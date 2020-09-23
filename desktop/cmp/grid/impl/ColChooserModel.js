@@ -7,6 +7,7 @@
 import {HoistModel, managed} from '@xh/hoist/core';
 import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
 import {action, observable} from '@xh/hoist/mobx';
+import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * State management for the ColChooser component.
@@ -26,18 +27,26 @@ export class ColChooserModel {
     // Show in popover
     @observable isPopoverOpen = false;
 
-    /*
-     * Default mode for ColChooserDialog and ColChooserButton components is 'commitOnChange'.
-     * When 'mode' prop is specified by colChooserButton component, the dialog component
-     * follows that mode for consistency.
-     */
-    @observable mode = 'commitOnChange';
+    commitOnChange;
+    showRestoreDefaults;
 
     /**
-     * @param {GridModel} gridModel - model for the grid to be managed.
+     * @param {Object} c - ColChooserModel config
+     * @param {GridModel} c.gridModel - model for the grid to be managed.
+     * @param {boolean} [c.commitOnChange] - Immediately render changed columns on grid.
+     *      Set to false to show Save button to commit changes on save. Default true.
+     * @param {boolean} [c.showRestoreDefaults] - show Restore Defaults button. Default true.
+     * @param {number} [c.width] - chooser width for popover and dialog
+     * @param {number} [c.height] - chooser height for popover and dialog
      */
-    constructor(gridModel) {
+    constructor({gridModel, commitOnChange, showRestoreDefaults, width, height}) {
         this.gridModel = gridModel;
+        this.commitOnChange = withDefault(commitOnChange, true);
+        this.showRestoreDefaults = withDefault(showRestoreDefaults, true);
+
+        this.width = withDefault(width, 520);
+        this.height = withDefault(height, 300);
+
         this.lrModel = new LeftRightChooserModel({
             leftTitle: 'Available Columns',
             leftEmptyText: 'No more columns to add.',
@@ -46,7 +55,7 @@ export class ColChooserModel {
             leftSorted: true,
             rightGroupingEnabled: false,
             onChange: () => {
-                if (this.mode === 'commitOnChange') this.commit();
+                if (this.commitOnChange) this.commit();
             }
         });
     }
@@ -90,11 +99,6 @@ export class ColChooserModel {
         this.gridModel.restoreDefaults();
         this.syncChooserData();
         this.commit();
-    }
-
-    @action
-    setMode(mode) {
-        this.mode = mode;
     }
 
     //------------------------

@@ -18,7 +18,7 @@ import {ColChooserModel} from './ColChooserModel';
 
 /**
  * Hoist UI for user selection and discovery of available Grid columns, enabled via the
- * GridModel.enableColChooser config option.
+ * GridModel.colChooserModel config option.
  *
  * This component displays available columns in a list, with currently visible columns
  * identified by a checkmark icon to the right of the column name. Users can toggle column

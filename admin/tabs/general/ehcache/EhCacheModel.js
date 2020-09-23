@@ -18,7 +18,7 @@ export class EhCacheModel {
     @managed
     gridModel = new GridModel({
         persistWith: this.persistWith,
-        enableColChooser: true,
+        colChooserModel: true,
         enableExport: true,
         store: new UrlStore({
             url: 'ehCacheAdmin/listCaches',

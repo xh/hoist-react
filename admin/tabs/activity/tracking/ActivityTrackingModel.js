@@ -145,7 +145,7 @@ export class ActivityTrackingModel {
                 path: 'aggGridModel',
                 persistSort: false
             },
-            enableColChooser: true,
+            colChooserModel: true,
             enableExport: true,
             exportOptions: {filename: `${XH.appCode}-activity-summary`},
             emptyText: 'No activity reported...',

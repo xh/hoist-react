@@ -16,7 +16,7 @@ export const userPreferencePanel = hoistCmp.factory(
 
 const modelSpec = {
     persistWith: {localStorageKey: 'xhAdminUserPreferenceState'},
-    enableColChooser: true,
+    colChooserModel: true,
     enableExport: true,
     selModel: 'multiple',
     store: {

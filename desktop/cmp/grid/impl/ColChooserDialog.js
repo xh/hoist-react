@@ -16,7 +16,8 @@ export const colChooserDialog = hoistCmp.factory({
 
     render({model, className}) {
 
-        if (!model.isOpen) return null;
+        const {isOpen, width} = model;
+        if (!isOpen) return null;
 
         return dialog({
             icon: Icon.gridPanel(),
@@ -24,7 +25,8 @@ export const colChooserDialog = hoistCmp.factory({
             isOpen: true,
             onClose: () => model.close(),
             item: colChooser({model}),
-            className
+            className,
+            style: {width}
         });
     }
 });

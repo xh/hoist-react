@@ -22,9 +22,6 @@ Error tracking tabs described below.
 * `RestGrid` now supports bulk delete when multiple rows are selected.
 * `RestGrid`'s `actionWarning` messages may now be specified as functions.
 * Added new `restoreDefaults` action to default `StoreContextMenu` for `GridModel`.
-* `ColChooserButton` supports a `mode` prop to specify when column changes are committed. `mode`
-  defaults to `'commitOnChange'`, while `'commitOnSave'` applies column changes via the Save button
-  and omits the otherwise immediately reactive Reset button.
 
 ### 🐞 Bug Fixes
 

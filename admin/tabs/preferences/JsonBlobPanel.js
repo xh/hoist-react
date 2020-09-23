@@ -17,7 +17,7 @@ export const jsonBlobPanel = hoistCmp.factory(
 
 const modelSpec = {
     persistWith: {localStorageKey: 'xhAdminJsonBlobState'},
-    enableColChooser: true,
+    colChooserModel: true,
     enableExport: true,
     store: {
         url: 'rest/jsonBlobAdmin',

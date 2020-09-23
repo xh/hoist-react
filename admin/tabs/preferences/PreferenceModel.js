@@ -20,7 +20,7 @@ export class PreferenceModel {
     @managed
     gridModel = new RestGridModel({
         persistWith: this.persistWith,
-        enableColChooser: true,
+        colChooserModel: true,
         enableExport: true,
         selModel: 'multiple',
         store: {

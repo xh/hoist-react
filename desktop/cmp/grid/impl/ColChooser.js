@@ -5,18 +5,16 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {filler} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {leftRightChooser, leftRightChooserFilter} from '@xh/hoist/desktop/cmp/leftrightchooser';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {withDefault} from '@xh/hoist/utils/js';
-import {ColChooserModel} from './ColChooserModel';
 
 /**
  * Hoist UI for user selection and discovery of available Grid columns, enabled via the
- * GridModel.enableColChooser config option.
+ * GridModel.colChooserModel config option.
  *
  * This component displays both available and currently visible columns in two left/right
  * grids, allowing users to toggle columns on and off within its associated grid.
@@ -28,30 +26,26 @@ import {ColChooserModel} from './ColChooserModel';
  * It is not necessary to manually create instances of this component within an application.
  */
 export const colChooser = hoistCmp.factory({
-    model: uses(ColChooserModel),
     className: 'xh-col-chooser',
 
-    render({model, className, width, height}) {
-        const commitOnChange = model.mode === 'commitOnChange';
+    render({model, className}) {
+        const {commitOnChange, showRestoreDefaults, width, height} = model;
 
         return panel({
             className,
             items: [
-                leftRightChooser({
-                    width: withDefault(width, 500),
-                    height: withDefault(height, 300)
-                }),
+                leftRightChooser({width, height}),
                 toolbar(
                     leftRightChooserFilter({fields: ['text']}),
                     filler(),
                     button({
-                        omit: !commitOnChange,
-                        text: 'Reset',
+                        omit: !showRestoreDefaults,
+                        text: 'Restore Grid Defaults',
                         icon: Icon.undo({className: 'xh-red'}),
                         onClick: () => model.restoreDefaults()
                     }),
                     toolbarSep({
-                        omit: !commitOnChange
+                        omit: !showRestoreDefaults
                     }),
                     button({
                         text: commitOnChange ? 'Close' : 'Cancel',

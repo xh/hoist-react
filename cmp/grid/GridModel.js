@@ -8,6 +8,7 @@ import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Column, ColumnGroup, GridAutosizeMode} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
+import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/ColChooserModel';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, observable} from '@xh/hoist/mobx';
@@ -30,7 +31,7 @@ import {
     defaultsDeep,
     difference,
     find,
-    isArray,
+    isArray, isBoolean,
     isEmpty,
     isFunction,
     isNil,
@@ -74,7 +75,7 @@ export class GridModel {
     /** @member {boolean} */
     treeMode;
     /** @member {ColChooserModel} */
-    @managed colChooserModel;
+    colChooserModel;
     /** @member {function} */
     rowClassFn;
     /** @member {(Array|function)} */
@@ -166,6 +167,8 @@ export class GridModel {
      *      config or string `mode` with which to create one.
      * @param {(ColChooserModel|Object|boolean)} [c.colChooserModel] - ColChooserModel, or a
      *      config with which to create one, or boolean `true` to enable default.
+     *      @see ColChooserModel desktop impl for valid config options.
+     *      Mobile apps should only specify `true`, as colChooserModel mobile impl is not configurable.
      * @param {GridModelPersistOptions} [c.persistWith] - options governing persistence.
      * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
@@ -182,8 +185,6 @@ export class GridModel {
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      * @param {boolean} [c.enableColumnPinning] - true to allow the user to manually pin / unpin
      *      columns via UI affordances.
-     * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
-     *      install a default context menu item to launch the chooser.
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
      *      install default context menu items.
      * @param {ExportOptions} [c.exportOptions] - default export options.
@@ -314,7 +315,7 @@ export class GridModel {
             showCellFocus
         });
 
-        this.colChooserModel = this.parseColChooserModel(colChooserModel);
+        this.colChooserModel = this.parseChooserModel(colChooserModel);
         this.selModel = this.parseSelModel(selModel);
         this.persistenceModel = persistWith ? new GridPersistenceModel(this, persistWith) : null;
         this.experimental = this.parseExperimental(experimental);
@@ -1085,9 +1086,26 @@ export class GridModel {
         };
     }
 
+    parseChooserModel(chooserModel) {
+        if (XH.isMobileApp) {
+            return chooserModel ? this.markManaged(new MobileColChooserModel(this)) : null;
+        }
 
-    createChooserModel() {
-        return XH.isMobileApp ? new MobileColChooserModel(this) : new DesktopColChooserModel(this);
+        if (chooserModel instanceof ColChooserModel) {
+            return this.markManaged(new DesktopColChooserModel(chooserModel));
+        }
+
+        if (isPlainObject(chooserModel)) {
+            return this.markManaged(new DesktopColChooserModel(defaults(chooserModel,
+                {gridModel: this})));
+        }
+
+        if (isBoolean(chooserModel)) {
+            return chooserModel ? this.markManaged(new DesktopColChooserModel({gridModel: this})) : null;
+        }
+
+        console.warn(`colChooserModel config in GridModel not supported: ${chooserModel}`);
+        return null;
     }
 
     defaultGroupSortFn = (a, b) => {
