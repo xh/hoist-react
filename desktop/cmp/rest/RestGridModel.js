@@ -54,6 +54,7 @@ export const deleteAction = {
     }),
     actionFn: ({gridModel}) => gridModel.restGridModel.confirmDeleteRecords()
 };
+
 /**
  * Core Model for a RestGrid.
  */
@@ -81,7 +82,7 @@ export class RestGridModel {
 
     prepareCloneFn;
 
-    unit = null;
+    unit;
     filterFields = null;
 
     @managed
@@ -178,6 +179,7 @@ export class RestGridModel {
         throwIf(this.readonly, 'Record not deleted: this grid is read-only');
         return this.store.deleteRecordAsync(record)
             .then(() => this.formModel.close())
+            .linkTo(this.loadModel)
             .catchDefault();
     }
 
@@ -190,6 +192,7 @@ export class RestGridModel {
 
                 XH.toast({intent, message});
             })
+            .linkTo(this.loadModel)
             .catchDefault();
     }
 

@@ -2,6 +2,11 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.1.0...develop)
+
+
+## v36.1.0 - 2020-09-22
+
 ⚠ NOTE - apps should update to `hoist-core >= 8.3.0` when taking this hoist-react update. This is
 required to support both the new `JsonBlobService` and updates to the Admin Activity and Client
 Error tracking tabs described below.
@@ -38,12 +43,13 @@ Error tracking tabs described below.
 * Resetting Grid columns to their default state (e.g. via the Column Chooser) retains enhancements
   applied from matching Store fields.
 * Desktop `DateInput` now handles out-of-bounds dates without throwing exception during rendering.
+* Dragging a grid column with element based header no longer displays [object Object] in draggable.
 
 ### 📚 Libraries
 
 * codemirror `5.57 -> 5.58`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v36.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.0.0...v36.1.0)
 
 ## v36.0.0 - 2020-09-04
 
