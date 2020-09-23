@@ -37,8 +37,11 @@ export class RegroupDialogModel {
             {selection, store} = _parent.gridModel,
             ids = selection.map(it => it.id),
             resp = await store.bulkUpdateRecordsAsync(ids, {groupName}),
-            intent = resp.fail > 0 ? 'warning' : 'success',
-            message = `Change group complete with ${resp.fail} failures.`;
+            failuresPresent = resp.fail > 0,
+            intent = failuresPresent ? 'warning' : 'success';
+
+        let message = `Successfully updated ${resp.success} records.`;
+        if (failuresPresent) message += ` Failed to update ${resp.fail} records.`;
 
         XH.toast({intent, message});
         this.close();
