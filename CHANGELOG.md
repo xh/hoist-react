@@ -2,6 +2,26 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+* New `GridModel` config `colChooserModel` replaces `enableColChooser` to allow for more flexible
+  configuration of the desktop implementation of `colChooser` in both popover and dialog components.
+  * Use `colChooserModel: true` to enable default behavior.
+  * To specify implementation, assign a config object
+     * e.g. `colChooserModel: {
+        commitOnChange: false,
+        showRestoreDefaults: false,
+        width: 600,
+        height: 400
+        }`
+  * Set `commitOnChange` to `false` to enable Save button for committing changes.
+  * Set `showRestoreDefaults` to `false` to hide Restore Grid Defaults button, which immediately
+    commits grid defaults (all column, grouping, and sorting states).
+
+
+### 🎁 New Features
+
+* Added new `restoreDefaults` action to default `StoreContextMenu` for `GridModel`.
+
 ### 🐞 Bug Fixes
 
 * Fixed a regression introduced in v36.1.0 in `FilterChooser`. Now supports `disabled` prop.
@@ -30,7 +50,6 @@ Error tracking tabs described below.
 * The `Select` input supports a new `leftIcon` prop.
 * `RestGrid` now supports bulk delete when multiple rows are selected.
 * `RestGrid`'s `actionWarning` messages may now be specified as functions.
-* Added new `restoreDefaults` action to default `StoreContextMenu` for `GridModel`.
 
 ### 🐞 Bug Fixes
 
