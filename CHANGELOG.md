@@ -42,6 +42,7 @@ Error tracking tabs described below.
 * Resetting Grid columns to their default state (e.g. via the Column Chooser) retains enhancements
   applied from matching Store fields.
 * Desktop `DateInput` now handles out-of-bounds dates without throwing exception during rendering.
+* Dragging a grid column with element based header no longer displays [object Object] in draggable.
 
 ### 📚 Libraries
 
