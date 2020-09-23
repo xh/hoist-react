@@ -628,8 +628,7 @@ export class GridModel {
     noteAgSelectionStateChanged() {
         const {selModel, agGridModel, isReady} = this;
 
-        // Debounce allows for cases where grid has been unmounted and is no longer ready when
-        // this reaction runs. Handle as a no-op (leaving selModel unchanged) to avoid throwing.
+        // Check required as due to debounce we may be receiving stale message after unmounting
         if (isReady) {
             selModel.select(agGridModel.getSelectedRowNodeIds());
         }
