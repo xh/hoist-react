@@ -2,6 +2,10 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed a regression introduced in v36.1.0 in `FilterChooser`. Now supports `disabled` prop.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.1.0...develop)
 
 

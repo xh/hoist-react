@@ -40,6 +40,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                     ref: inputRef,
 
                     autoFocus: chooserProps.autoFocus,
+                    disabled: chooserProps.disabled,
                     menuPlacement: chooserProps.menuPlacement,
                     placeholder: withDefault(chooserProps.placeholder, 'Filter...'),
                     leftIcon: withDefault(chooserProps.leftIcon, Icon.filter()),
@@ -79,6 +80,9 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
 FilterChooser.propTypes = {
     /** True to focus the control on render. */
     autoFocus: PT.bool,
+
+    /** True to disable user interaction. */
+    disabled: PT.bool,
 
     /** True to show a "clear" button at the right of the control.  Defaults to true. */
     enableClear: PT.bool,
