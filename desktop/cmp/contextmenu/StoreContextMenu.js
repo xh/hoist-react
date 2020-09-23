@@ -144,7 +144,7 @@ export class StoreContextMenu {
                 return new RecordAction({
                     text: 'Restore Grid Defaults',
                     icon: Icon.reset(),
-                    actionFn: () => gridModel.restoreDefaults()
+                    actionFn: () => gridModel.confirmRestoreDefaults()
                 });
             default:
                 return token;

@@ -5,18 +5,8 @@
 ### 💥 Breaking Changes
 * New `GridModel` config `colChooserModel` replaces `enableColChooser` to allow for more flexible
   configuration of the desktop implementation of `colChooser` in both popover and dialog components.
-  * Use `colChooserModel: true` to enable default behavior.
-  * To specify implementation, assign a config object
-     * e.g. `colChooserModel: {
-        commitOnChange: false,
-        showRestoreDefaults: false,
-        width: 600,
-        height: 400
-        }`
-  * Set `commitOnChange` to `false` to enable Save button for committing changes.
-  * Set `showRestoreDefaults` to `false` to hide Restore Grid Defaults button, which immediately
-    commits grid defaults (all column, grouping, and sorting states).
-
+  * Use `colChooserModel: true` to reimplement default behavior.
+  * See documentation on `ColChooserModel` for more information.
 
 ### 🎁 New Features
 

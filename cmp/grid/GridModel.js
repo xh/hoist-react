@@ -11,6 +11,7 @@ import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/ColChooserModel';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
+import {Icon} from '@xh/hoist/icon';
 import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {
@@ -319,6 +320,18 @@ export class GridModel {
         this.selModel = this.parseSelModel(selModel);
         this.persistenceModel = persistWith ? new GridPersistenceModel(this, persistWith) : null;
         this.experimental = this.parseExperimental(experimental);
+    }
+
+    /**
+     * Confirm before restoring defaults.
+     */
+    confirmRestoreDefaults() {
+        XH.confirm({
+            title: 'Please Confirm',
+            icon: Icon.warning({size: 'lg'}),
+            message: 'Restoring grid defaults will take place immediately. Do you wish to proceed?',
+            onConfirm: () => this.restoreDefaults()
+        });
     }
 
     /**
@@ -1096,7 +1109,7 @@ export class GridModel {
         }
 
         if (chooserModel instanceof ColChooserModel) {
-            return this.markManaged(new DesktopColChooserModel(chooserModel));
+            return new DesktopColChooserModel(chooserModel);
         }
 
         if (isPlainObject(chooserModel)) {
