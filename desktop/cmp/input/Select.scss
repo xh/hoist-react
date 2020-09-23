@@ -38,6 +38,14 @@
       &--is-focused {
         box-shadow: var(--xh-form-field-focused-box-shadow);
       }
+
+      &__left-icon {
+        color: var(--xh-text-color-muted);
+        display: inherit;
+        font-size: var(--xh-font-size-large-px);
+        margin-left: 7px;
+        width: var(--xh-font-size-large-px);
+      }
     }
 
     &__placeholder {

@@ -68,7 +68,7 @@ export const columnHeader = hoistCmp.factory({
         const {xhColumn, gridModel} = impl,
             {isDesktop} = XH;
 
-        const headerName = isFunction(xhColumn?.headerName) ?
+        const headerElem = isFunction(xhColumn?.headerName) ?
             xhColumn.headerName({column: xhColumn, gridModel}) :
             props.displayName;
 
@@ -77,7 +77,8 @@ export const columnHeader = hoistCmp.factory({
         if (isDesktop && isUndefined(xhColumn?.headerTooltip)) {
             onMouseEnter = ({target: el}) => {
                 if (el.offsetWidth < el.scrollWidth) {
-                    el.setAttribute('title', headerName);
+                    const title = isString(headerElem) ? headerElem : props.displayName;
+                    el.setAttribute('title', title);
                 } else {
                     el.removeAttribute('title');
                 }
@@ -94,7 +95,7 @@ export const columnHeader = hoistCmp.factory({
             onTouchEnd:     !isDesktop ? impl.onTouchEnd : null,
 
             items: [
-                span({onMouseEnter, item: headerName}),
+                span({onMouseEnter, item: headerElem}),
                 sortIcon(),
                 menuIcon()
             ]

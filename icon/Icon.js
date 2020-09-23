@@ -201,6 +201,7 @@ export const Icon = {
     office(p)           {return Icon.icon({...p,  iconName: 'building'})},
     openExternal(p)     {return Icon.icon({...p,  iconName: 'external-link'})},
     options(p)          {return Icon.icon({...p,  iconName: 'sliders-h-square'})},
+    paste(p)            {return Icon.icon({...p,  iconName: 'paste'})},
     pause(p)            {return Icon.icon({...p,  iconName: 'pause'})},
     pauseCircle(p)      {return Icon.icon({...p,  iconName: 'pause-circle'})},
     pin(p)              {return Icon.icon({...p,  iconName: 'thumbtack'})},

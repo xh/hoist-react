@@ -1,8 +1,11 @@
+// Start load timer as early as possible - read later in XH.trackLoad().
 window._xhLoadTimestamp = Date.now();
 
+// Check browser compatibility with features / syntax we can't polyfill. Currently Mobx 5+ has
+// a hard requirement for Proxy (test w/string access for max safety), which effectively filters
+// out the browsers (ahem, IE11) we want to block hard and fast here.
 (function(W) {
     var D = document,
-        // Mobx 5+ has a hard requirement for Proxy (test w/string access for max safety).
         hasProxy = W['Proxy'];
 
     if (!hasProxy) {

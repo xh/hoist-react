@@ -9,11 +9,6 @@ import {usernameCol} from '@xh/hoist/admin/columns';
 import {dateTimeCol} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
-import {
-    addAction,
-    deleteAction,
-    editAction
-} from '@xh/hoist/desktop/cmp/rest';
 
 export const userPreferencePanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
@@ -70,16 +65,6 @@ const modelSpec = {
     groupBy: 'groupName',
     unit: 'preference',
     filterFields: ['name', 'username'],
-    toolbarActions: [
-        addAction,
-        editAction,
-        deleteAction
-    ],
-    menuActions: [
-        addAction,
-        editAction,
-        deleteAction
-    ],
     columns: [
         {field: 'name', width: 200},
         {field: 'type', width: 100},

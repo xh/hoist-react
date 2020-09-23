@@ -85,7 +85,7 @@ export class ConfigModel {
             ]
         }),
         actionWarning: {
-            del: 'Are you sure you want to delete? Deleting configs can break running apps.'
+            del: (records) =>  `Are you sure you want to delete ${records.length} config(s)? Deleting configs can break running apps.`
         },
         toolbarActions: [
             addAction,
