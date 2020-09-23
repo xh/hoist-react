@@ -24,7 +24,7 @@ export class PreferenceModel {
     persistWith = {localStorageKey: 'xhAdminPreferenceState'};
 
     @managed
-    regroupDialogModel = new RegroupDialogModel(this)
+    regroupDialogModel = new RegroupDialogModel(this);
 
     @managed
     gridModel = new RestGridModel({

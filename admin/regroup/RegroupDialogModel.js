@@ -12,10 +12,10 @@ import {Icon} from '@xh/hoist/icon/Icon';
 @HoistModel
 export class RegroupDialogModel {
 
-    _parent
+    _parent;
 
-    @bindable.ref groupName = null;
-    @observable.ref isOpen = false
+    @bindable groupName = null;
+    @observable isOpen = false;
 
     regroupAction = {
         text: 'Change Group',

@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {truncate} from 'lodash';
 import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
@@ -16,7 +15,7 @@ import {
     RestGridModel,
     RestStore
 } from '@xh/hoist/desktop/cmp/rest';
-
+import {truncate} from 'lodash';
 import {DifferModel} from '../../../differ/DifferModel';
 import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
 
@@ -28,7 +27,7 @@ export class ConfigModel {
     persistWith = {localStorageKey: 'xhAdminConfigState'};
 
     @managed
-    regroupDialogModel = new RegroupDialogModel(this)
+    regroupDialogModel = new RegroupDialogModel(this);
 
     @managed
     gridModel = new RestGridModel({
