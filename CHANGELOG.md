@@ -6,6 +6,10 @@
 
 * Admin Preference and Config panels now provide bulk regrouping actions.
 
+### 🐞 Bug Fixes
+
+* Fixed a regression introduced in v36.1.0 in `FilterChooser`. Now supports `disabled` prop.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.1.0...develop)
 
 
