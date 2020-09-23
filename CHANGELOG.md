@@ -2,6 +2,10 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* Provides new `ManualProvider` for applications that want to use the Persistence API, but
+need to provide their own storage implementations.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.1.0...develop)
 
 

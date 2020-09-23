@@ -41,6 +41,6 @@ export * from './persist/PersistenceProvider';
 export * from './persist/LocalStorageProvider';
 export * from './persist/DashViewProvider';
 export * from './persist/PrefProvider';
-
+export * from './persist/ManualProvider';
 
 export * from './XH';
