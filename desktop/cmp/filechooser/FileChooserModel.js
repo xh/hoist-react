@@ -24,6 +24,7 @@ export class FileChooserModel {
     lastRejectedCount;
 
     gridModel = new GridModel({
+        hideHeaders: true,
         store: {idSpec: 'name'},
         columns: [
             {
