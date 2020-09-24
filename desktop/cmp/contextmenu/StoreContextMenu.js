@@ -38,7 +38,8 @@ export class StoreContextMenu {
      *          `exportCsv` - export grid data to CSV via Hoist's server-side export capabilities.
      *          `exportLocal` - export grid data to Excel via ag-Grid's built-in client side export.
      *          `autosizeColumns` - autosize columns to fit their contents.
-     *          `restoreDefaults` - restore grid defaults.
+     *          `restoreDefaults` - restore column, sorting, and grouping configs and clear any
+     *              persistent grid state.
      *              @see GridModel.restoreDefaults
      *
      *

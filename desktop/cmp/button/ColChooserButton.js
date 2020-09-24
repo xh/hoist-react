@@ -43,7 +43,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
         }
 
         if (!colChooserModel) {
-            console.error('No ColChooserModel available on bound GridModel - ensure colChooserModel config is set to true.');
+            console.error('No ColChooserModel available on bound GridModel - enable via GridModel.colChooserModel config.');
             return cloneElement(displayButton, {disabled: true});
         }
 

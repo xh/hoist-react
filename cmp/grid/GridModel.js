@@ -32,7 +32,7 @@ import {
     defaultsDeep,
     difference,
     find,
-    isArray, isBoolean,
+    isArray,
     isEmpty,
     isFunction,
     isNil,
@@ -261,8 +261,10 @@ export class GridModel {
         useVirtualColumns = false,
         autosizeOptions = {},
         experimental,
+        enableColChooser,
         ...rest
     }) {
+        apiDeprecated(enableColChooser, 'enableColChooser', "Use 'colChooserModel' instead");
 
         this._defaultState = {columns, sortBy, groupBy};
 
@@ -322,9 +324,6 @@ export class GridModel {
         this.experimental = this.parseExperimental(experimental);
     }
 
-    /**
-     * Confirm before restoring defaults.
-     */
     confirmRestoreDefaults() {
         XH.confirm({
             title: 'Please Confirm',
@@ -1113,16 +1112,10 @@ export class GridModel {
         }
 
         if (isPlainObject(chooserModel)) {
-            return this.markManaged(new DesktopColChooserModel(defaults(chooserModel,
-                {gridModel: this})));
+            return this.markManaged(new DesktopColChooserModel(defaults(chooserModel, {gridModel: this})));
         }
 
-        if (isBoolean(chooserModel)) {
-            return chooserModel ? this.markManaged(new DesktopColChooserModel({gridModel: this})) : null;
-        }
-
-        console.warn(`colChooserModel config in GridModel not supported: ${chooserModel}`);
-        return null;
+        return chooserModel ? this.markManaged(new DesktopColChooserModel({gridModel: this})) : null;
     }
 
     defaultGroupSortFn = (a, b) => {
