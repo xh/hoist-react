@@ -3,6 +3,7 @@
 ## v37.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
+* Admin Preference and Config panels now provide bulk regrouping actions.
 * Provides new `CustomProvider` for applications that want to use the Persistence API, but
 need to provide their own storage implementation.
 ### 🐞 Bug Fixes

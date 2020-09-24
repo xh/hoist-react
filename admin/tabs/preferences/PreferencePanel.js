@@ -10,6 +10,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {differ} from '../../differ/Differ';
+import {regroupDialog} from '../../regroup/RegroupDialog';
 import {PreferenceModel} from './PreferenceModel';
 
 export const preferencePanel = hoistCmp.factory({
@@ -26,7 +27,8 @@ export const preferencePanel = hoistCmp.factory({
                     });
                 }
             }),
-            differ()
+            differ(),
+            regroupDialog()
         );
     }
 });
