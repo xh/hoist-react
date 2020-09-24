@@ -4,9 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
-import {Icon} from '@xh/hoist/icon';
 import {action, observable} from '@xh/hoist/mobx';
 
 /**
@@ -30,17 +29,6 @@ export class ColChooserModel {
     commitOnChange;
     showRestoreDefaults;
 
-    /**
-     * @param {Object} c - ColChooserModel config
-     * @param {GridModel} c.gridModel - model for the grid to be managed.
-     * @param {boolean} [c.commitOnChange] - Immediately render changed columns on grid.
-     *      Set to false to enable Save button for committing changes on save.
-     * @param {boolean} [c.showRestoreDefaults] - show Restore Defaults button.
-     *      Set to false to hide Restore Grid Defaults button, which immediately
-     *      commits grid defaults (all column, grouping, and sorting states).
-     * @param {number} [c.width] - chooser width for popover and dialog.
-     * @param {number} [c.height] - chooser height for popover and dialog.
-     */
     constructor({
         gridModel,
         commitOnChange = true,
@@ -104,20 +92,11 @@ export class ColChooserModel {
         gridModel.applyColumnStateChanges(colChanges);
     }
 
-    // When commitOnChange is set to false, confirm with user before proceeding.
-    confirmRestoreDefaults() {
-        XH.confirm({
-            title: 'Please Confirm',
-            icon: Icon.warning({size: 'lg'}),
-            message: 'Restoring grid defaults will take place immediately. Do you wish to proceed?',
-            onConfirm: () => this.restoreDefaults()
-        });
-    }
-
-    restoreDefaults() {
-        this.gridModel.restoreDefaults();
-        this.syncChooserData();
-        this.commit();
+    async restoreDefaultsAsync() {
+        const restored = await this.gridModel.restoreDefaultsAsync({requireConfirm: true});
+        if (restored) {
+            this.syncChooserData();
+        }
     }
 
     //------------------------

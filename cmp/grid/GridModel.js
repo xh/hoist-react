@@ -8,7 +8,6 @@ import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Column, ColumnGroup, GridAutosizeMode} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
-import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/ColChooserModel';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
@@ -166,9 +165,8 @@ export class GridModel {
      *      `store.SummaryRecord` to be populated. Valid values are true/'top', 'bottom', or false.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
-     * @param {(ColChooserModel|Object|boolean)} [c.colChooserModel] - ColChooserModel, or a
-     *      config with which to create one, or boolean `true` to enable default.
-     *      @see ColChooserModel desktop impl for valid config options.
+     * @param {(ColChooserModelConfig|boolean)} [c.colChooserModel] - config with which to create a
+     *      ColChooserModel, or boolean `true` to enable default.
      *      Mobile apps should only specify `true`, as colChooserModel mobile impl is not configurable.
      * @param {GridModelPersistOptions} [c.persistWith] - options governing persistence.
      * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
@@ -261,11 +259,8 @@ export class GridModel {
         useVirtualColumns = false,
         autosizeOptions = {},
         experimental,
-        enableColChooser,
         ...rest
     }) {
-        apiDeprecated(enableColChooser, 'enableColChooser', "Use 'colChooserModel' instead");
-
         this._defaultState = {columns, sortBy, groupBy};
 
         this.treeMode = treeMode;
@@ -288,6 +283,7 @@ export class GridModel {
         });
 
         apiRemoved(rest.contextMenuFn, 'contextMenuFn', 'Use contextMenu instead');
+        apiRemoved(rest.enableColChooser, 'enableColChooser', "Use 'colChooserModel' instead");
         apiRemoved(rest.stateModel, 'stateModel', "Use 'persistWith' instead.");
         apiRemoved(exportOptions.includeHiddenCols, 'includeHiddenCols', "Replace with {columns: 'ALL'}.");
 
@@ -324,29 +320,39 @@ export class GridModel {
         this.experimental = this.parseExperimental(experimental);
     }
 
-    confirmRestoreDefaults() {
-        XH.confirm({
-            title: 'Please Confirm',
-            icon: Icon.warning({size: 'lg'}),
-            message: 'Restoring grid defaults will take place immediately. Do you wish to proceed?',
-            onConfirm: () => this.restoreDefaults()
-        });
-    }
-
     /**
      * Restore the column, sorting, and grouping configs as specified by the application at
      * construction time. This is the state without any saved grid state or user changes applied.
      * This method will clear the persistent grid state saved for this grid, if any.
+     *
+     * @return {boolean} true if defaults were restored
      */
-    restoreDefaults() {
+    async restoreDefaultsAsync({requireConfirm = false}) {
         const {columns, sortBy, groupBy} = this._defaultState;
+
+        if (requireConfirm) {
+            const confirmed = await XH.confirm({
+                title: 'Please Confirm',
+                icon: Icon.warning({size: 'lg'}),
+                message: 'Restoring grid defaults will take place immediately. Do you wish to proceed?'
+            });
+            if (!confirmed) return false;
+        }
+
         this.setColumns(columns);
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
 
-        if (this.persistenceModel) {
-            this.persistenceModel.clear();
-        }
+        this.persistenceModel?.clear();
+        return true;
+    }
+
+    /**
+     * @deprecated
+     * @see restoreDefaultsAsync
+     */
+    restoreDefaults() {
+        this.restoreDefaultsAsync();
     }
 
     /**
@@ -1107,10 +1113,6 @@ export class GridModel {
             return chooserModel ? this.markManaged(new MobileColChooserModel(this)) : null;
         }
 
-        if (chooserModel instanceof ColChooserModel) {
-            return new DesktopColChooserModel(chooserModel);
-        }
-
         if (isPlainObject(chooserModel)) {
             return this.markManaged(new DesktopColChooserModel(defaults(chooserModel, {gridModel: this})));
         }
@@ -1151,6 +1153,17 @@ const xhEmptyFlexCol = {
     }
 };
 
+
+/**
+ * @typedef {Object} ColChooserModelConfig
+ * @property {boolean} [commitOnChange] - Immediately render changed columns on grid (default true).
+ *      Set to false to enable Save button for committing changes on save
+ * @property {boolean} [showRestoreDefaults] - show Restore Defaults button (default true).
+ *      Set to false to hide Restore Grid Defaults button, which immediately
+ *      commits grid defaults (all column, grouping, and sorting states).
+ * @property {number} [width] - chooser width for popover and dialog.
+ * @property {number} [height] - chooser height for popover and dialog.
+ */
 
 /**
  * @typedef {Object} ColumnState
@@ -1203,7 +1216,6 @@ const xhEmptyFlexCol = {
  *      width, or content added to it, horizontal scrolling of the columns may result that may
  *      require an additional autosize.
  */
-
 
 /**
  * @typedef {Object} GridModelPersistOptions

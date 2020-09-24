@@ -42,9 +42,7 @@ export const colChooser = hoistCmp.factory({
                         omit: !showRestoreDefaults,
                         text: 'Restore Grid Defaults',
                         icon: Icon.undo({className: 'xh-red'}),
-                        onClick: () => commitOnChange ? 
-                            model.restoreDefaults() :
-                            model.confirmRestoreDefaults()
+                        onClick: () => model.restoreDefaultsAsync()
                     }),
                     toolbarSep({
                         omit: !showRestoreDefaults
