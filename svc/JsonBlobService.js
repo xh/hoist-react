@@ -5,7 +5,6 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {XH, HoistService} from '@xh/hoist/core';
-import {castArray} from 'lodash';
 
 /**
  * Service to read and set user-specific named json values.
@@ -23,21 +22,18 @@ export class JsonBlobService {
     }
 
     /**
-     * Return a list of blobs.
+     * Return the list of blobs visible to the current user.
      *
      * @param {string} type - reference key for which type of data to list.
-     * @param {(string|string[])} [owners] - owner(s) for whom to return blobs. Defaults to current user.
      * @param {boolean} [includeValue] - true to include the full value string for each blob.
      */
     async listAsync({
         type,
-        owners = XH.getUsername(),
         includeValue
     }) {
-        owners = JSON.stringify(castArray(owners));
         return XH.fetchJson({
             url: 'xh/listJsonBlobs',
-            params: {type, owners, includeValue}
+            params: {type, includeValue}
         });
     }
 
@@ -47,20 +43,18 @@ export class JsonBlobService {
      * @param {string} type - reference key for which type of data this is.
      * @param {string} name.
      * @param {(Object|Array)} value - json serializable data to saved.
-     * @param {string} [owner] - defaults to current user.
      * @param {string} [description] - optional description.
      */
     async createAsync({
         type,
         name,
         value,
-        owner = XH.getUsername(),
         description
     }) {
         value = JSON.stringify(value);
         return XH.fetchJson({
             url: 'xh/createJsonBlob',
-            params: {type, name, value, owner, description}
+            params: {type, name, value, description}
         });
     }
 

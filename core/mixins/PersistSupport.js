@@ -140,15 +140,20 @@ function createDescriptor(target, property, descriptor, options) {
  *      persisted and the concrete `PersistenceProvider` instance created to do so.
  *
  * @property {string} [type] - Type of PersistenceProvider to be used. May be one of
- *      'pref'|'localStorage'|'dashView'. If not provided (most common), Hoist will auto-detect
- *      the type based on other keys provided. For example a 'prefKey' argument implies a type of
- *      'pref', while a 'localStorageKey' implies a type of 'localStorage' - see below.
+ *      'pref'|'localStorage'|'dashView'|'custom'. If not provided (most common), Hoist
+ *      will auto-detect the type based on other keys provided. For example a 'prefKey'
+ *      argument implies a type of 'pref', while a 'localStorageKey' implies a type
+ *      of 'localStorage' - see below.
  * @property {string} [prefKey] - name of Hoist preference for pref-based storage. Supplying a
  *      value for this property will create a {@see PrefProvider}.
  * @property {string} [localStorageKey] - unique string key for LocalStorage based state storage.
  *      Supplying a value for this property will create a {@see LocalStorageProvider}.
  * @property {DashViewModel} [dashViewModel] - model instance for Dashboard-based state storage.
  *      Supplying a value for this property will create a {@see DashViewProvider}.
+ * @property {function} [setData] - function for setting custom state storage.
+ *      Supplying a value for this property will create a {@see CustomProvider}.
+ * @property {function} [getData] - function for getting custom state storage.
+ *      Supplying a value for this property will create a {@see CustomProvider}.
  * @property {string} [path] - path or key in provider data where state should be stored.
  *      If not provided, the provider will use the name of the class property being persisted or
  *      another auto-selected name suitable to the particular target (e.g. 'gridModel')

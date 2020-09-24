@@ -3,6 +3,7 @@
 ## v37.0.0-SNAPSHOT - unreleased
 
 ### 💥 Breaking Changes
+
 * New `GridModel` config `colChooserModel` replaces `enableColChooser` to allow for more flexible
   configuration of the desktop implementation of `colChooser` in both popover and dialog components.
   * Use `colChooserModel: true` to reimplement default behavior.
@@ -10,7 +11,9 @@
 
 ### 🎁 New Features
 
-* Added new `restoreDefaults` action to default `StoreContextMenu` for `GridModel`.
+* Provides new `CustomProvider` for applications that want to use the Persistence API, but
+need to provide their own storage implementation.
+* Added `restoreDefaults` action to default `StoreContextMenu` for `GridModel`.
 
 ### 🐞 Bug Fixes
 

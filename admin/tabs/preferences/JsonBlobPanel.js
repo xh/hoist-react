@@ -24,8 +24,11 @@ const modelSpec = {
         reloadLookupsOnLoad: true,
         fields: [
             {
-                name: 'owner',
-                required: true
+                name: 'owner'
+            },
+            {
+                name: 'acl',
+                displayName: 'ACL'
             },
             {
                 name: 'name',
@@ -55,11 +58,6 @@ const modelSpec = {
                 editable: false
             },
             {
-                name: 'valueLastUpdated',
-                type: 'date',
-                editable: false
-            },
-            {
                 name: 'lastUpdatedBy',
                 editable: false
             }
@@ -71,17 +69,18 @@ const modelSpec = {
     filterFields: ['name', 'owner', 'type', 'value', 'description'],
     columns: [
         {field: 'owner', width: 200},
+        {field: 'acl', width: 80},
         {field: 'name', width: 200},
         {field: 'type', width: 200},
         {field: 'description', width: 200},
         {field: 'value', flex: 1, renderer: v => truncate(v, {length: 500})},
         {field: 'dateCreated', ...dateTimeCol, hidden: true},
         {field: 'lastUpdated', ...dateTimeCol, hidden: true},
-        {field: 'valueLastUpdated', ...dateTimeCol, hidden: true},
         {field: 'lastUpdatedBy', width: 160, hidden: true}
     ],
     editors: [
         {field: 'owner'},
+        {field: 'acl'},
         {field: 'name'},
         {field: 'type'},
         {field: 'description', formField: {item: textArea()}},
