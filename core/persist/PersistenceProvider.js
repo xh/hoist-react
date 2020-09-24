@@ -69,10 +69,10 @@ export class PersistenceProvider {
     /**
      * @private
      *
-     * Called by implementations only.  See create.
+     * Called by implementations only. See create.
      *
      * @param {string} path - dot delimited path
-     * @param {number|object} debounce
+     * @param {(number|object)} debounce - debounce interval in ms, or a lodash debounce config.
      */
     constructor({path, debounce = 250}) {
         throwIf(isUndefined(path), 'Path not specified in PersistenceProvider.');
