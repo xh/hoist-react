@@ -90,9 +90,6 @@ Grid.propTypes = {
      */
     agOptions: PT.object,
 
-    /** True to suppress display of the grid's header row. */
-    hideHeaders: PT.bool,
-
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(GridModel), PT.object]),
 
@@ -248,7 +245,7 @@ class LocalModel {
             autoSizePadding: 3 // tighten up cells for ag-Grid native autosizing.  Remove when Hoist autosizing no longer experimental
         };
 
-        if (props.hideHeaders) {
+        if (model.hideHeaders) {
             ret.headerHeight = 0;
         }
 

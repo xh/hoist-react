@@ -2,11 +2,17 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+* The `Grid` prop `hideHeaders` has been converted to a `GridModel` config.
+
 ### 🎁 New Features
+
 * Admin Preference and Config panels now provide bulk regrouping actions.
 * Provides new `CustomProvider` for applications that want to use the Persistence API, but
 need to provide their own storage implementation.
+
 ### 🐞 Bug Fixes
+
 * Fixed a regression introduced in v36.1.0 in `FilterChooser`. Now supports `disabled` prop.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.1.0...develop)
