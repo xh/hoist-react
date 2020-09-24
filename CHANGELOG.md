@@ -3,7 +3,7 @@
 ## v37.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-* Provides new `ManualProvider` for applications that want to use the Persistence API, but
+* Provides new `CustomProvider` for applications that want to use the Persistence API, but
 need to provide their own storage implementation.
 ### 🐞 Bug Fixes
 * Fixed a regression introduced in v36.1.0 in `FilterChooser`. Now supports `disabled` prop.

@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {LocalStorageProvider, PrefProvider, DashViewProvider, ManualProvider} from '../';
+import {LocalStorageProvider, PrefProvider, DashViewProvider, CustomProvider} from '../';
 import {
     isUndefined,
     cloneDeep,
@@ -28,7 +28,7 @@ import {throwIf} from '@xh/hoist/utils/js';
  * @see PrefProvider - stores state in a predefined Hoist application Preference.
  * @see LocalStorageProvider - stores state in browser local storage under a configured key.
  * @see DashViewProvider - stores state with other Dashboard-specific state via a `DashViewModel`.
- * @see ManualProvider - provides API for application and components to provide their own
+ * @see CustomProvider - provides API for application and components to provide their own
  *      storage mechanism.
  */
 export class PersistenceProvider {
@@ -49,7 +49,7 @@ export class PersistenceProvider {
             if (rest.prefKey) type = 'pref';
             if (rest.localStorageKey) type = 'localStorage';
             if (rest.dashViewModel) type = 'dashView';
-            if (rest.getData || rest.setData) type = 'manual';
+            if (rest.getData || rest.setData) type = 'custom';
         }
 
         switch (type) {
@@ -59,8 +59,8 @@ export class PersistenceProvider {
                 return new LocalStorageProvider(rest);
             case `dashView`:
                 return new DashViewProvider(rest);
-            case 'manual':
-                return new ManualProvider(rest);
+            case 'custom':
+                return new CustomProvider(rest);
             default:
                 throw XH.exception(`Unknown Persistence Provider for type: ${type}`);
         }

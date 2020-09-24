@@ -15,7 +15,7 @@ import {throwIf} from '@xh/hoist/utils/js';
  * This provider allows applications to use the Persistence API to populate and read state from
  * components without actually writing to any pre-defined storage.
  */
-export class ManualProvider extends PersistenceProvider {
+export class CustomProvider extends PersistenceProvider {
 
     getData;
     setData;
@@ -25,7 +25,7 @@ export class ManualProvider extends PersistenceProvider {
      * @param {function} setData - function to be used to write blob of data representing state.
      */
     constructor({getData, setData, ...rest}) {
-        throwIf(!getData || !setData, `ManualProvider requires a 'getData' and a 'setData' function.`);
+        throwIf(!getData || !setData, `CustomProvider requires a 'getData' and a 'setData' function.`);
         super(rest);
         this.getData = getData;
         this.setData = setData;
