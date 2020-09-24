@@ -3,7 +3,9 @@
 ## v37.0.0-SNAPSHOT - unreleased
 
 ### 💥 Breaking Changes
-* The `Grid` prop `hideHeaders` has been converted to a `GridModel` config.
+* The `Grid` `hideHeaders` prop has been converted to a field on `AgGridModel` and `GridModel`.
+All grid options of this type are now on the model hierarchy, allowing consistent application code
+and developer discovery.
 
 ### 🎁 New Features
 

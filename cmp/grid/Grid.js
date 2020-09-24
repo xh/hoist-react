@@ -12,7 +12,7 @@ import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {div} from '@xh/hoist/cmp/layout';
 import {computed, observable, observer, action, runInAction} from '@xh/hoist/mobx';
-import {isDisplayed, withShortDebug} from '@xh/hoist/utils/js';
+import {isDisplayed, withShortDebug, apiRemoved} from '@xh/hoist/utils/js';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -57,6 +57,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
     className: 'xh-grid',
 
     render({model, className, ...props}) {
+        apiRemoved(props.hideHeaders, 'hideHeaders', 'Specify hideHeaders on the GridModel instead.');
 
         const impl = useLocalModel(() => new LocalModel(model, props)),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser;
