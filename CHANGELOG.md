@@ -3,11 +3,13 @@
 ## v37.0.0-SNAPSHOT - unreleased
 
 ### 💥 Breaking Changes
-
 * New `GridModel` config `colChooserModel` replaces `enableColChooser` to allow for more flexible
-  configuration of the desktop implementation of `colChooser` in both popover and dialog components.
+  configuration of the grid`colChooser'
   * Use `colChooserModel: true` to reimplement default behavior.
   * See documentation on `GridModel.ColChooserModelConfig` for more information.
+* The `Grid` `hideHeaders` prop has been converted to a field on `AgGridModel` and `GridModel`.
+All grid options of this type are now on the model hierarchy, allowing consistent application code
+and developer discovery.
 
 ### 🎁 New Features
 

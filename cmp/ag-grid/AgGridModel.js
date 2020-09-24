@@ -36,6 +36,8 @@ export class AgGridModel {
     @bindable showHover;
     /** @member {boolean} */
     @bindable showCellFocus;
+    /** @member {boolean} */
+    @bindable hideHeaders;
 
     /** @member {GridApi} */
     @observable.ref agApi = null;
@@ -50,6 +52,7 @@ export class AgGridModel {
      * @param {boolean} [c.cellBorders] - true to render cell borders.
      * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
+     * @param {boolean} [c.hideHeaders] - true to suppress display of the grid's header row.
      */
     constructor({
         sizingMode = 'standard',
@@ -58,6 +61,7 @@ export class AgGridModel {
         cellBorders = false,
         stripeRows = true,
         showCellFocus = false,
+        hideHeaders = false,
         compact
     } = {}) {
         apiDeprecated(compact, 'compact', "Use 'sizingMode' instead");
@@ -69,6 +73,7 @@ export class AgGridModel {
         this.cellBorders = cellBorders;
         this.stripeRows = stripeRows;
         this.showCellFocus = showCellFocus;
+        this.hideHeaders = hideHeaders;
 
         this.addReaction({
             track: () => this.sizingMode,

@@ -182,6 +182,7 @@ export class GridModel {
      * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
      * @param {boolean} [c.cellBorders] - true to render cell borders.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
+     * @param {boolean} [c.hideHeaders] - true to suppress display of the grid's header row.
      * @param {boolean} [c.enableColumnPinning] - true to allow the user to manually pin / unpin
      *      columns via UI affordances.
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
@@ -243,6 +244,7 @@ export class GridModel {
         cellBorders = false,
         stripeRows = true,
         showCellFocus = false,
+        hideHeaders = false,
         compact,
 
         enableColumnPinning = true,
@@ -311,7 +313,8 @@ export class GridModel {
             rowBorders,
             stripeRows,
             cellBorders,
-            showCellFocus
+            showCellFocus,
+            hideHeaders
         });
 
         this.colChooserModel = this.parseChooserModel(colChooserModel);
@@ -476,6 +479,9 @@ export class GridModel {
 
     get showCellFocus() { return this.agGridModel.showCellFocus }
     setShowCellFocus(showCellFocus) { this.agGridModel.setShowCellFocus(showCellFocus) }
+
+    get hideHeaders() { return this.agGridModel.hideHeaders }
+    setHideHeaders(hideHeaders) { this.agGridModel.setHideHeaders(hideHeaders) }
 
     /**
      * Apply full-width row-level grouping to the grid for the given column ID(s).

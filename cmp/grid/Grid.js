@@ -12,7 +12,7 @@ import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {div} from '@xh/hoist/cmp/layout';
 import {computed, observable, observer, action, runInAction} from '@xh/hoist/mobx';
-import {isDisplayed, withShortDebug} from '@xh/hoist/utils/js';
+import {isDisplayed, withShortDebug, apiRemoved} from '@xh/hoist/utils/js';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -57,6 +57,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
     className: 'xh-grid',
 
     render({model, className, ...props}) {
+        apiRemoved(props.hideHeaders, 'hideHeaders', 'Specify hideHeaders on the GridModel instead.');
 
         const impl = useLocalModel(() => new LocalModel(model, props)),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser;
@@ -89,9 +90,6 @@ Grid.propTypes = {
      * Note that changes to these options after the component's initial render will be ignored.
      */
     agOptions: PT.object,
-
-    /** True to suppress display of the grid's header row. */
-    hideHeaders: PT.bool,
 
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(GridModel), PT.object]),
@@ -248,7 +246,7 @@ class LocalModel {
             autoSizePadding: 3 // tighten up cells for ag-Grid native autosizing.  Remove when Hoist autosizing no longer experimental
         };
 
-        if (props.hideHeaders) {
+        if (model.hideHeaders) {
             ret.headerHeight = 0;
         }
 

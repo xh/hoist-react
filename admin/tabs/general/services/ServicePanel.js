@@ -33,7 +33,6 @@ export const servicePanel = hoistCmp.factory({
                 exportButton()
             ],
             item: grid({
-                hideHeaders: true,
                 agOptions: {
                     groupRowInnerRenderer: (params) => params.value + ' Services'
                 }

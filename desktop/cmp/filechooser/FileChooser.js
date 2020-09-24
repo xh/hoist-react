@@ -82,7 +82,6 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory({
                 }),
                 grid({
                     flex: 1,
-                    hideHeaders: true,
                     className: 'xh-file-chooser__grid',
                     omit: !showFileGrid
                 })
