@@ -8,14 +8,23 @@ import {truncate} from 'lodash';
 import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
-import {RestGridModel} from '@xh/hoist/desktop/cmp/rest';
+import {
+    addAction,
+    deleteAction,
+    editAction,
+    RestGridModel
+} from '@xh/hoist/desktop/cmp/rest';
 import {DifferModel} from '../../differ/DifferModel';
+import {RegroupDialogModel} from '../../regroup/RegroupDialogModel';
 
 @HoistModel
 @LoadSupport
 export class PreferenceModel {
 
     persistWith = {localStorageKey: 'xhAdminPreferenceState'};
+
+    @managed
+    regroupDialogModel = new RegroupDialogModel(this);
 
     @managed
     gridModel = new RestGridModel({
@@ -78,6 +87,12 @@ export class PreferenceModel {
             del: (records) =>  `Are you sure you want to delete ${records.length} preference(s)? Deleting preferences can break running apps.`
 
         },
+        menuActions: [
+            addAction,
+            editAction,
+            deleteAction,
+            this.regroupDialogModel.regroupAction
+        ],
         columns: [
             {field: 'local', ...boolCheckCol, width: 70},
             {field: 'name', width: 200},

@@ -17,6 +17,7 @@ import {
 } from '@xh/hoist/desktop/cmp/rest';
 import {truncate} from 'lodash';
 import {DifferModel} from '../../../differ/DifferModel';
+import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
 
 
 @HoistModel
@@ -24,6 +25,9 @@ import {DifferModel} from '../../../differ/DifferModel';
 export class ConfigModel {
 
     persistWith = {localStorageKey: 'xhAdminConfigState'};
+
+    @managed
+    regroupDialogModel = new RegroupDialogModel(this);
 
     @managed
     gridModel = new RestGridModel({
@@ -92,7 +96,8 @@ export class ConfigModel {
             addAction,
             editAction,
             cloneAction,
-            deleteAction
+            deleteAction,
+            this.regroupDialogModel.regroupAction
         ],
         prepareCloneFn: ({clone}) => clone.name = `${clone.name}_CLONE`,
         unit: 'config',
