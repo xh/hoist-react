@@ -119,9 +119,9 @@ class LocalModel {
             this.addReaction({
                 track: () => [model.agApi, model.sizingMode, model.hideHeaders],
                 run: ([api, sizingMode, hideHeaders]) => {
-                    if (!api) return;
-                    const height = hideHeaders ? 0 : AgGrid.getHeaderHeightForSizingMode(sizingMode);
-                    api.setHeaderHeight(height);
+                    api?.setHeaderHeight(
+                        hideHeaders ? 0 : AgGrid.getHeaderHeightForSizingMode(sizingMode)
+                    );
                 }
             });
         }
