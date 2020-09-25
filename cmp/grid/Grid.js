@@ -246,10 +246,6 @@ class LocalModel {
             autoSizePadding: 3 // tighten up cells for ag-Grid native autosizing.  Remove when Hoist autosizing no longer experimental
         };
 
-        if (model.hideHeaders) {
-            ret.headerHeight = 0;
-        }
-
         // Platform specific defaults
         if (XH.isMobileApp) {
             ret = {
