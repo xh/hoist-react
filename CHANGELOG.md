@@ -12,11 +12,13 @@ All grid options of this type are now on the model hierarchy, allowing consisten
 and developer discovery.
 
 ### 🎁 New Features
-* Admin Preference and Config panels now provide bulk regrouping actions.
 * Provides new `CustomProvider` for applications that want to use the Persistence API, but
 need to provide their own storage implementation.
 * Added `restoreDefaults` action to default context menu for `GridModel`.
 * Added `restoreDefaultsWarning` config to `GridModel`.
+* `FormModel` has a new convenience method `setValues` for putting data into one or more
+    fields in the form.
+* Admin Preference and Config panels now support bulk regrouping actions.
 
 ### 🐞 Bug Fixes
 

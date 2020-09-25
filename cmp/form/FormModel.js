@@ -7,7 +7,7 @@
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {flatMap, forOwn, map, mapValues, pickBy, some, values} from 'lodash';
+import {flatMap, forOwn, map, mapValues, pickBy, some, values, forEach} from 'lodash';
 import {FieldModel} from './field/FieldModel';
 import {SubformsFieldModel} from './field/SubformsFieldModel';
 import {ValidationState} from './validation/ValidationState';
@@ -133,6 +133,17 @@ export class FormModel {
     @action
     init(initialValues = {}) {
         forOwn(this.fields, m => m.init(initialValues[m.name]));
+    }
+
+    /**
+     * Set the value of one or more fields on this form.
+     *
+     * @param {Object} values - map of field name to value.
+     */
+    @action
+    setValues(values) {
+        const {fields} = this;
+        forEach(values, (v, k) => fields[k]?.setValue(v));
     }
 
     /** @return {boolean} - true if any fields have been changed since last reset/init. */
