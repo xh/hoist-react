@@ -93,7 +93,7 @@ export class ColChooserModel {
     }
 
     async restoreDefaultsAsync() {
-        const restored = await this.gridModel.restoreDefaultsAsync({requireConfirm: true});
+        const restored = await this.gridModel.restoreDefaultsAsync();
         if (restored) {
             this.syncChooserData();
         }

@@ -121,6 +121,8 @@ export class GridModel {
     @observable showSummary = false;
     /** @member {string} */
     @observable emptyText;
+    /** @member {string} */
+    @observable restoreDefaultsMessage;
 
     static defaultContextMenu = [
         'copy',
@@ -168,6 +170,10 @@ export class GridModel {
      * @param {(ColChooserModelConfig|boolean)} [c.colChooserModel] - config with which to create a
      *      ColChooserModel, or boolean `true` to enable default.
      *      Mobile apps should only specify `true`, as colChooserModel mobile impl is not configurable.
+     * @param {?string} [c.restoreDefaultsMessage] - Defaults to show confirmation dialog and
+     *      message on click of 'Restore Defaults' actions in context menu and column chooser, if
+     *      enabled: 'Restoring grid defaults will take place immediately. Do you wish to proceed?'
+     *      Set to null to skip confirmation dialog.
      * @param {GridModelPersistOptions} [c.persistWith] - options governing persistence.
      * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
@@ -231,6 +237,7 @@ export class GridModel {
         showSummary = false,
         selModel,
         colChooserModel,
+        restoreDefaultsMessage = 'Restoring grid defaults will take place immediately. Do you wish to proceed?',
         emptyText = null,
         sortBy = [],
         groupBy = null,
@@ -269,6 +276,7 @@ export class GridModel {
         this.showSummary = showSummary;
 
         this.emptyText = emptyText;
+        this.restoreDefaultsMessage = restoreDefaultsMessage;
         this.rowClassFn = rowClassFn;
         this.groupRowHeight = groupRowHeight;
         this.groupRowRenderer = groupRowRenderer;
@@ -330,14 +338,14 @@ export class GridModel {
      *
      * @return {boolean} true if defaults were restored
      */
-    async restoreDefaultsAsync({requireConfirm = false}) {
+    async restoreDefaultsAsync() {
         const {columns, sortBy, groupBy} = this._defaultState;
 
-        if (requireConfirm) {
+        if (this.restoreDefaultsMessage) {
             const confirmed = await XH.confirm({
                 title: 'Please Confirm',
                 icon: Icon.warning({size: 'lg'}),
-                message: 'Restoring grid defaults will take place immediately. Do you wish to proceed?'
+                message: this.restoreDefaultsMessage
             });
             if (!confirmed) return false;
         }
@@ -535,6 +543,15 @@ export class GridModel {
     @action
     setEmptyText(emptyText) {
         this.emptyText = emptyText;
+    }
+
+    /**
+     * Set the message displayed for restore defaults confirmation.
+     * @param {?string} restoreDefaultsMessage
+     */
+    @action
+    setRestoreDefaultsMessage(restoreDefaultsMessage) {
+        this.restoreDefaultsMessage = restoreDefaultsMessage;
     }
 
     /**
