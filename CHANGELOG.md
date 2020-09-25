@@ -15,6 +15,7 @@ need to provide their own storage implementation.
 
 ### 🐞 Bug Fixes
 
+* Fixed an error in implementation of `@managed` preventing proper cleanup of resources.
 * Fixed a regression introduced in v36.1.0 in `FilterChooser`. Now supports `disabled` prop.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.1.0...develop)
