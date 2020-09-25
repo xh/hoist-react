@@ -1,6 +1,6 @@
 # Changelog
 
-## v37.0.0-SNAPSHOT - unreleased
+## v36.2.0 - 2020-09-25
 
 ### 💥 Breaking Changes
 * New `GridModel` config `colChooserModel` replaces `enableColChooser` to allow for more flexible
@@ -21,11 +21,10 @@ need to provide their own storage implementation.
 * Admin Preference and Config panels now support bulk regrouping actions.
 
 ### 🐞 Bug Fixes
-
 * Fixed an error in implementation of `@managed` preventing proper cleanup of resources.
-* Fixed a regression introduced in v36.1.0 in `FilterChooser`. Now supports `disabled` prop.
+* Fixed a regression introduced in v36.1.0 in `FilterChooser`: Restore support for `disabled` prop.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v36.1.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.1.0...v36.2.0)
 
 
 ## v36.1.0 - 2020-09-22
