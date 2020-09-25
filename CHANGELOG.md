@@ -3,15 +3,21 @@
 ## v37.0.0-SNAPSHOT - unreleased
 
 ### 💥 Breaking Changes
+* New `GridModel` config `colChooserModel` replaces `enableColChooser` to allow for more flexible
+  configuration of the grid `colChooser`
+  * Use `colChooserModel: true` to retain default behavior.
+  * See documentation on `GridModel.ColChooserModelConfig` for more information.
 * The `Grid` `hideHeaders` prop has been converted to a field on `AgGridModel` and `GridModel`.
 All grid options of this type are now on the model hierarchy, allowing consistent application code
 and developer discovery.
 
 ### 🎁 New Features
-* `FormModel` has a new convenience method `setValues` for putting data into one or more
-    fields in the form.
 * Provides new `CustomProvider` for applications that want to use the Persistence API, but
 need to provide their own storage implementation.
+* Added `restoreDefaults` action to default context menu for `GridModel`.
+* Added `restoreDefaultsWarning` config to `GridModel`.
+* `FormModel` has a new convenience method `setValues` for putting data into one or more
+    fields in the form.
 * Admin Preference and Config panels now support bulk regrouping actions.
 
 ### 🐞 Bug Fixes

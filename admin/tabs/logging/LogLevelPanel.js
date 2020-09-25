@@ -13,7 +13,7 @@ export const logLevelPanel = hoistCmp.factory(
 
 const modelSpec = {
     persistWith: {localStorageKey: 'xhAdminLogLevelState'},
-    enableColChooser: true,
+    colChooserModel: true,
     enableExport: true,
     store: {
         url: 'rest/logLevelAdmin',

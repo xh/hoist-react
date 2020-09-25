@@ -20,14 +20,15 @@ import {button, Button} from './Button';
  * available Grid columns. For use by applications when a button is desired in addition to the
  * context menu item built into the Grid component directly.
  *
- * Requires the `GridModel.enableColChooser` config option to be true.
+ * Requires the `GridModel.colChooserModel` config option. Set to true for default implementation.
  */
 export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
     displayName: 'ColChooserButton',
     model: false,
 
-    render({icon, title, gridModel, popoverPosition, chooserWidth, chooserHeight, ...rest}) {
+    render({icon, title, gridModel, popoverPosition, ...rest}) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
+
         const colChooserModel = gridModel?.colChooserModel;
 
         const displayButton = button({
@@ -42,7 +43,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
         }
 
         if (!colChooserModel) {
-            console.error('No ColChooserModel available on bound GridModel - ensure enableColChooser config is set to true.');
+            console.error('No ColChooserModel available on bound GridModel - enable via GridModel.colChooserModel config.');
             return cloneElement(displayButton, {disabled: true});
         }
 
@@ -57,9 +58,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
                     item: 'Choose Columns'
                 }),
                 colChooser({
-                    model: colChooserModel,
-                    width: chooserWidth,
-                    height: chooserHeight
+                    model: colChooserModel
                 })
             ),
             onInteraction: (willOpen) => {
@@ -72,6 +71,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
         });
     }
 });
+
 ColChooserButton.propTypes = {
     ...Button.propTypes,
 
@@ -85,13 +85,7 @@ ColChooserButton.propTypes = {
         'bottom-right', 'bottom', 'bottom-left',
         'left-bottom', 'left', 'left-top',
         'auto'
-    ]),
-
-    /** Width for the opened chooser */
-    chooserWidth: PT.number,
-
-    /** Height for the opened chooser */
-    chooserHeight: PT.number
+    ])
 };
 
 

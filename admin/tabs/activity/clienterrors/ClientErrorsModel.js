@@ -45,7 +45,7 @@ export class ClientErrorsModel {
 
         this.gridModel = new GridModel({
             persistWith: this.persistWith,
-            enableColChooser: true,
+            colChooserModel: true,
             enableExport: true,
             store: {
                 fields: [
