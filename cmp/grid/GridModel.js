@@ -65,6 +65,9 @@ import {GridSorter} from './impl/GridSorter';
 @LoadSupport
 export class GridModel {
 
+    static DEFAULT_RESTORE_DEFAULTS_WARNING =
+        'This action will immediately clear all user saved configuration on this grid. OK to proceed?';
+
     //------------------------
     // Immutable public properties
     //------------------------
@@ -100,6 +103,8 @@ export class GridModel {
     useVirtualColumns;
     /** @member {GridAutosizeOptions} */
     autosizeOptions;
+    /** @member {string} */
+    restoreDefaultsWarning;
 
     /** @member {AgGridModel} */
     @managed agGridModel;
@@ -121,8 +126,6 @@ export class GridModel {
     @observable showSummary = false;
     /** @member {string} */
     @observable emptyText;
-    /** @member {string} */
-    @observable restoreDefaultsMessage;
 
     static defaultContextMenu = [
         'copy',
@@ -170,10 +173,8 @@ export class GridModel {
      * @param {(ColChooserModelConfig|boolean)} [c.colChooserModel] - config with which to create a
      *      ColChooserModel, or boolean `true` to enable default.
      *      Mobile apps should only specify `true`, as colChooserModel mobile impl is not configurable.
-     * @param {?string} [c.restoreDefaultsMessage] - Defaults to show confirmation dialog and
-     *      message on click of 'Restore Defaults' actions in context menu and column chooser, if
-     *      enabled: 'Restoring grid defaults will take place immediately. Do you wish to proceed?'
-     *      Set to null to skip confirmation dialog.
+     * @param {?string} [c.restoreDefaultsWarning] - Confirmation warning to be presented to user
+     *      before restoring default grid state.  Set to null to skip user confirmation.
      * @param {GridModelPersistOptions} [c.persistWith] - options governing persistence.
      * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
@@ -237,7 +238,6 @@ export class GridModel {
         showSummary = false,
         selModel,
         colChooserModel,
-        restoreDefaultsMessage = 'Restoring grid defaults will take place immediately. Do you wish to proceed?',
         emptyText = null,
         sortBy = [],
         groupBy = null,
@@ -267,6 +267,7 @@ export class GridModel {
         contextMenu,
         useVirtualColumns = false,
         autosizeOptions = {},
+        restoreDefaultsWarning = GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
         experimental,
         ...rest
     }) {
@@ -276,7 +277,6 @@ export class GridModel {
         this.showSummary = showSummary;
 
         this.emptyText = emptyText;
-        this.restoreDefaultsMessage = restoreDefaultsMessage;
         this.rowClassFn = rowClassFn;
         this.groupRowHeight = groupRowHeight;
         this.groupRowRenderer = groupRowRenderer;
@@ -291,6 +291,7 @@ export class GridModel {
             bufferPx: 5,
             fillMode: 'none'
         });
+        this.restoreDefaultsWarning = restoreDefaultsWarning;
 
         apiRemoved(rest.contextMenuFn, 'contextMenuFn', 'Use contextMenu instead');
         apiRemoved(rest.enableColChooser, 'enableColChooser', "Use 'colChooserModel' instead");
@@ -339,16 +340,17 @@ export class GridModel {
      * @return {boolean} true if defaults were restored
      */
     async restoreDefaultsAsync() {
-        const {columns, sortBy, groupBy} = this._defaultState;
 
-        if (this.restoreDefaultsMessage) {
+        if (this.restoreDefaultsWarning) {
             const confirmed = await XH.confirm({
                 title: 'Please Confirm',
                 icon: Icon.warning({size: 'lg'}),
-                message: this.restoreDefaultsMessage
+                message: this.restoreDefaultsWarning
             });
             if (!confirmed) return false;
         }
+
+        const {columns, sortBy, groupBy} = this._defaultState;
 
         this.setColumns(columns);
         this.setSortBy(sortBy);
@@ -543,15 +545,6 @@ export class GridModel {
     @action
     setEmptyText(emptyText) {
         this.emptyText = emptyText;
-    }
-
-    /**
-     * Set the message displayed for restore defaults confirmation.
-     * @param {?string} restoreDefaultsMessage
-     */
-    @action
-    setRestoreDefaultsMessage(restoreDefaultsMessage) {
-        this.restoreDefaultsMessage = restoreDefaultsMessage;
     }
 
     /**
