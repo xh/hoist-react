@@ -16,6 +16,8 @@ and developer discovery.
 * Admin Preference and Config panels now provide bulk regrouping actions.
 * Provides new `CustomProvider` for applications that want to use the Persistence API, but
 need to provide their own storage implementation.
+* Added `restoreDefaultsMessage` config to `GridModel` to customize restore defaults confirmation
+  message. Set to null to skip confirmation step.
 * Added `restoreDefaults` action to default `StoreContextMenu` for `GridModel`.
 
 ### 🐞 Bug Fixes
