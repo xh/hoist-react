@@ -4,21 +4,19 @@
 
 ### 💥 Breaking Changes
 * New `GridModel` config `colChooserModel` replaces `enableColChooser` to allow for more flexible
-  configuration of the grid`colChooser'
-  * Use `colChooserModel: true` to reimplement default behavior.
+  configuration of the grid `colChooser`
+  * Use `colChooserModel: true` to retain default behavior.
   * See documentation on `GridModel.ColChooserModelConfig` for more information.
 * The `Grid` `hideHeaders` prop has been converted to a field on `AgGridModel` and `GridModel`.
 All grid options of this type are now on the model hierarchy, allowing consistent application code
 and developer discovery.
 
 ### 🎁 New Features
-
 * Admin Preference and Config panels now provide bulk regrouping actions.
 * Provides new `CustomProvider` for applications that want to use the Persistence API, but
 need to provide their own storage implementation.
-* Added `restoreDefaultsMessage` config to `GridModel` to customize restore defaults confirmation
-  message. Set to null to skip confirmation step.
-* Added `restoreDefaults` action to default `StoreContextMenu` for `GridModel`.
+* Added `restoreDefaults` action to default context menu for `GridModel`.
+* Added `restoreDefaultsWarning` config to `GridModel`.
 
 ### 🐞 Bug Fixes
 
