@@ -294,8 +294,9 @@ export class ActivityTrackingModel {
     // Set the start date by taking the end date and pushing back [value] [units] - then pushing
     // forward one day as the day range query is inclusive.
     adjustStartDate(value, unit) {
-        const newStart = this.endDay.subtract(value, unit).nextDay();
-        this.formModel.fields.startDay.setValue(newStart);
+        this.formModel.setValues({
+            startDay: this.endDay.subtract(value, unit).nextDay()
+        });
     }
 
     toggleRowExpandCollapse(agParams) {
