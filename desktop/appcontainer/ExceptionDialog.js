@@ -4,6 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {FocusStyleManager} from '@blueprintjs/core';
+
 import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
@@ -27,7 +29,12 @@ export const exceptionDialog = hoistCmp.factory({
     render({model}) {
         const {exception, options} = model;
 
-        if (!exception) return null;
+        if (!exception) {
+            FocusStyleManager.onlyShowFocusOnTabs();
+            return null;
+        }
+
+        FocusStyleManager.alwaysShowFocus();
 
         const onClose = !options.requireReload ? () => model.close() : null;
 
@@ -84,12 +91,12 @@ export const dismissButton = hoistCmp.factory(
             button({
                 icon: loginRequired ? Icon.login() : Icon.refresh(),
                 text: loginRequired ? 'Login' : 'Reload App',
-                autoFocus: true,
+                elementRef: (el) => model.dismissButtonRef = el,
                 onClick: () => XH.reloadApp()
             }) :
             button({
                 text: 'Close',
-                autoFocus: true,
+                elementRef: (el) => model.dismissButtonRef = el,
                 onClick: () => model.close()
             });
     }
