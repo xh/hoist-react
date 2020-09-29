@@ -65,7 +65,11 @@ export const [Grid, grid] = hoistCmp.withFactory({
         // Don't render the agGridReact element with data or columns. Instead rely on API methods
         return fragment(
             frame({
-                className: classNames(className, impl.isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat'),
+                className: classNames(
+                    className,
+                    impl.isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat',
+                    model.treeGridStyleMode == 'none' ? null : `xh-grid--${model.treeGridStyleMode}`
+                ),
                 item: agGrid({
                     ...getLayoutProps(props),
                     ...impl.agOptions

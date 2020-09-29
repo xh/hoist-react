@@ -126,6 +126,8 @@ export class GridModel {
     @observable showSummary = false;
     /** @member {string} */
     @observable emptyText;
+    /** @member {string} */
+    @observable treeGridStyleMode; // Not sure this can't be immutable, but for our example I need observable
 
     static defaultContextMenu = [
         'copy',
@@ -186,7 +188,10 @@ export class GridModel {
      * @param {string} [c.sizingMode] - one of large, standard, compact, tiny
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
-     * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
+     * @param {string} [c.treeGridStyleMode] - Style scheme to apply to tree grid
+     *      one of ['none', 'gradient', 'top-two-levels', 'tri-color']
+     * @param {boolean} [c.stripeRows] - true to use alternating backgrounds for rows.
+     *      defaults to true unless treeGridStyleMode is employed
      * @param {boolean} [c.cellBorders] - true to render cell borders.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      * @param {boolean} [c.hideHeaders] - true to suppress display of the grid's header row.
@@ -249,7 +254,8 @@ export class GridModel {
         showHover = false,
         rowBorders = false,
         cellBorders = false,
-        stripeRows = true,
+        treeGridStyleMode = 'none',
+        stripeRows = treeGridStyleMode == 'none' ? true : false,
         showCellFocus = false,
         hideHeaders = false,
         compact,
@@ -302,6 +308,13 @@ export class GridModel {
             autosizeOptions.fillMode && !['all', 'left', 'right', 'none'].includes(autosizeOptions.fillMode),
             `Unsupported value for fillMode.`
         );
+
+        throwIf(
+            treeGridStyleMode && !['none', 'gradient', 'top-two-levels', 'tri-color'].includes(treeGridStyleMode),
+            `Unsupported value for treeGridStyleMode.`
+        );
+
+        this.treeGridStyleMode = treeGridStyleMode;
 
         this.enableColumnPinning = enableColumnPinning;
         this.enableExport = enableExport;
@@ -545,6 +558,11 @@ export class GridModel {
     @action
     setEmptyText(emptyText) {
         this.emptyText = emptyText;
+    }
+
+    @action
+    setTreeGridStyleMode(treeGridStyleMode) {
+        this.treeGridStyleMode = treeGridStyleMode;
     }
 
     /**

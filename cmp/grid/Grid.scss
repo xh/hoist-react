@@ -290,3 +290,59 @@
     padding: 0 var(--xh-grid-tiny-header-lr-pad-px);
   }
 }
+
+
+//------------------------
+// Tree grid styling modes
+//------------------------
+.xh-grid--gradient:not(.xh-data-view) {
+
+  // Without the attribute selector leaf rows will get shading
+  .ag-row-level-0[class*=" ag-row-group"] {
+    color: var(--xh-grid-group-text-color) !important;
+    background-color: var(--xh-grid-group-bg) !important;
+  }
+
+  .ag-row-level-1[class*=" ag-row-group"] {
+    font-weight: bold !important;
+    background-color: var(--xh-grid-group-bg-sub-1) !important;
+  }
+
+  .ag-row-level-2[class*=" ag-row-group"] {
+    background-color: var(--xh-grid-group-bg-sub-2) !important;
+  }
+
+  .ag-row-level-3[class*=" ag-row-group"] {
+    background-color: var(--xh-grid-group-bg-sub-3) !important;
+  }
+
+  .ag-row-level-4[class*=" ag-row-group"] {
+    background-color: var(--xh-grid-group-bg-sub-4) !important;
+  }
+}
+
+.xh-grid--top-two-levels:not(.xh-data-view) {
+
+  .ag-row-level-0[class*=" ag-row-group"] {
+    color: var(--xh-grid-group-text-color) !important;
+    background-color: var(--xh-grid-group-bg) !important;
+  }
+
+  .ag-row-level-1[class*=" ag-row-group"] {
+    font-weight: bold !important;
+    background-color: var(--xh-bg-alt) !important;
+  }
+}
+
+.xh-grid--tricolor:not(.xh-data-view) {
+
+  .ag-row-level-0[class*=" ag-row-group"] {
+    color: var(--xh-grid-group-text-color) !important;
+    background-color: var(--xh-grid-group-bg) !important;
+  }
+
+  div[class*=" ag-row-group"] {
+    font-weight: bold !important;
+    background-color: var(--xh-bg-alt) !important;
+  }
+}
