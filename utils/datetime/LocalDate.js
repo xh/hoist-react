@@ -263,7 +263,7 @@ export class LocalDate {
     previousWeekday() {
         switch (this._moment.day()) {
             case 1:     return this.subtract(3);
-            case 7:     return this.subtract(2);
+            case 0:     return this.subtract(2);
             default:    return this.subtract(1);
         }
     }
