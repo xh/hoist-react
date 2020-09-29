@@ -4,6 +4,7 @@
 
 ### 🐞 Bug Fixes
 * Fixed issue in `LocalDate.previousWeekday()` which did not correctly handle Sunday dates.
+* `exceptionDialog` no longer closes immediately when event that triggered exception is still bubbling up.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.2.0...develop)
 
