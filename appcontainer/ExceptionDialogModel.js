@@ -45,7 +45,9 @@ export class ExceptionDialogModel {
     show(exception, options) {
         if (this.displayData?.options.requireReload)  return;
         this.displayData = {exception, options};
-        wait(500).then(() => this.dismissButtonRef.focus());
+        wait(500).then(() => {
+            if (this.dismissButtonRef.focus) this.dismissButtonRef.focus();
+        });
     }
 
     @action
