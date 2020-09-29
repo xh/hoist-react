@@ -6,7 +6,7 @@
  */
 
 import {hoistCmp} from '@xh/hoist/core';
-import {restGrid} from '@xh/hoist/desktop/cmp/rest';
+import {restGrid, addAction, cloneAction, deleteAction, editAction} from '@xh/hoist/desktop/cmp/rest';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {dateTimeCol} from '@xh/hoist/cmp/grid';
 import {truncate} from 'lodash';
@@ -63,6 +63,19 @@ const modelSpec = {
             }
         ]
     },
+    toolbarActions: [
+        addAction,
+        editAction,
+        cloneAction,
+        deleteAction
+    ],
+    menuActions: [
+        addAction,
+        editAction,
+        cloneAction,
+        deleteAction
+    ],
+    prepareCloneFn: ({clone}) => clone.name = `${clone.name}_CLONE`,
     sortBy: ['owner', 'name'],
     groupBy: 'type',
     unit: 'blob',
