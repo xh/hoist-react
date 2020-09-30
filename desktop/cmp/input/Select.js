@@ -509,7 +509,7 @@ export class Select extends HoistInput {
 
     get suppressCheck() {
         const {props} = this;
-        return withDefault(props.hideSelectedOptionCheck, props.enableMulti && !props.rsOptions.hideSelectedOptions);
+        return withDefault(props.hideSelectedOptionCheck, props.enableMulti && !props.rsOptions?.hideSelectedOptions);
     }
 
     //------------------------
