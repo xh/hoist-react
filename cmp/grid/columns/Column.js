@@ -8,7 +8,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {castArray, clone, find, get, isArray, isFinite, isFunction, isNil, isNumber, isEmpty, isString} from 'lodash';
+import {castArray, clone, find, get, isArray, isFinite, isFunction, isNil, isNumber, isEmpty, isNull} from 'lodash';
 import {Component} from 'react';
 import {GridSorter} from '../impl/GridSorter';
 import {ExportFormat} from './ExportFormat';
@@ -310,15 +310,16 @@ export class Column {
      * Produce a Column definition appropriate for AG Grid.
      */
     getAgSpec() {
-        const {gridModel, field, headerName} = this,
+        const {gridModel, field, headerName, displayName} = this,
             me = this,
             ret = {
                 field,
                 colId: this.colId,
                 headerValueGetter: (agParams) => {
-                    return agParams.location === 'header' && isString(headerName) ?
-                        headerName :
-                        this.displayName;
+                    if (agParams.location !== 'header') return displayName;
+                    if (isNull(headerName)) return null;
+
+                    return isFunction(headerName) ? displayName : headerName;
                 },
                 headerClass: getAgHeaderClassFn(this),
                 headerTooltip: this.headerTooltip,
