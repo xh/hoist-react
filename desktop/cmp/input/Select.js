@@ -493,7 +493,7 @@ export class Select extends HoistInput {
             return div(opt.label);
         }
 
-        return this.externalValue === opt.value ?
+        return castArray(this.externalValue).includes(opt.value) ?
             hbox({
                 items: [
                     div({
@@ -509,7 +509,7 @@ export class Select extends HoistInput {
 
     get suppressCheck() {
         const {props} = this;
-        return withDefault(props.hideSelectedOptionCheck, props.enableMulti);
+        return withDefault(props.hideSelectedOptionCheck, props.enableMulti && !props.rsOptions.hideSelectedOptions);
     }
 
     //------------------------
