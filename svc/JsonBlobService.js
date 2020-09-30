@@ -61,7 +61,7 @@ export class JsonBlobService {
     /**
      * Modifies an existing json blob
      *
-     * @param {int} id.
+     * @param {string} id.
      * @param {Object} data - modifications to make.
      * @param {string} [data.name]
      * @param {(Object|Array)} [data.value]
@@ -75,6 +75,10 @@ export class JsonBlobService {
         return XH.fetchJson({url: 'xh/updateJsonBlob', params});
     }
 
+    /**
+     * Deletes a json blob
+     * @param {string} id.
+     */
     async deleteAsync(id) {
         return XH.fetchJson({
             url: 'xh/deleteJsonBlob',

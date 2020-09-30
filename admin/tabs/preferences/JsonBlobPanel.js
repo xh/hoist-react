@@ -81,6 +81,7 @@ const modelSpec = {
     unit: 'blob',
     filterFields: ['name', 'owner', 'type', 'value', 'description'],
     columns: [
+        {field: 'id', width: 300, hidden: true},
         {field: 'owner', width: 200},
         {field: 'acl', width: 80},
         {field: 'name', width: 200},
