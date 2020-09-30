@@ -4,7 +4,7 @@
 
 ### 🐞 Bug Fixes
 * Fixed issue in `LocalDate.previousWeekday()` which did not correctly handle Sunday dates.
-* Fixed regression in `Grid` column header rendering caused by commit 01d6dc3a9a5a502b791a22e2011e4b9d72ea2028
+* Fixed regression in `Grid` column header rendering for non-string headerNames.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.2.0...develop)
 

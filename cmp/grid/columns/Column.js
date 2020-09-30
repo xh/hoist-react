@@ -8,7 +8,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {castArray, clone, find, get, isArray, isFinite, isFunction, isNil, isNumber, isEmpty, isNull} from 'lodash';
+import {castArray, clone, find, get, isArray, isFinite, isFunction, isNil, isNumber, isEmpty, isString} from 'lodash';
 import {Component} from 'react';
 import {GridSorter} from '../impl/GridSorter';
 import {ExportFormat} from './ExportFormat';
@@ -315,11 +315,12 @@ export class Column {
             ret = {
                 field,
                 colId: this.colId,
+                // headerValueGetter should always return a string
+                // for display in draggable shadow box, aGrid Tool panel.
+                // Hoist ColumnHeader will handle display of Element values in the header.
                 headerValueGetter: (agParams) => {
-                    if (agParams.location !== 'header') return displayName;
-                    if (isNull(headerName)) return null;
-
-                    return isFunction(headerName) ? displayName : headerName;
+                    let ret = isFunction(headerName) ? headerName({column: this, gridModel, agParams}) : headerName;
+                    return isString(ret) ? ret : displayName;
                 },
                 headerClass: getAgHeaderClassFn(this),
                 headerTooltip: this.headerTooltip,
