@@ -2,6 +2,10 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+* Fixed issue in `LocalDate.previousWeekday()` which did not correctly handle Sunday dates.
+* Fixed regression in `Grid` column header rendering for non-string headerNames.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.2.0...develop)
 
 ## v36.2.0 - 2020-09-25
