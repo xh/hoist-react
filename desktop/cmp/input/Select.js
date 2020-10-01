@@ -56,6 +56,9 @@ export class Select extends HoistInput {
          */
         createMessageFn: PT.func,
 
+        /** True to close the menu after each selection.  Defaults to true. */
+        closeMenuOnSelect: PT.bool,
+
         /** True to show a "clear" button at the right of the control.  Defaults to false. */
         enableClear: PT.bool,
 
@@ -88,6 +91,9 @@ export class Select extends HoistInput {
 
         /** True to suppress the default check icon rendered for the currently selected option. */
         hideSelectedOptionCheck: PT.bool,
+
+        /** True to hide options in the drop down menu if they have been selected.  Defaults to false.*/
+        hideSelectedOptions: PT.bool,
 
         /** Field on provided options for sourcing each option's display text (default `label`). */
         labelField: PT.string,
@@ -220,6 +226,9 @@ export class Select extends HoistInput {
                 formatOptionLabel: this.formatOptionLabel,
                 isDisabled: props.disabled,
                 isMulti: props.enableMulti,
+                closeMenuOnSelect: props.closeMenuOnSelect,
+                hideSelectedOptions: props.hideSelectedOptions,
+
                 // Explicit false ensures consistent default for single and multi-value instances.
                 isClearable: withDefault(props.enableClear, false),
                 menuPlacement: withDefault(props.menuPlacement, 'auto'),
@@ -512,7 +521,7 @@ export class Select extends HoistInput {
         let dflt = false;
 
         if (props.enableMulti) {
-            dflt = props.rsOptions?.hideSelectedOptions;
+            dflt = props.hideSelectedOptions;
         }
 
         return withDefault(props.hideSelectedOptionCheck, dflt);
