@@ -116,7 +116,13 @@ export class JsonBlobModel {
     });
 
     @managed
-    differModel = new DifferModel(this.gridModel, 'jsonBlob');
+    differModel = new DifferModel({
+        parentGridModel: this.gridModel,
+        entityName: 'jsonBlob',
+        displayName: 'json blob',
+        columnFields: ['name', 'owner', 'type'],
+        matchFields: ['name', 'owner', 'type']
+    });
 
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();

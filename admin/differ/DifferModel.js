@@ -26,6 +26,9 @@ export class DifferModel  {
 
     parentGridModel;
     entityName;
+    displayName;
+    columns;
+    matchFields;
     url;
     clipboardContent;
 
@@ -54,15 +57,25 @@ export class DifferModel  {
         return XH.getConf('xhAppInstances').filter(it => it !== window.location.origin);
     }
 
-    constructor(parentGridModel, entityName) {
+    constructor({
+        parentGridModel,
+        entityName,
+        displayName,
+        columnFields = ['name'],
+        matchFields = ['name']
+    }) {
         this.parentGridModel = parentGridModel;
         this.entityName = entityName;
+        this.displayName = displayName ?? entityName;
+        this.columnFields = columnFields;
+        this.matchFields = matchFields;
         this.url = entityName + 'DiffAdmin';
 
         this.gridModel = new GridModel({
             store: {
                 idSpec: 'name',
-                filter: {field: 'status', op: '!=', value: 'Identical'}
+                filter: {field: 'status', op: '!=', value: 'Identical'},
+                fields: [...this.columnFields]
             },
             emptyText: 'All records match!',
             selModel: 'multiple',
@@ -77,12 +90,12 @@ export class DifferModel  {
                     actions: [this.applyRemoteAction]
                 },
                 {field: 'status', hidden: true},
-                {field: 'name', width: 200},
-                {
-                    field: 'type',
-                    width: 80,
-                    renderer: this.valueTypeRenderer
-                },
+                ...this.columnFields.map(field => {
+                    const ret = {field, renderer: this.fieldRenderer};
+                    if (field === 'valueType') ret.headerName = 'Type';
+                    ret.width = field === 'name' ? 200 : 80;
+                    return ret;
+                }),
                 {
                     field: 'localValue',
                     flex: true,
@@ -169,24 +182,38 @@ export class DifferModel  {
 
         // 0) Check each local record against (possible) remote counterpart. Cull remote record if found.
         localRecords.forEach(local => {
-            const remote = remoteRecords.find(it => it.name === local.name);
+            const remote = remoteRecords.find(it => {
+                return this.matchFields.every(field => it[field] === local[field]);
+            });
+
+            const values = {};
+            this.matchFields.forEach(field => {
+                values[field] = local[field];
+            });
 
             ret.push({
-                name: local.name,
+                ...values,
                 localValue: local,
                 remoteValue: remote,
                 status: this.rawRecordsAreEqual(local, remote) ? 'Identical' : (remote ? 'Diff' : 'Local Only')
             });
 
             if (remote) {
-                remove(remoteRecords, {name: remote.name});
+                remove(remoteRecords, it => {
+                    return this.matchFields.every(field => it[field] === remote[field]);
+                });
             }
         });
 
         // 1) Any remote records left in array are remote only
         remoteRecords.forEach(remote => {
+            const values = {};
+            this.matchFields.forEach(field => {
+                values[field] = remote[field];
+            });
+
             ret.push({
-                name: remote.name,
+                ...values,
                 localValue: null,
                 remoteValue: remote,
                 status: 'Remote Only'
@@ -223,7 +250,7 @@ export class DifferModel  {
         const filteredRecords = records.filter(it => !this.isPwd(it)),
             hadPwd = records.length !== filteredRecords.length,
             willDelete = filteredRecords.some(it => !it.data.remoteValue),
-            confirmMsg = `Are you sure you want to apply remote values to ${pluralize(this.entityName, filteredRecords.length, true)}?`;
+            confirmMsg = `Are you sure you want to apply remote values to ${pluralize(this.displayName, filteredRecords.length, true)}?`;
 
         const message = (
             <div>
@@ -248,8 +275,11 @@ export class DifferModel  {
 
     doApplyRemote(records) {
         const recsForPost = records.map(rec => {
-            const {name, remoteValue} = rec.data;
-            return {name, remoteValue};
+            const ret = {remoteValue: rec.data.remoteValue};
+            this.matchFields.forEach(field => {
+                ret[field] = rec.data[field];
+            });
+            return ret;
         });
 
         XH.fetchJson({
@@ -270,25 +300,22 @@ export class DifferModel  {
 
     valueRenderer(v) {
         if (v == null) return '';
-        // Handle both the config and pref names for type and value, respectively
-        const type = v.valueType ?? v.type,
-            value = v.value ?? v.defaultValue;
-        return  type === 'pwd' ? '*****' : value;
+        const value = v.value ?? v.defaultValue;
+        return v.valueType === 'pwd' ? '*****' : value;
     }
 
-    valueTypeRenderer(v, {record}) {
-        const local = record.data.localValue,
-            remote = record.data.remoteValue;
-
-        // Handle both the config and pref names for type respectively
-        const localType = local?.valueType ?? local?.type,
-            remoteType = remote?.valueType ?? local?.type;
+    fieldRenderer(v, {record, column}) {
+        const {field} = column,
+            local = record.data.localValue,
+            remote = record.data.remoteValue,
+            localVal = local?.[field],
+            remoteVal = remote?.[field];
 
         if (local && remote) {
-            return localType === remoteType ? localType : '??';
+            return localVal === remoteVal ? localVal : '??';
         }
 
-        return local ? localType : remoteType;
+        return local ? localVal : remoteVal;
     }
 
     async fetchLocalConfigsAsync() {

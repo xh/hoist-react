@@ -128,7 +128,12 @@ export class ConfigModel {
     });
 
     @managed
-    differModel = new DifferModel(this.gridModel, 'config');
+    differModel = new DifferModel({
+        parentGridModel: this.gridModel,
+        entityName: 'config',
+        columnFields: ['name', 'valueType'],
+        matchFields: ['name']
+    });
 
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();
