@@ -1,39 +1,42 @@
 # Changelog
 
-## v37.0.0-SNAPSHOT - unreleased
+## v36.2.1 - 2020-10-01
 
 ### 🐞 Bug Fixes
+
 * Fixed issue in `LocalDate.previousWeekday()` which did not correctly handle Sunday dates.
 * Fixed regression in `Grid` column header rendering for non-string headerNames.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v36.2.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.2.0...v36.2.1)
 
 ## v36.2.0 - 2020-09-25
 
 ### 💥 Breaking Changes
+
 * New `GridModel` config `colChooserModel` replaces `enableColChooser` to allow for more flexible
   configuration of the grid `colChooser`
   * Use `colChooserModel: true` to retain default behavior.
   * See documentation on `GridModel.ColChooserModelConfig` for more information.
-* The `Grid` `hideHeaders` prop has been converted to a field on `AgGridModel` and `GridModel`.
-All grid options of this type are now on the model hierarchy, allowing consistent application code
-and developer discovery.
+* The `Grid` `hideHeaders` prop has been converted to a field on `AgGridModel` and `GridModel`. All
+  grid options of this type are now on the model hierarchy, allowing consistent application code and
+  developer discovery.
 
 ### 🎁 New Features
-* Provides new `CustomProvider` for applications that want to use the Persistence API, but
-need to provide their own storage implementation.
+
+* Provides new `CustomProvider` for applications that want to use the Persistence API, but need to
+  provide their own storage implementation.
 * Added `restoreDefaults` action to default context menu for `GridModel`.
 * Added `restoreDefaultsWarning` config to `GridModel`.
-* `FormModel` has a new convenience method `setValues` for putting data into one or more
-    fields in the form.
+* `FormModel` has a new convenience method `setValues` for putting data into one or more fields in
+  the form.
 * Admin Preference and Config panels now support bulk regrouping actions.
 
 ### 🐞 Bug Fixes
+
 * Fixed an error in implementation of `@managed` preventing proper cleanup of resources.
 * Fixed a regression introduced in v36.1.0 in `FilterChooser`: Restore support for `disabled` prop.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.1.0...v36.2.0)
-
 
 ## v36.1.0 - 2020-09-22
 
@@ -72,7 +75,8 @@ Error tracking tabs described below.
 * Resetting Grid columns to their default state (e.g. via the Column Chooser) retains enhancements
   applied from matching Store fields.
 * Desktop `DateInput` now handles out-of-bounds dates without throwing exception during rendering.
-* Dragging a grid column with element based header no longer displays [object Object] in draggable.
+* Dragging a grid column with an element-based header no longer displays `[object Object]` in the
+  draggable placeholder.
 
 ### 📚 Libraries
 
