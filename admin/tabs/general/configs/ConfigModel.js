@@ -131,7 +131,7 @@ export class ConfigModel {
     differModel = new DifferModel({
         parentGridModel: this.gridModel,
         entityName: 'config',
-        columnFields: ['name', 'valueType'],
+        columnFields: ['name', {field: 'valueType', headerName: 'Type'}],
         matchFields: ['name']
     });
 

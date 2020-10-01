@@ -12,7 +12,7 @@ import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
+import {cloneDeep, isEqual, isString, remove, trimEnd} from 'lodash';
 import React from 'react';
 
 import {DifferDetailModel} from './DifferDetailModel';
@@ -27,7 +27,7 @@ export class DifferModel  {
     parentGridModel;
     entityName;
     displayName;
-    columns;
+    columnFields;
     matchFields;
     url;
     clipboardContent;
@@ -75,7 +75,7 @@ export class DifferModel  {
             store: {
                 idSpec: 'name',
                 filter: {field: 'status', op: '!=', value: 'Identical'},
-                fields: [...this.columnFields]
+                fields: [...this.columnFields.map(it => it.field ?? it)]
             },
             emptyText: 'All records match!',
             selModel: 'multiple',
@@ -89,12 +89,13 @@ export class DifferModel  {
                     width: 60,
                     actions: [this.applyRemoteAction]
                 },
-                {field: 'status', hidden: true},
-                ...this.columnFields.map(field => {
-                    const ret = {field, renderer: this.fieldRenderer};
-                    if (field === 'valueType') ret.headerName = 'Type';
-                    ret.width = field === 'name' ? 200 : 80;
-                    return ret;
+                {
+                    field: 'status',
+                    hidden: true
+                },
+                ...this.columnFields.map(it => {
+                    const colDef = {renderer: this.fieldRenderer, maxWidth: 200};
+                    return isString(it) ? {field: it, ...colDef} : {...colDef, ...it};
                 }),
                 {
                     field: 'localValue',
@@ -112,6 +113,11 @@ export class DifferModel  {
                 '-',
                 ...GridModel.defaultContextMenu
             ]
+        });
+
+        this.addReaction({
+            when: () => this.hasLoaded && this.gridModel.isReady,
+            run: () => this.gridModel.autosizeAsync()
         });
     }
 
