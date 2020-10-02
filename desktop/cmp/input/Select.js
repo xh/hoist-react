@@ -181,9 +181,8 @@ export class Select extends HoistInput {
         return this.props.selectOnFocus ??
             (!this.multiMode && (this.filterMode || this.creatableMode));
     }
-    get suppressCheck() {return this.props.hideSelectedOptionCheck ?? this.hideSelectedOptions}
-    // Match react-select defaulting for hideSelectedOptions.
-    get hideSelectedOptions() {return this.props.hideSelectedOptions ?? this.multiMode ?? false}
+    get hideSelectedOptions() {return this.props.hideSelectedOptions ?? this.multiMode}
+    get hideSelectedOptionCheck() {return this.props.hideSelectedOptionCheck || this.hideSelectedOptions}
 
 
     // Managed value for underlying text input under certain conditions
@@ -502,7 +501,7 @@ export class Select extends HoistInput {
     };
 
     optionRenderer = (opt) => {
-        if (this.suppressCheck) {
+        if (this.hideSelectedOptionCheck) {
             return div(opt.label);
         }
 
