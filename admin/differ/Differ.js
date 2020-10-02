@@ -14,7 +14,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {identity, capitalize} from 'lodash';
+import {identity, startCase} from 'lodash';
 import {differDetail} from './DifferDetail';
 import {DifferModel} from './DifferModel';
 
@@ -25,7 +25,7 @@ export const differ = hoistCmp.factory({
     render({model}) {
         return fragment(
             dialog({
-                title: `${capitalize(model.entityName)} Differ`,
+                title: `${startCase(model.displayName)} Differ`,
                 isOpen: model.isOpen,
                 canOutsideClickClose: false,
                 onClose: () => model.close(),
@@ -48,7 +48,7 @@ const contents = hoistCmp.factory(
                     agOptions: {popupParent: null}
                 }) :
                 frame({
-                    item: `No ${model.entityName}s loaded for comparison.`,
+                    item: `No ${model.displayName}s loaded for comparison.`,
                     padding: 10
                 }),
             bbar: [
@@ -66,7 +66,6 @@ const contents = hoistCmp.factory(
 const tbar = hoistCmp.factory(
     /** @param {DifferModel} model */
     ({model}) => {
-        const entityDispName = capitalize(model.entityName) + 's';
         return toolbar(
             span('Compare with'),
             select({
@@ -93,11 +92,11 @@ const tbar = hoistCmp.factory(
             }),
             filler(),
             clipboardButton({
-                text: `Copy ${entityDispName}`,
+                text: `Copy ${startCase(model.displayName)}s`,
                 intent: 'primary',
                 icon: Icon.copy(),
                 getCopyText: () => model.fetchLocalConfigsAsync(),
-                successMessage: `${entityDispName} copied to clipboard - ready to paste into the diff tool on another instance for comparison.`
+                successMessage: `${startCase(model.displayName)}s copied to clipboard - ready to paste into the diff tool on another instance for comparison.`
             })
         );
     }

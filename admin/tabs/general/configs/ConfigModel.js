@@ -15,7 +15,7 @@ import {
     RestGridModel,
     RestStore
 } from '@xh/hoist/desktop/cmp/rest';
-import {truncate} from 'lodash';
+import {isNil, truncate} from 'lodash';
 import {DifferModel} from '../../../differ/DifferModel';
 import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
 
@@ -128,7 +128,16 @@ export class ConfigModel {
     });
 
     @managed
-    differModel = new DifferModel(this.gridModel, 'config');
+    differModel = new DifferModel({
+        parentGridModel: this.gridModel,
+        entityName: 'config',
+        columnFields: ['name', {field: 'valueType', headerName: 'Type'}],
+        matchFields: ['name'],
+        valueRenderer: (v) => {
+            if (isNil(v)) return '';
+            return v.valueType === 'pwd' ? '*****' : v.value;
+        }
+    });
 
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();
