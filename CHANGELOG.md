@@ -2,10 +2,12 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* `Select` now supports `hideSelectedOptions` and `closeMenuOnSelect` props.
+
 ### 🐞 Bug Fixes
 * Fixed issue in `LocalDate.previousWeekday()` which did not correctly handle Sunday dates.
 * Fixed regression in `Grid` column header rendering for non-string headerNames.
-* Select now shows a check mark by the selected options when `enableMulti:true` and `rsOptions.hideSelectedOptions:false`.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.2.0...develop)
 
