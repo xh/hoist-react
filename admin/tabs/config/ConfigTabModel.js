@@ -16,13 +16,13 @@ import {
     RestStore
 } from '@xh/hoist/desktop/cmp/rest';
 import {isNil, truncate} from 'lodash';
-import {DifferModel} from '../../../differ/DifferModel';
-import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
 
+import {DifferModel} from '../../differ/DifferModel';
+import {RegroupDialogModel} from '../../regroup/RegroupDialogModel';
 
 @HoistModel
 @LoadSupport
-export class ConfigModel {
+export class ConfigTabModel {
 
     persistWith = {localStorageKey: 'xhAdminConfigState'};
 

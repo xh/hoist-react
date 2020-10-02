@@ -9,12 +9,13 @@ import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {Icon} from '@xh/hoist/icon';
-import {regroupDialog} from '../../../regroup/RegroupDialog';
-import {ConfigModel} from './ConfigModel';
-import {differ} from '../../../differ/Differ';
 
-export const configPanel = hoistCmp.factory({
-    model: creates(ConfigModel),
+import {ConfigTabModel} from './ConfigTabModel';
+import {regroupDialog} from '../../regroup/RegroupDialog';
+import {differ} from '../../differ/Differ';
+
+export const configTab = hoistCmp.factory({
+    model: creates(ConfigTabModel),
 
     render({model}) {
         return fragment(
