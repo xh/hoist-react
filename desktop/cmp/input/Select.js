@@ -92,7 +92,7 @@ export class Select extends HoistInput {
         /** True to suppress the default check icon rendered for the currently selected option. */
         hideSelectedOptionCheck: PT.bool,
 
-        /** True to hide options in the drop down menu if they have been selected.  Defaults to false.*/
+        /** True to hide options in the drop down menu if they have been selected.  Defaults to same as enableMulti. */
         hideSelectedOptions: PT.bool,
 
         /** Field on provided options for sourcing each option's display text (default `label`). */
@@ -227,7 +227,7 @@ export class Select extends HoistInput {
                 isDisabled: props.disabled,
                 isMulti: props.enableMulti,
                 closeMenuOnSelect: props.closeMenuOnSelect,
-                hideSelectedOptions: props.hideSelectedOptions,
+                hideSelectedOptions: this.hideSelectedOptions,
 
                 // Explicit false ensures consistent default for single and multi-value instances.
                 isClearable: withDefault(props.enableClear, false),
@@ -521,10 +521,15 @@ export class Select extends HoistInput {
         let dflt = false;
 
         if (props.enableMulti) {
-            dflt = props.hideSelectedOptions;
+            dflt = this.hideSelectedOptions;
         }
 
         return withDefault(props.hideSelectedOptionCheck, dflt);
+    }
+
+    // Match react-select defaulting.
+    get hideSelectedOptions() {
+        return withDefault(this.props.hideSelectedOptions, this.props.enableMulti);
     }
 
     //------------------------
