@@ -14,10 +14,10 @@ import {XH, HoistService} from '@xh/hoist/core';
 @HoistService
 export class JsonBlobService {
 
-    async getAsync(id) {
+    async getAsync(token) {
         return XH.fetchJson({
             url: 'xh/getJsonBlob',
-            params: {id}
+            params: {token}
         });
     }
 
@@ -61,14 +61,14 @@ export class JsonBlobService {
     /**
      * Modifies an existing json blob
      *
-     * @param {string} id.
+     * @param {string} token.
      * @param {Object} data - modifications to make.
      * @param {string} [data.name]
      * @param {(Object|Array)} [data.value]
      * @param {string} [data.description]
      */
-    async updateAsync(id, {name, value, description}) {
-        const params = {id};
+    async updateAsync(token, {name, value, description}) {
+        const params = {token};
         if (name) params.name = name;
         if (value) params.value = JSON.stringify(value);
         if (description) params.description = description;
@@ -77,12 +77,12 @@ export class JsonBlobService {
 
     /**
      * Deletes a json blob
-     * @param {string} id.
+     * @param {string} token.
      */
-    async deleteAsync(id) {
+    async deleteAsync(token) {
         return XH.fetchJson({
             url: 'xh/deleteJsonBlob',
-            params: {id}
+            params: {token}
         });
     }
 

@@ -24,6 +24,10 @@ const modelSpec = {
         reloadLookupsOnLoad: true,
         fields: [
             {
+                name: 'token',
+                editable: false
+            },
+            {
                 name: 'owner'
             },
             {
@@ -81,7 +85,7 @@ const modelSpec = {
     unit: 'blob',
     filterFields: ['name', 'owner', 'type', 'value', 'description'],
     columns: [
-        {field: 'id', width: 300, hidden: true},
+        {field: 'token', width: 100, hidden: true},
         {field: 'owner', width: 200},
         {field: 'acl', width: 80},
         {field: 'name', width: 200},
@@ -93,6 +97,7 @@ const modelSpec = {
         {field: 'lastUpdatedBy', width: 160, hidden: true}
     ],
     editors: [
+        {field: 'token'},
         {field: 'owner'},
         {field: 'acl'},
         {field: 'name'},
