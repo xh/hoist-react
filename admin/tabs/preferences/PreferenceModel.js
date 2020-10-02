@@ -116,7 +116,13 @@ export class PreferenceModel {
     });
 
     @managed
-    differModel = new DifferModel(this.gridModel, 'preference');
+    differModel = new DifferModel({
+        parentGridModel: this.gridModel,
+        entityName: 'preference',
+        columnFields: ['name', 'type'],
+        matchFields: ['name'],
+        valueRenderer: (v) => v?.defaultValue ?? ''
+    });
 
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();
