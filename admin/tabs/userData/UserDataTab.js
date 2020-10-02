@@ -17,9 +17,9 @@ export const userDataTab = hoistCmp.factory(
             route: 'default.userData',
             switcherPosition: 'left',
             tabs: [
-                {id: 'prefs', icon: Icon.bookmark(), content: preferencePanel},
+                {id: 'prefs', title: 'Preferences', icon: Icon.bookmark(), content: preferencePanel},
                 {id: 'userPrefs', icon: Icon.users(), content: userPreferencePanel, reloadOnShow: true},
-                {id: 'jsonBlobs', icon: Icon.json(), content: jsonBlobPanel, reloadOnShow: true}
+                {id: 'jsonBlobs', title: 'JSON Blobs', icon: Icon.json(), content: jsonBlobPanel, reloadOnShow: true}
             ]
         }
     })
