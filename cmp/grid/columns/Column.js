@@ -310,15 +310,17 @@ export class Column {
      * Produce a Column definition appropriate for AG Grid.
      */
     getAgSpec() {
-        const {gridModel, field, headerName} = this,
+        const {gridModel, field, headerName, displayName} = this,
             me = this,
             ret = {
                 field,
                 colId: this.colId,
+                // headerValueGetter should always return a string
+                // for display in draggable shadow box, aGrid Tool panel.
+                // Hoist ColumnHeader will handle display of Element values in the header.
                 headerValueGetter: (agParams) => {
-                    return agParams.location === 'header' && isString(headerName) ?
-                        headerName :
-                        this.displayName;
+                    let ret = isFunction(headerName) ? headerName({column: this, gridModel, agParams}) : headerName;
+                    return isString(ret) ? ret : displayName;
                 },
                 headerClass: getAgHeaderClassFn(this),
                 headerTooltip: this.headerTooltip,
