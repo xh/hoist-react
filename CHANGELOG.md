@@ -2,6 +2,9 @@
 
 ## v36.2.1 - 2020-10-01
 
+### 🎁 New Features
+* `Select` now supports `hideSelectedOptions` and `closeMenuOnSelect` props.
+
 ### 🐞 Bug Fixes
 
 * Fixed issue in `LocalDate.previousWeekday()` which did not correctly handle Sunday dates.

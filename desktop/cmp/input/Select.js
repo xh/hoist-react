@@ -56,6 +56,9 @@ export class Select extends HoistInput {
          */
         createMessageFn: PT.func,
 
+        /** True to close the menu after each selection.  Defaults to true. */
+        closeMenuOnSelect: PT.bool,
+
         /** True to show a "clear" button at the right of the control.  Defaults to false. */
         enableClear: PT.bool,
 
@@ -88,6 +91,9 @@ export class Select extends HoistInput {
 
         /** True to suppress the default check icon rendered for the currently selected option. */
         hideSelectedOptionCheck: PT.bool,
+
+        /** True to hide options in the drop down menu if they have been selected.  Defaults to same as enableMulti. */
+        hideSelectedOptions: PT.bool,
 
         /** Field on provided options for sourcing each option's display text (default `label`). */
         labelField: PT.string,
@@ -170,11 +176,14 @@ export class Select extends HoistInput {
     get creatableMode() {return !!this.props.enableCreate}
     get windowedMode() {return !!this.props.enableWindowed}
     get multiMode() {return !!this.props.enableMulti}
-    get filterMode() {return withDefault(this.props.enableFilter, true)}
+    get filterMode() {return this.props.enableFilter ?? true}
     get selectOnFocus() {
-        return withDefault(this.props.selectOnFocus,
-            !this.multiMode && (this.filterMode || this.creatableMode));
+        return this.props.selectOnFocus ??
+            (!this.multiMode && (this.filterMode || this.creatableMode));
     }
+    get hideSelectedOptions() {return this.props.hideSelectedOptions ?? this.multiMode}
+    get hideSelectedOptionCheck() {return this.props.hideSelectedOptionCheck || this.hideSelectedOptions}
+
 
     // Managed value for underlying text input under certain conditions
     // This is a workaround for rs-select issue described in hoist-react #880
@@ -220,6 +229,9 @@ export class Select extends HoistInput {
                 formatOptionLabel: this.formatOptionLabel,
                 isDisabled: props.disabled,
                 isMulti: props.enableMulti,
+                closeMenuOnSelect: props.closeMenuOnSelect,
+                hideSelectedOptions: this.hideSelectedOptions,
+
                 // Explicit false ensures consistent default for single and multi-value instances.
                 isClearable: withDefault(props.enableClear, false),
                 menuPlacement: withDefault(props.menuPlacement, 'auto'),
@@ -489,11 +501,11 @@ export class Select extends HoistInput {
     };
 
     optionRenderer = (opt) => {
-        if (this.suppressCheck) {
+        if (this.hideSelectedOptionCheck) {
             return div(opt.label);
         }
 
-        return this.externalValue === opt.value ?
+        return castArray(this.externalValue).includes(opt.value) ?
             hbox({
                 items: [
                     div({
@@ -506,11 +518,6 @@ export class Select extends HoistInput {
             }) :
             div({item: opt.label, style: {paddingLeft: 25}});
     };
-
-    get suppressCheck() {
-        const {props} = this;
-        return withDefault(props.hideSelectedOptionCheck, props.enableMulti);
-    }
 
     //------------------------
     // Other Implementation
