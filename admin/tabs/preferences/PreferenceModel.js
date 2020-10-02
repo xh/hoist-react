@@ -120,7 +120,8 @@ export class PreferenceModel {
         parentGridModel: this.gridModel,
         entityName: 'preference',
         columnFields: ['name', 'type'],
-        matchFields: ['name']
+        matchFields: ['name'],
+        valueRenderer: (v) => v?.defaultValue ?? ''
     });
 
     async doLoadAsync(loadSpec) {

@@ -12,7 +12,7 @@ import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {cloneDeep, isEqual, isString, remove, trimEnd} from 'lodash';
+import {cloneDeep, isEqual, isString, isNil, remove, trimEnd} from 'lodash';
 import React from 'react';
 
 import {DifferDetailModel} from './DifferDetailModel';
@@ -29,6 +29,7 @@ export class DifferModel  {
     displayName;
     columnFields;
     matchFields;
+    valueRenderer;
     url;
     clipboardContent;
 
@@ -62,13 +63,16 @@ export class DifferModel  {
         entityName,
         displayName,
         columnFields = ['name'],
-        matchFields = ['name']
+        matchFields = ['name'],
+        valueRenderer
     }) {
         this.parentGridModel = parentGridModel;
         this.entityName = entityName;
         this.displayName = displayName ?? entityName;
         this.columnFields = columnFields;
         this.matchFields = matchFields;
+        this.valueRenderer = valueRenderer ?? (v => isNil(v) ? '' : v.value);
+
         this.url = entityName + 'DiffAdmin';
 
         this.gridModel = new GridModel({
@@ -302,12 +306,6 @@ export class DifferModel  {
 
     showNoDiffToast() {
         XH.toast({message: 'Good news - all records match remote host.'});
-    }
-
-    valueRenderer(v) {
-        if (v == null) return '';
-        const value = v.value ?? v.defaultValue;
-        return v.valueType === 'pwd' ? '*****' : value;
     }
 
     fieldRenderer(v, {record, column}) {
