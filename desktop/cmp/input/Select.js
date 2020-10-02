@@ -176,11 +176,15 @@ export class Select extends HoistInput {
     get creatableMode() {return !!this.props.enableCreate}
     get windowedMode() {return !!this.props.enableWindowed}
     get multiMode() {return !!this.props.enableMulti}
-    get filterMode() {return withDefault(this.props.enableFilter, true)}
+    get filterMode() {return this.props.enableFilter ?? true}
     get selectOnFocus() {
-        return withDefault(this.props.selectOnFocus,
-            !this.multiMode && (this.filterMode || this.creatableMode));
+        return this.props.selectOnFocus ??
+            (!this.multiMode && (this.filterMode || this.creatableMode));
     }
+    get suppressCheck() {return this.props.hideSelectedOptionCheck ?? this.hideSelectedOptions}
+    // Match react-select defaulting for hideSelectedOptions.
+    get hideSelectedOptions() {return this.props.hideSelectedOptions ?? this.multiMode ?? false}
+
 
     // Managed value for underlying text input under certain conditions
     // This is a workaround for rs-select issue described in hoist-react #880
@@ -515,15 +519,6 @@ export class Select extends HoistInput {
             }) :
             div({item: opt.label, style: {paddingLeft: 25}});
     };
-
-    get suppressCheck() {
-        return withDefault(this.props.hideSelectedOptionCheck, this.hideSelectedOptions);
-    }
-
-    // Match react-select defaulting.
-    get hideSelectedOptions() {
-        return withDefault(this.props.hideSelectedOptions, this.props.enableMulti);
-    }
 
     //------------------------
     // Other Implementation
