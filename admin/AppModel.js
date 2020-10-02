@@ -59,7 +59,7 @@ export class AppModel {
             },
             {
                 name: 'config',
-                path: 'config'
+                path: '/config'
             },
             {
                 name: 'logging',
