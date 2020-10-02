@@ -35,6 +35,10 @@ export class JsonBlobModel {
             reloadLookupsOnLoad: true,
             fields: [
                 {
+                    name: 'token',
+                    editable: false
+                },
+                {
                     name: 'owner'
                 },
                 {
@@ -92,6 +96,7 @@ export class JsonBlobModel {
         unit: 'blob',
         filterFields: ['name', 'owner', 'type', 'value', 'description'],
         columns: [
+            {field: 'token', width: 100, hidden: true},
             {field: 'owner', width: 200},
             {field: 'acl', width: 80},
             {field: 'name', width: 200},
@@ -103,6 +108,7 @@ export class JsonBlobModel {
             {field: 'lastUpdatedBy', width: 160, hidden: true}
         ],
         editors: [
+            {field: 'token'},
             {field: 'owner'},
             {field: 'acl'},
             {field: 'name'},
