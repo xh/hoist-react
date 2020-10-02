@@ -517,14 +517,7 @@ export class Select extends HoistInput {
     };
 
     get suppressCheck() {
-        const {props} = this;
-        let dflt = false;
-
-        if (props.enableMulti) {
-            dflt = this.hideSelectedOptions;
-        }
-
-        return withDefault(props.hideSelectedOptionCheck, dflt);
+        return withDefault(this.props.hideSelectedOptionCheck, this.hideSelectedOptions);
     }
 
     // Match react-select defaulting.
