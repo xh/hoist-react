@@ -76,12 +76,12 @@ export class JsonBlobService {
     }
 
     /**
-     * Deletes a json blob
+     * Archives a json blob
      * @param {string} token.
      */
-    async deleteAsync(token) {
+    async archiveAsync(token) {
         return XH.fetchJson({
-            url: 'xh/deleteJsonBlob',
+            url: 'xh/archiveJsonBlob',
             params: {token}
         });
     }
