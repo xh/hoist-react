@@ -12,7 +12,7 @@ import {
     editAction,
     RestGridModel
 } from '@xh/hoist/desktop/cmp/rest';
-import {dateTimeCol} from '@xh/hoist/cmp/grid';
+import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {truncate} from 'lodash';
 
@@ -63,6 +63,10 @@ export class JsonBlobModel {
                     name: 'description'
                 },
                 {
+                    name: 'archived',
+                    type: 'bool'
+                },
+                {
                     name: 'dateCreated',
                     type: 'date',
                     editable: false
@@ -97,6 +101,7 @@ export class JsonBlobModel {
         filterFields: ['name', 'owner', 'type', 'value', 'description'],
         columns: [
             {field: 'token', width: 100, hidden: true},
+            {field: 'archived', ...boolCheckCol, width: 100},
             {field: 'owner', width: 200},
             {field: 'acl', width: 80},
             {field: 'name', width: 200},
@@ -115,6 +120,7 @@ export class JsonBlobModel {
             {field: 'type'},
             {field: 'description', formField: {item: textArea()}},
             {field: 'value'},
+            {field: 'archived'},
             {field: 'dateCreated'},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}
