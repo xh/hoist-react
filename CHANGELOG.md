@@ -2,7 +2,21 @@
 
 ## v36.2.1 - 2020-10-01
 
+### 💥 Breaking Changes
+
+* The following CSS variables are no longer in use:
+    + `--xh-grid-line-height`
+    + `--xh-grid-line-height-px`
+    + `--xh-grid-large-line-height`
+    + `--xh-grid-large-line-height-px`
+    + `--xh-grid-compact-line-height`
+    + `--xh-grid-compact-line-height-px`
+    + `--xh-grid-tiny-line-height`
+    + `--xh-grid-tiny-line-height-px`
+
+
 ### 🎁 New Features
+
 * `Select` now supports `hideSelectedOptions` and `closeMenuOnSelect` props.
 
 ### 🐞 Bug Fixes
