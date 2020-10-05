@@ -1,9 +1,12 @@
 # Changelog
 
-## v36.2.1 - 2020-10-01
+## v37.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
+
 * `Select` now supports `hideSelectedOptions` and `closeMenuOnSelect` props.
+
+## v36.2.1 - 2020-10-01
 
 ### 🐞 Bug Fixes
 
