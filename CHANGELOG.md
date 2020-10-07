@@ -5,6 +5,9 @@
 ### 🎁 New Features
 
 * `Select` now supports `hideSelectedOptions` and `closeMenuOnSelect` props.
+* `XH.message()` and its variants (`XH.prompt(), XH.confirm(), XH.alert()`) all support an optional
+new config `messageKey`.  This key can be used by applications to  prevent popping up the same
+dialog repeatedly. Hoist will only show the last message posted for any given key.
 
 ## v36.2.1 - 2020-10-01
 
