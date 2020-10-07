@@ -33,7 +33,7 @@
       opacity: var(--xh-button-disabled-opacity);
     }
 
-    &--autofocus-enabled {
+    &.xh-button--autofocus-enabled {
       // Hoist calls FocusStyleManager.onlyShowFocusOnTabs(), which by default hides focus indicators
       // unless a component has been tabbed into via keyboard. Override here to always show a focus
       // indicator for an autoFocus button so it's clear that it has focus.
