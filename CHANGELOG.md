@@ -22,6 +22,11 @@
 new config `messageKey`.  This key can be used by applications to  prevent popping up the same
 dialog repeatedly. Hoist will only show the last message posted for any given key.
 
+### 🐞 Bug Fixes
+* Fixed issue with sporadic failures reading grid state using `legacyStateKey`.
+
+
+
 ## v36.2.1 - 2020-10-01
 
 ### 🐞 Bug Fixes
