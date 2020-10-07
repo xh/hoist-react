@@ -179,9 +179,10 @@ export class GridPersistenceModel {
             let legacyKey = provider.legacyStateKey ?? provider.key;
             if (legacyKey) {
                 legacyKey = 'gridState.v1.' + legacyKey;
-                const data = XH.localStorageService.get(legacyKey);
+                let data = XH.localStorageService.get(legacyKey);
                 if (data) {
-                    provider.write({...data, version: VERSION});
+                    data = {...data, version: VERSION};
+                    provider.write(data);
                     XH.localStorageService.remove(legacyKey);
                     return data;
                 }
