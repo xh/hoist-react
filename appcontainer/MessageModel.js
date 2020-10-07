@@ -26,6 +26,7 @@ export class MessageModel {
     cancelProps;
     onConfirm;
     onCancel;
+    messageKey;
 
     // Promise to be resolved when user has clicked on choice and its internal resolver
     result;
@@ -37,6 +38,7 @@ export class MessageModel {
         title,
         icon,
         message,
+        messageKey,
         input,
         confirmProps = {},
         cancelProps = {},
@@ -51,19 +53,21 @@ export class MessageModel {
     }) {
         warnIf(
             (confirmText || confirmIntent || cancelText || cancelIntent),
-            'Message "confirmText", "confirmIntent", "cancelText", and "cancelIntent" configs have been deprecated - use "confirmProps" and "cancelProps" instead.'
+            'Message "confirmText", "confirmIntent", "cancelText", and "cancelIntent" configs have' +
+            ' been deprecated - use "confirmProps" and "cancelProps" instead.'
         );
 
         this.title = title;
         this.icon = icon;
         this.message = message;
+        this.messageKey = messageKey;
 
         if (input) {
             this.input = input;
             const {initialValue, rules} = input;
-            this.formModel = this.markManaged(new FormModel({
-                fields: [{name: 'value', initialValue, rules}]
-            }));
+            this.formModel = this.markManaged(
+                new FormModel({fields: [{name: 'value', initialValue, rules}]})
+            );
         }
 
         this.confirmProps = this.parseButtonProps(confirmProps, () => this.doConfirmAsync(), confirmText, confirmIntent);

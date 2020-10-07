@@ -741,6 +741,10 @@ export const XH = window.XH = new XHClass();
  * @property {ReactNode} message - message to be displayed - a string or any valid React node.
  * @property {string} [title] - title of message box.
  * @property {Element} [icon] - icon to be displayed.
+ * @property {string} [messageKey] - unique key identifying the message.  If subsequent messages
+ *      are triggered with this key, they will replace this message.  Useful for usages that may
+ *      be producing messages recursively, or via timers and wish to avoid generating a large stack
+ *      of duplicates.
  * @property {MessageInput} [input] - config for input to be displayed (as a prompt).
  * @property {Object} [confirmProps] - props for primary confirm button.
  *      Must provide either text or icon for button to be displayed, or use a preconfigured
