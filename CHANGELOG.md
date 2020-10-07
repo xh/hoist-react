@@ -1,6 +1,6 @@
 # Changelog
 
-## v37.0.0-SNAPSHOT - unreleased
+## v36.3.0 - 2020-10-07
 
 ### 💥 Breaking Changes
 
@@ -14,6 +14,10 @@
     + `--xh-grid-tiny-line-height`
     + `--xh-grid-tiny-line-height-px`
 
+### ⚙️ Technical
+
+* `Grid`: We have improved and simplified the vertical centering of content within grid cells using
+flexbox-based styling, rather than the css variables above.
 
 ### 🎁 New Features
 
@@ -21,11 +25,15 @@
 * `XH.message()` and its variants (`XH.prompt(), XH.confirm(), XH.alert()`) all support an optional
 new config `messageKey`.  This key can be used by applications to  prevent popping up the same
 dialog repeatedly. Hoist will only show the last message posted for any given key.
+* Misc. Improvements to organization of admin client tabs.
+
 
 ### 🐞 Bug Fixes
 * Fixed issue with sporadic failures reading grid state using `legacyStateKey`.
+* Fixed regression to the display of `autoFocus` buttons; focus rectangle restored.
 
 
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.2.1...v36.3.0)
 
 ## v36.2.1 - 2020-10-01
 
