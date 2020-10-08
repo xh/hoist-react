@@ -6,6 +6,7 @@
  */
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Column, ColumnGroup, GridAutosizeMode} from '@xh/hoist/cmp/grid';
+import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
@@ -66,7 +67,10 @@ import {GridSorter} from './impl/GridSorter';
 export class GridModel {
 
     static DEFAULT_RESTORE_DEFAULTS_WARNING =
-        'This action will immediately clear all user saved configuration on this grid. OK to proceed?';
+        fragment(
+            'This action will clear any customizations you have made to this grid, including column selection, ordering, and sizing.', br(), br(),
+            'OK to proceed?'
+        );
 
     //------------------------
     // Immutable public properties
@@ -103,7 +107,7 @@ export class GridModel {
     useVirtualColumns;
     /** @member {GridAutosizeOptions} */
     autosizeOptions;
-    /** @member {string} */
+    /** @member {ReactNode} */
     restoreDefaultsWarning;
 
     /** @member {AgGridModel} */
@@ -173,8 +177,8 @@ export class GridModel {
      * @param {(ColChooserModelConfig|boolean)} [c.colChooserModel] - config with which to create a
      *      ColChooserModel, or boolean `true` to enable default.
      *      Mobile apps should only specify `true`, as colChooserModel mobile impl is not configurable.
-     * @param {?string} [c.restoreDefaultsWarning] - Confirmation warning to be presented to user
-     *      before restoring default grid state.  Set to null to skip user confirmation.
+     * @param {?ReactNode} [c.restoreDefaultsWarning] - Confirmation warning to be presented to user
+     *      before restoring default grid state. Set to null to skip user confirmation.
      * @param {GridModelPersistOptions} [c.persistWith] - options governing persistence.
      * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
@@ -345,7 +349,11 @@ export class GridModel {
             const confirmed = await XH.confirm({
                 title: 'Please Confirm',
                 icon: Icon.warning({size: 'lg'}),
-                message: this.restoreDefaultsWarning
+                message: this.restoreDefaultsWarning,
+                confirmProps: {
+                    text: 'Yes, restore defaults',
+                    intent: 'primary'
+                }
             });
             if (!confirmed) return false;
         }
