@@ -59,6 +59,9 @@ export class Select extends HoistInput {
         /** Placement of the dropdown menu relative to the input control. */
         menuPlacement: PT.oneOf(['auto', 'top', 'bottom']),
 
+        /** Width in pixels for the dropdown menu - if unspecified, defaults to control width. */
+        menuWidth: PT.number,
+
         /** Function to return message indicating no options loaded. */
         noOptionsMessageFn: PT.func,
 
@@ -157,6 +160,12 @@ export class Select extends HoistInput {
                 ...rsProps.components,
                 DropdownIndicator: () => null,
                 IndicatorSeparator: () => null
+            };
+        }
+
+        if (props.menuWidth) {
+            rsProps.styles = {
+                menu: (provided) => ({...provided, width: `${props.menuWidth}px`})
             };
         }
 
