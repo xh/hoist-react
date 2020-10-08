@@ -203,7 +203,7 @@ export class TabContainerModel {
         if (this.activeTabId === id) return;
 
         const tab = this.findTab(id);
-        if (tab.disabled) return;
+        if (!tab || tab.disabled) return;
 
         const {route} = this;
         if (route) {
