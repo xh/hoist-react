@@ -140,31 +140,40 @@ export class TabContainerModel {
         ensureUniqueBy(tabs, 'id', 'Multiple tabs have the same id.');
 
         tabs = tabs.filter(p => !p.omit);
-        this.activeTabId = this.initialActiveTabId(tabs);
-        const newTabs = tabs.map(t => (
-            t instanceof TabModel ? t : new TabModel({...t, containerModel: this})
-        ));
 
-        this.tabs = newTabs;
+        // Adjust state -- intentionally setting activeTab *before* instantiating new tabs.
+        const {activeTabId} = this;
+        if (!activeTabId || !tabs.find(t => t.id === activeTabId && !t.disabled)) {
+            this.activeTabId = this.calculateActiveTabId(tabs);
+        }
+        this.tabs = tabs.map(t => t instanceof TabModel ? t : new TabModel({...t, containerModel: this}));
+
         if (oldTabs) {
-            XH.safeDestroy(difference(oldTabs, newTabs));
+            XH.safeDestroy(difference(oldTabs, this.tabs));
         }
     }
 
     /**
      * Add a Tab for display.
-     * @param {Object} tab - TabModel or config for TabModel to be added.
-     * @param {number} [index] - index in tab collection where tab is to be added
+     * @param {(Object |TabModel)} tab - TabModel or config for TabModel to be added.
+     * @param {Object} [opts] - optional flags
+     * @param {number} [opts.index] - index in tab collection where tab is to be added.
+     * @param {boolean} [opts.activateImmediately] - true to immediately activate new tab.
      */
-    addTab(tab, index = this.tabs.length) {
+    @action
+    addTab(tab, {index = this.tabs.length, activateImmediately = false} = {}) {
         const {tabs} = this;
         this.setTabs([...tabs.slice(0, index), tab, ...tabs.slice(index)]);
+        if (activateImmediately) {
+            this.activateTab(tab.id);
+        }
     }
 
     /**
      * Remove a Tab for display.
-     * @param {Object|String} tab - TabModel or id of TabModel to be removed.
+     * @param {(Object|string)} tab - TabModel or id of TabModel to be removed.
      */
+    @action
     removeTab(tab) {
         let {tabs} = this,
             toRemove = find(tabs, (t) => t === tab || t.id === tab);
@@ -175,7 +184,7 @@ export class TabContainerModel {
 
     /** @return {TabModel} */
     get activeTab() {
-        return find(this.tabs, {id: this.activeTabId});
+        return this.find(this.activeTabId);
     }
 
     /** @return {?TabModel} - the tab immediately before the active tab in the model's tab list. */
@@ -258,11 +267,12 @@ export class TabContainerModel {
         }
     }
 
-    initialActiveTabId(tabs) {
+    calculateActiveTabId(tabs) {
         let ret;
 
         // try route
-        const {route} = this, {router} = XH;
+        const {route} = this,
+            {router} = XH;
         if (route && router.isActive(route)) {
             ret = tabs.find(t => router.isActive(route + '.' + t.id));
             if (ret && !ret.disabled) return ret.id;
