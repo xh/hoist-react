@@ -184,7 +184,7 @@ export class TabContainerModel {
 
     /** @return {TabModel} */
     get activeTab() {
-        return this.find(this.activeTabId);
+        return this.findTab(this.activeTabId);
     }
 
     /** @return {?TabModel} - the tab immediately before the active tab in the model's tab list. */
