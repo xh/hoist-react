@@ -4,17 +4,18 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {fragment} from '@xh/hoist/cmp/layout';
-import {creates, hoistCmp} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {restGrid} from '@xh/hoist/desktop/cmp/rest';
-import {Icon} from '@xh/hoist/icon';
-import {regroupDialog} from '../../../regroup/RegroupDialog';
-import {ConfigModel} from './ConfigModel';
-import {differ} from '../../../differ/Differ';
 
-export const configPanel = hoistCmp.factory({
-    model: creates(ConfigModel),
+import {creates, hoistCmp} from '@xh/hoist/core';
+import {fragment} from '@xh/hoist/cmp/layout';
+import {restGrid} from '@xh/hoist/desktop/cmp/rest';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {Icon} from '@xh/hoist/icon';
+
+import {JsonBlobModel} from './JsonBlobModel';
+import {differ} from '../../differ/Differ';
+
+export const jsonBlobPanel = hoistCmp.factory({
+    model: creates(JsonBlobModel),
 
     render({model}) {
         return fragment(
@@ -27,8 +28,7 @@ export const configPanel = hoistCmp.factory({
                     });
                 }
             }),
-            differ(),
-            regroupDialog()
+            differ()
         );
     }
 });

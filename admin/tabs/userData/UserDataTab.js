@@ -11,15 +11,15 @@ import {preferencePanel} from './PreferencePanel';
 import {userPreferencePanel} from './UserPreferencePanel';
 import {jsonBlobPanel} from './JsonBlobPanel';
 
-export const preferencesTab = hoistCmp.factory(
+export const userDataTab = hoistCmp.factory(
     () => tabContainer({
         model: {
-            route: 'default.preferences',
+            route: 'default.userData',
             switcherPosition: 'left',
             tabs: [
-                {id: 'prefs', icon: Icon.bookmark(), content: preferencePanel},
+                {id: 'prefs', title: 'Preferences', icon: Icon.bookmark(), content: preferencePanel},
                 {id: 'userPrefs', icon: Icon.users(), content: userPreferencePanel, reloadOnShow: true},
-                {id: 'jsonBlobs', icon: Icon.json(), content: jsonBlobPanel, reloadOnShow: true}
+                {id: 'jsonBlobs', title: 'JSON Blobs', icon: Icon.json(), content: jsonBlobPanel, reloadOnShow: true}
             ]
         }
     })

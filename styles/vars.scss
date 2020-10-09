@@ -363,8 +363,6 @@ body {
   --xh-grid-header-font-size-px: calc(var(--xh-grid-header-font-size) * 1px);
   --xh-grid-header-font-weight: var(--grid-header-font-weight, 600);
   --xh-grid-header-text-color: var(--grid-header-text-color, var(--xh-text-color));
-  --xh-grid-line-height-px: calc(var(--xh-grid-line-height) * 1px);
-  --xh-grid-line-height: var(--grid-line-height, 26);
   --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '300')});
   --xh-grid-summary-row-border-color: var(--grid-summary-row-border-color, var(--xh-grid-border-color));
   --xh-grid-text-color: var(--grid-text-color, var(--xh-text-color));
@@ -380,8 +378,6 @@ body {
   --xh-grid-large-header-font-size-px: calc(var(--xh-grid-large-header-font-size) * 1px);
   --xh-grid-large-header-lr-pad: var(--grid-large-header-lr-pad, 12);
   --xh-grid-large-header-lr-pad-px: calc(var(--xh-grid-large-header-lr-pad) * 1px);
-  --xh-grid-large-line-height: var(--grid-large-line-height, 30);
-  --xh-grid-large-line-height-px: calc(var(--xh-grid-large-line-height) * 1px);
 
   // Compact Grid
   --xh-grid-compact-cell-lr-pad: var(--grid-compact-cell-lr-pad, 4);
@@ -392,8 +388,6 @@ body {
   --xh-grid-compact-header-font-size-px: calc(var(--xh-grid-compact-header-font-size) * 1px);
   --xh-grid-compact-header-lr-pad: var(--grid-compact-header-lr-pad, 6);
   --xh-grid-compact-header-lr-pad-px: calc(var(--xh-grid-compact-header-lr-pad) * 1px);
-  --xh-grid-compact-line-height: var(--grid-compact-line-height, 22);
-  --xh-grid-compact-line-height-px: calc(var(--xh-grid-compact-line-height) * 1px);
 
   // Tiny Grid
   --xh-grid-tiny-cell-lr-pad: var(--grid-tiny-cell-lr-pad, 2);
@@ -404,8 +398,6 @@ body {
   --xh-grid-tiny-header-font-size-px: calc(var(--xh-grid-tiny-header-font-size) * 1px);
   --xh-grid-tiny-header-lr-pad: var(--grid-tiny-header-lr-pad, 4);
   --xh-grid-tiny-header-lr-pad-px: calc(var(--xh-grid-tiny-header-lr-pad) * 1px);
-  --xh-grid-tiny-line-height: var(--grid-tiny-line-height, 18);
-  --xh-grid-tiny-line-height-px: calc(var(--xh-grid-tiny-line-height) * 1px);
 
   // Multifield renderer
   --xh-grid-multifield-top-font-size: var(--grid-multifield-top-font-size, 12);
@@ -429,9 +421,7 @@ body {
   // Mobile Grid
   &.xh-mobile {
     --xh-grid-font-size: var(--grid-font-size, 14);
-    --xh-grid-line-height: var(--grid-line-height, 30);
     --xh-grid-compact-font-size: var(--grid-compact-font-size, 13);
-    --xh-grid-compact-line-height: var(--grid-compact-line-height, 26);
   }
 
 

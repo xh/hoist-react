@@ -177,7 +177,14 @@
   }
 
   .ag-cell-value {
-    line-height: var(--xh-grid-line-height-px);
+    display: flex;
+    align-items: center;
+
+    & > span {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
 
   // Cell borders
@@ -223,10 +230,6 @@
   &--large {
     font-size: var(--xh-grid-large-font-size-px);
 
-    .ag-cell-value {
-      line-height: var(--xh-grid-large-line-height-px);
-    }
-
     .ag-header .ag-header-row {
       font-size: var(--xh-grid-large-header-font-size-px);
     }
@@ -249,10 +252,6 @@
   &--compact {
     font-size: var(--xh-grid-compact-font-size-px);
 
-    .ag-cell-value {
-      line-height: var(--xh-grid-compact-line-height-px);
-    }
-
     .ag-header .ag-header-row {
       font-size: var(--xh-grid-compact-header-font-size-px);
     }
@@ -274,10 +273,6 @@
   //------------------------
   &--tiny {
     font-size: var(--xh-grid-tiny-font-size-px);
-
-    .ag-cell-value {
-      line-height: var(--xh-grid-tiny-line-height-px);
-    }
 
     .ag-header .ag-header-row {
       font-size: var(--xh-grid-tiny-header-font-size-px);

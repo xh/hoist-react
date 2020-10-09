@@ -4,24 +4,27 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {truncate} from 'lodash';
 import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {
     addAction,
+    cloneAction,
     deleteAction,
     editAction,
-    RestGridModel
+    RestGridModel,
+    RestStore
 } from '@xh/hoist/desktop/cmp/rest';
+import {isNil, truncate} from 'lodash';
+
 import {DifferModel} from '../../differ/DifferModel';
 import {RegroupDialogModel} from '../../regroup/RegroupDialogModel';
 
 @HoistModel
 @LoadSupport
-export class PreferenceModel {
+export class ConfigTabModel {
 
-    persistWith = {localStorageKey: 'xhAdminPreferenceState'};
+    persistWith = {localStorageKey: 'xhAdminConfigState'};
 
     @managed
     regroupDialogModel = new RegroupDialogModel(this);
@@ -32,8 +35,8 @@ export class PreferenceModel {
         colChooserModel: true,
         enableExport: true,
         selModel: 'multiple',
-        store: {
-            url: 'rest/preferenceAdmin',
+        store: new RestStore({
+            url: 'rest/configAdmin',
             reloadLookupsOnLoad: true,
             fields: [
                 {
@@ -48,25 +51,26 @@ export class PreferenceModel {
                     enableCreate: true
                 },
                 {
-                    name: 'type',
-                    defaultValue: 'string',
-                    lookupName: 'types',
+                    name: 'valueType',
+                    displayName: 'Type',
+                    lookupName: 'valueTypes',
                     editable: 'onAdd',
                     required: true
                 },
                 {
-                    name: 'defaultValue',
-                    typeField: 'type',
+                    name: 'value',
+                    typeField: 'valueType',
                     required: true
                 },
                 {
-                    name: 'notes'
-                },
-                {
-                    name: 'local',
+                    name: 'clientVisible',
                     type: 'bool',
                     defaultValue: false,
                     required: true
+                },
+                {
+                    name: 'note',
+                    displayName: 'Notes'
                 },
                 {
                     name: 'lastUpdated',
@@ -78,52 +82,75 @@ export class PreferenceModel {
                     editable: false
                 }
             ]
-        },
-        sortBy: 'name',
-        groupBy: 'groupName',
-        unit: 'preference',
-        filterFields: ['name', 'groupName'],
+        }),
         actionWarning: {
-            del: (records) =>  `Are you sure you want to delete ${records.length} preference(s)? Deleting preferences can break running apps.`
-
+            del: (records) =>  `Are you sure you want to delete ${records.length} config(s)? Deleting configs can break running apps.`
         },
+        toolbarActions: [
+            addAction,
+            editAction,
+            cloneAction,
+            deleteAction
+        ],
         menuActions: [
             addAction,
             editAction,
+            cloneAction,
             deleteAction,
             this.regroupDialogModel.regroupAction
         ],
+        prepareCloneFn: ({clone}) => clone.name = `${clone.name}_CLONE`,
+        unit: 'config',
+        filterFields: ['name', 'value', 'groupName', 'note'],
+
+        sortBy: 'name',
+        groupBy: 'groupName',
         columns: [
-            {field: 'local', ...boolCheckCol, width: 70},
+            {field: 'groupName', width: 100, hidden: true},
             {field: 'name', width: 200},
-            {field: 'type', width: 100},
-            {field: 'defaultValue', width: 200, renderer: truncateIfJson},
-            {field: 'groupName', hidden: true},
-            {field: 'notes', minWidth: 200, flex: true},
+            {field: 'valueType', width: 80, align: 'center'},
+            {field: 'value', width: 200, renderer: this.configRenderer, tooltip: this.configRenderer},
+            {field: 'clientVisible', ...boolCheckCol, headerName: 'Client?', width: 75},
+            {field: 'note', minWidth: 60, flex: true, tooltip: true},
             {field: 'lastUpdatedBy', width: 160, hidden: true},
             {field: 'lastUpdated', ...dateTimeCol, hidden: true}
         ],
         editors: [
             {field: 'name'},
             {field: 'groupName'},
-            {field: 'type'},
-            {field: 'defaultValue'},
-            {field: 'notes', formField: {item: textArea({height: 100})}},
-            {field: 'local'},
+            {field: 'valueType'},
+            {field: 'value'},
+            {field: 'note', formField: {item: textArea({height: 100})}},
+            {field: 'clientVisible'},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}
         ]
     });
 
     @managed
-    differModel = new DifferModel(this.gridModel, 'preference');
+    differModel = new DifferModel({
+        parentGridModel: this.gridModel,
+        entityName: 'config',
+        columnFields: ['name', {field: 'valueType', headerName: 'Type'}],
+        matchFields: ['name'],
+        valueRenderer: (v) => {
+            if (isNil(v)) return '';
+            return v.valueType === 'pwd' ? '*****' : v.value;
+        }
+    });
 
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();
     }
-}
 
-
-function truncateIfJson(defaultValue, {record}) {
-    return record.data.type === 'json' ? truncate(defaultValue, {length: 500}) : defaultValue;
+    configRenderer(value, {record}) {
+        switch (record.data.valueType) {
+            case 'pwd':
+                return '*****';
+            case 'json':
+                return truncate(value, {length: 500});
+            default:
+                return value;
+        }
+    }
 }

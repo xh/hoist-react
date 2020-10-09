@@ -68,9 +68,14 @@ export const columnHeader = hoistCmp.factory({
         const {xhColumn, gridModel} = impl,
             {isDesktop} = XH;
 
-        const headerElem = isFunction(xhColumn?.headerName) ?
-            xhColumn.headerName({column: xhColumn, gridModel}) :
-            props.displayName;
+        // `props.displayName` is the output of the Column `headerValueGetter` and should always be a string
+        // If `xhColumn` is present, it can consulted for a richer `headerName`
+        let headerElem = props.displayName;
+        if (xhColumn) {
+            headerElem = isFunction(xhColumn.headerName) ?
+                xhColumn.headerName({column: xhColumn, gridModel}) :
+                xhColumn.headerName;
+        }
 
         // If no app tooltip dynamically toggle a tooltip to display elided header
         let onMouseEnter = null;

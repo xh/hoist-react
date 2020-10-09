@@ -36,11 +36,6 @@ const tbar = hoistCmp.factory(
         ],
         rightItems: [
             button({
-                icon: Icon.mail(),
-                text: 'Contact',
-                onClick: () => window.open('https://xh.io/contact')
-            }),
-            button({
                 icon: Icon.openExternal(),
                 title: 'Open app...',
                 onClick: () => window.open('/')
