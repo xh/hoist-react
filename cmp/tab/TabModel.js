@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, ManagedRefreshContextModel} from '@xh/hoist/core';
+import {XH, HoistModel, managed, ManagedRefreshContextModel} from '@xh/hoist/core';
 import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
@@ -24,6 +24,7 @@ export class TabModel {
     @bindable.ref icon;
     @observable disabled;
     excludeFromSwitcher;
+    showRemoveAction;
 
     containerModel;
     @managed refreshContextModel;
@@ -38,6 +39,8 @@ export class TabModel {
      * @param {string} [c.disabled] - true to disable this tab in the TabSwitcher and block routing.
      * @param {string} [c.excludeFromSwitcher] - true to hide this Tab in the TabSwitcher,
      *      but still be able to activate the tab manually or via routing.
+     * @param {boolean} [c.showRemoveAction] - display an affordance to allow the user to remove
+     *      this tab from its container.
      * @param {(Object|function)} c.content - Hoist Component (class or functional) to be rendered by this
      *      Tab; or function returning react element to be rendered by this Tab.
      * @param {RenderMode} [c.renderMode] - strategy for rendering this tab. If null, will
@@ -49,19 +52,23 @@ export class TabModel {
         id,
         containerModel,
         title = startCase(id),
-        icon,
-        disabled,
-        excludeFromSwitcher,
+        icon = null,
+        disabled = false,
+        excludeFromSwitcher = false,
+        showRemoveAction = false,
         content,
         refreshMode,
         renderMode
     }) {
+        throwIf(showRemoveAction && XH.isMobileApp, 'Removable Tabs not supported in Mobile toolkit.');
+
         this.id = id;
         this.containerModel = containerModel;
         this.title = title;
         this.icon = icon;
         this.disabled = !!disabled;
         this.excludeFromSwitcher = excludeFromSwitcher;
+        this.showRemoveAction = showRemoveAction;
         this.content = content;
 
         this._renderMode = renderMode;
