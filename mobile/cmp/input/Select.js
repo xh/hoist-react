@@ -165,7 +165,8 @@ export class Select extends HoistInput {
 
         if (props.menuWidth) {
             rsProps.styles = {
-                menu: (provided) => ({...provided, width: `${props.menuWidth}px`})
+                menu: (provided) => ({...provided, width: `${props.menuWidth}px`}),
+                ...props.rsOptions?.styles
             };
         }
 
