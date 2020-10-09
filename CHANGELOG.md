@@ -4,7 +4,8 @@
 
 ### 🎁 New Features
 
-* Add support for dynamically adding and removing tabs from a `TabContainerModel`.
+* `TabContainerModel` supports dynamically adding and removing tabs via new public methods.
+* `Select` supports a new `menuWidth` prop to control the width of the dropdown.
 
 ### 🐞 Bug Fixes
 
