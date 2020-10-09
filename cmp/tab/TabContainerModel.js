@@ -159,6 +159,7 @@ export class TabContainerModel {
      * @param {Object} [opts] - optional flags
      * @param {number} [opts.index] - index in tab collection where tab is to be added.
      * @param {boolean} [opts.activateImmediately] - true to immediately activate new tab.
+     * @return {TabModel}
      */
     @action
     addTab(tab, {index = this.tabs.length, activateImmediately = false} = {}) {
@@ -167,6 +168,7 @@ export class TabContainerModel {
         if (activateImmediately) {
             this.activateTab(tab.id);
         }
+        return this.findTab(tab.id);
     }
 
     /**
