@@ -1,6 +1,6 @@
 # Changelog
 
-## v37.0.0-SNAPSHOT - unreleased
+## v36.4.0 - 2020-10-09
 
 ### 🎁 New Features
 
@@ -11,7 +11,7 @@
 
 * Fixed v36.3.0 regression re. horizontal alignment of Grid columns.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v36.3.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.3.0...v36.4.0)
 
 ## v36.3.0 - 2020-10-07
 
