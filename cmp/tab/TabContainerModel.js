@@ -155,7 +155,7 @@ export class TabContainerModel {
 
     /**
      * Add a Tab for display.
-     * @param {(Object |TabModel)} tab - TabModel or config for TabModel to be added.
+     * @param {(Object|TabModel)} tab - TabModel or config for TabModel to be added.
      * @param {Object} [opts] - optional flags
      * @param {number} [opts.index] - index in tab collection where tab is to be added.
      * @param {boolean} [opts.activateImmediately] - true to immediately activate new tab.
@@ -173,7 +173,7 @@ export class TabContainerModel {
 
     /**
      * Remove a Tab for display.
-     * @param {(Object|string)} tab - TabModel or id of TabModel to be removed.
+     * @param {(TabModel|string)} tab - TabModel or id of TabModel to be removed.
      */
     @action
     removeTab(tab) {
