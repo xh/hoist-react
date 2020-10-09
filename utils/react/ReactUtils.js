@@ -36,6 +36,7 @@ export function elementFromContent(content, addProps) {
     }
 
     const ret = content();
+    if (ret === null) return null;
     throwIf(!isValidElement(ret),
         'Must specify either a HoistComponent or a function that returns a React Element.'
     );

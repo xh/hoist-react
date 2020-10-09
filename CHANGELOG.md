@@ -4,7 +4,12 @@
 
 ### 🎁 New Features
 
+* `TabContainerModel` supports dynamically adding and removing tabs via new public methods.
 * `Select` supports a new `menuWidth` prop to control the width of the dropdown.
+
+### 🐞 Bug Fixes
+
+* Fixed v36.3.0 regression re. horizontal alignment of Grid columns.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.3.0...develop)
 
@@ -13,33 +18,32 @@
 ### 💥 Breaking Changes
 
 * The following CSS variables are no longer in use:
-    + `--xh-grid-line-height`
-    + `--xh-grid-line-height-px`
-    + `--xh-grid-large-line-height`
-    + `--xh-grid-large-line-height-px`
-    + `--xh-grid-compact-line-height`
-    + `--xh-grid-compact-line-height-px`
-    + `--xh-grid-tiny-line-height`
-    + `--xh-grid-tiny-line-height-px`
+  + `--xh-grid-line-height`
+  + `--xh-grid-line-height-px`
+  + `--xh-grid-large-line-height`
+  + `--xh-grid-large-line-height-px`
+  + `--xh-grid-compact-line-height`
+  + `--xh-grid-compact-line-height-px`
+  + `--xh-grid-tiny-line-height`
+  + `--xh-grid-tiny-line-height-px`
 
 ### ⚙️ Technical
 
-* `Grid`: We have improved and simplified the vertical centering of content within grid cells using
-flexbox-based styling, rather than the css variables above.
+* We have improved and simplified the vertical centering of content within Grid cells using
+  flexbox-based styling, rather than the CSS variables above.
 
 ### 🎁 New Features
 
 * `Select` now supports `hideSelectedOptions` and `closeMenuOnSelect` props.
 * `XH.message()` and its variants (`XH.prompt(), XH.confirm(), XH.alert()`) all support an optional
-new config `messageKey`.  This key can be used by applications to  prevent popping up the same
-dialog repeatedly. Hoist will only show the last message posted for any given key.
+  new config `messageKey`. This key can be used by applications to prevent popping up the same
+  dialog repeatedly. Hoist will only show the last message posted for any given key.
 * Misc. Improvements to organization of admin client tabs.
 
-
 ### 🐞 Bug Fixes
+
 * Fixed issue with sporadic failures reading grid state using `legacyStateKey`.
 * Fixed regression to the display of `autoFocus` buttons; focus rectangle restored.
-
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.2.1...v36.3.0)
 

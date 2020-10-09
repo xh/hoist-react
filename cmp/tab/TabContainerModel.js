@@ -4,12 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {isEmpty} from 'lodash';
 import {HoistModel, managed, PersistenceProvider, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
-import {div} from '../layout';
 import {action, observable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-import {find, isUndefined} from 'lodash';
+import {find, isUndefined, without, difference} from 'lodash';
 import {TabModel} from './TabModel';
 
 /**
@@ -24,7 +22,9 @@ import {TabModel} from './TabModel';
 export class TabContainerModel {
 
     /** @member {TabModel[]} */
-    @managed tabs = [];
+    @managed
+    @observable.ref
+    tabs = null;
 
     /** @member {?string} */
     route;
@@ -78,29 +78,17 @@ export class TabContainerModel {
         persistWith,
         emptyText = 'No tabs to display.'
     }) {
-
-        tabs = tabs.filter(p => !p.omit);
-        if (isEmpty(tabs)) {
-            tabs.push({
-                content: () => div({
-                    className: 'xh-text-color-accent xh-pad xh-tab--empty',
-                    item: emptyText
-                })
-            });
-            switcherPosition = 'none';
-        }
-
-        ensureUniqueBy(tabs, 'id', 'Multiple TabContainerModel tabs have the same id.');
         throwIf(!['top', 'bottom', 'left', 'right', 'none'].includes(switcherPosition), 'Unsupported value for switcherPosition.');
         throwIf(route && persistWith, '"persistWith" and "route" cannot both be specified.');
 
         this.switcherPosition = switcherPosition;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
+        this.defaultTabId = defaultTabId;
+        this.emptyText = emptyText;
         this.route = route;
-        this.activeTabId = this.initialActiveTabId(tabs, defaultTabId);
-        this.tabs = tabs.map(p => new TabModel({...p, containerModel: this}));
         this.track = track;
+        this.setTabs(tabs);
 
         if (route) {
             if (XH.isMobileApp) {
@@ -134,9 +122,71 @@ export class TabContainerModel {
         }
     }
 
+    //-----------------------------
+    // Tab addition, modification
+    //-----------------------------
+    /**
+     * Set the Tabs displayed by this object.
+     *
+     * @param {Object[]|TabModel[]} tabs - TabModels or configs for TabModels.
+     */
+    @action
+    setTabs(tabs) {
+        const oldTabs = this.tabs,
+            isInit = (oldTabs === null);
+        throwIf(!isInit && this.route, 'Dynamic tabs not available on TabContainer with routing.');
+        throwIf(!isInit && XH.isMobileApp, 'Dynamic tabs not available on mobile TabContainer.');
+
+        ensureUniqueBy(tabs, 'id', 'Multiple tabs have the same id.');
+
+        tabs = tabs.filter(p => !p.omit);
+
+        // Adjust state -- intentionally setting activeTab *before* instantiating new tabs.
+        const {activeTabId} = this;
+        if (!activeTabId || !tabs.find(t => t.id === activeTabId && !t.disabled)) {
+            this.activeTabId = this.calculateActiveTabId(tabs);
+        }
+        this.tabs = tabs.map(t => t instanceof TabModel ? t : new TabModel({...t, containerModel: this}));
+
+        if (oldTabs) {
+            XH.safeDestroy(difference(oldTabs, this.tabs));
+        }
+    }
+
+    /**
+     * Add a Tab for display.
+     * @param {(Object|TabModel)} tab - TabModel or config for TabModel to be added.
+     * @param {Object} [opts] - optional flags
+     * @param {number} [opts.index] - index in tab collection where tab is to be added.
+     * @param {boolean} [opts.activateImmediately] - true to immediately activate new tab.
+     * @return {TabModel}
+     */
+    @action
+    addTab(tab, {index = this.tabs.length, activateImmediately = false} = {}) {
+        const {tabs} = this;
+        this.setTabs([...tabs.slice(0, index), tab, ...tabs.slice(index)]);
+        if (activateImmediately) {
+            this.activateTab(tab.id);
+        }
+        return this.findTab(tab.id);
+    }
+
+    /**
+     * Remove a Tab for display.
+     * @param {(TabModel|string)} tab - TabModel or id of TabModel to be removed.
+     */
+    @action
+    removeTab(tab) {
+        let {tabs} = this,
+            toRemove = find(tabs, (t) => t === tab || t.id === tab);
+        if (toRemove) {
+            this.setTabs(without(tabs, toRemove));
+        }
+    }
+
     /** @return {TabModel} */
     get activeTab() {
-        return find(this.tabs, {id: this.activeTabId});
+        return this.findTab(this.activeTabId);
     }
 
     /** @return {?TabModel} - the tab immediately before the active tab in the model's tab list. */
@@ -164,7 +214,7 @@ export class TabContainerModel {
         if (this.activeTabId === id) return;
 
         const tab = this.findTab(id);
-        if (tab.disabled) return;
+        if (!tab || tab.disabled) return;
 
         const {route} = this;
         if (route) {
@@ -219,22 +269,23 @@ export class TabContainerModel {
         }
     }
 
-    initialActiveTabId(tabConfigs, defaultTabId) {
+    calculateActiveTabId(tabs) {
         let ret;
 
         // try route
-        const {route} = this, {router} = XH;
+        const {route} = this,
+            {router} = XH;
         if (route && router.isActive(route)) {
-            ret = tabConfigs.find(t => router.isActive(route + '.' + t.id));
+            ret = tabs.find(t => router.isActive(route + '.' + t.id));
             if (ret && !ret.disabled) return ret.id;
         }
 
         // or default
-        ret = tabConfigs.find(t => t.id == defaultTabId);
+        ret = tabs.find(t => t.id === this.defaultTabId);
         if (ret && !ret.disabled) return ret.id;
 
         // or first enabled tab
-        ret = tabConfigs.find(t => !t.disabled);
+        ret = tabs.find(t => !t.disabled);
         if (ret) return ret.id;
 
         return null;

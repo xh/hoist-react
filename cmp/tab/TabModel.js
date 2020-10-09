@@ -20,8 +20,8 @@ import {startCase} from 'lodash';
 export class TabModel {
 
     id;
-    @bindable title;
-    @bindable icon;
+    @bindable.ref title;
+    @bindable.ref icon;
     @observable disabled;
     excludeFromSwitcher;
 
@@ -33,7 +33,7 @@ export class TabModel {
      * @param {string} c.id - unique ID, used by container for locating tabs and generating routes.
      * @param {TabContainerModel} c.containerModel - parent TabContainerModel. Provided by the
      *      container when constructing these models - no need to specify manually.
-     * @param {string} [c.title] - display title for the Tab in the container's TabSwitcher.
+     * @param {Element} [c.title] - display title for the Tab in the container's TabSwitcher.
      * @param {Element} [c.icon] - display icon for the Tab in the container's TabSwitcher.
      * @param {string} [c.disabled] - true to disable this tab in the TabSwitcher and block routing.
      * @param {string} [c.excludeFromSwitcher] - true to hide this Tab in the TabSwitcher,
