@@ -23,7 +23,7 @@ export class TabContainerModel {
 
     /** @member {TabModel[]} */
     @managed
-    @observable
+    @observable.ref
     tabs = null;
 
     /** @member {?string} */
