@@ -2,6 +2,9 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* Add support for dynamically adding and removing tabs from a `TabContainerModel`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.3.0...develop)
 
 ## v36.3.0 - 2020-10-07
