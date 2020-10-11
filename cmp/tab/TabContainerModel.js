@@ -49,7 +49,7 @@ export class TabContainerModel {
 
     /**
      * @param {Object} c - TabContainerModel configuration.
-     * @param {Object[]} c.tabs - configs for TabModels to be displayed.
+     * @param {Object[]} [c.tabs] - configs for TabModels to be displayed.
      * @param {?string} [c.defaultTabId] - ID of Tab to be shown initially if routing does not
      *      specify otherwise. If not set, will default to first tab in the provided collection.
      * @param {?string} [c.route] - base route name for this container. If set, this container will
@@ -68,7 +68,7 @@ export class TabContainerModel {
      *      or all tabs have been removed via their `omit` config.
      */
     constructor({
-        tabs,
+        tabs = [],
         defaultTabId = null,
         route = null,
         switcherPosition = XH.isMobileApp ? 'bottom' : 'top',
