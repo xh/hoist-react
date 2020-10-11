@@ -146,7 +146,7 @@ export class TabContainerModel {
         if (!activeTabId || !tabs.find(t => t.id === activeTabId && !t.disabled)) {
             this.activeTabId = this.calculateActiveTabId(tabs);
         }
-        this.tabs = tabs.map(t => t instanceof TabModel ? t : new TabModel({...t, containerModel: this}));
+        this.tabs = tabs.map(t => t.isTabModel ? t : new TabModel({...t, containerModel: this}));
 
         if (oldTabs) {
             XH.safeDestroy(difference(oldTabs, this.tabs));
@@ -216,19 +216,18 @@ export class TabContainerModel {
      * will only be updated once the router state changes. Otherwise the active Tab will be updated
      * immediately.
      *
-     * @param {string} id - unique ID of Tab to activate.
+     * @param {(TabModel|string)} tab - TabModel or id of TabModel to be activated.
      */
-    activateTab(id) {
-        if (this.activeTabId === id) return;
+    activateTab(tab) {
+        tab = this.findTab(tab.isTabModel ? tab.id : tab);
 
-        const tab = this.findTab(id);
-        if (!tab || tab.disabled) return;
+        if (!tab || tab.disabled || tab.isActive) return;
 
         const {route} = this;
         if (route) {
-            XH.navigate(route + '.' + id);
+            XH.navigate(route + '.' + tab.id);
         } else {
-            this.setActiveTabId(id);
+            this.setActiveTabId(tab.id);
         }
     }
 

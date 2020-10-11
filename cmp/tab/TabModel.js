@@ -28,6 +28,8 @@ export class TabModel {
     containerModel;
     @managed refreshContextModel;
 
+    get isTabModel() {return true}
+
     /**
      * @param {Object} c - TabModel configuration.
      * @param {string} c.id - unique ID, used by container for locating tabs and generating routes.
