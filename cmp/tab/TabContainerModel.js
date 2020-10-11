@@ -123,7 +123,7 @@ export class TabContainerModel {
     }
 
     //-----------------------------
-    // Tab addition, modification
+    // Manage contents.
     //-----------------------------
     /**
      * Set the Tabs displayed by this object.
@@ -182,6 +182,14 @@ export class TabContainerModel {
         if (toRemove) {
             this.setTabs(without(tabs, toRemove));
         }
+    }
+
+    //-------------------------------
+    // Access Tabs, active management
+    //-------------------------------
+    /** @return {TabModel} */
+    findTab(id) {
+        return find(this.tabs, {id});
     }
 
     /** @return {TabModel} */
@@ -321,9 +329,5 @@ export class TabContainerModel {
                 run: (activeTabId) => this.provider.write({activeTabId})
             });
         }
-    }
-
-    findTab(id) {
-        return find(this.tabs, {id});
     }
 }
