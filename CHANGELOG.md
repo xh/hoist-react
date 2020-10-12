@@ -2,6 +2,10 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Improved test of is Dom node visible.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.4.0...develop)
 
 ## v36.4.0 - 2020-10-09

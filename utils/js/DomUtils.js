@@ -42,7 +42,7 @@ export function observeResize(fn, node, {debounce}) {
     let wrappedFn = (e) => {
         const {contentRect, target} = e[0],
             {width, height} = contentRect,
-            isVisible = isElVisible(target),
+            isVisible = isNodeVisible(target),
             hasChanged = width !== prevWidth || height !== prevHeight;
 
         if (isVisible && hasChanged) {
@@ -74,7 +74,7 @@ export function observeResize(fn, node, {debounce}) {
 export function observeVisibleChange(fn, node) {
     let prevVisible = null;
     const ret = new ResizeObserver(e => {
-        const visible = isElVisible(e[0].target),
+        const visible = isNodeVisible(e[0].target),
             hasChanged = visible !== prevVisible;
 
         if (hasChanged) {
@@ -86,6 +86,12 @@ export function observeVisibleChange(fn, node) {
     return ret;
 }
 
-export function isElVisible(el) {
-    return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+/**
+ * Check if a DOM Node is visible.
+ *
+ * @param {Object} node - The DOM node to check
+ *
+ */
+export function isNodeVisible(node) {
+    return !!(node.offsetWidth || node.offsetHeight || node.getClientRects().length);
 }
