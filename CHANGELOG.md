@@ -4,7 +4,7 @@
 
 ### 🐞 Bug Fixes
 
-* Improved test of is Dom node visible.
+* Improved test of is DOM node visible.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.4.0...develop)
 
