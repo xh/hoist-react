@@ -193,7 +193,7 @@ export class GridModel {
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
      * @param {string} [c.treeGridStyleMode] - Style scheme to apply to tree grid
-     *      one of ['none', 'gradient', 'top-two-levels', 'tri-color']
+     *      one of ['none', 'highlightGroups', 'highlightGroupsWithBorders']
      * @param {boolean} [c.stripeRows] - true to use alternating backgrounds for rows.
      *      defaults to true unless treeGridStyleMode is employed
      * @param {boolean} [c.cellBorders] - true to render cell borders.
