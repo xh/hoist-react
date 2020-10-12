@@ -292,7 +292,7 @@ export class GridModel {
         this.groupRowRenderer = groupRowRenderer;
         this.groupRowElementRenderer = groupRowElementRenderer;
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
-        this.showGroupRowCounts = showGroupRowCounts;
+        this.showGroupRowCounts = showGroupRowCounts;sss
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.autosizeOptions = defaults(autosizeOptions, {
@@ -314,7 +314,7 @@ export class GridModel {
         );
 
         throwIf(
-            treeGridStyleMode && !['none', 'gradient', 'top-two-levels', 'tri-color'].includes(treeGridStyleMode),
+            treeGridStyleMode && !['none', 'highlightGroups', 'highlightGroupsWithBorders'].includes(treeGridStyleMode),
             `Unsupported value for treeGridStyleMode.`
         );
 
