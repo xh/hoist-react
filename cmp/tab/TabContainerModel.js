@@ -178,9 +178,17 @@ export class TabContainerModel {
     @action
     removeTab(tab) {
         let {tabs} = this,
-            toRemove = find(tabs, (t) => t === tab || t.id === tab);
+            toRemove = find(tabs, (t) => t === tab || t.id === tab),
+            toActivate = this.activeTab;
+
+        if (toRemove === toActivate) {
+            toActivate = this.nextTab ?? this.prevTab;
+        }
         if (toRemove) {
             this.setTabs(without(tabs, toRemove));
+            if (toActivate) {
+                this.activateTab(toActivate);
+            }
         }
     }
 
