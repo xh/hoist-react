@@ -16,6 +16,7 @@ import {
     useOnResize,
     useOnVisibleChange
 } from '@xh/hoist/utils/react';
+import {isElVisible} from '@xh/hoist/utils/js/';
 import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
 import PT from 'prop-types';
 import {ChartModel} from './ChartModel';
@@ -154,7 +155,7 @@ class LocalModel {
 
             // Skip creating HighCharts instance if hidden - we will
             // instead create when it becomes visible
-            if (parentDims.width === 0 || parentDims.height === 0) return;
+            if (!isElVisible(parentEl)) return;
 
             const dims = this.getChartDims(parentDims);
             assign(config.chart, dims);

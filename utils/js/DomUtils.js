@@ -40,9 +40,9 @@ export function isDisplayed(elem) {
 export function observeResize(fn, node, {debounce}) {
     let prevWidth = null, prevHeight = null;
     let wrappedFn = (e) => {
-        const {contentRect} = e[0],
+        const {contentRect, target} = e[0],
             {width, height} = contentRect,
-            isVisible = width !== 0 && height !== 0,
+            isVisible = isElVisible(target),
             hasChanged = width !== prevWidth || height !== prevHeight;
 
         if (isVisible && hasChanged) {
@@ -74,8 +74,7 @@ export function observeResize(fn, node, {debounce}) {
 export function observeVisibleChange(fn, node) {
     let prevVisible = null;
     const ret = new ResizeObserver(e => {
-        const {width, height} = e[0].contentRect,
-            visible = width !== 0 && height !== 0,
+        const visible = isElVisible(e[0].target),
             hasChanged = visible !== prevVisible;
 
         if (hasChanged) {
@@ -85,4 +84,8 @@ export function observeVisibleChange(fn, node) {
     });
     ret.observe(node);
     return ret;
+}
+
+export function isElVisible(el) {
+    return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
 }
