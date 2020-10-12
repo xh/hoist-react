@@ -4,11 +4,14 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {div} from '@xh/hoist/cmp/layout';
+import {div, frame} from '@xh/hoist/cmp/layout';
 import {tab as onsenTab, tabbar} from '@xh/hoist/kit/onsen';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {tab} from './Tab';
+import {isEmpty} from 'lodash';
+import {page} from '@xh/hoist/kit/onsen';
+
 import './Tabs.scss';
 
 /**
@@ -25,6 +28,16 @@ export function tabContainerImpl({model, className, ...props}) {
     const {activeTab, switcherPosition} = model,
         tabs = model.tabs.filter(it => !it.excludeFromSwitcher);
 
+    if (isEmpty(tabs)) {
+        return page({
+            className: 'xh-tab-page',
+            item: frame({
+                alignItems: 'center',
+                justifyContent: 'center',
+                item: model.emptyText
+            })
+        });
+    }
     return tabbar({
         className: classNames(className, `xh-tab-container--${switcherPosition}`),
         position: switcherPosition,

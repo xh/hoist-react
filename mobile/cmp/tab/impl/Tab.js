@@ -33,8 +33,8 @@ export const tab = hoistCmp.factory({
         if (
             !isActive &&
             (
-                (renderMode == RenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode == RenderMode.LAZY && !wasActivated.current)
+                (renderMode === RenderMode.UNMOUNT_ON_HIDE) ||
+                (renderMode === RenderMode.LAZY && !wasActivated.current)
             )
         ) {
             // Note: We must render an empty placeholder page to work with Onsen's tabbar.
