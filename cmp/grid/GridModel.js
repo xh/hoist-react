@@ -514,6 +514,16 @@ export class GridModel {
     get hideHeaders() { return this.agGridModel.hideHeaders }
     setHideHeaders(hideHeaders) { this.agGridModel.setHideHeaders(hideHeaders) }
 
+    get treeStyleClasses() {
+        switch (this.treeGridStyleMode) {
+            case 'highlightGroups':
+                return 'xh-grid--highlight-groups';
+            case 'highlightGroupsWithBorders':
+                return 'xh-grid--highlight-groups xh-grid--group-border';
+            default:
+                return null;
+        }
+    }
     /**
      * Apply full-width row-level grouping to the grid for the given column ID(s).
      * This method will clear grid grouping if provided any ids without a corresponding column.
