@@ -2,6 +2,11 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `GridModel` now supports a `treeGridStyleMode` property to optionally provide enhanced
+  visualization of hierarchical data.
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.31 -> 3.33`
