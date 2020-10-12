@@ -2,6 +2,14 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+### 📚 Libraries
+
+* @blueprintjs/core `3.31 -> 3.33`
+* @blueprintjs/datetime `3.18 -> 3.19`
+* @fortawesome/fontawesome-pro `5.14 -> 5.15`
+* moment `2.24 -> 2.29`
+* numbro `2.2 -> 2.3`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.4.0...develop)
 
 ## v36.4.0 - 2020-10-09
