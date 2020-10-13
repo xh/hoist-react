@@ -10,6 +10,10 @@
 * moment `2.24 -> 2.29`
 * numbro `2.2 -> 2.3`
 
+### 🐞 Bug Fixes
+
+* Improve hover and active background-color for header tool buttons in light theme.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.4.0...develop)
 
 ## v36.4.0 - 2020-10-09

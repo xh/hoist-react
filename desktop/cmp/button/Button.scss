@@ -370,3 +370,22 @@
     }
   }
 }
+
+//------------------------
+// Header "tool" buttons in panels and docks
+// Adjustment needed only in light theme.
+//------------------------
+*:not(.xh-dark),
+*:not(.bp3-dark) {
+  .xh-dock-view__header,
+  .xh-panel-header__items {
+    .xh-button.bp3-button.xh-button--minimal {
+      &.xh-button--intent-none {
+        &.xh-button--enabled {
+          &:hover {background-color: var( --xh-intent-neutral-trans1)}
+          &:active {background-color: var( --xh-intent-neutral-trans2)}
+        }
+      }
+    }
+  }
+}
