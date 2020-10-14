@@ -475,6 +475,8 @@ export class Column {
 
                 refresh() {return false}
             });
+        } else {
+            setRenderer((agParams) => agParams.value);
         }
 
         const sortCfg = find(gridModel.sortBy, {colId: ret.colId});
