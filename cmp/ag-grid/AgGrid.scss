@@ -180,10 +180,11 @@
     display: flex;
     align-items: center;
 
-    & > span {
+    & > * {
       flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
+      min-width: 0;
     }
   }
 
