@@ -104,6 +104,17 @@
           &:hover {background-color: var(--xh-button-bg-lighter)}
           &:active {background-color: var(--xh-button-bg-darkest)}
         }
+
+        &.xh-button--active {
+          background-color: var(--xh-button-active-bg);
+          box-shadow: var(--xh-button-active-box-shadow);
+          background-image: none; // mimic bp3 active state
+
+          // Make sure these states replicate the active state
+          // so as to make it look like there is no reaction
+          &:hover {background-color: var(--xh-button-active-bg)}
+          &:active {background-color: var(--xh-button-active-bg)}
+        }
       }
 
       &.xh-button--intent-primary {
@@ -153,6 +164,16 @@
         &.xh-button--enabled {
           &:hover {background-color: var(--xh-button-bg-darker)}
           &:active {background-color: var(--xh-button-bg-darkest)}
+        }
+
+        &.xh-button--active {
+          background-color: var(--xh-button-active-bg);
+          background-image: none; // mimic bp3 active state
+
+          // Make sure these states replicate the active state
+          // so as to make it look like there is no reaction
+          &:hover {background-color: var(--xh-button-active-bg)}
+          &:active {background-color: var(--xh-button-active-bg)}
         }
       }
 

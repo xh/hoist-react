@@ -13,6 +13,7 @@
 ### 🐞 Bug Fixes
 
 * Improve hover and active background-color for header tool buttons in light theme.
+* Button set to active:true renders with active styling.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.4.0...develop)
 
