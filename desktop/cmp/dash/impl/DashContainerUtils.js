@@ -6,7 +6,7 @@
  */
 import {serializeIcon} from '@xh/hoist/icon';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isArray, isEmpty, isFinite, isNil, isPlainObject, isString} from 'lodash';
+import {isArray, isEmpty, isFinite, isNil, isPlainObject, isString, round} from 'lodash';
 
 /**
  * Lookup the DashViewModel id of a rendered view
@@ -48,8 +48,8 @@ function convertGLToStateInner(configItems = [], contentItems = [], dashContaine
             const {type, width, height, activeItemIndex, content} = configItem,
                 container = {type};
 
-            if (isFinite(width)) container.width = width;
-            if (isFinite(height)) container.height = height;
+            if (isFinite(width)) container.width = round(width, 2);
+            if (isFinite(height)) container.height = round(height, 2);
             if (isFinite(activeItemIndex)) container.activeItemIndex = activeItemIndex;
             if (isArray(content) && content.length) {
                 container.content = convertGLToStateInner(content, contentItem.contentItems, dashContainerModel);
@@ -139,9 +139,9 @@ function sizeItemsToContainer(items, containerSize, dimension) {
             return;
         }
 
-        //  GoldenLayout deals exclusively with relative sizes. If the size
-        //  is defined in pixels, we must convert it to a relative size.
-        //  We can use the containerSize to do so.
+        // GoldenLayout deals exclusively with relative sizes. If the size
+        // is defined in pixels, we must convert it to a relative size.
+        // We can use the containerSize to do so.
         if (isString(item[dimension]) && item[dimension].endsWith('px')) {
             const intSize = parseInt(item[dimension]);
             item[dimension] = pixelsToRelativeSize(intSize, containerSize[dimension]);
