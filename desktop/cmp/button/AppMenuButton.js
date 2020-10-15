@@ -9,6 +9,7 @@ import {Button, button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 import React from 'react';
 
@@ -54,7 +55,7 @@ AppMenuButton.propTypes = {
     /** True to hide the Feedback Item. */
     hideFeedbackItem: PT.bool,
 
-    /** True to hide the Logout button. Always hidden when `appSpec.isSSO == true`. */
+    /** True to hide the Logout button. Defaulted to appSpec.isSSO. */
     hideLogoutItem: PT.bool,
 
     /** True to hide the Options button. */
@@ -79,7 +80,7 @@ function buildMenuItems({
     hideOptionsItem = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions;
     hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdmin;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
-    hideLogoutItem = hideLogoutItem || XH.appSpec.isSSO;
+    hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);
 
     const defaultItems = [
         {

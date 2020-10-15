@@ -7,6 +7,7 @@
 import {XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {MenuModel} from '@xh/hoist/mobile/cmp/menu';
+import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * An top-level application drop down menu, which installs a standard set of menu items for common
@@ -25,8 +26,7 @@ export class AppMenuModel extends MenuModel {
      * @param {boolean} [c.hideOptionsItem] - true to hide the Options menu item.
      * @param {boolean} [c.hideFeedbackItem] - true to hide the Feedback menu item.
      * @param {boolean} [c.hideThemeItem] - true to hide the Theme Toggle menu item.
-     * @param {boolean} [c.hideLogoutItem] - true to hide the Logout menu item.
-     *          Will be automatically hidden for applications with logout disabled
+     * @param {boolean} [c.hideLogoutItem] - true to hide Logout menu item - default AppSpec.isSSO.
      */
     constructor({
         itemModels = [],
@@ -68,7 +68,7 @@ export class AppMenuModel extends MenuModel {
                 icon: Icon.logout(),
                 text: 'Logout',
                 action: () => XH.identityService.logoutAsync(),
-                prepareFn: (item) => item.hidden = hideLogoutItem || XH.appSpec.isSSO
+                prepareFn: (item) => item.hidden = withDefault(hideLogoutItem, XH.appSpec.isSSO)
             }
         ];
 
