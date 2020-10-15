@@ -375,8 +375,7 @@
 // Header "tool" buttons in panels and docks
 // Adjustment needed only in light theme.
 //------------------------
-*:not(.xh-dark),
-*:not(.bp3-dark) {
+*:not(.xh-dark) {
   .xh-dock-view__header,
   .xh-panel-header__items {
     .xh-button.bp3-button.xh-button--minimal {
