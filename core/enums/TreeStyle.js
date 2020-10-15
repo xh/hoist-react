@@ -7,7 +7,6 @@
 
 /**
  * Options for how grids in tree mode should be style.
- * Used by TabContainerModel, DashContainerModel, and PanelModel.
  * @enum {string}
  */
 export const TreeStyle = Object.freeze({
