@@ -76,7 +76,7 @@ Button.propTypes = {
     onClick: PT.func,
     outlined: PT.bool,
     style: PT.object,
-    text: PT.string,
+    text: PT.node,
     title: PT.string
 };
 
