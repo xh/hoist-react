@@ -77,10 +77,18 @@
       }
     }
 
-    .xh-button {
-      font-size: var(--xh-title-font-size-px);
-      color: var(--xh-popup-title-text-color);
+    // Extra specificity needed here to overcome the specificity in Button.scss.
+    .xh-button.bp3-button {
+      &.xh-button--minimal {
+        &.xh-button--intent-none {
+          &.xh-button--enabled {
+            font-size: var(--xh-title-font-size-px);
+            color: var(--xh-popup-title-text-color);
+          }
+        }
+      }
     }
+    
   }
 
   &:not(&--collapsed) &__header__inner {
