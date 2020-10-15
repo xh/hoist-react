@@ -551,7 +551,10 @@ class XHClass {
 
             // ...if not, throw in SSO mode (unexpected error case) or trigger a login prompt.
             if (!userIsAuthenticated) {
-                throwIf(appSpec.isSSO, 'Failed to authenticate user via SSO.');
+                throwIf(
+                    appSpec.isSSO,
+                    'Unable to complete required authentication (SSO/Oauth failure).'
+                );
                 this.setAppState(S.LOGIN_REQUIRED);
                 return;
             }
