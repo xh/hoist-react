@@ -15,6 +15,8 @@ import {computed, observable, observer, action, runInAction} from '@xh/hoist/mob
 import {isDisplayed, withShortDebug, apiRemoved} from '@xh/hoist/utils/js';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
+import {getTreeStyleClasses} from '@xh/hoist/core/enums/TreeStyle';
+
 import classNames from 'classnames';
 import {
     isArray,
@@ -68,7 +70,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
                 className: classNames(
                     className,
                     impl.isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat',
-                    model.treeStyleClasses
+                    model.treeMode ? getTreeStyleClasses(model.treeStyle) : null
                 ),
                 item: agGrid({
                     ...getLayoutProps(props),

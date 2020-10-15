@@ -4,7 +4,7 @@
 
 ### 🎁 New Features
 
-* `GridModel` now supports a `treeGridStyleMode` property to optionally provide enhanced
+* `GridModel` now supports a `treeStyle` property to optionally provide enhanced
   visualization of hierarchical data.
 
 ### 📚 Libraries

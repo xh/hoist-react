@@ -130,8 +130,8 @@ export class GridModel {
     @observable showSummary = false;
     /** @member {string} */
     @observable emptyText;
-    /** @member {string} */
-    @observable treeGridStyleMode; // Not sure this can't be immutable, but for our example I need observable
+    /** @member {TreeStyle} */
+    @observable treeStyle;
 
     static defaultContextMenu = [
         'copy',
@@ -192,10 +192,10 @@ export class GridModel {
      * @param {string} [c.sizingMode] - one of large, standard, compact, tiny
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
-     * @param {string} [c.treeGridStyleMode] - Style scheme to apply to tree grid
-     *      one of ['none', 'highlightGroups', 'highlightGroupsWithBorders']
+     * @param {string} [c.treeStyle] - Style scheme to apply to tree grid
+     *      See enum for description of supported modes.
      * @param {boolean} [c.stripeRows] - true to use alternating backgrounds for rows.
-     *      defaults to true unless treeGridStyleMode is employed
+     *      defaults to true unless treeStyle is employed
      * @param {boolean} [c.cellBorders] - true to render cell borders.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      * @param {boolean} [c.hideHeaders] - true to suppress display of the grid's header row.
@@ -258,8 +258,8 @@ export class GridModel {
         showHover = false,
         rowBorders = false,
         cellBorders = false,
-        treeGridStyleMode = 'none',
-        stripeRows = treeGridStyleMode == 'none' ? true : false,
+        treeStyle = 'none',
+        stripeRows = treeStyle === 'none' ? true : false,
         showCellFocus = false,
         hideHeaders = false,
         compact,
@@ -284,6 +284,7 @@ export class GridModel {
         this._defaultState = {columns, sortBy, groupBy};
 
         this.treeMode = treeMode;
+        this.treeStyle = treeStyle;
         this.showSummary = showSummary;
 
         this.emptyText = emptyText;
@@ -312,13 +313,6 @@ export class GridModel {
             autosizeOptions.fillMode && !['all', 'left', 'right', 'none'].includes(autosizeOptions.fillMode),
             `Unsupported value for fillMode.`
         );
-
-        throwIf(
-            treeGridStyleMode && !['none', 'highlightGroups', 'highlightGroupsWithBorders'].includes(treeGridStyleMode),
-            `Unsupported value for treeGridStyleMode.`
-        );
-
-        this.treeGridStyleMode = treeGridStyleMode;
 
         this.enableColumnPinning = enableColumnPinning;
         this.enableExport = enableExport;
@@ -514,16 +508,8 @@ export class GridModel {
     get hideHeaders() { return this.agGridModel.hideHeaders }
     setHideHeaders(hideHeaders) { this.agGridModel.setHideHeaders(hideHeaders) }
 
-    get treeStyleClasses() {
-        switch (this.treeGridStyleMode) {
-            case 'highlightGroups':
-                return 'xh-grid--highlight-groups';
-            case 'highlightGroupsWithBorders':
-                return 'xh-grid--highlight-groups xh-grid--group-border';
-            default:
-                return null;
-        }
-    }
+    @action setTreeStyle(treeStyle) { this.treeStyle = treeStyle }
+
     /**
      * Apply full-width row-level grouping to the grid for the given column ID(s).
      * This method will clear grid grouping if provided any ids without a corresponding column.
@@ -576,11 +562,6 @@ export class GridModel {
     @action
     setEmptyText(emptyText) {
         this.emptyText = emptyText;
-    }
-
-    @action
-    setTreeGridStyleMode(treeGridStyleMode) {
-        this.treeGridStyleMode = treeGridStyleMode;
     }
 
     /**
