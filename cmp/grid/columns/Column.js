@@ -479,7 +479,7 @@ export class Column {
             // By always providing a minimal cell pass-through cellRenderer, we can ensure the
             // cell contents are wrapped in a span by Ag-Grid. Our flexbox enabled cell styling
             // requires all cells to have an inner element to work properly.
-            setRenderer((agParams) => agParams.value);
+            setRenderer((agParams) => agParams.value?.toString());
         }
 
         const sortCfg = find(gridModel.sortBy, {colId: ret.colId});
