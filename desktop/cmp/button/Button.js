@@ -68,6 +68,7 @@ export const [Button, button] = hoistCmp.withFactory({
 });
 
 Button.propTypes = {
+    active: PT.bool,
     autoFocus: PT.bool,
     className: PT.string,
     disabled: PT.bool,
