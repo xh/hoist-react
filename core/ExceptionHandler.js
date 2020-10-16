@@ -172,6 +172,7 @@ export class ExceptionHandler {
         if (this.sessionExpired(e)) {
             ret.title = 'Authentication Error';
             ret.message = 'Your session has expired. Please login.';
+            ret.showAsError = false;
             ret.requireReload = true;
         }
 
