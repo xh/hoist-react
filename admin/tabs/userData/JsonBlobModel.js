@@ -57,14 +57,17 @@ export class JsonBlobModel {
                 },
                 {
                     name: 'value',
-                    type: 'json'
+                    type: 'json',
+                    required: true
                 },
                 {
                     name: 'description'
                 },
                 {
                     name: 'archived',
-                    type: 'bool'
+                    type: 'bool',
+                    defaultValue: false,
+                    required: true
                 },
                 {
                     name: 'dateCreated',
