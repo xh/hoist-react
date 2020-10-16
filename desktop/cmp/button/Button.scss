@@ -338,11 +338,13 @@
 //------------------------
 *:not(.xh-dark) {
   .xh-dock-view__header,
-  .xh-panel-header__items {
+  .xh-panel-header__items,
+  .xh-panel-header--right,
+  .xh-panel-header--left {
     .xh-button.bp3-button.xh-button--minimal {
       &.xh-button--intent-none {
         &.xh-button--enabled {
-          &:hover {background-color: var(--xh-intent-neutral-trans1)}
+          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-intent-neutral-trans1)}
           &:active {background-color: var(--xh-intent-neutral-trans2)}
         }
       }
