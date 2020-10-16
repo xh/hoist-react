@@ -48,6 +48,7 @@ export const [Button, button] = hoistCmp.withFactory({
         if (active) classes.push('xh-button--active');
 
         return bpButton({
+            active,
             autoFocus,
             className: classNames(className, classes),
             disabled,
