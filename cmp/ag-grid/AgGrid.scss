@@ -165,11 +165,6 @@
       margin-top: unset;
       top: unset;
     }
-
-    // Adjust left padding for tree columns.
-    &.xh-tree-column {
-      padding-left: calc(var(--xh-grid-tree-indent) - var(--xh-grid-tree-icon-px));
-    }
   }
 
   .ag-cell.ag-cell-last-left-pinned:not(.ag-cell-focus) {

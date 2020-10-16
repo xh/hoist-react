@@ -85,13 +85,13 @@
   //------------------------
   // Core Cell Classes
   //------------------------
-
   // No LR padding when center aligned - not relevant / allows narrow cols (icons) to center align.
   .ag-cell.xh-align-center {
     padding-left: 0;
     padding-right: 0;
   }
 }
+
 
 //------------------------
 // Trees and Grouping
@@ -146,6 +146,52 @@
 
   .ag-group-contracted + .ag-group-value:not(:empty) {
     margin-left: 0;
+  }
+
+  // Adjust left padding for tree columns.
+  .ag-cell.xh-tree-column {
+    padding-left: calc(var(--xh-grid-tree-indent) - var(--xh-grid-tree-icon-px));
+  }
+
+  //------------------------
+  // Tree grid styling modes
+  //------------------------
+  &.xh-grid--highlight-tree-groups {
+    div[class*=" ag-row-group"],
+    div[class^="ag-row-group"] {
+      &:not(.ag-row-selected),
+      &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+        background-color: var(--xh-grid-tree-group-bg);
+      }
+    }
+
+    // Floating viewports host total rows.
+    .ag-floating-bottom,
+    .ag-floating-top {
+      // Background on viewport itself covers area left blank by presence of a flex column.
+      background-color: var(--xh-grid-tree-group-bg);
+      .ag-row-pinned.ag-row-first {
+        background-color: var(--xh-grid-tree-group-bg);
+      }
+    }
+  }
+
+  &.xh-grid--tree-group-border {
+    .ag-row-level-0[class*=" ag-row-group"],
+    .ag-row-level-0[class^="ag-row-group"], {
+      &:not(.ag-row-first) {
+        border-top: 1px solid var(--xh-grid-tree-group-border-color);
+      }
+    }
+
+    // Floating viewports host total rows.
+    .ag-floating-bottom {
+      border-color: var(--xh-grid-tree-group-border-color);
+    }
+
+    .ag-floating-top {
+      border-color: var(--xh-grid-tree-group-border-color);
+    }
   }
 }
 
@@ -288,51 +334,5 @@
   &--tiny {
     font-size: var(--xh-grid-tiny-header-font-size-px);
     padding: 0 var(--xh-grid-tiny-header-lr-pad-px);
-  }
-}
-
-
-//------------------------
-// Tree grid styling modes
-//------------------------
-
-.xh-grid--highlight-tree-groups {
-
-  .ag-theme-balham,
-  .ag-theme-balham-dark {
-    div[class*=" ag-row-group"], div[class^="ag-row-group"] {
-      &:not(.ag-row-selected), &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-        background-color: var(--xh-grid-tree-group-bg);
-      }
-    }
-
-    .ag-floating-bottom-container, .ag-floating-top-container {
-      .ag-row-pinned.ag-row-first {
-        background-color: var(--xh-grid-tree-group-bg);
-      }
-    }
-  }
-
-}
-
-.xh-grid--tree-group-border {
-
-  .ag-row-level-0[class*=" ag-row-group"], .ag-row-level-0[class^="ag-row-group"], {
-    &:not(.ag-row-first) {
-      border-top: 1px solid var(--xh-grid-tree-group-border-color);
-    }
-  }
-
-  // Total Rows
-  .ag-floating-bottom-container {
-    .ag-row-pinned.ag-row-first {
-      border-top: 1px solid var(--xh-grid-tree-group-border-color);
-    }
-  }
-
-  .ag-floating-top-container {
-    .ag-row-pinned.ag-row-first {
-      border-bottom: 1px solid var(--xh-grid-tree-group-border-color);
-    }
   }
 }

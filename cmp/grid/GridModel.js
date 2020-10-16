@@ -177,25 +177,24 @@ export class GridModel {
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(ColChooserModelConfig|boolean)} [c.colChooserModel] - config with which to create a
-     *      ColChooserModel, or boolean `true` to enable default.
-     *      Mobile apps should only specify `true`, as colChooserModel mobile impl is not configurable.
-     * @param {?ReactNode} [c.restoreDefaultsWarning] - Confirmation warning to be presented to user
-     *      before restoring default grid state. Set to null to skip user confirmation.
+     *      ColChooserModel, or boolean `true` to enable default. Mobile apps should only specify
+     *      `true`, as colChooserModel mobile impl is not configurable.
+     * @param {?ReactNode} [c.restoreDefaultsWarning] - Confirmation warning to be presented to
+     *      user before restoring default grid state. Set to null to skip user confirmation.
      * @param {GridModelPersistOptions} [c.persistWith] - options governing persistence.
      * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
      *      colId and sort direction.
      * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
-     * @param {boolean} [c.showGroupRowCounts] - true (default) to show a count of group member rows
-     *      within each full-width group row.
+     * @param {boolean} [c.showGroupRowCounts] - true (default) to show a count of group member
+     *      rows within each full-width group row.
      * @param {string} [c.sizingMode] - one of large, standard, compact, tiny
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
-     * @param {string} [c.treeStyle] - Style scheme to apply to tree grid
-     *      See enum for description of supported modes.
+     * @param {string} [c.treeStyle] - enable treeMode-specific styles (row background highlights
+     *      and borders). {@see TreeStyle} enum for description of supported modes.
      * @param {boolean} [c.stripeRows] - true to use alternating backgrounds for rows.
-     *      defaults to true unless treeStyle is employed
      * @param {boolean} [c.cellBorders] - true to render cell borders.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      * @param {boolean} [c.hideHeaders] - true to suppress display of the grid's header row.
@@ -259,7 +258,7 @@ export class GridModel {
         rowBorders = false,
         cellBorders = false,
         treeStyle = 'none',
-        stripeRows = treeStyle === 'none' ? true : false,
+        stripeRows = (treeStyle === 'none'),
         showCellFocus = false,
         hideHeaders = false,
         compact,
