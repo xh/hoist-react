@@ -10,7 +10,7 @@ import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSupport, managed, TreeStyle, XH} from '@xh/hoist/core';
 import {Cube} from '@xh/hoist/data';
 import {fmtDate, fmtNumber, numberRenderer} from '@xh/hoist/format';
 import {action} from '@xh/hoist/mobx';
@@ -18,7 +18,6 @@ import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isFinite} from 'lodash';
 import moment from 'moment';
-
 import {ChildCountAggregator, LeafCountAggregator, RangeAggregator} from '../aggregators';
 import {ChartsModel} from './charts/ChartsModel';
 
@@ -140,6 +139,7 @@ export class ActivityTrackingModel {
 
         this.gridModel = new GridModel({
             treeMode: true,
+            treeStyle: TreeStyle.HIGHLIGHT_GROUPS_WITH_BORDERS,
             persistWith: {
                 ...this.persistWith,
                 path: 'aggGridModel',
