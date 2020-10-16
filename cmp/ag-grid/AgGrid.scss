@@ -171,14 +171,22 @@
     border-right: 1px solid var(--xh-grid-pinned-column-border-color);
   }
 
+  // We use flexbox to consistently vertically center cell contents across
+  // the different sizing modes. See https://github.com/xh/hoist-react/issues/1949
   .ag-cell-value {
     display: flex;
     align-items: center;
 
-    & > span {
+    // This ensures the cell's inner-wrapper fills the entire width of the cell,
+    // and the text properly ellides. The min-width: 0 is required to enable
+    // the flex-child to overflow, as by default flex children take up as much
+    // width as necessary to fit their contents.
+    // See https://makandracards.com/makandra/66994-css-flex-and-min-width
+    & > * {
       flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
+      min-width: 0;
     }
   }
 

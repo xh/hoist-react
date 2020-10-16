@@ -163,6 +163,12 @@ export class LocalDate {
     get isEndOfMonth() {return this === this.endOfMonth()}
 
     /** @return {boolean} */
+    get isStartOfQuarter() {return this === this.startOfQuarter()}
+
+    /** @return {boolean} */
+    get isEndOfQuarter() {return this === this.endOfQuarter()}
+
+    /** @return {boolean} */
     get isStartOfYear() {return this === this.startOfYear()}
 
     /** @return {boolean} */
@@ -214,6 +220,12 @@ export class LocalDate {
 
     /** @return {LocalDate} */
     @computeOnce
+    startOfQuarter() {
+        return this.startOf('quarter');
+    }
+
+    /** @return {LocalDate} */
+    @computeOnce
     startOfYear() {
         return this.startOf('year');
     }
@@ -228,6 +240,12 @@ export class LocalDate {
     @computeOnce
     endOfMonth() {
         return this.endOf('month');
+    }
+
+    /** @return {LocalDate} */
+    @computeOnce
+    endOfQuarter() {
+        return this.endOf('quarter');
     }
 
     /** @return {LocalDate} */
