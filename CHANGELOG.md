@@ -2,6 +2,10 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.5.0...develop)
+
+## v36.5.0 - 2020-10-16
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.31 -> 3.33`
@@ -11,11 +15,17 @@
 * numbro `2.2 -> 2.3`
 
 ### 🐞 Bug Fixes
-
 * Improve hover and active background-color for header tool buttons in light theme.
 * Button set to active:true renders with active styling.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v36.4.0...develop)
+### ⚙️ Technical
+* Install a default simple string renderer on all columns.  This provides consistency
+ in column rendering, and fixes some additional issues with alignment and rendering of
+ Grid columns introduced by the change to flexbox-based styling in grid cells.
+
+* Support (optional) logout action in SSO applications.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.4.0...v36.5.0)
 
 ## v36.4.0 - 2020-10-09
 
