@@ -7,7 +7,7 @@
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Column, ColumnGroup, GridAutosizeMode} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSupport, TreeStyle, managed, XH} from '@xh/hoist/core';
 import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
@@ -130,6 +130,8 @@ export class GridModel {
     @observable showSummary = false;
     /** @member {string} */
     @observable emptyText;
+    /** @member {TreeStyle} */
+    @observable treeStyle;
 
     static defaultContextMenu = [
         'copy',
@@ -175,22 +177,24 @@ export class GridModel {
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(ColChooserModelConfig|boolean)} [c.colChooserModel] - config with which to create a
-     *      ColChooserModel, or boolean `true` to enable default.
-     *      Mobile apps should only specify `true`, as colChooserModel mobile impl is not configurable.
-     * @param {?ReactNode} [c.restoreDefaultsWarning] - Confirmation warning to be presented to user
-     *      before restoring default grid state. Set to null to skip user confirmation.
+     *      ColChooserModel, or boolean `true` to enable default. Mobile apps should only specify
+     *      `true`, as colChooserModel mobile impl is not configurable.
+     * @param {?ReactNode} [c.restoreDefaultsWarning] - Confirmation warning to be presented to
+     *      user before restoring default grid state. Set to null to skip user confirmation.
      * @param {GridModelPersistOptions} [c.persistWith] - options governing persistence.
      * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
      *      colId and sort direction.
      * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
-     * @param {boolean} [c.showGroupRowCounts] - true (default) to show a count of group member rows
-     *      within each full-width group row.
+     * @param {boolean} [c.showGroupRowCounts] - true (default) to show a count of group member
+     *      rows within each full-width group row.
      * @param {string} [c.sizingMode] - one of large, standard, compact, tiny
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
-     * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
+     * @param {string} [c.treeStyle] - enable treeMode-specific styles (row background highlights
+     *      and borders). {@see TreeStyle} enum for description of supported modes.
+     * @param {boolean} [c.stripeRows] - true to use alternating backgrounds for rows.
      * @param {boolean} [c.cellBorders] - true to render cell borders.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      * @param {boolean} [c.hideHeaders] - true to suppress display of the grid's header row.
@@ -253,7 +257,8 @@ export class GridModel {
         showHover = false,
         rowBorders = false,
         cellBorders = false,
-        stripeRows = true,
+        treeStyle = TreeStyle.NONE,
+        stripeRows = (treeStyle === TreeStyle.NONE),
         showCellFocus = false,
         hideHeaders = false,
         compact,
@@ -278,6 +283,7 @@ export class GridModel {
         this._defaultState = {columns, sortBy, groupBy};
 
         this.treeMode = treeMode;
+        this.treeStyle = treeStyle;
         this.showSummary = showSummary;
 
         this.emptyText = emptyText;
@@ -500,6 +506,8 @@ export class GridModel {
 
     get hideHeaders() { return this.agGridModel.hideHeaders }
     setHideHeaders(hideHeaders) { this.agGridModel.setHideHeaders(hideHeaders) }
+
+    @action setTreeStyle(treeStyle) { this.treeStyle = treeStyle }
 
     /**
      * Apply full-width row-level grouping to the grid for the given column ID(s).

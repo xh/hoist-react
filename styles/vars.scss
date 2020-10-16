@@ -52,9 +52,9 @@ body {
   --xh-yellow-light: var(--yellow-light, #{mc('yellow', '50')});
 
   &.xh-dark {
-    --xh-black: var(--black, #12171a);
+    --xh-black: var(--black, hsl(202, 18%, 9%));
     --xh-gray-dark: var(--gray-dark, #{mc('grey', '900')});
-    --xh-green: var(--green, #009e0a); // could not find a MC green that works, especially in grids....
+    --xh-green: var(--green, hsl(124, 100%, 31%)); // could not find a MC green that works, especially in grids....
     --xh-green-muted: var(--green-muted, #{mc-muted('green', '800', 20%, 5%)});
     --xh-red: var(--red, #{mc('red', 'a700')});
   }
@@ -352,6 +352,8 @@ body {
   --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '400')});
   --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '200')});
   --xh-grid-group-text-color: var(--grid-group-text-color, white);
+  --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(207, 87%, 95%));
+  --xh-grid-tree-group-border-color: var(--grid-tree-group-border-color, var(--xh-grid-bg-highlight));
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-blue-gray-light));
   --xh-grid-header-border-color: var(--grid-header-border-color, var(--xh-grid-border-color));
   --xh-grid-header-icon-color: var(--grid-header-icon-color, var(--xh-text-color-muted));
@@ -406,11 +408,12 @@ body {
 
   // Dark Grid
   &.xh-dark {
-    --xh-grid-bg-odd: var(--grid-bg-odd, #151f24);
-    --xh-grid-border-color: var(--grid-border-color, #293233);
+    --xh-grid-bg-odd: var(--grid-bg-odd, hsl(200, 26%, 11%));
+    --xh-grid-border-color: var(--grid-border-color, hsl(186, 11%, 18%));
     --xh-grid-cell-change-bg-highlight: var(--grid-cell-bg-highlight, #{mc-trans('orange', '800', 0.8)});
     --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '800')});
     --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '700')});
+    --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(201, 48%, 12%));
     --xh-grid-header-bg: var(--grid-header-bg, var(--xh-black));
     --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '800')});
   }

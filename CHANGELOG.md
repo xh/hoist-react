@@ -2,6 +2,11 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* New `GridModel.treeStyle` config enables more distinctive styling of tree grids, with optional
+  background highlighting and ledger-line style borders on group rows.
+
 ### 🐞 Bug Fixes
 
 * Ensure that `Button`s with `active: true` set directly (outside of a `ButtonGroupInput`) get the
