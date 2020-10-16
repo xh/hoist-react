@@ -2,9 +2,25 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Ensure that `Button`s with `active: true` set directly (outside of a `ButtonGroupInput`) get the
+  correct active/pressed styling.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.5.0...develop)
 
 ## v36.5.0 - 2020-10-16
+
+### 🐞 Bug Fixes
+
+* Fix text and hover+active background colors for header tool buttons in light theme.
+
+### ⚙️ Technical
+
+* Install a default simple string renderer on all columns. This provides consistency in column
+  rendering, and fixes some additional issues with alignment and rendering of Grid columns
+  introduced by the change to flexbox-based styling in grid cells.
+* Support (optional) logout action in SSO applications.
 
 ### 📚 Libraries
 
@@ -13,16 +29,6 @@
 * @fortawesome/fontawesome-pro `5.14 -> 5.15`
 * moment `2.24 -> 2.29`
 * numbro `2.2 -> 2.3`
-
-### 🐞 Bug Fixes
-* Improve hover and active background-color for header tool buttons in light theme.
-
-### ⚙️ Technical
-* Install a default simple string renderer on all columns.  This provides consistency
- in column rendering, and fixes some additional issues with alignment and rendering of
- Grid columns introduced by the change to flexbox-based styling in grid cells.
-
-* Support (optional) logout action in SSO applications.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.4.0...v36.5.0)
 
