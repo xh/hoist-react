@@ -246,6 +246,7 @@ body {
   // Buttons - override available to color active button in buttonGroups w/standard (null/neutral) intent styling.
   --xh-button-active-bg: var(--button-active-bg, var(--xh-button-bg-darkest));
   --xh-button-active-text-color: var(--button-active-text-color, var(--xh-button-text-color));
+  --xh-button-active-box-shadow: var(--button-active-box-shadow, #{inset 0 0 0 1px rgba(16, 22, 26, 0.2), inset 0 1px 2px rgba(16, 22, 26, 0.2)});
 
   &.xh-dark {
     // This breaks the standard of having the active button bg default to the pressed bg, but in

@@ -7,6 +7,11 @@
 * New `GridModel.treeStyle` config enables more distinctive styling of tree grids, with optional
   background highlighting and ledger-line style borders on group rows.
 
+### 🐞 Bug Fixes
+
+* Ensure that `Button`s with `active: true` set directly (outside of a `ButtonGroupInput`) get the
+  correct active/pressed styling.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.5.0...develop)
 
 ## v36.5.0 - 2020-10-16
