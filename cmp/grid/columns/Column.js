@@ -420,13 +420,20 @@ export class Column {
                     if (location === 'header') return div(me.headerTooltip);
 
                     const record = api.getDisplayedRowAtIndex(rowIndex)?.data;
-                    if (record && tooltipElement) {
-                        // ag-Grid cmp gets escaped value, lookup raw value from record instead
+                    // ag-Grid cmp gets escaped value, lookup raw value from record instead
+                    if (record) {
                         const {store} = record,
                             value = me.getValueFn({record, column: me, gridModel, agParams, store});
-                        return tooltipElement(value, {record, column: me, gridModel, agParams});
+
+                        if (tooltipElement) {
+                            return tooltipElement(value, {record, column: me, gridModel, agParams});
+                        } else {
+                            return isFunction(tooltip) ?
+                                tooltip(value, {record, column: me, gridModel, agParams}) :
+                                value;
+                        }
                     }
-                    return agParams.value === '*EMPTY*' ? null : agParams.value;
+                    return null;
                 }
             };
         }
