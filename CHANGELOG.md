@@ -3,42 +3,84 @@
 ## v37.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-* Add support for dynamically adding and removing tabs from a `TabContainerModel`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v36.3.0...develop)
+* New `GridModel.treeStyle` config enables more distinctive styling of tree grids, with optional
+  background highlighting and ledger-line style borders on group rows.
+
+### 🐞 Bug Fixes
+
+* Ensure that `Button`s with `active: true` set directly (outside of a `ButtonGroupInput`) get the
+  correct active/pressed styling.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.5.0...develop)
+
+## v36.5.0 - 2020-10-16
+
+### 🐞 Bug Fixes
+
+* Fix text and hover+active background colors for header tool buttons in light theme.
+
+### ⚙️ Technical
+
+* Install a default simple string renderer on all columns. This provides consistency in column
+  rendering, and fixes some additional issues with alignment and rendering of Grid columns
+  introduced by the change to flexbox-based styling in grid cells.
+* Support (optional) logout action in SSO applications.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.31 -> 3.33`
+* @blueprintjs/datetime `3.18 -> 3.19`
+* @fortawesome/fontawesome-pro `5.14 -> 5.15`
+* moment `2.24 -> 2.29`
+* numbro `2.2 -> 2.3`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.4.0...v36.5.0)
+
+## v36.4.0 - 2020-10-09
+
+### 🎁 New Features
+
+* `TabContainerModel` supports dynamically adding and removing tabs via new public methods.
+* `Select` supports a new `menuWidth` prop to control the width of the dropdown.
+
+### 🐞 Bug Fixes
+
+* Fixed v36.3.0 regression re. horizontal alignment of Grid columns.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.3.0...v36.4.0)
 
 ## v36.3.0 - 2020-10-07
 
 ### 💥 Breaking Changes
 
 * The following CSS variables are no longer in use:
-    + `--xh-grid-line-height`
-    + `--xh-grid-line-height-px`
-    + `--xh-grid-large-line-height`
-    + `--xh-grid-large-line-height-px`
-    + `--xh-grid-compact-line-height`
-    + `--xh-grid-compact-line-height-px`
-    + `--xh-grid-tiny-line-height`
-    + `--xh-grid-tiny-line-height-px`
+  + `--xh-grid-line-height`
+  + `--xh-grid-line-height-px`
+  + `--xh-grid-large-line-height`
+  + `--xh-grid-large-line-height-px`
+  + `--xh-grid-compact-line-height`
+  + `--xh-grid-compact-line-height-px`
+  + `--xh-grid-tiny-line-height`
+  + `--xh-grid-tiny-line-height-px`
 
 ### ⚙️ Technical
 
-* `Grid`: We have improved and simplified the vertical centering of content within grid cells using
-flexbox-based styling, rather than the css variables above.
+* We have improved and simplified the vertical centering of content within Grid cells using
+  flexbox-based styling, rather than the CSS variables above.
 
 ### 🎁 New Features
 
 * `Select` now supports `hideSelectedOptions` and `closeMenuOnSelect` props.
 * `XH.message()` and its variants (`XH.prompt(), XH.confirm(), XH.alert()`) all support an optional
-new config `messageKey`.  This key can be used by applications to  prevent popping up the same
-dialog repeatedly. Hoist will only show the last message posted for any given key.
+  new config `messageKey`. This key can be used by applications to prevent popping up the same
+  dialog repeatedly. Hoist will only show the last message posted for any given key.
 * Misc. Improvements to organization of admin client tabs.
 
-
 ### 🐞 Bug Fixes
+
 * Fixed issue with sporadic failures reading grid state using `legacyStateKey`.
 * Fixed regression to the display of `autoFocus` buttons; focus rectangle restored.
-
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.2.1...v36.3.0)
 

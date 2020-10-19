@@ -15,6 +15,8 @@ import {computed, observable, observer, action, runInAction} from '@xh/hoist/mob
 import {isDisplayed, withShortDebug, apiRemoved} from '@xh/hoist/utils/js';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
+import {getTreeStyleClasses} from '@xh/hoist/core/enums/TreeStyle';
+
 import classNames from 'classnames';
 import {
     isArray,
@@ -65,7 +67,11 @@ export const [Grid, grid] = hoistCmp.withFactory({
         // Don't render the agGridReact element with data or columns. Instead rely on API methods
         return fragment(
             frame({
-                className: classNames(className, impl.isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat'),
+                className: classNames(
+                    className,
+                    impl.isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat',
+                    model.treeMode ? getTreeStyleClasses(model.treeStyle) : null
+                ),
                 item: agGrid({
                     ...getLayoutProps(props),
                     ...impl.agOptions

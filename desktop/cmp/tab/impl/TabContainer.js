@@ -33,7 +33,6 @@ export function tabContainerImpl({model, className, ...props}) {
     });
 }
 
-
 function getChildren(model) {
     const {tabs, activeTabId, switcherPosition} = model,
         switcherBefore = ['left', 'top'].includes(switcherPosition),

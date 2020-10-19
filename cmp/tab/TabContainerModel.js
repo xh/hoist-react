@@ -49,7 +49,7 @@ export class TabContainerModel {
 
     /**
      * @param {Object} c - TabContainerModel configuration.
-     * @param {Object[]} c.tabs - configs for TabModels to be displayed.
+     * @param {Object[]} [c.tabs] - configs for TabModels to be displayed.
      * @param {?string} [c.defaultTabId] - ID of Tab to be shown initially if routing does not
      *      specify otherwise. If not set, will default to first tab in the provided collection.
      * @param {?string} [c.route] - base route name for this container. If set, this container will
@@ -68,7 +68,7 @@ export class TabContainerModel {
      *      or all tabs have been removed via their `omit` config.
      */
     constructor({
-        tabs,
+        tabs = [],
         defaultTabId = null,
         route = null,
         switcherPosition = XH.isMobileApp ? 'bottom' : 'top',
@@ -123,7 +123,7 @@ export class TabContainerModel {
     }
 
     //-----------------------------
-    // Tab addition, modification
+    // Manage contents.
     //-----------------------------
     /**
      * Set the Tabs displayed by this object.
@@ -146,7 +146,7 @@ export class TabContainerModel {
         if (!activeTabId || !tabs.find(t => t.id === activeTabId && !t.disabled)) {
             this.activeTabId = this.calculateActiveTabId(tabs);
         }
-        this.tabs = tabs.map(t => t instanceof TabModel ? t : new TabModel({...t, containerModel: this}));
+        this.tabs = tabs.map(t => t.isTabModel ? t : new TabModel({...t, containerModel: this}));
 
         if (oldTabs) {
             XH.safeDestroy(difference(oldTabs, this.tabs));
@@ -155,7 +155,7 @@ export class TabContainerModel {
 
     /**
      * Add a Tab for display.
-     * @param {(Object |TabModel)} tab - TabModel or config for TabModel to be added.
+     * @param {(Object|TabModel)} tab - TabModel or config for TabModel to be added.
      * @param {Object} [opts] - optional flags
      * @param {number} [opts.index] - index in tab collection where tab is to be added.
      * @param {boolean} [opts.activateImmediately] - true to immediately activate new tab.
@@ -173,15 +173,31 @@ export class TabContainerModel {
 
     /**
      * Remove a Tab for display.
-     * @param {(Object|string)} tab - TabModel or id of TabModel to be removed.
+     * @param {(TabModel|string)} tab - TabModel or id of TabModel to be removed.
      */
     @action
     removeTab(tab) {
         let {tabs} = this,
-            toRemove = find(tabs, (t) => t === tab || t.id === tab);
+            toRemove = find(tabs, (t) => t === tab || t.id === tab),
+            toActivate = this.activeTab;
+
+        if (toRemove === toActivate) {
+            toActivate = this.nextTab ?? this.prevTab;
+        }
         if (toRemove) {
             this.setTabs(without(tabs, toRemove));
+            if (toActivate) {
+                this.activateTab(toActivate);
+            }
         }
+    }
+
+    //-------------------------------
+    // Access Tabs, active management
+    //-------------------------------
+    /** @return {TabModel} */
+    findTab(id) {
+        return find(this.tabs, {id});
     }
 
     /** @return {TabModel} */
@@ -208,19 +224,18 @@ export class TabContainerModel {
      * will only be updated once the router state changes. Otherwise the active Tab will be updated
      * immediately.
      *
-     * @param {string} id - unique ID of Tab to activate.
+     * @param {(TabModel|string)} tab - TabModel or id of TabModel to be activated.
      */
-    activateTab(id) {
-        if (this.activeTabId === id) return;
+    activateTab(tab) {
+        tab = this.findTab(tab.isTabModel ? tab.id : tab);
 
-        const tab = this.findTab(id);
-        if (!tab || tab.disabled) return;
+        if (!tab || tab.disabled || tab.isActive) return;
 
         const {route} = this;
         if (route) {
-            XH.navigate(route + '.' + id);
+            XH.navigate(route + '.' + tab.id);
         } else {
-            this.setActiveTabId(id);
+            this.setActiveTabId(tab.id);
         }
     }
 
@@ -321,9 +336,5 @@ export class TabContainerModel {
                 run: (activeTabId) => this.provider.write({activeTabId})
             });
         }
-    }
-
-    findTab(id) {
-        return find(this.tabs, {id});
     }
 }

@@ -5,6 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {ChartModel} from '@xh/hoist/cmp/chart';
+import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
 import {action, bindable, observable} from '@xh/hoist/mobx';
@@ -43,7 +44,13 @@ export class ChartsModel {
     @managed timeseriesChartModel = new ChartModel({
         highchartsConfig: {
             chart: {type: 'line', animation: false},
-            plotOptions: {line: {animation: false}},
+            plotOptions: {
+                line: {
+                    width: 1,
+                    animation: false,
+                    step: 'left'
+                }
+            },
             legend: {enabled: false},
             title: {text: null},
             xAxis: {
@@ -118,7 +125,7 @@ export class ChartsModel {
 
     getSeriesData() {
         const {data, metric, primaryDim, showAsTimeseries} = this,
-            metricLabel = this.getLabelForMetric(metric),
+            metricLabel = this.getLabelForMetric(metric, false),
             sortedData = sortBy(data, aggRow => {
                 const {cubeLabel} = aggRow;
                 switch (primaryDim) {
@@ -135,12 +142,20 @@ export class ChartsModel {
         return [{name: metricLabel, data: chartData}];
     }
 
-    getLabelForMetric(metric) {
+    getLabelForMetric(metric, multiline) {
         switch (metric) {
-            case 'count': return `Unique ${this.getUnitsForDim(this.secondaryDim)} Count`;
-            case 'entryCount': return 'Total Entry Count';
-            case 'elapsed': return 'Elapsed ms';
-            default: return '???';
+            case 'count':
+                return multiline ?
+                    fragment(`Unique`, br(), `${this.getUnitsForDim(this.secondaryDim)} Count`) :
+                    `Unique ${this.getUnitsForDim(this.secondaryDim)} Count`;
+            case 'entryCount':
+                return multiline ?
+                    fragment('Total', br(), 'Entry Count') :
+                    'Total Entry Count';
+            case 'elapsed':
+                return 'Elapsed ms';
+            default:
+                return '???';
         }
     }
 
