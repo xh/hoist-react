@@ -398,11 +398,7 @@ export class Column {
         // Tooltip Handling
         const {tooltip, tooltipElement} = this;
         if (tooltip || tooltipElement) {
-            ret.tooltipValueGetter = (agParams) => {
-                const value = isFunction(tooltip) ?
-                    tooltip(agParams.value, {record: agParams.data, column: me, gridModel, agParams}) :
-                    agParams.value;
-
+            ret.tooltipValueGetter = ({value}) => {
                 // Note that due to a known AgGrid issue, a tooltip must always return a value
                 // or risk not showing when the value later changes.
                 // See https://github.com/xh/hoist-react/issues/2058
@@ -419,21 +415,19 @@ export class Column {
 
                     if (location === 'header') return div(me.headerTooltip);
 
-                    const record = api.getDisplayedRowAtIndex(rowIndex)?.data;
                     // ag-Grid cmp gets escaped value, lookup raw value from record instead
-                    if (record) {
-                        const {store} = record,
-                            value = me.getValueFn({record, column: me, gridModel, agParams, store});
+                    const record = api.getDisplayedRowAtIndex(rowIndex)?.data;
+                    if (!record) return null;
 
-                        if (tooltipElement) {
-                            return tooltipElement(value, {record, column: me, gridModel, agParams});
-                        } else {
-                            return isFunction(tooltip) ?
-                                tooltip(value, {record, column: me, gridModel, agParams}) :
-                                value;
-                        }
+                    const {store} = record,
+                        value = me.getValueFn({record, column: me, gridModel, agParams, store});
+                    if (tooltipElement) {
+                        return tooltipElement(value, {record, column: me, gridModel, agParams});
+                    } else if (isFunction(tooltip)) {
+                        return tooltip(value, {record, column: me, gridModel, agParams});
+                    } else {
+                        return value;
                     }
-                    return null;
                 }
             };
         }
