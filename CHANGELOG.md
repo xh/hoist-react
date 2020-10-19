@@ -12,6 +12,10 @@
 * Ensure that `Button`s with `active: true` set directly (outside of a `ButtonGroupInput`) get the
   correct active/pressed styling.
 
+### 📚 Libraries
+
+* @blueprintjs/core `3.33 -> 3.34`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.5.0...develop)
 
 ## v36.5.0 - 2020-10-16
