@@ -420,14 +420,12 @@ export class Column {
                     if (!record) return null;
 
                     const {store} = record,
-                        value = me.getValueFn({record, column: me, gridModel, agParams, store});
-                    if (tooltipElement) {
-                        return tooltipElement(value, {record, column: me, gridModel, agParams});
-                    } else if (isFunction(tooltip)) {
-                        return tooltip(value, {record, column: me, gridModel, agParams});
-                    } else {
-                        return value;
-                    }
+                        value = me.getValueFn({record, column: me, gridModel, agParams, store}),
+                        tooltipFn = tooltipElement || tooltip;
+
+                    return isFunction(tooltipFn) ?
+                        tooltipFn(value, {record, column: me, gridModel, agParams}) :
+                        value;
                 }
             };
         }
