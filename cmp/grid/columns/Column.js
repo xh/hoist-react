@@ -115,10 +115,10 @@ export class Column {
      * @param {number} [c.exportWidth] - width in characters for Excel-based exports. Typically
      *     used with ExportFormat.LONG_TEXT to enable text wrapping.
      * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or
-     *      tool tip function, which is based on AG Grid tooltip callback. Incompatible with
+     *      tooltip function, which is based on AG Grid tooltip callback. Incompatible with
      *      `tooltipElement`.
      * @param {Column~tooltipElementFn} [c.tooltipElement] - function which returns a React
-     *     component to display as a tool tip. Will take precedence over `tooltip`.
+     *     component to display as a tooltip. Will take precedence over `tooltip`.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
      * @param {boolean} [c.autosizable] - allow autosizing this column.
      * @param {boolean} [c.autosizeIncludeHeader] - true to include the header width when
