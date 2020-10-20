@@ -5,6 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
+import {Icon} from '@xh/hoist/icon';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {tab as blueprintTab, tabs as blueprintTabs} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -32,19 +34,30 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
         const orientation = withDefault(props.orientation, 'top'),
             vertical = ['left', 'right'].includes(orientation);
 
+        const items = tabs.map(tab => {
+            const {id, title, icon, disabled, showRemoveAction, excludeFromSwitcher} = tab;
+            if (excludeFromSwitcher) return null;
+            return blueprintTab({
+                id,
+                disabled,
+                items: [
+                    icon,
+                    title,
+                    button({
+                        omit: !showRemoveAction,
+                        icon: Icon.x(),
+                        onClick: () => tab.containerModel.removeTab(tab)
+                    })
+                ]
+            });
+        });
+
         return blueprintTabs({
             id,
             vertical,
             onChange: (tabId) => model.activateTab(tabId),
             selectedTabId: activeTabId,
-            items: tabs.map(({id, title, icon, disabled, excludeFromSwitcher}) => {
-                if (excludeFromSwitcher) return null;
-                return blueprintTab({
-                    id,
-                    disabled,
-                    items: [icon, title]
-                });
-            }),
+            items,
             ...props,
             animate: withDefault(animate, false),
             className: classNames(className, `xh-tab-switcher--${orientation}`)
