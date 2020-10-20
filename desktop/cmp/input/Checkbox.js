@@ -29,10 +29,10 @@ export class Checkbox extends HoistInput {
         inline: PT.bool,
 
         /**
-         * Label text displayed adjacent to the control itself.
+         * Label displayed adjacent to the control itself.
          * Can be used with or without an additional overall label as provided by FormField.
          */
-        label: PT.string,
+        label: PT.oneOfType([PT.string, PT.element]),
 
         /**
          * True to render null or undefined as a distinct visual state.  If false (default),

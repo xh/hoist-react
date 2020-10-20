@@ -25,10 +25,10 @@ export class SwitchInput extends HoistInput {
         inline: PT.bool,
 
         /**
-         * Label text displayed adjacent to the control itself.
+         * Label displayed adjacent to the control itself.
          * Can be used with or without an additional overall label as provided by FormField.
          */
-        label: PT.string,
+        label: PT.oneOfType([PT.string, PT.element]),
 
         /** Alignment of the inline label relative to the control itself, default right. */
         labelAlign: PT.oneOf(['left', 'right'])

@@ -29,18 +29,30 @@ import {dashView} from './impl/DashView';
  * State should be structured as nested arrays of container objects, according to
  * GoldenLayout`s content config. Supported container types are `row`, `column` and `stack`.
  * Child containers and views should be provided as an array under the `contents` key.
- * Note that loading state will destroy and reinitialize all components. Therefore,
- * it is recommended you do so sparingly.
+ *
+ *      + `row` lay out its children horizontally.
+ *      + `column` lays out its children vertically.
+ *      + `stack` lays out its children as tabs. `stacks` can only contain `views` (more below)
+ *
+ * The children of `row` and `column` containers can be sized by providing width or height values.
+ * Numeric values represent relative sizes, expressed as a percentage of the available space.
+ * Pixel values can be provided as a string (e.g. '100px'), which will be converted to a relative
+ * size at parse time. Any unaccounted for space will be divided equally across the remaing children.
  *
  * We differ from GoldenLayout by offering a new type `view`. These should be configured as
  * id references to the provided DashViewSpec, e.g. {type: `view`, id: ViewSpec.id}. These should
  * be used instead of the `component` and `react-component` types provided by GoldenLayout.
+ *
+ * Note that loading state will destroy and reinitialize all components. Therefore,
+ * it is recommended you do so sparingly.
  *
  * e.g.
  *
  * [{
  *     type: 'row',
  *     contents: [
+ *          // The first child of this row has pixel width of '200px'.
+ *          // The column will take the remaining width.
  *         {
  *             type: 'stack',
  *             width: '200px',
@@ -52,7 +64,9 @@ import {dashView} from './impl/DashView';
  *         {
  *             type: 'column',
  *             contents: [
+ *                 // Relative height of 40%. The remaining 60% will be split equally by the other views.
  *                 {type: 'view', id: 'viewId', height: 40},
+ *                 {type: 'view', id: 'viewId'},
  *                 {type: 'view', id: 'viewId'}
  *             ]
  *         }
