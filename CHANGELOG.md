@@ -11,6 +11,7 @@
 
 * Ensure that `Button`s with `active: true` set directly (outside of a `ButtonGroupInput`) get the
   correct active/pressed styling.
+* Fixed regression in `Column.tooltip` function displaying escaped HTML characters.
 
 ### ⚙️ Technical
 
