@@ -13,6 +13,7 @@ import {
     RestGridModel
 } from '@xh/hoist/desktop/cmp/rest';
 import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
+import {fmtDateTime} from '@xh/hoist/format';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {truncate} from 'lodash';
 
@@ -70,6 +71,11 @@ export class JsonBlobModel {
                     required: true
                 },
                 {
+                    name: 'archivedDate',
+                    type: 'date',
+                    editable: false
+                },
+                {
                     name: 'dateCreated',
                     type: 'date',
                     editable: false
@@ -110,7 +116,8 @@ export class JsonBlobModel {
             {field: 'name', width: 200},
             {field: 'type', width: 200},
             {field: 'description', width: 200},
-            {field: 'value', flex: 1, renderer: v => truncate(v, {length: 500})},
+            {field: 'value', flex: 1, renderer: this.valueRenderer},
+            {field: 'archivedDate', ...dateTimeCol, renderer: this.archivedDateRenderer, hidden: true},
             {field: 'dateCreated', ...dateTimeCol, hidden: true},
             {field: 'lastUpdated', ...dateTimeCol, hidden: true},
             {field: 'lastUpdatedBy', width: 160, hidden: true}
@@ -124,6 +131,7 @@ export class JsonBlobModel {
             {field: 'description', formField: {item: textArea()}},
             {field: 'value'},
             {field: 'archived'},
+            {field: 'archivedDate'},
             {field: 'dateCreated'},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}
@@ -135,12 +143,20 @@ export class JsonBlobModel {
         parentGridModel: this.gridModel,
         entityName: 'jsonBlob',
         displayName: 'json blob',
-        columnFields: ['name', 'owner', 'type'],
-        matchFields: ['name', 'owner', 'type']
+        columnFields: ['name', 'owner', 'type', {field: 'archivedDate', ...dateTimeCol, renderer: this.archivedDateRenderer}],
+        matchFields: ['name', 'owner', 'type', 'archivedDate']
     });
 
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();
+    }
+
+    valueRenderer(v) {
+        return truncate(v, {length: 500});
+    }
+
+    archivedDateRenderer(v) {
+        return v > 0 ? fmtDateTime(v) : '-';
     }
 
 }
