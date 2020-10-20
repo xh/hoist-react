@@ -113,12 +113,12 @@ export class Column {
      * @param {(ExportFormat|function)} [c.exportFormat] - structured format string for Excel-based
      *      exports, or a function to produce one. {@see ExportFormat}
      * @param {number} [c.exportWidth] - width in characters for Excel-based exports. Typically
-     *     used
-     *      with ExportFormat.LONG_TEXT to enable text wrapping.
+     *     used with ExportFormat.LONG_TEXT to enable text wrapping.
      * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or
-     *      tool tip function, which is based on AG Grid tooltip callback.
+     *      tool tip function, which is based on AG Grid tooltip callback. Incompatible with
+     *      `tooltipElement`.
      * @param {Column~tooltipElementFn} [c.tooltipElement] - function which returns a React
-     *     component.
+     *     component to display as a tool tip. Will take precedence over `tooltip`.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
      * @param {boolean} [c.autosizable] - allow autosizing this column.
      * @param {boolean} [c.autosizeIncludeHeader] - true to include the header width when
@@ -293,6 +293,10 @@ export class Column {
 
         this.tooltip = tooltip;
         this.tooltipElement = tooltipElement;
+        warnIf(
+            tooltip && tooltipElement,
+            `Column specified with both tooltip && tooltipElement. Tooltip will be ignored. [colId=${this.colId}]`
+        );
 
         this.editable = editable;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
@@ -396,8 +400,10 @@ export class Column {
         }
 
         // Tooltip Handling
-        const {tooltip, tooltipElement} = this;
-        if (tooltip || tooltipElement) {
+        const {tooltip, tooltipElement} = this,
+            tooltipSpec = tooltipElement ?? tooltip;
+
+        if (tooltipSpec) {
             ret.tooltipValueGetter = ({value}) => {
                 // Note that due to a known AgGrid issue, a tooltip must always return a value
                 // or risk not showing when the value later changes.
@@ -420,11 +426,10 @@ export class Column {
                     if (!record) return null;
 
                     const {store} = record,
-                        value = me.getValueFn({record, column: me, gridModel, agParams, store}),
-                        tooltipFn = tooltipElement || tooltip;
+                        value = me.getValueFn({record, column: me, gridModel, agParams, store});
 
-                    return isFunction(tooltipFn) ?
-                        tooltipFn(value, {record, column: me, gridModel, agParams}) :
+                    return isFunction(tooltipSpec) ?
+                        tooltipSpec(value, {record, column: me, gridModel, agParams}) :
                         value;
                 }
             };
