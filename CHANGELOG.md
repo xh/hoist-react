@@ -12,6 +12,11 @@
 * Ensure that `Button`s with `active: true` set directly (outside of a `ButtonGroupInput`) get the
   correct active/pressed styling.
 
+### ⚙️ Technical
+
+* Includes technical updates to how JSON Blobs are archived.  This change requires an update
+to `hoist-core` `v8.6.0` or later.
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.33 -> 3.34`
