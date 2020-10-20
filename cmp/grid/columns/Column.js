@@ -655,7 +655,7 @@ export function getAgHeaderClassFn(column) {
  * @callback Column~tooltipElementFn - function for a grid cell tooltip returning a React element.
  * @param {*} value - tooltip value.
  * @param {TooltipMetadata} metadata - additional data about the column and row.
- * @return {Element} - the React element to show as a toooltip.
+ * @return {Element} - the React element to show as a tooltip.
  */
 
 /**
