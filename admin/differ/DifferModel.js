@@ -78,7 +78,7 @@ export class DifferModel  {
         this.gridModel = new GridModel({
             store: {
                 idSpec: data => {
-                    return this.matchFields.map(field => data[field]?.toString()).join('-');;
+                    return this.matchFields.map(field => data[field]?.toString()).join('-');
                 },
                 filter: {field: 'status', op: '!=', value: 'Identical'},
                 fields: [...this.columnFields.map(it => it.field ?? it)]
