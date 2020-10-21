@@ -7,7 +7,6 @@
 import {hoistCmp} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
 import {Icon} from '@xh/hoist/icon';
-import {menuDivider} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
 
 /**
@@ -55,21 +54,17 @@ function createMenuItems(props) {
                 icon: Icon.refresh(),
                 hidden: !refreshContextModel.refreshTargets.length,
                 actionFn: () => refreshContextModel.refreshAsync()
-            }
+            },
+            '-'
         );
     }
     const addMenuItems = createAddMenuItems(props);
-    if (!isEmpty(addMenuItems)) {
-        ret.push(
-            menuDivider({title: 'Add'}),
-            ...addMenuItems
-        );
-    } else {
-        ret.push(
-            '-',
-            {text: 'No available views to add', disabled: true}
-        );
-    }
+    ret.push({
+        text: 'Add',
+        icon: Icon.add(),
+        disabled: isEmpty(addMenuItems),
+        items: addMenuItems
+    });
 
     return ret;
 }
