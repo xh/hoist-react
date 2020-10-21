@@ -31,6 +31,7 @@ export const dashContainerContextMenu = hoistCmp.factory({
 //---------------------------
 function createMenuItems(props) {
     const {dashContainerModel, viewModel} = props,
+        {extraMenuItems} = dashContainerModel,
         ret = [];
 
     // Add context sensitive items if clicked on a tab
@@ -58,6 +59,12 @@ function createMenuItems(props) {
             '-'
         );
     }
+
+    if (extraMenuItems) {
+        extraMenuItems.forEach(it => ret.push(it));
+        ret.push('-');
+    }
+
     const addMenuItems = createAddMenuItems(props);
     ret.push({
         text: 'Add',
