@@ -16,8 +16,14 @@
 
 ### ⚙️ Technical
 
-* Includes technical updates to how JSON Blobs are archived.  This change requires an update
-to `hoist-core` `v8.6.0` or later.
+* Includes technical updates to how JSON Blobs are archived. This change requires an update
+to `hoist-core` `v8.6.0` or later. You will also have to update your database - sample migration
+SQL below:
+```sql
+alter table xh_json_blob add archived_date bigint not null go
+alter table xh_json_blob drop column archived go
+alter table xh_json_blob add constraint UKbaef62a2f292268acb34ac8149d0 unique (archived_date, type, owner, name)
+```
 
 ### 📚 Libraries
 
