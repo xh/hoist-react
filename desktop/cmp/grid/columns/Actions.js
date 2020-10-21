@@ -100,7 +100,11 @@ export const actionCol = {
  *      Default small minimal buttons with an icon will be 24px
  * @returns {number} - the width in pixels
  */
-export function calcActionColWidth(count, cellPadding = 5, buttonWidth = 24) {
+export function calcActionColWidth(
+    count,
+    cellPadding = 5,  // This value needs to be kept in sync with $action-col-pad-px
+    buttonWidth = 24
+) {
     // add 1 to cellPadding to account for 1px transparent border in default theme
     return (count * buttonWidth) + ((cellPadding + 1) * 2);
 }
