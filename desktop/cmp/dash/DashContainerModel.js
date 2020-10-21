@@ -140,7 +140,7 @@ export class DashContainerModel {
      * @param {string} [c.addViewButtonText] - text to display on the add view button
      * @param {Array} [c.extraMenuItems] - array of RecordActions, configs or token strings, with
      *      which to create additional dash context menu items. Extra menu items will appear
-     *      in the menu section above the 'Add' action, including when the dash container is empty.
+     *      in the menu section below the 'Add' action, including when the dash container is empty.
      */
     constructor({
         viewSpecs,
