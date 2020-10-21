@@ -6,6 +6,8 @@
 
 * New `GridModel.treeStyle` config enables more distinctive styling of tree grids, with optional
   background highlighting and ledger-line style borders on group rows.
+* `NavigatorModel` now accepts a `track` property (default false) to easily track mobile page
+  views via Hoist's built-in activity tracking.
 
 ### 🐞 Bug Fixes
 
