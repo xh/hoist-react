@@ -60,11 +60,6 @@ function createMenuItems(props) {
         );
     }
 
-    if (extraMenuItems) {
-        extraMenuItems.forEach(it => ret.push(it));
-        ret.push('-');
-    }
-
     const addMenuItems = createAddMenuItems(props);
     ret.push({
         text: 'Add',
@@ -72,6 +67,12 @@ function createMenuItems(props) {
         disabled: isEmpty(addMenuItems),
         items: addMenuItems
     });
+
+
+    if (extraMenuItems) {
+        ret.push('-');
+        extraMenuItems.forEach(it => ret.push(it));
+    }
 
     return ret;
 }
