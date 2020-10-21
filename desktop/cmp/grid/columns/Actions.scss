@@ -5,15 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-$action-col-pad: 5;
-$action-col-pad-px: $action-col-pad * 1px;
-
-// This CSS-modules export makes this value accessible from JS -note the import in Actions.js.
-//noinspection CssInvalidPseudoSelector
-:export {
-  /* stylelint-disable-next-line property-case */
-  actionColPad: $action-col-pad;
-}
+// This value needs to be kept in sync with the arg for calcActionColWidth in Actions.js
+$action-col-pad-px: 5px;
 
 .xh-action-col-cell {
   &.ag-cell {
