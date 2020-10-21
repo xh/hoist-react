@@ -6,6 +6,7 @@
 
 * New `GridModel.treeStyle` config enables more distinctive styling of tree grids, with optional
   background highlighting and ledger-line style borders on group rows.
+* New `DashContainerModel.extraMenuItems` config supports additional `DashContainerContextMenu` items.
 
 ### 🐞 Bug Fixes
 
