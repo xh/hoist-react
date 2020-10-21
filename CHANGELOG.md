@@ -6,6 +6,7 @@
 
 * New `GridModel.treeStyle` config enables more distinctive styling of tree grids, with optional
   background highlighting and ledger-line style borders on group rows.
+* An About item has been added to the default app menu.
 
 ### 🐞 Bug Fixes
 
