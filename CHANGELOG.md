@@ -6,7 +6,8 @@
 
 * New `GridModel.treeStyle` config enables more distinctive styling of tree grids, with optional
   background highlighting and ledger-line style borders on group rows.
-* New `DashContainerModel.extraMenuItems` config supports additional `DashContainerContextMenu` items.
+* New `extraMenuItems` config supports custom app menu items in Dashboards
+* An About item has been added to the default app menu.
 
 ### 🐞 Bug Fixes
 
@@ -16,9 +17,10 @@
 
 ### ⚙️ Technical
 
-* Includes technical updates to how JSON Blobs are archived. This change requires an update
-to `hoist-core` `v8.6.0` or later. You will also have to update your database - sample migration
-SQL below:
+* Includes technical updates to how JSON Blobs are archived. This change requires an update to
+  `hoist-core` `v8.6.0` or later. You will also have to update your database - sample migration SQL
+  below:
+
 ```sql
 alter table xh_json_blob add archived_date bigint not null go
 alter table xh_json_blob drop column archived go

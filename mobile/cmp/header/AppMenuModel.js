@@ -27,6 +27,7 @@ export class AppMenuModel extends MenuModel {
      * @param {boolean} [c.hideFeedbackItem] - true to hide the Feedback menu item.
      * @param {boolean} [c.hideThemeItem] - true to hide the Theme Toggle menu item.
      * @param {boolean} [c.hideLogoutItem] - true to hide Logout menu item - default AppSpec.isSSO.
+     * @param {boolean} [c.hideAboutItem] - true to hide the About menu item.
      */
     constructor({
         itemModels = [],
@@ -35,7 +36,8 @@ export class AppMenuModel extends MenuModel {
         hideOptionsItem,
         hideFeedbackItem,
         hideThemeItem,
-        hideLogoutItem
+        hideLogoutItem,
+        hideAboutItem
     } = {}) {
         const standardItems = [
             {
@@ -65,6 +67,12 @@ export class AppMenuModel extends MenuModel {
                 prepareFn: (item) => item.hidden = !XH.identityService.canImpersonate
             },
             {
+                icon: Icon.info(),
+                text: `About ${XH.appName}`,
+                action: () => XH.showAboutDialog(),
+                prepareFn: (item) => item.hidden = hideAboutItem
+            },
+            {
                 icon: Icon.logout(),
                 text: 'Logout',
                 action: () => XH.identityService.logoutAsync(),
@@ -75,5 +83,4 @@ export class AppMenuModel extends MenuModel {
         itemModels.push(...standardItems);
         super({itemModels, xPos, yPos});
     }
-
 }
