@@ -7,7 +7,8 @@
 import {RecordAction} from '@xh/hoist/data';
 import {convertIconToHtml} from '@xh/hoist/icon';
 import {isEmpty} from 'lodash';
-import {actionColPad} from './Actions.scss';
+
+import './Actions.scss';
 
 /**
  * A column definition partial for adding an "action column" to a grid. An action column displays
@@ -94,12 +95,12 @@ export const actionCol = {
 /**
  * Calculates the width for an action column
  * @param {number} count - number of actions
- * @param {number} [cellPadding] - left and right padding (in pixels) for grid cells.
+ * @param {number} [cellPadding] - desired left and right padding (in pixels) for the action cell.
  * @param {number} [buttonWidth] - width (in pixels) of the action buttons.
  *      Default small minimal buttons with an icon will be 24px
  * @returns {number} - the width in pixels
  */
-export function calcActionColWidth(count, cellPadding = Number(actionColPad), buttonWidth = 24) {
+export function calcActionColWidth(count, cellPadding = 5, buttonWidth = 24) {
     // add 1 to cellPadding to account for 1px transparent border in default theme
     return (count * buttonWidth) + ((cellPadding + 1) * 2);
 }
