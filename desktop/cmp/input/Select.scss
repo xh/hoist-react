@@ -137,7 +137,9 @@
     }
 
     &__indicators {
-      padding-top: var(--xh-pad-half-px);
+      position: absolute;
+      top: var(--xh-pad-half-px);
+      right: var(--xh-pad-half-px);
       flex-direction: column;
     }
   }
