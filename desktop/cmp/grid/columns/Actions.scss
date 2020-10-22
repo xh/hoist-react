@@ -5,14 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-// This value needs to be kept in sync with the arg for calcActionColWidth in Actions.js
-$action-col-pad-px: 5px;
-
 .xh-action-col-cell {
-  &.ag-cell {
-    padding: 0 $action-col-pad-px;
-  }
-
   .xh-show-on-hover {
     .xh-record-action-button {
       visibility: hidden;
@@ -37,7 +30,6 @@ $action-col-pad-px: 5px;
       button.xh-record-action-button {
         min-height: 28px;
         max-height: 28px;
-        padding-top: 4px;
 
         svg.svg-inline--fa {
           width: 1.2em;
@@ -51,7 +43,6 @@ $action-col-pad-px: 5px;
       button.xh-record-action-button {
         min-height: 20px;
         max-height: 20px;
-        padding-top: 4px;
 
         svg.svg-inline--fa {
           width: 0.9em;
@@ -63,7 +54,6 @@ $action-col-pad-px: 5px;
   &--tiny {
     .xh-action-col-cell {
       button.xh-record-action-button {
-        padding-top: 1px;
         max-height: 14px;
         min-height: 14px;
 

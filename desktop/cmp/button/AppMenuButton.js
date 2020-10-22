@@ -19,7 +19,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     className: 'xh-app-menu',
 
     render(props) {
-        const {className, extraItems, hideAdminItem, hideImpersonateItem, hideFeedbackItem, hideLogoutItem, hideOptionsItem, hideThemeItem, ...rest} = props;
+        const {className, extraItems, hideAdminItem, hideImpersonateItem, hideFeedbackItem, hideLogoutItem, hideOptionsItem, hideThemeItem, hideAboutItem, ...rest} = props;
 
         return popover({
             className,
@@ -62,7 +62,10 @@ AppMenuButton.propTypes = {
     hideOptionsItem: PT.bool,
 
     /** True to hide the Theme Toggle button. */
-    hideThemeItem: PT.bool
+    hideThemeItem: PT.bool,
+
+    /** True to hide the About button */
+    hideAboutItem: PT.bool
 };
 
 //---------------------------
@@ -75,6 +78,7 @@ function buildMenuItems({
     hideAdminItem,
     hideImpersonateItem,
     hideLogoutItem,
+    hideAboutItem,
     extraItems = []
 }) {
     hideOptionsItem = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions;
@@ -113,6 +117,13 @@ function buildMenuItems({
             text: 'Impersonate',
             icon: Icon.impersonate(),
             onClick: () => XH.showImpersonationBar()
+        },
+        '-',
+        {
+            omit: hideAboutItem,
+            icon: Icon.info(),
+            text: `About ${XH.appName}`,
+            onClick: () => XH.showAboutDialog()
         },
         '-',
         {

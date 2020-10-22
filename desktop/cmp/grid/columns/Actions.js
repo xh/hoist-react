@@ -95,16 +95,12 @@ export const actionCol = {
 /**
  * Calculates the width for an action column
  * @param {number} count - number of actions
- * @param {number} [cellPadding] - left and right padding (in pixels) for grid cells.
+ * @param {number} [cellPadding] - desired left and right padding (in pixels) for the action cell.
  * @param {number} [buttonWidth] - width (in pixels) of the action buttons.
  *      Default small minimal buttons with an icon will be 24px
  * @returns {number} - the width in pixels
  */
-export function calcActionColWidth(
-    count,
-    cellPadding = 5,  // This value needs to be kept in sync with $action-col-pad-px
-    buttonWidth = 24
-) {
+export function calcActionColWidth(count, cellPadding = 5, buttonWidth = 24) {
     // add 1 to cellPadding to account for 1px transparent border in default theme
     return (count * buttonWidth) + ((cellPadding + 1) * 2);
 }
