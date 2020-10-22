@@ -108,6 +108,43 @@
   }
 }
 
+.xh-select--has-height {
+  > div {
+    height: 100%;
+  }
+
+  // This ".xh-select" is the prefix for nested BEM values below, not itself a level of nesting.
+  .xh-select {
+    &__control {
+      height: 100%;
+
+      &__left-icon {
+        height: 100%;
+        padding-top: 7px;
+      }
+    }
+
+    &__placeholder {
+      height: 100%;
+      padding-top: var(--xh-pad-half-px);
+    }
+
+    &__value-container {
+      align-content: flex-start;
+      margin: 1px;
+      height: calc(100% - 2px);
+      overflow-y: auto !important;
+    }
+
+    &__indicators {
+      position: absolute;
+      top: var(--xh-pad-half-px);
+      right: var(--xh-pad-half-px);
+      flex-direction: column;
+    }
+  }
+}
+
 // The menu is rendered under the xh-app body, not within the control DOM.
 .xh-app {
   .xh-select {

@@ -224,7 +224,7 @@ export class Select extends HoistInput {
 
     render() {
         const props = this.getNonLayoutProps(),
-            {width, ...layoutProps} = this.getLayoutProps(),
+            {width, height, ...layoutProps} = this.getLayoutProps(),
             rsProps = {
                 value: this.renderValue,
 
@@ -297,7 +297,7 @@ export class Select extends HoistInput {
         merge(rsProps, props.rsOptions);
         return box({
             item: factory(rsProps),
-            className: this.getClassName(),
+            className: this.getClassName(height ? 'xh-select--has-height' : null),
             onKeyDown: (e) => {
                 // Esc. and Enter can be listened for by parents -- stop the keydown event
                 // propagation only if react-select already likely to have used for menu management.
@@ -308,7 +308,8 @@ export class Select extends HoistInput {
                 }
             },
             ...layoutProps,
-            width: withDefault(width, 200)
+            width: withDefault(width, 200),
+            height: height
         });
     }
 
