@@ -36,6 +36,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
             item: popover({
                 item: select({
                     flex: 1,
+                    height: layoutProps?.height,
                     bind: 'selectValue',
                     ref: inputRef,
 
@@ -58,7 +59,10 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                         noOptionsMessage: () => null,
                         loadingMessage: () => null,
                         styles: {
-                            menuList: (base) => ({...base, maxHeight: 'unset'})
+                            menuList: (base) => ({
+                                ...base,
+                                maxHeight: withDefault(chooserProps.maxMenuHeight, 'unset')
+                            })
                         },
                         components: {
                             DropdownIndicator: () => favoritesIcon(model)
@@ -89,6 +93,9 @@ FilterChooser.propTypes = {
 
     /** Icon to display inline on the left side of the input. */
     leftIcon: PT.element,
+
+    /** Max-height (in pixels) of menu list */
+    maxMenuHeight: PT.number,
 
     /** Placement of the dropdown menu relative to the input control. */
     menuPlacement: PT.oneOf(['auto', 'top', 'bottom']),
