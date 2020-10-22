@@ -42,8 +42,10 @@ export class CompoundFilter extends Filter {
 
     /** Outputs JSON appropriate for recreation via `parseFilter` */
     toJSON() {
-        const {filters, op} = this;
-        return {filters, op};
+        return {
+            filters: this.filters.map(f => f.toJSON()),
+            op: this.op
+        };
     }
 
     //-----------------
