@@ -45,6 +45,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
                     title,
                     button({
                         omit: !showRemoveAction,
+                        tabIndex: -1,
                         icon: Icon.x(),
                         onClick: () => tab.containerModel.removeTab(tab)
                     })
