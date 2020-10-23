@@ -5,7 +5,8 @@
 ### 🎁 New Features
 
 * New `GridModel.treeStyle` config enables more distinctive styling of tree grids, with optional
-  background highlighting and ledger-line style borders on group rows.
+  background highlighting and ledger-line style borders on group rows. By default, tree grids will
+  have highlighted group rows without borders.
 * New `DashContainerModel.extraMenuItems` config supports custom app menu items in Dashboards
 * An About item has been added to the default app menu.
 
