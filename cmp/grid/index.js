@@ -11,6 +11,8 @@ export * from './columns/ExportFormat';
 export * from './columns/Column';
 export * from './columns/ColumnGroup';
 
+export * from './enums/TreeStyle';
+
 export * from './helpers/GridCountLabel';
 
 export * from './renderers/MultiFieldRenderer';

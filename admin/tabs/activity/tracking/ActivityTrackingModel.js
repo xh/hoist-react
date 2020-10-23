@@ -9,8 +9,8 @@ import {ActivityDetailModel} from '@xh/hoist/admin/tabs/activity/tracking/detail
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, managed, TreeStyle, XH} from '@xh/hoist/core';
+import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {Cube} from '@xh/hoist/data';
 import {fmtDate, fmtNumber, numberRenderer} from '@xh/hoist/format';
 import {action} from '@xh/hoist/mobx';
@@ -139,7 +139,7 @@ export class ActivityTrackingModel {
 
         this.gridModel = new GridModel({
             treeMode: true,
-            treeStyle: TreeStyle.HIGHLIGHT_GROUPS_WITH_BORDERS,
+            treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
             persistWith: {
                 ...this.persistWith,
                 path: 'aggGridModel',

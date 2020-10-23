@@ -7,10 +7,8 @@
 
 export * from './enums/RefreshMode';
 export * from './enums/RenderMode';
-export * from './enums/TreeStyle';
 
 export * from './elem';
-
 
 export * from './mixins/LayoutSupport';
 export * from './mixins/ReactiveSupport';
