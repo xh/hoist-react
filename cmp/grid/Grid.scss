@@ -156,7 +156,7 @@
   //------------------------
   // Tree grid styling modes
   //------------------------
-  &.xh-grid--highlight-tree-groups {
+  &.xh-grid--tree-style-highlights {
     div[class*=" ag-row-group"],
     div[class^="ag-row-group"] {
       &:not(.ag-row-selected),
@@ -176,7 +176,7 @@
     }
   }
 
-  &.xh-grid--tree-group-border {
+  &.xh-grid--tree-style-borders {
     .ag-row-level-0[class*=" ag-row-group"],
     .ag-row-level-0[class^="ag-row-group"], {
       &:not(.ag-row-first) {

@@ -5,9 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
-import {Column, ColumnGroup, GridAutosizeMode} from '@xh/hoist/cmp/grid';
+import {Column, ColumnGroup, GridAutosizeMode, TreeStyle} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSupport, TreeStyle, managed, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
@@ -257,7 +257,7 @@ export class GridModel {
         showHover = false,
         rowBorders = false,
         cellBorders = false,
-        treeStyle = TreeStyle.NONE,
+        treeStyle = TreeStyle.HIGHLIGHTS,
         stripeRows = (treeStyle === TreeStyle.NONE),
         showCellFocus = false,
         hideHeaders = false,

@@ -12,12 +12,12 @@
 export const TreeStyle = Object.freeze({
 
     /** Highlight parent nodes in tree */
-    HIGHLIGHT_GROUPS: 'highlightGroups',
+    HIGHLIGHTS: 'highlights',
 
     /** Separate groups by placing a border above top level parent nodes */
-    GROUP_BORDERS: 'tree-group-border',
+    BORDERS: 'borders',
 
-    HIGHLIGHT_GROUPS_WITH_BORDERS: 'highlightGroupsWithBorders',
+    HIGHLIGHTS_AND_BORDERS: 'highlightsAndBorders',
 
     NONE: 'none'
 
@@ -26,12 +26,12 @@ export const TreeStyle = Object.freeze({
 
 export function getTreeStyleClasses(treeStyle) {
     switch (treeStyle) {
-        case TreeStyle.HIGHLIGHT_GROUPS:
-            return 'xh-grid--highlight-tree-groups';
-        case TreeStyle.GROUP_BORDERS:
-            return 'xh-grid--tree-group-border';
-        case TreeStyle.HIGHLIGHT_GROUPS_WITH_BORDERS:
-            return 'xh-grid--highlight-tree-groups xh-grid--tree-group-border';
+        case TreeStyle.HIGHLIGHTS:
+            return 'xh-grid--tree-style-highlights';
+        case TreeStyle.BORDERS:
+            return 'xh-grid--tree-style-borders';
+        case TreeStyle.HIGHLIGHTS_AND_BORDERS:
+            return 'xh-grid--tree-style-highlights xh-grid--tree-style-borders';
         case TreeStyle.NONE:
             return null;
         default:
