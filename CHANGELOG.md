@@ -5,10 +5,11 @@
 ### 🎁 New Features
 
 * New `GridModel.treeStyle` config enables more distinctive styling of tree grids, with optional
-  background highlighting and ledger-line style borders on group rows. By default, tree grids will
-  have highlighted group rows without borders.
+  background highlighting and ledger-line style borders on group rows.
+  * ⚠ By default, tree grids will now have highlighted group rows (but no group borders). Set
+    `treeStyle: 'none'` on any `GridModel` instances where you do _not_ want the new default style.
 * New `DashContainerModel.extraMenuItems` config supports custom app menu items in Dashboards
-* An About item has been added to the default app menu.
+* An "About" item has been added to the default app menu.
 
 ### 🐞 Bug Fixes
 
@@ -20,13 +21,14 @@
 
 ### ⚙️ Technical
 
-* Includes technical updates to how JSON Blobs are archived. This change requires an update to
-  `hoist-core` `v8.6.0` or later, and modifications to the `xh_json_blob` table. See the
-  [hoist-core changelog](https://github.com/xh/hoist-core/blob/develop/CHANGELOG.md) for further details.
+* Includes technical updates to `JsonBlob` archiving. This change requires an update to `hoist-core`
+  `v8.6.0` or later, and modifications to the `xh_json_blob` table. See the
+  [hoist-core changelog](https://github.com/xh/hoist-core/blob/develop/CHANGELOG.md) for further
+  details.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.33 -> 3.34`
+* @blueprintjs/core `3.33 -> 3.35`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.5.0...develop)
 
