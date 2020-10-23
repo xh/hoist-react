@@ -33,10 +33,10 @@
   }
 
   .xh-tab-switcher .bp3-tab-list .xh-button {
+    padding: 0 !important;
     margin-left: 3px;
-    padding: 0;
     min-height: 15px;
     min-width: 15px;
-    border-radius: 20px;
+    border-radius: 100% !important;
   }
 }
