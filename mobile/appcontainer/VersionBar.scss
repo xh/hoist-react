@@ -25,6 +25,10 @@
     background-color: var(--xh-purple);
   }
 
+  &--test {
+    background-color: hsl(180, 100%, 25%);
+  }
+
   .xh-button {
     display: flex;
     padding: 0 10px;

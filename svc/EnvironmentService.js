@@ -58,6 +58,10 @@ export class EnvironmentService {
         return this.get('appEnvironment') === 'Production';
     }
 
+    isTest() {
+        return this.get('appEnvironment') === 'Test';
+    }
+
     //------------------------------
     // Implementation
     //------------------------------
