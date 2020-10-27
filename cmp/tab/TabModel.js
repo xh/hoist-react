@@ -64,7 +64,7 @@ export class TabModel {
     }) {
         throwIf(showRemoveAction && XH.isMobileApp, 'Removable Tabs not supported in Mobile toolkit.');
 
-        this.id = id;
+        this.id = id.toString();
         this.containerModel = containerModel;
         this.title = title;
         this.icon = icon;

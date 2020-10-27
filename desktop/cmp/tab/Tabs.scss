@@ -18,12 +18,26 @@
     min-height: 0;
     flex: 1 1 0;
   }
+}
 
-  .xh-tab-switcher--top {
+.xh-tab-switcher {
+  display: flex;
+
+  &__scroll {
+    overflow-x: auto;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &--top {
+    padding-left: var(--xh-pad-px);
     padding-bottom: var(--xh-pad-half-px);
   }
 
-  .xh-tab-switcher--bottom {
+  &--bottom {
+    padding-left: var(--xh-pad-px);
     padding-top: var(--xh-pad-half-px);
 
     // Flip the indicator to be on top of the tab label
@@ -32,7 +46,7 @@
     }
   }
 
-  .xh-tab-switcher .bp3-tab-list .xh-button {
+  .bp3-tab-list .xh-button {
     padding: 0 !important;
     margin-left: 3px;
     min-height: 15px;

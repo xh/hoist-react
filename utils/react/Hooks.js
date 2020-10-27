@@ -67,3 +67,15 @@ export function useOnVisibleChange(fn) {
         if (node) observer.current = observeVisibleChange(fn, node);
     }, []);
 }
+
+/**
+ * Hook to run a function when component scrolls.
+ *
+ * @param {function} fn
+ * @returns {function} - callback ref to be placed on target component
+ */
+export function useOnScroll(fn) {
+    return useCallback(node => {
+        if (node) node.addEventListener('scroll', fn);
+    }, []);
+}
