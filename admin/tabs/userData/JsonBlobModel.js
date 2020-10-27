@@ -62,6 +62,10 @@ export class JsonBlobModel {
                     required: true
                 },
                 {
+                    name: 'meta',
+                    type: 'json'
+                },
+                {
                     name: 'description'
                 },
                 {
@@ -107,7 +111,7 @@ export class JsonBlobModel {
         sortBy: ['owner', 'name'],
         groupBy: 'type',
         unit: 'blob',
-        filterFields: ['name', 'owner', 'type', 'value', 'description'],
+        filterFields: ['name', 'owner', 'type', 'value', 'meta', 'description'],
         columns: [
             {field: 'token', width: 100, hidden: true},
             {field: 'archived', ...boolCheckCol, width: 100},
@@ -117,6 +121,7 @@ export class JsonBlobModel {
             {field: 'type', width: 200},
             {field: 'description', width: 200},
             {field: 'value', flex: 1, renderer: this.valueRenderer},
+            {field: 'meta', width: 200},
             {field: 'archivedDate', ...dateTimeCol, renderer: this.archivedDateRenderer, hidden: true},
             {field: 'dateCreated', ...dateTimeCol, hidden: true},
             {field: 'lastUpdated', ...dateTimeCol, hidden: true},
@@ -130,6 +135,7 @@ export class JsonBlobModel {
             {field: 'type'},
             {field: 'description', formField: {item: textArea()}},
             {field: 'value'},
+            {field: 'meta'},
             {field: 'archived'},
             {field: 'archivedDate'},
             {field: 'dateCreated'},
