@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, useLocalModel} from '@xh/hoist/core';
-import {div} from '@xh/hoist/cmp/layout';
+import {div, span} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -14,6 +14,7 @@ import {bindable} from '@xh/hoist/mobx';
 import {tab as blueprintTab, tabs as blueprintTabs, popover, menu, menuItem} from '@xh/hoist/kit/blueprint';
 import {createObservableRef, useOnResize, useOnVisibleChange, useOnScroll} from '@xh/hoist/utils/react';
 import {debounced, withDefault, isDisplayed} from '@xh/hoist/utils/js';
+import {isEmpty, compact} from 'lodash';
 import classNames from 'classnames';
 import PT from 'prop-types';
 import composeRefs from '@seznam/compose-react-refs';
@@ -54,7 +55,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
                 disabled,
                 items: [
                     icon,
-                    title,
+                    span(title),
                     button({
                         omit: !showRemoveAction,
                         tabIndex: -1,
@@ -81,7 +82,10 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
                         animate: withDefault(animate, false)
                     })
                 }),
-                overflowMenu({tabs: impl.overflowTabs})
+                overflowMenu({
+                    tabs: impl.overflowTabs,
+                    vertical
+                })
             ]
         });
     }
@@ -102,8 +106,8 @@ TabSwitcher.propTypes = {
 // Implementation
 //-----------------
 const overflowMenu = hoistCmp.factory({
-    render({model, tabs}) {
-        if (!tabs?.length) return null;
+    render({model, tabs, vertical}) {
+        if (isEmpty(tabs)) return null;
 
         const items = tabs.map(tab => {
             const {id, title: text, icon, disabled} = tab;
@@ -111,29 +115,41 @@ const overflowMenu = hoistCmp.factory({
                 icon,
                 text,
                 disabled,
-                onClick: () => model.activateTab(id)
+                onClick: () => model.activateTab(id),
+                labelElement: button({
+                    icon: Icon.x(),
+                    onClick: (e) => {
+                        model.removeTab(id);
+                        e.stopPropagation();
+                    }
+                })
             });
         });
 
         return popover({
             popoverClassName: 'xh-tab-switcher__overflow-popover',
             position: 'bottom-right',
-            target: button({icon: Icon.ellipsisVertical()}),
+            target: button({
+                icon: vertical ? Icon.ellipsisHorizontal() : Icon.ellipsisVertical()
+            }),
             minimal: true,
-            content: menu({items})
+            content: menu({
+                className: 'xh-tab-switcher__overflow-menu',
+                items
+            })
         });
     }
 });
 
 @HoistModel
 class LocalModel {
-    @bindable.ref overflowIds = []
+    @bindable.ref overflowIds = [];
     switcherRef = createObservableRef();
     model;
     vertical;
 
     get overflowTabs() {
-        return this.overflowIds.map(id => this.model.findTab(id));
+        return compact(this.overflowIds.map(id => this.model.findTab(id)));
     }
 
     constructor(model, vertical) {
@@ -146,36 +162,48 @@ class LocalModel {
         });
 
         this.addReaction({
-            track: () => this.model.activeTabId,
+            track: () => [this.model.activeTabId, this.model.tabs],
             run: () => this.scrollActiveTabIntoView()
         });
     }
 
     @debounced(100)
     updateOverflowTabs() {
+        const ids = this.getOverflowIds();
+        this.setOverflowIds(ids);
+    }
+
+    // Debounce allows tab changes to render before scrolling into view
+    @debounced(1)
+    scrollActiveTabIntoView() {
+        const tab = this.tabEls.find(tab => tab.dataset.tabId === this.model.activeTabId);
+        if (tab) tab.scrollIntoView();
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
+    getOverflowIds() {
         const {dimensions} = this;
-        if (!dimensions) return;
+        if (!dimensions) return [];
 
         const {client, scroll, scrollPosition} = dimensions;
-        if (scroll < client) return;
+        if (scroll <= client) return [];
 
         const visibleStart = scrollPosition,
             visibleEnd = scrollPosition + client,
             ids = [];
 
         this.tabEls.forEach(tab => {
-            const {start, end} = this.getTabDimensions(tab);
-            if (start < visibleStart || end > visibleEnd) {
-                ids.push(tab.dataset.tabId);
-            }
+            // Tabs are considered overflowed if they are at least 25% obscured
+            const {start, length, end} = this.getTabDimensions(tab),
+                buffer = Math.round(length * 0.25),
+                overflowed = start < (visibleStart - buffer) || end > (visibleEnd + buffer);
+
+            if (overflowed) ids.push(tab.dataset.tabId);
         });
 
-        this.setOverflowIds(ids);
-    }
-
-    scrollActiveTabIntoView() {
-        const tab = this.tabEls.find(tab => tab.dataset.tabId === this.model.activeTabId);
-        if (tab) tab.scrollIntoView();
+        return ids;
     }
 
     get el() {
@@ -183,11 +211,10 @@ class LocalModel {
     }
 
     get dimensions() {
-        const {el} = this;
+        const {el, vertical} = this;
         if (!el || !isDisplayed(el)) return null;
 
-        const {vertical} = this,
-            client = vertical ? el.clientHeight : el.clientWidth,
+        const client = vertical ? el.clientHeight : el.clientWidth,
             scroll = vertical ? el.scrollHeight : el.scrollWidth,
             scrollPosition = vertical ? el.scrollTop : el.scrollLeft;
 
