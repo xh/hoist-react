@@ -1,6 +1,6 @@
 # Changelog
 
-## v37.0.0-SNAPSHOT - unreleased
+## v36.6.0 - 2020-10-28
 
 ### 🎁 New Features
 
@@ -22,7 +22,7 @@
 ### ⚙️ Technical
 
 * Includes technical updates to `JsonBlob` archiving. This change requires an update to `hoist-core`
-  `v8.6.0` or later, and modifications to the `xh_json_blob` table. See the
+  `v8.6.1` or later, and modifications to the `xh_json_blob` table. See the
   [hoist-core changelog](https://github.com/xh/hoist-core/blob/develop/CHANGELOG.md) for further
   details.
 
@@ -30,7 +30,7 @@
 
 * @blueprintjs/core `3.33 -> 3.35`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v36.5.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.5.0...v36.6.0)
 
 ## v36.5.0 - 2020-10-16
 
