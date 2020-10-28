@@ -1,5 +1,13 @@
 # Changelog
 
+## v36.6.1 - 2020-11-06
+
+### 🐞 Bug Fixes
+
+* Fix issue where grid row striping would be turned off by default for non-tree grids
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.6.0...v36.6.1)
+
 ## v36.6.0 - 2020-10-28
 
 ### 🎁 New Features
