@@ -258,7 +258,7 @@ export class GridModel {
         rowBorders = false,
         cellBorders = false,
         treeStyle = TreeStyle.HIGHLIGHTS,
-        stripeRows = (treeStyle === TreeStyle.NONE),
+        stripeRows = (!treeMode || treeStyle === TreeStyle.NONE),
         showCellFocus = false,
         hideHeaders = false,
         compact,
