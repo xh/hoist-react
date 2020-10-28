@@ -1,5 +1,9 @@
 # Changelog
 
+## v37.0.0-SNAPSHOT - unreleased
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.6.0...develop)
+
 ## v36.6.0 - 2020-10-28
 
 ### 🎁 New Features
