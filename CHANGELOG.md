@@ -10,6 +10,7 @@
     `treeStyle: 'none'` on any `GridModel` instances where you do _not_ want the new default style.
 * New `DashContainerModel.extraMenuItems` config supports custom app menu items in Dashboards
 * An "About" item has been added to the default app menu.
+* The default `TabSwitcher` now supports scrolling, and will show overflowing tabs in a drop down menu.
 
 ### 🐞 Bug Fixes
 
