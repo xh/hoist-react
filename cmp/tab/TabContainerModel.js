@@ -36,6 +36,9 @@ export class TabContainerModel {
     switcherPosition;
 
     /** @member {boolean} */
+    enableOverflow;
+
+    /** @member {boolean} */
     track;
 
     /** @member {RenderMode} */
@@ -57,6 +60,8 @@ export class TabContainerModel {
      *      Cannot be used with `persistWith`.
      * @param {string} [c.switcherPosition] - Position of the switcher docked within this component.
      *      Valid values are 'top', 'bottom', 'left', 'right', or 'none' if no switcher shown.
+     * @param {boolean} [c.enableOverflow] - True to enable tab overflow in the switcher docked
+     *      within this component (default false). Desktop only.
      * @param {boolean} [c.track] - True to enable activity tracking of tab views (default false).
      * @param {RenderMode} [c.renderMode] - strategy for rendering child tabs. Can be set
      *      per-tab via `TabModel.renderMode`. See enum for description of supported modes.
@@ -72,6 +77,7 @@ export class TabContainerModel {
         defaultTabId = null,
         route = null,
         switcherPosition = XH.isMobileApp ? 'bottom' : 'top',
+        enableOverflow = false,
         track = false,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
@@ -82,6 +88,7 @@ export class TabContainerModel {
         throwIf(route && persistWith, '"persistWith" and "route" cannot both be specified.');
 
         this.switcherPosition = switcherPosition;
+        this.enableOverflow = enableOverflow;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.defaultTabId = defaultTabId;

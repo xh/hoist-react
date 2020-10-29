@@ -24,11 +24,13 @@
   display: flex;
 
   // Allow scrolling
-  &__scroll {
-    overflow-x: auto;
+  &--overflow-enabled {
+    .xh-tab-switcher__scroll {
+      overflow-x: auto;
 
-    &::-webkit-scrollbar {
-      display: none;
+      &::-webkit-scrollbar {
+        display: none;
+      }
     }
   }
 

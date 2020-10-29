@@ -37,15 +37,20 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
     render({model, className, animate, ...props}) {
         const {id, tabs, activeTabId} = model,
             orientation = withDefault(props.orientation, 'top'),
+            enableOverflow = withDefault(props.enableOverflow, false),
             vertical = ['left', 'right'].includes(orientation);
 
-        const impl = useLocalModel(() => new LocalModel(model, vertical)),
+        const impl = useLocalModel(() => new LocalModel(model, enableOverflow, vertical));
+
+        let ref = impl.switcherRef;
+        if (impl.enableOverflow) {
             ref = composeRefs(
                 impl.switcherRef,
                 useOnResize(() => impl.updateOverflowTabs()),
                 useOnVisibleChange(() => impl.updateOverflowTabs()),
                 useOnScroll(() => impl.updateOverflowTabs())
             );
+        }
 
         const items = tabs.map(tab => {
             const {id, title, icon, disabled, showRemoveAction, excludeFromSwitcher} = tab;
@@ -67,7 +72,11 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
         });
 
         return div({
-            className: classNames(className, `xh-tab-switcher--${orientation}`),
+            className: classNames(
+                className,
+                `xh-tab-switcher--${orientation}`,
+                enableOverflow ? `xh-tab-switcher--overflow-enabled` : null
+            ),
             items: [
                 div({
                     ref,
@@ -99,7 +108,10 @@ TabSwitcher.propTypes = {
     model: PT.instanceOf(TabContainerModel),
 
     /** Relative position within the parent TabContainer. Defaults to 'top'. */
-    orientation: PT.oneOf(['top', 'bottom', 'left', 'right'])
+    orientation: PT.oneOf(['top', 'bottom', 'left', 'right']),
+
+    /** Enable scrolling and place tabs that overflow into a menu. Default to false. */
+    enableOverflow: PT.bool
 };
 
 //-----------------
@@ -146,25 +158,29 @@ class LocalModel {
     @bindable.ref overflowIds = [];
     switcherRef = createObservableRef();
     model;
+    enableOverflow;
     vertical;
 
     get overflowTabs() {
         return compact(this.overflowIds.map(id => this.model.findTab(id)));
     }
 
-    constructor(model, vertical) {
+    constructor(model, enableOverflow, vertical) {
         this.model = model;
+        this.enableOverflow = enableOverflow;
         this.vertical = vertical;
 
-        this.addReaction({
-            track: () => [this.switcherRef.current, this.model.tabs],
-            run: () => this.updateOverflowTabs()
-        });
+        if (this.enableOverflow) {
+            this.addReaction({
+                track: () => [this.switcherRef.current, this.model.tabs],
+                run: () => this.updateOverflowTabs()
+            });
 
-        this.addReaction({
-            track: () => [this.model.activeTabId, this.model.tabs],
-            run: () => this.scrollActiveTabIntoView()
-        });
+            this.addReaction({
+                track: () => [this.model.activeTabId, this.model.tabs],
+                run: () => this.scrollActiveTabIntoView()
+            });
+        }
     }
 
     @debounced(100)
@@ -176,6 +192,7 @@ class LocalModel {
     // Debounce allows tab changes to render before scrolling into view
     @debounced(1)
     scrollActiveTabIntoView() {
+        if (!this.enableOverflow) return;
         const tab = this.tabEls.find(tab => tab.dataset.tabId === this.model.activeTabId);
         if (tab) tab.scrollIntoView();
     }
@@ -184,8 +201,8 @@ class LocalModel {
     // Implementation
     //------------------------
     getOverflowIds() {
-        const {dimensions} = this;
-        if (!dimensions) return [];
+        const {enableOverflow, dimensions} = this;
+        if (!enableOverflow || !dimensions) return [];
 
         const {client, scroll, scrollPosition} = dimensions;
         if (scroll <= client) return [];

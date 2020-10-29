@@ -34,9 +34,9 @@ export function tabContainerImpl({model, className, ...props}) {
 }
 
 function getChildren(model) {
-    const {tabs, activeTabId, switcherPosition} = model,
-        switcherBefore = ['left', 'top'].includes(switcherPosition),
-        switcherAfter = ['right', 'bottom'].includes(switcherPosition);
+    const {tabs, activeTabId, switcherPosition: orientation, enableOverflow} = model,
+        switcherBefore = ['left', 'top'].includes(orientation),
+        switcherAfter = ['right', 'bottom'].includes(orientation);
 
     if (isEmpty(tabs)) {
         return div({
@@ -52,7 +52,7 @@ function getChildren(model) {
     }
 
     return [
-        switcherBefore ? tabSwitcher({key: 'switcher', orientation: switcherPosition}) : null,
+        switcherBefore ? tabSwitcher({key: 'switcher', orientation, enableOverflow}) : null,
         ...tabs.map(tabModel => {
             const tabId = tabModel.id,
                 style = (activeTabId !== tabId) ? hideStyle : undefined;
@@ -64,7 +64,7 @@ function getChildren(model) {
                 item: tab({model: tabModel})
             });
         }),
-        switcherAfter ? tabSwitcher({key: 'switcher', orientation: switcherPosition}) : null
+        switcherAfter ? tabSwitcher({key: 'switcher', orientation, enableOverflow}) : null
     ];
 }
 
