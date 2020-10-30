@@ -15,7 +15,7 @@ export const userDataTab = hoistCmp.factory(
     () => tabContainer({
         model: {
             route: 'default.userData',
-            switcherPosition: 'left',
+            switcher: {orientation: 'left'},
             tabs: [
                 {id: 'prefs', title: 'Preferences', icon: Icon.bookmark(), content: preferencePanel},
                 {id: 'userPrefs', icon: Icon.users(), content: userPreferencePanel, reloadOnShow: true},
