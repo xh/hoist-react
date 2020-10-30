@@ -13,7 +13,7 @@ import {hoistCmp, uses} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {tab as blueprintTab, tabs as blueprintTabs, popover, menu, menuItem} from '@xh/hoist/kit/blueprint';
 import {createObservableRef, useOnResize, useOnVisibleChange, useOnScroll} from '@xh/hoist/utils/react';
-import {debounced, withDefault, isDisplayed} from '@xh/hoist/utils/js';
+import {debounced, throwIf, isDisplayed} from '@xh/hoist/utils/js';
 import {isEmpty, compact} from 'lodash';
 import classNames from 'classnames';
 import PT from 'prop-types';
@@ -34,14 +34,23 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
     model: uses(TabContainerModel),
     className: 'xh-tab-switcher',
 
-    render({model, className, animate, ...props}) {
+    render({
+        model,
+        className,
+        orientation = 'top',
+        animate = false,
+        enableOverflow = false,
+        tabSize,
+        tabMinSize,
+        tabMaxSize
+    }) {
+        throwIf(!['top', 'bottom', 'left', 'right'].includes(orientation), 'Unsupported value for orientation.');
+
         const {id, tabs, activeTabId} = model,
-            orientation = withDefault(props.orientation, 'top'),
-            enableOverflow = withDefault(props.enableOverflow, false),
-            vertical = ['left', 'right'].includes(orientation);
+            vertical = ['left', 'right'].includes(orientation),
+            impl = useLocalModel(() => new LocalModel(model, enableOverflow, vertical));
 
-        const impl = useLocalModel(() => new LocalModel(model, enableOverflow, vertical));
-
+        // Implement overflow
         let ref = impl.switcherRef;
         if (impl.enableOverflow) {
             ref = composeRefs(
@@ -52,12 +61,19 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
             );
         }
 
+        // Create tabs
+        const tabStyle = {};
+        if (isFinite(tabSize)) tabStyle[vertical ? 'height' : 'width'] = tabSize + 'px';
+        if (isFinite(tabMinSize)) tabStyle[vertical ? 'minHeight' : 'minWidth'] = tabMinSize + 'px';
+        if (isFinite(tabMaxSize)) tabStyle[vertical ? 'maxHeight' : 'maxWidth'] = tabMaxSize + 'px';
+
         const items = tabs.map(tab => {
             const {id, title, icon, disabled, showRemoveAction, excludeFromSwitcher} = tab;
             if (excludeFromSwitcher) return null;
             return blueprintTab({
                 id,
                 disabled,
+                style: tabStyle,
                 items: [
                     icon,
                     span(title),
@@ -84,11 +100,10 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
                     item: blueprintTabs({
                         id,
                         vertical,
-                        onChange: (tabId) => model.activateTab(tabId),
-                        selectedTabId: activeTabId,
+                        animate,
                         items,
-                        ...props,
-                        animate: withDefault(animate, false)
+                        selectedTabId: activeTabId,
+                        onChange: (tabId) => model.activateTab(tabId)
                     })
                 }),
                 overflowMenu({
@@ -101,17 +116,26 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
 });
 
 TabSwitcher.propTypes = {
-    /** True to animate the indicator when switching tabs. False (default) to change instantly. */
-    animate: PT.bool,
-
     /** Primary component model instance. */
     model: PT.instanceOf(TabContainerModel),
 
     /** Relative position within the parent TabContainer. Defaults to 'top'. */
     orientation: PT.oneOf(['top', 'bottom', 'left', 'right']),
 
+    /** True to animate the indicator when switching tabs. False (default) to change instantly. */
+    animate: PT.bool,
+
     /** Enable scrolling and place tabs that overflow into a menu. Default to false. */
-    enableOverflow: PT.bool
+    enableOverflow: PT.bool,
+
+    /** Size (in px) to render tabs */
+    tabSize: PT.number,
+
+    /** Minimum size (in px) to render tabs */
+    tabMinSize: PT.number,
+
+    /** Maximum size (in px) to render tabs */
+    tabMaxSize: PT.number
 };
 
 //-----------------
