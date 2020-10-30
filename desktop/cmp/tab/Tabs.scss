@@ -63,11 +63,11 @@
   }
 
   // Right align close button within tabs
-  .bp3-tab-list .bp3-tab {
+  &__tab {
     display: flex;
 
     & > svg:first-child {
-      margin-top: 0.45em;
+      margin: 0.45em var(--xh-pad-half-px) 0 0;
     }
 
     & > span {

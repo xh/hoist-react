@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, useLocalModel} from '@xh/hoist/core';
-import {div, span} from '@xh/hoist/cmp/layout';
+import {div, span, hframe} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -68,22 +68,26 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
         if (isFinite(tabMaxSize)) tabStyle[vertical ? 'maxHeight' : 'maxWidth'] = tabMaxSize + 'px';
 
         const items = tabs.map(tab => {
-            const {id, title, icon, disabled, showRemoveAction, excludeFromSwitcher} = tab;
+            const {id, title, icon, disabled, tooltip, showRemoveAction, excludeFromSwitcher} = tab;
             if (excludeFromSwitcher) return null;
             return blueprintTab({
                 id,
                 disabled,
                 style: tabStyle,
-                items: [
-                    icon,
-                    span(title),
-                    button({
-                        omit: !showRemoveAction,
-                        tabIndex: -1,
-                        icon: Icon.x(),
-                        onClick: () => tab.containerModel.removeTab(tab)
-                    })
-                ]
+                item: hframe({
+                    className: 'xh-tab-switcher__tab',
+                    title: tooltip,
+                    items: [
+                        icon,
+                        span(title),
+                        button({
+                            omit: !showRemoveAction,
+                            tabIndex: -1,
+                            icon: Icon.x(),
+                            onClick: () => tab.containerModel.removeTab(tab)
+                        })
+                    ]
+                })
             });
         });
 

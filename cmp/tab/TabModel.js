@@ -6,7 +6,7 @@
  */
 import {XH, HoistModel, managed, ManagedRefreshContextModel} from '@xh/hoist/core';
 import {action, bindable, computed, observable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
 
 /**
@@ -22,6 +22,7 @@ export class TabModel {
     id;
     @bindable.ref title;
     @bindable.ref icon;
+    @bindable tooltip;
     @observable disabled;
     excludeFromSwitcher;
     showRemoveAction;
@@ -38,6 +39,7 @@ export class TabModel {
      *      container when constructing these models - no need to specify manually.
      * @param {Element} [c.title] - display title for the Tab in the container's TabSwitcher.
      * @param {Element} [c.icon] - display icon for the Tab in the container's TabSwitcher.
+     * @param {string} [c.tooltip] - tooltip for the Tab in the container's TabSwitcher. Defaults to title.
      * @param {string} [c.disabled] - true to disable this tab in the TabSwitcher and block routing.
      * @param {string} [c.excludeFromSwitcher] - true to hide this Tab in the TabSwitcher,
      *      but still be able to activate the tab manually or via routing.
@@ -55,6 +57,7 @@ export class TabModel {
         containerModel,
         title = startCase(id),
         icon = null,
+        tooltip,
         disabled = false,
         excludeFromSwitcher = false,
         showRemoveAction = false,
@@ -68,6 +71,7 @@ export class TabModel {
         this.containerModel = containerModel;
         this.title = title;
         this.icon = icon;
+        this.tooltip = withDefault(tooltip, title);
         this.disabled = !!disabled;
         this.excludeFromSwitcher = excludeFromSwitcher;
         this.showRemoveAction = showRemoveAction;
