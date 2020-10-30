@@ -64,14 +64,15 @@
 
   // Right align close button within tabs
   &__tab {
-    display: flex;
-
     & > svg:first-child {
-      margin: 0.45em var(--xh-pad-half-px) 0 0;
+      margin: 0.5em var(--xh-pad-half-px) 0 0;
+      min-width: 0;
     }
 
     & > span {
       flex: 1;
+      min-width: 0;
+      overflow: hidden;
     }
 
     // Close button styling

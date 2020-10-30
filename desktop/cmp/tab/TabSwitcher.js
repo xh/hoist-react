@@ -11,7 +11,7 @@ import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
-import {tab as blueprintTab, tabs as blueprintTabs, popover, menu, menuItem} from '@xh/hoist/kit/blueprint';
+import {tab as bpTab, tabs as bpTabs, tooltip as bpTooltip, popover, menu, menuItem} from '@xh/hoist/kit/blueprint';
 import {createObservableRef, useOnResize, useOnVisibleChange, useOnScroll} from '@xh/hoist/utils/react';
 import {debounced, throwIf, isDisplayed} from '@xh/hoist/utils/js';
 import {isEmpty, compact} from 'lodash';
@@ -40,9 +40,9 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
         orientation = 'top',
         animate = false,
         enableOverflow = false,
-        tabSize,
-        tabMinSize,
-        tabMaxSize
+        tabWidth,
+        tabMinWidth,
+        tabMaxWidth
     }) {
         throwIf(!['top', 'bottom', 'left', 'right'].includes(orientation), 'Unsupported value for orientation.');
 
@@ -63,30 +63,32 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
 
         // Create tabs
         const tabStyle = {};
-        if (isFinite(tabSize)) tabStyle[vertical ? 'height' : 'width'] = tabSize + 'px';
-        if (isFinite(tabMinSize)) tabStyle[vertical ? 'minHeight' : 'minWidth'] = tabMinSize + 'px';
-        if (isFinite(tabMaxSize)) tabStyle[vertical ? 'maxHeight' : 'maxWidth'] = tabMaxSize + 'px';
+        if (!vertical && isFinite(tabWidth)) tabStyle.width = tabWidth + 'px';
+        if (!vertical && isFinite(tabMinWidth)) tabStyle.minWidth = tabMinWidth + 'px';
+        if (!vertical && isFinite(tabMaxWidth)) tabStyle.maxWidth = tabMaxWidth + 'px';
 
         const items = tabs.map(tab => {
             const {id, title, icon, disabled, tooltip, showRemoveAction, excludeFromSwitcher} = tab;
             if (excludeFromSwitcher) return null;
-            return blueprintTab({
+            return bpTab({
                 id,
                 disabled,
                 style: tabStyle,
-                item: hframe({
-                    className: 'xh-tab-switcher__tab',
-                    title: tooltip,
-                    items: [
-                        icon,
-                        span(title),
-                        button({
-                            omit: !showRemoveAction,
-                            tabIndex: -1,
-                            icon: Icon.x(),
-                            onClick: () => tab.containerModel.removeTab(tab)
-                        })
-                    ]
+                item: bpTooltip({
+                    content: tooltip,
+                    item: hframe({
+                        className: 'xh-tab-switcher__tab',
+                        items: [
+                            icon,
+                            span(title),
+                            button({
+                                omit: !showRemoveAction,
+                                tabIndex: -1,
+                                icon: Icon.x(),
+                                onClick: () => tab.containerModel.removeTab(tab)
+                            })
+                        ]
+                    })
                 })
             });
         });
@@ -101,7 +103,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
                 div({
                     ref,
                     className: `xh-tab-switcher__scroll`,
-                    item: blueprintTabs({
+                    item: bpTabs({
                         id,
                         vertical,
                         animate,
@@ -132,14 +134,14 @@ TabSwitcher.propTypes = {
     /** Enable scrolling and place tabs that overflow into a menu. Default to false. */
     enableOverflow: PT.bool,
 
-    /** Size (in px) to render tabs */
-    tabSize: PT.number,
+    /** Width (in px) to render tabs. Only applies to horizontal orientations */
+    tabWidth: PT.number,
 
-    /** Minimum size (in px) to render tabs */
-    tabMinSize: PT.number,
+    /** Minimum width (in px) to render tabs. Only applies to horizontal orientations */
+    tabMinWidth: PT.number,
 
-    /** Maximum size (in px) to render tabs */
-    tabMaxSize: PT.number
+    /** Maximum width (in px) to render tabs. Only applies to horizontal orientations */
+    tabMaxWidth: PT.number
 };
 
 //-----------------
