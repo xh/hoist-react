@@ -25,7 +25,7 @@ export function tabContainerImpl({model, className, ...props}) {
         "Mobile TabContainer tab switcher position must be 'none', 'top', or 'bottom'"
     );
 
-    const {activeTab, switcherPosition} = model,
+    const {activeTab, switcherPosition, switcherProps} = model,
         tabs = model.tabs.filter(it => !it.excludeFromSwitcher);
 
     if (isEmpty(tabs)) {
@@ -44,7 +44,8 @@ export function tabContainerImpl({model, className, ...props}) {
         index: activeTab ? tabs.indexOf(activeTab) : 0,
         renderTabs: () => tabs.map(renderTabModel),
         onPreChange: (e) => model.activateTab(tabs[e.index].id),
-        visible: switcherPosition !== 'none'
+        visible: switcherPosition !== 'none',
+        ...switcherProps
     });
 }
 
