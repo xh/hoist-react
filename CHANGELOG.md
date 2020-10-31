@@ -16,7 +16,7 @@
   configuration of the default `TabSwitcher`.
   * Use `switcher: true` to retain default behavior.
   * Use `switcher: false` to not include a TabSwitcher. (previously `switcherPosition: 'none'`)
-  * Use `switcher: {...}` to provide customisation props the `TabSwitcher`. See `TabSwitcher`
+  * Use `switcher: {...}` to provide customisation props for the `TabSwitcher`. See `TabSwitcher`
   documentation for more information.
 
 ### 🐞 Bug Fixes

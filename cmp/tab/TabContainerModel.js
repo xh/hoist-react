@@ -55,9 +55,9 @@ export class TabContainerModel {
      * @param {?string} [c.route] - base route name for this container. If set, this container will
      *      be route-enabled, with the route for each tab being "[route]/[tab.id]".
      *      Cannot be used with `persistWith`.
-     * @param {(boolean|Object)} [c.switcher] - boolean indicating whether to include a default switcher
-     *      docked within this component, or an object containing configuration props to passed to it.
-     *      Set to false to not include a switcher. Defaults to true.
+     * @param {(boolean|Object)} [c.switcher] - indicates whether to include a default switcher
+     *      docked within this component. Specify as a boolean or an object containing props for a
+     *      TabSwitcher component. Set to false to not include a switcher. Defaults to true.
      * @param {boolean} [c.track] - True to enable activity tracking of tab views (default false).
      * @param {RenderMode} [c.renderMode] - strategy for rendering child tabs. Can be set
      *      per-tab via `TabModel.renderMode`. See enum for description of supported modes.

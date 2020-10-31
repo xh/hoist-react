@@ -201,19 +201,22 @@ class LocalModel {
         this.enableOverflow = enableOverflow;
         this.vertical = vertical;
 
-        if (this.enableOverflow) {
+        if (enableOverflow) {
             this.addReaction({
-                track: () => [this.switcherRef.current, this.model.tabs],
+                track: () => [this.switcherRef.current, model.tabs],
                 run: () => this.updateOverflowTabs()
             });
 
             this.addReaction({
-                track: () => [this.model.activeTabId, this.model.tabs],
+                track: () => [model.activeTabId, model.tabs],
                 run: () => this.scrollActiveTabIntoView()
             });
         }
     }
 
+    //------------------------
+    // Implementation
+    //------------------------
     @debounced(100)
     updateOverflowTabs() {
         const ids = this.getOverflowIds();
@@ -228,9 +231,6 @@ class LocalModel {
         if (tab) tab.scrollIntoView();
     }
 
-    //------------------------
-    // Implementation
-    //------------------------
     getOverflowIds() {
         const {enableOverflow, dimensions} = this;
         if (!enableOverflow || !dimensions) return [];

@@ -57,7 +57,7 @@ export class TabModel {
         containerModel,
         title = startCase(id),
         icon = null,
-        tooltip= null,
+        tooltip = null,
         disabled = false,
         excludeFromSwitcher = false,
         showRemoveAction = false,

@@ -18,7 +18,7 @@ import {TabContainerModel} from './TabContainerModel';
  * displayed Tab. The 'TabContainerModel.switcher' property can be adjusted to place the switcher
  * control on alternative edges of the container.
  *
- * If `switcher` is set to false then no TabSwitcher will be installed.  This latter case
+ * If `switcher` is set to false then no TabSwitcher will be installed.  This setting
  * is useful for applications that wish to place an associated TabSwitcher elsewhere in the graphical
  * hierarchy (e.g. a shared menu bar), or control the visible Tab directly via other means.
  *
