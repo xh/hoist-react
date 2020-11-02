@@ -414,7 +414,7 @@ body {
     --xh-grid-cell-change-bg-highlight: var(--grid-cell-bg-highlight, #{mc-trans('orange', '800', 0.8)});
     --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '800')});
     --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '700')});
-    --xh-grid-total-row-bg: var(--grid-tree-group-bg, hsl(201, 48%, 12%));
+    --xh-grid-total-row-bg: var(--grid-total-row-bg, hsl(201, 48%, 12%));
     --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(201, 48%, 12%));
     --xh-grid-header-bg: var(--grid-header-bg, var(--xh-black));
     --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '800')});
