@@ -78,6 +78,8 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
                     content: tooltip,
                     disabled: !tooltip,
                     boundary: 'viewport',
+                    hoverOpenDelay: 1000,
+                    position: flipOrientation(orientation),
                     item: hframe({
                         className: 'xh-tab-switcher__tab',
                         items: [
@@ -282,5 +284,14 @@ class LocalModel {
             end = start + length;
 
         return {length, start, end};
+    }
+}
+
+function flipOrientation(orientation) {
+    switch (orientation) {
+        case 'top': return 'bottom';
+        case 'bottom': return 'top';
+        case 'left': return 'right';
+        case 'right': return 'left';
     }
 }
