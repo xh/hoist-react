@@ -82,6 +82,16 @@
     }
   }
 
+  // Floating viewports host total rows.
+  .ag-floating-bottom,
+  .ag-floating-top {
+    // Background on viewport itself covers area left blank by presence of a flex column.
+    background-color: var(--xh-grid-total-row-bg);
+    .ag-row-pinned.ag-row-first {
+      background-color: var(--xh-grid-total-row-bg);
+    }
+  }
+
   //------------------------
   // Core Cell Classes
   //------------------------
@@ -161,16 +171,6 @@
     div[class^="ag-row-group"] {
       &:not(.ag-row-selected),
       &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-        background-color: var(--xh-grid-tree-group-bg);
-      }
-    }
-
-    // Floating viewports host total rows.
-    .ag-floating-bottom,
-    .ag-floating-top {
-      // Background on viewport itself covers area left blank by presence of a flex column.
-      background-color: var(--xh-grid-tree-group-bg);
-      .ag-row-pinned.ag-row-first {
         background-color: var(--xh-grid-tree-group-bg);
       }
     }
