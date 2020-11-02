@@ -95,4 +95,12 @@
       min-height: 20px !important;
     }
   }
+
+  // Tooltip
+  .bp3-tab {
+    .bp3-popover-wrapper,
+    .bp3-popover-target {
+      width: 100%;
+    }
+  }
 }

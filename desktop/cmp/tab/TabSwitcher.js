@@ -77,6 +77,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
                 item: bpTooltip({
                     content: tooltip,
                     disabled: !tooltip,
+                    boundary: 'viewport',
                     item: hframe({
                         className: 'xh-tab-switcher__tab',
                         items: [
