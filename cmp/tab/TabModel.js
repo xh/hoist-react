@@ -22,6 +22,7 @@ export class TabModel {
     id;
     @bindable.ref title;
     @bindable.ref icon;
+    @bindable tooltip;
     @observable disabled;
     excludeFromSwitcher;
     showRemoveAction;
@@ -38,6 +39,7 @@ export class TabModel {
      *      container when constructing these models - no need to specify manually.
      * @param {Element} [c.title] - display title for the Tab in the container's TabSwitcher.
      * @param {Element} [c.icon] - display icon for the Tab in the container's TabSwitcher.
+     * @param {(string|element)} [c.tooltip] - tooltip for the Tab in the container's TabSwitcher.
      * @param {string} [c.disabled] - true to disable this tab in the TabSwitcher and block routing.
      * @param {string} [c.excludeFromSwitcher] - true to hide this Tab in the TabSwitcher,
      *      but still be able to activate the tab manually or via routing.
@@ -55,6 +57,7 @@ export class TabModel {
         containerModel,
         title = startCase(id),
         icon = null,
+        tooltip = null,
         disabled = false,
         excludeFromSwitcher = false,
         showRemoveAction = false,
@@ -64,10 +67,11 @@ export class TabModel {
     }) {
         throwIf(showRemoveAction && XH.isMobileApp, 'Removable Tabs not supported in Mobile toolkit.');
 
-        this.id = id;
+        this.id = id.toString();
         this.containerModel = containerModel;
         this.title = title;
         this.icon = icon;
+        this.tooltip = tooltip;
         this.disabled = !!disabled;
         this.excludeFromSwitcher = excludeFromSwitcher;
         this.showRemoveAction = showRemoveAction;

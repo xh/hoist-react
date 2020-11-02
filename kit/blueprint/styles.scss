@@ -76,12 +76,13 @@
   margin: 0 !important;  // TODO - investigate this....
 }
 
-.bp3-tabs:not(.bp3-vertical) > .bp3-tab-list {
-  padding-left: var(--xh-pad-px);
-}
-
 .bp3-tab > svg:first-child {
   margin-right: var(--xh-pad-half-px);
+}
+
+// Vertical tab lists fill their width
+.bp3-tabs.bp3-vertical .bp3-tab-list {
+  flex: 1;
 }
 
 //------------------------

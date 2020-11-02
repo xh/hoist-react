@@ -34,7 +34,7 @@ export class AppModel {
         if (!this._tabModel) {
             this._tabModel = new TabContainerModel({
                 route: 'default',
-                switcherPosition: 'none',
+                switcher: false,
                 tabs: this.createTabs()
             });
         }

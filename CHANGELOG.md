@@ -2,6 +2,23 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* New props added to `TabSwitcher`:
+  * `enableOverflow` shows tabs that would normally overflow their container in a drop down menu.
+  * `tabWidth`, `tabMinWidth` & `tabMaxWidth` allow flexible configuration of tab sizes within the switcher.
+* `TabModel` now supports a bindable `tooltip`, which can be used to render strings or elements
+  while hovering over tabs.
+
+### 💥 Breaking Changes
+
+* New `TabContainerModel` config `switcher` replaces `switcherPosition` to allow for more flexible
+  configuration of the default `TabSwitcher`.
+  * Use `switcher: true` to retain default behavior.
+  * Use `switcher: false` to not include a TabSwitcher. (previously `switcherPosition: 'none'`)
+  * Use `switcher: {...}` to provide customisation props for the `TabSwitcher`. See `TabSwitcher`
+  documentation for more information.
+
 ### 🐞 Bug Fixes
 
 * Fix issue where grid row striping would be turned off by default for non-tree grids
@@ -18,6 +35,7 @@
     `treeStyle: 'none'` on any `GridModel` instances where you do _not_ want the new default style.
 * New `DashContainerModel.extraMenuItems` config supports custom app menu items in Dashboards
 * An "About" item has been added to the default app menu.
+* The default `TabSwitcher` now supports scrolling, and will show overflowing tabs in a drop down menu.
 
 ### 🐞 Bug Fixes
 

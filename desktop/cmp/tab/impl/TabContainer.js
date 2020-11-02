@@ -16,9 +16,8 @@ import {isEmpty} from 'lodash';
  * @private
  */
 export function tabContainerImpl({model, className, ...props}) {
-    const {switcherPosition} = model,
-        layoutProps = getLayoutProps(props),
-        vertical = ['left', 'right'].includes(switcherPosition),
+    const layoutProps = getLayoutProps(props),
+        vertical = ['left', 'right'].includes(model.switcher?.orientation),
         container = vertical ? hbox : vbox;
 
     // Default flex = 'auto' if no dimensions / flex specified.
@@ -34,9 +33,9 @@ export function tabContainerImpl({model, className, ...props}) {
 }
 
 function getChildren(model) {
-    const {tabs, activeTabId, switcherPosition} = model,
-        switcherBefore = ['left', 'top'].includes(switcherPosition),
-        switcherAfter = ['right', 'bottom'].includes(switcherPosition);
+    const {tabs, activeTabId, switcher} = model,
+        switcherBefore = ['left', 'top'].includes(switcher?.orientation),
+        switcherAfter = ['right', 'bottom'].includes(switcher?.orientation);
 
     if (isEmpty(tabs)) {
         return div({
@@ -52,7 +51,7 @@ function getChildren(model) {
     }
 
     return [
-        switcherBefore ? tabSwitcher({key: 'switcher', orientation: switcherPosition}) : null,
+        switcherBefore ? tabSwitcher({key: 'switcher', ...switcher}) : null,
         ...tabs.map(tabModel => {
             const tabId = tabModel.id,
                 style = (activeTabId !== tabId) ? hideStyle : undefined;
@@ -64,7 +63,7 @@ function getChildren(model) {
                 item: tab({model: tabModel})
             });
         }),
-        switcherAfter ? tabSwitcher({key: 'switcher', orientation: switcherPosition}) : null
+        switcherAfter ? tabSwitcher({key: 'switcher', ...switcher}) : null
     ];
 }
 
