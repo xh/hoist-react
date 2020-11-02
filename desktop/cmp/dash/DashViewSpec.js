@@ -5,6 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {throwIf} from '@xh/hoist/utils/js';
+import {startCase} from 'lodash';
 
 /**
  * Spec used to generate a DashViews and DashViewModels within a DashContainer.
@@ -31,8 +32,8 @@ export class DashViewSpec {
      * @param {string} id - unique identifier of the DashViewSpec
      * @param {(Object|function)} content - content to be rendered by this DashView.
      *      HoistComponent or a function returning a react element.
-     * @param {string} title - Title text added to the tab header.
-     * @param {Element} icon - An icon placed at the left-side of the tab header.
+     * @param {string} [title] - Title text added to the tab header.
+     * @param {Element} [icon] - An icon placed at the left-side of the tab header.
      * @param {string} [groupName] - Group name to display within the add view component.
      *      The default context menu will automatically group its available views if provided.
      * @param {boolean} [omit] - true to prevent any instances of this view. References to this
@@ -51,7 +52,7 @@ export class DashViewSpec {
     constructor({
         id,
         content,
-        title,
+        title = startCase(id),
         icon,
         groupName,
         omit = false,

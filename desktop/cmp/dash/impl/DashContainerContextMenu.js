@@ -31,7 +31,7 @@ export const dashContainerContextMenu = hoistCmp.factory({
 //---------------------------
 function createMenuItems(props) {
     const {dashContainerModel, viewModel} = props,
-        {extraMenuItems} = dashContainerModel,
+        {extraMenuItems, renameLocked} = dashContainerModel,
         ret = [];
 
     // Add context sensitive items if clicked on a tab
@@ -47,7 +47,8 @@ function createMenuItems(props) {
             {
                 text: 'Rename',
                 icon: Icon.edit(),
-                hidden: !viewSpec.allowRename,
+                hidden: renameLocked,
+                disabled: !viewSpec.allowRename,
                 actionFn: () => dashContainerModel.renameView(id)
             },
             {
