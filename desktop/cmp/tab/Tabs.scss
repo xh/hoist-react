@@ -21,8 +21,6 @@
 }
 
 .xh-tab-switcher {
-  display: flex;
-
   // Allow scrolling
   &--overflow-enabled {
     .xh-tab-switcher__scroll {
@@ -36,11 +34,13 @@
 
   &--top {
     padding-left: var(--xh-pad-px);
+    max-width: 100%;
   }
 
   &--bottom {
     padding-left: var(--xh-pad-px);
     padding-top: var(--xh-pad-half-px);
+    max-width: 100%;
 
     // Flip the indicator to be on top of the tab label
     .bp3-tab[aria-selected=true] {
@@ -51,6 +51,7 @@
   &--left,
   &--right {
     flex-direction: column;
+    max-height: 100%;
 
     // Make overflow button full width
     .bp3-popover-wrapper .bp3-popover-target {

@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, useLocalModel} from '@xh/hoist/core';
-import {div, span, hframe} from '@xh/hoist/cmp/layout';
+import {box, div, span, hframe} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -97,7 +97,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
             });
         });
 
-        return div({
+        return box({
             className: classNames(
                 className,
                 `xh-tab-switcher--${orientation}`,
