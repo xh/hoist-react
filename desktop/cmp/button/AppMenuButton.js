@@ -122,7 +122,7 @@ function buildMenuItems({
         {
             omit: hideAboutItem,
             icon: Icon.info(),
-            text: `About ${XH.appName}`,
+            text: `About ${XH.clientAppName}`,
             onClick: () => XH.showAboutDialog()
         },
         '-',
