@@ -12,7 +12,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {tab as bpTab, tabs as bpTabs, tooltip as bpTooltip, popover, menu, menuItem} from '@xh/hoist/kit/blueprint';
-import {createObservableRef, useOnResize, useOnVisibleChange, useOnScroll} from '@xh/hoist/utils/react';
+import {getLayoutProps, createObservableRef, useOnResize, useOnVisibleChange, useOnScroll} from '@xh/hoist/utils/react';
 import {debounced, throwIf, isDisplayed} from '@xh/hoist/utils/js';
 import {isEmpty, compact} from 'lodash';
 import classNames from 'classnames';
@@ -42,11 +42,13 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
         enableOverflow = false,
         tabWidth,
         tabMinWidth,
-        tabMaxWidth
+        tabMaxWidth,
+        ...props
     }) {
         throwIf(!['top', 'bottom', 'left', 'right'].includes(orientation), 'Unsupported value for orientation.');
 
         const {id, tabs, activeTabId} = model,
+            layoutProps = getLayoutProps(props),
             vertical = ['left', 'right'].includes(orientation),
             impl = useLocalModel(() => new LocalModel(model, enableOverflow, vertical));
 
@@ -98,6 +100,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
         });
 
         return box({
+            ...layoutProps,
             className: classNames(
                 className,
                 `xh-tab-switcher--${orientation}`,
