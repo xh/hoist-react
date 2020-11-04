@@ -377,6 +377,16 @@ export class Select extends HoistInput {
         super.noteFocused();
     }
 
+    @action
+    setInternalValue(val) {
+        const changed = !isEqual(val, this.internalValue);
+        super.setInternalValue(val);
+        if (changed && this.manageInputValue && this.hasFocus) {
+            const {renderValue} = this;
+            this.inputValue = renderValue ? renderValue.label : null;
+        }
+    }
+
     //-------------------------
     // Options / value handling
     //-------------------------
