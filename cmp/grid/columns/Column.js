@@ -314,7 +314,7 @@ export class Column {
      * Produce a Column definition appropriate for AG Grid.
      */
     getAgSpec() {
-        const {gridModel, field, headerName, displayName} = this,
+        const {gridModel, field, headerName, displayName, agOptions} = this,
             me = this,
             ret = {
                 field,
@@ -479,10 +479,12 @@ export class Column {
 
                 refresh() {return false}
             });
-        } else {
+        } else if (!agOptions.cellRenderer && !agOptions.cellRendererFramework) {
             // By always providing a minimal cell pass-through cellRenderer, we can ensure the
             // cell contents are wrapped in a span by Ag-Grid. Our flexbox enabled cell styling
-            // requires all cells to have an inner element to work properly.
+            // requires all cells to have an inner element to work properly. We check agOptions
+            // in case the dev has specified either renderer option directly against the ag-Grid
+            // API (done sometimes with components for performance reasons).
             setRenderer((agParams) => agParams.value?.toString());
         }
 
@@ -521,7 +523,7 @@ export class Column {
         }
 
         // Finally, apply explicit app requests.  The customer is always right....
-        return {...ret, ...this.agOptions};
+        return {...ret, ...agOptions};
     }
 
     //--------------------
