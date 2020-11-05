@@ -61,7 +61,8 @@ export class FilterChooserFieldSpec {
      *      if store provided.
      * @param {string[]} [c.ops] - operators available for filtering. Optional, will default to
      *      a supported set based on the fieldType.
-     * @param {*[]} [c.values] - explicit list of available values for this field.
+     * @param {(*[]|function)} [c.values] - explicit list of available values for this field, or
+     *      a function that returns such a list.
      * @param {(boolean|FilterOptionSuggestValuesCb)} [c.suggestValues] - true to provide
      *      auto-complete options with enumerated matches when user specifies '=', or'!='.
      *      Defaults to true for fieldTypes of 'string' or 'auto', Otherwise false.  May be also
@@ -104,7 +105,7 @@ export class FilterChooserFieldSpec {
         this.suggestValues = suggestValues ?? this.isValueType;
         this.forceSelection = forceSelection ?? false;
 
-        this.loadValues(values);
+        this.parseValues(values);
 
         throwIf(
             !this.values && forceSelection,
@@ -155,6 +156,7 @@ export class FilterChooserFieldSpec {
 
     get isBoolFieldType() {return this.fieldType == FieldType.BOOL}
 
+    get hasValueCallback() {return isFunction(this._valueFn)}
 
     renderValue(value, op) {
         let ret;
@@ -211,7 +213,13 @@ export class FilterChooserFieldSpec {
     //------------------------
     // Implementation
     //------------------------
-    loadValues(values) {
+    parseValues(values) {
+        if (isFunction(values)) {
+            this._valueFn = values;
+            this.loadValuesFromCallbackAsync();
+            return;
+        }
+
         if (values) {
             this.values = values;
             return;
@@ -262,6 +270,11 @@ export class FilterChooserFieldSpec {
         });
 
         this.values = Array.from(values);
+    }
+
+    async loadValuesFromCallbackAsync() {
+        if (!this.hasValueCallback) return;
+        this.values = await this._valueFn();
     }
 }
 

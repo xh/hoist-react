@@ -136,10 +136,12 @@ export class QueryEngine {
             ret = this.getValueMatchesForField(q.op, q.value, spec);
             ret = this.sortAndTruncate(ret);
         }
+
         // Add query value itself if needed and allowed
         const value = spec.parseValue(q.value),
             valueValid = !isNaN(value) && !isNil(value) && value !== '',
             {forceSelection, suggestValues} = spec;
+
         if (valueValid &&
             (!forceSelection || !supportsSuggestions) &&
             ret.every(it => it.filter?.value !== value)) {
