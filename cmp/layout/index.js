@@ -7,5 +7,6 @@
 export * from './Tags';
 export * from './Box';
 export * from './Frame';
+export * from './Placeholder';
 export * from './Spacer';
 export * from './Viewport';
