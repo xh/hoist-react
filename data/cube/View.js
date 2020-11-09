@@ -21,7 +21,7 @@ import {createLeafRow} from './impl/LeafRow';
  */
 export class View {
 
-    /** @member {Query} - Query defining this View. Update via `updateView()`. */
+    /** @member {Query} - Query defining this View. Update via `updateQuery()`. */
     @observable.ref
     query = null;
 
