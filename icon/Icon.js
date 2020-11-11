@@ -226,6 +226,7 @@ export const Icon = {
     settings(p)         {return Icon.icon({...p,  iconName: 'sliders-h-square'})},
     shield(p)           {return Icon.icon({...p,  iconName: 'shield-alt'})},
     shieldCheck(p)      {return Icon.icon({...p,  iconName: 'shield-check'})},
+    sigma(p)            {return Icon.icon({...p,  iconName: 'sigma'})},
     skull(p)            {return Icon.icon({...p,  iconName: 'skull'})},
     spinner(p)          {return Icon.icon({...p,  iconName: 'spinner'})},
     stop(p)             {return Icon.icon({...p,  iconName: 'stop'})},
