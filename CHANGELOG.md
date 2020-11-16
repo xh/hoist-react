@@ -11,9 +11,9 @@
 * `TabModel` now supports a bindable `tooltip`, which can be used to render strings or elements
   while hovering over tabs.
 * New `Placeholder` component provides a thin wrapper around `Box` with standardized, muted styling.
-* `Select` now implements more intelligent filtering of options during keyboard input.  Filtering
+* `Select` now implements more intelligent filtering of options based on keyboard input.  Filtering
 will now be based on a case-insensitive match of word starts.  To customize, applications should
-use the new `filterOption` property.
+may use the new `filterFn` property.
 
 ### 💥 Breaking Changes
 

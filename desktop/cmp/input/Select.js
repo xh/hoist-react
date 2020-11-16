@@ -154,12 +154,19 @@ export class Select extends HoistInput {
          * Provided function should take an option and a query value and return a boolean.
          * Defaults to a case-insensitive match on word starts.
          */
-        filterOption: PT.func,
+        filterFn: PT.func,
 
 
         /**
          * Async function to return a list of options for a given query string input.
          * Replaces the `options` prop - use one or the other.
+         *
+         * For providing external (e.g. server-side) options based on user inputs. Not to be
+         * confused with `filterFn`, which should be used to filter through local options when
+         * not in async mode.
+         *
+         * Provided function should take a query value and return a Promise resolving to a
+         * list of options.
          */
         queryFn: PT.func,
 
@@ -402,9 +409,9 @@ export class Select extends HoistInput {
         }
 
         // 2) Use function provided by app
-        const {filterOption} = this.props;
-        if (filterOption) {
-            return filterOption(opt, inputVal);
+        const {filterFn} = this.props;
+        if (filterFn) {
+            return filterFn(opt, inputVal);
         }
 
         // 3) ..or use default word start search
