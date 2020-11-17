@@ -11,6 +11,7 @@
 * `TabModel` now supports a bindable `tooltip`, which can be used to render strings or elements
   while hovering over tabs.
 * New `Placeholder` component provides a thin wrapper around `Box` with standardized, muted styling.
+* New `matchMode` prop on `StoreFilterField` to allow customizing match to: `start`, `startWord`, or `any`.
 
 ### 💥 Breaking Changes
 
