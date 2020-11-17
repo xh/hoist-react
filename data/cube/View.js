@@ -35,10 +35,6 @@ export class View {
     /** @member {Store[]} - Stores to which results of this view should be (re)loaded. */
     stores = null;
 
-    /** @member {Object} - observable Cube info associated with this View when last updated. */
-    @observable.ref
-    info = null;
-
     // Implementation
     _rows = null;
     _leafMap = null;
@@ -71,6 +67,9 @@ export class View {
 
     /** @return {CubeField[]} */
     get fields() {return this.query.fields}
+
+    /** @return {Object} */
+    get info() {return this.cube.info}
 
     /** @return {boolean} */
     get isConnected() {return this.cube.viewIsConnected(this)}
@@ -127,8 +126,6 @@ export class View {
             this.fullUpdate();
         } else if (!isEmpty(simpleUpdates)) {
             this.dataOnlyUpdate(simpleUpdates);
-        } else {
-            this.info = this.cube.info;
         }
     }
 
@@ -141,7 +138,6 @@ export class View {
 
         this.stores.forEach(s => s.loadData(this._rows));
         this.result = {rows: this._rows, leafMap: this._leafMap};
-        this.info = this.cube.info;
     }
 
     @action
@@ -161,7 +157,6 @@ export class View {
             store.updateData({update: recordUpdates});
         });
         this.result = {rows: this._rows, leafMap: this._leafMap};
-        this.info = this.cube.info;
     }
 
     // Generate a new full data representation
