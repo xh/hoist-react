@@ -27,7 +27,14 @@ should use the new `filterFn` prop.
 
 ### 🐞 Bug Fixes
 
-* Fix issue where grid row striping would be turned off by default for non-tree grids
+* Fix issue where grid row striping inadvertently disabled by default for non-tree grids.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.35 -> 3.36`
+* @blueprintjs/datetime `3.19 -> 3.20`
+* clipboard-copy `3.1 -> 3.2`
+* core-js `3.6 -> 3.7`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.6.1...develop)
 
