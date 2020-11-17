@@ -50,6 +50,15 @@ export class Select extends HoistInput {
          */
         enableFilter: PT.bool,
 
+        /**
+         * Function called to filter available options for a given query string input.
+         * Used for filtering of options provided by `options` prop when `enableFilter` is true.
+         *
+         * Provided function should take an option and a query value and return a boolean.
+         * Defaults to a case-insensitive match on word starts.
+         */
+        filterFn: PT.func,
+
         /** True to hide the dropdown indicator, i.e. the down-facing arrow at the right of the Select. */
         hideDropdownIndicator: PT.bool,
 
@@ -152,7 +161,9 @@ export class Select extends HoistInput {
 
                 onBlur: this.onBlur,
                 onChange: this.onSelectChange,
-                onFocus: this.onFocus
+                onFocus: this.onFocus,
+                filterOption: this.filterOption
+
             };
 
         if (props.hideDropdownIndicator) {
@@ -190,6 +201,20 @@ export class Select extends HoistInput {
     //-------------------------
     // Options / value handling
     //-------------------------
+    filterOption = (opt, inputVal) => {
+        // 1) Use function provided by app
+        const {filterFn} = this.props;
+        if (filterFn) {
+            return filterFn(opt, inputVal);
+        }
+
+        // 2) ..or use default word start search
+        if (!inputVal) return true;
+        if (!opt.label) return false;
+        const regex = new RegExp(`(^|\\W)${inputVal}`, 'i');
+        return regex.test(opt.label);
+    };
+
     onSelectChange = (opt) => {
         this.noteValueChange(opt);
     };
