@@ -49,6 +49,8 @@ export class AppSpec {
      * @param {boolean} [c.showBrowserContextMenu] - True to show the built-in browser context menu
      *      when no app-specific menu would be shown (e.g. from a Grid). False (the default)
      *      prevents the browser menu from being shown anywhere upon right-click.
+     * @param {?string} [c.minHoistCoreVersion] - Minimum version of hoist-core required by this app.
+     *      The app will throw if the provided minimum is not satisfied.
      */
     constructor({
         clientAppCode = XH.appCode,
@@ -65,6 +67,7 @@ export class AppSpec {
         idlePanel = null,
         loginMessage = null,
         lockoutMessage = null,
+        minHoistCoreVersion = null,
         ...rest
     }) {
         throwIf(!modelClass, 'A Hoist App must define a modelClass.');
@@ -98,6 +101,7 @@ export class AppSpec {
         this.loginMessage = loginMessage;
         this.lockoutMessage = lockoutMessage;
         this.showBrowserContextMenu = showBrowserContextMenu;
+        this.minHoistCoreVersion = minHoistCoreVersion;
 
         Object.freeze(this);
     }

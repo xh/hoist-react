@@ -14,6 +14,7 @@ import {deepFreeze} from '@xh/hoist/utils/js';
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {defaults} from 'lodash';
 import {version as mobxVersion} from 'mobx/package.json';
+import semver from 'semver';
 import React from 'react';
 
 @HoistService
@@ -43,6 +44,14 @@ export class EnvironmentService {
         }, serverEnv);
 
         deepFreeze(this._data);
+
+        // Ensure that hoist-core version satisfies the minimum requirement (if specified)
+        const minVersion = this.parseVersion(XH.appSpec.minHoistCoreVersion),
+            coreVersion = this.parseVersion(this._data.hoistCoreVersion);
+
+        if (minVersion && !semver.gte(coreVersion, minVersion)) {
+            throw XH.exception(`Available hoist-core version ${coreVersion} does not satisfy the required minimum version of ${minVersion}.`);
+        }
 
         this.addReaction({
             when: () => XH.appIsRunning,
@@ -97,5 +106,10 @@ export class EnvironmentService {
         if (appVersion !== clientVersion) {
             console.warn(`Version mismatch detected between client and server - ${clientVersion} vs ${appVersion}`);
         }
+    }
+
+    parseVersion(version) {
+        if (!version) return null;
+        return semver.clean(version.replace('-SNAPSHOT', '.0'));
     }
 }
