@@ -128,7 +128,7 @@ export class JsonBlobModel {
             {field: 'lastUpdatedBy', width: 160, hidden: true}
         ],
         editors: [
-            {field: 'token'},
+            {field: 'token', skipBlank: true},
             {field: 'owner'},
             {field: 'acl'},
             {field: 'name'},
@@ -137,7 +137,7 @@ export class JsonBlobModel {
             {field: 'value'},
             {field: 'meta'},
             {field: 'archived'},
-            {field: 'archivedDate'},
+            {field: 'archivedDate', skipBlank: true},
             {field: 'dateCreated'},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}

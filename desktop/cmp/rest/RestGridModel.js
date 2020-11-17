@@ -9,7 +9,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
-import {filter, isPlainObject, pickBy} from 'lodash';
+import {filter, isPlainObject, pickBy, isNil} from 'lodash';
 import {RestStore} from './data/RestStore';
 import {RestFormModel} from './impl/RestFormModel';
 
@@ -126,7 +126,7 @@ export class RestGridModel {
         ...rest
     }) {
         this.readonly = readonly;
-        this.editors = editors;
+        this.editors = this.parseEditors(editors);
         this.toolbarActions = toolbarActions;
         this.menuActions = menuActions;
         this.formActions = formActions;
@@ -232,6 +232,16 @@ export class RestGridModel {
     parseStore(store) {
         return isPlainObject(store) ? this.markManaged(new RestStore(store)) : store;
     }
+
+    parseEditors(editors) {
+        // Default `skipBlank` to true for known metadata fields,
+        const metadataFields = ['lastUpdatedBy', 'lastUpdated', 'dateCreated'];
+        return editors.map(editor => {
+            let {field, skipBlank} = editor;
+            if (isNil(skipBlank) && metadataFields.includes(field)) skipBlank = true;
+            return {...editor, skipBlank};
+        });
+    }
 }
 
 /**
@@ -242,6 +252,8 @@ export class RestGridModel {
  *      Can be used to specify or customize the input used for editing/displaying this Field.
  * @property {Object} [fieldModel] - partial config for underlying FieldModel to be used for
  *      form display. Can be used for to specify additional validation requirements.
+ * @property {boolean} [skipBlank] - true to only display this editor if it has a record value.
+ *      Useful for fields which are readonly.
  */
 
 /**

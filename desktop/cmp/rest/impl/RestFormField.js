@@ -21,11 +21,10 @@ export const restFormField = hoistCmp.factory({
     displayName: 'RestFormField',
     model: uses(RestFormModel),
 
-    render({model, editor, ...props}) {
+    render({model, editor}) {
         const name = editor.field;
 
-        // Skip blank metadata
-        if (!model.formModel.values[name] && ['lastUpdatedBy', 'lastUpdated'].includes(name)) {
+        if (editor.skipBlank && !model.formModel.values[name]) {
             return null;
         }
 
