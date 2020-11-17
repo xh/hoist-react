@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {
@@ -46,7 +46,7 @@ export class StoreFilterFieldImplModel {
         filterOptions,
         includeFields,
         excludeFields,
-        matchMode
+        matchMode = 'startWord'
     }) {
         this.model = model;
         this.bind = bind;
@@ -57,7 +57,7 @@ export class StoreFilterFieldImplModel {
         this.filterOptions = filterOptions;
         this.includeFields = includeFields;
         this.excludeFields = excludeFields;
-        this.matchMode = matchMode || 'startWord';
+        this.matchMode = matchMode;
 
         warnIf(!gridModel && !store && isEmpty(includeFields),
             "Must specify one of 'gridModel', 'store', or 'includeFields' or the filter will be a no-op."
@@ -157,10 +157,10 @@ export class StoreFilterFieldImplModel {
                 return new RegExp(searchTerm, 'i');
             case 'start':
                 return new RegExp(`^${searchTerm}`, 'i');
-            default:
-                // startWord
+            case 'startWord':
                 return new RegExp(`(^|\\W)${searchTerm}`, 'i');
         }
+        throw XH.exception('Unknown matchMode in StoreFilterField');
     }
 
     getActiveFields() {
