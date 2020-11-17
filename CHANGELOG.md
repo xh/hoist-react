@@ -11,6 +11,10 @@
 * `TabModel` now supports a bindable `tooltip`, which can be used to render strings or elements
   while hovering over tabs.
 * New `Placeholder` component provides a thin wrapper around `Box` with standardized, muted styling.
+* `Select` now implements enhanced typeahead filtering of options. The default filtering is now
+  based on a case-insensitive match of word starts in the label. (Previously it was based on a match
+  _anywhere_ in the label _or_ value.) To customize this behavior, applications should use the new
+  `filterFn` prop.
 
 ### 💥 Breaking Changes
 
