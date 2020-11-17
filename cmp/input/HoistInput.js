@@ -172,7 +172,6 @@ export class HoistInput extends Component {
         this.doCommitInternal();
         // After explicit commit, we want to fully round-trip external value to get canonical value.
         this.setInternalValue(this.internalFromExternal());
-
     }
 
     /** Hook to convert an internal representation of the value to an appropriate external one. */

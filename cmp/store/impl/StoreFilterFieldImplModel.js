@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {
@@ -45,7 +45,8 @@ export class StoreFilterFieldImplModel {
         onFilterChange,
         filterOptions,
         includeFields,
-        excludeFields
+        excludeFields,
+        matchMode = 'startWord'
     }) {
         this.model = model;
         this.bind = bind;
@@ -56,6 +57,7 @@ export class StoreFilterFieldImplModel {
         this.filterOptions = filterOptions;
         this.includeFields = includeFields;
         this.excludeFields = excludeFields;
+        this.matchMode = matchMode;
 
         warnIf(!gridModel && !store && isEmpty(includeFields),
             "Must specify one of 'gridModel', 'store', or 'includeFields' or the filter will be a no-op."
@@ -127,7 +129,7 @@ export class StoreFilterFieldImplModel {
 
         let newFilter = null;
         if (searchTerm && !isEmpty(activeFields)) {
-            const regex = new RegExp(`(^|\\W)${searchTerm}`, 'i');
+            const regex = this.getRegex(searchTerm);
             newFilter = (rec) => activeFields.some(f => {
                 // Use of lodash get() slower than direct access - use only when needed to support
                 // dot-separated field paths. (See note in getActiveFields() below.)
@@ -147,6 +149,18 @@ export class StoreFilterFieldImplModel {
         } else {
             this.applyFilter();
         }
+    }
+
+    getRegex(searchTerm) {
+        switch (this.matchMode) {
+            case 'any':
+                return new RegExp(searchTerm, 'i');
+            case 'start':
+                return new RegExp(`^${searchTerm}`, 'i');
+            case 'startWord':
+                return new RegExp(`(^|\\W)${searchTerm}`, 'i');
+        }
+        throw XH.exception('Unknown matchMode in StoreFilterField');
     }
 
     getActiveFields() {

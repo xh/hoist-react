@@ -11,7 +11,11 @@
 * `TabModel` now supports a bindable `tooltip`, which can be used to render strings or elements
   while hovering over tabs.
 * New `Placeholder` component provides a thin wrapper around `Box` with standardized, muted styling.
-* `Cube.info` is now directly observable.
+* New `StoreFilterField.matchMode` prop allows customizing match to `start`, `startWord`, or `any`.
+* `Select` now implements enhanced typeahead filtering of options. The default filtering is now
+  based on a case-insensitive match of word starts in the label. (Previously it was based on a match
+  _anywhere_ in the label _or_ value.) To customize this behavior, applications should use the new
+  `filterFn` prop.
 
 ### 💥 Breaking Changes
 
@@ -24,7 +28,18 @@
 
 ### 🐞 Bug Fixes
 
-* Fix issue where grid row striping would be turned off by default for non-tree grids
+* Fix issue where grid row striping inadvertently disabled by default for non-tree grids.
+
+### ⚙️ Technical
+
+* `Cube.info` is now directly observable.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.35 -> 3.36`
+* @blueprintjs/datetime `3.19 -> 3.20`
+* clipboard-copy `3.1 -> 3.2`
+* core-js `3.6 -> 3.7`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.6.1...develop)
 
