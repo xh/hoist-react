@@ -106,5 +106,10 @@ StoreFilterField.propTypes = {
     store: PT.instanceOf(Store),
 
     /** Width of the input in pixels. */
-    width: PT.number
+    width: PT.number,
+
+    /**
+     * Mode to use when filtering.  Defaults to 'startWord'.
+     */
+    matchMode: PT.oneOf(['start', 'startWord', 'any'])
 };
