@@ -45,7 +45,8 @@ export class StoreFilterFieldImplModel {
         onFilterChange,
         filterOptions,
         includeFields,
-        excludeFields
+        excludeFields,
+        matchMode
     }) {
         this.model = model;
         this.bind = bind;
@@ -56,6 +57,7 @@ export class StoreFilterFieldImplModel {
         this.filterOptions = filterOptions;
         this.includeFields = includeFields;
         this.excludeFields = excludeFields;
+        this.matchMode = matchMode || 'startWord';
 
         warnIf(!gridModel && !store && isEmpty(includeFields),
             "Must specify one of 'gridModel', 'store', or 'includeFields' or the filter will be a no-op."
@@ -127,7 +129,7 @@ export class StoreFilterFieldImplModel {
 
         let newFilter = null;
         if (searchTerm && !isEmpty(activeFields)) {
-            const regex = new RegExp(`(^|\\W)${searchTerm}`, 'i');
+            const regex = this.getRegex(searchTerm);
             newFilter = (rec) => activeFields.some(f => {
                 // Use of lodash get() slower than direct access - use only when needed to support
                 // dot-separated field paths. (See note in getActiveFields() below.)
@@ -146,6 +148,18 @@ export class StoreFilterFieldImplModel {
             this.bufferedApplyFilter();
         } else {
             this.applyFilter();
+        }
+    }
+
+    getRegex(searchTerm) {
+        switch (this.matchMode) {
+            case 'any':
+                return new RegExp(searchTerm, 'i');
+            case 'start':
+                return new RegExp(`^${searchTerm}`, 'i');
+            default:
+                // startWord
+                return new RegExp(`(^|\\W)${searchTerm}`, 'i');
         }
     }
 
