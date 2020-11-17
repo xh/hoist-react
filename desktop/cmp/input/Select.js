@@ -56,10 +56,10 @@ export class Select extends HoistInput {
          */
         createMessageFn: PT.func,
 
-        /** True to close the menu after each selection.  Defaults to true. */
+        /** True (default) to close the menu after each selection. */
         closeMenuOnSelect: PT.bool,
 
-        /** True to show a "clear" button at the right of the control.  Defaults to false. */
+        /** True to show a "clear" button at the right of the control. */
         enableClear: PT.bool,
 
         /** True to accept and commit input values not present in options or returned by a query. */
@@ -76,7 +76,7 @@ export class Select extends HoistInput {
 
         /**
          * True to use react-windowed-select for improved performance on large option lists.
-         * See https://github.com/jacobworrel/react-windowed-select/.  Defaults to false.
+         * See https://github.com/jacobworrel/react-windowed-select/.
          *
          * Currently only supported when the enableCreate and queryFn props are not specified.
          * These options require the use of specialized 'Async' or 'Creatable' selects from the
@@ -86,13 +86,26 @@ export class Select extends HoistInput {
          */
         enableWindowed: PT.bool,
 
+        /**
+         * Function called to filter available options for a given query string input.
+         * Used for filtering of options provided by `options` prop when `enableFilter` is true.
+         * Not to be confused with `queryFn` prop, used in asynchronous mode.
+         *
+         * Provided function should take an option and a query value and return a boolean.
+         * Defaults to a case-insensitive match on word starts.
+         */
+        filterFn: PT.func,
+
         /** True to hide the dropdown indicator, i.e. the down-facing arrow at the right of the Select. */
         hideDropdownIndicator: PT.bool,
 
         /** True to suppress the default check icon rendered for the currently selected option. */
         hideSelectedOptionCheck: PT.bool,
 
-        /** True to hide options in the drop down menu if they have been selected.  Defaults to same as enableMulti. */
+        /**
+         * True to hide options in the drop down menu if they have been selected.
+         * Defaults to same as enableMulti.
+         */
         hideSelectedOptions: PT.bool,
 
         /** Field on provided options for sourcing each option's display text (default `label`). */
@@ -145,18 +158,6 @@ export class Select extends HoistInput {
          */
         queryBuffer: PT.number,
 
-
-        /**
-         * Function to be used for filtering of values for a given query string  input.
-         * Used for filtering of options provided by `options` prop when `enableFilter` is true.
-         * Not to be confused with `queryFn` prop, used in asynchronous mode.
-         *
-         * Provided function should take an option and a query value and return a boolean.
-         * Defaults to a case-insensitive match on word starts.
-         */
-        filterFn: PT.func,
-
-
         /**
          * Async function to return a list of options for a given query string input.
          * Replaces the `options` prop - use one or the other.
@@ -169,7 +170,6 @@ export class Select extends HoistInput {
          * list of options.
          */
         queryFn: PT.func,
-
 
         /**
          * Escape-hatch props passed directly to react-select. Use with care - not all props

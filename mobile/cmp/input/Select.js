@@ -50,16 +50,14 @@ export class Select extends HoistInput {
          */
         enableFilter: PT.bool,
 
-
         /**
-         * Function to be used for filtering of values for a given query string input.
+         * Function called to filter available options for a given query string input.
          * Used for filtering of options provided by `options` prop when `enableFilter` is true.
          *
          * Provided function should take an option and a query value and return a boolean.
          * Defaults to a case-insensitive match on word starts.
          */
         filterFn: PT.func,
-
 
         /** True to hide the dropdown indicator, i.e. the down-facing arrow at the right of the Select. */
         hideDropdownIndicator: PT.bool,
