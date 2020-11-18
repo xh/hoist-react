@@ -86,6 +86,9 @@ StoreFilterField.propTypes = {
      */
     includeFields: PT.arrayOf(PT.string),
 
+    /** Mode to use when filtering (default 'startWord'). */
+    matchMode: PT.oneOf(['start', 'startWord', 'any']),
+
     /** Optional model for value binding - see comments on the `bind` prop for details. */
     model: PT.object,
 
@@ -107,4 +110,5 @@ StoreFilterField.propTypes = {
 
     /** Width of the input in pixels. */
     width: PT.number
+
 };

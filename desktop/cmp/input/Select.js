@@ -8,7 +8,7 @@ import debouncePromise from 'debounce-promise';
 import {castArray, isEmpty, isNil, isPlainObject, keyBy, merge, isEqual} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
-import {createFilter, components} from 'react-select';
+import {components} from 'react-select';
 
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span, fragment} from '@xh/hoist/cmp/layout';
@@ -56,10 +56,10 @@ export class Select extends HoistInput {
          */
         createMessageFn: PT.func,
 
-        /** True to close the menu after each selection.  Defaults to true. */
+        /** True (default) to close the menu after each selection. */
         closeMenuOnSelect: PT.bool,
 
-        /** True to show a "clear" button at the right of the control.  Defaults to false. */
+        /** True to show a "clear" button at the right of the control. */
         enableClear: PT.bool,
 
         /** True to accept and commit input values not present in options or returned by a query. */
@@ -76,7 +76,7 @@ export class Select extends HoistInput {
 
         /**
          * True to use react-windowed-select for improved performance on large option lists.
-         * See https://github.com/jacobworrel/react-windowed-select/.  Defaults to false.
+         * See https://github.com/jacobworrel/react-windowed-select/.
          *
          * Currently only supported when the enableCreate and queryFn props are not specified.
          * These options require the use of specialized 'Async' or 'Creatable' selects from the
@@ -86,13 +86,26 @@ export class Select extends HoistInput {
          */
         enableWindowed: PT.bool,
 
+        /**
+         * Function called to filter available options for a given query string input.
+         * Used for filtering of options provided by `options` prop when `enableFilter` is true.
+         * Not to be confused with `queryFn` prop, used in asynchronous mode.
+         *
+         * Provided function should take an option and a query value and return a boolean.
+         * Defaults to a case-insensitive match on word starts.
+         */
+        filterFn: PT.func,
+
         /** True to hide the dropdown indicator, i.e. the down-facing arrow at the right of the Select. */
         hideDropdownIndicator: PT.bool,
 
         /** True to suppress the default check icon rendered for the currently selected option. */
         hideSelectedOptionCheck: PT.bool,
 
-        /** True to hide options in the drop down menu if they have been selected.  Defaults to same as enableMulti. */
+        /**
+         * True to hide options in the drop down menu if they have been selected.
+         * Defaults to same as enableMulti.
+         */
         hideSelectedOptions: PT.bool,
 
         /** Field on provided options for sourcing each option's display text (default `label`). */
@@ -148,6 +161,13 @@ export class Select extends HoistInput {
         /**
          * Async function to return a list of options for a given query string input.
          * Replaces the `options` prop - use one or the other.
+         *
+         * For providing external (e.g. server-side) options based on user inputs. Not to be
+         * confused with `filterFn`, which should be used to filter through local options when
+         * not in async mode.
+         *
+         * Provided function should take a query value and return a Promise resolving to a
+         * list of options.
          */
         queryFn: PT.func,
 
@@ -191,18 +211,10 @@ export class Select extends HoistInput {
     // Managed value for underlying text input under certain conditions
     // This is a workaround for rs-select issue described in hoist-react #880
     @observable inputValue = null;
+    inputValueChangedSinceSelect = false;
     get manageInputValue() {
         return this.filterMode && !this.multiMode;
     }
-
-    // Custom local option filtering to leverage default filter fn w/change to show all options if
-    // input has not been changed since last select (i.e. user has not typed).
-    // Applied only when manageInputValue if true.
-    _inputChangedSinceSelect = false;
-    _defaultLocalFilterFn = createFilter();
-    _localFilterFn = (opt, inputVal) => {
-        return !this.inputValue || !this._inputChangedSinceSelect || this._defaultLocalFilterFn(opt, inputVal);
-    };
 
     constructor(props, context) {
         super(props, context);
@@ -262,6 +274,7 @@ export class Select extends HoistInput {
                 onBlur: this.onBlur,
                 onChange: this.onSelectChange,
                 onFocus: this.onFocus,
+                filterOption: this.filterOption,
 
                 ref: this.reactSelectRef
             };
@@ -269,7 +282,6 @@ export class Select extends HoistInput {
         if (this.manageInputValue) {
             rsProps.inputValue = this.inputValue || '';
             rsProps.onInputChange = this.onInputChange;
-            rsProps.filterOption = this._localFilterFn;
         }
 
         if (this.asyncMode) {
@@ -329,7 +341,7 @@ export class Select extends HoistInput {
     onSelectChange = (opt) => {
         if (this.manageInputValue) {
             this.inputValue = opt ? opt.label : null;
-            this._inputChangedSinceSelect = false;
+            this.inputValueChangedSinceSelect = false;
         }
         this.noteValueChange(opt);
     };
@@ -342,11 +354,11 @@ export class Select extends HoistInput {
         if (this.manageInputValue) {
             if (action === 'input-change') {
                 this.inputValue = value;
-                this._inputChangedSinceSelect = true;
+                this.inputValueChangedSinceSelect = true;
                 if (!value) this.noteValueChange(null);
             } else if (action === 'input-blur') {
                 this.inputValue = null;
-                this._inputChangedSinceSelect = false;
+                this.inputValueChangedSinceSelect = false;
             }
         }
     };
@@ -390,6 +402,25 @@ export class Select extends HoistInput {
     //-------------------------
     // Options / value handling
     //-------------------------
+    filterOption = (opt, inputVal) => {
+        // 1) show all options if input has not changed since last select (i.e. user has not typed)
+        if (this.manageInputValue && (!this.inputValue || !this.inputValueChangedSinceSelect)) {
+            return true;
+        }
+
+        // 2) Use function provided by app
+        const {filterFn} = this.props;
+        if (filterFn) {
+            return filterFn(opt, inputVal);
+        }
+
+        // 3) ..or use default word start search
+        if (!inputVal) return true;
+        if (!opt.label) return false;
+        const regex = new RegExp(`(^|\\W)${inputVal}`, 'i');
+        return regex.test(opt.label);
+    };
+
 
     // Convert external value into option object(s). Options created if missing - this takes the
     // external value from the model, and we will respect that even if we don't know about it.

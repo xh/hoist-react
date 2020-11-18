@@ -14,25 +14,34 @@ import {
     switchInput,
     textInput
 } from '@xh/hoist/desktop/cmp/input';
-import {assign} from 'lodash';
+import {assign, isNil} from 'lodash';
 import {RestFormModel} from './RestFormModel';
 
 export const restFormField = hoistCmp.factory({
     displayName: 'RestFormField',
     model: uses(RestFormModel),
 
+    /**
+     * @param {RestFormModel} model
+     * @param {RestGridEditor} editor
+     * @param props
+     */
     render({model, editor, ...props}) {
-        const name = editor.field;
+        const {field} = editor,
+            fieldModel = model.getFormFieldModel(field),
+            fieldVal = fieldModel.value;
 
-        // Skip blank metadata
-        if (!model.formModel.values[name] && ['lastUpdatedBy', 'lastUpdated'].includes(name)) {
+        // Skip fields that are a) empty and b) readonly when c) adding a record. No point in
+        // showing these fields as they are not populated (nor are they expected to be), and they
+        // can't be edited. Common examples are metadata such as `dateCreated` and `lastUpdated`.
+        if (isNil(fieldVal) && fieldModel.readonly && model.isAdd) {
             return null;
         }
 
-        let config = assign({field: name, flex: 1}, editor.formField);
+        let config = assign({field, flex: 1}, editor.formField);
 
         if (!config.item && !config.items) {
-            config = {item: renderDefaultInput(name, model), ...config};
+            config = {item: renderDefaultInput(field, model), ...config};
         }
 
         return formField(config);
@@ -73,10 +82,9 @@ function renderDefaultInput(name, model) {
     }
 }
 
+// Favor switch, when we are not in a tri-state situation w/null
+// Otherwise, use a clearly nullable select.
 function renderBoolean(fieldModel) {
-    // Favor switch, when we are not in a tri-state situation w/null
-    // Otherwise, use a clearly nullable select.
-
     const {isRequired, value, initialValue} = fieldModel,
         useSwitch = isRequired && value != null && initialValue != null;
 
