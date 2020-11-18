@@ -6,6 +6,7 @@
  */
 
 import {managed} from '@xh/hoist/core';
+import {action, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {CubeField} from './CubeField';
 import {Query} from './Query';
@@ -28,9 +29,10 @@ export class Cube {
     @managed store;
     /** @member {function} */
     lockFn;
-
     /** @member {Object} */
-    _info = null;
+    @observable.ref
+    info = null;
+
     /** @member {Set<View>} */
     _connectedViews = new Set();
 
@@ -59,11 +61,8 @@ export class Cube {
         });
         this.store.loadData(data);
         this.lockFn = lockFn;
-        this._info = info;
+        this.info = info;
     }
-
-    /** @returns {Object} - optional metadata associated with this Cube at the last data load. */
-    get info() {return this._info}
 
     /** @returns {CubeField[]} - Fields configured for this Cube. */
     get fields() {return this.store.fields}
@@ -151,7 +150,7 @@ export class Cube {
      */
     async loadDataAsync(rawData, info = {}) {
         this.store.loadData(rawData);
-        this._info = Object.freeze(info);
+        this.setInfo(info);
         await forEachAsync(
             this._connectedViews,
             (v) => v.noteCubeLoaded()
@@ -174,9 +173,7 @@ export class Cube {
 
         // 2) Process info
         const hasInfoUpdates = !isEmpty(infoUpdates);
-        if (hasInfoUpdates) {
-            this._info = Object.freeze({...this._info, ...infoUpdates});
-        }
+        if (hasInfoUpdates) this.setInfo({...this.info, ...infoUpdates});
 
         // 3) Notify connected views
         if (changeLog || hasInfoUpdates) {
@@ -197,7 +194,7 @@ export class Cube {
      * @param {Object} infoUpdates - new key-value pairs to be applied to existing info on this cube.
      */
     updateInfo(infoUpdates = {}) {
-        this._info = Object.freeze({...this._info, ...infoUpdates});
+        this.setInfo({...this.info, ...infoUpdates});
         this._connectedViews.forEach((v) => v.noteCubeUpdated(null));
     }
 
@@ -205,6 +202,11 @@ export class Cube {
     //---------------------
     // Implementation
     //---------------------
+    @action
+    setInfo(info) {
+        this.info = Object.freeze(info);
+    }
+
     parseFields(fields = []) {
         return fields.map(f => f instanceof CubeField ? f : new CubeField(f));
     }

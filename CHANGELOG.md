@@ -30,6 +30,10 @@
 
 * Fix issue where grid row striping inadvertently disabled by default for non-tree grids.
 
+### ⚙️ Technical
+
+* `Cube.info` is now directly observable.
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.35 -> 3.36`
