@@ -24,7 +24,7 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {getClientDeviceInfo, throwIf, withShortDebug, checkVersion} from '@xh/hoist/utils/js';
+import {getClientDeviceInfo, throwIf, withShortDebug, checkMinVersion} from '@xh/hoist/utils/js';
 import {compact, camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
 import parser from 'ua-parser-js';
@@ -35,7 +35,6 @@ import {ExceptionHandler} from './ExceptionHandler';
 import {RouterModel} from './RouterModel';
 
 const MIN_HOIST_CORE_VERSION = '8.6.1';
-const MAX_HOIST_CORE_VERSION = '8.*.*';
 
 /**
  * Top-level Singleton model for Hoist. This is the main entry point for the API.
@@ -600,10 +599,10 @@ class XHClass {
 
             // Confirm hoist-core version after environment service loaded
             const version = XH.environmentService._data.hoistCoreVersion;
-            if (!checkVersion(version, MIN_HOIST_CORE_VERSION, MAX_HOIST_CORE_VERSION)) {
+            if (!checkMinVersion(version, MIN_HOIST_CORE_VERSION)) {
                 throw XH.exception(
-                    `This version of Hoist requires a hoist-core version between ${MIN_HOIST_CORE_VERSION} ` +
-                    `and ${MAX_HOIST_CORE_VERSION}. Version ${version} detected.`
+                    `This version of Hoist requires a minimum hoist-core version of ` +
+                    `${MIN_HOIST_CORE_VERSION}. Version ${version} detected.`
                 );
             }
 

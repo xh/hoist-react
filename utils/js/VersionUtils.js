@@ -19,10 +19,8 @@ export function checkVersion(version, minVersion, maxVersion) {
  * @return boolean
  */
 export function checkMinVersion(version, minVersion) {
-    // Treat snapshot versions as the next major version for min comparison
-    if (version?.endsWith('SNAPSHOT')) {
-        version = version.replace('-SNAPSHOT', '.0');
-    }
+    // Treat snapshot versions as the release version
+    version = version.replace('-SNAPSHOT', '.0');
     return version && minVersion && semver.satisfies(version, '>=' + minVersion);
 }
 
@@ -31,9 +29,7 @@ export function checkMinVersion(version, minVersion) {
  * @return boolean
  */
 export function checkMaxVersion(version, maxVersion) {
-    // Treat snapshot versions as the previous major version for max comparison
-    if (version?.endsWith('SNAPSHOT')) {
-        version = (parseInt(version) - 1) + '.0.0';
-    }
+    // Treat snapshot versions as the release version
+    version = version.replace('-SNAPSHOT', '.0');
     return version && maxVersion && semver.satisfies(version, '<=' + maxVersion);
 }
