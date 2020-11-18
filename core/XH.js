@@ -35,6 +35,7 @@ import {ExceptionHandler} from './ExceptionHandler';
 import {RouterModel} from './RouterModel';
 
 const MIN_HOIST_CORE_VERSION = '8.6.1';
+const MAX_HOIST_CORE_VERSION = '8.*.*';
 
 /**
  * Top-level Singleton model for Hoist. This is the main entry point for the API.
@@ -598,9 +599,12 @@ class XHClass {
             );
 
             // Confirm hoist-core version after environment service loaded
-            const {hoistCoreVersion} = XH.environmentService._data;
-            if (!checkVersion(hoistCoreVersion, MIN_HOIST_CORE_VERSION)) {
-                throw XH.exception(`Available hoist-core version ${hoistCoreVersion} does not satisfy the required minimum version of ${MIN_HOIST_CORE_VERSION}.`);
+            const version = XH.environmentService._data.hoistCoreVersion;
+            if (!checkVersion(version, MIN_HOIST_CORE_VERSION, MAX_HOIST_CORE_VERSION)) {
+                throw XH.exception(
+                    `This version of Hoist requires a hoist-core version between ${MIN_HOIST_CORE_VERSION} ` +
+                    `and ${MAX_HOIST_CORE_VERSION}. Version ${version} detected.`
+                );
             }
 
             await this.installServicesAsync(

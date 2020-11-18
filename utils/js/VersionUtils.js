@@ -7,20 +7,33 @@
 import semver from 'semver';
 
 /**
- * Check if a version string meets a required version
+ * Check if a version string falls within a range
  * @return boolean
  */
-export function checkVersion(version, requiredVersion) {
-    version = parseVersion(version);
-    requiredVersion = parseVersion(requiredVersion);
-    return version && requiredVersion && semver.gte(version, requiredVersion);
+export function checkVersion(version, minVersion, maxVersion) {
+    return checkMinVersion(version, minVersion) && checkMaxVersion(version, maxVersion);
 }
 
 /**
- * Parse and validate a semver string.
- * @return string if valid, or null.
+ * Check if a version string meets a minimum version
+ * @return boolean
  */
-export function parseVersion(version) {
-    if (!version) return null;
-    return semver.clean(version.replace('-SNAPSHOT', '.0'));
+export function checkMinVersion(version, minVersion) {
+    // Treat snapshot versions as the next major version for min comparison
+    if (version?.endsWith('SNAPSHOT')) {
+        version = version.replace('-SNAPSHOT', '.0');
+    }
+    return version && minVersion && semver.satisfies(version, '>=' + minVersion);
+}
+
+/**
+ * Check if a version string meets a maximum version
+ * @return boolean
+ */
+export function checkMaxVersion(version, maxVersion) {
+    // Treat snapshot versions as the previous major version for max comparison
+    if (version?.endsWith('SNAPSHOT')) {
+        version = (parseInt(version) - 1) + '.0.0';
+    }
+    return version && maxVersion && semver.satisfies(version, '<=' + maxVersion);
 }
