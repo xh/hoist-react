@@ -11,3 +11,4 @@ export * from './Decorators';
 export * from './WithDebug';
 export * from './DomUtils';
 export * from './BrowserUtils';
+export * from './VersionUtils';

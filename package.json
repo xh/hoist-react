@@ -66,7 +66,7 @@
     "resize-observer-polyfill": "~1.5.1",
     "router5": "~7.0.2",
     "router5-plugin-browser": "~7.0.2",
-    "semver": "^7.3.2",
+    "semver": "~7.3.2",
     "store2": "~2.12.0",
     "ua-parser-js": "~0.7.22"
   },
