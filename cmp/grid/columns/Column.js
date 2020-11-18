@@ -8,7 +8,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {castArray, clone, find, get, isArray, isFinite, isFunction, isNil, isNumber, isEmpty, isString} from 'lodash';
+import {castArray, clone, find, get, isArray, isFinite, isFunction, isNil, isNumber, isString} from 'lodash';
 import {Component} from 'react';
 import {GridSorter} from '../impl/GridSorter';
 import {ExportFormat} from './ExportFormat';
@@ -404,11 +404,12 @@ export class Column {
             tooltipSpec = tooltipElement ?? tooltip;
 
         if (tooltipSpec) {
-            ret.tooltipValueGetter = ({value}) => {
-                // Note that due to a known AgGrid issue, a tooltip must always return a value
-                // or risk not showing when the value later changes.
-                // See https://github.com/xh/hoist-react/issues/2058
-                return isEmpty(value) ? '*EMPTY*' : value;
+            ret.tooltipValueGetter = (obj) => {
+
+                // We actually return the *record* itself, rather then ag-Grid's default escaped value.
+                // We need it below, where it will be handled to class as a prop.
+                // Note that we must always return a value - see hoist-react #2058, #2181
+                return obj.data ?? '*EMPTY*';
             };
             ret.tooltipComponentFramework = class extends Component {
                 getReactContainerClasses() {
@@ -417,20 +418,17 @@ export class Column {
                 }
                 render() {
                     const agParams = this.props,
-                        {location, api, rowIndex} = agParams;
+                        {location, value: record} = agParams;  // Value actually contains store record -- see above
 
                     if (location === 'header') return div(me.headerTooltip);
 
-                    // ag-Grid cmp gets escaped value, lookup raw value from record instead
-                    const record = api.getDisplayedRowAtIndex(rowIndex)?.data;
-                    if (!record) return null;
-
+                    if (!record?.isRecord) return null;
                     const {store} = record,
-                        value = me.getValueFn({record, column: me, gridModel, agParams, store});
+                        val = me.getValueFn({record, column: me, gridModel, agParams, store});
 
                     return isFunction(tooltipSpec) ?
-                        tooltipSpec(value, {record, column: me, gridModel, agParams}) :
-                        value;
+                        tooltipSpec(val, {record, column: me, gridModel, agParams}) :
+                        val;
                 }
             };
         }
