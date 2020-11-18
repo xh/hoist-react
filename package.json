@@ -40,7 +40,6 @@
     "classnames": "~2.2.6",
     "clipboard-copy": "~3.2.0",
     "codemirror": "~5.58.2",
-    "compare-versions": "~3.6.0",
     "core-js": "~3.7.0",
     "debounce-promise": "~3.1.0",
     "downloadjs": "~1.4.7",
@@ -66,6 +65,7 @@
     "resize-observer-polyfill": "~1.5.1",
     "router5": "~7.0.2",
     "router5-plugin-browser": "~7.0.2",
+    "semver": "~7.3.2",
     "store2": "~2.12.0",
     "ua-parser-js": "~0.7.22"
   },
