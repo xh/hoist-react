@@ -65,9 +65,12 @@ export class RestGridModel {
     //----------------
     // Properties
     //----------------
+    /** @member {boolean} */
     readonly;
 
+    /** @member {RestGridEditor[]} */
     editors;
+
     toolbarActions;
     menuActions;
     formActions;
@@ -85,18 +88,21 @@ export class RestGridModel {
     unit;
     filterFields = null;
 
+    /** @member {GridModel} */
     @managed
     gridModel = null;
 
+    /** @member {RestFormModel} */
     @managed
     formModel = null;
 
+    /** @return {RestStore} */
     get store() {return this.gridModel.store}
-
+    /** @return {StoreSelectionModel} */
     get selModel() {return this.gridModel.selModel}
-
+    /** @return {Record[]} */
     get selection() {return this.gridModel.selection}
-
+    /** @return {Record} */
     get selectedRecord() {return this.gridModel.selectedRecord}
 
     /**
@@ -250,4 +256,3 @@ export class RestGridModel {
  * @param {input.record} original record from the REST grid
  * @param {input.clone} cloned record that is used to populate the editor form
  */
-
