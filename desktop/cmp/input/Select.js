@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import debouncePromise from 'debounce-promise';
-import {castArray, isEmpty, isNil, isPlainObject, keyBy, merge, isEqual} from 'lodash';
+import {castArray, escapeRegExp, isEmpty, isNil, isPlainObject, keyBy, merge, isEqual} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
 import {components} from 'react-select';
@@ -415,9 +415,10 @@ export class Select extends HoistInput {
         }
 
         // 3) ..or use default word start search
-        if (!inputVal) return true;
+        const searchTerm = escapeRegExp(inputVal);
+        if (!searchTerm) return true;
         if (!opt.label) return false;
-        const regex = new RegExp(`(^|\\W)${inputVal}`, 'i');
+        const regex = new RegExp(`(^|\\W)${searchTerm}`, 'i');
         return regex.test(opt.label);
     };
 
