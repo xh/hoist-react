@@ -92,7 +92,7 @@ export class FilterChooserModel {
         targetStore = null,
         initialValue = null,
         initialFavorites = [],
-        maxResults = 10,
+        maxResults = 50,
         persistWith
     }) {
         this.sourceStore = sourceStore;
