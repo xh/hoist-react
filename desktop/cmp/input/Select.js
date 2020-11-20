@@ -403,18 +403,24 @@ export class Select extends HoistInput {
     // Options / value handling
     //-------------------------
     filterOption = (opt, inputVal) => {
+        const {props, asyncMode, inputValue, inputValueChangedSinceSelect} = this;
+
         // 1) show all options if input has not changed since last select (i.e. user has not typed)
-        if (this.manageInputValue && (!this.inputValue || !this.inputValueChangedSinceSelect)) {
+        //    or if in async mode (i.e. queryFn specified).
+        if (
+            this.manageInputValue && (!inputValue || !inputValueChangedSinceSelect) ||
+            asyncMode
+        ) {
             return true;
         }
 
         // 2) Use function provided by app
-        const {filterFn} = this.props;
+        const {filterFn} = props;
         if (filterFn) {
             return filterFn(opt, inputVal);
         }
 
-        // 3) ..or use default word start search
+        // 3) ...or use default word start search
         const searchTerm = escapeRegExp(inputVal);
         if (!searchTerm) return true;
         if (!opt.label) return false;
