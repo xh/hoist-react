@@ -15,8 +15,7 @@ import {AppOption} from './AppOption';
  * Manages built-in setting of options.
  * @private
  */
-@HoistModel
-export class OptionsDialogModel {
+export class OptionsDialogModel extends HoistModel {
 
     @observable isOpen = false;
     @observable.ref options = [];

@@ -7,7 +7,7 @@
 
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {p} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, observable} from '@xh/hoist/mobx';
@@ -20,9 +20,9 @@ import {DifferDetailModel} from './DifferDetailModel';
 /**
  * @private
  */
-@HoistModel
-@LoadSupport
-export class DifferModel  {
+export class DifferModel extends HoistModel {
+
+    get isLoadSupport() {return true}
 
     parentGridModel;
     entityName;
@@ -66,6 +66,7 @@ export class DifferModel  {
         matchFields = ['name'],
         valueRenderer
     }) {
+        super();
         this.parentGridModel = parentGridModel;
         this.entityName = entityName;
         this.displayName = displayName ?? entityName;

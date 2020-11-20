@@ -13,8 +13,7 @@ import {ToastModel} from './ToastModel';
  *
  *  @private
  */
-@HoistModel
-export class ToastSourceModel {
+export class ToastSourceModel extends HoistModel {
 
     @managed
     @observable.ref

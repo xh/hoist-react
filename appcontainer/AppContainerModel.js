@@ -19,8 +19,7 @@ import {ToastSourceModel} from './ToastSourceModel';
 /**
  *  Root object for Framework GUI State.
  */
-@HoistModel
-export class AppContainerModel {
+export class AppContainerModel extends HoistModel {
 
     //------------
     // Sub-models

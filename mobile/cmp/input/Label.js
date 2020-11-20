@@ -6,14 +6,13 @@
  */
 import {HoistInput} from '@xh/hoist/cmp/input/HoistInput';
 import {div} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory} from '@xh/hoist/core';
 import PT from 'prop-types';
 import './Label.scss';
 
 /**
  * A simple label for a form.
  */
-@HoistComponent
 export class Label extends HoistInput {
 
     static propTypes = {

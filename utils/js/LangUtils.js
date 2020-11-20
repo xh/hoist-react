@@ -5,10 +5,20 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {Exception} from '@xh/hoist/exception';
-import {forOwn, isEmpty, isObject, isObjectLike, mixin, uniq, uniqBy} from 'lodash';
+import {forOwn, isEmpty, isObject, isObjectLike, mixin, uniq, uniqBy, isFunction} from 'lodash';
 import _inflection from 'lodash-inflection';
 
 mixin(_inflection);
+
+
+/**
+ * Is an object a ES6 class?
+ *
+ * @param {Object} v
+ */
+export function isClass(v) {
+    return isFunction(v) && v.toString().startsWith('class');
+}
 
 /**
  * Return the first defined argument - intended to allow for multiple levels of fallback values or

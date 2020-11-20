@@ -62,8 +62,7 @@ Clock.propTypes = {
     updateInterval: PT.number
 };
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
     timezone;
     format;
     updateInterval;

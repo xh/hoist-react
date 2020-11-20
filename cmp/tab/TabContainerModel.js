@@ -8,6 +8,7 @@ import {HoistModel, managed, PersistenceProvider, RefreshMode, RenderMode, XH} f
 import {action, observable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, apiRemoved, throwIf} from '@xh/hoist/utils/js';
 import {find, isUndefined, without, difference} from 'lodash';
+import {makeObservable} from 'mobx';
 import {TabModel} from './TabModel';
 
 /**
@@ -18,8 +19,7 @@ import {TabModel} from './TabModel';
  *
  * Note: Routing is currently enabled for desktop applications only.
  */
-@HoistModel
-export class TabContainerModel {
+export class TabContainerModel extends HoistModel {
 
     /** @member {TabModel[]} */
     @managed
@@ -80,6 +80,7 @@ export class TabContainerModel {
         emptyText = 'No tabs to display.',
         switcherPosition
     }) {
+        super();
         apiRemoved(switcherPosition, 'switcherPosition', 'Please specify `switcher` instead.');
 
         // Create default switcher props
@@ -119,6 +120,7 @@ export class TabContainerModel {
             this.addReaction({
                 track: () => this.activeTab,
                 run: (activeTab) => {
+                    console.log('sniff');
                     const {route} = this;
                     XH.track({
                         category: 'Navigation',
@@ -236,6 +238,7 @@ export class TabContainerModel {
      * @param {(TabModel|string)} tab - TabModel or id of TabModel to be activated.
      */
     activateTab(tab) {
+        console.log(tab);
         tab = this.findTab(tab.isTabModel ? tab.id : tab);
 
         if (!tab || tab.disabled || tab.isActive) return;
@@ -269,8 +272,9 @@ export class TabContainerModel {
 
         throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
-
+        console.log(id);
         this.activeTabId = id;
+        console.log(this.activeTabId);
         this.forwardRouterToTab(id);
     }
 

@@ -39,8 +39,7 @@ import {
  *  2) Add a reaction against this model's `value` property to fetch new data when it updates.
  *  3) Render a `DimensionChooser` control in your layout to bind to this model.
  */
-@HoistModel
-export class DimensionChooserModel {
+export class DimensionChooserModel extends HoistModel {
 
     /** @member {string[]} - names of dimensions selected for grouping. */
     @observable.ref value;
@@ -95,6 +94,7 @@ export class DimensionChooserModel {
         enableClear = false,
         ...rest
     }) {
+        super();
         this.maxHistoryLength = maxHistoryLength;
         this.maxDepth = maxDepth;
         this.enableClear = enableClear;

@@ -4,8 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, LoadSupport, loadAllAsync} from '@xh/hoist/core';
-import {applyMixin, throwIf} from '@xh/hoist/utils/js';
+import {HoistModel, loadAllAsync} from '@xh/hoist/core';
+import {throwIf} from '@xh/hoist/utils/js';
 import {pull} from 'lodash';
 
 /**
@@ -20,7 +20,7 @@ import {pull} from 'lodash';
  * Apps can create additional sub-contexts using a `RefreshContextView` paired with this model if
  * they need to coordinate refreshes within a more targeted sections of their UI.
  *
- * HoistModels declared with the `@LoadSupport` decorator are the primary targets for the refresh
+ * HoistModels declared with `isLoadSupport = true` are the primary targets for the refresh
  * calls made by this class. LoadSupport-enabled models are auto-linked to the nearest
  * RefreshContextModel when their HoistComponent is mounted.
  *
@@ -35,49 +35,43 @@ import {pull} from 'lodash';
  * @see ModelProvider
  * @see RootRefreshContextModel
  */
-export function RefreshContextModel(C) {
-    return applyMixin(C, {
-        name: 'RefreshContextModel',
-        includes: [HoistModel, LoadSupport],
+export class RefreshContextModel extends HoistModel {
 
-        defaults: {
+    get isRefreshContextModel()     {return true}
+    get isLoadSupport()             {return true}
 
-            async doLoadAsync(loadSpec) {
-                return loadAllAsync(this.refreshTargets, loadSpec);
-            },
+    async doLoadAsync(loadSpec) {
+        return loadAllAsync(this.refreshTargets, loadSpec);
+    }
 
-            /** Targets registered for refresh. */
-            refreshTargets: {
-                get() {
-                    if (!this._refreshTargets) this._refreshTargets = [];
-                    return this._refreshTargets;
-                }
-            },
+    /** Targets registered for refresh. */
+    get refreshTargets() {
+        if (!this._refreshTargets) this._refreshTargets = [];
+        return this._refreshTargets;
+    }
 
-            /**
-             * Register a target with this model for refreshing.
-             *
-             * Not typically called directly by applications.  Hoist will automatically register
-             * HoistModels marked with LoadSupport when their owning Component is first mounted.
-             *
-             * @param {Object} target
-             */
-            register(target) {
-                throwIf(
-                    !target.isLoadSupport,
-                    'Object must apply the LoadSupport decorator to be registered with a RefreshContextModel.'
-                );
-                const {refreshTargets} = this;
-                if (!refreshTargets.includes(target)) refreshTargets.push(target);
-            },
+    /**
+     * Register a target with this model for refreshing.
+     *
+     * Not typically called directly by applications.  Hoist will automatically register
+     * HoistModels marked with LoadSupport when their owning Component is first mounted.
+     *
+     * @param {Object} target
+     */
+    register(target) {
+        throwIf(
+            !target.isLoadSupport,
+            'Object must have LoadSupport to be registered with a RefreshContextModel.'
+        );
+        const {refreshTargets} = this;
+        if (!refreshTargets.includes(target)) refreshTargets.push(target);
+    }
 
-            /**
-             * Unregister a target from this model.
-             * @param {Object} target
-             */
-            unregister(target) {
-                pull(this.refreshTargets, target);
-            }
-        }
-    });
+    /**
+     * Unregister a target from this model.
+     * @param {Object} target
+     */
+    unregister(target) {
+        pull(this.refreshTargets, target);
+    }
 }

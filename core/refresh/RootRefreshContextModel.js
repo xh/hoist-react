@@ -16,8 +16,7 @@ import {RefreshContextModel} from './RefreshContextModel';
  *
  * The `XH.refreshAppAsync()` convenience method is the recommended entry-point for apps to call.
  */
-@RefreshContextModel
-export class RootRefreshContextModel {
+export class RootRefreshContextModel extends RefreshContextModel {
 
     async doLoadAsync(loadSpec) {
 

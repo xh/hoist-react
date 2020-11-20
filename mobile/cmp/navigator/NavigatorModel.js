@@ -15,8 +15,7 @@ import {PageModel} from './PageModel';
  * Model for handling stack-based navigation between Onsen pages.
  * Provides support for routing based navigation.
  */
-@HoistModel
-export class NavigatorModel {
+export class NavigatorModel extends HoistModel {
     /** @member {boolean} */
     @bindable disableAppRefreshButton;
 
@@ -59,6 +58,7 @@ export class NavigatorModel {
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY
     }) {
+        super();
         warnIf(renderMode === RenderMode.ALWAYS, 'RenderMode.ALWAYS is not supported in Navigator. Pages are always can\'t exist before being mounted.');
 
         ensureNotEmpty(pages, 'NavigatorModel needs at least one page.');

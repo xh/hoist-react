@@ -10,7 +10,7 @@ import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Cube} from '@xh/hoist/data';
 import {fmtDate, fmtNumber, numberRenderer} from '@xh/hoist/format';
 import {action} from '@xh/hoist/mobx';
@@ -23,9 +23,9 @@ import {ChartsModel} from './charts/ChartsModel';
 
 export const PERSIST_ACTIVITY = {localStorageKey: 'xhAdminActivityState'};
 
-@HoistModel
-@LoadSupport
-export class ActivityTrackingModel {
+export class ActivityTrackingModel extends HoistModel {
+
+    get isLoadSupport() {return true}
 
     persistWith = PERSIST_ACTIVITY;
 
@@ -64,6 +64,7 @@ export class ActivityTrackingModel {
     _defaultFilter = [{field: 'category', op: '=', value: 'App'}]
 
     constructor() {
+        super();
         this.formModel = new FormModel({
             fields: [
                 {name: 'startDay', initialValue: this.getDefaultStartDay()},

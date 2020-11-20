@@ -16,8 +16,7 @@ import {startCase} from 'lodash';
  * This model is not typically created directly within applications. Instead, specify a
  * configuration for it via the `TabContainerModel.tabs` constructor config.
  */
-@HoistModel
-export class TabModel {
+export class TabModel extends HoistModel {
 
     id;
     @bindable.ref title;
@@ -65,6 +64,7 @@ export class TabModel {
         refreshMode,
         renderMode
     }) {
+        super();
         throwIf(showRemoveAction && XH.isMobileApp, 'Removable Tabs not supported in Mobile toolkit.');
 
         this.id = id.toString();

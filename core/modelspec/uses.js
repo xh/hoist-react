@@ -20,7 +20,7 @@ import {ModelPublishMode, ModelSpec} from './ModelSpec';
  *
  * Note that any model created via `createFromConfig` or `createDefault` will be considered to be
  * 'owned' by the receiving component and treated as if it were specified using `create()`: if it
- * implements `@LoadSupport` it will be loaded on component mount, and it will always be destroyed
+ * implements `LoadSupport` it will be loaded on component mount, and it will always be destroyed
  * on component unmount.
  *
  * @param {(Class|string|function)} selector - specification of HoistModel to use. Should be a

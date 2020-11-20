@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {ReactiveSupport, ManagedSupport} from '@xh/hoist/core';
+import {HoistModel} from '@xh/hoist/core';
 import {action, observable, bindable} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
@@ -28,9 +28,7 @@ import {Record} from './Record';
 /**
  * A managed and observable set of local, in-memory Records.
  */
-@ReactiveSupport
-@ManagedSupport
-export class Store {
+export class Store extends HoistModel {
 
     /** @member {Field[]} */
     fields = null;
@@ -91,6 +89,7 @@ export class Store {
         loadRootAsSummary = false,
         data
     }) {
+        super();
         this.fields = this.parseFields(fields);
         this.idSpec = isString(idSpec) ? (data) => data[idSpec] : idSpec;
         this.processRawData = processRawData;

@@ -23,8 +23,7 @@ import {isNil} from 'lodash';
  * PanelModel supports configuration and state-management for user-driven Panel resizing and
  * expand/collapse, along with support for saving this state via a configured PersistenceProvider.
  */
-@HoistModel
-export class PanelModel {
+export class PanelModel extends HoistModel {
 
     //-----------------------
     // Immutable Properties
@@ -102,6 +101,7 @@ export class PanelModel {
         showHeaderCollapseButton = true,
         ...rest
     }) {
+        super();
         if ((collapsible || resizable) && (isNil(defaultSize) || isNil(side))) {
             console.error(
                 "Must specify 'defaultSize' and 'side' for a collapsible or resizable PanelModel. Panel sizing disabled."

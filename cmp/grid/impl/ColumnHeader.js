@@ -109,8 +109,7 @@ export const columnHeader = hoistCmp.factory({
 });
 
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
     gridModel;
     xhColumn;
     agColumn;
@@ -126,6 +125,7 @@ class LocalModel {
     _lastMouseDown = null;
 
     constructor({gridLocalModel, xhColumn, column: agColumn, enableSorting}) {
+        super();
         this.gridModel = gridLocalModel.model;
         this.xhColumn = xhColumn;
         this.agColumn = agColumn;

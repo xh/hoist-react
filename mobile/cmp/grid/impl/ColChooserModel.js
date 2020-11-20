@@ -15,8 +15,7 @@ import {clone, find, sortBy} from 'lodash';
  * It is not necessary to manually create instances of this class within an application.
  * @private
  */
-@HoistModel
-export class ColChooserModel {
+export class ColChooserModel extends HoistModel {
 
     gridModel;
 
@@ -41,6 +40,7 @@ export class ColChooserModel {
      * @param {GridModel} gridModel - model for the grid to be managed.
      */
     constructor(gridModel) {
+        super();
         this.gridModel = gridModel;
 
         this.addReaction({

@@ -11,8 +11,7 @@ import {throwIf} from '@xh/hoist/utils/js';
 /**
  * Model to hold and maintain the configuration and data series for a Highcharts chart.
  */
-@HoistModel
-export class ChartModel {
+export class ChartModel extends HoistModel {
 
     @observable.ref highchartsConfig = {};
     @observable.ref series = [];
@@ -30,6 +29,7 @@ export class ChartModel {
      * @param {Object[]} c.series - The initial data series to be displayed.
      */
     constructor({highchartsConfig, series = [], config} = {}) {
+        super();
         throwIf(config, 'ChartModel "config" has been removed. Please use "highchartsConfig" instead.');
         this.highchartsConfig = highchartsConfig;
         this.series = series;

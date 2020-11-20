@@ -15,8 +15,7 @@ import {action, observable} from '@xh/hoist/mobx';
  *
  * @private
  */
-@HoistModel
-export class ExceptionDialogModel {
+export class ExceptionDialogModel extends HoistModel {
 
     @observable.ref displayData;
     @observable detailsIsOpen = false;

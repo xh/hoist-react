@@ -66,8 +66,7 @@ export const impersonationBar = hoistCmp.factory({
 });
 
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
     model;
     @bindable pendingTarget = null;

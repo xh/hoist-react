@@ -55,8 +55,7 @@ export const columnGroupHeader = hoistCmp.factory({
     }
 });
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
     /** @member {ColumnGroup} */
     agColumnGroup;
 
@@ -65,6 +64,7 @@ class LocalModel {
     get isExpandable() {return this.agColumnGroup.isExpandable()}
 
     constructor({columnGroup: agColumnGroup}) {
+        super();
         this.agColumnGroup = agColumnGroup.originalColumnGroup;
         this.syncIsExpanded();
         this.agColumnGroup.addEventListener('expandedChanged', this.syncIsExpanded);

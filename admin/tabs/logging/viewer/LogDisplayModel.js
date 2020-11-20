@@ -4,16 +4,16 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 
 /**
  * @private
  */
-@HoistModel
-@LoadSupport
-export class LogDisplayModel {
+export class LogDisplayModel extends HoistModel {
+
+    get isLoadSupport() {return true}
 
     firstRowRef = createObservableRef();
     lastRowRef = createObservableRef();
@@ -21,6 +21,7 @@ export class LogDisplayModel {
     @bindable.ref rows = [];
 
     constructor(parent) {
+        super();
         this.parent = parent;
         this.addAutorun(this.syncTail);
     }

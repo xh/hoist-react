@@ -35,8 +35,7 @@ import {ValidationState} from './validation/ValidationState';
  *
  * @see FieldModel for details on state and validation maintained at the individual field level.
  */
-@HoistModel
-export class FormModel {
+export class FormModel extends HoistModel {
 
     /** @member {Object} - container object for FieldModel instances, keyed by field name. */
     @observable.ref fields = {};
@@ -78,6 +77,7 @@ export class FormModel {
             disabled = false,
             readonly = false
         } = {}) {
+        super();
         this.disabled = disabled;
         this.readonly = readonly;
         const models = {};

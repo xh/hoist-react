@@ -87,15 +87,14 @@ Chart.propTypes = {
     model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object])
 };
 
-
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
     @bindable aspectRatio;
     chartRef = createObservableRef();
     model;
     prevSeriesConfig;
 
     constructor(model, aspectRatio) {
+        super();
         this.model = model;
         this.aspectRatio = aspectRatio;
         this.addReaction({

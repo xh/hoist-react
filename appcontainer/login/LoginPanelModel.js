@@ -13,8 +13,7 @@ import {debounced} from '@xh/hoist/utils/js';
  * Support for Forms-based Login.
  * @private
  */
-@HoistModel
-export class LoginPanelModel {
+export class LoginPanelModel extends HoistModel {
 
     @bindable username = '';
     @bindable password = '';

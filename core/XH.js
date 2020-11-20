@@ -26,6 +26,7 @@ import {
 } from '@xh/hoist/svc';
 import {getClientDeviceInfo, throwIf, withShortDebug, checkMinVersion} from '@xh/hoist/utils/js';
 import {compact, camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
+import {makeObservable} from 'mobx';
 import ReactDOM from 'react-dom';
 import parser from 'ua-parser-js';
 
@@ -50,6 +51,10 @@ class XHClass {
 
     _initCalled = false;
     _lastActivityMs = Date.now();
+
+    constructor() {
+        makeObservable(this);
+    }
 
     //----------------------------------------------------------------------------------------------
     // Metadata - set via webpack.DefinePlugin at build time.
@@ -190,7 +195,7 @@ class XHClass {
     /**
      * Install HoistServices on this object.
      *
-     * @param {...Object} serviceClasses - Classes decorated with @HoistService
+     * @param {...Class} serviceClasses - Classes extending HoistService
      *
      * This method will create, initialize, and install the services classes listed on XH.
      * All services will be initialized concurrently. To guarantee execution order of service

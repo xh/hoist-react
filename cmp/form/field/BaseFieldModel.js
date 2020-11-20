@@ -12,6 +12,7 @@ import {wait} from '@xh/hoist/promise';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
 import {withDefault} from '@xh/hoist/utils/js';
 import {compact, flatten, isEmpty, isFunction, isNil, isUndefined} from 'lodash';
+import {HoistModel} from '../../../core';
 
 /**
  * Abstract Base class for FieldModels.
@@ -19,7 +20,7 @@ import {compact, flatten, isEmpty, isFunction, isNil, isUndefined} from 'lodash'
  * @see FieldModel
  * @see SubformsFieldModel
  */
-export class BaseFieldModel {
+export class BaseFieldModel extends HoistModel {
 
     /** @member {FormModel} */
     _formModel;
@@ -78,6 +79,7 @@ export class BaseFieldModel {
         readonly = false,
         rules = []
     }) {
+        super();
         this.name = name;
         this.displayName = withDefault(displayName, genDisplayName(name));
         this.value = initialValue;

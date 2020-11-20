@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core/HoistModel';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
+import {makeObservable} from '@xh/hoist/mobx';
 
 /**
  * Tracks the resolution state of a stream of promise invocations.
@@ -19,8 +19,9 @@ import {isUndefined} from 'lodash';
  * @see Promise#linkTo
  * @see Panel.mask
  */
-@HoistModel
 export class PendingTaskModel {
+
+    get isPendingTaskModel() {return true}
 
     @bindable message = null;
 
@@ -36,6 +37,7 @@ export class PendingTaskModel {
      * @param {?string} [c.message] - description of the pending task - for end-user display.
      */
     constructor({mode = 'last', message = null} = {}) {
+        makeObservable(this);
         this.mode = mode;
         this.message = message;
     }

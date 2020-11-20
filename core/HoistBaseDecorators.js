@@ -5,61 +5,20 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {PersistenceProvider} from '@xh/hoist/core';
-import {applyMixin} from '@xh/hoist/utils/js';
 
 import {cloneDeep, isUndefined} from 'lodash';
-import {runInAction} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
-/**
- * Mixin to support Persistent properties on an object
- */
-export function PersistSupport(C) {
-    return applyMixin(C, {
-        name: 'PersistSupport',
 
-        defaults: {
-            /**
-             *  Method to make a class property persistent, syncing its value via a configured
-             * `PersistenceProvider` to maintain and restore values across browser sessions.
-             *
-             * This may be used on any @observable or @bindable class property which is a primitive.
-             * It will initialize the observable's value from the class's default
-             * `PersistenceProvider` and will subsequently write back any changes to the property
-             * to that Provider. If the Provider has not yet been populated with a value, or an
-             * error occurs, it will use the value set in-code instead.
-             *
-             * @param {string} property - name of property on this object to bind to a
-             *      persistence provider.
-             * @param {PersistOptions} [options] - options governing the persistence of this
-             *      object.  These will be applied on top of any default persistWith options defined
-             *      on the instance itself.
-             *
-             * See also @persist and @persist.with for a convenient decorator that may be used
-             * directly on the property declaration itself.  Use this method in the general case,
-             * when you need to control the timing,
-             */
-            markPersist(property, options = {}) {
-                // Read from and attach to Provider, failing gently
-                try {
-                    const persistWith = {path: property, ...this.persistWith, ...options},
-                        provider = this.markManaged(PersistenceProvider.create(persistWith)),
-                        providerState = provider.read();
-                    if (!isUndefined(providerState)) {
-                        runInAction(() => this[property] = cloneDeep(providerState));
-                    }
-                    this.addReaction({
-                        track: () => this[property],
-                        run: (data) => provider.write(data)
-                    });
-                } catch (e) {
-                    console.error(
-                        `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
-                        `'persistWith' on this object or in the method call.`
-                    );
-                }
-            }
-        }
-    });
+/**
+ * Decorator to make a property "managed". Managed properties are designed to hold objects that
+ * are created by the referencing object and that implement a `destroy()` method.
+ *
+ * See also (@see HoistBase.markManaged}.
+ */
+export function managed(target, property, descriptor) {
+    target._xhManagedProperties = target._xhManagedProperties ?? [];
+    target._xhManagedProperties.push(property);
+    return descriptor;
 }
 
 /**
@@ -75,7 +34,7 @@ export function PersistSupport(C) {
  * property-specific persistence options.
  */
 export function persist(target, property, descriptor) {
-    return createDescriptor(target, property, descriptor, null);
+    return createPersistDescriptor(target, property, descriptor, null);
 }
 
 /**
@@ -88,14 +47,15 @@ export function persist(target, property, descriptor) {
  */
 persist.with = function(options) {
     return function(target, property, descriptor) {
-        return createDescriptor(target, property, descriptor, options);
+        return createPersistDescriptor(target, property, descriptor, options);
     };
 };
 
-//--------------------
+
+//---------------------
 // Implementation
-//--------------------
-function createDescriptor(target, property, descriptor, options) {
+//---------------------
+function createPersistDescriptor(target, property, descriptor, options) {
     if (descriptor.get || descriptor.set) {
         console.error(
             `Error defining ${property} : @persist or @persistWith should be defined closest ` +

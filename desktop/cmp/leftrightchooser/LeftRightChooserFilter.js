@@ -48,14 +48,14 @@ LeftRightChooserFilter.propTypes = {
 };
 
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
     lastProps;
 
     @bindable
     value = null;
 
     constructor() {
+        super();
         this.addReaction({
             track: () => this.value,
             run: () => this.runFilter()

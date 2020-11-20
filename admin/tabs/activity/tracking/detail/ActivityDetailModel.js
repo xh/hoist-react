@@ -7,8 +7,7 @@ import {Icon} from '@xh/hoist/icon/Icon';
 import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 
-@HoistModel
-export class ActivityDetailModel {
+export class ActivityDetailModel extends HoistModel {
 
     /** @member {ActivityTrackingModel} */
     parentModel;
@@ -20,6 +19,7 @@ export class ActivityDetailModel {
     @observable formattedData;
 
     constructor({parentModel}) {
+        super();
         this.parentModel = parentModel;
 
         this.gridModel = new GridModel({

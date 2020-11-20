@@ -14,8 +14,7 @@ import {times} from 'lodash';
 // safe to use with the desktop kit.
 import FastClick from '@onsenui/fastclick';
 
-@HoistModel
-export class PinPadModel {
+export class PinPadModel extends HoistModel {
 
     /** @member {boolean} */
     @bindable disabled;
@@ -43,6 +42,7 @@ export class PinPadModel {
         headerText = '',
         subHeaderText = ''
     } = {}) {
+        super();
         this.headerText = headerText;
         this.subHeaderText = subHeaderText;
 

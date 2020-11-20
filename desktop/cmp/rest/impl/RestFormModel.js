@@ -11,8 +11,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil, merge} from 'lodash';
 
-@HoistModel
-export class RestFormModel {
+export class RestFormModel extends HoistModel {
 
     /** @member {RestGridModel} */
     parent = null;
@@ -39,6 +38,7 @@ export class RestFormModel {
 
     /** @param {RestGridModel} parent */
     constructor(parent) {
+        super();
         this.parent = parent;
     }
 

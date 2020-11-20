@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {codeInput, CodeInput} from '@xh/hoist/desktop/cmp/input';
 import {bindable} from '@xh/hoist/mobx';
 import * as codemirror from 'codemirror';
@@ -15,7 +15,6 @@ import {jsonlint} from './impl/jsonlint';
 /**
  * Code-editor style input for editing and validating JSON, powered by CodeMirror.
  */
-@HoistComponent
 @LayoutSupport
 export class JsonInput extends HoistInput {
 

@@ -272,7 +272,7 @@ render function with the `hoistComponent` function. This will apply core Hoist s
 MobX observability, and support for Forwards refs, and will return the Component.
 
 Alternatively, Hoist continues to fully support ES6 class-based Components. These can be specified
-using the '@HoistComponent' decorator. This decorator will enable MobX reactivity and augment a
+using the 'HoistComponent' base class. This class will enable MobX reactivity and augment a
 Component with several useful convenience methods/getters such as `getDOMNode()` and `isDisplayed`.
 
 Note that many layout related HoistComponents provide "LayoutSupport". HoistComponents supporting
@@ -292,13 +292,13 @@ Model and Component classes that's tailored to their needs.
 Service instances persist for the life of the app and have a defined initialization process. By
 convention they are stored within an `svc/` package within an app's file structure.
 
-Use the `@HoistService` decorator to mark a class as a global service within. As with the other
-decorators, this installs MobX and Event support and defines an empty `initAsync()` lifecycle
-method. To instantiate and make services available to application code, use the
-`XH.installServicesAsync()` method. This method will construct, initialize, and install the services
-as a property on the XH object. Note that there is a strict expectation that service classes will be
-named ending with the word 'Service', e.g. `MyCustomService.`. The installed instance in this case
-would then be made available to application code as `XH.myCustomService'.
+Use the `HoistService` class to mark a class as a global service within.  Tthis installs MobX and
+Event support and defines an empty `initAsync()` lifecycle method. To instantiate and make services
+available to application code, use the`XH.installServicesAsync()` method. This method will construct,
+initialize, and install the services as a property on the XH object. Note that there is a strict
+expectation that service classes will be named ending with the word 'Service', e.g. `MyCustomService.`.
+The installed instance in this case would then be made available to application code as
+`XH.myCustomService'.
 
 Many core Hoist features are exposed on the client via services such as `PrefService`,
 `ConfigService`, and `IdentityService`. See these examples for a better understanding of the kind of

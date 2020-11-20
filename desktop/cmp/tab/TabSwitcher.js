@@ -190,8 +190,7 @@ const overflowMenu = hoistCmp.factory({
     }
 });
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel  {
     @bindable.ref overflowIds = [];
     switcherRef = createObservableRef();
     model;
@@ -203,6 +202,7 @@ class LocalModel {
     }
 
     constructor(model, enableOverflow, vertical) {
+        super();
         this.model = model;
         this.enableOverflow = enableOverflow;
         this.vertical = vertical;

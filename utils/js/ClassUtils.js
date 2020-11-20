@@ -151,7 +151,7 @@ function chainMethods(C, methods, {runOrder = 'after'} = {}) {
             f = method;
         } else {
             f = function() {
-                if (runOrder == 'after') {
+                if (runOrder === 'after') {
                     existing.apply(this, arguments);
                     method.apply(this, arguments);
                 } else {

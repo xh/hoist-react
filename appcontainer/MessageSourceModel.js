@@ -14,8 +14,7 @@ import {MessageModel} from './MessageModel';
  * Not intended for direct application use. {@see XHClass#message()} and related for the public API.
  * @private
  */
-@HoistModel
-export class MessageSourceModel {
+export class MessageSourceModel extends HoistModel {
 
     @managed
     @observable.ref

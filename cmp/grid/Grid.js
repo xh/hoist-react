@@ -144,8 +144,7 @@ Grid.propTypes = {
 //------------------------
 // Implementation
 //------------------------
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
     model;
     agOptions;
@@ -180,6 +179,7 @@ class LocalModel {
     @observable frameworkCmpsMounted = false;
 
     constructor(model, props) {
+        super();
         this.model = model;
         this.addReaction(this.selectionReaction());
         this.addReaction(this.sortReaction());

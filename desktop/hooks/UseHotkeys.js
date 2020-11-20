@@ -32,15 +32,14 @@ export function useHotkeys(child, hotkeys) {
     );
 }
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
     localHotkeysEvents = new HotkeysEvents('local');
     globalHotkeysEvents = new HotkeysEvents('global');
 
     // Capture the handlers on initial render.  Following blueprint, assume these static.
     constructor(hotkeys) {
-
+        super();
         // Normalize to blueprint Hotkeys element
         if (isArray(hotkeys)) {
             hotkeys = hotkeys.map(it => isPlainObject(it) ? hotkeyBp(it) : it);

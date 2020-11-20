@@ -9,8 +9,7 @@ import {HoistModel, XH} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {Icon} from '@xh/hoist/icon/Icon';
 
-@HoistModel
-export class RegroupDialogModel {
+export class RegroupDialogModel extends HoistModel {
 
     _parent;
 
@@ -29,6 +28,7 @@ export class RegroupDialogModel {
     }
 
     constructor(parent) {
+        super();
         this._parent = parent;
     }
 

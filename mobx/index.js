@@ -7,6 +7,7 @@
 import {configure} from 'mobx';
 
 export {
+    makeObservable,
     action,
     autorun,
     computed,

@@ -14,8 +14,7 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
  *
  * @private
  */
-@HoistModel
-export class ToastModel {
+export class ToastModel extends HoistModel {
 
     // Immutable public properties
     icon = null;
@@ -35,6 +34,7 @@ export class ToastModel {
         position = null,
         containerRef = null
     }) {
+        super();
         this.message = message;
         this.icon = icon;
         this.timeout = timeout;

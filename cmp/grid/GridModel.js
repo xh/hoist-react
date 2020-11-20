@@ -7,7 +7,7 @@
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Column, ColumnGroup, GridAutosizeMode, TreeStyle} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
@@ -62,9 +62,9 @@ import {GridSorter} from './impl/GridSorter';
  *      collapse controls and indent child columns in addition to displaying its own data.
  *
  */
-@HoistModel
-@LoadSupport
-export class GridModel {
+export class GridModel extends HoistModel {
+
+    get isLoadSupport() {return true}
 
     static DEFAULT_RESTORE_DEFAULTS_WARNING =
         fragment(
@@ -280,6 +280,7 @@ export class GridModel {
         experimental,
         ...rest
     }) {
+        super();
         this._defaultState = {columns, sortBy, groupBy};
 
         this.treeMode = treeMode;

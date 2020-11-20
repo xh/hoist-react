@@ -12,8 +12,7 @@ import {computed} from '@xh/hoist/mobx';
 /**
  * A Model for managing the state of a LeftRightChooser.
  */
-@HoistModel
-export class LeftRightChooserModel {
+export class LeftRightChooserModel extends HoistModel {
 
     /** @type {GridModel} */
     @managed leftModel;
@@ -98,6 +97,7 @@ export class LeftRightChooserModel {
         rightEmptyText = null,
         showCounts = true
     }) {
+        super();
         this.onChange = onChange;
         this._ungroupedName = ungroupedName;
         this.leftGroupingEnabled = leftGroupingEnabled;

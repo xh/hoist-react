@@ -5,26 +5,31 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {ManagedSupport, ReactiveSupport, PersistSupport, XhIdSupport} from '@xh/hoist/core';
-import {applyMixin} from '@xh/hoist/utils/js';
+import {makeObservable, observable} from '@xh/hoist/mobx';
 
 /**
- * Core decorator for Services in Hoist.
+ * Core class for Services in Hoist.
  *
- * All services Hoist applications should typically be decorated with this function.
  * Adds support for managed events, mobx reactivity, and lifecycle initialization.
  */
-export function HoistService(C) {
-    return applyMixin(C, {
-        name: 'HoistService',
-        includes: [ManagedSupport, ReactiveSupport, PersistSupport, XhIdSupport],
+@ManagedSupport
+@ReactiveSupport
+@PersistSupport
+@XhIdSupport
+export class HoistService {
 
-        defaults: {
-            /**
-             * Called by framework or application to initialize before application startup.
-             * Throwing an exception from this method will typically block startup.
-             * Service writers should take care to stifle and manage all non-fatal exceptions.
-             */
-            async initAsync() {}
-        }
-    });
+    @observable sniff;
+
+    get isHoistService() {return true}
+
+    constructor() {
+        makeObservable(this);
+    }
+
+    /**
+     * Called by framework or application to initialize before application startup.
+     * Throwing an exception from this method will typically block startup.
+     * Service writers should take care to stifle and manage all non-fatal exceptions.
+     */
+    async initAsync() {}
 }

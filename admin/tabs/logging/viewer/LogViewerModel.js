@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, managed, persist, XH} from '@xh/hoist/core';
+import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
@@ -17,9 +17,9 @@ import {LogDisplayModel} from './LogDisplayModel';
 /**
  * @private
  */
-@HoistModel
-@LoadSupport
-export class LogViewerModel {
+export class LogViewerModel extends HoistModel {
+
+    get isLoadSupport() {return true}
 
     persistWith = {localStorageKey: 'xhAdminLogViewerState'};
 
@@ -60,6 +60,7 @@ export class LogViewerModel {
     });
 
     constructor() {
+        super();
         this.addReaction(this.syncSelectionReaction());
         this.addReaction(this.toggleTailReaction());
         this.addReaction(this.reloadReaction());

@@ -12,8 +12,7 @@ import {action, observable} from '@xh/hoist/mobx';
  *
  *  @private
  */
-@HoistModel
-export class ThemeModel {
+export class ThemeModel extends HoistModel {
 
     @observable darkTheme = false;
 

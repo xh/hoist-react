@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory} from '@xh/hoist/core';
 import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
@@ -14,7 +14,6 @@ import PT from 'prop-types';
  * Checkbox control for boolean values.
  * Renders null with an "indeterminate" [-] display.
  */
-@HoistComponent
 export class Checkbox extends HoistInput {
 
     static propTypes = {

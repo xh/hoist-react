@@ -76,8 +76,7 @@ import {dashView} from './impl/DashView';
  * @see http://golden-layout.com/docs/ItemConfig.html
  * @see http://golden-layout.com/tutorials/getting-started-react.html
  */
-@HoistModel
-export class DashContainerModel {
+export class DashContainerModel extends HoistModel {
 
     //---------------------------
     // Observable Persisted State
@@ -157,6 +156,7 @@ export class DashContainerModel {
         addViewButtonText = 'Add View',
         extraMenuItems
     }) {
+        super();
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {

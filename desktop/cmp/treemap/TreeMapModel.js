@@ -30,8 +30,7 @@ import {cloneDeep, get, isEmpty, isFinite, partition, set, sumBy, unset, sortBy}
  *
  * @see https://www.highcharts.com/docs/chart-and-series-types/treemap for Highcharts config options
  */
-@HoistModel
-export class TreeMapModel {
+export class TreeMapModel extends HoistModel {
 
     //------------------------
     // Immutable public properties
@@ -118,6 +117,7 @@ export class TreeMapModel {
         emptyText,
         filter
     } = {}) {
+        super();
         this.gridModel = gridModel;
         this.store = store ? store : gridModel ? gridModel.store : null;
         throwIf(!this.store,  'TreeMapModel requires either a Store or a GridModel');

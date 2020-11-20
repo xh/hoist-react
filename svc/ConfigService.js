@@ -23,8 +23,7 @@ import {keys} from 'lodash';
  * Note that this service does *not* currently attempt to reload or update configs once the client
  * application has loaded. A refresh of the application is required to load new entries.
  */
-@HoistService
-export class ConfigService {
+export class ConfigService extends HoistService {
 
     _data = {};
 

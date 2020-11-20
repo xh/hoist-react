@@ -27,8 +27,7 @@ import {
     isArray
 } from 'lodash';
 
-@HoistModel
-export class FilterChooserModel {
+export class FilterChooserModel extends HoistModel {
 
     /** @member Filter */
     @observable.ref value = null;
@@ -95,6 +94,7 @@ export class FilterChooserModel {
         maxResults = 10,
         persistWith
     }) {
+        super();
         this.sourceStore = sourceStore;
         this.targetStore = targetStore;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);

@@ -16,8 +16,7 @@ import {defaults} from 'lodash';
 import {version as mobxVersion} from 'mobx/package.json';
 import React from 'react';
 
-@HoistService
-export class EnvironmentService {
+export class EnvironmentService extends HoistService {
 
     _data = {};
 

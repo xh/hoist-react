@@ -16,8 +16,7 @@ import {stringify} from 'qs';
  * This model is not typically created directly within applications. Instead, specify a
  * configuration for it via the `NavigatorModel.pages` constructor config.
  */
-@HoistModel
-export class PageModel {
+export class PageModel extends HoistModel {
 
     id;
     content;
@@ -76,6 +75,7 @@ export class PageModel {
         disableDirectLink,
         disableAppRefreshButton
     }) {
+        super();
         warnIf(renderMode === RenderMode.ALWAYS, 'RenderMode.ALWAYS is not supported in PageModel. Pages are always can\'t exist before being mounted.');
 
         this.id = id;

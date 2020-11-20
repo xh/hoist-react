@@ -28,7 +28,7 @@ export class AppSpec {
      *      'MyApp Mobile').
      * @param {boolean} c.isMobileApp - true if the app should use the Hoist mobile toolkit.
      * @param {Class} c.modelClass - root Model class for App, decorated with `@HoistAppModel`.
-     * @param {Class} c.componentClass - root Component class for App, decorated with `@HoistComponent`.
+     * @param {Class} c.componentClass - root Component class for App.
      * @param {Class} c.containerClass - Container component to be used to host this application.
      *      This class determines the platform used by Hoist. The value should be imported from
      *      either `@xh/hoist/desktop/AppContainer` or `@xh/hoist/mobile/AppContainer`.

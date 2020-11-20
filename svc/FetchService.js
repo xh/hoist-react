@@ -28,8 +28,7 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
  * Note that the convenience methods 'fetchJson', 'postJson', 'putJson' all accept the same options
  * as the main entry point 'fetch', as they delegate to fetch after setting additional defaults.
  */
-@HoistService
-export class FetchService {
+export class FetchService extends HoistService {
 
     abortControllers = {};
     defaultHeaders = {};

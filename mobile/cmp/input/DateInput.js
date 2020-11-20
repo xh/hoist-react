@@ -6,7 +6,7 @@
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {singleDatePicker} from '@xh/hoist/kit/react-dates';
@@ -20,7 +20,6 @@ import './DateInput.scss';
 /**
  * A Calendar Control for choosing a Date.
  */
-@HoistComponent
 @LayoutSupport
 export class DateInput extends HoistInput {
 

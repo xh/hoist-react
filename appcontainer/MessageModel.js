@@ -14,8 +14,7 @@ import {warnIf} from '@xh/hoist/utils/js';
  * Not intended for direct application use. {@see XHClass#message()} and related for the public API.
  * @private
  */
-@HoistModel
-export class MessageModel {
+export class MessageModel extends HoistModel {
 
     // Immutable properties
     title;
@@ -51,6 +50,7 @@ export class MessageModel {
         cancelText,
         cancelIntent
     }) {
+        super();
         warnIf(
             (confirmText || confirmIntent || cancelText || cancelIntent),
             'Message "confirmText", "confirmIntent", "cancelText", and "cancelIntent" configs have' +

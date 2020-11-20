@@ -16,8 +16,7 @@ import {isNumber} from 'lodash';
  *
  * This is the primary app entry-point for specifying DataView component options and behavior.
  */
-@HoistModel
-export class DataViewModel {
+export class DataViewModel extends HoistModel {
 
     @managed
     gridModel;
@@ -74,6 +73,7 @@ export class DataViewModel {
         rowClassFn,
         ...restArgs
     }) {
+        super();
         throwIf(!isNumber(itemHeight), 'Must specify DataViewModel.itemHeight as a number to set a fixed pixel height for each item.');
         apiRemoved(restArgs.rowCls, 'rowCls', 'Use \'rowClassFn\' instead.');
         apiRemoved(restArgs.itemRenderer, 'itemRenderer', 'Use \'elementRenderer\' instead.');

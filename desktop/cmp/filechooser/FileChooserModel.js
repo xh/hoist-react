@@ -14,8 +14,7 @@ import filesize from 'filesize';
 import {find, uniqBy, without} from 'lodash';
 
 
-@HoistModel
-export class FileChooserModel {
+export class FileChooserModel extends HoistModel {
 
     @observable.ref
     files = [];
@@ -56,6 +55,7 @@ export class FileChooserModel {
     });
 
     constructor() {
+        super();
         this.addReaction({
             track: () => this.files,
             run: (files) => this.onFilesChange(files)

@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {managed, XH} from '@xh/hoist/core';
 import {action, computed} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {clone, defaults, flatMap, isArray, isUndefined, partition, without} from 'lodash';
@@ -26,7 +26,6 @@ import {BaseFieldModel} from './BaseFieldModel';
  * validations on the subforms will also bubble up to this field, affecting its overall
  * validation state.
  */
-@HoistModel
 export class SubformsFieldModel extends BaseFieldModel {
 
     // (Sub)FormModels created by this model, tracked to support cleanup.

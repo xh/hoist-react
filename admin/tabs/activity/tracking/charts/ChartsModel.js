@@ -14,8 +14,7 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 import {cloneDeep, sortBy} from 'lodash';
 import moment from 'moment';
 
-@HoistModel
-export class ChartsModel {
+export class ChartsModel extends HoistModel {
 
     /** @member {ActivityTrackingModel} */
     parentModel;
@@ -104,6 +103,7 @@ export class ChartsModel {
     }
 
     constructor({parentModel}) {
+        super();
         this.parentModel = parentModel;
 
         this.addReaction({

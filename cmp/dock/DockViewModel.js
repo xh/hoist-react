@@ -16,8 +16,7 @@ import {throwIf} from '@xh/hoist/utils/js';
  * configuration for it via the `DockContainerModel.views` constructor config or via
  * the `DockContainerModel.addView()` method.
  */
-@HoistModel
-export class DockViewModel {
+export class DockViewModel extends HoistModel {
 
     id;
     @bindable title;
@@ -85,6 +84,7 @@ export class DockViewModel {
         allowClose = true,
         allowDialog = true
     }) {
+        super();
         throwIf(!id, 'DockViewModel requires an id');
         this.id = id;
         this.containerModel = containerModel;

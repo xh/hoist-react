@@ -10,14 +10,14 @@ import {action, observable} from '@xh/hoist/mobx';
 /**
  * @private
  */
-@HoistModel
-export class DifferDetailModel  {
+export class DifferDetailModel extends HoistModel  {
 
     parent = null;
 
     @observable.ref record = null;
 
     constructor({parent}) {
+        super();
         this.parent = parent;
     }
 

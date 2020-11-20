@@ -14,8 +14,7 @@ import {action, observable} from '@xh/hoist/mobx';
  * It is not necessary to manually create instances of this class within an application.
  * @private
  */
-@HoistModel
-export class ColChooserModel {
+export class ColChooserModel extends HoistModel {
 
     gridModel;
     @managed lrModel;
@@ -36,6 +35,7 @@ export class ColChooserModel {
         width = 520,
         height = 300
     }) {
+        super();
         this.gridModel = gridModel;
 
         this.commitOnChange = commitOnChange;

@@ -18,10 +18,11 @@ import {action, observable} from 'mobx';
 export function settable(target, property, descriptor) {
     const name = 'set' + upperFirst(property);
     if (!target.hasOwnProperty(name)) {
-        const fn = action.bound(target, name, {
+        const fn = {
             value: function(v) {this[property] = v}
-        });
+        };
         Object.defineProperty(target, name, fn);
+        //action(target, name);
     }
 
     return descriptor && {...descriptor, configurable: true};
@@ -39,10 +40,12 @@ export function settable(target, property, descriptor) {
  * reference. This will use the similarly named `@observable.ref` decorator in the core MobX API.
  */
 export function bindable(target, property, descriptor) {
-    return settable(target, property, observable(target, property, descriptor));
+    observable(target, property);
+    return settable(target, property, descriptor);
 }
 bindable.ref = function(target, property, descriptor) {
-    return settable(target, property, observable.ref(target, property, descriptor));
+    observable.ref(target, property);
+    return settable(target, property, descriptor);
 };
 
 

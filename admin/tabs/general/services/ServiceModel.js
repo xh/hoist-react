@@ -5,13 +5,13 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
 import {lowerFirst} from 'lodash';
 
-@HoistModel
-@LoadSupport
-export class ServiceModel {
+export class ServiceModel extends HoistModel {
+
+    get isLoadSupport() {return true}
 
     @managed
     gridModel = new GridModel({

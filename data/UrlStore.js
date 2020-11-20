@@ -5,16 +5,16 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {LoadSupport, XH} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 
 import {Store} from './Store';
 
 /**
  * A store with built-in support for loading data from a URL.
  */
-@LoadSupport
 export class UrlStore extends Store {
 
+    get isLoadSupport() {return true}
     url;
     dataRoot;
 

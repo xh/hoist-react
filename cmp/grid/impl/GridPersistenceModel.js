@@ -13,8 +13,7 @@ import {find, isUndefined, omit} from 'lodash';
  * Model to manage persisting state from GridModel.
  * @private
  */
-@HoistModel
-export class GridPersistenceModel {
+export class GridPersistenceModel extends HoistModel {
 
     VERSION = 1;  // Increment to abandon state.
     gridModel;
@@ -39,6 +38,7 @@ export class GridPersistenceModel {
             ...persistWith
         }
     ) {
+        super();
         this.gridModel = gridModel;
 
         persistWith = {path: 'grid', ...persistWith};

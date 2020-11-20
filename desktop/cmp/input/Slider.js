@@ -6,7 +6,7 @@
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {box} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {rangeSlider as bpRangeSlider, slider as bpSlider} from '@xh/hoist/kit/blueprint';
 import {toJS} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -17,7 +17,6 @@ import './Slider.scss';
 /**
  * A slider input to edit either a single number or an array of two (for a range).
  */
-@HoistComponent
 @LayoutSupport
 export class Slider extends HoistInput {
 

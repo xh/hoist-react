@@ -35,8 +35,7 @@ import {find, pull} from 'lodash';
  *
  * Also {@see WebSocketIndicator}, a simple component for visually displaying connection status.
  */
-@HoistService
-export class WebSocketService {
+export class WebSocketService extends HoistService {
 
     HEARTBEAT_TOPIC = 'xhHeartbeat';
     REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';

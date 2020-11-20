@@ -15,8 +15,7 @@ import {DockViewModel} from './DockViewModel';
  * This object provides support for managing docked views, adding new views on the fly,
  * and expanding / collapsing views programmatically.
  */
-@HoistModel
-export class DockContainerModel {
+export class DockContainerModel extends HoistModel {
 
     /** @member {DockViewModel[]} */
     @managed @observable.ref views = [];
@@ -48,6 +47,7 @@ export class DockContainerModel {
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY
     } = {}) {
+        super();
         views = views.filter(v => !v.omit);
 
         ensureUniqueBy(views, 'id', 'Multiple DockContainerModel views have the same id.');

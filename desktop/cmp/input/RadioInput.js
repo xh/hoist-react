@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory} from '@xh/hoist/core';
 import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
 import {action, observable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -16,7 +16,6 @@ import './RadioInput.scss';
 /**
  * An input for managing Radio Buttons.
  */
-@HoistComponent
 export class RadioInput extends HoistInput {
 
     static propTypes = {

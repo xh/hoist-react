@@ -12,8 +12,7 @@ import {stripTags} from '@xh/hoist/utils/js';
  * Manages built-in collection of user feedback.
  * @private
  */
-@HoistModel
-export class FeedbackDialogModel {
+export class FeedbackDialogModel extends HoistModel {
 
     @observable isOpen = false;
     @observable message = null;

@@ -17,8 +17,7 @@ import {cloneDeep, has, isArray, isEmpty, isEqual, isNil, last, set, startCase} 
  * This includes the ability to get and set the full state of the grid in a serializable form,
  * allowing applications to save "views" of the grid.
  */
-@HoistModel
-export class AgGridModel {
+export class AgGridModel extends HoistModel {
     static AUTO_GROUP_COL_ID = 'ag-Grid-AutoColumn';
 
     //------------------------
@@ -64,6 +63,7 @@ export class AgGridModel {
         hideHeaders = false,
         compact
     } = {}) {
+        super();
         apiDeprecated(compact, 'compact', "Use 'sizingMode' instead");
         if (compact) sizingMode = 'compact';
 

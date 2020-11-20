@@ -19,8 +19,7 @@ import {
     isUndefined
 } from 'lodash';
 
-@HoistModel
-export class StoreFilterFieldImplModel {
+export class StoreFilterFieldImplModel extends HoistModel {
 
     model;
     bind;
@@ -48,6 +47,7 @@ export class StoreFilterFieldImplModel {
         excludeFields,
         matchMode = 'startWord'
     }) {
+        super();
         this.model = model;
         this.bind = bind;
         this.gridModel = gridModel;

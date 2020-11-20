@@ -55,8 +55,7 @@ RelativeTimestamp.propTypes = {
     options: PT.object
 };
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
     options;
     timestamp;

@@ -19,8 +19,7 @@ import {TreeMapModel} from './TreeMapModel';
  * Additionally, accepts and passes along all settings for TreeMapModel.
  * @see TreeMapModel
  */
-@HoistModel
-export class SplitTreeMapModel {
+export class SplitTreeMapModel extends HoistModel {
 
     //------------------------
     // Immutable public properties
@@ -59,6 +58,7 @@ export class SplitTreeMapModel {
         orientation = 'vertical',
         ...rest
     } = {}) {
+        super();
         this.mapFilter = withDefault(mapFilter, this.defaultMapFilter);
         this.mapTitleFn = mapTitleFn;
 
