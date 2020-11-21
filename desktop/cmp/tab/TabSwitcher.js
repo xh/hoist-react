@@ -85,6 +85,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
                     position: flipOrientation(orientation),
                     item: hframe({
                         className: 'xh-tab-switcher__tab',
+                        tabIndex: -1,
                         items: [
                             icon,
                             span(title),

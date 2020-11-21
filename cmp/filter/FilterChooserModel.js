@@ -91,7 +91,7 @@ export class FilterChooserModel extends HoistModel {
         targetStore = null,
         initialValue = null,
         initialFavorites = [],
-        maxResults = 10,
+        maxResults = 50,
         persistWith
     }) {
         super();
