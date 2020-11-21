@@ -16,7 +16,6 @@ import {
     RestStore
 } from '@xh/hoist/desktop/cmp/rest';
 import {isNil, truncate} from 'lodash';
-import {makeObservable} from 'mobx';
 
 import {DifferModel} from '../../differ/DifferModel';
 import {RegroupDialogModel} from '../../regroup/RegroupDialogModel';
@@ -137,11 +136,6 @@ export class ConfigTabModel extends HoistModel {
             return v.valueType === 'pwd' ? '*****' : v.value;
         }
     });
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
 
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();

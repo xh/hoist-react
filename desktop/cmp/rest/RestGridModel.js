@@ -156,7 +156,7 @@ export class RestGridModel extends HoistModel {
     }
 
     /** Load the underlying store. */
-    doLoadAsync(loadSpec) {
+    async doLoadAsync(loadSpec) {
         return this.store.loadAsync(loadSpec);
     }
 

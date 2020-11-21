@@ -7,7 +7,7 @@
 import debouncePromise from 'debounce-promise';
 import {castArray, escapeRegExp, isEmpty, isNil, isPlainObject, keyBy, merge, isEqual} from 'lodash';
 import PT from 'prop-types';
-import React from 'react';
+import {createRef} from 'react';
 import {components} from 'react-select';
 
 import {HoistInput} from '@xh/hoist/cmp/input';
@@ -233,7 +233,7 @@ export class Select extends HoistInput {
         });
     }
 
-    reactSelectRef = React.createRef();
+    reactSelectRef = createRef();
 
     render() {
         const props = this.getNonLayoutProps(),

@@ -26,6 +26,7 @@ export class UrlStore extends Store {
      */
     constructor({url, dataRoot = null, ...localStoreArgs}) {
         super(localStoreArgs);
+        this.initLoadSupport();
         this.url = url;
         this.dataRoot = dataRoot;
     }

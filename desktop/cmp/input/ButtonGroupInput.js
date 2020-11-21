@@ -10,7 +10,7 @@ import {Button, ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {castArray} from 'lodash';
 import PT from 'prop-types';
-import React from 'react';
+import {cloneElement} from 'react';
 
 /**
  * A segmented group of buttons, one of which is depressed to indicate the input's current value.
@@ -73,7 +73,7 @@ export class ButtonGroupInput extends HoistInput {
             throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
 
             const active = (this.renderValue === value);
-            return React.cloneElement(button, {
+            return cloneElement(button, {
                 active,
                 intent,
                 minimal: withDefault(minimal, false),

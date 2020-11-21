@@ -5,12 +5,12 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {elemFactory} from '@xh/hoist/core';
-import React from 'react';
+import {Fragment} from 'react';
 
 //--------------------------------
 // React
 //--------------------------------
-export const fragment = elemFactory(React.Fragment);
+export const fragment = elemFactory(Fragment);
 
 //--------------------------------
 // Standard HTML

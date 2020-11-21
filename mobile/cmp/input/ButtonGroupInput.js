@@ -10,7 +10,7 @@ import {Button, buttonGroup} from '@xh/hoist/mobile/cmp/button';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {castArray} from 'lodash';
 import PT from 'prop-types';
-import React from 'react';
+import {cloneElement} from 'react';
 import './ButtonGroupInput.scss';
 
 /**
@@ -46,7 +46,7 @@ export class ButtonGroupInput extends HoistInput {
             throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
 
             const active = (this.renderValue === value);
-            return React.cloneElement(button, {
+            return cloneElement(button, {
                 active,
                 disabled: withDefault(btnDisabled, false),
                 onClick: () => {
