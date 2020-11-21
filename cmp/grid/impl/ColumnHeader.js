@@ -140,6 +140,7 @@ class LocalModel extends HoistModel {
 
     destroy() {
         this.agColumn.removeEventListener('filterChanged', this.onFilterChanged);
+        super.destroy();
     }
 
     // Get any active sortBy for this column, or null

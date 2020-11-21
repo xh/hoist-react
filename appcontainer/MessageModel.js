@@ -118,6 +118,7 @@ export class MessageModel extends HoistModel {
 
     destroy() {
         this.close();
+        super.destroy();
     }
 
     // Merge handler and deprecated props into consolidated object.

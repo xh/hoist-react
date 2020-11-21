@@ -73,6 +73,7 @@ class LocalModel extends HoistModel {
 
     destroy() {
         this.agColumnGroup.removeEventListener('expandedChanged', this.syncIsExpanded);
+        super.destroy();
     }
 
     syncIsExpanded = () => this.setIsExpanded(this.agColumnGroup.isExpanded());

@@ -66,6 +66,7 @@ class LocalModel extends HoistModel {
         document.removeEventListener('keyup', this.globalHotkeysEvents.handleKeyUp);
         this.globalHotkeysEvents.clear();
         this.localHotkeysEvents.clear();
+        super.destroy();
     }
 }
 

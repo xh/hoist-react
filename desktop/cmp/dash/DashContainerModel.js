@@ -576,5 +576,6 @@ export class DashContainerModel extends HoistModel {
 
     destroy() {
         this.destroyGoldenLayout();
+        super.destroy();
     }
 }

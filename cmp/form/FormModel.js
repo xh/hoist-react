@@ -222,5 +222,6 @@ export class FormModel extends HoistModel {
 
     destroy() {
         XH.safeDestroy(this.fieldList);
+        super.destroy();
     }
 }

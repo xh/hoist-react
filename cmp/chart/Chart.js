@@ -209,6 +209,7 @@ class LocalModel extends HoistModel {
 
     destroy() {
         this.destroyHighChart();
+        super.destroy();
     }
 
     destroyHighChart() {

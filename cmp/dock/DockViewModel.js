@@ -162,6 +162,7 @@ export class DockViewModel extends HoistModel {
 
     destroy() {
         XH.safeDestroy(this.content);
+        super.destroy();
     }
 
 }

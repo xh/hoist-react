@@ -86,5 +86,6 @@ class LocalModel extends HoistModel {
         // This unusual bit of code is extremely important -- the model we are linking to might
         // survive the display of this component and should be restored. (This happens with GridColumnChooser)
         this.lastProps.model.setDisplayFilter(null);
+        super.destroy();
     }
 }

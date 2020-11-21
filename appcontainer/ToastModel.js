@@ -51,5 +51,6 @@ export class ToastModel extends HoistModel {
 
     destroy() {
         this.dismiss();
+        super.destroy();
     }
 }
