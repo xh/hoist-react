@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {isUndefined, filter} from 'lodash';
 import {MessageModel} from './MessageModel';
 
@@ -19,6 +19,11 @@ export class MessageSourceModel extends HoistModel {
     @managed
     @observable.ref
     msgModels = [];
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     message(config) {
 
