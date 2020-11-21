@@ -10,7 +10,7 @@ import {p} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {cloneDeep, isEqual, isString, isNil, remove, trimEnd} from 'lodash';
 import React from 'react';
@@ -21,8 +21,6 @@ import {DifferDetailModel} from './DifferDetailModel';
  * @private
  */
 export class DifferModel extends HoistModel {
-
-    get isLoadSupport() {return true}
 
     parentGridModel;
     entityName;
@@ -67,6 +65,7 @@ export class DifferModel extends HoistModel {
         valueRenderer
     }) {
         super();
+        makeObservable(this);
         this.parentGridModel = parentGridModel;
         this.entityName = entityName;
         this.displayName = displayName ?? entityName;

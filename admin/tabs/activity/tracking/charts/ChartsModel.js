@@ -8,7 +8,7 @@ import {ChartModel} from '@xh/hoist/cmp/chart';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {cloneDeep, sortBy} from 'lodash';
@@ -104,6 +104,7 @@ export class ChartsModel extends HoistModel {
 
     constructor({parentModel}) {
         super();
+        makeObservable(this);
         this.parentModel = parentModel;
 
         this.addReaction({

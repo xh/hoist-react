@@ -197,7 +197,7 @@ add their particular functionality, behaviors, and methods to the decorated clas
 ### HoistModel
 
 📝 "Models" within Hoist comprise the core class of objects for managing state and business logic.
-The `@HoistModel` decorator marks a class as a Model and installs core MobX and Event support.
+The `HoistModel` base class marks a class as a Model and installs core MobX and other support.
 (Model classes do not require any particular superclass - all shared functionality and patterns are
 mixed in via the decorator.)
 
@@ -245,7 +245,7 @@ aliases on itself for the most common framework service calls, e.g. `XH.getConf(
 #### HoistAppModel
 
 Each client application must define a top-level Model class using
-[the specialized `@HoistAppModel` decorator](core/HoistAppModel.js). This decorator installs core
+[the specialized `HoistAppModel` base class](core/HoistAppModel.js). This decorator installs core
 Model support as well as several additional methods specific to the high-level lifecycle of the
 application, including those dealing with init, and routing. This class instance is available via an
 import of the `XH` (as `XH.appModel`) and can be a useful place to hang global state specific to
@@ -292,7 +292,7 @@ Model and Component classes that's tailored to their needs.
 Service instances persist for the life of the app and have a defined initialization process. By
 convention they are stored within an `svc/` package within an app's file structure.
 
-Use the `HoistService` class to mark a class as a global service within.  Tthis installs MobX and
+Use the `HoistService` class to mark a class as a global service within.  This installs MobX and
 Event support and defines an empty `initAsync()` lifecycle method. To instantiate and make services
 available to application code, use the`XH.installServicesAsync()` method. This method will construct,
 initialize, and install the services as a property on the XH object. Note that there is a strict

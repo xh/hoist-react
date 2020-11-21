@@ -6,7 +6,7 @@
  */
 import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 
 /**
@@ -51,6 +51,7 @@ export class MessageModel extends HoistModel {
         cancelIntent
     }) {
         super();
+        makeObservable(this);
         warnIf(
             (confirmText || confirmIntent || cancelText || cancelIntent),
             'Message "confirmText", "confirmIntent", "cancelText", and "cancelIntent" configs have' +

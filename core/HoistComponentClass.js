@@ -10,12 +10,12 @@ import {isPlainObject, isUndefined} from 'lodash';
 import {Component, useDebugValue} from 'react';
 import ReactDom from 'react-dom';
 import {useOwnedModelLinker} from './impl/UseOwnedModelLinker';
-import {makeObservable, observer, observable} from '@xh/hoist/mobx';
+import {observer} from '@xh/hoist/mobx';
 import {ModelLookupContext} from './impl/ModelLookup';
 
 
 /**
- * Hoist Component base class. Adds support for MobX reactivity, model
+ * Hoist base class for components. Adds support for MobX reactivity, resource management, model
  * awareness, and other convenience methods below.
  *
  * NOTE: This class provided the original method for specifying class-based components within
@@ -33,15 +33,11 @@ export class HoistComponent extends Component {
 
     static contextType = ModelLookupContext;
 
-    @observable sniff;
-
-    get isHoistModel() {return true}
+    get isHoistComponent() {return true}
 
     constructor(props) {
         super(props);
-        makeObservable(this);
     }
-
 
     /**
      * The primary backing Model instance for this component.
@@ -180,8 +176,7 @@ export class HoistComponent extends Component {
         return this._modelIsOwned ? modelHost({model: this.model, element}) : element;
     }
 }
-
-HoistComponent.prototype
+HoistComponent.isHoistComponent = true;
 
 
 //------------------------

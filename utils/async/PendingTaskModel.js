@@ -4,9 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
-import {makeObservable} from '@xh/hoist/mobx';
 
 /**
  * Tracks the resolution state of a stream of promise invocations.
@@ -28,7 +27,7 @@ export class PendingTaskModel {
     mode = null;
 
     @observable _pendingCount = 0;
-    @observable _lastCall = null;
+    @observable.ref _lastCall = null;
 
     /**
      * @param {Object} [c] - PendingTaskModel configuration.

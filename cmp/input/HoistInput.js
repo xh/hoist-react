@@ -6,7 +6,7 @@
  */
 import {HoistComponent} from '@xh/hoist/core';
 import {FieldModel} from '@xh/hoist/cmp/form';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEqual} from 'lodash';
@@ -86,7 +86,7 @@ export class HoistInput extends HoistComponent {
 
     constructor(props, context) {
         super(props, context);
-
+        makeObservable(this);
         throwIf(props.onKeyPress, "HoistInputs no longer support a 'onKeyPress' property.  Use 'onKeyDown' instead.");
         throwIf(props.field, "HoistInput no longer supports a 'field' property.  Use 'bind' instead.");
     }

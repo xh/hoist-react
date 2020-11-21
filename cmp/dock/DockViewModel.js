@@ -7,6 +7,7 @@
 import {HoistModel, managed, ManagedRefreshContextModel, XH} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
+import {makeObservable} from 'mobx';
 
 /**
  * Model for a DockView within a DockContainer. Specifies the actual content (child component)
@@ -85,6 +86,7 @@ export class DockViewModel extends HoistModel {
         allowDialog = true
     }) {
         super();
+        makeObservable(this);
         throwIf(!id, 'DockViewModel requires an id');
         this.id = id;
         this.containerModel = containerModel;

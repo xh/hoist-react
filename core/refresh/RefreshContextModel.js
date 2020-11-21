@@ -20,8 +20,8 @@ import {pull} from 'lodash';
  * Apps can create additional sub-contexts using a `RefreshContextView` paired with this model if
  * they need to coordinate refreshes within a more targeted sections of their UI.
  *
- * HoistModels declared with `isLoadSupport = true` are the primary targets for the refresh
- * calls made by this class. LoadSupport-enabled models are auto-linked to the nearest
+ * HoistModels implementing LoadSupport {@see LoadSupport}  are the primary targets for the
+ * refresh calls made by this class. LoadSupport-enabled models are auto-linked to the nearest
  * RefreshContextModel when their HoistComponent is mounted.
  *
  * (Note that models must be "owned" by their Component to be auto-linked in this way - meaning they
@@ -37,17 +37,13 @@ import {pull} from 'lodash';
  */
 export class RefreshContextModel extends HoistModel {
 
-    get isRefreshContextModel()     {return true}
-    get isLoadSupport()             {return true}
+    get isRefreshContextModel() {return true}
+
+    /** Targets registered for refresh. */
+    refreshTargets = [];
 
     async doLoadAsync(loadSpec) {
         return loadAllAsync(this.refreshTargets, loadSpec);
-    }
-
-    /** Targets registered for refresh. */
-    get refreshTargets() {
-        if (!this._refreshTargets) this._refreshTargets = [];
-        return this._refreshTargets;
     }
 
     /**
@@ -60,8 +56,8 @@ export class RefreshContextModel extends HoistModel {
      */
     register(target) {
         throwIf(
-            !target.isLoadSupport,
-            'Object must have LoadSupport to be registered with a RefreshContextModel.'
+            !target.implementsLoading,
+            'Object must have implemented LoadSupport to be registered with a RefreshContextModel.'
         );
         const {refreshTargets} = this;
         if (!refreshTargets.includes(target)) refreshTargets.push(target);
@@ -75,3 +71,4 @@ export class RefreshContextModel extends HoistModel {
         pull(this.refreshTargets, target);
     }
 }
+RefreshContextModel.isRefreshContextModel = true;

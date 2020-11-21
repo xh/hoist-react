@@ -7,7 +7,7 @@
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, computed} from '@xh/hoist/mobx';
+import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {useOnMount, createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
@@ -126,6 +126,7 @@ class LocalModel extends HoistModel {
 
     constructor({gridLocalModel, xhColumn, column: agColumn, enableSorting}) {
         super();
+        makeObservable(this);
         this.gridModel = gridLocalModel.model;
         this.xhColumn = xhColumn;
         this.agColumn = agColumn;

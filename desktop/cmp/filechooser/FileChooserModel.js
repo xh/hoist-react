@@ -12,6 +12,7 @@ import {action, bindable, observable} from '@xh/hoist/mobx';
 import {isEmpty} from 'codemirror/src/util/misc';
 import filesize from 'filesize';
 import {find, uniqBy, without} from 'lodash';
+import {makeObservable} from 'mobx';
 
 
 export class FileChooserModel extends HoistModel {
@@ -56,6 +57,7 @@ export class FileChooserModel extends HoistModel {
 
     constructor() {
         super();
+        makeObservable(this);
         this.addReaction({
             track: () => this.files,
             run: (files) => this.onFilesChange(files)

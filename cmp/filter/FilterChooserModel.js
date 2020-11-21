@@ -10,7 +10,7 @@ import {QueryEngine} from './impl/QueryEngine';
 import {filterOption} from './impl/Option';
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
 import {FieldFilter, parseFilter} from '@xh/hoist/data';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -95,6 +95,7 @@ export class FilterChooserModel extends HoistModel {
         persistWith
     }) {
         super();
+        makeObservable(this);
         this.sourceStore = sourceStore;
         this.targetStore = targetStore;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);

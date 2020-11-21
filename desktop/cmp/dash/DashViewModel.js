@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, ManagedRefreshContextModel} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -59,6 +59,7 @@ export class DashViewModel extends HoistModel {
         containerModel
     }) {
         super();
+        makeObservable(this);
         throwIf(!id, 'DashViewModel requires an id');
         throwIf(!viewSpec, 'DashViewModel requires an DashViewSpec');
 

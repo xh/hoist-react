@@ -6,7 +6,7 @@
  */
 import {CreatesSpec, elemFactory, ModelPublishMode, ModelSpec, uses} from '@xh/hoist/core';
 import {useOwnedModelLinker} from '@xh/hoist/core/impl/UseOwnedModelLinker';
-import {throwIf, withDefault, isClass} from '@xh/hoist/utils/js';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isString} from 'lodash';
 import {useObserver} from 'mobx-react';
@@ -228,7 +228,7 @@ function lookupModel(spec, props, modelLookup, displayName) {
 
 function formatSelector(selector) {
     if (isString(selector)) return selector;
-    if (isFunction(selector)  && isClass(selector)) return selector.name;
+    if (isFunction(selector)  && selector.isHoistModel) return selector.name;
     return '[Selector]';
 }
 

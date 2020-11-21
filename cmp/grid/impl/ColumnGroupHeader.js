@@ -7,7 +7,7 @@
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {isFunction} from 'lodash';
 
@@ -65,6 +65,7 @@ class LocalModel extends HoistModel {
 
     constructor({columnGroup: agColumnGroup}) {
         super();
+        makeObservable(this);
         this.agColumnGroup = agColumnGroup.originalColumnGroup;
         this.syncIsExpanded();
         this.agColumnGroup.addEventListener('expandedChanged', this.syncIsExpanded);

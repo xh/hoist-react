@@ -12,7 +12,7 @@ import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {datePicker as bpDatePicker, popover} from '@xh/hoist/kit/blueprint';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
@@ -175,6 +175,11 @@ export class DateInput extends HoistInput {
     get valueType()             {return withDefault(this.props.valueType, 'date')}
     get strictInputParsing()    {return withDefault(this.props.strictInputParsing, false)}
     get timePrecision()         {return this.valueType === 'localDate' ? null : this.props.timePrecision}
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     render() {
         const props = this.getNonLayoutProps();

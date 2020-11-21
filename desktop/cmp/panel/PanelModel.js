@@ -14,7 +14,7 @@ import {
     RenderMode,
     XH
 } from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
 import {apiRemoved} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
@@ -102,6 +102,7 @@ export class PanelModel extends HoistModel {
         ...rest
     }) {
         super();
+        makeObservable(this);
         if ((collapsible || resizable) && (isNil(defaultSize) || isNil(side))) {
             console.error(
                 "Must specify 'defaultSize' and 'side' for a collapsible or resizable PanelModel. Panel sizing disabled."

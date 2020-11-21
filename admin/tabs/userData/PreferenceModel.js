@@ -19,8 +19,6 @@ import {RegroupDialogModel} from '../../regroup/RegroupDialogModel';
 
 export class PreferenceModel extends HoistModel {
 
-    get isLoadSupport() {return true}
-
     persistWith = {localStorageKey: 'xhAdminPreferenceState'};
 
     @managed

@@ -7,7 +7,7 @@
 import {box, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, managed, useLocalModel, XH} from '@xh/hoist/core';
 import {fmtDate, TIME_FMT} from '@xh/hoist/format';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, ONE_SECOND} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -76,6 +76,10 @@ class LocalModel extends HoistModel {
     @observable display = '';
     @managed timer;
 
+    constructor() {
+        super();
+        makeObservable(this);
+    }
     setData({timezone, format, updateInterval, prefix, suffix, errorString}) {
         this.format = format;
         this.updateInterval = updateInterval;

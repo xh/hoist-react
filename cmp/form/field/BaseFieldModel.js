@@ -5,14 +5,13 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {Rule, ValidationState} from '@xh/hoist/cmp/form';
-import {managed} from '@xh/hoist/core';
+import {managed, HoistModel} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
-import {action, computed, observable, runInAction} from '@xh/hoist/mobx';
+import {action, computed, observable, runInAction, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
 import {withDefault} from '@xh/hoist/utils/js';
 import {compact, flatten, isEmpty, isFunction, isNil, isUndefined} from 'lodash';
-import {HoistModel} from '../../../core';
 
 /**
  * Abstract Base class for FieldModels.
@@ -80,6 +79,7 @@ export class BaseFieldModel extends HoistModel {
         rules = []
     }) {
         super();
+        makeObservable(this);
         this.name = name;
         this.displayName = withDefault(displayName, genDisplayName(name));
         this.value = initialValue;

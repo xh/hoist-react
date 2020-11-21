@@ -6,7 +6,7 @@
  */
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {apiRemoved, throwIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
@@ -95,6 +95,7 @@ export class DimensionChooserModel extends HoistModel {
         ...rest
     }) {
         super();
+        makeObservable(this);
         this.maxHistoryLength = maxHistoryLength;
         this.maxDepth = maxDepth;
         this.enableClear = enableClear;

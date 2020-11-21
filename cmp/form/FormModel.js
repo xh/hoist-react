@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {flatMap, forOwn, map, mapValues, pickBy, some, values, forEach} from 'lodash';
 import {FieldModel} from './field/FieldModel';
@@ -78,6 +78,7 @@ export class FormModel extends HoistModel {
             readonly = false
         } = {}) {
         super();
+        makeObservable(this);
         this.disabled = disabled;
         this.readonly = readonly;
         const models = {};

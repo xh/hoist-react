@@ -60,8 +60,6 @@ export const deleteAction = {
  */
 export class RestGridModel extends HoistModel {
 
-    get isLoadSupport() {return true}
-
     //----------------
     // Properties
     //----------------

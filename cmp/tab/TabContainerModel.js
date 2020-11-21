@@ -5,10 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, PersistenceProvider, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, apiRemoved, throwIf} from '@xh/hoist/utils/js';
 import {find, isUndefined, without, difference} from 'lodash';
-import {makeObservable} from 'mobx';
 import {TabModel} from './TabModel';
 
 /**
@@ -81,6 +80,7 @@ export class TabContainerModel extends HoistModel {
         switcherPosition
     }) {
         super();
+        makeObservable(this);
         apiRemoved(switcherPosition, 'switcherPosition', 'Please specify `switcher` instead.');
 
         // Create default switcher props
@@ -120,7 +120,6 @@ export class TabContainerModel extends HoistModel {
             this.addReaction({
                 track: () => this.activeTab,
                 run: (activeTab) => {
-                    console.log('sniff');
                     const {route} = this;
                     XH.track({
                         category: 'Navigation',
@@ -238,7 +237,6 @@ export class TabContainerModel extends HoistModel {
      * @param {(TabModel|string)} tab - TabModel or id of TabModel to be activated.
      */
     activateTab(tab) {
-        console.log(tab);
         tab = this.findTab(tab.isTabModel ? tab.id : tab);
 
         if (!tab || tab.disabled || tab.isActive) return;
@@ -269,12 +267,9 @@ export class TabContainerModel extends HoistModel {
     @action
     setActiveTabId(id) {
         const tab = this.findTab(id);
-
         throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
-        console.log(id);
         this.activeTabId = id;
-        console.log(this.activeTabId);
         this.forwardRouterToTab(id);
     }
 

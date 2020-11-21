@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {cloneDeep, get, isEmpty, isFinite, partition, set, sumBy, unset, sortBy} from 'lodash';
 
@@ -118,6 +118,7 @@ export class TreeMapModel extends HoistModel {
         filter
     } = {}) {
         super();
+        makeObservable(this);
         this.gridModel = gridModel;
         this.store = store ? store : gridModel ? gridModel.store : null;
         throwIf(!this.store,  'TreeMapModel requires either a Store or a GridModel');

@@ -15,6 +15,7 @@ export * from './mixins/ReactiveSupport';
 export * from './mixins/PersistSupport';
 export * from './mixins/XhIdSupport';
 export * from './mixins/ManagedSupport';
+export * from './mixins/LoadSupport';
 
 export * from './hooks/Models';
 

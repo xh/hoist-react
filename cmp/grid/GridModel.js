@@ -12,7 +12,7 @@ import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {
     apiDeprecated,
@@ -63,8 +63,6 @@ import {GridSorter} from './impl/GridSorter';
  *
  */
 export class GridModel extends HoistModel {
-
-    get isLoadSupport() {return true}
 
     static DEFAULT_RESTORE_DEFAULTS_WARNING =
         fragment(
@@ -281,6 +279,7 @@ export class GridModel extends HoistModel {
         ...rest
     }) {
         super();
+        makeObservable(this);
         this._defaultState = {columns, sortBy, groupBy};
 
         this.treeMode = treeMode;

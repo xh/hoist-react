@@ -7,7 +7,7 @@
 import {FormModel, required} from '@xh/hoist/cmp/form';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil, merge} from 'lodash';
 
@@ -39,6 +39,7 @@ export class RestFormModel extends HoistModel {
     /** @param {RestGridModel} parent */
     constructor(parent) {
         super();
+        makeObservable(this);
         this.parent = parent;
     }
 

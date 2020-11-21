@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {TreeMapModel} from './TreeMapModel';
 
@@ -59,6 +59,7 @@ export class SplitTreeMapModel extends HoistModel {
         ...rest
     } = {}) {
         super();
+        makeObservable(this);
         this.mapFilter = withDefault(mapFilter, this.defaultMapFilter);
         this.mapTitleFn = mapTitleFn;
 

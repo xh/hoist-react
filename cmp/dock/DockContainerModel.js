@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {DockViewModel} from './DockViewModel';
 
@@ -48,6 +48,7 @@ export class DockContainerModel extends HoistModel {
         refreshMode = RefreshMode.ON_SHOW_LAZY
     } = {}) {
         super();
+        makeObservable(this);
         views = views.filter(v => !v.omit);
 
         ensureUniqueBy(views, 'id', 'Multiple DockContainerModel views have the same id.');

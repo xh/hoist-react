@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {merge} from 'lodash';
 import createRouter from 'router5';
 import browserPlugin from 'router5-plugin-browser';
@@ -64,6 +64,10 @@ export class RouterModel extends HoistModel {
         return this.router.navigate(match[0], params);
     }
 
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     //-------------------------
     // Implementation

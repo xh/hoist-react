@@ -189,7 +189,7 @@ Panel.propTypes = {
      *   + true for a default LoadingIndicator,
      *   + a PendingTaskModel for a default LoadingIndicator bound to a pending task,
      *   + the string 'onLoad' for a default LoadingIndicator bound to the loading of the current model.
-     *     (current model must have LoadSupport).
+     *     (current model must include LoadSupport).
      */
     loadingIndicator: PT.oneOfType([PT.instanceOf(PendingTaskModel), PT.element, PT.bool, PT.string]),
 

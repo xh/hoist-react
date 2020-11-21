@@ -6,7 +6,7 @@
  */
 import {uniq} from 'lodash';
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {Icon} from '@xh/hoist/icon/Icon';
 
 export class RegroupDialogModel extends HoistModel {
@@ -29,6 +29,7 @@ export class RegroupDialogModel extends HoistModel {
 
     constructor(parent) {
         super();
+        makeObservable(this);
         this._parent = parent;
     }
 

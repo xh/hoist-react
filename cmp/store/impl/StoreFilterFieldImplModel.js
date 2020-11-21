@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {action} from '@xh/hoist/mobx';
+import {action, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {
     debounce,
@@ -48,6 +48,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
         matchMode = 'startWord'
     }) {
         super();
+        makeObservable(this);
         this.model = model;
         this.bind = bind;
         this.gridModel = gridModel;

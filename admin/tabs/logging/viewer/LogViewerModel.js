@@ -7,7 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
@@ -18,8 +18,6 @@ import {LogDisplayModel} from './LogDisplayModel';
  * @private
  */
 export class LogViewerModel extends HoistModel {
-
-    get isLoadSupport() {return true}
 
     persistWith = {localStorageKey: 'xhAdminLogViewerState'};
 
@@ -61,6 +59,7 @@ export class LogViewerModel extends HoistModel {
 
     constructor() {
         super();
+        makeObservable(this);
         this.addReaction(this.syncSelectionReaction());
         this.addReaction(this.toggleTailReaction());
         this.addReaction(this.reloadReaction());

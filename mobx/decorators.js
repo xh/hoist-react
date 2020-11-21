@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {upperFirst} from 'lodash';
-import {action, observable} from 'mobx';
+import {observable, runInAction} from 'mobx';
 
 /**
  * Decorator to add a simple MobX action of the form `setPropName()` to a class.
@@ -19,10 +19,11 @@ export function settable(target, property, descriptor) {
     const name = 'set' + upperFirst(property);
     if (!target.hasOwnProperty(name)) {
         const fn = {
-            value: function(v) {this[property] = v}
+            value: function(v) {
+                runInAction(() => {this[property] = v});
+            }
         };
         Object.defineProperty(target, name, fn);
-        //action(target, name);
     }
 
     return descriptor && {...descriptor, configurable: true};
@@ -40,12 +41,10 @@ export function settable(target, property, descriptor) {
  * reference. This will use the similarly named `@observable.ref` decorator in the core MobX API.
  */
 export function bindable(target, property, descriptor) {
-    observable(target, property);
-    return settable(target, property, descriptor);
+    return settable(target, property, observable(target, property, descriptor));
 }
 bindable.ref = function(target, property, descriptor) {
-    observable.ref(target, property);
-    return settable(target, property, descriptor);
+    return settable(target, property, observable.ref(target, property, descriptor));
 };
 
 

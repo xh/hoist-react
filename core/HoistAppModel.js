@@ -17,13 +17,6 @@ import {HoistModel} from './HoistModel';
  */
 export class HoistAppModel extends HoistModel {
 
-    get isHoistAppModel()   {return true}
-    get isLoadSupport()     {return true}
-
-    constructor() {
-        super();
-    }
-
     /**
      * Hoist will call this method after Hoist services have initialized and the application
      * has mounted. Use to trigger initialization of the app and any app-specific services.

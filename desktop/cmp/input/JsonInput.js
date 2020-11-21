@@ -7,7 +7,7 @@
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {codeInput, CodeInput} from '@xh/hoist/desktop/cmp/input';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import * as codemirror from 'codemirror';
 import 'codemirror/mode/javascript/javascript';
 import {jsonlint} from './impl/jsonlint';
@@ -25,6 +25,11 @@ export class JsonInput extends HoistInput {
     };
 
     baseClassName = 'xh-json-input';
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     render() {
         const {props} = this;

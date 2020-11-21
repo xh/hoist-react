@@ -7,7 +7,7 @@
 import {p} from '@xh/hoist/cmp/layout';
 import {AppSpec, AppState, elem, ReactiveSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {
     AutoRefreshService,
@@ -26,7 +26,6 @@ import {
 } from '@xh/hoist/svc';
 import {getClientDeviceInfo, throwIf, withShortDebug, checkMinVersion} from '@xh/hoist/utils/js';
 import {compact, camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
-import {makeObservable} from 'mobx';
 import ReactDOM from 'react-dom';
 import parser from 'ua-parser-js';
 

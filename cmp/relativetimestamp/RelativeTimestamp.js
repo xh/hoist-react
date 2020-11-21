@@ -7,7 +7,7 @@
 import {box, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, managed, useLocalModel, XH} from '@xh/hoist/core';
 import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {apiRemoved, withDefault} from '@xh/hoist/utils/js';
@@ -67,6 +67,11 @@ class LocalModel extends HoistModel {
         runFn: () => this.refreshDisplay(),
         interval: 5 * SECONDS
     });
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     setData(timestamp, options) {
         this.timestamp = timestamp;

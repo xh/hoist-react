@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {times} from 'lodash';
 
@@ -43,6 +43,7 @@ export class PinPadModel extends HoistModel {
         subHeaderText = ''
     } = {}) {
         super();
+        makeObservable(this);
         this.headerText = headerText;
         this.subHeaderText = subHeaderText;
 

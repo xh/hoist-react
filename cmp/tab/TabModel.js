@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel, managed, ManagedRefreshContextModel} from '@xh/hoist/core';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
 
@@ -65,6 +65,7 @@ export class TabModel extends HoistModel {
         renderMode
     }) {
         super();
+        makeObservable(this);
         throwIf(showRemoveAction && XH.isMobileApp, 'Removable Tabs not supported in Mobile toolkit.');
 
         this.id = id.toString();

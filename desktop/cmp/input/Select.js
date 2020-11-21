@@ -21,7 +21,7 @@ import {
     reactSelect,
     reactWindowedSelect
 } from '@xh/hoist/kit/react-select';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
@@ -217,6 +217,7 @@ export class Select extends HoistInput {
 
     constructor(props, context) {
         super(props, context);
+        makeObservable(this);
 
         const queryBuffer = withDefault(props.queryBuffer, 300);
         if (queryBuffer) this.doQueryAsync = debouncePromise(this.doQueryAsync, queryBuffer);

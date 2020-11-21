@@ -6,7 +6,7 @@
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 
 /**
  * State management for the ColChooser component.
@@ -36,6 +36,7 @@ export class ColChooserModel extends HoistModel {
         height = 300
     }) {
         super();
+        makeObservable(this);
         this.gridModel = gridModel;
 
         this.commitOnChange = commitOnChange;

@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -30,6 +30,7 @@ export class ChartModel extends HoistModel {
      */
     constructor({highchartsConfig, series = [], config} = {}) {
         super();
+        makeObservable(this);
         throwIf(config, 'ChartModel "config" has been removed. Please use "highchartsConfig" instead.');
         this.highchartsConfig = highchartsConfig;
         this.series = series;

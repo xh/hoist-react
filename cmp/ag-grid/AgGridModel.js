@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, apiDeprecated} from '@xh/hoist/utils/js';
 import {cloneDeep, has, isArray, isEmpty, isEqual, isNil, last, set, startCase} from 'lodash';
 
@@ -64,6 +64,7 @@ export class AgGridModel extends HoistModel {
         compact
     } = {}) {
         super();
+        makeObservable(this);
         apiDeprecated(compact, 'compact', "Use 'sizingMode' instead");
         if (compact) sizingMode = 'compact';
 

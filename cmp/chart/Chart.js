@@ -9,7 +9,7 @@ import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
-import {bindable, runInAction} from '@xh/hoist/mobx';
+import {bindable, runInAction, makeObservable} from '@xh/hoist/mobx';
 import {
     createObservableRef,
     getLayoutProps,
@@ -95,6 +95,7 @@ class LocalModel extends HoistModel {
 
     constructor(model, aspectRatio) {
         super();
+        makeObservable(this);
         this.model = model;
         this.aspectRatio = aspectRatio;
         this.addReaction({

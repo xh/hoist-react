@@ -6,7 +6,7 @@
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {apiRemoved, throwIf} from '@xh/hoist/utils/js';
 import {isNumber} from 'lodash';
 
@@ -74,6 +74,7 @@ export class DataViewModel extends HoistModel {
         ...restArgs
     }) {
         super();
+        makeObservable(this);
         throwIf(!isNumber(itemHeight), 'Must specify DataViewModel.itemHeight as a number to set a fixed pixel height for each item.');
         apiRemoved(restArgs.rowCls, 'rowCls', 'Use \'rowClassFn\' instead.');
         apiRemoved(restArgs.itemRenderer, 'itemRenderer', 'Use \'elementRenderer\' instead.');

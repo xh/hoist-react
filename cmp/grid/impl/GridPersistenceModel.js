@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH, managed, PersistenceProvider} from '@xh/hoist/core';
-import {observable, action} from '@xh/hoist/mobx';
+import {observable, action, makeObservable} from '@xh/hoist/mobx';
 import {find, isUndefined, omit} from 'lodash';
 
 
@@ -39,6 +39,7 @@ export class GridPersistenceModel extends HoistModel {
         }
     ) {
         super();
+        makeObservable(this);
         this.gridModel = gridModel;
 
         persistWith = {path: 'grid', ...persistWith};

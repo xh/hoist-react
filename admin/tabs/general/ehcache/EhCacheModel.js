@@ -11,8 +11,6 @@ import {trimEnd} from 'lodash';
 
 export class EhCacheModel extends HoistModel {
 
-    get isLoadSupport() {return true}
-
     persistWith = {localStorageKey: 'xhAdminEhCacheState'};
 
     @managed

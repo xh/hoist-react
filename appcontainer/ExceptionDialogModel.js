@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 
 /**
  * Manages the default display of exceptions.
@@ -35,6 +35,10 @@ export class ExceptionDialogModel extends HoistModel {
     /** Optional user supplied message */
     @observable userMessage = '';
 
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     @action
     show(exception, options) {

@@ -21,8 +21,6 @@ import {DifferModel} from '../../differ/DifferModel';
 
 export class JsonBlobModel extends HoistModel {
 
-    get isLoadSupport() {return true}
-
     persistWith = {localStorageKey: 'xhAdminJsonBlobState'};
 
     @managed

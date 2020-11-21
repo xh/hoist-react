@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, ManagedRefreshContextModel, RenderMode} from '@xh/hoist/core';
-import {computed} from '@xh/hoist/mobx';
+import {computed, makeObservable} from '@xh/hoist/mobx';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
 
@@ -76,6 +76,7 @@ export class PageModel extends HoistModel {
         disableAppRefreshButton
     }) {
         super();
+        makeObservable(this);
         warnIf(renderMode === RenderMode.ALWAYS, 'RenderMode.ALWAYS is not supported in PageModel. Pages are always can\'t exist before being mounted.');
 
         this.id = id;

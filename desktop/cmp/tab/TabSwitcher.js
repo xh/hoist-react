@@ -16,6 +16,7 @@ import {getLayoutProps, createObservableRef, useOnResize, useOnVisibleChange, us
 import {debounced, throwIf, isDisplayed} from '@xh/hoist/utils/js';
 import {isEmpty, compact} from 'lodash';
 import classNames from 'classnames';
+import {makeObservable} from 'mobx';
 import PT from 'prop-types';
 import composeRefs from '@seznam/compose-react-refs';
 
@@ -203,6 +204,7 @@ class LocalModel extends HoistModel  {
 
     constructor(model, enableOverflow, vertical) {
         super();
+        makeObservable(this);
         this.model = model;
         this.enableOverflow = enableOverflow;
         this.vertical = vertical;

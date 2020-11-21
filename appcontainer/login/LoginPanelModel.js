@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {bindable, computed} from '@xh/hoist/mobx';
+import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {debounced} from '@xh/hoist/utils/js';
 
@@ -25,6 +25,11 @@ export class LoginPanelModel extends HoistModel {
     @computed
     get isValid() {
         return this.username && this.password;
+    }
+
+    constructor() {
+        super();
+        makeObservable(this);
     }
 
     // Debounce to defend against double-click fast enough to get through masking + button disable.

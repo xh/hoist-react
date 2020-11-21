@@ -20,9 +20,6 @@ export class RootRefreshContextModel extends RefreshContextModel {
 
     async doLoadAsync(loadSpec) {
 
-        // TODO: Refresh selected hoist services in phases here....
-        // await loadAllAsync([XH.configService, XH.prefService], loadSpec);
-
         await XH.appModel.loadAsync(loadSpec);
         await loadAllAsync(this.refreshTargets, loadSpec);
     }

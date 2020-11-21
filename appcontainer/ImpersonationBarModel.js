@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -17,6 +17,11 @@ export class ImpersonationBarModel extends HoistModel {
 
     @observable showRequested = false;
     @observable.ref targets = [];
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     init() {
         this.addAutorun(() => {

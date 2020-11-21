@@ -6,7 +6,7 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 
 /**
@@ -35,6 +35,7 @@ export class ToastModel extends HoistModel {
         containerRef = null
     }) {
         super();
+        makeObservable(this);
         this.message = message;
         this.icon = icon;
         this.timeout = timeout;

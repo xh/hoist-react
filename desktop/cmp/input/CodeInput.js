@@ -13,7 +13,7 @@ import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog, textArea} from '@xh/hoist/kit/blueprint';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import * as codemirror from 'codemirror';
 import 'codemirror/addon/fold/brace-fold.js';
@@ -178,6 +178,7 @@ export class CodeInput extends HoistInput {
 
     constructor(props, context) {
         super(props, context);
+        makeObservable(this);
 
         this.addReaction({
             track: () => XH.darkTheme,

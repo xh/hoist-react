@@ -35,6 +35,8 @@
 * `Cube.info` is now directly observable.
 
 ### 📚 Libraries
+* @mobx-react `6.3.0 -> 7.0.5`
+* @mobx `5.15.7 -> 6.0.4`
 * @react `16.13.1 -> 17.0.1`
 * @blueprintjs/core `3.35 -> 3.36`
 * @blueprintjs/datetime `3.19 -> 3.20`

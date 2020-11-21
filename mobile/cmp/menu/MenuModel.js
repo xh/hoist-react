@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {isPlainObject} from 'lodash';
 import {MenuItemModel} from './MenuItemModel';
 
@@ -25,6 +25,7 @@ export class MenuModel extends HoistModel {
      */
     constructor({itemModels = [], xPos = 0, yPos = 0}) {
         super();
+        makeObservable(this);
         this.itemModels = itemModels.map(i => isPlainObject(i) ? new MenuItemModel(i) : i);
         this.xPos = xPos;
         this.yPos = yPos;

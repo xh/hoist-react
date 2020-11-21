@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {stripTags} from '@xh/hoist/utils/js';
 
 /**
@@ -16,6 +16,11 @@ export class FeedbackDialogModel extends HoistModel {
 
     @observable isOpen = false;
     @observable message = null;
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     init() {
         this.addReaction({

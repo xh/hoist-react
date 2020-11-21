@@ -11,8 +11,6 @@ import {lowerFirst} from 'lodash';
 
 export class ServiceModel extends HoistModel {
 
-    get isLoadSupport() {return true}
-
     @managed
     gridModel = new GridModel({
         enableExport: true,

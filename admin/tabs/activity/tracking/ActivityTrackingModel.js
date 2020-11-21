@@ -13,7 +13,7 @@ import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Cube} from '@xh/hoist/data';
 import {fmtDate, fmtNumber, numberRenderer} from '@xh/hoist/format';
-import {action} from '@xh/hoist/mobx';
+import {action, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isFinite} from 'lodash';
@@ -24,8 +24,6 @@ import {ChartsModel} from './charts/ChartsModel';
 export const PERSIST_ACTIVITY = {localStorageKey: 'xhAdminActivityState'};
 
 export class ActivityTrackingModel extends HoistModel {
-
-    get isLoadSupport() {return true}
 
     persistWith = PERSIST_ACTIVITY;
 
@@ -65,6 +63,7 @@ export class ActivityTrackingModel extends HoistModel {
 
     constructor() {
         super();
+        makeObservable(this);
         this.formModel = new FormModel({
             fields: [
                 {name: 'startDay', initialValue: this.getDefaultStartDay()},

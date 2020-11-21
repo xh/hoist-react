@@ -6,7 +6,7 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {castArray, compact, intersection, isEqual, union} from 'lodash';
 
 /**
@@ -29,6 +29,7 @@ export class StoreSelectionModel extends HoistModel {
      */
     constructor({store, mode = 'single'}) {
         super();
+        makeObservable(this);
         this.store = store;
         this.mode = mode;
         this.addReaction(this.cullSelectionReaction());

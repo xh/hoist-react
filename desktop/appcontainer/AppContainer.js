@@ -58,7 +58,6 @@ export const AppContainer = hoistCmp({
     render() {
         useOnMount(() => XH.initAsync());
 
-        console.log('r');
         return fragment(
             errorBoundary({
                 item: viewForState(),

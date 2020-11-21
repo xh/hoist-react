@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, RootRefreshContextModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {AboutDialogModel} from './AboutDialogModel';
 import {ExceptionDialogModel} from './ExceptionDialogModel';
@@ -40,6 +40,11 @@ export class AppContainerModel extends HoistModel {
      */
     @managed
     appLoadModel = new PendingTaskModel({mode: 'all'});
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     init() {
         const models = [

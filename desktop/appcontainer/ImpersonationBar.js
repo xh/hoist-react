@@ -13,6 +13,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {bindable} from '@xh/hoist/mobx';
 import './ImpersonationBar.scss';
+import {makeObservable} from 'mobx';
 
 /**
  * An admin-only toolbar that provides a UI for impersonating application users, as well as ending
@@ -70,6 +71,11 @@ class LocalModel extends HoistModel {
 
     model;
     @bindable pendingTarget = null;
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     onCommit = () => {
         if (this.pendingTarget) {

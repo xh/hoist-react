@@ -4,7 +4,7 @@ import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
 import {managed, HoistModel, XH} from '@xh/hoist/core';
 import {numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 
 export class ActivityDetailModel extends HoistModel {
@@ -20,6 +20,7 @@ export class ActivityDetailModel extends HoistModel {
 
     constructor({parentModel}) {
         super();
+        makeObservable(this);
         this.parentModel = parentModel;
 
         this.gridModel = new GridModel({

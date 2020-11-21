@@ -22,7 +22,7 @@ import {useContextModel} from '../hooks/Models';
 export function useOwnedModelLinker(model) {
     const context = useContextModel('RefreshContextModel');
     useEffect(() => {
-        if (model && model.isLoadSupport) {
+        if (model?.implementsLoading) {
             model.loadAsync();
             if (context) {
                 context.register(model);

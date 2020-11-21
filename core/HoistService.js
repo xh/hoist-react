@@ -4,26 +4,24 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {ManagedSupport, ReactiveSupport, PersistSupport, XhIdSupport} from '@xh/hoist/core';
-import {makeObservable, observable} from '@xh/hoist/mobx';
+import {ManagedSupport, ReactiveSupport, PersistSupport, XhIdSupport, LoadSupport} from '@xh/hoist/core';
 
 /**
  * Core class for Services in Hoist.
  *
- * Adds support for managed events, mobx reactivity, and lifecycle initialization.
+ * Adds support for mobx reactivity, resource management, persistence, and data loading.
  */
 @ManagedSupport
 @ReactiveSupport
 @PersistSupport
 @XhIdSupport
+@LoadSupport
 export class HoistService {
-
-    @observable sniff;
 
     get isHoistService() {return true}
 
     constructor() {
-        makeObservable(this);
+        this.initLoadSupport();
     }
 
     /**
@@ -33,3 +31,4 @@ export class HoistService {
      */
     async initAsync() {}
 }
+HoistService.isHoistService = true;

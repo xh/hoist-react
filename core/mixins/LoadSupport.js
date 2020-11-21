@@ -8,14 +8,16 @@ import {XH} from '@xh/hoist/core';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {applyMixin, throwIf} from '@xh/hoist/utils/js';
 import {isPlainObject} from 'lodash';
-import {decorate, observable, runInAction} from 'mobx';
+import {extendObservable, observable, runInAction} from 'mobx';
 
 /**
- * Mixin to indicate that an object has a load and refresh lifecycle for loading data from backend
+ * Mixin to provide load and refresh lifecycle for loading data from backend
  * sources and setting up resources.
  *
- * This decorator is designed to be applied to implementations of HoistModel and HoistService.
- * It is also implemented by standard classes such as UrlStore, RestStore, RestGridModel.
+ * This mixin is used by standard classes such as HoistModel, HoistService, UrlStore,
+ * RestStore, RestGridModel to support a data loading lifecycle.
+ *
+ * To implement loading, concrete classes need to provide a doLoadAsync() Method.
  *
  * @see HoistModel
  * @see UrlStore
@@ -23,12 +25,6 @@ import {decorate, observable, runInAction} from 'mobx';
  * @see RestGridModel
  */
 export function LoadSupport(C) {
-
-    decorate(C,  {
-        lastLoadRequested: observable.ref,
-        lastLoadCompleted: observable.ref,
-        lastLoadException: observable.ref
-    });
 
     return applyMixin(C, {
         name: 'LoadSupport',
@@ -45,11 +41,41 @@ export function LoadSupport(C) {
              *      take care to pass this parameter to any delegates (e.g. other LoadSupport instances)
              *      that accept it.
              */
-            async doLoadAsync(loadSpec) {}
+            doLoadAsync: null
         },
 
 
         provides: {
+
+            /**
+             * Initialize loading for his object.
+             */
+            initLoadSupport() {
+                if (!this.implementsLoading) return;
+
+                this._loadModel = new PendingTaskModel();
+                extendObservable(this,
+                    {
+                        _lastLoadRequested: null,
+                        _lastLoadCompleted: null,
+                        _lastLoadException: null
+                    },
+                    {
+                        _lastLoadRequested: observable.ref,
+                        _lastLoadCompleted: observable.ref,
+                        _lastLoadException: observable.ref
+                    });
+            },
+
+            /**
+             * Does this object implement loading?
+             * True if an implementation of doLoadAsync been provided?
+             */
+            implementsLoading: {
+                get() {
+                    return !!this.doLoadAsync;
+                }
+            },
 
             /**
              * Load this object from underlying data sources or services.
@@ -58,6 +84,7 @@ export function LoadSupport(C) {
              * @param {LoadSpec} [loadSpec] - Metadata about the underlying request
              */
             async loadAsync(loadSpec = {}) {
+                throwIf(!this.loadModel, 'Loading not initialized. Be sure to implement doLoadAsync() and call initLoadSupport().');
                 throwIf(
                     !isPlainObject(loadSpec),
                     'Unexpected param passed to loadAsync() - accepts loadSpec object only. If triggered via a reaction, ensure call is wrapped in a closure.'
@@ -66,7 +93,7 @@ export function LoadSupport(C) {
                 // Skip auto-refresh if we have a pending triggered refresh
                 if (loadSpec.isAutoRefresh && this.loadModel.isPending) return;
 
-                runInAction(() => this.lastLoadRequested = new Date());
+                runInAction(() => this._lastLoadRequested = new Date());
                 const loadModel = !loadSpec.isAutoRefresh ? this.loadModel : null;
 
                 let exception = null;
@@ -79,13 +106,13 @@ export function LoadSupport(C) {
                     })
                     .finally(() => {
                         runInAction(() => {
-                            this.lastLoadCompleted = new Date();
-                            this.lastLoadException = exception;
+                            this._lastLoadCompleted = new Date();
+                            this._lastLoadException = exception;
                         });
 
                         if (C.isRefreshContextModel) return;
 
-                        const elapsed = this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime(),
+                        const elapsed = this._lastLoadCompleted.getTime() - this._lastLoadRequested.getTime(),
                             msg = `[${C.name}] | ${getLoadTypeFromSpec(loadSpec)} | ${exception ? 'failed' : 'completed'} | ${elapsed}ms`;
 
                         if (exception) {
@@ -123,11 +150,30 @@ export function LoadSupport(C) {
              * Note that this model will *not* track auto-refreshes.
              */
             loadModel: {
-                get() {
-                    if (!this._loadModel) this._loadModel = new PendingTaskModel();
-                    return this._loadModel;
-                }
+                get() {return this._loadModel}
+            },
+
+            /**
+             * Date when last load was initiated.
+             */
+            lastLoadRequested: {
+                get() {return this._lastLoadRequested}
+            },
+
+            /**
+             * Date when last load completed.
+             */
+            lastLoadCompleted: {
+                get() {return this._lastLoadCompleted}
+            },
+
+            /**
+             * Any exception that occurred during last load.
+             */
+            lastLoadException: {
+                get() {return this._lastLoadException}
             }
+
         },
 
         chains: {

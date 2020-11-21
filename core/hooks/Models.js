@@ -7,7 +7,6 @@
 import {useContext, useState} from 'react';
 import {ModelLookupContext} from '../impl/ModelLookup';
 import {useOwnedModelLinker} from '../impl/UseOwnedModelLinker';
-import {isClass} from '@xh/hoist/utils/js';
 
 /**
  * Hook to allow a component to access a HoistModel provided in context by an ancestor component.
@@ -31,7 +30,7 @@ export function useContextModel(selector = '*') {
 export function useLocalModel(spec) {
     const [ret] = useState(() => {
         if (!spec) return null;
-        return isClass(spec) ? new spec() : spec.call();
+        return spec.isHoistModel ? new spec() : spec.call();
     });
     useOwnedModelLinker(ret);
     return ret;

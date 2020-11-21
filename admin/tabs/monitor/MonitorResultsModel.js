@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isDisplayed} from '@xh/hoist/utils/js';
@@ -13,8 +13,6 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 import {min} from 'lodash';
 
 export class MonitorResultsModel extends HoistModel {
-
-    get isLoadSupport() {return true}
 
     @observable.ref results = [];
     @observable lastRun = null;
@@ -43,6 +41,7 @@ export class MonitorResultsModel extends HoistModel {
 
     constructor() {
         super();
+        makeObservable(this);
         this.timer = Timer.create({
             runFn: () => this.autoRefreshAsync(),
             interval: 10 * SECONDS,
