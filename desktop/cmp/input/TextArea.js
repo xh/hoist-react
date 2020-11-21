@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory, LayoutSupport} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
@@ -14,6 +14,7 @@ import './TextArea.scss';
 /**
  * A multi-line text input.
  */
+@HoistComponent
 @LayoutSupport
 export class TextArea extends HoistInput {
 

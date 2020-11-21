@@ -272,7 +272,7 @@ render function with the `hoistComponent` function. This will apply core Hoist s
 MobX observability, and support for Forwards refs, and will return the Component.
 
 Alternatively, Hoist continues to fully support ES6 class-based Components. These can be specified
-using the 'HoistComponent' base class. This class will enable MobX reactivity and augment a
+using the '@HoistComponent' decorator. This decorator will enable MobX reactivity and augment a
 Component with several useful convenience methods/getters such as `getDOMNode()` and `isDisplayed`.
 
 Note that many layout related HoistComponents provide "LayoutSupport". HoistComponents supporting

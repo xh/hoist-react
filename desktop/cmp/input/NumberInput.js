@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory, LayoutSupport} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
@@ -28,6 +28,7 @@ import PT from 'prop-types';
  *
  * Set the corresponding stepSize prop(s) to null to disable this feature.
  */
+@HoistComponent
 @LayoutSupport
 export class NumberInput extends HoistInput {
 

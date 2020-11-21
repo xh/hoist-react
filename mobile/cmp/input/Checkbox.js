@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory} from '@xh/hoist/core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {checkbox as onsenCheckbox} from '@xh/hoist/kit/onsen';
 import PT from 'prop-types';
 import './Checkbox.scss';
@@ -13,6 +13,7 @@ import './Checkbox.scss';
 /**
  * Checkbox control for boolean values.
  */
+@HoistComponent
 export class Checkbox extends HoistInput {
 
     static propTypes = {

@@ -72,7 +72,7 @@ export class PinPadModel extends HoistModel {
     get completedPin() {
         const {_enteredDigits, _pinLength} = this;
         return _enteredDigits.length === _pinLength ?
-            _enteredDigits.toJS().join('') :
+            _enteredDigits.join('') :
             null;
     }
 

@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory} from '@xh/hoist/core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {switchControl} from '@xh/hoist/kit/onsen';
 import PT from 'prop-types';
 import './SwitchInput.scss';
@@ -13,6 +13,7 @@ import './SwitchInput.scss';
 /**
  * Switch (toggle) control for non-nullable boolean values.
  */
+@HoistComponent
 export class SwitchInput extends HoistInput {
 
     static propTypes = {

@@ -6,7 +6,7 @@
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
-import {elemFactory, LayoutSupport, XH} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {reactSelect, reactCreatableSelect} from '@xh/hoist/kit/react-select';
 import {action, observable} from '@xh/hoist/mobx';
@@ -26,6 +26,7 @@ import './Select.scss';
  * @see {@link https://react-select.com|React Select Docs}
  */
 @LayoutSupport
+@HoistComponent
 export class Select extends HoistInput {
 
     static propTypes = {

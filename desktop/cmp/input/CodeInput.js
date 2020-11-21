@@ -6,7 +6,7 @@
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, filler, fragment, frame, hbox, vbox, div, label, span} from '@xh/hoist/cmp/layout';
-import {elemFactory, LayoutSupport, XH} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
@@ -43,6 +43,7 @@ import './CodeInput.scss';
  * TODO - understanding sizing spec / requirements for component vs. generated CodeMirror.
  * Reconcile LayoutSupport with width/height props. https://github.com/xh/hoist-react/issues/327
  */
+@HoistComponent
 @LayoutSupport
 export class CodeInput extends HoistInput {
 

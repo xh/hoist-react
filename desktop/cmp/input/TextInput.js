@@ -6,7 +6,7 @@
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {elemFactory, LayoutSupport} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
@@ -17,6 +17,7 @@ import PT from 'prop-types';
 /**
  * A single-line text input with additional support for embedded icons/elements.
  */
+@HoistComponent
 @LayoutSupport
 export class TextInput extends HoistInput {
 

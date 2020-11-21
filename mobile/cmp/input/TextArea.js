@@ -6,7 +6,7 @@
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {div, textarea as textareaTag} from '@xh/hoist/cmp/layout';
-import {elemFactory, LayoutSupport} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 import './TextArea.scss';
@@ -14,6 +14,7 @@ import './TextArea.scss';
 /**
  * A multi-line text input.
  */
+@HoistComponent
 @LayoutSupport
 export class TextArea extends HoistInput {
 

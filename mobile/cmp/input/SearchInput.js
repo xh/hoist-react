@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory, LayoutSupport} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
 import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
@@ -13,6 +13,7 @@ import PT from 'prop-types';
 /**
  * A Search Input
  */
+@HoistComponent
 @LayoutSupport
 export class SearchInput extends HoistInput {
 

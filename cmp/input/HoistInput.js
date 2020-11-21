@@ -4,13 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistComponent} from '@xh/hoist/core';
 import {FieldModel} from '@xh/hoist/cmp/form';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEqual} from 'lodash';
 import PT from 'prop-types';
+import {Component} from 'react';
 import './HoistInput.scss';
 
 /**
@@ -43,7 +43,9 @@ import './HoistInput.scss';
  * as the change event. Other inputs such as textInput maintain the distinction described above,
  * but expose a `commitOnChange` prop to force them to eagerly flush their values on every change.
  */
-export class HoistInput extends HoistComponent {
+export class HoistInput extends Component {
+
+    static supportModelFromContext = true;
 
     static propTypes = {
 

@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory, LayoutSupport} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {Button, ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {castArray} from 'lodash';
@@ -19,6 +19,7 @@ import React from 'react';
  * The buttons are automatically configured to set this value on click and appear pressed if the
  * ButtonGroupInput's value matches.
  */
+@HoistComponent
 @LayoutSupport
 export class ButtonGroupInput extends HoistInput {
 

@@ -12,7 +12,7 @@ import {components} from 'react-select';
 
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span, fragment} from '@xh/hoist/cmp/layout';
-import {elemFactory, LayoutSupport, elem} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport, elem} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {
     reactAsyncCreatableSelect,
@@ -41,6 +41,7 @@ import './Select.scss';
  * @see {@link https://github.com/jacobworrel/react-windowed-select react-windowed-select}
  */
 @LayoutSupport
+@HoistComponent
 export class Select extends HoistInput {
 
     static propTypes = {

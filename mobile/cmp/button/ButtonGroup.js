@@ -9,13 +9,15 @@ import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {Button} from '@xh/hoist/mobile/cmp/button';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray} from 'lodash';
+import {Component} from 'react';
 import './ButtonGroup.scss';
 
 /**
  * A segmented group of buttons. Should receive a list of Buttons as a children.
  */
+@HoistComponent
 @LayoutSupport
-export class ButtonGroup extends HoistComponent {
+export class ButtonGroup extends Component {
 
     baseClassName = 'xh-button-group';
 
