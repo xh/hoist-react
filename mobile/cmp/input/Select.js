@@ -9,7 +9,7 @@ import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {reactSelect, reactCreatableSelect} from '@xh/hoist/kit/react-select';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {assign, isEmpty, isPlainObject} from 'lodash';
 import PT from 'prop-types';
@@ -125,6 +125,7 @@ export class Select extends HoistInput {
 
     constructor(props, context) {
         super(props, context);
+        makeObservable(this);
         this.addReaction({
             track: () => this.props.options,
             run: (opts) => {

@@ -11,9 +11,8 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import './ImpersonationBar.scss';
-import {makeObservable} from 'mobx';
 
 /**
  * An admin-only toolbar that provides a UI for impersonating application users, as well as ending

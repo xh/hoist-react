@@ -6,7 +6,7 @@
  */
 
 import {managed} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {CubeField} from './CubeField';
 import {Query} from './Query';
@@ -54,6 +54,7 @@ export class Cube {
         info = {},
         lockFn
     }) {
+        makeObservable(this);
         this.store = new Store({
             fields: this.parseFields(fields),
             idSpec,

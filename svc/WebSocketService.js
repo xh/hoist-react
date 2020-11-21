@@ -6,7 +6,7 @@
  */
 import {HoistService, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -58,6 +58,11 @@ export class WebSocketService extends HoistService {
     _subsByTopic = {};
 
     get enabled() {return XH.appSpec.webSocketsEnabled}
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     async initAsync() {
         if (!this.enabled) return;

@@ -8,7 +8,7 @@ import {XH} from '@xh/hoist/core';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {applyMixin, throwIf} from '@xh/hoist/utils/js';
 import {isPlainObject} from 'lodash';
-import {extendObservable, observable, runInAction} from 'mobx';
+import {extendObservable, observable, runInAction} from '@xh/hoist/mobx';
 
 /**
  * Mixin to provide load and refresh lifecycle for loading data from backend

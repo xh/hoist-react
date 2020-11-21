@@ -7,9 +7,8 @@
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {escapeRegExp} from 'lodash';
-import {makeObservable} from 'mobx';
 import PT from 'prop-types';
 import {LeftRightChooserModel} from './LeftRightChooserModel';
 

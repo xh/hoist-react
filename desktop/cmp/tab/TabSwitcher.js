@@ -10,13 +10,12 @@ import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {tab as bpTab, tabs as bpTabs, tooltip as bpTooltip, popover, menu, menuItem} from '@xh/hoist/kit/blueprint';
 import {getLayoutProps, createObservableRef, useOnResize, useOnVisibleChange, useOnScroll} from '@xh/hoist/utils/react';
 import {debounced, throwIf, isDisplayed} from '@xh/hoist/utils/js';
 import {isEmpty, compact} from 'lodash';
 import classNames from 'classnames';
-import {makeObservable} from 'mobx';
 import PT from 'prop-types';
 import composeRefs from '@seznam/compose-react-refs';
 

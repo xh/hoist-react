@@ -6,10 +6,9 @@
  */
 
 import {ReactiveSupport, ManagedSupport} from '@xh/hoist/core';
-import {action, observable, bindable} from '@xh/hoist/mobx';
+import {action, observable, bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
-import {makeObservable} from 'mobx';
 import {parseFilter} from './filter/Utils';
 import {
     castArray,

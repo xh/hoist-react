@@ -7,6 +7,5 @@
 export * from './ClassName';
 export * from './ReactUtils';
 export * from './LayoutPropUtils';
-export * from './Ref';
 export * from './ObservableRef';
 export * from './Hooks';

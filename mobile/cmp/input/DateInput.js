@@ -10,7 +10,7 @@ import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {singleDatePicker} from '@xh/hoist/kit/react-dates';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
 import moment from 'moment';
@@ -83,6 +83,11 @@ export class DateInput extends HoistInput {
     @bindable popoverOpen = false;
 
     baseClassName = 'xh-date-input';
+
+    constructor(props, context) {
+        super(props, context);
+        makeObservable(this);
+    }
 
     // Prop-backed convenience getters
     get maxDate() {
