@@ -100,7 +100,10 @@
         color: var(--xh-button-text-color);
         background-color: var(--xh-button-bg-lightest);
 
-        &.xh-button--active {background-color: var(--xh-button-active-bg)}
+        &.xh-button--active {
+          background-color: var(--xh-button-active-bg);
+          color: var(--xh-button-active-text-color);
+        }
         // BG styles for :hover and :active limited to enabled buttons only - prevent misleading
         // highlight on hover for a disabled button. Note that :active pseudo-selector here is
         // triggered while button is being "held down" by user.
@@ -158,7 +161,10 @@
         color: var(--xh-button-text-color);
         background-color: transparent;
         border-color: var(--xh-button-border-color);
-        &.xh-button--active {background-color: var(--xh-button-active-bg)}
+        &.xh-button--active {
+          background-color: var(--xh-button-active-bg);
+          color: var(--xh-button-active-text-color);
+        }
         &.xh-button--enabled {
           &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-button-bg-darker)}
           &:active {background-color: var(--xh-button-bg-darkest)}
@@ -223,7 +229,10 @@
       &.xh-button--intent-none {
         color: var(--xh-button-text-color);
         background-color: var(--xh-button-bg);
-        &.xh-button--active {background-color: var(--xh-button-active-bg)}
+        &.xh-button--active {
+          background-color: var(--xh-button-active-bg);
+          color: var(--xh-button-active-text-color);
+        }
         &.xh-button--enabled {
           &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-button-bg-darker)}
           &:active {background-color: var(--xh-button-bg-darkest)}
@@ -278,7 +287,10 @@
         color: var(--xh-button-text-color);
         background-color: transparent;
         border-color: var(--xh-button-border-color);
-        &.xh-button--active {background-color: var(--xh-button-active-bg)}
+        &.xh-button--active {
+          background-color: var(--xh-button-active-bg);
+          color: var(--xh-button-active-text-color);
+        }
         &.xh-button--enabled {
           &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-button-bg-lighter)}
           &:active {background-color: var(--xh-button-bg-lightest)}
