@@ -18,12 +18,10 @@ import {observable, runInAction} from 'mobx';
 export function settable(target, property, descriptor) {
     const name = 'set' + upperFirst(property);
     if (!target.hasOwnProperty(name)) {
-        const fn = {
-            value: function(v) {
-                runInAction(() => {this[property] = v});
-            }
+        const value = function(v) {
+            runInAction(() => {this[property] = v});
         };
-        Object.defineProperty(target, name, fn);
+        Object.defineProperty(target, name, {value});
     }
 
     return descriptor && {...descriptor, configurable: true};

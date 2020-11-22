@@ -17,7 +17,7 @@ import {action, observable} from '@xh/hoist/mobx';
  */
 export function createObservableRef() {
     const ret = action(v => ret._current.set(v));
-    ret._current = observable.box(null);
+    ret._current = observable.box(null, {deep: false});
     Object.defineProperty(ret, 'current', {get: () => ret._current.get()});
     return ret;
 }
