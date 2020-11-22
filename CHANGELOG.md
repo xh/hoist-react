@@ -2,6 +2,21 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+### 🎁 Technical
+Hoist v37 requires some changes to the core Hoist model and service classes.  New base
+classes of `HoistModel` and `HoistService` replace the existing class decorators
+`@HoistModel` and `@HoistService`.  This is part of an ongoing effort to streamline our core entity
+classes and provide better documentation and development support for them.  We have also removed the
+ need for explicit `@LoadSupport` annotation in all implementations of `HoistModel` and
+`HoistService`. The presence of a defined `doLoadAsync()` method is now sufficient to cause
+these objects to participate in the loading and refreshing lifecycle.
+
+Due to changes in MobX v6.0.1, all classes that host observable fields and actions will now also
+need to provide a constructor containing a call to `makeObservable(this)`.  This change will
+require updates to most `HoistModel`, `HoistService` and `HoistComponent` classes.  See
+https://michel.codes/blogs/mobx6 for more on this change and the motivation behind it.
+
+
 ### 🎁 New Features
 
 * New props added to `TabSwitcher`:
@@ -16,6 +31,7 @@
   based on a case-insensitive match of word starts in the label. (Previously it was based on a match
   _anywhere_ in the label _or_ value.) To customize this behavior, applications should use the new
   `filterFn` prop.
+* New utility method `getOrCreate` for easy caching of properties on objects.
 
 ### 💥 Breaking Changes
 
@@ -25,6 +41,7 @@
   * Use `switcher: false` to not include a TabSwitcher. (previously `switcherPosition: 'none'`)
   * Use `switcher: {...}` to provide customisation props for the `TabSwitcher`. See `TabSwitcher`
     documentation for more information.
+* The `Ref` class, deprecated in v26 has now been removed.  Use `createObservableRef` instead.
 
 ### 🐞 Bug Fixes
 
