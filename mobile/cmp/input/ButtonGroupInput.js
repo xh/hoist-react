@@ -4,10 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {HoistInputPropTypes, HoistInputModel, hoistInputHost} from '@xh/hoist/cmp/input';
+import {hoistCmp} from '@xh/hoist/core';
 import {Button, buttonGroup} from '@xh/hoist/mobile/cmp/button';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {castArray} from 'lodash';
 import PT from 'prop-types';
 import {cloneElement} from 'react';
@@ -20,21 +21,36 @@ import './ButtonGroupInput.scss';
  * The buttons are automatically configured to set this value on click and appear pressed if the
  * ButtonGroupInput's value matches.
  */
-@HoistComponent
-@LayoutSupport
-export class ButtonGroupInput extends HoistInput {
+export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory({
+    displayName: 'ButtonGroupInput',
+    render(props, ref) {
+        return hoistInputHost({modelSpec: Model, cmpSpec: cmp, ...props, ref});
+    }
+});
+ButtonGroupInput.propTypes = {
+    ...HoistInputPropTypes,
 
-    static propTypes = {
-        ...HoistInput.propTypes,
+    /** True to allow buttons to be unselected (aka inactivated). Defaults to false. */
+    enableClear: PT.bool
+};
+ButtonGroupInput.hasLayoutSupport = true;
 
-        /** True to allow buttons to be unselected (aka inactivated). Defaults to false. */
-        enableClear: PT.bool
-    };
+//----------------------------------
+// Implementation
+//----------------------------------
+class Model extends HoistInputModel {
 
     baseClassName = 'xh-button-group-input';
 
-    render() {
-        const {children, disabled, enableClear, ...rest} = this.getNonLayoutProps();
+    constructor(props) {
+        super(props);
+    }
+}
+
+const cmp = hoistCmp.factory(
+    ({model, ...props}, ref) => {
+
+        const {children, disabled, enableClear, ...rest} = getNonLayoutProps(props);
 
         const buttons = castArray(children).map(button => {
             if (!button) return null;
@@ -49,23 +65,16 @@ export class ButtonGroupInput extends HoistInput {
             return cloneElement(button, {
                 active,
                 disabled: withDefault(btnDisabled, false),
-                onClick: () => {
-                    if (enableClear) {
-                        this.noteValueChange(active ? null : value);
-                    } else {
-                        this.noteValueChange(value);
-                    }
-                }
+                onClick: () => model.noteValueChange(enableClear && active ? null : value)
             });
         });
 
         return buttonGroup({
             items: buttons,
             ...rest,
-            ...this.getLayoutProps(),
-            className: this.getClassName()
+            ...getLayoutProps(props),
+            className: model.getClassName(),
+            ref
         });
     }
-}
-
-export const buttonGroupInput = elemFactory(ButtonGroupInput);
+);

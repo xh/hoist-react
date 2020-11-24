@@ -4,77 +4,58 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {HoistInputModel, HoistInputPropTypes, hoistInputHost} from '@xh/hoist/cmp/input';
+import {hoistCmp} from '@xh/hoist/core';
 import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
 import {withDefault} from '@xh/hoist/utils/js';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
 
 /**
  * A Search Input
  */
-@HoistComponent
-@LayoutSupport
-export class SearchInput extends HoistInput {
+export const [SearchInput, searchInput] = hoistCmp.withFactory({
+    displayName: 'Select',
+    render(props, ref) {
+        return hoistInputHost({modelSpec: Model, cmpSpec: cmp, ...props, ref});
+    }
+});
+SearchInput.propTypes = {
+    ...HoistInputPropTypes,
+    value: PT.string,
 
-    static propTypes = {
-        ...HoistInput.propTypes,
-        value: PT.string,
+    /** True to commit on every change/keystroke, default false. */
+    commitOnChange: PT.bool,
 
-        /** True to commit on every change/keystroke, default false. */
-        commitOnChange: PT.bool,
+    /** Onsen modifier string */
+    modifier: PT.string,
 
-        /** Onsen modifier string */
-        modifier: PT.string,
+    /** Function which receives keydown event */
+    onKeyDown: PT.func,
 
-        /** Function which receives keydown event */
-        onKeyDown: PT.func,
+    /** Text to display when control is empty */
+    placeholder: PT.string,
 
-        /** Text to display when control is empty */
-        placeholder: PT.string,
+    /** Whether text in field is selected when field receives focus */
+    selectOnFocus: PT.bool,
 
-        /** Whether text in field is selected when field receives focus */
-        selectOnFocus: PT.bool,
+    /** Whether to allow browser spell check, defaults to false */
+    spellCheck: PT.bool,
 
-        /** Whether to allow browser spell check, defaults to false */
-        spellCheck: PT.bool,
+    /** Alignment of entry text within control, default 'left'. */
+    textAlign: PT.oneOf(['left', 'right'])
+};
+SearchInput.hasLayoutSupport;
 
-        /** Alignment of entry text within control, default 'left'. */
-        textAlign: PT.oneOf(['left', 'right'])
-    };
+//-----------------------
+// Implementation
+//-----------------------
+class Model extends HoistInputModel {
 
     baseClassName = 'xh-search-input';
 
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);
-    }
-
-    render() {
-        const props = this.getNonLayoutProps(),
-            {width, ...layoutProps} = this.getLayoutProps();
-
-        return onsenSearchInput({
-            value: this.renderValue || '',
-
-            disabled: props.disabled,
-            modifier: props.modifier,
-            placeholder: props.placeholder,
-            spellCheck: withDefault(props.spellCheck, false),
-            tabIndex: props.tabIndex,
-
-            className: this.getClassName(),
-            style: {
-                ...props.style,
-                ...layoutProps,
-                width: withDefault(width, null),
-                textAlign: withDefault(props.textAlign, 'left')
-            },
-
-            onChange: this.onChange,
-            onKeyDown: this.onKeyDown,
-            onBlur: this.onBlur,
-            onFocus: this.onFocus
-        });
     }
 
     onChange = (ev) => {
@@ -94,4 +75,33 @@ export class SearchInput extends HoistInput {
         this.noteFocused();
     };
 }
-export const searchInput = elemFactory(SearchInput);
+
+const cmp = hoistCmp.factory(
+    ({model, ...props}, ref) => {
+        const  {width, ...layoutProps} = getLayoutProps(props);
+
+        return onsenSearchInput({
+            value: model.renderValue || '',
+
+            disabled: props.disabled,
+            modifier: props.modifier,
+            placeholder: props.placeholder,
+            spellCheck: withDefault(props.spellCheck, false),
+            tabIndex: props.tabIndex,
+
+            className: model.getClassName(),
+            style: {
+                ...props.style,
+                ...layoutProps,
+                width: withDefault(width, null),
+                textAlign: withDefault(props.textAlign, 'left')
+            },
+
+            onChange: model.onChange,
+            onKeyDown: model.onKeyDown,
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            ref
+        });
+    }
+);

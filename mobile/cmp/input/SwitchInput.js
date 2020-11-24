@@ -4,8 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {HoistInputModel, HoistInputPropTypes, hoistInputHost} from '@xh/hoist/cmp/input';
+import {hoistCmp} from '@xh/hoist/core';
 import {switchControl} from '@xh/hoist/kit/onsen';
 import PT from 'prop-types';
 import './SwitchInput.scss';
@@ -13,40 +13,51 @@ import './SwitchInput.scss';
 /**
  * Switch (toggle) control for non-nullable boolean values.
  */
-@HoistComponent
-export class SwitchInput extends HoistInput {
+export const [SwitchInput, switchInput] = hoistCmp.withFactory({
+    displayName: 'SwitchInput',
+    render(props, ref) {
+        return hoistInputHost({modelSpec: Model, cmpSpec: cmp, ...props, ref});
+    }
+});
+SwitchInput.propTypes = {
+    ...HoistInputPropTypes,
 
-    static propTypes = {
-        ...HoistInput.propTypes,
-        value: PT.string,
+    value: PT.string,
 
-        /** Onsen modifier string */
-        modifier: PT.string
-    };
+    /** Onsen modifier string */
+    modifier: PT.string
+};
+
+
+//-----------------------
+// Implementation
+//-----------------------
+class Model extends HoistInputModel {
 
     baseClassName = 'xh-switch-input';
-
-    render() {
-        const {props} = this;
-
-        return switchControl({
-            checked: !!this.renderValue,
-
-            disabled: props.disabled,
-            modifier: props.modifier,
-            tabIndex: props.tabIndex,
-
-            className: this.getClassName(),
-            style: props.style,
-
-            onChange: this.onChange,
-            onBlur: this.onBlur,
-            onFocus: this.onFocus
-        });
-    }
 
     onChange = (e) => {
         this.noteValueChange(e.target.checked);
     };
 }
-export const switchInput = elemFactory(SwitchInput);
+
+const cmp = hoistCmp.factory(
+    ({model, ...props}, ref) => {
+
+        return switchControl({
+            checked: !!model.renderValue,
+
+            disabled: props.disabled,
+            modifier: props.modifier,
+            tabIndex: props.tabIndex,
+
+            className: model.getClassName(),
+            style: props.style,
+
+            onChange: model.onChange,
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            ref
+        });
+    }
+);
