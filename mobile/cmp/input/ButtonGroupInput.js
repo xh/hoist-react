@@ -53,7 +53,7 @@ const cmp = hoistCmp.factory(
             throwIf(button.type !== Button, 'ButtonGroupInput child must be a Button.');
             throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
 
-            const active = (this.renderValue === value);
+            const active = (model.renderValue === value);
             return cloneElement(button, {
                 active,
                 disabled: withDefault(btnDisabled, false),

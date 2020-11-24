@@ -46,7 +46,7 @@ SearchInput.propTypes = {
     /** Alignment of entry text within control, default 'left'. */
     textAlign: PT.oneOf(['left', 'right'])
 };
-SearchInput.hasLayoutSupport;
+SearchInput.hasLayoutSupport = true;
 
 //-----------------------
 // Implementation

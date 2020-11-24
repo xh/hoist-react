@@ -15,7 +15,7 @@ import './Checkbox.scss';
  */
 export const [Checkbox, checkbox] = hoistCmp.withFactory({
     displayName: 'Checkbox',
-    className: 'xh-checkbox',
+    className: 'xh-check-box',
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref);
     }

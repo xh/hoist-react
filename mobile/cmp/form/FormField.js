@@ -5,7 +5,6 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {FieldModel, FormContext} from '@xh/hoist/cmp/form';
-import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
@@ -228,7 +227,7 @@ const editableChild = hoistCmp.factory({
 //---------------------------------
 function getValidChild(children) {
     const child = Children.only(children);
-    throwIf(!child || !(child.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
+    throwIf(!child, 'FormField child must be a single component.');
     throwIf(child.props.bind || child.props.model, 'HoistInputs should not specify "bind" or "model" props when used with FormField');
     return child;
 }

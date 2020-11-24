@@ -15,7 +15,7 @@ import './SwitchInput.scss';
  */
 export const [SwitchInput, switchInput] = hoistCmp.withFactory({
     displayName: 'SwitchInput',
-    classname: 'xh-switch-input',
+    className: 'xh-switch-input',
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref);
     }
@@ -43,13 +43,13 @@ const cmp = hoistCmp.factory(
             modifier: props.modifier,
             tabIndex: props.tabIndex,
 
+            className,
             style: props.style,
 
             onBlur: model.onBlur,
             onFocus: model.onFocus,
-            onChange: (e) => this.noteValueChange(e.target.checked),
+            onChange: (e) => model.noteValueChange(e.target.checked),
 
-            className,
             ref
         });
     }
