@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputPropTypes, HoistInputModel, hoistInputHost} from '@xh/hoist/cmp/input';
+import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {Button, ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -22,8 +22,9 @@ import {cloneElement} from 'react';
  */
 export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory({
     displayName: 'ButtonGroupInput',
+    className: 'xh-button-group-input',
     render(props, ref) {
-        return hoistInputHost({modelSpec: Model, cmpSpec: cmp, ...props, ref});
+        return useHoistInputModel(cmp, props, ref);
     }
 });
 ButtonGroupInput.propTypes = {
@@ -48,17 +49,8 @@ ButtonGroupInput.hasLayoutSupport = true;
 //----------------------------------
 // Implementation
 //----------------------------------
-class Model extends HoistInputModel {
-
-    baseClassName = 'xh-button-group-input';
-
-    constructor(props) {
-        super(props);
-    }
-}
-
 const cmp = hoistCmp.factory(
-    ({model, ...props}, ref) => {
+    ({model, className, ...props}, ref) => {
         const {
             children,
             //  HoistInput Props
@@ -105,7 +97,7 @@ const cmp = hoistCmp.factory(
             ...buttonGroupProps,
             minimal: withDefault(minimal, outlined, false),
             ...getLayoutProps(props),
-            className: model.getClassName(),
+            className,
             ref
         });
     }

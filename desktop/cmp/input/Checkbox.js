@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputPropTypes, HoistInputModel, hoistInputHost} from '@xh/hoist/cmp/input';
+import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
@@ -17,8 +17,9 @@ import {isNil} from 'lodash';
  */
 export const [Checkbox, checkbox] = hoistCmp.withFactory({
     displayName: 'Checkbox',
+    className: 'xh-checkbox',
     render(props, ref) {
-        return hoistInputHost({modelSpec: Model, cmpSpec: cmp, ...props, ref});
+        return useHoistInputModel(cmp, props, ref);
     }
 });
 
@@ -52,21 +53,8 @@ Checkbox.propTypes = {
 //----------------------------------
 // Implementation
 //----------------------------------
-class Model extends HoistInputModel {
-
-    baseClassName = 'xh-checkbox';
-
-    constructor(props) {
-        super(props);
-    }
-
-    onChange = (e) => {
-        this.noteValueChange(e.target.checked);
-    }
-}
-
 const cmp = hoistCmp.factory(
-    ({model, ...props}, ref) => {
+    ({model, className, ...props}, ref) => {
         const {renderValue} = model,
             labelAlign = withDefault(props.labelAlign, 'right'),
             displayUnsetState = withDefault(props.displayUnsetState, false),
@@ -83,12 +71,12 @@ const cmp = hoistCmp.factory(
             tabIndex: props.tabIndex,
 
             id: props.id,
-            className: model.getClassName(),
+            className,
             style: props.style,
 
             onBlur: model.onBlur,
-            onChange: model.onChange,
             onFocus: model.onFocus,
+            onChange: (e) => model.noteValueChange(e.target.checked),
             ref
         });
     }

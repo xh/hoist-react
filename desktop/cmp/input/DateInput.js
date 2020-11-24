@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, hoistInputHost, HoistInputPropTypes} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel, HoistInputPropTypes} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
@@ -33,8 +33,9 @@ import './DateInput.scss';
  */
 export const [DateInput, dateInput] = hoistCmp.withFactory({
     displayName: 'DateInput',
+    className: 'xh-date-input',
     render(props, ref) {
-        return hoistInputHost({modelSpec: Model, cmpSpec: cmp, ...props, ref});
+        return useHoistInputModel(cmp, props, ref, Model);
     }
 });
 DateInput.propTypes = {
@@ -161,7 +162,6 @@ class Model extends HoistInputModel {
     inputRef = createObservableRef();
     buttonRef = createObservableRef();
     popoverRef = createObservableRef();
-    baseClassName = 'xh-date-input';
 
     // Prop-backed convenience getters
     get maxDate() {
@@ -335,7 +335,7 @@ class Model extends HoistInputModel {
 }
 
 const cmp = hoistCmp.factory(
-    ({model, ...props}, ref) => {
+    ({model, className, ...props}, ref) => {
         warnIf(
             (props.enableClear || props.enablePicker) && props.rightElement,
             'Cannot specify enableClear or enablePicker along with custom rightElement - built-in clear/picker button will not be shown.'
@@ -418,7 +418,7 @@ const cmp = hoistCmp.factory(
                 item: div({
                     item: textInput({
                         value: model.formatDate(renderValue),
-                        className: model.getClassName(!enableTextInput && !disabled ? 'xh-date-input--picker-only' : null),
+                        className: classNames(className, !enableTextInput && !disabled ? 'xh-date-input--picker-only' : null),
                         onCommit: model.onInputCommit,
                         rightElement,
 

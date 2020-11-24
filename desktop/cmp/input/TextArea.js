@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, hoistInputHost} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -17,8 +17,9 @@ import './TextArea.scss';
  */
 export const [TextArea, textArea] = hoistCmp.withFactory({
     displayName: 'TextArea',
+    className: 'xh-text-area',
     render(props, ref) {
-        return hoistInputHost({modelSpec: Model, cmpSpec: cmp, ...props, ref});
+        return useHoistInputModel(cmp, props, ref, Model);
     }
 });
 TextArea.propTypes = {
@@ -56,7 +57,6 @@ TextArea.hasLayoutSupport = true;
 //-----------------------
 
 class Model extends HoistInputModel {
-    baseClassName = 'xh-text-area';
 
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);
@@ -81,7 +81,7 @@ class Model extends HoistInputModel {
 
 
 const cmp = hoistCmp.factory(
-    ({model, ...props}, ref) => {
+    ({model, className, ...props}, ref) => {
         const {width, height, ...layoutProps} = getLayoutProps(props);
 
         return bpTextarea({
@@ -96,7 +96,7 @@ const cmp = hoistCmp.factory(
             tabIndex: props.tabIndex,
 
             id: props.id,
-            className: model.getClassName(),
+            className,
             style: {
                 ...props.style,
                 ...layoutProps,

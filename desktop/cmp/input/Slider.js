@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, hoistInputHost} from '@xh/hoist/cmp/input';
+import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {rangeSlider as bpRangeSlider, slider as bpSlider} from '@xh/hoist/kit/blueprint';
@@ -19,8 +19,9 @@ import './Slider.scss';
  */
 export const [Slider, slider] = hoistCmp.withFactory({
     displayName: 'Slider',
+    className: 'xh-slider',
     render(props, ref) {
-        return hoistInputHost({modelSpec: Model, cmpSpec: cmp, ...props, ref});
+        return useHoistInputModel(cmp, props, ref);
     }
 });
 Slider.propTypes = {
@@ -62,17 +63,8 @@ Slider.hasLayoutSupport = true;
 // Implementation
 //-----------------------
 
-class Model extends HoistInputModel {
-
-    baseClassName = 'xh-slider';
-
-    onValueChange = (val) => {
-        this.noteValueChange(val);
-    };
-}
-
 const cmp = hoistCmp.factory(
-    ({model, ...props}, ref) => {
+    ({model, className, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props),
             sliderType = isArray(model.renderValue) ? bpRangeSlider : bpSlider;
 
@@ -99,12 +91,12 @@ const cmp = hoistCmp.factory(
                 tabIndex: props.tabIndex,
                 vertical: props.vertical,
 
-                onChange: model.onValueChange
+                onChange: (val) => model.noteValueChange(val)
             }),
 
             ...layoutProps,
             width: withDefault(width, 200),
-            className: model.getClassName(),
+            className,
 
             onBlur: model.onBlur,
             onFocus: model.onFocus,

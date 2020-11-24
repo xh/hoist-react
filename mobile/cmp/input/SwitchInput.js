@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, hoistInputHost} from '@xh/hoist/cmp/input';
+import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {switchControl} from '@xh/hoist/kit/onsen';
 import PT from 'prop-types';
@@ -15,8 +15,9 @@ import './SwitchInput.scss';
  */
 export const [SwitchInput, switchInput] = hoistCmp.withFactory({
     displayName: 'SwitchInput',
+    classname: 'xh-switch-input',
     render(props, ref) {
-        return hoistInputHost({modelSpec: Model, cmpSpec: cmp, ...props, ref});
+        return useHoistInputModel(cmp, props, ref);
     }
 });
 SwitchInput.propTypes = {
@@ -32,17 +33,8 @@ SwitchInput.propTypes = {
 //-----------------------
 // Implementation
 //-----------------------
-class Model extends HoistInputModel {
-
-    baseClassName = 'xh-switch-input';
-
-    onChange = (e) => {
-        this.noteValueChange(e.target.checked);
-    };
-}
-
 const cmp = hoistCmp.factory(
-    ({model, ...props}, ref) => {
+    ({model, className, ...props}, ref) => {
 
         return switchControl({
             checked: !!model.renderValue,
@@ -51,12 +43,13 @@ const cmp = hoistCmp.factory(
             modifier: props.modifier,
             tabIndex: props.tabIndex,
 
-            className: model.getClassName(),
             style: props.style,
 
-            onChange: model.onChange,
             onBlur: model.onBlur,
             onFocus: model.onFocus,
+            onChange: (e) => this.noteValueChange(e.target.checked),
+
+            className,
             ref
         });
     }

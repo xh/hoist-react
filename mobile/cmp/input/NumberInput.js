@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, hoistInputHost} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {input} from '@xh/hoist/kit/onsen';
@@ -20,8 +20,9 @@ import './NumberInput.scss';
  */
 export const [NumberInput, numberInput] = hoistCmp.withFactory({
     displayName: 'NumberInput',
+    className: 'xh-number-input',
     render(props, ref) {
-        return hoistInputHost({modelSpec: Model, cmpSpec: cmp, ...props, ref});
+        return useHoistInputModel(cmp, props, ref, Model);
     }
 });
 NumberInput.propTypes = {
@@ -80,8 +81,6 @@ NumberInput.hasLayoutSupport = true;
 class Model extends HoistInputModel {
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/gi;
-
-    baseClassName = 'xh-number-input';
 
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);
@@ -153,7 +152,7 @@ class Model extends HoistInputModel {
 }
 
 const cmp = hoistCmp.factory(
-    ({model, ...props}, ref) => {
+    ({model, className, ...props}, ref) => {
 
         const {width, ...layoutProps} = getLayoutProps(props),
             {hasFocus, renderValue} = model,
@@ -170,7 +169,7 @@ const cmp = hoistCmp.factory(
             modifier: props.modifier,
             tabIndex: props.tabIndex,
 
-            className: model.getClassName(),
+            className,
             style: {
                 ...props.style,
                 ...layoutProps,

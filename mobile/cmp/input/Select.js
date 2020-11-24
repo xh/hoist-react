@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, hoistInputHost} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -28,8 +28,9 @@ import './Select.scss';
  */
 export const [Select, select] = hoistCmp.withFactory({
     displayName: 'Select',
+    className: 'xh-select',
     render(props, ref) {
-        return hoistInputHost({modelSpec: Model, cmpSpec: cmp, ...props, ref});
+        return useHoistInputModel(cmp, props, ref, Model);
     }
 });
 Select.propTypes = {
@@ -121,8 +122,6 @@ Select.hasLayoutSupport = true;
 // Implementation
 //-----------------------
 class Model extends HoistInputModel {
-
-    baseClassName = 'xh-select';
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     @observable.ref internalOptions = [];
@@ -303,7 +302,7 @@ class Model extends HoistInputModel {
 }
 
 const cmp = hoistCmp.factory(
-    ({model, ...props}, ref) => {
+    ({model, className, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props),
             rsProps = {
                 options: model.internalOptions,
@@ -358,7 +357,7 @@ const cmp = hoistCmp.factory(
 
         return box({
             item: factory(rsProps),
-            className: model.getClassName(),
+            className,
             ...layoutProps,
             width: withDefault(width, null),
             ref

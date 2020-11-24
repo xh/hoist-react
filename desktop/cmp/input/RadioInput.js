@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputPropTypes, HoistInputModel, hoistInputHost} from '@xh/hoist/cmp/input';
+import {HoistInputPropTypes, HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
@@ -18,8 +18,9 @@ import './RadioInput.scss';
  */
 export const [RadioInput, radioInput] = hoistCmp.withFactory({
     displayName: 'RadioInput',
+    className: 'xh-radio-input',
     render(props, ref) {
-        return hoistInputHost({modelSpec: Model, cmpSpec: cmp, ...props, ref});
+        return useHoistInputModel(cmp, props, ref, Model);
     }
 });
 RadioInput.propTypes = {
@@ -44,8 +45,6 @@ RadioInput.propTypes = {
 // Implementation
 //-----------------------
 class Model extends HoistInputModel {
-
-    baseClassName = 'xh-radio-input';
 
     @observable.ref internalOptions = [];
 
@@ -87,7 +86,7 @@ class Model extends HoistInputModel {
 }
 
 const cmp = hoistCmp.factory(
-    ({model, ...props}, ref) => {
+    ({model, className, ...props}, ref) => {
         const {internalOptions} = model,
             labelAlign = withDefault(props.labelAlign, 'right');
 
@@ -102,11 +101,11 @@ const cmp = hoistCmp.factory(
         });
 
         return radioGroup({
+            className,
             items,
             disabled: props.disabled,
             inline: props.inline,
             selectedValue: model.renderValue,
-            className: model.getClassName(),
             onChange: model.onChange,
             ref
         });

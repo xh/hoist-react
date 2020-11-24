@@ -6,5 +6,4 @@
  */
 export * from './HoistInput';
 export * from './HoistInputModel';
-export * from './HoistInputHost';
 export * from './HoistInputProps';

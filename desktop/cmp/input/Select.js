@@ -10,7 +10,7 @@ import PT from 'prop-types';
 import {createRef} from 'react';
 import {components} from 'react-select';
 
-import {HoistInputModel, HoistInputPropTypes, hoistInputHost} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span, fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, elem} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -25,6 +25,7 @@ import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
 
 import './Select.scss';
 
@@ -43,8 +44,9 @@ import './Select.scss';
  */
 export const [Select, select] = hoistCmp.withFactory({
     displayName: 'Select',
+    className: 'xh-select',
     render(props, ref) {
-        return hoistInputHost({modelSpec: Model, cmpSpec: cmp, ...props, ref});
+        return useHoistInputModel(cmp, props, ref, Model);
     }
 });
 Select.propTypes = {
@@ -190,13 +192,10 @@ Select.propTypes = {
 Select.MENU_PORTAL_ID = 'xh-select-input-portal';
 Select.hasLayoutSupport = true;
 
-
 //-----------------------
 // Implementation
 //-----------------------
 class Model extends HoistInputModel {
-
-    baseClassName = 'xh-select';
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
@@ -574,7 +573,7 @@ class Model extends HoistInputModel {
 }
 
 const cmp = hoistCmp.factory(
-    ({model, ...props}, ref) => {
+    ({model, className, ...props}, ref) => {
         const {width, height, ...layoutProps} = getLayoutProps(props),
             rsProps = {
                 value: model.renderValue,
@@ -648,7 +647,7 @@ const cmp = hoistCmp.factory(
         merge(rsProps, props.rsOptions);
         return box({
             item: factory(rsProps),
-            className: model.getClassName(height ? 'xh-select--has-height' : null),
+            className: classNames(className, height ? 'xh-select--has-height' : null),
             onKeyDown: (e) => {
                 // Esc. and Enter can be listened for by parents -- stop the keydown event
                 // propagation only if react-select already likely to have used for menu management.

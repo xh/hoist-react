@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, hoistInputHost} from '@xh/hoist/cmp/input';
+import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import PT from 'prop-types';
@@ -15,8 +15,9 @@ import './Label.scss';
  */
 export const [Label, label] = hoistCmp.withFactory({
     displayName: 'Label',
+    className: 'xh-input-label',
     render(props, ref) {
-        return hoistInputHost({modelSpec: Model, cmpSpec: cmp, ...props, ref});
+        return useHoistInputModel(cmp, props, ref);
     }
 });
 Label.propTypes = {
@@ -27,17 +28,10 @@ Label.propTypes = {
 //-----------------------
 // Implementation
 //-----------------------
-class Model extends HoistInputModel {
-    baseClassName = 'xh-input-label';
-    constructor(props) {
-        super(props);
-    }
-}
-
 const cmp = hoistCmp.factory(
-    ({model, style, width, children}, ref) => {
+    ({model, className, style, width, children}, ref) => {
         return div({
-            className: model.getClassName(),
+            className,
             style: {...style, whiteSpace: 'nowrap', width},
             items: children,
             ref

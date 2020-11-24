@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, hoistInputHost, HoistInputPropTypes} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel, HoistInputPropTypes} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
@@ -23,8 +23,9 @@ import './DateInput.scss';
  */
 export const [DateInput, dateInput] = hoistCmp.withFactory({
     displayName: 'DateInput',
+    className: 'xh-date-input',
     render(props, ref) {
-        return hoistInputHost({modelSpec: Model, cmpSpec: cmp, ...props, ref});
+        return useHoistInputModel(cmp, props, ref, Model);
     }
 });
 DateInput.propTypes = {
@@ -91,8 +92,6 @@ class Model extends HoistInputModel {
 
     @bindable popoverOpen = false;
 
-    baseClassName = 'xh-date-input';
-
     constructor(props) {
         super(props);
         makeObservable(this);
@@ -154,7 +153,7 @@ class Model extends HoistInputModel {
 }
 
 const cmp = hoistCmp.factory(
-    ({model, ...props}, ref) => {
+    ({model, className, ...props}, ref) => {
 
         const layoutProps = getLayoutProps(props),
             {renderValue} = model,
@@ -166,7 +165,7 @@ const cmp = hoistCmp.factory(
             isOpen = model.popoverOpen && !props.disabled;
 
         return div({
-            className: model.getClassName(),
+            className,
             items: [
                 leftIcon,
                 singleDatePicker({

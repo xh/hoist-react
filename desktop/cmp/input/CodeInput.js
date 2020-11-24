@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, hoistInputHost} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, filler, fragment, frame, hbox, vbox, div, label, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -46,8 +46,9 @@ import './CodeInput.scss';
  */
 export const [CodeInput, codeInput] = hoistCmp.withFactory({
     displayName: 'CodeInput',
+    className: 'xh-code-input',
     render(props, ref) {
-        return hoistInputHost({modelSpec: Model, cmpSpec: cmp, ...props, ref});
+        return useHoistInputModel(cmp, props, ref, Model);
     }
 });
 CodeInput.propTypes = {
@@ -116,145 +117,9 @@ CodeInput.propTypes = {
 CodeInput.hasLayoutSupport = true;
 
 //------------------------------
-// Implementation Components
-//------------------------------
-const cmp = hoistCmp.factory(
-    ({model, ...props}, ref) => {
-        const childProps = {
-            width: 300,
-            height: 100,
-            ...getLayoutProps(props),
-            ref
-        };
-
-        return model.fullScreen ? fullscreenCmp(childProps) : inputCmp(childProps);
-    }
-);
-
-const fullscreenCmp = hoistCmp.factory(
-    ({model, ...props}, ref) => fragment(
-        dialog({
-            className: 'xh-code-input__dialog',
-            isOpen: true,
-            canOutsideClickClose: true,
-            item: inputCmp(),
-            onClose: () => model.toggleFullScreen()
-        }),
-        box({
-            className: 'xh-code-input__placeholder',
-            ...props,
-            ref
-        })
-    )
-);
-
-const inputCmp = hoistCmp.factory(
-    ({model}, ref) => vbox({
-        items: [
-            div({
-                className: 'xh-code-input__inner-wrapper',
-                item: textArea({
-                    value: model.renderValue || '',
-                    ref: model.manageCodeEditor,
-                    onChange: model.onChange
-                })
-            }),
-            model.showToolbar ? toolbarCmp() : actionButtonsCmp()
-        ],
-        className: model.getClassName(),
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        flex: 1,
-        ref
-    })
-);
-
-const toolbarCmp = hoistCmp.factory(
-    ({model}) => {
-        const {actionButtons, showSearchInput} = model;
-
-        return toolbar({
-            className: 'xh-code-input__toolbar',
-            items: [
-                filler(),
-                searchInputCmp({omit: !showSearchInput}),
-                toolbarSep({omit: !showSearchInput}),
-                ...actionButtons
-            ]
-        });
-    }
-);
-
-const searchInputCmp = hoistCmp.factory(
-    ({model}) => {
-        const {cursor, currentMatchIdx, matchCount} = model;
-
-        return fragment(
-            // Frame wrapper added due to issues with textInput not supporting all layout props as it should.
-            frame({
-                flex: 1,
-                maxWidth: 400,
-                item: textInput({
-                    width: null,
-                    flex: 1,
-                    model: this,
-                    bind: 'query',
-                    leftIcon: Icon.search(),
-                    enableClear: true,
-                    commitOnChange: true,
-                    onKeyDown: (e) => {
-                        if (e.key !== 'Enter') return;
-                        if (!cursor) {
-                            model.findAll();
-                        } else if (e.shiftKey) {
-                            model.findPrevious();
-                        } else {
-                            model.findNext();
-                        }
-                    }
-                })
-            }),
-            label({
-                className: 'xh-code-input__label',
-                item: matchCount ?
-                    `${currentMatchIdx + 1} / ${matchCount}` :
-                    span({item: '0 results', className: 'xh-text-color-muted'})
-            }),
-            button({
-                icon: Icon.arrowUp(),
-                title: 'Find previous (shift+enter)',
-                disabled: !matchCount,
-                onClick: () => model.findPrevious()
-            }),
-            button({
-                icon: Icon.arrowDown(),
-                title: 'Find next (enter)',
-                disabled: !matchCount,
-                onClick: () => model.findNext()
-            })
-        );
-    }
-);
-
-const actionButtonsCmp = hoistCmp.factory(
-    ({model}) => {
-        const {hasFocus, actionButtons} = model;
-
-        return (hasFocus && actionButtons.length) ?
-            hbox({
-                className: 'xh-code-input__action-buttons',
-                items: actionButtons
-            }) : null;
-    }
-);
-
-
-//------------------------------
-// Implementation Model
+// Implementation
 //------------------------------
 class Model extends HoistInputModel {
-
-    baseClassName = 'xh-code-input';
 
     /** @member {CodeMirror} - a CodeMirror editor instance. */
     editor;
@@ -531,3 +396,135 @@ class Model extends HoistInputModel {
         super.destroy();
     }
 }
+
+
+const cmp = hoistCmp.factory(
+    ({model, ...props}, ref) => {
+        const childProps = {
+            width: 300,
+            height: 100,
+            ...getLayoutProps(props),
+            ref
+        };
+
+        return model.fullScreen ? fullscreenCmp(childProps) : inputCmp(childProps);
+    }
+);
+
+const fullscreenCmp = hoistCmp.factory(
+    ({model, ...props}, ref) => fragment(
+        dialog({
+            className: 'xh-code-input__dialog',
+            isOpen: true,
+            canOutsideClickClose: true,
+            item: inputCmp(),
+            onClose: () => model.toggleFullScreen()
+        }),
+        box({
+            className: 'xh-code-input__placeholder',
+            ...props,
+            ref
+        })
+    )
+);
+
+const inputCmp = hoistCmp.factory(
+    ({model, className}, ref) => vbox({
+        items: [
+            div({
+                className: 'xh-code-input__inner-wrapper',
+                item: textArea({
+                    value: model.renderValue || '',
+                    ref: model.manageCodeEditor,
+                    onChange: model.onChange
+                })
+            }),
+            model.showToolbar ? toolbarCmp() : actionButtonsCmp()
+        ],
+        className: className,
+        onBlur: model.onBlur,
+        onFocus: model.onFocus,
+        flex: 1,
+        ref
+    })
+);
+
+const toolbarCmp = hoistCmp.factory(
+    ({model}) => {
+        const {actionButtons, showSearchInput} = model;
+
+        return toolbar({
+            className: 'xh-code-input__toolbar',
+            items: [
+                filler(),
+                searchInputCmp({omit: !showSearchInput}),
+                toolbarSep({omit: !showSearchInput}),
+                ...actionButtons
+            ]
+        });
+    }
+);
+
+const searchInputCmp = hoistCmp.factory(
+    ({model}) => {
+        const {cursor, currentMatchIdx, matchCount} = model;
+
+        return fragment(
+            // Frame wrapper added due to issues with textInput not supporting all layout props as it should.
+            frame({
+                flex: 1,
+                maxWidth: 400,
+                item: textInput({
+                    width: null,
+                    flex: 1,
+                    model: this,
+                    bind: 'query',
+                    leftIcon: Icon.search(),
+                    enableClear: true,
+                    commitOnChange: true,
+                    onKeyDown: (e) => {
+                        if (e.key !== 'Enter') return;
+                        if (!cursor) {
+                            model.findAll();
+                        } else if (e.shiftKey) {
+                            model.findPrevious();
+                        } else {
+                            model.findNext();
+                        }
+                    }
+                })
+            }),
+            label({
+                className: 'xh-code-input__label',
+                item: matchCount ?
+                    `${currentMatchIdx + 1} / ${matchCount}` :
+                    span({item: '0 results', className: 'xh-text-color-muted'})
+            }),
+            button({
+                icon: Icon.arrowUp(),
+                title: 'Find previous (shift+enter)',
+                disabled: !matchCount,
+                onClick: () => model.findPrevious()
+            }),
+            button({
+                icon: Icon.arrowDown(),
+                title: 'Find next (enter)',
+                disabled: !matchCount,
+                onClick: () => model.findNext()
+            })
+        );
+    }
+);
+
+const actionButtonsCmp = hoistCmp.factory(
+    ({model}) => {
+        const {hasFocus, actionButtons} = model;
+
+        return (hasFocus && actionButtons.length) ?
+            hbox({
+                className: 'xh-code-input__action-buttons',
+                items: actionButtons
+            }) : null;
+    }
+);
+

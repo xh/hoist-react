@@ -4,13 +4,14 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
+import composeRefs from '@seznam/compose-react-refs';
+import {HoistModel, useLocalModel} from '@xh/hoist/core';
 import {FieldModel} from '@xh/hoist/cmp/form';
-import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, computed, observable, bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEqual} from 'lodash';
-import {createRef} from 'react';
+import {createRef, useEffect} from 'react';
 import './HoistInput.scss';
 
 
@@ -43,6 +44,8 @@ import './HoistInput.scss';
  * For many inputs (e.g. checkbox, select, switchInput, slider) commit always fires at the same time
  * as the change event. Other inputs such as textInput maintain the distinction described above,
  * but expose a `commitOnChange` prop to force them to eagerly flush their values on every change.
+ *
+ * To use this class in an Input component {@see useHoistInputModel}
  */
 export class HoistInputModel extends HoistModel {
 
@@ -50,7 +53,7 @@ export class HoistInputModel extends HoistModel {
     model;
 
     /** Props on input */
-    @observable.ref props;
+    @bindable.ref props;
 
     /** Ref to rendered component */
     ref = createRef();
@@ -61,6 +64,7 @@ export class HoistInputModel extends HoistModel {
     constructor(props) {
         super();
         makeObservable(this);
+        this.props = props;
         this.model = props.model;
         throwIf(props.onKeyPress, "HoistInputs no longer support a 'onKeyPress' property.  Use 'onKeyDown' instead.");
         throwIf(props.field, "HoistInput no longer supports a 'field' property.  Use 'bind' instead.");
@@ -186,23 +190,6 @@ export class HoistInputModel extends HoistModel {
     onFocus = () => this.noteFocused();
 
 
-    //-----------------------------
-    // Additional Utilities
-    //-----------------------------
-    /**
-     * Wrapper around classNames that can add the xh-input and xh-input-invalid classes.
-     * @param {...String} extraClassNames
-     * @returns {string}
-     */
-    getClassName(...extraClassNames) {
-        const field = this.getField(),
-            validityClass = field && field.isNotValid && field.validationDisplayed ? 'xh-input-invalid' : null,
-            disabledClass = this.props.disabled ? 'xh-input-disabled' : null;
-
-        return classNames('xh-input', validityClass, disabledClass, this.baseClassName, this.props.className, ...extraClassNames);
-    }
-
-
     //----------------------
     // Implementation
     //------------------------
@@ -218,7 +205,6 @@ export class HoistInputModel extends HoistModel {
     externalFromInternal() {
         return this.toExternal(this.internalValue);
     }
-
 
     // Ensure that updates to the external value - are always flushed to the internal value but
     // only change internal if not already a valid representation of external to avoid flapping
@@ -260,4 +246,33 @@ export class HoistInputModel extends HoistModel {
         }
         return false;
     }
+}
+
+/**
+ *  Hook to render a display component with a HoistInputModel in context.
+ *
+ *  Places model in context and composes appropriate
+ *  CSS class names for current model state.
+ *
+ * @param {function} component - react component to render
+ * @param {Object} props - props passed to containing component
+ * @param {Object} ref - forwardRef passed to containing component
+ * @param {Class} [modelSpec] - specify to use particular subclass of HoistInputModel
+ * @returns {element} - react element to be rendered
+ */
+export function useHoistInputModel(component, props, ref, modelSpec = HoistInputModel) {
+    const inputModel = useLocalModel(() => new modelSpec(props));
+
+    useEffect(() => inputModel.setProps(props));
+
+    const field = inputModel.getField(),
+        validityClass = field?.isNotValid && field?.validationDisplayed ? 'xh-input-invalid' : null,
+        disabledClass = props.disabled ? 'xh-input-disabled' : null;
+
+    return component({
+        ...props,
+        model: inputModel,
+        ref: composeRefs(ref, inputModel.ref),
+        className: classNames('xh-input', validityClass, disabledClass, props.className)
+    });
 }

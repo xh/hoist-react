@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, hoistInputHost} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -20,8 +20,9 @@ import PT from 'prop-types';
  */
 export const [TextInput, textInput] = hoistCmp.withFactory({
     displayName: 'TextInput',
+    className: 'xh-text-input',
     render(props, ref) {
-        return hoistInputHost({modelSpec: Model, cmpSpec: cmp, ...props, ref});
+        return useHoistInputModel(cmp, props, ref, Model);
     }
 });
 TextInput.propTypes = {
@@ -89,8 +90,6 @@ TextInput.hasLayoutSupport = true;
 
 class Model extends HoistInputModel {
 
-    baseClassName = 'xh-text-input';
-
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);
     }
@@ -116,7 +115,7 @@ class Model extends HoistInputModel {
 }
 
 const cmp = hoistCmp.factory(
-    ({model, ...props}, ref) => {
+    ({model, className, ...props}, ref) => {
         const {width, flex, ...layoutProps} = getLayoutProps(props);
 
         const isClearable = !isEmpty(model.internalValue);
@@ -149,7 +148,7 @@ const cmp = hoistCmp.factory(
                 onKeyDown: model.onKeyDown
             }),
 
-            className: model.getClassName(),
+            className,
             style: {
                 width: withDefault(width, 200),
                 flex: withDefault(flex, null)

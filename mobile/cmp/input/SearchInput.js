@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, hoistInputHost} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -15,9 +15,10 @@ import PT from 'prop-types';
  * A Search Input
  */
 export const [SearchInput, searchInput] = hoistCmp.withFactory({
-    displayName: 'Select',
+    displayName: 'SearchInput',
+    className: 'xh-search-input',
     render(props, ref) {
-        return hoistInputHost({modelSpec: Model, cmpSpec: cmp, ...props, ref});
+        return useHoistInputModel(cmp, props, ref, Model);
     }
 });
 SearchInput.propTypes = {
@@ -52,8 +53,6 @@ SearchInput.hasLayoutSupport;
 //-----------------------
 class Model extends HoistInputModel {
 
-    baseClassName = 'xh-search-input';
-
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);
     }
@@ -77,8 +76,8 @@ class Model extends HoistInputModel {
 }
 
 const cmp = hoistCmp.factory(
-    ({model, ...props}, ref) => {
-        const  {width, ...layoutProps} = getLayoutProps(props);
+    ({model, className, ...props}, ref) => {
+        const {width, ...layoutProps} = getLayoutProps(props);
 
         return onsenSearchInput({
             value: model.renderValue || '',
@@ -89,7 +88,7 @@ const cmp = hoistCmp.factory(
             spellCheck: withDefault(props.spellCheck, false),
             tabIndex: props.tabIndex,
 
-            className: model.getClassName(),
+            className,
             style: {
                 ...props.style,
                 ...layoutProps,
