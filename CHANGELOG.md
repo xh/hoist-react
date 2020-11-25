@@ -3,17 +3,23 @@
 ## v37.0.0-SNAPSHOT - unreleased
 
 ### 🎁 Technical
-Hoist v37 requires some changes to the core Hoist model and service classes.  New base
-classes of `HoistModel` and `HoistService` replace the existing class decorators
-`@HoistModel` and `@HoistService`.  This is part of an ongoing effort to streamline our core entity
-classes and provide better documentation and development support for them.  We have also removed the
- need for explicit `@LoadSupport` annotation in all implementations of `HoistModel` and
-`HoistService`. The presence of a defined `doLoadAsync()` method is now sufficient to cause
-these objects to participate in the loading and refreshing lifecycle.
+* Hoist v37 includes some major refactoring of our core model and service classes to streamline
+them, bring them in to conformance with the latest developments in Javascript, React, and MobX,
+and allow us to  more easily provide documentation and additional features.  In particular:
 
-Due to changes in MobX v6.0.1, all classes that host observable fields and actions will now also
+* New base classes of `HoistModel` and `HoistService` replace the existing class decorators
+`@HoistModel` and `@HoistService`.
+
+* We have removed the need for explicit `@LoadSupport` annotation in all implementations of
+`HoistModel` and `HoistService`. The presence of a defined `doLoadAsync()` method is now sufficient
+to allow these objects to participate in the loading and refreshing lifecycle.
+
+* With this release we are officially deprecating support for class based Components via the
+`@HoistComponent` class decorator.   **We plan to remove `@HoistComponent` in Hoist v38.**
+
+* Due to changes in MobX v6.0.1, all classes that host observable fields and actions will now also
 need to provide a constructor containing a call to `makeObservable(this)`.  This change will
-require updates to most `HoistModel`, `HoistService` and `HoistComponent` classes.  See
+require updates to most `HoistModel`, `HoistService` and `@HoistComponent` classes.  See
 https://michel.codes/blogs/mobx6 for more on this change and the motivation behind it.
 
 

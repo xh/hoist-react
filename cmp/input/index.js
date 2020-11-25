@@ -4,6 +4,5 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-export * from './HoistInput';
 export * from './HoistInputModel';
 export * from './HoistInputProps';
