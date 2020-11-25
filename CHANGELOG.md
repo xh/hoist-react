@@ -35,7 +35,7 @@
 * `Cube.info` is now directly observable.
 
 ### 📚 Libraries
-
+* @react `16.13.1 -> 17.0.1`
 * @blueprintjs/core `3.35 -> 3.36`
 * @blueprintjs/datetime `3.19 -> 3.20`
 * clipboard-copy `3.1 -> 3.2`
