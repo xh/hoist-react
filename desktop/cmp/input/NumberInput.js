@@ -4,12 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {hoistCmp} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {withDefault} from '@xh/hoist/utils/js';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN, isNil, isNumber} from 'lodash';
 import PT from 'prop-types';
 
@@ -28,122 +29,91 @@ import PT from 'prop-types';
  *
  * Set the corresponding stepSize prop(s) to null to disable this feature.
  */
-@HoistComponent
-@LayoutSupport
-export class NumberInput extends HoistInput {
+export const [NumberInput, numberInput] = hoistCmp.withFactory({
+    displayName: 'NumberInput',
+    className: 'xh-number-input',
+    render(props, ref) {
+        return useHoistInputModel(cmp, props, ref, Model);
+    }
+});
+NumberInput.propTypes = {
+    ...HoistInputPropTypes,
+    value: PT.number,
 
-    static propTypes = {
-        ...HoistInput.propTypes,
-        value: PT.number,
+    /** True to focus the control on render. */
+    autoFocus: PT.bool,
 
-        /** True to focus the control on render. */
-        autoFocus: PT.bool,
+    /** True to commit on every change/keystroke, default false. */
+    commitOnChange: PT.bool,
 
-        /** True to commit on every change/keystroke, default false. */
-        commitOnChange: PT.bool,
+    /** True to insert commas in displayed value. */
+    displayWithCommas: PT.bool,
 
-        /** True to insert commas in displayed value. */
-        displayWithCommas: PT.bool,
+    /** True to convert entries suffixed with k/m/b to thousands/millions/billions. */
+    enableShorthandUnits: PT.bool,
 
-        /** True to convert entries suffixed with k/m/b to thousands/millions/billions. */
-        enableShorthandUnits: PT.bool,
+    /** True to take up the full width of container. */
+    fill: PT.bool,
 
-        /** True to take up the full width of container. */
-        fill: PT.bool,
+    /** Ref handler that receives HTML <input> element backing this component. */
+    inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
 
-        /** Ref handler that receives HTML <input> element backing this component. */
-        inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
+    /** Icon to display inline on the left side of the input. */
+    leftIcon: PT.element,
 
-        /** Icon to display inline on the left side of the input. */
-        leftIcon: PT.element,
+    /** Minimum value */
+    min: PT.number,
 
-        /** Minimum value */
-        min: PT.number,
+    /** Major step size for increment/decrement handling. */
+    majorStepSize: PT.number,
 
-        /** Major step size for increment/decrement handling. */
-        majorStepSize: PT.number,
+    /** Maximum value */
+    max: PT.number,
 
-        /** Maximum value */
-        max: PT.number,
+    /** Minor step size for increment/decrement handling. */
+    minorStepSize: PT.number,
 
-        /** Minor step size for increment/decrement handling. */
-        minorStepSize: PT.number,
+    /** Callback for normalized keydown event. */
+    onKeyDown: PT.func,
 
-        /** Callback for normalized keydown event. */
-        onKeyDown: PT.func,
+    /** Text to display when control is empty. */
+    placeholder: PT.string,
 
-        /** Text to display when control is empty. */
-        placeholder: PT.string,
+    /** Max decimal precision of the value, defaults to 4. */
+    precision: PT.number,
 
-        /** Max decimal precision of the value, defaults to 4. */
-        precision: PT.number,
+    /** Element to display inline on the right side of the input. */
+    rightElement: PT.element,
 
-        /** Element to display inline on the right side of the input. */
-        rightElement: PT.element,
+    /** True to select contents when control receives focus. */
+    selectOnFocus: PT.bool,
 
-        /** True to select contents when control receives focus. */
-        selectOnFocus: PT.bool,
+    /** Standard step size for increment/decrement handling. */
+    stepSize: PT.number,
 
-        /** Standard step size for increment/decrement handling. */
-        stepSize: PT.number,
+    /** Alignment of entry text within control, default 'right'. */
+    textAlign: PT.oneOf(['left', 'right']),
 
-        /** Alignment of entry text within control, default 'right'. */
-        textAlign: PT.oneOf(['left', 'right']),
+    /**
+     * Text appended to the rendered value within control when not editing.
+     * Can be used to append e.g. "%" or a unit without need for an external right label.
+     */
+    valueLabel: PT.string,
 
-        /**
-         * Text appended to the rendered value within control when not editing.
-         * Can be used to append e.g. "%" or a unit without need for an external right label.
-         */
-        valueLabel: PT.string,
+    /** True to pad with trailing zeros out to precision, default false. */
+    zeroPad: PT.bool
+};
+NumberInput.hasLayoutSupport = true;
 
-        /** True to pad with trailing zeros out to precision, default false. */
-        zeroPad: PT.bool
-    };
+//-----------------------
+// Implementation
+//-----------------------
 
+class Model extends HoistInputModel {
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
-
-    baseClassName = 'xh-number-input';
 
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);
-    }
-
-    render() {
-        const props = this.getNonLayoutProps(),
-            {width, ...layoutProps} = this.getLayoutProps();
-
-        return numericInput({
-            value: this.formatRenderValue(this.renderValue),
-
-            allowNumericCharactersOnly: !props.enableShorthandUnits,
-            buttonPosition: 'none',
-            disabled: props.disabled,
-            fill: props.fill,
-            inputRef: props.inputRef,
-            leftIcon: props.leftIcon,
-            max: props.max,
-            majorStepSize: props.majorStepSize,
-            min: props.min,
-            minorStepSize: props.minorStepSize,
-            placeholder: props.placeholder,
-            rightElement: props.rightElement,
-            stepSize: props.stepSize,
-            tabIndex: props.tabIndex,
-            autoFocus: props.autoFocus,
-
-            id: props.id,
-            className: this.getClassName(),
-            style: {
-                ...props.style,
-                ...layoutProps,
-                width: withDefault(width, 200),
-                textAlign: withDefault(props.textAlign, 'right')
-            },
-            onBlur: this.onBlur,
-            onFocus: this.onFocus,
-            onKeyDown: this.onKeyDown,
-            onValueChange: this.onValueChange
-        });
     }
 
     onValueChange = (val, valAsString) => {
@@ -179,7 +149,7 @@ export class NumberInput extends HoistInput {
 
         value = value.replace(/,/g, '');
 
-        if (NumberInput.shorthandValidator.test(value)) {
+        if (Model.shorthandValidator.test(value)) {
             const num = +value.substring(0, value.length - 1),
                 lastChar = value.charAt(value.length - 1).toLowerCase();
 
@@ -208,4 +178,43 @@ export class NumberInput extends HoistInput {
         }
     }
 }
-export const numberInput = elemFactory(NumberInput);
+
+const cmp = hoistCmp.factory(
+    ({model, className, ...props}, ref) => {
+        const {width, ...layoutProps} = getLayoutProps(props);
+
+        return numericInput({
+            value: model.formatRenderValue(model.renderValue),
+
+            allowNumericCharactersOnly: !props.enableShorthandUnits,
+            buttonPosition: 'none',
+            disabled: props.disabled,
+            fill: props.fill,
+            inputRef: props.inputRef,
+            leftIcon: props.leftIcon,
+            max: props.max,
+            majorStepSize: props.majorStepSize,
+            min: props.min,
+            minorStepSize: props.minorStepSize,
+            placeholder: props.placeholder,
+            rightElement: props.rightElement,
+            stepSize: props.stepSize,
+            tabIndex: props.tabIndex,
+            autoFocus: props.autoFocus,
+
+            id: props.id,
+            className,
+            style: {
+                ...props.style,
+                ...layoutProps,
+                width: withDefault(width, 200),
+                textAlign: withDefault(props.textAlign, 'right')
+            },
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            onKeyDown: model.onKeyDown,
+            onValueChange: model.onValueChange,
+            ref
+        });
+    }
+);
