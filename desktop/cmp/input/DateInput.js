@@ -12,7 +12,7 @@ import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {datePicker as bpDatePicker, popover} from '@xh/hoist/kit/blueprint';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
@@ -187,7 +187,6 @@ class Model extends HoistInputModel {
 
     constructor(props) {
         super(props);
-        makeObservable(this);
     }
 
     toExternal(internal) {

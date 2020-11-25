@@ -7,7 +7,7 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistModel, useLocalModel} from '@xh/hoist/core';
 import {FieldModel} from '@xh/hoist/cmp/form';
-import {action, computed, observable, bindable, makeObservable} from '@xh/hoist/mobx';
+import {action, computed, observable, bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEqual} from 'lodash';
@@ -47,7 +47,8 @@ import './HoistInput.scss';
  *
  * To use this class in an Input component {@see useHoistInputModel}
  */
-export class HoistInputModel extends HoistModel {
+@HoistModel
+export class HoistInputModel {
 
     /** External model of input (may be bound to this) */
     model;
@@ -62,8 +63,6 @@ export class HoistInputModel extends HoistModel {
     @observable.ref internalValue = null;
 
     constructor(props) {
-        super();
-        makeObservable(this);
         this.props = props;
         this.model = props.model;
         throwIf(props.onKeyPress, "HoistInputs no longer support a 'onKeyPress' property.  Use 'onKeyDown' instead.");

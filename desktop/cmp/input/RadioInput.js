@@ -7,7 +7,7 @@
 import {HoistInputPropTypes, HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import {isObject} from 'lodash';
 import PT from 'prop-types';
@@ -54,7 +54,6 @@ class Model extends HoistInputModel {
 
     constructor(props) {
         super(props);
-        makeObservable(this);
         this.addReaction({
             track: () => this.props.options,
             run: (opts) => {
