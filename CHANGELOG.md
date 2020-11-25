@@ -30,11 +30,16 @@
 
 * Fix issue where grid row striping inadvertently disabled by default for non-tree grids.
 
+### ✨ Style
+
+* Default `Chart` themes reworked in both light and dark modes to better match overall Hoist theme.
+
 ### ⚙️ Technical
 
 * `Cube.info` is now directly observable.
 
 ### 📚 Libraries
+
 * @react `16.13.1 -> 17.0.1`
 * @blueprintjs/core `3.35 -> 3.36`
 * @blueprintjs/datetime `3.19 -> 3.20`
