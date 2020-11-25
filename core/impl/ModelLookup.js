@@ -44,7 +44,7 @@ export class ModelLookup {
             isWildcard = (selector === '*');
 
         // Try this model
-        if ((isWildcard && modeIsDefault) || (!isWildcard && model.matchesSelector(selector))) {
+        if ((isWildcard && modeIsDefault) || (!isWildcard && matchesSelector(model, selector))) {
             return model;
         }
 
@@ -52,7 +52,7 @@ export class ModelLookup {
         if (modeIsDefault) {
             let ret = null;
             forOwn(model, (value, key) => {
-                if (value && value.isHoistModel && value.matchesSelector(selector)) {
+                if (matchesSelector(value, selector)) {
                     ret = value;
                     return false;
                 }
@@ -63,6 +63,10 @@ export class ModelLookup {
         // Try parent
         return parent?.lookupModel(selector) ?? null;
     }
+}
+
+function matchesSelector(model, selector) {
+    return model?.matchesSelector && model.matchesSelector(selector);
 }
 
 /**

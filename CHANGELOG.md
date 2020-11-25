@@ -25,6 +25,9 @@
   * Use `switcher: false` to not include a TabSwitcher. (previously `switcherPosition: 'none'`)
   * Use `switcher: {...}` to provide customisation props for the `TabSwitcher`. See `TabSwitcher`
     documentation for more information.
+* The `HoistInput` base class has been removed. Application components extending `HoistInput` should
+use the `useHoistInputModel` hook instead.  This change marks the completion of our efforts to
+remove all internal uses of React class-based Components in Hoist.
 
 ### 🐞 Bug Fixes
 

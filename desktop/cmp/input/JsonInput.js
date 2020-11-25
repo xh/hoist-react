@@ -27,7 +27,12 @@ export const [JsonInput, jsonInput] = hoistCmp.withFactory({
     }
 });
 JsonInput.propTypes = CodeInput.propTypes;
+JsonInput.hasLayoutSupport = true;
 
+
+//----------------------
+// Implementation
+//-----------------------
 function linter(text) {
     const errors = [];
     if (!text) return errors;
