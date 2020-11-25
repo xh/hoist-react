@@ -7,20 +7,20 @@
 them, bring them in to conformance with the latest developments in Javascript, React, and MobX,
 and allow us to  more easily provide documentation and additional features.  In particular:
 
-* New base classes of `HoistModel` and `HoistService` replace the existing class decorators
+** New base classes of `HoistModel` and `HoistService` replace the existing class decorators
 `@HoistModel` and `@HoistService`.
 
-* We have removed the need for explicit `@LoadSupport` annotation in all implementations of
+** We have removed the need for explicit `@LoadSupport` annotation in all implementations of
 `HoistModel` and `HoistService`. The presence of a defined `doLoadAsync()` method is now sufficient
 to allow these objects to participate in the loading and refreshing lifecycle.
 
-* With this release we are officially deprecating support for class based Components via the
-`@HoistComponent` class decorator.   **We plan to remove `@HoistComponent` in Hoist v38.**
-
-* Due to changes in MobX v6.0.1, all classes that host observable fields and actions will now also
+** Due to changes in MobX v6.0.1, all classes that host observable fields and actions will now also
 need to provide a constructor containing a call to `makeObservable(this)`.  This change will
 require updates to most `HoistModel`, `HoistService` and `@HoistComponent` classes.  See
 https://michel.codes/blogs/mobx6 for more on this change and the motivation behind it.
+
+** With this release we are officially deprecating support for class based Components via the
+`@HoistComponent` class decorator.   **We plan to remove `@HoistComponent` in Hoist v38.**
 
 
 ### 🎁 New Features

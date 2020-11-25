@@ -15,6 +15,9 @@ import {ModelLookupContext} from './impl/ModelLookup';
 import {useOwnedModelLinker} from './impl/UseOwnedModelLinker';
 
 /**
+ *
+ * @deprecated -- This class will be removed in a future version of Hoist.
+ *
  * Hoist decorator for creating class-based components. Adds support for MobX reactivity, model
  * awareness, and other convenience methods below.
  *
