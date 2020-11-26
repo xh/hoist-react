@@ -188,7 +188,6 @@ class Model extends HoistInputModel {
     constructor(props) {
         super(props);
         makeObservable(this);
-
         this.addReaction({
             track: () => XH.darkTheme,
             run: () => {

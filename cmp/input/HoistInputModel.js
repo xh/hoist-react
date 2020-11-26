@@ -16,8 +16,9 @@ import './HoistInput.scss';
 
 
 /**
- * Abstract superclass for a LocalModel supporting Input components in Hoist.  This class provides
- * common functionality around reading, writing, converting, and displaying input values.
+ * A Local Model supporting Input components in Hoist.  This class provides common functionality
+ * around reading, writing, converting, and displaying input values, including support for a "commit"
+ * lifecycle which determines when values being edited should be flushed to any bound model.
  *
  * If building a classic data-entry form (i.e. multiple labelled inputs used to enter or edit a
  * chunk of data), please review and consider the use of Form and FormField components and their
@@ -45,7 +46,8 @@ import './HoistInput.scss';
  * as the change event. Other inputs such as textInput maintain the distinction described above,
  * but expose a `commitOnChange` prop to force them to eagerly flush their values on every change.
  *
- * To use this class in an Input component {@see useHoistInputModel}
+ * To create an instance of an Input component using this model use the hook
+ * {@see useHoistInputModel}.
  */
 export class HoistInputModel extends HoistModel {
 

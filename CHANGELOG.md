@@ -47,11 +47,19 @@ https://michel.codes/blogs/mobx6 for more on this change and the motivation behi
   * Use `switcher: false` to not include a TabSwitcher. (previously `switcherPosition: 'none'`)
   * Use `switcher: {...}` to provide customisation props for the `TabSwitcher`. See `TabSwitcher`
     documentation for more information.
+* The `HoistInput` base class has been removed. Application components extending `HoistInput` should
+use the `useHoistInputModel` hook instead.  This change marks the completion of our efforts to
+remove all internal uses of React class-based Components in Hoist.
 * The `Ref` class, deprecated in v26 has now been removed.  Use `createObservableRef` instead.
+
 
 ### 🐞 Bug Fixes
 
 * Fix issue where grid row striping inadvertently disabled by default for non-tree grids.
+
+### ✨ Style
+
+* Default `Chart` themes reworked in both light and dark modes to better match overall Hoist theme.
 
 ### ⚙️ Technical
 

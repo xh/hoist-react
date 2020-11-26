@@ -32,7 +32,7 @@ const tbar = hoistCmp.factory(
     () => appBar({
         icon: Icon.gears({size: '2x', prefix: 'fal'}),
         leftItems: [
-            tabSwitcher()
+            tabSwitcher({enableOverflow: true})
         ],
         rightItems: [
             button({

@@ -26,6 +26,10 @@ import composeRefs from '@seznam/compose-react-refs';
  * For 'top' or 'bottom' orientations this switcher will be rendered in horizontal mode.
  * For 'left' or 'right' orientations this switcher will be rendered in vertical mode.
  *
+ * Overflowing tabs can be displayed in a dropdown menu if `enableOverflow` is true.
+ * Note that in order for tabs to overflow, the TabSwitcher or it's wrapper must have a
+ * a maximum width.
+ *
  * @see TabContainer
  * @see TabContainerModel
  */
@@ -160,13 +164,14 @@ const overflowMenu = hoistCmp.factory({
         if (isEmpty(tabs)) return null;
 
         const items = tabs.map(tab => {
-            const {id, title: text, icon, disabled} = tab;
+            const {id, title: text, icon, disabled, showRemoveAction} = tab;
             return menuItem({
                 icon,
                 text,
                 disabled,
                 onClick: () => model.activateTab(id),
                 labelElement: button({
+                    omit: !showRemoveAction,
                     icon: Icon.x(),
                     onClick: (e) => {
                         model.removeTab(id);
