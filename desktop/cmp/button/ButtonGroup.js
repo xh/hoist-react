@@ -17,7 +17,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory({
     model: false,
     className: 'xh-button-group',
 
-    render(props) {
+    render(props, ref) {
         const [layoutProps, {fill, minimal, vertical, style, ...rest}] = splitLayoutProps(props);
 
         return bpButtonGroup({
@@ -28,6 +28,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory({
                 ...style,
                 ...layoutProps
             },
+            ref,
             ...rest
         });
     }

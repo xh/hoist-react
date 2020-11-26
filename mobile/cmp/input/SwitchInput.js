@@ -4,8 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {hoistCmp} from '@xh/hoist/core';
 import {switchControl} from '@xh/hoist/kit/onsen';
 import PT from 'prop-types';
 import './SwitchInput.scss';
@@ -13,40 +13,44 @@ import './SwitchInput.scss';
 /**
  * Switch (toggle) control for non-nullable boolean values.
  */
-@HoistComponent
-export class SwitchInput extends HoistInput {
+export const [SwitchInput, switchInput] = hoistCmp.withFactory({
+    displayName: 'SwitchInput',
+    className: 'xh-switch-input',
+    render(props, ref) {
+        return useHoistInputModel(cmp, props, ref);
+    }
+});
+SwitchInput.propTypes = {
+    ...HoistInputPropTypes,
 
-    static propTypes = {
-        ...HoistInput.propTypes,
-        value: PT.string,
+    value: PT.string,
 
-        /** Onsen modifier string */
-        modifier: PT.string
-    };
+    /** Onsen modifier string */
+    modifier: PT.string
+};
 
-    baseClassName = 'xh-switch-input';
 
-    render() {
-        const {props} = this;
+//-----------------------
+// Implementation
+//-----------------------
+const cmp = hoistCmp.factory(
+    ({model, className, ...props}, ref) => {
 
         return switchControl({
-            checked: !!this.renderValue,
+            checked: !!model.renderValue,
 
             disabled: props.disabled,
             modifier: props.modifier,
             tabIndex: props.tabIndex,
 
-            className: this.getClassName(),
+            className,
             style: props.style,
 
-            onChange: this.onChange,
-            onBlur: this.onBlur,
-            onFocus: this.onFocus
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            onChange: (e) => model.noteValueChange(e.target.checked),
+
+            ref
         });
     }
-
-    onChange = (e) => {
-        this.noteValueChange(e.target.checked);
-    };
-}
-export const switchInput = elemFactory(SwitchInput);
+);

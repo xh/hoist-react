@@ -4,33 +4,37 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInput} from '@xh/hoist/cmp/input/HoistInput';
+import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import PT from 'prop-types';
 import './Label.scss';
 
 /**
  * A simple label for a form.
  */
-@HoistComponent
-export class Label extends HoistInput {
+export const [Label, label] = hoistCmp.withFactory({
+    displayName: 'Label',
+    className: 'xh-input-label',
+    render(props, ref) {
+        return useHoistInputModel(cmp, props, ref);
+    }
+});
+Label.propTypes = {
+    ...HoistInputPropTypes,
+    children: PT.node
+};
 
-    static propTypes = {
-        ...HoistInput.propTypes,
-
-        children: PT.node
-    };
-
-    baseClassName = 'xh-input-label';
-
-    render() {
-        const {children, style, width} = this.props;
+//-----------------------
+// Implementation
+//-----------------------
+const cmp = hoistCmp.factory(
+    ({model, className, style, width, children}, ref) => {
         return div({
-            className: this.getClassName(),
+            className,
             style: {...style, whiteSpace: 'nowrap', width},
-            items: children
+            items: children,
+            ref
         });
     }
-}
-export const label = elemFactory(Label);
+);

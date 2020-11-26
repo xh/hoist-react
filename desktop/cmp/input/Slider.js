@@ -4,12 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInput} from '@xh/hoist/cmp/input';
+import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {rangeSlider as bpRangeSlider, slider as bpSlider} from '@xh/hoist/kit/blueprint';
-import {toJS} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isArray} from 'lodash';
 import PT from 'prop-types';
 import './Slider.scss';
@@ -17,49 +17,56 @@ import './Slider.scss';
 /**
  * A slider input to edit either a single number or an array of two (for a range).
  */
-@HoistComponent
-@LayoutSupport
-export class Slider extends HoistInput {
+export const [Slider, slider] = hoistCmp.withFactory({
+    displayName: 'Slider',
+    className: 'xh-slider',
+    render(props, ref) {
+        return useHoistInputModel(cmp, props, ref);
+    }
+});
+Slider.propTypes = {
+    ...HoistInputPropTypes,
+    value: PT.oneOfType([PT.number, PT.arrayOf(PT.number)]),
 
-    static propTypes = {
-        ...HoistInput.propTypes,
-        value: PT.oneOfType([PT.number, PT.arrayOf(PT.number)]),
+    /** Maximum value */
+    max: PT.number,
 
-        /** Maximum value */
-        max: PT.number,
+    /** Minimum value */
+    min: PT.number,
 
-        /** Minimum value */
-        min: PT.number,
+    /**
+     * Callback to render each label, passed the number value for that label point.
+     * If true, labels will use number value formatted to labelStepSize decimal places.
+     * If false, labels will not be shown.
+     */
+    labelRenderer: PT.oneOfType([PT.bool, PT.func]),
 
-        /**
-         * Callback to render each label, passed the number value for that label point.
-         * If true, labels will use number value formatted to labelStepSize decimal places.
-         * If false, labels will not be shown.
-         */
-        labelRenderer: PT.oneOfType([PT.bool, PT.func]),
+    /** Increment between successive labels. Must be greater than zero. Defaults to 1. */
+    labelStepSize: PT.number,
 
-        /** Increment between successive labels. Must be greater than zero. Defaults to 1. */
-        labelStepSize: PT.number,
+    /** Increment between values. Must be greater than zero. Defaults to 1. */
+    stepSize: PT.number,
 
-        /** Increment between values. Must be greater than zero. Defaults to 1. */
-        stepSize: PT.number,
+    /**
+     * True to render a solid bar between min and current values (for simple slider) or between
+     * handles (for range slider). Defaults to true.
+     */
+    showTrackFill: PT.bool,
 
-        /**
-         * True to render a solid bar between min and current values (for simple slider) or between
-         * handles (for range slider). Defaults to true.
-         */
-        showTrackFill: PT.bool,
+    /** True to render in a vertical orientation. */
+    vertical: PT.bool
+};
+Slider.hasLayoutSupport = true;
 
-        /** True to render in a vertical orientation. */
-        vertical: PT.bool
-    };
 
-    baseClassName = 'xh-slider';
+//-----------------------
+// Implementation
+//-----------------------
 
-    render() {
-        const props = this.getNonLayoutProps(),
-            {width, ...layoutProps} = this.getLayoutProps(),
-            sliderType = isArray(toJS(this.renderValue)) ? bpRangeSlider : bpSlider;
+const cmp = hoistCmp.factory(
+    ({model, className, ...props}, ref) => {
+        const {width, ...layoutProps} = getLayoutProps(props),
+            sliderType = isArray(model.renderValue) ? bpRangeSlider : bpSlider;
 
         throwIf(
             props.labelStepSize <= 0,
@@ -72,7 +79,7 @@ export class Slider extends HoistInput {
 
         return box({
             item: sliderType({
-                value: this.renderValue,
+                value: model.renderValue,
 
                 disabled: props.disabled,
                 labelRenderer: props.labelRenderer,
@@ -84,20 +91,16 @@ export class Slider extends HoistInput {
                 tabIndex: props.tabIndex,
                 vertical: props.vertical,
 
-                onChange: this.onValueChange
+                onChange: (val) => model.noteValueChange(val)
             }),
 
             ...layoutProps,
             width: withDefault(width, 200),
-            className: this.getClassName(),
+            className,
 
-            onBlur: this.onBlur,
-            onFocus: this.onFocus
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            ref
         });
     }
-
-    onValueChange = (val) => {
-        this.noteValueChange(val);
-    };
-}
-export const slider = elemFactory(Slider);
+);
