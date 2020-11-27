@@ -469,7 +469,8 @@ class XHClass {
      * Helper method to destroy resources safely (e.g. child HoistModels). Will quietly skip args
      * that are null / undefined or that do not implement destroy().
      *
-     * @param {...Object} args - Objects to be destroyed.
+     * @param {...(Object|array)} args - objects to be destroyed. If any argument is an array,
+     *      each element in the array will be destroyed (this is *not* done recursively);.
      */
     safeDestroy(...args) {
         if (args) {
