@@ -23,9 +23,10 @@ export function ManagedSupport(C) {
 
         defaults: {
             /**
-             * Mark an object for destruction when this object is destroyed.
-             * @param {object} obj - object to be destroyed
-             * @returns object passed.
+             * Mark one or more objects for destruction when this object is destroyed.
+             *
+             * @param {(Object|Array)} obj - object or array of objects to be destroyed
+             * @returns obj
              */
             markManaged(obj) {
                 this._xhManagedInstances = this._xhManagedInstances ?? [];
