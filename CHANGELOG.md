@@ -16,6 +16,9 @@
   based on a case-insensitive match of word starts in the label. (Previously it was based on a match
   _anywhere_ in the label _or_ value.) To customize this behavior, applications should use the new
   `filterFn` prop.
+* `@managed` and `markManaged` have been enhanced to allow for the cleanup of arrays of objects as
+well as objects.  This matches the existing array support in `XH.safeDestroy()`.
+
 
 ### 💥 Breaking Changes
 

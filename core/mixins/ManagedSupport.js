@@ -36,8 +36,12 @@ export function ManagedSupport(C) {
 
         chains: {
             destroy() {
-                XH.safeDestroy(this._xhManagedProperties?.map(p => this[p]));
-                XH.safeDestroy(this._xhManagedInstances);
+                this._xhManagedProperties?.forEach(p => {
+                    XH.safeDestroy(this[p]);
+                });
+                this._xhManagedInstances?.forEach(i => {
+                    XH.safeDestroy(i);
+                });
             }
         }
     });
