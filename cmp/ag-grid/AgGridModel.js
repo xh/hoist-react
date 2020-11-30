@@ -328,6 +328,27 @@ export class AgGridModel {
     }
 
     /**
+     * Sets the sort state on the grid's column state
+     * @param {GridSorter[]} sortBy
+     */
+    applySortBy(sortBy) {
+        const {agColumnApi} = this,
+            state = agColumnApi.getColumnState();
+        state.forEach(it => {
+            it.sort = null;
+            it.sortIndex = null;
+        });
+        sortBy.forEach((sorter, idx) => {
+            const column = state.find(it => it.colId === sorter.colId);
+            if (column) {
+                column.sort = sorter.sort;
+                column.sortIndex = idx;
+            }
+        });
+        agColumnApi.applyColumnState({state, applyOrder: true});
+    }
+
+    /**
      * @returns {Object} - the current row expansion state of the grid in a serializable form
      */
     getExpandState() {
