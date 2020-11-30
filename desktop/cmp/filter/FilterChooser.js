@@ -61,7 +61,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                         styles: {
                             menuList: (base) => ({
                                 ...base,
-                                maxHeight: withDefault(chooserProps.maxMenuHeight, 'unset')
+                                maxHeight: withDefault(chooserProps.maxMenuHeight, '50vh')
                             })
                         },
                         components: {
@@ -94,8 +94,8 @@ FilterChooser.propTypes = {
     /** Icon to display inline on the left side of the input. */
     leftIcon: PT.element,
 
-    /** Max-height (in pixels) of menu list */
-    maxMenuHeight: PT.number,
+    /** Max-height of dropdown. Either a number in pixels or a valid CSS string, such as '80vh'. */
+    maxMenuHeight: PT.oneOfType([PT.number, PT.string]),
 
     /** Placement of the dropdown menu relative to the input control. */
     menuPlacement: PT.oneOf(['auto', 'top', 'bottom']),

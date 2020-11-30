@@ -4,8 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {hoistCmp} from '@xh/hoist/core';
 import {checkbox as onsenCheckbox} from '@xh/hoist/kit/onsen';
 import PT from 'prop-types';
 import './Checkbox.scss';
@@ -13,40 +13,42 @@ import './Checkbox.scss';
 /**
  * Checkbox control for boolean values.
  */
-@HoistComponent
-export class Checkbox extends HoistInput {
+export const [Checkbox, checkbox] = hoistCmp.withFactory({
+    displayName: 'Checkbox',
+    className: 'xh-check-box',
+    render(props, ref) {
+        return useHoistInputModel(cmp, props, ref);
+    }
+});
+Checkbox.propTypes = {
+    ...HoistInputPropTypes,
 
-    static propTypes = {
-        ...HoistInput.propTypes,
-        value: PT.string,
+    value: PT.string,
 
-        /** Onsen modifier string */
-        modifier: PT.string
-    };
+    /** Onsen modifier string */
+    modifier: PT.string
+};
 
-    baseClassName = 'xh-check-box';
-
-    render() {
-        const {props} = this;
-
+//----------------------------------
+// Implementation
+//----------------------------------
+const cmp = hoistCmp.factory(
+    ({model, className, ...props}, ref) => {
         return onsenCheckbox({
-            checked: !!this.renderValue,
+            checked: !!model.renderValue,
 
             disabled: props.disabled,
             modifier: props.modifier,
             tabIndex: props.tabIndex,
 
-            className: this.getClassName(),
             style: props.style,
 
-            onChange: this.onChange,
-            onBlur: this.onBlur,
-            onFocus: this.onFocus
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            onChange: (e) => model.noteValueChange(e.target.checked),
+
+            className,
+            ref
         });
     }
-
-    onChange = (e) => {
-        this.noteValueChange(e.target.checked);
-    };
-}
-export const checkbox = elemFactory(Checkbox);
+);

@@ -426,9 +426,12 @@ export class Column {
                     const {store} = record,
                         val = me.getValueFn({record, column: me, gridModel, agParams, store});
 
-                    return isFunction(tooltipSpec) ?
+                    const ret = isFunction(tooltipSpec) ?
                         tooltipSpec(val, {record, column: me, gridModel, agParams}) :
                         val;
+
+                    // Always defend against returning undefined from render() - React will throw!
+                    return ret ?? null;
                 }
             };
         }
