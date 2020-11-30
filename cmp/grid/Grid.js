@@ -245,7 +245,6 @@ class LocalModel {
             groupRowInnerRenderer: model.groupRowRenderer,
             groupRowRendererFramework: model.groupRowElementRenderer,
             groupRowRendererParams: {suppressCount: !model.showGroupRowCounts},
-            rememberGroupStateWhenNewData: true, // turning this on by default so group state is maintained when apps are not using immutableData
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
             },
