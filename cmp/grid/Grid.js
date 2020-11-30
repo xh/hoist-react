@@ -220,7 +220,6 @@ class LocalModel {
                 agColumnGroupHeader: (props) => columnGroupHeader(props)
             },
             rowSelection: model.selModel.mode,
-            rowDeselection: true,
             getRowHeight: (params) => params.node?.group ? this.groupRowHeight : this.rowHeight,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             noRowsOverlayComponentFramework: observer(() => div(model.emptyText)),
