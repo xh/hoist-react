@@ -65,7 +65,19 @@
   }
 
   &__add-control {
+    display: flex;
+    align-items: center;
+    padding: 0 var(--xh-pad-half-px);
     border-top: var(--xh-border-solid);
+
+    &__icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 20px;
+      width: 20px;
+      color: var(--xh-input-placeholder-text-color);
+    }
 
     .xh-select__control {
       background: none;
@@ -75,10 +87,7 @@
 
   &__btn-row {
     border-top: var(--xh-border-solid);
-
-    .xh-button:not(:last-child) {
-      border-right: var(--xh-border-solid);
-    }
+    background-color: var(--xh-tbar-bg);
   }
 
   &__favorite-icon {

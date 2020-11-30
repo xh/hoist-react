@@ -7,8 +7,8 @@
 
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
-import {div, fragment, vbox} from '@xh/hoist/cmp/layout';
-import {buttonGroup, button} from '@xh/hoist/desktop/cmp/button';
+import {div, fragment, vbox, hbox, filler} from '@xh/hoist/cmp/layout';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {select, Select} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {popover, menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
@@ -132,7 +132,6 @@ GroupingChooser.propTypes = {
 //------------------
 const editor = hoistCmp.factory({
     render({model, popoverWidth, popoverTitle}) {
-        const {isValid} = model;
         return vbox({
             width: popoverWidth,
             items: [
@@ -151,23 +150,7 @@ const editor = hoistCmp.factory({
                     })
                 }),
                 addDimensionControl(),
-                buttonGroup({
-                    className: 'xh-grouping-chooser__btn-row',
-                    items: [
-                        button({
-                            icon: Icon.close(),
-                            flex: 1,
-                            onClick: () => model.closePopover()
-                        }),
-                        button({
-                            icon: Icon.check(),
-                            flex: 2,
-                            intent: 'success',
-                            disabled: !isValid,
-                            onClick: () => model.commitPendingValueAndClose()
-                        })
-                    ]
-                })
+                bbar()
             ]
         });
     }
@@ -192,7 +175,7 @@ const dimensionRow = hoistCmp.factory({
     render({model, dimension, idx}) {
         // The options for this select include its current value
         const options = getDimOptions([...model.availableDims, dimension], model),
-            marginLeft = idx * 10;
+            marginLeft = null; // Todo: Enable indentation? marginLeft = idx * 10
 
         return draggable({
             key: dimension,
@@ -268,27 +251,61 @@ const dimensionRow = hoistCmp.factory({
 
 const addDimensionControl = hoistCmp.factory({
     render({model}) {
-        const options = getDimOptions(model.availableDims, model),
-            disabled = isEmpty(options) || model.atMaxDepth,
-            placeholder = isEmpty(options) ? 'No more options available' :
-                model.atMaxDepth ? 'Grouping at max depth' : 'Add Dimension...';
-
+        if (!model.showAddControl || model.addDisabledMsg) return null;
+        const options = getDimOptions(model.availableDims, model);
         return div({
             className: 'xh-grouping-chooser__add-control',
-            item: select({
-                // By changing the key each time the options change, we can
-                // ensure the Select loses its internal input state.
-                key: JSON.stringify(options),
-                options,
-                disabled,
-                placeholder,
-                flex: 1,
-                width: null,
-                autoFocus: true,
-                hideDropdownIndicator: true,
-                hideSelectedOptionCheck: true,
-                onChange: (newDim) => model.addPendingDim(newDim)
-            })
+            items: [
+                div({
+                    className: 'xh-grouping-chooser__add-control__icon',
+                    item: Icon.grip({prefix: 'fal'})
+                }),
+                select({
+                    // By changing the key each time the options change, we can
+                    // ensure the Select loses its internal input state.
+                    key: JSON.stringify(options),
+                    options,
+                    placeholder: 'Add Dimension...',
+                    flex: 1,
+                    width: null,
+                    autoFocus: true,
+                    hideDropdownIndicator: true,
+                    hideSelectedOptionCheck: true,
+                    onChange: (newDim) => model.addPendingDim(newDim)
+                })
+            ]
+        });
+    }
+});
+
+const bbar = hoistCmp.factory({
+    render({model}) {
+        const {addDisabledMsg, isValid} = model,
+            addDisabled = !!addDisabledMsg;
+
+        return hbox({
+            className: 'xh-grouping-chooser__btn-row',
+            items: [
+                button({
+                    icon: Icon.add(),
+                    intent: 'success',
+                    disabled: !!addDisabled,
+                    title: addDisabledMsg,
+                    onClick: () => model.toggleAddControl()
+                }),
+                filler(),
+                button({
+                    icon: Icon.close(),
+                    intent: 'danger',
+                    onClick: () => model.closePopover()
+                }),
+                button({
+                    icon: Icon.check(),
+                    intent: 'success',
+                    disabled: !isValid,
+                    onClick: () => model.commitPendingValueAndClose()
+                })
+            ]
         });
     }
 });

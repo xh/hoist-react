@@ -35,6 +35,7 @@ export class GroupingChooserModel {
     @observable.ref pendingValue = [];
     @observable editorIsOpen = false;
     @observable favoritesIsOpen = false;
+    @observable showAddControl = false;
 
     popoverRef = createObservableRef();
 
@@ -51,6 +52,13 @@ export class GroupingChooserModel {
     @computed
     get isValid() {
         return this.validateValue(this.pendingValue);
+    }
+
+    @computed
+    get addDisabledMsg() {
+        if (isEmpty(this.availableDims)) return 'All dimensions added';
+        if (this.atMaxDepth) return 'Grouping at max depth';
+        return null;
     }
 
     /**
@@ -129,6 +137,12 @@ export class GroupingChooserModel {
     closePopover() {
         this.editorIsOpen = false;
         this.favoritesIsOpen = false;
+        this.showAddControl = false;
+    }
+
+    @action
+    toggleAddControl() {
+        this.showAddControl = !this.showAddControl;
     }
 
     //-------------------------
@@ -138,6 +152,7 @@ export class GroupingChooserModel {
     addPendingDim(dimName) {
         if (!dimName) return;
         this.pendingValue = [...this.pendingValue, dimName];
+        this.showAddControl = false;
     }
 
     @action
