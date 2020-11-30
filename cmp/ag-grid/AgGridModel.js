@@ -324,7 +324,7 @@ export class AgGridModel {
         // Remove invalid columns. ag-Grid does not like calls to set state with unknown column IDs.
         columns = columns.filter(it => validColIds.includes(it.colId));
 
-        agColumnApi.setColumnState(columns);
+        agColumnApi.applyColumnState({state: columns, applyOrder: true});
     }
 
     /**
