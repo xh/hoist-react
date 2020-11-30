@@ -530,7 +530,7 @@ class LocalModel {
                 });
 
                 this.doWithPreservedState({expansion: false}, () => {
-                    colApi.setColumnState(colState);
+                    colApi.applyColumnState({state: colState, applyOrder: true});
                 });
             }
         };
