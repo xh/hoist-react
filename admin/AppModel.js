@@ -74,7 +74,8 @@ export class AppModel {
                 path: '/monitor',
                 children: [
                     {name: 'status', path: '/status'},
-                    {name: 'config', path: '/config'}
+                    {name: 'config', path: '/config'},
+                    {name: 'memory', path: '/memory'}
                 ]
             },
             {
