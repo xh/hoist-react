@@ -73,6 +73,14 @@
     }
   }
 
+  &__btn-row {
+    border-top: var(--xh-border-solid);
+
+    .xh-button:not(:last-child) {
+      border-right: var(--xh-border-solid);
+    }
+  }
+
   &__favorite-icon {
     position: absolute;
     top: 3px;

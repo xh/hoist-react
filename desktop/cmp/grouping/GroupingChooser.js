@@ -8,7 +8,7 @@
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {div, fragment, vbox} from '@xh/hoist/cmp/layout';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {buttonGroup, button} from '@xh/hoist/desktop/cmp/button';
 import {select, Select} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {popover, menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
@@ -41,24 +41,13 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
         popoverPosition = 'bottom'
     }) {
         const {editorIsOpen, favoritesIsOpen, value} = model,
-            isOpen = editorIsOpen || favoritesIsOpen;
-
-        // Todo: Tidy this up?
-        const getButtonText = () => {
-                const staticText = buttonText;
-                if (staticText !== undefined) return staticText;
-                if (isEmpty(model.value)) return emptyText;
-
+            isOpen = editorIsOpen || favoritesIsOpen,
+            getButtonText = () => {
                 const prefix = buttonValueTextPrefix,
                     dimText = model.getValueLabel(value);
-
                 return prefix ? `${prefix} ${dimText}` : dimText;
             },
             getButtonTitle = () => {
-                const staticTitle = buttonTitle;
-                if (staticTitle !== undefined) return staticTitle;
-                if (isEmpty(model.value)) return emptyText;
-
                 const labels = model.getValueLabel(value).split(' > ');
                 return labels.map((it, i) => ' '.repeat(i) + (i ? '› ' : '') + it).join('\n');
             };
@@ -73,8 +62,8 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
                 minimal: favoritesIsOpen,
                 target: fragment(
                     button({
-                        item: getButtonText(),
-                        title: getButtonTitle(),
+                        item: buttonText ?? (isEmpty(model.value) ? emptyText : getButtonText()),
+                        title: buttonTitle ?? (isEmpty(model.value) ? emptyText : getButtonTitle()),
                         icon: buttonIcon,
                         width: buttonWidth,
                         className: classNames('xh-grouping-chooser-button', styleButtonAsInput ? 'xh-grouping-chooser-button--as-input' : null),
@@ -89,7 +78,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
                         // Prevent clicks with Select controls from closing popover
                         const selectPortal = document.getElementById(Select.MENU_PORTAL_ID)?.contains(e?.target),
                             selectClick = e?.target?.classList.contains('xh-select__single-value');
-                        if (!selectPortal && !selectClick) model.commitPendingValueAndClose();
+                        if (!selectPortal && !selectClick) model.closePopover();
                     }
                 }
             })
@@ -143,6 +132,7 @@ GroupingChooser.propTypes = {
 //------------------
 const editor = hoistCmp.factory({
     render({model, popoverWidth, popoverTitle}) {
+        const {isValid} = model;
         return vbox({
             width: popoverWidth,
             items: [
@@ -160,7 +150,24 @@ const editor = hoistCmp.factory({
                         })
                     })
                 }),
-                addDimensionControl()
+                addDimensionControl(),
+                buttonGroup({
+                    className: 'xh-grouping-chooser__btn-row',
+                    items: [
+                        button({
+                            icon: Icon.close(),
+                            flex: 1,
+                            onClick: () => model.closePopover()
+                        }),
+                        button({
+                            icon: Icon.check(),
+                            flex: 2,
+                            intent: 'success',
+                            disabled: !isValid,
+                            onClick: () => model.commitPendingValueAndClose()
+                        })
+                    ]
+                })
             ]
         });
     }
@@ -184,7 +191,9 @@ const dimensionList = hoistCmp.factory({
 const dimensionRow = hoistCmp.factory({
     render({model, dimension, idx}) {
         // The options for this select include its current value
-        const options = getDimOptions([...model.availableDims, dimension], model);
+        const options = getDimOptions([...model.availableDims, dimension], model),
+            marginLeft = idx * 10;
+
         return draggable({
             key: dimension,
             draggableId: dimension,
@@ -196,9 +205,15 @@ const dimensionRow = hoistCmp.factory({
                 // The below workaround is based on approaches discussed on this thread:
                 // https://github.com/atlassian/react-beautiful-dnd/issues/128
                 let transform = dndProps.draggableProps.style.transform;
-                if (dndState.isDragging) {
-                    const rowValues = parseTransform(transform),
+                if (dndState.isDragging || dndState.isDropAnimating) {
+                    let rowValues = parseTransform(transform),
                         popoverValues = parseTransform(model.popoverRef.current.style.transform);
+
+                    // Account for drop animation
+                    if (dndState.isDropAnimating) {
+                        const {x, y} = dndState.dropAnimation.moveTo;
+                        rowValues = [x, y];
+                    }
 
                     // Subtract the popover's X / Y translation from the row's
                     if (!isEmpty(rowValues) && !isEmpty(popoverValues)) {
@@ -227,6 +242,7 @@ const dimensionRow = hoistCmp.factory({
                                 value: dimension,
                                 flex: 1,
                                 width: null,
+                                marginLeft,
                                 hideDropdownIndicator: true,
                                 disabled: isEmpty(options) || model.atMaxDepth,
                                 onChange: (newDim) => model.replacePendingDimAtIdx(newDim, idx)
@@ -234,7 +250,6 @@ const dimensionRow = hoistCmp.factory({
                         }),
                         button({
                             icon: Icon.delete(),
-                            intent: 'danger',
                             className: 'xh-grouping-chooser__row__remove-btn',
                             onClick: () => model.removePendingDimAtIdx(idx)
                         })
@@ -253,21 +268,25 @@ const dimensionRow = hoistCmp.factory({
 
 const addDimensionControl = hoistCmp.factory({
     render({model}) {
-        const options = getDimOptions(model.availableDims, model);
-        if (isEmpty(options) || model.atMaxDepth) return null;
+        const options = getDimOptions(model.availableDims, model),
+            disabled = isEmpty(options) || model.atMaxDepth,
+            placeholder = isEmpty(options) ? 'No more options available' :
+                model.atMaxDepth ? 'Grouping at max depth' : 'Add Dimension...';
+
         return div({
             className: 'xh-grouping-chooser__add-control',
             item: select({
-                // By changing the key each time the value changes, we can
+                // By changing the key each time the options change, we can
                 // ensure the Select loses its internal input state.
                 key: JSON.stringify(options),
                 options,
+                disabled,
+                placeholder,
                 flex: 1,
                 width: null,
                 autoFocus: true,
                 hideDropdownIndicator: true,
                 hideSelectedOptionCheck: true,
-                placeholder: 'Add Dimension...',
                 onChange: (newDim) => model.addPendingDim(newDim)
             })
         });
@@ -351,7 +370,7 @@ const favoriteMenuItem = hoistCmp.factory({
             className: 'xh-grouping-chooser__favorite',
             onClick: () => model.setValue(value),
             labelElement: button({
-                icon: Icon.cross(),
+                icon: Icon.delete(),
                 intent: 'danger',
                 onClick: (e) => {
                     model.removeFavorite(value);

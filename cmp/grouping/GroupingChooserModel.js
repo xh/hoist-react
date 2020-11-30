@@ -48,6 +48,11 @@ export class GroupingChooserModel {
         return this.pendingValue.length === Math.min(this.maxDepth, this.dimensionNames.length);
     }
 
+    @computed
+    get isValid() {
+        return this.validateValue(this.pendingValue);
+    }
+
     /**
      * @param c - GroupingChooserModel configuration.
      * @param {(DimensionSpec[]|CubeField[]|string[])} c.dimensions - dimensions available for
