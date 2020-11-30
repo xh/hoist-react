@@ -66,7 +66,7 @@ export class AppModel {
                 path: '/logging',
                 children: [
                     {name: 'viewer', path: '/viewer'},
-                    {name: 'config', path: '/config'}
+                    {name: 'levels', path: '/levels'}
                 ]
             },
             {
