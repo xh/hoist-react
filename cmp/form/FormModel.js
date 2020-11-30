@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {flatMap, forOwn, map, mapValues, pickBy, some, values, forEach} from 'lodash';
@@ -42,6 +42,7 @@ export class FormModel {
     @observable.ref fields = {};
 
     /** @return {FieldModel[]} - all FieldModel instances, as an array. */
+    @managed
     get fieldList() {return values(this.fields)}
 
     /** @member {FormModel} */
@@ -91,7 +92,7 @@ export class FormModel {
         this.init(initialValues);
 
         // Set the owning formModel *last* after all fields in place with data.
-        // This (currently) kicks off the validation and other reativity.
+        // This (currently) kicks off the validation and other reactivity.
         forOwn(this.fields, f => f.formModel = this);
     }
 
@@ -217,9 +218,5 @@ export class FormModel {
                 return undefined;
             }
         });
-    }
-
-    destroy() {
-        XH.safeDestroy(this.fieldList);
     }
 }

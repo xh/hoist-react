@@ -4,12 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {hoistCmp} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {input} from '@xh/hoist/kit/onsen';
 import {wait} from '@xh/hoist/promise';
 import {withDefault} from '@xh/hoist/utils/js';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN} from 'lodash';
 import PT from 'prop-types';
 import './NumberInput.scss';
@@ -17,97 +18,72 @@ import './NumberInput.scss';
 /**
  * Number Input, with optional support for formatted of display value,
  */
-@HoistComponent
-@LayoutSupport
-export class NumberInput extends HoistInput {
+export const [NumberInput, numberInput] = hoistCmp.withFactory({
+    displayName: 'NumberInput',
+    className: 'xh-number-input',
+    render(props, ref) {
+        return useHoistInputModel(cmp, props, ref, Model);
+    }
+});
+NumberInput.propTypes = {
+    ...HoistInputPropTypes,
+    value: PT.number,
 
-    static propTypes = {
-        ...HoistInput.propTypes,
-        value: PT.number,
+    /** True to commit on every change/keystroke, default false. */
+    commitOnChange: PT.bool,
 
-        /** True to commit on every change/keystroke, default false. */
-        commitOnChange: PT.bool,
+    /** Whether to display large values with commas */
+    displayWithCommas: PT.bool,
 
-        /** Whether to display large values with commas */
-        displayWithCommas: PT.bool,
+    /** Set to true for advanced input evaluation, defaults to false.
+     Inputs suffixed with k, m, or b will be calculated as thousands, millions, or billions respectively */
+    enableShorthandUnits: PT.bool,
 
-        /** Set to true for advanced input evaluation, defaults to false.
-         Inputs suffixed with k, m, or b will be calculated as thousands, millions, or billions respectively */
-        enableShorthandUnits: PT.bool,
+    /** Minimum value */
+    min: PT.number,
 
-        /** Minimum value */
-        min: PT.number,
+    /** Maximum value */
+    max: PT.number,
 
-        /** Maximum value */
-        max: PT.number,
+    /** Onsen modifier string */
+    modifier: PT.string,
 
-        /** Onsen modifier string */
-        modifier: PT.string,
+    /** Function which receives keydown event */
+    onKeyDown: PT.func,
 
-        /** Function which receives keydown event */
-        onKeyDown: PT.func,
+    /** Text to display when control is empty */
+    placeholder: PT.string,
 
-        /** Text to display when control is empty */
-        placeholder: PT.string,
+    /** Number of decimal places to allow on field's value, defaults to 4 */
+    precision: PT.number,
 
-        /** Number of decimal places to allow on field's value, defaults to 4 */
-        precision: PT.number,
+    /** Whether text in field is selected when field receives focus */
+    selectOnFocus: PT.bool,
 
-        /** Whether text in field is selected when field receives focus */
-        selectOnFocus: PT.bool,
+    /** Alignment of entry text within control, default 'right'. */
+    textAlign: PT.oneOf(['left', 'right']),
 
-        /** Alignment of entry text within control, default 'right'. */
-        textAlign: PT.oneOf(['left', 'right']),
+    /**
+     * Text appended to the rendered value within control when not editing.
+     * Can be used to append e.g. "%" or a unit without need for an external right label.
+     */
+    valueLabel: PT.string,
 
-        /**
-         * Text appended to the rendered value within control when not editing.
-         * Can be used to append e.g. "%" or a unit without need for an external right label.
-         */
-        valueLabel: PT.string,
+    /** Allow/automatically fill in trailing zeros in accord with precision, defaults to false */
+    zeroPad: PT.bool
+};
+NumberInput.hasLayoutSupport = true;
 
-        /** Allow/automatically fill in trailing zeros in accord with precision, defaults to false */
-        zeroPad: PT.bool
-    };
+//-----------------------
+// Implementation
+//-----------------------
+
+class Model extends HoistInputModel {
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/gi;
 
-    baseClassName = 'xh-number-input';
-
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);
-    }
-
-    render() {
-        const props = this.getNonLayoutProps(),
-            {width, ...layoutProps} = this.getLayoutProps(),
-            {hasFocus, renderValue} = this,
-            displayValue = hasFocus ? this.displayValue(renderValue) : this.formatValue(renderValue);
-
-        return input({
-            value: displayValue,
-
-            type: props.enableShorthandUnits ? 'text' : 'number',
-            disabled: props.disabled,
-            min: props.min,
-            max: props.max,
-            placeholder: props.placeholder,
-            modifier: props.modifier,
-            tabIndex: props.tabIndex,
-
-            className: this.getClassName(),
-            style: {
-                ...props.style,
-                ...layoutProps,
-                width: withDefault(width, null),
-                textAlign: withDefault(props.textAlign, 'right')
-            },
-            spellCheck: false,
-
-            onChange: this.onChange,
-            onKeyDown: this.onKeyDown,
-            onBlur: this.onBlur,
-            onFocus: this.onFocus
-        });
     }
 
     onChange = (ev) => {
@@ -154,7 +130,7 @@ export class NumberInput extends HoistInput {
         value = value.toString();
         value = value.replace(/,/g, '');
 
-        if (NumberInput.shorthandValidator.test(value)) {
+        if (Model.shorthandValidator.test(value)) {
             const num = +value.substring(0, value.length - 1),
                 lastChar = value.charAt(value.length - 1).toLowerCase();
 
@@ -173,7 +149,40 @@ export class NumberInput extends HoistInput {
         value = parseFloat(value);
         return isNaN(value) ? null : value;
     }
-
 }
 
-export const numberInput = elemFactory(NumberInput);
+const cmp = hoistCmp.factory(
+    ({model, className, ...props}, ref) => {
+
+        const {width, ...layoutProps} = getLayoutProps(props),
+            {hasFocus, renderValue} = model,
+            displayValue = hasFocus ? model.displayValue(renderValue) : model.formatValue(renderValue);
+
+        return input({
+            value: displayValue,
+
+            type: props.enableShorthandUnits ? 'text' : 'number',
+            disabled: props.disabled,
+            min: props.min,
+            max: props.max,
+            placeholder: props.placeholder,
+            modifier: props.modifier,
+            tabIndex: props.tabIndex,
+
+            className,
+            style: {
+                ...props.style,
+                ...layoutProps,
+                width: withDefault(width, null),
+                textAlign: withDefault(props.textAlign, 'right')
+            },
+            spellCheck: false,
+
+            onChange: model.onChange,
+            onKeyDown: model.onKeyDown,
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            ref
+        });
+    }
+);

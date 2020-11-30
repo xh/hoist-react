@@ -16,6 +16,9 @@
   based on a case-insensitive match of word starts in the label. (Previously it was based on a match
   _anywhere_ in the label _or_ value.) To customize this behavior, applications should use the new
   `filterFn` prop.
+* `@managed` and `markManaged` have been enhanced to allow for the cleanup of arrays of objects as
+well as objects.  This matches the existing array support in `XH.safeDestroy()`.
+
 
 ### 💥 Breaking Changes
 
@@ -25,16 +28,24 @@
   * Use `switcher: false` to not include a TabSwitcher. (previously `switcherPosition: 'none'`)
   * Use `switcher: {...}` to provide customisation props for the `TabSwitcher`. See `TabSwitcher`
     documentation for more information.
+* The `HoistInput` base class has been removed. Application components extending `HoistInput` should
+use the `useHoistInputModel` hook instead.  This change marks the completion of our efforts to
+remove all internal uses of React class-based Components in Hoist.
 
 ### 🐞 Bug Fixes
 
 * Fix issue where grid row striping inadvertently disabled by default for non-tree grids.
+
+### ✨ Style
+
+* Default `Chart` themes reworked in both light and dark modes to better match overall Hoist theme.
 
 ### ⚙️ Technical
 
 * `Cube.info` is now directly observable.
 
 ### 📚 Libraries
+
 * @react `16.13.1 -> 17.0.1`
 * @blueprintjs/core `3.35 -> 3.36`
 * @blueprintjs/datetime `3.19 -> 3.20`

@@ -4,8 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {hoistCmp} from '@xh/hoist/core';
 import {switchControl} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
@@ -14,36 +14,42 @@ import './SwitchInput.scss';
 /**
  * Switch (toggle) control for non-nullable boolean values.
  */
-@HoistComponent
-export class SwitchInput extends HoistInput {
+export const [SwitchInput, switchInput] = hoistCmp.withFactory({
+    displayName: 'SwitchInput',
+    className: 'xh-switch-input',
+    render(props, ref) {
+        return useHoistInputModel(cmp, props, ref);
+    }
+});
+SwitchInput.propTypes = {
+    ...HoistInputPropTypes,
 
-    static propTypes = {
-        ...HoistInput.propTypes,
-        value: PT.bool,
+    value: PT.bool,
 
-        /** True if the control should appear as an inline element (defaults to true). */
-        inline: PT.bool,
+    /** True if the control should appear as an inline element (defaults to true). */
+    inline: PT.bool,
 
-        /**
-         * Label displayed adjacent to the control itself.
-         * Can be used with or without an additional overall label as provided by FormField.
-         */
-        label: PT.oneOfType([PT.string, PT.element]),
+    /**
+     * Label displayed adjacent to the control itself.
+     * Can be used with or without an additional overall label as provided by FormField.
+     */
+    label: PT.oneOfType([PT.string, PT.element]),
 
-        /** Alignment of the inline label relative to the control itself, default right. */
-        labelAlign: PT.oneOf(['left', 'right'])
-    };
+    /** Alignment of the inline label relative to the control itself, default right. */
+    labelAlign: PT.oneOf(['left', 'right'])
+};
 
-    baseClassName = 'xh-switch-input';
-
-    render() {
-        const {props} = this,
-            labelAlign = withDefault(props.labelAlign, 'right');
+//-----------------------
+// Implementation
+//-----------------------
+const cmp = hoistCmp.factory(
+    ({model, className, ...props}, ref) => {
+        const labelAlign = withDefault(props.labelAlign, 'right');
 
         return switchControl({
-            checked: !!this.renderValue,
+            checked: !!model.renderValue,
 
-            alignIndicator: labelAlign == 'left' ? 'right' : 'left',
+            alignIndicator: labelAlign === 'left' ? 'right' : 'left',
             disabled: props.disabled,
             inline: withDefault(props.inline, true),
             label: props.label,
@@ -51,16 +57,12 @@ export class SwitchInput extends HoistInput {
             tabIndex: props.tabIndex,
 
             id: props.id,
-            className: this.getClassName(),
+            className,
 
-            onBlur: this.onBlur,
-            onChange: this.onChange,
-            onFocus: this.onFocus
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            onChange: (e) => model.noteValueChange(e.target.checked),
+            ref
         });
     }
-
-    onChange = (e) => {
-        this.noteValueChange(e.target.checked);
-    };
-}
-export const switchInput = elemFactory(SwitchInput);
+);

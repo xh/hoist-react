@@ -52,7 +52,7 @@ body {
   --xh-yellow-light: var(--yellow-light, #{mc('yellow', '50')});
 
   &.xh-dark {
-    --xh-black: var(--black, hsl(202, 18%, 9%));
+    --xh-black: var(--black, hsl(202, 17%, 9%));
     --xh-gray-dark: var(--gray-dark, #{mc('grey', '900')});
     --xh-green: var(--green, hsl(124, 100%, 31%)); // could not find a MC green that works, especially in grids....
     --xh-green-muted: var(--green-muted, #{mc-muted('green', '800', 20%, 5%)});

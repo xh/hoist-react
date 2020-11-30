@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInput} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, filler, fragment, frame, hbox, vbox, div, label, span} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
@@ -15,6 +15,7 @@ import {Icon} from '@xh/hoist/icon';
 import {dialog, textArea} from '@xh/hoist/kit/blueprint';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import * as codemirror from 'codemirror';
 import 'codemirror/addon/fold/brace-fold.js';
 import 'codemirror/addon/fold/foldcode.js';
@@ -28,7 +29,7 @@ import 'codemirror/addon/search/searchcursor.js';
 import 'codemirror/addon/selection/mark-selection.js';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/dracula.css';
-import {compact, defaultsDeep, isEmpty, isEqual, isFunction} from 'lodash';
+import {compact, defaultsDeep, isEqual, isFunction} from 'lodash';
 import PT from 'prop-types';
 import ReactDOM from 'react-dom';
 import './CodeInput.scss';
@@ -43,74 +44,82 @@ import './CodeInput.scss';
  * TODO - understanding sizing spec / requirements for component vs. generated CodeMirror.
  * Reconcile LayoutSupport with width/height props. https://github.com/xh/hoist-react/issues/327
  */
-@HoistComponent
-@LayoutSupport
-export class CodeInput extends HoistInput {
+export const [CodeInput, codeInput] = hoistCmp.withFactory({
+    displayName: 'CodeInput',
+    className: 'xh-code-input',
+    render(props, ref) {
+        return useHoistInputModel(cmp, props, ref, Model);
+    }
+});
+CodeInput.propTypes = {
+    ...HoistInputPropTypes,
 
-    static propTypes = {
-        ...HoistInput.propTypes,
+    /** True to focus the control on render. */
+    autoFocus: PT.bool,
 
-        /** True to focus the control on render. */
-        autoFocus: PT.bool,
+    /** True to commit on every change/keystroke, default false. */
+    commitOnChange: PT.bool,
 
-        /** True to commit on every change/keystroke, default false. */
-        commitOnChange: PT.bool,
+    /**
+     * Configuration object with any properties supported by the CodeMirror API.
+     * @see {@link https://codemirror.net/doc/manual.html#api_configuration|CodeMirror Docs}
+     */
+    editorProps: PT.object,
 
-        /**
-         * Configuration object with any properties supported by the CodeMirror API.
-         * @see {@link https://codemirror.net/doc/manual.html#api_configuration|CodeMirror Docs}
-         */
-        editorProps: PT.object,
+    /**
+     * True to enable case-insensitive searching within the input. Default false, except in
+     * fullscreen mode, where search will be shown unless explicitly *disabled*. Note that
+     * enabling search forces the display of a toolbar, regardless of `showToolbar` prop.
+     */
+    enableSearch: PT.bool,
 
-        /**
-         * True to enable case-insensitive searching within the input. Default false, except in
-         * fullscreen mode, where search will be shown unless explicitly *disabled*. Note that
-         * enabling search forces the display of a toolbar, regardless of `showToolbar` prop.
-         */
-        enableSearch: PT.bool,
+    /**
+     * Callback to autoformat the code. Given the unformatted code, this should return a
+     * properly-formatted copy.
+     */
+    formatter: PT.func,
 
-        /**
-         * Callback to autoformat the code. Given the unformatted code, this should return a
-         * properly-formatted copy.
-         */
-        formatter: PT.func,
+    /** A CodeMirror linter to provide error detection and hinting in the gutter. */
+    linter: PT.func,
 
-        /** A CodeMirror linter to provide error detection and hinting in the gutter. */
-        linter: PT.func,
+    /**
+     * A CodeMirror language mode - default none (plain-text). See the CodeMirror docs
+     * ({@link https://codemirror.net/mode/}) regarding available modes.
+     * Applications must import any mode they wish to enable.
+     */
+    mode: PT.string,
 
-        /**
-         * A CodeMirror language mode - default none (plain-text). See the CodeMirror docs
-         * ({@link https://codemirror.net/mode/}) regarding available modes.
-         * Applications must import any mode they wish to enable.
-         */
-        mode: PT.string,
+    /**
+     * True to prevent user modification of editor contents, while still allowing user to
+     * focus, select, and copy contents.
+     */
+    readonly: PT.bool,
 
-        /**
-         * True to prevent user modification of editor contents, while still allowing user to
-         * focus, select, and copy contents.
-         */
-        readonly: PT.bool,
+    /** True to display a copy button at bottom-right of input. */
+    showCopyButton: PT.bool,
 
-        /** True to display a copy button at bottom-right of input. */
-        showCopyButton: PT.bool,
+    /**
+     * True (default) to display autoformat button at bottom-right of input. Requires a
+     * `formatter` to be configured and content to be editable (!readonly, !disabled).
+     */
+    showFormatButton: PT.bool,
 
-        /**
-         * True (default) to display autoformat button at bottom-right of input. Requires a
-         * `formatter` to be configured and content to be editable (!readonly, !disabled).
-         */
-        showFormatButton: PT.bool,
+    /** True (default) to display fullscreen button at bottom-right of input. */
+    showFullscreenButton: PT.bool,
 
-        /** True (default) to display fullscreen button at bottom-right of input. */
-        showFullscreenButton: PT.bool,
+    /**
+     * True to display action buttons and/or find functionality in a dedicated bottom toolbar.
+     * Default is false unless enableSearch==true or in fullscreen mode. When false, enabled
+     * action buttons show only when the input focused and float in the bottom-right corner.
+     */
+    showToolbar: PT.bool
+};
+CodeInput.hasLayoutSupport = true;
 
-        /**
-         * True to display action buttons and/or find functionality in a dedicated bottom toolbar.
-         * Default is false unless enableSearch==true or in fullscreen mode. When false, enabled
-         * action buttons show only when the input focused and float in the bottom-right corner.
-         */
-        showToolbar: PT.bool
-    };
-
+//------------------------------
+// Implementation
+//------------------------------
+class Model extends HoistInputModel {
 
     /** @member {CodeMirror} - a CodeMirror editor instance. */
     editor;
@@ -123,7 +132,6 @@ export class CodeInput extends HoistInput {
     get matchCount() {return this.matches.length}
 
     @observable fullScreen = false;
-    baseClassName = 'xh-code-input';
 
     get commitOnChange() {return withDefault(this.props.commitOnChange, true)}
 
@@ -177,8 +185,8 @@ export class CodeInput extends HoistInput {
         ]);
     }
 
-    constructor(props, context) {
-        super(props, context);
+    constructor(props) {
+        super(props);
 
         this.addReaction({
             track: () => XH.darkTheme,
@@ -200,10 +208,9 @@ export class CodeInput extends HoistInput {
         });
 
         this.addReaction({
-            track: () => [this.props.readonly, this.props.disabled],
-            run: (arr) => {
-                const [readonly, disabled] = arr;
-                this.editor.setOption('readOnly',  disabled || readonly);
+            track: () => this.props.readonly || this.props.disabled,
+            run: (editorReadOnly) => {
+                this.editor.setOption('readOnly', editorReadOnly);
             }
         });
 
@@ -220,132 +227,7 @@ export class CodeInput extends HoistInput {
         });
     }
 
-    render() {
-        const {width, height, ...layoutProps} = this.getLayoutProps(),
-            props = {
-                ...layoutProps,
-                width: withDefault(width, 300),
-                height: withDefault(height, 100)
-            };
 
-        return this.fullScreen ? this.renderFullscreen(props) : this.renderInput(props);
-    }
-
-    renderFullscreen(props) {
-        return fragment(
-            dialog({
-                className: 'xh-code-input__dialog',
-                isOpen: true,
-                canOutsideClickClose: true,
-                item: this.renderInput({flex: 1}),
-                onClose: () => this.toggleFullScreen()
-            }),
-            box({
-                className: 'xh-code-input__placeholder',
-                ...props
-            })
-        );
-    }
-
-    renderInput(props) {
-        const {showToolbar} = this;
-        return vbox({
-            items: [
-                div({
-                    className: 'xh-code-input__inner-wrapper',
-                    item: textArea({
-                        value: this.renderValue || '',
-                        ref: this.manageCodeEditor,
-                        onChange: this.onChange
-                    })
-                }),
-                showToolbar ? this.renderToolbar() : this.renderActionButtons()
-            ],
-            className: this.getClassName(),
-            onBlur: this.onBlur,
-            onFocus: this.onFocus,
-            ...props
-        });
-    }
-
-    renderToolbar() {
-        const {actionButtons} = this,
-            searchInput = this.renderSearchInput();
-
-        return toolbar({
-            className: 'xh-code-input__toolbar',
-            items: [
-                filler(),
-                searchInput,
-                toolbarSep({omit: !searchInput || isEmpty(actionButtons)}),
-                ...actionButtons
-            ]
-        });
-    }
-
-    renderSearchInput() {
-        const {showSearchInput, cursor, currentMatchIdx, matchCount} = this;
-        if (!showSearchInput) return null;
-
-        return fragment(
-            // Frame wrapper added due to issues with textInput not supporting all layout props as it should.
-            frame({
-                flex: 1,
-                maxWidth: 400,
-                item: textInput({
-                    width: null,
-                    flex: 1,
-                    model: this,
-                    bind: 'query',
-                    leftIcon: Icon.search(),
-                    enableClear: true,
-                    commitOnChange: true,
-                    onKeyDown: (e) => {
-                        if (e.key != 'Enter') return;
-                        if (!cursor) {
-                            this.findAll();
-                        } else if (e.shiftKey) {
-                            this.findPrevious();
-                        } else {
-                            this.findNext();
-                        }
-                    }
-                })
-            }),
-            label({
-                className: 'xh-code-input__label',
-                item: matchCount ?
-                    `${currentMatchIdx + 1} / ${matchCount}` :
-                    span({item: '0 results', className: 'xh-text-color-muted'})
-            }),
-            button({
-                icon: Icon.arrowUp(),
-                title: 'Find previous (shift+enter)',
-                disabled: !matchCount,
-                onClick: () => this.findPrevious()
-            }),
-            button({
-                icon: Icon.arrowDown(),
-                title: 'Find next (enter)',
-                disabled: !matchCount,
-                onClick: () => this.findNext()
-            })
-        );
-    }
-
-    renderActionButtons() {
-        const {hasFocus, actionButtons} = this;
-
-        return (hasFocus && actionButtons.length) ?
-            hbox({
-                className: 'xh-code-input__action-buttons',
-                items: actionButtons
-            }) : null;
-    }
-
-    //------------------
-    // Implementation
-    //------------------
     manageCodeEditor = (textAreaComp) => {
         if (textAreaComp) {
             this.editor = this.createCodeEditor(textAreaComp);
@@ -507,13 +389,141 @@ export class CodeInput extends HoistInput {
         this.matches = [];
     }
 
-
-    //------------------------
-    // Other Lifecycle
-    //------------------------
     destroy() {
         // Cleanup editor component as per CodeMirror docs.
         if (this.editor) this.editor.toTextArea();
+        super.destroy();
     }
 }
-export const codeInput = elemFactory(CodeInput);
+
+
+const cmp = hoistCmp.factory(
+    ({model, ...props}, ref) => {
+        const childProps = {
+            width: 300,
+            height: 100,
+            ...getLayoutProps(props),
+            ref
+        };
+
+        return model.fullScreen ? fullscreenCmp(childProps) : inputCmp(childProps);
+    }
+);
+
+const fullscreenCmp = hoistCmp.factory(
+    ({model, ...props}, ref) => fragment(
+        dialog({
+            className: 'xh-code-input__dialog',
+            isOpen: true,
+            canOutsideClickClose: true,
+            item: inputCmp(),
+            onClose: () => model.toggleFullScreen()
+        }),
+        box({
+            className: 'xh-code-input__placeholder',
+            ...props,
+            ref
+        })
+    )
+);
+
+const inputCmp = hoistCmp.factory(
+    ({model, className}, ref) => vbox({
+        items: [
+            div({
+                className: 'xh-code-input__inner-wrapper',
+                item: textArea({
+                    value: model.renderValue || '',
+                    ref: model.manageCodeEditor,
+                    onChange: model.onChange
+                })
+            }),
+            model.showToolbar ? toolbarCmp() : actionButtonsCmp()
+        ],
+        className: className,
+        onBlur: model.onBlur,
+        onFocus: model.onFocus,
+        flex: 1,
+        ref
+    })
+);
+
+const toolbarCmp = hoistCmp.factory(
+    ({model}) => {
+        const {actionButtons, showSearchInput} = model;
+
+        return toolbar({
+            className: 'xh-code-input__toolbar',
+            items: [
+                filler(),
+                searchInputCmp({omit: !showSearchInput}),
+                toolbarSep({omit: !showSearchInput}),
+                ...actionButtons
+            ]
+        });
+    }
+);
+
+const searchInputCmp = hoistCmp.factory(
+    ({model}) => {
+        const {cursor, currentMatchIdx, matchCount} = model;
+
+        return fragment(
+            // Frame wrapper added due to issues with textInput not supporting all layout props as it should.
+            frame({
+                flex: 1,
+                maxWidth: 400,
+                item: textInput({
+                    width: null,
+                    flex: 1,
+                    model: this,
+                    bind: 'query',
+                    leftIcon: Icon.search(),
+                    enableClear: true,
+                    commitOnChange: true,
+                    onKeyDown: (e) => {
+                        if (e.key !== 'Enter') return;
+                        if (!cursor) {
+                            model.findAll();
+                        } else if (e.shiftKey) {
+                            model.findPrevious();
+                        } else {
+                            model.findNext();
+                        }
+                    }
+                })
+            }),
+            label({
+                className: 'xh-code-input__label',
+                item: matchCount ?
+                    `${currentMatchIdx + 1} / ${matchCount}` :
+                    span({item: '0 results', className: 'xh-text-color-muted'})
+            }),
+            button({
+                icon: Icon.arrowUp(),
+                title: 'Find previous (shift+enter)',
+                disabled: !matchCount,
+                onClick: () => model.findPrevious()
+            }),
+            button({
+                icon: Icon.arrowDown(),
+                title: 'Find next (enter)',
+                disabled: !matchCount,
+                onClick: () => model.findNext()
+            })
+        );
+    }
+);
+
+const actionButtonsCmp = hoistCmp.factory(
+    ({model}) => {
+        const {hasFocus, actionButtons} = model;
+
+        return (hasFocus && actionButtons.length) ?
+            hbox({
+                className: 'xh-code-input__action-buttons',
+                items: actionButtons
+            }) : null;
+    }
+);
+

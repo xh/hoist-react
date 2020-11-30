@@ -202,8 +202,7 @@ function lookupModel(spec, props, modelLookup, displayName) {
 
     // 2) props - instance
     if (model) {
-        throwIf(!model.isHoistModel, `Model for '${displayName}' must be a HoistModel.`);
-        throwIf(selector !== '*' && !model.matchesSelector(selector),
+        throwIf(selector !== '*' && (!model.matchesSelector || !model.matchesSelector(selector)),
             `Incorrect model passed to '${displayName}'. Expected: ${formatSelector(selector)} Received: ${model.constructor.name}`
         );
         return {model, isOwned: false, fromContext: false};

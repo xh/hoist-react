@@ -7,6 +7,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
+import {castArray} from 'lodash';
 
 /**
  * Model to hold and maintain the configuration and data series for a Highcharts chart.
@@ -27,16 +28,16 @@ export class ChartModel {
     /**
      * @param {Object} c - ChartModel configuration.
      * @param {Object} c.highchartsConfig - The initial highchartsConfig for this chart.
-     * @param {Object[]} c.series - The initial data series to be displayed.
+     * @param {(Object|Object[])} c.series - The initial data series to be displayed.
      */
     constructor({highchartsConfig, series = [], config} = {}) {
         throwIf(config, 'ChartModel "config" has been removed. Please use "highchartsConfig" instead.');
         this.highchartsConfig = highchartsConfig;
-        this.series = series;
+        this.series = castArray(series);
     }
 
     /**
-     * @param {{}} config - Highcharts configuration object for the managed chart. May include any
+     * @param {Object} config - Highcharts configuration object for the managed chart. May include any
      *      Highcharts opts other than `series`, which should be set via `setSeries()`.
      */
     @action
@@ -44,10 +45,13 @@ export class ChartModel {
         this.highchartsConfig = config;
     }
 
-    /** @param {[]} series - one or more data series to be charted. */
+    /** @param {(Object|Object[])} series - one or more data series to be charted. */
     @action
     setSeries(series) {
-        this.series = series ?? [];
+        this.series = series ? castArray(series) : [];
     }
+
+    /** Remove all series from this chart. */
+    clear() {this.setSeries([])}
 
 }
