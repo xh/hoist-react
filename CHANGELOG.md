@@ -17,8 +17,9 @@
   _anywhere_ in the label _or_ value.) To customize this behavior, applications should use the new
   `filterFn` prop.
 * `@managed` and `markManaged` have been enhanced to allow for the cleanup of arrays of objects as
-well as objects.  This matches the existing array support in `XH.safeDestroy()`.
-
+  well as objects. This matches the existing array support in `XH.safeDestroy()`.
+* New Admin Console Monitor > Memory tab added to view snapshots of JVM memory usage. (Requires
+  Hoist Core v8.7 or greater.)
 
 ### 💥 Breaking Changes
 
@@ -29,8 +30,8 @@ well as objects.  This matches the existing array support in `XH.safeDestroy()`.
   * Use `switcher: {...}` to provide customisation props for the `TabSwitcher`. See `TabSwitcher`
     documentation for more information.
 * The `HoistInput` base class has been removed. Application components extending `HoistInput` should
-use the `useHoistInputModel` hook instead.  This change marks the completion of our efforts to
-remove all internal uses of React class-based Components in Hoist.
+  use the `useHoistInputModel` hook instead. This change marks the completion of our efforts to
+  remove all internal uses of React class-based Components in Hoist.
 
 ### 🐞 Bug Fixes
 
