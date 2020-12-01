@@ -9,7 +9,8 @@ import {FieldModel} from '@xh/hoist/cmp/form';
 import {action, computed, observable, bindable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {isEqual} from 'lodash';
-import {createRef, useEffect, useImperativeHandle} from 'react';
+import {useEffect, useImperativeHandle} from 'react';
+import {createObservableRef} from '@xh/hoist/core/utils/react';
 import './HoistInput.scss';
 
 
@@ -47,8 +48,8 @@ import './HoistInput.scss';
  * Note: Passing a ref to a HoistInput will give you a reference to its underlying HoistInputModel.
  * This model is mostly used for implementation purposes, but it is also intended to
  * provide a limited API for application use.  It currently provides access to the underlying DOM
- * element of the rendered input via its `domRef`.  In future versions of Hoist, we intend to
- * provide additional public APIs on this model, especially for focus management.
+ * element of the rendered input via its `domRef` and a new `focus()` method that will
+ * cause the control to take focus, if supported.
  *
  * To create an instance of an Input component using this model use the hook
  * {@see useHoistInputModel}.
@@ -60,7 +61,8 @@ export class HoistInputModel {
      * Ref to rendered DOM element
      * @member {Element}
      */
-    domRef = createRef();
+    domRef = createObservableRef();
+
 
     /**
      * Does this input have the focus ?
@@ -88,6 +90,10 @@ export class HoistInputModel {
         this.props = props;
         this.model = props.model;
         this.addReaction(this.externalValueReaction());
+    }
+
+    focus() {
+
     }
 
     //------------------------------
