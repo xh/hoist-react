@@ -13,6 +13,7 @@ import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
+import composeRefs from '@seznam/compose-react-refs'
 import PT from 'prop-types';
 
 /**
@@ -90,6 +91,12 @@ TextInput.hasLayoutSupport = true;
 
 class Model extends HoistInputModel {
 
+    inputRef;
+
+    focus() {
+        this.inputRef.current?.focus();
+    }
+
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);
     }
@@ -127,7 +134,7 @@ const cmp = hoistCmp.factory(
                 autoComplete: withDefault(props.autoComplete, props.type === 'password' ? 'new-password' : 'nope'),
                 autoFocus: props.autoFocus,
                 disabled: props.disabled,
-                inputRef: props.inputRef,
+                inputRef: composeRefs(model.inputRef, props.inputRef),
                 leftIcon: props.leftIcon,
                 placeholder: props.placeholder,
                 rightElement: props.rightElement ||
