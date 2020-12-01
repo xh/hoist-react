@@ -242,6 +242,7 @@ export const Icon = {
     toast(p)            {return Icon.icon({...p,  iconName: 'bread-slice'})},
     toolbox(p)          {return Icon.icon({...p,  iconName: 'toolbox'})},
     tools(p)            {return Icon.icon({...p,  iconName: 'tools'})},
+    trash(p)            {return Icon.icon({...p,  iconName: 'trash-alt'})},
     transaction(p)      {return Icon.icon({...p,  iconName: 'exchange'})},
     treeList(p)         {return Icon.icon({...p,  iconName: 'stream'})},
     undo(p)             {return Icon.icon({...p,  iconName: 'undo'})},
