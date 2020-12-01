@@ -4,14 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import composeRefs from '@seznam/compose-react-refs';
 import {HoistModel, useLocalModel} from '@xh/hoist/core';
 import {FieldModel} from '@xh/hoist/cmp/form';
 import {action, computed, observable, bindable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEqual} from 'lodash';
-import {createRef, useEffect} from 'react';
+import {createRef, useEffect, useImperativeHandle} from 'react';
 import './HoistInput.scss';
 
 
@@ -46,37 +44,50 @@ import './HoistInput.scss';
  * as the change event. Other inputs such as textInput maintain the distinction described above,
  * but expose a `commitOnChange` prop to force them to eagerly flush their values on every change.
  *
+ * Note: Passing a ref to a HoistInput will give you a reference to its underlying HoistInputModel.
+ * This model is mostly used for implementation purposes, but it is also intended to
+ * provide a limited API for application use.  It currently provides access to the underlying DOM
+ * element of the rendered input via its `domRef`.  In future versions of Hoist, we intend to
+ * provide additional public APIs on this model, especially for focus management.
+ *
  * To create an instance of an Input component using this model use the hook
  * {@see useHoistInputModel}.
  */
 @HoistModel
 export class HoistInputModel {
 
-    /** External model of input (may be bound to this) */
-    model;
+    /**
+     * Ref to rendered DOM element
+     * @member {Element}
+     */
+    domRef = createRef();
 
-    /** Props on input */
-    @bindable.ref props;
-
-    /** Ref to rendered component */
-    ref = createRef();
-
+    /**
+     * Does this input have the focus ?
+     * @type {boolean}
+     */
     @observable hasFocus = false;
-    @observable.ref internalValue = null;
+
+    /**
+     * Field (if any) associated with this control.
+     * @member {FieldModel}
+     */
+    getField() {
+        const {model} = this;
+        return model instanceof FieldModel ? model : null;
+    }
+
+    //-----------------------
+    // Implementation State
+    //------------------------
+    model;                                   // Reference to bound model, if any
+    @bindable.ref props;                     // Props on input
+    @observable.ref internalValue = null;    // Cached internal value
 
     constructor(props) {
         this.props = props;
         this.model = props.model;
-        throwIf(props.onKeyPress, "HoistInputs no longer support a 'onKeyPress' property.  Use 'onKeyDown' instead.");
-        throwIf(props.field, "HoistInput no longer supports a 'field' property.  Use 'bind' instead.");
-
         this.addReaction(this.externalValueReaction());
-    }
-
-    /** @return {FieldModel} (if any) associated with this control. */
-    getField() {
-        const {model} = this;
-        return model &&  model instanceof FieldModel ? model : null;
     }
 
     //------------------------------
@@ -238,7 +249,7 @@ export class HoistInputModel {
     }
 
     containsElement(elem) {
-        const thisElem = this.ref.current;
+        const thisElem = this.domRef.current;
         if (thisElem) {
             while (elem) {
                 if (elem === thisElem) return true;
@@ -265,6 +276,7 @@ export function useHoistInputModel(component, props, ref, modelSpec = HoistInput
     const inputModel = useLocalModel(() => new modelSpec(props));
 
     useEffect(() => inputModel.setProps(props));
+    useImperativeHandle(ref, () => inputModel);
 
     const field = inputModel.getField(),
         validityClass = field?.isNotValid && field?.validationDisplayed ? 'xh-input-invalid' : null,
@@ -273,7 +285,7 @@ export function useHoistInputModel(component, props, ref, modelSpec = HoistInput
     return component({
         ...props,
         model: inputModel,
-        ref: composeRefs(ref, inputModel.ref),
+        ref: inputModel.domRef,
         className: classNames('xh-input', validityClass, disabledClass, props.className)
     });
 }
