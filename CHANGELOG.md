@@ -43,6 +43,8 @@
 
 ### ⚙️ Technical
 
+* Note that the included Onsen fork has been replaced with the latest Onsen release.
+  Apps should not need to make any changes.
 * `Cube.info` is now directly observable.
 
 ### 📚 Libraries
@@ -50,6 +52,8 @@
 * @react `16.13.1 -> 17.0.1`
 * @blueprintjs/core `3.35 -> 3.36`
 * @blueprintjs/datetime `3.19 -> 3.20`
+* @xh/onsenui `~0.1.2` -> onsenui `~2.11.1`
+* @xh/react-onsenui `~0.1.2` -> react-onsenui `~1.11.3`
 * clipboard-copy `3.1 -> 3.2`
 * core-js `3.6 -> 3.7`
 
