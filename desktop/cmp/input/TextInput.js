@@ -13,7 +13,7 @@ import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
-import composeRefs from '@seznam/compose-react-refs'
+import composeRefs from '@seznam/compose-react-refs';
 import PT from 'prop-types';
 
 /**
