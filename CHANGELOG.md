@@ -29,9 +29,13 @@
   * Use `switcher: false` to not include a TabSwitcher. (previously `switcherPosition: 'none'`)
   * Use `switcher: {...}` to provide customisation props for the `TabSwitcher`. See `TabSwitcher`
     documentation for more information.
-* The `HoistInput` base class has been removed. Application components extending `HoistInput` should
-  use the `useHoistInputModel` hook instead. This change marks the completion of our efforts to
-  remove all internal uses of React class-based Components in Hoist.
+* The `HoistInput` base class has been removed.   This change marks the completion of our efforts
+ to remove all internal uses of React class-based Components in Hoist.  The following adjustments are
+ required:
+   * Application components extending `HoistInput` should use the `useHoistInputModel` hook instead.
+   * Applications getting ref's to `HoistInputs` should be aware that these ref's now return a ref to
+   a `HoistInputModel`.   In order to get the dom element associated with the component use the new
+   `domRef` property of that model rather than `HoistComponent.getDOMNode()` method.
 * Hoist-React grids now require ag-Grid v24.1.0 or higher - update your ag-Grid depency in your app's `package.json` file.  
   ag-Grid v24.1.0 [lists the following breaking changes](https://www.ag-grid.com/ag-grid-changelog/):
   1. AG-4291 | 24.0.0 | Reactive Columns - not a breaking change for Hoist-React Grids
@@ -39,7 +43,6 @@
   3. AG-4366 | 24.0.0 | Make default value rowDeselection: true and add new option to allow to suppress it so they can have old behavior.  If you need to block rowDeselection set `suppressRowDeselection: true`.
   4. AG-4388 | 24.0.0 | Cleanup Legacy Properties (> 1 year old) - not a breaking change for Hoist-React Grids
   5. AG-4610 | 24.1.0 | [Master/Detail] Detail-level autoHeight does not work when used with custom detail renderer - if your app implements ag-Grid Detail cell renderers, you should look into this.
-   
 
 ### 🐞 Bug Fixes
 
