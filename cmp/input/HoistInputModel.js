@@ -10,7 +10,7 @@ import {action, computed, observable, bindable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {isEqual} from 'lodash';
 import {useEffect, useImperativeHandle} from 'react';
-import {createObservableRef} from '@xh/hoist/core/utils/react';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import './HoistInput.scss';
 
 
