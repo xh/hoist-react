@@ -452,8 +452,8 @@ class LocalModel {
 
         return {
             track: () => [agGridModel.agColumnApi, this.model.sortBy],
-            run: ([api, sortBy]) => {
-                if (api && !externalSort) {
+            run: ([colApi, sortBy]) => {
+                if (colApi && !externalSort) {
                     agGridModel.applySortBy(sortBy);
                 }
             }
