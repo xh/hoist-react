@@ -54,16 +54,29 @@ export class MemoryMonitorModel {
                     zoomType: 'x',
                     animation: false
                 },
+                plotOptions: {
+                    series: {
+                        animation: false,
+                        step: true,
+                        marker: {enabled: false}
+                    }
+                },
                 title: {text: null},
                 xAxis: {
                     type: 'datetime',
                     labels: {formatter: function() {return fmtTime(this.value)}}
                 },
-                yAxis: {
-                    floor: 0,
-                    opposite: true,
-                    title: {text: 'JVM Heap (mb)'}
-                },
+                yAxis: [
+                    {
+                        floor: 0,
+                        title: {text: 'JVM Heap (mb)'}
+                    },
+                    {
+                        opposite: true,
+                        linkedTo: 0,
+                        title: {text: undefined}
+                    }
+                ],
                 tooltip: {outside: true, shared: true}
             }
         });
@@ -101,23 +114,17 @@ export class MemoryMonitorModel {
             chartModel.setSeries([
                 {
                     name: 'Max',
-                    animation: false,
-                    step: true,
                     data: maxSeries,
                     color: '#ef6c00'
                 },
                 {
                     name: 'Total',
-                    animation: false,
-                    step: true,
                     data: totalSeries,
                     color: '#1976d2'
                 },
                 {
                     name: 'Used',
                     type: 'area',
-                    animation: false,
-                    step: true,
                     data: usedSeries,
                     color: '#bd7c7c',
                     fillOpacity: 0.3
