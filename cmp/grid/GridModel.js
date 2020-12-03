@@ -132,6 +132,8 @@ export class GridModel {
     @observable emptyText;
     /** @member {TreeStyle} */
     @observable treeStyle;
+    /** @member {boolean} */
+    @observable showColumnGroups;
 
     static defaultContextMenu = [
         'copy',
@@ -198,6 +200,7 @@ export class GridModel {
      * @param {boolean} [c.cellBorders] - true to render cell borders.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      * @param {boolean} [c.hideHeaders] - true to suppress display of the grid's header row.
+     * @param {boolean} [c.showColumnGroups] - true to show column groups.
      * @param {boolean} [c.enableColumnPinning] - true to allow the user to manually pin / unpin
      *      columns via UI affordances.
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
@@ -261,6 +264,7 @@ export class GridModel {
         stripeRows = (!treeMode || treeStyle === TreeStyle.NONE),
         showCellFocus = false,
         hideHeaders = false,
+        showColumnGroups = true,
         compact,
 
         enableColumnPinning = true,
@@ -285,6 +289,7 @@ export class GridModel {
         this.treeMode = treeMode;
         this.treeStyle = treeStyle;
         this.showSummary = showSummary;
+        this.showColumnGroups = showColumnGroups;
 
         this.emptyText = emptyText;
         this.rowClassFn = rowClassFn;
@@ -552,6 +557,15 @@ export class GridModel {
     @action
     setShowSummary(showSummary) {
         this.showSummary = showSummary;
+    }
+
+    /**
+     * Set whether column groups should be shown in the grid
+     * @param {boolean} showColumnGroups - true to show, false to hide.
+     */
+    @action
+    setShowColumnGroups(showColumnGroups) {
+        this.showColumnGroups = showColumnGroups;
     }
 
     /**

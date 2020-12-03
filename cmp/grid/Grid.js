@@ -286,7 +286,12 @@ class LocalModel {
     // Support for defaults
     //------------------------
     getColumnDefs() {
-        return this.model.columns.map(col => col.getAgSpec());
+        const {showColumnGroups} = this.model;
+        if (showColumnGroups) {
+            return this.model.columns.map(col => col.getAgSpec());
+        } else {
+            return this.model.getLeafColumns().map(col => col.getAgSpec());
+        }
     }
 
     getContextMenuItems = (params) => {
@@ -473,7 +478,7 @@ class LocalModel {
     columnsReaction() {
         const {agGridModel} = this.model;
         return {
-            track: () => [agGridModel.agApi, this.model.columns],
+            track: () => [agGridModel.agApi, this.model.columns, this.model.showColumnGroups],
             run: ([api]) => {
                 if (!api) return;
 

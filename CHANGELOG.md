@@ -20,6 +20,7 @@
   well as objects. This matches the existing array support in `XH.safeDestroy()`.
 * New Admin Console Monitor > Memory tab added to view snapshots of JVM memory usage. (Requires
   Hoist Core v8.7 or greater.)
+* New `GridModel.showColumnGroups` config allows turning column groups on or off
 
 ### 💥 Breaking Changes
 
