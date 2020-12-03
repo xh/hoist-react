@@ -7,7 +7,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf, apiDeprecated} from '@xh/hoist/utils/js';
-import {cloneDeep, concat, has, isArray, isEmpty, isNil, set, startCase} from 'lodash';
+import {cloneDeep, concat, find, has, isArray, isEmpty, isNil, partition, set, startCase} from 'lodash';
 
 /**
  * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
@@ -259,15 +259,14 @@ export class AgGridModel {
         this.throwIfNotReady();
 
         const sortedColumnState = cloneDeep(sortState),
-            secondaryColumnState = sortedColumnState.filter(it => isArray(it.colId)),
-            primaryColumnState = sortedColumnState.filter(it => !isArray(it.colId)),
+            [primaryColumnState, secondaryColumnState] = partition(sortedColumnState, it => !isArray(it.colId)),
             {agColumnApi} = this,
             isPivot = agColumnApi.isPivotMode(),
             havePivotCols = !isEmpty(agColumnApi.getPivotColumns());
 
         // ag-Grid does not allow "secondary" columns to be manipulated by applyColumnState
         // so this approach is required for setting sort config on secondary columns.
-        if (secondaryColumnState.length && isPivot && havePivotCols) {
+        if (isPivot && havePivotCols && !isEmpty(secondaryColumnState)) {
             secondaryColumnState.forEach(state => {
                 const col = agColumnApi.getSecondaryPivotColumn(state.colId[0], state.colId[1]);
                 if (col) {
@@ -281,7 +280,7 @@ export class AgGridModel {
             });
         }
 
-        if (primaryColumnState.length) {
+        if (!isEmpty(primaryColumnState)) {
             agColumnApi.applyColumnState({
                 state: primaryColumnState,
                 defaultState: {
@@ -345,15 +344,13 @@ export class AgGridModel {
         const {agColumnApi} = this,
             cols = agColumnApi.getColumnState(),
             sortedCols = sortBy.
-                filter(sorter => cols.find(it => it.colId === sorter.colId)).
+                filter(sorter => find(cols, {'colId': sorter.colId})).
                 map((sorter, idx) => {
-                    const col = cols.find(it => it.colId === sorter.colId);
-                    col.sort = sorter.sort;
-                    col.sortIndex = idx;
+                    const {colId} = find(cols, {'colId': sorter.colId});
                     return {
-                        colId: col.colId,
-                        sort: col.sort,
-                        sortIndex: col.sortIndex
+                        colId,
+                        sort: sorter.sort,
+                        sortIndex: idx
                     };
                 });
 
