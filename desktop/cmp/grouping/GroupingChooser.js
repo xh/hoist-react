@@ -7,13 +7,14 @@
 
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
-import {div, fragment, vbox, hbox, filler} from '@xh/hoist/cmp/layout';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {div, fragment, vbox, hbox, filler, box} from '@xh/hoist/cmp/layout';
+import {button, Button} from '@xh/hoist/desktop/cmp/button';
 import {select, Select} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {popover, menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
-import {compact, isEmpty, sortBy} from 'lodash';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {compact, isEmpty, isNil, sortBy} from 'lodash';
 import classNames from 'classnames';
 import PT from 'prop-types';
 
@@ -29,31 +30,33 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
     render({
         model,
         className,
-        buttonIcon,
-        buttonText,
-        buttonTitle,
-        buttonWidth = 220,
         buttonValueTextPrefix,
         styleButtonAsInput = true,
         emptyText = 'Ungrouped',
         popoverWidth = 250,
         popoverTitle = 'Group By',
-        popoverPosition = 'bottom'
+        popoverPosition = 'bottom',
+        ...rest
     }) {
         const {editorIsOpen, favoritesIsOpen, value} = model,
             isOpen = editorIsOpen || favoritesIsOpen,
+            [layoutProps, buttonProps] = splitLayoutProps(rest),
             getButtonText = () => {
                 const prefix = buttonValueTextPrefix,
                     dimText = model.getValueLabel(value);
                 return prefix ? `${prefix} ${dimText}` : dimText;
             },
             getButtonTitle = () => {
-                const labels = model.getValueLabel(value).split(' > ');
-                return labels.map((it, i) => ' '.repeat(i) + (i ? '› ' : '') + it).join('\n');
+                return model.getValueLabel(value);
             };
 
-        return div({
+        if (isNil(layoutProps.width) && isNil(layoutProps.flex)) {
+            layoutProps.width = 220;
+        }
+
+        return box({
             className,
+            ...layoutProps,
             item: popover({
                 isOpen,
                 popoverRef: model.popoverRef,
@@ -62,12 +65,11 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
                 minimal: favoritesIsOpen,
                 target: fragment(
                     button({
-                        item: buttonText ?? (isEmpty(model.value) ? emptyText : getButtonText()),
-                        title: buttonTitle ?? (isEmpty(model.value) ? emptyText : getButtonTitle()),
-                        icon: buttonIcon,
-                        width: buttonWidth,
+                        text: isEmpty(model.value) ? emptyText : getButtonText(),
+                        title: isEmpty(model.value) ? emptyText : getButtonTitle(),
                         className: classNames('xh-grouping-chooser-button', styleButtonAsInput ? 'xh-grouping-chooser-button--as-input' : null),
                         minimal: styleButtonAsInput,
+                        ...buttonProps,
                         onClick: () => model.showEditor()
                     }),
                     favoritesIcon()
@@ -87,20 +89,13 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
 });
 
 GroupingChooser.propTypes = {
-    /** Icon for target button. */
-    buttonIcon: PT.element,
-
-    /** Static text for target button, or null (default) to display current dimensions. */
-    buttonText: PT.node,
+    ...Button.propTypes,
 
     /**
      * Prefix for button text - applied when value not-empty and static text not specified.
      *      E.g. "Group by" to render "Group by Fund > Trader".
      */
     buttonValueTextPrefix: PT.node,
-
-    /** Width in pixels of the target button. */
-    buttonWidth: PT.number,
 
     /** Text to represent empty state (i.e. value = null or []) */
     emptyText: PT.string,
@@ -174,8 +169,7 @@ const dimensionList = hoistCmp.factory({
 const dimensionRow = hoistCmp.factory({
     render({model, dimension, idx}) {
         // The options for this select include its current value
-        const options = getDimOptions([...model.availableDims, dimension], model),
-            marginLeft = null; // Todo: Enable indentation? marginLeft = idx * 10
+        const options = getDimOptions([...model.availableDims, dimension], model);
 
         return draggable({
             key: dimension,
@@ -225,9 +219,8 @@ const dimensionRow = hoistCmp.factory({
                                 value: dimension,
                                 flex: 1,
                                 width: null,
-                                marginLeft,
                                 hideDropdownIndicator: true,
-                                disabled: isEmpty(options) || model.atMaxDepth,
+                                disabled: isEmpty(options),
                                 onChange: (newDim) => model.replacePendingDimAtIdx(newDim, idx)
                             })
                         }),
@@ -269,6 +262,7 @@ const addDimensionControl = hoistCmp.factory({
                     flex: 1,
                     width: null,
                     autoFocus: true,
+                    openMenuOnFocus: true,
                     hideDropdownIndicator: true,
                     hideSelectedOptionCheck: true,
                     onChange: (newDim) => model.addPendingDim(newDim)

@@ -46,7 +46,9 @@ export class GroupingChooserModel {
 
     @computed
     get atMaxDepth() {
-        return this.pendingValue.length === Math.min(this.maxDepth, this.dimensionNames.length);
+        const {pendingValue, maxDepth, dimensionNames} = this,
+            limit = maxDepth > 0 ? Math.min(maxDepth, dimensionNames.length) : dimensionNames.length;
+        return pendingValue.length === limit;
     }
 
     @computed
@@ -57,7 +59,7 @@ export class GroupingChooserModel {
     @computed
     get addDisabledMsg() {
         if (isEmpty(this.availableDims)) return 'All dimensions added';
-        if (this.atMaxDepth) return 'Grouping at max depth';
+        if (this.atMaxDepth) return 'Further grouping not available';
         return null;
     }
 
@@ -69,14 +71,14 @@ export class GroupingChooserModel {
      * @param {string[]} [c.initialValue] - initial value as an array of dimension names.
      * @param {string[][]} [c.initialFavorites] - initial favorites, an array of dim name arrays.
      * @param {?GroupingChooserPersistOptions} [c.persistWith] - options governing persistence.
-     * @param {number} [c.maxDepth] - maximum number of dimensions allowed in a single grouping.
+     * @param {?number} [c.maxDepth] - maximum number of dimensions allowed in a single grouping.
      */
     constructor({
         dimensions,
         initialValue = [],
         initialFavorites = [],
         persistWith = null,
-        maxDepth = 4
+        maxDepth = null
     }) {
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionNames = keys(this.dimensions);
@@ -167,6 +169,10 @@ export class GroupingChooserModel {
         const pendingValue = [...this.pendingValue];
         pendingValue.splice(idx, 1);
         this.pendingValue = pendingValue;
+
+        if (isEmpty(this.pendingValue)) {
+            this.showAddControl = true;
+        }
     }
 
     @action
