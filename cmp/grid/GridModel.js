@@ -514,6 +514,10 @@ export class GridModel {
 
     @action setTreeStyle(treeStyle) { this.treeStyle = treeStyle }
 
+    @action setShowColumnGroups(showColumnGroups) { this.showColumnGroups = showColumnGroups }
+
+    get hasColumnGroups() { return this.columns.some(col => col instanceof ColumnGroup) }
+
     /**
      * Apply full-width row-level grouping to the grid for the given column ID(s).
      * This method will clear grid grouping if provided any ids without a corresponding column.
@@ -557,15 +561,6 @@ export class GridModel {
     @action
     setShowSummary(showSummary) {
         this.showSummary = showSummary;
-    }
-
-    /**
-     * Set whether column groups should be shown in the grid
-     * @param {boolean} showColumnGroups - true to show, false to hide.
-     */
-    @action
-    setShowColumnGroups(showColumnGroups) {
-        this.showColumnGroups = showColumnGroups;
     }
 
     /**
