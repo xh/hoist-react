@@ -341,6 +341,8 @@ export class AgGridModel {
      * @param {GridSorter[]} sortBy
      */
     applySortBy(sortBy) {
+        this.throwIfNotReady();
+
         const {agColumnApi} = this,
             cols = agColumnApi.getColumnState(),
             sortedCols = sortBy.
