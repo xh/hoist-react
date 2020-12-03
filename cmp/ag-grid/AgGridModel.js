@@ -260,15 +260,39 @@ export class AgGridModel {
 
         const sortedColumnState = cloneDeep(sortState),
             [primaryColumnState, secondaryColumnState] = partition(sortedColumnState, it => !isArray(it.colId)),
-            {agColumnApi} = this,
-            isPivot = agColumnApi.isPivotMode(),
-            havePivotCols = !isEmpty(agColumnApi.getPivotColumns());
-
+            {agColumnApi: colApi, agApi} = this,
+            isPivot = colApi.isPivotMode(),
+            havePivotCols = !isEmpty(colApi.getPivotColumns());
+            
         // ag-Grid does not allow "secondary" columns to be manipulated by applyColumnState
         // so this approach is required for setting sort config on secondary columns.
         if (isPivot && havePivotCols && !isEmpty(secondaryColumnState)) {
+            // 1st clear all pre-exisiting primary column sorts
+            // with an explicit clear of the auto_group column, 
+            // which is not cleared by the defaultState config.
+            colApi.applyColumnState({
+                state: [{
+                    colId: AgGridModel.AUTO_GROUP_COL_ID,
+                    sort: null,
+                    sortIndex: null
+                }],
+                defaultState: {
+                    sort: null,
+                    sortIndex: null
+                }
+            });
+
+            // 2nd clear all pre-exisiting secondary column sorts
+            colApi.getSecondaryColumns().forEach(col => {
+                if (col) {
+                    col.setSort(undefined);
+                    col.setSortIndex(undefined);
+                } 
+            });
+
+            // finally apply sorts from state to secondary columns
             secondaryColumnState.forEach(state => {
-                const col = agColumnApi.getSecondaryPivotColumn(state.colId[0], state.colId[1]);
+                const col = colApi.getSecondaryPivotColumn(state.colId[0], state.colId[1]);
                 if (col) {
                     col.setSort(state.sort);
                     col.setSortIndex(state.sortIndex);
@@ -280,14 +304,16 @@ export class AgGridModel {
             });
         }
 
-        if (!isEmpty(primaryColumnState)) {
-            agColumnApi.applyColumnState({
-                state: primaryColumnState,
-                defaultState: {
-                    sort: null,
-                    sortIndex: null
-                }});
-        }
+        // always apply any sorts on primary columns (includes the auto_group column on pivot grids)
+        colApi.applyColumnState({
+            state: primaryColumnState,
+            defaultState: {
+                sort: null,
+                sortIndex: null
+            }
+        });
+
+        agApi.onSortChanged();
     }
 
     /**
