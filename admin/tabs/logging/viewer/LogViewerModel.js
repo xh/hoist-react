@@ -74,12 +74,16 @@ export class LogViewerModel {
     @action
     async doLoadAsync(loadSpec) {
         const {store, selModel} = this.filesGridModel;
-        await store.loadAsync(loadSpec);
-        if (selModel.isEmpty) {
-            const latestAppLog = store.records.find(rec => rec.data.filename == `${XH.appCode}.log`);
-            if (latestAppLog) {
-                selModel.select(latestAppLog);
+        try {
+            await store.loadAsync(loadSpec);
+            if (selModel.isEmpty) {
+                const latestAppLog = store.records.find(rec => rec.data.filename == `${XH.appCode}.log`);
+                if (latestAppLog) {
+                    selModel.select(latestAppLog);
+                }
             }
+        } catch (e) {
+            XH.handleException(e, {title: 'Error loading list of available log files'});
         }
     }
 

@@ -599,12 +599,12 @@ class XHClass {
             );
 
             // Confirm hoist-core version after environment service loaded
-            const version = XH.environmentService._data.hoistCoreVersion;
-            if (!checkMinVersion(version, MIN_HOIST_CORE_VERSION)) {
-                throw XH.exception(
-                    `This version of Hoist requires a minimum hoist-core version of ` +
-                    `${MIN_HOIST_CORE_VERSION}. Version ${version} detected.`
-                );
+            const hcVersion = XH.environmentService.get('hoistCoreVersion');
+            if (!checkMinVersion(hcVersion, MIN_HOIST_CORE_VERSION)) {
+                throw XH.exception(`
+                    This version of Hoist React requires the server to run Hoist Core
+                    v${MIN_HOIST_CORE_VERSION} or greater. Version ${hcVersion} detected.
+                `);
             }
 
             await this.installServicesAsync(
