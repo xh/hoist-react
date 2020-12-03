@@ -378,7 +378,7 @@ class LocalModel {
         return {
             track: () => [agGridModel.agApi, agGridModel.agColumnApi, this.frameworkCmpsMounted, store.lastLoaded, store.lastUpdated, store._filtered, model.showSummary],
             run: ([agApi, colApi, frameworkCmpsMounted, lastLoaded, lastUpdated, newRs]) => {
-                if (!agApi || !frameworkCmpsMounted) return;
+                if (!agApi || !colApi || !frameworkCmpsMounted) return;
 
                 const isUpdate = lastUpdated > lastLoaded,
                     prevRs = this._prevRs,
@@ -398,7 +398,7 @@ class LocalModel {
 
                     if (experimental.externalSort) {
                         const {sortBy} = model;
-                        if (!isEqual(sortBy, this._lastSortBy) && colApi) agGridModel.applySortBy(sortBy);
+                        if (!isEqual(sortBy, this._lastSortBy)) agGridModel.applySortBy(sortBy);
                         this._lastSortBy = sortBy;
                     }
 
