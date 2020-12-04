@@ -20,6 +20,8 @@
   well as objects. This matches the existing array support in `XH.safeDestroy()`.
 * New Admin Console Monitor > Memory tab added to view snapshots of JVM memory usage. (Requires
   Hoist Core v8.7 or greater.)
+* New `GroupingChooser` component provides a new interface for selecting a list of dimensions for
+  grouping APIs, offering drag-and-drop and persisted favorites.
 
 ### 💥 Breaking Changes
 
