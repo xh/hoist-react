@@ -7,7 +7,6 @@
 import debouncePromise from 'debounce-promise';
 import {castArray, escapeRegExp, isEmpty, isNil, isPlainObject, keyBy, merge, isEqual} from 'lodash';
 import PT from 'prop-types';
-import {createRef} from 'react';
 import {components} from 'react-select';
 
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
@@ -24,8 +23,9 @@ import {
 import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps, createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
+import composeRefs from '@seznam/compose-react-refs';
 
 import './Select.scss';
 
@@ -240,7 +240,12 @@ class Model extends HoistInputModel {
         });
     }
 
-    reactSelectRef = createRef();
+    focus() {
+        this.inputRef.current?.focus();
+    }
+    
+    inputRef = createObservableRef();
+    reactSelectRef = createObservableRef();
 
     getSelectFactory() {
         const {creatableMode, asyncMode, windowedMode} = this;
@@ -613,7 +618,7 @@ const cmp = hoistCmp.factory(
                 onFocus: model.onFocus,
                 filterOption: model.filterOption,
 
-                ref: model.reactSelectRef
+                ref: composeRefs(model.inputRef, props.inputRef, model.reactSelectRef)
             };
 
         if (model.manageInputValue) {
