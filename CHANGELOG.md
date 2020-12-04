@@ -20,6 +20,8 @@
   well as objects. This matches the existing array support in `XH.safeDestroy()`.
 * New Admin Console Monitor > Memory tab added to view snapshots of JVM memory usage. (Requires
   Hoist Core v8.7 or greater.)
+* New `GroupingChooser` component provides a new interface for selecting a list of dimensions for
+  grouping APIs, offering drag-and-drop and persisted favorites.
 
 ### 💥 Breaking Changes
 
@@ -36,6 +38,12 @@
    * Applications getting ref's to `HoistInputs` should be aware that these ref's now return a ref to
    a `HoistInputModel`.   In order to get the dom element associated with the component use the new
    `domRef` property of that model rather than `HoistComponent.getDOMNode()` method.
+* Hoist grids now require ag-Grid v24.1.0 or higher - update your ag-Grid dependency in your app's `package.json` file.
+  ag-Grid v24.1.0 [lists 5 breaking changes](https://www.ag-grid.com/ag-grid-changelog/).  Two of them seemed worth highlighting here:
+  1. AG-4291 | 24.0.0 | Reactive Columns - the state pattern for ag-grid wrapper has changed as a result of this change.
+     If your app made heavy use of saving/loading grid state, please test carefully after upgrade.
+  2. AG-1959 | 24.0.0 | [Aggregation] Add additional parameters to the Custom Aggregation methods.
+     If your app implements custom aggregations, they might need to be updated.
 
 ### 🐞 Bug Fixes
 
@@ -56,6 +64,7 @@
 * @blueprintjs/datetime `3.19 -> 3.20`
 * clipboard-copy `3.1 -> 3.2`
 * core-js `3.6 -> 3.7`
+* ag-Grid `23.2.0 -> 24.1.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.6.1...develop)
 

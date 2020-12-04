@@ -211,7 +211,7 @@ const favoriteMenuItem = hoistCmp.factory({
             className: 'xh-filter-chooser-favorite',
             onClick: () => model.setValue(value),
             labelElement: button({
-                icon: Icon.cross(),
+                icon: Icon.delete(),
                 intent: 'danger',
                 onClick: (e) => {
                     model.removeFavorite(value);
