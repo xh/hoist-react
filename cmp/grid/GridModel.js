@@ -911,7 +911,7 @@ export class GridModel {
         }
 
         // 3) Let service perform sizing, masking as appropriate.
-        const {agApi} = this;
+        const {agApi, empty} = this;
         const showMask = options.showMask && agApi;
         if (showMask) {
             agApi.showLoadingOverlay();
@@ -922,7 +922,11 @@ export class GridModel {
 
         if (showMask) {
             await wait(100);
-            agApi.hideOverlay();
+            if (empty) {
+                agApi.showNoRowsOverlay();
+            } else {
+                agApi.hideOverlay();
+            }
         }
     }
 

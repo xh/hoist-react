@@ -48,6 +48,7 @@
 ### 🐞 Bug Fixes
 
 * Fix issue where grid row striping inadvertently disabled by default for non-tree grids.
+* Fix issue where grid empty text cleared on autosize.
 
 ### ✨ Style
 
