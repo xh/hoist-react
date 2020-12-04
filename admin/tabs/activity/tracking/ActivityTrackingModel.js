@@ -6,7 +6,7 @@
  */
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {ActivityDetailModel} from '@xh/hoist/admin/tabs/activity/tracking/detail/ActivityDetailModel';
-import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
+import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
@@ -31,8 +31,8 @@ export class ActivityTrackingModel {
 
     /** @member {FormModel} */
     @managed formModel;
-    /** @member {DimensionChooserModel} */
-    @managed dimChooserModel;
+    /** @member {GroupingChooserModel} */
+    @managed groupingChooserModel;
     /** @member {Cube} */
     @managed cube;
     /** @member {FilterChooserModel} */
@@ -45,7 +45,7 @@ export class ActivityTrackingModel {
     /** @member {ChartsModel} */
     @managed chartsModel;
 
-    get dimensions() {return this.dimChooserModel.value}
+    get dimensions() {return this.groupingChooserModel.value}
 
     /**
      * @returns {string} - summary of currently active query / filters.
@@ -90,7 +90,7 @@ export class ActivityTrackingModel {
             ]
         });
 
-        this.dimChooserModel = new DimensionChooserModel({
+        this.groupingChooserModel = new GroupingChooserModel({
             dimensions: this.cube.dimensions,
             persistWith: this.persistWith,
             initialValue: this._defaultDims
@@ -262,13 +262,13 @@ export class ActivityTrackingModel {
 
     @action
     resetQuery() {
-        const {formModel, filterChooserModel, dimChooserModel, _defaultDims, _defaultFilter} = this;
+        const {formModel, filterChooserModel, groupingChooserModel, _defaultDims, _defaultFilter} = this;
         formModel.init({
             startDay: this.getDefaultStartDay(),
             endDay: this.getDefaultEndDay()
         });
         filterChooserModel.setValue(_defaultFilter);
-        dimChooserModel.setValue(_defaultDims);
+        groupingChooserModel.setValue(_defaultDims);
     }
 
     adjustDates(dir) {
