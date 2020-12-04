@@ -286,7 +286,6 @@ export class AgGridModel {
             // 2nd clear all pre-exisiting secondary column sorts
             colApi.getSecondaryColumns().forEach(col => {
                 if (col) {
-                    
                     // When using `applyColumnState`, `undefined` means do nothing, `null` means set to none, not cleared.
                     // But when using the setSort & setSortIndex methods directly, to clear all sort settings as if no sort
                     // had ever been specified, `undefined` must be used.
