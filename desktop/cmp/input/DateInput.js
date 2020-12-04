@@ -159,6 +159,10 @@ class Model extends HoistInputModel {
 
     @bindable popoverOpen = false;
 
+    focus() {
+        this.inputRef.current?.focus();
+    }
+    
     inputRef = createObservableRef();
     buttonRef = createObservableRef();
     popoverRef = createObservableRef();
