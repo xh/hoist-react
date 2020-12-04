@@ -30,25 +30,17 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
     render({
         model,
         className,
-        buttonValueTextPrefix,
-        styleButtonAsInput = true,
         emptyText = 'Ungrouped',
         popoverWidth = 250,
         popoverTitle = 'Group By',
         popoverPosition = 'bottom',
+        styleButtonAsInput = true,
         ...rest
     }) {
         const {editorIsOpen, favoritesIsOpen, value} = model,
             isOpen = editorIsOpen || favoritesIsOpen,
-            [layoutProps, buttonProps] = splitLayoutProps(rest),
-            getButtonText = () => {
-                const prefix = buttonValueTextPrefix,
-                    dimText = model.getValueLabel(value);
-                return prefix ? `${prefix} ${dimText}` : dimText;
-            },
-            getButtonTitle = () => {
-                return model.getValueLabel(value);
-            };
+            label = isEmpty(value) ? emptyText : model.getValueLabel(value),
+            [layoutProps, buttonProps] = splitLayoutProps(rest);
 
         if (isNil(layoutProps.width) && isNil(layoutProps.flex)) {
             layoutProps.width = 220;
@@ -65,8 +57,8 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
                 minimal: favoritesIsOpen,
                 target: fragment(
                     button({
-                        text: isEmpty(model.value) ? emptyText : getButtonText(),
-                        title: isEmpty(model.value) ? emptyText : getButtonTitle(),
+                        text: label,
+                        title: label,
                         className: classNames('xh-grouping-chooser-button', styleButtonAsInput ? 'xh-grouping-chooser-button--as-input' : null),
                         minimal: styleButtonAsInput,
                         ...buttonProps,
@@ -90,12 +82,6 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
 
 GroupingChooser.propTypes = {
     ...Button.propTypes,
-
-    /**
-     * Prefix for button text - applied when value not-empty and static text not specified.
-     *      E.g. "Group by" to render "Group by Fund > Trader".
-     */
-    buttonValueTextPrefix: PT.node,
 
     /** Text to represent empty state (i.e. value = null or []) */
     emptyText: PT.string,
