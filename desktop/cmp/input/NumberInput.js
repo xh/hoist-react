@@ -10,7 +10,8 @@ import {fmtNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps, createObservableRef} from '@xh/hoist/utils/react';
+import composeRefs from '@seznam/compose-react-refs';
 import {isNaN, isNil, isNumber} from 'lodash';
 import PT from 'prop-types';
 
@@ -112,6 +113,12 @@ NumberInput.hasLayoutSupport = true;
 class Model extends HoistInputModel {
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
+    inputRef = createObservableRef();
+
+    focus() {
+        this.inputRef.current?.focus();
+    }
+
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);
     }
@@ -190,7 +197,7 @@ const cmp = hoistCmp.factory(
             buttonPosition: 'none',
             disabled: props.disabled,
             fill: props.fill,
-            inputRef: props.inputRef,
+            inputRef: composeRefs(model.inputRef, props.inputRef),
             leftIcon: props.leftIcon,
             max: props.max,
             majorStepSize: props.majorStepSize,

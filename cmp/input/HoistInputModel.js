@@ -280,8 +280,10 @@ export class HoistInputModel {
  */
 export function useHoistInputModel(component, props, ref, modelSpec = HoistInputModel) {
     const inputModel = useLocalModel(() => new modelSpec(props));
+    inputModel.inputRef = ref ? createObservableRef() : undefined;
 
     useEffect(() => inputModel.setProps(props));
+    
     useImperativeHandle(ref, () => inputModel);
 
     const field = inputModel.getField(),
