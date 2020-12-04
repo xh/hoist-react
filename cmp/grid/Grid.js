@@ -220,7 +220,6 @@ class LocalModel {
                 agColumnGroupHeader: (props) => columnGroupHeader(props)
             },
             rowSelection: model.selModel.mode,
-            rowDeselection: true,
             getRowHeight: (params) => params.node?.group ? this.groupRowHeight : this.rowHeight,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             noRowsOverlayComponentFramework: observer(() => div(model.emptyText)),
@@ -245,7 +244,6 @@ class LocalModel {
             groupRowInnerRenderer: model.groupRowRenderer,
             groupRowRendererFramework: model.groupRowElementRenderer,
             groupRowRendererParams: {suppressCount: !model.showGroupRowCounts},
-            rememberGroupStateWhenNewData: true, // turning this on by default so group state is maintained when apps are not using immutableData
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
             },
@@ -378,9 +376,9 @@ class LocalModel {
             {agGridModel, store, experimental} = model;
 
         return {
-            track: () => [agGridModel.agApi, this.frameworkCmpsMounted, store.lastLoaded, store.lastUpdated, store._filtered, model.showSummary],
-            run: ([api, frameworkCmpsMounted, lastLoaded, lastUpdated, newRs]) => {
-                if (!api || !frameworkCmpsMounted) return;
+            track: () => [agGridModel.agApi, agGridModel.agColumnApi, this.frameworkCmpsMounted, store.lastLoaded, store.lastUpdated, store._filtered, model.showSummary],
+            run: ([agApi, colApi, frameworkCmpsMounted, lastLoaded, lastUpdated, newRs]) => {
+                if (!agApi || !colApi || !frameworkCmpsMounted) return;
 
                 const isUpdate = lastUpdated > lastLoaded,
                     prevRs = this._prevRs,
@@ -392,15 +390,15 @@ class LocalModel {
                         console.debug(this.transactionLogStr(transaction));
 
                         if (!this.transactionIsEmpty(transaction)) {
-                            api.applyTransaction(transaction);
+                            agApi.applyTransaction(transaction);
                         }
                     } else {
-                        api.setRowData(newRs.list);
+                        agApi.setRowData(newRs.list);
                     }
 
                     if (experimental.externalSort) {
                         const {sortBy} = model;
-                        if (!isEqual(sortBy, this._lastSortBy)) api.setSortModel(sortBy);
+                        if (!isEqual(sortBy, this._lastSortBy)) agGridModel.applySortBy(sortBy);
                         this._lastSortBy = sortBy;
                     }
 
@@ -408,7 +406,7 @@ class LocalModel {
 
                     const refreshCols = model.columns.filter(c => !c.hidden && c.rendererIsComplex);
                     if (!isEmpty(refreshCols)) {
-                        api.refreshCells({columns: refreshCols.map(c => c.colId), force: true});
+                        agApi.refreshCells({columns: refreshCols.map(c => c.colId), force: true});
                     }
 
                     model.noteAgExpandStateChange();
@@ -453,9 +451,11 @@ class LocalModel {
             {externalSort} = this.model.experimental;
 
         return {
-            track: () => [agGridModel.agApi, this.model.sortBy],
-            run: ([api, sortBy]) => {
-                if (api && !externalSort) api.setSortModel(sortBy);
+            track: () => [agGridModel.agColumnApi, this.model.sortBy],
+            run: ([colApi, sortBy]) => {
+                if (colApi && !externalSort) {
+                    agGridModel.applySortBy(sortBy);
+                }
             }
         };
     }
@@ -532,7 +532,7 @@ class LocalModel {
                 });
 
                 this.doWithPreservedState({expansion: false}, () => {
-                    colApi.setColumnState(colState);
+                    colApi.applyColumnState({state: colState, applyOrder: true});
                 });
             }
         };

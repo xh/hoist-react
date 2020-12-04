@@ -225,7 +225,7 @@ export class QueryEngine {
         const ops = FieldFilter.OPERATORS.filter(it => it != 'like');
         const operatorRegs = sortBy(ops, o => -o.length).map(escapeRegExp);
         operatorRegs.push('\\blike\\b');
-        operatorRegs.push('\\is\\b');
+        operatorRegs.push('\\bis\\b');
 
         let [field = '', op = '', value = ''] = raw
             .split(new RegExp('(' + operatorRegs.join('|') + ')', 'i'))

@@ -17,8 +17,8 @@ import {checkVersion} from '@xh/hoist/utils/js/VersionUtils';
 export let AgGridReact = null;
 export let agGridVersion = null;
 
-const MIN_VERSION = '23.2.0';
-const MAX_VERSION = '23.*.*';
+const MIN_VERSION = '24.1.0';
+const MAX_VERSION = '24.*.*';
 
 /**
  * Expose application versions of ag-Grid to Hoist.
