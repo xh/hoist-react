@@ -4,9 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
 import {hoistCmp} from '@xh/hoist/core';
 import {isNil} from 'lodash';
@@ -19,7 +20,7 @@ export const [Checkbox, checkbox] = hoistCmp.withFactory({
     displayName: 'Checkbox',
     className: 'xh-check-box',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref);
+        return useHoistInputModel(cmp, props, ref, Model);
     }
 });
 
@@ -53,6 +54,15 @@ Checkbox.propTypes = {
 //----------------------------------
 // Implementation
 //----------------------------------
+class Model extends HoistInputModel {
+
+    inputRef = createObservableRef();
+
+    focus() {
+        this.inputRef.current?.focus();
+    }
+}
+
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
         const {renderValue} = model,
@@ -77,6 +87,7 @@ const cmp = hoistCmp.factory(
             onBlur: model.onBlur,
             onFocus: model.onFocus,
             onChange: (e) => model.noteValueChange(e.target.checked),
+            inputRef: model.inputRef,
             ref
         });
     }
