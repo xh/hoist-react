@@ -12,10 +12,17 @@
   &__row {
     display: flex;
     align-items: center;
-    padding: 0 var(--xh-pad-half-px);
     background-color: var(--xh-bg);
     height: 35px;
     flex-shrink: 0;
+
+    &__grabber {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 30px;
+      width: 30px;
+    }
 
     &__select {
       flex: 1;

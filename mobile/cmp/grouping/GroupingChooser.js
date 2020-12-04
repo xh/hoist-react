@@ -196,6 +196,7 @@ const dimensionRow = hoistCmp.factory({
                         button({
                             icon: Icon.delete(),
                             className: 'xh-grouping-chooser__row__remove-btn',
+                            modifier: 'quiet',
                             onClick: () => model.removePendingDimAtIdx(idx)
                         })
                     ],
