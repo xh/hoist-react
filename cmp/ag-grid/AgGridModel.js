@@ -262,7 +262,11 @@ export class AgGridModel {
             [primaryColumnState, secondaryColumnState] = partition(sortedColumnState, it => !isArray(it.colId)),
             {agColumnApi: colApi, agApi} = this,
             isPivot = colApi.isPivotMode(),
-            havePivotCols = !isEmpty(colApi.getPivotColumns());
+            havePivotCols = !isEmpty(colApi.getPivotColumns()),
+            defaultState = {
+                sort: null,
+                sortIndex: null
+            };
             
         // ag-Grid does not allow "secondary" columns to be manipulated by applyColumnState
         // so this approach is required for setting sort config on secondary columns.
@@ -276,15 +280,19 @@ export class AgGridModel {
                     sort: null,
                     sortIndex: null
                 }],
-                defaultState: {
-                    sort: null,
-                    sortIndex: null
-                }
+                defaultState
             });
 
             // 2nd clear all pre-exisiting secondary column sorts
             colApi.getSecondaryColumns().forEach(col => {
                 if (col) {
+                    /**
+                     * When using `applyColumnState`, `undefined` means do nothing, `null` means set to none, not cleared.
+                     * But when using the setSort & setSortIndex methods directly, to clear all sort settings as if no sort
+                     * had ever been specified, `undefined` must be used.
+                     * see https://github.com/ag-grid/ag-grid/blob/3ed885a9cde6742d5c2469093f02b424d9c2bb05/community-modules/core/src/ts/sortController.ts#L103
+                     * see https://github.com/ag-grid/ag-grid/blob/3ed885a9cde6742d5c2469093f02b424d9c2bb05/community-modules/core/src/ts/sortController.ts#L66
+                     */
                     col.setSort(undefined);
                     col.setSortIndex(undefined);
                 } 
@@ -307,10 +315,7 @@ export class AgGridModel {
         // always apply any sorts on primary columns (includes the auto_group column on pivot grids)
         colApi.applyColumnState({
             state: primaryColumnState,
-            defaultState: {
-                sort: null,
-                sortIndex: null
-            }
+            defaultState
         });
 
         agApi.onSortChanged();
