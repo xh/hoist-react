@@ -26,6 +26,7 @@ export const [TextInput, textInput] = hoistCmp.withFactory({
         return useHoistInputModel(cmp, props, ref, Model);
     }
 });
+
 TextInput.propTypes = {
     ...HoistInputPropTypes,
 
