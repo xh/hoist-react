@@ -284,11 +284,7 @@ export function useHoistInputModel(component, props, ref, modelSpec = HoistInput
 
     useEffect(() => inputModel.setProps(props));
     
-    useImperativeHandle(ref, () => ({
-        model: inputModel,
-        domRef: inputModel.domRef,
-        inputRef: inputModel.inputRef
-    }));
+    useImperativeHandle(ref, () => inputModel);
 
     const field = inputModel.getField(),
         validityClass = field?.isNotValid && field?.validationDisplayed ? 'xh-input-invalid' : null,
@@ -297,7 +293,6 @@ export function useHoistInputModel(component, props, ref, modelSpec = HoistInput
     return component({
         ...props,
         model: inputModel,
-        inputRef: inputModel.inputRef,
         ref: inputModel.domRef,
         className: classNames('xh-input', validityClass, disabledClass, props.className)
     });
