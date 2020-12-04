@@ -11,7 +11,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps, createObservableRef} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import composeRefs from '@seznam/compose-react-refs';
 import PT from 'prop-types';
@@ -91,7 +91,7 @@ TextInput.hasLayoutSupport = true;
 
 class Model extends HoistInputModel {
 
-    inputRef;
+    inputRef = createObservableRef();
 
     focus() {
         this.inputRef.current?.focus();
