@@ -4,9 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {switchControl} from '@xh/hoist/kit/blueprint';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 import './SwitchInput.scss';
@@ -18,9 +19,10 @@ export const [SwitchInput, switchInput] = hoistCmp.withFactory({
     displayName: 'SwitchInput',
     className: 'xh-switch-input',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref);
+        return useHoistInputModel(cmp, props, ref, Model);
     }
 });
+
 SwitchInput.propTypes = {
     ...HoistInputPropTypes,
 
@@ -42,6 +44,15 @@ SwitchInput.propTypes = {
 //-----------------------
 // Implementation
 //-----------------------
+class Model extends HoistInputModel {
+
+    inputRef = createObservableRef();
+
+    focus() {
+        this.inputRef.current?.focus();
+    }
+}
+
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
         const labelAlign = withDefault(props.labelAlign, 'right');
@@ -62,6 +73,7 @@ const cmp = hoistCmp.factory(
             onBlur: model.onBlur,
             onFocus: model.onFocus,
             onChange: (e) => model.noteValueChange(e.target.checked),
+            inputRef: model.inputRef,
             ref
         });
     }
