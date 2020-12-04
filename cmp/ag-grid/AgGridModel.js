@@ -290,8 +290,6 @@ export class AgGridModel {
                      * When using `applyColumnState`, `undefined` means do nothing, `null` means set to none, not cleared.
                      * But when using the setSort & setSortIndex methods directly, to clear all sort settings as if no sort
                      * had ever been specified, `undefined` must be used.
-                     * see https://github.com/ag-grid/ag-grid/blob/3ed885a9cde6742d5c2469093f02b424d9c2bb05/community-modules/core/src/ts/sortController.ts#L103
-                     * see https://github.com/ag-grid/ag-grid/blob/3ed885a9cde6742d5c2469093f02b424d9c2bb05/community-modules/core/src/ts/sortController.ts#L66
                      */
                     col.setSort(undefined);
                     col.setSortIndex(undefined);
