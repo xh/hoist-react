@@ -51,6 +51,14 @@
   * AG-1959 - Aggregation - Add additional parameters to the Custom Aggregation methods. If your app
     implements custom aggregations, they might need to be updated.
 
+### 🔒 Security
+
+* The data package `Field` class now sanitizes all String values during parsing, using the DOMPurify
+  library to defend against XSS attacks and other issues with malformed HTML or scripting content
+  loaded into `Record`s and rendered by `Grid` or other data-driven components. Please contact XH if
+  you find any reason to disable this protection, or observe any unintended side effects of this
+  additional processing.
+
 ### 🐞 Bug Fixes
 
 * Fix issue where grid row striping inadvertently disabled by default for non-tree grids.
@@ -74,6 +82,7 @@
 * @blueprintjs/datetime `3.19 -> 3.20`
 * clipboard-copy `3.1 -> 3.2`
 * core-js `3.6 -> 3.7`
+* dompurify `added @ 2.2`
 * ag-Grid `23.2.0 -> 24.1.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.6.1...develop)

@@ -9,7 +9,8 @@ import {XH} from '@xh/hoist/core';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
-import {isDate, startCase} from 'lodash';
+import {isDate, isString, startCase} from 'lodash';
+import DOMPurify from 'dompurify';
 
 /**
  * Metadata for an individual data field within a {@see Record}.
@@ -24,23 +25,27 @@ export class Field {
     displayName;
     /** @member {*} */
     defaultValue;
+    /** @member {boolean} */
+    disableXssProtection;
 
     /** @param {FieldConfig} c - Field configuration */
     constructor({
         name,
         type = FieldType.AUTO,
         displayName,
-        defaultValue = null
+        defaultValue = null,
+        disableXssProtection = false
     }) {
         this.name = name;
         this.type = type;
         this.displayName = withDefault(displayName, genDisplayName(name));
         this.defaultValue = defaultValue;
+        this.disableXssProtection = disableXssProtection;
     }
 
     parseVal(val) {
-        const {type, defaultValue} = this;
-        return parseFieldValue(val, type, defaultValue);
+        const {type, defaultValue, disableXssProtection} = this;
+        return parseFieldValue(val, type, defaultValue, disableXssProtection);
     }
 
     isEqual(val1, val2) {
@@ -53,11 +58,15 @@ export class Field {
  * @param {*} val - raw value to parse.
  * @param {FieldType} type - data type of the field to use for possible conversion.
  * @param {*} [defaultValue] - typed value to return if `val` undefined or null.
+ * @param {boolean} [disableXssProtection] - true to disable XSS (cross-site scripting) protection.
+ *      {@see FieldConfig} docs for additional details.
  * @return {*} resulting value, potentially parsed or cast as per type.
  */
-export function parseFieldValue(val, type, defaultValue = null) {
+export function parseFieldValue(val, type, defaultValue = null, disableXssProtection = false) {
     if (val === undefined || val === null) val = defaultValue;
     if (val === null) return val;
+
+    if (!disableXssProtection && isString(val)) val = DOMPurify.sanitize(val);
 
     const FT = FieldType;
     switch (type) {
@@ -110,4 +119,10 @@ export function genDisplayName(fieldName) {
  * @property {string} [displayName] - user-facing / longer name for display, defaults to `name`
  *      transformed via `genDisplayName()` (e.g. 'myField' -> 'My Field').
  * @property {*} [defaultValue] - value to be used for records with a null, or non-existent value.
+ * @property {boolean} [disableXssProtection] - true to disable built-in XSS (cross-site scripting)
+ *      protection, applied by default to all incoming String values via the DOMPurify library.
+ *      DOMPurify provides fast escaping of dangerous HTML, scripting, and other content that can
+ *      be used to execute XSS attacks, while allowing common and expected HTML and style tags.
+ *      Please contact XH if you find yourself needing to disable this protection!
+ *      {@link https://github.com/cure53/DOMPurify}
  */
