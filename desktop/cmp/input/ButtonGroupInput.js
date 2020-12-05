@@ -66,7 +66,6 @@ const cmp = hoistCmp.factory(
             intent,
             minimal,
             outlined,
-            inputRef,
             // ...and ButtonGroup gets all the rest
             ...buttonGroupProps
         } = getNonLayoutProps(props);
