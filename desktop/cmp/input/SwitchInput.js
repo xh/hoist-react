@@ -48,8 +48,16 @@ class Model extends HoistInputModel {
 
     inputRef = createObservableRef();
 
+    blur() {
+        this.inputEl?.blur();
+    }
+
     focus() {
-        this.inputRef.current?.focus();
+        this.inputEl?.focus();
+    }
+
+    get inputEl() {
+        return this.inputRef.current;
     }
 }
 

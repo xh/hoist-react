@@ -114,9 +114,21 @@ class Model extends HoistInputModel {
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
     inputRef = createObservableRef();
+    
+    blur() {
+        this.inputEl?.blur();
+    }
 
     focus() {
-        this.inputRef.current?.focus();
+        this.inputEl?.focus();
+    }
+
+    select() {
+        this.inputEl?.select();
+    }
+
+    get inputEl() {
+        return this.inputRef.current;
     }
 
     get commitOnChange() {

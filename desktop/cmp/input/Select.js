@@ -240,10 +240,22 @@ class Model extends HoistInputModel {
         });
     }
 
-    focus() {
-        this.inputRef.current?.focus();
+    blur() {
+        this.inputEl?.blur();
     }
-    
+
+    focus() {
+        this.inputEl?.focus();
+    }
+
+    select() {
+        this.selectText();
+    }
+
+    get inputEl() {
+        return this.reactSelectRef.current;
+    }
+
     inputRef = createObservableRef();
     reactSelectRef = createObservableRef();
 
@@ -294,21 +306,25 @@ class Model extends HoistInputModel {
         if (this.selectOnFocus) {
             wait(1).then(() => {
                 // Delay to allow re-render. For safety, only select if still focused!
-                const rsRef = this.reactSelectRef.current;
-                if (!rsRef) return;
-
-                // Use of windowedMode, creatable and async variants will create levels of nesting we must
-                // traverse to get to the underlying Select comp and its inputRef.
-                let selectComp = rsRef.select;
-                while (selectComp && !selectComp.inputRef) {selectComp = selectComp.select}
-                const inputElem = selectComp?.inputRef;
-
-                if (this.hasFocus && inputElem && document.activeElement === inputElem) {
-                    inputElem.select();
-                }
+                this.selectText();
             });
         }
         super.noteFocused();
+    }
+
+    selectText() {
+        const rsRef = this.inputEl;
+        if (!rsRef) return;
+
+        // Use of windowedMode, creatable and async variants will create levels of nesting we must
+        // traverse to get to the underlying Select comp and its inputRef.
+        let selectComp = rsRef.select;
+        while (selectComp && !selectComp.inputRef) {selectComp = selectComp.select}
+        const inputElem = selectComp?.inputRef;
+
+        if (this.hasFocus && inputElem && document.activeElement === inputElem) {
+            inputElem.select();
+        }
     }
 
     @action
@@ -656,7 +672,7 @@ const cmp = hoistCmp.factory(
                 // Esc. and Enter can be listened for by parents -- stop the keydown event
                 // propagation only if react-select already likely to have used for menu management.
                 // note: menuIsOpen will be undefined on AsyncSelect due to a react-select bug.
-                const {menuIsOpen} = model.reactSelectRef.current ? model.reactSelectRef.current.state : {};
+                const {menuIsOpen} = model.inputEl ? model.inputEl.state : {};
                 if (menuIsOpen && (e.key === 'Escape' || e.key === 'Enter')) {
                     e.stopPropagation();
                 }
