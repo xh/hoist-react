@@ -282,7 +282,6 @@ export function useHoistInputModel(component, props, ref, modelSpec = HoistInput
     const inputModel = useLocalModel(() => new modelSpec(props));
 
     useEffect(() => inputModel.setProps(props));
-    
     useImperativeHandle(ref, () => inputModel);
 
     const field = inputModel.getField(),
