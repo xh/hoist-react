@@ -276,7 +276,6 @@ const bbar = hoistCmp.factory({
                 filler(),
                 button({
                     icon: Icon.close(),
-                    intent: 'danger',
                     onClick: () => model.closePopover()
                 }),
                 button({
@@ -319,8 +318,8 @@ const favoritesIcon = hoistCmp.factory({
     render({model}) {
         if (!model.persistFavorites) return null;
         const isFavorite = model.isFavorite(model.value);
-        return Icon.favorite({
-            prefix: isFavorite ? 'fas' : 'far',
+        return div({
+            item: Icon.favorite({prefix: isFavorite ? 'fas' : 'far'}),
             className: classNames(
                 'xh-grouping-chooser__favorite-icon',
                 isFavorite ? 'xh-grouping-chooser__favorite-icon--active' : null

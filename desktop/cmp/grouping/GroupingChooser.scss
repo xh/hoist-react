@@ -98,10 +98,20 @@
   }
 
   &__favorite-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 20px;
     position: absolute;
-    top: 3px;
-    right: 7px;
+    top: 0;
+    right: 0;
     cursor: pointer;
+    color: var(--xh-text-color-muted);
+
+    &:hover {
+      color: var(--xh-text-color);
+    }
 
     &--active {
       color: var(--xh-orange) !important;
