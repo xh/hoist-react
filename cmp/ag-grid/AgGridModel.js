@@ -7,7 +7,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf, apiDeprecated} from '@xh/hoist/utils/js';
-import {cloneDeep, has, isArray, isEmpty, isEqual, isNil, last, set, startCase} from 'lodash';
+import {cloneDeep, concat, find, has, isArray, isEmpty, isNil, partition, set, startCase} from 'lodash';
 
 /**
  * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
@@ -225,29 +225,30 @@ export class AgGridModel {
     getSortState() {
         this.throwIfNotReady();
 
-        const {agApi, agColumnApi} = this,
+        const {agColumnApi} = this,
             isPivot = agColumnApi.isPivotMode();
 
-        let sortModel = agApi.getSortModel();
+        let sortState = agColumnApi.getColumnState().filter(it => it.sort);
 
         // When we have pivot columns we need to make sure we store the path to the sorted column
         // using the pivot keys and value column id, instead of using the auto-generate secondary
         // column id as this could be different with different data or even with the same data based
         // on the state of the grid when pivot mode was enabled.
         if (isPivot && !isEmpty(agColumnApi.getPivotColumns())) {
-            // ag-Grid may have left sort state in the model from before pivot mode was activated,
-            // which is not representative of the current grid state, so we need to remove any sorts
-            // on non-pivot columns
-            sortModel = sortModel.filter(it => it.colId.startsWith('pivot_'));
-
-            const secondaryCols = agColumnApi.getSecondaryColumns();
-            sortModel.forEach(sort => {
-                const col = secondaryCols.find(it => it.colId === sort.colId);
-                sort.colId = this.getPivotColumnId(col);
+            const secondarySortedCols = agColumnApi.getSecondaryColumns().filter(it => it.sort);
+            secondarySortedCols.forEach(col => {
+                col.colId = this.getPivotColumnId(col);
             });
+            sortState = concat(sortState, secondarySortedCols);
         }
 
-        return sortModel;
+        sortState = sortState.map(it => ({
+            colId: it.colId,
+            sort: it.sort,
+            sortIndex: it.sortIndex
+        }));
+
+        return sortState;
     }
 
     /**
@@ -257,33 +258,62 @@ export class AgGridModel {
     setSortState(sortState) {
         this.throwIfNotReady();
 
-        const sortModel = cloneDeep(sortState),
-            {agApi, agColumnApi} = this,
-            isPivot = agColumnApi.isPivotMode(),
-            havePivotCols = !isEmpty(agColumnApi.getPivotColumns());
+        const sortedColumnState = cloneDeep(sortState),
+            [primaryColumnState, secondaryColumnState] = partition(sortedColumnState, it => !isArray(it.colId)),
+            {agColumnApi: colApi, agApi} = this,
+            isPivot = colApi.isPivotMode(),
+            havePivotCols = !isEmpty(colApi.getPivotColumns()),
+            defaultState = {
+                sort: null,
+                sortIndex: null
+            };
+            
+        // ag-Grid does not allow "secondary" columns to be manipulated by applyColumnState
+        // so this approach is required for setting sort config on secondary columns.
+        if (isPivot && havePivotCols && !isEmpty(secondaryColumnState)) {
+            // 1st clear all pre-exisiting primary column sorts
+            // with an explicit clear of the auto_group column, 
+            // which is not cleared by the defaultState config.
+            colApi.applyColumnState({
+                state: [{
+                    colId: AgGridModel.AUTO_GROUP_COL_ID,
+                    sort: null,
+                    sortIndex: null
+                }],
+                defaultState
+            });
 
-        sortModel.forEach(sort => {
-            if (isArray(sort.colId)) {
-                if (isPivot && havePivotCols) {
-                    // Find the appropriate secondary column
-                    const secondaryCols = agColumnApi.getSecondaryColumns(),
-                        col = secondaryCols.find(
-                            it => isEqual(sort.colId, this.getPivotColumnId(it)));
+            // 2nd clear all pre-exisiting secondary column sorts
+            colApi.getSecondaryColumns().forEach(col => {
+                if (col) {
+                    // When using `applyColumnState`, `undefined` means do nothing, `null` means set to none, not cleared.
+                    // But when using the setSort & setSortIndex methods directly, to clear all sort settings as if no sort
+                    // had ever been specified, `undefined` must be used.
+                    col.setSort(undefined);
+                    col.setSortIndex(undefined);
+                } 
+            });
 
-                    if (col) {
-                        sort.colId = col.colId;
-                    } else {
-                        console.warn(
-                            'Could not find a secondary column to associate with the pivot column path',
-                            sort.colId);
-                    }
+            // finally apply sorts from state to secondary columns
+            secondaryColumnState.forEach(state => {
+                const col = colApi.getSecondaryPivotColumn(state.colId[0], state.colId[1]);
+                if (col) {
+                    col.setSort(state.sort);
+                    col.setSortIndex(state.sortIndex);
                 } else {
-                    sort.colId = last(sort.colId);
+                    console.warn(
+                        'Could not find a secondary column to associate with the pivot column path',
+                        state.colId);
                 }
-            }
+            });
+        }
+
+        // always apply any sorts on primary columns (includes the auto_group column on pivot grids)
+        colApi.applyColumnState({
+            state: primaryColumnState,
+            defaultState
         });
 
-        agApi.setSortModel(sortModel);
         agApi.onSortChanged();
     }
 
@@ -293,10 +323,16 @@ export class AgGridModel {
     getColumnState() {
         this.throwIfNotReady();
 
-        const {agColumnApi} = this;
+        const {agColumnApi} = this,
+            columns = agColumnApi.getColumnState();
+
+        // sort config is collected in the getSortState function
+        const sortKeys = ['sort', 'sortIndex'];
+        columns.forEach(col => sortKeys.forEach(it => delete col[it]));
+
         return {
             isPivot: agColumnApi.isPivotMode(),
-            columns: agColumnApi.getColumnState()
+            columns: columns
         };
     }
 
@@ -324,7 +360,36 @@ export class AgGridModel {
         // Remove invalid columns. ag-Grid does not like calls to set state with unknown column IDs.
         columns = columns.filter(it => validColIds.includes(it.colId));
 
-        agColumnApi.setColumnState(columns);
+        agColumnApi.applyColumnState({state: columns, applyOrder: true});
+    }
+
+    /**
+     * Sets the sort state on the grid's column state
+     * @param {GridSorter[]} sortBy
+     */
+    applySortBy(sortBy) {
+        this.throwIfNotReady();
+
+        const {agColumnApi} = this,
+            cols = agColumnApi.getColumnState(),
+            sortedCols = sortBy.
+                filter(sorter => find(cols, {'colId': sorter.colId})).
+                map((sorter, idx) => {
+                    const {colId} = find(cols, {'colId': sorter.colId});
+                    return {
+                        colId,
+                        sort: sorter.sort,
+                        sortIndex: idx
+                    };
+                });
+
+        agColumnApi.applyColumnState({
+            state: sortedCols,
+            defaultState: {
+                sort: null,
+                sortIndex: null
+            }
+        });
     }
 
     /**
@@ -486,7 +551,7 @@ export class AgGridModel {
     }
 
     getPivotColumnId(column) {
-        return [...column.colDef.pivotKeys, column.colDef.pivotValueColumn.colId];
+        return [column.colDef.pivotKeys, column.colDef.pivotValueColumn.colId];
     }
 
     getGroupNodePath(node) {

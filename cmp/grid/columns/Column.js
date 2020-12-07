@@ -492,7 +492,7 @@ export class Column {
         const sortCfg = find(gridModel.sortBy, {colId: ret.colId});
         if (sortCfg) {
             ret.sort = sortCfg.sort;
-            ret.sortedAt = gridModel.sortBy.indexOf(sortCfg);
+            ret.sortIndex = gridModel.sortBy.indexOf(sortCfg);
         }
 
         if (this.comparator === undefined) {

@@ -1,0 +1,135 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
+
+.xh-grouping-chooser {
+  .xh-button.xh-grouping-chooser-button--as-input {
+    background-color: var(--xh-input-bg) !important;
+    border: none;
+    box-shadow: var(--xh-form-field-box-shadow);
+    display: inline;
+    overflow: hidden;
+    padding-left: var(--xh-pad-px) !important;
+    padding-right: var(--xh-pad-px) !important;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  // Outer box is sized via layoutSupport - all nested inner elements should stretch to fill.
+  .bp3-popover-wrapper,
+  .bp3-popover-target,
+  .xh-grouping-chooser-button {
+    width: 100%;
+  }
+
+  .bp3-popover-target span {
+    position: relative;
+  }
+
+  &__list {
+    background-color: var(--xh-bg-alt);
+  }
+
+  &__row {
+    padding: var(--xh-pad-half-px) 0 var(--xh-pad-half-px) var(--xh-pad-half-px);
+    display: flex;
+    align-items: center;
+    background-color: var(--xh-bg);
+    height: 30px;
+
+    &__grabber {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 20px;
+      width: 20px;
+    }
+
+    &__select {
+      flex: 1;
+
+      .xh-select__control {
+        background: none;
+        box-shadow: none;
+      }
+
+      .xh-select__single-value {
+        color: var(--xh-input-text-color);
+      }
+    }
+
+    &__text {
+      flex: 1;
+    }
+
+    &--dragging {
+      border: var(--xh-border-solid);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  &__add-control {
+    display: flex;
+    align-items: center;
+    padding: 0 var(--xh-pad-half-px);
+    border-top: var(--xh-border-solid);
+
+    &__icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 20px;
+      width: 20px;
+      color: var(--xh-input-placeholder-text-color);
+    }
+
+    .xh-select__control {
+      background: none;
+      box-shadow: none;
+    }
+  }
+
+  &__btn-row {
+    border-top: var(--xh-border-solid);
+    background-color: var(--xh-tbar-bg);
+  }
+
+  &__favorite-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 20px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    cursor: pointer;
+    color: var(--xh-text-color-muted);
+
+    &:hover {
+      color: var(--xh-text-color);
+    }
+
+    &--active {
+      color: var(--xh-orange) !important;
+    }
+  }
+
+  &__favorite {
+    align-items: center;
+    max-width: 50vw;
+
+    .xh-button {
+      padding: 0 !important;
+      min-width: 20px !important;
+      min-height: 20px !important;
+    }
+
+    &:hover {
+      background-color: var(--xh-bg-highlight);
+    }
+  }
+}

@@ -4,6 +4,10 @@
 
 ### 🎁 New Features
 
+* New `GroupingChooser` component provides a new interface for selecting a list of fields
+  (dimensions) for grouping APIs, offering drag-and-drop reordering and persisted favorites.
+  * This is intended as a complete replacement for the existing `DimensionChooser`. That component
+    should be considered deprecated and will be removed in future releases.
 * New props added to `TabSwitcher`:
   * `enableOverflow` shows tabs that would normally overflow their container in a drop down menu.
   * `tabWidth`, `tabMinWidth` & `tabMaxWidth` allow flexible configuration of tab sizes within the
@@ -16,8 +20,6 @@
   based on a case-insensitive match of word starts in the label. (Previously it was based on a match
   _anywhere_ in the label _or_ value.) To customize this behavior, applications should use the new
   `filterFn` prop.
-* `@managed` and `markManaged` have been enhanced to allow for the cleanup of arrays of objects as
-  well as objects. This matches the existing array support in `XH.safeDestroy()`.
 * New Admin Console Monitor > Memory tab added to view snapshots of JVM memory usage. (Requires
   Hoist Core v8.7 or greater.)
 
@@ -29,13 +31,38 @@
   * Use `switcher: false` to not include a TabSwitcher. (previously `switcherPosition: 'none'`)
   * Use `switcher: {...}` to provide customisation props for the `TabSwitcher`. See `TabSwitcher`
     documentation for more information.
-* The `HoistInput` base class has been removed. Application components extending `HoistInput` should
-  use the `useHoistInputModel` hook instead. This change marks the completion of our efforts to
-  remove all internal uses of React class-based Components in Hoist.
+* The `HoistInput` base class has been removed. This change marks the completion of our efforts to
+  remove all internal uses of React class-based Components in Hoist. The following adjustments are
+  required:
+  * Application components extending `HoistInput` should use the `useHoistInputModel` hook instead.
+  * Applications getting refs to `HoistInputs` should be aware that these refs now return a ref to a
+    `HoistInputModel`. In order to get the DOM element associated with the component use the new
+    `domRef` property of that model rather than `HoistComponent.getDOMNode()` method.
+* Hoist grids now require ag-Grid v24.1.0 or higher - update your ag-Grid dependency in your app's
+  `package.json` file. ag-Grid v24.1.0
+  [lists 5 breaking changes](https://www.ag-grid.com/ag-grid-changelog/), including the two called
+  out below. *Note that these cautions apply only to direct use of the ag-Grid APIs* - if your app
+  is using the Hoist `Grid` and `GridModel` exclusively, there should be no need to adjust code
+  around columns or grid state, as the related Hoist classes have been updated to handle these
+  changes.
+  * AG-4291 - Reactive Columns - the state pattern for ag-grid wrapper has changed as a result of
+    this change. If your app made heavy use of saving/loading grid state, please test carefully
+    after upgrade.
+  * AG-1959 - Aggregation - Add additional parameters to the Custom Aggregation methods. If your app
+    implements custom aggregations, they might need to be updated.
+
+### 🔒 Security
+
+* The data package `Field` class now sanitizes all String values during parsing, using the DOMPurify
+  library to defend against XSS attacks and other issues with malformed HTML or scripting content
+  loaded into `Record`s and rendered by `Grid` or other data-driven components. Please contact XH if
+  you find any reason to disable this protection, or observe any unintended side effects of this
+  additional processing.
 
 ### 🐞 Bug Fixes
 
 * Fix issue where grid row striping inadvertently disabled by default for non-tree grids.
+* Fix issue where grid empty text cleared on autosize.
 
 ### ✨ Style
 
@@ -46,6 +73,9 @@
 * Note that the included Onsen fork has been replaced with the latest Onsen release.
   Apps should not need to make any changes.
 * `Cube.info` is now directly observable.
+* `@managed` and `markManaged` have been enhanced to allow for the cleanup of arrays of objects as
+  well as objects. This matches the existing array support in `XH.safeDestroy()`.
+
 
 ### 📚 Libraries
 
@@ -56,6 +86,8 @@
 * @xh/react-onsenui `~0.1.2` -> react-onsenui `~1.11.3`
 * clipboard-copy `3.1 -> 3.2`
 * core-js `3.6 -> 3.7`
+* dompurify `added @ 2.2`
+* ag-Grid `23.2.0 -> 24.1.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.6.1...develop)
 
@@ -2661,9 +2693,9 @@ list. Note, this component is being replaced in Hoist v16 by the react-select li
 
 ## v13.0.0
 
-🍀Lucky v13 brings with it a number of enhancements for forms and validation, grouped column
-support in the core Grid API, a fully wrapped MultiSelect component, decorator syntax adjustments,
-and a number of other fixes and enhancements.
+🍀Lucky v13 brings with it a number of enhancements for forms and validation, grouped column support
+in the core Grid API, a fully wrapped MultiSelect component, decorator syntax adjustments, and a
+number of other fixes and enhancements.
 
 It also includes contributions from new ExHI team members Arjun and Brendan. 🎉
 
