@@ -37,7 +37,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
         styleButtonAsInput = true,
         ...rest
     }) {
-        const {editorIsOpen, favoritesIsOpen, value} = model,
+        const {editorIsOpen, favoritesIsOpen, persistFavorites, value} = model,
             isOpen = editorIsOpen || favoritesIsOpen,
             label = isEmpty(value) ? emptyText : model.getValueLabel(value),
             [layoutProps, buttonProps] = splitLayoutProps(rest);
@@ -59,7 +59,11 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
                     button({
                         text: label,
                         title: label,
-                        className: classNames('xh-grouping-chooser-button', styleButtonAsInput ? 'xh-grouping-chooser-button--as-input' : null),
+                        className: classNames(
+                            'xh-grouping-chooser-button',
+                            styleButtonAsInput ? 'xh-grouping-chooser-button--as-input' : null,
+                            persistFavorites ? 'xh-grouping-chooser-button--with-favorites' : null
+                        ),
                         minimal: styleButtonAsInput,
                         ...buttonProps,
                         onClick: () => model.showEditor()
@@ -349,13 +353,16 @@ const favoritesMenu = hoistCmp.factory({
             menuDivider(),
             menuItem({
                 icon: Icon.add({className: addDisabled ? '' : 'xh-intent-success'}),
-                text: 'Add current grouping to favorites',
+                text: 'Add current',
                 disabled: addDisabled,
                 onClick: () => model.addFavorite(model.value)
             })
         );
 
-        return menu({items});
+        return vbox(
+            div({className: 'xh-popup__title', item: 'Favorites'}),
+            menu({items})
+        );
     }
 });
 
@@ -367,7 +374,6 @@ const favoriteMenuItem = hoistCmp.factory({
             onClick: () => model.setValue(value),
             labelElement: button({
                 icon: Icon.delete(),
-                intent: 'danger',
                 onClick: (e) => {
                     model.removeFavorite(value);
                     e.stopPropagation();

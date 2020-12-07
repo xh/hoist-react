@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
-import {box, div, hbox, hframe} from '@xh/hoist/cmp/layout';
+import {box, div, hbox, vbox, hframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
@@ -194,13 +194,16 @@ const favoritesMenu = hoistCmp.factory({
             menuDivider(),
             menuItem({
                 icon: Icon.add({className: addDisabled ? '' : 'xh-intent-success'}),
-                text: 'Add current filter to favorites',
+                text: 'Add current',
                 disabled: addDisabled,
                 onClick: () => model.addFavorite(model.value)
             })
         );
 
-        return menu({items});
+        return vbox(
+            div({className: 'xh-popup__title', item: 'Favorites'}),
+            menu({items})
+        );
     }
 });
 
@@ -212,7 +215,6 @@ const favoriteMenuItem = hoistCmp.factory({
             onClick: () => model.setValue(value),
             labelElement: button({
                 icon: Icon.delete(),
-                intent: 'danger',
                 onClick: (e) => {
                     model.removeFavorite(value);
                     e.stopPropagation();
