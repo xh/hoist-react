@@ -16,6 +16,10 @@
     padding-right: var(--xh-pad-px) !important;
     text-overflow: ellipsis;
     white-space: nowrap;
+
+    & > .xh-icon {
+      color: var(--xh-text-color-muted);
+    }
   }
 
   // Outer box is sized via layoutSupport - all nested inner elements should stretch to fill.
