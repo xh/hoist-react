@@ -25,7 +25,6 @@ import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import composeRefs from '@seznam/compose-react-refs';
 
 import './Select.scss';
 
@@ -256,7 +255,6 @@ class Model extends HoistInputModel {
         return this.reactSelectRef.current;
     }
 
-    inputRef = createObservableRef();
     reactSelectRef = createObservableRef();
 
     getSelectFactory() {
@@ -634,7 +632,7 @@ const cmp = hoistCmp.factory(
                 onFocus: model.onFocus,
                 filterOption: model.filterOption,
 
-                ref: composeRefs(model.inputRef, props.inputRef, model.reactSelectRef)
+                ref: model.reactSelectRef
             };
 
         if (model.manageInputValue) {
