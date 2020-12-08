@@ -22,15 +22,15 @@ export const [WebSocketIndicator, webSocketIndicator] = hoistCmp.withFactory({
         let icon, txt, tooltip;
 
         if (!enabled) {
-            icon = Icon.circle({prefix: 'fal', className: 'xh-text-color-muted'});
+            icon = Icon.disabled({className: 'xh-text-color-muted'});
             txt = 'Disabled';
             tooltip = 'WebSockets not enabled for this application';
         } else if (connected) {
-            icon = Icon.circle({prefix: 'fas', className: 'xh-green'});
+            icon = Icon.circle({prefix: 'fas', className: 'xh-intent-success'});
             txt = 'Connected';
             tooltip = `Last message: ${fmtTime(lastMessageTime)}`;
         } else {
-            icon = Icon.xCircle({prefix: 'fas', className: 'xh-red'});
+            icon = Icon.xCircle({className: 'xh-intent-danger'});
             txt = 'Disconnected';
             tooltip = 'WebSockets enabled but not connected (unexpected)';
         }
