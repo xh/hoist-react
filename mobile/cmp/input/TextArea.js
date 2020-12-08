@@ -56,6 +56,22 @@ class Model extends HoistInputModel {
         return withDefault(this.props.commitOnChange, false);
     }
 
+    get inputEl() {
+        return this.domRef.current?.querySelector('textarea');
+    }
+
+    blur() {
+        this.inputEl?.blur();
+    }
+
+    focus() {
+        this.inputEl?.focus();
+    }
+
+    select() {
+        this.inputEl?.select();
+    }
+
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
     };

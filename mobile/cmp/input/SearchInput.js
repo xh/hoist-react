@@ -4,6 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import ReactDOM from 'react-dom';
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
@@ -55,6 +56,22 @@ class Model extends HoistInputModel {
 
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);
+    }
+
+    get inputEl() {
+        return ReactDOM.findDOMNode(this.domRef.current)?.querySelector('input');
+    }
+
+    blur() {
+        this.inputEl?.blur();
+    }
+
+    focus() {
+        this.inputEl?.focus();
+    }
+
+    select() {
+        this.inputEl?.select();
     }
 
     onChange = (ev) => {

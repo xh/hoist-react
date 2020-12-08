@@ -11,7 +11,7 @@ import {Icon} from '@xh/hoist/icon';
 import {reactSelect, reactCreatableSelect} from '@xh/hoist/kit/react-select';
 import {action, observable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps, createObservableRef} from '@xh/hoist/utils/react';
 import {assign, isEmpty, isPlainObject} from 'lodash';
 import PT from 'prop-types';
 import './Select.scss';
@@ -129,6 +129,18 @@ class Model extends HoistInputModel {
 
     get creatableMode() {return !!this.props.enableCreate}
     get filterMode() {return !!this.props.enableFilter}
+
+    reactSelectRef = createObservableRef();
+
+    blur() {this.inputEl?.blur()}
+
+    focus() {this.inputEl?.focus()}
+
+    // not working when enableCreate: true.  react-select not putting created content into input.
+    // maybe not necessary?
+    select() {this.selectText()}
+
+    get inputEl() {return this.reactSelectRef.current}
 
     constructor(props) {
         super(props);
@@ -298,6 +310,21 @@ class Model extends HoistInputModel {
         const {createMessageFn} = this.props;
         return createMessageFn ? createMessageFn(q) : `Create "${q}"`;
     };
+
+    selectText() {
+        const rsRef = this.inputEl;
+        if (!rsRef) return;
+
+        // Use of windowedMode, creatable and async variants will create levels of nesting we must
+        // traverse to get to the underlying Select comp and its inputRef.
+        let selectComp = rsRef.select;
+        while (selectComp && !selectComp.inputRef) {selectComp = selectComp.select}
+        const inputElem = selectComp?.inputRef;
+
+        if (this.hasFocus && inputElem && document.activeElement === inputElem) {
+            inputElem.select();
+        }
+    }
 }
 
 const cmp = hoistCmp.factory(
@@ -327,8 +354,8 @@ const cmp = hoistCmp.factory(
                 onBlur: model.onBlur,
                 onChange: model.onSelectChange,
                 onFocus: model.onFocus,
-                filterOption: model.filterOption
-
+                filterOption: model.filterOption,
+                ref: model.reactSelectRef
             };
 
         if (props.hideDropdownIndicator) {

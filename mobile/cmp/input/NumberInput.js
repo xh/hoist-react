@@ -4,6 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import ReactDOM from 'react-dom';
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
@@ -84,6 +85,25 @@ class Model extends HoistInputModel {
 
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);
+    }
+
+    get inputEl() {
+        return ReactDOM.findDOMNode(this.domRef.current)?.querySelector('input');
+    }
+
+    blur() {
+        this.inputEl?.blur();
+    }
+
+    focus() {
+        this.inputEl?.focus();
+    }
+
+    select() {
+        // first focus, and then
+        // wait one tick for value to be put into input element
+        this.focus();
+        wait().then(() => this.inputEl?.select());
     }
 
     onChange = (ev) => {
