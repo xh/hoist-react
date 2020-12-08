@@ -116,6 +116,34 @@ class DragListenerPatched extends DragListener {
 }
 GoldenLayout['__lm'].utils.DragListener = DragListenerPatched;
 
+// When creating drop zones in the root component, GoldenLayout (v1.5.9) assumes
+// that the root component is full screen (i.e. the origin is 0,0).
+//
+// That means that if a dashboard is not positioned at or near 0,0 in the document,
+// the left and top root drag areas do not work.
+//
+// The below patch fixes this by adding in the current x and y offset to the root
+// areas when appropriate.
+//
+// See https://github.com/golden-layout/golden-layout/issues/459
+// See https://github.com/golden-layout/golden-layout/pull/457
+GoldenLayout['__lm'].LayoutManager.prototype._$createRootItemAreas = function() {
+    const sides = {y2: 'y1', x2: 'x1', y1: 'y2', x1: 'x2'},
+        areaSize = 50;
+
+    for (const side in sides) {
+        const area = this.root._$getArea();
+        area.side = side;
+        if (sides[side][1] === '2') {
+            area[side] = area[sides[side]] - areaSize;
+        } else {
+            area[side] = area[sides[side]] + areaSize;
+        }
+        area.surface = (area.x2 - area.x1) * (area.y2 - area.y1);
+        this._itemAreas.push(area);
+    }
+};
+
 // Overwrite jquery's 'touchmove' handler wiring, to ensure 'touchmove' handlers are non-passive.
 // This is required to suppress an error thrown by trying to preventDefault() a passive event.
 jquery.event.special.touchmove = {
