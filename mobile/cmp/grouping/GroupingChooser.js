@@ -96,7 +96,7 @@ const popoverCmp = hoistCmp.factory(
                     button({
                         icon: Icon.add(),
                         flex: 1,
-                        text: 'Add current grouping to favorites',
+                        text: 'Add current',
                         disabled: addFavoriteDisabled,
                         onClick: () => model.addFavorite(model.value)
                     })

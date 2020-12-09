@@ -145,6 +145,7 @@ export class GroupingChooserModel {
         this.pendingValue = this.value;
         this.editorIsOpen = true;
         this.favoritesIsOpen = false;
+        this.showAddControl = isEmpty(this.value);
     }
 
     @action
