@@ -105,6 +105,7 @@ const popoverCmp = hoistCmp.factory(
                     button({
                         icon: Icon.add(),
                         disabled: !!addDimDisabled,
+                        omit: model.showAddControl,
                         onClick: () => model.toggleAddControl()
                     }),
                     filler(),
@@ -224,7 +225,6 @@ const addDimensionControl = hoistCmp.factory({
                     flex: 1,
                     width: null,
                     autoFocus: true,
-                    openMenuOnFocus: true,
                     hideDropdownIndicator: true,
                     hideSelectedOptionCheck: true,
                     onChange: (newDim) => model.addPendingDim(newDim)
@@ -264,7 +264,7 @@ const favoritesMenu = hoistCmp.factory({
         const options = model.favoritesOptions;
 
         if (isEmpty(options)) {
-            return placeholder('You have not yet saved any favorites...');
+            return placeholder('No favorites saved...');
         }
 
         const items = options.map(it => favoriteMenuItem(it));

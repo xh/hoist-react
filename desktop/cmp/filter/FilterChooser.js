@@ -182,7 +182,7 @@ const favoritesMenu = hoistCmp.factory({
             items = [];
 
         if (isEmpty(options)) {
-            items.push(menuItem({text: 'You have not yet saved any favorites...', disabled: true}));
+            items.push(menuItem({text: 'No favorites saved...', disabled: true}));
         } else {
             items.push(...options.map(it => favoriteMenuItem(it)));
         }
