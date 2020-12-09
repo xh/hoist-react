@@ -287,7 +287,7 @@ const favoriteMenuItem = hoistCmp.factory({
                     }
                 }),
                 button({
-                    icon: Icon.delete({className: 'xh-intent-danger'}),
+                    icon: Icon.delete(),
                     modifier: 'quiet',
                     onClick: () => model.removeFavorite(value)
                 })
