@@ -93,6 +93,13 @@ export class GroupingChooserModel {
 
         throwIf(isEmpty(this.dimensions), 'Must provide valid dimensions available for selection.');
 
+        // Read and validate value and favorites
+        let value = isFunction(initialValue) ? initialValue() : initialValue,
+            favorites = isFunction(initialFavorites) ? initialFavorites() : initialFavorites;
+
+        throwIf(isEmpty(value) && !this.allowEmpty, 'Initial value cannot be empty.');
+        throwIf(!this.validateValue(value), 'Initial value is invalid.');
+
         // Read state from provider -- fail gently
         if (persistWith) {
             try {
@@ -102,10 +109,10 @@ export class GroupingChooserModel {
 
                 const state = cloneDeep(this.provider.read());
                 if (this.persistValue && state?.value && this.validateValue(state?.value)) {
-                    initialValue = state.value;
+                    value = state.value;
                 }
                 if (this.persistFavorites && state?.favorites) {
-                    initialFavorites = state.favorites;
+                    favorites = state.favorites;
                 }
 
                 this.addReaction({
@@ -119,8 +126,8 @@ export class GroupingChooserModel {
             }
         }
 
-        this.setValue(isFunction(initialValue) ? initialValue() : initialValue);
-        this.setFavorites(isFunction(initialFavorites) ? initialFavorites() : initialFavorites);
+        this.setValue(value);
+        this.setFavorites(favorites);
     }
 
     @action

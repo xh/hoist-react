@@ -104,6 +104,9 @@ export class FilterChooserModel {
         this.maxResults = maxResults;
         this.queryEngine = new QueryEngine(this);
 
+        let value = isFunction(initialValue) ? initialValue() : initialValue,
+            favorites = isFunction(initialFavorites) ? initialFavorites() : initialFavorites;
+
         // Read state from provider -- fail gently
         if (persistWith) {
             try {
@@ -113,10 +116,10 @@ export class FilterChooserModel {
 
                 const state = this.provider.read();
                 if (this.persistValue && state?.value) {
-                    initialValue = state.value;
+                    value = state.value;
                 }
                 if (this.persistFavorites && state?.favorites) {
-                    initialFavorites = state.favorites.map(f => parseFilter(f));
+                    favorites = state.favorites.map(f => parseFilter(f));
                 }
 
                 this.addReaction({
@@ -130,8 +133,8 @@ export class FilterChooserModel {
             }
         }
 
-        this.setValue(isFunction(initialValue) ? initialValue() : initialValue);
-        this.setFavorites(isFunction(initialFavorites) ? initialFavorites() : initialFavorites);
+        this.setValue(value);
+        this.setFavorites(favorites);
 
         if (targetStore) {
             this.addReaction({
