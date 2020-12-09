@@ -250,14 +250,10 @@ function getDimOptions(dims, model) {
 const favoritesButton = hoistCmp.factory({
     render({model}) {
         if (!model.persistFavorites) return null;
-        const isFavorite = model.isFavorite(model.value);
         return button({
-            icon: Icon.favorite({prefix: isFavorite ? 'fas' : 'far'}),
+            icon: Icon.favorite(),
             modifier: 'quiet',
-            className: classNames(
-                'xh-grouping-chooser__favorite-button',
-                isFavorite ? 'xh-grouping-chooser__favorite-button--active' : null
-            ),
+            className: 'xh-grouping-chooser__favorite-button',
             onClick: () => model.openFavoritesMenu()
         });
     }

@@ -14,7 +14,7 @@ import {Icon} from '@xh/hoist/icon';
 import {popover, menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {compact, isEmpty, isNil, sortBy} from 'lodash';
+import {compact, isEmpty, sortBy} from 'lodash';
 import classNames from 'classnames';
 import PT from 'prop-types';
 
@@ -41,10 +41,6 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
             isOpen = editorIsOpen || favoritesIsOpen,
             label = isEmpty(value) ? emptyText : model.getValueLabel(value),
             [layoutProps, buttonProps] = splitLayoutProps(rest);
-
-        if (isNil(layoutProps.width) && isNil(layoutProps.flex)) {
-            layoutProps.width = 220;
-        }
 
         return box({
             className,
@@ -321,13 +317,9 @@ function getDimOptions(dims, model) {
 const favoritesIcon = hoistCmp.factory({
     render({model}) {
         if (!model.persistFavorites) return null;
-        const isFavorite = model.isFavorite(model.value);
         return div({
-            item: Icon.favorite({prefix: isFavorite ? 'fas' : 'far'}),
-            className: classNames(
-                'xh-grouping-chooser__favorite-icon',
-                isFavorite ? 'xh-grouping-chooser__favorite-icon--active' : null
-            ),
+            item: Icon.favorite(),
+            className: 'xh-grouping-chooser__favorite-icon',
             onClick: (e) => {
                 model.openFavoritesMenu();
                 e.stopPropagation();

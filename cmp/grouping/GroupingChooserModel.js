@@ -10,7 +10,7 @@ import {action, computed, observable} from '@xh/hoist/mobx';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {cloneDeep, difference, isArray, isEmpty, isEqual, isString, keys, sortBy} from 'lodash';
+import {cloneDeep, difference, isFunction, isArray, isEmpty, isEqual, isString, keys, sortBy} from 'lodash';
 
 @HoistModel
 export class GroupingChooserModel {
@@ -20,12 +20,14 @@ export class GroupingChooserModel {
     /** @member {string[][]} - array of dim-name value arrays */
     @observable.ref favorites = [];
 
-    /** @member {number} */
-    maxDepth;
     /** @member {Object<string, DimensionSpec>} */
     dimensions;
     /** @member {string[]} */
     dimensionNames;
+    /** @member {boolean} */
+    allowEmpty;
+    /** @member {number} */
+    maxDepth;
     /** @member {PersistenceProvider} */
     @managed provider = null;
     persistValue = false;
@@ -59,7 +61,7 @@ export class GroupingChooserModel {
     @computed
     get addDisabledMsg() {
         if (isEmpty(this.availableDims)) return 'All dimensions added';
-        if (this.atMaxDepth) return 'Further grouping not available';
+        if (this.atMaxDepth) return `Maximum ${this.maxDepth} dimensions added`;
         return null;
     }
 
@@ -68,9 +70,12 @@ export class GroupingChooserModel {
      * @param {(DimensionSpec[]|CubeField[]|string[])} c.dimensions - dimensions available for
      *     selection. When using GroupingChooser to create Cube queries, it is recommended to pass
      *     the `dimensions` from the related cube (or a filtered subset thereof).
-     * @param {string[]} [c.initialValue] - initial value as an array of dimension names.
-     * @param {string[][]} [c.initialFavorites] - initial favorites, an array of dim name arrays.
+     * @param {(string[]|function)} [c.initialValue] - initial value as an array of dimension names,
+     *     or a function to produce such an array.
+     * @param {(string[][]|function)} [c.initialFavorites] - initial favorites as an array of
+     *     dim name arrays, or a function to produce such an array.
      * @param {?GroupingChooserPersistOptions} [c.persistWith] - options governing persistence.
+     * @param {boolean} [c.allowEmpty] - accept an empty list as a valid value.
      * @param {?number} [c.maxDepth] - maximum number of dimensions allowed in a single grouping.
      */
     constructor({
@@ -78,10 +83,12 @@ export class GroupingChooserModel {
         initialValue = [],
         initialFavorites = [],
         persistWith = null,
+        allowEmpty = false,
         maxDepth = null
     }) {
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionNames = keys(this.dimensions);
+        this.allowEmpty = allowEmpty;
         this.maxDepth = maxDepth;
 
         throwIf(isEmpty(this.dimensions), 'Must provide valid dimensions available for selection.');
@@ -94,8 +101,12 @@ export class GroupingChooserModel {
                 this.persistFavorites = persistWith.persistFavorites ?? true;
 
                 const state = cloneDeep(this.provider.read());
-                if (this.persistValue && state?.value) initialValue = state.value;
-                if (this.persistFavorites && state?.favorites) initialFavorites = state.favorites;
+                if (this.persistValue && state?.value && this.validateValue(state?.value)) {
+                    initialValue = state.value;
+                }
+                if (this.persistFavorites && state?.favorites) {
+                    initialFavorites = state.favorites;
+                }
 
                 this.addReaction({
                     track: () => this.persistState,
@@ -108,8 +119,8 @@ export class GroupingChooserModel {
             }
         }
 
-        this.setValue(initialValue);
-        this.setFavorites(initialFavorites);
+        this.setValue(isFunction(initialValue) ? initialValue() : initialValue);
+        this.setFavorites(isFunction(initialFavorites) ? initialFavorites() : initialFavorites);
     }
 
     @action
@@ -194,11 +205,9 @@ export class GroupingChooserModel {
     }
 
     validateValue(value) {
-        return (
-            isArray(value) &&
-            !isEmpty(value) &&
-            value.every(h => this.dimensionNames.includes(h))
-        );
+        if (!isArray(value)) return false;
+        if (isEmpty(value) && !this.allowEmpty) return false;
+        return value.every(dim => this.dimensionNames.includes(dim));
     }
 
     normalizeDimensions(dims) {

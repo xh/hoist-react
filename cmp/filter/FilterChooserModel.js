@@ -24,7 +24,8 @@ import {
     sortBy,
     flatMap,
     forEach,
-    isArray
+    isArray,
+    isFunction
 } from 'lodash';
 
 @HoistModel
@@ -78,10 +79,12 @@ export class FilterChooserModel {
      *      value changes. May be the same as `sourceStore`. Leave undefined if you wish to combine
      *      this model's values with other filters, send it to the server, or otherwise observe
      *      and handle value changes manually.
-     * @param {(Filter|* |[])} [c.initialValue] -  Configuration for a filter appropriate to be
-     *      rendered and managed by FilterChooser. Note that FilterChooser currently can only
-     *      edit and create a flat collection of FieldFilters, to be 'AND'ed together.
-     * @param {Filter[]} [c.initialFavorites] - initial favorites, an array of filter configurations.
+     * @param {(Filter|* |[]|function)} [c.initialValue] - Configuration for a filter appropriate
+     *      to be rendered and managed by FilterChooser, or a function to produce the same.
+     *      Note that FilterChooser currently can only edit and create a flat collection of
+     *      FieldFilters, to be 'AND'ed together.
+     * @param {(Filter[]|function)} [c.initialFavorites] - initial favorites as an array of filter
+     *      configurations, or a function to produce such an array.
      * @param {number} [c.maxResults] - maximum number of dropdown options to show before truncating.
      * @param {FilterChooserPersistOptions} [c.persistWith] - options governing persistence.
      */
@@ -109,7 +112,9 @@ export class FilterChooserModel {
                 this.persistFavorites = persistWith.persistFavorites ?? true;
 
                 const state = this.provider.read();
-                if (this.persistValue && state?.value) initialValue = state.value;
+                if (this.persistValue && state?.value) {
+                    initialValue = state.value;
+                }
                 if (this.persistFavorites && state?.favorites) {
                     initialFavorites = state.favorites.map(f => parseFilter(f));
                 }
@@ -125,8 +130,8 @@ export class FilterChooserModel {
             }
         }
 
-        this.setValue(initialValue);
-        this.setFavorites(initialFavorites);
+        this.setValue(isFunction(initialValue) ? initialValue() : initialValue);
+        this.setFavorites(isFunction(initialFavorites) ? initialFavorites() : initialFavorites);
 
         if (targetStore) {
             this.addReaction({

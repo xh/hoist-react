@@ -162,13 +162,10 @@ const messageOption = hoistCmp.factory({
 //------------------
 function favoritesIcon(model) {
     if (!model.persistFavorites) return null;
-    const isFavorite = model.isFavorite(model.value);
     return Icon.favorite({
-        prefix: isFavorite ? 'fas' : 'far',
         className: classNames(
             'xh-select__indicator',
-            'xh-filter-chooser-favorite-icon',
-            isFavorite ? 'xh-filter-chooser-favorite-icon--active' : null
+            'xh-filter-chooser-favorite-icon'
         ),
         onClick: (e) => {
             model.openFavoritesMenu();
