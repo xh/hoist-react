@@ -241,9 +241,11 @@ class LocalModel {
             defaultGroupSortComparator: model.groupSortFn ? this.groupSortComparator : undefined,
             groupDefaultExpanded: 1,
             groupUseEntireRow: true,
-            groupRowInnerRenderer: model.groupRowRenderer,
             groupRowRendererFramework: model.groupRowElementRenderer,
-            groupRowRendererParams: {suppressCount: !model.showGroupRowCounts},
+            groupRowRendererParams: {
+                innerRenderer: model.groupRowRenderer,
+                suppressCount: !model.showGroupRowCounts
+            },
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
             },
