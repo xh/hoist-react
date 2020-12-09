@@ -48,8 +48,10 @@ import './HoistInput.scss';
  * Note: Passing a ref to a HoistInput will give you a reference to its underlying HoistInputModel.
  * This model is mostly used for implementation purposes, but it is also intended to
  * provide a limited API for application use.  It currently provides access to the underlying DOM
- * element of the rendered input via its `domRef`.  Methods `blur()`, `focus()`, and `select()` should be 
- * implemented on subclasses of HoistInputModel as needed.
+ * element of the rendered input via its `domRef`, as well as `focus()`, `blur()`, and `select()`.
+ *
+ * The latter methods should be implemented by concrete subclasses of this class as
+ * appropriate, but are provided with an empty implementation in this class.
  *
  * To create an instance of an Input component using this model use the hook
  * {@see useHoistInputModel}.
@@ -93,17 +95,17 @@ export class HoistInputModel {
     }
 
     /**
-     * Implement on subclass to blur a focused input.
+     * Blur focus from this control, if supported.
      */
     blur() {}
 
     /**
-     * Implement on subclass to focus an input.
+     * Bring focus to this control, if supported.
      */
     focus() {}
 
     /**
-     * Implement on subclass to select content of an input.
+     * Select all content on this input, if supported.
      */
     select() {}
 

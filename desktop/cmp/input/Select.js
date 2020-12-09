@@ -239,6 +239,8 @@ class Model extends HoistInputModel {
         });
     }
 
+    reactSelectRef = createObservableRef();
+
     blur() {
         this.inputEl?.blur();
     }
@@ -254,8 +256,6 @@ class Model extends HoistInputModel {
     get inputEl() {
         return this.reactSelectRef.current;
     }
-
-    reactSelectRef = createObservableRef();
 
     getSelectFactory() {
         const {creatableMode, asyncMode, windowedMode} = this;

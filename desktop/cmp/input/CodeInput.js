@@ -15,7 +15,7 @@ import {Icon} from '@xh/hoist/icon';
 import {dialog, textArea} from '@xh/hoist/kit/blueprint';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps, createObservableRef} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import * as codemirror from 'codemirror';
 import 'codemirror/addon/fold/brace-fold.js';
 import 'codemirror/addon/fold/foldcode.js';
@@ -185,23 +185,17 @@ class Model extends HoistInputModel {
         ]);
     }
 
-    inputRef = createObservableRef();
-
     blur() {
-        this.inputEl?.execCommand('undoSelection');
-        this.inputEl?.getInputField().blur();
+        this.editor?.execCommand('undoSelection');
+        this.editor?.getInputField().blur();
     }
 
     focus() {
-        this.inputEl?.focus();
+        this.editor?.focus();
     }
 
     select() {
-        this.inputEl?.execCommand('selectAll');
-    }
-
-    get inputEl() {
-        return this.editor;
+        this.editor?.execCommand('selectAll');
     }
 
     constructor(props) {

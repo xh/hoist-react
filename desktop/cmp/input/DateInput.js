@@ -159,6 +159,10 @@ class Model extends HoistInputModel {
 
     @bindable popoverOpen = false;
 
+    inputRef = createObservableRef();
+    buttonRef = createObservableRef();
+    popoverRef = createObservableRef();
+
     blur() {
         this.inputEl?.blur();
     }
@@ -174,10 +178,6 @@ class Model extends HoistInputModel {
     get inputEl() {
         return this.inputRef.current;
     }
-
-    inputRef = createObservableRef();
-    buttonRef = createObservableRef();
-    popoverRef = createObservableRef();
 
     // Prop-backed convenience getters
     get maxDate() {
