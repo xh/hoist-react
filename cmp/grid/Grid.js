@@ -152,6 +152,12 @@ class LocalModel {
     propsKeyDown;
     viewRef = createRef();
 
+    @computed
+    get needRowHeightFn() {
+        const useAutoHeight = this.model.columns.filter(it => it.agOptions.autoHeight).length > 0;
+        return !useAutoHeight;
+    }
+
     // The minimum required row height specified by the columns (if any) */
     @computed
     get rowHeight() {
@@ -220,7 +226,9 @@ class LocalModel {
                 agColumnGroupHeader: (props) => columnGroupHeader(props)
             },
             rowSelection: model.selModel.mode,
-            getRowHeight: (params) => params.node?.group ? this.groupRowHeight : this.rowHeight,
+            getRowHeight: this.needRowHeightFn ? 
+                (params) => params.node?.group ? this.groupRowHeight : this.rowHeight :
+                undefined,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             noRowsOverlayComponentFramework: observer(() => div(model.emptyText)),
             onRowClicked: (e) => {
