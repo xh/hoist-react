@@ -206,8 +206,9 @@ export class GroupingChooserModel {
 
     @action
     commitPendingValueAndClose() {
-        if (!isEqual(this.value, this.pendingValue)) {
-            this.setValue(this.pendingValue);
+        const {pendingValue, value} = this;
+        if (!isEqual(value, pendingValue) && this.validateValue(pendingValue)) {
+            this.setValue(pendingValue);
         }
         this.closePopover();
     }

@@ -276,6 +276,7 @@ const bbar = hoistCmp.factory({
                 filler(),
                 button({
                     icon: Icon.close(),
+                    intent: 'danger',
                     onClick: () => model.closePopover()
                 }),
                 button({
