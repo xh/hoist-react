@@ -7,6 +7,13 @@
 .xh-grouping-chooser {
   .xh-grouping-chooser-button {
     width: 100%;
+    justify-content: flex-start;
+
+    span {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
   }
 
   &__row {

@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
-import {div, hbox, vbox, filler, box, placeholder} from '@xh/hoist/cmp/layout';
+import {div, hbox, vbox, filler, box, placeholder, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from '@xh/hoist/mobile/cmp/button';
@@ -47,7 +47,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
                 popoverCmp({popoverTitle, popoverWidth}),
                 button({
                     className: 'xh-grouping-chooser-button',
-                    item: label,
+                    item: span(label),
                     ...buttonProps,
                     onClick: () => model.showEditor()
                 }),
