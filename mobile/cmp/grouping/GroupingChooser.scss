@@ -7,6 +7,13 @@
 .xh-grouping-chooser {
   .xh-grouping-chooser-button {
     width: 100%;
+    justify-content: flex-start;
+
+    span {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
   }
 
   &__row {
@@ -42,10 +49,6 @@
 
   &__add-control {
     padding: var(--xh-pad-half-px);
-  }
-
-  &__favorite-button--active {
-    color: var(--xh-orange) !important;
   }
 
   &__favorite {
