@@ -342,7 +342,7 @@ const favoritesMenu = hoistCmp.factory({
         }
 
         items.push(
-            menuDivider(),
+            menuDivider({omit: omitAdd}),
             menuItem({
                 icon: Icon.add({className: 'xh-intent-success'}),
                 text: 'Add current',

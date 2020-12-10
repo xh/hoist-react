@@ -178,7 +178,7 @@ const favoritesMenu = hoistCmp.factory({
     render({model}) {
         const options = getFavoritesOptions(model),
             isFavorite = model.isFavorite(model.value),
-            addDisabled = isEmpty(model.value) || isFavorite,
+            omitAdd = isEmpty(model.value) || isFavorite,
             items = [];
 
         if (isEmpty(options)) {
@@ -188,11 +188,11 @@ const favoritesMenu = hoistCmp.factory({
         }
 
         items.push(
-            menuDivider(),
+            menuDivider({omit: omitAdd}),
             menuItem({
-                icon: Icon.add({className: addDisabled ? '' : 'xh-intent-success'}),
+                icon: Icon.add({className: 'xh-intent-success'}),
                 text: 'Add current',
-                disabled: addDisabled,
+                omit: omitAdd,
                 onClick: () => model.addFavorite(model.value)
             })
         );
