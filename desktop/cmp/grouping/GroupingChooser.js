@@ -14,7 +14,7 @@ import {Icon} from '@xh/hoist/icon';
 import {popover, menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {compact, isEmpty, isNil, sortBy} from 'lodash';
+import {compact, isEmpty, sortBy} from 'lodash';
 import classNames from 'classnames';
 import PT from 'prop-types';
 
@@ -37,14 +37,10 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
         styleButtonAsInput = true,
         ...rest
     }) {
-        const {editorIsOpen, favoritesIsOpen, value} = model,
+        const {editorIsOpen, favoritesIsOpen, persistFavorites, value} = model,
             isOpen = editorIsOpen || favoritesIsOpen,
             label = isEmpty(value) ? emptyText : model.getValueLabel(value),
             [layoutProps, buttonProps] = splitLayoutProps(rest);
-
-        if (isNil(layoutProps.width) && isNil(layoutProps.flex)) {
-            layoutProps.width = 220;
-        }
 
         return box({
             className,
@@ -59,7 +55,11 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
                     button({
                         text: label,
                         title: label,
-                        className: classNames('xh-grouping-chooser-button', styleButtonAsInput ? 'xh-grouping-chooser-button--as-input' : null),
+                        className: classNames(
+                            'xh-grouping-chooser-button',
+                            styleButtonAsInput ? 'xh-grouping-chooser-button--as-input' : null,
+                            persistFavorites ? 'xh-grouping-chooser-button--with-favorites' : null
+                        ),
                         minimal: styleButtonAsInput,
                         ...buttonProps,
                         onClick: () => model.showEditor()
@@ -230,7 +230,7 @@ const dimensionRow = hoistCmp.factory({
 
 const addDimensionControl = hoistCmp.factory({
     render({model}) {
-        if (!model.showAddControl || model.addDisabledMsg) return null;
+        if (!model.addControlShown || model.addDisabledMsg) return null;
         const options = getDimOptions(model.availableDims, model);
         return div({
             className: 'xh-grouping-chooser__add-control',
@@ -248,7 +248,6 @@ const addDimensionControl = hoistCmp.factory({
                     flex: 1,
                     width: null,
                     autoFocus: true,
-                    openMenuOnFocus: true,
                     hideDropdownIndicator: true,
                     hideSelectedOptionCheck: true,
                     onChange: (newDim) => model.addPendingDim(newDim)
@@ -269,9 +268,10 @@ const bbar = hoistCmp.factory({
                 button({
                     icon: Icon.add(),
                     intent: 'success',
+                    omit: model.addControlShown,
                     disabled: !!addDisabled,
                     title: addDisabledMsg,
-                    onClick: () => model.toggleAddControl()
+                    onClick: () => model.showAddControl()
                 }),
                 filler(),
                 button({
@@ -317,13 +317,9 @@ function getDimOptions(dims, model) {
 const favoritesIcon = hoistCmp.factory({
     render({model}) {
         if (!model.persistFavorites) return null;
-        const isFavorite = model.isFavorite(model.value);
         return div({
-            item: Icon.favorite({prefix: isFavorite ? 'fas' : 'far'}),
-            className: classNames(
-                'xh-grouping-chooser__favorite-icon',
-                isFavorite ? 'xh-grouping-chooser__favorite-icon--active' : null
-            ),
+            item: Icon.favorite(),
+            className: 'xh-grouping-chooser__favorite-icon',
             onClick: (e) => {
                 model.openFavoritesMenu();
                 e.stopPropagation();
@@ -336,26 +332,29 @@ const favoritesMenu = hoistCmp.factory({
     render({model}) {
         const options = model.favoritesOptions,
             isFavorite = model.isFavorite(model.value),
-            addDisabled = isEmpty(model.value) || isFavorite,
+            omitAdd = isEmpty(model.value) || isFavorite,
             items = [];
 
         if (isEmpty(options)) {
-            items.push(menuItem({text: 'You have not yet saved any favorites...', disabled: true}));
+            items.push(menuItem({text: 'No favorites saved...', disabled: true}));
         } else {
             items.push(...options.map(it => favoriteMenuItem(it)));
         }
 
         items.push(
-            menuDivider(),
+            menuDivider({omit: omitAdd}),
             menuItem({
-                icon: Icon.add({className: addDisabled ? '' : 'xh-intent-success'}),
-                text: 'Add current grouping to favorites',
-                disabled: addDisabled,
+                icon: Icon.add({className: 'xh-intent-success'}),
+                text: 'Add current',
+                omit: omitAdd,
                 onClick: () => model.addFavorite(model.value)
             })
         );
 
-        return menu({items});
+        return vbox(
+            div({className: 'xh-popup__title', item: 'Favorites'}),
+            menu({items})
+        );
     }
 });
 
@@ -367,7 +366,6 @@ const favoriteMenuItem = hoistCmp.factory({
             onClick: () => model.setValue(value),
             labelElement: button({
                 icon: Icon.delete(),
-                intent: 'danger',
                 onClick: (e) => {
                     model.removeFavorite(value);
                     e.stopPropagation();

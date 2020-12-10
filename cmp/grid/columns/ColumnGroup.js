@@ -67,7 +67,7 @@ export class ColumnGroup {
             headerClass: getAgHeaderClassFn(this),
             headerGroupComponentParams: {gridModel, xhColumnGroup: this},
             children: this.children.map(it => it.getAgSpec()),
-            marryChildren: true, // enforce 'sealed' column groups
+            marryChildren: gridModel.lockColumnGroups,
             ...this.agOptions
         };
     }

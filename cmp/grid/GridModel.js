@@ -198,6 +198,8 @@ export class GridModel {
      * @param {boolean} [c.cellBorders] - true to render cell borders.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      * @param {boolean} [c.hideHeaders] - true to suppress display of the grid's header row.
+     * @param {boolean} [c.lockColumnGroups] - true to disallow moving columns outside of their
+     *      groups.
      * @param {boolean} [c.enableColumnPinning] - true to allow the user to manually pin / unpin
      *      columns via UI affordances.
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
@@ -263,6 +265,7 @@ export class GridModel {
         hideHeaders = false,
         compact,
 
+        lockColumnGroups = true,
         enableColumnPinning = true,
         enableExport = false,
         exportOptions = {},
@@ -313,6 +316,7 @@ export class GridModel {
             `Unsupported value for fillMode.`
         );
 
+        this.lockColumnGroups = lockColumnGroups;
         this.enableColumnPinning = enableColumnPinning;
         this.enableExport = enableExport;
         this.exportOptions = exportOptions;
@@ -964,15 +968,15 @@ export class GridModel {
         return sortBy(columns, [it => it._sortOrder]);
     }
 
-    collectIds(cols, groupIds = [], colIds = []) {
+    collectIds(cols, ids = []) {
         cols.forEach(col => {
-            if (col.colId) colIds.push(col.colId);
+            if (col.colId) ids.push(col.colId);
             if (col.groupId) {
-                groupIds.push(col.groupId);
-                this.collectIds(col.children, groupIds, colIds);
+                ids.push(col.groupId);
+                this.collectIds(col.children, ids);
             }
         });
-        return {groupIds, colIds};
+        return ids;
     }
 
     formatValuesForExport(params) {
@@ -1034,10 +1038,8 @@ export class GridModel {
     validateColumns(cols) {
         if (isEmpty(cols)) return;
 
-        const {groupIds, colIds} = this.collectIds(cols);
-
-        ensureUnique(colIds, 'All colIds in a GridModel columns collection must be unique.');
-        ensureUnique(groupIds, 'All groupIds in a GridModel columns collection must be unique.');
+        const ids = this.collectIds(cols);
+        ensureUnique(ids, 'All colIds and groupIds in a GridModel columns collection must be unique.');
 
         const treeCols = cols.filter(it => it.isTreeColumn);
         warnIf(
