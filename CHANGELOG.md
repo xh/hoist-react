@@ -23,6 +23,8 @@
 * New Admin Console Monitor > Memory tab added to view snapshots of JVM memory usage. (Requires
   Hoist Core v8.7 or greater.)
 * Focus, blur, and select methods now available on the model returned by the `ref` prop on most HoistInputs.
+* New `GridModel` config `lockColumnGroups` to allow controlling whether child columns can be moved
+  outside their parent group. Defaults to `true` to maintain existing behavior.
 
 ### 💥 Breaking Changes
 
