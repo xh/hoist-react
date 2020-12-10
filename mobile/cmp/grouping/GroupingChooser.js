@@ -105,8 +105,8 @@ const popoverCmp = hoistCmp.factory(
                     button({
                         icon: Icon.add(),
                         disabled: !!addDimDisabled,
-                        omit: model.showAddControl,
-                        onClick: () => model.toggleAddControl()
+                        omit: model.addControlShown,
+                        onClick: () => model.showAddControl()
                     }),
                     filler(),
                     button({
@@ -211,7 +211,7 @@ const dimensionRow = hoistCmp.factory({
 
 const addDimensionControl = hoistCmp.factory({
     render({model}) {
-        if (!model.showAddControl || model.addDisabledMsg) return null;
+        if (!model.addControlShown || model.addDisabledMsg) return null;
         const options = getDimOptions(model.availableDims, model);
         return div({
             className: 'xh-grouping-chooser__add-control',

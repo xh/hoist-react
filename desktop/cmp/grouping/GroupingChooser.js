@@ -230,7 +230,7 @@ const dimensionRow = hoistCmp.factory({
 
 const addDimensionControl = hoistCmp.factory({
     render({model}) {
-        if (!model.showAddControl || model.addDisabledMsg) return null;
+        if (!model.addControlShown || model.addDisabledMsg) return null;
         const options = getDimOptions(model.availableDims, model);
         return div({
             className: 'xh-grouping-chooser__add-control',
@@ -268,10 +268,10 @@ const bbar = hoistCmp.factory({
                 button({
                     icon: Icon.add(),
                     intent: 'success',
-                    omit: model.showAddControl,
+                    omit: model.addControlShown,
                     disabled: !!addDisabled,
                     title: addDisabledMsg,
-                    onClick: () => model.toggleAddControl()
+                    onClick: () => model.showAddControl()
                 }),
                 filler(),
                 button({
