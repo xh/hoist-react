@@ -68,11 +68,14 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
                 ),
                 content: favoritesIsOpen ? favoritesMenu() : editor({popoverWidth, popoverTitle}),
                 onInteraction: (nextOpenState, e) => {
-                    if (nextOpenState === false) {
+                    if (isOpen && nextOpenState === false) {
                         // Prevent clicks with Select controls from closing popover
                         const selectPortal = document.getElementById(Select.MENU_PORTAL_ID)?.contains(e?.target),
                             selectClick = e?.target?.classList.contains('xh-select__single-value');
-                        if (!selectPortal && !selectClick) model.closePopover();
+
+                        if (!selectPortal && !selectClick) {
+                            model.commitPendingValueAndClose();
+                        }
                     }
                 }
             })
