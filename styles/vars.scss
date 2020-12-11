@@ -332,11 +332,6 @@ body {
     --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '800', 0.2)});
   }
 
-  //------------------------
-  // Slider Handles
-  //------------------------
-  --xh-slider-handle-focused-box-shadow: var(--slider-handle-focused-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-focused-border-color), 0 0 0 1px var(--xh-form-field-focused-border-color)});
-  
 
   //------------------------
   // Grids
