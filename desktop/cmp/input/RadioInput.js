@@ -4,12 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import ReactDOM from 'react-dom';
 import {HoistInputPropTypes, HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
 import {action, observable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
-import {isObject} from 'lodash';
+import {filter, isObject} from 'lodash';
 import PT from 'prop-types';
 import './RadioInput.scss';
 
@@ -45,6 +46,30 @@ RadioInput.propTypes = {
 // Implementation
 //-----------------------
 class Model extends HoistInputModel {
+
+    blur() {
+        this.enabledRadioInputs[0]?.blur();
+    }
+
+    onBlur = (e) => {
+        const noBtnsFocused = this.enabledRadioInputs.every(it => !it.focused);
+
+        if (noBtnsFocused) {
+            // noting blur for entire button group, not a single button within
+            this.noteBlurred();
+        }
+    };
+
+    focus() {
+        this.enabledRadioInputs[0]?.focus();
+    }
+
+    get enabledRadioInputs() {
+        const btns = ReactDOM.findDOMNode(this.domRef.current)
+            .querySelectorAll('input');
+    
+        return filter(btns, {disabled: false});
+    }
 
     @observable.ref internalOptions = [];
 
@@ -95,7 +120,15 @@ const cmp = hoistCmp.factory(
                 disabled: opt.disabled,
                 label: opt.label,
                 value: opt.value,
-                className: 'xh-radio-input-option'
+                className: 'xh-radio-input-option',
+                onFocus: (e) => {
+                    model.onFocus();
+                    opt.onFocus ? opt.onFocus(e) : null;
+                },
+                onBlur: (e) => {
+                    model.onBlur(e);
+                    opt.onFocus ? opt.onBlur(e) : null;
+                }
             });
         });
 

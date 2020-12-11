@@ -4,12 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import ReactDOM from 'react-dom';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {Button, ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
-import {castArray} from 'lodash';
+import {castArray, filter} from 'lodash';
 import PT from 'prop-types';
 import {cloneElement} from 'react';
 
@@ -24,7 +25,7 @@ export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory({
     displayName: 'ButtonGroupInput',
     className: 'xh-button-group-input',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref);
+        return useHoistInputModel(cmp, props, ref, Model);
     }
 });
 ButtonGroupInput.propTypes = {
@@ -49,6 +50,33 @@ ButtonGroupInput.hasLayoutSupport = true;
 //----------------------------------
 // Implementation
 //----------------------------------
+class Model extends HoistInputModel {
+
+    blur() {
+        this.enabledButtons[0]?.blur();
+    }
+
+    onBlur = (e) => {
+        const noBtnsFocused = this.enabledButtons.every(it => !it.focused);
+
+        if (noBtnsFocused) {
+            // noting blur for entire button group, not a single button within
+            this.noteBlurred();
+        }
+    };
+
+    focus() {
+        this.enabledButtons[0]?.focus();
+    }
+
+    get enabledButtons() {
+        const btns = ReactDOM.findDOMNode(this.domRef.current)
+            .querySelectorAll('button');
+    
+        return filter(btns, {disabled: false});
+    }
+}
+
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
         const {
@@ -73,7 +101,7 @@ const cmp = hoistCmp.factory(
         const buttons = castArray(children).map(button => {
             if (!button) return null;
 
-            const {value} = button.props,
+            const {value, onFocus, onBlur} = button.props,
                 btnDisabled = disabled || button.props.disabled;
 
             throwIf(button.type !== Button, 'ButtonGroupInput child must be a Button.');
@@ -87,6 +115,14 @@ const cmp = hoistCmp.factory(
                 outlined: withDefault(outlined, false),
                 disabled: withDefault(btnDisabled, false),
                 onClick: () => model.noteValueChange(enableClear && active ? null : value),
+                onFocus: (e) => {
+                    model.onFocus();
+                    onFocus ? onFocus(e) : null;
+                },
+                onBlur: (e) => {
+                    model.onBlur(e);
+                    onFocus ? onBlur(e) : null;
+                },
                 // Workaround for https://github.com/palantir/blueprint/issues/3971
                 key: `${active} ${value}`
             });
