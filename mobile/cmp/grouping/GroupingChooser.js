@@ -90,7 +90,7 @@ const popoverCmp = hoistCmp.factory(
             className: 'xh-grouping-chooser-popover',
             width: popoverWidth,
             content: favoritesIsOpen ? favoritesMenu() : editor(),
-            onCancel: () => model.closePopover(),
+            onCancel: () => model.commitPendingValueAndClose(),
             buttons: favoritesIsOpen ?
                 [
                     button({
