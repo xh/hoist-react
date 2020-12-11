@@ -145,7 +145,7 @@ export class GroupingChooserModel {
         this.pendingValue = this.value;
         this.editorIsOpen = true;
         this.favoritesIsOpen = false;
-        this.addControlShown = isEmpty(this.value);
+        this.addControlShown = isEmpty(this.value) && !this.allowEmpty;
     }
 
     @action
@@ -189,7 +189,7 @@ export class GroupingChooserModel {
         pendingValue.splice(idx, 1);
         this.pendingValue = pendingValue;
 
-        if (isEmpty(this.pendingValue)) {
+        if (isEmpty(this.pendingValue) && !this.allowEmpty) {
             this.addControlShown = true;
         }
     }
@@ -206,8 +206,9 @@ export class GroupingChooserModel {
 
     @action
     commitPendingValueAndClose() {
-        if (!isEqual(this.value, this.pendingValue)) {
-            this.setValue(this.pendingValue);
+        const {pendingValue, value} = this;
+        if (!isEqual(value, pendingValue) && this.validateValue(pendingValue)) {
+            this.setValue(pendingValue);
         }
         this.closePopover();
     }

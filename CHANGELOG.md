@@ -77,16 +77,19 @@
 * `@managed` and `markManaged` have been enhanced to allow for the cleanup of arrays of objects as
   well as objects. This matches the existing array support in `XH.safeDestroy()`.
 
-
 ### 📚 Libraries
 
-* @react `16.13.1 -> 17.0.1`
 * @blueprintjs/core `3.35 -> 3.36`
 * @blueprintjs/datetime `3.19 -> 3.20`
-* clipboard-copy `3.1 -> 3.2`
-* core-js `3.6 -> 3.7`
+* clipboard-copy `3.1 -> 4.0`
+* core-js `3.6 -> 3.8`
 * dompurify `added @ 2.2`
-* ag-Grid `23.2.0 -> 24.1.0`
+* react `16.13 -> 17.0`
+* semver `added @ 7.3`
+
+#### 📚 Required App Library Upgrades
+
+* ag-Grid `23.x -> 24.1`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.6.1...develop)
 
