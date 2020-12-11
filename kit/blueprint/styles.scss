@@ -260,18 +260,6 @@ textarea.bp3-input,
   box-shadow: var(--xh-form-field-box-shadow);
 }
 
-.bp3-control,
-.bp3-dark .bp3-control,
-.bp3-dark .bp3-control.bp3-switch {
-  input:focus ~ .bp3-control-indicator {
-    box-shadow: var(--xh-form-field-focused-box-shadow) !important;
-  }
-}
-
-.bp3-slider-handle:focus {
-  box-shadow: var(--xh-slider-handle-focused-box-shadow);
-}
-
 .bp3-input:focus,
 .bp3-dark .bp3-input:focus {
   box-shadow: var(--xh-form-field-focused-box-shadow);
