@@ -271,12 +271,12 @@ body.xh-app {
   }
 }
 
-body.xh-app {
-  .bp3-slider-handle:focus {
-    outline: 0;
-    box-shadow: var(--xh-slider-handle-focused-box-shadow);
-  }
+
+.bp3-slider-handle:focus {
+  outline: 0;  // override browser default styles
+  box-shadow: var(--xh-slider-handle-focused-box-shadow);
 }
+
 
 .bp3-input:focus,
 .bp3-dark .bp3-input:focus {
