@@ -73,12 +73,16 @@
 
 ### ⚙️ Technical
 
+* Note that the included Onsen fork has been replaced with the latest Onsen release.
+  Apps should not need to make any changes.
 * `Cube.info` is now directly observable.
 * `@managed` and `markManaged` have been enhanced to allow for the cleanup of arrays of objects as
   well as objects. This matches the existing array support in `XH.safeDestroy()`.
 
 ### 📚 Libraries
 
+* @xh/onsenui `~0.1.2` -> onsenui `~2.11.1`
+* @xh/react-onsenui `~0.1.2` -> react-onsenui `~1.11.3`
 * @blueprintjs/core `3.35 -> 3.36`
 * @blueprintjs/datetime `3.19 -> 3.20`
 * clipboard-copy `3.1 -> 4.0`
