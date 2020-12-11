@@ -136,8 +136,9 @@ class Model extends HoistInputModel {
 
     focus() {this.inputEl?.focus()}
 
-    // not working when enableCreate: true.  react-select not putting created content into input.
-    // maybe not necessary?
+    // not working when enableCreate: true or enableFilter: true.  
+    // react-select not putting created content into input.
+    // maybe not necessary, anyways, on mobile?
     select() {this.selectText()}
 
     get inputEl() {return this.reactSelectRef.current}
