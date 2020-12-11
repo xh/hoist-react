@@ -13,6 +13,7 @@ import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desk
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
 import {action, observable} from '@xh/hoist/mobx';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {wait} from '@xh/hoist/promise';
 import {
     apiDeprecated,
@@ -449,11 +450,23 @@ export class GridModel {
      * the minimum scrolling necessary to display the start of the selection and as much as
      * possible of the rest.
      */
-    ensureSelectionVisible() {
+    ensureSelectionVisible(isLastTry) {
         const {records} = this.selModel,
-            {agApi} = this;
+            {agApi} = this,
+            retryDelay = 1 * SECONDS,
+            doRetry = () => {if (!isLastTry) wait(retryDelay).then(() => this.ensureSelectionVisible(true));};
 
-        if (!agApi) return;
+        if (!agApi) {
+            console.warn('ag-Grid api not ready.  Will try again in 1 second.');
+            doRetry();            
+            return;
+        }
+
+        if (isEmpty(records)) {
+            console.warn('No records selected yet.  Will try again in 1 second.');
+            doRetry();            
+            return;
+        }
 
         const indices = [];
         records.forEach(record => {
@@ -463,7 +476,9 @@ export class GridModel {
 
         const indexCount = indices.length;
         if (indexCount != records.length) {
-            console.warn('Grid row nodes not found for all selected records - grid data reaction/rendering likely in progress.');
+            console.warn('Grid row nodes not found for all selected records - grid data reaction/rendering likely in progress.  Will try again in 1 second.');
+            doRetry();
+            return;
         }
 
         if (indexCount === 1) {

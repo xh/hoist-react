@@ -7,6 +7,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf, apiDeprecated} from '@xh/hoist/utils/js';
+import {MINUTES} from '@xh/hoist/utils/datetime';
 import {cloneDeep, concat, find, has, isArray, isEmpty, isNil, partition, set, startCase} from 'lodash';
 
 /**
@@ -95,6 +96,13 @@ export class AgGridModel {
      */
     get isReady() {
         return !isNil(this.agApi);
+    }
+
+    async isReadyAsync() {
+        return Promise.timeout({
+            interval: 1 * MINUTES,
+            message: 'ag-Grid api not ready after 1 minute.  Something else more serious may be going wrong...'
+        });
     }
 
     /**
