@@ -4,7 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import ReactDOM from 'react-dom';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {switchControl} from '@xh/hoist/kit/onsen';
 import PT from 'prop-types';
@@ -17,7 +18,7 @@ export const [SwitchInput, switchInput] = hoistCmp.withFactory({
     displayName: 'SwitchInput',
     className: 'xh-switch-input',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref);
+        return useHoistInputModel(cmp, props, ref, Model);
     }
 });
 SwitchInput.propTypes = {
@@ -33,6 +34,21 @@ SwitchInput.propTypes = {
 //-----------------------
 // Implementation
 //-----------------------
+class Model extends HoistInputModel {
+
+    blur() {
+        this.inputEl?.blur();
+    }
+
+    focus() {
+        this.inputEl?.focus();
+    }
+
+    get inputEl() {
+        return ReactDOM.findDOMNode(this.domRef.current).querySelector('input');
+    }
+}
+
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
 

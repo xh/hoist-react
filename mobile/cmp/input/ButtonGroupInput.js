@@ -4,7 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import ReactDOM from 'react-dom';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {Button, buttonGroup} from '@xh/hoist/mobile/cmp/button';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -25,7 +26,7 @@ export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory({
     displayName: 'ButtonGroupInput',
     className: 'xh-button-group-input',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref);
+        return useHoistInputModel(cmp, props, ref, Model);
     }
 });
 ButtonGroupInput.propTypes = {
@@ -39,10 +40,25 @@ ButtonGroupInput.hasLayoutSupport = true;
 //----------------------------------
 // Implementation
 //----------------------------------
+class Model extends HoistInputModel {
+
+    blur() {
+        this.buttonGroupEl?.blur();
+    }
+
+    focus() {
+        this.buttonGroupEl?.focus();
+    }
+
+    get buttonGroupEl() {
+        return ReactDOM.findDOMNode(this.domRef.current);
+    }
+}
+
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
 
-        const {children, disabled, enableClear, ...rest} = getNonLayoutProps(props);
+        const {children, disabled, enableClear, tabIndex = 0, ...rest} = getNonLayoutProps(props);
 
         const buttons = castArray(children).map(button => {
             if (!button) return null;
@@ -63,6 +79,9 @@ const cmp = hoistCmp.factory(
 
         return buttonGroup({
             items: buttons,
+            tabIndex,
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
             ...rest,
             ...getLayoutProps(props),
             className,
