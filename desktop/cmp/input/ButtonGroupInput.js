@@ -121,7 +121,7 @@ const cmp = hoistCmp.factory(
                 },
                 onBlur: (e) => {
                     model.onBlur(e);
-                    onFocus ? onBlur(e) : null;
+                    onBlur ? onBlur(e) : null;
                 },
                 // Workaround for https://github.com/palantir/blueprint/issues/3971
                 key: `${active} ${value}`
