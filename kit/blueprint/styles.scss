@@ -265,15 +265,15 @@ body.xh-app {
   .bp3-dark .bp3-control,
   .bp3-dark .bp3-control.bp3-switch {
     input:focus ~ .bp3-control-indicator {
-      outline: 0;
-      box-shadow: var(--xh-form-field-focused-box-shadow) !important;
+      outline: var(--xh-form-field-focused-border-color) solid 1px !important;
+      outline-offset: 1px;
     }
   }
 }
 
 
 .bp3-slider-handle:focus {
-  outline: 0;  // override browser default styles
+  outline: unset;  // override browser default styles
   box-shadow: var(--xh-slider-handle-focused-box-shadow);
 }
 
