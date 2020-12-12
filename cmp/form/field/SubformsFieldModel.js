@@ -48,6 +48,10 @@ export class SubformsFieldModel extends BaseFieldModel {
     //-----------------------------
     // Overrides
     //-----------------------------
+    get hasFocus() {return false}
+    focus() {}
+    blur() {}
+
     getDataOrProxy() {
         return this.value.map(s => s.values);
     }
