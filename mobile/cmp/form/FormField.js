@@ -16,6 +16,7 @@ import classNames from 'classnames';
 import {isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
 import PT from 'prop-types';
 import {Children, cloneElement, useContext} from 'react';
+import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import './FormField.scss';
 
 /**
@@ -194,10 +195,12 @@ const editableChild = hoistCmp.factory({
         const {props} = child,
             {propTypes} = child.type;
 
+        // Overrides -- be sure not to clobber selected properties on child
         const overrides = {
             model,
             bind: 'value',
-            disabled: props.disabled || disabled
+            disabled: props.disabled || disabled,
+            ref: composeRefs(model._boundInputRef, child.ref)
         };
 
         // If FormField is sized and item doesn't specify its own dimensions,
