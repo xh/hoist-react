@@ -260,14 +260,12 @@ textarea.bp3-input,
   box-shadow: var(--xh-form-field-box-shadow);
 }
 
-body.xh-app {
-  .bp3-control,
-  .bp3-dark .bp3-control,
-  .bp3-dark .bp3-control.bp3-switch {
-    input:focus ~ .bp3-control-indicator {
-      outline: var(--xh-form-field-focused-border-color) solid 1px !important;
-      outline-offset: 1px;
-    }
+.bp3-control,
+.bp3-dark .bp3-control,
+.bp3-dark .bp3-control.bp3-switch {
+  input:focus ~ .bp3-control-indicator {
+    outline: var(--xh-form-field-focused-border-color) solid 1px !important;
+    outline-offset: 1px;
   }
 }
 
@@ -277,7 +275,8 @@ body.xh-app {
 }
 
 .bp3-input:focus,
-.bp3-dark .bp3-input:focus {
+.bp3-dark .bp3-input:focus,
+.bp3-dark textarea.bp3-input:focus {
   box-shadow: var(--xh-form-field-focused-box-shadow);
 }
 
