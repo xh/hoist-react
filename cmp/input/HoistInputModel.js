@@ -298,10 +298,10 @@ export class HoistInputModel {
     }
 
     containsElement(elem) {
-        const {domElem} = this;
-        if (domElem) {
+        const {domEl} = this;
+        if (domEl) {
             while (elem) {
-                if (elem === domElem) return true;
+                if (elem === domEl) return true;
                 elem = elem.parentElement;
             }
         }
