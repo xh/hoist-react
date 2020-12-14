@@ -11,7 +11,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps, createObservableRef} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import composeRefs from '@seznam/compose-react-refs';
 import PT from 'prop-types';
@@ -26,7 +26,6 @@ export const [TextInput, textInput] = hoistCmp.withFactory({
         return useHoistInputModel(cmp, props, ref, Model);
     }
 });
-
 TextInput.propTypes = {
     ...HoistInputPropTypes,
 
@@ -91,24 +90,6 @@ TextInput.hasLayoutSupport = true;
 //-----------------------
 
 class Model extends HoistInputModel {
-
-    inputRef = createObservableRef();
-
-    blur() {
-        this.inputEl?.blur();
-    }
-
-    focus() {
-        this.inputEl?.focus();
-    }
-
-    select() {
-        this.inputEl?.select();
-    }
-
-    get inputEl() {
-        return this.inputRef.current;
-    }
 
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);

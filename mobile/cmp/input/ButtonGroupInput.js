@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import ReactDOM from 'react-dom';
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {Button, buttonGroup} from '@xh/hoist/mobile/cmp/button';
@@ -43,15 +42,11 @@ ButtonGroupInput.hasLayoutSupport = true;
 class Model extends HoistInputModel {
 
     blur() {
-        this.buttonGroupEl?.blur();
+        this.domEl?.blur();
     }
 
     focus() {
-        this.buttonGroupEl?.focus();
-    }
-
-    get buttonGroupEl() {
-        return ReactDOM.findDOMNode(this.domRef.current);
+        this.domEl?.focus();
     }
 }
 

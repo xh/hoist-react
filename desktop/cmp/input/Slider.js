@@ -65,17 +65,16 @@ Slider.hasLayoutSupport = true;
 class Model extends HoistInputModel {
 
     blur() {
-        this.inputEl?.blur();
+        this.sliderHandle?.blur();
     }
 
     focus() {
-        this.inputEl?.focus();
+        this.sliderHandle?.focus();
     }
 
-    get inputEl() {
-        return  this.domRef.current?.querySelector('.bp3-slider-handle');
+    get sliderHandle() {
+        return this.domEl?.querySelector('.bp3-slider-handle');
     }
-    
 }
 
 const cmp = hoistCmp.factory(

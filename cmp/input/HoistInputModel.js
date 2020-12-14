@@ -12,6 +12,7 @@ import {isEqual} from 'lodash';
 import {useEffect, useImperativeHandle} from 'react';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import './HoistInput.scss';
+import ReactDOM from 'react-dom';
 
 
 /**
@@ -48,23 +49,14 @@ import './HoistInput.scss';
  * Note: Passing a ref to a HoistInput will give you a reference to its underlying HoistInputModel.
  * This model is mostly used for implementation purposes, but it is also intended to
  * provide a limited API for application use.  It currently provides access to the underlying DOM
- * element of the rendered input via its `domRef`, as well as `focus()`, `blur()`, and `select()`.
- *
- * The latter methods should be implemented by concrete subclasses of this class as
- * appropriate, but are provided with an empty implementation in this class.
+ * element of the rendered input via its `domEl` property, as well as `focus()`, `blur()`, and
+ * `select()`.
  *
  * To create an instance of an Input component using this model use the hook
  * {@see useHoistInputModel}.
  */
 @HoistModel
 export class HoistInputModel {
-
-    /**
-     * Ref to rendered DOM element
-     * @member {Element}
-     */
-    domRef = createObservableRef();
-
 
     /**
      * Does this input have the focus ?
@@ -81,12 +73,44 @@ export class HoistInputModel {
         return model instanceof FieldModel ? model : null;
     }
 
+
+    /**
+     * Ref to top-most rendered DOM element in this component.
+     *
+     * HoistInput implementations should implement this by placing the `domRef` ref on the
+     * root of the rendered component sub-tree.
+     *
+     * @member {Element}
+     */
+    get domEl() {
+        const {current} = this.domRef;
+        // eslint-disable-next-line no-undef
+        return (!current || current instanceof Element) ? current : ReactDOM.findDOMNode(current);
+    }
+
+    /**
+     * DOM <Input> element on this control, if any.
+     *
+     * If multiple <Input> elements are present, this getter will return the first one.
+     *
+     * Implementations may target a specific input via placing the 'inputRef' ref
+     * on the appropriate element during rendering.  Otherwise the dom will be
+     * searched for the first rendered <input>.
+     *
+     * @returns {Element}
+     */
+    get inputEl() {
+        return this.inputRef.current ?? this.domEl?.querySelector('input');
+    }
+
     //-----------------------
     // Implementation State
     //------------------------
     model;                                   // Reference to bound model, if any
     @bindable.ref props;                     // Props on input
     @observable.ref internalValue = null;    // Cached internal value
+    inputRef = createObservableRef();        // ref to internal <input> element, if any
+    domRef = createObservableRef();          // ref to outermost element, or class Component.
 
     constructor(props) {
         this.props = props;
@@ -97,17 +121,23 @@ export class HoistInputModel {
     /**
      * Blur focus from this control, if supported.
      */
-    blur() {}
+    blur() {
+        this.inputEl?.blur();
+    }
 
     /**
      * Bring focus to this control, if supported.
      */
-    focus() {}
+    focus() {
+        this.inputEl?.focus();
+    }
 
     /**
      * Select all content on this input, if supported.
      */
-    select() {}
+    select() {
+        this.inputEl?.select();
+    }
 
     //------------------------------
     // Value conversion / committing
@@ -268,10 +298,10 @@ export class HoistInputModel {
     }
 
     containsElement(elem) {
-        const thisElem = this.domRef.current;
-        if (thisElem) {
+        const {domElem} = this;
+        if (domElem) {
             while (elem) {
-                if (elem === thisElem) return true;
+                if (elem === domElem) return true;
                 elem = elem.parentElement;
             }
         }

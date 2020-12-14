@@ -163,22 +163,6 @@ class Model extends HoistInputModel {
     buttonRef = createObservableRef();
     popoverRef = createObservableRef();
 
-    blur() {
-        this.inputEl?.blur();
-    }
-
-    focus() {
-        this.inputEl?.focus();
-    }
-
-    select() {
-        this.inputEl?.select();
-    }
-
-    get inputEl() {
-        return this.inputRef.current;
-    }
-
     // Prop-backed convenience getters
     get maxDate() {
         const {maxDate} = this.props;

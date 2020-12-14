@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import ReactDOM from 'react-dom';
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {input} from '@xh/hoist/kit/onsen';
@@ -69,22 +68,6 @@ TextInput.hasLayoutSupport = true;
 // Implementation
 //-----------------------
 class Model extends HoistInputModel {
-
-    blur() {
-        this.inputEl?.blur();
-    }
-
-    focus() {
-        this.inputEl?.focus();
-    }
-
-    select() {
-        this.inputEl?.select();
-    }
-
-    get inputEl() {
-        return ReactDOM.findDOMNode(this.domRef.current)?.querySelector('input');
-    }
 
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);
