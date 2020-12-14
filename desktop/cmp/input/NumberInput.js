@@ -10,7 +10,7 @@ import {fmtNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps, createObservableRef} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import composeRefs from '@seznam/compose-react-refs';
 import {isNaN, isNil, isNumber} from 'lodash';
 import PT from 'prop-types';
@@ -112,24 +112,6 @@ NumberInput.hasLayoutSupport = true;
 
 class Model extends HoistInputModel {
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
-
-    inputRef = createObservableRef();
-    
-    blur() {
-        this.inputEl?.blur();
-    }
-
-    focus() {
-        this.inputEl?.focus();
-    }
-
-    select() {
-        this.inputEl?.select();
-    }
-
-    get inputEl() {
-        return this.inputRef.current;
-    }
 
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);

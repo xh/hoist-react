@@ -57,19 +57,7 @@ class Model extends HoistInputModel {
     }
 
     get inputEl() {
-        return this.domRef.current?.querySelector('textarea');
-    }
-
-    blur() {
-        this.inputEl?.blur();
-    }
-
-    focus() {
-        this.inputEl?.focus();
-    }
-
-    select() {
-        this.inputEl?.select();
+        return this.domEl.querySelector('textarea');
     }
 
     onChange = (ev) => {

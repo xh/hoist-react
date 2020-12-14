@@ -131,17 +131,22 @@ class Model extends HoistInputModel {
     get filterMode() {return !!this.props.enableFilter}
 
     reactSelectRef = createObservableRef();
+    get reactSelect() {return this.reactSelectRef.current}
 
-    blur() {this.inputEl?.blur()}
+    blur() {
+        this.reactSelect?.blur();
+    }
 
-    focus() {this.inputEl?.focus()}
+    focus() {
+        this.reactSelect?.focus();
+    }
 
-    // not working when enableCreate: true or enableFilter: true.  
+    // not working when enableCreate: true or enableFilter: true.
     // react-select not putting created content into input.
     // maybe not necessary, anyways, on mobile?
-    select() {this.selectText()}
-
-    get inputEl() {return this.reactSelectRef.current}
+    select() {
+        this.selectText();
+    }
 
     constructor(props) {
         super(props);
@@ -313,12 +318,12 @@ class Model extends HoistInputModel {
     };
 
     selectText() {
-        const rsRef = this.inputEl;
-        if (!rsRef) return;
+        const {reactSelect} = this;
+        if (!reactSelect) return;
 
         // Use of windowedMode, creatable and async variants will create levels of nesting we must
         // traverse to get to the underlying Select comp and its inputRef.
-        let selectComp = rsRef.select;
+        let selectComp = reactSelect.select;
         while (selectComp && !selectComp.inputRef) {selectComp = selectComp.select}
         const inputElem = selectComp?.inputRef;
 

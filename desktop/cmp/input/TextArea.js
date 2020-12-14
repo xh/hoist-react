@@ -8,7 +8,7 @@ import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hois
 import {hoistCmp} from '@xh/hoist/core';
 import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps, createObservableRef} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
 import composeRefs from '@seznam/compose-react-refs';
 import './TextArea.scss';
@@ -58,24 +58,6 @@ TextArea.hasLayoutSupport = true;
 //-----------------------
 
 class Model extends HoistInputModel {
-
-    inputRef = createObservableRef();
-
-    blur() {
-        this.inputEl?.blur();
-    }
-
-    focus() {
-        this.inputEl?.focus();
-    }
-
-    select() {
-        this.inputEl?.select();
-    }
-
-    get inputEl() {
-        return this.inputRef.current;
-    }
 
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);

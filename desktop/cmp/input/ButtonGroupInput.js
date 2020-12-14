@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import ReactDOM from 'react-dom';
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {Button, ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
@@ -53,26 +52,24 @@ ButtonGroupInput.hasLayoutSupport = true;
 class Model extends HoistInputModel {
 
     blur() {
-        this.enabledButtons[0]?.blur();
+        this.enabledButtons.forEach(it => it.blur());
     }
 
-    onBlur = (e) => {
-        const noBtnsFocused = this.enabledButtons.every(it => !it.focused);
+    focus() {
+        // TODO:  this should favor focusing the "active" button
+        this.enabledButtons[0]?.focus();
+    }
 
+    onButtonBlur = () => {
+        const noBtnsFocused = this.enabledButtons.every(it => !it.focused);
         if (noBtnsFocused) {
-            // noting blur for entire button group, not a single button within
             this.noteBlurred();
         }
     };
 
-    focus() {
-        this.enabledButtons[0]?.focus();
-    }
-
     get enabledButtons() {
-        const btns = ReactDOM.findDOMNode(this.domRef.current)
-            .querySelectorAll('button');
-    
+        const btns = this.domEl?.querySelectorAll('button') ?? [];
+
         return filter(btns, {disabled: false});
     }
 }
@@ -101,7 +98,7 @@ const cmp = hoistCmp.factory(
         const buttons = castArray(children).map(button => {
             if (!button) return null;
 
-            const {value, onFocus, onBlur} = button.props,
+            const {value} = button.props,
                 btnDisabled = disabled || button.props.disabled;
 
             throwIf(button.type !== Button, 'ButtonGroupInput child must be a Button.');
@@ -115,14 +112,8 @@ const cmp = hoistCmp.factory(
                 outlined: withDefault(outlined, false),
                 disabled: withDefault(btnDisabled, false),
                 onClick: () => model.noteValueChange(enableClear && active ? null : value),
-                onFocus: (e) => {
-                    model.onFocus();
-                    onFocus ? onFocus(e) : null;
-                },
-                onBlur: (e) => {
-                    model.onBlur(e);
-                    onBlur ? onBlur(e) : null;
-                },
+                onFocus: model.onFocus,
+                onBlur: model.onButtonBlur,
                 // Workaround for https://github.com/palantir/blueprint/issues/3971
                 key: `${active} ${value}`
             });

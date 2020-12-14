@@ -4,10 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import {createObservableRef} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
 import {hoistCmp} from '@xh/hoist/core';
 import {isNil} from 'lodash';
@@ -20,7 +19,7 @@ export const [Checkbox, checkbox] = hoistCmp.withFactory({
     displayName: 'Checkbox',
     className: 'xh-check-box',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, Model);
+        return useHoistInputModel(cmp, props, ref);
     }
 });
 
@@ -54,23 +53,6 @@ Checkbox.propTypes = {
 //----------------------------------
 // Implementation
 //----------------------------------
-class Model extends HoistInputModel {
-
-    inputRef = createObservableRef();
-
-    blur() {
-        this.inputEl?.blur();
-    }
-
-    focus() {
-        this.inputEl?.focus();
-    }
-
-    get inputEl() {
-        return this.inputRef.current;
-    }
-}
-
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
         const {renderValue} = model,
