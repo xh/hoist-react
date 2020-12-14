@@ -261,8 +261,7 @@ textarea.bp3-input,
 }
 
 .bp3-control,
-.bp3-dark .bp3-control,
-.bp3-dark .bp3-control.bp3-switch {
+.bp3-dark .bp3-control {
   input:focus ~ .bp3-control-indicator {
     outline: var(--xh-form-field-focused-border-color) solid 1px !important;
     outline-offset: 1px;
