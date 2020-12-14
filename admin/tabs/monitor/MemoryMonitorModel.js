@@ -3,6 +3,7 @@ import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
 import {FieldType} from '@xh/hoist/data';
 import {fmtTime, numberRenderer} from '@xh/hoist/format';
+import {Icon} from '@xh/hoist/icon';
 import {checkMinVersion} from '@xh/hoist/utils/js';
 import {forOwn, sortBy} from 'lodash';
 
@@ -27,6 +28,7 @@ export class MemoryMonitorModel {
 
         this.gridModel = new GridModel({
             sortBy: 'timestamp|desc',
+            enableExport: true,
             store: {
                 idSpec: 'timestamp',
                 fields: [
@@ -57,7 +59,6 @@ export class MemoryMonitorModel {
                 plotOptions: {
                     series: {
                         animation: false,
-                        step: true,
                         marker: {enabled: false}
                     }
                 },
@@ -115,21 +116,37 @@ export class MemoryMonitorModel {
                 {
                     name: 'Max',
                     data: maxSeries,
-                    color: '#ef6c00'
+                    color: '#ef6c00',
+                    step: true
                 },
                 {
                     name: 'Total',
                     data: totalSeries,
-                    color: '#1976d2'
+                    color: '#1976d2',
+                    step: true
                 },
                 {
                     name: 'Used',
                     type: 'area',
                     data: usedSeries,
                     color: '#bd7c7c',
-                    fillOpacity: 0.3
+                    fillOpacity: 0.3,
+                    lineWidth: 1
                 }
             ]);
+        } catch (e) {
+            XH.handleException(e);
+        }
+    }
+
+    async takeSnapshotAsync() {
+        try {
+            await XH.fetchJson({
+                url: 'memoryMonitorAdmin/takeSnapshot'
+            }).linkTo(this.loadModel);
+
+            await this.loadAsync();
+            XH.toast({message: 'Updated snapshot loaded', icon: Icon.camera()});
         } catch (e) {
             XH.handleException(e);
         }
@@ -142,7 +159,7 @@ export class MemoryMonitorModel {
             }).linkTo(this.loadModel);
 
             await this.loadAsync();
-            XH.toast({message: 'GC run complete'});
+            XH.toast({message: 'GC run complete', icon: Icon.trash()});
         } catch (e) {
             XH.handleException(e);
         }
