@@ -51,12 +51,6 @@ body.xh-app {
     margin: var(--xh-pad-px) 0;
   }
 
-  :focus:not(.bp3-input, .bp3-slider-handle),
-  .bp3-control input:focus ~ .bp3-control-indicator {
-    outline: var(--xh-focus-outline);
-    outline-offset: var(--xh-focus-outline-offset-px);
-  }
-
   .xh-title-tip {
     cursor: pointer;
   }
