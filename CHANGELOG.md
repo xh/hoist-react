@@ -1,6 +1,6 @@
 # Changelog
 
-## v37.0.0-SNAPSHOT - unreleased
+## v37.0.0 - 12-15-2020
 
 ### 🎁 New Features
 
