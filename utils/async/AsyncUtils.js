@@ -5,7 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {wait} from '@xh/hoist/promise';
-
+import {MILLISECONDS, SECONDS} from '@xh/hoist/utils/datetime';
+import {isNil} from 'lodash';
 
 /**
  * Iterate over a collection and run a closure on each item - as with `for ... of` - but do so
@@ -75,6 +76,50 @@ export async function whileAsync(conditionFn, fn, {waitAfter = 50, waitFor = 1, 
     }
     writeDebug(debug, waitCount, initialStart);
 }
+
+/**
+ * Evaluate checkFn on interval until it returns true, or until timeout is expired.
+ * Use this to wait for a state that you expect to eventually be true.
+ * @param {Object} [opts] - options.
+ * @param {function} [opts.checkFn] - function to run each iteration.  Must return boolean.
+ * @param {number} [opts.checkInterval] - interval in ms to wait for each iteration.
+ * @param {string} [opts.reCheckMsg] - msg to log when checkFn returns false.
+ * @param {string} [opts.failMsg] - msg to put into Exception when timeout expires.
+ * @param {number} [opts.timeout] - duration in ms after which loop will stop and exception will be thrown.
+ */
+export async function isReadyAsync({
+    checkFn,
+    checkInterval = 100 * MILLISECONDS,
+    reCheckMsg = 'checkFn failed. Retrying.',
+    failMsg,
+    timeout = 30 * SECONDS
+}) {
+    let ret;
+    const internalCheckFnAsync = async () => checkFn();   
+    
+    try {
+        ret = await new Promise((resolve, reject) => {
+            const doCheckAsync = async () => {
+                if (await internalCheckFnAsync()) {
+                    resolve(true);
+                } else if (isNil(ret)) {
+                    console.warn(reCheckMsg);
+                    wait(checkInterval).then(doCheckAsync);
+                }
+            };
+            doCheckAsync();
+        }).timeout({
+            interval: timeout,
+            message: failMsg
+        });
+    } catch (error) {
+        ret = false;
+        console.error(error);
+    }
+
+    return ret;
+}
+
 
 //------------------------------
 // Implementation
