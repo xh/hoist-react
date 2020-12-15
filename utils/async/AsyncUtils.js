@@ -5,8 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {wait} from '@xh/hoist/promise';
-import {MILLISECONDS, SECONDS} from '@xh/hoist/utils/datetime';
-import {isNil} from 'lodash';
+import {SECONDS} from '@xh/hoist/utils/datetime';
+import {Timer} from '../../utils/async/Timer';
 
 /**
  * Iterate over a collection and run a closure on each item - as with `for ... of` - but do so
@@ -77,40 +77,42 @@ export async function whileAsync(conditionFn, fn, {waitAfter = 50, waitFor = 1, 
     writeDebug(debug, waitCount, initialStart);
 }
 
-// todo: explore replacing this with Timer.js
+
 /**
- * Evaluate checkFn on interval until it returns true, or until timeout is expired.
+ * Evaluate runFn on interval until it returns true, or until timeout is expired.
  * Use this to wait for a state that you expect to eventually be true.
  * @param {Object} [opts] - options.
- * @param {function} [opts.checkFn] - function to run each iteration.  May be async.  Must return boolean.
- * @param {number} [opts.checkInterval] - interval in ms to wait for each iteration.
- * @param {string} [opts.reCheckMsg] - msg to log when checkFn returns false.
- * @param {string} [opts.failMsg] - msg to put into Exception when timeout expires.
- * @param {number} [opts.timeout] - duration in ms after which loop will stop and exception will be thrown.
+ * @param {function} [opts.runFn] - Function to run each iteration.  May be async.  Must return boolean.
+ * @param {number} [opts.interval] - Interval in ms to wait for each iteration.
+ * @param {string} [opts.failMsg] - Message to put into Exception when the loop timeout expires.
+ * @param {number} [opts.timeout] - Duration in ms after which the iterations will stop and exception will be thrown.
+ *                                  Also the duration to wait for a result of a run of the runFn, if the runFn is a Promise.
  */
 export async function isReadyAsync({
-    checkFn,
-    checkInterval = 100 * MILLISECONDS,
-    reCheckMsg = 'checkFn failed. Retrying.',
+    runFn,
+    interval = 500,
     failMsg,
-    timeout = 30 * SECONDS
+    timeout = 30 * SECONDS,
+    debug = false
 }) {
-    let ret;
-    const internalCheckFnAsync = async () => checkFn();   
-    // todo: support not re-running while already running
-    //       this would be useful for longer running async checkFn
-    // todo: add debug config to allow for logging timeout error & recheck warning only on debug:true
+    let ret, runner;
+        
     try {
         ret = await new Promise((resolve, reject) => {
-            const doCheckAsync = async () => {
-                if (await internalCheckFnAsync()) {
+            const internalRunFnAsync = async () => {
+                if (await runFn()) {
                     resolve(true);
-                } else if (isNil(ret)) {
-                    console.warn(reCheckMsg);
-                    wait(checkInterval).then(doCheckAsync);
+                } else if (debug) {
+                    console.warn('runFn passed to isReadyAsync returned false. Retrying.');
                 }
-            };
-            doCheckAsync();
+            };  
+
+            runner = Timer.create({
+                runFn: internalRunFnAsync,
+                interval,
+                timeout
+            });
+
         }).timeout({
             interval: timeout,
             message: failMsg
@@ -120,6 +122,7 @@ export async function isReadyAsync({
         console.error(error);
     }
 
+    runner.cancel();
     return ret;
 }
 

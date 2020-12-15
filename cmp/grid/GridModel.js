@@ -458,10 +458,6 @@ export class GridModel {
 
         const {agApi} = this;
 
-        // todo: explore breaking this assert up so that
-        //       selModel.record count and selected rowNode count are checked
-        //       separately from the "match"
-
         const assertStoreAndGridSelectionMatch = () => {
             const {records} = this.selModel;
             const gridRecords = agApi.getSelectedRows();
@@ -469,8 +465,7 @@ export class GridModel {
         };
 
         const selectionsMatch = await isReadyAsync({
-            checkFn: assertStoreAndGridSelectionMatch,
-            reCheckMsg: 'agGrid row selection and Hoist React store selection do not match.  Retrying.',
+            runFn: assertStoreAndGridSelectionMatch,
             failMsg: `agGrid row selection and Hoist React store selection do not match after 30 seconds.
                 This is probably caused by an application level bug.`
         });
