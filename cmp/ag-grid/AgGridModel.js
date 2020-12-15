@@ -7,8 +7,8 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf, apiDeprecated} from '@xh/hoist/utils/js';
-import {isReadyAsync} from '@xh/hoist/utils/async';
 import {cloneDeep, concat, find, has, isArray, isEmpty, isNil, partition, set, startCase} from 'lodash';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 
 /**
  * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
@@ -103,13 +103,21 @@ export class AgGridModel {
      *                      or returns false after 30 seconds.
      */
     async isReadyAsync() {
-        const ret = await isReadyAsync({
-            checkFn: () => this.isReady,
-            reCheckMsg: 'ag-Grid api not ready.  Retrying.',
-            failMsg: `ag-Grid api not ready after 30 seconds.
-                This is probably caused by an application level bug.`
+        let ret = false,
+            disposer;
+
+        ret = await new Promise((resolve, reject) => {
+            disposer = this.addReaction({
+                when: () => this.agApi,
+                run: () => {resolve(true)}
+            });
+        }).timeout({
+            interval: 10 * SECONDS,
+            message: `ag-Grid api not ready after 30 seconds.
+            This is probably caused by an application level bug.`
         });
 
+        disposer();
         return ret;
     }
 
