@@ -103,7 +103,7 @@ export class AgGridModel {
      *                      or resolves to false if agApi is not defined within 30 seconds.
      */
     async isReadyAsync() {
-        return mobxWhen(() => false && this.agApi)
+        return mobxWhen(() => this.agApi)
             .timeout({
                 interval: 30 * SECONDS,
                 message: 'ag-Grid api not ready after 30 seconds.  This is likely an application level bug.'
