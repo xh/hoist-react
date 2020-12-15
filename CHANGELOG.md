@@ -22,6 +22,10 @@
   `filterFn` prop.
 * New Admin Console Monitor > Memory tab added to view snapshots of JVM memory usage. (Requires
   Hoist Core v8.7 or greater.)
+* `FormModel` and `FieldModel` gain support for Focus Management.
+* New `boundInput` getter on `FieldModel` to facilitate imperative access to controls, when needed.
+  This getter will return the new `HoistInputModel` interface, which support basic DOM access as well
+  as standard methods for `focus()`, `blur()`, and `select()`.
 * New `GridModel` config `lockColumnGroups` to allow controlling whether child columns can be moved
   outside their parent group. Defaults to `true` to maintain existing behavior.
 
@@ -39,7 +43,7 @@
   * Application components extending `HoistInput` should use the `useHoistInputModel` hook instead.
   * Applications getting refs to `HoistInputs` should be aware that these refs now return a ref to a
     `HoistInputModel`. In order to get the DOM element associated with the component use the new
-    `domRef` property of that model rather than `HoistComponent.getDOMNode()` method.
+    `domEl` property of that model rather than the`HoistComponent.getDOMNode()` method.
 * Hoist grids now require ag-Grid v24.1.0 or higher - update your ag-Grid dependency in your app's
   `package.json` file. ag-Grid v24.1.0
   [lists 5 breaking changes](https://www.ag-grid.com/ag-grid-changelog/), including the two called

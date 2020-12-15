@@ -185,6 +185,19 @@ class Model extends HoistInputModel {
         ]);
     }
 
+    blur() {
+        this.editor?.execCommand('undoSelection');
+        this.editor?.getInputField().blur();
+    }
+
+    focus() {
+        this.editor?.focus();
+    }
+
+    select() {
+        this.editor?.execCommand('selectAll');
+    }
+
     constructor(props) {
         super(props);
 

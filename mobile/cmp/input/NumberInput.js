@@ -86,6 +86,12 @@ class Model extends HoistInputModel {
         return withDefault(this.props.commitOnChange, false);
     }
 
+    select() {
+        // first focus, and then wait one tick for value to be put into input element
+        this.focus();
+        wait().then(() => super.select());
+    }
+
     onChange = (ev) => {
         let value = this.parseValue(ev.target.value);
         value = isNaN(value) ? null : value;

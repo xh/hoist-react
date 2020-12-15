@@ -7,7 +7,6 @@
 import debouncePromise from 'debounce-promise';
 import {castArray, escapeRegExp, isEmpty, isNil, isPlainObject, keyBy, merge, isEqual} from 'lodash';
 import PT from 'prop-types';
-import {createRef} from 'react';
 import {components} from 'react-select';
 
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
@@ -21,10 +20,10 @@ import {
     reactSelect,
     reactWindowedSelect
 } from '@xh/hoist/kit/react-select';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps, createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 
 import './Select.scss';
@@ -199,8 +198,7 @@ class Model extends HoistInputModel {
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
-    @observable.ref internalOptions = [];
-    @action setInternalOptions(options) {this.internalOptions = options}
+    @bindable.ref internalOptions = [];
 
     // Prop-backed convenience getters
     get asyncMode() {return !!this.props.queryFn}
@@ -240,7 +238,23 @@ class Model extends HoistInputModel {
         });
     }
 
-    reactSelectRef = createRef();
+    reactSelectRef = createObservableRef();
+    get reactSelect() {
+        return this.reactSelectRef.current;
+    }
+
+    blur() {
+        this.reactSelect?.blur();
+    }
+
+    focus() {
+        this.reactSelect?.focus();
+    }
+
+    select() {
+        this.selectText();
+    }
+
 
     getSelectFactory() {
         const {creatableMode, asyncMode, windowedMode} = this;
@@ -289,21 +303,25 @@ class Model extends HoistInputModel {
         if (this.selectOnFocus) {
             wait(1).then(() => {
                 // Delay to allow re-render. For safety, only select if still focused!
-                const rsRef = this.reactSelectRef.current;
-                if (!rsRef) return;
-
-                // Use of windowedMode, creatable and async variants will create levels of nesting we must
-                // traverse to get to the underlying Select comp and its inputRef.
-                let selectComp = rsRef.select;
-                while (selectComp && !selectComp.inputRef) {selectComp = selectComp.select}
-                const inputElem = selectComp?.inputRef;
-
-                if (this.hasFocus && inputElem && document.activeElement === inputElem) {
-                    inputElem.select();
-                }
+                this.selectText();
             });
         }
         super.noteFocused();
+    }
+
+    selectText() {
+        const {reactSelect} = this;
+        if (!reactSelect) return;
+
+        // Use of windowedMode, creatable and async variants will create levels of nesting we must
+        // traverse to get to the underlying Select comp and its inputRef.
+        let selectComp = reactSelect.select;
+        while (selectComp && !selectComp.inputRef) {selectComp = selectComp.select}
+        const inputElem = selectComp?.inputRef;
+
+        if (this.hasFocus && inputElem && document.activeElement === inputElem) {
+            inputElem.select();
+        }
     }
 
     @action
@@ -651,7 +669,8 @@ const cmp = hoistCmp.factory(
                 // Esc. and Enter can be listened for by parents -- stop the keydown event
                 // propagation only if react-select already likely to have used for menu management.
                 // note: menuIsOpen will be undefined on AsyncSelect due to a react-select bug.
-                const {menuIsOpen} = model.reactSelectRef.current ? model.reactSelectRef.current.state : {};
+                const {reactSelect} = model,
+                    {menuIsOpen} = reactSelect ? reactSelect.state : {};
                 if (menuIsOpen && (e.key === 'Escape' || e.key === 'Enter')) {
                     e.stopPropagation();
                 }
