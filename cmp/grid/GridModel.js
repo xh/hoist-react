@@ -455,6 +455,9 @@ export class GridModel {
 
         const {agApi} = this;
 
+        // todo: explore breaking this assert up so that
+        //       selModel.record count and selected rowNode count are checked
+        //       separately from the "match"
         let indexCount,
             indices = [];
         const assertStoreAndGridSelectionMatch = () => {

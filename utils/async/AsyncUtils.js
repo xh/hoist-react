@@ -81,7 +81,7 @@ export async function whileAsync(conditionFn, fn, {waitAfter = 50, waitFor = 1, 
  * Evaluate checkFn on interval until it returns true, or until timeout is expired.
  * Use this to wait for a state that you expect to eventually be true.
  * @param {Object} [opts] - options.
- * @param {function} [opts.checkFn] - function to run each iteration.  Must return boolean.
+ * @param {function} [opts.checkFn] - function to run each iteration.  May be async.  Must return boolean.
  * @param {number} [opts.checkInterval] - interval in ms to wait for each iteration.
  * @param {string} [opts.reCheckMsg] - msg to log when checkFn returns false.
  * @param {string} [opts.failMsg] - msg to put into Exception when timeout expires.
@@ -96,7 +96,9 @@ export async function isReadyAsync({
 }) {
     let ret;
     const internalCheckFnAsync = async () => checkFn();   
-    
+    // todo: support not re-running while already running
+    //       this would be useful for longer running async checkFn
+    // todo: add debug config to allow for logging timeout error & recheck warning only on debug:true
     try {
         ret = await new Promise((resolve, reject) => {
             const doCheckAsync = async () => {
