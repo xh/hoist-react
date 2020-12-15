@@ -9,7 +9,6 @@ import {hoistCmp} from '@xh/hoist/core';
 import {input} from '@xh/hoist/kit/onsen';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-
 import PT from 'prop-types';
 import './TextInput.scss';
 

@@ -11,6 +11,7 @@ import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
+import composeRefs from '@seznam/compose-react-refs';
 import {isNaN, isNil, isNumber} from 'lodash';
 import PT from 'prop-types';
 
@@ -190,7 +191,7 @@ const cmp = hoistCmp.factory(
             buttonPosition: 'none',
             disabled: props.disabled,
             fill: props.fill,
-            inputRef: props.inputRef,
+            inputRef: composeRefs(model.inputRef, props.inputRef),
             leftIcon: props.leftIcon,
             max: props.max,
             majorStepSize: props.majorStepSize,

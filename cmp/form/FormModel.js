@@ -153,6 +153,34 @@ export class FormModel {
         return some(this.fields, m => m.isDirty);
     }
 
+    //-----------------------------------
+    // Focus Management
+    //-----------------------------------
+    /**
+     * The Field that is currently focused on this form.
+     *
+     * @see FieldModel.focus() for important information on this method
+     * and its limitations.
+     *
+     * @returns {FieldModel}
+     */
+    @computed
+    get focusedField() {
+        return this.fieldList.find(f => f.hasFocus);
+    }
+
+    /**
+     * Focus a field on this form.
+     *
+     * @param {string} - name of field to focus.
+     *
+     * @see FieldModel.focus() for important information on this method
+     * and its limitations.
+     */
+    focusField(name) {
+        this.getField(name)?.focus();
+    }
+
     //------------------------
     // Validation
     //------------------------
