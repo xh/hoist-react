@@ -56,20 +56,11 @@ class Model extends HoistInputModel {
     }
 
     focus() {
-        // TODO:  this should favor focusing the "active" button
         this.enabledButtons[0]?.focus();
     }
 
-    onButtonBlur = () => {
-        const noBtnsFocused = this.enabledButtons.every(it => !it.focused);
-        if (noBtnsFocused) {
-            this.noteBlurred();
-        }
-    };
-
     get enabledButtons() {
         const btns = this.domEl?.querySelectorAll('button') ?? [];
-
         return filter(btns, {disabled: false});
     }
 }
@@ -112,10 +103,9 @@ const cmp = hoistCmp.factory(
                 outlined: withDefault(outlined, false),
                 disabled: withDefault(btnDisabled, false),
                 onClick: () => model.noteValueChange(enableClear && active ? null : value),
-                onFocus: model.onFocus,
-                onBlur: model.onButtonBlur,
                 // Workaround for https://github.com/palantir/blueprint/issues/3971
-                key: `${active} ${value}`
+                key: `${active} ${value}`,
+                autoFocus: active && model.hasFocus
             });
         });
 
@@ -124,6 +114,8 @@ const cmp = hoistCmp.factory(
             ...buttonGroupProps,
             minimal: withDefault(minimal, outlined, false),
             ...getLayoutProps(props),
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
             className,
             ref
         });

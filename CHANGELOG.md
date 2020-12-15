@@ -22,7 +22,10 @@
   `filterFn` prop.
 * New Admin Console Monitor > Memory tab added to view snapshots of JVM memory usage. (Requires
   Hoist Core v8.7 or greater.)
-* Focus, blur, and select methods now available on the model returned by the `ref` prop on most HoistInputs.
+* `FormModel` and `FieldModel` gain support for Focus Management.
+* New `boundInput` getter on `FieldModel` to facilitate imperative access to controls, when needed.
+  This getter will return the new `HoistInputModel` interface, which support basic DOM access as well
+  as standard methods for `focus()`, `blur()`, and `select()`.
 * New `GridModel` config `lockColumnGroups` to allow controlling whether child columns can be moved
   outside their parent group. Defaults to `true` to maintain existing behavior.
 
