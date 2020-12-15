@@ -14,6 +14,7 @@ import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobil
 import {Icon} from '@xh/hoist/icon';
 import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isReadyAsync} from '@xh/hoist/utils/async';
 import {
     apiDeprecated,
@@ -35,6 +36,7 @@ import {
     find,
     isArray,
     isEmpty,
+    isEqual,
     isFunction,
     isNil,
     isPlainObject,
@@ -452,23 +454,18 @@ export class GridModel {
      */
     async ensureSelectionVisible() {
         if (!await this.isReadyAsync()) return;
+        if (!await this.confirmSelectionAsync()) return;
 
         const {agApi} = this;
 
         // todo: explore breaking this assert up so that
         //       selModel.record count and selected rowNode count are checked
         //       separately from the "match"
-        let indexCount,
-            indices = [];
+
         const assertStoreAndGridSelectionMatch = () => {
-            indices = [];
             const {records} = this.selModel;
-            records.forEach(record => {
-                const rowNode = agApi.getRowNode(record.id);
-                if (rowNode?.isSelected()) indices.push(rowNode.rowIndex);
-            });
-            indexCount = indices.length;
-            return indexCount > 0 && indexCount === records.length;
+            const gridRecords = agApi.getSelectedRows();
+            return isEqual(records, gridRecords);
         };
 
         const selectionsMatch = await isReadyAsync({
@@ -480,6 +477,9 @@ export class GridModel {
        
         if (!selectionsMatch) return;
 
+        let indices = agApi.getSelectedNodes().map(it => it.rowIndex),
+            indexCount = indices.length;
+
         if (indexCount === 1) {
             agApi.ensureIndexVisible(indices[0]);
         } else if (indexCount > 1) {
@@ -490,6 +490,21 @@ export class GridModel {
 
     /** @return {boolean} - true if any records are selected. */
     get hasSelection() {return !this.selModel.isEmpty}
+
+    /**
+     * @returns {promise} - returns a promise that resolves to true as soon as store selection > 0 is detected,
+     *                      or resolves to false if not detected within 30 seconds.
+     *                      This is useful when selections are made through an ag-Grid api, and you are
+     *                      expecting to be able to access the selected records from the Store.  It takes a
+     *                      few ticks for them to appear in the Hoist-React Store.
+     */
+    async confirmSelectionAsync() {
+        return this.whenAsync({
+            when: () => !this.selModel.isEmpty,
+            timeout: 30 * SECONDS,
+            errorMsg: 'GridModel Store has no selected records after 30 seconds.  This is likely an application level bug.'
+        });
+    }
 
     /** @return {Record[]} - currently selected Records. */
     get selection() {return this.selModel.records}

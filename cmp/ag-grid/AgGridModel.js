@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, bindable, observable, when as mobxWhen} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf, apiDeprecated} from '@xh/hoist/utils/js';
 import {cloneDeep, concat, find, has, isArray, isEmpty, isNil, partition, set, startCase} from 'lodash';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -103,16 +103,11 @@ export class AgGridModel {
      *                      or resolves to false if agApi is not defined within 30 seconds.
      */
     async isReadyAsync() {
-        return mobxWhen(() => this.agApi)
-            .timeout({
-                interval: 30 * SECONDS,
-                message: 'ag-Grid api not ready after 30 seconds.  This is likely an application level bug.'
-            })
-            .then(() => true)
-            .catch(error => {
-                console.error(error);
-                return false;
-            });
+        return this.whenAsync({
+            when: () => this.agApi,
+            timeout: 30 * SECONDS,
+            errorMsg: 'ag-Grid api not ready after 30 seconds.  This is likely an application level bug.'
+        });
     }
 
     /**
