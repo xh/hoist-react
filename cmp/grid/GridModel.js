@@ -451,6 +451,10 @@ export class GridModel {
      * If multiple records are selected, scroll to the first record and then the last. This will do
      * the minimum scrolling necessary to display the start of the selection and as much as
      * possible of the rest.
+     * 
+     * Method is async, but name does not use 'Async' suffix to maintain backwards compatability.
+     * The method will wait for the agApi, and for an expected selection in the Store, and for 
+     * store and grid selection to match, before attempting to scroll.
      */
     async ensureSelectionVisible() {
         if (!await this.isReadyAsync()) return;

@@ -28,6 +28,10 @@
   as standard methods for `focus()`, `blur()`, and `select()`.
 * New `GridModel` config `lockColumnGroups` to allow controlling whether child columns can be moved
   outside their parent group. Defaults to `true` to maintain existing behavior.
+* `ReactiveSupport.js` offers a new method `whenAsync` to wait 'n' MS for an observable state to change.
+* `GridModel` has a new method `isReadyAsync`. Use to wait for the ag-Grid api to be ready.
+* `GridModel` has a new method `confirmSelectionAsync`. Use to wait for the selModel.selection to be detected.
+* `AsyncUtils.js` has a new method `isReadyAsync`.  Use this to wait for a state that you expect to eventually be true.
 
 ### 💥 Breaking Changes
 
@@ -69,6 +73,8 @@
 
 * Fix issue where grid row striping inadvertently disabled by default for non-tree grids.
 * Fix issue where grid empty text cleared on autosize.
+* `GridModel.ensureSelectionVisible` is now async and handles waiting for selections to be set before
+  scrolling.
 
 ### ✨ Style
 

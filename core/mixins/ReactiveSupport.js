@@ -142,7 +142,7 @@ export function ReactiveSupport(C) {
              * @param {function} [conf.timeout] - interval value in ms.
              * @param {function} conf.errorMsg - message for Exception thrown on timeout.
              * @returns {promise} - Returns a promise that resolves to true as soon as `when` returns true,
-             *                      or resolves to false if when does return true within interval.
+             *                      or resolves to false if `when` does not return true within interval.
              */
             async whenAsync({when, timeout, errorMsg}) {
                 return mobxWhen(when)
