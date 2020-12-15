@@ -9,7 +9,7 @@ import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {reactSelect, reactCreatableSelect} from '@xh/hoist/kit/react-select';
-import {action, observable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, createObservableRef} from '@xh/hoist/utils/react';
 import {assign, isEmpty, isPlainObject} from 'lodash';
@@ -124,8 +124,7 @@ Select.hasLayoutSupport = true;
 class Model extends HoistInputModel {
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
-    @observable.ref internalOptions = [];
-    @action setInternalOptions(options) {this.internalOptions = options}
+    @bindable.ref internalOptions = [];
 
     get creatableMode() {return !!this.props.enableCreate}
     get filterMode() {return !!this.props.enableFilter}
