@@ -13,8 +13,8 @@ import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desk
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
 import {action, observable} from '@xh/hoist/mobx';
-import {SECONDS} from '@xh/hoist/utils/datetime';
 import {wait} from '@xh/hoist/promise';
+import {isReadyAsync} from '@xh/hoist/utils/async';
 import {
     apiDeprecated,
     apiRemoved,
@@ -450,36 +450,32 @@ export class GridModel {
      * the minimum scrolling necessary to display the start of the selection and as much as
      * possible of the rest.
      */
-    ensureSelectionVisible(isLastTry) {
-        const {records} = this.selModel,
-            {agApi} = this,
-            retryDelay = 1 * SECONDS,
-            doRetry = () => {if (!isLastTry) wait(retryDelay).then(() => this.ensureSelectionVisible(true));};
+    async ensureSelectionVisible() {
+        if (!await this.isReadyAsync()) return;
 
-        if (!agApi) {
-            console.warn('ag-Grid api not ready.  Will try again in 1 second.');
-            doRetry();            
-            return;
-        }
+        const {agApi} = this;
 
-        if (isEmpty(records)) {
-            console.warn('No records selected yet.  Will try again in 1 second.');
-            doRetry();            
-            return;
-        }
+        let indexCount,
+            indices = [];
+        const assertStoreAndGridSelectionMatch = () => {
+            indices = [];
+            const {records} = this.selModel;
+            records.forEach(record => {
+                const rowNode = agApi.getRowNode(record.id);
+                if (rowNode?.isSelected()) indices.push(rowNode.rowIndex);
+            });
+            indexCount = indices.length;
+            return indexCount > 0 && indexCount === records.length;
+        };
 
-        const indices = [];
-        records.forEach(record => {
-            const rowNode = agApi.getRowNode(record.id);
-            if (rowNode) indices.push(rowNode.rowIndex);
+        const selectionsMatch = await isReadyAsync({
+            checkFn: assertStoreAndGridSelectionMatch,
+            reCheckMsg: 'agGrid row selection and Hoist React store selection do not match.  Retrying.',
+            failMsg: `agGrid row selection and Hoist React store selection do not match after 30 seconds.
+                This is probably caused by an application level bug.`
         });
-
-        const indexCount = indices.length;
-        if (indexCount != records.length) {
-            console.warn('Grid row nodes not found for all selected records - grid data reaction/rendering likely in progress.  Will try again in 1 second.');
-            doRetry();
-            return;
-        }
+       
+        if (!selectionsMatch) return;
 
         if (indexCount === 1) {
             agApi.ensureIndexVisible(indices[0]);
@@ -502,6 +498,8 @@ export class GridModel {
     get empty() {return this.store.empty}
 
     get isReady() {return this.agGridModel.isReady}
+    async isReadyAsync() {return this.agGridModel.isReadyAsync()}
+
     get agApi() {return this.agGridModel.agApi}
     get agColumnApi() {return this.agGridModel.agColumnApi}
 
