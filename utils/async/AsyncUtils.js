@@ -77,6 +77,7 @@ export async function whileAsync(conditionFn, fn, {waitAfter = 50, waitFor = 1, 
     writeDebug(debug, waitCount, initialStart);
 }
 
+// todo: explore replacing this with Timer.js
 /**
  * Evaluate checkFn on interval until it returns true, or until timeout is expired.
  * Use this to wait for a state that you expect to eventually be true.
