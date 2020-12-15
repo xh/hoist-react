@@ -136,8 +136,7 @@ export function ReactiveSupport(C) {
             },
 
             /**
-             * @param {Object} conf - configuration of reaction, containing options accepted by MobX
-             *      reaction() API, as well as arguments below.
+             * @param {Object} conf - configuration of check to run.
              * @param {function} [conf.when] - function returning data to observe.
              * @param {function} [conf.timeout] - interval value in ms.
              * @param {function} conf.errorMsg - message for Exception thrown on timeout.
