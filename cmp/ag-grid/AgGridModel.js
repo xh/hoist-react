@@ -7,7 +7,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf, apiDeprecated} from '@xh/hoist/utils/js';
-import {MINUTES} from '@xh/hoist/utils/datetime';
+import {isReadyAsync} from '@xh/hoist/utils/async';
 import {cloneDeep, concat, find, has, isArray, isEmpty, isNil, partition, set, startCase} from 'lodash';
 
 /**
@@ -98,11 +98,19 @@ export class AgGridModel {
         return !isNil(this.agApi);
     }
 
+    /**
+     * @returns {boolean} - same as `isReady`, but waits until grid is ready to return true,
+     *                      or returns false after 30 seconds.
+     */
     async isReadyAsync() {
-        return Promise.timeout({
-            interval: 1 * MINUTES,
-            message: 'ag-Grid api not ready after 1 minute.  Something else more serious may be going wrong...'
+        const ret = await isReadyAsync({
+            checkFn: () => this.isReady,
+            reCheckMsg: 'ag-Grid api not ready.  Retrying.',
+            failMsg: `ag-Grid api not ready after 30 seconds.
+                This is probably caused by an application level bug.`
         });
+
+        return ret;
     }
 
     /**
