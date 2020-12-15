@@ -135,6 +135,29 @@ export function ReactiveSupport(C) {
                 this[setter].call(this, value);
             },
 
+            /**
+             * @param {Object} conf - configuration of reaction, containing options accepted by MobX
+             *      reaction() API, as well as arguments below.
+             * @param {function} [conf.when] - function returning data to observe.
+             * @param {function} [conf.timeout] - interval value in ms.
+             * @param {function} conf.errorMsg - message for Exception thrown on timeout.
+             * @returns {promise} - Returns a promise that resolves to true as soon as `when` returns true,
+             *                      or resolves to false if when does return true within interval.
+             */
+            async whenAsync({when, timeout, errorMsg}) {
+                return mobxWhen(when)
+                    .timeout({
+                        interval: timeout,
+                        message: errorMsg
+                    })
+                    .then(() => true)
+                    .catch(error => {
+                        console.error(error);
+                        return false;
+                    });
+            },
+
+
             //------------------------
             // Implementation
             //------------------------
