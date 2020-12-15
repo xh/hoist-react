@@ -1,6 +1,6 @@
 # Changelog
 
-## v37.0.0 - 12-15-2020
+## v37.0.0 - 2020-12-15
 
 ### 🎁 New Features
 
@@ -98,7 +98,7 @@
 
 * ag-Grid `23.x -> 24.1`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v36.6.1...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.6.1...v37.0.0)
 
 ## v36.6.1 - 2020-11-06
 
