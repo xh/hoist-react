@@ -4,53 +4,55 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {hoistCmp} from '@xh/hoist/core';
 import {div, fragment, hspacer, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
 import {listItem} from '@xh/hoist/kit/onsen';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
-import {MenuModel} from '@xh/hoist/mobile/cmp/menu/MenuModel';
+import {throwIf} from '@xh/hoist/utils/js';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {isFunction, isEmpty} from 'lodash';
+import {isValidElement} from 'react';
 import PT from 'prop-types';
+
 import './Menu.scss';
+import {MenuItem} from './MenuItem';
 
 /**
- * Menu Component
+ * Menu Component.
+ *
+ * Not typically created directly, but instead created via a MenuButton or similar affordance.
+ *
+ * Note that the Menu itself does not maintain open / close state - it is the responsibility
+ * of the triggering component to manage this state. Pass an `onDismiss` callback to
+ * facilitate closing the menu from within this component.
+ *
+ * @see MenuButton
+ * @private
  */
 export const [Menu, menu] = hoistCmp.withFactory({
     displayName: 'Menu',
-    model: uses(MenuModel),
+    model: false,
     className: 'xh-menu',
 
-    render({model, className, width, align = 'left'}) {
-        const {isOpen, xPos, yPos} = model,
-            style = {top: yPos, [align]: xPos, width};
+    render(props, ref) {
+        const [layoutProps, {className, style, menuItems, onDismiss}] = splitLayoutProps(props),
+            items = parseMenuItems(menuItems, onDismiss);
 
-        if (!isOpen) return null;
-
-        const items = model.itemModels.map((it, idx) => {
-            if (it.prepareFn) it.prepareFn(it);
-            const {text, icon, action, hidden} = it,
-                labelItems = icon ? [icon, hspacer(10), text] : [text];
-
-            return listItem({
-                key: idx,
-                tappable: true,
-                item: div({className: 'center', items: labelItems}),
-                omit: hidden,
-                onClick: () => {
-                    if (action) action();
-                    model.close();
-                }
-            });
-        });
+        if (isEmpty(items)) return null;
+        throwIf(!isFunction(onDismiss), 'Menu requires an `onDismiss` callback function');
 
         return fragment(
             mask({
                 isDisplayed: true,
-                onClick: () => model.close()
+                onClick: () => onDismiss()
             }),
-            div({
+            vbox({
+                ref,
                 className,
-                style,
+                style: {
+                    ...style,
+                    ...layoutProps
+                },
                 item: vbox({
                     className: 'xh-menu__list',
                     items
@@ -61,12 +63,41 @@ export const [Menu, menu] = hoistCmp.withFactory({
 });
 
 Menu.propTypes = {
-    /** Width of the menu. */
-    width: PT.number,
+    /** Array of MenuItems or configs to create them */
+    menuItems: PT.arrayOf(PT.oneOfType([PT.instanceOf(MenuItem), PT.object])).isRequired,
 
-    /** How to interpret the provided xPos when showing. */
-    align: PT.oneOf(['left', 'right']),
-
-    /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(MenuModel), PT.object]).isRequired
+    /** Callback triggered when use dismisses the menu */
+    onDismiss: PT.func.isRequired
 };
+
+//---------------------------
+// Implementation
+//---------------------------
+function parseMenuItems(items, onDismiss) {
+    return items
+        .filter(it => !it.omit)
+        .map(item => {
+            if (item === '-' || isValidElement(item)) return item;
+            if (!(item instanceof MenuItem)) {
+                item = new MenuItem(item);
+            }
+            if (item.prepareFn) item.prepareFn(item);
+            return item;
+        })
+        .filter(it => !it.hidden)
+        .map((item, idx) => {
+            const {text, icon, actionFn, hidden} = item,
+                labelItems = icon ? [icon, hspacer(10), text] : [text];
+
+            return listItem({
+                key: idx,
+                tappable: true,
+                item: div({className: 'center', items: labelItems}),
+                omit: hidden,
+                onClick: () => {
+                    if (actionFn) actionFn();
+                    onDismiss();
+                }
+            });
+        });
+}

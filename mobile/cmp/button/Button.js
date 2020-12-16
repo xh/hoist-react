@@ -21,7 +21,7 @@ export const [Button, button] = hoistCmp.withFactory({
     model: false,
     className: 'xh-button',
 
-    render(props) {
+    render(props, ref) {
         const [layoutProps, {icon, className, text, modifier, active, onClick, style, ...rest}] = splitLayoutProps(props),
             items = [];
 
@@ -34,6 +34,7 @@ export const [Button, button] = hoistCmp.withFactory({
         }
 
         return onsenButton({
+            ref,
             items,
             modifier,
             onClick,

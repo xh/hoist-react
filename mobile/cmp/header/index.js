@@ -6,4 +6,4 @@
  */
 
 export * from './AppBar';
-export * from './AppMenuModel';
+export * from './AppMenuButton';

@@ -6,4 +6,4 @@
  */
 
 export * from './Menu';
-export * from './MenuModel';
+export * from './MenuItem';
