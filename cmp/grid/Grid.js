@@ -153,9 +153,8 @@ class LocalModel {
     viewRef = createRef();
 
     @computed
-    get needRowHeightFn() {
-        const useAutoHeight = this.model.columns.filter(it => it.agOptions.autoHeight).length > 0;
-        return !useAutoHeight;
+    get usingRowAutoHeight() {
+        return this.model.columns.filter(it => it.agOptions.autoHeight).length > 0;
     }
 
     // The minimum required row height specified by the columns (if any) */
@@ -226,9 +225,8 @@ class LocalModel {
                 agColumnGroupHeader: (props) => columnGroupHeader(props)
             },
             rowSelection: model.selModel.mode,
-            getRowHeight: this.needRowHeightFn ? 
-                (params) => params.node?.group ? this.groupRowHeight : this.rowHeight :
-                undefined,
+            getRowHeight: this.usingRowAutoHeight ? undefined :
+                (params) => params.node?.group ? this.groupRowHeight : this.rowHeight,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             noRowsOverlayComponentFramework: observer(() => div(model.emptyText)),
             onRowClicked: (e) => {
@@ -633,6 +631,7 @@ class LocalModel {
         if (isDisplayed(this.viewRef.current) && ev.finished && ev.source == 'autosizeColumns') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
+        if (this.usingRowAutoHeight) ev.api.resetRowHeights();
     };
 
     // Catches row group changes triggered from ag-grid ui components
@@ -658,6 +657,7 @@ class LocalModel {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
+        if (this.usingRowAutoHeight) ev.api.resetRowHeights();
     };
 
     groupSortComparator = (nodeA, nodeB) => {
