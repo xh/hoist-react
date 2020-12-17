@@ -2,6 +2,10 @@
 
 ## v38.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fix issue where a `View` would create a root row even if there were no leaf rows
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v37.0.0...develop)
 
 ## v37.0.0 - 2020-12-15
