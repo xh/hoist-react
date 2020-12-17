@@ -25,7 +25,7 @@
 
     // We must account for the favorites icon when eliding text
     &--with-favorites {
-      padding-right: 25px !important;
+      padding-right: 30px !important;
     }
   }
 
@@ -124,8 +124,8 @@
       color: var(--xh-text-color);
     }
 
-    &--active {
-      color: var(--xh-orange) !important;
+    & > .svg-inline--fa {
+      width: 12px;
     }
   }
 

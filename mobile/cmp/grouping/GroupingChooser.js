@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
-import {div, hbox, vbox, filler, box, placeholder} from '@xh/hoist/cmp/layout';
+import {div, hbox, vbox, filler, box, placeholder, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from '@xh/hoist/mobile/cmp/button';
@@ -47,7 +47,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
                 popoverCmp({popoverTitle, popoverWidth}),
                 button({
                     className: 'xh-grouping-chooser-button',
-                    item: label,
+                    item: span(label),
                     ...buttonProps,
                     onClick: () => model.showEditor()
                 }),
@@ -90,13 +90,13 @@ const popoverCmp = hoistCmp.factory(
             className: 'xh-grouping-chooser-popover',
             width: popoverWidth,
             content: favoritesIsOpen ? favoritesMenu() : editor(),
-            onCancel: () => model.closePopover(),
+            onCancel: () => model.commitPendingValueAndClose(),
             buttons: favoritesIsOpen ?
                 [
                     button({
                         icon: Icon.add(),
                         flex: 1,
-                        text: 'Add current grouping to favorites',
+                        text: 'Add current',
                         disabled: addFavoriteDisabled,
                         onClick: () => model.addFavorite(model.value)
                     })
@@ -105,7 +105,8 @@ const popoverCmp = hoistCmp.factory(
                     button({
                         icon: Icon.add(),
                         disabled: !!addDimDisabled,
-                        onClick: () => model.toggleAddControl()
+                        omit: model.addControlShown,
+                        onClick: () => model.showAddControl()
                     }),
                     filler(),
                     button({
@@ -210,7 +211,7 @@ const dimensionRow = hoistCmp.factory({
 
 const addDimensionControl = hoistCmp.factory({
     render({model}) {
-        if (!model.showAddControl || model.addDisabledMsg) return null;
+        if (!model.addControlShown || model.addDisabledMsg) return null;
         const options = getDimOptions(model.availableDims, model);
         return div({
             className: 'xh-grouping-chooser__add-control',
@@ -224,7 +225,6 @@ const addDimensionControl = hoistCmp.factory({
                     flex: 1,
                     width: null,
                     autoFocus: true,
-                    openMenuOnFocus: true,
                     hideDropdownIndicator: true,
                     hideSelectedOptionCheck: true,
                     onChange: (newDim) => model.addPendingDim(newDim)
@@ -250,14 +250,10 @@ function getDimOptions(dims, model) {
 const favoritesButton = hoistCmp.factory({
     render({model}) {
         if (!model.persistFavorites) return null;
-        const isFavorite = model.isFavorite(model.value);
         return button({
-            icon: Icon.favorite({prefix: isFavorite ? 'fas' : 'far'}),
+            icon: Icon.favorite(),
             modifier: 'quiet',
-            className: classNames(
-                'xh-grouping-chooser__favorite-button',
-                isFavorite ? 'xh-grouping-chooser__favorite-button--active' : null
-            ),
+            className: 'xh-grouping-chooser__favorite-button',
             onClick: () => model.openFavoritesMenu()
         });
     }
@@ -268,7 +264,7 @@ const favoritesMenu = hoistCmp.factory({
         const options = model.favoritesOptions;
 
         if (isEmpty(options)) {
-            return placeholder('You have not yet saved any favorites...');
+            return placeholder('No favorites saved...');
         }
 
         const items = options.map(it => favoriteMenuItem(it));
@@ -291,7 +287,7 @@ const favoriteMenuItem = hoistCmp.factory({
                     }
                 }),
                 button({
-                    icon: Icon.delete({className: 'xh-intent-danger'}),
+                    icon: Icon.delete(),
                     modifier: 'quiet',
                     onClick: () => model.removeFavorite(value)
                 })

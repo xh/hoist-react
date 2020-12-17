@@ -1,6 +1,10 @@
 # Changelog
 
-## v37.0.0-SNAPSHOT - unreleased
+## v38.0.0-SNAPSHOT - unreleased
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v37.0.0...develop)
+
+## v37.0.0 - 2020-12-15
 
 ### 🎁 New Features
 
@@ -22,6 +26,10 @@
   `filterFn` prop.
 * New Admin Console Monitor > Memory tab added to view snapshots of JVM memory usage. (Requires
   Hoist Core v8.7 or greater.)
+* `FormModel` and `FieldModel` gain support for Focus Management.
+* New `boundInput` getter on `FieldModel` to facilitate imperative access to controls, when needed.
+  This getter will return the new `HoistInputModel` interface, which support basic DOM access as well
+  as standard methods for `focus()`, `blur()`, and `select()`.
 * New `GridModel` config `lockColumnGroups` to allow controlling whether child columns can be moved
   outside their parent group. Defaults to `true` to maintain existing behavior.
 
@@ -39,7 +47,7 @@
   * Application components extending `HoistInput` should use the `useHoistInputModel` hook instead.
   * Applications getting refs to `HoistInputs` should be aware that these refs now return a ref to a
     `HoistInputModel`. In order to get the DOM element associated with the component use the new
-    `domRef` property of that model rather than `HoistComponent.getDOMNode()` method.
+    `domEl` property of that model rather than the`HoistComponent.getDOMNode()` method.
 * Hoist grids now require ag-Grid v24.1.0 or higher - update your ag-Grid dependency in your app's
   `package.json` file. ag-Grid v24.1.0
   [lists 5 breaking changes](https://www.ag-grid.com/ag-grid-changelog/), including the two called
@@ -72,22 +80,29 @@
 
 ### ⚙️ Technical
 
+* Note that the included Onsen fork has been replaced with the latest Onsen release.
+  Apps should not need to make any changes.
 * `Cube.info` is now directly observable.
 * `@managed` and `markManaged` have been enhanced to allow for the cleanup of arrays of objects as
   well as objects. This matches the existing array support in `XH.safeDestroy()`.
 
-
 ### 📚 Libraries
 
-* @react `16.13.1 -> 17.0.1`
+* @xh/onsenui `~0.1.2` -> onsenui `~2.11.1`
+* @xh/react-onsenui `~0.1.2` -> react-onsenui `~1.11.3`
 * @blueprintjs/core `3.35 -> 3.36`
 * @blueprintjs/datetime `3.19 -> 3.20`
-* clipboard-copy `3.1 -> 3.2`
-* core-js `3.6 -> 3.7`
+* clipboard-copy `3.1 -> 4.0`
+* core-js `3.6 -> 3.8`
 * dompurify `added @ 2.2`
-* ag-Grid `23.2.0 -> 24.1.0`
+* react `16.13 -> 17.0`
+* semver `added @ 7.3`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v36.6.1...develop)
+#### 📚 Required App Library Upgrades
+
+* ag-Grid `23.x -> 24.1`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.6.1...v37.0.0)
 
 ## v36.6.1 - 2020-11-06
 

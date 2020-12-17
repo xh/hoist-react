@@ -14,7 +14,7 @@ import {Icon} from '@xh/hoist/icon';
 import {popover, menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {compact, isEmpty, isNil, sortBy} from 'lodash';
+import {compact, isEmpty, sortBy} from 'lodash';
 import classNames from 'classnames';
 import PT from 'prop-types';
 
@@ -42,10 +42,6 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
             label = isEmpty(value) ? emptyText : model.getValueLabel(value),
             [layoutProps, buttonProps] = splitLayoutProps(rest);
 
-        if (isNil(layoutProps.width) && isNil(layoutProps.flex)) {
-            layoutProps.width = 220;
-        }
-
         return box({
             className,
             ...layoutProps,
@@ -72,11 +68,14 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
                 ),
                 content: favoritesIsOpen ? favoritesMenu() : editor({popoverWidth, popoverTitle}),
                 onInteraction: (nextOpenState, e) => {
-                    if (nextOpenState === false) {
+                    if (isOpen && nextOpenState === false) {
                         // Prevent clicks with Select controls from closing popover
                         const selectPortal = document.getElementById(Select.MENU_PORTAL_ID)?.contains(e?.target),
                             selectClick = e?.target?.classList.contains('xh-select__single-value');
-                        if (!selectPortal && !selectClick) model.closePopover();
+
+                        if (!selectPortal && !selectClick) {
+                            model.commitPendingValueAndClose();
+                        }
                     }
                 }
             })
@@ -234,7 +233,7 @@ const dimensionRow = hoistCmp.factory({
 
 const addDimensionControl = hoistCmp.factory({
     render({model}) {
-        if (!model.showAddControl || model.addDisabledMsg) return null;
+        if (!model.addControlShown || model.addDisabledMsg) return null;
         const options = getDimOptions(model.availableDims, model);
         return div({
             className: 'xh-grouping-chooser__add-control',
@@ -252,7 +251,6 @@ const addDimensionControl = hoistCmp.factory({
                     flex: 1,
                     width: null,
                     autoFocus: true,
-                    openMenuOnFocus: true,
                     hideDropdownIndicator: true,
                     hideSelectedOptionCheck: true,
                     onChange: (newDim) => model.addPendingDim(newDim)
@@ -273,13 +271,15 @@ const bbar = hoistCmp.factory({
                 button({
                     icon: Icon.add(),
                     intent: 'success',
+                    omit: model.addControlShown,
                     disabled: !!addDisabled,
                     title: addDisabledMsg,
-                    onClick: () => model.toggleAddControl()
+                    onClick: () => model.showAddControl()
                 }),
                 filler(),
                 button({
                     icon: Icon.close(),
+                    intent: 'danger',
                     onClick: () => model.closePopover()
                 }),
                 button({
@@ -321,13 +321,9 @@ function getDimOptions(dims, model) {
 const favoritesIcon = hoistCmp.factory({
     render({model}) {
         if (!model.persistFavorites) return null;
-        const isFavorite = model.isFavorite(model.value);
         return div({
-            item: Icon.favorite({prefix: isFavorite ? 'fas' : 'far'}),
-            className: classNames(
-                'xh-grouping-chooser__favorite-icon',
-                isFavorite ? 'xh-grouping-chooser__favorite-icon--active' : null
-            ),
+            item: Icon.favorite(),
+            className: 'xh-grouping-chooser__favorite-icon',
             onClick: (e) => {
                 model.openFavoritesMenu();
                 e.stopPropagation();
@@ -340,21 +336,21 @@ const favoritesMenu = hoistCmp.factory({
     render({model}) {
         const options = model.favoritesOptions,
             isFavorite = model.isFavorite(model.value),
-            addDisabled = isEmpty(model.value) || isFavorite,
+            omitAdd = isEmpty(model.value) || isFavorite,
             items = [];
 
         if (isEmpty(options)) {
-            items.push(menuItem({text: 'You have not yet saved any favorites...', disabled: true}));
+            items.push(menuItem({text: 'No favorites saved...', disabled: true}));
         } else {
             items.push(...options.map(it => favoriteMenuItem(it)));
         }
 
         items.push(
-            menuDivider(),
+            menuDivider({omit: omitAdd}),
             menuItem({
-                icon: Icon.add({className: addDisabled ? '' : 'xh-intent-success'}),
+                icon: Icon.add({className: 'xh-intent-success'}),
                 text: 'Add current',
-                disabled: addDisabled,
+                omit: omitAdd,
                 onClick: () => model.addFavorite(model.value)
             })
         );

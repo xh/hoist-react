@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {rangeSlider as bpRangeSlider, slider as bpSlider} from '@xh/hoist/kit/blueprint';
@@ -21,7 +21,7 @@ export const [Slider, slider] = hoistCmp.withFactory({
     displayName: 'Slider',
     className: 'xh-slider',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref);
+        return useHoistInputModel(cmp, props, ref, Model);
     }
 });
 Slider.propTypes = {
@@ -62,6 +62,20 @@ Slider.hasLayoutSupport = true;
 //-----------------------
 // Implementation
 //-----------------------
+class Model extends HoistInputModel {
+
+    blur() {
+        this.sliderHandle?.blur();
+    }
+
+    focus() {
+        this.sliderHandle?.focus();
+    }
+
+    get sliderHandle() {
+        return this.domEl?.querySelector('.bp3-slider-handle');
+    }
+}
 
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
