@@ -170,27 +170,21 @@ export class View {
             {dimensions, includeRoot, cube} = query,
             rootId = query.filtersAsString();
 
-        const leafMap = this.generateLeaves(cube.store.records);
-        this._leafMap = leafMap;
-
-        if (leafMap.size === 0) {
-            this._rows = [];
-            return;
-        }
-
-        const leafArray = Array.from(leafMap.values());
+        const leafMap = this.generateLeaves(cube.store.records),
+            leafArray = Array.from(leafMap.values());
         let newRows = this.groupAndInsertLeaves(leafArray, dimensions, rootId, {});
-        if (includeRoot) {
+        if (includeRoot && !isEmpty(newRows)) {
             newRows = [createAggregateRow(this, rootId, newRows, null, 'Total', {})];
         } else if (!query.includeLeaves && newRows[0]?._meta.isLeaf) {
             newRows = []; // degenerate case, no visible rows
         }
-
+        this._leafMap = leafMap;
         this._rows = newRows;
     }
 
     groupAndInsertLeaves(leaves, dimensions, parentId, appliedDimensions) {
-        if (isEmpty(dimensions)) return leaves;
+        if (isEmpty(dimensions) || isEmpty(leaves)) return leaves;
+
 
         const dim = dimensions[0],
             dimName = dim.name,
