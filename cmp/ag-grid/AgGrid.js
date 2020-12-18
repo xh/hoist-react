@@ -142,7 +142,8 @@ class LocalModel {
     };
 
     get usingRowAutoHeight() {
-        return this.columnDefs.filter(it => it.autoHeight).length > 0;
+        // columnDefs won't be defined if the componet is rendered for a Hoist Grid.
+        return this.columnDefs?.filter(it => it.autoHeight).length > 0;
     }
 
     getRowHeight = () => AgGrid.getRowHeightForSizingMode(this.model.sizingMode);
