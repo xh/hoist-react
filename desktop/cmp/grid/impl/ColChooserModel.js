@@ -103,15 +103,17 @@ export class ColChooserModel {
     // Implementation
     //------------------------
     syncChooserData() {
-        const {gridModel, lrModel} = this;
+        const {gridModel, lrModel} = this,
+            columns = gridModel.getLeafColumns(),
+            hasGrouping = columns.some(it => it.chooserGroup);
 
-        const data = gridModel.getLeafColumns().map(it => {
+        const data = columns.map(it => {
             const visible = gridModel.isColumnVisible(it.colId);
             return {
                 value: it.colId,
                 text: it.chooserName,
                 description: it.chooserDescription,
-                group: it.chooserGroup,
+                group: hasGrouping ? it.chooserGroup ?? 'Ungrouped' : null,
                 exclude: it.excludeFromChooser,
                 locked: visible && !it.hideable,
                 side: visible ? 'right' : 'left'

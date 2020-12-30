@@ -13,14 +13,14 @@ export const description = hoistCmp.factory(
         const {hasDescription, leftModel, rightModel} = model,
             selected = leftModel.selectedRecord || rightModel.selectedRecord;
 
-        if (!hasDescription || !(selected && selected.description)) return null;
+        if (!hasDescription || !(selected && selected.data.description)) return null;
 
         return callout({
-            title: selected.text,
+            title: selected.data.text,
             className: 'xh-lr-chooser__description',
             intent: 'primary',
             icon: null,
-            item: selected.description
+            item: selected.data.description
         });
     }
 );
