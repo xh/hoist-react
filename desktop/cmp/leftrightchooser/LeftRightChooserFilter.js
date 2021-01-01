@@ -37,7 +37,7 @@ export const [LeftRightChooserFilter, leftRightChooserFilter] = hoistCmp.withFac
 
 LeftRightChooserFilter.propTypes = {
 
-    /** Names of fields in chooser on which to filter. Defaults to ['text', 'grouping'] */
+    /** Names of fields in chooser on which to filter. Defaults to ['text', 'group'] */
     fields: PT.arrayOf(PT.string),
 
     /** True to prevent regex start line anchor from being added. */
