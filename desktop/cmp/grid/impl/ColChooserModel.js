@@ -113,7 +113,7 @@ export class ColChooserModel {
                 value: it.colId,
                 text: it.chooserName,
                 description: it.chooserDescription,
-                group: hasGrouping ? it.chooserGroup ?? 'Ungrouped' : null,
+                group: hasGrouping ? (it.chooserGroup ?? 'Ungrouped') : null,
                 exclude: it.excludeFromChooser,
                 locked: visible && !it.hideable,
                 side: visible ? 'right' : 'left'

@@ -37,8 +37,8 @@ export const [LeftRightChooserFilter, leftRightChooserFilter] = hoistCmp.withFac
 
 LeftRightChooserFilter.propTypes = {
 
-    /** Names of fields in chooser on which to filter. */
-    fields: PT.arrayOf(PT.string).isRequired,
+    /** Names of fields in chooser on which to filter. Defaults to ['text', 'grouping'] */
+    fields: PT.arrayOf(PT.string),
 
     /** True to prevent regex start line anchor from being added. */
     anyMatch: PT.bool,
@@ -63,7 +63,7 @@ class LocalModel {
     }
 
     runFilter() {
-        const {fields, anyMatch, model} = this.lastProps;
+        const {fields = ['text', 'group'], anyMatch = false, model} = this.lastProps;
         let searchTerm = escapeRegExp(this.value);
 
         if (!anyMatch) {
@@ -72,8 +72,9 @@ class LocalModel {
 
         const filter = (raw) => {
             return fields.some(f => {
-                const fieldVal = !!searchTerm && raw.data[f];
-                return ((fieldVal && new RegExp(searchTerm, 'ig').test(fieldVal)) || !searchTerm);
+                if (!searchTerm) return true;
+                const fieldVal = raw.data[f];
+                return fieldVal && new RegExp(searchTerm, 'ig').test(fieldVal);
             });
         };
 
