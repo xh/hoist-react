@@ -82,7 +82,7 @@ export class ActivityTrackingModel {
                 {name: 'browser', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'userAgent', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'elapsed', type: 'int', aggregator: 'AVG'},
-                {name: 'impersonating', type: 'bool'},
+                {name: 'impersonating', type: 'string'},
                 {name: 'dateCreated', displayName: 'Timestamp', type: 'date'},
                 {name: 'data', type: 'json'},
                 {name: 'count', type: 'int', aggregator: new ChildCountAggregator()},
