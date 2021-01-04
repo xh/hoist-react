@@ -36,7 +36,7 @@ export const colChooser = hoistCmp.factory({
             items: [
                 leftRightChooser({width, height}),
                 toolbar(
-                    leftRightChooserFilter({fields: ['text']}),
+                    leftRightChooserFilter(),
                     filler(),
                     button({
                         omit: !showRestoreDefaults,
