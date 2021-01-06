@@ -130,7 +130,7 @@ function globalHotKeys(model) {
     const {impersonationBarModel, optionsDialogModel} = model,
         ret = [];
 
-    if (XH.identityService.canImpersonate) {
+    if (XH.identityService.canAuthUserImpersonate) {
         ret.push({
             global: true,
             combo: 'shift + i',
