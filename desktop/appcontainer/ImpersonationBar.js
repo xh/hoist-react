@@ -25,12 +25,12 @@ export const impersonationBar = hoistCmp.factory({
     model: uses(ImpersonationBarModel),
 
     render({model}) {
-        const {isImpersonating, canImpersonate, authUsername, username} = XH.identityService;
+        const {isImpersonating, canAuthUserImpersonate, authUsername, username} = XH.identityService;
 
         const impl = useLocalModel(LocalModel);
         impl.model = model;
 
-        if (!canImpersonate || !model.isOpen) return null;
+        if (!canAuthUserImpersonate || !model.isOpen) return null;
 
         const {targets} = model;
 
