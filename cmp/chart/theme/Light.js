@@ -29,9 +29,19 @@ export const LightTheme = {
         style: {fontFamily},
         plotBorderColor: borderColor,
         resetZoomButton: {
-            position: {x: -30, y: 0},
-            // TODO - standard colors
-            theme: {r: 0}
+            theme: {
+                fill: altBg,
+                stroke: borderColor,
+                style: {color: textColor},
+                r: 4,
+                states: {
+                    hover: {
+                        fill: altBg,
+                        stroke: accentColor,
+                        style: {color: accentColor}
+                    }
+                }
+            }
         }
     },
 

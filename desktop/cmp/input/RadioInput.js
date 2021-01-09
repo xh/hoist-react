@@ -7,9 +7,9 @@
 import {HoistInputPropTypes, HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {computed, makeObservable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
-import {isObject} from 'lodash';
+import {filter, isObject} from 'lodash';
 import PT from 'prop-types';
 import './RadioInput.scss';
 
@@ -46,30 +46,22 @@ RadioInput.propTypes = {
 //-----------------------
 class Model extends HoistInputModel {
 
-    @observable.ref internalOptions = [];
-
-    @action setInternalOptions(options) {
-        this.internalOptions = options;
+    blur() {
+        this.enabledInputs.forEach(it => it.blur());
     }
 
-    constructor(props) {
-        super(props);
-        makeObservable(this);
-        this.addReaction({
-            track: () => this.props.options,
-            run: (opts) => {
-                opts = this.normalizeOptions(opts);
-                this.setInternalOptions(opts);
-            },
-            fireImmediately: true
-        });
+    focus() {
+        this.enabledInputs[0]?.focus();
     }
 
-    //-------------------------
-    // Options / value handling
-    //-------------------------
-    normalizeOptions(options) {
-        options = options || [];
+    get enabledInputs() {
+        const btns = this.domEl?.querySelectorAll('input') ?? [];
+        return filter(btns, {disabled: false});
+    }
+
+    @computed
+    get normalizedOptions() {
+        const options = this.props.options ?? [];
         return options.map(o => {
             const ret = isObject(o) ?
                 {label: o.label, value: o.value, disabled: o.disabled} :
@@ -80,6 +72,14 @@ class Model extends HoistInputModel {
         });
     }
 
+    constructor(props) {
+        super(props);
+        makeObservable(this);
+    }
+
+    //-------------------------
+    // Options / value handling
+    //-------------------------
     onChange = (e) => {
         this.noteValueChange(e.target.value);
     }
@@ -87,16 +87,18 @@ class Model extends HoistInputModel {
 
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
-        const {internalOptions} = model,
+        const {normalizedOptions} = model,
             labelAlign = withDefault(props.labelAlign, 'right');
 
-        const items = internalOptions.map(opt => {
+        const items = normalizedOptions.map(opt => {
             return radio({
                 alignIndicator: labelAlign === 'left' ? 'right' : 'left',
                 disabled: opt.disabled,
                 label: opt.label,
                 value: opt.value,
-                className: 'xh-radio-input-option'
+                className: 'xh-radio-input-option',
+                onFocus: model.onFocus,
+                onBlur: model.onBlur
             });
         });
 

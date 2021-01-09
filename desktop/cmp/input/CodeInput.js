@@ -185,6 +185,19 @@ class Model extends HoistInputModel {
         ]);
     }
 
+    blur() {
+        this.editor?.execCommand('undoSelection');
+        this.editor?.getInputField().blur();
+    }
+
+    focus() {
+        this.editor?.focus();
+    }
+
+    select() {
+        this.editor?.execCommand('selectAll');
+    }
+
     constructor(props) {
         super(props);
         makeObservable(this);
@@ -398,11 +411,12 @@ class Model extends HoistInputModel {
 
 
 const cmp = hoistCmp.factory(
-    ({model, ...props}, ref) => {
+    ({model, className, ...props}, ref) => {
         const childProps = {
             width: 300,
             height: 100,
             ...getLayoutProps(props),
+            className,
             ref
         };
 
@@ -416,19 +430,19 @@ const fullscreenCmp = hoistCmp.factory(
             className: 'xh-code-input__dialog',
             isOpen: true,
             canOutsideClickClose: true,
-            item: inputCmp(),
+            item: inputCmp({flex: 1}),
             onClose: () => model.toggleFullScreen()
         }),
         box({
-            className: 'xh-code-input__placeholder',
             ...props,
+            className: 'xh-code-input__placeholder',
             ref
         })
     )
 );
 
 const inputCmp = hoistCmp.factory(
-    ({model, className}, ref) => vbox({
+    ({model, ...props}, ref) => vbox({
         items: [
             div({
                 className: 'xh-code-input__inner-wrapper',
@@ -440,10 +454,9 @@ const inputCmp = hoistCmp.factory(
             }),
             model.showToolbar ? toolbarCmp() : actionButtonsCmp()
         ],
-        className: className,
         onBlur: model.onBlur,
         onFocus: model.onFocus,
-        flex: 1,
+        ...props,
         ref
     })
 );

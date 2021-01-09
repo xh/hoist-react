@@ -6,7 +6,7 @@
  */
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {ActivityDetailModel} from '@xh/hoist/admin/tabs/activity/tracking/detail/ActivityDetailModel';
-import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
+import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
@@ -29,8 +29,8 @@ export class ActivityTrackingModel extends HoistModel {
 
     /** @member {FormModel} */
     @managed formModel;
-    /** @member {DimensionChooserModel} */
-    @managed dimChooserModel;
+    /** @member {GroupingChooserModel} */
+    @managed groupingChooserModel;
     /** @member {Cube} */
     @managed cube;
     /** @member {FilterChooserModel} */
@@ -43,7 +43,7 @@ export class ActivityTrackingModel extends HoistModel {
     /** @member {ChartsModel} */
     @managed chartsModel;
 
-    get dimensions() {return this.dimChooserModel.value}
+    get dimensions() {return this.groupingChooserModel.value}
 
     /**
      * @returns {string} - summary of currently active query / filters.
@@ -82,7 +82,7 @@ export class ActivityTrackingModel extends HoistModel {
                 {name: 'browser', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'userAgent', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'elapsed', type: 'int', aggregator: 'AVG'},
-                {name: 'impersonating', type: 'bool'},
+                {name: 'impersonating', type: 'string'},
                 {name: 'dateCreated', displayName: 'Timestamp', type: 'date'},
                 {name: 'data', type: 'json'},
                 {name: 'count', type: 'int', aggregator: new ChildCountAggregator()},
@@ -90,7 +90,7 @@ export class ActivityTrackingModel extends HoistModel {
             ]
         });
 
-        this.dimChooserModel = new DimensionChooserModel({
+        this.groupingChooserModel = new GroupingChooserModel({
             dimensions: this.cube.dimensions,
             persistWith: this.persistWith,
             initialValue: this._defaultDims
@@ -262,13 +262,13 @@ export class ActivityTrackingModel extends HoistModel {
 
     @action
     resetQuery() {
-        const {formModel, filterChooserModel, dimChooserModel, _defaultDims, _defaultFilter} = this;
+        const {formModel, filterChooserModel, groupingChooserModel, _defaultDims, _defaultFilter} = this;
         formModel.init({
             startDay: this.getDefaultStartDay(),
             endDay: this.getDefaultEndDay()
         });
         filterChooserModel.setValue(_defaultFilter);
-        dimChooserModel.setValue(_defaultDims);
+        groupingChooserModel.setValue(_defaultDims);
     }
 
     adjustDates(dir) {

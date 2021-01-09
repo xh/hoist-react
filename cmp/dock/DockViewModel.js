@@ -23,6 +23,7 @@ export class DockViewModel extends HoistModel {
     @bindable icon;
     @observable docked;
     @observable collapsed;
+    content;
     width;
     height;
     collapsedWidth;

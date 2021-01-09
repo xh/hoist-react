@@ -86,6 +86,12 @@ class Model extends HoistInputModel {
         return withDefault(this.props.commitOnChange, false);
     }
 
+    select() {
+        // first focus, and then wait one tick for value to be put into input element
+        this.focus();
+        wait().then(() => super.select());
+    }
+
     onChange = (ev) => {
         let value = this.parseValue(ev.target.value);
         value = isNaN(value) ? null : value;
@@ -153,15 +159,19 @@ class Model extends HoistInputModel {
 
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
-
         const {width, ...layoutProps} = getLayoutProps(props),
             {hasFocus, renderValue} = model,
-            displayValue = hasFocus ? model.displayValue(renderValue) : model.formatValue(renderValue);
+            displayValue = hasFocus ? model.displayValue(renderValue) : model.formatValue(renderValue),
+            // Note that we dynamically toggle the input type. We use 'number' when entering
+            // values to bring up the numerical keyboard on device, but otherwise use
+            // 'text' to facilitate displaying formatted values.
+            type = hasFocus && !props.enableShorthandUnits ? 'number' : 'text';
 
         return input({
-            value: displayValue,
+            type,
+            className,
 
-            type: props.enableShorthandUnits ? 'text' : 'number',
+            value: displayValue,
             disabled: props.disabled,
             min: props.min,
             max: props.max,
@@ -169,7 +179,6 @@ const cmp = hoistCmp.factory(
             modifier: props.modifier,
             tabIndex: props.tabIndex,
 
-            className,
             style: {
                 ...props.style,
                 ...layoutProps,

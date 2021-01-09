@@ -1,3 +1,12 @@
 .xh-input.xh-button-group {
-  border: none;
+  border: 1px transparent solid;
+
+  &:focus {
+    outline: none;
+    border: 1px solid var(--xh-focus-outline-color);
+  }
+}
+
+.xh-form-field .xh-input.xh-button-group {
+  align-self: flex-start;
 }

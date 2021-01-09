@@ -14,7 +14,7 @@ import {
     RenderMode,
     XH
 } from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable, comparer, makeObservable} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
 import {apiRemoved} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
@@ -132,7 +132,7 @@ export class PanelModel extends HoistModel {
         this.showSplitterCollapseButton = showSplitterCollapseButton;
         this.showHeaderCollapseButton = showHeaderCollapseButton;
 
-        if (this.collapsible) {
+        if (collapsible) {
             this.refreshContextModel = new ManagedRefreshContextModel(this);
         }
 
@@ -150,14 +150,20 @@ export class PanelModel extends HoistModel {
         }
 
         // Initialize state.
-        this.setSize(state?.size ?? defaultSize);
-        this.setCollapsed(state?.collapsed ?? defaultCollapsed);
+        this.setSize(resizable && !isNil(state?.size) ? state.size : defaultSize);
+        this.setCollapsed(collapsible && !isNil(state?.collapsed) ? state.collapsed : defaultCollapsed);
 
         // Attach to provider last
         if (this.provider) {
             this.addReaction({
-                track: () => [this.collapsed, this.size],
-                run: ([collapsed, size]) => this.provider.write({collapsed, size})
+                equals: comparer.shallow,
+                track: () => {
+                    const state = {};
+                    if (collapsible) state.collapsed = this.collapsed;
+                    if (resizable) state.size = this.size;
+                    return state;
+                },
+                run: (state) => this.provider.write(state)
             });
         }
     }

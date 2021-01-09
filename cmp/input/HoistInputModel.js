@@ -4,15 +4,15 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import composeRefs from '@seznam/compose-react-refs';
 import {HoistModel, useLocalModel} from '@xh/hoist/core';
 import {FieldModel} from '@xh/hoist/cmp/form';
 import {action, computed, observable, bindable, makeObservable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEqual} from 'lodash';
-import {createRef, useEffect} from 'react';
+import {useEffect, useImperativeHandle} from 'react';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import './HoistInput.scss';
+import ReactDOM from 'react-dom';
 
 
 /**
@@ -46,38 +46,98 @@ import './HoistInput.scss';
  * as the change event. Other inputs such as textInput maintain the distinction described above,
  * but expose a `commitOnChange` prop to force them to eagerly flush their values on every change.
  *
+ * Note: Passing a ref to a HoistInput will give you a reference to its underlying HoistInputModel.
+ * This model is mostly used for implementation purposes, but it is also intended to
+ * provide a limited API for application use.  It currently provides access to the underlying DOM
+ * element of the rendered input via its `domEl` property, as well as `focus()`, `blur()`, and
+ * `select()`.
+ *
  * To create an instance of an Input component using this model use the hook
  * {@see useHoistInputModel}.
  */
 export class HoistInputModel extends HoistModel {
 
-    /** External model of input (may be bound to this) */
-    model;
-
-    /** Props on input */
-    @bindable.ref props;
-
-    /** Ref to rendered component */
-    ref = createRef();
-
+    /**
+     * Does this input have the focus ?
+     * @type {boolean}
+     */
     @observable hasFocus = false;
-    @observable.ref internalValue = null;
+
+    /**
+     * Field (if any) associated with this control.
+     * @member {FieldModel}
+     */
+    getField() {
+        const {model} = this;
+        return model instanceof FieldModel ? model : null;
+    }
+
+
+    /**
+     * Ref to top-most rendered DOM element in this component.
+     *
+     * HoistInput implementations should implement this by placing the `domRef` ref on the
+     * root of the rendered component sub-tree.
+     *
+     * @member {Element}
+     */
+    get domEl() {
+        const {current} = this.domRef;
+        // eslint-disable-next-line no-undef
+        return (!current || current instanceof Element) ? current : ReactDOM.findDOMNode(current);
+    }
+
+    /**
+     * DOM <Input> element on this control, if any.
+     *
+     * If multiple <Input> elements are present, this getter will return the first one.
+     *
+     * Implementations may target a specific input via placing the 'inputRef' ref
+     * on the appropriate element during rendering.  Otherwise the dom will be
+     * searched for the first rendered <input>.
+     *
+     * @returns {Element}
+     */
+    get inputEl() {
+        return this.inputRef.current ?? this.domEl?.querySelector('input');
+    }
+
+    //-----------------------
+    // Implementation State
+    //------------------------
+    model;                                   // Reference to bound model, if any
+    @bindable.ref props;                     // Props on input
+    @observable.ref internalValue = null;    // Cached internal value
+    inputRef = createObservableRef();        // ref to internal <input> element, if any
+    domRef = createObservableRef();          // ref to outermost element, or class Component.
 
     constructor(props) {
         super();
         makeObservable(this);
         this.props = props;
         this.model = props.model;
-        throwIf(props.onKeyPress, "HoistInputs no longer support a 'onKeyPress' property.  Use 'onKeyDown' instead.");
-        throwIf(props.field, "HoistInput no longer supports a 'field' property.  Use 'bind' instead.");
-
         this.addReaction(this.externalValueReaction());
     }
 
-    /** @return {FieldModel} (if any) associated with this control. */
-    getField() {
-        const {model} = this;
-        return model &&  model instanceof FieldModel ? model : null;
+    /**
+     * Blur focus from this control, if supported.
+     */
+    blur() {
+        this.inputEl?.blur();
+    }
+
+    /**
+     * Bring focus to this control, if supported.
+     */
+    focus() {
+        this.inputEl?.focus();
+    }
+
+    /**
+     * Select all content on this input, if supported.
+     */
+    select() {
+        this.inputEl?.select();
     }
 
     //------------------------------
@@ -239,10 +299,10 @@ export class HoistInputModel extends HoistModel {
     }
 
     containsElement(elem) {
-        const thisElem = this.ref.current;
-        if (thisElem) {
+        const {domEl} = this;
+        if (domEl) {
             while (elem) {
-                if (elem === thisElem) return true;
+                if (elem === domEl) return true;
                 elem = elem.parentElement;
             }
         }
@@ -266,6 +326,7 @@ export function useHoistInputModel(component, props, ref, modelSpec = HoistInput
     const inputModel = useLocalModel(() => new modelSpec(props));
 
     useEffect(() => inputModel.setProps(props));
+    useImperativeHandle(ref, () => inputModel);
 
     const field = inputModel.getField(),
         validityClass = field?.isNotValid && field?.validationDisplayed ? 'xh-input-invalid' : null,
@@ -274,7 +335,7 @@ export function useHoistInputModel(component, props, ref, modelSpec = HoistInput
     return component({
         ...props,
         model: inputModel,
-        ref: composeRefs(ref, inputModel.ref),
+        ref: inputModel.domRef,
         className: classNames('xh-input', validityClass, disabledClass, props.className)
     });
 }

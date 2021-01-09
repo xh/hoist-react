@@ -12,6 +12,7 @@ import {wait} from '@xh/hoist/promise';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
 import {withDefault} from '@xh/hoist/utils/js';
 import {compact, flatten, isEmpty, isFunction, isNil, isUndefined} from 'lodash';
+import {createObservableRef} from '@xh/hoist/utils/react';
 
 /**
  * Abstract Base class for FieldModels.
@@ -45,11 +46,32 @@ export class BaseFieldModel extends HoistModel {
      */
     @observable validationDisplayed = false;
 
+
+    /**
+     * The input Component bound to this field.
+     *
+     * This is an observable property that provides access to the "ref" or "imperativeHandle"
+     * of the bound component.
+     *
+     * This getter is provided to applications as an 'escape hatch' when they need
+     * imperative access to the underlying rendering of this FieldModel.
+     * Applications should not typically need to use this property.
+     *
+     * Note that there is no requirement that any input is bound to this FieldModel, or that there
+     * is only a single such input.  In the case of multiple bound inputs, no guarantee is
+     * provided regarding which one will be returned.
+     */
+    get boundInput() {
+        return this._boundInputRef?.current;
+    }
+
     //----------------------
     // Implementation State
     //----------------------
     @observable _disabled;
     @observable _readonly;
+
+    _boundInputRef = createObservableRef();
 
     // An array with the result of evaluating each rule.  Each element will be array of strings
     // containing any validation errors for the rule.  If validation for the rule has not
@@ -187,6 +209,40 @@ export class BaseFieldModel extends HoistModel {
     /** @member {boolean} - true if value has been changed since last reset/init. */
     get isDirty() {
         return this.value !== this.initialValue;
+    }
+
+    //-------------------------
+    // Focus
+    //-------------------------
+    /**
+     * Is the bound input associated with this field focused?
+     *
+     * Note that there is no requirement that any input is bound to this FieldModel, or that there
+     * is only a single such input.  In the case of multiple bound inputs, no guarantee is provided
+     * regarding which one is consulted by this getter.
+     */
+    get hasFocus() {
+        return this.boundInput?.hasFocus;
+    }
+
+    /**
+     * Focus the bound input associated with this field.
+     *
+     * Note that there is no requirement that any input is bound to this FieldModel, or that there
+     * is only a single such input.  In the case of multiple bound inputs, no guarantee is
+     * provided regarding which one will be focused.
+     */
+    focus() {
+        const {boundInput} = this;
+        if (boundInput?.focus) boundInput.focus();
+    }
+
+    /**
+     * Blur the bound input associated with this field.
+     */
+    blur() {
+        const {boundInput} = this;
+        if (boundInput?.blur) boundInput.blur();
     }
 
     //------------------------

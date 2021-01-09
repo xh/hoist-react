@@ -10,6 +10,7 @@ import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
+import composeRefs from '@seznam/compose-react-refs';
 import './TextArea.scss';
 
 /**
@@ -90,7 +91,7 @@ const cmp = hoistCmp.factory(
             autoFocus: props.autoFocus,
             disabled: props.disabled,
             fill: props.fill,
-            inputRef: props.inputRef,
+            inputRef: composeRefs(model.inputRef, props.inputRef),
             placeholder: props.placeholder,
             spellCheck: withDefault(props.spellCheck, false),
             tabIndex: props.tabIndex,

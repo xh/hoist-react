@@ -35,7 +35,7 @@ export class ImpersonationBarModel extends HoistModel {
 
     @action
     show() {
-        throwIf(!XH.identityService.canImpersonate, 'User does not have right to impersonate or impersonation is disabled.');
+        throwIf(!XH.identityService.canAuthUserImpersonate, 'User does not have right to impersonate or impersonation is disabled.');
         this.showRequested = true;
     }
 

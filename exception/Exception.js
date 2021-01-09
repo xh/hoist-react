@@ -98,11 +98,12 @@ export class Exception {
      * @returns {Error}
      */
     static fetchTimeout(fetchOptions, e, message) {
-        message = message ?? `Failure calling '${fetchOptions.url}' - timed out after ${e.interval}ms.`;
+        message = message ?? `Timed out loading '${fetchOptions.url}' - no response after ${e.interval}ms.`;
 
         return this.createInternal({
             name: 'Fetch Timeout',
             message,
+            isFetchTimeout: true,
             fetchOptions,
             stack: null
         });

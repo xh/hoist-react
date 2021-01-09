@@ -10,7 +10,7 @@ import {hoistCmp} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {singleDatePicker} from '@xh/hoist/kit/react-dates';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -90,11 +90,28 @@ DateInput.hasLayoutSupport = true;
 //---------------------------------
 class Model extends HoistInputModel {
 
-    @bindable popoverOpen = false;
+    @observable popoverOpen = false;
+
+    @action setPopoverOpen(bool) {
+        this.popoverOpen = bool;
+        if (this.popoverOpen) {
+            this.noteFocused();
+        } else {
+            this.noteBlurred();
+        }
+    }
 
     constructor(props) {
         super(props);
         makeObservable(this);
+    }
+
+    blur() {
+        this.setPopoverOpen(false);
+    }
+
+    focus() {
+        this.setPopoverOpen(true);
     }
 
     // Prop-backed convenience getters

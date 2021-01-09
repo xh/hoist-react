@@ -33,19 +33,16 @@ export const DarkTheme = {
         style: {fontFamily},
         plotBorderColor: borderColor,
         resetZoomButton: {
-            position: {x: -30, y: 0},
-            // TODO - standard colors
             theme: {
-                fill: '#232D38',
-                stroke: '#A0A0A3',
-                style: {
-                    color: '#b3b3b3'
-                },
-                r: 0,
+                fill: altBg,
+                stroke: borderColor,
+                style: {color: textColor},
+                r: 4,
                 states: {
                     hover: {
-                        fill: '#3B4C5F',
-                        style: {color: '#D0D0D0'}
+                        fill: altBg,
+                        stroke: accentColor,
+                        style: {color: accentColor}
                     }
                 }
             }

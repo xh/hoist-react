@@ -473,7 +473,8 @@ class XHClass {
      * Helper method to destroy resources safely (e.g. child HoistModels). Will quietly skip args
      * that are null / undefined or that do not implement destroy().
      *
-     * @param {...Object} args - Objects to be destroyed.
+     * @param {...(Object|array)} args - objects to be destroyed. If any argument is an array,
+     *      each element in the array will be destroyed (this is *not* done recursively);.
      */
     safeDestroy(...args) {
         if (args) {
@@ -602,12 +603,12 @@ class XHClass {
             );
 
             // Confirm hoist-core version after environment service loaded
-            const version = XH.environmentService._data.hoistCoreVersion;
-            if (!checkMinVersion(version, MIN_HOIST_CORE_VERSION)) {
-                throw XH.exception(
-                    `This version of Hoist requires a minimum hoist-core version of ` +
-                    `${MIN_HOIST_CORE_VERSION}. Version ${version} detected.`
-                );
+            const hcVersion = XH.environmentService.get('hoistCoreVersion');
+            if (!checkMinVersion(hcVersion, MIN_HOIST_CORE_VERSION)) {
+                throw XH.exception(`
+                    This version of Hoist React requires the server to run Hoist Core
+                    v${MIN_HOIST_CORE_VERSION} or greater. Version ${hcVersion} detected.
+                `);
             }
 
             await this.installServicesAsync(
