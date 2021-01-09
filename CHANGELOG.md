@@ -36,6 +36,11 @@ https://michel.codes/blogs/mobx6 for more on this change and the motivation behi
 * The `Ref` class, deprecated in v26 has now been removed.  Use `createObservableRef` instead.
 
 
+### 📚 Libraries
+* mobx -> `5.15.7 -> 6.0.4`
+* mobx-react -> `6.3.0 -> 7.0.5`
+
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v37.0.0...develop)
 
 ## v37.0.0 - 2020-12-15
