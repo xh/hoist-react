@@ -33,7 +33,7 @@ https://michel.codes/blogs/mobx6 for more on this change and the motivation behi
 * Fixed regression in `LeftRightChooser` not displaying description callout.
 
 ### 💥 Breaking Changes
-* The `Ref` class, deprecated in v26 has now been removed.  Use `createObservableRef` instead.
+* The `Ref` class, deprecated in v26, has now been removed.  Use `createObservableRef` instead.
 
 
 ### 📚 Libraries
