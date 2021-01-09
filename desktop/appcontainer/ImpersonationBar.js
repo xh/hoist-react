@@ -4,14 +4,14 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarModel';
 import {filler, hspacer, span} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarModel';
+import {bindable} from '@xh/hoist/mobx';
 import './ImpersonationBar.scss';
 
 /**
@@ -25,12 +25,12 @@ export const impersonationBar = hoistCmp.factory({
     model: uses(ImpersonationBarModel),
 
     render({model}) {
-        const {isImpersonating, canImpersonate, authUsername, username} = XH.identityService;
+        const {isImpersonating, canAuthUserImpersonate, authUsername, username} = XH.identityService;
 
         const impl = useLocalModel(LocalModel);
         impl.model = model;
 
-        if (!canImpersonate || !model.isOpen) return null;
+        if (!canAuthUserImpersonate || !model.isOpen) return null;
 
         const {targets} = model;
 

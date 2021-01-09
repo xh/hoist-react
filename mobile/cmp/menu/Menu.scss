@@ -1,10 +1,15 @@
 .xh-menu {
   position: fixed !important;
+  overflow-y: auto !important;
   z-index: 21;
-  background-color: var(--xh-bg);
-  border: var(--xh-border-solid);
+  bottom: var(--xh-pad-half-px);
 
-  .list-item {
-    background-color: var(--xh-grid-bg) !important;
+  &__list {
+    background-color: var(--xh-bg);
+    border: var(--xh-border-solid);
+
+    .list-item {
+      background-color: var(--xh-grid-bg) !important;
+    }
   }
 }

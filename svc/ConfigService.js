@@ -4,8 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistService} from '@xh/hoist/core';
-import {throwIf, deepFreeze} from '@xh/hoist/utils/js';
+import {HoistService, XH} from '@xh/hoist/core';
+import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
+import {keys} from 'lodash';
 
 /**
  * Service to read soft-configuration values.
@@ -30,6 +31,13 @@ export class ConfigService {
     async initAsync() {
         this._data = await XH.fetchJson({url: 'xh/getConfig'});
         deepFreeze(this._data);
+    }
+
+    /**
+     * Get the list of available keys.
+     */
+    get list() {
+        return keys(this._data);
     }
 
     /**

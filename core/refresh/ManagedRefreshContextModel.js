@@ -4,8 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {RefreshContextModel} from '@xh/hoist/core/refresh';
-import {loadAllAsync, RefreshMode} from '@xh/hoist/core';
+import {loadAllAsync, RefreshContextModel, RefreshMode} from '@xh/hoist/core';
 
 /**
  * A refresh context model that consults a model's RefreshMode and active state to manage

@@ -4,23 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
+import {div} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
+import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {Utils as agUtils} from '@ag-grid-enterprise/all-modules';
-import {
-    castArray,
-    clone,
-    find,
-    get,
-    isArray,
-    isFinite,
-    isFunction,
-    isNil, isNumber,
-    isString,
-    startCase
-} from 'lodash';
+import {castArray, clone, find, get, isArray, isFinite, isFunction, isNil, isNumber, isString} from 'lodash';
 import {Component} from 'react';
+import {GridSorter} from '../impl/GridSorter';
 import {ExportFormat} from './ExportFormat';
 
 /**
@@ -40,8 +30,8 @@ export class Column {
      * support absolute value sorting.  See Column.absSort.
      */
     static DEFAULT_SORTING_ORDER = [
-        {sort: 'asc', abs: false},
         {sort: 'desc', abs: true},
+        {sort: 'asc', abs: false},
         {sort: 'desc', abs: false}
     ];
 
@@ -50,16 +40,25 @@ export class Column {
      * @param {string} [c.field] - name of data store field to display within the column.
      * @param {string} [c.colId] - unique identifier for the Column within its grid.
      *      Defaults to field name - one of these two properties must be specified.
-     * @param {(Column~headerNameFn|element)} [c.headerName] - display text for grid header.
+     * @param {boolean} [c.isTreeColumn] - true if this column will host the expand/collapse arrow
+     *      controls for a hierarchical Tree Grid. For when `GridModel.treeMode` is enabled, one
+     *      column in that grid should have this flag enabled.
+     * @param {string} [c.displayName] - primary user-facing name for this Column. Sourced from
+     *      the corresponding data `Field.displayName` from the parent `GridModel.store` config, if
+     *      available, or defaulted via transform of `field` string config. Used as default value
+     *      for more specialized `headerName`, `chooserName`, and `exportName` configs. See those
+     *      configs for additional details and options they support.
+     * @param {(Column~headerNameFn|element)} [c.headerName] - user-facing text/element displayed
+     *      in the Column header, or a function to produce the same. Defaulted from `displayName`.
      * @param {string} [c.headerTooltip] - tooltip text for grid header.
      * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - CSS classes to add to the
      *      header. Supports both string values or a function to generate strings.
      * @param {(Column~cellClassFn|string|string[])} [c.cellClass] - additional css classes to add
-     *      to each cell in the column. Supports both string values or function to generate strings.
-     * @param {boolean} [c.isTreeColumn] - true if this column should show the tree affordances for a
-     *      Tree Grid. See GridModel.treeMode.
+     *      to each cell in the column. Supports both string values or function to generate
+     *     strings.
      * @param {boolean} [c.hidden] - true to suppress default display of the column.
      * @param {string} [c.align] - horizontal alignment of cell contents.
+     *      Valid values are:  'left' (default), 'right' or 'center'.
      * @param {string} [c.headerAlign] - horizontal alignment of header contents. Defaults to same
      *      as cell alignment.
      * @param {number} [c.width] - default width in pixels.
@@ -67,30 +66,38 @@ export class Column {
      *      as auto-flex resizing below this value. (Note this is *not* a substitute for width.)
      * @param {number} [c.maxWidth] - maximum width in pixels - grid will block user-driven as well
      *      as auto-flex resizing above this value.
-     * @param {(boolean|number)} [c.flex] - flex columns stretch to fill the width of the grid after
+     * @param {(boolean|number)} [c.flex] - flex columns stretch to fill the width of the grid
+     *     after
      *      all columns with a set pixel-width have been sized. If multiple columns have a flex
      *      value set, their width will be set in proportion to their flex values. A flex value
      *      of `true` is equivalent to 1. Consider pairing a flex setting with min/max pixel widths
      *      to avoid your column being squeezed down to the default 50px minimum or stretching so
      *      wide that it compromises the overall legibility of the grid.
-     * @param {number} [c.rowHeight] - row height required by column in pixels - grids can use this to
-     *      determine an appropriate row height when the column is visible.
-     * @param {(string | Column~SortSpec)[]} [c.sortingOrder] - the sorting options for this column that
-     *      will be applied by successive clicks on the column header. Values may be one of 'asc',
-     *      'desc', a SortSpec, or null.  Specify null to clear the sort on this column.
+     * @param {number} [c.rowHeight] - row height required by column in pixels - grids can use this
+     *      to determine an appropriate row height when the column is visible.
+     * @param {(string[]|Column~SortSpec[])} [c.sortingOrder] - the sorting options for this column
+     *      to be applied by successive clicks on the column header. Values may be one of 'asc',
+     *      'desc', a SortSpec, or null. Specify null to clear the sort on this column.
      * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column.  If
-     *      false (default) absolute value sorts will be ignored when cycling through the sortingOrder.
-     * @param {Column~comparatorFn} [c.comparator] - function for comparing column values for sorting
+     *      false (default) absolute value sorts will be ignored when cycling through the
+     *     sortingOrder.
+     * @param {Column~comparatorFn} [c.comparator] - function for comparing column values for
+     *     sorting
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
      * @param {boolean} [c.sortable] - false to prevent user from sorting on this column.
      * @param {(boolean|string)} [c.pinned] - set to true/'left' or 'right' to pin (aka "lock") the
      *      column to the side of the grid, ensuring it's visible while horizontally scrolling.
-     * @param {Column~rendererFn} [c.renderer] - function to produce a formatted string for each cell.
-     * @param {Column~elementRendererFn} [c.elementRenderer] - function which returns a React component.
+     * @param {Column~rendererFn} [c.renderer] - function returning a formatted string for each
+     *      cell value in this Column. May return HTML, as this will be rendered by ag-Grid.
+     * @param {Column~elementRendererFn} [c.elementRenderer] - function returning a React Component
+     *      for each cell value in this Column. For use when a Component is required to render or
+     *      encapsulate logic not easily achieved by a simpler `renderer` function returning a
+     *      string. Use with care - this can have a noticeable performance impact on larger grids!
      * @param {string} [c.chooserName] - name to display within the column chooser component.
-     *      Defaults to headerName, but useful when a longer / un-abbreviated string is available.
-     * @param {string} [c.chooserGroup] - group name to display within the column chooser component.
+     *      Defaults to `displayName`, can be longer / less abbreviated than `headerName` might be.
+     * @param {string} [c.chooserGroup] - group name to display within the column chooser
+     *     component.
      *      Chooser will automatically group its "available columns" grid if any cols provide.
      * @param {string} [c.chooserDescription] - additional descriptive text to display within the
      *      column chooser. Appears when the column is selected within the chooser UI.
@@ -98,25 +105,36 @@ export class Column {
      *      completely. Useful for hiding structural columns the user is not expected to adjust.
      * @param {boolean} [c.hideable] - false to always show column. Will appear in column chooser
      *       but always locked in the displayed collection of columns.
-     * @param {string} [c.exportName] - display name to use as a header within a file export.
-     *      Defaults to headerName.
+     * @param {string} [c.exportName] - name to use as a header within a file export. Defaults to
+     *      `headerName`. Useful when `headerName` contains markup or other characters not suitable
+     *      for use within an Excel or CSV file header.
      * @param {(string|function)} [c.exportValue] - alternate field name to reference or function
      *      to call when producing a value for a file export. {@see GridExportService}
      * @param {(ExportFormat|function)} [c.exportFormat] - structured format string for Excel-based
      *      exports, or a function to produce one. {@see ExportFormat}
-     * @param {number} [c.exportWidth] - width in characters for Excel-based exports. Typically used
-     *      with ExportFormat.LONG_TEXT to enable text wrapping.
+     * @param {number} [c.exportWidth] - width in characters for Excel-based exports. Typically
+     *     used with ExportFormat.LONG_TEXT to enable text wrapping.
      * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or
-     *      tool tip function, which is based on AG Grid tooltip callback.
-     * @param {Column~tooltipElementFn} [c.tooltipElement] - function which returns a React component.
+     *      tooltip function, which is based on AG Grid tooltip callback. Incompatible with
+     *      `tooltipElement`.
+     * @param {Column~tooltipElementFn} [c.tooltipElement] - function which returns a React
+     *     component to display as a tooltip. Will take precedence over `tooltip`.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
+     * @param {boolean} [c.autosizable] - allow autosizing this column.
+     * @param {boolean} [c.autosizeIncludeHeader] - true to include the header width when
+     *     autosizing.
+     * @param {boolean} [c.autosizeIncludeHeaderIcons] - true to always include the width of the
+     *     sort icon when calculating the header width.
+     * @param {number} [c.autosizeMinWidth] - minimum width in pixels when autosizing.
+     * @param {number} [c.autosizeMaxWidth] - maximum width in pixels when autosizing.
      * @param {boolean} [c.rendererIsComplex] - true if this renderer relies on more than
      *      just the value of the field associated with this column.  Set to true to ensure that
      *      the cells for this column are updated any time the record is changed.  Setting to true
      *      may have performance implications. Default false.
      * @param {boolean} highlightOnChange - set to true to call attention to cell changes by
      *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
-     * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column editable.
+     * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column
+     *     editable.
      * @param {Column~setValueFn} [c.setValueFn] - function for updating Record field for this
      *      column after inline editing.
      * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
@@ -135,6 +153,7 @@ export class Column {
         field,
         colId,
         isTreeColumn,
+        displayName,
         headerName,
         headerTooltip,
         headerClass,
@@ -168,6 +187,11 @@ export class Column {
         exportFormat,
         exportWidth,
         excludeFromExport,
+        autosizable,
+        autosizeIncludeHeader,
+        autosizeIncludeHeaderIcons,
+        autosizeMinWidth,
+        autosizeMaxWidth,
         tooltip,
         tooltipElement,
         editable,
@@ -186,19 +210,27 @@ export class Column {
             this.fieldPath = splitFieldPath ? field.split('.') : field;
         }
 
-        this.colId = withDefault(colId, field);
+        this.colId = colId || field;
         throwIf(!this.colId, 'Must specify colId or field for a Column.');
 
-        this.hidden = withDefault(hidden, false);
-        warnIf(rest.hide, `Column ${this.colId} configured with {hide: true} - use "hidden" instead.`);
+        this.isTreeColumn = withDefault(isTreeColumn, false);
 
-        this.headerName = withDefault(headerName, startCase(this.colId));
+        // Note that parent GridModel might have already defaulted displayName from an associated
+        // `Store.field` when pre-processing Column configs - prior to calling this ctor. If that
+        // hasn't happened, displayName will still always be defaulted to a fallback based on colId.
+        this.displayName = displayName || genDisplayName(this.colId);
+
+        // In contrast, headerName supports a null or '' value when no header label is desired.
+        this.headerName = withDefault(headerName, this.displayName);
+
         this.headerTooltip = headerTooltip;
         this.headerClass = headerClass;
         this.cellClass = cellClass;
         this.align = align;
-        this.headerAlign = headerAlign ?? align;
-        this.isTreeColumn = withDefault(isTreeColumn, false);
+        this.headerAlign = headerAlign || align;
+
+        this.hidden = withDefault(hidden, false);
+        warnIf(rest.hide, `Column ${this.colId} configured with {hide: true} - use "hidden" instead.`);
 
         warnIf(
             flex && width,
@@ -238,20 +270,33 @@ export class Column {
             'Specifying both renderIsComplex and highlightOnChange is not supported. Cells will be force-refreshed on all changes and always flash.'
         );
 
-        this.chooserName = withDefault(chooserName, headerName && isString(headerName) ? headerName : undefined, startCase(this.colId));
+        this.chooserName = chooserName || this.displayName;
         this.chooserGroup = chooserGroup;
         this.chooserDescription = chooserDescription;
         this.excludeFromChooser = withDefault(excludeFromChooser, false);
         this.hideable = withDefault(hideable, !this.isTreeColumn);
 
+        // ExportName must be non-empty string. Default to headerName if unspecified (it supports
+        // the function form of headerName) and fallback to colId. Note GridExportService can
+        // fallback again to colId internally if headerName is or returns an Element.
         this.exportName = exportName || this.headerName || this.colId;
         this.exportValue = exportValue;
         this.exportFormat = withDefault(exportFormat, ExportFormat.DEFAULT);
         this.exportWidth = exportWidth || null;
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
+        this.autosizable = withDefault(autosizable, this.resizable, true);
+        this.autosizeIncludeHeader = withDefault(autosizeIncludeHeader, true);
+        this.autosizeIncludeHeaderIcons = withDefault(autosizeIncludeHeaderIcons, true);
+        this.autosizeMinWidth = withDefault(autosizeMinWidth, this.minWidth);
+        this.autosizeMaxWidth = withDefault(autosizeMaxWidth, this.maxWidth);
+
         this.tooltip = tooltip;
         this.tooltipElement = tooltipElement;
+        warnIf(
+            tooltip && tooltipElement,
+            `Column specified with both tooltip && tooltipElement. Tooltip will be ignored. [colId=${this.colId}]`
+        );
 
         this.editable = editable;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
@@ -269,15 +314,17 @@ export class Column {
      * Produce a Column definition appropriate for AG Grid.
      */
     getAgSpec() {
-        const {gridModel, field, headerName} = this,
+        const {gridModel, field, headerName, displayName, agOptions} = this,
             me = this,
             ret = {
                 field,
                 colId: this.colId,
+                // headerValueGetter should always return a string
+                // for display in draggable shadow box, aGrid Tool panel.
+                // Hoist ColumnHeader will handle display of Element values in the header.
                 headerValueGetter: (agParams) => {
-                    return agParams.location === 'header' ?
-                        isFunction(headerName) ? headerName({column: this, gridModel, agParams}) : headerName :
-                        this.chooserName;
+                    let ret = isFunction(headerName) ? headerName({column: this, gridModel, agParams}) : headerName;
+                    return isString(ret) ? ret : displayName;
                 },
                 headerClass: getAgHeaderClassFn(this),
                 headerTooltip: this.headerTooltip,
@@ -287,9 +334,9 @@ export class Column {
                 resizable: this.resizable,
                 sortable: this.sortable,
                 suppressMovable: !this.movable,
-                lockPinned: !gridModel.enableColumnPinning || XH.isMobile,
+                lockPinned: !gridModel.enableColumnPinning || XH.isMobileApp,
                 pinned: this.pinned,
-                lockVisible: !gridModel.colChooserModel || XH.isMobile,
+                lockVisible: !this.hideable || !gridModel.colChooserModel || XH.isMobileApp,
                 headerComponentParams: {gridModel, xhColumn: this},
                 suppressColumnsToolPanel: this.excludeFromChooser,
                 suppressFiltersToolPanel: this.excludeFromChooser,
@@ -352,23 +399,39 @@ export class Column {
             };
         }
 
-        if (this.tooltip) {
-            ret.tooltipValueGetter = isFunction(this.tooltip) ?
-                (agParams) => this.tooltip(agParams.value,
-                    {record: agParams.data, column: this, gridModel, agParams}) :
-                ({value}) => value;
-        }
+        // Tooltip Handling
+        const {tooltip, tooltipElement} = this,
+            tooltipSpec = tooltipElement ?? tooltip;
 
-        if (this.tooltipElement) {
+        if (tooltipSpec) {
+            ret.tooltipValueGetter = (obj) => {
+
+                // We actually return the *record* itself, rather then ag-Grid's default escaped value.
+                // We need it below, where it will be handled to class as a prop.
+                // Note that we must always return a value - see hoist-react #2058, #2181
+                return obj.data ?? '*EMPTY*';
+            };
             ret.tooltipComponentFramework = class extends Component {
-                getReactContainerClasses() {return ['xh-grid-tooltip']}
+                getReactContainerClasses() {
+                    if (this.props.location === 'header') return ['ag-tooltip'];
+                    return ['xh-grid-tooltip', tooltipElement ? 'xh-grid-tooltip--custom' : 'xh-grid-tooltip--default'];
+                }
                 render() {
                     const agParams = this.props,
-                        {value, rowIndex, api} = agParams,
-                        record = api.getDisplayedRowAtIndex(rowIndex).data;
+                        {location, value: record} = agParams;  // Value actually contains store record -- see above
 
-                    // ag-Grid encodes the value, so we decode it before passing to the renderer
-                    return me.tooltipElement(decodeURIComponent(value), {record, column: me, gridModel, agParams});
+                    if (location === 'header') return div(me.headerTooltip);
+
+                    if (!record?.isRecord) return null;
+                    const {store} = record,
+                        val = me.getValueFn({record, column: me, gridModel, agParams, store});
+
+                    const ret = isFunction(tooltipSpec) ?
+                        tooltipSpec(val, {record, column: me, gridModel, agParams}) :
+                        val;
+
+                    // Always defend against returning undefined from render() - React will throw!
+                    return ret ?? null;
                 }
             };
         }
@@ -384,6 +447,9 @@ export class Column {
                         this.cellClass(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
                         this.cellClass
                 );
+            }
+            if (this.isTreeColumn) {
+                r.push('xh-tree-column');
             }
             if (align === 'center' || align === 'right') {
                 r.push('xh-align-' + align);
@@ -414,12 +480,19 @@ export class Column {
 
                 refresh() {return false}
             });
+        } else if (!agOptions.cellRenderer && !agOptions.cellRendererFramework) {
+            // By always providing a minimal cell pass-through cellRenderer, we can ensure the
+            // cell contents are wrapped in a span by Ag-Grid. Our flexbox enabled cell styling
+            // requires all cells to have an inner element to work properly. We check agOptions
+            // in case the dev has specified either renderer option directly against the ag-Grid
+            // API (done sometimes with components for performance reasons).
+            setRenderer((agParams) => agParams.value?.toString());
         }
 
         const sortCfg = find(gridModel.sortBy, {colId: ret.colId});
         if (sortCfg) {
             ret.sort = sortCfg.sort;
-            ret.sortedAt = gridModel.sortBy.indexOf(sortCfg);
+            ret.sortIndex = gridModel.sortBy.indexOf(sortCfg);
         }
 
         if (this.comparator === undefined) {
@@ -451,7 +524,7 @@ export class Column {
         }
 
         // Finally, apply explicit app requests.  The customer is always right....
-        return {...ret, ...this.agOptions};
+        return {...ret, ...agOptions};
     }
 
     //--------------------
@@ -459,7 +532,7 @@ export class Column {
     //--------------------
     defaultComparator = (v1, v2) => {
         const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
-        return sortCfg ? sortCfg.comparator(v1, v2) : agUtils.defaultComparator(v1, v2);
+        return sortCfg ? sortCfg.comparator(v1, v2) : GridSorter.defaultComparator(v1, v2);
     };
 
     defaultSetValueFn = ({value, record, store, field}) => {
@@ -472,7 +545,6 @@ export class Column {
         const {fieldPath} = this;
         if (!record || isNil(fieldPath)) return '';
 
-        if (fieldPath === 'id') return record.id;
         if (isArray(fieldPath)) return get(record.data, fieldPath);
         return record.data[fieldPath];
     };
@@ -515,8 +587,8 @@ export function getAgHeaderClassFn(column) {
  * @param {?Object} params.agNodeB - row node provided by ag-grid
  * @param {Column} params.column - column for the cell being rendered
  * @param {GridModel} params.gridModel - gridModel for the grid
- * @param {function} params.defaultComparator - default comparator provided by Hoist for this column.
- *          accepts two arguments: (a, b)
+ * @param {function} params.defaultComparator - default comparator provided by Hoist for this
+ *     column. accepts two arguments: (a, b)
  */
 
 /**
@@ -586,7 +658,7 @@ export function getAgHeaderClassFn(column) {
  * @callback Column~tooltipElementFn - function for a grid cell tooltip returning a React element.
  * @param {*} value - tooltip value.
  * @param {TooltipMetadata} metadata - additional data about the column and row.
- * @return {Element} - the React element to show as a toooltip.
+ * @return {Element} - the React element to show as a tooltip.
  */
 
 /**
@@ -632,6 +704,7 @@ export function getAgHeaderClassFn(column) {
  * @callback Column~getValueFn - function to get the value of a Record field
  * @param {Object} params
  * @param {Record} params.record - row-level data Record.
+ * @param {string} params.field - name of data store field displayed in the column.
  * @param {Store} params.store - Store containing the grid data.
  * @param {Column} params.column - column for the cell being edited.
  * @param {GridModel} params.gridModel - gridModel for the grid.
@@ -639,7 +712,7 @@ export function getAgHeaderClassFn(column) {
  */
 
 /**
- * @typedef {Object} SortSpec - specifies how to perform sorting in a given column
+ * @typedef {Object} Column~SortSpec - specifies how to perform sorting in a given column
  * @param {string} sort - direction to sort, either 'asc' or 'desc', or null to remove sort.
  * @param {boolean} [abs] - true to sort by absolute value
  */

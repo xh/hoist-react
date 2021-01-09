@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistService} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -92,8 +92,23 @@ export class IdentityService {
         return this._authUser !== this._apparentUser;
     }
 
-    /** Can the underlying user impersonate other users? */
+    /**
+     * Can the user impersonate other users?
+     *
+     * See also canAuthUserImpersonate() which should be consulted before actually
+     * triggering any impersonation attempts.
+     */
     get canImpersonate() {
+        return this.user.isHoistAdmin && XH.getConf('xhEnableImpersonation', false);
+    }
+
+    /**
+     * Can the underlying authenticated user impersonate other users?
+     *
+     * Use this getter to determine if Hoist should allow the client to show impersonation
+     * affordances and to trigger impersonation actions.
+     */
+    get canAuthUserImpersonate() {
         return this._authUser.isHoistAdmin && XH.getConf('xhEnableImpersonation', false);
     }
 
@@ -106,7 +121,10 @@ export class IdentityService {
      * @param {string} username - the end-user to impersonate
      */
     async impersonateAsync(username) {
-        throwIf(!this.canImpersonate, 'User does not have right to impersonate or impersonation is disabled.');
+        throwIf(
+            !this.canAuthUserImpersonate,
+            'User does not have right to impersonate or impersonation is disabled.'
+        );
         return XH.fetchJson({
             url: 'xh/impersonate',
             params: {

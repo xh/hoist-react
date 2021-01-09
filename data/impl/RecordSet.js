@@ -6,7 +6,7 @@
  */
 
 import equal from 'fast-deep-equal';
-import {throwIf} from '../../utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Internal container for Record management within a Store.
@@ -95,16 +95,16 @@ export class RecordSet {
     // Editing operations that spawn new RecordSets.
     // Preserve all record references we can!
     //-----------------------------------------------
-
     normalize(target) {
         return this.isEqual(target) ? target : this;
     }
 
     withFilter(filter) {
         if (!filter) return this;
-        const {fn, includeChildren} = filter;
-
-        const passes = new Map(),
+        const {store} = this,
+            includeChildren = store.filterIncludesChildren,
+            test = filter.getTestFn(store),
+            passes = new Map(),
             isMarked = (rec) => passes.has(rec.id),
             mark = (rec) => passes.set(rec.id, rec);
 
@@ -124,7 +124,7 @@ export class RecordSet {
             };
         }
         this.recordMap.forEach(rec => {
-            if (!isMarked(rec) && fn(rec)) {
+            if (!isMarked(rec) && test(rec)) {
                 mark(rec);
                 if (includeChildren) markChildren(rec);
             }
@@ -144,9 +144,11 @@ export class RecordSet {
     }
 
     withNewRecords(recordMap) {
-        // Reuse existing Record object instances where possible if they resolve as equal to their
-        // new counterparts. See note on Store.loadData().
-        if (!this.empty) {
+        // Reuse existing Record object instances where possible.  See Store.loadData().
+        // Be sure to freeze any new records that are accepted.  See Record.freeze()
+        if (this.empty) {
+            recordMap.forEach(r => r.freeze());
+        } else {
             const newIds = recordMap.keys();
             for (let id of newIds) {
                 const currRec = this.getById(id),
@@ -155,8 +157,6 @@ export class RecordSet {
                 if (currRec && this.areRecordsEqual(currRec, newRec)) {
                     recordMap.set(id, currRec);
                 } else {
-                    // If we are sure that we are going to keep this Record, we freeze it now to
-                    // enforce immutability on the application
                     newRec.freeze();
                 }
             }
@@ -165,11 +165,8 @@ export class RecordSet {
         return new RecordSet(this.store, recordMap);
     }
 
-    areRecordsEqual(rec1, rec2) {
-        return equal(rec1.treePath, rec2.treePath) && equal(rec1.data, rec2.data);
-    }
-
     withTransaction({update, add, remove}) {
+        // Be sure to freeze any new records that are accepted.  See Record.freeze()
         const {recordMap} = this,
             newRecords = new Map(recordMap);
 
@@ -223,6 +220,10 @@ export class RecordSet {
     //------------------------
     // Implementation
     //------------------------
+    areRecordsEqual(rec1, rec2) {
+        return equal(rec1.treePath, rec2.treePath) && equal(rec1.data, rec2.data);
+    }
+
     computeChildrenMap(recordMap) {
         const ret = new Map();
         recordMap.forEach(r => {

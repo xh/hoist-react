@@ -4,10 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
-import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, action} from '@xh/hoist/mobx';
-import {table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
+import {HoistModel, XH} from '@xh/hoist/core';
+import {action, observable} from '@xh/hoist/mobx';
 
 /**
  * Support for About Dialog.
@@ -38,9 +38,12 @@ export class AboutDialogModel {
     getTable() {
         const svc = XH.environmentService,
             row = (label, data) => tr(th(label), td(data)),
-            configRows = XH.getConf('xhAboutMenuConfigs', []).map(it => {
-                return row(it.label, XH.getConf(it.key, ''));
-            });
+            configRows = [];
+
+        XH.getConf('xhAboutMenuConfigs', []).forEach(it => {
+            const confVal = XH.getConf(it.key, null);
+            if (confVal !== null) configRows.push(row(it.label, confVal));
+        });
 
         return table({
             item: tbody(

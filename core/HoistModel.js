@@ -4,10 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {ReactiveSupport, ManagedSupport, XhIdSupport} from './mixins';
+import {ManagedSupport, ReactiveSupport, XhIdSupport, PersistSupport} from '@xh/hoist/core';
 import {applyMixin} from '@xh/hoist/utils/js';
-import {isString, isFunction} from 'lodash';
-
+import {isFunction, isString} from 'lodash';
 
 /**
  * Core decorator for State Models in Hoist.
@@ -28,7 +27,7 @@ import {isString, isFunction} from 'lodash';
 export function HoistModel(C) {
     return applyMixin(C, {
         name: 'HoistModel',
-        includes: [ManagedSupport, ReactiveSupport, XhIdSupport],
+        includes: [ManagedSupport, ReactiveSupport, PersistSupport, XhIdSupport],
 
         provides: {
             matchesSelector(selector) {

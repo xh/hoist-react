@@ -4,10 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
-import {isUndefined} from 'lodash';
+import {isUndefined, filter} from 'lodash';
 import {MessageModel} from './MessageModel';
 
 /**
@@ -68,7 +67,12 @@ export class MessageSourceModel {
     //------------------------------------
     @action
     addModel(model) {
-        this.msgModels.push(model);
+        const {messageKey} = model,
+            {msgModels} = this;
+        if (messageKey) {
+            filter(msgModels, {messageKey}).forEach(m => m.close());
+        }
+        msgModels.push(model);
         this.cull();
     }
 

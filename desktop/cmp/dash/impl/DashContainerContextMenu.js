@@ -6,7 +6,6 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
-import {menuDivider} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
 import {isEmpty} from 'lodash';
 
@@ -32,6 +31,7 @@ export const dashContainerContextMenu = hoistCmp.factory({
 //---------------------------
 function createMenuItems(props) {
     const {dashContainerModel, viewModel} = props,
+        {extraMenuItems, renameLocked} = dashContainerModel,
         ret = [];
 
     // Add context sensitive items if clicked on a tab
@@ -47,7 +47,8 @@ function createMenuItems(props) {
             {
                 text: 'Rename',
                 icon: Icon.edit(),
-                hidden: !viewSpec.allowRename,
+                hidden: renameLocked,
+                disabled: !viewSpec.allowRename,
                 actionFn: () => dashContainerModel.renameView(id)
             },
             {
@@ -55,20 +56,23 @@ function createMenuItems(props) {
                 icon: Icon.refresh(),
                 hidden: !refreshContextModel.refreshTargets.length,
                 actionFn: () => refreshContextModel.refreshAsync()
-            }
+            },
+            '-'
         );
     }
+
     const addMenuItems = createAddMenuItems(props);
-    if (!isEmpty(addMenuItems)) {
-        ret.push(
-            menuDivider({title: 'Add'}),
-            ...addMenuItems
-        );
-    } else {
-        ret.push(
-            '-',
-            {text: 'No available views to add', disabled: true}
-        );
+    ret.push({
+        text: 'Add',
+        icon: Icon.add(),
+        disabled: isEmpty(addMenuItems),
+        items: addMenuItems
+    });
+
+
+    if (extraMenuItems) {
+        ret.push('-');
+        extraMenuItems.forEach(it => ret.push(it));
     }
 
     return ret;

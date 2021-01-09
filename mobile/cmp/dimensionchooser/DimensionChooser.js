@@ -4,19 +4,16 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
+import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
+import {div, filler, fragment, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import PT from 'prop-types';
-
-import {fragment, div, span, filler} from '@xh/hoist/cmp/layout';
+import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
-import {Icon} from '@xh/hoist/icon';
 import {select} from '@xh/hoist/mobile/cmp/input';
-import {size, isEmpty} from 'lodash';
 import classNames from 'classnames';
-
-import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
+import {isEmpty, size} from 'lodash';
+import PT from 'prop-types';
 import './DimensionChooser.scss';
 
 
@@ -26,6 +23,7 @@ const LEFT_PAD = 5;       // Left-padding for inputs.
 
 /**
  * Control for selecting a list of dimensions for grouping APIs.
+ * @see DimensionChooserModel
  */
 export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
     displayName: 'DimensionChooser',
@@ -38,8 +36,10 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
         buttonWidth = 150,
         emptyText = '[Ungrouped]'
     }) {
-        const {value, dimensions} = model,
-            labels = isEmpty(value) ? [emptyText] : value.map(h => dimensions[h].label);
+        const {value} = model,
+            labels = isEmpty(value) ?
+                [emptyText] :
+                value.map(dimName => model.getDimDisplayName(dimName));
 
         return div(
             dialogCmp({dialogWidth, emptyText}),
@@ -52,6 +52,7 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
         );
     }
 });
+
 DimensionChooser.propTypes = {
     /** Width in pixels of the target button (that triggers show of popover). */
     buttonWidth: PT.number,
@@ -99,10 +100,12 @@ const dialogCmp = hoistCmp.factory(
 //---------------------------
 const historyMenu = hoistCmp.factory(
     ({model, emptyText}) => {
-        const {history, dimensions} = model,
+        const {history} = model,
             historyItems = history.map((value, i) => {
                 const isActive = value === model.value,
-                    labels = isEmpty(value) ? [emptyText] : value.map(h => dimensions[h].label);
+                    labels = isEmpty(value) ?
+                        [emptyText] :
+                        value.map(dimName => model.getDimDisplayName(dimName));
 
                 return button({
                     className: classNames('dim-history-btn', isActive ? 'dim-history-btn--active' : null),
@@ -172,7 +175,7 @@ const selectMenu = hoistCmp.factory(
             children.push(addOrSelectButton({dialogWidth}));
         }
 
-        return children;
+        return fragment(children);
     }
 );
 

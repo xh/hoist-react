@@ -4,41 +4,39 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {hoistCmp, elem, AppState, XH, uses} from '@xh/hoist/core';
-import {refreshContextView} from '@xh/hoist/core/refresh';
-import {errorBoundary} from '@xh/hoist/core/impl';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
-
-import {aboutDialog} from './AboutDialog';
-import {feedbackDialog} from './FeedbackDialog';
-import {optionsDialog} from './OptionsDialog';
-import {exceptionDialog} from './ExceptionDialog';
-import {impersonationBar} from './ImpersonationBar';
-import {loginPanel} from './LoginPanel';
-import {updateBar} from './UpdateBar';
-import {versionBar}  from './VersionBar';
-import {lockoutPanel} from './LockoutPanel';
-import {messageSource} from './MessageSource';
-import {IdleDialog} from './IdleDialog';
-import {toastSource} from './ToastSource';
-
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
-
-import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
-import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
-import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
+import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
+import {AppState, elem, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
+import {errorBoundary} from '@xh/hoist/core/impl/ErrorBoundary';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {colChooserDialog as colChooser, ColChooserModel} from '@xh/hoist/desktop/cmp/grid';
+import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
+import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/ColChooserDialog';
+import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/ColChooserModel';
+import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
+import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
+import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
+import {useHotkeys, useContextMenu} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
-import {useOnMount} from '@xh/hoist/utils/react';
-import {useHotkeys} from '@xh/hoist/desktop/hooks';
+import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
+import {aboutDialog} from './AboutDialog';
+import {exceptionDialog} from './ExceptionDialog';
+import {feedbackDialog} from './FeedbackDialog';
+import {idlePanel} from './IdlePanel';
+import {impersonationBar} from './ImpersonationBar';
+import {lockoutPanel} from './LockoutPanel';
+import {loginPanel} from './LoginPanel';
+import {messageSource} from './MessageSource';
+import {optionsDialog} from './OptionsDialog';
+import {toastSource} from './ToastSource';
+import {updateBar} from './UpdateBar';
+import {versionBar} from './VersionBar';
 
 installDesktopImpls({
     tabContainerImpl,
     dockContainerImpl,
     storeFilterFieldImpl,
+    pinPadImpl,
     colChooser,
     ColChooserModel,
     StoreContextMenu
@@ -65,7 +63,11 @@ export const AppContainer = hoistCmp({
                 item: viewForState(),
                 onError: (e) => XH.handleException(e, {requireReload: true})
             }),
-            exceptionDialog()
+            // Modal component helpers rendered here at top-level to support display of messages
+            // and exceptions at any point during the app lifecycle.
+            exceptionDialog(),
+            messageSource(),
+            toastSource()
         );
     }
 });
@@ -84,8 +86,9 @@ function viewForState() {
         case S.ACCESS_DENIED:
             return lockoutPanel();
         case S.RUNNING:
-        case S.SUSPENDED:
             return appContainerView();
+        case S.SUSPENDED:
+            return idlePanelHost();
         case S.LOAD_FAILED:
         default:
             return null;
@@ -96,27 +99,30 @@ const appContainerView = hoistCmp.factory({
     displayName: 'AppContainerView',
 
     render({model}) {
-        return useHotkeys(
-            viewport(
-                vframe(
-                    impersonationBar(),
-                    updateBar(),
-                    refreshContextView({
-                        model: model.refreshContextModel,
-                        item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
-                    }),
-                    versionBar()
-                ),
-                mask({model: model.appLoadModel, spinner: true}),
-                messageSource(),
-                toastSource(),
-                optionsDialog(),
-                feedbackDialog(),
-                aboutDialog(),
-                idleDialog()
+        const {appSpec, appModel} = XH;
+        let ret = viewport(
+            vframe(
+                impersonationBar(),
+                updateBar(),
+                refreshContextView({
+                    model: model.refreshContextModel,
+                    item: frame(elem(appSpec.componentClass, {model: appModel}))
+                }),
+                versionBar()
             ),
-            globalHotKeys(model)
+            mask({model: model.appLoadModel, spinner: true}),
+            aboutDialog(),
+            feedbackDialog(),
+            optionsDialog()
         );
+
+        if (!appSpec.showBrowserContextMenu) {
+            ret = useContextMenu(ret, null);
+        }
+
+        ret = useHotkeys(ret, globalHotKeys(model));
+
+        return ret;
     }
 });
 
@@ -124,7 +130,7 @@ function globalHotKeys(model) {
     const {impersonationBarModel, optionsDialogModel} = model,
         ret = [];
 
-    if (XH.identityService.canImpersonate) {
+    if (XH.identityService.canAuthUserImpersonate) {
         ret.push({
             global: true,
             combo: 'shift + i',
@@ -143,13 +149,10 @@ function globalHotKeys(model) {
     return ret;
 }
 
-const idleDialog = hoistCmp.factory({
-    displayName: 'IdleDialog',
+const idlePanelHost = hoistCmp.factory({
+    displayName: 'IdlePanel',
     render() {
-        const dialogClass = XH.appSpec.idleDialogClass || IdleDialog;
-
-        return XH.appState == AppState.SUSPENDED && dialogClass ?
-            elem(dialogClass, {onReactivate: () => XH.reloadApp()}) :
-            null;
+        const content = XH.appSpec.idlePanel ?? idlePanel;
+        return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
     }
 });

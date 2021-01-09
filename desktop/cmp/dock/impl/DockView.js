@@ -4,17 +4,15 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {useRef} from 'react';
-import {hoistCmp, uses, RenderMode} from '@xh/hoist/core';
-import {div, hbox, vbox, span, filler} from '@xh/hoist/cmp/layout';
-import {refreshContextView} from '@xh/hoist/core/refresh';
-import {elementFromContent} from '@xh/hoist/utils/react';
-import {dialog} from '@xh/hoist/kit/blueprint';
+import {DockViewModel} from '@xh/hoist/cmp/dock';
+import {div, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
+import {hoistCmp, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {DockViewModel} from '@xh/hoist/cmp/dock';
+import {dialog} from '@xh/hoist/kit/blueprint';
+import {elementFromContent} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-
+import {useRef} from 'react';
 import './Dock.scss';
 
 /**

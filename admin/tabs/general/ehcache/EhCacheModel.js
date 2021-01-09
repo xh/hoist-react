@@ -4,21 +4,21 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel, numberCol} from '@xh/hoist/cmp/grid';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {emptyFlexCol, numberCol} from '@xh/hoist/cmp/grid';
 import {trimEnd} from 'lodash';
 
 @HoistModel
 @LoadSupport
 export class EhCacheModel {
 
+    persistWith = {localStorageKey: 'xhAdminEhCacheState'};
+
     @managed
     gridModel = new GridModel({
-        stateModel: 'xhEhCacheGrid',
-        enableColChooser: true,
+        persistWith: this.persistWith,
+        colChooserModel: true,
         enableExport: true,
         store: new UrlStore({
             url: 'ehCacheAdmin/listCaches',
@@ -36,8 +36,7 @@ export class EhCacheModel {
             {field: 'name', width: 360},
             {field: 'heapSize', ...numberCol, headerName: 'Heap Size (MB)', width: 130},
             {field: 'entries', ...numberCol, width: 120},
-            {field: 'status', width: 120},
-            {...emptyFlexCol}
+            {field: 'status', width: 120}
         ]
     });
 

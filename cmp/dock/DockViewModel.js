@@ -4,9 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {ManagedRefreshContextModel} from '@xh/hoist/core/refresh';
-import {bindable, observable, action} from '@xh/hoist/mobx';
+import {HoistModel, managed, ManagedRefreshContextModel} from '@xh/hoist/core';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -25,6 +24,7 @@ export class DockViewModel {
     @bindable icon;
     @observable docked;
     @observable collapsed;
+    content;
     width;
     height;
     collapsedWidth;
@@ -158,9 +158,4 @@ export class DockViewModel {
     close() {
         this.containerModel.removeView(this.id);
     }
-
-    destroy() {
-        XH.safeDestroy(this.content);
-    }
-
 }

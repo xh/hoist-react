@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {isEmpty, isObject, isObjectLike, forOwn, mixin, uniq, uniqBy} from 'lodash';
-import _inflection from 'lodash-inflection';
 import {Exception} from '@xh/hoist/exception';
+import {forOwn, isEmpty, isObject, isObjectLike, mixin, uniq, uniqBy} from 'lodash';
+import _inflection from 'lodash-inflection';
 
 mixin(_inflection);
 
@@ -19,16 +19,21 @@ export function withDefault(...args) {
 }
 
 /**
- * Recursively freeze an object, preventing future modifications.
- * Adapted from MDN.
+ * Recursively freeze an object, preventing future modifications. Not all objects are supported -
+ * FREEZABLE_TYPES limits what we will attempt to freeze to a whitelist of types known to be safely
+ * freezable without side effects. This avoids freezing other types of objects where this routine
+ * could be problematic - e.g. application or library classes (such as `moment`!) which rely on
+ * their internal state remaining mutable to function.
  */
+const FREEZABLE_TYPES = new Set(['Object', 'Array', 'Map', 'Set']);
 export function deepFreeze(obj) {
-    if (!isObjectLike(obj)) return obj;
+    if (!isObjectLike(obj) || !FREEZABLE_TYPES.has(obj.constructor.name)) return obj;
 
     const propNames = Object.getOwnPropertyNames(obj);
     for (const name of propNames) {
         deepFreeze(obj[name]);
     }
+
     return Object.freeze(obj);
 }
 
@@ -80,17 +85,6 @@ export function throwIf(condition, message) {
 }
 
 /**
- * Document and prevent usage of a removed parameter.
- *
- * @param {*} paramValue - value of the removed parameter.  If defined, this method will throw.
- * @param {string} paramName - the name of the removed parameter
- * @param {string} [message] - an additional message.  Can contain suggestions for alternatives.
- */
-export function apiRemoved(paramValue, paramName, message = '') {
-    throwIf(paramValue !== undefined, `The use of '${paramName}' is no longer supported. ${message}`);
-}
-
-/**
  * Log a warning to the console if a condition evaluates as truthy.
  * @param {*} condition
  * @param {string} message
@@ -110,6 +104,28 @@ export function errorIf(condition, message) {
     if (condition) {
         console.error(message);
     }
+}
+
+/**
+ * Document and prevent usage of a removed parameter.
+ *
+ * @param {*} paramValue - value of the removed parameter.  If defined, this method will throw.
+ * @param {string} paramName - the name of the removed parameter
+ * @param {string} [message] - an additional message.  Can contain suggestions for alternatives.
+ */
+export function apiRemoved(paramValue, paramName, message = '') {
+    throwIf(paramValue !== undefined, `The use of '${paramName}' is no longer supported. ${message}`);
+}
+
+/**
+ * Document and warn on usage of a deprecated parameter.
+ *
+ * @param {*} paramValue - value of the deprecated parameter.  If defined, this method will warn.
+ * @param {string} paramName - the name of the deprecated parameter
+ * @param {string} [message] - an additional message.  Can contain suggestions for alternatives.
+ */
+export function apiDeprecated(paramValue, paramName, message = '') {
+    warnIf(paramValue !== undefined, `The use of '${paramName}' has been deprecated. ${message}`);
 }
 
 /**
@@ -184,21 +200,30 @@ export function findIn(collection, fn) {
 }
 
 /**
- * A function to be passed to `array.filter()`, than excludes consecutive items
- * that match the provided predicate.
+ * A function to be passed to `array.filter()` that excludes consecutive items that match the
+ * provided predicate.  Matches that would ultimately appear at the start or end of the
+ * filtered array are also removed.
+ *
+ * Useful for removing separators that have become extraneous when the items they were separating
+ * have been removed.
+ *
  * @returns {Function}
  */
 export function filterConsecutive(predicate) {
     return (it, idx, arr) => {
-        if (!predicate(it)) return true;
+        if (predicate(it)) {
 
-        // Remove if first / last
-        if (idx === 0 || idx === (arr.length - 1)) return false;
+            // Remove if first
+            if (idx === 0) return false;
 
-        // Remove if previous item matches predicate
-        const prev = idx > 0 ? arr[idx - 1] : null,
-            prevMatch = prev && predicate(prev);
+            // Remove if previous item also matches
+            const prev = idx > 0 ? arr[idx - 1] : null;
+            if (prev && predicate(prev)) return false;
 
-        return !prevMatch;
+            // Remove if last or *all* subsequent items also match
+            if (arr.slice(idx + 1).every(predicate)) return false;
+        }
+
+        return true;
     };
 }

@@ -4,16 +4,15 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, creates} from '@xh/hoist/core';
-import {filler, hframe} from '@xh/hoist/cmp/layout';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid} from '@xh/hoist/cmp/grid';
+import {hframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-
+import {creates, hoistCmp} from '@xh/hoist/core';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {logDisplay} from './LogDisplay';
+import './LogViewer.scss';
 import {LogViewerModel} from './LogViewerModel';
 import {logViewerToolbar} from './LogViewerToolbar';
-import './LogViewer.scss';
 
 export const logViewer = hoistCmp.factory({
     model: creates(LogViewerModel),
@@ -31,8 +30,7 @@ export const logViewer = hoistCmp.factory({
                     },
                     item: grid(),
                     bbar: [
-                        filler(),
-                        storeFilterField()
+                        storeFilterField({flex: 1})
                     ]
                 }),
                 panel({

@@ -4,11 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {observable, action} from '@xh/hoist/mobx';
 import {HoistModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {action, observable} from '@xh/hoist/mobx';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-
 
 /**
  * Model for a single instance of a Toast.

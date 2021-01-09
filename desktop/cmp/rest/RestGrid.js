@@ -5,13 +5,14 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import PT from 'prop-types';
+import {cloneElement, isValidElement} from 'react';
 import {grid} from '@xh/hoist/cmp/grid';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import PT from 'prop-types';
-import {cloneElement, isValidElement} from 'react';
-import {withDefault} from '../../../utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
+
 import {restForm} from './impl/RestForm';
 import {restGridToolbar} from './impl/RestGridToolbar';
 import {RestGridModel} from './RestGridModel';

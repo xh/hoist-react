@@ -6,8 +6,8 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {action, observable, computed} from '@xh/hoist/mobx';
-import {castArray, intersection, union, isEqual} from 'lodash';
+import {action, computed, observable} from '@xh/hoist/mobx';
+import {castArray, compact, intersection, isEqual, union} from 'lodash';
 
 /**
  * Model for managing store selections.
@@ -34,26 +34,26 @@ export class StoreSelectionModel {
         this.addReaction(this.cullSelectionReaction());
     }
 
-    /** Single selected record, or null if multiple or no records selected. */
+    /** @return {?Record} - single selected record, or null if multiple or no records selected. */
     @computed
     get singleRecord() {
         const ids = this.ids;
         return ids.length === 1 ? this.store.getById(ids[0]) : null;
     }
 
-    /** Currently selected records. */
+    /** @return {Record[]} - currently selected Records. */
     @computed
     get records() {
-        return this.ids.map(it => this.store.getById(it));
+        return compact(this.ids.map(it => this.store.getById(it)));
     }
 
-    /** Is the selection empty? */
+    /** @return {boolean} - true if selection is empty. */
     @computed
     get isEmpty() {
         return this.ids.length === 0;
     }
 
-    /** Number of currently selected records. */
+    /** @return {number} - count of currently selected records. */
     @computed
     get count() {
         return this.ids.length;

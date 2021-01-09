@@ -4,10 +4,21 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {isFunction, isNil, debounce as lodashDebounce, isNumber, isPlainObject} from 'lodash';
-import {autorun as mobxAutorun, action, reaction as mobxReaction, when as mobxWhen} from '@xh/hoist/mobx';
-import {throwIf, applyMixin} from '@xh/hoist/utils/js';
+import {
+    action,
+    autorun as mobxAutorun,
+    reaction as mobxReaction,
+    when as mobxWhen
+} from '@xh/hoist/mobx';
+import {applyMixin, throwIf} from '@xh/hoist/utils/js';
+import {
+    debounce as lodashDebounce,
+    isFunction,
+    isNil,
+    isNumber,
+    isPlainObject,
+    upperFirst
+} from 'lodash';
 
 /**
  * Mixin to add MobX reactivity to Components, Models, and Services.
@@ -106,6 +117,23 @@ export function ReactiveSupport(C) {
                     this.addMobxDisposer(mobxWhen(when, run, opts));
             },
 
+            /**
+             * Set an observable/bindable value.
+             *
+             * This method is a convenience method for calling the conventional setXXX method
+             * for updating a mobx observable given the property name.
+             *
+             * @param {string} property
+             * @param {*} value
+             */
+            setBindable(property, value) {
+                const setter = `set${upperFirst(property)}`;
+                throwIf(!isFunction(this[setter]),
+                    `Required function '${setter}()' not found on bound model. ` +
+                    `Implement a setter, or use the @bindable annotation.`
+                );
+                this[setter].call(this, value);
+            },
 
             //------------------------
             // Implementation

@@ -4,30 +4,32 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {cloneElement} from 'react';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import PT from 'prop-types';
+import {div, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
+import {colChooser} from '@xh/hoist/desktop/cmp/grid/impl/ColChooser';
 import {Icon} from '@xh/hoist/icon';
-import {button, Button} from './Button';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import {div, vbox} from '@xh/hoist/cmp/layout';
-import {colChooser} from '@xh/hoist/desktop/cmp/grid';
+import PT from 'prop-types';
+import {cloneElement} from 'react';
+import {button, Button} from './Button';
 
 /**
  * A convenience button to trigger the display of a ColChooser for user selection and discovery of
  * available Grid columns. For use by applications when a button is desired in addition to the
  * context menu item built into the Grid component directly.
  *
- * Requires the `GridModel.enableColChooser` config option to be true.
+ * Requires the `GridModel.colChooserModel` config option. Set to true for default implementation.
  */
 export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
     displayName: 'ColChooserButton',
     model: false,
 
-    render({icon, title, gridModel, popoverPosition, chooserWidth, chooserHeight, ...rest}) {
+    render({icon, title, gridModel, popoverPosition, ...rest}) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
+
+        const colChooserModel = gridModel?.colChooserModel;
 
         const displayButton = button({
             icon: withDefault(icon, Icon.gridPanel()),
@@ -40,7 +42,11 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
             return cloneElement(displayButton, {disabled: true});
         }
 
-        const {colChooserModel} = gridModel;
+        if (!colChooserModel) {
+            console.error('No ColChooserModel available on bound GridModel - enable via GridModel.colChooserModel config.');
+            return cloneElement(displayButton, {disabled: true});
+        }
+
         return popover({
             popoverClassName: 'xh-col-chooser-popover xh-popup--framed',
             position: withDefault(popoverPosition, 'auto'),
@@ -52,9 +58,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
                     item: 'Choose Columns'
                 }),
                 colChooser({
-                    model: colChooserModel,
-                    width: chooserWidth,
-                    height: chooserHeight
+                    model: colChooserModel
                 })
             ),
             onInteraction: (willOpen) => {
@@ -67,6 +71,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
         });
     }
 });
+
 ColChooserButton.propTypes = {
     ...Button.propTypes,
 
@@ -80,13 +85,7 @@ ColChooserButton.propTypes = {
         'bottom-right', 'bottom', 'bottom-left',
         'left-bottom', 'left', 'left-top',
         'auto'
-    ]),
-
-    /** Width for the opened chooser */
-    chooserWidth: PT.number,
-
-    /** Height for the opened chooser */
-    chooserHeight: PT.number
+    ])
 };
 
 

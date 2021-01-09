@@ -4,8 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {isValidElement, createElement, cloneElement} from 'react';
+import {cloneElement, createElement, isValidElement} from 'react';
 import {throwIf} from '../js';
 
 /**
@@ -37,6 +36,7 @@ export function elementFromContent(content, addProps) {
     }
 
     const ret = content();
+    if (ret === null) return null;
     throwIf(!isValidElement(ret),
         'Must specify either a HoistComponent or a function that returns a React Element.'
     );

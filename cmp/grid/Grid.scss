@@ -52,9 +52,11 @@
       text-overflow: ellipsis;
     }
 
-    svg {
-      margin-left: var(--xh-pad-half-px);
+    .xh-grid-header-sort-icon,
+    .xh-grid-header-menu-icon {
       color: var(--xh-grid-header-icon-color);
+      margin-left: var(--xh-pad-half-px);
+      width: 1.5em;
     }
 
     &.xh-grid-header-multisort .xh-grid-header-sort-icon svg {
@@ -80,16 +82,26 @@
     }
   }
 
+  // Floating viewports host total rows.
+  .ag-floating-bottom,
+  .ag-floating-top {
+    // Background on viewport itself covers area left blank by presence of a flex column.
+    background-color: var(--xh-grid-total-row-bg);
+    .ag-row-pinned.ag-row-first {
+      background-color: var(--xh-grid-total-row-bg);
+    }
+  }
+
   //------------------------
   // Core Cell Classes
   //------------------------
-
   // No LR padding when center aligned - not relevant / allows narrow cols (icons) to center align.
   .ag-cell.xh-align-center {
     padding-left: 0;
     padding-right: 0;
   }
 }
+
 
 //------------------------
 // Trees and Grouping
@@ -98,52 +110,88 @@
   // Generate indentations for tree grids with hierarchical data.
   .ag-ltr {
     .ag-row-group-indent-0 {
-      padding-left: calc(0 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(0 * var(--xh-grid-tree-indent));
     }
 
     .ag-row-group-indent-1 {
-      padding-left: calc(1 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(1 * var(--xh-grid-tree-indent));
     }
 
     .ag-row-group-indent-2 {
-      padding-left: calc(2 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(2 * var(--xh-grid-tree-indent));
     }
 
     .ag-row-group-indent-3 {
-      padding-left: calc(3 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(3 * var(--xh-grid-tree-indent));
     }
 
     .ag-row-group-indent-4 {
-      padding-left: calc(4 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(4 * var(--xh-grid-tree-indent));
     }
 
     .ag-row-group-indent-5 {
-      padding-left: calc(5 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(5 * var(--xh-grid-tree-indent));
     }
 
     .ag-row-group-indent-6 {
-      padding-left: calc(6 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(6 * var(--xh-grid-tree-indent));
     }
 
     .ag-row-group-indent-7 {
-      padding-left: calc(7 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(7 * var(--xh-grid-tree-indent));
     }
 
     .ag-row-group-indent-8 {
-      padding-left: calc(8 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(8 * var(--xh-grid-tree-indent));
     }
 
     .ag-row-group-indent-9 {
-      padding-left: calc(9 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(9 * var(--xh-grid-tree-indent));
     }
   }
 
   .ag-ltr .ag-row-group-leaf-indent {
-    margin-left: var(--xh-pad-double-px);
+    margin-left: var(--xh-grid-tree-indent);
   }
 
   .ag-group-contracted + .ag-group-value:not(:empty) {
     margin-left: 0;
+  }
+
+  // Adjust left padding for tree columns.
+  .ag-cell.xh-tree-column {
+    padding-left: calc(var(--xh-grid-tree-indent) - var(--xh-grid-tree-icon-px));
+  }
+
+  //------------------------
+  // Tree grid styling modes
+  //------------------------
+  &.xh-grid--tree-style-highlights {
+    div[class*=" ag-row-group"],
+    div[class^="ag-row-group"] {
+      &:not(.ag-row-selected),
+      &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+        background-color: var(--xh-grid-tree-group-bg);
+      }
+    }
+  }
+
+  &.xh-grid--tree-style-borders {
+    .ag-row-level-0[class*=" ag-row-group"],
+    .ag-row-level-0[class^="ag-row-group"], {
+      &:not(.ag-row-first) {
+        border-top: 1px solid var(--xh-grid-tree-group-border-color);
+      }
+    }
+
+    // Floating viewports host total rows.
+    .ag-floating-bottom {
+      border-color: var(--xh-grid-tree-group-border-color);
+    }
+
+    .ag-floating-top {
+      border-color: var(--xh-grid-tree-group-border-color);
+    }
   }
 }
 
@@ -191,4 +239,100 @@
 
 .xh-grid-tooltip {
   position: absolute;
+
+  &:empty {
+    display: none;
+  }
+
+  // Default minimal styling. This is not applied when using a custom tooltipElement.
+  &--default {
+    padding: var(--xh-pad-half-px);
+    background: var(--xh-bg);
+    border: var(--xh-border-solid);
+  }
+}
+
+//-----------
+// Autosize
+//-----------
+.xh-grid-autosize-canvas {
+  position: absolute;
+  display: none;
+}
+
+.xh-grid-autosize-cell {
+  padding: 0 var(--xh-grid-cell-lr-pad-px);
+  font-size: var(--xh-grid-font-size-px);
+  font-family: var(--xh-grid-font-family);
+  visibility: hidden;
+  display: none;
+  white-space: nowrap;
+
+  // This property is not actually used in rendering, but is provided here
+  // for later interpretation by GridAutosizeService.getIndentation()
+  left: var(--xh-grid-tree-indent);
+
+  &--active {
+    display: inline-block;
+  }
+
+  &--large {
+    font-size: var(--xh-grid-large-font-size-px);
+    padding: 0 var(--xh-grid-large-cell-lr-pad-px);
+  }
+
+  &--compact {
+    font-size: var(--xh-grid-compact-font-size-px);
+    padding: 0 var(--xh-grid-compact-cell-lr-pad-px);
+  }
+
+  &--tiny {
+    font-size: var(--xh-grid-tiny-font-size-px);
+    padding: 0 var(--xh-grid-tiny-cell-lr-pad-px);
+  }
+}
+
+.xh-grid-autosize-header {
+  padding: 0 var(--xh-grid-cell-lr-pad-px);
+  font-size: var(--xh-grid-header-font-size-px);
+  font-weight: var(--xh-grid-header-font-weight);
+  font-family: var(--xh-grid-header-font-family);
+  flex-direction: row;
+  visibility: hidden;
+  display: none;
+  white-space: nowrap;
+
+  .xh-grid-header-sort-icon,
+  .xh-grid-header-menu-icon {
+    margin-left: var(--xh-pad-half-px);
+    width: 1.5em;
+    display: none;
+  }
+
+  &--active {
+    display: inline-flex;
+  }
+
+  &--sort .xh-grid-header-sort-icon {
+    display: block;
+  }
+
+  &--menu .xh-grid-header-menu-icon {
+    display: block;
+  }
+
+  &--large {
+    font-size: var(--xh-grid-large-header-font-size-px);
+    padding: 0 var(--xh-grid-large-header-lr-pad-px);
+  }
+
+  &--compact {
+    font-size: var(--xh-grid-compact-header-font-size-px);
+    padding: 0 var(--xh-grid-compact-header-lr-pad-px);
+  }
+
+  &--tiny {
+    font-size: var(--xh-grid-tiny-header-font-size-px);
+    padding: 0 var(--xh-grid-tiny-header-lr-pad-px);
+  }
 }

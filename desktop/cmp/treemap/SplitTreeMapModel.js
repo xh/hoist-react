@@ -7,7 +7,6 @@
 import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-
 import {TreeMapModel} from './TreeMapModel';
 
 /**
@@ -95,5 +94,5 @@ export class SplitTreeMapModel {
  * @callback SplitTreeMapTitleFn
  * @param {TreeMapModel} treeMapModel - model for the region's inner TreeMap.
  * @param {boolean} isPrimary - true if the region is the primary (top/left) map in the pair.
- * @return {(String|ReactNode)} - the region title to display.
+ * @return {(string|ReactNode)} - the region title to display.
  */

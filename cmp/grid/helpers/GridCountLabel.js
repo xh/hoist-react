@@ -4,8 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel} from '../GridModel';
 import {box} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
@@ -48,7 +47,7 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory({
             selCountString = () => {
                 const count = selection.length,
                     countStr = count ? fmtCount(count) : 'none',
-                    showCount = showSelectionCount == 'always' || (showSelectionCount == 'auto' && count > 1);
+                    showCount = showSelectionCount === 'always' || (showSelectionCount === 'auto' && count > 1);
 
                 return showCount ? ` (${countStr} selected)` : '';
             };

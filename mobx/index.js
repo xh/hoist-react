@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {configure} from 'mobx';
 
 export {
@@ -20,9 +19,7 @@ export {
     when,
     comparer
 } from 'mobx';
-
 export {observer} from 'mobx-react';
-
 export {settable, bindable} from './decorators';
 
 configure({enforceActions: 'observed'});

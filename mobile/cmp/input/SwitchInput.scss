@@ -1,6 +1,6 @@
 .xh-input.xh-switch-input {
-  border: none;
-  height: 22px;
+  border: 1px transparent solid;
+  height: 24px;
 
   .switch__toggle {
     width: 40px;
@@ -13,6 +13,10 @@
       box-shadow: none;
       left: 2px;
     }
+  }
+
+  &:focus-within {
+    border: 1px solid var(--xh-focus-outline-color);
   }
 
   :checked + .switch__toggle {

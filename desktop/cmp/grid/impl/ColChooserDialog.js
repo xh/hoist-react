@@ -4,10 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {dialog} from '@xh/hoist/kit/blueprint';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-
+import {dialog} from '@xh/hoist/kit/blueprint';
 import {colChooser} from './ColChooser';
 import {ColChooserModel} from './ColChooserModel';
 
@@ -15,9 +14,10 @@ export const colChooserDialog = hoistCmp.factory({
     model: uses(ColChooserModel),
     className: 'xh-col-chooser-dialog',
 
-    render({model, className, ...props}) {
+    render({model, className}) {
 
-        if (!model.isOpen) return null;
+        const {isOpen, width} = model;
+        if (!isOpen) return null;
 
         return dialog({
             icon: Icon.gridPanel(),
@@ -25,7 +25,8 @@ export const colChooserDialog = hoistCmp.factory({
             isOpen: true,
             onClose: () => model.close(),
             item: colChooser({model}),
-            className
+            className,
+            style: {width}
         });
     }
 });

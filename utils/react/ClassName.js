@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import classNames from 'classnames';
 
 /**
@@ -17,7 +16,7 @@ import classNames from 'classnames';
  *
  * @param {string} baseName - base class name for the component.
  * @param {Array} props - component props
- * @param {String[]} [extraNames] - optional, additional class names to append.
+ * @param {string[]} [extraNames] - optional, additional class names to append.
  *
  * @returns {string} - Concatenated space-delimited class name appropriate for html className attribute
  */

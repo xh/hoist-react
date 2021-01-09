@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {box, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, managed, useLocalModel, XH} from '@xh/hoist/core';
 import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
@@ -110,7 +109,7 @@ export function getRelativeTimestamp(timestamp, options = {}) {
     options = {
         timestamp,
         allowFuture: false,
-        short: XH.isMobile,
+        short: XH.isMobileApp,
         futureSuffix: relTo ? `after ${relFmt}` : 'from now',
         pastSuffix: relTo ? `before ${relFmt}` : 'ago',
         equalString: relTo ? `${relFmtIsTime ? 'at' : 'on'}  ${relFmt}` : 'just now',

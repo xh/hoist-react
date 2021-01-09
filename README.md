@@ -37,13 +37,19 @@ at the class/component level and for essential public methods.
 
 ## Hoist usage, licensing, and support
 
-While we maintain open access to the Hoist codebase via these public repositories, Hoist is intended
-for use by clients of Extremely Heavy who are working with us to develop custom
-applications for their enterprise.
+Hoist is currently developed exclusively by Extremely Heavy and intended for use by XH and our
+client partners to develop enterprise web applications with XH's guidance and direction. That said,
+we have released the toolkit under the permissive and open Apache 2.0 license. This allows other
+developers, regardless of whether they are current XH clients or not, to checkout, use, modify, and
+otherwise explore Hoist and its source code. See [this project's license file](LICENSE.md) for the
+full license.
 
-Please refer to the
-[Hoist Core readme](https://github.com/xh/hoist-core#hoist-usage-licensing-and-support) for
-additional terms and conditions, all of which apply equally and entirely to Hoist React.
+We have selected an open source license as part of our ongoing commitment to openness, transparency,
+and ease-of-use, and to clarify and emphasize the suitability of Hoist for use within a wide variety
+of enterprise software projects. Note, however, that we cannot at this time commit to any particular
+support or contribution model outside of our consulting work. But if you are interested in Hoist
+and/or think it might be helpful for a project, please don't hesitate to
+[contact us](https://xh.io/contact)!
 
 ## Key Libraries and Dependencies
 
@@ -64,18 +70,17 @@ framework, please review the technologies below.
 
 ### Library Licensing Considerations
 
-👮 The majority of the libraries listed above and included within Hoist React as dependencies are
+⚖️ The majority of the libraries listed above and included within Hoist React as dependencies are
 open-source and fully free to use. Wherever possible, we have aimed to minimize exposure to
 third-party license costs and restrictions. The exceptions to this rule are listed below. For these
 libraries, client application(s) using Hoist React must acquire and register appropriate licenses.
 
-**Ag-Grid Enterprise** is required by Hoist React due to its support for a number of key, enterprise
-only features, including row grouping and tree grids. Ag-Grid offers several
-[licensing models](https://www.ag-grid.com/license-pricing.php) and requires a license key to be
-included with the application codebase to verify compliance and avoid console warnings. An
-appropriate key can be installed in any Hoist React application by via the `agGridLicenseKey`
-parameter to `configureWebpack()` within
-[hoist-dev-utils](https://github.com/xh/hoist-dev-utils/blob/master/configureWebpack.js).
+**Ag-Grid** is released by its developer under a dual licensing model, with the community edition
+available under a permissive MIT license and the Enterprise edition requiring a [paid license from
+ag-Grid](https://www.ag-grid.com/license-pricing.php). Applications wishing to use grids in Hoist
+React will need to provide a licensed version of ag-Grid.  A free community version is
+available, however many applications will want to license the enterprise version in order to make
+use of the important extra functionality it provides, including row grouping and tree grids.
 
 **Font Awesome** provides a greatly extended set of icons via its
 [Pro license](https://fontawesome.com/pro), and Hoist React references / relies on several of these
@@ -84,8 +89,8 @@ accessed via a unique URL. XH can configure appropriate access via npm configura
 enterprise npm repository proxy.
 
 **HighCharts HighStock** is the primary charting library in Hoist, and offers several [licensing and
-support options](https://shop.highsoft.com/highstock) for commercial use. Highcharts does not
-require the registration or maintenance of any in-code licence keys.
+support options](https://shop.highsoft.com/highstock) for commercial use. Application wishing to use
+charts in Hoist will need to provide a licensed version of Highcharts.
 
 ## ECMAScript 2016+
 
@@ -791,7 +796,7 @@ sudo docker system prune -af
 - [ ] Theming and styles
 - [ ] Bundled formatters and renderers (Dates, numbers)
 - [ ] Exception handling and error reporting
-- [ ] Admin console + custom snap-ins
+- [ ] Admin console and custom snap-ins
 - [ ] ....
 
 🙏 Thanks for your patience as we continue to build out this documentation.

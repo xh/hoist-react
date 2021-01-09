@@ -5,11 +5,10 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-
 /**
  * Shared columns for the admin client.
  */
 export const usernameCol = {
     headerName: 'User',
-    width: 120
+    width: 160
 };

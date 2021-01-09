@@ -4,30 +4,25 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {hoistCmp, uses} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
-import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {Icon} from '@xh/hoist/icon';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {appBar, appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
-import {ContextMenuItem as CM} from '@xh/hoist/desktop/cmp/contextmenu';
-
-import {AppModel} from './AppModel';
-
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
+import {Icon} from '@xh/hoist/icon';
 import './App.scss';
+import {AppModel} from './AppModel';
 
 export const App = hoistCmp({
     displayName: 'App',
     model: uses(AppModel),
 
-    render() {
+    render({model}) {
         return panel({
             tbar: tbar(),
-            contextMenu: [CM.reloadApp(), CM.about(), CM.logout()],
             className: 'xh-admin-app-frame',
-            item: tabContainer()
+            item: tabContainer({model: model.tabModel})
         });
     }
 });
@@ -37,14 +32,9 @@ const tbar = hoistCmp.factory(
     () => appBar({
         icon: Icon.gears({size: '2x', prefix: 'fal'}),
         leftItems: [
-            tabSwitcher()
+            tabSwitcher({enableOverflow: true})
         ],
         rightItems: [
-            button({
-                icon: Icon.mail(),
-                text: 'Contact',
-                onClick: () => window.open('https://xh.io/contact')
-            }),
             button({
                 icon: Icon.openExternal(),
                 title: 'Open app...',

@@ -6,24 +6,10 @@
  */
 
 .xh-admin-app-frame {
-  .bp3-tabs.bp3-vertical > .bp3-tab-list {
+  .xh-tab-switcher--left,
+  .xh-tab-switcher--right {
     min-width: 130px;
     background-color: var(--xh-bg-alt);
     border-right: var(--xh-border-solid);
-  }
-
-  > .bp3-tabs > .bp3-tab-panel {
-    border-top: var(--xh-border-solid);
-  }
-}
-
-.xh-admin-activity-detail,
-.xh-admin-error-detail {
-  padding: var(--xh-pad-half-px);
-  border-bottom: var(--xh-border-solid);
-
-  th {
-    text-align: left;
-    vertical-align: top;
   }
 }

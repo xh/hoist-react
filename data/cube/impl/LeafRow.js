@@ -5,8 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {RowUpdate} from './RowUpdate';
 import {isEmpty} from 'lodash';
+import {RowUpdate} from './RowUpdate';
 
 /**
  * @private

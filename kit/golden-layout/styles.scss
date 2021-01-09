@@ -139,3 +139,14 @@
     display: none;
   }
 }
+
+// On touch devices, we must ensure that the tab itself is never
+// the target for touch events. Instead, it's children (icon, title)
+// are the target.
+body:not(.xh-desktop) .lm_goldenlayout .lm_header .lm_tab {
+  pointer-events: none;
+
+  & * {
+    pointer-events: auto;
+  }
+}

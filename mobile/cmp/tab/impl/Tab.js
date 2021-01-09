@@ -4,14 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {useRef} from 'react';
-import {hoistCmp, ModelPublishMode, RenderMode, uses} from '@xh/hoist/core';
-import {page} from '@xh/hoist/kit/onsen';
-import {refreshContextView} from '@xh/hoist/core/refresh';
-import {elementFromContent} from '@xh/hoist/utils/react';
-
-import './Tabs.scss';
 import {TabModel} from '@xh/hoist/cmp/tab';
+import {hoistCmp, ModelPublishMode, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
+import {page} from '@xh/hoist/kit/onsen';
+import {elementFromContent} from '@xh/hoist/utils/react';
+import {useRef} from 'react';
+import './Tabs.scss';
 
 /**
  * @private
@@ -35,8 +33,8 @@ export const tab = hoistCmp.factory({
         if (
             !isActive &&
             (
-                (renderMode == RenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode == RenderMode.LAZY && !wasActivated.current)
+                (renderMode === RenderMode.UNMOUNT_ON_HIDE) ||
+                (renderMode === RenderMode.LAZY && !wasActivated.current)
             )
         ) {
             // Note: We must render an empty placeholder page to work with Onsen's tabbar.

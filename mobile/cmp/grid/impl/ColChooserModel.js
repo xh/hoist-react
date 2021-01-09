@@ -4,10 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, bindable, action} from '@xh/hoist/mobx';
+import {HoistModel, XH} from '@xh/hoist/core';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
-import {sortBy, clone, find} from 'lodash';
+import {clone, find, sortBy} from 'lodash';
 
 /**
  * State management for the ColChooser component.
@@ -25,8 +25,12 @@ export class ColChooserModel {
 
     @observable isOpen = false;
 
+    get pinnedColumn() {
+        return this.pinFirst ? this.columns.find(it => it.pinned) : null;
+    }
+
     get visibleColumns() {
-        return this.getVisible(this.columns);
+        return this.getVisible(this.columns).filter(it => !it.pinned);
     }
 
     get hiddenColumns() {
@@ -50,9 +54,8 @@ export class ColChooserModel {
     }
 
     restoreDefaults() {
-        this.gridModel.stateModel.resetStateAsync().then(() => {
-            this.syncChooserData();
-        });
+        this.gridModel.restoreDefaults();
+        this.syncChooserData();
     }
 
     @action
@@ -67,7 +70,6 @@ export class ColChooserModel {
     }
 
     updatePinnedColumn() {
-
         // Loop through and, if applicable, pin the first
         // non-excluded visible column encountered
         let shouldPinFirst = this.pinFirst;

@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {XH} from '@xh/hoist/core';
 import {applyMixin} from '@xh/hoist/utils/js';
 
@@ -24,12 +23,13 @@ export function ManagedSupport(C) {
 
         defaults: {
             /**
-             * Mark an object for destruction when this object is destroyed.
-             * @param {object} obj - object to be destroyed
-             * @returns object passed.
+             * Mark one or more objects for destruction when this object is destroyed.
+             *
+             * @param {(Object|Array)} obj - object or array of objects to be destroyed
+             * @returns obj
              */
             markManaged(obj) {
-                this._xhManagedInstances = this._xhManagedInstances || [];
+                this._xhManagedInstances = this._xhManagedInstances ?? [];
                 this._xhManagedInstances.push(obj);
                 return obj;
             }
@@ -37,11 +37,12 @@ export function ManagedSupport(C) {
 
         chains: {
             destroy() {
-                const props = this._xhManagedProperties;
-                if (props) props.forEach(p => XH.safeDestroy(this[p]));
-
-                const instances = this._xhManagedInstances;
-                if (instances) instances.forEach(o => XH.safeDestroy(o));
+                this._xhManagedProperties?.forEach(p => {
+                    XH.safeDestroy(this[p]);
+                });
+                this._xhManagedInstances?.forEach(i => {
+                    XH.safeDestroy(i);
+                });
             }
         }
     });
@@ -53,7 +54,7 @@ export function ManagedSupport(C) {
  * via {@see ManagedSupport} when the referencing object is destroyed.
  */
 export function managed(target, property, descriptor) {
-    target._xhManagedProperties = target._xhManagedProperties || [];
+    target._xhManagedProperties = target._xhManagedProperties ?? [];
     target._xhManagedProperties.push(property);
     return descriptor;
 }

@@ -4,18 +4,16 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {Icon} from '@xh/hoist/icon';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
+import {Icon} from '@xh/hoist/icon';
 
 /**
  * Desktop implementation of StoreFilterField.
  * @private
  */
-export function storeFilterFieldImpl({implModel, ...props}) {
+export function storeFilterFieldImpl(props) {
     return textInput({
-        value: implModel.value,
-        onChange: (v) => implModel.setValue(v, {applyImmediately: false}),
+        commitOnChange: true,
         leftIcon: Icon.filter(),
         enableClear: true,
         placeholder: 'Quick filter',

@@ -4,10 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {Exception} from '@xh/hoist/exception';
-import {forOwn, isPlainObject} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
+import {forOwn, isPlainObject} from 'lodash';
 
 
 /**
@@ -15,7 +14,7 @@ import {throwIf} from '@xh/hoist/utils/js';
  *
  * @param {Object} C - class to be enhanced.
  * @param {Object} config
- * @param {String} [config.name] - name for mixin - will mark the class with `is[Name]: true` flag.
+ * @param {string} [config.name] - name for mixin - will mark the class with `is[Name]: true` flag.
  * @param {Object} [config.includes] - list of additional decorators to apply to the class.
  *      Will be applied in reverse order, to mimic their application in a file context (i.e. first
  *      decorator listed is applied last).
@@ -68,7 +67,7 @@ export function applyMixin(C, config) {
  *
  * Useful for providing an identifying flag for marking objects.
  *
- * @param {String} flag
+ * @param {string} flag
  */
 function markClass(C, flag) {
 

@@ -4,8 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmp} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import './VersionBar.scss';
 
@@ -16,7 +16,9 @@ export const versionBar = hoistCmp.factory({
         if (!isShowing()) return null;
 
         const env = XH.getEnv('appEnvironment'),
-            version = XH.getEnv('clientVersion');
+            version = XH.getEnv('clientVersion'),
+            build = XH.getEnv('clientBuild'),
+            versionAndBuild = (!build || build == 'UNKNOWN') ? version : `${version} (build ${build})`;
 
         return box({
             justifyContent: 'center',
@@ -24,7 +26,7 @@ export const versionBar = hoistCmp.factory({
             flex: 'none',
             className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
             items: [
-                [XH.appName, env, version].join(' • '),
+                [XH.appName, env, versionAndBuild].join(' • '),
                 Icon.info({
                     onClick: () => XH.showAboutDialog()
                 })

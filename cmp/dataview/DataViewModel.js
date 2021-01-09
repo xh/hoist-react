@@ -4,13 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {apiRemoved, throwIf} from '@xh/hoist/utils/js';
 import {isNumber} from 'lodash';
-import {apiRemoved} from '../../utils/js';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
@@ -86,7 +84,7 @@ export class DataViewModel {
         // We create a single visible 'synthetic' column in our DataView grid to hold our renderer
         // Also add hidden columns for all other fields to make sure grouping and sorting works!
         const columns = store.fields.map(field => {
-            const fieldName = field.name ?? field;   // May be a StoreField, or just a config for one 
+            const fieldName = field.name ?? field;   // May be a StoreField, or just a config for one
             return {field: fieldName, hidden: true};
         });
 
@@ -134,4 +132,5 @@ export class DataViewModel {
     clear()                     {return this.gridModel.clear()}
     setGroupBy(colIds)          {return this.gridModel.setGroupBy(colIds)}
     setSortBy(sorters)          {return this.gridModel.setSortBy(sorters)}
+    setFilter(filter)           {return this.gridModel.setFilter(filter)}
 }

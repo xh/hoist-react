@@ -4,13 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import PT from 'prop-types';
-import {escapeRegExp} from 'lodash';
-import {bindable} from '@xh/hoist/mobx';
-import {hoistCmp, useLocalModel, uses, HoistModel} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
+import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
-
+import {Icon} from '@xh/hoist/icon';
+import {bindable} from '@xh/hoist/mobx';
+import {escapeRegExp} from 'lodash';
+import PT from 'prop-types';
 import {LeftRightChooserModel} from './LeftRightChooserModel';
 
 /**
@@ -38,8 +37,8 @@ export const [LeftRightChooserFilter, leftRightChooserFilter] = hoistCmp.withFac
 
 LeftRightChooserFilter.propTypes = {
 
-    /** Names of fields in chooser on which to filter. */
-    fields: PT.arrayOf(PT.string).isRequired,
+    /** Names of fields in chooser on which to filter. Defaults to ['text', 'group'] */
+    fields: PT.arrayOf(PT.string),
 
     /** True to prevent regex start line anchor from being added. */
     anyMatch: PT.bool,
@@ -64,7 +63,7 @@ class LocalModel {
     }
 
     runFilter() {
-        const {fields, anyMatch, model} = this.lastProps;
+        const {fields = ['text', 'group'], anyMatch = false, model} = this.lastProps;
         let searchTerm = escapeRegExp(this.value);
 
         if (!anyMatch) {
@@ -73,8 +72,9 @@ class LocalModel {
 
         const filter = (raw) => {
             return fields.some(f => {
-                const fieldVal = !!searchTerm && raw.data[f];
-                return ((fieldVal && new RegExp(searchTerm, 'ig').test(fieldVal)) || !fieldVal);
+                if (!searchTerm) return true;
+                const fieldVal = raw.data[f];
+                return fieldVal && new RegExp(searchTerm, 'ig').test(fieldVal);
             });
         };
 
