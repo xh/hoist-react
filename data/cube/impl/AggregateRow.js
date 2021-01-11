@@ -5,7 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {has, isEmpty, reduce} from 'lodash';
+import {has, isEmpty, reduce, partition} from 'lodash';
+import {pluralize} from '@xh/hoist/utils/js';
+import {Cube} from '../Cube';
 
 /**
  *  Object used by views to gather Aggregate rows.
@@ -48,7 +50,7 @@ class AggregateMeta {
 
         this.markAggFields(val, appliedDimensions);
         this.computeAggregates();
-        this.applyVisibleChildren();
+        this.applyVisibleChildren(appliedDimensions);
     }
 
     computeAggregates() {
@@ -102,9 +104,9 @@ class AggregateMeta {
         }, {});
     }
 
-    applyVisibleChildren() {
+    applyVisibleChildren(appliedDimensions) {
         const {children, view, dim, data} = this,
-            {lockFn} = view.cube;
+            {lockFn, closeFn} = view.cube;
 
         // Hide hidden leaves.
         if (!view.query.includeLeaves && children[0]?.isLeaf) {
@@ -124,10 +126,32 @@ class AggregateMeta {
             const childRow = children[0],
                 childDim = childRow.dim;
 
-            if (dim && childDim && childDim.parentDimension === dim.name &&
+            if (dim && childDim &&
+                (childDim.parentDimension === dim.name || childDim === dim) &&
                 childRow.data[childDim.name] === data[dim.name]) {
                 data.children = childRow.data.children;
                 return;
+            }
+        } else if (closeFn) {
+            // Figure out which of our kids are closed
+            const [closedChildren, openChildren] = partition(children, row => closeFn(row));
+            if (!isEmpty(closedChildren)) {
+                if (closedChildren.length !== children.length) {
+                    // Push all CLOSED children under a new aggregate row
+
+                    // Determine the next dimension to use for the label
+                    const nextDimIdx = view.query.dimensions.indexOf(dim) + 1, // Note this works for root row since idx will be 0 - which is what we want
+                        nextDim = nextDimIdx <= view.query.dimensions.length ? view.query.dimensions[nextDimIdx] : null,
+                        value = nextDim ? `CLOSED ${pluralize(nextDim.displayName).toUpperCase()}` : 'CLOSED';
+
+                    // TODO: Is dim what we want to pass here to this child aggregate row? Or should it be the 'nextDim'?
+                    const closedRow = createAggregateRow(view, data.id + Cube.RECORD_ID_DELIMITER + 'CLOSED', closedChildren.map(it => it.data), nextDim, value, appliedDimensions);
+                    data.children = [closedRow, ...openChildren.map(it => it.data)];
+                    return;
+                } else {
+                    // Turn this row into a closed row
+                    this.data.cubeLabel = dim ? `CLOSED ${pluralize(dim.displayName).toUpperCase()}` : 'CLOSED';
+                }
             }
         }
 

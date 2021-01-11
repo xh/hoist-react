@@ -29,6 +29,8 @@ export class Cube {
     @managed store;
     /** @member {function} */
     lockFn;
+    /** @member {function} */
+    closeFn;
     /** @member {Object} */
     @observable.ref
     info = null;
@@ -52,7 +54,8 @@ export class Cube {
         idSpec = 'id',
         processRawData,
         info = {},
-        lockFn
+        lockFn,
+        closeFn
     }) {
         this.store = new Store({
             fields: this.parseFields(fields),
@@ -61,6 +64,7 @@ export class Cube {
         });
         this.store.loadData(data);
         this.lockFn = lockFn;
+        this.closeFn = closeFn;
         this.info = info;
     }
 
