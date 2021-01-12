@@ -34,6 +34,8 @@ export class Cube {
     /** @member {Object} */
     @observable.ref
     info = null;
+    /** @member {string} */
+    leafUnit;
 
     /** @member {Set<View>} */
     _connectedViews = new Set();
@@ -55,7 +57,8 @@ export class Cube {
         processRawData,
         info = {},
         lockFn,
-        closeFn
+        closeFn,
+        leafUnit
     }) {
         this.store = new Store({
             fields: this.parseFields(fields),
@@ -65,6 +68,7 @@ export class Cube {
         this.store.loadData(data);
         this.lockFn = lockFn;
         this.closeFn = closeFn;
+        this.leafUnit = leafUnit;
         this.info = info;
     }
 

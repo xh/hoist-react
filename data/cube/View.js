@@ -173,8 +173,10 @@ export class View {
         const leafMap = this.generateLeaves(cube.store.records),
             leafArray = Array.from(leafMap.values());
         let newRows = this.groupAndInsertLeaves(leafArray, dimensions, rootId, {});
-        if (includeRoot && !isEmpty(newRows)) {
-            newRows = [createAggregateRow(this, rootId, newRows, null, 'Total', {})];
+        if (!isEmpty(newRows)) {
+            // Always process a root aggregate row so we run through any special processing of root children
+            const root = createAggregateRow(this, rootId, newRows, null, 'Total', {});
+            newRows = includeRoot ? [root] : root.children ?? [];
         } else if (!query.includeLeaves && newRows[0]?._meta.isLeaf) {
             newRows = []; // degenerate case, no visible rows
         }

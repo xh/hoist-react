@@ -121,7 +121,7 @@ class AggregateMeta {
             return;
         }
 
-        // ...or drill past single child if it is an identical 'child' dimension.
+        // ...or drill past single child if it is an identical 'child' or closed dimension.
         if (children.length === 1) {
             const childRow = children[0],
                 childDim = childRow.dim;
@@ -133,29 +133,34 @@ class AggregateMeta {
                 return;
             }
         } else if (closeFn) {
-            // Figure out which of our kids are closed
+            // Split up our children into open and closed lists
             const [closedChildren, openChildren] = partition(children, row => closeFn(row));
-            if (!isEmpty(closedChildren)) {
-                if (closedChildren.length !== children.length) {
-                    // Push all CLOSED children under a new aggregate row
+            if (!isEmpty(closedChildren) && closedChildren.length !== children.length) {
+                // Push all closed children under a new aggregate row
+                const nextDim = this.findNextDim(dim),
+                    value = this.generateClosedLabel(nextDim),
+                    closedRow = createAggregateRow(view, data.id + Cube.RECORD_ID_DELIMITER + 'CLOSED', closedChildren.map(it => it.data), nextDim, value, appliedDimensions);
 
-                    // Determine the next dimension to use for the label
-                    const nextDimIdx = view.query.dimensions.indexOf(dim) + 1, // Note this works for root row since idx will be 0 - which is what we want
-                        nextDim = nextDimIdx <= view.query.dimensions.length ? view.query.dimensions[nextDimIdx] : null,
-                        value = nextDim ? `CLOSED ${pluralize(nextDim.displayName).toUpperCase()}` : 'CLOSED';
-
-                    // TODO: Is dim what we want to pass here to this child aggregate row? Or should it be the 'nextDim'?
-                    const closedRow = createAggregateRow(view, data.id + Cube.RECORD_ID_DELIMITER + 'CLOSED', closedChildren.map(it => it.data), nextDim, value, appliedDimensions);
-                    data.children = [closedRow, ...openChildren.map(it => it.data)];
-                    return;
-                } else {
-                    // Turn this row into a closed row
-                    this.data.cubeLabel = dim ? `CLOSED ${pluralize(dim.displayName).toUpperCase()}` : 'CLOSED';
-                }
+                data.children = [closedRow, ...openChildren.map(it => it.data)];
+                return;
             }
         }
 
         // otherwise send them off into the world!
         data.children = children.map(it => it.data);
+    }
+
+    generateClosedLabel(dim) {
+        if (dim) return `CLOSED ${pluralize(dim.displayName).toUpperCase()}`;
+
+        const {leafUnit} = this.view.cube;
+        return 'CLOSED' + (leafUnit ? ` ${pluralize(leafUnit).toUpperCase()}` : '');
+    }
+
+    findNextDim(dim) {
+        const {view} = this,
+            idx = view.query.dimensions.indexOf(dim) + 1; // This works for root row also since idx will be 0 - which is what we want
+
+        return idx <= view.query.dimensions.length ? view.query.dimensions[idx] : null;
     }
 }
