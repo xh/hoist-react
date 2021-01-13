@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, ManagedSupport} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {parseFilter} from '../filter/Utils';
 import {castArray, find} from 'lodash';
 import {apiRemoved} from '@xh/hoist/utils/js';
@@ -13,7 +13,6 @@ import {apiRemoved} from '@xh/hoist/utils/js';
 /**
  *  Specification used to define the shape of the data returned by a Cube.
  */
-@ManagedSupport
 export class Query {
 
     /** @member {CubeField[]} */

@@ -11,7 +11,7 @@ import classNames from 'classnames';
 import {isFunction, isPlainObject, isString} from 'lodash';
 import {useObserver} from 'mobx-react';
 import {forwardRef, memo, useContext, useDebugValue, useState} from 'react';
-import {ModelLookup, ModelLookupContext, modelLookupContextProvider} from './impl/ModelLookup';
+import {ModelLookup, matchesSelector, ModelLookupContext, modelLookupContextProvider} from './impl/ModelLookup';
 
 /**
  * Hoist utility for defining functional components. This is the primary method for creating
@@ -202,7 +202,7 @@ function lookupModel(spec, props, modelLookup, displayName) {
 
     // 2) props - instance
     if (model) {
-        throwIf(selector !== '*' && (!model.matchesSelector || !model.matchesSelector(selector)),
+        throwIf(!matchesSelector(model, selector, true),
             `Incorrect model passed to '${displayName}'. Expected: ${formatSelector(selector)} Received: ${model.constructor.name}`
         );
         return {model, isOwned: false, fromContext: false};

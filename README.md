@@ -142,22 +142,21 @@ behaviors, but we have found it to be a helpful indicator of any Promise-based, 
 + Docs: <https://mobx.js.org/refguide/api.html>
 + Source: <https://github.com/mobxjs/mobx>
 
-|      Class/File      |                               Note                                |                 Link                  |
-|----------------------|-------------------------------------------------------------------|:-------------------------------------:|
-| `ReactiveSupport.js` | Mixin to add MobX reactivity to Components, Models, and Services. | [⚛️](core/mixins/ReactiveSupport.js)  |
+|  Class/File     |                               Note                                |                 Link                  |
+|-----------------|-------------------------------------------------------------------|:-------------------------------------:|
+| `Reactive.js`   | Support for MobX reactivity                                       | [⚛️](core/Reactive.js)  |
 
 MobX is an essential building block of Hoist React, providing an application state management
 solution with "smart' reactivity, tight integration with React Components, and a general API for
 reactive programming that extends beyond Components. Please review and familiarize yourself with the
 MobX documentation to make the best use of Hoist React.
 
-All Hoist Components (functional or class-based) include 'observer' support from the 'mobx-react'
-project. This means that these Components are automatically re-rendered when any observable state
-they used during their last render is modified. This support provides the core engine of reactivity
-in Hoist.
+All Hoist Components include 'observer' support from the 'mobx-react' project. This means that
+these Components are automatically re-rendered when any observable state they used during their
+last render is modified. This support provides the core engine of reactivity in Hoist.
 
 In addition to Components, MobX is an essential tool for use by Models and Services within Hoist.
-The `ReactiveSupport` mixin (decorator, linked above) adds two key methods by default to these core
+The `Reactive` class  adds two key methods by default to these core
 Hoist artifacts - `addAutorun()` and `addReaction()`. These methods build on top of the native MobX
 autorun and reaction utilities with some additional syntax for clarity (in the case of reactions)
 and, importantly, a managed lifecycle that automatically disposes of these listeners when the owning
@@ -186,11 +185,10 @@ add their particular functionality, behaviors, and methods to the decorated clas
 
 |     Class/File                |                                  Note                                  |             Link              |
 |-------------------------------|------------------------------------------------------------------------|:-----------------------------:|
-| `HoistModel.js`               | Mixin for adding core Model support.                                   |   [⚛️](core/HoistModel.js)   |
-| `HoistComponentClass.js`      | Mixin for creating class Components                                    | [⚛️](core/HoistComponentClass.js) |
-| `HoistComponentFunctional.js` | Factory for creating functional Components                             | [⚛️](core/HoistComponentFunctional.js) |
-| `HoistService.js`             | Mixin for adding core Service support.                                 |  [⚛️](core/HoistService.js)  |
-| `HoistAppModel.js`            | Mixin for adding additional support to an App's primary Model class.   |    [⚛️](core/HoistAppModel.js)    |
+| `HoistModel.js`               | Base class for Model classes in Hoist.                                 |   [⚛️](core/HoistModel.js)   |
+| `HoistComponent.js`           | Factory for creating functional Components                             | [⚛️](core/HoistComponent.js) |
+| `HoistService.js`             | Base class for Service support.                                        |  [⚛️](core/HoistService.js)  |
+| `HoistAppModel.js`            | Base class an App's primary Model class.   |  [⚛️](core/HoistAppModel.js) |
 | `XH.js`                       | Hoist's top-level Model / framework API entry-point, exported as `XH`. |       [⚛️](core/XH.js)       |
 | `ClassUtils.js`               | Library methods for providing and extending methods on core classes.   | [⚛️](utils/js/ClassUtils.js) |
 
@@ -271,10 +269,6 @@ defining components in React and Hoist. To define a functional component in Hois
 render function with the `hoistComponent` function. This will apply core Hoist support, including
 MobX observability, and support for Forwards refs, and will return the Component.
 
-Alternatively, Hoist continues to fully support ES6 class-based Components. These can be specified
-using the '@HoistComponent' decorator. This decorator will enable MobX reactivity and augment a
-Component with several useful convenience methods/getters such as `getDOMNode()` and `isDisplayed`.
-
 Note that many layout related HoistComponents provide "LayoutSupport". HoistComponents supporting
 this feature promote most flexbox layout properties (e.g. 'width', 'height', 'flex') to being first
 class props on the component itself. This allows many layout operations to be done in declarative
@@ -293,7 +287,7 @@ Service instances persist for the life of the app and have a defined initializat
 convention they are stored within an `svc/` package within an app's file structure.
 
 Use the `HoistService` class to mark a class as a global service within.  This installs MobX and
-Event support and defines an empty `initAsync()` lifecycle method. To instantiate and make services
+support and defines an empty `initAsync()` lifecycle method. To instantiate and make services
 available to application code, use the`XH.installServicesAsync()` method. This method will construct,
 initialize, and install the services as a property on the XH object. Note that there is a strict
 expectation that service classes will be named ending with the word 'Service', e.g. `MyCustomService.`.

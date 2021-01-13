@@ -14,6 +14,13 @@ import {HoistModel} from './HoistModel';
  * Applications should specify this class to provide application level state and services and
  * customize important metadata. Initialization of all resources (e.g. application level services)
  * should be done in initAsync().
+ *
+ *
+ * Hoist will load/reload this Model during the global refresh process.  This will occur before t
+ * the application's global XH.refreshContextModel has been refreshed, (when all mounted and 'owned'
+ * HoistModels in the application are refreshed). Apps should implement a doloadAsync() to refresh all
+ * other app-specific services and models, respecting any ordering and phasing requirements that
+ * may exist.  @see HoistBase.doLoadAsync();
  */
 export class HoistAppModel extends HoistModel {
 
@@ -33,17 +40,6 @@ export class HoistAppModel extends HoistModel {
      * initialization or other work to support flows such as OAuth.
      */
     async preAuthInitAsync() {}
-
-    /**
-     * Hoist will call this method during the global refresh process.
-     *
-     * This will be called after all core Hoist services have been refreshed and before the
-     * application's global XH.refreshContextModel has been refreshed.
-     *
-     * Apps should implement this method to refresh all app-specific services, respecting any
-     * ordering and phasing requirements that may exist.
-     */
-    async doLoadAsync(loadSpec) {}
 
     /**
      * Called by {@see IdentityService.logoutAsync} to provide an app-specific hook prior

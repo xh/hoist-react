@@ -4,6 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+
 import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
 

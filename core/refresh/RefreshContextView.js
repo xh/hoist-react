@@ -7,6 +7,7 @@
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {useContextModel} from '@xh/hoist/core';
 import {useEffect} from 'react';
+import {RefreshContextModel} from './RefreshContextModel';
 
 /**
  * Establishes an area of the application with an independent RefreshContextModel.
@@ -18,7 +19,7 @@ import {useEffect} from 'react';
  */
 export const [RefreshContextView, refreshContextView] = hoistCmp.withFactory({
     displayName: 'RefreshContextView',
-    model: uses('RefreshContextModel', {publishMode: ModelPublishMode.LIMITED}),
+    model: uses(RefreshContextModel, {publishMode: ModelPublishMode.LIMITED}),
 
     render({model, children}) {
         const parent = useContextModel(m => m.isRefreshContextModel && m != model);

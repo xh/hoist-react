@@ -8,7 +8,7 @@ import {XH} from '@xh/hoist/core';
 import {applyMixin} from '@xh/hoist/utils/js';
 
 /**
- * Support automatic, on-demand generation of a unique ID string for class instances.
+ * @private
  */
 export function XhIdSupport(C) {
     return applyMixin(C, {

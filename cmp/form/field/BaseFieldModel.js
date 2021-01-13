@@ -9,10 +9,11 @@ import {managed, HoistModel} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {action, computed, observable, runInAction, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
 import {withDefault} from '@xh/hoist/utils/js';
 import {compact, flatten, isEmpty, isFunction, isNil, isUndefined} from 'lodash';
 import {createObservableRef} from '@xh/hoist/utils/react';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
+
 
 /**
  * Abstract Base class for FieldModels.

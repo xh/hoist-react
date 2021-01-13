@@ -3,24 +3,27 @@
 ## v38.0.0-SNAPSHOT - unreleased
 
 ### 🎁 Technical
-* Hoist v38 includes some major refactoring of our core model and service classes to streamline
-them, bring them in to conformance with the latest developments in Javascript, React, and MobX,
-and allow us to  more easily provide documentation and additional features.  In particular:
+* Hoist v38 includes some major refactoring of our core classes to streamline
+them, bring them in to conformance with the latest developments in Javascript, React,
+and MobX, and allow us to  more easily provide documentation and additional features.
+In particular:
 
-** New base classes of `HoistModel` and `HoistService` replace the existing class decorators
-`@HoistModel` and `@HoistService`.
+** New base classes of `HoistModel` and `HoistService` replace the existing class
+decorators `@HoistModel`, `@HoistService`.
 
-** We have removed the need for explicit `@LoadSupport` annotation in all implementations of
-`HoistModel` and `HoistService`. The presence of a defined `doLoadAsync()` method is now sufficient
-to allow these objects to participate in the loading and refreshing lifecycle.
+** Core functionality for `HoistModel` and `HoistService` now derive from the inherited classes
+`HoistBase` and `Reactive`, rather than annotations.  In particular, we have removed the need for
+the explicit `@LoadSupport` annotation.  The presence of a defined `doLoadAsync()` method is now
+sufficient to allow these objects to participate in the loading and refreshing lifecycle.
+
+** We have deprecated support for class-based Components via the `@HoistComponent` class decorator.
+To continue to use this decorator, please import it from the `@xh\hoist\deprecated` package.
+Please note that we plan to remove `@HoistComponent` in a future version.
 
 ** Due to changes in MobX v6.0.1, all classes that host observable fields and actions will now also
 need to provide a constructor containing a call to `makeObservable(this)`.  This change will
-require updates to most `HoistModel`, `HoistService` and `@HoistComponent` classes.  See
+require updates to most `HoistModel`, `HoistService` classes.  See
 https://michel.codes/blogs/mobx6 for more on this change and the motivation behind it.
-
-** With this release we are officially deprecating support for class based Components via the
-`@HoistComponent` class decorator.   **We plan to remove `@HoistComponent` in Hoist v38.**
 
 
 ### 🎁 New Features
@@ -28,12 +31,13 @@ https://michel.codes/blogs/mobx6 for more on this change and the motivation behi
 * New utility method `getOrCreate` for easy caching of properties on objects.
 
 ### 🐞 Bug Fixes
-
 * Fix issue where a `View` would create a root row even if there were no leaf rows.
 * Fixed regression in `LeftRightChooser` not displaying description callout.
 
 ### 💥 Breaking Changes
 * The `Ref` class, deprecated in v26, has now been removed.  Use `createObservableRef` instead.
+* `@HoistComponent` has been deprecated and moved to `@xh\hoist\deprecated`
+* All `HoistModel` and `HoistService` classes will have to be adjusted as described above.
 
 
 ### 📚 Libraries

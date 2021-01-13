@@ -4,10 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
+import {XH, RefreshContextModel, useContextModel} from '@xh/hoist/core';
 import {useOnUnmount} from '@xh/hoist/utils/react';
 import {useEffect} from 'react';
-import {useContextModel} from '../hooks/Models';
 
 /**
  * @private
@@ -20,7 +19,7 @@ import {useContextModel} from '../hooks/Models';
 
 /* eslint-disable react-hooks/exhaustive-deps */
 export function useOwnedModelLinker(model) {
-    const context = useContextModel('RefreshContextModel');
+    const context = useContextModel(RefreshContextModel);
     useEffect(() => {
         if (model?.implementsLoading) {
             model.loadAsync();

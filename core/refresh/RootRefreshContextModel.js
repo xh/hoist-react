@@ -19,8 +19,10 @@ import {RefreshContextModel} from './RefreshContextModel';
 export class RootRefreshContextModel extends RefreshContextModel {
 
     async doLoadAsync(loadSpec) {
-
-        await XH.appModel.loadAsync(loadSpec);
+        const {appModel} = XH;
+        if (appModel.implementsLoading) {
+            await appModel.loadAsync(loadSpec);
+        }
         await loadAllAsync(this.refreshTargets, loadSpec);
     }
 }

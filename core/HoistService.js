@@ -4,25 +4,16 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {ManagedSupport, ReactiveSupport, PersistSupport, XhIdSupport, LoadSupport} from '@xh/hoist/core';
+import {HoistBase} from '@xh/hoist/core';
 
 /**
  * Core class for Services in Hoist.
  *
  * Adds support for mobx reactivity, resource management, persistence, and data loading.
  */
-@ManagedSupport
-@ReactiveSupport
-@PersistSupport
-@XhIdSupport
-@LoadSupport
-export class HoistService {
+export class HoistService extends HoistBase {
 
     get isHoistService() {return true}
-
-    constructor() {
-        this.initLoadSupport();
-    }
 
     /**
      * Called by framework or application to initialize before application startup.
