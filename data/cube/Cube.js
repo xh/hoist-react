@@ -30,7 +30,7 @@ export class Cube {
     /** @member {function} */
     lockFn;
     /** @member {function} */
-    closeFn;
+    bucketFn;
     /** @member {Object} */
     @observable.ref
     info = null;
@@ -57,7 +57,7 @@ export class Cube {
         processRawData,
         info = {},
         lockFn,
-        closeFn,
+        bucketFn,
         leafUnit
     }) {
         this.store = new Store({
@@ -67,7 +67,7 @@ export class Cube {
         });
         this.store.loadData(data);
         this.lockFn = lockFn;
-        this.closeFn = closeFn;
+        this.bucketFn = bucketFn;
         this.leafUnit = leafUnit;
         this.info = info;
     }

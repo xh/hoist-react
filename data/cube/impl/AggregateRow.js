@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {has, isEmpty, reduce, partition} from 'lodash';
+import {has, isEmpty, reduce, groupBy, forEach} from 'lodash';
 import {pluralize} from '@xh/hoist/utils/js';
 import {Cube} from '../Cube';
 
@@ -106,7 +106,7 @@ class AggregateMeta {
 
     applyVisibleChildren(appliedDimensions) {
         const {children, view, dim, data} = this,
-            {lockFn, closeFn} = view.cube;
+            {lockFn, bucketFn} = view.cube;
 
         // Hide hidden leaves.
         if (!view.query.includeLeaves && children[0]?.isLeaf) {
@@ -127,34 +127,55 @@ class AggregateMeta {
                 childDim = childRow.dim;
 
             if (dim && childDim &&
-                (childDim.parentDimension === dim.name || childDim === dim) &&
+                childDim.parentDimension === dim.name &&
                 childRow.data[childDim.name] === data[dim.name]) {
                 data.children = childRow.data.children;
                 return;
             }
-        } else if (closeFn) {
-            // Split up our children into open and closed lists
-            const [closedChildren, openChildren] = partition(children, row => closeFn(row));
-            if (!isEmpty(closedChildren) && closedChildren.length !== children.length) {
-                // Push all closed children under a new aggregate row
-                const nextDim = this.findNextDim(dim),
-                    value = this.generateClosedLabel(nextDim),
-                    closedRow = createAggregateRow(view, data.id + Cube.RECORD_ID_DELIMITER + 'CLOSED', closedChildren.map(it => it.data), nextDim, value, appliedDimensions);
+        } else if (bucketFn) {
+            const byBucket = groupBy(children, (row) => bucketFn(row) ?? '__unbucketed__'),
+                bucketedRows = [],
+                unBucketedChildren = [],
+                nextDim = this.findNextDim(dim);
 
-                data.children = [closedRow, ...openChildren.map(it => it.data)];
-                return;
-            }
+            forEach(byBucket, (bucketChildren, bucket) => {
+                if (bucket === '__unbucketed__' || bucketChildren.length === children.length) {
+                    unBucketedChildren.push(...bucketChildren);
+                } else {
+                    const bucketLabel = this.generateBucketLabel(nextDim, bucket),
+                        bucketRow = createAggregateRow(view, data.id + Cube.RECORD_ID_DELIMITER + bucket, bucketChildren.map(it => it.data), nextDim, bucketLabel, appliedDimensions);
+
+                    bucketedRows.push(bucketRow);
+                }
+            });
+
+            data.children = [...bucketedRows, ...unBucketedChildren.map(it => it.data)];
+            return;
+
+            /*
+             // Split up our children into open and closed lists
+             const [closedChildren, openChildren] = partition(children, row => bucketFn(row));
+             if (!isEmpty(closedChildren) && closedChildren.length !== children.length) {
+             // Push all closed children under a new aggregate row
+             const nextDim = this.findNextDim(dim),
+             value = this.generateBucketLabel(nextDim),
+             closedRow = createAggregateRow(view, data.id + Cube.RECORD_ID_DELIMITER + 'CLOSED', closedChildren.map(it => it.data), nextDim, value, appliedDimensions);
+
+             data.children = [closedRow, ...openChildren.map(it => it.data)];
+             return;
+             }
+             */
         }
 
         // otherwise send them off into the world!
         data.children = children.map(it => it.data);
     }
 
-    generateClosedLabel(dim) {
-        if (dim) return `CLOSED ${pluralize(dim.displayName).toUpperCase()}`;
+    generateBucketLabel(dim, bucketLabel) {
+        if (dim) return `${bucketLabel} ${pluralize(dim.displayName).toUpperCase()}`;
 
         const {leafUnit} = this.view.cube;
-        return 'CLOSED' + (leafUnit ? ` ${pluralize(leafUnit).toUpperCase()}` : '');
+        return bucketLabel + (leafUnit ? ` ${pluralize(leafUnit).toUpperCase()}` : '');
     }
 
     findNextDim(dim) {
