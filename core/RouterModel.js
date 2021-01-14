@@ -27,7 +27,7 @@ export class RouterModel {
 
     /**
      * Does the routing system already have a given route?
-     * @param {String} routeName
+     * @param {string} routeName
      */
     hasRoute(routeName) {
         const flatNames = this.getRouteNames(this.router.rootNode);
@@ -47,7 +47,7 @@ export class RouterModel {
 
     /**
      * Add a routeName to the current route, preserving params
-     * @param {String} routeName - the routeName to append
+     * @param {string} routeName - the routeName to append
      * @param {Object} newParams - additional params for this routeName to be merged with existing params.
      */
     appendRoute(routeName, newParams = {}) {

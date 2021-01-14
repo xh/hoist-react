@@ -23,6 +23,7 @@ export const differDetail = hoistCmp.factory({
         return dialog({
             title: 'Detail',
             isOpen: model.record,
+            className: 'xh-admin-diff-detail',
             onClose: () => model.close(),
             item: panel({
                 item: diffTable(),
@@ -36,6 +37,7 @@ export const differDetail = hoistCmp.factory({
                         text: 'Accept Remote',
                         icon: Icon.cloudDownload(),
                         intent: 'primary',
+                        minimal: false,
                         onClick: () => model.confirmApplyRemote()
                     })
                 ]
@@ -58,16 +60,15 @@ const diffTable = hoistCmp.factory(
             return tr(td(field), td(localCell), td(remoteCell));
         });
 
-        return table({
-            className: 'diff-table',
-            item: tbody(
+        return table(
+            tbody(
                 tr(
-                    th('Property'),
+                    th(''),
                     th('Local'),
                     th('Remote')
                 ),
                 ...rows
             )
-        });
+        );
     }
 );

@@ -4,6 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {memoryMonitorPanel} from '@xh/hoist/admin/tabs/monitor/MemoryMonitorPanel';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -14,10 +15,11 @@ export const monitorTab = hoistCmp.factory(
     () => tabContainer({
         model: {
             route: 'default.monitor',
-            switcherPosition: 'left',
+            switcher: {orientation: 'left'},
             tabs: [
                 {id: 'status', icon: Icon.shieldCheck(), content: monitorResultsPanel},
-                {id: 'config', icon: Icon.settings(), content: monitorEditorPanel}
+                {id: 'config', icon: Icon.settings(), content: monitorEditorPanel},
+                {id: 'memory', icon: Icon.server(), content: memoryMonitorPanel}
             ]
         }
     })

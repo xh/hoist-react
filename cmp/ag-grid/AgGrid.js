@@ -77,7 +77,6 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
                 // Default some ag-grid props, but allow overriding.
                 getRowHeight: impl.getRowHeight,
                 navigateToNextCell: impl.navigateToNextCell,
-                headerHeight: model.headerHeight,
 
                 // Pass others on directly.
                 ...agGridProps,
@@ -113,16 +112,16 @@ class LocalModel {
 
     constructor(model, agGridProps) {
         this.model = model;
-        this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(model) :  null;
+        this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(model) : null;
 
-        // Only update header height if was not explicitly provided to the component
+        // manage header height if was not explicitly provided to component
         if (isNil(agGridProps.headerHeight)) {
             this.addReaction({
-                track: () => [this.model.agApi, this.model.sizingMode],
-                run: ([api, sizingMode]) => {
-                    if (!api) return;
-                    const height = AgGrid.getHeaderHeightForSizingMode(sizingMode);
-                    api.setHeaderHeight(height);
+                track: () => [model.agApi, model.sizingMode, model.hideHeaders],
+                run: ([api, sizingMode, hideHeaders]) => {
+                    api?.setHeaderHeight(
+                        hideHeaders ? 0 : AgGrid.getHeaderHeightForSizingMode(sizingMode)
+                    );
                 }
             });
         }

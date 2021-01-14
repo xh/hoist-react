@@ -5,8 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
-import {div} from '@xh/hoist/cmp/layout';
-import {hbox, vbox} from '@xh/hoist/cmp/layout/index';
+import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {select, Select} from '@xh/hoist/desktop/cmp/input';
@@ -22,6 +21,7 @@ const LEFT_PAD = 5;       // Left-padding for inputs.
 
 /**
  * Control for selecting a list of dimensions for grouping APIs.
+ * @see DimensionChooserModel
  */
 export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
     displayName: 'DimensionChooser',
@@ -43,8 +43,10 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
         popoverPosition = 'bottom',
         selectProps
     }) {
-        const {isMenuOpen, activeMode, value, dimensions} = model;
-        const getCurrDimensionLabels = () => value.map(it => dimensions[it].label),
+        const {isMenuOpen, activeMode, value} = model;
+        const getCurrDimensionLabels = () => {
+                return value.map(dimName => model.getDimDisplayName(dimName));
+            },
             getButtonText = () => {
                 const staticText = buttonText;
                 if (staticText != undefined) return staticText;
@@ -151,10 +153,6 @@ DimensionChooser.propTypes = {
     styleButtonAsInput: PT.bool
 };
 
-
-//---------------------------
-// sub components
-//---------------------------
 const historyMenu = hoistCmp.factory(
     ({model, popoverWidth, popoverTitle, emptyText}) => vbox({
         width: popoverWidth,
@@ -306,13 +304,13 @@ const addButtonOrSelect = hoistCmp.factory(
 
 const historyItems = hoistCmp.factory(
     ({model, emptyText}) => {
-        const {history, dimensions} = model;
+        const {history} = model;
         return buttonGroup({
             className: 'xh-dim-history-items',
             vertical: true,
             items: [
                 history.map((value, i) => {
-                    const labels = isEmpty(value) ? [emptyText] : value.map(h => dimensions[h].label);
+                    const labels = isEmpty(value) ? [emptyText] : value.map(dimName => model.getDimDisplayName(dimName));
                     return button({
                         minimal: true,
                         title: ` ${labels.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it).join('\n')}`,
@@ -330,7 +328,7 @@ const historyItems = hoistCmp.factory(
 );
 
 const titleBar = hoistCmp.factory(
-    ({popoverTitle, popoverWidth}) => {
+    ({popoverTitle}) => {
         if (!popoverTitle) return null;
 
         return div({

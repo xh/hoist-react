@@ -13,29 +13,29 @@ export const logLevelPanel = hoistCmp.factory(
 
 const modelSpec = {
     persistWith: {localStorageKey: 'xhAdminLogLevelState'},
-    enableColChooser: true,
+    colChooserModel: true,
     enableExport: true,
     store: {
         url: 'rest/logLevelAdmin',
         fields: [
             {
                 name: 'name',
-                label: 'Log Name',
+                displayName: 'Log Name',
                 required: true
             },
             {
                 name: 'level',
-                label: 'Override',
+                displayName: 'Override',
                 lookupName: 'levels'
             },
             {
                 name: 'defaultLevel',
-                label: 'Initial',
+                displayName: 'Initial',
                 editable: false
             },
             {
                 name: 'effectiveLevel',
-                label: 'Effective',
+                displayName: 'Effective',
                 editable: false
             }
         ]
@@ -44,9 +44,9 @@ const modelSpec = {
     filterFields: ['name'],
     columns: [
         {field: 'name', width: 400},
-        {field: 'defaultLevel', headerName: 'Initial', width: 110},
-        {field: 'level', headerName: 'Override', width: 110},
-        {field: 'effectiveLevel', headerName: 'Effective', width: 110}
+        {field: 'defaultLevel', width: 110},
+        {field: 'level', width: 110},
+        {field: 'effectiveLevel', width: 110}
     ],
     editors: [
         {field: 'name'},

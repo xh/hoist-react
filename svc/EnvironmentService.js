@@ -11,6 +11,7 @@ import {version as hoistReactVersion} from '@xh/hoist/package.json';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {deepFreeze} from '@xh/hoist/utils/js';
+import {MINUTES} from '@xh/hoist/utils/datetime';
 import {defaults} from 'lodash';
 import {version as mobxVersion} from 'mobx/package.json';
 import React from 'react';
@@ -21,7 +22,9 @@ export class EnvironmentService {
     _data = {};
 
     async initAsync() {
-        const serverEnv = await XH.fetchJson({url: 'xh/environment'});
+        const serverEnv = await XH.fetchJson({url: 'xh/environment'}),
+            clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
+            clientTimeZoneOffset = (new Date()).getTimezoneOffset() * -1 * MINUTES;
 
         // Favor client-side data injected via Webpack build or otherwise determined locally,
         // then apply all other env data sourced from the server.
@@ -34,7 +37,9 @@ export class EnvironmentService {
             hoistReactVersion,
             agGridVersion,
             mobxVersion,
-            blueprintCoreVersion
+            blueprintCoreVersion,
+            clientTimeZone,
+            clientTimeZoneOffset
         }, serverEnv);
 
         deepFreeze(this._data);
@@ -51,6 +56,10 @@ export class EnvironmentService {
 
     isProduction() {
         return this.get('appEnvironment') === 'Production';
+    }
+
+    isTest() {
+        return this.get('appEnvironment') === 'Test';
     }
 
     //------------------------------

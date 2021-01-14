@@ -16,7 +16,7 @@ import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
 import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
-import {useHotkeys} from '@xh/hoist/desktop/hooks';
+import {useHotkeys, useContextMenu} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
 import {aboutDialog} from './AboutDialog';
@@ -63,7 +63,11 @@ export const AppContainer = hoistCmp({
                 item: viewForState(),
                 onError: (e) => XH.handleException(e, {requireReload: true})
             }),
-            exceptionDialog()
+            // Modal component helpers rendered here at top-level to support display of messages
+            // and exceptions at any point during the app lifecycle.
+            exceptionDialog(),
+            messageSource(),
+            toastSource()
         );
     }
 });
@@ -95,26 +99,30 @@ const appContainerView = hoistCmp.factory({
     displayName: 'AppContainerView',
 
     render({model}) {
-        return useHotkeys(
-            viewport(
-                vframe(
-                    impersonationBar(),
-                    updateBar(),
-                    refreshContextView({
-                        model: model.refreshContextModel,
-                        item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
-                    }),
-                    versionBar()
-                ),
-                mask({model: model.appLoadModel, spinner: true}),
-                messageSource(),
-                toastSource(),
-                optionsDialog(),
-                feedbackDialog(),
-                aboutDialog()
+        const {appSpec, appModel} = XH;
+        let ret = viewport(
+            vframe(
+                impersonationBar(),
+                updateBar(),
+                refreshContextView({
+                    model: model.refreshContextModel,
+                    item: frame(elem(appSpec.componentClass, {model: appModel}))
+                }),
+                versionBar()
             ),
-            globalHotKeys(model)
+            mask({model: model.appLoadModel, spinner: true}),
+            aboutDialog(),
+            feedbackDialog(),
+            optionsDialog()
         );
+
+        if (!appSpec.showBrowserContextMenu) {
+            ret = useContextMenu(ret, null);
+        }
+
+        ret = useHotkeys(ret, globalHotKeys(model));
+
+        return ret;
     }
 });
 
@@ -122,7 +130,7 @@ function globalHotKeys(model) {
     const {impersonationBarModel, optionsDialogModel} = model,
         ret = [];
 
-    if (XH.identityService.canImpersonate) {
+    if (XH.identityService.canAuthUserImpersonate) {
         ret.push({
             global: true,
             combo: 'shift + i',

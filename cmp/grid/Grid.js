@@ -12,9 +12,11 @@ import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {div} from '@xh/hoist/cmp/layout';
 import {computed, observable, observer, action, runInAction} from '@xh/hoist/mobx';
-import {isDisplayed, withShortDebug} from '@xh/hoist/utils/js';
+import {isDisplayed, withShortDebug, apiRemoved} from '@xh/hoist/utils/js';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
+import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
+
 import classNames from 'classnames';
 import {
     isArray,
@@ -57,6 +59,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
     className: 'xh-grid',
 
     render({model, className, ...props}) {
+        apiRemoved(props.hideHeaders, 'hideHeaders', 'Specify hideHeaders on the GridModel instead.');
 
         const impl = useLocalModel(() => new LocalModel(model, props)),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser;
@@ -64,7 +67,11 @@ export const [Grid, grid] = hoistCmp.withFactory({
         // Don't render the agGridReact element with data or columns. Instead rely on API methods
         return fragment(
             frame({
-                className: classNames(className, impl.isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat'),
+                className: classNames(
+                    className,
+                    impl.isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat',
+                    model.treeMode ? getTreeStyleClasses(model.treeStyle) : null
+                ),
                 item: agGrid({
                     ...getLayoutProps(props),
                     ...impl.agOptions
@@ -89,9 +96,6 @@ Grid.propTypes = {
      * Note that changes to these options after the component's initial render will be ignored.
      */
     agOptions: PT.object,
-
-    /** True to suppress display of the grid's header row. */
-    hideHeaders: PT.bool,
 
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(GridModel), PT.object]),
@@ -216,7 +220,6 @@ class LocalModel {
                 agColumnGroupHeader: (props) => columnGroupHeader(props)
             },
             rowSelection: model.selModel.mode,
-            rowDeselection: true,
             getRowHeight: (params) => params.node?.group ? this.groupRowHeight : this.rowHeight,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             noRowsOverlayComponentFramework: observer(() => div(model.emptyText)),
@@ -238,18 +241,16 @@ class LocalModel {
             defaultGroupSortComparator: model.groupSortFn ? this.groupSortComparator : undefined,
             groupDefaultExpanded: 1,
             groupUseEntireRow: true,
-            groupRowInnerRenderer: model.groupRowRenderer,
             groupRowRendererFramework: model.groupRowElementRenderer,
-            rememberGroupStateWhenNewData: true, // turning this on by default so group state is maintained when apps are not using immutableData
+            groupRowRendererParams: {
+                innerRenderer: model.groupRowRenderer,
+                suppressCount: !model.showGroupRowCounts
+            },
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
             },
             autoSizePadding: 3 // tighten up cells for ag-Grid native autosizing.  Remove when Hoist autosizing no longer experimental
         };
-
-        if (props.hideHeaders) {
-            ret.headerHeight = 0;
-        }
 
         // Platform specific defaults
         if (XH.isMobileApp) {
@@ -377,9 +378,9 @@ class LocalModel {
             {agGridModel, store, experimental} = model;
 
         return {
-            track: () => [agGridModel.agApi, this.frameworkCmpsMounted, store.lastLoaded, store.lastUpdated, store._filtered, model.showSummary],
-            run: ([api, frameworkCmpsMounted, lastLoaded, lastUpdated, newRs]) => {
-                if (!api || !frameworkCmpsMounted) return;
+            track: () => [agGridModel.agApi, agGridModel.agColumnApi, this.frameworkCmpsMounted, store.lastLoaded, store.lastUpdated, store._filtered, model.showSummary],
+            run: ([agApi, colApi, frameworkCmpsMounted, lastLoaded, lastUpdated, newRs]) => {
+                if (!agApi || !colApi || !frameworkCmpsMounted) return;
 
                 const isUpdate = lastUpdated > lastLoaded,
                     prevRs = this._prevRs,
@@ -391,15 +392,15 @@ class LocalModel {
                         console.debug(this.transactionLogStr(transaction));
 
                         if (!this.transactionIsEmpty(transaction)) {
-                            api.applyTransaction(transaction);
+                            agApi.applyTransaction(transaction);
                         }
                     } else {
-                        api.setRowData(newRs.list);
+                        agApi.setRowData(newRs.list);
                     }
 
                     if (experimental.externalSort) {
                         const {sortBy} = model;
-                        if (!isEqual(sortBy, this._lastSortBy)) api.setSortModel(sortBy);
+                        if (!isEqual(sortBy, this._lastSortBy)) agGridModel.applySortBy(sortBy);
                         this._lastSortBy = sortBy;
                     }
 
@@ -407,7 +408,7 @@ class LocalModel {
 
                     const refreshCols = model.columns.filter(c => !c.hidden && c.rendererIsComplex);
                     if (!isEmpty(refreshCols)) {
-                        api.refreshCells({columns: refreshCols.map(c => c.colId), force: true});
+                        agApi.refreshCells({columns: refreshCols.map(c => c.colId), force: true});
                     }
 
                     model.noteAgExpandStateChange();
@@ -452,9 +453,11 @@ class LocalModel {
             {externalSort} = this.model.experimental;
 
         return {
-            track: () => [agGridModel.agApi, this.model.sortBy],
-            run: ([api, sortBy]) => {
-                if (api && !externalSort) api.setSortModel(sortBy);
+            track: () => [agGridModel.agColumnApi, this.model.sortBy],
+            run: ([colApi, sortBy]) => {
+                if (colApi && !externalSort) {
+                    agGridModel.applySortBy(sortBy);
+                }
             }
         };
     }
@@ -531,7 +534,7 @@ class LocalModel {
                 });
 
                 this.doWithPreservedState({expansion: false}, () => {
-                    colApi.setColumnState(colState);
+                    colApi.applyColumnState({state: colState, applyOrder: true});
                 });
             }
         };

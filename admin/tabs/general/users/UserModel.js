@@ -22,7 +22,7 @@ export class UserModel {
     @managed
     gridModel = new GridModel({
         persistWith: this.persistWith,
-        enableColChooser: true,
+        colChooserModel: true,
         enableExport: true,
         store: {idSpec: 'username'},
         sortBy: 'username',

@@ -5,7 +5,6 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {FieldModel, FormContext} from '@xh/hoist/cmp/form';
-import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
@@ -17,6 +16,7 @@ import classNames from 'classnames';
 import {isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
 import PT from 'prop-types';
 import {Children, cloneElement, useContext} from 'react';
+import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import './FormField.scss';
 
 /**
@@ -84,6 +84,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
         if (isRequired) classes.push('xh-form-field-required');
         if (minimal) classes.push('xh-form-field-minimal');
         if (readonly) classes.push('xh-form-field-readonly');
+        if (disabled) classes.push('xh-form-field-disabled');
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
         let childEl = readonly ?
@@ -142,6 +143,9 @@ FormField.propTypes = {
      */
     commitOnChange: PT.bool,
 
+    /** True to disable user interaction. Defaulted from backing FieldModel. */
+    disabled: PT.bool,
+
     /** Property name on bound FormModel from which to read/write data. */
     field: PT.string,
 
@@ -191,10 +195,12 @@ const editableChild = hoistCmp.factory({
         const {props} = child,
             {propTypes} = child.type;
 
+        // Overrides -- be sure not to clobber selected properties on child
         const overrides = {
             model,
             bind: 'value',
-            disabled: props.disabled || disabled
+            disabled: props.disabled || disabled,
+            ref: composeRefs(model._boundInputRef, child.ref)
         };
 
         // If FormField is sized and item doesn't specify its own dimensions,
@@ -224,7 +230,7 @@ const editableChild = hoistCmp.factory({
 //---------------------------------
 function getValidChild(children) {
     const child = Children.only(children);
-    throwIf(!child || !(child.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
+    throwIf(!child, 'FormField child must be a single component.');
     throwIf(child.props.bind || child.props.model, 'HoistInputs should not specify "bind" or "model" props when used with FormField');
     return child;
 }

@@ -51,12 +51,6 @@ body.xh-app {
     margin: var(--xh-pad-px) 0;
   }
 
-  :focus:not(.bp3-input),
-  .bp3-control input:focus ~ .bp3-control-indicator {
-    outline: var(--xh-focus-outline);
-    outline-offset: var(--xh-focus-outline-offset-px);
-  }
-
   .xh-title-tip {
     cursor: pointer;
   }
@@ -98,9 +92,20 @@ body.xh-app {
   .xh-file-icon-word { color: #1b5ab9; }
 
   // Misc conveniences.
-  .xh-align-center { text-align: center; }
-  .xh-align-left { text-align: left; }
-  .xh-align-right { text-align: right; }
+  .xh-align-center {
+    text-align: center;
+    justify-content: center;
+  }
+
+  .xh-align-left {
+    text-align: left;
+    justify-content: flex-start;
+  }
+
+  .xh-align-right {
+    text-align: right;
+    justify-content: flex-end;
+  }
 
   .xh-border { border: var(--xh-border-solid); }
   .xh-border-bottom { border-bottom: var(--xh-border-solid) !important; }

@@ -7,8 +7,8 @@
 import {HoistService, XH} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
-import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {NO_CONTENT, RESET_CONTENT} from 'http-status-codes';
+import {throwIf, apiDeprecated, withDefault} from '@xh/hoist/utils/js';
+import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, omitBy} from 'lodash';
 import {stringify} from 'qs';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -62,7 +62,7 @@ export class FetchService {
             this.fetchInternalAsync({
                 ...opts,
                 headers: {'Accept': 'application/json', ...opts.headers}
-            }).then(r => [NO_CONTENT, RESET_CONTENT].includes(r.status) ? null : r.json()),
+            }).then(r => [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT].includes(r.status) ? null : r.json()),
             opts
         );
     }
@@ -129,8 +129,8 @@ export class FetchService {
         let {url, method, headers, body, params, autoAbortKey} = opts;
         throwIf(!url, 'No url specified in call to fetchService.');
         throwIf(headers instanceof Headers, 'headers must be a plain object in calls to fetchService.');
-        warnIf(opts.contentType, 'contentType has been deprecated - please pass a "Content-Type" header instead.');
-        warnIf(opts.acceptJson, 'acceptJson has been deprecated - please pass an {"Accept": "application/json"} header instead.');
+        apiDeprecated(opts.contentType, 'contentType', 'Please pass a "Content-Type" header instead.');
+        apiDeprecated(opts.acceptJson, 'acceptJson', 'Please pass an {"Accept": "application/json"} header instead.');
 
         // 1) Compute / install defaults
         if (!method) {

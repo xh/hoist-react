@@ -15,7 +15,7 @@ import PT from 'prop-types';
  * A convenience button to trigger the display of a ColChooser for user selection,
  * discovery and reordering of available Grid columns.
  *
- * Requires the `GridModel.enableColChooser` config option to be true.
+ * Requires a `GridModel.colChooserModel` config option, set to true for default implementation.
  */
 export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
     displayName: 'ColChooserButton',

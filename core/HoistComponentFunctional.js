@@ -133,14 +133,13 @@ hoistComponent.withFactory = (config) =>  {
 };
 
 
-//------------------------
-// Implementation
-//------------------------
+//------------------------------------
+// Implementation -- Core Wrappers
+//------------------------------------
 function wrapWithClassName(render, baseName) {
     return (props, ref) => {
         const className = classNames(baseName, props.className);
-        props = enhanceProps(props, 'className', className);
-        return render(props, ref);
+        return render(propsWithClassName(props, className), ref);
     };
 }
 
@@ -150,20 +149,41 @@ function wrapWithModel(render, spec, displayName) {
         wrapWithPublishedModel(render, spec, displayName);
 }
 
+
+//----------------------------------------------------------------------------------------
+// 1) Lookup/create model for this component using spec, but *NEVER* publish
+// received model explicitly to children.  No need to add any ContextProviders
+//-----------------------------------------------------------------------------------------
 function wrapWithSimpleModel(render, spec, displayName) {
-    return (props, ref) => {
-        const lookup = spec.fromContext ? useContext(ModelLookupContext) : null;
-        const {model} = useResolvedModel(spec, props, lookup, displayName);
-        if (model && model !== props.model) props = enhanceProps(props, 'model', model);
-        return render(props, ref);
-    };
+    return spec.fromContext ?
+        // a) with a context lookup
+        (props, ref) => {
+            const lookup = useContext(ModelLookupContext),
+                {model} = useResolvedModel(spec, props, lookup, displayName);
+            return render(propsWithModel(props, model), ref);
+        } :
+        // b) no context lookup needed, lean and mean.
+        (props, ref) => {
+            const {model} = useResolvedModel(spec, props, null, displayName);
+            return render(propsWithModel(props, model), ref);
+        };
 }
 
+//------------------------------------------------------------------------------------
+// 2) Lookup/create model for this component using spec, *AND* potentially publish
+// explicitly to children, if needed.  This may require inserting a ContextProvider
+//------------------------------------------------------------------------------------
 function wrapWithPublishedModel(render, spec, displayName) {
     return (props, ref) => {
-        const lookup = useContext(ModelLookupContext);
-        const {model, fromContext} = useResolvedModel(spec, props, lookup, displayName),
-            publishDefault = (spec.publishMode === ModelPublishMode.DEFAULT);
+        const publishDefault = (spec.publishMode === ModelPublishMode.DEFAULT);  // otherwise LIMITED
+
+        // Get the model and context
+        const lookup = useContext(ModelLookupContext),
+            {model, fromContext} = useResolvedModel(spec, props, lookup, displayName);
+
+        // Create any lookup needed for model, caching it in state.
+        // Avoid adding extra context if this model already in default context.
+        // Fixed cache here ok due to the "immutable" model from useResolvedModel
         const createLookup = () => {
             return (
                 model &&
@@ -171,13 +191,19 @@ function wrapWithPublishedModel(render, spec, displayName) {
             ) ? new ModelLookup(model, lookup, spec.publishMode) : null;
         };
         const [newLookup] = useState(createLookup);
-        if (model && model !== props.model) props = enhanceProps(props, 'model', model);
-        const rendering = render(props, ref);
+
+        // Render the app specified elements, either raw or wrapped in context
+        const rendering = render(propsWithModel(props, model), ref);
         return newLookup ? modelLookupContextProvider({value: newLookup, item: rendering}) : rendering;
     };
 }
 
+//-------------------------------------------------------------------------
+// Support to resolve/create model at render-time.  Used by wrappers above.
+//-------------------------------------------------------------------------
 function useResolvedModel(spec, props, lookup, displayName) {
+    // fixed cache here creates the "immutable" model behavior in hoist components
+    // (Need to force full remount with 'key' prop to resolve any new model)
     const [{model, isOwned, fromContext}] = useState(() => {
         return (spec instanceof CreatesSpec) ? createModel(spec) : lookupModel(spec, props, lookup, displayName);
     });
@@ -202,8 +228,7 @@ function lookupModel(spec, props, modelLookup, displayName) {
 
     // 2) props - instance
     if (model) {
-        throwIf(!model.isHoistModel, `Model for '${displayName}' must be a HoistModel.`);
-        throwIf(selector !== '*' && !model.matchesSelector(selector),
+        throwIf(selector !== '*' && (!model.matchesSelector || !model.matchesSelector(selector)),
             `Incorrect model passed to '${displayName}'. Expected: ${formatSelector(selector)} Received: ${model.constructor.name}`
         );
         return {model, isOwned: false, fromContext: false};
@@ -226,16 +251,29 @@ function lookupModel(spec, props, modelLookup, displayName) {
     return {model: null, isOwned: false, fromContext: false};
 }
 
+
+//--------------------------
+// Other helpers
+//--------------------------
 function formatSelector(selector) {
     if (isString(selector)) return selector;
     if (isFunction(selector)  && selector.isHoistModel) return selector.name;
     return '[Selector]';
 }
 
-function enhanceProps(props, name, value) {
+function enhancedProps(props, name, value) {
+    // Clone frozen props object, but don't re-clone when done multiple times for single render
     if (!Object.isExtensible(props)) {
         props = {...props};
     }
     props[name] = value;
     return props;
+}
+
+function propsWithModel(props, model) {
+    return (model && model !== props.model) ? enhancedProps(props, 'model', model) : props;
+}
+
+function propsWithClassName(props, className) {
+    return enhancedProps(props, 'className', className);
 }

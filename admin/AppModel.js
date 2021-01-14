@@ -8,10 +8,11 @@ import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistAppModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {activityTab} from './tabs/activity/ActivityTab';
+import {configTab} from './tabs/config/ConfigTab';
 import {generalTab} from './tabs/general/GeneralTab';
 import {loggingTab} from './tabs/logging/LoggingTab';
 import {monitorTab} from './tabs/monitor/MonitorTab';
-import {preferencesTab} from './tabs/preferences/PreferencesTab';
+import {userDataTab} from './tabs/userData/UserDataTab';
 
 @HoistAppModel
 export class AppModel {
@@ -33,7 +34,7 @@ export class AppModel {
         if (!this._tabModel) {
             this._tabModel = new TabContainerModel({
                 route: 'default',
-                switcherPosition: 'none',
+                switcher: false,
                 tabs: this.createTabs()
             });
         }
@@ -50,7 +51,6 @@ export class AppModel {
                 path: '/general',
                 children: [
                     {name: 'about', path: '/about'},
-                    {name: 'config', path: '/config'},
                     {name: 'services', path: '/services'},
                     {name: 'ehCache', path: '/ehCache'},
                     {name: 'users', path: '/users'},
@@ -58,11 +58,15 @@ export class AppModel {
                 ]
             },
             {
+                name: 'config',
+                path: '/config'
+            },
+            {
                 name: 'logging',
                 path: '/logging',
                 children: [
                     {name: 'viewer', path: '/viewer'},
-                    {name: 'config', path: '/config'}
+                    {name: 'levels', path: '/levels'}
                 ]
             },
             {
@@ -70,7 +74,8 @@ export class AppModel {
                 path: '/monitor',
                 children: [
                     {name: 'status', path: '/status'},
-                    {name: 'config', path: '/config'}
+                    {name: 'config', path: '/config'},
+                    {name: 'memory', path: '/memory'}
                 ]
             },
             {
@@ -83,11 +88,12 @@ export class AppModel {
                 ]
             },
             {
-                name: 'preferences',
-                path: '/preferences',
+                name: 'userData',
+                path: '/userData',
                 children: [
                     {name: 'prefs', path: '/prefs'},
-                    {name: 'userPrefs', path: '/userPrefs'}
+                    {name: 'userPrefs', path: '/userPrefs'},
+                    {name: 'jsonBlobs', path: '/jsonBlobs'}
                 ]
             }
         ];
@@ -96,10 +102,11 @@ export class AppModel {
     createTabs() {
         return [
             {id: 'general', icon: Icon.info(), content: generalTab},
+            {id: 'config', icon: Icon.settings(), content: configTab},
             {id: 'activity', icon: Icon.analytics(), content: activityTab},
             {id: 'logging', icon: Icon.fileText(), content: loggingTab},
             {id: 'monitor', icon: Icon.shieldCheck(), content: monitorTab, omit: !XH.getConf('xhEnableMonitoring', true)},
-            {id: 'preferences', icon: Icon.bookmark(), content: preferencesTab}
+            {id: 'userData', icon: Icon.users(), content: userDataTab}
         ];
     }
 }

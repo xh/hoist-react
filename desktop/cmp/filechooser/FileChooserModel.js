@@ -24,6 +24,7 @@ export class FileChooserModel {
     lastRejectedCount;
 
     gridModel = new GridModel({
+        hideHeaders: true,
         store: {idSpec: 'name'},
         columns: [
             {
@@ -83,7 +84,7 @@ export class FileChooserModel {
 
     /**
      * Remove a single file from the current selection.
-     * @param {String} name - name of the file to remove.
+     * @param {string} name - name of the file to remove.
      */
     @action
     removeFileByName(name) {

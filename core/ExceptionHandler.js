@@ -14,6 +14,12 @@ import {XH} from './XH';
  */
 export class ExceptionHandler {
 
+    _isUnloading = false;
+
+    constructor() {
+        window.addEventListener('unload', () => this._isUnloading = true);
+    }
+
     /**
      * Called by Hoist internally to handle exceptions, with built-in support for parsing certain
      * Hoist-specific exception options, displaying an appropriate error dialog to users, and
@@ -50,6 +56,8 @@ export class ExceptionHandler {
      *      the exception log and alert.
      */
     handleException(exception, options) {
+        if (this._isUnloading) return;
+
         if (!(exception instanceof Error)) {
             exception = Exception.create(exception);
         }
@@ -150,7 +158,7 @@ export class ExceptionHandler {
         ret.showAsError = ret.showAsError ?? !isRoutine;
         ret.logOnServer = ret.logOnServer ?? (ret.showAsError && !isAutoRefresh);
         ret.showAlert = ret.showAlert ?? (!isAutoRefresh && !isFetchAborted);
-        ret.requireReload = ret.requireReload ?? false;
+        ret.requireReload = ret.requireReload ?? !!e.requireReload;
 
         ret.title = ret.title || (ret.showAsError ? 'Error' : 'Alert');
         ret.message = ret.message || e.message || e.name || 'An unknown error occurred.';
@@ -164,6 +172,7 @@ export class ExceptionHandler {
         if (this.sessionExpired(e)) {
             ret.title = 'Authentication Error';
             ret.message = 'Your session has expired. Please login.';
+            ret.showAsError = false;
             ret.requireReload = true;
         }
 

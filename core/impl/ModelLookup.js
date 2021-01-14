@@ -9,12 +9,11 @@ import {forOwn} from 'lodash';
 import {createContext} from 'react';
 
 /**
- * @private
- *
  * Support for making models available to components via React context.
  * Not created directly by applications. Components specify how/if they publish/source their
  * models from context via the `model` config option passed into the `hoistCmp()` factory.
  * Hoist will in turn create and manage instances of this class to power those links.
+ * @private
  */
 export class ModelLookup {
     model;
@@ -45,7 +44,7 @@ export class ModelLookup {
             isWildcard = (selector === '*');
 
         // Try this model
-        if ((isWildcard && modeIsDefault) || (!isWildcard && model.matchesSelector(selector))) {
+        if ((isWildcard && modeIsDefault) || (!isWildcard && matchesSelector(model, selector))) {
             return model;
         }
 
@@ -53,7 +52,7 @@ export class ModelLookup {
         if (modeIsDefault) {
             let ret = null;
             forOwn(model, (value, key) => {
-                if (value && value.isHoistModel && value.matchesSelector(selector)) {
+                if (matchesSelector(value, selector)) {
                     ret = value;
                     return false;
                 }
@@ -66,10 +65,13 @@ export class ModelLookup {
     }
 }
 
+function matchesSelector(model, selector) {
+    return model?.matchesSelector && model.matchesSelector(selector);
+}
+
 /**
- * @private
- *
  * Context used to publish a ModelLookup
+ * @private
  */
 export const ModelLookupContext = createContext(null);
 

@@ -172,13 +172,13 @@ export class TreeMapModel {
     @computed
     get valueFieldLabel() {
         const field = this.store.fields.find(it => it.name === this.valueField);
-        return field ? field.label : this.valueField;
+        return field ? field.displayName : this.valueField;
     }
 
     @computed
     get heatFieldLabel() {
         const field = this.store.fields.find(it => it.name === this.heatField);
-        return field ? field.label : this.heatField;
+        return field ? field.displayName : this.heatField;
     }
 
     @computed

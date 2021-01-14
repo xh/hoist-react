@@ -5,6 +5,20 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+// Dark theme color vars - see and sync with vars.scss.
+const bg = '#13181B',               // --xh-black
+    altBg = '#151e23',              // --xh-grid-bg-odd
+    borderColor = '#37474f',        // --xh-border-color
+    altBorderColor = '#293233',     // --xh-grid-border-color
+    textColor = '#ffffff',          // --xh-text-color
+    textColorMuted = '#757575',     // --xh-text-color-muted
+    accentColor = '#039be5';        // --xh-blue-light
+
+// Font-related vars.
+const fontFamily = '-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif',
+    titleFontPx = '19px',
+    labelFontPx = '10px';
+
 /**
  * @private
  */
@@ -13,97 +27,81 @@ export const DarkTheme = {
         '#2b908f', '#90ee7e', '#f45b5b', '#7798BF', '#aaeeee', '#ff0066',
         '#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'
     ],
+
     chart: {
-        backgroundColor: '#1F232B',
-        plotBorderColor: '#606063',
+        backgroundColor: bg,
+        style: {fontFamily},
+        plotBorderColor: borderColor,
         resetZoomButton: {
-            position: {
-                x: -30,
-                y: 0
-            },
             theme: {
-                fill: '#232D38',
-                stroke: '#A0A0A3',
-                style: {
-                    color: '#b3b3b3'
-                },
-                r: 0,
+                fill: altBg,
+                stroke: borderColor,
+                style: {color: textColor},
+                r: 4,
                 states: {
                     hover: {
-                        fill: '#3B4C5F',
-                        style: {
-                            color: '#D0D0D0'
-                        }
+                        fill: altBg,
+                        stroke: accentColor,
+                        style: {color: accentColor}
                     }
                 }
             }
         }
     },
+
     title: {
-        style: {
-            color: '#E0E0E3',
-            textTransform: 'uppercase',
-            fontSize: '20px'
-        }
+        style: {color: textColor, fontSize: titleFontPx}
     },
+
     subtitle: {
-        style: {
-            color: '#E0E0E3',
-            textTransform: 'uppercase'
-        }
+        style: {color: textColor}
     },
+
     xAxis: {
-        gridLineColor: '#2d323b',
+        gridLineColor: altBorderColor,
         gridLineWidth: 1,
         labels: {
             style: {
-                fontSize: '9px',
-                color: '#E0E0E3'
+                color: textColor,
+                fontSize: labelFontPx
             }
         },
-        lineColor: '#707073',
+        lineColor: borderColor,
         minorGridLineColor: '#505053',
-        tickColor: '#707073',
+        tickColor: borderColor,
         tickLength: 5,
-        title: {
-            style: {
-                color: '#A0A0A3'
-
-            }
-        }
+        title: {style: {color: textColor}}
     },
+
     yAxis: {
-        alternateGridColor: '#232D38',
-        gridLineColor: '#2d323b',
+        alternateGridColor: altBg,
+        gridLineColor: altBorderColor,
         labels: {
             style: {
-                fontSize: '9px',
-                color: '#E0E0E3'
+                color: textColor,
+                fontSize: labelFontPx
             }
         },
-        lineColor: '#707073',
+        lineColor: borderColor,
+        lineWidth: 1,
         minorGridLineColor: '#505053',
-        tickColor: '#707073',
+        tickColor: borderColor,
         tickLength: 5,
         tickWidth: 1,
-        lineWidth: 1,
-        title: {
-            style: {
-                color: '#A0A0A3'
-            }
-        }
+        title: {style: {color: textColor}}
     },
+
     tooltip: {
-        backgroundColor: '#1F232B',
-        borderColor: '#606063',
-        style: {
-            color: '#F0F0F0'
-        }
+        backgroundColor: altBg,
+        borderColor: borderColor,
+        style: {color: textColor}
     },
+
+    // TODO - review / determine if we want these
     plotOptions: {
         series: {
             dataLabels: {
-                color: '#B0B0B3'
+                color: textColor
             },
             marker: {
                 lineColor: '#333'
@@ -113,143 +111,127 @@ export const DarkTheme = {
             fillColor: '#505053'
         },
         candlestick: {
-            lineColor: 'white'
+            lineColor: textColor
         },
         errorbar: {
-            color: 'white'
-        }
-    },
-    legend: {
-        itemStyle: {
-            color: '#E0E0E3'
-        },
-        itemHoverStyle: {
-            color: '#FFF'
-        },
-        itemHiddenStyle: {
-            color: '#606063'
-        }
-    },
-    labels: {
-        style: {
-            color: '#707073'
+            color: textColor
         }
     },
 
-    drilldown: {
-        activeAxisLabelStyle: {
-            color: '#F0F0F3'
+    legend: {
+        itemStyle: {
+            color: textColor
         },
-        activeDataLabelStyle: {
-            color: '#F0F0F3'
+        itemHoverStyle: {
+            color: accentColor
+        },
+        itemHiddenStyle: {
+            color: textColorMuted
+        }
+    },
+
+    labels: {
+        style: {
+            color: textColorMuted
         }
     },
 
     navigation: {
         buttonOptions: {
-            symbolStroke: '#b3b3b3',
+            symbolStroke: textColor,
+            symbolStrokeWidth: 2,
+            symbolSize: 12,
             theme: {
-                fill: '#232D38',
+                fill: 'transparent',
                 'stroke-width': 1,
-                stroke: '#A0A0A3',  // border color of button
+                stroke: borderColor,  // border color of button
                 r: 0,   // corner radius
                 states: {
                     hover: {
-                        stroke: '#D0D0D0',
-                        fill: '#3B4C5F'
+                        fill: 'transparent',
+                        stroke: borderColor
                     },
                     select: {
-                        stroke: '#D0D0D0',
-                        fill: '#3B4C5F'
+                        fill: 'transparent',
+                        stroke: borderColor
                     }
                 }
             }
         },
         menuStyle: {
-            background: '#2d323b',
-            border: '1px solid #707073',
+            background: altBg,
+            border: `1px solid ${borderColor}`,
             padding: '5px 0',
             boxShadow: 'none'
         },
         menuItemStyle: {
             fontWeight: 'normal',
-            background: '#232D38',
-            color: '#b9b9b9'
+            background: altBg,
+            color: textColor
         },
         menuItemHoverStyle: {
             fontWeight: 'normal',
-            background: '#232D38',
-            color: '#DDDDDD'
+            background: altBg,
+            color: accentColor
 
         }
     },
 
-    // scroll charts
     rangeSelector: {
         buttonTheme: {
-            fill: '#505053',
-            stroke: '#000000',
-            style: {
-                color: '#CCC'
-            },
+            fill: 'transparent',
+            stroke: borderColor,
+            'stroke-width': 1,
+            style: {color: textColor},
             states: {
                 hover: {
-                    fill: '#707073',
-                    stroke: '#000000',
-                    style: {
-                        color: 'white'
-                    }
+                    fill: 'transparent',
+                    stroke: borderColor,
+                    style: {color: accentColor}
                 },
                 select: {
-                    fill: '#000003',
-                    stroke: '#000000',
-                    style: {
-                        color: 'white'
-                    }
+                    fill: 'transparent',
+                    stroke: accentColor,
+                    style: {color: accentColor}
                 }
             }
         },
-        inputBoxBorderColor: '#505053',
+        inputBoxBorderColor: borderColor,
         inputStyle: {
-            backgroundColor: '#333',
-            color: 'silver'
+            backgroundColor: altBg,
+            color: textColor
         },
         labelStyle: {
-            color: 'silver'
+            color: textColor
         }
     },
 
     navigator: {
         handles: {
             backgroundColor: '#666',
-            borderColor: '#AAA'
+            borderColor: borderColor
         },
-        outlineColor: '#CCC',
+        outlineColor: borderColor,
+        outlineWidth: 1,
         maskFill: 'rgba(255,255,255,0.1)',
         series: {
             color: '#7798BF',
-            lineColor: '#A6C7ED'
+            lineColor: '#A6C7ED',
+            fillOpacity: 0.2
         },
         xAxis: {
-            gridLineColor: '#505053'
+            gridLineColor: altBorderColor
         }
     },
 
     scrollbar: {
-        barBackgroundColor: '#808083',
-        barBorderColor: '#808083',
-        buttonArrowColor: '#CCC',
-        buttonBackgroundColor: '#606063',
-        buttonBorderColor: '#606063',
-        rifleColor: '#FFF',
-        trackBackgroundColor: '#404043',
-        trackBorderColor: '#404043'
-    },
-
-    legendBackgroundColor: 'rgba(0, 0, 0, 0.5)',
-    background2: '#505053',
-    dataLabelsColor: '#B0B0B3',
-    textColor: '#C0C0C0',
-    contrastTextColor: '#F0F0F3',
-    maskColor: 'rgba(255,255,255,0.3)'
+        barBackgroundColor: '#263238',  // --xh-scrollbar-thumb
+        barBorderColor: '#263238',
+        buttonArrowColor: accentColor,
+        buttonBackgroundColor: '#263238',
+        buttonBorderColor: borderColor,
+        rifleColor: accentColor,
+        trackBackgroundColor: bg,
+        trackBorderColor: borderColor
+    }
 };

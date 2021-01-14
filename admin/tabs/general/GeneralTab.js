@@ -8,7 +8,6 @@ import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {aboutPanel} from './about/AboutPanel';
-import {configPanel} from './configs/ConfigPanel';
 import {ehCachePanel} from './ehcache/EhCachePanel';
 import {servicePanel} from './services/ServicePanel';
 import {userPanel} from './users/UserPanel';
@@ -18,10 +17,9 @@ export const generalTab = hoistCmp.factory(
     () => tabContainer({
         model: {
             route: 'default.general',
-            switcherPosition: 'left',
+            switcher: {orientation: 'left'},
             tabs: [
                 {id: 'about', icon: Icon.info(), content: aboutPanel},
-                {id: 'config', icon: Icon.settings(), content: configPanel},
                 {id: 'services', icon: Icon.gears(), content: servicePanel},
                 {id: 'ehCache', icon: Icon.database(), title: 'Caches', content: ehCachePanel},
                 {id: 'users', icon: Icon.users(), content: userPanel},

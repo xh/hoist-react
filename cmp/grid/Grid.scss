@@ -82,16 +82,26 @@
     }
   }
 
+  // Floating viewports host total rows.
+  .ag-floating-bottom,
+  .ag-floating-top {
+    // Background on viewport itself covers area left blank by presence of a flex column.
+    background-color: var(--xh-grid-total-row-bg);
+    .ag-row-pinned.ag-row-first {
+      background-color: var(--xh-grid-total-row-bg);
+    }
+  }
+
   //------------------------
   // Core Cell Classes
   //------------------------
-
   // No LR padding when center aligned - not relevant / allows narrow cols (icons) to center align.
   .ag-cell.xh-align-center {
     padding-left: 0;
     padding-right: 0;
   }
 }
+
 
 //------------------------
 // Trees and Grouping
@@ -147,6 +157,42 @@
   .ag-group-contracted + .ag-group-value:not(:empty) {
     margin-left: 0;
   }
+
+  // Adjust left padding for tree columns.
+  .ag-cell.xh-tree-column {
+    padding-left: calc(var(--xh-grid-tree-indent) - var(--xh-grid-tree-icon-px));
+  }
+
+  //------------------------
+  // Tree grid styling modes
+  //------------------------
+  &.xh-grid--tree-style-highlights {
+    div[class*=" ag-row-group"],
+    div[class^="ag-row-group"] {
+      &:not(.ag-row-selected),
+      &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+        background-color: var(--xh-grid-tree-group-bg);
+      }
+    }
+  }
+
+  &.xh-grid--tree-style-borders {
+    .ag-row-level-0[class*=" ag-row-group"],
+    .ag-row-level-0[class^="ag-row-group"], {
+      &:not(.ag-row-first) {
+        border-top: 1px solid var(--xh-grid-tree-group-border-color);
+      }
+    }
+
+    // Floating viewports host total rows.
+    .ag-floating-bottom {
+      border-color: var(--xh-grid-tree-group-border-color);
+    }
+
+    .ag-floating-top {
+      border-color: var(--xh-grid-tree-group-border-color);
+    }
+  }
 }
 
 // Suppress default indenting when grid is in tree mode but no root records have children.
@@ -193,6 +239,17 @@
 
 .xh-grid-tooltip {
   position: absolute;
+
+  &:empty {
+    display: none;
+  }
+
+  // Default minimal styling. This is not applied when using a custom tooltipElement.
+  &--default {
+    padding: var(--xh-pad-half-px);
+    background: var(--xh-bg);
+    border: var(--xh-border-solid);
+  }
 }
 
 //-----------

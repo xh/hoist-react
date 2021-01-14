@@ -8,7 +8,6 @@ import {hoistCmp} from '@xh/hoist/core';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
-import './ButtonGroup.scss';
 
 /**
  * Wrapper around Blueprint's ButtonGroup component, with LayoutSupport.
@@ -18,7 +17,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory({
     model: false,
     className: 'xh-button-group',
 
-    render(props) {
+    render(props, ref) {
         const [layoutProps, {fill, minimal, vertical, style, ...rest}] = splitLayoutProps(props);
 
         return bpButtonGroup({
@@ -29,6 +28,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory({
                 ...style,
                 ...layoutProps
             },
+            ref,
             ...rest
         });
     }

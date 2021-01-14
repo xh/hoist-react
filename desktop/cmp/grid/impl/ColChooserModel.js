@@ -26,11 +26,24 @@ export class ColChooserModel {
     // Show in popover
     @observable isPopoverOpen = false;
 
-    /**
-     * @param {GridModel} gridModel - model for the grid to be managed.
-     */
-    constructor(gridModel) {
+    commitOnChange;
+    showRestoreDefaults;
+
+    constructor({
+        gridModel,
+        commitOnChange = true,
+        showRestoreDefaults = true,
+        width = 520,
+        height = 300
+    }) {
         this.gridModel = gridModel;
+
+        this.commitOnChange = commitOnChange;
+        this.showRestoreDefaults = showRestoreDefaults;
+
+        this.width = width;
+        this.height = height;
+
         this.lrModel = new LeftRightChooserModel({
             leftTitle: 'Available Columns',
             leftEmptyText: 'No more columns to add.',
@@ -39,7 +52,7 @@ export class ColChooserModel {
             leftSorted: true,
             rightGroupingEnabled: false,
             onChange: () => {
-                if (this.isPopoverOpen) this.commit();
+                if (this.commitOnChange) this.commit();
             }
         });
     }
@@ -79,25 +92,28 @@ export class ColChooserModel {
         gridModel.applyColumnStateChanges(colChanges);
     }
 
-    restoreDefaults() {
-        this.gridModel.restoreDefaults();
-        this.syncChooserData();
-        if (this.isPopoverOpen) this.commit();
+    async restoreDefaultsAsync() {
+        const restored = await this.gridModel.restoreDefaultsAsync();
+        if (restored) {
+            this.syncChooserData();
+        }
     }
 
     //------------------------
     // Implementation
     //------------------------
     syncChooserData() {
-        const {gridModel, lrModel} = this;
+        const {gridModel, lrModel} = this,
+            columns = gridModel.getLeafColumns(),
+            hasGrouping = columns.some(it => it.chooserGroup);
 
-        const data = gridModel.getLeafColumns().map(it => {
+        const data = columns.map(it => {
             const visible = gridModel.isColumnVisible(it.colId);
             return {
                 value: it.colId,
                 text: it.chooserName,
                 description: it.chooserDescription,
-                group: it.chooserGroup,
+                group: hasGrouping ? (it.chooserGroup ?? 'Ungrouped') : null,
                 exclude: it.excludeFromChooser,
                 locked: visible && !it.hideable,
                 side: visible ? 'right' : 'left'

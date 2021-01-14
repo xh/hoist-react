@@ -10,7 +10,6 @@ export * from './enums/RenderMode';
 
 export * from './elem';
 
-
 export * from './mixins/LayoutSupport';
 export * from './mixins/ReactiveSupport';
 export * from './mixins/PersistSupport';
@@ -41,6 +40,6 @@ export * from './persist/PersistenceProvider';
 export * from './persist/LocalStorageProvider';
 export * from './persist/DashViewProvider';
 export * from './persist/PrefProvider';
-
+export * from './persist/CustomProvider';
 
 export * from './XH';

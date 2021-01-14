@@ -4,6 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {p} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
@@ -11,8 +12,9 @@ import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
+import {cloneDeep, isEqual, isString, isNil, remove, trimEnd} from 'lodash';
 import React from 'react';
+
 import {DifferDetailModel} from './DifferDetailModel';
 
 /**
@@ -24,7 +26,12 @@ export class DifferModel  {
 
     parentGridModel;
     entityName;
+    displayName;
+    columnFields;
+    matchFields;
+    valueRenderer;
     url;
+    clipboardContent;
 
     @managed
     detailModel = new DifferDetailModel({parent: this});
@@ -51,14 +58,30 @@ export class DifferModel  {
         return XH.getConf('xhAppInstances').filter(it => it !== window.location.origin);
     }
 
-    constructor(parentGridModel, entityName) {
+    constructor({
+        parentGridModel,
+        entityName,
+        displayName,
+        columnFields = ['name'],
+        matchFields = ['name'],
+        valueRenderer
+    }) {
         this.parentGridModel = parentGridModel;
         this.entityName = entityName;
+        this.displayName = displayName ?? entityName;
+        this.columnFields = columnFields;
+        this.matchFields = matchFields;
+        this.valueRenderer = valueRenderer ?? (v => isNil(v) ? '' : v.value);
+
         this.url = entityName + 'DiffAdmin';
+
         this.gridModel = new GridModel({
             store: {
-                idSpec: 'name',
-                filter: (it) => it.data.status !== 'Identical'
+                idSpec: data => {
+                    return this.matchFields.map(field => data[field]?.toString()).join('-');
+                },
+                filter: {field: 'status', op: '!=', value: 'Identical'},
+                fields: [...this.columnFields.map(it => it.field ?? it)]
             },
             emptyText: 'All records match!',
             selModel: 'multiple',
@@ -72,13 +95,14 @@ export class DifferModel  {
                     width: 60,
                     actions: [this.applyRemoteAction]
                 },
-                {field: 'status', hidden: true},
-                {field: 'name', width: 200},
                 {
-                    field: 'type',
-                    width: 80,
-                    renderer: this.valueTypeRenderer
+                    field: 'status',
+                    hidden: true
                 },
+                ...this.columnFields.map(it => {
+                    const colDef = {renderer: this.fieldRenderer, maxWidth: 200};
+                    return isString(it) ? {field: it, ...colDef} : {...colDef, ...it};
+                }),
                 {
                     field: 'localValue',
                     flex: true,
@@ -96,10 +120,15 @@ export class DifferModel  {
                 ...GridModel.defaultContextMenu
             ]
         });
+
+        this.addReaction({
+            when: () => this.hasLoaded && this.gridModel.isReady,
+            run: () => this.gridModel.autosizeAsync()
+        });
     }
 
     async doLoadAsync(loadSpec) {
-        if (loadSpec.isAutoRefresh || !this.remoteHost) return;
+        if (loadSpec.isAutoRefresh || (!this.remoteHost && !this.clipboardContent)) return;
 
         const remoteHost = trimEnd(this.remoteHost, '/'),
             // Assume default /api/ baseUrl during local dev, since actual baseUrl will be localhost:8080
@@ -110,7 +139,9 @@ export class DifferModel  {
         try {
             const resp = await Promise.all([
                 XH.fetchJson({url: `${url}/${entityName}s`, loadSpec}),
-                XH.fetchJson({url: `${remoteBaseUrl}${url}/${entityName}s`, loadSpec})
+                this.clipboardContent ?
+                    Promise.resolve(cloneDeep(this.clipboardContent)) :
+                    XH.fetchJson({url: `${remoteBaseUrl}${url}/${entityName}s`, loadSpec})
             ]);
             this.processResponse(resp);
         } catch (e) {
@@ -127,6 +158,20 @@ export class DifferModel  {
         }
     }
 
+    diffFromRemote() {
+        this.clipboardContent = null;
+        this.loadAsync();
+    }
+
+    async diffFromClipboardAsync() {
+        try {
+            await this.readConfigFromClipboardAsync();
+            this.loadAsync();
+        } catch (e) {
+            XH.handleException(e, {showAsError: false, logOnServer: false});
+        }
+    }
+
     processResponse(resp) {
         const local = this.cleanRawData(resp[0].data),
             remote = this.cleanRawData(resp[1].data),
@@ -140,6 +185,7 @@ export class DifferModel  {
 
     processFailedLoad() {
         this.gridModel.clear();
+        this.clipboardContent = null;
         this.setHasLoaded(false);
     }
 
@@ -148,24 +194,38 @@ export class DifferModel  {
 
         // 0) Check each local record against (possible) remote counterpart. Cull remote record if found.
         localRecords.forEach(local => {
-            const remote = remoteRecords.find(it => it.name === local.name);
+            const remote = remoteRecords.find(it => {
+                return this.matchFields.every(field => it[field] === local[field]);
+            });
+
+            const values = {};
+            this.matchFields.forEach(field => {
+                values[field] = local[field];
+            });
 
             ret.push({
-                name: local.name,
+                ...values,
                 localValue: local,
                 remoteValue: remote,
                 status: this.rawRecordsAreEqual(local, remote) ? 'Identical' : (remote ? 'Diff' : 'Local Only')
             });
 
             if (remote) {
-                remove(remoteRecords, {name: remote.name});
+                remove(remoteRecords, it => {
+                    return this.matchFields.every(field => it[field] === remote[field]);
+                });
             }
         });
 
         // 1) Any remote records left in array are remote only
         remoteRecords.forEach(remote => {
+            const values = {};
+            this.matchFields.forEach(field => {
+                values[field] = remote[field];
+            });
+
             ret.push({
-                name: remote.name,
+                ...values,
                 localValue: null,
                 remoteValue: remote,
                 status: 'Remote Only'
@@ -202,7 +262,7 @@ export class DifferModel  {
         const filteredRecords = records.filter(it => !this.isPwd(it)),
             hadPwd = records.length !== filteredRecords.length,
             willDelete = filteredRecords.some(it => !it.data.remoteValue),
-            confirmMsg = `Are you sure you want to apply remote values to ${pluralize(this.entityName, filteredRecords.length, true)}?`;
+            confirmMsg = `Are you sure you want to apply remote values to ${pluralize(this.displayName, filteredRecords.length, true)}?`;
 
         const message = (
             <div>
@@ -227,8 +287,11 @@ export class DifferModel  {
 
     doApplyRemote(records) {
         const recsForPost = records.map(rec => {
-            const {name, remoteValue} = rec.data;
-            return {name, remoteValue};
+            const ret = {remoteValue: rec.data.remoteValue};
+            this.matchFields.forEach(field => {
+                ret[field] = rec.data[field];
+            });
+            return ret;
         });
 
         XH.fetchJson({
@@ -247,27 +310,41 @@ export class DifferModel  {
         XH.toast({message: 'Good news - all records match remote host.'});
     }
 
-    valueRenderer(v) {
-        if (v == null) return '';
-        // Handle both the config and pref names for type and value, respectively
-        const type = v.valueType ?? v.type,
-            value = v.value ?? v.defaultValue;
-        return  type === 'pwd' ? '*****' : value;
-    }
-
-    valueTypeRenderer(v, {record}) {
-        const local = record.data.localValue,
-            remote = record.data.remoteValue;
-
-        // Handle both the config and pref names for type respectively
-        const localType = local?.valueType ?? local?.type,
-            remoteType = remote?.valueType ?? local?.type;
+    fieldRenderer(v, {record, column}) {
+        const {field} = column,
+            local = record.data.localValue,
+            remote = record.data.remoteValue,
+            localVal = local?.[field],
+            remoteVal = remote?.[field];
 
         if (local && remote) {
-            return localType === remoteType ? localType : '??';
+            return localVal === remoteVal ? localVal : '??';
         }
 
-        return local ? localType : remoteType;
+        return local ? localVal : remoteVal;
+    }
+
+    async fetchLocalConfigsAsync() {
+        const {entityName, url} = this,
+            resp = await XH.fetchJson({url: `${url}/${entityName}s`});
+        return JSON.stringify(resp);
+    }
+
+    async readConfigFromClipboardAsync() {
+        // Try/catch locally to re-throw with consistent error message if clipboard cannot be read
+        // or parsed into JSON w/expected format for any reason.
+        let content = null;
+        try {
+            content = await window.navigator.clipboard.readText();
+            content = JSON.parse(content);
+        } catch (e) {
+            console.warn('Error reading config from clipboard', e);
+        }
+
+        this.clipboardContent = content;
+        if (!this.clipboardContent?.data) {
+            throw XH.exception('Clipboard did not contain remote data in the expected JSON format.');
+        }
     }
 
     @action

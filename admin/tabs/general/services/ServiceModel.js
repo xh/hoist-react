@@ -16,6 +16,7 @@ export class ServiceModel {
     @managed
     gridModel = new GridModel({
         enableExport: true,
+        hideHeaders: true,
         store: new UrlStore({
             url: 'serviceAdmin/listServices',
             processRawData: this.processRawData,

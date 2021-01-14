@@ -36,7 +36,7 @@ export class PrefService {
 
     constructor() {
         const pushFn = () => this.pushPendingAsync();
-        window.addEventListener('unload', pushFn);
+        window.addEventListener('beforeunload', pushFn);
         this.pushPendingBuffered = debounce(pushFn, 5 * SECONDS);
     }
 

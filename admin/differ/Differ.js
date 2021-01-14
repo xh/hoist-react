@@ -7,23 +7,26 @@
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler, fragment, frame, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
+import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {identity, capitalize} from 'lodash';
+import {identity, startCase} from 'lodash';
 import {differDetail} from './DifferDetail';
 import {DifferModel} from './DifferModel';
 
 export const differ = hoistCmp.factory({
     model: uses(DifferModel),
 
+    /** @param {DifferModel} model */
     render({model}) {
         return fragment(
             dialog({
-                title: `${capitalize(model.entityName)} Differ`,
+                title: `${startCase(model.displayName)} Differ`,
                 isOpen: model.isOpen,
                 canOutsideClickClose: false,
                 onClose: () => model.close(),
@@ -36,6 +39,7 @@ export const differ = hoistCmp.factory({
 });
 
 const contents = hoistCmp.factory(
+    /** @param {DifferModel} model */
     ({model}) => {
         return panel({
             tbar: tbar(),
@@ -45,22 +49,17 @@ const contents = hoistCmp.factory(
                     agOptions: {popupParent: null}
                 }) :
                 frame({
-                    item: 'Select/enter a remote host to compare against...',
+                    item: `No ${model.displayName}s loaded for comparison.`,
                     padding: 10
                 }),
-            bbar: [
-                filler(),
-                button({
-                    text: 'Close',
-                    onClick: () => model.close()
-                })
-            ],
+            bbar: bbar(),
             mask: 'onLoad'
         });
     }
 );
 
 const tbar = hoistCmp.factory(
+    /** @param {DifferModel} model */
     ({model}) => {
         return toolbar(
             span('Compare with'),
@@ -73,11 +72,43 @@ const tbar = hoistCmp.factory(
                 options: model.remoteHosts
             }),
             button({
-                text: 'Load Diff',
+                text: 'Diff from Remote',
                 icon: Icon.diff(),
                 intent: 'primary',
                 disabled: !model.remoteHost,
-                onClick: () => model.loadAsync()
+                onClick: () => model.diffFromRemote()
+            }),
+            span('- or -'),
+            button({
+                text: 'Diff from Clipboard',
+                icon: Icon.paste(),
+                intent: 'primary',
+                onClick: () => model.diffFromClipboardAsync()
+            }),
+            filler(),
+            clipboardButton({
+                text: `Copy ${startCase(model.displayName)}s`,
+                icon: Icon.copy(),
+                getCopyText: () => model.fetchLocalConfigsAsync(),
+                successMessage: `${startCase(model.displayName)}s copied to clipboard - ready to paste into the diff tool on another instance for comparison.`
+            })
+        );
+    }
+);
+
+const bbar = hoistCmp.factory(
+    ({model}) => {
+        return toolbar(
+            filler(),
+            recordActionBar({
+                actions: [model.applyRemoteAction],
+                selModel: model.gridModel.selModel,
+                buttonProps: {intent: 'primary'}
+            }),
+            toolbarSep(),
+            button({
+                text: 'Close',
+                onClick: () => model.close()
             })
         );
     }

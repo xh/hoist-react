@@ -89,7 +89,7 @@ export const Icon = {
     attachment(p)       {return Icon.icon({...p,  iconName: 'paperclip'})},
     balanceScale(p)     {return Icon.icon({...p,  iconName: 'balance-scale'})},
     balanceScaleLeft(p) {return Icon.icon({...p,  iconName: 'balance-scale-left'})},
-    balanceScaleRight(p) {return Icon.icon({...p,  iconName: 'balance-scale-right'})},
+    balanceScaleRight(p) {return Icon.icon({...p, iconName: 'balance-scale-right'})},
     bars(p)             {return Icon.icon({...p,  iconName: 'bars'})},
     bolt(p)             {return Icon.icon({...p,  iconName: 'bolt'})},
     book(p)             {return Icon.icon({...p,  iconName: 'book'})},
@@ -140,11 +140,12 @@ export const Icon = {
     dollarSignCircle(p) {return Icon.icon({...p,  iconName: 'usd-circle'})},
     download(p)         {return Icon.icon({...p,  iconName: 'download'})},
     edit(p)             {return Icon.icon({...p,  iconName: 'edit'})},
-    envelope(p)         {return Icon.icon({...p,  iconName: 'envelope'})},
     ellipsisHorizontal(p) {return Icon.icon({...p, iconName: 'ellipsis-h'})},
-    ellipsisVertical(p) {return Icon.icon({...p, iconName: 'ellipsis-v'})},
-    equals(p)           {return Icon.icon({...p, iconName: 'equals'})},
+    ellipsisVertical(p) {return Icon.icon({...p,  iconName: 'ellipsis-v'})},
+    envelope(p)         {return Icon.icon({...p,  iconName: 'envelope'})},
+    equals(p)           {return Icon.icon({...p,  iconName: 'equals'})},
     error(p)            {return Icon.icon({...p,  iconName: 'times-hexagon'})},
+    euroSign(p)         {return Icon.icon({...p,  iconName: 'euro-sign'})},
     expand(p)           {return Icon.icon({...p,  iconName: 'expand-alt'})},
     experiment(p)       {return Icon.icon({...p,  iconName: 'flask'})},
     eye(p)              {return Icon.icon({...p,  iconName: 'eye'})},
@@ -201,6 +202,7 @@ export const Icon = {
     office(p)           {return Icon.icon({...p,  iconName: 'building'})},
     openExternal(p)     {return Icon.icon({...p,  iconName: 'external-link'})},
     options(p)          {return Icon.icon({...p,  iconName: 'sliders-h-square'})},
+    paste(p)            {return Icon.icon({...p,  iconName: 'paste'})},
     pause(p)            {return Icon.icon({...p,  iconName: 'pause'})},
     pauseCircle(p)      {return Icon.icon({...p,  iconName: 'pause-circle'})},
     pin(p)              {return Icon.icon({...p,  iconName: 'thumbtack'})},
@@ -209,6 +211,7 @@ export const Icon = {
     plus(p)             {return Icon.icon({...p,  iconName: 'plus'})},
     plusCircle(p)       {return Icon.icon({...p,  iconName: 'plus-circle'})},
     portfolio(p)        {return Icon.icon({...p,  iconName: 'briefcase'})},
+    poundSign(p)        {return Icon.icon({...p,  iconName: 'pound-sign'})},
     print(p)            {return Icon.icon({...p,  iconName: 'print'})},
     question(p)         {return Icon.icon({...p,  iconName: 'question'})},
     questionCircle(p)   {return Icon.icon({...p,  iconName: 'question-circle'})},
@@ -223,6 +226,7 @@ export const Icon = {
     settings(p)         {return Icon.icon({...p,  iconName: 'sliders-h-square'})},
     shield(p)           {return Icon.icon({...p,  iconName: 'shield-alt'})},
     shieldCheck(p)      {return Icon.icon({...p,  iconName: 'shield-check'})},
+    sigma(p)            {return Icon.icon({...p,  iconName: 'sigma'})},
     skull(p)            {return Icon.icon({...p,  iconName: 'skull'})},
     spinner(p)          {return Icon.icon({...p,  iconName: 'spinner'})},
     stop(p)             {return Icon.icon({...p,  iconName: 'stop'})},
@@ -238,6 +242,7 @@ export const Icon = {
     toast(p)            {return Icon.icon({...p,  iconName: 'bread-slice'})},
     toolbox(p)          {return Icon.icon({...p,  iconName: 'toolbox'})},
     tools(p)            {return Icon.icon({...p,  iconName: 'tools'})},
+    trash(p)            {return Icon.icon({...p,  iconName: 'trash-alt'})},
     transaction(p)      {return Icon.icon({...p,  iconName: 'exchange'})},
     treeList(p)         {return Icon.icon({...p,  iconName: 'stream'})},
     undo(p)             {return Icon.icon({...p,  iconName: 'undo'})},
@@ -259,7 +264,7 @@ export const Icon = {
      * Create an Icon for a file with default styling appropriate for the file type.
      *
      * @param {Object} c - See Icon.icon().
-     * @param {String} [c.filename] - filename to be used to create icon.  Name will be parsed
+     * @param {string} [c.filename] - filename to be used to create icon.  Name will be parsed
      *      for an extension.  If not provided or recognized, a default icon will be returned.
      * @returns {(Element|string)}
      */
@@ -297,7 +302,7 @@ export const Icon = {
  * @return {string} - html of the <svg> tag representing the icon.
  */
 export function convertIconToHtml(iconElem) {
-    throwIf(iconElem.type?.displayName !== 'Icon',
+    throwIf(!iconElem.type?.isHoistComponent,
         'Icon not created by a Hoist Icon factory - cannot convert to SVG'
     );
     return iconHtml(iconElem.props);
@@ -311,7 +316,7 @@ export function convertIconToHtml(iconElem) {
  * @returns {Object} - json representation of icon.
  */
 export function serializeIcon(iconElem) {
-    throwIf(iconElem.type?.displayName !== 'Icon',
+    throwIf(!iconElem.type?.isHoistComponent,
         'Attempted to serialize an icon not created by a Hoist Icon factory.'
     );
 

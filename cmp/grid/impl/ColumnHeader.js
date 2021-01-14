@@ -12,7 +12,7 @@ import {useOnMount, createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
 import classNames from 'classnames';
-import {filter, findIndex, isEmpty, isFunction, isFinite, isString} from 'lodash';
+import {filter, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString} from 'lodash';
 import {GridSorter} from './GridSorter';
 import {Column} from '@xh/hoist/cmp/grid/columns/Column';
 
@@ -65,13 +65,31 @@ export const columnHeader = hoistCmp.factory({
             impl.hasNonPrimarySort ? 'xh-grid-header-multisort' : null
         ];
 
-        let headerName = props.displayName;
-        if (impl.xhColumn && isFunction(impl.xhColumn.headerName)) {
-            const {xhColumn, gridModel} = impl;
-            headerName = xhColumn.headerName({column: xhColumn, gridModel});
+        const {xhColumn, gridModel} = impl,
+            {isDesktop} = XH;
+
+        // `props.displayName` is the output of the Column `headerValueGetter` and should always be a string
+        // If `xhColumn` is present, it can consulted for a richer `headerName`
+        let headerElem = props.displayName;
+        if (xhColumn) {
+            headerElem = isFunction(xhColumn.headerName) ?
+                xhColumn.headerName({column: xhColumn, gridModel}) :
+                xhColumn.headerName;
         }
 
-        const {isDesktop} = XH;
+        // If no app tooltip dynamically toggle a tooltip to display elided header
+        let onMouseEnter = null;
+        if (isDesktop && isUndefined(xhColumn?.headerTooltip)) {
+            onMouseEnter = ({target: el}) => {
+                if (el.offsetWidth < el.scrollWidth) {
+                    const title = isString(headerElem) ? headerElem : props.displayName;
+                    el.setAttribute('title', title);
+                } else {
+                    el.removeAttribute('title');
+                }
+            };
+        }
+
         return div({
             className: classNames(props.className, extraClasses),
 
@@ -82,7 +100,7 @@ export const columnHeader = hoistCmp.factory({
             onTouchEnd:     !isDesktop ? impl.onTouchEnd : null,
 
             items: [
-                span(headerName),
+                span({onMouseEnter, item: headerElem}),
                 sortIcon(),
                 menuIcon()
             ]

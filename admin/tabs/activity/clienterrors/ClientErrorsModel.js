@@ -5,14 +5,16 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {usernameCol} from '@xh/hoist/admin/columns';
+import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
-import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
+import {dateTimeCol, localDateCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
-import {fmtSpan} from '@xh/hoist/format';
+import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, comparer, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
+import moment from 'moment';
 
 @HoistModel
 @LoadSupport
@@ -20,18 +22,17 @@ export class ClientErrorsModel {
 
     persistWith = {localStorageKey: 'xhAdminClientErrorsState'};
 
-    @bindable.ref startDate = LocalDate.today().subtract(6, 'months');
-    @bindable.ref endDate = LocalDate.today();
-    @bindable username;
-    @bindable error;
+    /** @member {LocalDate} */
+    @bindable.ref startDay;
+    /** @member {LocalDate} */
+    @bindable.ref endDay;
 
     /** @member {GridModel} */
-    @managed gridModel
+    @managed gridModel;
     /** @member {FormModel} */
     @managed formModel;
-
-    /** @member {{}} - distinct values for key dimensions, used to power query selects. */
-    @bindable.ref lookups = {};
+    /** @member {FilterChooserModel} */
+    @managed filterChooserModel;
 
     get selectedRecord() {return this.gridModel.selectedRecord}
 
@@ -39,10 +40,28 @@ export class ClientErrorsModel {
     @observable formattedErrorJson;
 
     constructor() {
+        this.startDay = this.getDefaultStartDay();
+        this.endDay = this.getDefaultEndDay();
+
         this.gridModel = new GridModel({
             persistWith: this.persistWith,
-            enableColChooser: true,
+            colChooserModel: true,
             enableExport: true,
+            store: {
+                fields: [
+                    {name: 'username', type: 'string'},
+                    {name: 'browser', type: 'string'},
+                    {name: 'device', type: 'string'},
+                    {name: 'userAgent', type: 'string'},
+                    {name: 'appVersion', type: 'string'},
+                    {name: 'appEnvironment', displayName: 'Environment', type: 'string'},
+                    {name: 'msg', displayName: 'User Message', type: 'string'},
+                    {name: 'error', displayName: 'Error Details', type: 'string'},
+                    {name: 'dateCreated', displayName: 'Timestamp', type: 'date'},
+                    {name: 'day', displayName: 'App Day', type: 'localDate'},
+                    {name: 'userAlerted', type: 'bool'}
+                ]
+            },
             exportOptions: {
                 filename: `${XH.appCode}-client-errors`,
                 columns: 'ALL'
@@ -71,9 +90,7 @@ export class ClientErrorsModel {
                     align: 'center',
                     width: 50,
                     exportName: 'User Alerted?',
-                    renderer: v => {
-                        return v ? Icon.window({asHtml: true}) : '';
-                    }
+                    renderer: v => v ? Icon.window({asHtml: true}) : ''
                 },
                 {field: 'id', headerName: 'Entry ID', width: 100, align: 'right', hidden: true},
                 {field: 'username', ...usernameCol},
@@ -81,17 +98,60 @@ export class ClientErrorsModel {
                 {field: 'device', width: 100},
                 {field: 'userAgent', width: 130, hidden: true},
                 {field: 'appVersion', width: 130},
-                {field: 'appEnvironment', headerName: 'Environment', width: 130},
-                {field: 'msg', headerName: 'User Message', width: 130, hidden: true},
+                {field: 'appEnvironment',  width: 130},
+                {field: 'msg', width: 130, hidden: true},
                 {
                     field: 'error',
-                    headerName: 'Error Details',
                     flex: true,
                     minWidth: 150,
                     renderer: (e) => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
                 },
-                {field: 'dateCreated', headerName: 'Timestamp', ...dateTimeCol}
+                {field: 'dateCreated', ...dateTimeCol},
+                {field: 'day',  ...localDateCol}
             ]
+        });
+
+        this.filterChooserModel = new FilterChooserModel({
+            sourceStore: this.gridModel.store,
+            targetStore: this.gridModel.store,
+            fieldSpecs: [
+                'username',
+                'browser',
+                'device',
+                'appVersion',
+                'appEnvironment',
+                'userAlerted',
+                {
+                    field: 'userAgent',
+                    suggestValues: false
+                },
+                {
+                    field: 'msg',
+                    suggestValues: false
+                },
+                {
+                    field: 'error',
+                    suggestValues: false
+                },
+                {
+                    field: 'dateCreated',
+                    example: 'YYYY-MM-DD',
+                    valueParser: (v, op) => {
+                        let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
+                        if (!ret.isValid()) return null;
+
+                        // Note special handling for '>' & '<=' queries.
+                        if (['>', '<='].includes(op)) {
+                            ret = moment(ret).endOf('day');
+                        }
+
+                        return ret.toDate();
+                    },
+                    valueRenderer: (v) => fmtDate(v),
+                    ops: ['>', '>=', '<', '<=']
+                }
+            ],
+            persistWith: this.persistWith
         });
 
         this.formModel = new FormModel({
@@ -113,18 +173,15 @@ export class ClientErrorsModel {
 
     @action
     resetQuery() {
-        this.startDate = LocalDate.today().subtract(6, 'months');
-        this.endDate = LocalDate.today();
-        this.username = null;
-        this.error = null;
+        this.startDay = this.getDefaultStartDay();
+        this.endDay = this.getDefaultEndDay();
+        this.filterChooserModel.setValue(null);
     }
 
     async doLoadAsync(loadSpec) {
         const {gridModel} = this;
 
         try {
-            await this.loadLookupsAsync(loadSpec);
-
             const data = await XH.fetchJson({
                 url: 'clientErrorAdmin',
                 params: this.getParams(),
@@ -139,15 +196,6 @@ export class ClientErrorsModel {
             gridModel.clear();
             XH.handleException(e);
         }
-    }
-
-    async loadLookupsAsync(loadSpec) {
-        const lookups = await XH.fetchJson({
-            url: 'clientErrorAdmin/lookups',
-            loadSpec
-        });
-
-        this.setLookups(lookups);
     }
 
     @action
@@ -167,32 +215,38 @@ export class ClientErrorsModel {
         this.formattedErrorJson = formattedErrorJson;
     }
 
-    adjustDates(dir, toToday = false) {
-        const today = LocalDate.today(),
-            start = this.startDate,
-            end = this.endDate,
+    @action
+    adjustDates(dir) {
+        const appDay = LocalDate.currentAppDay(),
+            start = this.startDay,
+            end = this.endDay,
             diff = end.diff(start),
             incr = diff + 1;
 
         let newStart = start[dir](incr),
             newEnd = end[dir](incr);
 
-        if (newEnd.diff(today) > 0 || toToday) {
-            newStart = today.subtract(Math.abs(diff));
-            newEnd = today;
+        if (newEnd > appDay) {
+            newStart = appDay.subtract(Math.abs(diff));
+            newEnd = appDay;
         }
 
-        this.setStartDate(newStart);
-        this.setEndDate(newEnd);
-        this.loadAsync();
+        this.startDay = newStart;
+        this.endDay = newEnd;
+    }
+
+    // Set the start date by taking the end date and pushing back [value] [units] - then pushing
+    // forward one day as the day range query is inclusive.
+    @action
+    adjustStartDate(value, unit) {
+        this.startDay = this.endDay.subtract(value, unit).nextDay();
     }
 
     getParams() {
-        return {
-            startDate: this.startDate,
-            endDate: this.endDate,
-            username: this.username,
-            error: this.error
-        };
+        const {startDay, endDay} = this;
+        return {startDay, endDay};
     }
+
+    getDefaultStartDay() {return LocalDate.currentAppDay()}
+    getDefaultEndDay() {return LocalDate.currentAppDay()}
 }

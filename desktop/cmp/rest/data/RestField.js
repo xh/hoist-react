@@ -12,16 +12,24 @@ import {withDefault} from '@xh/hoist/utils/js';
  */
 export class RestField extends Field {
 
+    /** @member {(boolean|string)} */
     editable;
+    /** @member {boolean} */
     required;
+    /** @member {(Object[]|string[])} */
     lookup;
+    /** @member {string} */
     lookupName;
+    /** @member {boolean} */
     enableCreate;
+    /** @member {string} */
     typeField;
 
     /**
-     * @param {(boolean|'addOnly')} [editable]
-     * @param {boolean} [required] - True to require a non-null value for additions and edits.
+     * @param {(boolean|string)} [editable] - false to disable editing and present field as
+     *      readonly data. True (default) to enable editing, or special string token 'addOnly'
+     *      to enable editing only when first creating a new record.
+     * @param {boolean} [required] - true to require a non-null value for additions and edits.
      * @param {(Object[]|string[])} [lookup] - Array of available option values.
      * @param {string} [lookupName] - Name of server-provided options to populate lookup.
      * @param {boolean} [enableCreate] - For lookups, true to accept custom values not found within

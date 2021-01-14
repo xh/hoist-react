@@ -18,12 +18,13 @@ import {
     GridExportService,
     IdentityService,
     IdleService,
+    JsonBlobService,
     LocalStorageService,
     PrefService,
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {getClientDeviceInfo, throwIf, withShortDebug} from '@xh/hoist/utils/js';
+import {getClientDeviceInfo, throwIf, withShortDebug, checkMinVersion} from '@xh/hoist/utils/js';
 import {compact, camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
 import parser from 'ua-parser-js';
@@ -32,6 +33,8 @@ import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import '../styles/XH.scss';
 import {ExceptionHandler} from './ExceptionHandler';
 import {RouterModel} from './RouterModel';
+
+const MIN_HOIST_CORE_VERSION = '8.6.1';
 
 /**
  * Top-level Singleton model for Hoist. This is the main entry point for the API.
@@ -90,6 +93,8 @@ class XHClass {
     identityService;
     /** @member {IdleService} */
     idleService;
+    /** @member {JsonBlobService} */
+    jsonBlobService;
     /** @member {LocalStorageService} */
     localStorageService;
     /** @member {PrefService} */
@@ -415,15 +420,17 @@ class XHClass {
      *      the exception log and alert.
      */
     handleException(exception, options) {
-        return this.exceptionHandler.handleException(exception, options);
+        this.exceptionHandler.handleException(exception, options);
     }
 
     /**
-     * Create a new exception.
-     * @see Exception.create
+     * Create a new exception - {@see Exception} for Hoist conventions / extensions to JS Errors.
+     * @param {(Object|string)} cfg - properties to add to the returned Error.
+     *      If a string, will become the 'message' value.
+     * @returns {Error}
      */
-    exception(...args) {
-        return Exception.create(...args);
+    exception(cfg) {
+        return Exception.create(cfg);
     }
 
     //---------------------------
@@ -462,7 +469,8 @@ class XHClass {
      * Helper method to destroy resources safely (e.g. child HoistModels). Will quietly skip args
      * that are null / undefined or that do not implement destroy().
      *
-     * @param {...Object} args - Objects to be destroyed.
+     * @param {...(Object|array)} args - objects to be destroyed. If any argument is an array,
+     *      each element in the array will be destroyed (this is *not* done recursively);.
      */
     safeDestroy(...args) {
         if (args) {
@@ -546,7 +554,10 @@ class XHClass {
 
             // ...if not, throw in SSO mode (unexpected error case) or trigger a login prompt.
             if (!userIsAuthenticated) {
-                throwIf(appSpec.isSSO, 'Failed to authenticate user via SSO.');
+                throwIf(
+                    appSpec.isSSO,
+                    'Unable to complete required authentication (SSO/Oauth failure).'
+                );
                 this.setAppState(S.LOGIN_REQUIRED);
                 return;
             }
@@ -583,7 +594,19 @@ class XHClass {
             // Complete initialization process
             this.setAppState(S.INITIALIZING);
             await this.installServicesAsync(LocalStorageService);
-            await this.installServicesAsync(EnvironmentService, PrefService, ConfigService);
+            await this.installServicesAsync(
+                EnvironmentService, PrefService, ConfigService, JsonBlobService
+            );
+
+            // Confirm hoist-core version after environment service loaded
+            const hcVersion = XH.environmentService.get('hoistCoreVersion');
+            if (!checkMinVersion(hcVersion, MIN_HOIST_CORE_VERSION)) {
+                throw XH.exception(`
+                    This version of Hoist React requires the server to run Hoist Core
+                    v${MIN_HOIST_CORE_VERSION} or greater. Version ${hcVersion} detected.
+                `);
+            }
+
             await this.installServicesAsync(
                 AutoRefreshService, IdleService, GridAutosizeService, GridExportService, WebSocketService
             );
@@ -734,6 +757,10 @@ export const XH = window.XH = new XHClass();
  * @property {ReactNode} message - message to be displayed - a string or any valid React node.
  * @property {string} [title] - title of message box.
  * @property {Element} [icon] - icon to be displayed.
+ * @property {string} [messageKey] - unique key identifying the message.  If subsequent messages
+ *      are triggered with this key, they will replace this message.  Useful for usages that may
+ *      be producing messages recursively, or via timers and wish to avoid generating a large stack
+ *      of duplicates.
  * @property {MessageInput} [input] - config for input to be displayed (as a prompt).
  * @property {Object} [confirmProps] - props for primary confirm button.
  *      Must provide either text or icon for button to be displayed, or use a preconfigured

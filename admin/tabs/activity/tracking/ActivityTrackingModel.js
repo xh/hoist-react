@@ -6,16 +6,17 @@
  */
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {ActivityDetailModel} from '@xh/hoist/admin/tabs/activity/tracking/detail/ActivityDetailModel';
-import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
+import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
+import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {Cube} from '@xh/hoist/data';
-import {fmtDate, numberRenderer} from '@xh/hoist/format';
-import {action, bindable} from '@xh/hoist/mobx';
+import {fmtDate, fmtNumber, numberRenderer} from '@xh/hoist/format';
+import {action} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {compact, isEmpty, isFinite} from 'lodash';
+import {isFinite} from 'lodash';
 import moment from 'moment';
 import {ChildCountAggregator, LeafCountAggregator, RangeAggregator} from '../aggregators';
 import {ChartsModel} from './charts/ChartsModel';
@@ -30,10 +31,12 @@ export class ActivityTrackingModel {
 
     /** @member {FormModel} */
     @managed formModel;
-    /** @member {DimensionChooserModel} */
-    @managed dimChooserModel;
+    /** @member {GroupingChooserModel} */
+    @managed groupingChooserModel;
     /** @member {Cube} */
     @managed cube;
+    /** @member {FilterChooserModel} */
+    @managed filterChooserModel;
     /** @member {GridModel} */
     @managed gridModel;
 
@@ -42,87 +45,107 @@ export class ActivityTrackingModel {
     /** @member {ChartsModel} */
     @managed chartsModel;
 
-    /** @member {{}} - distinct values for key dimensions, used to power query selects. */
-    @bindable.ref lookups = {};
+    get dimensions() {return this.groupingChooserModel.value}
 
-    get dimensions() {return this.dimChooserModel.value}
-
-    /** @returns {string} - summary of overall query. */
+    /**
+     * @returns {string} - summary of currently active query / filters.
+     *      TODO - include new local filters if feasible, or drop this altogether.
+     *          Formerly summarized server-side filters, but was misleading w/new filtering.
+     */
     get queryDisplayString() {
-        const {formModel} = this,
-            vals = formModel.values,
-            parts = [
-                `${XH.appName} Activity`,
-                vals.category ? `${vals.category} Category` : null,
-                this.dateRangeRenderer({min: vals.startDate, max: vals.endDate}),
-                vals.username,
-                vals.device,
-                vals.browser,
-                vals.msg ? `"${vals.msg}"` : null
-            ];
-
-        return compact(parts).join(' · ');
+        return `${XH.appName} Activity`;
     }
+
+    /** @return {LocalDate} */
+    get endDay() {return this.formModel.values.endDay}
 
     _monthFormat = 'MMM YYYY';
     _defaultDims = ['day', 'username'];
+    _defaultFilter = [{field: 'category', op: '=', value: 'App'}]
 
     constructor() {
         this.formModel = new FormModel({
             fields: [
-                {name: 'startDate', initialValue: LocalDate.today().subtract(6, 'months')},
-                // TODO - see https://github.com/xh/hoist-react/issues/400 for why we push endDate out to tomorrow.
-                {name: 'endDate', initialValue: LocalDate.today().add(1)},
-                {name: 'category'},
-                {name: 'username'},
-                {name: 'device'},
-                {name: 'browser'},
-                {name: 'msg'}
+                {name: 'startDay', initialValue: this.getDefaultStartDay()},
+                {name: 'endDay', initialValue: this.getDefaultEndDay()}
             ]
         });
 
         this.cube = new Cube({
             fields: [
-                {name: 'day', isDimension: true, aggregator: new RangeAggregator()},
-                {name: 'month', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'username', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'msg', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'category', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'device', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'browser', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'userAgent', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'elapsed', aggregator: 'AVG'},
-                {name: 'impersonating'},
-                {name: 'dateCreated'},
-                {name: 'data'},
-                {name: 'count', aggregator: new ChildCountAggregator()},
-                {name: 'entryCount', aggregator: new LeafCountAggregator()}
+                {name: 'day', type: 'localDate', isDimension: true, aggregator: new RangeAggregator()},
+                {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
+                {name: 'username', displayName: 'User', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
+                {name: 'msg', displayName: 'Message', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
+                {name: 'category', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
+                {name: 'device', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
+                {name: 'browser', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
+                {name: 'userAgent', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
+                {name: 'elapsed', type: 'int', aggregator: 'AVG'},
+                {name: 'impersonating', type: 'string'},
+                {name: 'dateCreated', displayName: 'Timestamp', type: 'date'},
+                {name: 'data', type: 'json'},
+                {name: 'count', type: 'int', aggregator: new ChildCountAggregator()},
+                {name: 'entryCount', type: 'int', aggregator: new LeafCountAggregator()}
             ]
         });
 
-        this.dimChooserModel = new DimensionChooserModel({
+        this.groupingChooserModel = new GroupingChooserModel({
+            dimensions: this.cube.dimensions,
             persistWith: this.persistWith,
-            dimensions: [
-                {label: 'Date', value: 'day'},
-                {label: 'Month', value: 'month'},
-                {label: 'User', value: 'username'},
-                {label: 'Message', value: 'msg'},
-                {label: 'Category', value: 'category'},
-                {label: 'Device', value: 'device'},
-                {label: 'Browser', value: 'browser'},
-                {label: 'User Agent', value: 'userAgent'}
-            ],
             initialValue: this._defaultDims
+        });
+
+        this.filterChooserModel = new FilterChooserModel({
+            initialValue: this._defaultFilter,
+            sourceStore: this.cube.store,
+            fieldSpecs: [
+                'category',
+                'month',
+                'username',
+                'device',
+                'browser',
+                'msg',
+                'userAgent',
+                {
+                    field: 'elapsed',
+                    valueRenderer: (v) => {
+                        return fmtNumber(v, {
+                            label: 'ms',
+                            formatConfig: {thousandSeparated: false, mantissa: 0}
+                        });
+                    }
+                },
+                {
+                    field: 'dateCreated',
+                    example: 'YYYY-MM-DD',
+                    valueParser: (v, op) => {
+                        let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
+                        if (!ret.isValid()) return null;
+
+                        // Note special handling for '>' & '<=' queries.
+                        if (['>', '<='].includes(op)) {
+                            ret = moment(ret).endOf('day');
+                        }
+
+                        return ret.toDate();
+                    },
+                    valueRenderer: (v) => fmtDate(v),
+                    ops: ['>', '>=', '<', '<=']
+                }
+            ],
+            persistWith: this.persistWith
         });
 
         this.gridModel = new GridModel({
             treeMode: true,
+            treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
             persistWith: {
                 ...this.persistWith,
                 path: 'aggGridModel',
                 persistSort: false
             },
-            enableColChooser: true,
+            colChooserModel: true,
             enableExport: true,
             exportOptions: {filename: `${XH.appCode}-activity-summary`},
             emptyText: 'No activity reported...',
@@ -155,7 +178,7 @@ export class ActivityTrackingModel {
                     field: 'day',
                     width: 200,
                     align: 'right',
-                    headerName: 'Date Range',
+                    headerName: 'App Day',
                     renderer: this.dateRangeRenderer,
                     exportValue: this.dateRangeRenderer,
                     comparator: this.dateRangeComparator.bind(this),
@@ -171,18 +194,14 @@ export class ActivityTrackingModel {
         this.addReaction({
             track: () => {
                 const vals = this.formModel.values;
-                return [
-                    vals.startDate, vals.endDate,
-                    vals.username, vals.msg, vals.category, vals.device, vals.browser
-                ];
+                return [vals.startDay, vals.endDay];
             },
             run: () => this.loadAsync(),
-            fireImmediately: true,
             debounce: 100
         });
 
         this.addReaction({
-            track: () => [this.cube.records, this.dimensions],
+            track: () => [this.cube.records, this.filterChooserModel.value, this.dimensions],
             run: () => this.loadGridAndChartAsync(),
             debounce: 100
         });
@@ -191,8 +210,6 @@ export class ActivityTrackingModel {
     async doLoadAsync(loadSpec) {
         const {cube, formModel} = this;
         try {
-            await this.loadLookupsAsync(loadSpec);
-
             const data = await XH.fetchJson({
                 url: 'trackLogAdmin',
                 params: formModel.getData(),
@@ -200,7 +217,7 @@ export class ActivityTrackingModel {
             });
 
             data.forEach(it => {
-                it.day = LocalDate.from(it.dateCreated);
+                it.day = LocalDate.from(it.day);
                 it.month = it.day.format(this._monthFormat);
             });
 
@@ -211,30 +228,13 @@ export class ActivityTrackingModel {
         }
     }
 
-    // Load lookups for query selects to which we wish to provide the set of available values.
-    // Will also default the category field to the special "App" value (used within Hoist init() to
-    // track application visits / load times).
-    async loadLookupsAsync(loadSpec) {
-        const {formModel} = this,
-            categoryField = formModel.fields.category,
-            isFirstLookupLoad = isEmpty(this.lookups);
-
-        const lookups = await XH.fetchJson({
-            url: 'trackLogAdmin/lookups',
-            loadSpec
-        });
-
-        this.setLookups(lookups);
-
-        const {categories} = this.lookups;
-        if (isFirstLookupLoad && categories.includes('App') && !categoryField.value) {
-            categoryField.setValue('App');
-        }
-    }
-
     async loadGridAndChartAsync() {
         const {cube, gridModel, chartsModel, dimensions} = this,
-            data = cube.executeQuery({dimensions, includeLeaves: true});
+            data = cube.executeQuery({
+                dimensions,
+                filter: this.filterChooserModel.value,
+                includeLeaves: true
+            });
 
         data.forEach(node => this.separateLeafRows(node));
         gridModel.loadData(data);
@@ -262,33 +262,41 @@ export class ActivityTrackingModel {
 
     @action
     resetQuery() {
-        const {formModel, dimChooserModel, lookups, _defaultDims} = this;
-        formModel.reset();
-        if (lookups?.categories?.includes('App')) {
-            formModel.fields.category.setValue('App');
-        }
-
-        dimChooserModel.setValue(_defaultDims);
+        const {formModel, filterChooserModel, groupingChooserModel, _defaultDims, _defaultFilter} = this;
+        formModel.init({
+            startDay: this.getDefaultStartDay(),
+            endDay: this.getDefaultEndDay()
+        });
+        filterChooserModel.setValue(_defaultFilter);
+        groupingChooserModel.setValue(_defaultDims);
     }
 
-    adjustDates(dir, toToday = false) {
-        const {startDate, endDate} = this.formModel.fields,
-            today = LocalDate.today(),
-            start = startDate.value,
-            end = endDate.value,
+    adjustDates(dir) {
+        const {startDay, endDay} = this.formModel.fields,
+            appDay = LocalDate.currentAppDay(),
+            start = startDay.value,
+            end = endDay.value,
             diff = end.diff(start),
             incr = diff + 1;
 
         let newStart = start[dir](incr),
             newEnd = end[dir](incr);
 
-        if (newEnd.diff(today) > 0 || toToday) {
-            newStart = today.subtract(Math.abs(diff));
-            newEnd = today;
+        if (newEnd > appDay) {
+            newStart = appDay.subtract(Math.abs(diff));
+            newEnd = appDay;
         }
 
-        startDate.setValue(newStart);
-        endDate.setValue(newEnd);
+        startDay.setValue(newStart);
+        endDay.setValue(newEnd);
+    }
+
+    // Set the start date by taking the end date and pushing back [value] [units] - then pushing
+    // forward one day as the day range query is inclusive.
+    adjustStartDate(value, unit) {
+        this.formModel.setValues({
+            startDay: this.endDay.subtract(value, unit).nextDay()
+        });
     }
 
     toggleRowExpandCollapse(agParams) {
@@ -337,5 +345,8 @@ export class ActivityTrackingModel {
             default: return rawVal;
         }
     }
+
+    getDefaultStartDay() {return LocalDate.currentAppDay()}
+    getDefaultEndDay() {return LocalDate.currentAppDay()}
 
 }

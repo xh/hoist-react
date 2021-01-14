@@ -24,7 +24,7 @@ export class ActivityDetailModel {
 
         this.gridModel = new GridModel({
             sortBy: 'dateCreated|desc',
-            enableColChooser: true,
+            colChooserModel: true,
             enableExport: true,
             exportOptions: {
                 columns: 'ALL',

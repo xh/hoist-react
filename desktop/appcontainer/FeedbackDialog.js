@@ -6,7 +6,7 @@
  */
 import {FeedbackDialogModel} from '@xh/hoist/appcontainer/FeedbackDialogModel';
 import {filler} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -26,7 +26,7 @@ export const feedbackDialog = hoistCmp.factory({
         if (!model.isOpen) return null;
 
         return dialog({
-            title: 'Submit Feedback',
+            title: `${XH.clientAppName} Feedback`,
             style: {width: 450},
             isOpen: true,
             onClose: () => model.hide(),
@@ -35,6 +35,7 @@ export const feedbackDialog = hoistCmp.factory({
                 textArea({
                     placeholder: 'Please enter your comments...',
                     width: null,
+                    autoFocus: true,
                     height: 250,
                     style: {marginBottom: 2},
                     commitOnChange: true,
@@ -47,8 +48,9 @@ export const feedbackDialog = hoistCmp.factory({
                         onClick: () => model.hide()
                     }),
                     button({
-                        text: 'Send',
+                        text: 'Send Feedback',
                         intent: 'success',
+                        minimal: false,
                         disabled: !model.message,
                         onClick: () => model.submitAsync()
                     })

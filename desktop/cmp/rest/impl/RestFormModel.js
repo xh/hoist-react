@@ -9,12 +9,12 @@ import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, merge} from 'lodash';
+import {isFunction, isNil, merge} from 'lodash';
 
 @HoistModel
 export class RestFormModel {
 
-    // Parent RestGridModel
+    /** @member {RestGridModel} */
     parent = null;
 
     // Mutable State
@@ -23,20 +23,37 @@ export class RestFormModel {
     @observable isAdd = null;
     @observable isOpen = false;
 
+    /** @member {FormModel} */
     @managed
-    @observable formModel = null;
+    @observable
+    formModel;
 
     @observable types = {};
 
     get actionWarning()     {return this.parent.actionWarning}
     get actions()           {return this.parent.formActions}
     get editors()           {return this.parent.editors}
+    get gridModel()         {return this.parent.gridModel}
     get store()             {return this.parent.store}
     get loadModel()         {return this.store.loadModel}
 
+    /** @param {RestGridModel} parent */
     constructor(parent) {
         this.parent = parent;
     }
+
+    /**
+     * @param {String} field
+     * @return {RestField}
+     */
+    getStoreField(field) {return this.store.getField(field)}
+
+    /**
+     * @param {String} field
+     * @return {FieldModel}
+     */
+    getFormFieldModel(field) {return this.formModel.getField(field)}
+
 
     //-----------------
     // Actions
@@ -77,21 +94,24 @@ export class RestFormModel {
 
         const valid = await this.formModel.validateAsync();
         if (!valid) {
-            XH.toast({message: 'Form not valid.  Please correct errors.'});
+            XH.toast({message: 'Form not valid. Please correct errors.'});
             return;
         }
 
         if (warning) {
-            const confirmed = await XH.confirm({
-                message: warning,
-                title: 'Warning',
-                icon: Icon.warning({size: 'lg'})
-            });
+            const message = isFunction(warning) ? warning([this.currentRecord]) : warning,
+                confirmed = await XH.confirm({
+                    message,
+                    title: 'Warning',
+                    icon: Icon.warning({size: 'lg'})
+                });
+
             if (!confirmed) return;
         }
 
         return this.saveRecordAsync();
     }
+
 
     //---------------------
     // Implementation
@@ -100,7 +120,9 @@ export class RestFormModel {
         this.currentRecord = !isNil(rec) ? rec : {id: null};
         this.isAdd = isNil(rec) || isNil(rec.id);
         this.isOpen = true;
+
         const fields = this.editors.map(editor => this.fieldModelConfig(editor));
+
         XH.safeDestroy(this.formModel);
         const formModel = this.formModel = new FormModel({
             fields,
@@ -140,13 +162,13 @@ export class RestFormModel {
 
     fieldModelConfig(editor) {
         const name = editor.field,
-            restField = this.store.getField(name);
+            restField = this.getStoreField(name);
         throwIf(!restField, `Unknown field '${name}' in RestGrid.`);
 
         return merge({
             name,
             rules: restField.required ? [required] : [],
-            displayName: editor.label,
+            displayName: restField.displayName,
             readonly: restField.editable === false || (restField.editable === 'onAdd' && !this.isAdd),
             initialValue: restField.defaultValue
         }, editor.fieldModel);
@@ -156,15 +178,16 @@ export class RestFormModel {
     // Helpers
     //-------------------------
     calcType(fieldName) {
-        const restField = this.store.getField(fieldName);
+        const restField = this.getStoreField(fieldName);
         this.types[fieldName] = restField.typeField ? this.getDynamicType(restField.typeField) : restField.type;
     }
 
     getDynamicType(typeField) {
         // Favor (observable) value in form itself, if present!
-        const {currentRecord, store} = this,
-            field = store.getField(typeField),
-            formField = this.formModel.fields[typeField];
+        const {currentRecord, formModel} = this,
+            field = this.getStoreField(typeField),
+            formField = formModel.fields[typeField];
+
         let rawType = null;
         if (formField) {
             rawType = formField.value;

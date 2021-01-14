@@ -31,6 +31,10 @@
     background-color: var(--xh-purple);
   }
 
+  &--test {
+    background-color: hsl(180, 100%, 25%);
+  }
+
   svg {
     cursor: pointer;
     margin-left: var(--xh-pad-px);

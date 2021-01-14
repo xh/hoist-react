@@ -35,6 +35,11 @@ export class MonitorResultsModel {
         return this.results.filter(monitor => monitor.status === 'FAIL').length;
     }
 
+    @computed
+    get inactive() {
+        return this.results.filter(monitor => monitor.status === 'INACTIVE').length;
+    }
+
     constructor() {
         this.timer = Timer.create({
             runFn: () => this.autoRefreshAsync(),
