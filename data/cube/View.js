@@ -181,11 +181,12 @@ export class View {
         let newRows = this.groupAndInsertLeaves(leafArray, dimensions, rootId, {});
 
         // Only bucket rows if we have dimensions - we are not bucketing flat views of leaves
-        const {bucketFn} = cube,
+        const {bucketSpecFn} = cube,
             firstDim = first(dimensions);
+
         if (firstDim) {
             // Run the root aggregate rows through the bucketing process
-            const bucketingFn = bucketFn ? bucketFn(null, firstDim) : null;
+            const bucketingFn = bucketSpecFn ? bucketSpecFn({dim: null, childDim: firstDim}) : null;
             if (bucketingFn) {
                 newRows = this.bucketRows(bucketingFn, rootId, newRows, null, firstDim, {});
             }
