@@ -8,7 +8,8 @@
 import {castArray, first, forEach, groupBy, isEmpty, isFunction, map} from 'lodash';
 import {action, observable} from 'mobx';
 import {FieldFilter} from '@xh/hoist/data';
-import {throwIf} from '@xh/hoist/utils/js';
+
+import {throwIf} from '../../utils/js';
 import {Cube} from './Cube';
 import {Query} from './Query';
 import {createAggregateRow} from './impl/AggregateRow';
@@ -138,8 +139,13 @@ export class View {
     fullUpdate() {
         this.generateRows();
 
-        this.stores.forEach(s => s.loadData(this._rows));
-        this.result = {rows: this._rows, leafMap: this._leafMap};
+        // Load stores and observable state.
+        // Skip degenerate root in stores/grids, but preserve in object api.
+        const {stores, _leafMap, _rows} = this,
+            storeRows = _leafMap.size !== 0 ? _rows : null;
+
+        stores.forEach(s => s.loadData(storeRows));
+        this.result = {rows: _rows, leafMap: _leafMap};
         this.info = this.cube.info;
     }
 
@@ -185,7 +191,7 @@ export class View {
             }
         }
 
-        if (includeRoot && !isEmpty(newRows)) {
+        if (includeRoot) {
             newRows = [createAggregateRow(this, rootId, newRows, null, 'Total', {})];
         } else if (!query.includeLeaves && newRows[0]?._meta.isLeaf) {
             newRows = []; // degenerate case, no visible rows
