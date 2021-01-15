@@ -142,7 +142,7 @@ export class View {
         // Load stores and observable state.
         // Skip degenerate root in stores/grids, but preserve in object api.
         const {stores, _leafMap, _rows} = this,
-            storeRows = _leafMap.size !== 0 ? _rows : null;
+            storeRows = _leafMap.size !== 0 ? _rows : [];
 
         stores.forEach(s => s.loadData(storeRows));
         this.result = {rows: _rows, leafMap: _leafMap};
