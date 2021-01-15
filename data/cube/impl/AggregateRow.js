@@ -5,9 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {has, isEmpty, reduce, groupBy, forEach} from 'lodash';
-import {pluralize} from '@xh/hoist/utils/js';
-import {Cube} from '../Cube';
+import {has, isEmpty, reduce} from 'lodash';
 
 /**
  *  Object used by views to gather Aggregate rows.
@@ -50,7 +48,7 @@ class AggregateMeta {
 
         this.markAggFields(val, appliedDimensions);
         this.computeAggregates();
-        this.applyVisibleChildren(appliedDimensions);
+        this.applyVisibleChildren();
     }
 
     computeAggregates() {
@@ -104,24 +102,29 @@ class AggregateMeta {
         }, {});
     }
 
-    applyVisibleChildren(appliedDimensions) {
+    // Process child rows to determine what should be exposed as the actual children in the row data
+    applyVisibleChildren() {
         const {children, view, dim, data} = this,
-            {lockFn, bucketFn} = view.cube;
+            {lockFn} = view.cube;
 
-        // Hide hidden leaves.
+        // Remove all children from the data if the query is not configure to include leaves and
+        // this row has leaves as children
         if (!view.query.includeLeaves && children[0]?.isLeaf) {
             data.children = null;
             return;
         }
 
-        // Hide locked children
+        // Check if we need to 'lock' this row - removing all children from the data so they will not
+        // appear in the UI but remain as children of this AggregateMeta to ensure that updates to
+        // those child rows will update our aggregate value
         if (lockFn && lockFn(this)) {
             this.locked = true;
             data.children = null;
             return;
         }
 
-        // ...or drill past single child if it is an identical 'child' or closed dimension.
+        // If we have a single child which is identical to ourselves remove it from the hierarchy
+        // since it represents the exact same data as this row
         if (children.length === 1) {
             const childRow = children[0],
                 childDim = childRow.dim;
@@ -132,56 +135,10 @@ class AggregateMeta {
                 data.children = childRow.data.children;
                 return;
             }
-        } else if (bucketFn) {
-            const byBucket = groupBy(children, (row) => bucketFn(row) ?? '__unbucketed__'),
-                bucketedRows = [],
-                unBucketedChildren = [],
-                nextDim = this.findNextDim(dim);
-
-            forEach(byBucket, (bucketChildren, bucket) => {
-                if (bucket === '__unbucketed__' || bucketChildren.length === children.length) {
-                    unBucketedChildren.push(...bucketChildren);
-                } else {
-                    const bucketLabel = this.generateBucketLabel(nextDim, bucket),
-                        bucketRow = createAggregateRow(view, data.id + Cube.RECORD_ID_DELIMITER + bucket, bucketChildren.map(it => it.data), nextDim, bucketLabel, appliedDimensions);
-
-                    bucketedRows.push(bucketRow);
-                }
-            });
-
-            data.children = [...bucketedRows, ...unBucketedChildren.map(it => it.data)];
-            return;
-
-            /*
-             // Split up our children into open and closed lists
-             const [closedChildren, openChildren] = partition(children, row => bucketFn(row));
-             if (!isEmpty(closedChildren) && closedChildren.length !== children.length) {
-             // Push all closed children under a new aggregate row
-             const nextDim = this.findNextDim(dim),
-             value = this.generateBucketLabel(nextDim),
-             closedRow = createAggregateRow(view, data.id + Cube.RECORD_ID_DELIMITER + 'CLOSED', closedChildren.map(it => it.data), nextDim, value, appliedDimensions);
-
-             data.children = [closedRow, ...openChildren.map(it => it.data)];
-             return;
-             }
-             */
         }
 
-        // otherwise send them off into the world!
+        // If we've gotten past all of the above checks then our data children should consist of
+        // all of this row's children
         data.children = children.map(it => it.data);
-    }
-
-    generateBucketLabel(dim, bucketLabel) {
-        if (dim) return `${bucketLabel} ${pluralize(dim.displayName).toUpperCase()}`;
-
-        const {leafUnit} = this.view.cube;
-        return bucketLabel + (leafUnit ? ` ${pluralize(leafUnit).toUpperCase()}` : '');
-    }
-
-    findNextDim(dim) {
-        const {view} = this,
-            idx = view.query.dimensions.indexOf(dim) + 1; // This works for root row also since idx will be 0 - which is what we want
-
-        return idx <= view.query.dimensions.length ? view.query.dimensions[idx] : null;
     }
 }

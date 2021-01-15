@@ -5,11 +5,10 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {castArray, groupBy, isEmpty, map} from 'lodash';
+import {castArray, first, forEach, groupBy, isEmpty, isFunction, map} from 'lodash';
 import {action, observable} from 'mobx';
 import {FieldFilter} from '@xh/hoist/data';
-
-import {throwIf} from '../../utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import {Cube} from './Cube';
 import {Query} from './Query';
 import {createAggregateRow} from './impl/AggregateRow';
@@ -172,11 +171,22 @@ export class View {
 
         const leafMap = this.generateLeaves(cube.store.records),
             leafArray = Array.from(leafMap.values());
+
         let newRows = this.groupAndInsertLeaves(leafArray, dimensions, rootId, {});
-        if (!isEmpty(newRows)) {
-            // Always process a root aggregate row so we run through any special processing of root children
-            const root = createAggregateRow(this, rootId, newRows, null, 'Total', {});
-            newRows = includeRoot ? [root] : root.children ?? [];
+
+        // Only bucket rows if we have dimensions - we are not bucketing flat views of leaves
+        const {bucketFn} = cube,
+            firstDim = first(dimensions);
+        if (firstDim) {
+            // Run the root aggregate rows through the bucketing process
+            const bucketingFn = bucketFn ? bucketFn(null, firstDim) : null;
+            if (bucketingFn) {
+                newRows = this.bucketRows(bucketingFn, rootId, newRows, null, firstDim, {});
+            }
+        }
+
+        if (includeRoot && !isEmpty(newRows)) {
+            newRows = [createAggregateRow(this, rootId, newRows, null, 'Total', {})];
         } else if (!query.includeLeaves && newRows[0]?._meta.isLeaf) {
             newRows = []; // degenerate case, no visible rows
         }
@@ -187,19 +197,60 @@ export class View {
     groupAndInsertLeaves(leaves, dimensions, parentId, appliedDimensions) {
         if (isEmpty(dimensions) || isEmpty(leaves)) return leaves;
 
-
         const dim = dimensions[0],
+            childDim = dimensions.length > 1 ? dimensions[1] : null,
             dimName = dim.name,
-            groups = groupBy(leaves, (it) => it[dimName]);
+            groups = groupBy(leaves, (it) => it[dimName]),
+            {bucketSpecFn} = this.cube,
+            bucketSpec = bucketSpecFn ? bucketSpecFn({dim, childDim}) : null;
 
         appliedDimensions = {...appliedDimensions};
         return map(groups, (groupLeaves, val) => {
             appliedDimensions[dimName] = val;
-            const filter = new FieldFilter({field: dimName, op: '=', value: val});
-            const id = parentId + Cube.RECORD_ID_DELIMITER + Query.filterAsString(filter);
-            const newChildren = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
-            return createAggregateRow(this, id, newChildren, dim, val, appliedDimensions);
+            const filter = new FieldFilter({field: dimName, op: '=', value: val}),
+                id = parentId + Cube.RECORD_ID_DELIMITER + Query.filterAsString(filter),
+                newChildren = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions),
+                row = createAggregateRow(this, id, newChildren, dim, val, appliedDimensions);
+
+            // Perform additional bucketing of child rows if needed
+            row.children = this.bucketRows(bucketSpec, id, row.children, dim, childDim, appliedDimensions);
+
+            return row;
         });
+    }
+
+    bucketRows(bucketSpec, id, children, dim, childDim, appliedDimensions) {
+        if (!bucketSpec || isEmpty(children)) return children;
+
+        const bucketFn = isFunction(bucketSpec) ? bucketSpec : bucketSpec.bucketFn,
+            generateLabelFn = bucketSpec.labelFn ?? (({bucket}) => bucket);
+
+        throwIf(!bucketFn, 'No bucketing function provided for bucket spec!');
+
+        // Group the children by bucket
+        const byBucket = groupBy(children, (childRow) => bucketFn(childRow, {dim, childDim}) ?? '__unbucketed__'),
+            bucketedRows = [],
+            unBucketedChildren = [];
+
+        forEach(byBucket, (bucketChildren, bucket) => {
+            // If we are processing our unbucketed children or if if this bucket contains all of our children
+            // then we will add them to our list of unbucketed children to be added as direct children
+            if (bucket === '__unbucketed__' || bucketChildren.length === children.length) {
+                unBucketedChildren.push(...bucketChildren);
+            } else {
+                // These children need to be put into a new aggregate row which we will create for the bucket
+                const bucketLabel = generateLabelFn({dim, childDim, bucket, rows: bucketChildren}),
+                    bucketId = id + Cube.RECORD_ID_DELIMITER + `${childDim?.name ?? 'leafBucket'}=[${bucket}]`,
+                    bucketRow = createAggregateRow(this, bucketId, bucketChildren, childDim, bucketLabel, appliedDimensions);
+
+                // Mark this row as a bucket so it can be distinguished from dimension aggregate rows
+                bucketRow._meta.isBucket = true;
+
+                bucketedRows.push(bucketRow);
+            }
+        });
+
+        return [...bucketedRows, ...unBucketedChildren];
     }
 
     // return a list of simple updates for leaves we have or false if leaf population changing

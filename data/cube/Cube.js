@@ -27,15 +27,13 @@ export class Cube {
 
     /** @member {Store} */
     @managed store;
-    /** @member {function} */
+    /** @member {LockFn} */
     lockFn;
-    /** @member {function} */
-    bucketFn;
+    /** @member {BucketSpecFn} */
+    bucketSpecFn;
     /** @member {Object} */
     @observable.ref
     info = null;
-    /** @member {string} */
-    leafUnit;
 
     /** @member {Set<View>} */
     _connectedViews = new Set();
@@ -49,6 +47,9 @@ export class Cube {
      * @param {Object} [c.info] - app-specific metadata to be associated with this data.
      * @param {LockFn} [c.lockFn] - optional function to be called for each aggregate node to
      *      determine if it should be "locked", preventing drilldown into its children.
+     * @param {BucketSpecFn} [c.bucketSpecFn] - optional function to be called for each dimension
+     *      during row generation  to determine if the children of that dimension should be bucketed
+     *      into additional dynamic dimensions.
      */
     constructor({
         fields,
@@ -57,8 +58,7 @@ export class Cube {
         processRawData,
         info = {},
         lockFn,
-        bucketFn,
-        leafUnit
+        bucketSpecFn
     }) {
         this.store = new Store({
             fields: this.parseFields(fields),
@@ -66,10 +66,9 @@ export class Cube {
             processRawData
         });
         this.store.loadData(data);
-        this.lockFn = lockFn;
-        this.bucketFn = bucketFn;
-        this.leafUnit = leafUnit;
         this.info = info;
+        this.lockFn = lockFn;
+        this.bucketSpecFn = bucketSpecFn;
     }
 
     /** @returns {CubeField[]} - Fields configured for this Cube. */
@@ -234,4 +233,48 @@ export class Cube {
  *
  * @param {AggregateRow} row - node to be potentially locked.
  * @returns boolean
+ */
+
+/**
+ * @callback BucketSpecFn
+ *
+ * Function to be called for each dimension to determine if children of said dimension should be
+ * bucketed into additional dynamic dimensions.
+ *
+ * @param {Object} c - params
+ * @param {CubeField} c.dim - the current dimension being processed
+ * @param {CubeField} c.childDim - the next dimension to be processed
+ * @returns {boolean|BucketFn|BucketSpec} - a falsey value if children should not be bucketed, a
+ *      function which returns which bucket to place a given row in, or a BucketSpec for further
+ *      customizing properties of the bucket aggregate row
+ */
+
+/**
+ * @callback BucketFn
+ *
+ * Function which is used to determine which bucket (if any) a given row should be placed into.
+ *
+ * @param {AggregateRow|LeafRow} row
+ * @param {Object} c
+ * @param {CubeField} c.dim - the dimension being processed
+ * @param {CubeField|null} c.childDim - the dimension of the row, or null if a leaf row
+ */
+
+/**
+ * @typedef {Object} BucketSpec
+ * @property {BucketLabelFn} labelFn - function to generate the bucket row label.
+ * @property {BucketFn} bucketFn - function to determine which (if any) bucket the given row should
+ *      be placed into
+ */
+
+/**
+ * @callback BucketLabelFn
+ *
+ * Function which generates a label for a bucket row.
+ *
+ * @param {Object} c
+ * @param {CubeField} c.dim - the dimension being processed
+ * @param {CubeField|null} c.childDim - the dimension of the row being bucketed, or null if a leaf row
+ * @param {string} c.bucket - the name of the bucket returned by the BucketFn in the BucketSpec *
+ * @returns {string} - the label for the bucket row
  */
