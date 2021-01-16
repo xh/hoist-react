@@ -13,7 +13,7 @@ import {start} from '@xh/hoist/promise';
  * Decorator to make a property "managed". Managed properties are designed to hold objects that
  * are created by the referencing object and that implement a `destroy()` method.
  *
- * See also (@see HoistBase.markManaged}.
+ * @see HoistBase.markManaged
  */
 export function managed(target, property, descriptor) {
     target._xhManagedProperties = target._xhManagedProperties ?? [];
