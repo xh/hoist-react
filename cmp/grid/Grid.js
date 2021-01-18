@@ -19,6 +19,7 @@ import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 
 import classNames from 'classnames';
 import {
+    compact,
     isArray,
     isEmpty,
     isEqual,
@@ -193,13 +194,11 @@ class LocalModel {
     }
 
     createDefaultAgOptions(props) {
-        const {model} = this,
-            {useDeltaSort, useTransactions} = model.experimental;
+        const {model} = this;
 
         let ret = {
             model: model.agGridModel,
-            deltaSort: useDeltaSort && !model.treeMode,
-            immutableData: !useTransactions,
+            immutableData: true,
             suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowNodeId: (data) => data.id,
             defaultColDef: {
@@ -387,13 +386,15 @@ class LocalModel {
                     prevCount = prevRs ? prevRs.count : 0;
 
                 withShortDebug(`${isUpdate ? 'Updated' : 'Loaded'} Grid`, () => {
-                    if (prevCount !== 0 && experimental.useTransactions) {
-                        const transaction = this.genTransaction(newRs, prevRs);
+                    let transaction = null;
+                    if (prevCount !== 0) {
+                        transaction = this.genTransaction(newRs, prevRs);
                         console.debug(this.transactionLogStr(transaction));
 
                         if (!this.transactionIsEmpty(transaction)) {
                             agApi.applyTransaction(transaction);
                         }
+
                     } else {
                         agApi.setRowData(newRs.list);
                     }
@@ -406,9 +407,13 @@ class LocalModel {
 
                     this.updatePinnedSummaryRowData();
 
-                    const refreshCols = model.columns.filter(c => !c.hidden && c.rendererIsComplex);
-                    if (!isEmpty(refreshCols)) {
-                        agApi.refreshCells({columns: refreshCols.map(c => c.colId), force: true});
+                    if (!isEmpty(transaction?.update)) {
+                        const refreshCols = model.columns.filter(c => !c.hidden && c.rendererIsComplex);
+                        if (refreshCols) {
+                            const rowNodes = compact(transaction.update.map(r => agApi.getRowNode(r.id))),
+                                columns = refreshCols.map(c => c.colId);
+                            agApi.refreshCells({rowNodes, columns, force: true});
+                        }
                     }
 
                     model.noteAgExpandStateChange();

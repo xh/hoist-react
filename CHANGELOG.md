@@ -10,6 +10,16 @@
 * Fix issue where a `View` would create a root row even if there were no leaf rows.
 * Fixed regression in `LeftRightChooser` not displaying description callout.
 
+### ⚙️ Technical
+* We have removed the experimental flags `useTransactions`, and `deltaSort` from `GridModel`.
+The former has been the default behavior for Hoist for several releases, and the latter is
+obsolete.
+
+### 💥 Breaking Changes
+* Hoist grids now require ag-Grid v25.0.1 or higher - if your app uses ag-Grid, update your
+ag-Grid dependency in your app's `package.json` file.
+
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v37.0.0...develop)
 
 ## v37.0.0 - 2020-12-15

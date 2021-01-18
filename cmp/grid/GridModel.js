@@ -233,11 +233,6 @@ export class GridModel {
      *      should not immediately respond to user or programmatic changes to the sortBy property,
      *      but will instead wait for the next load of data, which is assumed to be pre-sorted.
      *      Default false.
-     * @param {boolean} [c.experimental.useDeltaSort] - Set to true to use ag-Grid's experimental
-     *      'deltaSort' feature designed to do incremental sorting.  Default false.
-     * @param {boolean} [c.experimental.useTransaction] - set to false to use ag-Grid's
-     *      immutableData to internally generate transactions on data updates.  When true,
-     *      Hoist will generate the transaction on data update. Default true.
      * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
@@ -864,7 +859,7 @@ export class GridModel {
             }
             if (config.renderer || config.elementRenderer) {
                 colDefaults.renderer = null;
-                colDefaults.elementRender = null;
+                colDefaults.elementRenderer = null;
             }
             config = defaultsDeep({}, config, colDefaults);
         }
@@ -1139,8 +1134,6 @@ export class GridModel {
 
         return {
             externalSort: false,
-            useTransactions: true,
-            useDeltaSort: false,
             ...XH.getConf('xhGridExperimental', {}),
             ...experimental
         };
