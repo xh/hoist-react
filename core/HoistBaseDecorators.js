@@ -8,6 +8,7 @@ import {PersistenceProvider} from '@xh/hoist/core';
 
 import {cloneDeep, isUndefined} from 'lodash';
 import {start} from '@xh/hoist/promise';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Decorator to make a property "managed". Managed properties are designed to hold objects that
@@ -16,7 +17,11 @@ import {start} from '@xh/hoist/promise';
  * See also (@see HoistBase.markManaged}.
  */
 export function managed(target, property, descriptor) {
-    target._xhManagedProperties = target._xhManagedProperties ?? [];
+    throwIf(!target.isHoistBase, '@managed decorator should be applied to an instance of HoistBase');
+    // Be sure to create list for *this* particular class. Clone and included inherited values.
+    if (!target.hasOwnProperty('xhManagedProperties')) {
+        target._xhManagedProperties = [...(target._xhManagedProperties ?? [])];
+    }
     target._xhManagedProperties.push(property);
     return descriptor;
 }
@@ -56,6 +61,7 @@ persist.with = function(options) {
 // Implementation
 //---------------------
 function createPersistDescriptor(target, property, descriptor, options) {
+    throwIf(!target.isHoistBase, '@persist decorator should be applied to an instance of HoistBase');
     if (descriptor.get || descriptor.set) {
         console.error(
             `Error defining ${property} : @persist or @persistWith should be defined closest ` +

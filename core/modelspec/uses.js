@@ -21,7 +21,7 @@ import {isFunction} from 'lodash';
  *
  * Note that any model created via `createFromConfig` or `createDefault` will be considered to be
  * 'owned' by the receiving component and treated as if it were specified using `create()`: if it
- * implements `LoadSupport` it will be loaded on component mount, and it will always be destroyed
+ * implements loading it will be loaded on component mount, and it will always be destroyed
  * on component unmount.
  *
  * @param {ModelSelector} selector - specification of Model to use, or '*' (default) to accept the

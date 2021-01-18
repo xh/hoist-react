@@ -84,3 +84,4 @@ export class PendingTaskModel {
         if (promise === this._lastCall)  this._lastCall = null;
     }
 }
+PendingTaskModel.isPendingTaskModel = true;

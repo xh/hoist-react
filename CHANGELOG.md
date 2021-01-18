@@ -12,7 +12,7 @@ In particular:
 decorators `@HoistModel`, `@HoistService`.
 
 ** Core functionality for `HoistModel` and `HoistService` now derive from the inherited classes
-`HoistBase` and `Reactive`, rather than annotations.  In particular, we have removed the need for
+`HoistBase` and `Loadable`, rather than annotations.  In particular, we have removed the need for
 the explicit `@LoadSupport` annotation.  The presence of a defined `doLoadAsync()` method is now
 sufficient to allow these objects to participate in the loading and refreshing lifecycle.
 
@@ -38,7 +38,10 @@ https://michel.codes/blogs/mobx6 for more on this change and the motivation behi
 * The `Ref` class, deprecated in v26, has now been removed.  Use `createObservableRef` instead.
 * `@HoistComponent` has been deprecated and moved to `@xh\hoist\deprecated`
 * All `HoistModel` and `HoistService` classes will have to be adjusted as described above.
-* The `uses()` function (called within `hoistComponent()` factory configs for model context lookups) no longer accepts class names as strings. Pass the class itself (or superclass) of the model you wish to select for your component. This util will now throw if given any string other than "*", making the need for any updates clear.
+* The `uses()` function (called within `hoistComponent()` factory configs for model context lookups)
+no longer accepts class names as strings. Pass the class itself (or superclass) of the model you wish
+to select for your component. `Uses` will throw if given any string other than "*", making
+the need for any updates clear.
 
 ### 📚 Libraries
 * mobx -> `5.15.7 -> 6.0.4`

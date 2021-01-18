@@ -12,7 +12,7 @@ import {useEffect} from 'react';
  * @private
  *
  * Integrate a HoistModel owned by a component into the component's lifecycle,
- * enabling support for the LoadSupport lifecycle and destruction.
+ * enabling support for both the Loading lifecycle and destruction.
  *
  * No-op, if model is null.
  */

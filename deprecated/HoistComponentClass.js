@@ -9,8 +9,9 @@ import {elemFactory,  XH} from '@xh/hoist/core';
 import {ManagedSupport} from './impl/ManagedSupport';
 import {ReactiveSupport} from './impl/ReactiveSupport';
 import {XhIdSupport} from './impl/XhIdSupport';
+import {applyMixin} from './impl/ClassUtils';
 
-import {applyMixin, throwIf} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isPlainObject, isUndefined} from 'lodash';
 import {observer} from 'mobx-react';

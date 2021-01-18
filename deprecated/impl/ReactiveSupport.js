@@ -10,7 +10,8 @@ import {
     reaction as mobxReaction,
     when as mobxWhen
 } from '@xh/hoist/mobx';
-import {applyMixin, throwIf} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
+import {applyMixin} from './ClassUtils';
 import {
     debounce as lodashDebounce,
     isFunction,

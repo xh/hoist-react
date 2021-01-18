@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {managed} from '@xh/hoist/core';
+import {HoistBase, managed} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {CubeField} from './CubeField';
@@ -21,7 +21,7 @@ import {isEmpty} from 'lodash';
  * that performing filtering, grouping, and aggregating.  It also support the creation of
  * observable "views" for showing realtime updates to this data..
  */
-export class Cube {
+export class Cube extends HoistBase {
 
     static RECORD_ID_DELIMITER = '>>';
 
@@ -54,6 +54,7 @@ export class Cube {
         info = {},
         lockFn
     }) {
+        super();
         makeObservable(this);
         this.store = new Store({
             fields: this.parseFields(fields),

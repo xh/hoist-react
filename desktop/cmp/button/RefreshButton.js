@@ -14,7 +14,7 @@ import {Button, button} from './Button';
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
  *
  * If an onClick handler is provided it will be used. Otherwise this button will
- * be linked to any model in props implementing LoadSupport, or the contextual
+ * be linked to any model in props implementing loading, or the contextual
  * RefreshContextModel.
  */
 export const [RefreshButton, refreshButton] = hoistCmp.withFactory({
@@ -25,7 +25,7 @@ export const [RefreshButton, refreshButton] = hoistCmp.withFactory({
         const refreshContextModel = useContextModel(RefreshContextModel);
 
         if (!onClick) {
-            errorIf(model && !model.implementsLoading, 'Provided model to RefreshButton must be decorated with LoadSupport.');
+            errorIf(model && !model.implementsLoading, 'Provided model to RefreshButton must implement loading.');
             model = withDefault(model, refreshContextModel);
             onClick = model ? () => model.refreshAsync() : null;
         }

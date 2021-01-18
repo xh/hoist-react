@@ -17,7 +17,7 @@ import {ModelPublishMode, ModelSpec} from './ModelSpec';
  * for access by all sub-components.
  *
  * The model created will be considered to be 'owned' by the receiving component. If it implements
- * `LoadSupport` it will be loaded on component mount, and it will always be destroyed on
+ * loading it will be loaded on component mount, and it will always be destroyed on
  * component unmount.
  *
  * @param {(Class|function)} spec - HoistModel Class to construct, or a function returning a

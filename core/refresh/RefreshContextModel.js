@@ -20,9 +20,9 @@ import {pull} from 'lodash';
  * Apps can create additional sub-contexts using a `RefreshContextView` paired with this model if
  * they need to coordinate refreshes within a more targeted sections of their UI.
  *
- * HoistModels implementing LoadSupport {@see LoadSupport}  are the primary targets for the
- * refresh calls made by this class. LoadSupport-enabled models are auto-linked to the nearest
- * RefreshContextModel when their HoistComponent is mounted.
+ * HoistModels implementing loading {@see Loadable} are the primary targets for the
+ * refresh calls made by this class. Such models are auto-linked to the nearest
+ * RefreshContextModel when their associated component is mounted.
  *
  * (Note that models must be "owned" by their Component to be auto-linked in this way - meaning they
  * must be internally created by the Component, either directly or from a config passed via props.)
@@ -50,14 +50,14 @@ export class RefreshContextModel extends HoistModel {
      * Register a target with this model for refreshing.
      *
      * Not typically called directly by applications.  Hoist will automatically register
-     * HoistModels marked with LoadSupport when their owning Component is first mounted.
+     * HoistModels that implement loading when their owning Component is first mounted.
      *
      * @param {Object} target
      */
     register(target) {
         throwIf(
             !target.implementsLoading,
-            'Object must have implemented LoadSupport to be registered with a RefreshContextModel.'
+            'Object must have implemented Loading to be registered with a RefreshContextModel.'
         );
         const {refreshTargets} = this;
         if (!refreshTargets.includes(target)) refreshTargets.push(target);

@@ -4,14 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistBase} from '@xh/hoist/core';
+import {Loadable} from './Loadable';
 
 /**
  * Core class for Services in Hoist.
  *
- * Adds support for mobx reactivity, resource management, persistence, and data loading.
  */
-export class HoistService extends HoistBase {
+export class HoistService extends Loadable {
 
     get isHoistService() {return true}
 

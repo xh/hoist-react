@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {applyMixin} from '@xh/hoist/utils/js';
+import {applyMixin} from './ClassUtils';
 
 /**
  * @private

@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-export * from './ClassUtils';
 export * from './HtmlUtils';
 export * from './LangUtils';
 export * from './Decorators';

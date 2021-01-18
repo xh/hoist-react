@@ -4,41 +4,144 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, Reactive, PersistenceProvider} from '@xh/hoist/core';
+import {XH, PersistenceProvider} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
-import {observable, extendObservable, runInAction} from '@xh/hoist/mobx';
-import {cloneDeep, isPlainObject, isUndefined} from 'lodash';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {
+    debounce as lodashDebounce,
+    cloneDeep,
+    isFunction,
+    isNil,
+    isNumber,
+    isPlainObject,
+    isUndefined,
+    upperFirst
+} from 'lodash';
+import {
+    action,
+    runInAction,
+    autorun as mobxAutorun,
+    reaction as mobxReaction,
+    when as mobxWhen
+} from '@xh/hoist/mobx';
+import {getOrCreate} from '../utils/js';
 
 /**
- * Base class for Services, Models, Stores, and other core entities in Hoist.
+ * Base class for objects in Hoist.
  *
- * Provides misc support for resource cleanup, state persistence.  Also provides optional
- * support for lifecycle loading and other useful utilities.
+ * Provides misc. support for Mobx integration, state persistence, and resource cleanup.
  *
  * This class should not typically be extended directly by applications.  Applications should
  * extend one of its subclasses instead.
  *
  * @see HoistModel, HoistService, and Store.
  */
-export class HoistBase extends Reactive {
+export class HoistBase {
 
-    constructor() {
-        super();
-        if (this.implementsLoading) {
-            this._loadModel = new PendingTaskModel();
-            extendObservable(this,
-                {
-                    _lastLoadRequested: null,
-                    _lastLoadCompleted: null,
-                    _lastLoadException: null
-                },
-                {
-                    _lastLoadRequested: observable.ref,
-                    _lastLoadCompleted: observable.ref,
-                    _lastLoadException: observable.ref
-                });
-        }
+    _xhManagedInstances = [];
+    _xhDisposers = [];
+
+    get isHoistBase() {return true}
+
+    /**
+     * Add and start a managed reaction.
+     *
+     * A reaction's run function will be executed on changes to any/all observables read in its
+     * track function, regardless of whether they - or any other observables - are accessed in
+     * the run function. The reaction will also run only when the output of the track function
+     * changes, and this output is passed to the run function.
+     *
+     * Specify the property 'track' to run the reaction continuously until disposal.
+     * Alternatively, specify the 'when' property to run this reaction only until the predicate
+     * passes, and the run function is executed once. (These map to mobX's native `reaction()`
+     * and `when()` functions, respectively).
+     *
+     * Choose this method over an autorun when you wish to explicitly declare which observables
+     * should be tracked. A common pattern is to have the track function return these
+     * observables in a simple array or object, which the run function can use as its input or
+     * (commonly) ignore. This helps to clarify that the track function is only enumerating
+     * the observables to be watched, and not necessarily generating or transforming values.
+     *
+     *  This reaction will be disposed of automatically when this object is destroyed. It can also be
+     *  ended/disposed of manually using the native mobx disposer function returned by this method.
+     *
+     * @param {Object} conf - configuration of reaction, containing options accepted by MobX
+     *      reaction() API, as well as arguments below.
+     * @param {function} [conf.track] - function returning data to observe - first arg to the
+     *      underlying reaction() call. Specify this or `when`.
+     * @param {function} [conf.when] - function returning data to observe - first arg to the
+     *      underlying when() call. Specify this or `track`.
+     * @param {function} conf.run - function to run - second arg to underlying reaction()/when() call.
+     * @param {(number|Object)} [conf.debounce] - Specify to debounce run function with lodash.
+     *      When specified as object, should contain an 'interval' and other optional keys for
+     *      lodash.  If specified as number the default lodash debounce will be used.
+     * @returns {function} - disposer to manually dispose of the created reaction.
+     */
+    addReaction({track, when, run, debounce, ...opts}) {
+        throwIf(
+            (track && when) || (!track && !when),
+            "Must specify either 'track' or 'when' in addReaction."
+        );
+        validateMobxOptions(opts);
+
+        run = bindAndDebounce(this, run, debounce);
+
+        const disposer = track ? mobxReaction(track, run, opts) : mobxWhen(when, run, opts);
+        this._xhDisposers.push(disposer);
+        return disposer;
+    }
+
+
+    /**
+     * Add and start an autorun.
+     *
+     * An autorun function will be run on changes to any/all observables read during the last
+     * execution of the function. This provides convenient and often very efficient dynamic
+     * reactivity. This is a core MobX concept and is important to fully understand when
+     * using autorun functions.
+     *
+     * In some cases, however, it is desirable or more clear to explicitly declare which
+     * observables should be tracked and trigger a reaction, regardless of their use within
+     * the function itself. See addReaction() below for that functionality.
+     *
+     * This autorun will be disposed of automatically when this object is destroyed. It can also be
+     * ended/disposed of manually using the native mobx disposer function returned by this method.
+     *
+     * @param {(Object|function)} conf - function to run, or a config object containing options
+     *      accepted by MobX autorun() API as well as argument below.
+     * @param {function} [conf.run] - function to run - first arg to underlying autorun() call.
+     * @param {(number|Object)} [conf.debounce] - Specify to debounce run function with lodash.
+     *      When specified as Object, should contain an 'interval' and other optional keys for
+     *      lodash debounce.  If specified as number the default lodash debounce will be used.
+     * @returns {function} - disposer to manually dispose of the created autorun.
+     */
+    addAutorun(conf) {
+        if (isFunction(conf)) conf = {run: conf};
+        let {run, debounce, ...opts} = conf;
+
+        validateMobxOptions(opts);
+        run = bindAndDebounce(this, run, debounce);
+
+        const disposer = mobxAutorun(run, opts);
+        this._xhDisposers.push(disposer);
+        return disposer;
+    }
+
+    /**
+     * Set an observable/bindable value.
+     *
+     * This method is a convenience method for calling the conventional setXXX method
+     * for updating a mobx observable given the property name.
+     *
+     * @param {string} property
+     * @param {*} value
+     */
+    setBindable(property, value) {
+        const setter = `set${upperFirst(property)}`;
+        throwIf(!isFunction(this[setter]),
+            `Required function '${setter}()' not found on bound model. ` +
+            `Implement a setter, or use the @bindable annotation.`
+        );
+        this[setter].call(this, value);
     }
 
     /**
@@ -46,8 +149,7 @@ export class HoistBase extends Reactive {
      * @returns {string}
      */
     get xhId() {
-        if (!this._xhId) this._xhId = XH.genId();
-        return this._xhId;
+        return getOrCreate(this, '_xhId', XH.genId);
     }
 
     /**
@@ -63,124 +165,9 @@ export class HoistBase extends Reactive {
      * @returns object passed.
      */
     markManaged(obj) {
-        this._xhManagedInstances = this._xhManagedInstances ?? [];
         this._xhManagedInstances.push(obj);
         return obj;
     }
-
-    //-----------------------
-    // Load Support
-    //-----------------------
-    /**
-     * Does this object implement loading?
-     * True if an implementation of doLoadAsync been provided.
-     */
-    get implementsLoading() {
-        return this.doLoadAsync !== HoistBase.prototype.doLoadAsync;
-    }
-
-    /**
-     * @member {PendingTaskModel} - model tracking the loading of this object
-     * Note that this model will *not* track auto-refreshes.
-     */
-    get loadModel() {return this._loadModel}
-
-    /** @member {Date} - date when last load was initiated.*/
-    get lastLoadRequested() {return this._lastLoadRequested}
-
-    /** @member {Date} -  date when last load completed */
-    get lastLoadCompleted() {return this._lastLoadCompleted}
-
-    /** @member {Error} Any exception that occurred during last load.*/
-    get lastLoadException() {return this._lastLoadException}
-
-    /**
-     * Load this object from underlying data sources or services.
-     * NOT for implementation.  Implement doLoadAsync() instead.
-     *
-     * @param {LoadSpec} [loadSpec] - Metadata about the underlying request
-     */
-    async loadAsync(loadSpec = {}) {
-        if (!this.implementsLoading) {
-            console.warn('Loading not initialized. Be sure to implement doLoadAsync().');
-            return;
-        }
-
-        throwIf(
-            !isPlainObject(loadSpec),
-            'Unexpected param passed to loadAsync() - accepts loadSpec object only. If triggered via a reaction, ensure call is wrapped in a closure.'
-        );
-
-        // Skip auto-refresh if we have a pending triggered refresh
-        if (loadSpec.isAutoRefresh && this.loadModel.isPending) return;
-
-        runInAction(() => this._lastLoadRequested = new Date());
-        const loadModel = !loadSpec.isAutoRefresh ? this.loadModel : null;
-
-        let exception = null;
-        return this
-            .doLoadAsync(loadSpec)
-            .linkTo(loadModel)
-            .catch(e => {
-                exception = e;
-                throw e;
-            })
-            .finally(() => {
-                runInAction(() => {
-                    this._lastLoadCompleted = new Date();
-                    this._lastLoadException = exception;
-                });
-
-                if (this.isRefreshContextModel) return;
-
-                const elapsed = this._lastLoadCompleted.getTime() - this._lastLoadRequested.getTime(),
-                    msg = `[${this.constructor.name}] | ${getLoadTypeFromSpec(loadSpec)} | ${exception ? 'failed' : 'completed'} | ${elapsed}ms`;
-
-                if (exception) {
-                    if (exception.isRoutine) {
-                        console.debug(msg, exception);
-                    } else {
-                        console.error(msg, exception);
-                    }
-                } else {
-                    console.debug(msg);
-                }
-            });
-    }
-
-
-    /**
-     * Refresh this object from underlying data sources or services.
-     * NOT for implementation.  Implement doLoadAsync() instead.
-     */
-    async refreshAsync() {
-        return this.loadAsync({isRefresh: true, isAutoRefresh: false});
-    }
-
-    /**
-     * Auto-refresh this object from underlying data sources or services.
-     * NOT for implementation.  Implement doLoadAsync() instead.
-     */
-    async autoRefreshAsync() {
-        return this.loadAsync({isRefresh: true, isAutoRefresh: true});
-    }
-
-    /**
-     * Load this object. Implement this method to describe how this object should load
-     * itself from underlying data sources or services.
-     *
-     * For implementation only.  Callers should call loadAsync() or refreshAsync() instead.
-     *
-     * @param {LoadSpec} loadSpec - Metadata about the underlying request. Implementations should
-     *      take care to pass this parameter to any delegates (e.g. other LoadSupport instances)
-     *      that accept it.
-     */
-    async doLoadAsync(loadSpec) {}
-
-
-    //-------------------
-    // Other
-    //-------------------
 
     /**
      *  Method to make a class property persistent, syncing its value via a configured
@@ -223,53 +210,34 @@ export class HoistBase extends Reactive {
         }
     }
 
-
     /**
      * Clean up resources associated with this object
      */
     destroy() {
+        this._xhDisposers?.forEach(f => f());
+        this._xhManagedInstances.forEach(i => XH.safeDestroy(i));
         this._xhManagedProperties?.forEach(p => XH.safeDestroy(this[p]));
-        this._xhManagedInstances?.forEach(i => XH.safeDestroy(i));
-        XH.safeDestroy(this._loadModel);
-        super.destroy();
     }
 }
-
-
-/**
- * Load a collection of HoistBase objects concurrently.
- *
- * @param {Object[]} objs - list of objects to be loaded
- * @param {LoadSpec} loadSpec - metadata related to this request.
- *
- * Note that this method uses 'allSettled' in its implementation in order to
- * to avoid a failure of any single call from causing the method to throw.
- */
-export async function loadAllAsync(objs, loadSpec) {
-    const promises = objs.map(it => it.loadAsync(loadSpec)),
-        ret = await Promise.allSettled(promises);
-
-    ret.filter(it => it.status === 'rejected')
-        .forEach(err => console.error('Failed to Load Object', err.reason));
-
-    return ret;
-}
-
-
-/**
- * @typedef {Object} LoadSpec
- *
- * @property {boolean} [isRefresh] - true if this load was triggered by a refresh request.
- * @property {boolean} [isAutoRefresh] - true if this load was triggered by a programmatic
- *       refresh process, rather than a user action.
- */
-
+HoistBase.isHoistBase = true;
 
 //--------------------------------------------------
 // Implementation
+// Externalized to make private, obj is the instance
 //--------------------------------------------------
-function getLoadTypeFromSpec(loadSpec) {
-    if (loadSpec.isAutoRefresh) return 'Auto-Refresh';
-    if (loadSpec.isRefresh) return 'Refresh';
-    return 'Load';
+function validateMobxOptions(options) {
+    throwIf(
+        !isNil(options.runImmediately),
+        '"runImmediately" is not a reaction option.  Did you mean "fireImmediately"?'
+    );
+}
+
+function bindAndDebounce(obj, fn, debounce) {
+    let ret = fn.bind(obj);
+
+    //  See https://github.com/mobxjs/mobx/issues/1956 and note we cannot use mobx scheduler.
+    //  ensure the async run of the effect also occurs in action as expected.
+    if (isNumber(debounce)) return lodashDebounce(action(ret), debounce);
+    if (isPlainObject(debounce)) return lodashDebounce(action(ret), debounce.interval, debounce);
+    return ret;
 }

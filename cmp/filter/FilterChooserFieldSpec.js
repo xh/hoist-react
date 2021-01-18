@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {Reactive} from '@xh/hoist/core';
+import {HoistBase} from '@xh/hoist/core';
 import {FieldFilter, FieldType, genDisplayName, parseFieldValue} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {LocalDate} from '@xh/hoist/utils/datetime';
@@ -18,7 +18,7 @@ import {isFunction, isNil} from 'lodash';
  * Apps should NOT instantiate this class directly. Instead {@see FilterChooserModel.fieldSpecs}
  * for the relevant config to set these options.
  */
-export class FilterChooserFieldSpec extends Reactive {
+export class FilterChooserFieldSpec extends HoistBase {
 
     /** @member {string} */
     field;

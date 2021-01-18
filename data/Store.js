@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel} from '@xh/hoist/core';
+import {Loadable} from '@xh/hoist/core';
 import {action, observable, bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
@@ -28,7 +28,7 @@ import {Record} from './Record';
 /**
  * A managed and observable set of local, in-memory Records.
  */
-export class Store extends HoistModel {
+export class Store extends Loadable {
 
     /** @member {Field[]} */
     fields = null;

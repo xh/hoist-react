@@ -11,9 +11,9 @@ export * from './enums/RenderMode';
 export * from './elem';
 
 
-export * from './Reactive';
 export * from './HoistBase';
 export * from './HoistBaseDecorators';
+export * from './Loadable';
 
 export * from './hooks/Models';
 

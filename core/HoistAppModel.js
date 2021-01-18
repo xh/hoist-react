@@ -15,12 +15,11 @@ import {HoistModel} from './HoistModel';
  * customize important metadata. Initialization of all resources (e.g. application level services)
  * should be done in initAsync().
  *
- *
- * Hoist will load/reload this Model during the global refresh process.  This will occur before t
- * the application's global XH.refreshContextModel has been refreshed, (when all mounted and 'owned'
+ * Hoist will load/reload this Model during the global refresh process.  This will occur before the
+ * application's global XH.refreshContextModel has been refreshed, (when all mounted and 'owned'
  * HoistModels in the application are refreshed). Apps should implement a doloadAsync() to refresh all
  * other app-specific services and models, respecting any ordering and phasing requirements that
- * may exist.  @see HoistBase.doLoadAsync();
+ * may exist.  {@see HoistBase.doLoadAsync()}
  */
 export class HoistAppModel extends HoistModel {
 

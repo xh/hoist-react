@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {p} from '@xh/hoist/cmp/layout';
-import {AppSpec, AppState, elem, Reactive} from '@xh/hoist/core';
+import {AppSpec, AppState, elem, HoistBase} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
@@ -45,7 +45,7 @@ const MIN_HOIST_CORE_VERSION = '8.6.1';
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
-class XHClass extends Reactive {
+class XHClass extends HoistBase {
 
     _initCalled = false;
     _lastActivityMs = Date.now();
