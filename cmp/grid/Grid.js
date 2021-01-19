@@ -400,9 +400,7 @@ class LocalModel {
                     }
 
                     if (experimental.externalSort) {
-                        const {sortBy} = model;
-                        if (!isEqual(sortBy, this._lastSortBy)) agGridModel.applySortBy(sortBy);
-                        this._lastSortBy = sortBy;
+                        agGridModel.applySortBy(model.sortBy);
                     }
 
                     this.updatePinnedSummaryRowData();
