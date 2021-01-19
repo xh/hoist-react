@@ -180,7 +180,7 @@ export class View {
 
         let newRows = this.groupAndInsertLeaves(leafArray, dimensions, rootId, {});
 
-        if (this.cube.bucketSpecFn) newRows = this.bucketRows(newRows, null, rootId);
+        if (cube.bucketSpecFn) newRows = this.bucketRows(newRows, null, rootId);
 
         if (includeRoot) {
             newRows = [createAggregateRow(this, rootId, newRows, null, 'Total', {})];
