@@ -179,7 +179,7 @@
       div[class*=" ag-row-group"],
       div[class^="ag-row-group"] {
         &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected) {
-          background-color: var(--xh-grid-tree-group-bg-hover);
+          background-color: var(--xh-grid-bg-hover);
         }
       }
     }

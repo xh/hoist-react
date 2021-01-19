@@ -139,8 +139,13 @@ export class View {
     fullUpdate() {
         this.generateRows();
 
-        this.stores.forEach(s => s.loadData(this._rows));
-        this.result = {rows: this._rows, leafMap: this._leafMap};
+        // Load stores and observable state.
+        // Skip degenerate root in stores/grids, but preserve in object api.
+        const {stores, _leafMap, _rows} = this,
+            storeRows = _leafMap.size !== 0 ? _rows : [];
+
+        stores.forEach(s => s.loadData(storeRows));
+        this.result = {rows: _rows, leafMap: _leafMap};
         this.info = this.cube.info;
     }
 
@@ -173,7 +178,7 @@ export class View {
         const leafMap = this.generateLeaves(cube.store.records),
             leafArray = Array.from(leafMap.values());
         let newRows = this.groupAndInsertLeaves(leafArray, dimensions, rootId, {});
-        if (includeRoot && !isEmpty(newRows)) {
+        if (includeRoot) {
             newRows = [createAggregateRow(this, rootId, newRows, null, 'Total', {})];
         } else if (!query.includeLeaves && newRows[0]?._meta.isLeaf) {
             newRows = []; // degenerate case, no visible rows
@@ -184,7 +189,6 @@ export class View {
 
     groupAndInsertLeaves(leaves, dimensions, parentId, appliedDimensions) {
         if (isEmpty(dimensions) || isEmpty(leaves)) return leaves;
-
 
         const dim = dimensions[0],
             dimName = dim.name,

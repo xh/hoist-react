@@ -342,7 +342,7 @@ body {
   //------------------------
   // Grids
   //------------------------
-  --xh-grid-bg-highlight: var(--grid-bg-highlight, var(--xh-bg-highlight));
+  --xh-grid-bg-highlight: var(--grid-bg-highlight, hsl(207, 87%, 80%));
   --xh-grid-bg-hover: var(--grid-bg-hover, #{mc-trans('blue', '200', 0.8)});
   --xh-grid-bg-odd: var(--grid-bg-odd, #{mc('grey', '100')});
   --xh-grid-bg: var(--grid-bg, var(--xh-bg));
@@ -359,8 +359,7 @@ body {
   --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '200')});
   --xh-grid-group-text-color: var(--grid-group-text-color, white);
   --xh-grid-total-row-bg: var(--grid-total-row-bg, hsl(207, 87%, 95%));
-  --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(207, 87%, 95%));
-  --xh-grid-tree-group-bg-hover: var(--grid-bg-hover, #{mc-trans('blue', '200', .2)});
+  --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(207, 87%, 90%));
   --xh-grid-tree-group-border-color: var(--grid-tree-group-border-color, var(--xh-grid-bg-highlight));
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-blue-gray-light));
   --xh-grid-header-border-color: var(--grid-header-border-color, var(--xh-grid-border-color));
@@ -416,6 +415,7 @@ body {
 
   // Dark Grid
   &.xh-dark {
+    --xh-grid-bg-highlight: var(--grid-bg-highlight, var(--xh-bg-highlight));
     --xh-grid-bg-odd: var(--grid-bg-odd, hsl(200, 26%, 11%));
     --xh-grid-border-color: var(--grid-border-color, hsl(186, 11%, 18%));
     --xh-grid-cell-change-bg-highlight: var(--grid-cell-bg-highlight, #{mc-trans('orange', '800', 0.8)});
@@ -425,7 +425,6 @@ body {
     --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(201, 48%, 12%));
     --xh-grid-header-bg: var(--grid-header-bg, var(--xh-black));
     --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '800')});
-    --xh-grid-tree-group-bg-hover: var(--grid-bg-hover, #{mc-trans('blue', '200', 0.8)});
   }
 
   // Mobile Grid
