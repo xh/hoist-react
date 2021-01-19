@@ -6,6 +6,7 @@
  */
 
 import {has, isEmpty, reduce} from 'lodash';
+import {Cube} from '../Cube';
 
 /**
  *  Object used by views to gather Aggregate rows.
@@ -13,10 +14,20 @@ import {has, isEmpty, reduce} from 'lodash';
  *  Not intended to be used directly by applications.
  */
 export function createAggregateRow(view, id, children, dim, val, appliedDimensions) {
-
     const data = {};
     data._meta = new AggregateMeta(data, view, id, children, dim, val, appliedDimensions);
     return data;
+}
+
+export function createBucketRow(bucket, view, parentId, parentRow, children, labelFn) {
+    const {dim} = children[0]._meta,
+        id = parentId + Cube.RECORD_ID_DELIMITER + `${dim?.name ?? 'leafBucket'}=[${bucket}]`,
+        bucketLabel = labelFn ? labelFn(bucket, {parentRow, children}) : bucket,
+        row = createAggregateRow(view, id, children, dim, bucketLabel, {});
+
+    row._meta.isBucket = true;
+
+    return row;
 }
 
 class AggregateMeta {

@@ -241,23 +241,10 @@ export class Cube {
  * Function to be called for each dimension to determine if children of said dimension should be
  * bucketed into additional dynamic dimensions.
  *
- * @param {Object} c - params
- * @param {CubeField} c.dim - the current dimension being processed
- * @param {CubeField} c.childDim - the next dimension to be processed
- * @returns {boolean|BucketFn|BucketSpec} - a falsey value if children should not be bucketed, a
- *      function which returns which bucket to place a given row in, or a BucketSpec for further
- *      customizing properties of the bucket aggregate row
- */
-
-/**
- * @callback BucketFn
- *
- * Function which is used to determine which bucket (if any) a given row should be placed into.
- *
- * @param {AggregateRow|LeafRow} row
- * @param {Object} c
- * @param {CubeField} c.dim - the dimension being processed
- * @param {CubeField|null} c.childDim - the dimension of the row, or null if a leaf row
+ * @param {Object|null} row - the current row being processed, or null if processing top-level rows
+ * @param {Object[]} children - child rows which may be bucketed
+ * @returns {BucketSpec|null} - a BucketSpec for configuring the bucket to place child rows into,
+ *      or null to perform no bucketing
  */
 
 /**
@@ -268,13 +255,22 @@ export class Cube {
  */
 
 /**
+ * @callback BucketFn
+ *
+ * Function which is used to determine which bucket (if any) a given row should be placed into.
+ *
+ * @param {Object} row - the row being checked
+ * @returns {string|null} - the bucket to place the row into, or null if row should not be bucketed
+ */
+
+/**
  * @callback BucketLabelFn
  *
  * Function which generates a label for a bucket row.
  *
+ * @param {string} bucket - the name of the bucket returned by the BucketFn in the BucketSpec
  * @param {Object} c
- * @param {CubeField} c.dim - the dimension being processed
- * @param {CubeField|null} c.childDim - the dimension of the row being bucketed, or null if a leaf row
- * @param {string} c.bucket - the name of the bucket returned by the BucketFn in the BucketSpec *
+ * @param {Object} c.parentRow - the parent row of the new bucket row
+ * @param {Object[]} c.children - the child rows being placed into the new bucket row
  * @returns {string} - the label for the bucket row
  */
