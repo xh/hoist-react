@@ -1,17 +1,16 @@
 # Changelog
 
-## v38.0.0-SNAPSHOT - unreleased
+## v37.1.0 - 2021-01-20
 
 ### 🎁 New Features
 * Columns in `ColChooser` can now be filtered by their `chooserGroup`.
-* `Cube` now supports a `bucketSpecFn` config which allows dynamic bucketing and aggregation of rows
+* `Cube` now supports a `bucketSpecFn` config which allows dynamic bucketing and aggregation of rows.
 
 ### 🐞 Bug Fixes
-
 * Fix issue where a `View` would create a root row even if there were no leaf rows.
 * Fixed regression in `LeftRightChooser` not displaying description callout.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v37.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v37.0.0...v37.1.0)
 
 ## v37.0.0 - 2020-12-15
 
