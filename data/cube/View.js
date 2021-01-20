@@ -179,8 +179,7 @@ export class View {
             leafArray = Array.from(leafMap.values());
 
         let newRows = this.groupAndInsertLeaves(leafArray, dimensions, rootId, {});
-
-        if (cube.bucketSpecFn) newRows = this.bucketRows(newRows, null, rootId);
+            newRows = this.bucketRows(newRows, rootId, {});
 
         if (includeRoot) {
             newRows = [createAggregateRow(this, rootId, newRows, null, 'Total', {})];
@@ -203,38 +202,39 @@ export class View {
         return map(groups, (groupLeaves, val) => {
             appliedDimensions[dimName] = val;
             const filter = new FieldFilter({field: dimName, op: '=', value: val}),
-                id = parentId + Cube.RECORD_ID_DELIMITER + Query.filterAsString(filter),
-                newChildren = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
+                id = parentId + Cube.RECORD_ID_DELIMITER + Query.filterAsString(filter);
+            let children = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
+            children = this.bucketRows(children, id, appliedDimensions);
 
-            return createAggregateRow(this, id, newChildren, dim, val, appliedDimensions);
+            return createAggregateRow(this, id, children, dim, val, appliedDimensions);
         });
     }
 
-    bucketRows(rows, parentRow, parentId = parentRow?.id) {
-        const {bucketSpecFn} = this.cube,
-            bucketSpec = bucketSpecFn(parentRow, rows),
-            buckets = {},
-            ret = [];
+    bucketRows(rows, parentId, appliedDimensions) {
+        const bucketSpec = this.cube.bucketSpecFn(rows);
+        if (!bucketSpec) return rows;
 
+        if (!this.query.includeLeaves && rows[0]?.isLeaf) return rows;
+
+        const {name: bucketName, bucketFn} = bucketSpec,
+        buckets = {},
+        ret = [];
+
+        // Determine which bucket to put this row into (if any)
         rows.forEach(row => {
-            // Depth-first bucketing of child rows
-            if (row.children) {
-                row.children = this.bucketRows(row.children, row);
-            }
-
-            // Determine which bucket to put this row into (if any)
-            const bucket = bucketSpec?.bucketFn(row);
-            if (isNil(bucket)) {
+            const bucketVal = bucketFn(row);
+            if (isNil(bucketVal)) {
                 ret.push(row);
             } else {
-                if (!buckets[bucket]) buckets[bucket] = [];
-                buckets[bucket].push(row);
+                if (!buckets[bucketVal]) buckets[bucketVal] = [];
+                buckets[bucketVal].push(row);
             }
         });
 
         // Create new rows for each bucket and add to the result
-        forEach(buckets, (rows, bucket) => {
-            ret.push(createBucketRow(bucket, this, parentId, parentRow, rows, bucketSpec?.labelFn));
+        forEach(buckets, (rows, bucketVal) => {
+            const id = parentId + Cube.RECORD_ID_DELIMITER + `${bucketName}=[${bucketVal}]`;
+            ret.push(createBucketRow(this, id, rows, bucketVal, bucketSpec, appliedDimensions));
         });
 
         return ret;

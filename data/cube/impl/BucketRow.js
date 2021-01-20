@@ -6,47 +6,47 @@
  */
 
 import {has, isEmpty, reduce} from 'lodash';
+import {Cube} from '../Cube';
 
 /**
- *  Object used by views to gather Aggregate rows.
+ *  Object used by views to gather bucket rows.
  *
  *  Not intended to be used directly by applications.
  */
-export function createAggregateRow(view, id, children, dim, val, appliedDimensions) {
+
+export function createBucketRow(view, id, children, bucketVal, bucketSpec, appliedDimensions) {
     const data = {};
-    data._meta = new AggregateMeta(data, view, id, children, dim, val, appliedDimensions);
+    data._meta = new BucketMeta(data, view, id, children, bucketVal, bucketSpec, appliedDimensions);
     return data;
 }
 
-class AggregateMeta {
+class BucketMeta {
 
     view = null;
-    dim = null;         // Grouping Dim or null for summary row
-    dimName = null;
     children = null;
     parent = null;
+    bucketSpec = null;
 
-    get isLeaf()        {return false}
-    get isAggregate()   {return true}
+    get isLeaf()    {return false}
+    get isBucket()  {return true}
 
-    constructor(data, view, id, children, dim, val, appliedDimensions) {
-        const dimName = dim ? dim.name : 'Total';
+    constructor(data, view, id, children, bucketVal, bucketSpec, appliedDimensions) {
 
         this.view = view;
-        this.dim = dim;
-        this.dimName = dimName;
+        this.id = id;
         this.children = children.map(it => it._meta);
         this.children.forEach(it => it.parent = this);
         this.data = data;
+        this.bucketSpec = bucketSpec;
 
         data.id = id;
-        data.cubeLabel = val;
-        data.cubeDimension = dimName;
+        data.cubeLabel = bucketSpec.labelFn(bucketVal);
+        data.cubeDimension = bucketSpec.name;
 
         view.fields.forEach(({name}) => data[name] = null);
         Object.assign(data, appliedDimensions);
 
-        this.markAggFields(val, appliedDimensions);
+        this.markAggFields(bucketVal, appliedDimensions);
         this.computeAggregates();
         this.applyVisibleChildren();
     }
@@ -88,7 +88,8 @@ class AggregateMeta {
     // Implementation
     //-------------------
     markAggFields(val, appliedDimensions) {
-        const {dimName, view} = this;
+        const {view, bucketSpec} = this,
+            bucketName = bucketSpec.name;
 
         this.canAggregate = reduce(view.fields, (ret, field) => {
             const {name} = field;
@@ -96,7 +97,7 @@ class AggregateMeta {
                 ret[name] = false;
             } else {
                 const {aggregator, canAggregateFn} = field;
-                ret[name] = aggregator && (!canAggregateFn || canAggregateFn(dimName, val, appliedDimensions));
+                ret[name] = aggregator && (!canAggregateFn || canAggregateFn(bucketName, val, appliedDimensions));
             }
             return ret;
         }, {});
@@ -104,15 +105,8 @@ class AggregateMeta {
 
     // Process child rows to determine what should be exposed as the actual children in the row data
     applyVisibleChildren() {
-        const {children, view, dim, data} = this,
+        const {children, view, data} = this,
             {lockFn} = view.cube;
-
-        // Remove all children from the data if the query is not configure to include leaves and
-        // this row has leaves as children
-        if (!view.query.includeLeaves && children[0]?.isLeaf) {
-            data.children = null;
-            return;
-        }
 
         // Check if we need to 'lock' this row - removing all children from the data so they will not
         // appear in the UI but remain as children of this AggregateMeta to ensure that updates to
@@ -121,20 +115,6 @@ class AggregateMeta {
             this.locked = true;
             data.children = null;
             return;
-        }
-
-        // If we have a single child which is identical to ourselves remove it from the hierarchy
-        // since it represents the exact same data as this row
-        if (children.length === 1) {
-            const childRow = children[0],
-                childDim = childRow.dim;
-
-            if (dim && childDim &&
-                childDim.parentDimension === dim.name &&
-                childRow.data[childDim.name] === data[dim.name]) {
-                data.children = childRow.data.children;
-                return;
-            }
         }
 
         // If we've gotten past all of the above checks then our data children should consist of

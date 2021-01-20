@@ -246,31 +246,3 @@ export class Cube {
  * @returns {BucketSpec|null} - a BucketSpec for configuring the bucket to place child rows into,
  *      or null to perform no bucketing
  */
-
-/**
- * @typedef {Object} BucketSpec
- * @property {BucketLabelFn} labelFn - function to generate the bucket row label.
- * @property {BucketFn} bucketFn - function to determine which (if any) bucket the given row should
- *      be placed into
- */
-
-/**
- * @callback BucketFn
- *
- * Function which is used to determine which bucket (if any) a given row should be placed into.
- *
- * @param {Object} row - the row being checked
- * @returns {string|null} - the bucket to place the row into, or null if row should not be bucketed
- */
-
-/**
- * @callback BucketLabelFn
- *
- * Function which generates a label for a bucket row.
- *
- * @param {string} bucket - the name of the bucket returned by the BucketFn in the BucketSpec
- * @param {Object} c
- * @param {Object} c.parentRow - the parent row of the new bucket row
- * @param {Object[]} c.children - the child rows being placed into the new bucket row
- * @returns {string} - the label for the bucket row
- */
