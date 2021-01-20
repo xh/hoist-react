@@ -14,18 +14,19 @@ import PT from 'prop-types';
 import './ErrorMessage.scss';
 
 /**
- * Component for displaying an error message with standardized styling.
+ * Component for displaying an error with standardized styling.
  */
 export const [ErrorMessage, errorMessage] = hoistCmp.withFactory({
     className: 'xh-error-message',
-    render({className, message, actionFn, actionIcon, actionText}) {
+    render({className, error, title, actionFn, actionButtonProps}) {
         return frame({
             className,
             item: div({
                 className: 'xh-error-message__inner',
                 items: [
-                    messageCmp({message}),
-                    actionButton({actionFn, actionIcon, actionText})
+                    titleCmp({title}),
+                    errorCmp({error}),
+                    actionButton({actionFn, actionButtonProps})
                 ]
             })
         });
@@ -33,36 +34,45 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory({
 });
 
 ErrorMessage.propTypes = {
-    /** Content to display. Either an exception, an element or a string */
-    message: PT.oneOfType([PT.instanceOf(Error), PT.element, PT.string]).isRequired,
+    /** Error to display. Either an exception, an element or a string */
+    error: PT.oneOfType([PT.instanceOf(Error), PT.element, PT.string]).isRequired,
 
-    /** If provided, will render an action button which triggers this function. */
+    /** Optional title to display above the error. Either an element or a string */
+    title: PT.oneOfType([PT.element, PT.string]),
+
+    /** If provided, will render an action button which triggers this function,
+     preconfigured with the text 'Retry' (see `actionButtonProps`) */
     actionFn: PT.func,
 
-    /** Icon for the button generated for actionFn */
-    actionIcon: PT.element,
-
-    /** Text for the button generated for actionFn. Defaults to 'Retry' */
-    actionText: PT.string
+    /** Allows overriding the default properties of the action button. */
+    actionButtonProps: PT.object
 };
 
-const messageCmp = hoistCmp.factory(
-    ({message}) => {
-        if (message instanceof Error || message?.message) return p(message.message);
-        if (isValidElement(message)) return message;
-        if (isString(message)) return p(message);
+const titleCmp = hoistCmp.factory(
+    ({title}) => {
+        if (isValidElement(title)) return title;
+        if (isString(title)) return div({className: 'xh-error-message__title', item: title});
+        return null;
+    }
+);
+
+const errorCmp = hoistCmp.factory(
+    ({error}) => {
+        if (error instanceof Error || error?.message) return p(error.message);
+        if (isValidElement(error)) return error;
+        if (isString(error)) return p(error);
         return null;
     }
 );
 
 const actionButton = hoistCmp.factory(
-    ({actionFn, actionIcon, actionText}) => {
+    ({actionFn, actionButtonProps}) => {
         if (!isFunction(actionFn)) return null;
         return button({
-            icon: actionIcon,
-            text: actionText ?? 'Retry',
+            text: 'Retry',
             minimal: false,
-            onClick: () => actionFn()
+            onClick: () => actionFn(),
+            ...actionButtonProps
         });
     }
 );
