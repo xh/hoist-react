@@ -20,7 +20,7 @@ export class RootRefreshContextModel extends RefreshContextModel {
 
     async doLoadAsync(loadSpec) {
         const {appModel} = XH;
-        if (appModel.implementsLoading) {
+        if (appModel.loadSupport) {
             await appModel.loadAsync(loadSpec);
         }
         await loadAllAsync(this.refreshTargets, loadSpec);

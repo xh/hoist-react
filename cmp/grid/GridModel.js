@@ -595,10 +595,9 @@ export class GridModel extends HoistModel {
         this.sortBy = sorters;
     }
 
-    /** Load the underlying store. */
     async doLoadAsync(loadSpec) {
-        throwIf(!this.store.implementsLoading, 'Underlying store does not define support for loading.');
-        return this.store.loadAsync(loadSpec);
+        // Delegate to any store that has load support
+        return this.store.loadSupport?.loadAsync(loadSpec);
     }
 
     /** Load the underlying store. */

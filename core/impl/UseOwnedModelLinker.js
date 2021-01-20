@@ -21,7 +21,7 @@ import {useEffect} from 'react';
 export function useOwnedModelLinker(model) {
     const context = useContextModel(RefreshContextModel);
     useEffect(() => {
-        if (model?.implementsLoading) {
+        if (model?.loadSupport) {
             model.loadAsync();
             if (context) {
                 context.register(model);

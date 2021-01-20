@@ -13,8 +13,7 @@ export * from './elem';
 
 export * from './HoistBase';
 export * from './HoistBaseDecorators';
-export * from './Loadable';
-
+export * from './LoadSupport';
 export * from './hooks/Models';
 
 export * from './modelspec/ModelSpec';

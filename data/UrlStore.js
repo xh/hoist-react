@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
+import {XH, managed, LoadSupport} from '@xh/hoist/core';
 
 import {Store} from './Store';
 
@@ -16,6 +16,9 @@ export class UrlStore extends Store {
 
     url;
     dataRoot;
+
+    @managed
+    loadSupport = new LoadSupport(this);
 
     /**
      * @param {Object} c - UrlStore configuration.

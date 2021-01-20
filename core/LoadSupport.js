@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {throwIf} from '@xh/hoist/utils/js';
-import {observable, extendObservable, runInAction} from '@xh/hoist/mobx';
+import {observable, makeObservable, runInAction} from '@xh/hoist/mobx';
 import {isPlainObject} from 'lodash';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 
@@ -15,71 +15,45 @@ import {managed} from './HoistBaseDecorators';
 /**
  * Provides support for objects that participate in Hoist's loading/refresh lifecycle.
  *
- * This class should not typically be extended directly by applications.  Applications should
- * extend one of its subclasses instead.
+ * This utility is used by core Hoist classes such as HoistModel and HoistService to support
+ * the managed loading/refresh lifecycle built in to Hoist.
  *
- * @see HoistModel, HoistService, and Store.
+ * Not typically created directly by applications.
+ *
+ * @see HoistModel, HoistService.
  */
-export class Loadable extends HoistBase {
-
-    get isLoadable() {return true}
-
-    /**
-     * Does this object implement loading?
-     * True if an implementation of doLoadAsync been provided.
-     */
-    get implementsLoading() {
-        return this.doLoadAsync !== Loadable.prototype.doLoadAsync;
-    }
+export class LoadSupport extends HoistBase {
 
     /**
      * @member {PendingTaskModel} - model tracking the loading of this object
      * Note that this model will *not* track auto-refreshes.
      */
     @managed
-    get loadModel() {return this._loadModel}
+    loadModel = new PendingTaskModel();
 
     /** @member {Date} - date when last load was initiated (observable) */
-    get lastLoadRequested() {return this._lastLoadRequested}
+    @observable.ref lastLoadRequested = null;
 
     /** @member {Date} -  date when last load completed (observable) */
-    get lastLoadCompleted() {return this._lastLoadCompleted}
+    @observable.ref lastLoadCompleted = null;
 
     /** @member {Error} Any exception that occurred during last load (observable) */
-    get lastLoadException() {return this._lastLoadException}
+    @observable.ref lastLoadException = null;
 
-    constructor() {
+    constructor(target) {
         super();
-
-        if (this.implementsLoading) {
-            this._loadModel = new PendingTaskModel();
-            this._lastLoadRequested = null;
-            this._lastLoadCompleted = null;
-            this._lastLoadException = null;
-
-            extendObservable(this, {
-                _lastLoadRequested: observable.ref,
-                _lastLoadCompleted: observable.ref,
-                _lastLoadException: observable.ref
-            });
-        }
+        throwIf(!target.doLoadAsync, `Target of LoadSupport must implement method doLoadAsync`);
+        makeObservable(this);
+        this.target = target;
     }
 
-
     /**
-     * Load this object from underlying data sources or services.
-     * Main public entry point.
-     *
-     * NOT for implementation.  Implement doLoadAsync() instead.
-     *
+     * Load the target.
+     **
      * @param {LoadSpec} [loadSpec] - Metadata about the underlying request
      */
     async loadAsync(loadSpec = {}) {
-        if (!this.implementsLoading) {
-            console.warn('Loading not initialized. Be sure to implement doLoadAsync().');
-            return;
-        }
-
+        const {target} = this;
         throwIf(
             !isPlainObject(loadSpec),
             'Unexpected param passed to loadAsync() - accepts loadSpec object only. If triggered via a reaction, ensure call is wrapped in a closure.'
@@ -88,11 +62,11 @@ export class Loadable extends HoistBase {
         // Skip auto-refresh if we have a pending triggered refresh
         if (loadSpec.isAutoRefresh && this.loadModel.isPending) return;
 
-        runInAction(() => this._lastLoadRequested = new Date());
+        runInAction(() => this.lastLoadRequested = new Date());
         const loadModel = !loadSpec.isAutoRefresh ? this.loadModel : null;
 
         let exception = null;
-        return this
+        return target
             .doLoadAsync(loadSpec)
             .linkTo(loadModel)
             .catch(e => {
@@ -101,14 +75,14 @@ export class Loadable extends HoistBase {
             })
             .finally(() => {
                 runInAction(() => {
-                    this._lastLoadCompleted = new Date();
-                    this._lastLoadException = exception;
+                    this.lastLoadCompleted = new Date();
+                    this.lastLoadException = exception;
                 });
 
-                if (this.isRefreshContextModel) return;
+                if (this.target.isRefreshContextModel) return;
 
-                const elapsed = this._lastLoadCompleted.getTime() - this._lastLoadRequested.getTime(),
-                    msg = `[${this.constructor.name}] | ${getLoadTypeFromSpec(loadSpec)} | ${exception ? 'failed' : 'completed'} | ${elapsed}ms`;
+                const elapsed = this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime(),
+                    msg = `[${target.constructor.name}] | ${getLoadTypeFromSpec(loadSpec)} | ${exception ? 'failed' : 'completed'} | ${elapsed}ms`;
 
                 if (exception) {
                     if (exception.isRoutine) {
@@ -123,39 +97,22 @@ export class Loadable extends HoistBase {
     }
 
     /**
-     * Refresh this object from underlying data sources or services.
-     * NOT for implementation.  Implement doLoadAsync() instead.
+     * Refresh the target.
      */
     async refreshAsync() {
         return this.loadAsync({isRefresh: true, isAutoRefresh: false});
     }
 
     /**
-     * Auto-refresh this object from underlying data sources or services.
-     * NOT for implementation.  Implement doLoadAsync() instead.
+     * Auto-refresh the target.
      */
     async autoRefreshAsync() {
         return this.loadAsync({isRefresh: true, isAutoRefresh: true});
     }
-
-    /**
-     * Load this object. Implement this method to describe how this object should load
-     * itself from underlying data sources or services.
-     *
-     * For implementation only.  Callers should call loadAsync() or refreshAsync() instead.
-     *
-     * @param {LoadSpec} loadSpec - Metadata about the underlying request. Implementations should
-     *      take care to pass this parameter to any delegates (e.g. other instances of Loadable)
-     *      that accept it.
-     */
-    async doLoadAsync(loadSpec) {}
-
 }
-Loadable.isLoadable = true;
-
 
 /**
-* Load a collection of HoistBase objects concurrently.
+* Load a collection of objects concurrently.
 *
 * @param {Object[]} objs - list of objects to be loaded
 * @param {LoadSpec} loadSpec - metadata related to this request.

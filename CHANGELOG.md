@@ -6,15 +6,16 @@
 * Hoist v38 includes some major refactoring of our core classes to streamline
 them, bring them in to conformance with the latest developments in Javascript, React,
 and MobX, and allow us to  more easily provide documentation and additional features.
+We have removed the use of class based decorators, in favor of a simpler, inheritance model.
+
 In particular:
+** We are introducing a new root base class called `HoistBase` which provides many of the syntax
+enhancements and conventions used in Hoist for persistence, resource management, and reactivity.
 
 ** New base classes of `HoistModel` and `HoistService` replace the existing class
-decorators `@HoistModel`, `@HoistService`.
-
-** Core functionality for `HoistModel` and `HoistService` now derive from the inherited classes
-`HoistBase` and `Loadable`, rather than annotations.  In particular, we have removed the need for
-the explicit `@LoadSupport` annotation.  The presence of a defined `doLoadAsync()` method is now
-sufficient to allow these objects to participate in the loading and refreshing lifecycle.
+decorators `@HoistModel`, `@HoistService`.  We have also removed the need for the explicit
+`@LoadSupport` annotation on these classes.  The presence of a defined `doLoadAsync()` method is now
+sufficient to allow these objects to participate in the loading and refreshing lifecycle as before.
 
 ** We have deprecated support for class-based Components via the `@HoistComponent` class decorator.
 To continue to use this decorator, please import it from the `@xh\hoist\deprecated` package.

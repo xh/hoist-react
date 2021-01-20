@@ -75,7 +75,7 @@ export class LogViewerModel extends HoistModel {
     async doLoadAsync(loadSpec) {
         const {store, selModel} = this.filesGridModel;
         try {
-            await store.loadAsync(loadSpec);
+            await store.loadSupport.loadAsync(loadSpec);
             if (selModel.isEmpty) {
                 const latestAppLog = store.records.find(rec => rec.data.filename == `${XH.appCode}.log`);
                 if (latestAppLog) {
