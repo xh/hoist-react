@@ -4,6 +4,7 @@
 
 ### 🎁 New Features
 * Columns in `ColChooser` can now be filtered by their `chooserGroup`.
+* `Cube` now supports a `bucketSpecFn` config which allows dynamic bucketing and aggregation of rows
 
 ### 🐞 Bug Fixes
 
