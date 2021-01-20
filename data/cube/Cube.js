@@ -241,8 +241,7 @@ export class Cube {
  * Function to be called for each dimension to determine if children of said dimension should be
  * bucketed into additional dynamic dimensions.
  *
- * @param {Object|null} row - the current row being processed, or null if processing top-level rows
- * @param {Object[]} children - child rows which may be bucketed
+ * @param {Object[]} rows - the rows being checked for bucketing
  * @returns {BucketSpec|null} - a BucketSpec for configuring the bucket to place child rows into,
  *      or null to perform no bucketing
  */

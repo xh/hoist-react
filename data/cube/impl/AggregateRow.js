@@ -35,8 +35,10 @@ class AggregateMeta {
         this.view = view;
         this.dim = dim;
         this.dimName = dimName;
-        this.children = children.map(it => it._meta);
-        this.children.forEach(it => it.parent = this);
+        this.children = children.map(it => {
+            it._meta.parent = this;
+            return it._meta;
+        });
         this.data = data;
 
         data.id = id;

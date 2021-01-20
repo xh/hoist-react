@@ -6,7 +6,6 @@
  */
 
 import {has, isEmpty, reduce} from 'lodash';
-import {Cube} from '../Cube';
 
 /**
  *  Object used by views to gather bucket rows.
@@ -34,8 +33,10 @@ class BucketMeta {
 
         this.view = view;
         this.id = id;
-        this.children = children.map(it => it._meta);
-        this.children.forEach(it => it.parent = this);
+        this.children = children.map(it => {
+            it._meta.parent = this;
+            return it._meta;
+        });
         this.data = data;
         this.bucketSpec = bucketSpec;
 

@@ -11,7 +11,8 @@ import {action, observable} from 'mobx';
 
 import {throwIf} from '../../utils/js';
 import {Cube} from './Cube';
-import {createAggregateRow, createBucketRow} from './impl/AggregateRow';
+import {createAggregateRow} from './impl/AggregateRow';
+import {createBucketRow} from './impl/BucketRow';
 import {createLeafRow} from './impl/LeafRow';
 import {Query} from './Query';
 
@@ -179,7 +180,7 @@ export class View {
             leafArray = Array.from(leafMap.values());
 
         let newRows = this.groupAndInsertLeaves(leafArray, dimensions, rootId, {});
-            newRows = this.bucketRows(newRows, rootId, {});
+        newRows = this.bucketRows(newRows, rootId, {});
 
         if (includeRoot) {
             newRows = [createAggregateRow(this, rootId, newRows, null, 'Total', {})];
@@ -203,6 +204,7 @@ export class View {
             appliedDimensions[dimName] = val;
             const filter = new FieldFilter({field: dimName, op: '=', value: val}),
                 id = parentId + Cube.RECORD_ID_DELIMITER + Query.filterAsString(filter);
+
             let children = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
             children = this.bucketRows(children, id, appliedDimensions);
 
@@ -211,14 +213,16 @@ export class View {
     }
 
     bucketRows(rows, parentId, appliedDimensions) {
+        if (!this.cube.bucketSpecFn) return rows;
+
         const bucketSpec = this.cube.bucketSpecFn(rows);
         if (!bucketSpec) return rows;
 
-        if (!this.query.includeLeaves && rows[0]?.isLeaf) return rows;
+        if (!this.query.includeLeaves && rows[0]?._meta.isLeaf) return rows;
 
         const {name: bucketName, bucketFn} = bucketSpec,
-        buckets = {},
-        ret = [];
+            buckets = {},
+            ret = [];
 
         // Determine which bucket to put this row into (if any)
         rows.forEach(row => {
