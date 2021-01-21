@@ -49,7 +49,15 @@ class BucketMeta {
 
         this.markAggFields(bucketVal, appliedDimensions);
         this.computeAggregates();
+        this.noteBucketed(bucketSpec, bucketVal);
         this.applyVisibleChildren();
+    }
+
+    noteBucketed(bucketSpec, bucketVal) {
+        const {data} = this;
+        data.buckets = data.buckets ?? {};
+        data.buckets[bucketSpec.name] = bucketVal;
+        this.children.forEach(it => it.noteBucketed(bucketSpec, bucketVal));
     }
 
     computeAggregates() {

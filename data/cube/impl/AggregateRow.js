@@ -53,6 +53,12 @@ class AggregateMeta {
         this.applyVisibleChildren();
     }
 
+    noteBucketed(bucketSpec, bucketVal) {
+        this.data.buckets = this.data.buckets ?? {};
+        this.data.buckets[bucketSpec.name] = bucketVal;
+        this.children.forEach(it => it.noteBucketed(bucketSpec, bucketVal));
+    }
+
     computeAggregates() {
         const {children, canAggregate, view, data} = this;
         view.fields.forEach(({aggregator, name}) => {
