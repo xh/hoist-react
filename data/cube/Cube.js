@@ -27,8 +27,10 @@ export class Cube {
 
     /** @member {Store} */
     @managed store;
-    /** @member {function} */
+    /** @member {LockFn} */
     lockFn;
+    /** @member {BucketSpecFn} */
+    bucketSpecFn;
     /** @member {Object} */
     @observable.ref
     info = null;
@@ -45,6 +47,9 @@ export class Cube {
      * @param {Object} [c.info] - app-specific metadata to be associated with this data.
      * @param {LockFn} [c.lockFn] - optional function to be called for each aggregate node to
      *      determine if it should be "locked", preventing drilldown into its children.
+     * @param {BucketSpecFn} [c.bucketSpecFn] - optional function to be called for each dimension
+     *      during row generation  to determine if the children of that dimension should be bucketed
+     *      into additional dynamic dimensions.
      */
     constructor({
         fields,
@@ -52,7 +57,8 @@ export class Cube {
         idSpec = 'id',
         processRawData,
         info = {},
-        lockFn
+        lockFn,
+        bucketSpecFn
     }) {
         this.store = new Store({
             fields: this.parseFields(fields),
@@ -60,8 +66,9 @@ export class Cube {
             processRawData
         });
         this.store.loadData(data);
-        this.lockFn = lockFn;
         this.info = info;
+        this.lockFn = lockFn;
+        this.bucketSpecFn = bucketSpecFn;
     }
 
     /** @returns {CubeField[]} - Fields configured for this Cube. */
@@ -226,4 +233,15 @@ export class Cube {
  *
  * @param {AggregateRow} row - node to be potentially locked.
  * @returns boolean
+ */
+
+/**
+ * @callback BucketSpecFn
+ *
+ * Function to be called for each dimension to determine if children of said dimension should be
+ * bucketed into additional dynamic dimensions.
+ *
+ * @param {Object[]} rows - the rows being checked for bucketing
+ * @returns {BucketSpec|null} - a BucketSpec for configuring the bucket to place child rows into,
+ *      or null to perform no bucketing
  */
