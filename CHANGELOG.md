@@ -7,8 +7,6 @@
 retry support.
 * `Cube` now supports an `omitFn` to allow apps to remove unwanted, single-node children.
 
-### 🐞 Bug Fixes
-
 [Commit Log](https://github.com/xh/hoist-react/compare/v37.1.0...v37.2.0)
 
 ## v37.1.0 - 2021-01-20
