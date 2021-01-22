@@ -7,10 +7,13 @@
 ## v37.1.0 - 2021-01-20
 
 ### 🎁 New Features
+
 * Columns in `ColChooser` can now be filtered by their `chooserGroup`.
-* `Cube` now supports a `bucketSpecFn` config which allows dynamic bucketing and aggregation of rows.
+* `Cube` now supports a `bucketSpecFn` config which allows dynamic bucketing and aggregation of
+  rows.
 
 ### 🐞 Bug Fixes
+
 * Fix issue where a `View` would create a root row even if there were no leaf rows.
 * Fixed regression in `LeftRightChooser` not displaying description callout.
 
@@ -40,8 +43,8 @@
   Hoist Core v8.7 or greater.)
 * `FormModel` and `FieldModel` gain support for Focus Management.
 * New `boundInput` getter on `FieldModel` to facilitate imperative access to controls, when needed.
-  This getter will return the new `HoistInputModel` interface, which support basic DOM access as well
-  as standard methods for `focus()`, `blur()`, and `select()`.
+  This getter will return the new `HoistInputModel` interface, which support basic DOM access as
+  well as standard methods for `focus()`, `blur()`, and `select()`.
 * New `GridModel` config `lockColumnGroups` to allow controlling whether child columns can be moved
   outside their parent group. Defaults to `true` to maintain existing behavior.
 
@@ -92,8 +95,8 @@
 
 ### ⚙️ Technical
 
-* Note that the included Onsen fork has been replaced with the latest Onsen release.
-  Apps should not need to make any changes.
+* Note that the included Onsen fork has been replaced with the latest Onsen release. Apps should not
+  need to make any changes.
 * `Cube.info` is now directly observable.
 * `@managed` and `markManaged` have been enhanced to allow for the cleanup of arrays of objects as
   well as objects. This matches the existing array support in `XH.safeDestroy()`.
