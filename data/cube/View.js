@@ -202,7 +202,7 @@ export class View {
 
         const dim = dimensions[0],
             dimName = dim.name,
-            groups = groupBy(leaves, (it) => it[dimName]);
+            groups = groupBy(leaves, (it) => it.data[dimName]);
 
         appliedDimensions = {...appliedDimensions};
         return map(groups, (groupLeaves, val) => {

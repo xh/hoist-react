@@ -79,7 +79,7 @@ export class BaseRow {
 
     isRedundantChild(row) {
         // TODO:  put this test in application code omitFn instead?
-        const parent = row.parent,
+        const {parent} = row,
             parentDim = parent.dim,
             dim = row.dim;
         return dim &&
@@ -94,10 +94,8 @@ export class BaseRow {
     initAggregate(children, dimOrBucketName, val, appliedDimensions) {
         const {view, data} = this;
 
-        this.children = children.map(it => {
-            it._meta.parent = this;
-            return it._meta;
-        });
+        this.children = children;
+        children.forEach(it => it.parent = this);
 
         view.fields.forEach(({name}) => data[name] = null);
         Object.assign(data, appliedDimensions);
