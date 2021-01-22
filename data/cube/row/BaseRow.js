@@ -65,28 +65,25 @@ export class BaseRow {
         // Apply recursively -- we need to go depth first to allow recursive collapsing
         children.forEach(it => it.applyVisibleChildren());
 
-        // Skip cullable single children, by wiring up to *their* data children.
-        if (children.length === 1) {
+        // Skip chains of cullable single children, by wiring up to *their* data children.
+        while (children?.length === 1) {
             const childRow = children[0];
-            if (this.isRedundantChild(childRow) || (omitFn && omitFn(childRow))) {
-                data.children = childRow.data.children;
-                return;
+            if (this.isRedundantChild(this, childRow) || (omitFn && omitFn(childRow))) {
+                children = childRow.data.children?.map(it => it._meta) ?? null;
             }
         }
 
         // ...otherwise wire up to your own children's data
-        data.children = children.map(it => it.data);
+        data.children = children?.map(it => it.data) ?? null;
     }
 
-    isRedundantChild(row) {
+    isRedundantChild(parent, child) {
         // TODO:  put this test in application code omitFn instead?
-        const {parent} = row,
-            parentDim = parent.dim,
-            dim = row.dim;
-        return dim &&
-            parentDim &&
-            dim.parentDimension === parentDim.name &&
-            row.data[dim.name] === parent.data[parentDim.name];
+        const parentDim = parent.dim,
+            childDim = child.dim;
+        return childDim && parentDim &&
+            childDim.parentDimension === parentDim.name &&
+            child.data[childDim.name] === parent.data[parentDim.name];
     }
 
     //-----------------------------------
