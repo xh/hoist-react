@@ -11,9 +11,9 @@ import {action, observable} from 'mobx';
 
 import {throwIf} from '../../utils/js';
 import {Cube} from './Cube';
-import {createAggregateRow} from './impl/AggregateRow';
-import {createBucketRow} from './impl/BucketRow';
-import {createLeafRow} from './impl/LeafRow';
+import {AggregateRow} from './impl/AggregateRow';
+import {BucketRow} from './impl/BucketRow';
+import {LeafRow} from './impl/LeafRow';
 import {Query} from './Query';
 
 /**
@@ -157,7 +157,7 @@ export class View {
         const updatedRows = new Set();
         updates.forEach(rec => {
             const leaf = _leafMap.get(rec.id);
-            leaf?._meta.applyDataUpdate(rec, updatedRows);
+            leaf?.applyDataUpdate(rec, updatedRows);
         });
         this.stores.forEach(store => {
             const recordUpdates = [];
@@ -183,13 +183,18 @@ export class View {
         newRows = this.bucketRows(newRows, rootId, {});
 
         if (includeRoot) {
-            newRows = [createAggregateRow(this, rootId, newRows, null, 'Total', {})];
-        } else if (!query.includeLeaves && newRows[0]?._meta.isLeaf) {
+            newRows = [new AggregateRow(this, rootId, newRows, null, 'Total', {})];
+        } else if (!query.includeLeaves && newRows[0]?.isLeaf) {
             newRows = []; // degenerate case, no visible rows
         }
 
         this._leafMap = leafMap;
-        this._rows = newRows;
+
+        // This is the magic.  We only actually reveal to API the network of *data* nodes.
+        // This hides all the meta information, as well as unwanted leaves and skipped rows.
+        // Underlying network still there and updates will flow up through it via the leaves.
+        newRows.forEach(it => it.applyVisibleChildren());
+        this._rows = newRows.map(it => it.data);
     }
 
     groupAndInsertLeaves(leaves, dimensions, parentId, appliedDimensions) {
@@ -208,7 +213,7 @@ export class View {
             let children = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
             children = this.bucketRows(children, id, appliedDimensions);
 
-            return createAggregateRow(this, id, children, dim, val, appliedDimensions);
+            return new AggregateRow(this, id, children, dim, val, appliedDimensions);
         });
     }
 
@@ -218,7 +223,7 @@ export class View {
         const bucketSpec = this.cube.bucketSpecFn(rows);
         if (!bucketSpec) return rows;
 
-        if (!this.query.includeLeaves && rows[0]?._meta.isLeaf) return rows;
+        if (!this.query.includeLeaves && rows[0]?.isLeaf) return rows;
 
         const {name: bucketName, bucketFn} = bucketSpec,
             buckets = {},
@@ -238,7 +243,7 @@ export class View {
         // Create new rows for each bucket and add to the result
         forEach(buckets, (rows, bucketVal) => {
             const id = parentId + Cube.RECORD_ID_DELIMITER + `${bucketName}=[${bucketVal}]`;
-            ret.push(createBucketRow(this, id, rows, bucketVal, bucketSpec, appliedDimensions));
+            ret.push(new BucketRow(this, id, rows, bucketVal, bucketSpec, appliedDimensions));
         });
 
         return ret;
@@ -278,7 +283,7 @@ export class View {
         const ret = new Map();
         records.forEach(rec => {
             if (this.query.test(rec)) {
-                ret.set(rec.id, createLeafRow(this, rec));
+                ret.set(rec.id, new LeafRow(this, rec));
             }
         });
         return ret;
