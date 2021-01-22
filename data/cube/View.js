@@ -11,9 +11,9 @@ import {action, observable} from 'mobx';
 
 import {throwIf} from '../../utils/js';
 import {Cube} from './Cube';
-import {AggregateRow} from './impl/AggregateRow';
-import {BucketRow} from './impl/BucketRow';
-import {LeafRow} from './impl/LeafRow';
+import {AggregateRow} from './row/AggregateRow';
+import {BucketRow} from './row/BucketRow';
+import {LeafRow} from './row/LeafRow';
 import {Query} from './Query';
 
 /**
