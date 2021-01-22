@@ -65,15 +65,16 @@ export class BaseRow {
         // Apply recursively -- we need to go depth first to allow recursive collapsing
         children.forEach(it => it.applyVisibleChildren());
 
-        // Skip selected single children
+        // Skip cullable single children, by wiring up to *their* data children.
         if (children.length === 1) {
             const childRow = children[0];
             if (this.isRedundantChild(childRow) || (omitFn && omitFn(childRow))) {
-                children = childRow.children;
+                data.children = childRow.data.children;
+                return;
             }
         }
 
-        // Wire up data node to its data children
+        // ...otherwise wire up to your own children's data
         data.children = children.map(it => it.data);
     }
 
