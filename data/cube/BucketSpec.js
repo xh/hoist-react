@@ -29,7 +29,7 @@ export class BucketSpec {
  *
  * Function which is used to determine which bucket (if any) a given row should be placed into.
  *
- * @param {Object} row - the row being checked
+ * @param {BaseRow} row - the row being checked
  * @returns {string|null} - the bucket to place the row into, or null if row should not be bucketed
  */
 
