@@ -145,7 +145,7 @@
 
   // Hover highlight
   &--show-hover {
-    .ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected) {
+    .ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected):not(.ag-row-pinned) {
       background-color: var(--xh-grid-bg-hover);
     }
   }
