@@ -9,7 +9,7 @@ retry support.
 
 ### 🐞 Bug Fixes
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v37.0.0...v37.1.0)
+[Commit Log](https://github.com/xh/hoist-react/compare/v37.1.0...v37.2.0)
 
 ## v37.1.0 - 2021-01-20
 
