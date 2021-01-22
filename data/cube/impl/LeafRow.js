@@ -39,6 +39,12 @@ class LeafMeta {
         });
     }
 
+    noteBucketed(bucketSpec, bucketVal) {
+        const {data} = this;
+        data.buckets = data.buckets ?? {};
+        data.buckets[bucketSpec.name] = bucketVal;
+    }
+
     applyDataUpdate(newRec, updatedRows) {
         const {view, parent, data} = this,
             newData = newRec.data,
