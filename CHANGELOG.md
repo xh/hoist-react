@@ -1,8 +1,15 @@
 # Changelog
 
-## v38.0.0-SNAPSHOT - unreleased
+## v37.2.0 - 2021-01-22
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v37.1.0...develop)
+### 🎁 New Features
+* New `ErrorMessage` component for standard "inline" rendering of Errors and Exceptions, with
+retry support.
+* `Cube` now supports an `omitFn` to allow apps to remove unwanted, single-node children.
+
+### 🐞 Bug Fixes
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v37.0.0...v37.1.0)
 
 ## v37.1.0 - 2021-01-20
 
@@ -11,6 +18,7 @@
 * Columns in `ColChooser` can now be filtered by their `chooserGroup`.
 * `Cube` now supports a `bucketSpecFn` config which allows dynamic bucketing and aggregation of
   rows.
+* `Cube` now supports a `omitFn`
 
 ### 🐞 Bug Fixes
 
