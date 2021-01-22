@@ -70,6 +70,8 @@ export class BaseRow {
             const childRow = children[0];
             if (this.isRedundantChild(this, childRow) || (omitFn && omitFn(childRow))) {
                 children = childRow.data.children?.map(it => it._meta) ?? null;
+            } else {
+                break;
             }
         }
 
