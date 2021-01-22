@@ -44,7 +44,7 @@ export class BaseRow {
         let {children, view, data} = this,
             {lockFn, omitFn} = view.cube;
 
-        if (!children);
+        if (!children) return;
 
         // Remove all children from the data if the query is not configured to include leaves and
         // this row has leaves as children
