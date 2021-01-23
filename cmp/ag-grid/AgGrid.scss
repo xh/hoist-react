@@ -105,7 +105,9 @@
     .ag-row {
       border-color: var(--xh-grid-border-color);
 
-      &.ag-row-group {
+      // Apply `--xh-grid-group-border-color` var to full-width grouped rows - for tree grid groups,
+      // see the dedicated `--xh-grid-tree-group-border-color` var, applied within Grid.scss.
+      &.ag-row-group.ag-full-width-row {
         border-color: var(--xh-grid-group-border-color);
       }
     }
@@ -145,7 +147,7 @@
 
   // Hover highlight
   &--show-hover {
-    .ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected) {
+    .ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected):not(.ag-row-pinned) {
       background-color: var(--xh-grid-bg-hover);
     }
   }

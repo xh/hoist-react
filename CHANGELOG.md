@@ -28,12 +28,7 @@ https://michel.codes/blogs/mobx6 for more on this change and the motivation behi
 
 
 ### 🎁 New Features
-* Columns in `ColChooser` can now be filtered by their `chooserGroup`.
 * New utility method `getOrCreate` for easy caching of properties on objects.
-
-### 🐞 Bug Fixes
-* Fix issue where a `View` would create a root row even if there were no leaf rows.
-* Fixed regression in `LeftRightChooser` not displaying description callout.
 
 ### 💥 Breaking Changes
 * The `Ref` class, deprecated in v26, has now been removed.  Use `createObservableRef` instead.
@@ -48,8 +43,32 @@ the need for any updates clear.
 * mobx -> `5.15.7 -> 6.0.4`
 * mobx-react -> `6.3.0 -> 7.0.5`
 
+[Commit Log](https://github.com/xh/hoist-react/compare/v37.2.0...develop)
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v37.0.0...develop)
+
+## v37.2.0 - 2021-01-22
+
+### 🎁 New Features
+* New `ErrorMessage` component for standard "inline" rendering of Errors and Exceptions, with
+retry support.
+* `Cube` now supports an `omitFn` to allow apps to remove unwanted, single-node children.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v37.1.0...v37.2.0)
+
+## v37.1.0 - 2021-01-20
+
+### 🎁 New Features
+
+* Columns in `ColChooser` can now be filtered by their `chooserGroup`.
+* `Cube` now supports a `bucketSpecFn` config which allows dynamic bucketing and aggregation of
+  rows.
+
+### 🐞 Bug Fixes
+
+* Fix issue where a `View` would create a root row even if there were no leaf rows.
+* Fixed regression in `LeftRightChooser` not displaying description callout.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v37.0.0...v37.1.0)
 
 ## v37.0.0 - 2020-12-15
 
@@ -75,8 +94,8 @@ the need for any updates clear.
   Hoist Core v8.7 or greater.)
 * `FormModel` and `FieldModel` gain support for Focus Management.
 * New `boundInput` getter on `FieldModel` to facilitate imperative access to controls, when needed.
-  This getter will return the new `HoistInputModel` interface, which support basic DOM access as well
-  as standard methods for `focus()`, `blur()`, and `select()`.
+  This getter will return the new `HoistInputModel` interface, which support basic DOM access as
+  well as standard methods for `focus()`, `blur()`, and `select()`.
 * New `GridModel` config `lockColumnGroups` to allow controlling whether child columns can be moved
   outside their parent group. Defaults to `true` to maintain existing behavior.
 
@@ -127,8 +146,8 @@ the need for any updates clear.
 
 ### ⚙️ Technical
 
-* Note that the included Onsen fork has been replaced with the latest Onsen release.
-  Apps should not need to make any changes.
+* Note that the included Onsen fork has been replaced with the latest Onsen release. Apps should not
+  need to make any changes.
 * `Cube.info` is now directly observable.
 * `@managed` and `markManaged` have been enhanced to allow for the cleanup of arrays of objects as
   well as objects. This matches the existing array support in `XH.safeDestroy()`.

@@ -67,7 +67,7 @@ export class StoreSelectionModel extends HoistModel {
      */
     @action
     select(records, clearSelection = true) {
-        records = castArray(records);
+        records = castArray(records ?? []);
         if (this.mode == 'disabled') return;
         if (this.mode == 'single' && records.length > 1) {
             records = [records[0]];
