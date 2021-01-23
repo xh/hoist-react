@@ -1,5 +1,12 @@
 # Changelog
 
+## v38.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v37.2.0...develop)
+
+
 ## v37.2.0 - 2021-01-22
 
 ### 🎁 New Features
