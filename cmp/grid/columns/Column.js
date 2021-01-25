@@ -9,7 +9,7 @@ import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {castArray, clone, find, get, isArray, isFinite, isFunction, isNil, isNumber, isString} from 'lodash';
-import {Component} from 'react';
+import {forwardRef, useImperativeHandle, useState} from 'react';
 import {GridSorter} from '../impl/GridSorter';
 import {ExportFormat} from './ExportFormat';
 
@@ -315,7 +315,6 @@ export class Column {
      */
     getAgSpec() {
         const {gridModel, field, headerName, displayName, agOptions} = this,
-            me = this,
             ret = {
                 field,
                 colId: this.colId,
@@ -411,29 +410,30 @@ export class Column {
                 // Note that we must always return a value - see hoist-react #2058, #2181
                 return obj.data ?? '*EMPTY*';
             };
-            ret.tooltipComponentFramework = class extends Component {
-                getReactContainerClasses() {
-                    if (this.props.location === 'header') return ['ag-tooltip'];
-                    return ['xh-grid-tooltip', tooltipElement ? 'xh-grid-tooltip--custom' : 'xh-grid-tooltip--default'];
-                }
-                render() {
-                    const agParams = this.props,
-                        {location, value: record} = agParams;  // Value actually contains store record -- see above
+            ret.tooltipComponentFramework = forwardRef((props, ref) => {
+                const {location} = props;
+                useImperativeHandle(ref, () => ({
+                    getReactContainerClasses() {
+                        if (location === 'header') return ['ag-tooltip'];
+                        return ['xh-grid-tooltip', tooltipElement ? 'xh-grid-tooltip--custom' : 'xh-grid-tooltip--default'];
+                    }
+                }), [location]);
 
-                    if (location === 'header') return div(me.headerTooltip);
+                const agParams = props,
+                    {value: record} = agParams;  // Value actually contains store record -- see above
 
-                    if (!record?.isRecord) return null;
-                    const {store} = record,
-                        val = me.getValueFn({record, column: me, gridModel, agParams, store});
+                if (location === 'header') return div(this.headerTooltip);
 
-                    const ret = isFunction(tooltipSpec) ?
-                        tooltipSpec(val, {record, column: me, gridModel, agParams}) :
-                        val;
+                if (!record?.isRecord) return null;
+                const {store} = record,
+                    val = this.getValueFn({record, column: this, gridModel, agParams, store});
 
-                    // Always defend against returning undefined from render() - React will throw!
-                    return ret ?? null;
-                }
-            };
+                const ret = isFunction(tooltipSpec) ?
+                    tooltipSpec(val, {record, column: this, gridModel, agParams}) :
+                    val;
+
+                return ret ?? null;
+            });
         }
 
         // Generate CSS classes for cells.
@@ -471,15 +471,21 @@ export class Column {
                 return renderer(agParams.value, {record: agParams.data, column: this, gridModel, agParams});
             });
         } else if (elementRenderer) {
-            setElementRenderer(class extends Component {
-                render() {
-                    const agParams = this.props,
-                        {value, data: record} = agParams;
-                    return elementRenderer(value, {record, column: me, gridModel, agParams});
-                }
-
-                refresh() {return false}
-            });
+            setElementRenderer(
+                forwardRef((props, ref) => {
+                    const [agParams, setAgParams] = useState(props);
+                    useImperativeHandle(ref, () => {
+                        return {
+                            refresh: (agParams) => {
+                                setAgParams(agParams);
+                                return true;
+                            }
+                        };
+                    });
+                    const {value, data} =  agParams;
+                    return elementRenderer(value, {record: data, column: this, gridModel, agParams});
+                })
+            );
         } else if (!agOptions.cellRenderer && !agOptions.cellRendererFramework) {
             // By always providing a minimal cell pass-through cellRenderer, we can ensure the
             // cell contents are wrapped in a span by Ag-Grid. Our flexbox enabled cell styling

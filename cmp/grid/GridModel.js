@@ -39,7 +39,6 @@ import {
     isPlainObject,
     isString,
     isUndefined,
-    last,
     map,
     max,
     min,
@@ -233,11 +232,6 @@ export class GridModel {
      *      should not immediately respond to user or programmatic changes to the sortBy property,
      *      but will instead wait for the next load of data, which is assumed to be pre-sorted.
      *      Default false.
-     * @param {boolean} [c.experimental.useDeltaSort] - Set to true to use ag-Grid's experimental
-     *      'deltaSort' feature designed to do incremental sorting.  Default false.
-     * @param {boolean} [c.experimental.useTransaction] - set to false to use ag-Grid's
-     *      immutableData to internally generate transactions on data updates.  When true,
-     *      Hoist will generate the transaction on data update. Default true.
      * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
@@ -632,12 +626,6 @@ export class GridModel {
 
         this.validateColumns(columns);
 
-        const leaves = this.gatherLeaves(columns);
-        if (leaves.some(c => c.flex && c.maxWidth) && !find(leaves, {colId: 'xhEmptyFlex'})) {
-            console.debug('Adding empty flex column to workaround AG-4243');
-            columns.push(this.buildColumn(xhEmptyFlexCol));
-        }
-
         this.columns = columns;
         this.columnState = this.getLeafColumns()
             .map(({colId, width, hidden, pinned}) => ({colId, width, hidden, pinned}));
@@ -734,12 +722,6 @@ export class GridModel {
             // 2.b) Install implied group sort orders and sort
             columnState.forEach(it => this.markGroupSortOrder(it));
             columnState = this.sortColumns(columnState);
-
-            // 2.c) Force AG-4243 workaround column to stay last (avoid user dragging)!
-            const emptyFlex = find(columnState, {colId: 'xhEmptyFlex'});
-            if (emptyFlex && last(columnState) !== emptyFlex) {
-                pull(columnState, emptyFlex).push(emptyFlex);
-            }
         }
 
         this.columnState = columnState;
@@ -864,7 +846,7 @@ export class GridModel {
             }
             if (config.renderer || config.elementRenderer) {
                 colDefaults.renderer = null;
-                colDefaults.elementRender = null;
+                colDefaults.elementRenderer = null;
             }
             config = defaultsDeep({}, config, colDefaults);
         }
@@ -1139,8 +1121,6 @@ export class GridModel {
 
         return {
             externalSort: false,
-            useTransactions: true,
-            useDeltaSort: false,
             ...XH.getConf('xhGridExperimental', {}),
             ...experimental
         };
@@ -1162,35 +1142,6 @@ export class GridModel {
         return a < b ? -1 : (a > b ? 1 : 0);
     };
 }
-
-//--------------------------------------------------------------------
-// Hidden flex column designed to workaround the following ag issue:
-//
-//   AG-4243: [Column Flex] When using column flex and maxWidth, last column
-//   header text isn't shown (See also hr ticket #1928)
-//
-// This column is inserted whenever there is a flex column with maxWidth.
-// Special handling ensures it is maintained as the last column.
-//-------------------------------------------------------------------------
-const xhEmptyFlexCol = {
-    colId: 'xhEmptyFlex',
-    headerName: null,
-    // Tiny flex value set here to avoidFlexCol competing with other flex cols in the same grid.
-    // This config's goal is only to soak up *extra* width - e.g. when there are no other flex cols,
-    // or when any other flex cols are constrained to a configured maxWidth.
-    flex: 0.001,
-    minWidth: 0,
-    movable: false,
-    resizable: false,
-    sortable: false,
-    excludeFromChooser: true,
-    excludeFromExport: true,
-    agOptions: {
-        filter: false,
-        suppressMenu: true
-    }
-};
-
 
 /**
  * @typedef {Object} ColChooserModelConfig
