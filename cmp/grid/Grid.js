@@ -199,6 +199,7 @@ class LocalModel {
         let ret = {
             model: model.agGridModel,
             immutableData: true,
+            rowDataChangeDetectionStrategy: 'IdentityCheck',
             suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowNodeId: (data) => data.id,
             defaultColDef: {

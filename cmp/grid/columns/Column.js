@@ -9,7 +9,7 @@ import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {castArray, clone, find, get, isArray, isFinite, isFunction, isNil, isNumber, isString} from 'lodash';
-import {forwardRef, useImperativeHandle} from 'react';
+import {forwardRef, useImperativeHandle, useState} from 'react';
 import {GridSorter} from '../impl/GridSorter';
 import {ExportFormat} from './ExportFormat';
 
@@ -473,13 +473,17 @@ export class Column {
         } else if (elementRenderer) {
             setElementRenderer(
                 forwardRef((props, ref) => {
-                    useImperativeHandle(ref, () => ({
-                        refresh: () => false
-                    }));
-
-                    const agParams = props,
-                        {value, data: record} = agParams;
-                    return elementRenderer(value, {record, column: this, gridModel, agParams});
+                    const [agParams, setAgParams] = useState(props);
+                    useImperativeHandle(ref, () => {
+                        return {
+                            refresh: (agParams) => {
+                                setAgParams(agParams);
+                                return true;
+                            }
+                        };
+                    });
+                    const {value, data} =  agParams;
+                    return elementRenderer(value, {record: data, column: this, gridModel, agParams});
                 })
             );
         } else if (!agOptions.cellRenderer && !agOptions.cellRendererFramework) {
