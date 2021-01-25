@@ -199,12 +199,12 @@ body {
   //-----------------------------------------
   --xh-bg: var(--bg, white);
   --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-light));
-  --xh-bg-highlight: var(--bg-highlight, #{mc-trans('blue', '200')});
+  --xh-bg-highlight: var(--bg-highlight, hsl(205, 85%, 85%));
 
   &.xh-dark {
     --xh-bg: var(--bg, var(--xh-black));
     --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-dark));
-    --xh-bg-highlight: var(--bg-highlight, #{mc-trans('light-blue', '500', 0.65)});
+    --xh-bg-highlight: var(--bg-highlight, hsl(200, 50%, 27%));
   }
 
 
@@ -332,18 +332,18 @@ body {
     --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '800', 0.2)});
   }
 
-  
+
   //------------------------
   // Slider Handles
   //------------------------
   --xh-slider-handle-focused-box-shadow: var(--slider-handle-focused-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-focused-border-color), 0 0 0 1px var(--xh-form-field-focused-border-color)});
 
-  
+
   //------------------------
   // Grids
   //------------------------
   --xh-grid-bg-highlight: var(--grid-bg-highlight, var(--xh-bg-highlight));
-  --xh-grid-bg-hover: var(--grid-bg-hover, #{mc-trans('blue', '200', 0.8)});
+  --xh-grid-bg-hover: var(--grid-bg-hover, hsl(205, 85%, 90%));
   --xh-grid-bg-odd: var(--grid-bg-odd, #{mc('grey', '100')});
   --xh-grid-bg: var(--grid-bg, var(--xh-bg));
   --xh-grid-border-color: var(--grid-border-color, #{mc('grey', '200')});
@@ -358,9 +358,9 @@ body {
   --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '400')});
   --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '200')});
   --xh-grid-group-text-color: var(--grid-group-text-color, white);
-  --xh-grid-total-row-bg: var(--grid-total-row-bg, hsl(207, 87%, 95%));
-  --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(207, 87%, 95%));
+  --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(205, 85%, 95%));
   --xh-grid-tree-group-border-color: var(--grid-tree-group-border-color, var(--xh-grid-bg-highlight));
+  --xh-grid-total-row-bg: var(--grid-total-row-bg, var(--xh-grid-tree-group-bg));
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-blue-gray-light));
   --xh-grid-header-border-color: var(--grid-header-border-color, var(--xh-grid-border-color));
   --xh-grid-header-icon-color: var(--grid-header-icon-color, var(--xh-text-color-muted));
@@ -415,13 +415,15 @@ body {
 
   // Dark Grid
   &.xh-dark {
+    --xh-grid-bg-highlight: var(--grid-bg-highlight, var(--xh-bg-highlight));
+    --xh-grid-bg-hover: var(--grid-bg-hover, hsl(200, 50%, 17%));
     --xh-grid-bg-odd: var(--grid-bg-odd, hsl(200, 26%, 11%));
     --xh-grid-border-color: var(--grid-border-color, hsl(186, 11%, 18%));
     --xh-grid-cell-change-bg-highlight: var(--grid-cell-bg-highlight, #{mc-trans('orange', '800', 0.8)});
     --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '800')});
     --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '700')});
-    --xh-grid-total-row-bg: var(--grid-total-row-bg, hsl(201, 48%, 12%));
-    --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(201, 48%, 12%));
+    --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(200, 50%, 12%));
+    --xh-grid-total-row-bg: var(--grid-total-row-bg, var(--xh-grid-tree-group-bg));
     --xh-grid-header-bg: var(--grid-header-bg, var(--xh-black));
     --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '800')});
   }

@@ -6,36 +6,22 @@
  */
 
 import {isEmpty} from 'lodash';
+import {BaseRow} from './BaseRow';
 import {RowUpdate} from './RowUpdate';
 
 /**
- * @private
- *
- * object used to track leaf rows in a View
+ * Object used to track leaf rows in a View
  */
-export function createLeafRow(view, rawRecord) {
-    const data = {};
-    data._meta = new LeafMeta(data, view, rawRecord);
-    return data;
-}
-
-
-class LeafMeta {
-
-    data = null;
-    view = null;
-    parent = null;
-
+export class LeafRow extends BaseRow {
     get isLeaf() {return true}
 
-    constructor(data, view, rawRecord) {
-        this.data = data;
+    constructor(view, rawRecord) {
+        super(view, rawRecord.id);
         this.view = view;
 
-        data.id = rawRecord.id;
-        data.cubeLabel = rawRecord.id;
+        this.data.cubeLabel = rawRecord.id;
         view.fields.forEach(({name}) => {
-            data[name] = rawRecord.data[name];
+            this.data[name] = rawRecord.data[name];
         });
     }
 
