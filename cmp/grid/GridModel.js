@@ -22,7 +22,8 @@ import {
     ensureUnique,
     throwIf,
     warnIf,
-    withDefault
+    withDefault,
+    withShortDebug
 } from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
@@ -904,7 +905,9 @@ export class GridModel {
             await wait(100);
         }
 
-        await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
+        withShortDebug('Autosizing Grid', async () => {
+            await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
+        }, this);
 
         if (showMask) {
             await wait(100);
