@@ -256,6 +256,8 @@ export class FetchService extends HoistService {
  * @property {(number|Object)} [timeout] - ms to wait for response before rejecting with a timeout
  *      exception.  Defaults to 30 seconds, but may be specified as null to specify no timeout.
  *      May also be specified as an object to customise the exception. See Promise.timeout().
+ * @property {LoadSpec} [loadSpec] - optional metadata about the underlying request. Passed through
+ *      for downstream processing by utils such as {@see ExceptionHandler}.
  * @property {Object} [fetchOpts] - options to pass to the underlying fetch request.
  *      @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
  * @property {Object} [qsOpts] - options to pass to the param converter library, qs.

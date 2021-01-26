@@ -15,18 +15,18 @@ import {managed} from './HoistBaseDecorators';
 /**
  * Provides support for objects that participate in Hoist's loading/refresh lifecycle.
  *
- * This utility is used by core Hoist classes such as HoistModel and HoistService to support
- * the managed loading/refresh lifecycle built in to Hoist.
+ * This utility is used by core Hoist classes such as {@see HoistModel} and {@see HoistService},
+ * which will automatically create an instance of this class if they have declared a concrete
+ * implementation of `doLoadAsync()`, signalling that they wish to take advantage of the additional
+ * tracking and management provided here.
  *
  * Not typically created directly by applications.
- *
- * @see HoistModel, HoistService.
  */
 export class LoadSupport extends HoistBase {
 
     /**
-     * @member {PendingTaskModel} - model tracking the loading of this object
-     * Note that this model will *not* track auto-refreshes.
+     * @member {PendingTaskModel} - model tracking the loading of this object.
+     *      Note that this model will *not* track auto-refreshes.
      */
     @managed
     loadModel = new PendingTaskModel();
@@ -48,9 +48,11 @@ export class LoadSupport extends HoistBase {
     }
 
     /**
-     * Load the target.
-     **
-     * @param {LoadSpec} [loadSpec] - Metadata about the underlying request
+     * Load the target by calling its `doLoadAsync()` implementation.
+     *
+     * @param {LoadSpec} [loadSpec] - optional metadata about the underlying request, used within
+     *      Hoist and application code to adjust related behaviors such as error handling and
+     *      activity tracking.
      */
     async loadAsync(loadSpec = {}) {
         const {target} = this;
@@ -111,6 +113,7 @@ export class LoadSupport extends HoistBase {
     }
 }
 
+
 /**
 * Load a collection of objects concurrently.
 *
@@ -139,16 +142,10 @@ export async function loadAllAsync(objs, loadSpec) {
  *       refresh process, rather than a user action.
  */
 
-/**
- * @typedef {Object} LoadSpec
- *
- * @property {boolean} [isRefresh] - true if this load was triggered by a refresh request.
- * @property {boolean} [isAutoRefresh] - true if this load was triggered by a programmatic
- *       refresh process, rather than a user action.
- */
-//--------------------------------------------------
+
+//------------------------
 // Implementation
-//--------------------------------------------------
+//------------------------
 function getLoadTypeFromSpec(loadSpec) {
     if (loadSpec.isAutoRefresh) return 'Auto-Refresh';
     if (loadSpec.isRefresh) return 'Refresh';
