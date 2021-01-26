@@ -2,44 +2,54 @@
 
 ## v38.0.0-SNAPSHOT - unreleased
 
-### 🎁 Technical
-* Hoist v38 includes some major refactoring of our core classes to streamline
-them, bring them in to conformance with the latest developments in Javascript, React,
-and MobX, and allow us to  more easily provide documentation and additional features.
-We have removed the use of class based decorators, in favor of a simpler, inheritance model.
+Hoist v38 includes some major refactoring of our core classes to streamline them, bring them in to
+conformance with the latest developments in Javascript, React, and MobX, and allow us to more easily
+provide documentation and additional features. We have removed the use of class based decorators, in
+favor of a simpler, inheritance model.
 
 In particular:
-** We are introducing a new root base class called `HoistBase` which provides many of the syntax
-enhancements and conventions used in Hoist for persistence, resource management, and reactivity.
 
-** New base classes of `HoistModel` and `HoistService` replace the existing class
-decorators `@HoistModel`, `@HoistService`.  We have also removed the need for the explicit
-`@LoadSupport` annotation on these classes.  The presence of a defined `doLoadAsync()` method is now
-sufficient to allow these objects to participate in the loading and refreshing lifecycle as before.
+* We are introducing a new root base class called `HoistBase` which provides many of the syntax
+  enhancements and conventions used in Hoist for persistence, resource management, and reactivity.
 
-** We have deprecated support for class-based Components via the `@HoistComponent` class decorator.
-To continue to use this decorator, please import it from the `@xh\hoist\deprecated` package.
-Please note that we plan to remove `@HoistComponent` in a future version.
+* New base classes of `HoistModel` and `HoistService` replace the existing class decorators
+  `@HoistModel`, `@HoistService`. We have also removed the need for the explicit `@LoadSupport`
+  annotation on these classes. The presence of a defined `doLoadAsync()` method is now sufficient to
+  allow these objects to participate in the loading and refreshing lifecycle as before.
 
-** Due to changes in MobX v6.0.1, all classes that host observable fields and actions will now also
-need to provide a constructor containing a call to `makeObservable(this)`.  This change will
-require updates to most `HoistModel`, `HoistService` classes.  See
-https://michel.codes/blogs/mobx6 for more on this change and the motivation behind it.
+* We have deprecated support for class-based Components via the `@HoistComponent` class decorator.
+  To continue to use this decorator, please import it from the `@xh\hoist\deprecated` package.
+  Please note that we plan to remove `@HoistComponent` in a future version.
+
+* Due to changes in MobX v6.0.1, all classes that host observable fields and actions will now also
+  need to provide a constructor containing a call to `makeObservable(this)`. This change will
+  require updates to most `HoistModel`, `HoistService` classes. See https://michel.codes/blogs/mobx6
+  for more on this change and the motivation behind it.
 
 
 ### 🎁 New Features
+
 * New utility method `getOrCreate` for easy caching of properties on objects.
 
 ### 💥 Breaking Changes
-* The `Ref` class, deprecated in v26, has now been removed.  Use `createObservableRef` instead.
+
+* Hoist grids now require ag-Grid v25.0.1 or higher - if your app uses ag-Grid, update your ag-Grid
+  dependency in your app's `package.json` file.
+* The `Ref` class, deprecated in v26, has now been removed. Use `createObservableRef` instead.
 * `@HoistComponent` has been deprecated and moved to `@xh\hoist\deprecated`
 * All `HoistModel` and `HoistService` classes will have to be adjusted as described above.
 * The `uses()` function (called within `hoistComponent()` factory configs for model context lookups)
-no longer accepts class names as strings. Pass the class itself (or superclass) of the model you wish
-to select for your component. `Uses` will throw if given any string other than "*", making
-the need for any updates clear.
+  no longer accepts class names as strings. Pass the class itself (or superclass) of the model you
+  wish to select for your component. `Uses` will throw if given any string other than "*", making
+  the need for any updates clear.
+
+### ⚙️ Technical
+
+* We have removed the experimental flags `useTransactions`, and `deltaSort` from `GridModel`. The
+  former has been the default behavior for Hoist for several releases, and the latter is obsolete.
 
 ### 📚 Libraries
+
 * mobx -> `5.15.7 -> 6.0.4`
 * mobx-react -> `6.3.0 -> 7.0.5`
 
@@ -49,8 +59,9 @@ the need for any updates clear.
 ## v37.2.0 - 2021-01-22
 
 ### 🎁 New Features
-* New `ErrorMessage` component for standard "inline" rendering of Errors and Exceptions, with
-retry support.
+
+* New `ErrorMessage` component for standard "inline" rendering of Errors and Exceptions, with retry
+  support.
 * `Cube` now supports an `omitFn` to allow apps to remove unwanted, single-node children.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v37.1.0...v37.2.0)

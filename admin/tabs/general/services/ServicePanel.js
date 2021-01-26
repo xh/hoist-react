@@ -34,7 +34,9 @@ export const servicePanel = hoistCmp.factory({
             ],
             item: grid({
                 agOptions: {
-                    groupRowInnerRenderer: (params) => params.value + ' Services'
+                    groupRowRendererParams: {
+                        innerRenderer: (params) => params.value + ' Services'
+                    }
                 }
             })
         });
