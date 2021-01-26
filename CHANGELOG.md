@@ -2,20 +2,23 @@
 
 ## v38.0.0-SNAPSHOT - unreleased
 
-Hoist v38 includes some major refactoring of our core classes to streamline them, bring them in to
-conformance with the latest developments in Javascript, React, and MobX, and allow us to more easily
-provide documentation and additional features. We have removed the use of class based decorators, in
-favor of a simpler, inheritance model.
+Hoist v38 includes major refactoring to streamline core classes, bring the toolkit into closer
+alignment with the latest developments in Javascript, React, and MobX, and allow us to more easily
+provide documentation and additional features. Most notably, we have removed the use of class based
+decorators, in favor of a simpler inheritance-based approach to defining models and services.
 
-In particular:
-
-* We are introducing a new root base class called `HoistBase` which provides many of the syntax
-  enhancements and conventions used in Hoist for persistence, resource management, and reactivity.
+* We are introducing a new root superclass `HoistBase` which provides many of the syntax
+  enhancements and conventions used throughout Hoist for persistence, resource management, and
+  reactivity.
 
 * New base classes of `HoistModel` and `HoistService` replace the existing class decorators
-  `@HoistModel`, `@HoistService`. We have also removed the need for the explicit `@LoadSupport`
-  annotation on these classes. The presence of a defined `doLoadAsync()` method is now sufficient to
-  allow these objects to participate in the loading and refreshing lifecycle as before.
+  `@HoistModel` and `@HoistService`. Application models and services should now `extend` these base
+  classes instead of applying the (now removed) decorators. For your application's `AppModel`,
+  extend the new `HoistAppModel` superclass.
+
+* We have also removed the need for the explicit `@LoadSupport` annotation on these classes. The
+  presence of a defined `doLoadAsync()` method is now sufficient to allow classes extending
+  `HoistModel` and `HoistService` to participate in the loading and refreshing lifecycle as before.
 
 * We have deprecated support for class-based Components via the `@HoistComponent` class decorator.
   To continue to use this decorator, please import it from the `@xh\hoist\deprecated` package.
@@ -23,9 +26,9 @@ In particular:
 
 * Due to changes in MobX v6.0.1, all classes that host observable fields and actions will now also
   need to provide a constructor containing a call to `makeObservable(this)`. This change will
-  require updates to most `HoistModel`, `HoistService` classes. See https://michel.codes/blogs/mobx6
-  for more on this change and the motivation behind it.
-
+  require updates to most `HoistModel` and `HoistService` classes. See
+  [this article from MobX](https://michel.codes/blogs/mobx6) for more on this change and the
+  motivation behind it.
 
 ### 🎁 New Features
 
@@ -33,15 +36,15 @@ In particular:
 
 ### 💥 Breaking Changes
 
+* All `HoistModel` and `HoistService` classes will have to be adjusted as described above.
+* `@HoistComponent` has been deprecated and moved to `@xh\hoist\deprecated`
 * Hoist grids now require ag-Grid v25.0.1 or higher - if your app uses ag-Grid, update your ag-Grid
   dependency in your app's `package.json` file.
-* The `Ref` class, deprecated in v26, has now been removed. Use `createObservableRef` instead.
-* `@HoistComponent` has been deprecated and moved to `@xh\hoist\deprecated`
-* All `HoistModel` and `HoistService` classes will have to be adjusted as described above.
 * The `uses()` function (called within `hoistComponent()` factory configs for model context lookups)
   no longer accepts class names as strings. Pass the class itself (or superclass) of the model you
   wish to select for your component. `Uses` will throw if given any string other than "*", making
   the need for any updates clear.
+* The `Ref` class, deprecated in v26, has now been removed. Use `createObservableRef` instead.
 
 ### ⚙️ Technical
 
@@ -50,8 +53,10 @@ In particular:
 
 ### 📚 Libraries
 
-* mobx -> `5.15.7 -> 6.0.4`
-* mobx-react -> `6.3.0 -> 7.0.5`
+* @blueprintjs/core `3.36 -> 3.38`
+* codemirror `5.58 -> 5.59`
+* mobx `5.15 -> 6.0`
+* mobx-react `6.3 -> 7.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v37.2.0...develop)
 
