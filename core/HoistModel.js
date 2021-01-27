@@ -9,9 +9,9 @@ import {managed} from './HoistBaseDecorators';
 import {LoadSupport} from './LoadSupport';
 
 /**
- * Core superclass for stateful Models in Hoist, used as backing stores for component state + APIs
- * and as general all-purpose constructs for loading, storing, processing, and observing business
- * data and other application state.
+ * Core superclass for stateful Models in Hoist. Models are used throughout the toolkit and
+ * applications as backing stores for components and as general all-purpose constructs for
+ * loading, storing, processing, and observing business data and other application state.
  *
  * The most common use of `HoistModel` is to support Hoist components. Components can be configured
  * to create or lookup an instance of an appropriate model subclass using the `model` config passed
@@ -55,7 +55,7 @@ export class HoistModel extends HoistBase {
     /**
      * @member {LoadSupport} - provides optional support for Hoist's approach to managed loading.
      *
-     * Applications will not typically need to access this object directly. If a model class
+     * Applications will not typically need to access this object directly. If a subclass
      * declares a concrete implementation of the `doLoadAsync()` template method, an instance of
      * `LoadSupport` will automatically be created and installed to support the extensions below.
      */
@@ -91,10 +91,8 @@ export class HoistModel extends HoistBase {
     async autoRefreshAsync() {return this.loadSupport?.autoRefreshAsync()}
 
     /**
-     * Load this object. Implement this method to describe how this object should load
-     * itself from underlying data sources or services.
-     *
-     * For implementation only. Callers should call `loadAsync()` or `refreshAsync()` instead.
+     * Implement this method to load data or other state from external data sources or services.
+     * @protected - callers should call `loadAsync()` or `refreshAsync()` instead.
      *
      * @param {LoadSpec} loadSpec - metadata about the underlying request. Implementations should
      *      take care to pass this parameter in calls to any delegates that support it, e.g.
@@ -102,5 +100,6 @@ export class HoistModel extends HoistBase {
      *      `loadSupport` or when making calls to the core {@see FetchService} APIs.
      */
     async doLoadAsync(loadSpec) {}
+
 }
 HoistModel.isHoistModel = true;

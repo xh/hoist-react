@@ -14,19 +14,19 @@ import {stringify} from 'qs';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 
 /**
- * Service to send an HTTP request to a URL.
+ * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
  *
  * Wrapper around the standard Fetch API with some enhancements to streamline the process for
  * the most common use-cases. The Fetch API will be called with CORS enabled, credentials
  * included, and redirects followed.
  *
- * Custom headers can be provided to fetch as a plain object. App-wide default headers
- * can be set using setDefaultHeaders.
+ * Custom headers can be provided to fetch as a plain object. App-wide default headers can be set
+ * using `setDefaultHeaders()`.
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API|Fetch API Docs}
  *
- * Note that the convenience methods 'fetchJson', 'postJson', 'putJson' all accept the same options
- * as the main entry point 'fetch', as they delegate to fetch after setting additional defaults.
+ * Note that the convenience methods `fetchJson`, `postJson`, `putJson` all accept the same options
+ * as the main entry point `fetch`, as they delegate to fetch after setting additional defaults.
  */
 export class FetchService extends HoistService {
 

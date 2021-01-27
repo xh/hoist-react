@@ -7,19 +7,21 @@
 import {HoistModel} from './HoistModel';
 
 /**
- * Specialized base class for defining a Hoist Application. An instance of this class will be
- * initialized by Hoist after the framework has successfully initialized and will remain available
- * to all code via the XH.appModel getter.
+ * Specialized base class for defining the central model for a Hoist app as specified by its
+ * {@see AppSpec.modelClass} config. That config should reference a concrete implementation class
+ * extending this base. Hoist will create and then initialize an instance of that class after
+ * the framework has successfully initialized and will make it available to all app code via the
+ * `XH.appModel` getter.
  *
  * Applications should specify this class to provide application level state and services and
  * customize important metadata. Initialization of all resources (e.g. application level services)
- * should be done in initAsync().
+ * should be done in `initAsync()`.
  *
  * Hoist will load/reload this Model during the global refresh process.  This will occur before the
  * application's global XH.refreshContextModel has been refreshed, (when all mounted and 'owned'
- * HoistModels in the application are refreshed). Apps should implement a doloadAsync() to refresh all
- * other app-specific services and models, respecting any ordering and phasing requirements that
- * may exist.  {@see HoistBase.doLoadAsync()}
+ * HoistModels in the application are refreshed). AppModels should implement `doLoadAsync()` if
+ * required to refresh all other app-wide services and models, respecting any ordering and phasing
+ * requirements specific to its needs. {@see HoistModel.doLoadAsync()}
  */
 export class HoistAppModel extends HoistModel {
 
