@@ -7,21 +7,22 @@
 import {configure} from 'mobx';
 
 export {
-    extendObservable,
-    makeObservable,
     action,
     autorun,
+    comparer,
     computed,
+    extendObservable,
+    makeObservable,
     observable,
+    override,
     reaction,
     runInAction,
     toJS,
     trace,
     untracked,
-    when,
-    comparer
+    when
 } from 'mobx';
 export {observer} from 'mobx-react';
-export {settable, bindable} from './decorators';
+export {bindable, settable} from './decorators';
 
 configure({enforceActions: 'observed'});

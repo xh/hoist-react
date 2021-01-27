@@ -4,12 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {ValidationState} from '@xh/hoist/cmp/form';
 import {managed, XH} from '@xh/hoist/core';
-import {action, computed, makeObservable} from '@xh/hoist/mobx';
+import {action, computed, makeObservable, override} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {clone, defaults, flatMap, isArray, isUndefined, partition, without} from 'lodash';
 import {FormModel} from '../FormModel';
-import {ValidationState} from '../validation/ValidationState';
 import {BaseFieldModel} from './BaseFieldModel';
 
 /**
@@ -60,7 +60,7 @@ export class SubformsFieldModel extends BaseFieldModel {
         return this.value.map(s => s.getData());
     }
 
-    @action
+    @override
     init(initialValue) {
         if (!isUndefined(initialValue)) {
             this.initialValue = this.parseValue(initialValue);
@@ -69,7 +69,7 @@ export class SubformsFieldModel extends BaseFieldModel {
         this.cleanupModels();
     }
 
-    @action
+    @override
     setValue(v) {
         super.setValue(this.parseValue(v));
         this.cleanupModels();
@@ -98,13 +98,13 @@ export class SubformsFieldModel extends BaseFieldModel {
         return [...this.errors, ...subErrs];
     }
 
-    @action
+    @override
     reset() {
         super.reset();
         this.value.forEach(s => s.reset());
     }
 
-    @action
+    @override
     displayValidation(includeSubforms = true) {
         super.displayValidation(includeSubforms);
         if (includeSubforms) {
@@ -122,7 +122,7 @@ export class SubformsFieldModel extends BaseFieldModel {
         return this.value.some(s => s.isDirty) || super.isDirty;
     }
 
-    @action
+    @override
     async validateAsync({display = true} = {}) {
         const promises = this.value.map(m => m.validateAsync({display}));
         promises.push(super.validateAsync({display}));
