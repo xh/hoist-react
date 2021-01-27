@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, PersistenceProvider, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, apiRemoved, throwIf} from '@xh/hoist/utils/js';
 import {find, isUndefined, without, difference} from 'lodash';
 import {TabModel} from './TabModel';
@@ -18,8 +18,7 @@ import {TabModel} from './TabModel';
  *
  * Note: Routing is currently enabled for desktop applications only.
  */
-@HoistModel
-export class TabContainerModel {
+export class TabContainerModel extends HoistModel {
 
     /** @member {TabModel[]} */
     @managed
@@ -80,6 +79,8 @@ export class TabContainerModel {
         emptyText = 'No tabs to display.',
         switcherPosition
     }) {
+        super();
+        makeObservable(this);
         apiRemoved(switcherPosition, 'switcherPosition', 'Please specify `switcher` instead.');
 
         // Create default switcher props
@@ -266,10 +267,8 @@ export class TabContainerModel {
     @action
     setActiveTabId(id) {
         const tab = this.findTab(id);
-
         throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
-
         this.activeTabId = id;
         this.forwardRouterToTab(id);
     }

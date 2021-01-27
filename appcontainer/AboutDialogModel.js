@@ -7,16 +7,20 @@
 import {table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 
 /**
  * Support for About Dialog.
  *  @private
  */
-@HoistModel
-export class AboutDialogModel {
+export class AboutDialogModel extends HoistModel {
 
     @observable isOpen = false;
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     init() {
         this.addReaction({

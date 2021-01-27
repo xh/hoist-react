@@ -16,15 +16,13 @@ import {RefreshContextModel} from './RefreshContextModel';
  *
  * The `XH.refreshAppAsync()` convenience method is the recommended entry-point for apps to call.
  */
-@RefreshContextModel
-export class RootRefreshContextModel {
+export class RootRefreshContextModel extends RefreshContextModel {
 
     async doLoadAsync(loadSpec) {
-
-        // TODO: Refresh selected hoist services in phases here....
-        // await loadAllAsync([XH.configService, XH.prefService], loadSpec);
-
-        await XH.appModel.loadAsync(loadSpec);
+        const {appModel} = XH;
+        if (appModel.loadSupport) {
+            await appModel.loadAsync(loadSpec);
+        }
         await loadAllAsync(this.refreshTargets, loadSpec);
     }
 }

@@ -2,19 +2,61 @@
 
 ## v38.0.0-SNAPSHOT - unreleased
 
+Hoist v38 includes major refactoring to streamline core classes, bring the toolkit into closer
+alignment with the latest developments in Javascript, React, and MobX, and allow us to more easily
+provide documentation and additional features. Most notably, we have removed the use of class based
+decorators, in favor of a simpler inheritance-based approach to defining models and services.
 
-### ⚙️ Technical
-* We have removed the experimental flags `useTransactions`, and `deltaSort` from `GridModel`.
-The former has been the default behavior for Hoist for several releases, and the latter is
-obsolete.
+* We are introducing a new root superclass `HoistBase` which provides many of the syntax
+  enhancements and conventions used throughout Hoist for persistence, resource management, and
+  reactivity.
 
-### 💥 Breaking Changes
-* Hoist grids now require ag-Grid v25.0.1 or higher - if your app uses ag-Grid, update your
-ag-Grid dependency in your app's `package.json` file.
+* New base classes of `HoistModel` and `HoistService` replace the existing class decorators
+  `@HoistModel` and `@HoistService`. Application models and services should now `extend` these base
+  classes instead of applying the (now removed) decorators. For your application's `AppModel`,
+  extend the new `HoistAppModel` superclass.
 
+* We have also removed the need for the explicit `@LoadSupport` annotation on these classes. The
+  presence of a defined `doLoadAsync()` method is now sufficient to allow classes extending
+  `HoistModel` and `HoistService` to participate in the loading and refreshing lifecycle as before.
 
+* We have deprecated support for class-based Components via the `@HoistComponent` class decorator.
+  To continue to use this decorator, please import it from the `@xh\hoist\deprecated` package.
+  Please note that we plan to remove `@HoistComponent` in a future version.
+
+* Due to changes in MobX v6.0.1, all classes that host observable fields and actions will now also
+  need to provide a constructor containing a call to `makeObservable(this)`. This change will
+  require updates to most `HoistModel` and `HoistService` classes. See
+  [this article from MobX](https://michel.codes/blogs/mobx6) for more on this change and the
+  motivation behind it.
 
 ### 🎁 New Features
+
+* New utility method `getOrCreate` for easy caching of properties on objects.
+
+### 💥 Breaking Changes
+
+* All `HoistModel` and `HoistService` classes will have to be adjusted as described above.
+* `@HoistComponent` has been deprecated and moved to `@xh\hoist\deprecated`
+* Hoist grids now require ag-Grid v25.0.1 or higher - if your app uses ag-Grid, update your ag-Grid
+  dependency in your app's `package.json` file.
+* The `uses()` function (called within `hoistComponent()` factory configs for model context lookups)
+  no longer accepts class names as strings. Pass the class itself (or superclass) of the model you
+  wish to select for your component. `Uses` will throw if given any string other than "*", making
+  the need for any updates clear.
+* The `Ref` class, deprecated in v26, has now been removed. Use `createObservableRef` instead.
+
+### ⚙️ Technical
+
+* We have removed the experimental flags `useTransactions`, and `deltaSort` from `GridModel`. The
+  former has been the default behavior for Hoist for several releases, and the latter is obsolete.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.36 -> 3.38`
+* codemirror `5.58 -> 5.59`
+* mobx `5.15 -> 6.0`
+* mobx-react `6.3 -> 7.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v37.2.0...develop)
 
@@ -22,8 +64,9 @@ ag-Grid dependency in your app's `package.json` file.
 ## v37.2.0 - 2021-01-22
 
 ### 🎁 New Features
-* New `ErrorMessage` component for standard "inline" rendering of Errors and Exceptions, with
-retry support.
+
+* New `ErrorMessage` component for standard "inline" rendering of Errors and Exceptions, with retry
+  support.
 * `Cube` now supports an `omitFn` to allow apps to remove unwanted, single-node children.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v37.1.0...v37.2.0)

@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {TreeMapModel} from './TreeMapModel';
 
@@ -19,8 +19,7 @@ import {TreeMapModel} from './TreeMapModel';
  * Additionally, accepts and passes along all settings for TreeMapModel.
  * @see TreeMapModel
  */
-@HoistModel
-export class SplitTreeMapModel {
+export class SplitTreeMapModel extends HoistModel {
 
     //------------------------
     // Immutable public properties
@@ -59,6 +58,8 @@ export class SplitTreeMapModel {
         orientation = 'vertical',
         ...rest
     } = {}) {
+        super();
+        makeObservable(this);
         this.mapFilter = withDefault(mapFilter, this.defaultMapFilter);
         this.mapTitleFn = mapTitleFn;
 

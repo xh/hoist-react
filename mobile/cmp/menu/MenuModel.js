@@ -5,13 +5,12 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {isPlainObject} from 'lodash';
 import {MenuItemModel} from './MenuItemModel';
 
-@HoistModel
 /** Model for a floating drop down, managing its open/close state and items. */
-export class MenuModel {
+export class MenuModel extends HoistModel {
 
     @observable isOpen = false;
     @observable xPos = 0;
@@ -25,6 +24,8 @@ export class MenuModel {
      * @param {number} [c.yPos] - Screen Y position to display the menu. Can be set via openAt().
      */
     constructor({itemModels = [], xPos = 0, yPos = 0}) {
+        super();
+        makeObservable(this);
         this.itemModels = itemModels.map(i => isPlainObject(i) ? new MenuItemModel(i) : i);
         this.xPos = xPos;
         this.yPos = yPos;

@@ -7,7 +7,7 @@
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {escapeRegExp} from 'lodash';
 import PT from 'prop-types';
 import {LeftRightChooserModel} from './LeftRightChooserModel';
@@ -48,14 +48,15 @@ LeftRightChooserFilter.propTypes = {
 };
 
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
     lastProps;
 
     @bindable
     value = null;
 
     constructor() {
+        super();
+        makeObservable(this);
         this.addReaction({
             track: () => this.value,
             run: () => this.runFilter()
@@ -85,5 +86,6 @@ class LocalModel {
         // This unusual bit of code is extremely important -- the model we are linking to might
         // survive the display of this component and should be restored. (This happens with GridColumnChooser)
         this.lastProps.model.setDisplayFilter(null);
+        super.destroy();
     }
 }

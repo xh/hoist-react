@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {ToastModel} from './ToastModel';
 
 /**
@@ -13,12 +13,16 @@ import {ToastModel} from './ToastModel';
  *
  *  @private
  */
-@HoistModel
-export class ToastSourceModel {
+export class ToastSourceModel extends HoistModel {
 
     @managed
     @observable.ref
     toastModels = [];
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     show(config) {
         const ret = new ToastModel(config);

@@ -6,7 +6,7 @@
  */
 import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {assign} from 'lodash';
 import {AppOption} from './AppOption';
@@ -15,8 +15,7 @@ import {AppOption} from './AppOption';
  * Manages built-in setting of options.
  * @private
  */
-@HoistModel
-export class OptionsDialogModel {
+export class OptionsDialogModel extends HoistModel {
 
     @observable isOpen = false;
     @observable.ref options = [];
@@ -26,6 +25,11 @@ export class OptionsDialogModel {
 
     @managed
     formModel = null;
+
+    constructor(props) {
+        super(props);
+        makeObservable(this);
+    }
 
     init() {
         this.addReaction({

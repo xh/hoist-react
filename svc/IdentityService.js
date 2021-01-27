@@ -14,8 +14,7 @@ import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
  * Also provides support for recognizing impersonation and distinguishing between the apparent and
  * actual underlying user.
  */
-@HoistService
-export class IdentityService {
+export class IdentityService extends HoistService {
 
     _authUser = null;
     _apparentUser = null;

@@ -50,12 +50,12 @@ DataView.propTypes = {
     onRowDoubleClicked: PT.func
 };
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
     model;
     agOptions;
 
     constructor(model) {
+        super();
         this.model = model;
 
         this.addReaction({

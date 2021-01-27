@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {castArray, isArray, isPlainObject} from 'lodash';
-import React, {isValidElement} from 'react';
+import {createElement, isValidElement} from 'react';
 
 /**
  * Convenience method for creating React Elements. This method is designed to provide a well-
@@ -52,7 +52,7 @@ export function elem(type, config = {}) {
         }
     });
 
-    return React.createElement(type, props, ...children);
+    return createElement(type, props, ...children);
 }
 
 

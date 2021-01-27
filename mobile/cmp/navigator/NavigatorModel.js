@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {find, isEqual, keys, merge} from 'lodash';
 import {page} from './impl/Page';
@@ -15,8 +15,7 @@ import {PageModel} from './PageModel';
  * Model for handling stack-based navigation between Onsen pages.
  * Provides support for routing based navigation.
  */
-@HoistModel
-export class NavigatorModel {
+export class NavigatorModel extends HoistModel {
     /** @member {boolean} */
     @bindable disableAppRefreshButton;
 
@@ -59,6 +58,8 @@ export class NavigatorModel {
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY
     }) {
+        super();
+        makeObservable(this);
         warnIf(renderMode === RenderMode.ALWAYS, 'RenderMode.ALWAYS is not supported in Navigator. Pages are always can\'t exist before being mounted.');
 
         ensureNotEmpty(pages, 'NavigatorModel needs at least one page.');

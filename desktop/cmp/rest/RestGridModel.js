@@ -6,7 +6,7 @@
  */
 import {isFunction} from 'lodash';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {filter, isPlainObject, pickBy} from 'lodash';
@@ -58,9 +58,7 @@ export const deleteAction = {
 /**
  * Core Model for a RestGrid.
  */
-@HoistModel
-@LoadSupport
-export class RestGridModel {
+export class RestGridModel extends HoistModel {
 
     //----------------
     // Properties
@@ -131,6 +129,7 @@ export class RestGridModel {
         store,
         ...rest
     }) {
+        super();
         this.readonly = readonly;
         this.editors = editors;
         this.toolbarActions = toolbarActions;
@@ -157,8 +156,8 @@ export class RestGridModel {
     }
 
     /** Load the underlying store. */
-    doLoadAsync(loadSpec) {
-        return this.store.loadAsync(loadSpec);
+    async doLoadAsync(loadSpec) {
+        return this.store.loadSupport.loadAsync(loadSpec);
     }
 
     /** Load the underlying store. */

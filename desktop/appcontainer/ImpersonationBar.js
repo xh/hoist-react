@@ -11,7 +11,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import './ImpersonationBar.scss';
 
 /**
@@ -66,11 +66,15 @@ export const impersonationBar = hoistCmp.factory({
 });
 
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
     model;
     @bindable pendingTarget = null;
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     onCommit = () => {
         if (this.pendingTarget) {

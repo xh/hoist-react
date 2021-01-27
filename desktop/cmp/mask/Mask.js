@@ -23,11 +23,11 @@ export const [Mask, mask] = hoistCmp.withFactory({
     className: 'xh-mask',
 
     render({model, className, ...props}) {
-        const isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false);
+        const isDisplayed = withDefault(props.isDisplayed, model?.isPending, false);
 
         if (!isDisplayed) return null;
 
-        const message = withDefault(props.message, model && model.message),
+        const message = withDefault(props.message, model?.message),
             inline = withDefault(props.inline, true),
             showSpinner = withDefault(props.spinner, false);
 

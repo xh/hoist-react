@@ -8,7 +8,7 @@ import {HoistModel, managed, RefreshMode, RenderMode, XH, PersistenceProvider} f
 import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {action, observable, bindable} from '@xh/hoist/mobx';
+import {action, observable, bindable, makeObservable} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
@@ -76,8 +76,7 @@ import {dashView} from './impl/DashView';
  * @see http://golden-layout.com/docs/ItemConfig.html
  * @see http://golden-layout.com/tutorials/getting-started-react.html
  */
-@HoistModel
-export class DashContainerModel {
+export class DashContainerModel extends HoistModel {
 
     //---------------------------
     // Observable Persisted State
@@ -157,6 +156,8 @@ export class DashContainerModel {
         addViewButtonText = 'Add View',
         extraMenuItems
     }) {
+        super();
+        makeObservable(this);
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {
@@ -575,5 +576,6 @@ export class DashContainerModel {
 
     destroy() {
         this.destroyGoldenLayout();
+        super.destroy();
     }
 }

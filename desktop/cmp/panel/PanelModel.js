@@ -14,7 +14,7 @@ import {
     RenderMode,
     XH
 } from '@xh/hoist/core';
-import {action, observable, comparer} from '@xh/hoist/mobx';
+import {action, observable, comparer, makeObservable} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
 import {apiRemoved} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
@@ -23,8 +23,7 @@ import {isNil} from 'lodash';
  * PanelModel supports configuration and state-management for user-driven Panel resizing and
  * expand/collapse, along with support for saving this state via a configured PersistenceProvider.
  */
-@HoistModel
-export class PanelModel {
+export class PanelModel extends HoistModel {
 
     //-----------------------
     // Immutable Properties
@@ -102,6 +101,8 @@ export class PanelModel {
         showHeaderCollapseButton = true,
         ...rest
     }) {
+        super();
+        makeObservable(this);
         if ((collapsible || resizable) && (isNil(defaultSize) || isNil(side))) {
             console.error(
                 "Must specify 'defaultSize' and 'side' for a collapsible or resizable PanelModel. Panel sizing disabled."

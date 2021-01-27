@@ -14,11 +14,10 @@ import {loggingTab} from './tabs/logging/LoggingTab';
 import {monitorTab} from './tabs/monitor/MonitorTab';
 import {userDataTab} from './tabs/userData/UserDataTab';
 
-@HoistAppModel
-export class AppModel {
+export class AppModel extends HoistAppModel {
 
     @managed
-    _tabModel
+    _tabModel;
 
     getRoutes() {
         return [

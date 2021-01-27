@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, apiDeprecated} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
@@ -29,8 +29,7 @@ import {
  * This includes the ability to get and set the full state of the grid in a serializable form,
  * allowing applications to save "views" of the grid.
  */
-@HoistModel
-export class AgGridModel {
+export class AgGridModel extends HoistModel {
     static AUTO_GROUP_COL_ID = 'ag-Grid-AutoColumn';
 
     //------------------------
@@ -76,6 +75,8 @@ export class AgGridModel {
         hideHeaders = false,
         compact
     } = {}) {
+        super();
+        makeObservable(this);
         apiDeprecated(compact, 'compact', "Use 'sizingMode' instead");
         if (compact) sizingMode = 'compact';
 

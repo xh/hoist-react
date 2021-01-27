@@ -4,8 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, LoadSupport, loadAllAsync} from '@xh/hoist/core';
-import {applyMixin, throwIf} from '@xh/hoist/utils/js';
+import {HoistModel, loadAllAsync} from '@xh/hoist/core';
+import {throwIf} from '@xh/hoist/utils/js';
 import {pull} from 'lodash';
 
 /**
@@ -20,9 +20,9 @@ import {pull} from 'lodash';
  * Apps can create additional sub-contexts using a `RefreshContextView` paired with this model if
  * they need to coordinate refreshes within a more targeted sections of their UI.
  *
- * HoistModels declared with the `@LoadSupport` decorator are the primary targets for the refresh
- * calls made by this class. LoadSupport-enabled models are auto-linked to the nearest
- * RefreshContextModel when their HoistComponent is mounted.
+ * HoistModels that enable LoadSupport are the primary targets for the refresh calls made by this
+ * class. Such models are auto-linked to the nearest RefreshContextModel when their associated
+ * component is mounted.
  *
  * (Note that models must be "owned" by their Component to be auto-linked in this way - meaning they
  * must be internally created by the Component, either directly or from a config passed via props.)
@@ -32,52 +32,43 @@ import {pull} from 'lodash';
  * `refreshMode` configs on `TabContainerModel` and `TabModel` for more information on this common
  * use case.
  *
- * @see ModelProvider
  * @see RootRefreshContextModel
+ * @see HoistModel.loadSupport
  */
-export function RefreshContextModel(C) {
-    return applyMixin(C, {
-        name: 'RefreshContextModel',
-        includes: [HoistModel, LoadSupport],
+export class RefreshContextModel extends HoistModel {
 
-        defaults: {
+    get isRefreshContextModel() {return true}
 
-            async doLoadAsync(loadSpec) {
-                return loadAllAsync(this.refreshTargets, loadSpec);
-            },
+    /** Targets registered for refresh. */
+    refreshTargets = [];
 
-            /** Targets registered for refresh. */
-            refreshTargets: {
-                get() {
-                    if (!this._refreshTargets) this._refreshTargets = [];
-                    return this._refreshTargets;
-                }
-            },
+    async doLoadAsync(loadSpec) {
+        return loadAllAsync(this.refreshTargets, loadSpec);
+    }
 
-            /**
-             * Register a target with this model for refreshing.
-             *
-             * Not typically called directly by applications.  Hoist will automatically register
-             * HoistModels marked with LoadSupport when their owning Component is first mounted.
-             *
-             * @param {Object} target
-             */
-            register(target) {
-                throwIf(
-                    !target.isLoadSupport,
-                    'Object must apply the LoadSupport decorator to be registered with a RefreshContextModel.'
-                );
-                const {refreshTargets} = this;
-                if (!refreshTargets.includes(target)) refreshTargets.push(target);
-            },
+    /**
+     * Register a target with this model for refreshing.
+     *
+     * Not typically called directly by applications.  Hoist will automatically register
+     * HoistModels that implement loading when their owning Component is first mounted.
+     *
+     * @param {Object} target
+     */
+    register(target) {
+        throwIf(
+            !target.loadSupport,
+            'Object must have implemented Loading to be registered with a RefreshContextModel.'
+        );
+        const {refreshTargets} = this;
+        if (!refreshTargets.includes(target)) refreshTargets.push(target);
+    }
 
-            /**
-             * Unregister a target from this model.
-             * @param {Object} target
-             */
-            unregister(target) {
-                pull(this.refreshTargets, target);
-            }
-        }
-    });
+    /**
+     * Unregister a target from this model.
+     * @param {Object} target
+     */
+    unregister(target) {
+        pull(this.refreshTargets, target);
+    }
 }
+RefreshContextModel.isRefreshContextModel = true;

@@ -10,7 +10,7 @@ import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {tab as bpTab, tabs as bpTabs, tooltip as bpTooltip, popover, menu, menuItem} from '@xh/hoist/kit/blueprint';
 import {getLayoutProps, createObservableRef, useOnResize, useOnVisibleChange, useOnScroll} from '@xh/hoist/utils/react';
 import {debounced, throwIf, isDisplayed} from '@xh/hoist/utils/js';
@@ -196,8 +196,7 @@ const overflowMenu = hoistCmp.factory({
     }
 });
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel  {
     @bindable.ref overflowIds = [];
     switcherRef = createObservableRef();
     model;
@@ -209,6 +208,8 @@ class LocalModel {
     }
 
     constructor(model, enableOverflow, vertical) {
+        super();
+        makeObservable(this);
         this.model = model;
         this.enableOverflow = enableOverflow;
         this.vertical = vertical;

@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {
     addAction,
     cloneAction,
@@ -19,9 +19,7 @@ import {truncate} from 'lodash';
 
 import {DifferModel} from '../../differ/DifferModel';
 
-@HoistModel
-@LoadSupport
-export class JsonBlobModel {
+export class JsonBlobModel extends HoistModel {
 
     persistWith = {localStorageKey: 'xhAdminJsonBlobState'};
 

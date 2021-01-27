@@ -14,8 +14,7 @@ import store from 'store2';
  *
  * Relied upon by Hoist features such as local preference values and grid state.
  */
-@HoistService
-export class LocalStorageService {
+export class LocalStorageService extends HoistService {
 
     get(key, defaultValue) {
         const storage = this.getInstance(),

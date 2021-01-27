@@ -7,7 +7,7 @@
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, computed} from '@xh/hoist/mobx';
+import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {useOnMount, createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
@@ -109,8 +109,7 @@ export const columnHeader = hoistCmp.factory({
 });
 
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
     gridModel;
     xhColumn;
     agColumn;
@@ -126,6 +125,8 @@ class LocalModel {
     _lastMouseDown = null;
 
     constructor({gridLocalModel, xhColumn, column: agColumn, enableSorting}) {
+        super();
+        makeObservable(this);
         this.gridModel = gridLocalModel.model;
         this.xhColumn = xhColumn;
         this.agColumn = agColumn;
@@ -139,6 +140,7 @@ class LocalModel {
 
     destroy() {
         this.agColumn.removeEventListener('filterChanged', this.onFilterChanged);
+        super.destroy();
     }
 
     // Get any active sortBy for this column, or null

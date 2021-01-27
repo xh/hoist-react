@@ -28,12 +28,12 @@ export const toastSource = hoistCmp.factory({
 });
 
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
     _toasterMap = new Map();
 
     constructor(toastSourceModel) {
+        super();
         this.addReaction({
             track: () => toastSourceModel.toastModels,
             run: this.displayPendingToasts

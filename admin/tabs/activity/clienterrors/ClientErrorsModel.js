@@ -8,17 +8,15 @@ import {usernameCol} from '@xh/hoist/admin/columns';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {dateTimeCol, localDateCol, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, comparer, observable} from '@xh/hoist/mobx';
+import {action, bindable, comparer, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import moment from 'moment';
 
-@HoistModel
-@LoadSupport
-export class ClientErrorsModel {
+export class ClientErrorsModel extends HoistModel {
 
     persistWith = {localStorageKey: 'xhAdminClientErrorsState'};
 
@@ -40,6 +38,8 @@ export class ClientErrorsModel {
     @observable formattedErrorJson;
 
     constructor() {
+        super();
+        makeObservable(this);
         this.startDay = this.getDefaultStartDay();
         this.endDay = this.getDefaultEndDay();
 

@@ -4,8 +4,5 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-export * from './ClassName';
-export * from './ReactUtils';
-export * from './LayoutPropUtils';
-export * from './ObservableRef';
-export * from './Hooks';
+
+export * from './HoistComponentClass';

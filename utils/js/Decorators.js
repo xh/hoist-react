@@ -4,9 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {debounce, isUndefined, isFunction} from 'lodash';
-import {throwIf} from './LangUtils';
-
+import {debounce, isFunction} from 'lodash';
+import {throwIf, getOrCreate} from './LangUtils';
 
 /**
  * Decorates a class method so that it is debounced by the specified duration.
@@ -16,18 +15,14 @@ import {throwIf} from './LangUtils';
  */
 export function debounced(duration) {
     return function(target, key, descriptor) {
+        const baseFn = descriptor.value;
+        throwIf(!isFunction(baseFn), 'Debounced should be applied to a function');
         return {
-            configurable: true,
-            enumerable: descriptor.enumerable,
-            get: function() {
-                // Attach this function to the instance (not the class)
-                Object.defineProperty(this, key, {
-                    configurable: true,
-                    enumerable: descriptor.enumerable,
-                    value: debounce(descriptor.value, duration)
-                });
-
-                return this[key];
+            ...descriptor,
+            value: function() {
+                // synthesize an inner debounced function to the instance (not the class)
+                const fn = getOrCreate(this, '_xh_' + key, () => debounce(baseFn, duration));
+                fn.apply(this, arguments);
             }
         };
     };
@@ -46,16 +41,11 @@ export function computeOnce(target, key, descriptor) {
 
     const isMethod = isFunction(value),
         baseFnName = isMethod ? 'value' : 'get',
-        baseFn = isMethod ? value : get,
-        cacheKey = '_xh_' + key;
+        baseFn = isMethod ? value : get;
     return {
         ...descriptor,
         [baseFnName]: function() {
-            let val = this[cacheKey];
-            if (isUndefined(val)) {
-                val = this[cacheKey] = baseFn.call(this);
-            }
-            return val;
+            return getOrCreate(this, '_xh_' + key, () => baseFn.call(this));
         }
     };
 }

@@ -7,13 +7,12 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {computed} from '@xh/hoist/mobx';
+import {computed, makeObservable} from '@xh/hoist/mobx';
 
 /**
  * A Model for managing the state of a LeftRightChooser.
  */
-@HoistModel
-export class LeftRightChooserModel {
+export class LeftRightChooserModel extends HoistModel {
 
     /** @type {GridModel} */
     @managed leftModel;
@@ -98,6 +97,8 @@ export class LeftRightChooserModel {
         rightEmptyText = null,
         showCounts = true
     }) {
+        super();
+        makeObservable(this);
         this.onChange = onChange;
         this._ungroupedName = ungroupedName;
         this.leftGroupingEnabled = leftGroupingEnabled;
