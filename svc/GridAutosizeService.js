@@ -24,8 +24,7 @@ import {ColumnWidthCalculator} from '../cmp/grid/impl/ColumnWidthCalculator';
  *
  * @see Column.autosizeOptions for options to control this behaviour
  */
-@HoistService
-export class GridAutosizeService {
+export class GridAutosizeService extends HoistService {
 
     _columnWidthCalculator = new ColumnWidthCalculator();
 

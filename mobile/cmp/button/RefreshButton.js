@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, useContextModel} from '@xh/hoist/core';
+import {hoistCmp, useContextModel, RefreshContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from '@xh/hoist/mobile/cmp/button';
 import {errorIf} from '@xh/hoist/utils/js';
@@ -22,10 +22,10 @@ export const [RefreshButton, refreshButton] = hoistCmp.withFactory({
     model: false,  // For consistency with all other buttons -- the model prop here could be replaced by 'target'
 
     render({model, icon = Icon.sync(), onClick, ...props}) {
-        const refreshContextModel = useContextModel('RefreshContextModel');
+        const refreshContextModel = useContextModel(RefreshContextModel);
 
         if (!onClick) {
-            errorIf(model && !model.isLoadSupport, 'Provided model to RefreshButton must be decorated with LoadSupport.');
+            errorIf(model && !model.loadSupport, 'Models provided to RefreshButton must enable LoadSupport.');
             model = model ?? refreshContextModel;
             onClick = model ? () => model.refreshAsync() : null;
         }

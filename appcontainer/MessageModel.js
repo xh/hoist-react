@@ -6,7 +6,7 @@
  */
 import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 
 /**
@@ -14,8 +14,7 @@ import {warnIf} from '@xh/hoist/utils/js';
  * Not intended for direct application use. {@see XHClass#message()} and related for the public API.
  * @private
  */
-@HoistModel
-export class MessageModel {
+export class MessageModel extends HoistModel {
 
     // Immutable properties
     title;
@@ -51,6 +50,8 @@ export class MessageModel {
         cancelText,
         cancelIntent
     }) {
+        super();
+        makeObservable(this);
         warnIf(
             (confirmText || confirmIntent || cancelText || cancelIntent),
             'Message "confirmText", "confirmIntent", "cancelText", and "cancelIntent" configs have' +
@@ -117,6 +118,7 @@ export class MessageModel {
 
     destroy() {
         this.close();
+        super.destroy();
     }
 
     // Merge handler and deprecated props into consolidated object.

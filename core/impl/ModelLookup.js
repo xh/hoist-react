@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {elemFactory, ModelPublishMode} from '@xh/hoist/core';
-import {forOwn} from 'lodash';
+import {forOwn, isFunction} from 'lodash';
 import {createContext} from 'react';
 
 /**
@@ -34,24 +34,22 @@ export class ModelLookup {
     /**
      * Lookup a model in the context hierarchy
      *
-     * @param {(Class|string)} selector - class or name of mixin applied to class of
-     *      model to be returned, or '*' to return the default model.
-     * @returns {*} model or null if no matching model found.
+     * @param {ModelSelector} selector - type of model to lookup.
+     * @returns {HoistModel} - model, or null if no matching model found.
      */
     lookupModel(selector = '*') {
         const {model, publishMode, parent} = this,
-            modeIsDefault = (publishMode === ModelPublishMode.DEFAULT),
-            isWildcard = (selector === '*');
+            modeIsDefault = (publishMode === ModelPublishMode.DEFAULT);
 
-        // Try this model
-        if ((isWildcard && modeIsDefault) || (!isWildcard && matchesSelector(model, selector))) {
+        // Try this model - but only accept wildcard for default mode!
+        if (matchesSelector(model, selector, modeIsDefault)) {
             return model;
         }
 
-        // Potentially try this model's direct children
+        // Potentially try this model's direct children, do not accept wildcard
         if (modeIsDefault) {
             let ret = null;
-            forOwn(model, (value, key) => {
+            forOwn(model, (value) => {
                 if (matchesSelector(value, selector)) {
                     ret = value;
                     return false;
@@ -65,9 +63,20 @@ export class ModelLookup {
     }
 }
 
-function matchesSelector(model, selector) {
-    return model?.matchesSelector && model.matchesSelector(selector);
+export function matchesSelector(model, selector, acceptWildcard = false) {
+    if (!model || !selector)    return false;
+    if (selector === '*')       return acceptWildcard;
+
+    if (isFunction(selector)) {
+        // Need to distinguish a class constructor from a generic function here
+        // In general a clunky op, but can short-circuit: selector almost always a HoistModel!
+        return selector.isHoistModel || (selector.toString().startsWith('class')) ?
+            model instanceof selector :
+            selector(model);
+    }
+    return false;
 }
+
 
 /**
  * Context used to publish a ModelLookup

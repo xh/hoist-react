@@ -5,19 +5,20 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 
 /**
  * @private
  */
-@HoistModel
-export class DifferDetailModel  {
+export class DifferDetailModel extends HoistModel  {
 
     parent = null;
 
     @observable.ref record = null;
 
     constructor({parent}) {
+        super();
+        makeObservable(this);
         this.parent = parent;
     }
 

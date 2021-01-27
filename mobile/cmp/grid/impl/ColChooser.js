@@ -203,8 +203,7 @@ const row = hoistCmp.factory({
 });
 
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
     model;
 

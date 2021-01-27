@@ -16,8 +16,7 @@ import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq, compact} 
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
  * @see Column API for options to control exported values and formats.
  */
-@HoistService
-export class GridExportService {
+export class GridExportService extends HoistService {
 
     /**
      * Export a GridModel to a file. Typically called via `GridModel.exportAsync()`.

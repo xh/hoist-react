@@ -103,8 +103,7 @@ TreeMap.propTypes = {
 };
 
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
     model;
     chartRef = createObservableRef();
@@ -112,6 +111,7 @@ class LocalModel {
     clickCount = 0;
 
     constructor(model) {
+        super();
         this.model = model;
 
         // Detect double-clicks vs single-clicks
@@ -212,6 +212,7 @@ class LocalModel {
 
     destroy() {
         this.destroyHighChart();
+        super.destroy();
     }
 
     destroyHighChart() {

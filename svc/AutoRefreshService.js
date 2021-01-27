@@ -26,8 +26,7 @@ import {withDefault} from '@xh/hoist/utils/js';
  *
  * @see RefreshContextModel - the underlying mechanism used to implement the refresh.
  */
-@HoistService
-export class AutoRefreshService {
+export class AutoRefreshService extends HoistService {
 
     @managed
     timer;

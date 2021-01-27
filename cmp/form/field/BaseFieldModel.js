@@ -5,14 +5,15 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {Rule, ValidationState} from '@xh/hoist/cmp/form';
-import {managed} from '@xh/hoist/core';
+import {managed, HoistModel} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
-import {action, computed, observable, runInAction} from '@xh/hoist/mobx';
+import {action, computed, observable, runInAction, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
 import {withDefault} from '@xh/hoist/utils/js';
 import {compact, flatten, isEmpty, isFunction, isNil, isUndefined} from 'lodash';
 import {createObservableRef} from '@xh/hoist/utils/react';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
+
 
 /**
  * Abstract Base class for FieldModels.
@@ -20,7 +21,7 @@ import {createObservableRef} from '@xh/hoist/utils/react';
  * @see FieldModel
  * @see SubformsFieldModel
  */
-export class BaseFieldModel {
+export class BaseFieldModel extends HoistModel {
 
     /** @member {FormModel} */
     _formModel;
@@ -100,6 +101,8 @@ export class BaseFieldModel {
         readonly = false,
         rules = []
     }) {
+        super();
+        makeObservable(this);
         this.name = name;
         this.displayName = withDefault(displayName, genDisplayName(name));
         this.value = initialValue;

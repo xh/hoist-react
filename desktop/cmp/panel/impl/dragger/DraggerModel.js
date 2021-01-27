@@ -9,8 +9,7 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {clamp, throttle} from 'lodash';
 
-@HoistModel
-export class DraggerModel {
+export class DraggerModel extends HoistModel {
 
     ref = createObservableRef();
 
@@ -24,6 +23,7 @@ export class DraggerModel {
     maxSize = null;
 
     constructor(panelModel) {
+        super();
         this.panelModel = panelModel;
         this.throttledSetSize = throttle(size => panelModel.setSize(size), 50);
 

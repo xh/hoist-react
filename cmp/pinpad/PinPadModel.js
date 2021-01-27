@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {times} from 'lodash';
 
@@ -14,8 +14,7 @@ import {times} from 'lodash';
 // safe to use with the desktop kit.
 import FastClick from '@onsenui/fastclick';
 
-@HoistModel
-export class PinPadModel {
+export class PinPadModel extends HoistModel {
 
     /** @member {boolean} */
     @bindable disabled;
@@ -43,6 +42,8 @@ export class PinPadModel {
         headerText = '',
         subHeaderText = ''
     } = {}) {
+        super();
+        makeObservable(this);
         this.headerText = headerText;
         this.subHeaderText = subHeaderText;
 
@@ -71,7 +72,7 @@ export class PinPadModel {
     get completedPin() {
         const {_enteredDigits, _pinLength} = this;
         return _enteredDigits.length === _pinLength ?
-            _enteredDigits.toJS().join('') :
+            _enteredDigits.join('') :
             null;
     }
 

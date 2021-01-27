@@ -18,13 +18,13 @@ import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
  * This service consults the `xhIdleConfig` soft-config and the `xh.disableIdleDetection`
  * user preference to determine if and when it should suspend the app.
  */
-@HoistService
-export class IdleService {
+export class IdleService extends HoistService {
 
     @managed timer = null;
     timeout = null;
 
     constructor() {
+        super();
         this.addReaction({
             when: () => XH.appIsRunning,
             run: this.startMonitoring

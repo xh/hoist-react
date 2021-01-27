@@ -6,14 +6,13 @@
  */
 
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {cloneDeep, difference, isFunction, isArray, isEmpty, isEqual, isString, keys, sortBy} from 'lodash';
 
-@HoistModel
-export class GroupingChooserModel {
+export class GroupingChooserModel extends HoistModel {
 
     /** @member {string[]} - names of dimensions selected for grouping. */
     @observable.ref value;
@@ -86,6 +85,8 @@ export class GroupingChooserModel {
         allowEmpty = false,
         maxDepth = null
     }) {
+        super();
+        makeObservable(this);
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionNames = keys(this.dimensions);
         this.allowEmpty = allowEmpty;

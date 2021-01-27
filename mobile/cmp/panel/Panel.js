@@ -96,7 +96,6 @@ Panel.propTypes = {
      *   + true for a default mask,
      *   + a PendingTaskModel for a default load mask bound to a pending task,
      *   + the string 'onLoad' for a default load mask bound to the loading of the current model.
-     *     (current model must include @LoadSupport).
      */
     mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool, PT.string]),
 
@@ -106,7 +105,6 @@ Panel.propTypes = {
      *   + true for a default LoadingIndicator,
      *   + a PendingTaskModel for a default LoadingIndicator bound to a pending task,
      *   + the string 'onLoad' for a default LoadingIndicator bound to the loading of the current model.
-     *     (current model must include @LoadSupport).
      */
     loadingIndicator: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool, PT.string]),
 
@@ -131,7 +129,7 @@ function parseLoadDecorator(prop, name, contextModel) {
     if (prop === 'onLoad') {
         const loadModel = contextModel?.loadModel;
         if (!loadModel) {
-            console.warn(`Cannot use 'onLoad' for '${name}'.  Context model is not an instance of @LoadSupport or have a 'loadModel' property.`);
+            console.warn(`Cannot use 'onLoad' for '${name}'.  Context model does not implement loading.`);
             return null;
         }
         return cmp({model: loadModel, spinner: true});

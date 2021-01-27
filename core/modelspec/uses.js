@@ -6,6 +6,7 @@
  */
 import {throwIf} from '@xh/hoist/utils/js';
 import {ModelPublishMode, ModelSpec} from './ModelSpec';
+import {isFunction} from 'lodash';
 
 /**
  * Returns a ModelSpec to define how a functional HoistComponent should source its primary backing
@@ -20,13 +21,11 @@ import {ModelPublishMode, ModelSpec} from './ModelSpec';
  *
  * Note that any model created via `createFromConfig` or `createDefault` will be considered to be
  * 'owned' by the receiving component and treated as if it were specified using `create()`: if it
- * implements `@LoadSupport` it will be loaded on component mount, and it will always be destroyed
+ * implements loading it will be loaded on component mount, and it will always be destroyed
  * on component unmount.
  *
- * @param {(Class|string|function)} selector - specification of HoistModel to use. Should be a
- *      HoistModel selector: a Class, string class name, or function. The special string '*'
- *      indicates that this component will use any model passed via props or the closest context
- *      model, without specifying any particular class. {@see HoistModel.matchesSelector()}
+ * @param {ModelSelector} selector - specification of Model to use, or '*' (default) to accept the
+ *      closest context model, without specifying any particular class.
  * @param {Object} [flags]
  * @param {boolean} [flags.fromContext] - true (default) to look for a suitable model in context if
  *      not sourced via props.
@@ -57,10 +56,19 @@ export class UsesSpec extends ModelSpec  {
 
     constructor(selector, fromContext, publishMode, createFromConfig, createDefault) {
         super(fromContext, publishMode);
-        throwIf(!selector, 'Must specify selector in uses().');
+        throwIf(
+            !isFunction(selector) && selector !== '*',
+            'A valid Class, function, or "*" is required as a selector in uses().'
+        );
 
         this.selector = selector;
         this.createFromConfig = createFromConfig;
         this.createDefault = createDefault;
     }
 }
+
+
+/**
+ * @typedef {(Class|function|string)} ModelSelector -- class (or superclass) to match, function
+ *      taking a model and returning a boolean, or  '*' to accept any Model.
+ */

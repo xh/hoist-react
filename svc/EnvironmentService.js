@@ -14,10 +14,9 @@ import {deepFreeze} from '@xh/hoist/utils/js';
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {defaults} from 'lodash';
 import {version as mobxVersion} from 'mobx/package.json';
-import React from 'react';
+import {version as reactVersion} from 'react';
 
-@HoistService
-export class EnvironmentService {
+export class EnvironmentService extends HoistService {
 
     _data = {};
 
@@ -33,7 +32,7 @@ export class EnvironmentService {
             appName: XH.appName,
             clientVersion: XH.appVersion,
             clientBuild: XH.appBuild,
-            reactVersion: React.version,
+            reactVersion,
             hoistReactVersion,
             agGridVersion,
             mobxVersion,

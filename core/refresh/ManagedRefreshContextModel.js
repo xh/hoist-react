@@ -14,12 +14,12 @@ import {loadAllAsync, RefreshContextModel, RefreshMode} from '@xh/hoist/core';
  *  a) An observable `isActive` property, that returns a boolean value.
  *  b) A `refreshMode` property, that returns a RefreshMode enum value.
  */
-@RefreshContextModel
-export class ManagedRefreshContextModel {
+export class ManagedRefreshContextModel extends RefreshContextModel {
 
     model;
 
     constructor(model)  {
+        super();
         this.model = model;
         this.addReaction({
             track: () => model.isActive,

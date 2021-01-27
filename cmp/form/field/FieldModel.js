@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
 import {BaseFieldModel} from './BaseFieldModel';
 
 /**
@@ -15,7 +14,6 @@ import {BaseFieldModel} from './BaseFieldModel';
  * These models are typically created by passing configuration objects to the constructor of FormModel.
  * The parent Form/FormModel and the FormField component work together to bind to this model by name.
  */
-@HoistModel
 export class FieldModel extends BaseFieldModel {
 
 

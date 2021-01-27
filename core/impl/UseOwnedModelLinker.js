@@ -4,25 +4,24 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
+import {XH, RefreshContextModel, useContextModel} from '@xh/hoist/core';
 import {useOnUnmount} from '@xh/hoist/utils/react';
 import {useEffect} from 'react';
-import {useContextModel} from '../hooks/Models';
 
 /**
  * @private
  *
  * Integrate a HoistModel owned by a component into the component's lifecycle,
- * enabling support for the LoadSupport lifecycle and destruction.
+ * enabling support for both the Loading lifecycle and destruction.
  *
  * No-op, if model is null.
  */
 
 /* eslint-disable react-hooks/exhaustive-deps */
 export function useOwnedModelLinker(model) {
-    const context = useContextModel('RefreshContextModel');
+    const context = useContextModel(RefreshContextModel);
     useEffect(() => {
-        if (model && model.isLoadSupport) {
+        if (model?.loadSupport) {
             model.loadAsync();
             if (context) {
                 context.register(model);

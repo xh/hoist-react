@@ -5,18 +5,20 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {LoadSupport, XH} from '@xh/hoist/core';
+import {XH, managed, LoadSupport} from '@xh/hoist/core';
 
 import {Store} from './Store';
 
 /**
  * A store with built-in support for loading data from a URL.
  */
-@LoadSupport
 export class UrlStore extends Store {
 
     url;
     dataRoot;
+
+    @managed
+    loadSupport = new LoadSupport(this);
 
     /**
      * @param {Object} c - UrlStore configuration.
@@ -35,11 +37,8 @@ export class UrlStore extends Store {
      */
     async doLoadAsync(loadSpec) {
         const {url, dataRoot} = this;
-        return XH
-            .fetchJson({url, loadSpec})
-            .then(data => {
-                if (dataRoot) data = data[dataRoot];
-                return this.loadData(data);
-            });
+        let data = await XH.fetchJson({url, loadSpec});
+        if (dataRoot) data = data[dataRoot];
+        this.loadData(data);
     }
 }

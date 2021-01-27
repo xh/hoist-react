@@ -5,9 +5,21 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, apiDeprecated} from '@xh/hoist/utils/js';
-import {cloneDeep, concat, find, has, isArray, isEmpty, isNil, partition, set, startCase} from 'lodash';
+import {
+    cloneDeep,
+    concat,
+    find,
+    has,
+    isArray,
+    isEmpty,
+    isNil,
+    partition,
+    set,
+    startCase,
+    isEqual
+} from 'lodash';
 
 /**
  * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
@@ -17,8 +29,7 @@ import {cloneDeep, concat, find, has, isArray, isEmpty, isNil, partition, set, s
  * This includes the ability to get and set the full state of the grid in a serializable form,
  * allowing applications to save "views" of the grid.
  */
-@HoistModel
-export class AgGridModel {
+export class AgGridModel extends HoistModel {
     static AUTO_GROUP_COL_ID = 'ag-Grid-AutoColumn';
 
     //------------------------
@@ -64,6 +75,8 @@ export class AgGridModel {
         hideHeaders = false,
         compact
     } = {}) {
+        super();
+        makeObservable(this);
         apiDeprecated(compact, 'compact', "Use 'sizingMode' instead");
         if (compact) sizingMode = 'compact';
 
@@ -267,12 +280,12 @@ export class AgGridModel {
                 sort: null,
                 sortIndex: null
             };
-            
+
         // ag-Grid does not allow "secondary" columns to be manipulated by applyColumnState
         // so this approach is required for setting sort config on secondary columns.
         if (isPivot && havePivotCols && !isEmpty(secondaryColumnState)) {
             // 1st clear all pre-exisiting primary column sorts
-            // with an explicit clear of the auto_group column, 
+            // with an explicit clear of the auto_group column,
             // which is not cleared by the defaultState config.
             colApi.applyColumnState({
                 state: [{
@@ -291,7 +304,7 @@ export class AgGridModel {
                     // had ever been specified, `undefined` must be used.
                     col.setSort(undefined);
                     col.setSortIndex(undefined);
-                } 
+                }
             });
 
             // finally apply sorts from state to secondary columns
@@ -369,27 +382,32 @@ export class AgGridModel {
      */
     applySortBy(sortBy) {
         this.throwIfNotReady();
-
         const {agColumnApi} = this,
-            cols = agColumnApi.getColumnState(),
-            sortedCols = sortBy.
-                filter(sorter => find(cols, {'colId': sorter.colId})).
-                map((sorter, idx) => {
-                    const {colId} = find(cols, {'colId': sorter.colId});
-                    return {
-                        colId,
-                        sort: sorter.sort,
-                        sortIndex: idx
-                    };
-                });
+            prevSortBy = this._prevSortBy;
+
+        if (isEqual(prevSortBy, sortBy)) return;
+
+        // Preclear if only toggling abs for any sort. Ag-Grid doesn't handle abs and would skip
+        if (sortBy.some(curr =>
+            prevSortBy?.some(prev => curr.sort === prev.sort && curr.abs != prev.abs)
+        )) {
+            agColumnApi.applyColumnState({defaultState: {sort: null, sortIndex: null}});
+        }
+
+        // Calculate and set new state
+        const currState = agColumnApi.getColumnState(),
+            newState = [];
+        let idx = 0;
+        sortBy.forEach(({colId, sort}) => {
+            const col = find(currState, {colId});
+            if (col) newState.push({colId, sort, sortIndex: idx++});
+        });
 
         agColumnApi.applyColumnState({
-            state: sortedCols,
-            defaultState: {
-                sort: null,
-                sortIndex: null
-            }
+            state: newState,
+            defaultState: {sort: null, sortIndex: null}
         });
+        this._prevSortBy = sortBy;
     }
 
     /**

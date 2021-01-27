@@ -4,17 +4,26 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {elemFactory, ManagedSupport, ReactiveSupport, XH, XhIdSupport} from '@xh/hoist/core';
-import {applyMixin, throwIf} from '@xh/hoist/utils/js';
+import {elemFactory,  XH} from '@xh/hoist/core';
+
+import {ManagedSupport} from './impl/ManagedSupport';
+import {ReactiveSupport} from './impl/ReactiveSupport';
+import {XhIdSupport} from './impl/XhIdSupport';
+import {applyMixin} from './impl/ClassUtils';
+
+import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isPlainObject, isUndefined} from 'lodash';
 import {observer} from 'mobx-react';
 import {useDebugValue} from 'react';
 import ReactDom from 'react-dom';
-import {ModelLookupContext} from './impl/ModelLookup';
-import {useOwnedModelLinker} from './impl/UseOwnedModelLinker';
+import {ModelLookupContext} from '../core/impl/ModelLookup';
+import {useOwnedModelLinker} from '../core/impl/UseOwnedModelLinker';
 
 /**
+ *
+ * @deprecated -- This class will be removed in a future version of Hoist.
+ *
  * Hoist decorator for creating class-based components. Adds support for MobX reactivity, model
  * awareness, and other convenience methods below.
  *

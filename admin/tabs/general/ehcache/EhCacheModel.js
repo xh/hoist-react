@@ -5,13 +5,11 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {GridModel, numberCol} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
 import {trimEnd} from 'lodash';
 
-@HoistModel
-@LoadSupport
-export class EhCacheModel {
+export class EhCacheModel extends HoistModel {
 
     persistWith = {localStorageKey: 'xhAdminEhCacheState'};
 
