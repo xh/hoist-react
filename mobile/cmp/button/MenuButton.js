@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, hoistCmp, useLocalModel} from '@xh/hoist/core';
-import {observable, action} from '@xh/hoist/mobx';
+import {observable, action, makeObservable} from '@xh/hoist/mobx';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from '@xh/hoist/mobile/cmp/button';
@@ -76,12 +76,16 @@ MenuButton.propTypes = {
     popperOptions: PT.object
 };
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
     buttonRef = createObservableRef();
     menuRef = createObservableRef();
     @observable isOpen = false;
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     @action
     open() {
