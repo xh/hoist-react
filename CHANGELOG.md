@@ -3348,7 +3348,7 @@ and ag-Grid upgrade, and more. 🚀
 
 ------------------------------------------
 
-Copyright © 2020 Extremely Heavy Industries Inc. - all rights reserved
+Copyright © 2021 Extremely Heavy Industries Inc. - all rights reserved
 
 ------------------------------------------
 
