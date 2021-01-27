@@ -58,6 +58,8 @@ export class HoistModel extends HoistBase {
      * Applications will not typically need to access this object directly. If a subclass
      * declares a concrete implementation of the `doLoadAsync()` template method, an instance of
      * `LoadSupport` will automatically be created and installed to support the extensions below.
+     *
+     * See the class-level comments above for additional details.
      */
     @managed
     loadSupport;

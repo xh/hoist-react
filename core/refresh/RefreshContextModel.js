@@ -20,9 +20,9 @@ import {pull} from 'lodash';
  * Apps can create additional sub-contexts using a `RefreshContextView` paired with this model if
  * they need to coordinate refreshes within a more targeted sections of their UI.
  *
- * HoistModels implementing loading are the primary targets for the refresh calls made by this class.
- * Such models are auto-linked to the nearest RefreshContextModel when their associated component is
- * mounted.
+ * HoistModels that enable LoadSupport are the primary targets for the refresh calls made by this
+ * class. Such models are auto-linked to the nearest RefreshContextModel when their associated
+ * component is mounted.
  *
  * (Note that models must be "owned" by their Component to be auto-linked in this way - meaning they
  * must be internally created by the Component, either directly or from a config passed via props.)
@@ -32,8 +32,8 @@ import {pull} from 'lodash';
  * `refreshMode` configs on `TabContainerModel` and `TabModel` for more information on this common
  * use case.
  *
- * @see ModelProvider
  * @see RootRefreshContextModel
+ * @see HoistModel.loadSupport
  */
 export class RefreshContextModel extends HoistModel {
 

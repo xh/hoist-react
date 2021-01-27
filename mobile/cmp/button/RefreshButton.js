@@ -25,7 +25,7 @@ export const [RefreshButton, refreshButton] = hoistCmp.withFactory({
         const refreshContextModel = useContextModel(RefreshContextModel);
 
         if (!onClick) {
-            errorIf(model && !model.loadSupport, 'Provided model to RefreshButton must implement loading.');
+            errorIf(model && !model.loadSupport, 'Models provided to RefreshButton must enable LoadSupport.');
             model = model ?? refreshContextModel;
             onClick = model ? () => model.refreshAsync() : null;
         }
