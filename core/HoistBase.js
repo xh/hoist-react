@@ -27,13 +27,13 @@ import {getOrCreate} from '../utils/js';
 
 /**
  * Base class for objects in Hoist.
- *
  * Provides misc. support for Mobx integration, state persistence, and resource cleanup.
  *
- * This class should not typically be extended directly by applications.  Applications should
- * extend one of its subclasses instead.
- *
- * @see HoistModel, HoistService, and Store.
+ * This class should not typically be extended directly by applications. Applications should
+ * extend one of its subclasses instead, notably:
+ * @see HoistModel
+ * @see HoistService
+ * @see Store
  */
 export class HoistBase {
 
