@@ -148,6 +148,10 @@ function doFormat(opts) {
             '<1 minute' :
             moment.duration(elapsed).humanize();
 
+        // Moment outputs e.g. "a minute" instead of "1 minute". This creates some awkwardness
+        // when the leading number comes and goes - "<1 minute" -> "a minute" -> "2 minutes".
+        ret = ret.replace(/^(an|a) /, '1 ');
+
         if (short) ret = ret.replace('minute', 'min').replace('second', 'sec');
 
         ret += ' ' + (isFuture ? opts.futureSuffix : opts.pastSuffix);
