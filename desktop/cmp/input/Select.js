@@ -2,16 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import debouncePromise from 'debounce-promise';
-import {castArray, escapeRegExp, isEmpty, isNil, isPlainObject, keyBy, merge, isEqual} from 'lodash';
-import PT from 'prop-types';
-import {components} from 'react-select';
-
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {box, div, hbox, span, fragment} from '@xh/hoist/cmp/layout';
-import {hoistCmp, elem} from '@xh/hoist/core';
+import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
+import {elem, hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {
     reactAsyncCreatableSelect,
@@ -20,12 +15,24 @@ import {
     reactSelect,
     reactWindowedSelect
 } from '@xh/hoist/kit/react-select';
-import {action, observable, bindable, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps, createObservableRef} from '@xh/hoist/utils/react';
+import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-
+import debouncePromise from 'debounce-promise';
+import {
+    castArray,
+    escapeRegExp,
+    isEmpty,
+    isEqual,
+    isNil,
+    isPlainObject,
+    keyBy,
+    merge
+} from 'lodash';
+import PT from 'prop-types';
+import {components} from 'react-select';
 import './Select.scss';
 
 /**
@@ -146,8 +153,8 @@ Select.propTypes = {
      * Objects must have either:
      *      + A `label` property for display and a `value` property
      *      + A `label` property and an `options` property containing an array of sub-options
-     *        to be grouped beneath the option.
-     *        These sub-options must be either primitives or `label`:`value` pairs: deeper nesting is unsupported.
+     *        to be grouped beneath the option. These sub-options must be either primitives or
+     *        `label`:`value` pairs. Deeper nesting is unsupported.
      *
      * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
      * of up-front in this prop.
@@ -295,7 +302,7 @@ class Model extends HoistInputModel {
         }
     };
 
-    @action
+    @override
     noteFocused() {
         if (this.manageInputValue) {
             const {renderValue} = this;
@@ -325,7 +332,7 @@ class Model extends HoistInputModel {
         }
     }
 
-    @action
+    @override
     setInternalValue(val) {
         const changed = !isEqual(val, this.internalValue);
         super.setInternalValue(val);

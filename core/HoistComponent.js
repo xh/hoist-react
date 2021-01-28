@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {CreatesSpec, elemFactory, ModelPublishMode, ModelSpec, uses} from '@xh/hoist/core';
 import {useOwnedModelLinker} from '@xh/hoist/core/impl/UseOwnedModelLinker';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isString} from 'lodash';
-import {useObserver} from 'mobx-react';
+import {observer} from 'mobx-react';
 import {forwardRef, memo, useContext, useDebugValue, useState} from 'react';
 import {ModelLookup, matchesSelector, ModelLookupContext, modelLookupContextProvider} from './impl/ModelLookup';
 
@@ -22,8 +22,9 @@ import {ModelLookup, matchesSelector, ModelLookupContext, modelLookupContextProv
  * provided to / created by this component and if the component should publish its model to any
  * sub-components via context.
  *
- * By default, this utility applies the MobX 'observer' behavior on the returned component,
- * enabling MobX-powered reactivity and auto-re-rendering.
+ * By default, this utility wraps the returned component in the MobX 'observer' HOC, enabling
+ * MobX-powered reactivity and auto-re-rendering of observable properties read from models and
+ * any other sources of observable state.
  *
  * Forward refs (@link https://reactjs.org/docs/forwarding-refs.html) are supported by specifying a
  * render function that accepts two arguments. In that case, the second arg will be considered a
@@ -45,8 +46,8 @@ import {ModelLookup, matchesSelector, ModelLookupContext, modelLookupContextProv
  *      Components that are known to be unable to make effective use of memo (e.g. container
  *      components) may set this to `false`. Not typically set by application code.
  * @param {boolean} [config.observer] - true (default) to enable MobX-powered reactivity via the
- *      `useObserver()` hook from mobx-react. Components that are known to dereference no
- *      observable state may set this to `false`. Not typically set by application code.
+ *      `observer()` HOC from mobx-react. Components that are known to dereference no observable
+ *      state may set this to `false`, but this is not typically done by application code.
  * @returns {function} - a functional Component for use within Hoist apps.
  *
  * This function also has two convenience "sub-functions" that are properties of it:
@@ -66,18 +67,15 @@ export function hoistComponent(config) {
         isObserver = withDefault(config.observer, true),
         isForwardRef = (render.length === 2);
 
-    // 1) Default and validate the modelSpec
+    // 1) Default and validate the modelSpec.
     const modelSpec = withDefault(config.model, uses('*'));
     throwIf(
         modelSpec && !(modelSpec instanceof ModelSpec),
         "The 'model' config passed to hoistComponent() is incorrectly specified: provide a spec returned by either uses() or creates()."
     );
 
-    // 2) Decorate with function wrappers with behaviors
+    // 2) Decorate with function wrappers with behaviors.
     let ret = render;
-    if (isObserver) {
-        ret = (props, ref) => useObserver(() => render(props, ref));
-    }
     if (modelSpec) {
         ret = wrapWithModel(ret,  modelSpec, displayName);
     }
@@ -85,18 +83,25 @@ export function hoistComponent(config) {
         ret = wrapWithClassName(ret, className);
     }
     // 2a) Apply display name to wrapped function.  This is the "pre-react" functional component.
-    // and react dev tools expect it to be named.
+    // and React dev tools expect it to be named.
     ret.displayName = displayName;
 
-    // 3) Decorate with built-in react HOCs (these trampoline displayName)
+    // 3) Wrap with built-in React HOCs (these trampoline displayName).
     if (isForwardRef) {
         ret = forwardRef(ret);
     }
-    if (isMemo) {
+    // Wrap with memo if requested and if *not* applying observer wrapper below.
+    // Mobx will wrap with memo internally, and will complain if already memoized.
+    if (isMemo && !isObserver) {
         ret = memo(ret);
     }
 
-    // 4) Mark and return
+    // 4) Wrap with MobX observer HOC.
+    if (isObserver) {
+        ret = observer(ret);
+    }
+
+    // 5) Mark and return.
     ret.displayName = displayName;
     ret.isHoistComponent = true;
 

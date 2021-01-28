@@ -55,8 +55,8 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
 
 * @blueprintjs/core `3.36 -> 3.38`
 * codemirror `5.58 -> 5.59`
-* mobx `5.15 -> 6.0`
-* mobx-react `6.3 -> 7.0`
+* mobx `5.15 -> 6.1`
+* mobx-react `6.3 -> 7.1`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v37.2.0...develop)
 
@@ -3348,7 +3348,7 @@ and ag-Grid upgrade, and more. 🚀
 
 ------------------------------------------
 
-Copyright © 2020 Extremely Heavy Industries Inc. - all rights reserved
+Copyright © 2021 Extremely Heavy Industries Inc. - all rights reserved
 
 ------------------------------------------
 
