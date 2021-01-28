@@ -9,11 +9,13 @@ import {observable, action, makeObservable} from '@xh/hoist/mobx';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from '@xh/hoist/mobile/cmp/button';
-import {menu, MenuItem} from '@xh/hoist/mobile/cmp/menu';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {usePopper} from 'react-popper';
 import PT from 'prop-types';
 import ReactDom from 'react-dom';
+
+import {MenuItem} from './MenuItem';
+import {menu} from './impl/Menu';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a dropdown menu operation.

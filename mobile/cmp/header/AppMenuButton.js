@@ -5,7 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
-import {Button, menuButton} from '@xh/hoist/mobile/cmp/button';
+import {menuButton} from '@xh/hoist/mobile/cmp/menu';
+import {Button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';

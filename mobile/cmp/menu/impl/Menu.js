@@ -15,7 +15,7 @@ import {isValidElement} from 'react';
 import PT from 'prop-types';
 
 import './Menu.scss';
-import {MenuItem} from './MenuItem';
+import {MenuItem} from '../MenuItem';
 
 /**
  * Menu Component.
