@@ -9,7 +9,7 @@ import {useOwnedModelLinker} from '@xh/hoist/core/impl/UseOwnedModelLinker';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isString} from 'lodash';
-import {observer} from 'mobx-react-lite';
+import {observer} from '@xh/hoist/mobx';
 import {forwardRef, memo, useContext, useDebugValue, useState} from 'react';
 import {ModelLookup, matchesSelector, ModelLookupContext, modelLookupContextProvider} from './impl/ModelLookup';
 
