@@ -38,7 +38,6 @@ export const [FormField, formField] = hoistCmp.withFactory({
     displayName: 'FormField',
     className: 'xh-form-field',
     model: uses(FieldModel, {fromContext: false, publishMode: ModelPublishMode.NONE}),
-    memo: false,
 
     render({model, className, field, children, info, ...props}) {
 
@@ -176,7 +175,6 @@ FormField.propTypes = {
 
 
 const readonlyChild = hoistCmp.factory({
-    memo: false,
     model: false,
 
     render({model, readonlyRenderer}) {
@@ -188,7 +186,6 @@ const readonlyChild = hoistCmp.factory({
 
 
 const editableChild = hoistCmp.factory({
-    memo: false,
     model: false,
 
     render({model, child, childIsSizeable, disabled, commitOnChange, width, height, flex}) {

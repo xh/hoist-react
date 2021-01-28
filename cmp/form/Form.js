@@ -31,7 +31,6 @@ const formContextProvider = elemFactory(FormContext.Provider);
 export const [Form, form] = hoistCmp.withFactory({
     displayName: 'Form',
     model: uses(FormModel, {publishMode: ModelPublishMode.NONE}),
-    memo: false,
 
     render({model, fieldDefaults, children}) {
         const parentContext = useContext(FormContext);
