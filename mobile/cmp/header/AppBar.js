@@ -24,7 +24,7 @@ import './AppBar.scss';
 export const [AppBar, appBar] = hoistCmp.withFactory({
     displayName: 'AppBar',
     className: 'xh-appbar',
-    model: false, memo: false,
+    model: false,
 
     render({
         className,

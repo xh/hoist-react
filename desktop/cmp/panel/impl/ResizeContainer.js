@@ -13,7 +13,6 @@ import {splitter} from './Splitter';
 
 export const resizeContainer = hoistCmp.factory({
     displayName: 'ResizeContainer',
-    memo: false,
     model: false,
     className: 'xh-resizable',
 
