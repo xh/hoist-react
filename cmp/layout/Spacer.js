@@ -45,5 +45,5 @@ export const [Filler, filler] = hoistCmp.withFactory({
 //--------------------------------
 // Convenience Factories
 //--------------------------------
-export function hspacer(width)  {return spacer({width})}
-export function vspacer(height) {return spacer({height})}
+export function hspacer(width = 10)  {return spacer({width})}
+export function vspacer(height = 10) {return spacer({height})}
