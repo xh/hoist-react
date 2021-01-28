@@ -15,7 +15,7 @@ import './Dialog.scss';
 export const [Dialog, dialog] = hoistCmp.withFactory({
     displayName: 'Dialog',
     className: 'xh-dialog',
-    model: false, memo: false,
+    model: false,
 
     render({className, isOpen, onCancel, icon, title, content, buttons = []}) {
 
@@ -58,7 +58,7 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
 //-----------------------------------------------------------------
 const modelHost = hoistCmp.factory({
     model: uses('*'),
-    memo: false,
+    memo: false, observer: false,
 
     render({children}) {
         return children;

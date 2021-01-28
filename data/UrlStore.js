@@ -20,6 +20,7 @@ export class UrlStore extends Store {
     @managed
     loadSupport = new LoadSupport(this);
 
+
     /**
      * @param {Object} c - UrlStore configuration.
      * @param {string} c.url - URL from which to load data.
@@ -35,6 +36,11 @@ export class UrlStore extends Store {
     /**
      * Reload store from url.
      */
+    async loadAsync(loadSpec) {
+        return this.loadSupport.loadAsync(loadSpec);
+    }
+
+
     async doLoadAsync(loadSpec) {
         const {url, dataRoot} = this;
         let data = await XH.fetchJson({url, loadSpec});

@@ -6,10 +6,10 @@
  */
 import {CreatesSpec, elemFactory, ModelPublishMode, ModelSpec, uses} from '@xh/hoist/core';
 import {useOwnedModelLinker} from '@xh/hoist/core/impl/UseOwnedModelLinker';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isString} from 'lodash';
-import {observer} from 'mobx-react';
+import {observer} from '@xh/hoist/mobx';
 import {forwardRef, memo, useContext, useDebugValue, useState} from 'react';
 import {ModelLookup, matchesSelector, ModelLookupContext, modelLookupContextProvider} from './impl/ModelLookup';
 
@@ -74,6 +74,11 @@ export function hoistComponent(config) {
         "The 'model' config passed to hoistComponent() is incorrectly specified: provide a spec returned by either uses() or creates()."
     );
 
+    warnIf(
+        !isMemo && isObserver,
+        'Cannot create an observer component without `memo`.  Memo is built-in to MobX observable. Component will be memoized.'
+    );
+
     // 2) Decorate with function wrappers with behaviors.
     let ret = render;
     if (modelSpec) {
@@ -86,22 +91,21 @@ export function hoistComponent(config) {
     // and React dev tools expect it to be named.
     ret.displayName = displayName;
 
-    // 3) Wrap with built-in React HOCs (these trampoline displayName).
-    if (isForwardRef) {
-        ret = forwardRef(ret);
-    }
-    // Wrap with memo if requested and if *not* applying observer wrapper below.
-    // Mobx will wrap with memo internally, and will complain if already memoized.
-    if (isMemo && !isObserver) {
-        ret = memo(ret);
-    }
-
-    // 4) Wrap with MobX observer HOC.
+    // 3) Wrap with HOCs.
+    // note that observer will take care of memo and forwardRef if needed
     if (isObserver) {
-        ret = observer(ret);
+        // see https://github.com/mobxjs/mobx/issues/2527 for discuss of observer + forwardRef API
+        ret = observer(ret, {forwardRef: isForwardRef});
+    } else {
+        if (isForwardRef) {
+            ret = forwardRef(ret);
+        }
+        if (isMemo) {
+            ret = memo(ret);
+        }
     }
 
-    // 5) Mark and return.
+    // 4) Mark and return.
     ret.displayName = displayName;
     ret.isHoistComponent = true;
 
