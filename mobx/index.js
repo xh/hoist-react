@@ -22,7 +22,6 @@ export {
     untracked,
     when
 } from 'mobx';
-export {observer} from 'mobx-react';
 export {bindable, settable} from './decorators';
 
 configure({enforceActions: 'observed'});
