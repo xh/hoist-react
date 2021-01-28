@@ -5,5 +5,5 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-export * from './Menu';
-export * from './MenuModel';
+export * from './MenuButton';
+export * from './MenuItem';
