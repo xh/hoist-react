@@ -39,7 +39,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     model: uses(TreeMapModel),
     className: 'xh-treemap',
 
-    render({model, className, ...props}) {
+    render({model, className, ...props}, ref) {
 
         if (!Highcharts) {
             console.error(
@@ -49,11 +49,12 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
             return 'Highcharts not available';
         }
 
-        const impl = useLocalModel(() => new LocalModel(model)),
-            ref = composeRefs(
-                useOnResize(impl.onResizeAsync, {debounce: 100}),
-                useOnVisibleChange(impl.onVisibleChange)
-            );
+        const impl = useLocalModel(() => new LocalModel(model));
+        ref = composeRefs(
+            ref,
+            useOnResize(impl.onResizeAsync, {debounce: 100}),
+            useOnVisibleChange(impl.onVisibleChange)
+        );
 
         const renderError = (error) => frame({
             className: 'xh-treemap__error-message',

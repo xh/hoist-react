@@ -48,7 +48,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
         tabMinWidth,
         tabMaxWidth,
         ...props
-    }) {
+    }, ref) {
         throwIf(!['top', 'bottom', 'left', 'right'].includes(orientation), 'Unsupported value for orientation.');
 
         const {id, tabs, activeTabId} = model,
@@ -57,15 +57,15 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
             impl = useLocalModel(() => new LocalModel(model, enableOverflow, vertical));
 
         // Implement overflow
-        let ref = impl.switcherRef;
-        if (impl.enableOverflow) {
-            ref = composeRefs(
+        ref = impl.enableOverflow ?
+            composeRefs(
+                ref,
                 impl.switcherRef,
                 useOnResize(() => impl.updateOverflowTabs()),
                 useOnVisibleChange(() => impl.updateOverflowTabs()),
                 useOnScroll(() => impl.updateOverflowTabs())
-            );
-        }
+            ):
+            composeRefs(ref, impl.switcherRef);
 
         // Create tabs
         const tabStyle = {};

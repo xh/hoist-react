@@ -22,7 +22,7 @@ export const [DataView, dataView] = hoistCmp.withFactory({
     model: uses(DataViewModel),
     className: 'xh-data-view',
 
-    render({model, className, ...props}) {
+    render({model, className, ...props}, ref) {
         apiRemoved(props.itemHeight, 'itemHeight', 'Specify itemHeight on the DataViewModel instead.');
         apiRemoved(props.rowCls, 'rowCls', 'Specify rowClassFn on the DataViewModel instead.');
 
@@ -32,6 +32,7 @@ export const [DataView, dataView] = hoistCmp.withFactory({
         return grid({
             ...layoutProps,
             className,
+            ref,
             model: model.gridModel,
             agOptions: localModel.agOptions,
             onRowDoubleClicked
