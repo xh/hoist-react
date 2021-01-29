@@ -16,9 +16,10 @@ export const [LaunchAdminButton, launchAdminButton] = hoistCmp.withFactory({
     displayName: 'LaunchAdminButton',
     model: false,
 
-    render(props) {
+    render(props, ref) {
         if (!XH.getUser().isHoistAdmin) return null;
         return button({
+            ref,
             icon: Icon.wrench(),
             title: 'Launch admin client...',
             onClick: () => window.open('/admin'),

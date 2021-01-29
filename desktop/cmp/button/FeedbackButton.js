@@ -16,8 +16,9 @@ export const [FeedbackButton, feedbackButton] = hoistCmp.withFactory({
     displayName: 'FeedbackButton',
     model: false,
 
-    render(props) {
+    render(props, ref) {
         return button({
+            ref,
             icon: Icon.comment({className: 'fa-flip-horizontal'}),
             title: 'Feedback',
             onClick: () => XH.showFeedbackDialog(),

@@ -26,7 +26,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
     displayName: 'ColChooserButton',
     model: false,
 
-    render({icon, title, gridModel, popoverPosition, ...rest}) {
+    render({icon, title, gridModel, popoverPosition, ...rest}, ref) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
 
         const colChooserModel = gridModel?.colChooserModel;
@@ -54,6 +54,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
             target: displayButton,
             content: vbox(
                 div({
+                    ref,
                     className: 'xh-popup__title',
                     item: 'Choose Columns'
                 }),

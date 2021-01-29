@@ -21,7 +21,7 @@ export const [RefreshButton, refreshButton] = hoistCmp.withFactory({
     displayName: 'RefreshButton',
     model: false,  // For consistency with all other buttons -- the model prop here could be replaced by 'target'
 
-    render({model, onClick, ...props}) {
+    render({model, onClick, ...props}, ref) {
         const refreshContextModel = useContextModel(RefreshContextModel);
 
         if (!onClick) {
@@ -31,6 +31,7 @@ export const [RefreshButton, refreshButton] = hoistCmp.withFactory({
         }
 
         return button({
+            ref,
             icon: Icon.refresh(),
             title: 'Refresh',
             intent: 'success',
