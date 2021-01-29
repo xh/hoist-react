@@ -124,7 +124,7 @@ class LocalModel extends HoistModel {
     _lastTouchStart = null;
     _lastMouseDown = null;
 
-    constructor({gridLocalModel, xhColumn, column: agColumn, enableSorting}) {
+    constructor({gridLocalModel, xhColumn, column: agColumn}) {
         super();
         makeObservable(this);
         this.gridModel = gridLocalModel.model;
@@ -132,7 +132,7 @@ class LocalModel extends HoistModel {
         this.agColumn = agColumn;
         this.colId = agColumn.colId;
         this.isFiltered = agColumn.isFilterActive();
-        this.enableSorting = enableSorting;
+        this.enableSorting = xhColumn.sortable;
         this.availableSorts = this.parseAvailableSorts();
 
         agColumn.addEventListener('filterChanged', this.onFilterChanged);
