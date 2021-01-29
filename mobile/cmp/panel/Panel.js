@@ -27,7 +27,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
     className: 'xh-panel',
     model: false, memo: false,
 
-    render(props) {
+    render(props, ref) {
         const contextModel = useContextModel('*');
 
         let [layoutProps, nonLayoutProps] = splitLayoutProps(props);
@@ -74,6 +74,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
                 parseLoadDecorator(maskProp, 'mask', contextModel),
                 parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)
             ],
+            ref,
             ...rest,
             ...layoutProps
         });
