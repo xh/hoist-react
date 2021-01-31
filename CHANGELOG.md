@@ -37,6 +37,7 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
   A new `MenuButton` component has been added to the mobile framework, which renders a `Menu`
   of `MenuItems` next to the `MenuButton`. This change also includes the removal of
   `AppMenuModel` (see Breaking Changes)
+* Added `ExpandCollapseButton` to the mobile toolkit, to expand / collapse all rows in a tree grid.
 
 ### 💥 Breaking Changes
 
