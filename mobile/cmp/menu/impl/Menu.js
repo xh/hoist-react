@@ -5,9 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
-import {div, fragment, hspacer, vbox} from '@xh/hoist/cmp/layout';
+import {div, hspacer, vbox} from '@xh/hoist/cmp/layout';
 import {listItem} from '@xh/hoist/kit/onsen';
-import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {throwIf} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {isFunction, isEmpty} from 'lodash';
@@ -41,24 +40,18 @@ export const [Menu, menu] = hoistCmp.withFactory({
         if (isEmpty(items)) return null;
         throwIf(!isFunction(onDismiss), 'Menu requires an `onDismiss` callback function');
 
-        return fragment(
-            mask({
-                isDisplayed: true,
-                onClick: () => onDismiss()
-            }),
-            vbox({
-                ref,
-                className,
-                style: {
-                    ...style,
-                    ...layoutProps
-                },
-                item: vbox({
-                    className: 'xh-menu__list',
-                    items
-                })
+        return vbox({
+            ref,
+            className,
+            style: {
+                ...style,
+                ...layoutProps
+            },
+            item: vbox({
+                className: 'xh-menu__list',
+                items
             })
-        );
+        });
     }
 });
 
