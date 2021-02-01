@@ -16,8 +16,11 @@ import {
     isEmpty,
     isEqual,
     without,
-    isUndefined
+    isUndefined,
+    flatMap,
+    filter
 } from 'lodash';
+import {stripTags} from '../../../utils/js';
 
 export class StoreFilterFieldImplModel extends HoistModel {
 
@@ -124,19 +127,14 @@ export class StoreFilterFieldImplModel extends HoistModel {
     regenerateFilter() {
         const {filter, filterText} = this,
             activeFields = this.getActiveFields(),
-            supportDotSeparated = !!activeFields.find(it => it.includes('.')),
             searchTerm = escapeRegExp(filterText),
             initializing = isUndefined(filter);
 
         let newFilter = null;
         if (searchTerm && !isEmpty(activeFields)) {
             const regex = this.getRegex(searchTerm);
-            newFilter = (rec) => activeFields.some(f => {
-                // Use of lodash get() slower than direct access - use only when needed to support
-                // dot-separated field paths. (See note in getActiveFields() below.)
-                const fieldVal = supportDotSeparated ? get(rec.data, f) : rec.data[f];
-                return regex.test(fieldVal);
-            });
+            const valGetters = flatMap(activeFields, (fieldPath) => this.getValGetters(fieldPath));
+            newFilter = (rec) => valGetters.some(fn => regex.test(fn(rec)));
         }
 
         if (filter === newFilter) return;
@@ -193,6 +191,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
             // Run exclude once more to support explicitly excluding a dot-sep field added above.
             if (excludeFields) ret = without(ret, ...excludeFields);
 
+            // Final filter for column visibility, or explicit request for inclusion.
             ret = ret.filter(f => {
                 return (
                     (includeFields && includeFields.includes(f)) ||
@@ -202,5 +201,28 @@ export class StoreFilterFieldImplModel extends HoistModel {
             });
         }
         return ret;
+    }
+
+
+    getValGetters(field) {
+        const {gridModel} = this,
+            cols = gridModel ? filter(gridModel.getVisibleLeafColumns(), {field}) : null;
+
+        // No associated visible column -- use simple get.
+        if (!cols) {
+            // lodash get() slower - use only when needed to support dot-separated paths.
+            return field.includes('.') ? (rec) => get(rec.data, field) : (rec) => rec.data[field];
+        }
+
+        // For each visible column, return closest approximation of rendered value.
+        return cols.map(column => {
+            const {renderer, getValueFn} = column;
+            return (record) => {
+                let ret = getValueFn({record, field, column, gridModel});
+                if (!renderer) return ret;
+                ret = renderer(ret, {record, column, gridModel});
+                return stripTags(ret);
+            };
+        });
     }
 }
