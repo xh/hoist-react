@@ -54,7 +54,7 @@ export class PageModel extends HoistModel {
      * @param {string} id - unique ID. Must match a configured Router5 route name.
      * @param {NavigatorModel} navigatorModel - parent NavigatorModel. Provided by the
      *      navigator when constructing these models - no need to specify manually.
-     * @param {(Object|function)} content - Hoist Component (class or functional) to be
+     * @param {(Element|Object|function)} content - Hoist Component (class or functional) to be
      *      rendered by this page; or function returning react element to be rendered by this page.
      * @param {Object} [props] - props to be passed to page upon creation.
      * @param {RefreshMode} [renderMode] - strategy for rendering this Page. If null, will

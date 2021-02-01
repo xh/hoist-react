@@ -7,10 +7,8 @@
 import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {observable, action, makeObservable} from '@xh/hoist/mobx';
 import {div} from '@xh/hoist/cmp/layout';
-import {throwIf} from '@xh/hoist/utils/js';
-import {createObservableRef} from '@xh/hoist/utils/react';
+import {elementFromContent, createObservableRef} from '@xh/hoist/utils/react';
 import {isNil, isFunction} from 'lodash';
-import {isValidElement} from 'react';
 import {usePopper} from 'react-popper';
 import ReactDom from 'react-dom';
 import classNames from 'classnames';
@@ -41,9 +39,6 @@ export const [Popover, popover] = hoistCmp.withFactory({
         position = 'auto',
         popperOptions
     }) {
-        throwIf(!isValidElement(target), 'Popover requires a `target` component');
-        throwIf(!isValidElement(content), 'Popover requires a `content` component');
-
         const impl = useLocalModel(() => new LocalModel()),
             popper = usePopper(impl.targetEl, impl.contentEl, {
                 placement: impl.menuPositionToPlacement(position),
@@ -65,7 +60,7 @@ export const [Popover, popover] = hoistCmp.withFactory({
                 div({
                     ref: impl.targetRef,
                     className: 'xh-popover__target-wrapper',
-                    item: target,
+                    item: elementFromContent(target),
                     onClick: () => impl.toggleOpen()
                 }),
                 div({
@@ -73,7 +68,7 @@ export const [Popover, popover] = hoistCmp.withFactory({
                     omit: !impl.isOpen,
                     style: popper?.styles?.popper,
                     className: 'xh-popover__content-wrapper',
-                    items: content
+                    items: elementFromContent(content)
                 }),
                 div({
                     omit: !impl.isOpen,
@@ -90,10 +85,10 @@ export const [Popover, popover] = hoistCmp.withFactory({
 
 Popover.propTypes = {
     /** Component to display inside the popover */
-    content: PT.element,
+    content: PT.oneOfType([PT.element, PT.object, PT.func]),
 
     /** The target to which the popover content is attached */
-    target: PT.element,
+    target: PT.oneOfType([PT.element, PT.object, PT.func]),
 
     /** Whether the popover is visible. Passing this prop puts the popover in controlled mode */
     isOpen: PT.bool,
