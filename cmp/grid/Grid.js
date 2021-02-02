@@ -4,6 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {fragment, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
@@ -59,7 +60,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
     model: uses(GridModel),
     className: 'xh-grid',
 
-    render({model, className, ...props}) {
+    render({model, className, ...props}, ref) {
         apiRemoved(props.hideHeaders, 'hideHeaders', 'Specify hideHeaders on the GridModel instead.');
 
         const impl = useLocalModel(() => new LocalModel(model, props)),
@@ -78,7 +79,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
                     ...impl.agOptions
                 }),
                 onKeyDown: impl.onKeyDown,
-                ref: impl.viewRef
+                ref: composeRefs(impl.viewRef, ref)
             }),
             (model.colChooserModel ? platformColChooser({model: model.colChooserModel}) : null)
         );

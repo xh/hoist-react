@@ -33,6 +33,11 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
 ### 🎁 New Features
 
 * New utility method `getOrCreate` for easy caching of properties on objects.
+* The `Menu` system on mobile has been reworked to be more consistent with desktop.
+  A new `MenuButton` component has been added to the mobile framework, which renders a `Menu`
+  of `MenuItems` next to the `MenuButton`. This change also includes the removal of
+  `AppMenuModel` (see Breaking Changes)
+* Added `ExpandCollapseButton` to the mobile toolkit, to expand / collapse all rows in a tree grid.
 
 ### 💥 Breaking Changes
 
@@ -45,6 +50,8 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
   wish to select for your component. `Uses` will throw if given any string other than "*", making
   the need for any updates clear.
 * The `Ref` class, deprecated in v26, has now been removed. Use `createObservableRef` instead.
+* `AppMenuModel` has been removed. The `AppMenuButton` is now configured via `AppBar.appMenuButtonProps`.
+  As with desktop, menu items can be added with `AppBar.appMenuButtonProps.extraItems[]`
 
 ### ⚙️ Technical
 

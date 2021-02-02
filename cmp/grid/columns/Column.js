@@ -331,7 +331,7 @@ export class Column {
                 minWidth: this.minWidth,
                 maxWidth: this.maxWidth,
                 resizable: this.resizable,
-                sortable: this.sortable,
+                sortable: false,   // Prevent ag-Grid built-in sorting affordances.  Our custom header provides.
                 suppressMovable: !this.movable,
                 lockPinned: !gridModel.enableColumnPinning || XH.isMobileApp,
                 pinned: this.pinned,

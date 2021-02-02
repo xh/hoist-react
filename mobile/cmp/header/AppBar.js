@@ -6,12 +6,13 @@
  */
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel, XH} from '@xh/hoist/core';
-import {button, menuButton, navigatorBackButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
-import {menu} from '@xh/hoist/mobile/cmp/menu';
+import {button, navigatorBackButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
 import {NavigatorModel} from '@xh/hoist/mobile/cmp/navigator';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import PT from 'prop-types';
+
 import './AppBar.scss';
+import {appMenuButton} from './AppMenuButton';
 
 /**
  * A standard application navigation bar which displays the current page title and a standard set of
@@ -36,11 +37,10 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
         hideBackButton,
         hideRefreshButton,
         appMenuButtonProps = {},
+        appMenuButtonPosition = 'right',
         backButtonProps = {},
-        refreshButtonProps = {},
-        appMenuButtonPosition = 'right'
+        refreshButtonProps = {}
     }, ref) {
-
         const navigatorModel = useContextModel(NavigatorModel);
 
         return toolbar({
@@ -54,8 +54,9 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                             omit: hideBackButton,
                             ...backButtonProps
                         }),
-                        menuButton({
+                        appMenuButton({
                             omit: hideAppMenuButton || appMenuButtonPosition != 'left',
+                            menuPosition: 'bottom-right',
                             ...appMenuButtonProps
                         }),
                         ...leftItems || []
@@ -83,32 +84,17 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                             disabled: navigatorModel?.disableAppRefreshButton,
                             ...refreshButtonProps
                         }),
-                        menuButton({
+                        appMenuButton({
                             omit: hideAppMenuButton || appMenuButtonPosition != 'right',
+                            menuPosition: 'bottom-left',
                             ...appMenuButtonProps
                         })
                     ]
-                }),
-                appMenu({align: appMenuButtonPosition})
+                })
             ]
         });
     }
 });
-
-const appMenu = hoistCmp.factory({
-    displayName: 'AppMenu',
-
-    render({align}) {
-        const menuModel = XH.appModel.appMenuModel;
-        if (!menuModel) return null;
-        return menu({
-            model: menuModel,
-            width: 260,
-            align
-        });
-    }
-});
-
 
 AppBar.propTypes = {
     /** App icon to display to the left of the title. */
