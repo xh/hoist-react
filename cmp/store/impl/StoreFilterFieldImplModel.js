@@ -131,12 +131,11 @@ export class StoreFilterFieldImplModel extends HoistModel {
 
         let newFilter = null;
         if (filterText && !isEmpty(activeFields)) {
-            // stripping commas improves number matching
-            const regex = this.getRegex(stripNumberCommas(filterText));
-            const valGetters = flatMap(activeFields, (fieldPath) => this.getValGetters(fieldPath));
-            newFilter = (rec) => valGetters.some(fn => {
-                return regex.test(stripNumberCommas(fn(rec)));
-            });
+            const regex = this.getRegex(filterText),
+                valGetters = flatMap(activeFields, (fieldPath) => this.getValGetters(fieldPath));
+            newFilter = (rec) => valGetters.some(fn => (
+                regex.test(fn(rec))
+            ));
         }
 
         if (filter === newFilter) return;
@@ -207,29 +206,30 @@ export class StoreFilterFieldImplModel extends HoistModel {
     }
 
 
-    getValGetters(field) {
+    getValGetters(fieldName) {
         const {gridModel} = this,
-            cols = gridModel ? filter(gridModel.getVisibleLeafColumns(), {field}) : null;
+            {store} = gridModel,
+            field = store.getField(fieldName);
 
-        // No associated visible column -- use simple get.
-        if (!cols) {
-            // lodash get() slower - use only when needed to support dot-separated paths.
-            return field.includes('.') ? (rec) => get(rec.data, field) : (rec) => rec.data[field];
+        // For dates, need rendered value for any hope of string matching.
+        // This can be expensive, so currently applying to dates only.
+        if (field?.type === 'date' || field?.type === 'localDate') {
+            if (!gridModel) return [];
+            const cols = filter(gridModel.getVisibleLeafColumns(), {field: fieldName});
+            if (!cols) return [];
+            return cols.map(column => {
+                const {renderer, getValueFn} = column;
+                return (record) => {
+                    const ctx = {record, field, column, gridModel, store},
+                        ret = getValueFn(ctx);
+
+                    return renderer ? stripTags(renderer(ret, ctx)) : ret;
+                };
+            });
         }
 
-        // For each visible column, return closest approximation of rendered value.
-        return cols.map(column => {
-            const {renderer, getValueFn} = column;
-            return (record) => {
-                const ctx = {record, field, column, gridModel, store: gridModel.store},
-                    ret = getValueFn(ctx);
-
-                return renderer ? stripTags(renderer(ret, ctx)) : ret;
-            };
-        });
+        // Otherwise just match raw
+        // Use expensive get() only when needed to support dot-separated paths.
+        return fieldName.includes('.') ? (rec) => get(rec.data, fieldName) : (rec) => rec.data[fieldName];
     }
-}
-
-function stripNumberCommas(str) {
-    return str ? str.replace(/\d,\d/g, (match) => match[0] + match[2]) : str;
 }
