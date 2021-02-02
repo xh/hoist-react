@@ -29,7 +29,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
         agOptions,
         onRowDoubleClicked,
         ...props
-    }) {
+    }, ref) {
 
         const {formModel, gridModel} = model;
 
@@ -45,6 +45,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
 
         return fragment(
             panel({
+                ref,
                 ...props,
                 tbar: restGridToolbar({model, extraToolbarItems}),
                 item: grid({model: gridModel, agOptions, onRowDoubleClicked}),

@@ -18,8 +18,9 @@ import './ErrorMessage.scss';
  */
 export const [ErrorMessage, errorMessage] = hoistCmp.withFactory({
     className: 'xh-error-message',
-    render({className, error, title, actionFn, actionButtonProps}) {
+    render({className, error, title, actionFn, actionButtonProps}, ref) {
         return frame({
+            ref,
             className,
             item: div({
                 className: 'xh-error-message__inner',

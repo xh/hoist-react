@@ -25,12 +25,12 @@ export const [StoreCountLabel, storeCountLabel] = hoistCmp.withFactory({
         unit = 'record',
         includeChildren = false,
         ...props
-    }) {
+    }, ref) {
         const count = includeChildren ? store.count : store.rootCount,
             unitLabel = count === 1 ? singularize(unit) : pluralize(unit),
             item = `${fmtNumber(count, {precision: 0})} ${unitLabel}`;
 
-        return box({...props, item});
+        return box({...props, ref, item});
     }
 });
 

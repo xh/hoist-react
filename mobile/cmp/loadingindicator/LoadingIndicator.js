@@ -34,7 +34,7 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory({
         maxMessageLength = 30,
         isDisplayed = model?.isPending || false,
         className
-    }) {
+    }, ref) {
 
         message = truncate(message, {length: maxMessageLength});
         if (!isDisplayed || (!spinner && !message)) return null;
@@ -54,6 +54,7 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory({
             cornerCls = `xh-loading-indicator--${corner}`;
 
         return div({
+            ref,
             className: classNames(className, hasMessageCls, hasSpinnerCls, cornerCls),
             item: hbox(innerItems())
         });

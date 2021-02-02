@@ -23,8 +23,8 @@ export const [PinPad, pinPad] = hoistCmp.withFactory({
     model: uses(PinPadModel),
     className: 'xh-pinpad',
 
-    render(props) {
-        return XH.isMobileApp ? mobilePinPadImpl(props) : desktopPinPadImpl(props);
+    render(props, ref) {
+        return XH.isMobileApp ? mobilePinPadImpl(props, ref) : desktopPinPadImpl(props, ref);
     }
 });
 PinPadModel.propTypes = {

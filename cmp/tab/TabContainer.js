@@ -32,9 +32,9 @@ export const [TabContainer, tabContainer] = hoistCmp.withFactory({
     model: uses(TabContainerModel, {publishMode: ModelPublishMode.LIMITED}),
     className: 'xh-tab-container',
 
-    render(props) {
+    render(props, ref) {
         apiRemoved(props.switcherPosition, 'switcherPosition', 'Please specify TabContainerModel.switcher instead.');
-        return XH.isMobileApp ? mobileTabContainerImpl(props) : desktopTabContainerImpl(props);
+        return XH.isMobileApp ? mobileTabContainerImpl(props, ref) : desktopTabContainerImpl(props, ref);
     }
 });
 

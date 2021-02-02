@@ -27,7 +27,7 @@ export const [ExportButton, exportButton] = hoistCmp.withFactory({
     displayName: 'ExportButton',
     model: false,
 
-    render({icon, title, onClick, gridModel, exportOptions = {}, disabled, ...rest}) {
+    render({icon, title, onClick, gridModel, exportOptions = {}, disabled, ...rest}, ref) {
 
         const contextGridModel = useContextModel(GridModel);
 
@@ -42,6 +42,7 @@ export const [ExportButton, exportButton] = hoistCmp.withFactory({
         }
 
         return button({
+            ref,
             icon: withDefault(icon, Icon.download()),
             title: withDefault(title, 'Export'),
             onClick,

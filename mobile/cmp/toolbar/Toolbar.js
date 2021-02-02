@@ -18,8 +18,9 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
     className: 'xh-toolbar',
     model: false, memo: false, observer: false,
 
-    render({className, vertical, ...rest}) {
+    render({className, vertical, ...rest}, ref) {
         return (vertical ? vbox : hbox)({
+            ref,
             className: classNames(className, vertical ? 'xh-toolbar--vertical' : null),
             ...rest
         });

@@ -35,21 +35,24 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
         dialogWidth = 250,
         buttonWidth = 150,
         emptyText = '[Ungrouped]'
-    }) {
+    }, ref) {
         const {value} = model,
             labels = isEmpty(value) ?
                 [emptyText] :
                 value.map(dimName => model.getDimDisplayName(dimName));
 
-        return div(
-            dialogCmp({dialogWidth, emptyText}),
-            button({
-                className: 'xh-dim-button',
-                item: span(labels.join(' \u203a ')),
-                width: buttonWidth,
-                onClick: () => model.showMenu()
-            })
-        );
+        return div({
+            ref,
+            items: [
+                dialogCmp({dialogWidth, emptyText}),
+                button({
+                    className: 'xh-dim-button',
+                    item: span(labels.join(' \u203a ')),
+                    width: buttonWidth,
+                    onClick: () => model.showMenu()
+                })
+            ]
+        });
     }
 });
 

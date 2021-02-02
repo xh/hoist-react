@@ -35,7 +35,7 @@ export const [Chart, chart] = hoistCmp.withFactory({
     model: uses(ChartModel),
     className: 'xh-chart',
 
-    render({model, className, aspectRatio, ...props}) {
+    render({model, className, aspectRatio, ...props}, ref) {
 
         if (!Highcharts) {
             console.error(
@@ -48,11 +48,12 @@ export const [Chart, chart] = hoistCmp.withFactory({
             });
         }
 
-        const impl = useLocalModel(() => new LocalModel(model, aspectRatio)),
-            ref = composeRefs(
-                useOnResize(impl.onResize),
-                useOnVisibleChange(impl.onVisibleChange)
-            );
+        const impl = useLocalModel(() => new LocalModel(model, aspectRatio));
+        ref = composeRefs(
+            ref,
+            useOnResize(impl.onResize),
+            useOnVisibleChange(impl.onVisibleChange)
+        );
 
         useEffect(() => impl.setAspectRatio(aspectRatio), [impl, aspectRatio]);
 
