@@ -23,7 +23,7 @@ export function getReactElementName(obj) {
  * Used by the TabContainer, DashContainer, DockView, and Navigator APIs to process the 'content'
  * configs provided to them for their tabs and views.
  *
- * @param {(Element|Object|function)} content - Element, HoistComponent or function returning a React element.
+ * @param {(ReactElement|Object|function)} content - Element, HoistComponent or function returning a React element.
  *      If a function, it may be an 'elemFactory' (as created by elemFactory()), or any function that
  *      returns a React element. In either case, the function will be called with no arguments.
  * @param {Object} [addProps] -- optional additional props to apply to the element.
@@ -38,7 +38,7 @@ export function elementFromContent(content, addProps) {
     const ret = isFunction(content) ? content() : content;
     if (ret === null) return null;
     throwIf(!isValidElement(ret),
-        'Must specify either a HoistComponent or a function that returns a React Element.'
+        'Must specify either a React Element, HoistComponent or a function that returns a React Element.'
     );
     return addProps ? cloneElement(ret, addProps) : ret;
 }
