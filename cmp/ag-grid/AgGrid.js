@@ -37,7 +37,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
     className: 'xh-ag-grid',
     model: uses(AgGridModel),
 
-    render({model, key, className, onGridReady, ...props}) {
+    render({model, key, className, onGridReady, ...props}, ref) {
 
         if (!AgGridReact) {
             console.error(
@@ -62,6 +62,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
         });
 
         return frame({
+            ref,
             className: classNames(
                 className,
                 darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',

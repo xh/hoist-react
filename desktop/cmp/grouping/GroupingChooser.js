@@ -36,13 +36,14 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
         popoverPosition = 'bottom',
         styleButtonAsInput = true,
         ...rest
-    }) {
+    }, ref) {
         const {editorIsOpen, favoritesIsOpen, persistFavorites, value} = model,
             isOpen = editorIsOpen || favoritesIsOpen,
             label = isEmpty(value) ? emptyText : model.getValueLabel(value),
             [layoutProps, buttonProps] = splitLayoutProps(rest);
 
         return box({
+            ref,
             className,
             ...layoutProps,
             item: popover({

@@ -43,11 +43,12 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory({
         enableAddMulti = enableMulti,
         showFileGrid = true,
         ...props
-    }) {
+    }, ref) {
         const {lastRejectedCount} = model,
-            fileNoun = (count) => `${count} ${count == 1 ? 'file' : 'files'}`;
+            fileNoun = (count) => `${count} ${count === 1 ? 'file' : 'files'}`;
 
         return hbox({
+            ref,
             ...props,
             items: [
                 dropzone({

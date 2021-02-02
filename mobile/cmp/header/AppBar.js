@@ -40,10 +40,11 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
         appMenuButtonPosition = 'right',
         backButtonProps = {},
         refreshButtonProps = {}
-    }) {
+    }, ref) {
         const navigatorModel = useContextModel(NavigatorModel);
 
         return toolbar({
+            ref,
             className,
             items: [
                 div({

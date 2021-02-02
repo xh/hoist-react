@@ -20,7 +20,7 @@ export const [Placeholder, placeholder] = hoistCmp.withFactory({
     model: false, memo: false, observer: false,
     className: 'xh-placeholder',
 
-    render(props) {
-        return box(props);
+    render(props, ref) {
+        return box({...props, ref});
     }
 });

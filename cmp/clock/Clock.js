@@ -24,7 +24,7 @@ export const [Clock, clock] = hoistCmp.withFactory({
     displayName: 'Clock',
     className: 'xh-clock',
 
-    render({timezone, format, updateInterval, prefix, suffix, errorString, ...props}) {
+    render({timezone, format, updateInterval, prefix, suffix, errorString, ...props}, ref) {
         format = format || TIME_FMT;
         updateInterval = updateInterval || ONE_SECOND;
         errorString = withDefault(errorString, '???');
@@ -34,6 +34,7 @@ export const [Clock, clock] = hoistCmp.withFactory({
 
         return box({
             ...props,
+            ref,
             item: span(impl.display)
         });
     }
