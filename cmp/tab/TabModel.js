@@ -44,7 +44,7 @@ export class TabModel extends HoistModel {
      *      but still be able to activate the tab manually or via routing.
      * @param {boolean} [c.showRemoveAction] - display an affordance to allow the user to remove
      *      this tab from its container.
-     * @param {(Object|function)} c.content - Hoist Component (class or functional) to be rendered by this
+     * @param {(ReactElement|Object|function)} c.content - Hoist Component (class or functional) to be rendered by this
      *      Tab; or function returning react element to be rendered by this Tab.
      * @param {RenderMode} [c.renderMode] - strategy for rendering this tab. If null, will
      *      default to its container's mode. See enum for description of supported modes.

@@ -38,6 +38,8 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
   of `MenuItems` next to the `MenuButton`. This change also includes the removal of
   `AppMenuModel` (see Breaking Changes)
 * Added `ExpandCollapseButton` to the mobile toolkit, to expand / collapse all rows in a tree grid.
+* Added `Popover` to the mobile toolkit, a component to display floating content next to a target element.
+  Its API is based on the Blueprint `Popover` component used on desktop.
 
 ### 💥 Breaking Changes
 
