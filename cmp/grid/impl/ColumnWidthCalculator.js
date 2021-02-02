@@ -93,15 +93,15 @@ export class ColumnWidthCalculator {
 
     calcLevelWidth(gridModel, records, column, options, indentationPx = 0) {
         const {field, getValueFn, renderer} = column,
-            {bufferPx} = options,
-            useRenderer = isFunction(renderer);
+            {bufferPx} = options;
 
         // 1) Get unique values
         const values = new Set();
         records.forEach(record => {
             if (!record) return;
-            const rawValue = getValueFn({record, field, column, gridModel}),
-                value = useRenderer ? renderer(rawValue, {record, column, gridModel}) : rawValue;
+            const ctx = {record, field, column, gridModel, store: gridModel.store},
+                rawValue = getValueFn(ctx),
+                value = renderer ? renderer(rawValue, ctx) : rawValue;
             values.add(value);
         });
 
@@ -117,7 +117,7 @@ export class ColumnWidthCalculator {
 
         // 4) Render to a hidden cell to calculate the max displayed width
         return reduce(longestValues, (currMax, value) => {
-            const width = this.getCellWidth(value, useRenderer) + indentationPx + bufferPx;
+            const width = this.getCellWidth(value, renderer) + indentationPx + bufferPx;
             return Math.max(currMax, width);
         }, 0);
     }
@@ -191,9 +191,9 @@ export class ColumnWidthCalculator {
     //------------------
     // Autosize cell
     //------------------
-    getCellWidth(value, useRenderer) {
+    getCellWidth(value, renderer) {
         const cellEl = this.getCellEl();
-        if (useRenderer) {
+        if (renderer) {
             cellEl.innerHTML = value;
         } else if (cellEl.childNodes.length === 1 && cellEl.firstChild?.nodeType === 3) {
             // If we're not rendering html and the cell's first and only child is already a TextNode,

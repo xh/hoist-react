@@ -127,14 +127,16 @@ export class StoreFilterFieldImplModel extends HoistModel {
     regenerateFilter() {
         const {filter, filterText} = this,
             activeFields = this.getActiveFields(),
-            searchTerm = escapeRegExp(filterText),
             initializing = isUndefined(filter);
 
         let newFilter = null;
-        if (searchTerm && !isEmpty(activeFields)) {
-            const regex = this.getRegex(searchTerm);
+        if (filterText && !isEmpty(activeFields)) {
+            // stripping commas improves number matching
+            const regex = this.getRegex(stripNumberCommas(filterText));
             const valGetters = flatMap(activeFields, (fieldPath) => this.getValGetters(fieldPath));
-            newFilter = (rec) => valGetters.some(fn => regex.test(fn(rec)));
+            newFilter = (rec) => valGetters.some(fn => {
+                return regex.test(stripNumberCommas(fn(rec)));
+            });
         }
 
         if (filter === newFilter) return;
@@ -151,6 +153,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
     }
 
     getRegex(searchTerm) {
+        searchTerm = escapeRegExp(searchTerm);
         switch (this.matchMode) {
             case 'any':
                 return new RegExp(searchTerm, 'i');
@@ -218,11 +221,15 @@ export class StoreFilterFieldImplModel extends HoistModel {
         return cols.map(column => {
             const {renderer, getValueFn} = column;
             return (record) => {
-                let ret = getValueFn({record, field, column, gridModel});
-                if (!renderer) return ret;
-                ret = renderer(ret, {record, column, gridModel});
-                return stripTags(ret);
+                const ctx = {record, field, column, gridModel, store: gridModel.store},
+                    ret = getValueFn(ctx);
+
+                return renderer ? stripTags(renderer(ret, ctx)) : ret;
             };
         });
     }
+}
+
+function stripNumberCommas(str) {
+    return str ? str.replace(/\d,\d/g, (match) => match[0] + match[2]) : str;
 }
