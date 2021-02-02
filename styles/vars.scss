@@ -473,6 +473,19 @@ body {
     --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.2));
   }
 
+  //------------------------
+  // Popovers
+  //------------------------
+  --xh-popover-box-shadow: var(--popover-shadow, #{0 0 20px rgba(0, 0, 0, 0.4)});
+  --xh-backdrop-bg: var(--backdrop-bg, #{mc-trans('blue-grey', '300', 0.2)});
+
+  &.xh-dark {
+    --xh-popover-box-shadow: var(--popover-shadow, #{0 0 20px rgba(0, 0, 0, 0.7)});
+  }
+
+  &.xh-mobile {
+    --xh-backdrop-bg: var(--backdrop-bg, rgba(0, 0, 0, 0.4));
+  }
 
   //-------------------------
   // Navbar (aka AppBar)

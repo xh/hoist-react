@@ -131,7 +131,7 @@ class LocalModel extends HoistModel {
     _controlledMode = false;
 
     get targetEl() {
-        return ReactDom.findDOMNode(this.targetRef.current);
+        return this.targetRef.current;
     }
 
     get contentEl() {

@@ -3,7 +3,7 @@
     position: fixed;
     z-index: 21;
     background-color: var(--xh-bg);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--xh-popover-box-shadow);
   }
 
   &__content-overlay {
@@ -21,7 +21,7 @@
     background-color: transparent;
 
     &--backdrop {
-      background-color: var(--xh-mask-bg);
+      background-color: var(--xh-backdrop-bg);
     }
   }
 }

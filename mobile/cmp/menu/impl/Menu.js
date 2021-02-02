@@ -8,7 +8,6 @@ import {hoistCmp} from '@xh/hoist/core';
 import {div, hspacer, vbox} from '@xh/hoist/cmp/layout';
 import {listItem} from '@xh/hoist/kit/onsen';
 import {throwIf} from '@xh/hoist/utils/js';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {isFunction, isEmpty} from 'lodash';
 import {isValidElement} from 'react';
 import PT from 'prop-types';
@@ -32,9 +31,8 @@ export const [Menu, menu] = hoistCmp.withFactory({
     displayName: 'Menu',
     model: false,
     className: 'xh-menu',
-
     render(props, ref) {
-        const [layoutProps, {className, style, menuItems, onDismiss}] = splitLayoutProps(props),
+        const {menuItems, onDismiss, ...rest} = props,
             items = parseMenuItems(menuItems, onDismiss);
 
         if (isEmpty(items)) return null;
@@ -42,15 +40,11 @@ export const [Menu, menu] = hoistCmp.withFactory({
 
         return vbox({
             ref,
-            className,
-            style: {
-                ...style,
-                ...layoutProps
-            },
             item: vbox({
                 className: 'xh-menu__list',
                 items
-            })
+            }),
+            ...rest
         });
     }
 });
