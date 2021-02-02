@@ -35,7 +35,7 @@ export const [Popover, popover] = hoistCmp.withFactory({
         content,
         isOpen,
         onInteraction,
-        withMask = false,
+        backdrop = false,
         position = 'auto',
         popperOptions
     }) {
@@ -76,7 +76,7 @@ export const [Popover, popover] = hoistCmp.withFactory({
                             div({
                                 className: classNames(
                                     'xh-popover__content-overlay',
-                                    withMask ? 'xh-popover__content-overlay--mask' : null
+                                    backdrop ? 'xh-popover__content-overlay--backdrop' : null
                                 ),
                                 onClick: () => impl.setIsOpen(false)
                             })
@@ -105,8 +105,8 @@ Popover.propTypes = {
      */
     onInteraction: PT.func,
 
-    /** Whether to display a mask behind the popover */
-    withMask: PT.bool,
+    /** Whether to display a semi-transparent backdrop behind the popover */
+    backdrop: PT.bool,
 
     /** The position (relative to the target) at which the popover should appear. Default 'auto' */
     position: PT.oneOf([
