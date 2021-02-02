@@ -6,7 +6,7 @@
  */
 import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {observable, action, makeObservable} from '@xh/hoist/mobx';
-import {div} from '@xh/hoist/cmp/layout';
+import {div, fragment} from '@xh/hoist/cmp/layout';
 import {elementFromContent, createObservableRef} from '@xh/hoist/utils/react';
 import {isNil, isFunction} from 'lodash';
 import {usePopper} from 'react-popper';
@@ -63,21 +63,27 @@ export const [Popover, popover] = hoistCmp.withFactory({
                     item: elementFromContent(target),
                     onClick: () => impl.toggleOpen()
                 }),
-                div({
-                    ref: impl.contentRef,
-                    omit: !impl.isOpen,
-                    style: popper?.styles?.popper,
-                    className: 'xh-popover__content-wrapper',
-                    items: elementFromContent(content)
-                }),
-                div({
-                    omit: !impl.isOpen,
-                    className: classNames(
-                        'xh-popover__content-overlay',
-                        withMask ? 'xh-popover__content-overlay--mask' : null
-                    ),
-                    onClick: () => impl.setIsOpen(false)
-                })
+                ReactDom.createPortal(
+                    fragment({
+                        omit: !impl.isOpen,
+                        items: [
+                            div({
+                                ref: impl.contentRef,
+                                style: popper?.styles?.popper,
+                                className: 'xh-popover__content-wrapper',
+                                items: elementFromContent(content)
+                            }),
+                            div({
+                                className: classNames(
+                                    'xh-popover__content-overlay',
+                                    withMask ? 'xh-popover__content-overlay--mask' : null
+                                ),
+                                onClick: () => impl.setIsOpen(false)
+                            })
+                        ]
+                    }),
+                    impl.getOrCreatePortalDiv()
+                )
             ]
         });
     }
@@ -158,6 +164,17 @@ class LocalModel extends HoistModel {
     @action
     toggleOpen() {
         this.setIsOpen(!this.isOpen);
+    }
+
+    getOrCreatePortalDiv() {
+        const id = 'xh-popover-portal';
+        let portal = document.getElementById(id);
+        if (!portal) {
+            portal = document.createElement('div');
+            portal.id = id;
+            document.body.appendChild(portal);
+        }
+        return portal;
     }
 
     /**
