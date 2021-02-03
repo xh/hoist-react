@@ -215,7 +215,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
                 field = store.getField(fieldName);
 
             if (field?.type === DATE || field?.type === LOCAL_DATE) {
-                const cols = filter(gridModel.getLeafColumns(), {field: fieldName});
+                const cols = filter(gridModel.getVisibleLeafColumns(), {field: fieldName});
 
                 // Empty return if no columns - even if this field has been force-included,
                 // we can't match it if we can't render it.
