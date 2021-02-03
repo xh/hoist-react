@@ -4,24 +4,25 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-
-import {hoistCmp, uses} from '@xh/hoist/core';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
-import {div, fragment, vbox, hbox, filler, box} from '@xh/hoist/cmp/layout';
+import {box, div, filler, fragment, vbox} from '@xh/hoist/cmp/layout';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {button, Button} from '@xh/hoist/desktop/cmp/button';
 import {select, Select} from '@xh/hoist/desktop/cmp/input';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {popover, menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
+import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {compact, isEmpty, sortBy} from 'lodash';
 import classNames from 'classnames';
+import {compact, isEmpty, sortBy} from 'lodash';
 import PT from 'prop-types';
-
 import './GroupingChooser.scss';
 
 /**
- * Control for selecting a list of dimensions for grouping APIs.
+ * Control for selecting a list of dimensions for grouping APIs, with built-in support for
+ * drag-and-drop reordering and user-managed favorites.
+ *
  * @see GroupingChooserModel
  */
 export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
@@ -216,6 +217,7 @@ const dimensionRow = hoistCmp.factory({
                         }),
                         button({
                             icon: Icon.delete(),
+                            intent: 'danger',
                             className: 'xh-grouping-chooser__row__remove-btn',
                             onClick: () => model.removePendingDimAtIdx(idx)
                         })
@@ -252,6 +254,7 @@ const addDimensionControl = hoistCmp.factory({
                     flex: 1,
                     width: null,
                     autoFocus: true,
+                    openMenuOnFocus: true,
                     hideDropdownIndicator: true,
                     hideSelectedOptionCheck: true,
                     onChange: (newDim) => model.addPendingDim(newDim)
@@ -266,11 +269,12 @@ const bbar = hoistCmp.factory({
         const {addDisabledMsg, isValid} = model,
             addDisabled = !!addDisabledMsg;
 
-        return hbox({
+        return toolbar({
             className: 'xh-grouping-chooser__btn-row',
             items: [
                 button({
                     icon: Icon.add(),
+                    text: 'Add Level',
                     intent: 'success',
                     omit: model.addControlShown,
                     disabled: !!addDisabled,
@@ -280,11 +284,14 @@ const bbar = hoistCmp.factory({
                 filler(),
                 button({
                     icon: Icon.close(),
+                    title: 'Cancel',
                     intent: 'danger',
                     onClick: () => model.closePopover()
                 }),
+                toolbarSep(),
                 button({
                     icon: Icon.check(),
+                    text: 'Apply',
                     intent: 'success',
                     disabled: !isValid,
                     onClick: () => model.commitPendingValueAndClose()

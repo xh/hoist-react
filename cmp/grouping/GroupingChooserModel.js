@@ -164,7 +164,11 @@ export class GroupingChooserModel extends HoistModel {
 
     @action
     showAddControl() {
-        this.addControlShown = true;
+        if (this.availableDims.length === 1) {
+            this.addPendingDim(this.availableDims[0]);
+        } else {
+            this.addControlShown = true;
+        }
     }
 
     //-------------------------
