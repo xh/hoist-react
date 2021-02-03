@@ -31,9 +31,9 @@ export const [DockContainer, dockContainer] = hoistCmp.withFactory({
     model: uses(DockContainerModel),
     className: 'xh-dock-container',
 
-    render(props) {
+    render(props, ref) {
         throwIf(XH.isMobileApp, 'DockContainer is not implemented on mobile');
-        return desktopDockContainerImpl(props);
+        return desktopDockContainerImpl(props, ref);
     }
 
 });

@@ -26,11 +26,12 @@ import './FilterChooser.scss';
 export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
     model: uses(FilterChooserModel),
     className: 'xh-filter-chooser',
-    render({model, className, ...props}) {
+    render({model, className, ...props}, ref) {
         const [layoutProps, chooserProps] = splitLayoutProps(props),
             {inputRef, selectOptions, favoritesIsOpen} = model;
 
         return box({
+            ref,
             className,
             ...layoutProps,
             item: popover({

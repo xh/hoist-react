@@ -26,10 +26,11 @@ export const [Mask, mask] = hoistCmp.withFactory({
         isDisplayed = model?.isPending || false,
         spinner = false,
         onClick
-    }) {
+    }, ref) {
         if (!isDisplayed) return null;
 
         return div({
+            ref,
             onClick,
             className,
             item: vbox({

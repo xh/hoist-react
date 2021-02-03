@@ -39,7 +39,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
     className: 'xh-form-field',
     model: uses(FieldModel, {fromContext: false, publishMode: ModelPublishMode.NONE}),
 
-    render({model, className, field, children, info, ...props}) {
+    render({model, className, field, children, info, ...props}, ref) {
 
         // Resolve FieldModel
         const formContext = useContext(FormContext);
@@ -100,6 +100,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
             });
 
         return box({
+            ref,
             className: classNames(className, classes),
             ...layoutProps,
             items: [

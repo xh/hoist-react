@@ -42,7 +42,7 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
         popoverTitle = 'Group By',
         popoverPosition = 'bottom',
         selectProps
-    }) {
+    }, ref) {
         const {isMenuOpen, activeMode, value} = model;
         const getCurrDimensionLabels = () => {
                 return value.map(dimName => model.getDimDisplayName(dimName));
@@ -80,6 +80,7 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
 
         return div({
             className,
+            ref,
             item: popover({
                 target,
                 isOpen: isMenuOpen,
