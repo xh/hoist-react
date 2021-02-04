@@ -21,7 +21,6 @@ import {
     isUndefined,
     without
 } from 'lodash';
-import {stripTags} from '../../../utils/js';
 
 export class StoreFilterFieldImplModel extends HoistModel {
 
@@ -128,8 +127,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
         let newFilter = null;
         if (filterText && !isEmpty(activeFields)) {
             const regex = this.getRegex(filterText),
-                valGetters = 
-          (activeFields, (fieldPath) => this.getValGetters(fieldPath));
+                valGetters = flatMap(activeFields, (fieldPath) => this.getValGetters(fieldPath));
             newFilter = (rec) => valGetters.some(fn => (
                 regex.test(fn(rec))
             ));
