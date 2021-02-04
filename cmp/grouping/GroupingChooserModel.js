@@ -36,7 +36,7 @@ export class GroupingChooserModel extends HoistModel {
     @observable.ref pendingValue = [];
     @observable editorIsOpen = false;
     @observable favoritesIsOpen = false;
-    @observable addControlShown = false;
+    @observable isAddMode = false;
 
     popoverRef = createObservableRef();
 
@@ -62,6 +62,10 @@ export class GroupingChooserModel extends HoistModel {
         if (isEmpty(this.availableDims)) return 'All dimensions added';
         if (this.atMaxDepth) return `Maximum ${this.maxDepth} dimensions added`;
         return null;
+    }
+
+    get addControlShown() {
+        return this.isAddMode && !this.addDisabledMsg;
     }
 
     /**
@@ -146,7 +150,7 @@ export class GroupingChooserModel extends HoistModel {
         this.pendingValue = this.value;
         this.editorIsOpen = true;
         this.favoritesIsOpen = false;
-        this.addControlShown = isEmpty(this.value) && !this.allowEmpty;
+        this.isAddMode = isEmpty(this.value) && !this.allowEmpty;
     }
 
     @action
@@ -159,15 +163,14 @@ export class GroupingChooserModel extends HoistModel {
     closePopover() {
         this.editorIsOpen = false;
         this.favoritesIsOpen = false;
-        this.addControlShown = false;
     }
 
     @action
-    showAddControl() {
+    addLevel() {
         if (this.availableDims.length === 1) {
             this.addPendingDim(this.availableDims[0]);
         } else {
-            this.addControlShown = true;
+            this.isAddMode = true;
         }
     }
 
@@ -178,7 +181,7 @@ export class GroupingChooserModel extends HoistModel {
     addPendingDim(dimName) {
         if (!dimName) return;
         this.pendingValue = [...this.pendingValue, dimName];
-        this.addControlShown = false;
+        this.isAddMode = false;
     }
 
     @action
@@ -194,8 +197,8 @@ export class GroupingChooserModel extends HoistModel {
         pendingValue.splice(idx, 1);
         this.pendingValue = pendingValue;
 
-        if (isEmpty(this.pendingValue) && !this.allowEmpty) {
-            this.addControlShown = true;
+        if (isEmpty(pendingValue) && !this.allowEmpty) {
+            this.isAddMode = true;
         }
     }
 
