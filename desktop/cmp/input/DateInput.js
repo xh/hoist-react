@@ -16,10 +16,11 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
-import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {assign, clone} from 'lodash';
 import moment from 'moment';
+import {createRef} from 'react';
 import PT from 'prop-types';
 import './DateInput.scss';
 
@@ -159,9 +160,8 @@ class Model extends HoistInputModel {
 
     @bindable popoverOpen = false;
 
-    inputRef = createObservableRef();
-    buttonRef = createObservableRef();
-    popoverRef = createObservableRef();
+    buttonRef = createRef();
+    popoverRef = createRef();
 
     // Prop-backed convenience getters
     get maxDate() {
@@ -393,7 +393,7 @@ const cmp = hoistCmp.factory(
                 autoFocus: false,
                 enforceFocus: false,
                 position: props.popoverPosition ?? 'auto',
-                popoverRef: model.popoverRef,
+                popoverRef: (v) => {model.popoverRef.current = v},  // Workaround for #2272
                 onClose: model.onPopoverClose,
                 onInteraction: (nextOpenState) => {
                     if (props.showPickerOnFocus) {
