@@ -33,15 +33,19 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
 ### 🎁 New Features
 
 * New utility method `getOrCreate` for easy caching of properties on objects.
-* The `Menu` system on mobile has been reworked to be more consistent with desktop.
-  A new `MenuButton` component has been added to the mobile framework, which renders a `Menu`
-  of `MenuItems` next to the `MenuButton`. This change also includes the removal of
-  `AppMenuModel` (see Breaking Changes)
+* The `Menu` system on mobile has been reworked to be more consistent with desktop. A new
+  `MenuButton` component has been added to the mobile framework, which renders a `Menu` of
+  `MenuItems` next to the `MenuButton`. This change also includes the removal of `AppMenuModel` (see
+  Breaking Changes).
 * Added `ExpandCollapseButton` to the mobile toolkit, to expand / collapse all rows in a tree grid.
+* Added `Popover` to the mobile toolkit, a component to display floating content next to a target
+  element. Its API is based on the Blueprint `Popover` component used on desktop.
+* `StoreFilterField` now matches the rendered string values for `date` and `localDate` fields when
+  linked to a properly configured `GridModel`.
 
 ### 💥 Breaking Changes
 
-* All `HoistModel` and `HoistService` classes will have to be adjusted as described above.
+* All `HoistModel` and `HoistService` classes must be adjusted as described above.
 * `@HoistComponent` has been deprecated and moved to `@xh\hoist\deprecated`
 * Hoist grids now require ag-Grid v25.0.1 or higher - if your app uses ag-Grid, update your ag-Grid
   dependency in your app's `package.json` file.
@@ -50,8 +54,9 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
   wish to select for your component. `Uses` will throw if given any string other than "*", making
   the need for any updates clear.
 * The `Ref` class, deprecated in v26, has now been removed. Use `createObservableRef` instead.
-* `AppMenuModel` has been removed. The `AppMenuButton` is now configured via `AppBar.appMenuButtonProps`.
-  As with desktop, menu items can be added with `AppBar.appMenuButtonProps.extraItems[]`
+* `AppMenuModel` has been removed. The `AppMenuButton` is now configured via
+  `AppBar.appMenuButtonProps`. As with desktop, menu items can be added with
+  `AppBar.appMenuButtonProps.extraItems[]`
 
 ### ⚙️ Technical
 
@@ -1456,9 +1461,8 @@ _"The one with the hooks."_
 
 **Hoist now fully supports React functional components and hooks.** The new `hoistComponent`
 function is now the recommended method for defining new components and their corresponding element
-factories. See that (within [HoistComponentFunctional.js](core/HoistComponentFunctional.js)) and the
-new `useLocalModel()` and `useContextModel()` hooks (within [core/hooks](core/hooks)) for more
-information.
+factories. See that (within HoistComponentFunctional.js) and the new `useLocalModel()` and
+`useContextModel()` hooks (within [core/hooks](core/hooks)) for more information.
 
 Along with the performance benefits and the ability to use React hooks, Hoist functional components
 are designed to read and write their models via context. This allows a much less verbose

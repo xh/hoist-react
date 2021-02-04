@@ -52,8 +52,8 @@ export class DockViewModel extends HoistModel {
      *      container when constructing these models - no need to specify manually.
      * @param {string} [c.title] - Title text added to the header.
      * @param {Element} [c.icon] - An icon placed at the left-side of the header.
-     * @param {(Object|function)} c.content - content to be rendered by this DockView.
-     *      HoistComponent or a function returning a react element.
+     * @param {(ReactElement|Object|function)} c.content - content to be rendered by this DockView.
+     *      Element, HoistComponent, or a function returning a react element.
      * @param {number} [c.width] - width in pixels. If not set, width will be determined by the content.
      * @param {number} [c.height] - height in pixels. If not set, height will be determined by the content.
      * @param {number} [c.collapsedWidth] - width of collapsed header in pixels. If not set, width

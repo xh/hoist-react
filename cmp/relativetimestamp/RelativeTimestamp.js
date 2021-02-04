@@ -24,7 +24,7 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
     displayName: 'RelativeTimestamp',
     className: 'xh-relative-timestamp',
 
-    render({model, timestamp, bind, options, ...props}) {
+    render({model, timestamp, bind, options, ...props}, ref) {
         const impl = useLocalModel(LocalModel);
 
         timestamp = withDefault(timestamp, (model && bind ? model[bind] : null));
@@ -33,6 +33,7 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
 
         return box({
             ...props,
+            ref,
             item: span({
                 className: 'xh-title-tip',
                 item: impl.display,

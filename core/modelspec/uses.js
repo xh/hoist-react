@@ -32,7 +32,7 @@ import {isFunction} from 'lodash';
  * @param {ModelPublishMode} [flags.publishMode] - mode for publishing this model to context.
  * @param {boolean} [flags.createFromConfig] - true (default) to accept model config from props and
  *      construct an instance on-demand. Selector must be a HoistModel Class.
- * @params {(boolean|function)} [flags.createDefault] - true create a model if none provided.
+ * @param {(boolean|function)} [flags.createDefault] - true to create a model if none provided.
  *      Selector must be a HoistModel Class, or a custom function may be provided for this argument.
  * @returns {ModelSpec}
  */

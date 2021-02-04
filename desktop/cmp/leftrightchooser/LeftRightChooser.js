@@ -25,7 +25,7 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory({
     model: uses(LeftRightChooserModel),
     className: 'xh-lr-chooser',
 
-    render({model, ...props}) {
+    render({model, ...props}, ref) {
         const {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
             gridOptions = {
                 onRowDoubleClicked: (e) => {
@@ -44,6 +44,7 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory({
         if (!rightGroupingExpanded) rightGridOptions.agOptions.groupDefaultExpanded = 0;
 
         return vbox({
+            ref,
             items: [
                 hframe({
                     className: 'xh-lr-chooser__grid-frame',

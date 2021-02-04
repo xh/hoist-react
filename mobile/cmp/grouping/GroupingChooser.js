@@ -35,12 +35,13 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
         popoverWidth = 250,
         popoverTitle = 'Group By',
         ...rest
-    }) {
+    }, ref) {
         const {value} = model,
             label = isEmpty(value) ? emptyText : model.getValueLabel(value),
             [layoutProps, buttonProps] = splitLayoutProps(rest);
 
         return box({
+            ref,
             className,
             ...layoutProps,
             items: [

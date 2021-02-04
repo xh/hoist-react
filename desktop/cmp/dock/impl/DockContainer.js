@@ -15,8 +15,9 @@ import {dockView} from './DockView';
  * @private
  */
 
-export function dockContainerImpl({model, className, compactHeaders, ...props}) {
+export function dockContainerImpl({model, className, compactHeaders, ...props}, ref) {
     return hbox({
+        ref,
         className: classNames(className, `xh-dock-container--${model.direction}`),
         items: model.views.map(viewModel => {
             return dockView({

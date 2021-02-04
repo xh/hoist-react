@@ -57,7 +57,7 @@ export class Store extends HoistBase {
     @observable.ref _filtered;
     _loadRootAsSummary = false;
 
-    /** @private -- used internally by any StoreFilterField that is bound to this store. */
+    /** @package - used internally by any StoreFilterField that is bound to this store. */
     @bindable xhFilterText = null;
 
     /**

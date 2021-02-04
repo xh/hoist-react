@@ -86,6 +86,9 @@ export class Cube extends HoistBase {
     /** @returns {Record[]} - records loaded in to this Cube. */
     get records() {return this.store.records}
 
+    /** @returns {number} - count of currently connected, auto-updating Views. */
+    get connectedViewCount() {return this._connectedViews.size}
+
 
     //------------------
     // Querying API
