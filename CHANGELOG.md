@@ -42,6 +42,8 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
   element. Its API is based on the Blueprint `Popover` component used on desktop.
 * `StoreFilterField` now matches the rendered string values for `date` and `localDate` fields when
   linked to a properly configured `GridModel`.
+* `GroupingChooser` gets several minor usability improvements + clearer support for an empty /
+  ungrouped state, when so enabled.
 
 ### 💥 Breaking Changes
 
