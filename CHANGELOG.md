@@ -1,6 +1,6 @@
 # Changelog
 
-## v38.0.0-SNAPSHOT - unreleased
+## v38.0.0 - 2021-02-04
 
 Hoist v38 includes major refactoring to streamline core classes, bring the toolkit into closer
 alignment with the latest developments in Javascript, React, and MobX, and allow us to more easily
@@ -72,7 +72,7 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
 * mobx `5.15 -> 6.1`
 * mobx-react `6.3 -> 7.1`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v37.2.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v37.2.0...v38.0.0)
 
 
 ## v37.2.0 - 2021-01-22
