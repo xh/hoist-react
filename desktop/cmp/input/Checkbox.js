@@ -77,7 +77,7 @@ const cmp = hoistCmp.factory(
             onBlur: model.onBlur,
             onFocus: model.onFocus,
             onChange: (e) => model.noteValueChange(e.target.checked),
-            inputRef: model.inputRef,
+            inputRef: (v) => model.inputRef(v), // Workaround for #2272
             ref
         });
     }
