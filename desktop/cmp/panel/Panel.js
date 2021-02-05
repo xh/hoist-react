@@ -26,6 +26,7 @@ import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
 import './Panel.scss';
 import {PanelModel} from './PanelModel';
+import composeRefs from '@seznam/compose-react-refs';
 
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
@@ -135,6 +136,8 @@ export const [Panel, panel] = hoistCmp.withFactory({
         if (refreshContextModel) {
             item = refreshContextView({model: refreshContextModel, item});
         }
+
+        ref = composeRefs(model._domRef, ref);
 
         // 4) Return wrapped in resizable and its affordances if needed.
         return resizable || collapsible || showSplitter ?

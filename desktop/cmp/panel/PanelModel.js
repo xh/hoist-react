@@ -18,6 +18,7 @@ import {action, observable, comparer, makeObservable} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
 import {apiRemoved} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
+import {createRef} from 'react';
 
 /**
  * PanelModel supports configuration and state-management for user-driven Panel resizing and
@@ -46,6 +47,7 @@ export class PanelModel extends HoistModel {
     @managed refreshContextModel;
     @managed provider;
 
+
     //---------------------
     // Observable State
     //---------------------
@@ -61,6 +63,11 @@ export class PanelModel extends HoistModel {
     get isActive() {
         return !this.collapsed;
     }
+
+    //-----------------
+    // Implementation
+    //-----------------
+    _domRef;
 
     /**
      * @param {Object} c - PanelModel configuration
@@ -131,6 +138,7 @@ export class PanelModel extends HoistModel {
         this.showSplitter = showSplitter;
         this.showSplitterCollapseButton = showSplitterCollapseButton;
         this.showHeaderCollapseButton = showHeaderCollapseButton;
+        this._domRef = createRef();
 
         if (collapsible) {
             this.refreshContextModel = new ManagedRefreshContextModel(this);
@@ -173,12 +181,21 @@ export class PanelModel extends HoistModel {
     //----------------------
     @action
     setCollapsed(collapsed) {
-        // When opening from collapsed position restore *default* size. This may be suboptimal
-        // in some cases -- you lose user set "size" -- but avoids confusing behavior where
-        // 'opening' a panel could cause it to shrink.
-        if (this.collapsed === true && !collapsed) {
-            this.size = this.defaultSize;
+
+        // When opening we never want to shrink -- in that degenerate case restore default size.
+        // Can happen when no min height and title bar, and user has sized panel to be very small.
+        if (this.collapsed && !collapsed) {
+            const el = this._domRef?.current,
+                currSize = this.vertical ? el?.offsetHeight : el?.offsetWidth,
+                {size} = this;
+            console.log(currSize);
+            console.log(size);
+            if (isNil(currSize) || isNil(size) || size < currSize) {
+                this.size = this.defaultSize;
+            }
         }
+
+
         this.collapsed = collapsed;
         this.dispatchResize();
     }
