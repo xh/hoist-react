@@ -188,8 +188,6 @@ export class PanelModel extends HoistModel {
             const el = this._domRef?.current,
                 currSize = this.vertical ? el?.offsetHeight : el?.offsetWidth,
                 {size} = this;
-            console.log(currSize);
-            console.log(size);
             if (isNil(currSize) || isNil(size) || size < currSize) {
                 this.size = this.defaultSize;
             }
