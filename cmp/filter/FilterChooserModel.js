@@ -30,10 +30,10 @@ import {
 
 export class FilterChooserModel extends HoistModel {
 
-    /** @member Filter */
+    /** @member {Filter} */
     @observable.ref value = null;
 
-    /** @member Filter[] */
+    /** @member {Filter[]} */
     @observable.ref favorites = [];
 
     /** @member {Store} */
@@ -43,8 +43,7 @@ export class FilterChooserModel extends HoistModel {
     targetStore;
 
     /** @member {FilterChooserFieldSpec[]} */
-    @managed
-    fieldSpecs = [];
+    @managed fieldSpecs = [];
 
     /** @member {number} */
     maxResults;
@@ -60,8 +59,7 @@ export class FilterChooserModel extends HoistModel {
     @observable favoritesIsOpen = false;
     inputRef = createObservableRef();
 
-    @managed
-    queryEngine;
+    @managed queryEngine;
 
     /**
      * @param c - FilterChooserModel configuration.
@@ -84,7 +82,8 @@ export class FilterChooserModel extends HoistModel {
      *      FieldFilters, to be 'AND'ed together.
      * @param {(Filter[]|function)} [c.initialFavorites] - initial favorites as an array of filter
      *      configurations, or a function to produce such an array.
-     * @param {number} [c.maxResults] - maximum number of dropdown options to show before truncating.
+     * @param {number} [c.maxResults] - maximum number of dropdown options to show before
+     *     truncating.
      * @param {FilterChooserPersistOptions} [c.persistWith] - options governing persistence.
      */
     constructor({
