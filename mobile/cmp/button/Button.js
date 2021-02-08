@@ -54,5 +54,5 @@ Button.propTypes = {
     ...OnsenButton.propTypes,
     active: PT.bool,
     icon: PT.element,
-    text: PT.string
+    text: PT.node
 };
