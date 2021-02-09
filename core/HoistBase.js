@@ -216,7 +216,13 @@ export class HoistBase {
     destroy() {
         this._xhDisposers?.forEach(f => f());
         this._xhManagedInstances.forEach(i => XH.safeDestroy(i));
-        this._xhManagedProperties?.forEach(p => XH.safeDestroy(this[p]));
+        const managedProps = this._xhManagedProperties;
+        if (managedProps) {
+            managedProps.forEach(p => XH.safeDestroy(this[p]));
+            runInAction(() => {
+                managedProps.forEach(p => {this[p] = null});
+            });
+        }
     }
 }
 HoistBase.isHoistBase = true;
