@@ -8,7 +8,7 @@
 import {Cube, FieldFilter, Query} from '@xh/hoist/data';
 import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, forEach, groupBy, isEmpty, isEqual, isNil, map, pick} from 'lodash';
+import {castArray, forEach, groupBy, isEmpty, isNil, map} from 'lodash';
 import {AggregateRow} from './row/AggregateRow';
 import {BucketRow} from './row/BucketRow';
 import {LeafRow} from './row/LeafRow';
@@ -282,14 +282,15 @@ export class View {
     }
 
     hasDimUpdates(update) {
-        const dimNames = this.query.dimensions.map(it => it.name),
-            updateDimValues = update.map(rec => pick(rec.data, dimNames)),
-            curDimValues = update.map(rec => {
-                const row = this._leafMap.get(rec.id);
-                return pick(row.data, dimNames);
-            });
+        const dimNames = this.query.dimensions.map(it => it.name);
+        if (isEmpty(dimNames)) return false;
 
-        return !isEqual(updateDimValues, curDimValues);
+        for (const rec of update) {
+            const curRec = this._leafMap.get(rec.id);
+            if (dimNames.some(name => rec.data[name] !== curRec.data[name])) return true;
+        }
+
+        return false;
     }
 
     generateLeaves(records) {
