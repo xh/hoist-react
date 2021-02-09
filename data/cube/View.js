@@ -254,7 +254,7 @@ export class View {
 
         // 1) Simple case: no filter
         if (!query.filter) {
-            return isEmpty(t.add) && isEmpty(t.remove) ? t.update : false;
+            return isEmpty(t.add) && isEmpty(t.remove) && !this.hasDimUpdates(t.update) ? t.update : false;
         }
 
         // 2) Examine, accounting for filter
@@ -274,7 +274,23 @@ export class View {
             }
         }
 
+        // 2c) Examine the final set of updates for any changes to dimension field values which would
+        //     require rebuilding the row hierarchy
+        if (this.hasDimUpdates(ret)) return false;
+
         return ret;
+    }
+
+    hasDimUpdates(update) {
+        const dimNames = this.query.dimensions.map(it => it.name);
+        if (isEmpty(dimNames)) return false;
+
+        for (const rec of update) {
+            const curRec = this._leafMap.get(rec.id);
+            if (dimNames.some(name => rec.data[name] !== curRec.data[name])) return true;
+        }
+
+        return false;
     }
 
     generateLeaves(records) {
