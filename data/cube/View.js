@@ -8,7 +8,7 @@
 import {Cube, FieldFilter, Query} from '@xh/hoist/data';
 import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, forEach, groupBy, isEmpty, isNil, map} from 'lodash';
+import {castArray, forEach, groupBy, isEmpty, isEqual, isNil, map, pick} from 'lodash';
 import {AggregateRow} from './row/AggregateRow';
 import {BucketRow} from './row/BucketRow';
 import {LeafRow} from './row/LeafRow';
@@ -254,7 +254,7 @@ export class View {
 
         // 1) Simple case: no filter
         if (!query.filter) {
-            return isEmpty(t.add) && isEmpty(t.remove) ? t.update : false;
+            return isEmpty(t.add) && isEmpty(t.remove) && !this.hasDimUpdates(t.update) ? t.update : false;
         }
 
         // 2) Examine, accounting for filter
@@ -274,7 +274,22 @@ export class View {
             }
         }
 
+        // 2c) Examine the final set of updates for any changes to dimension field values which would
+        //     require rebuilding the row hierarchy
+        if (this.hasDimUpdates(ret)) return false;
+
         return ret;
+    }
+
+    hasDimUpdates(update) {
+        const dimNames = this.query.dimensions.map(it => it.name),
+            updateDimValues = update.map(rec => pick(rec.data, dimNames)),
+            curDimValues = update.map(rec => {
+                const row = this._leafMap.get(rec.id);
+                return pick(row.data, dimNames);
+            });
+
+        return !isEqual(updateDimValues, curDimValues);
     }
 
     generateLeaves(records) {
