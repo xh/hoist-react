@@ -6,9 +6,9 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {parseFilter} from '../filter/Utils';
-import {castArray, find} from 'lodash';
+import {parseFilter} from '@xh/hoist/data';
 import {apiRemoved} from '@xh/hoist/utils/js';
+import {castArray, find} from 'lodash';
 
 /**
  *  Specification used to define the shape of the data returned by a Cube.

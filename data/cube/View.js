@@ -5,16 +5,13 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {FieldFilter} from '@xh/hoist/data';
+import {Cube, FieldFilter, Query} from '@xh/hoist/data';
+import {action, observable} from '@xh/hoist/mobx';
+import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, forEach, groupBy, isEmpty, isNil, map} from 'lodash';
-import {action, observable} from 'mobx';
-
-import {throwIf} from '../../utils/js';
-import {Cube} from './Cube';
 import {AggregateRow} from './row/AggregateRow';
 import {BucketRow} from './row/BucketRow';
 import {LeafRow} from './row/LeafRow';
-import {Query} from './Query';
 
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.
@@ -88,11 +85,12 @@ export class View {
      * Change the query in some way, re-computing the data in this View to reflect the new query.
      *
      * @param {Object} overrides - changes to be applied to the query. May include any arguments to
-     *      the query constructor, other than cube.
+     *      the query constructor with the exception of `cube`, which cannot be changed on a view
+     *      once set via the initial query.
      */
     @action
     updateQuery(overrides) {
-        throwIf(overrides.cubes, 'Cannot redirect view to a different cube in updateQuery().');
+        throwIf(overrides.cube, 'Cannot redirect view to a different cube in updateQuery().');
         this.query = this.query.clone(overrides);
         this.fullUpdate();
     }
