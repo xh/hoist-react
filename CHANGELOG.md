@@ -1,5 +1,15 @@
 # Changelog
 
+## v36.6.2 - 2021-02-09  (PATCH Release)
+
+### 🐞 Bug Fixes
+
+* Collapsible Panel will now restore its user specified-size when re-opened.  Previously
+the panel would be reset to the default size.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.6.1...v36.6.2)
+
+
 ## v36.6.1 - 2020-11-06
 
 ### 🐞 Bug Fixes
