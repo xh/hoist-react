@@ -32,7 +32,7 @@ export const [Menu, menu] = hoistCmp.withFactory({
     model: false,
     className: 'xh-menu',
     render(props, ref) {
-        const {menuItems, onDismiss, ...rest} = props,
+        const {menuItems, onDismiss, title, ...rest} = props,
             items = parseMenuItems(menuItems, onDismiss);
 
         if (isEmpty(items)) return null;
@@ -40,10 +40,17 @@ export const [Menu, menu] = hoistCmp.withFactory({
 
         return vbox({
             ref,
-            item: vbox({
-                className: 'xh-menu__list',
-                items
-            }),
+            items: [
+                div({
+                    omit: !title,
+                    className: 'xh-menu__title',
+                    item: title
+                }),
+                vbox({
+                    className: 'xh-menu__list',
+                    items
+                })
+            ],
             ...rest
         });
     }
@@ -54,7 +61,10 @@ Menu.propTypes = {
     menuItems: PT.arrayOf(PT.oneOfType([PT.instanceOf(MenuItem), PT.object])).isRequired,
 
     /** Callback triggered when use dismisses the menu */
-    onDismiss: PT.func.isRequired
+    onDismiss: PT.func.isRequired,
+
+    /** Optional title to display above the menu */
+    title: PT.node
 };
 
 //---------------------------
