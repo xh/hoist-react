@@ -282,9 +282,10 @@ export class View {
     }
 
     hasDimUpdates(update) {
-        const dimNames = this.query.dimensions.map(it => it.name);
-        if (isEmpty(dimNames)) return false;
+        const {dimensions} = this.query;
+        if (isEmpty(dimensions)) return false;
 
+        const dimNames = dimensions.map(it => it.name);
         for (const rec of update) {
             const curRec = this._leafMap.get(rec.id);
             if (dimNames.some(name => rec.data[name] !== curRec.data[name])) return true;
