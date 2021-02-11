@@ -107,6 +107,9 @@ body.xh-app {
     justify-content: flex-end;
   }
 
+  .xh-bg-alt {background-color: var(--xh-bg-alt)}
+  .xh-bg-highlight {background-color: var(--xh-bg-highlight)}
+
   .xh-border { border: var(--xh-border-solid); }
   .xh-border-bottom { border-bottom: var(--xh-border-solid) !important; }
   .xh-border-dotted { border: var(--xh-border-dotted); }
