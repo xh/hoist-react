@@ -78,7 +78,8 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
                 // Default some ag-grid props, but allow overriding.
                 getRowHeight: impl.usingRowAutoHeight ? undefined : impl.getRowHeight,
                 navigateToNextCell: impl.navigateToNextCell,
-
+                onColumnResized: !impl.usingRowAutoHeight ? undefined : impl.onColumnResized,
+                onColumnVisible: !impl.usingRowAutoHeight ? undefined : impl.onColumnVisible,
                 // Pass others on directly.
                 ...agGridProps,
 
@@ -140,6 +141,14 @@ class LocalModel extends HoistModel {
         if (this.rowKeyNavSupport) {
             return this.rowKeyNavSupport.navigateToNextCell(agParams);
         }
+    };
+
+    onColumnResized = (ev) => {
+        ev.api.resetRowHeights();
+    };
+    
+    onColumnVisible = (ev) => {
+        ev.api.resetRowHeights();
     };
 
     get usingRowAutoHeight() {
