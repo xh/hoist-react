@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
 import PT from 'prop-types';
@@ -29,7 +29,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
         agOptions,
         onRowDoubleClicked,
         ...props
-    }) {
+    }, ref) {
 
         const {formModel, gridModel} = model;
 
@@ -45,6 +45,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
 
         return fragment(
             panel({
+                ref,
                 ...props,
                 tbar: restGridToolbar({model, extraToolbarItems}),
                 item: grid({model: gridModel, agOptions, onRowDoubleClicked}),

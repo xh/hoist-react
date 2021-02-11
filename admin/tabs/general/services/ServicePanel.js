@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
@@ -34,7 +34,9 @@ export const servicePanel = hoistCmp.factory({
             ],
             item: grid({
                 agOptions: {
-                    groupRowInnerRenderer: (params) => params.value + ' Services'
+                    groupRowRendererParams: {
+                        innerRenderer: (params) => params.value + ' Services'
+                    }
                 }
             })
         });

@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, ManagedRefreshContextModel, RenderMode} from '@xh/hoist/core';
-import {computed} from '@xh/hoist/mobx';
+import {computed, makeObservable} from '@xh/hoist/mobx';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
 
@@ -16,8 +16,7 @@ import {stringify} from 'qs';
  * This model is not typically created directly within applications. Instead, specify a
  * configuration for it via the `NavigatorModel.pages` constructor config.
  */
-@HoistModel
-export class PageModel {
+export class PageModel extends HoistModel {
 
     id;
     content;
@@ -55,7 +54,7 @@ export class PageModel {
      * @param {string} id - unique ID. Must match a configured Router5 route name.
      * @param {NavigatorModel} navigatorModel - parent NavigatorModel. Provided by the
      *      navigator when constructing these models - no need to specify manually.
-     * @param {(Object|function)} content - Hoist Component (class or functional) to be
+     * @param {(ReactElement|Object|function)} content - Hoist Component (class or functional) to be
      *      rendered by this page; or function returning react element to be rendered by this page.
      * @param {Object} [props] - props to be passed to page upon creation.
      * @param {RefreshMode} [renderMode] - strategy for rendering this Page. If null, will
@@ -76,6 +75,8 @@ export class PageModel {
         disableDirectLink,
         disableAppRefreshButton
     }) {
+        super();
+        makeObservable(this);
         warnIf(renderMode === RenderMode.ALWAYS, 'RenderMode.ALWAYS is not supported in PageModel. Pages are always can\'t exist before being mounted.');
 
         this.id = id;

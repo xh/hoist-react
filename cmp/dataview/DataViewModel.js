@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {apiRemoved, throwIf} from '@xh/hoist/utils/js';
 import {isNumber} from 'lodash';
 
@@ -16,8 +16,7 @@ import {isNumber} from 'lodash';
  *
  * This is the primary app entry-point for specifying DataView component options and behavior.
  */
-@HoistModel
-export class DataViewModel {
+export class DataViewModel extends HoistModel {
 
     @managed
     gridModel;
@@ -74,6 +73,8 @@ export class DataViewModel {
         rowClassFn,
         ...restArgs
     }) {
+        super();
+        makeObservable(this);
         throwIf(!isNumber(itemHeight), 'Must specify DataViewModel.itemHeight as a number to set a fixed pixel height for each item.');
         apiRemoved(restArgs.rowCls, 'rowCls', 'Use \'rowClassFn\' instead.');
         apiRemoved(restArgs.itemRenderer, 'itemRenderer', 'Use \'elementRenderer\' instead.');

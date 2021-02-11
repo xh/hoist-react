@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {div, filler, fragment, span} from '@xh/hoist/cmp/layout';
@@ -35,21 +35,24 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
         dialogWidth = 250,
         buttonWidth = 150,
         emptyText = '[Ungrouped]'
-    }) {
+    }, ref) {
         const {value} = model,
             labels = isEmpty(value) ?
                 [emptyText] :
                 value.map(dimName => model.getDimDisplayName(dimName));
 
-        return div(
-            dialogCmp({dialogWidth, emptyText}),
-            button({
-                className: 'xh-dim-button',
-                item: span(labels.join(' \u203a ')),
-                width: buttonWidth,
-                onClick: () => model.showMenu()
-            })
-        );
+        return div({
+            ref,
+            items: [
+                dialogCmp({dialogWidth, emptyText}),
+                button({
+                    className: 'xh-dim-button',
+                    item: span(labels.join(' \u203a ')),
+                    width: buttonWidth,
+                    onClick: () => model.showMenu()
+                })
+            ]
+        });
     }
 });
 

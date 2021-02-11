@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -17,8 +17,9 @@ export const [OptionsButton, optionsButton] = hoistCmp.withFactory({
     displayName: 'OptionsButton',
     model: false,
 
-    render(props) {
+    render(props, ref) {
         return button({
+            ref,
             icon: Icon.gear(),
             title: 'Options',
             onClick: () => XH.showOptionsDialog(),

@@ -2,20 +2,19 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {cloneDeep, sortBy} from 'lodash';
 import moment from 'moment';
 
-@HoistModel
-export class ChartsModel {
+export class ChartsModel extends HoistModel {
 
     /** @member {ActivityTrackingModel} */
     parentModel;
@@ -104,6 +103,8 @@ export class ChartsModel {
     }
 
     constructor({parentModel}) {
+        super();
+        makeObservable(this);
         this.parentModel = parentModel;
 
         this.addReaction({

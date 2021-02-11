@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {FieldModel, FormContext} from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
@@ -38,9 +38,8 @@ export const [FormField, formField] = hoistCmp.withFactory({
     displayName: 'FormField',
     className: 'xh-form-field',
     model: uses(FieldModel, {fromContext: false, publishMode: ModelPublishMode.NONE}),
-    memo: false,
 
-    render({model, className, field, children, info, ...props}) {
+    render({model, className, field, children, info, ...props}, ref) {
 
         // Resolve FieldModel
         const formContext = useContext(FormContext);
@@ -101,6 +100,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
             });
 
         return box({
+            ref,
             className: classNames(className, classes),
             ...layoutProps,
             items: [
@@ -176,7 +176,6 @@ FormField.propTypes = {
 
 
 const readonlyChild = hoistCmp.factory({
-    memo: false,
     model: false,
 
     render({model, readonlyRenderer}) {
@@ -188,7 +187,6 @@ const readonlyChild = hoistCmp.factory({
 
 
 const editableChild = hoistCmp.factory({
-    memo: false,
     model: false,
 
     render({model, child, childIsSizeable, disabled, commitOnChange, width, height, flex}) {

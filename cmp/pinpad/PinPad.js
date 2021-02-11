@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {pinPadImpl as desktopPinPadImpl} from '@xh/hoist/dynamics/desktop';
@@ -23,8 +23,8 @@ export const [PinPad, pinPad] = hoistCmp.withFactory({
     model: uses(PinPadModel),
     className: 'xh-pinpad',
 
-    render(props) {
-        return XH.isMobileApp ? mobilePinPadImpl(props) : desktopPinPadImpl(props);
+    render(props, ref) {
+        return XH.isMobileApp ? mobilePinPadImpl(props, ref) : desktopPinPadImpl(props, ref);
     }
 });
 PinPadModel.propTypes = {

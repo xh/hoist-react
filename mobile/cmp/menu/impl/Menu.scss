@@ -1,15 +1,21 @@
 .xh-menu {
-  position: fixed !important;
+  position: fixed;
   overflow-y: auto !important;
+  margin: 0 !important;
   z-index: 21;
-  bottom: var(--xh-pad-half-px);
 
   &__list {
     background-color: var(--xh-bg);
     border: var(--xh-border-solid);
 
     .list-item {
+      padding: 0 var(--xh-pad-px);
       background-color: var(--xh-grid-bg) !important;
+
+      &__center {
+        padding: var(--xh-pad-half-px) 0;
+        min-height: 40px;
+      }
     }
   }
 }

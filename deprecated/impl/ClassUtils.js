@@ -2,36 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {Exception} from '@xh/hoist/exception';
 import {throwIf} from '@xh/hoist/utils/js';
 import {forOwn, isPlainObject} from 'lodash';
 
-
 /**
- * Mixin (decorate) a JS Class with methods and other decorators.
- *
- * @param {Object} C - class to be enhanced.
- * @param {Object} config
- * @param {string} [config.name] - name for mixin - will mark the class with `is[Name]: true` flag.
- * @param {Object} [config.includes] - list of additional decorators to apply to the class.
- *      Will be applied in reverse order, to mimic their application in a file context (i.e. first
- *      decorator listed is applied last).
- * @param {Object} [config.defines] - map of method names > impls to install on class prototype.
- *      Will *replace* any existing methods for the same key.
- * @param {Object} [config.defaults]- map of method names > impls to install on class prototype.
- *      Will *ignore* method if there are any existing methods for the same key.
- * @param {Object} [config.provides] - map of method names > impls to install on class prototype.
- *      Will *throw* if there are any existing methods for the same key.
- * @param {Object} [config.chains] - map of method names > impls to install on class prototype.
- *      Will *chain* to any existing method for the same key, creating a new chained method.
- *      The new method will be run after any existing method for this key.
- * @param {Object} [config.overrides] - map of name-value pairs representing methods to be added.
- *      The value is a generator function that receives the existing method on the class (or null)
- *      and returns the new function.
- *
- * @returns {function} - decorator for a JS class.
+ * @private
  */
 export function applyMixin(C, config) {
     const {name, includes, defines, defaults, provides, overrides, chains, ...rest} = config;
@@ -151,7 +129,7 @@ function chainMethods(C, methods, {runOrder = 'after'} = {}) {
             f = method;
         } else {
             f = function() {
-                if (runOrder == 'after') {
+                if (runOrder === 'after') {
                     existing.apply(this, arguments);
                     method.apply(this, arguments);
                 } else {

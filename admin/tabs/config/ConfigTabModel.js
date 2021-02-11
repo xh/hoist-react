@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {
     addAction,
@@ -20,9 +20,7 @@ import {isNil, truncate} from 'lodash';
 import {DifferModel} from '../../differ/DifferModel';
 import {RegroupDialogModel} from '../../regroup/RegroupDialogModel';
 
-@HoistModel
-@LoadSupport
-export class ConfigTabModel {
+export class ConfigTabModel extends HoistModel {
 
     persistWith = {localStorageKey: 'xhAdminConfigState'};
 

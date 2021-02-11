@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -27,14 +27,14 @@ import {cloneDeep, debounce, forEach, isEmpty, isEqual, isNil, pickBy} from 'lod
  * user values to local storage instead. This should be used for prefs that are more natural to
  * associate with a particular machine or browser (e.g. sizing or layout related options).
  */
-@HoistService
-export class PrefService {
+export class PrefService extends HoistService {
 
     _data = {};
     _updates = {};
     _localStorageKey = 'localPrefs';
 
     constructor() {
+        super();
         const pushFn = () => this.pushPendingAsync();
         window.addEventListener('beforeunload', pushFn);
         this.pushPendingBuffered = debounce(pushFn, 5 * SECONDS);

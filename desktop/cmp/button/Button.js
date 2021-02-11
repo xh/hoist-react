@@ -2,8 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import composeRefs from '@seznam/compose-react-refs';
 import {hoistCmp} from '@xh/hoist/core';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
@@ -22,11 +23,25 @@ export const [Button, button] = hoistCmp.withFactory({
     model: false,
     className: 'xh-button',
 
-    render(props) {
-        const [layoutProps, {
-                autoFocus, className, disabled, icon, intent, minimal = true, onClick, outlined, style, text, title, active, ...rest
-            }] = splitLayoutProps(props),
+    render(props, ref) {
+        const [layoutProps, nonLayoutProps] = splitLayoutProps(props),
             classes = [];
+        const {
+            autoFocus,
+            className,
+            disabled,
+            icon,
+            intent,
+            minimal = true,
+            onClick,
+            outlined,
+            style,
+            text,
+            title,
+            active,
+            elementRef,
+            ...rest
+        } = nonLayoutProps;
 
         if (autoFocus) classes.push('xh-button--autofocus-enabled');
 
@@ -51,6 +66,7 @@ export const [Button, button] = hoistCmp.withFactory({
             active,
             autoFocus,
             className: classNames(className, classes),
+            elementRef: composeRefs(ref, elementRef),
             disabled,
             icon,
             intent,

@@ -2,15 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {p} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {cloneDeep, isEqual, isString, isNil, remove, trimEnd} from 'lodash';
 import React from 'react';
@@ -20,9 +20,7 @@ import {DifferDetailModel} from './DifferDetailModel';
 /**
  * @private
  */
-@HoistModel
-@LoadSupport
-export class DifferModel  {
+export class DifferModel extends HoistModel {
 
     parentGridModel;
     entityName;
@@ -66,6 +64,8 @@ export class DifferModel  {
         matchFields = ['name'],
         valueRenderer
     }) {
+        super();
+        makeObservable(this);
         this.parentGridModel = parentGridModel;
         this.entityName = entityName;
         this.displayName = displayName ?? entityName;

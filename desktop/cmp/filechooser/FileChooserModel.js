@@ -2,20 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {fileExtCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel} from '@xh/hoist/core';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {isEmpty} from 'codemirror/src/util/misc';
 import filesize from 'filesize';
 import {find, uniqBy, without} from 'lodash';
 
-
-@HoistModel
-export class FileChooserModel {
+export class FileChooserModel extends HoistModel {
 
     @observable.ref
     files = [];
@@ -56,6 +54,8 @@ export class FileChooserModel {
     });
 
     constructor() {
+        super();
+        makeObservable(this);
         this.addReaction({
             track: () => this.files,
             run: (files) => this.onFilesChange(files)

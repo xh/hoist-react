@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel, managed, ManagedRefreshContextModel} from '@xh/hoist/core';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
 
@@ -16,8 +16,7 @@ import {startCase} from 'lodash';
  * This model is not typically created directly within applications. Instead, specify a
  * configuration for it via the `TabContainerModel.tabs` constructor config.
  */
-@HoistModel
-export class TabModel {
+export class TabModel extends HoistModel {
 
     id;
     @bindable.ref title;
@@ -45,7 +44,7 @@ export class TabModel {
      *      but still be able to activate the tab manually or via routing.
      * @param {boolean} [c.showRemoveAction] - display an affordance to allow the user to remove
      *      this tab from its container.
-     * @param {(Object|function)} c.content - Hoist Component (class or functional) to be rendered by this
+     * @param {(ReactElement|Object|function)} c.content - Hoist Component (class or functional) to be rendered by this
      *      Tab; or function returning react element to be rendered by this Tab.
      * @param {RenderMode} [c.renderMode] - strategy for rendering this tab. If null, will
      *      default to its container's mode. See enum for description of supported modes.
@@ -65,6 +64,8 @@ export class TabModel {
         refreshMode,
         renderMode
     }) {
+        super();
+        makeObservable(this);
         throwIf(showRemoveAction && XH.isMobileApp, 'Removable Tabs not supported in Mobile toolkit.');
 
         this.id = id.toString();

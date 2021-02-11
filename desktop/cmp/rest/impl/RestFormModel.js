@@ -2,17 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {FormModel, required} from '@xh/hoist/cmp/form';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil, merge} from 'lodash';
 
-@HoistModel
-export class RestFormModel {
+export class RestFormModel extends HoistModel {
 
     /** @member {RestGridModel} */
     parent = null;
@@ -35,10 +34,12 @@ export class RestFormModel {
     get editors()           {return this.parent.editors}
     get gridModel()         {return this.parent.gridModel}
     get store()             {return this.parent.store}
-    get loadModel()         {return this.store.loadModel}
+    get loadModel()         {return this.store.loadSupport.loadModel}
 
     /** @param {RestGridModel} parent */
     constructor(parent) {
+        super();
+        makeObservable(this);
         this.parent = parent;
     }
 

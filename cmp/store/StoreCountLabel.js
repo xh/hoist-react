@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {box} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
@@ -25,12 +25,12 @@ export const [StoreCountLabel, storeCountLabel] = hoistCmp.withFactory({
         unit = 'record',
         includeChildren = false,
         ...props
-    }) {
+    }, ref) {
         const count = includeChildren ? store.count : store.rootCount,
             unitLabel = count === 1 ? singularize(unit) : pluralize(unit),
             item = `${fmtNumber(count, {precision: 0})} ${unitLabel}`;
 
-        return box({...props, item});
+        return box({...props, ref, item});
     }
 });
 

@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {flatMap, forOwn, map, mapValues, pickBy, some, values, forEach} from 'lodash';
 import {FieldModel} from './field/FieldModel';
@@ -35,8 +35,7 @@ import {ValidationState} from './validation/ValidationState';
  *
  * @see FieldModel for details on state and validation maintained at the individual field level.
  */
-@HoistModel
-export class FormModel {
+export class FormModel extends HoistModel {
 
     /** @member {Object} - container object for FieldModel instances, keyed by field name. */
     @observable.ref fields = {};
@@ -79,6 +78,8 @@ export class FormModel {
             disabled = false,
             readonly = false
         } = {}) {
+        super();
+        makeObservable(this);
         this.disabled = disabled;
         this.readonly = readonly;
         const models = {};

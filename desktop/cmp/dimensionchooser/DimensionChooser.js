@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
@@ -42,7 +42,7 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
         popoverTitle = 'Group By',
         popoverPosition = 'bottom',
         selectProps
-    }) {
+    }, ref) {
         const {isMenuOpen, activeMode, value} = model;
         const getCurrDimensionLabels = () => {
                 return value.map(dimName => model.getDimDisplayName(dimName));
@@ -80,6 +80,7 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
 
         return div({
             className,
+            ref,
             item: popover({
                 target,
                 isOpen: isMenuOpen,

@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH, managed, PersistenceProvider} from '@xh/hoist/core';
-import {observable, action} from '@xh/hoist/mobx';
+import {observable, action, makeObservable} from '@xh/hoist/mobx';
 import {find, isUndefined, omit} from 'lodash';
 
 
@@ -13,8 +13,7 @@ import {find, isUndefined, omit} from 'lodash';
  * Model to manage persisting state from GridModel.
  * @private
  */
-@HoistModel
-export class GridPersistenceModel {
+export class GridPersistenceModel extends HoistModel {
 
     VERSION = 1;  // Increment to abandon state.
     gridModel;
@@ -39,6 +38,8 @@ export class GridPersistenceModel {
             ...persistWith
         }
     ) {
+        super();
+        makeObservable(this);
         this.gridModel = gridModel;
 
         persistWith = {path: 'grid', ...persistWith};

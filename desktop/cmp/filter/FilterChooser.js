@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {box, div, hbox, vbox, hframe} from '@xh/hoist/cmp/layout';
@@ -26,11 +26,12 @@ import './FilterChooser.scss';
 export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
     model: uses(FilterChooserModel),
     className: 'xh-filter-chooser',
-    render({model, className, ...props}) {
+    render({model, className, ...props}, ref) {
         const [layoutProps, chooserProps] = splitLayoutProps(props),
             {inputRef, selectOptions, favoritesIsOpen} = model;
 
         return box({
+            ref,
             className,
             ...layoutProps,
             item: popover({

@@ -2,19 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {castArray, compact, intersection, isEqual, union} from 'lodash';
 
 /**
  * Model for managing store selections.
  * Typically accessed from a GridModel to observe/control Grid selection.
  */
-@HoistModel
-export class StoreSelectionModel {
+export class StoreSelectionModel extends HoistModel {
 
     /** @member {Store} */
     store;
@@ -29,6 +28,8 @@ export class StoreSelectionModel {
      * @param {string} [c.mode] - one of ['single', 'multiple', 'disabled'].
      */
     constructor({store, mode = 'single'}) {
+        super();
+        makeObservable(this);
         this.store = store;
         this.mode = mode;
         this.addReaction(this.cullSelectionReaction());
@@ -66,7 +67,7 @@ export class StoreSelectionModel {
      */
     @action
     select(records, clearSelection = true) {
-        records = castArray(records);
+        records = castArray(records ?? []);
         if (this.mode == 'disabled') return;
         if (this.mode == 'single' && records.length > 1) {
             records = [records[0]];

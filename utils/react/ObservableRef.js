@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {action, observable} from '@xh/hoist/mobx';
 
@@ -17,7 +17,7 @@ import {action, observable} from '@xh/hoist/mobx';
  */
 export function createObservableRef() {
     const ret = action(v => ret._current.set(v));
-    ret._current = observable.box(null);
+    ret._current = observable.box(null, {deep: false});
     Object.defineProperty(ret, 'current', {get: () => ret._current.get()});
     return ret;
 }

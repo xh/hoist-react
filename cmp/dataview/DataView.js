@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
@@ -22,7 +22,7 @@ export const [DataView, dataView] = hoistCmp.withFactory({
     model: uses(DataViewModel),
     className: 'xh-data-view',
 
-    render({model, className, ...props}) {
+    render({model, className, ...props}, ref) {
         apiRemoved(props.itemHeight, 'itemHeight', 'Specify itemHeight on the DataViewModel instead.');
         apiRemoved(props.rowCls, 'rowCls', 'Specify rowClassFn on the DataViewModel instead.');
 
@@ -32,6 +32,7 @@ export const [DataView, dataView] = hoistCmp.withFactory({
         return grid({
             ...layoutProps,
             className,
+            ref,
             model: model.gridModel,
             agOptions: localModel.agOptions,
             onRowDoubleClicked
@@ -50,12 +51,12 @@ DataView.propTypes = {
     onRowDoubleClicked: PT.func
 };
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
     model;
     agOptions;
 
     constructor(model) {
+        super();
         this.model = model;
 
         this.addReaction({

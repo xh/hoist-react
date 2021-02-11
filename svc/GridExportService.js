@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {ExportFormat} from '@xh/hoist/cmp/grid';
 import {HoistService, XH} from '@xh/hoist/core';
@@ -16,8 +16,7 @@ import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq, compact} 
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
  * @see Column API for options to control exported values and formats.
  */
-@HoistService
-export class GridExportService {
+export class GridExportService extends HoistService {
 
     /**
      * Export a GridModel to a file. Typically called via `GridModel.exportAsync()`.

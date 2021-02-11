@@ -2,13 +2,28 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {Exception} from '@xh/hoist/exception';
-import {forOwn, isEmpty, isObject, isObjectLike, mixin, uniq, uniqBy} from 'lodash';
+import {forOwn, isEmpty, isObject, isObjectLike, mixin, uniq, uniqBy, isUndefined} from 'lodash';
 import _inflection from 'lodash-inflection';
 
 mixin(_inflection);
+
+/**
+ * Get a cached value on an object, creating it, if it does not yet exist.
+ *
+ * @param {Object} obj - object of interest.  Must have writable properties.
+ * @param {string} key - key (property name) to cache value at in object.
+ * @param {function} fn - function to generate value if missing.
+ * @returns {*} value stored at key
+ */
+export function getOrCreate(obj, key, fn) {
+    const val = obj[key];
+    if (!isUndefined(val)) return val;
+    return obj[key] = fn();
+}
+
 
 /**
  * Return the first defined argument - intended to allow for multiple levels of fallback values or

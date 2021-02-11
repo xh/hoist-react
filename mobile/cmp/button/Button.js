@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
@@ -21,7 +21,7 @@ export const [Button, button] = hoistCmp.withFactory({
     model: false,
     className: 'xh-button',
 
-    render(props) {
+    render(props, ref) {
         const [layoutProps, {icon, className, text, modifier, active, onClick, style, ...rest}] = splitLayoutProps(props),
             items = [];
 
@@ -34,6 +34,7 @@ export const [Button, button] = hoistCmp.withFactory({
         }
 
         return onsenButton({
+            ref,
             items,
             modifier,
             onClick,
@@ -53,5 +54,5 @@ Button.propTypes = {
     ...OnsenButton.propTypes,
     active: PT.bool,
     icon: PT.element,
-    text: PT.string
+    text: PT.node
 };

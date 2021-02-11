@@ -2,18 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {cloneDeep, difference, isFunction, isArray, isEmpty, isEqual, isString, keys, sortBy} from 'lodash';
 
-@HoistModel
-export class GroupingChooserModel {
+export class GroupingChooserModel extends HoistModel {
 
     /** @member {string[]} - names of dimensions selected for grouping. */
     @observable.ref value;
@@ -37,7 +36,7 @@ export class GroupingChooserModel {
     @observable.ref pendingValue = [];
     @observable editorIsOpen = false;
     @observable favoritesIsOpen = false;
-    @observable addControlShown = false;
+    @observable isAddMode = false;
 
     popoverRef = createObservableRef();
 
@@ -65,6 +64,10 @@ export class GroupingChooserModel {
         return null;
     }
 
+    get addControlShown() {
+        return this.isAddMode && !this.addDisabledMsg;
+    }
+
     /**
      * @param c - GroupingChooserModel configuration.
      * @param {(DimensionSpec[]|CubeField[]|string[])} c.dimensions - dimensions available for
@@ -86,6 +89,8 @@ export class GroupingChooserModel {
         allowEmpty = false,
         maxDepth = null
     }) {
+        super();
+        makeObservable(this);
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionNames = keys(this.dimensions);
         this.allowEmpty = allowEmpty;
@@ -145,7 +150,7 @@ export class GroupingChooserModel {
         this.pendingValue = this.value;
         this.editorIsOpen = true;
         this.favoritesIsOpen = false;
-        this.addControlShown = isEmpty(this.value) && !this.allowEmpty;
+        this.isAddMode = isEmpty(this.value) && !this.allowEmpty;
     }
 
     @action
@@ -158,12 +163,15 @@ export class GroupingChooserModel {
     closePopover() {
         this.editorIsOpen = false;
         this.favoritesIsOpen = false;
-        this.addControlShown = false;
     }
 
     @action
-    showAddControl() {
-        this.addControlShown = true;
+    addLevel() {
+        if (this.availableDims.length === 1) {
+            this.addPendingDim(this.availableDims[0]);
+        } else {
+            this.isAddMode = true;
+        }
     }
 
     //-------------------------
@@ -173,7 +181,7 @@ export class GroupingChooserModel {
     addPendingDim(dimName) {
         if (!dimName) return;
         this.pendingValue = [...this.pendingValue, dimName];
-        this.addControlShown = false;
+        this.isAddMode = false;
     }
 
     @action
@@ -189,8 +197,8 @@ export class GroupingChooserModel {
         pendingValue.splice(idx, 1);
         this.pendingValue = pendingValue;
 
-        if (isEmpty(this.pendingValue) && !this.allowEmpty) {
-            this.addControlShown = true;
+        if (isEmpty(pendingValue) && !this.allowEmpty) {
+            this.isAddMode = true;
         }
     }
 
