@@ -119,7 +119,7 @@ const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
         const {width, flex, ...layoutProps} = getLayoutProps(props),
             // remove layoutProps, props not recognized as DOM elements, and props not accepted on BP's inputGroup component
-            {commitOnChange, enableClear, onCommit, selectOnFocus, textAlign, ...rest} = getNonLayoutProps(props);
+            {bind, commitOnChange, enableClear, onCommit, selectOnFocus, textAlign, ...rest} = getNonLayoutProps(props);
 
         const isClearable = !isEmpty(model.internalValue);
 
