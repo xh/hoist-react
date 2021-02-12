@@ -141,6 +141,13 @@ class LocalModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+
+        // Popovers are automatically closed on app route changes to avoid navigating the
+        // app underneath the popover in an unsettling way. (i.e. via browser back button)
+        this.addReaction({
+            track: () => XH.routerState,
+            run: () => this.setIsOpen(false)
+        });
     }
 
     @action
