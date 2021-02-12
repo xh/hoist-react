@@ -72,7 +72,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                 }),
                 content: favoritesMenu(),
                 isOpen: favoritesIsOpen,
-                position: 'bottom-right',
+                placement: 'bottom-end',
                 minimal: true,
                 onInteraction: (willOpen) => {
                     if (!willOpen) model.closeFavoritesMenu();

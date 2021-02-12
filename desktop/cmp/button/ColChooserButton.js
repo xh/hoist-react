@@ -49,9 +49,9 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
 
         return popover({
             popoverClassName: 'xh-col-chooser-popover xh-popup--framed',
-            position: withDefault(popoverPosition, 'auto'),
+            placement: withDefault(popoverPosition, 'auto'),
             isOpen: colChooserModel.isPopoverOpen,
-            target: displayButton,
+            item: displayButton,
             content: vbox(
                 div({
                     ref,
@@ -81,11 +81,11 @@ ColChooserButton.propTypes = {
 
     /** Position for chooser popover, as per Blueprint docs. */
     popoverPosition: PT.oneOf([
-        'top-left', 'top', 'top-right',
-        'right-top', 'right', 'right-bottom',
-        'bottom-right', 'bottom', 'bottom-left',
-        'left-bottom', 'left', 'left-top',
-        'auto'
+        'top', 'top-start', 'top-end', 
+        'bottom', 'bottom-start', 'bottom-end', 
+        'right', 'right-start', 'right-end', 
+        'left', 'left-start', 'left-end', 
+        'auto', 'auto-start', 'auto-end'
     ])
 };
 

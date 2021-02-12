@@ -51,9 +51,9 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
                 isOpen,
                 popoverRef: (v) => model.popoverRef(v), // Workaround for #2272
                 popoverClassName: classNames('xh-grouping-chooser-popover', editorIsOpen ? 'xh-popup--framed' : null),
-                position: favoritesIsOpen ? 'bottom-right' : popoverPosition,
+                placement: favoritesIsOpen ? 'bottom-end' : popoverPosition,
                 minimal: favoritesIsOpen,
-                target: fragment(
+                item: fragment(
                     button({
                         text: label,
                         title: label,
@@ -102,11 +102,11 @@ GroupingChooser.propTypes = {
 
     /** Position for chooser popover, as per Blueprint docs. */
     popoverPosition: PT.oneOf([
-        'top-left', 'top', 'top-right',
-        'right-top', 'right', 'right-bottom',
-        'bottom-right', 'bottom', 'bottom-left',
-        'left-bottom', 'left', 'left-top',
-        'auto'
+        'top', 'top-start', 'top-end', 
+        'bottom', 'bottom-start', 'bottom-end', 
+        'right', 'right-start', 'right-end', 
+        'left', 'left-start', 'left-end', 
+        'auto', 'auto-start', 'auto-end'
     ]),
 
     /** True (default) to style target button as an input field - blends better in toolbars. */

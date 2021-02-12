@@ -66,7 +66,7 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
                 return labels.map((it, i) => ' '.repeat(i) + (i ? '› ' : '') + it).join('\n');
             };
 
-        const target = button({
+        const item = button({
             item: getButtonText(),
             title: getButtonTitle(),
             icon: buttonIcon,
@@ -82,11 +82,11 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
             className,
             ref,
             item: popover({
-                target,
+                item,
                 isOpen: isMenuOpen,
                 targetClassName: 'xh-dim-popover',
                 popoverClassName: 'xh-dim-chooser-popover xh-popup--framed',
-                position: popoverPosition,
+                placement: popoverPosition,
                 content: contentCmp({popoverWidth, popoverTitle, selectProps, emptyText}),
                 // Handle user clicks outside of the popover (which would by default close it).
                 onInteraction: (nextOpenState, e) => {
@@ -136,11 +136,11 @@ DimensionChooser.propTypes = {
 
     /** Position for chooser popover, as per Blueprint docs. */
     popoverPosition: PT.oneOf([
-        'top-left', 'top', 'top-right',
-        'right-top', 'right', 'right-bottom',
-        'bottom-right', 'bottom', 'bottom-left',
-        'left-bottom', 'left', 'left-top',
-        'auto'
+        'top', 'top-start', 'top-end', 
+        'bottom', 'bottom-start', 'bottom-end', 
+        'right', 'right-start', 'right-end', 
+        'left', 'left-start', 'left-end', 
+        'auto', 'auto-start', 'auto-end'
     ]),
 
     /**

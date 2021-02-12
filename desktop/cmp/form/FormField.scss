@@ -26,18 +26,19 @@
         width: 100%;
       }
 
-      &.bp3-popover-target,
-      .bp3-popover-target {
+      &.bp3-popover2-target,
+      .bp3-popover2-target {
         display: block;
       }
     }
 
-    .bp3-popover-wrapper:not(.xh-form-field-error-msg) {
+    // todo:  what is this solving?
+    .bp3-popover2-target:not(.xh-form-field-error-msg) {
       display: flex;
       flex: 1;
 
-      & > .bp3-popover-target,
-      & > .bp3-popover-target > .bp3-control-group {
+      & > .bp3-popover2-target,
+      & > .bp3-popover2-target > .bp3-control-group {
         display: flex;
         flex: 1;
       }

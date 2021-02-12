@@ -1,4 +1,5 @@
 @import '~@blueprintjs/core/src/common/react-transition';
+@import '~@blueprintjs/popover2/src/popover2';  // doesn't seem to be integrated into dist bundle?!
 
 //------------------------
 // NavBar
@@ -131,9 +132,9 @@ $pt-transition-duration: 100ms !default;
 
 // This override is taken from the popover source SCSS - there it is scoped under the minimal class.
 // https://github.com/palantir/blueprint/blob/1bfd1e42303d2626bfc3923eec2195ab4dc696d2/packages/core/src/components/popover/_popover.scss#L54
-.bp3-popover {
+.bp3-popover2 {
   @include react-transition(
-    "bp3-popover",
+    "bp3-popover2",
     (transform: scale(1) scale(1)),
     $duration: 0,
     $after: "> &"
@@ -190,41 +191,41 @@ $pt-transition-duration: 100ms !default;
 //------------------------
 .bp3-tooltip {
   &.bp3-intent-primary {
-    .bp3-popover-content {
+    .bp3-popover2-content {
       background-color: var(--xh-intent-primary);
     }
 
-    .bp3-popover-arrow-fill {
+    .bp3-popover2-arrow-fill {
       fill: var(--xh-intent-primary);
     }
   }
 
   &.bp3-intent-danger {
-    .bp3-popover-content {
+    .bp3-popover2-content {
       background-color: var(--xh-intent-danger);
     }
 
-    .bp3-popover-arrow-fill {
+    .bp3-popover2-arrow-fill {
       fill: var(--xh-intent-danger);
     }
   }
 
   &.bp3-intent-success {
-    .bp3-popover-content {
+    .bp3-popover2-content {
       background-color: var(--xh-intent-success);
     }
 
-    .bp3-popover-arrow-fill {
+    .bp3-popover2-arrow-fill {
       fill: var(--xh-intent-success);
     }
   }
 
   &.bp3-intent-warning {
-    .bp3-popover-content {
+    .bp3-popover2-content {
       background-color: var(--xh-intent-warning);
     }
 
-    .bp3-popover-arrow-fill {
+    .bp3-popover2-arrow-fill {
       fill: var(--xh-intent-warning);
     }
   }

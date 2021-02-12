@@ -183,8 +183,8 @@ const overflowMenu = hoistCmp.factory({
 
         return popover({
             popoverClassName: 'xh-tab-switcher__overflow-popover',
-            position: 'bottom-right',
-            target: button({
+            placement: 'bottom-end',
+            item: button({
                 icon: vertical ? Icon.ellipsisHorizontal() : Icon.ellipsisVertical()
             }),
             minimal: true,

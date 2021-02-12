@@ -105,11 +105,11 @@ DateInput.propTypes = {
      * @see https://blueprintjs.com/docs/#datetime/dateinput
      */
     popoverPosition: PT.oneOf([
-        'top-left', 'top', 'top-right',
-        'right-top', 'right', 'right-bottom',
-        'bottom-right', 'bottom', 'bottom-left',
-        'left-bottom', 'left', 'left-top',
-        'auto'
+        'top', 'top-start', 'top-end', 
+        'bottom', 'bottom-start', 'bottom-end', 
+        'right', 'right-start', 'right-end', 
+        'left', 'left-start', 'left-end', 
+        'auto', 'auto-start', 'auto-end'
     ]),
 
     /** True to select contents when control receives focus. */
@@ -392,7 +392,7 @@ const cmp = hoistCmp.factory(
                 usePortal: true,
                 autoFocus: false,
                 enforceFocus: false,
-                position: props.popoverPosition ?? 'auto',
+                placement: props.popoverPosition ?? 'auto',
                 popoverRef: (v) => {model.popoverRef.current = v},  // Workaround for #2272
                 onClose: model.onPopoverClose,
                 onInteraction: (nextOpenState) => {

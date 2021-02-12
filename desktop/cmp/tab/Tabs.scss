@@ -54,7 +54,7 @@
     max-height: 100%;
 
     // Make overflow button full width
-    .bp3-popover-wrapper .bp3-popover-target {
+    .bp3-popover2-target {
       display: block;
 
       .xh-button {
@@ -99,8 +99,7 @@
 
   // Tooltip
   .bp3-tab {
-    .bp3-popover-wrapper,
-    .bp3-popover-target {
+    .bp3-popover2-target {
       width: 100%;
     }
   }

@@ -33,7 +33,6 @@ import {
     NumericInput,
     OverflowList,
     Overlay,
-    Popover,
     Radio,
     RadioGroup,
     RangeSlider,
@@ -50,6 +49,7 @@ import {
     Tree
 } from '@blueprintjs/core';
 import {DatePicker} from '@blueprintjs/datetime';
+import {Popover2 as Popover} from '@blueprintjs/popover2';
 import {elemFactory} from '@xh/hoist/core';
 
 //---------------------

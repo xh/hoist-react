@@ -23,9 +23,9 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
 
         return popover({
             className,
-            position: 'bottom-right',
+            placement: 'bottom-end',
             minimal: true,
-            target: button({
+            item: button({
                 icon: Icon.bars(),
                 ...rest
             }),
