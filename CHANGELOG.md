@@ -6,6 +6,8 @@
 
 * Collapsible Panel will now restore its user specified-size when re-opened.  Previously
 the panel would be reset to the default size.
+* `TextInput` now passes on all `input` element attributes that it does not itself have an opinion about
+to the underlying input field.
 
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.0.0...develop)
