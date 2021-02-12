@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
+import {XH, hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {observable, action, makeObservable} from '@xh/hoist/mobx';
 import {div, fragment} from '@xh/hoist/cmp/layout';
 import {elementFromContent, createObservableRef} from '@xh/hoist/utils/react';
