@@ -37,6 +37,7 @@ export const [Popover, popover] = hoistCmp.withFactory({
         onInteraction,
         backdrop = false,
         position = 'auto',
+        popoverClassName,
         popperOptions
     }) {
         const impl = useLocalModel(() => new LocalModel()),
@@ -71,7 +72,7 @@ export const [Popover, popover] = hoistCmp.withFactory({
                                 ref: impl.contentRef,
                                 style: popper?.styles?.popper,
                                 className: 'xh-popover__content-wrapper',
-                                items: elementFromContent(content)
+                                items: elementFromContent(content, {className: popoverClassName})
                             }),
                             div({
                                 className: classNames(
@@ -116,6 +117,9 @@ Popover.propTypes = {
         'left-bottom', 'left', 'left-top',
         'auto'
     ]),
+
+    /** Optional className applied to the popover content. */
+    popoverClassName: PT.string,
 
     /** Escape hatch to provide additional options to the PopperJS implementation */
     popperOptions: PT.object
