@@ -137,9 +137,13 @@ const cmp = hoistCmp.factory(
                 round: withDefault(rest.round, false),
                 spellCheck: withDefault(rest.spellCheck, false),
 
+                // These styles get passed onto the HTML INPUT element, 
+                // they are not placed on the DIV created by Blueprint's InputGroup component.
                 style: {
                     ...rest.style,
                     ...layoutProps,
+                    width: withDefault(width, 200),
+                    flex: withDefault(flex, null),
                     textAlign: withDefault(textAlign, 'left')
                 },
 
@@ -150,6 +154,7 @@ const cmp = hoistCmp.factory(
             className,
             style: {
                 width: withDefault(width, 200),
+                maxWidth: layoutProps.maxWidth,
                 flex: withDefault(flex, null)
             },
 
