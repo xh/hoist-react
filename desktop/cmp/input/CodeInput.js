@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {box, filler, fragment, frame, hbox, vbox, div, label, span} from '@xh/hoist/cmp/layout';
+import {box, filler, fragment, hbox, vbox, div, label, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
@@ -482,29 +482,25 @@ const searchInputCmp = hoistCmp.factory(
         const {cursor, currentMatchIdx, matchCount} = model;
 
         return fragment(
-            // Frame wrapper added due to issues with textInput not supporting all layout props as it should.
-            frame({
-                flex: 1,
+            textInput({
                 maxWidth: 400,
-                item: textInput({
-                    width: null,
-                    flex: 1,
-                    model: this,
-                    bind: 'query',
-                    leftIcon: Icon.search(),
-                    enableClear: true,
-                    commitOnChange: true,
-                    onKeyDown: (e) => {
-                        if (e.key !== 'Enter') return;
-                        if (!cursor) {
-                            model.findAll();
-                        } else if (e.shiftKey) {
-                            model.findPrevious();
-                        } else {
-                            model.findNext();
-                        }
+                width: null,
+                flex: 1,
+                model: this,
+                bind: 'query',
+                leftIcon: Icon.search(),
+                enableClear: true,
+                commitOnChange: true,
+                onKeyDown: (e) => {
+                    if (e.key !== 'Enter') return;
+                    if (!cursor) {
+                        model.findAll();
+                    } else if (e.shiftKey) {
+                        model.findPrevious();
+                    } else {
+                        model.findNext();
                     }
-                })
+                }
             }),
             label({
                 className: 'xh-code-input__label',
