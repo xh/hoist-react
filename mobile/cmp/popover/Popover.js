@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
+import {XH, hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {observable, action, makeObservable} from '@xh/hoist/mobx';
 import {div, fragment} from '@xh/hoist/cmp/layout';
 import {elementFromContent, createObservableRef} from '@xh/hoist/utils/react';
@@ -141,6 +141,13 @@ class LocalModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+
+        // Popovers are automatically closed on app route changes to avoid navigating the
+        // app underneath the popover in an unsettling way. (i.e. via browser back button)
+        this.addReaction({
+            track: () => XH.routerState,
+            run: () => this.setIsOpen(false)
+        });
     }
 
     @action
