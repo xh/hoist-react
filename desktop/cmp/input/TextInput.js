@@ -11,7 +11,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import composeRefs from '@seznam/compose-react-refs';
 import PT from 'prop-types';
@@ -117,32 +117,30 @@ class Model extends HoistInputModel {
 
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
-        const {width, flex, ...layoutProps} = getLayoutProps(props);
+        const {width, flex, ...layoutProps} = getLayoutProps(props),
+            // remove layoutProps, props not recognized as DOM elements, and props not accepted on BP's inputGroup component
+            {commitOnChange, enableClear, onCommit, selectOnFocus, textAlign, ...rest} = getNonLayoutProps(props);
 
         const isClearable = !isEmpty(model.internalValue);
 
         return div({
             item: inputGroup({
+                ...rest,
+
+                // overwrite some of the ...rest props with Hoist's customizations
                 value: model.renderValue || '',
 
-                autoComplete: withDefault(props.autoComplete, props.type === 'password' ? 'new-password' : 'nope'),
-                autoFocus: props.autoFocus,
-                disabled: props.disabled,
-                inputRef: composeRefs(model.inputRef, props.inputRef),
-                leftIcon: props.leftIcon,
-                placeholder: props.placeholder,
-                rightElement: props.rightElement ||
-                    (props.enableClear && !props.disabled && isClearable ? clearButton() : null),
-                round: withDefault(props.round, false),
-                spellCheck: withDefault(props.spellCheck, false),
-                tabIndex: props.tabIndex,
-                type: props.type,
+                autoComplete: withDefault(rest.autoComplete, rest.type === 'password' ? 'new-password' : 'nope'),
+                inputRef: composeRefs(model.inputRef, rest.inputRef),
+                rightElement: rest.rightElement ||
+                    (enableClear && !rest.disabled && isClearable ? clearButton() : null),
+                round: withDefault(rest.round, false),
+                spellCheck: withDefault(rest.spellCheck, false),
 
-                id: props.id,
                 style: {
-                    ...props.style,
+                    ...rest.style,
                     ...layoutProps,
-                    textAlign: withDefault(props.textAlign, 'left')
+                    textAlign: withDefault(textAlign, 'left')
                 },
 
                 onChange: model.onChange,
