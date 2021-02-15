@@ -71,8 +71,8 @@ export const [Popover, popover] = hoistCmp.withFactory({
                             div({
                                 ref: impl.contentRef,
                                 style: popper?.styles?.popper,
-                                className: 'xh-popover__content-wrapper',
-                                items: elementFromContent(content, {className: popoverClassName})
+                                className: classNames('xh-popover__content-wrapper', popoverClassName),
+                                items: elementFromContent(content)
                             }),
                             div({
                                 className: classNames(
@@ -118,7 +118,7 @@ Popover.propTypes = {
         'auto'
     ]),
 
-    /** Optional className applied to the popover content. */
+    /** Optional className applied to the popover content wrapper. */
     popoverClassName: PT.string,
 
     /** Escape hatch to provide additional options to the PopperJS implementation */
