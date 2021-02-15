@@ -146,14 +146,13 @@ class LocalModel extends HoistModel {
     onColumnResized = (ev) => {
         ev.api.resetRowHeights();
     };
-    
+
     onColumnVisible = (ev) => {
         ev.api.resetRowHeights();
     };
 
     get usingRowAutoHeight() {
-        // columnDefs won't be defined if the componet is rendered for a Hoist Grid.
-        return this.columnDefs?.filter(it => it.autoHeight).length > 0;
+        return this.columnDefs?.some(it => it.autoHeight);
     }
 
     getRowHeight = () => AgGrid.getRowHeightForSizingMode(this.model.sizingMode);

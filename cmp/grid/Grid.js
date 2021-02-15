@@ -155,7 +155,7 @@ class LocalModel extends HoistModel {
 
     @computed
     get usingRowAutoHeight() {
-        return this.model.columns.filter(it => it.agOptions.autoHeight).length > 0;
+        return this.model.columns.some(it => it.agOptions?.autoHeight);
     }
 
     // The minimum required row height specified by the columns (if any) */
