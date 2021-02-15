@@ -1,15 +1,24 @@
 .xh-menu {
   position: fixed;
-  overflow-y: auto !important;
   margin: 0 !important;
   z-index: 21;
 
+  &__title {
+    padding: var(--xh-pad-half-px);
+    color: var(--xh-navbar-title-color);
+    font-size: var(--xh-font-size-small-px);
+    text-align: center;
+    background-color: var(--xh-navbar-bg);
+    border-bottom: var(--xh-border-solid);
+  }
+
   &__list {
+    padding: 1px 0;
     background-color: var(--xh-bg);
-    border: var(--xh-border-solid);
+    overflow-y: auto !important;
 
     .list-item {
-      padding: 0 var(--xh-pad-px);
+      padding: 0 var(--xh-pad-double-px) 0 var(--xh-pad-px);
       background-color: var(--xh-grid-bg) !important;
 
       &__center {
