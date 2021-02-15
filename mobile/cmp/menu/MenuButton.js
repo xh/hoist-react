@@ -24,6 +24,7 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory({
     render({
         menuItems,
         menuPosition = 'auto',
+        title,
         popoverProps,
         icon = Icon.bars(),
         ...props
@@ -34,7 +35,7 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory({
             isOpen: impl.isOpen,
             position: menuPosition,
             target: button({icon, ...props}),
-            content: menu({menuItems, onDismiss: () => impl.setIsOpen(false)}),
+            content: menu({menuItems, title, onDismiss: () => impl.setIsOpen(false)}),
             onInteraction: (nextOpenState) => impl.setIsOpen(nextOpenState),
             backdrop: true,
             ...popoverProps
@@ -56,6 +57,9 @@ MenuButton.propTypes = {
         'left-bottom', 'left', 'left-top',
         'auto'
     ]),
+
+    /** Optional title to display above the menu */
+    title: PT.node,
 
     /** Props passed to the internal popover */
     popoverProps: PT.object
