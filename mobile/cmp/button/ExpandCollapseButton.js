@@ -28,10 +28,11 @@ export const [ExpandCollapseButton, expandCollapseButton] = hoistCmp.withFactory
 
         if (!gridModel?.treeMode) {
             console.error("No GridModel available with treeMode enabled. Provide via a 'gridModel' prop, or context.");
+            return button({icon: Icon.expand(), disabled: true, ...props});
         }
 
         const shouldCollapse = !isEmpty(gridModel.expandState),
-            disabled = !gridModel.treeMode || gridModel.store.allRootCount === gridModel.store.allCount,
+            disabled = gridModel.store.allRootCount === gridModel.store.allCount,
             icon = shouldCollapse ? Icon.collapse() : Icon.expand();
 
         onClick = onClick ?? (() => shouldCollapse ? gridModel.collapseAll() : gridModel.expandAll());
