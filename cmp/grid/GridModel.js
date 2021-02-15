@@ -980,9 +980,9 @@ export class GridModel extends HoistModel {
     // so it can be better re-used across Hoist APIs such as `Filter` and `FormModel`. However for
     // convenience, a `GridModel.store` config can also be very minimal (or non-existent), and
     // in this case GridModel should work out the required Store fields from column definitions.
-    parseAndSetColumnsAndStore(colConfigs, store) {
-        // 1) Default and pre-validate configs.
-        store = withDefault(store, {});
+    parseAndSetColumnsAndStore(colConfigs, store = {}) {
+
+        // 1) validate configs.
         this.validateStoreConfig(store);
         this.validateColConfigs(colConfigs);
 
@@ -992,13 +992,14 @@ export class GridModel extends HoistModel {
         // 3) Create and set columns with (possibly) enhanced configs.
         this.setColumns(colConfigs);
 
-        // 4) Enhance store config and create (if needed), then set.
+        // 4) Create store if needed
         if (isPlainObject(store)) {
-            const storeConfig = this.enhanceStoreConfigFromColumns(store);
-            this.store = this.markManaged(new Store(storeConfig));
-        } else {
-            this.store = store;
+            store = this.enhanceStoreConfigFromColumns(store);
+            store = new Store({loadTreeData: this.treeMode, ...store});
+            this.markManaged(store);
         }
+
+        this.store = store;
     }
 
     validateStoreConfig(store) {

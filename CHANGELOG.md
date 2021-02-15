@@ -4,8 +4,15 @@
 
 ### 🐞 Bug Fixes
 
-* Collapsible Panel will now restore its user specified-size when re-opened.  Previously
+* A collapsible `Panel` will now restore its user specified-size when re-opened.  Previously
 the panel would be reset to the default size.
+
+* Fixes issue with `Store`'s `lastLoaded` property incorrectly being initialized to the construction
+time of the object rather than `null`.
+
+### 🎁 New Features
+
+* Store gains a new property `loadTreeData` for governing how it loads hierarchical data.
 
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.0.0...develop)
