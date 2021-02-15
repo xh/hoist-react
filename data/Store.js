@@ -41,10 +41,10 @@ export class Store extends HoistBase {
     @observable filterIncludesChildren;
 
     /** @member {boolean} */
-    loadTreeData = false;
+    loadTreeData;
 
     /** @member {boolean} */
-    loadRootAsSummary = false;
+    loadRootAsSummary;
 
     /** @member {Filter}  */
     @observable.ref filter;
