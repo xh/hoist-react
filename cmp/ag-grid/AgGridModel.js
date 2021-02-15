@@ -99,7 +99,8 @@ export class AgGridModel extends HoistModel {
                 // See: https://www.ag-grid.com/javascript-grid-row-height/#height-for-pinned-rows
                 this.setPinnedTopRowData(this.getPinnedTopRowData());
                 this.setPinnedBottomRowData(this.getPinnedBottomRowData());
-            }
+            },
+            debounce: 1 // Debounce required to support auto row height
         });
     }
 
@@ -535,6 +536,16 @@ export class AgGridModel extends HoistModel {
     getPinnedBottomRowData() {
         this.throwIfNotReady();
         return this.getPinnedRowData('Bottom');
+    }
+
+    /**
+     * @returns {Number} - pixel height for row if auto row height enabled, else null
+     */
+    getAutoRowHeight(node) {
+        if (!this.isReady) return null;
+        const {columnController, autoHeightCalculator} = this.agApi.gridOptionsWrapper;
+        if (!columnController.isAutoRowHeightActive()) return null;
+        return autoHeightCalculator.getPreferredHeightForRow(node);
     }
 
     //------------------------

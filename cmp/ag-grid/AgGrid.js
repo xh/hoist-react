@@ -9,6 +9,7 @@ import {hoistCmp, HoistModel, useLocalModel, uses, elem, XH} from '@xh/hoist/cor
 import {splitLayoutProps, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isNil} from 'lodash';
+
 import './AgGrid.scss';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 import {AgGridModel} from './AgGridModel';
@@ -76,10 +77,10 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
             ...layoutProps,
             item: elem(AgGridReact, {
                 // Default some ag-grid props, but allow overriding.
-                getRowHeight: impl.usingRowAutoHeight ? undefined : impl.getRowHeight,
+                getRowHeight: impl.getRowHeight,
                 navigateToNextCell: impl.navigateToNextCell,
-                onColumnResized: !impl.usingRowAutoHeight ? undefined : impl.onColumnResized,
-                onColumnVisible: !impl.usingRowAutoHeight ? undefined : impl.onColumnVisible,
+                onColumnResized: impl.onColumnResized,
+                onColumnVisible: impl.onColumnVisible,
                 // Pass others on directly.
                 ...agGridProps,
 
@@ -114,7 +115,6 @@ class LocalModel extends HoistModel {
     constructor(model, agGridProps) {
         super();
         this.model = model;
-        this.columnDefs = agGridProps.columnDefs;
         this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(model) : null;
 
         // manage header height if was not explicitly provided to component
@@ -151,9 +151,9 @@ class LocalModel extends HoistModel {
         ev.api.resetRowHeights();
     };
 
-    get usingRowAutoHeight() {
-        return this.columnDefs?.some(it => it.autoHeight);
+    getRowHeight = (params) => {
+        const height = AgGrid.getRowHeightForSizingMode(this.model.sizingMode),
+            autoHeight = this.model.getAutoRowHeight(params.node);
+        return Math.max(height, autoHeight);
     }
-
-    getRowHeight = () => AgGrid.getRowHeightForSizingMode(this.model.sizingMode);
 }

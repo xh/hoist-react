@@ -923,6 +923,10 @@ export class GridModel extends HoistModel {
         this.autosizeAsync({columns: colIds});
     }
 
+    getAutoRowHeight(node) {
+        return this.agGridModel.getAutoRowHeight(node);
+    }
+
     //-----------------------
     // Implementation
     //-----------------------

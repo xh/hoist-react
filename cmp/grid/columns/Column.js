@@ -308,9 +308,6 @@ export class Column {
         // Warn if using the ag-Grid valueSetter or valueGetter and recommend using our callbacks
         warnIf(this.agOptions.valueSetter, `Column '${this.colId}' uses valueSetter through agOptions. Remove and use custom setValueFn if needed.`);
         warnIf(this.agOptions.valueGetter, `Column '${this.colId}' uses valueGetter through agOptions. Remove and use custom getValueFn if needed.`);
-
-        // Warn if using autoHeight
-        warnIf(this.agOptions.autoHeight, `Column specified with agOptions.autoHeight: true. gridModel.sizingMode will not be applied to rowHeights. 'Standard' size is best when 'agOptions.autoHeight: true'. [colId=${this.colId}]`);
     }
 
     /**
