@@ -112,6 +112,8 @@ DateInput.propTypes = {
         'auto'
     ]),
 
+    popoverBoundary: PT.oneOf(['scrollParent', 'viewport', 'window']),
+
     /** True to select contents when control receives focus. */
     selectOnFocus: PT.bool,
 
@@ -393,6 +395,7 @@ const cmp = hoistCmp.factory(
                 autoFocus: false,
                 enforceFocus: false,
                 position: props.popoverPosition ?? 'auto',
+                boundary: props.popoverBoundary ?? 'scrollParent',
                 popoverRef: (v) => {model.popoverRef.current = v},  // Workaround for #2272
                 onClose: model.onPopoverClose,
                 onInteraction: (nextOpenState) => {
