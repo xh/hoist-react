@@ -12,7 +12,7 @@ import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynam
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {div} from '@xh/hoist/cmp/layout';
-import {computed, observable, observer, action, runInAction, makeObservable} from '@xh/hoist/mobx';
+import {computed, observable, observer, makeObservable} from '@xh/hoist/mobx';
 import {isDisplayed, withShortDebug, apiRemoved} from '@xh/hoist/utils/js';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -168,10 +168,6 @@ class LocalModel extends HoistModel {
         return model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode(model.sizingMode);
     }
 
-    // Observable stamp incremented every time the ag-Grid receives a new set of data.
-    // Used to ensure proper re-running / sequencing of data and selection reactions.
-    @observable _dataVersion = 0;
-
     // Do any root level records have children?
     @computed
     get isHierarchical() {
@@ -225,7 +221,7 @@ class LocalModel extends HoistModel {
                 clipboardCopy: Icon.copy({asHtml: true})
             },
             frameworkComponents: {
-                agColumnHeader: (props) => columnHeader({gridLocalModel: this, ...props}),
+                agColumnHeader: (props) => columnHeader(props),
                 agColumnGroupHeader: (props) => columnGroupHeader(props)
             },
             rowSelection: model.selModel.mode,
@@ -387,12 +383,8 @@ class LocalModel extends HoistModel {
             {agGridModel, store, experimental} = model;
 
         return {
-            track: () => ({
-                isReady: model.agApi && model.agColumnApi && this.frameworkCmpsMounted,
-                newRs: store._filtered,
-                showSummary: model.showSummary
-            }),
-            run: ({isReady, newRs}) => {
+            track: () => [model.isReady, store._filtered, model.showSummary],
+            run: ([isReady, newRs]) => {
                 if (!isReady) return;
 
                 const {agApi} = model,
@@ -432,11 +424,6 @@ class LocalModel extends HoistModel {
                 }, this);
 
                 this._prevRs = newRs;
-
-                // Increment version counter to trigger selectionReaction w/latest data.
-                runInAction(() => {
-                    this._dataVersion++;
-                });
             }
         };
     }
@@ -446,7 +433,7 @@ class LocalModel extends HoistModel {
             {agGridModel} = model;
 
         return {
-            track: () => [model.isReady, model.selection, this._dataVersion],
+            track: () => [model.isReady, model.selection],
             run: ([isReady, selection]) => {
                 if (!isReady) return;
 
@@ -609,11 +596,6 @@ class LocalModel extends HoistModel {
 
     transactionLogStr(t) {
         return `[update: ${t.update ? t.update.length : 0} | add: ${t.add ? t.add.length : 0} | remove: ${t.remove ? t.remove.length : 0}]`;
-    }
-
-    @action
-    noteFrameworkCmpMounted() {
-        this.frameworkCmpsMounted = true;
     }
 
     //------------------------

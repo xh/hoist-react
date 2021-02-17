@@ -450,6 +450,9 @@ export class GridModel extends HoistModel {
      * the minimum scrolling necessary to display the start of the selection and as much as
      * possible of the rest.
      *
+     * Any selected records that are hidden because their parent rows are collapsed will first
+     * be revealed by expanding their parent rows.
+     *
      * This method imposes a minimal delay to allow the underlying grid implementation to
      * render all pending data changes.
      */
@@ -461,14 +464,24 @@ export class GridModel extends HoistModel {
             {agApi} = this,
             indices = [];
 
+        // 1) Expand any selected nodes that are collapsed
+        records.forEach(({id}) => {
+            let rowNode = agApi.getRowNode(id);
+            while (rowNode.parent && !rowNode.parent.expanded) {
+                agApi.setRowNodeExpanded(rowNode.parent, true);
+                rowNode = rowNode.parent;
+            }
+        });
+
+        // 2) Scroll to all selected nodes
         records.forEach(({id}) => {
             const rowNode = agApi.getRowNode(id);
-            if (rowNode) indices.push(rowNode.rowIndex);
+            if (!isNil(rowNode?.rowIndex)) indices.push(rowNode.rowIndex);
         });
 
         const indexCount = indices.length;
         if (indexCount !== records.length) {
-            console.warn('Grid row nodes not found for all selected records - grid data reaction/rendering likely in progress.');
+            console.warn('Grid row nodes not found for all selected records.');
         }
 
         if (indexCount === 1) {

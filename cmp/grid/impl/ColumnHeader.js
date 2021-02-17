@@ -8,7 +8,7 @@ import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
-import {useOnMount, createObservableRef} from '@xh/hoist/utils/react';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
 import classNames from 'classnames';
@@ -31,7 +31,6 @@ export const columnHeader = hoistCmp.factory({
 
     render(props) {
         const impl = useLocalModel(() => new LocalModel(props));
-        useOnMount(() => props.gridLocalModel.noteFrameworkCmpMounted());
 
         const sortIcon = () => {
             const {abs, sort} = impl.activeGridSorter ?? {};
