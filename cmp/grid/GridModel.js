@@ -426,8 +426,8 @@ export class GridModel extends HoistModel {
      * render all pending data changes.
      */
     async selectFirstAsync() {
+        // await always async, allowing grid to render changes pending at time of call
         await when(() => this.isReady);
-        await wait(0);
 
         // Get first displayed row with data - i.e. backed by a record, not a full-width group row.
         const id = this.agGridModel.getFirstSelectableRowNodeId();
@@ -454,8 +454,8 @@ export class GridModel extends HoistModel {
      * render all pending data changes.
      */
     async ensureSelectionVisibleAsync() {
+        // await always async, allowing grid to render changes pending at time of call
         await when(() => this.isReady);
-        await wait(0);
 
         const {records} = this.selModel,
             {agApi} = this,
