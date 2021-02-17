@@ -112,6 +112,7 @@ DateInput.propTypes = {
         'auto'
     ]),
 
+    /** Boundary for calendar popover, as per Blueprint docs. Defaults to viewport. */
     popoverBoundary: PT.oneOf(['scrollParent', 'viewport', 'window']),
 
     /** True to select contents when control receives focus. */
@@ -395,7 +396,7 @@ const cmp = hoistCmp.factory(
                 autoFocus: false,
                 enforceFocus: false,
                 position: props.popoverPosition ?? 'auto',
-                boundary: props.popoverBoundary ?? 'scrollParent',
+                boundary: props.popoverBoundary ?? 'viewport',
                 popoverRef: (v) => {model.popoverRef.current = v},  // Workaround for #2272
                 onClose: model.onPopoverClose,
                 onInteraction: (nextOpenState) => {
