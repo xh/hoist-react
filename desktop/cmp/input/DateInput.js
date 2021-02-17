@@ -112,7 +112,7 @@ DateInput.propTypes = {
         'auto'
     ]),
 
-    /** Defaults to viewport. */
+    /** Boundary for calendar popover, as per Blueprint docs. Defaults to viewport. */
     popoverBoundary: PT.oneOf(['scrollParent', 'viewport', 'window']),
 
     /** True to select contents when control receives focus. */
