@@ -109,7 +109,7 @@
 .xh-grid--hierarchical:not(.xh-data-view) {
   // Generate indentations for tree grids with hierarchical data.
   .ag-ltr {
-    @for $i from 1 to 20 {
+    @for $i from 0 to 20 {
       .ag-row-group-indent-#{$i} {
         padding-left: calc(#{$i} * var(--xh-grid-tree-indent));
       }
