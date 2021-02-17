@@ -29,8 +29,7 @@ import {
     isNil,
     isString,
     map,
-    merge,
-    xor
+    merge
 } from 'lodash';
 import PT from 'prop-types';
 import {createRef, isValidElement} from 'react';
@@ -156,15 +155,17 @@ class LocalModel extends HoistModel {
     // The minimum required row height specified by the columns (if any) */
     @computed
     get rowHeight() {
-        const gridDefaultHeight = AgGrid.getRowHeightForSizingMode(this.model.sizingMode),
-            maxColHeight = Math.max(...map(this.model.columns, 'rowHeight').filter(isFinite));
+        const {model} = this;
+        const gridDefaultHeight = AgGrid.getRowHeightForSizingMode(model.sizingMode),
+            maxColHeight = Math.max(...map(model.columns, 'rowHeight').filter(isFinite));
 
         return isFinite(maxColHeight) ? Math.max(gridDefaultHeight, maxColHeight) : gridDefaultHeight;
     }
 
     @computed
     get groupRowHeight() {
-        return this.model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode(this.model.sizingMode);
+        const {model} = this;
+        return model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode(model.sizingMode);
     }
 
     // Observable stamp incremented every time the ag-Grid receives a new set of data.
@@ -172,7 +173,11 @@ class LocalModel extends HoistModel {
     @observable _dataVersion = 0;
 
     // Do any root level records have children?
-    @observable isHierarchical = false;
+    @computed
+    get isHierarchical() {
+        const {model} = this;
+        return model.treeMode && model.store.allRootCount !== model.store.allCount;
+    }
 
     // Have framework components been mounted? As of AgGrid v23, there is a noticeable
     // delay between AgGrid.onGridReady and framework components (e.g. Column Headers)
@@ -382,15 +387,19 @@ class LocalModel extends HoistModel {
             {agGridModel, store, experimental} = model;
 
         return {
-            track: () => [agGridModel.agApi, agGridModel.agColumnApi, this.frameworkCmpsMounted, store.lastLoaded, store.lastUpdated, store._filtered, model.showSummary],
-            run: ([agApi, colApi, frameworkCmpsMounted, lastLoaded, lastUpdated, newRs]) => {
-                if (!agApi || !colApi || !frameworkCmpsMounted) return;
+            track: () => ({
+                isReady: model.agApi && model.agColumnApi && this.frameworkCmpsMounted,
+                newRs: store._filtered,
+                showSummary: model.showSummary
+            }),
+            run: ({isReady, newRs}) => {
+                if (!isReady) return;
 
-                const isUpdate = lastUpdated > lastLoaded,
+                const {agApi} = model,
                     prevRs = this._prevRs,
                     prevCount = prevRs ? prevRs.count : 0;
 
-                withShortDebug(`${isUpdate ? 'Updated' : 'Loaded'} Grid`, () => {
+                withShortDebug(`Updating ag-Grid from Store`, () => {
                     let transaction = null;
                     if (prevCount !== 0) {
                         transaction = this.genTransaction(newRs, prevRs);
@@ -422,13 +431,10 @@ class LocalModel extends HoistModel {
                     model.noteAgExpandStateChange();
                 }, this);
 
+                this._prevRs = newRs;
+
+                // Increment version counter to trigger selectionReaction w/latest data.
                 runInAction(() => {
-                    this._prevRs = newRs;
-
-                    // Set flag if data is hierarchical.
-                    this.isHierarchical = model.treeMode && store.allRootCount !== store.allCount;
-
-                    // Increment version counter to trigger selectionReaction w/latest data.
                     this._dataVersion++;
                 });
             }
@@ -440,16 +446,14 @@ class LocalModel extends HoistModel {
             {agGridModel} = model;
 
         return {
-            track: () => [agGridModel.agApi, model.selection, this._dataVersion],
-            run: ([api]) => {
-                if (!api) return;
-
-                const modelSelection = model.selModel.ids,
-                    selectedIds = agGridModel.getSelectedRowNodeIds(),
-                    diff = xor(modelSelection, selectedIds);
+            track: () => [model.isReady, model.selection, this._dataVersion],
+            run: ([isReady, selection]) => {
+                if (!isReady) return;
 
                 // If ag-grid's selection differs from the selection model, set it to match.
-                if (diff.length > 0) {
+                const modelSelection = map(selection, 'id'),
+                    agSelection = agGridModel.getSelectedRowNodeIds();
+                if (!isEqual(modelSelection, agSelection)) {
                     agGridModel.setSelectedRowNodeIds(modelSelection);
                 }
             }
@@ -457,23 +461,23 @@ class LocalModel extends HoistModel {
     }
 
     sortReaction() {
-        const {agGridModel} = this.model,
-            {externalSort} = this.model.experimental;
+        const {model} = this,
+            {externalSort} = model.experimental;
 
         return {
-            track: () => [agGridModel.agColumnApi, this.model.sortBy],
+            track: () => [model.agColumnApi, model.sortBy],
             run: ([colApi, sortBy]) => {
                 if (colApi && !externalSort) {
-                    agGridModel.applySortBy(sortBy);
+                    model.agGridModel.applySortBy(sortBy);
                 }
             }
         };
     }
 
     groupReaction() {
-        const {agGridModel} = this.model;
+        const {model} = this;
         return {
-            track: () => [agGridModel.agColumnApi, this.model.groupBy],
+            track: () => [model.agColumnApi, model.groupBy],
             run: ([colApi, groupBy]) => {
                 if (colApi) colApi.setRowGroupColumns(groupBy);
             }
@@ -481,9 +485,9 @@ class LocalModel extends HoistModel {
     }
 
     columnsReaction() {
-        const {agGridModel} = this.model;
+        const {model} = this;
         return {
-            track: () => [agGridModel.agApi, this.model.columns],
+            track: () => [model.agApi, model.columns],
             run: ([api]) => {
                 if (!api) return;
 
@@ -495,9 +499,9 @@ class LocalModel extends HoistModel {
     }
 
     columnStateReaction() {
-        const {agGridModel} = this.model;
+        const {model} = this;
         return {
-            track: () => [agGridModel.agApi, agGridModel.agColumnApi, this.model.columnState],
+            track: () => [model.agApi, model.agColumnApi, model.columnState],
             run: ([api, colApi, colState]) => {
                 if (!api || !colApi) return;
 
@@ -630,7 +634,7 @@ class LocalModel extends HoistModel {
 
     // Catches column resizing on call to autoSize API.
     onColumnResized = (ev) => {
-        if (isDisplayed(this.viewRef.current) && ev.finished && ev.source == 'autosizeColumns') {
+        if (isDisplayed(this.viewRef.current) && ev.finished && ev.source === 'autosizeColumns') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
     };

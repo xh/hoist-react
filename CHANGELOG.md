@@ -14,6 +14,10 @@ time of the object rather than `null`.
 
 * Store gains a new property `loadTreeData` for governing how it loads hierarchical data.
 
+* `GridModel` has three new async variants of existing methods: `selectFirstAsync`, `selectAsync`, and
+`ensureSelectionVisibleAsync`. These methods build-in the necessary waiting for the underlying grid
+implementation to be ready and fully rendered.  In addition, the first two methods will internally call
+the third.  The existing non-async counterparts for these methods have been deprecated.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.0.0...develop)
 

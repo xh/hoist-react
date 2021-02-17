@@ -14,7 +14,6 @@ import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Cube} from '@xh/hoist/data';
 import {fmtDate, fmtNumber, numberRenderer} from '@xh/hoist/format';
 import {action, makeObservable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isFinite} from 'lodash';
 import moment from 'moment';
@@ -188,6 +187,7 @@ export class ActivityTrackingModel extends HoistModel {
             ]
         });
 
+
         this.activityDetailModel = new ActivityDetailModel({parentModel: this});
         this.chartsModel = new ChartsModel({parentModel: this});
 
@@ -239,8 +239,9 @@ export class ActivityTrackingModel extends HoistModel {
         data.forEach(node => this.separateLeafRows(node));
         gridModel.loadData(data);
 
-        await wait(1);
-        if (!gridModel.hasSelection) gridModel.selectFirst();
+        if (!gridModel.hasSelection) {
+            await gridModel.selectFirstAsync();
+        }
 
         chartsModel.setDataAndDims({data, dimensions});
     }

@@ -6,8 +6,8 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {castArray, compact, intersection, isEqual, union} from 'lodash';
+import {action, computed, observable, makeObservable, comparer} from '@xh/hoist/mobx';
+import {castArray, compact, remove, isEqual, union} from 'lodash';
 
 /**
  * Model for managing store selections.
@@ -35,29 +35,26 @@ export class StoreSelectionModel extends HoistModel {
         this.addReaction(this.cullSelectionReaction());
     }
 
-    /** @return {?Record} - single selected record, or null if multiple or no records selected. */
-    @computed
-    get singleRecord() {
-        const ids = this.ids;
-        return ids.length === 1 ? this.store.getById(ids[0]) : null;
-    }
-
     /** @return {Record[]} - currently selected Records. */
-    @computed
+    @computed({equals: comparer.shallow})
     get records() {
         return compact(this.ids.map(it => this.store.getById(it)));
     }
 
+    /** @return {?Record} - single selected record, or null if multiple or no records selected. */
+    get singleRecord() {
+        const {records} = this;
+        return records.length === 1 ? records[0] : null;
+    }
+
     /** @return {boolean} - true if selection is empty. */
-    @computed
     get isEmpty() {
-        return this.ids.length === 0;
+        return this.count === 0;
     }
 
     /** @return {number} - count of currently selected records. */
-    @computed
     get count() {
-        return this.ids.length;
+        return this.records.length;
     }
 
     /**
@@ -68,8 +65,8 @@ export class StoreSelectionModel extends HoistModel {
     @action
     select(records, clearSelection = true) {
         records = castArray(records ?? []);
-        if (this.mode == 'disabled') return;
-        if (this.mode == 'single' && records.length > 1) {
+        if (this.mode === 'disabled') return;
+        if (this.mode === 'single' && records.length > 1) {
             records = [records[0]];
         }
         const ids = records.map(it => {
@@ -105,16 +102,11 @@ export class StoreSelectionModel extends HoistModel {
     //------------------------
     cullSelectionReaction() {
         // Remove recs from selection if they are no longer in store e.g. (due to filtering)
+        // Just cleanup and not mutating the ref.  The records @computed provides all observable state
+        const {store} = this;
         return {
-            track: () => this.store.records,
-            run: (records) => {
-                const storeIds = records.map(it => it.id),
-                    selection = this.ids,
-                    newSelection = intersection(storeIds, selection);
-                if (selection.length !== newSelection.length) {
-                    this.select(newSelection);
-                }
-            }
+            track: () => store.records,
+            run: () => remove(this.ids, id => !store.getById(id))
         };
     }
 }

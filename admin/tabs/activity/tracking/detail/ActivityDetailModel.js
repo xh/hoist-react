@@ -5,7 +5,6 @@ import {managed, HoistModel, XH} from '@xh/hoist/core';
 import {numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
 
 export class ActivityDetailModel extends HoistModel {
 
@@ -97,9 +96,8 @@ export class ActivityDetailModel extends HoistModel {
 
         gridModel.loadData(leaves);
 
-        await wait(1);
         if (!gridModel.hasSelection) {
-            gridModel.selectFirst();
+            await gridModel.selectFirstAsync();
         }
     }
 

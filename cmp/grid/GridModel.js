@@ -12,7 +12,7 @@ import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable, when} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {
     apiDeprecated,
@@ -414,23 +414,29 @@ export class GridModel extends HoistModel {
      * @param {(Object[]|Object)} records - single record/ID or array of records/IDs to select.
      * @param {boolean} [clearSelection] - true to clear previous selection (rather than add to it).
      */
-    select(records, clearSelection = true) {
+    async selectAsync(records, clearSelection = true) {
         this.selModel.select(records, clearSelection);
+        await this.ensureSelectionVisibleAsync();
     }
 
-    /** Select the first row in the grid. */
-    selectFirst() {
-        const {agGridModel, selModel} = this;
-        if (!agGridModel.agApi) {
-            console.warn('Called selectFirst before the grid was ready!');
-            return;
+    /**
+     * Select the first row in the grid.
+     *
+     * This method allows for a minimal delay to allow the underlying grid implementation to
+     * render all pending data changes.
+     */
+    async selectFirstAsync() {
+        await when(() => this.isReady);
+        await wait(0);
+
+        // Get first displayed row with data - i.e. backed by a record, not a full-width group row.
+        const id = this.agGridModel.getFirstSelectableRowNodeId();
+        if (id != null) {
+            this.selModel.select(id);
+            await this.ensureSelectionVisibleAsync();
         }
-
-        // Find first displayed row with data - i.e. backed by a record, not a full-width group row.
-        const id = agGridModel.getFirstSelectableRowNodeId();
-
-        if (id) selModel.select(id);
     }
+
 
     /** Deselect all rows. */
     clearSelection() {
@@ -443,21 +449,25 @@ export class GridModel extends HoistModel {
      * If multiple records are selected, scroll to the first record and then the last. This will do
      * the minimum scrolling necessary to display the start of the selection and as much as
      * possible of the rest.
+     *
+     * This method imposes a minimal delay to allow the underlying grid implementation to
+     * render all pending data changes.
      */
-    ensureSelectionVisible() {
+    async ensureSelectionVisibleAsync() {
+        await when(() => this.isReady);
+        await wait(0);
+
         const {records} = this.selModel,
-            {agApi} = this;
+            {agApi} = this,
+            indices = [];
 
-        if (!agApi) return;
-
-        const indices = [];
-        records.forEach(record => {
-            const rowNode = agApi.getRowNode(record.id);
+        records.forEach(({id}) => {
+            const rowNode = agApi.getRowNode(id);
             if (rowNode) indices.push(rowNode.rowIndex);
         });
 
         const indexCount = indices.length;
-        if (indexCount != records.length) {
+        if (indexCount !== records.length) {
             console.warn('Grid row nodes not found for all selected records - grid data reaction/rendering likely in progress.');
         }
 
@@ -1144,6 +1154,23 @@ export class GridModel extends HoistModel {
     defaultGroupSortFn = (a, b) => {
         return a < b ? -1 : (a > b ? 1 : 0);
     };
+
+
+    // Deprecated methods
+    select(records, clearSelection) {
+        apiDeprecated(true, 'select', 'Use selectAsync() instead.');
+        this.selectAsync(records, clearSelection);
+    }
+
+    selectFirst() {
+        apiDeprecated(true, 'selectFirst', 'Use selectFirstAsync() instead.');
+        this.selectFirstAsync();
+    }
+
+    ensureSelectionVisible() {
+        apiDeprecated(true, 'ensureSelectionVisible', 'Use ensureSelectionVisibleAsync() instead.');
+        this.ensureSelectionVisibleAsync();
+    }
 }
 
 /**
