@@ -112,6 +112,7 @@ DateInput.propTypes = {
         'auto'
     ]),
 
+    /** Defaults to viewport. */
     popoverBoundary: PT.oneOf(['scrollParent', 'viewport', 'window']),
 
     /** True to select contents when control receives focus. */
