@@ -11,6 +11,11 @@
 * Tweak to `Grid` style rules to ensure sufficient specificity of rules related to indenting child
   rows within tree grids.
 
+* Improvements to parsing of `Field`s of type 'int': We now correctly parse values presented in
+exponential notation and `NaN` values are now converted to `null`.
+
+
+
 ### 🎁 New Features
 
 * Added new `Store.loadTreeData` config (default `true`) to enable or disable building of nested
