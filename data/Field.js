@@ -9,7 +9,7 @@ import {XH} from '@xh/hoist/core';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
-import {isDate, isString, startCase} from 'lodash';
+import {isDate, isString, toNumber, isFinite, startCase} from 'lodash';
 import DOMPurify from 'dompurify';
 
 /**
@@ -74,9 +74,10 @@ export function parseFieldValue(val, type, defaultValue = null, disableXssProtec
         case FT.JSON:
             return val;
         case FT.INT:
-            return parseInt(val);
+            val = toNumber(val);
+            return isFinite(val) ? Math.trunc(val) : null;
         case FT.NUMBER:
-            return parseFloat(val);
+            return toNumber(val);
         case FT.BOOL:
             return !!val;
         case FT.PWD:

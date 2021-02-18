@@ -25,7 +25,7 @@ import './Panel.scss';
 export const [Panel, panel] = hoistCmp.withFactory({
     displayName: 'Panel',
     className: 'xh-panel',
-    model: false, memo: false,
+    model: false,
 
     render(props, ref) {
         const contextModel = useContextModel('*');
