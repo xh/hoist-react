@@ -12,7 +12,7 @@ import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynam
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {div} from '@xh/hoist/cmp/layout';
-import {computed, observable, observer, makeObservable} from '@xh/hoist/mobx';
+import {computed, observer} from '@xh/hoist/mobx';
 import {isDisplayed, withShortDebug, apiRemoved} from '@xh/hoist/utils/js';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -175,15 +175,8 @@ class LocalModel extends HoistModel {
         return model.treeMode && model.store.allRootCount !== model.store.allCount;
     }
 
-    // Have framework components been mounted? As of AgGrid v23, there is a noticeable
-    // delay between AgGrid.onGridReady and framework components (e.g. Column Headers)
-    // being rendered. By tracking this, we can wait until they have been rendered
-    // before we trigger the first data reaction and remove the loading overlay.
-    @observable frameworkCmpsMounted = false;
-
     constructor(model, props) {
         super();
-        makeObservable(this);
         this.model = model;
         this.addReaction(this.selectionReaction());
         this.addReaction(this.sortReaction());
