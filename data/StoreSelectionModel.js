@@ -38,7 +38,7 @@ export class StoreSelectionModel extends HoistModel {
     /** @return {Record[]} - currently selected Records. */
     @computed({equals: comparer.shallow})
     get records() {
-        return compact(this.ids.map(it => this.store.getById(it)));
+        return compact(this.ids.map(it => this.store.getById(it, true)));
     }
 
     /** @return {?Record} - single selected record, or null if multiple or no records selected. */
@@ -106,7 +106,7 @@ export class StoreSelectionModel extends HoistModel {
         const {store} = this;
         return {
             track: () => store.records,
-            run: () => remove(this.ids, id => !store.getById(id))
+            run: () => remove(this.ids, id => !store.getById(id, true))
         };
     }
 }
