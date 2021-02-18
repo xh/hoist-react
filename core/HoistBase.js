@@ -145,6 +145,27 @@ export class HoistBase {
     }
 
     /**
+     * @param {Object} conf - configuration of check to run.
+     * @param {function} [conf.when] - function returning data to observe.
+     * @param {function} [conf.timeout] - interval value in ms.
+     * @param {function} conf.errorMsg - message for Exception thrown on timeout.
+     * @returns {promise} - Returns a promise that resolves to true as soon as `when` returns true,
+     *                      or resolves to false if `when` does not return true within timeout.
+     */
+    async whenAsync({when, timeout, errorMsg}) {
+        return mobxWhen(when)
+            .timeout({
+                interval: timeout,
+                message: errorMsg
+            })
+            .then(() => true)
+            .catch(error => {
+                console.error(error);
+                return false;
+            });
+    }
+
+    /**
      * A unique id for this object within the lifetime of this document.
      * @returns {string}
      */
