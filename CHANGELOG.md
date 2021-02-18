@@ -10,6 +10,11 @@ the panel would be reset to the default size.
 * Fixes issue with `Store`'s `lastLoaded` property incorrectly being initialized to the construction
 time of the object rather than `null`.
 
+* Improvements to parsing of `Field`s of type 'int': We now correctly parse values presented in
+exponential notation and `NaN` values are now converted to `null`.
+
+
+
 ### 🎁 New Features
 
 * Store gains a new property `loadTreeData` for governing how it loads hierarchical data.
