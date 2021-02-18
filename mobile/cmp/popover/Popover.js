@@ -35,6 +35,7 @@ export const [Popover, popover] = hoistCmp.withFactory({
         content,
         isOpen,
         onInteraction,
+        disabled = false,
         backdrop = false,
         position = 'auto',
         popoverClassName,
@@ -62,7 +63,10 @@ export const [Popover, popover] = hoistCmp.withFactory({
                     ref: impl.targetRef,
                     className: 'xh-popover__target-wrapper',
                     item: elementFromContent(target),
-                    onClick: () => impl.toggleOpen()
+                    onClick: () => {
+                        if (disabled) return;
+                        impl.toggleOpen();
+                    }
                 }),
                 ReactDom.createPortal(
                     fragment({
@@ -105,6 +109,9 @@ Popover.propTypes = {
      * Receives (nextOpenState: boolean)
      */
     onInteraction: PT.func,
+
+    /** True to disable user interaction */
+    disabled: PT.bool,
 
     /** Whether to display a semi-transparent backdrop behind the popover */
     backdrop: PT.bool,

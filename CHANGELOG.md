@@ -4,20 +4,24 @@
 
 ### 🐞 Bug Fixes
 
-* A collapsible `Panel` will now restore its user specified-size when re-opened.  Previously
-the panel would be reset to the default size.
-
-* Fixes issue with `Store`'s `lastLoaded` property incorrectly being initialized to the construction
-time of the object rather than `null`.
+* A collapsible `Panel` will now restore its user specified-size when re-opened. Previously the
+  panel would be reset to the default size.
+* `Store.lastLoaded` property now initialized to `null`. Previously this property had been set to
+  the construction time of the Store.
+* Tweak to `Grid` style rules to ensure sufficient specificity of rules related to indenting child
+  rows within tree grids.
 
 ### 🎁 New Features
 
-* Store gains a new property `loadTreeData` for governing how it loads hierarchical data.
-
-* `GridModel` has three new async variants of existing methods: `selectFirstAsync`, `selectAsync`, and
-`ensureSelectionVisibleAsync`. These methods build-in the necessary waiting for the underlying grid
-implementation to be ready and fully rendered.  In addition, the first two methods will internally call
-the third.  The existing non-async counterparts for these methods have been deprecated.
+* `GridModel` has three new async variants of existing methods: `selectFirstAsync`, `selectAsync`,
+  and `ensureSelectionVisibleAsync`. These methods build-in the necessary waiting for the underlying
+  grid implementation to be ready and fully rendered to ensure reliable selection. In addition, the
+  first two methods will internally call the third. The existing non-async counterparts for these
+  methods have been deprecated.
+* Added new `Store.loadTreeData` config (default `true`) to enable or disable building of nested
+  Records when the raw data elements being loaded have a `children` property.
+* Cube `View` now detects and properly handles streaming updates to source data that include changes
+  to row dimensions as well as measures.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.0.0...develop)
 
