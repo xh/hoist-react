@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div, frame} from '@xh/hoist/cmp/layout';
@@ -39,7 +39,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     model: uses(TreeMapModel),
     className: 'xh-treemap',
 
-    render({model, className, ...props}) {
+    render({model, className, ...props}, ref) {
 
         if (!Highcharts) {
             console.error(
@@ -49,11 +49,12 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
             return 'Highcharts not available';
         }
 
-        const impl = useLocalModel(() => new LocalModel(model)),
-            ref = composeRefs(
-                useOnResize(impl.onResizeAsync, {debounce: 100}),
-                useOnVisibleChange(impl.onVisibleChange)
-            );
+        const impl = useLocalModel(() => new LocalModel(model));
+        ref = composeRefs(
+            ref,
+            useOnResize(impl.onResizeAsync, {debounce: 100}),
+            useOnVisibleChange(impl.onVisibleChange)
+        );
 
         const renderError = (error) => frame({
             className: 'xh-treemap__error-message',
@@ -103,8 +104,7 @@ TreeMap.propTypes = {
 };
 
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
     model;
     chartRef = createObservableRef();
@@ -112,6 +112,7 @@ class LocalModel {
     clickCount = 0;
 
     constructor(model) {
+        super();
         this.model = model;
 
         // Detect double-clicks vs single-clicks
@@ -212,6 +213,7 @@ class LocalModel {
 
     destroy() {
         this.destroyHighChart();
+        super.destroy();
     }
 
     destroyHighChart() {

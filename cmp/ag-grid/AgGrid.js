@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {div, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, elem, XH} from '@xh/hoist/core';
@@ -37,7 +37,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
     className: 'xh-ag-grid',
     model: uses(AgGridModel),
 
-    render({model, key, className, onGridReady, ...props}) {
+    render({model, key, className, onGridReady, ...props}, ref) {
 
         if (!AgGridReact) {
             console.error(
@@ -62,6 +62,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
         });
 
         return frame({
+            ref,
             className: classNames(
                 className,
                 darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
@@ -104,13 +105,13 @@ AgGrid.HEADER_HEIGHTS = {large: 36, standard: 32, compact: 28, tiny: 22};
 AgGrid.HEADER_HEIGHTS_MOBILE = {large: 42, standard: 38, compact: 34, tiny: 30};
 AgGrid.getHeaderHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS)[mode];
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
     model;
     onGridReady;
 
     constructor(model, agGridProps) {
+        super();
         this.model = model;
         this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(model) : null;
 

@@ -2,17 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Column, ColumnGroup, GridAutosizeMode, TreeStyle} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isReadyAsync} from '@xh/hoist/utils/async';
@@ -24,7 +24,8 @@ import {
     ensureUnique,
     throwIf,
     warnIf,
-    withDefault
+    withDefault,
+    withShortDebug
 } from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
@@ -42,7 +43,6 @@ import {
     isPlainObject,
     isString,
     isUndefined,
-    last,
     map,
     max,
     min,
@@ -65,9 +65,7 @@ import {GridSorter} from './impl/GridSorter';
  *      collapse controls and indent child columns in addition to displaying its own data.
  *
  */
-@HoistModel
-@LoadSupport
-export class GridModel {
+export class GridModel extends HoistModel {
 
     static DEFAULT_RESTORE_DEFAULTS_WARNING =
         fragment(
@@ -236,11 +234,6 @@ export class GridModel {
      *      should not immediately respond to user or programmatic changes to the sortBy property,
      *      but will instead wait for the next load of data, which is assumed to be pre-sorted.
      *      Default false.
-     * @param {boolean} [c.experimental.useDeltaSort] - Set to true to use ag-Grid's experimental
-     *      'deltaSort' feature designed to do incremental sorting.  Default false.
-     * @param {boolean} [c.experimental.useTransaction] - set to false to use ag-Grid's
-     *      immutableData to internally generate transactions on data updates.  When true,
-     *      Hoist will generate the transaction on data update. Default true.
      * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
@@ -286,6 +279,8 @@ export class GridModel {
         experimental,
         ...rest
     }) {
+        super();
+        makeObservable(this);
         this._defaultState = {columns, sortBy, groupBy};
 
         this.treeMode = treeMode;
@@ -625,10 +620,9 @@ export class GridModel {
         this.sortBy = sorters;
     }
 
-    /** Load the underlying store. */
     async doLoadAsync(loadSpec) {
-        throwIf(!this.store.isLoadSupport, 'Underlying store does not define support for loading.');
-        return this.store.loadAsync(loadSpec);
+        // Delegate to any store that has load support
+        return this.store.loadSupport?.loadAsync(loadSpec);
     }
 
     /** Load the underlying store. */
@@ -661,12 +655,6 @@ export class GridModel {
         const columns = colConfigs.map(c => this.buildColumn(c));
 
         this.validateColumns(columns);
-
-        const leaves = this.gatherLeaves(columns);
-        if (leaves.some(c => c.flex && c.maxWidth) && !find(leaves, {colId: 'xhEmptyFlex'})) {
-            console.debug('Adding empty flex column to workaround AG-4243');
-            columns.push(this.buildColumn(xhEmptyFlexCol));
-        }
 
         this.columns = columns;
         this.columnState = this.getLeafColumns()
@@ -764,12 +752,6 @@ export class GridModel {
             // 2.b) Install implied group sort orders and sort
             columnState.forEach(it => this.markGroupSortOrder(it));
             columnState = this.sortColumns(columnState);
-
-            // 2.c) Force AG-4243 workaround column to stay last (avoid user dragging)!
-            const emptyFlex = find(columnState, {colId: 'xhEmptyFlex'});
-            if (emptyFlex && last(columnState) !== emptyFlex) {
-                pull(columnState, emptyFlex).push(emptyFlex);
-            }
         }
 
         this.columnState = columnState;
@@ -894,7 +876,7 @@ export class GridModel {
             }
             if (config.renderer || config.elementRenderer) {
                 colDefaults.renderer = null;
-                colDefaults.elementRender = null;
+                colDefaults.elementRenderer = null;
             }
             config = defaultsDeep({}, config, colDefaults);
         }
@@ -952,7 +934,9 @@ export class GridModel {
             await wait(100);
         }
 
-        await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
+        withShortDebug('Autosizing Grid', async () => {
+            await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
+        }, this);
 
         if (showMask) {
             await wait(100);
@@ -1026,9 +1010,9 @@ export class GridModel {
     // so it can be better re-used across Hoist APIs such as `Filter` and `FormModel`. However for
     // convenience, a `GridModel.store` config can also be very minimal (or non-existent), and
     // in this case GridModel should work out the required Store fields from column definitions.
-    parseAndSetColumnsAndStore(colConfigs, store) {
-        // 1) Default and pre-validate configs.
-        store = withDefault(store, {});
+    parseAndSetColumnsAndStore(colConfigs, store = {}) {
+
+        // 1) validate configs.
         this.validateStoreConfig(store);
         this.validateColConfigs(colConfigs);
 
@@ -1038,13 +1022,14 @@ export class GridModel {
         // 3) Create and set columns with (possibly) enhanced configs.
         this.setColumns(colConfigs);
 
-        // 4) Enhance store config and create (if needed), then set.
+        // 4) Create store if needed
         if (isPlainObject(store)) {
-            const storeConfig = this.enhanceStoreConfigFromColumns(store);
-            this.store = this.markManaged(new Store(storeConfig));
-        } else {
-            this.store = store;
+            store = this.enhanceStoreConfigFromColumns(store);
+            store = new Store({loadTreeData: this.treeMode, ...store});
+            this.markManaged(store);
         }
+
+        this.store = store;
     }
 
     validateStoreConfig(store) {
@@ -1169,8 +1154,6 @@ export class GridModel {
 
         return {
             externalSort: false,
-            useTransactions: true,
-            useDeltaSort: false,
             ...XH.getConf('xhGridExperimental', {}),
             ...experimental
         };
@@ -1192,35 +1175,6 @@ export class GridModel {
         return a < b ? -1 : (a > b ? 1 : 0);
     };
 }
-
-//--------------------------------------------------------------------
-// Hidden flex column designed to workaround the following ag issue:
-//
-//   AG-4243: [Column Flex] When using column flex and maxWidth, last column
-//   header text isn't shown (See also hr ticket #1928)
-//
-// This column is inserted whenever there is a flex column with maxWidth.
-// Special handling ensures it is maintained as the last column.
-//-------------------------------------------------------------------------
-const xhEmptyFlexCol = {
-    colId: 'xhEmptyFlex',
-    headerName: null,
-    // Tiny flex value set here to avoidFlexCol competing with other flex cols in the same grid.
-    // This config's goal is only to soak up *extra* width - e.g. when there are no other flex cols,
-    // or when any other flex cols are constrained to a configured maxWidth.
-    flex: 0.001,
-    minWidth: 0,
-    movable: false,
-    resizable: false,
-    sortable: false,
-    excludeFromChooser: true,
-    excludeFromExport: true,
-    agOptions: {
-        filter: false,
-        suppressMenu: true
-    }
-};
-
 
 /**
  * @typedef {Object} ColChooserModelConfig

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
@@ -130,7 +130,7 @@ function globalHotKeys(model) {
     const {impersonationBarModel, optionsDialogModel} = model,
         ret = [];
 
-    if (XH.identityService.canImpersonate) {
+    if (XH.identityService.canAuthUserImpersonate) {
         ret.push({
             global: true,
             combo: 'shift + i',

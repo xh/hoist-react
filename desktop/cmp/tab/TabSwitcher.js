@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, useLocalModel} from '@xh/hoist/core';
 import {box, div, span, hframe} from '@xh/hoist/cmp/layout';
@@ -10,7 +10,7 @@ import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {tab as bpTab, tabs as bpTabs, tooltip as bpTooltip, popover, menu, menuItem} from '@xh/hoist/kit/blueprint';
 import {getLayoutProps, createObservableRef, useOnResize, useOnVisibleChange, useOnScroll} from '@xh/hoist/utils/react';
 import {debounced, throwIf, isDisplayed} from '@xh/hoist/utils/js';
@@ -48,7 +48,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
         tabMinWidth,
         tabMaxWidth,
         ...props
-    }) {
+    }, ref) {
         throwIf(!['top', 'bottom', 'left', 'right'].includes(orientation), 'Unsupported value for orientation.');
 
         const {id, tabs, activeTabId} = model,
@@ -57,15 +57,15 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
             impl = useLocalModel(() => new LocalModel(model, enableOverflow, vertical));
 
         // Implement overflow
-        let ref = impl.switcherRef;
-        if (impl.enableOverflow) {
-            ref = composeRefs(
+        ref = impl.enableOverflow ?
+            composeRefs(
+                ref,
                 impl.switcherRef,
                 useOnResize(() => impl.updateOverflowTabs()),
                 useOnVisibleChange(() => impl.updateOverflowTabs()),
                 useOnScroll(() => impl.updateOverflowTabs())
-            );
-        }
+            ):
+            composeRefs(ref, impl.switcherRef);
 
         // Create tabs
         const tabStyle = {};
@@ -196,8 +196,7 @@ const overflowMenu = hoistCmp.factory({
     }
 });
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel  {
     @bindable.ref overflowIds = [];
     switcherRef = createObservableRef();
     model;
@@ -209,6 +208,8 @@ class LocalModel {
     }
 
     constructor(model, enableOverflow, vertical) {
+        super();
+        makeObservable(this);
         this.model = model;
         this.enableOverflow = enableOverflow;
         this.vertical = vertical;

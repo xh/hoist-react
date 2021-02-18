@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistAppModel, managed, XH} from '@xh/hoist/core';
@@ -14,11 +14,10 @@ import {loggingTab} from './tabs/logging/LoggingTab';
 import {monitorTab} from './tabs/monitor/MonitorTab';
 import {userDataTab} from './tabs/userData/UserDataTab';
 
-@HoistAppModel
-export class AppModel {
+export class AppModel extends HoistAppModel {
 
     @managed
-    _tabModel
+    _tabModel;
 
     getRoutes() {
         return [

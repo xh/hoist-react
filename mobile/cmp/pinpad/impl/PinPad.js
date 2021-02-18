@@ -2,8 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import composeRefs from '@seznam/compose-react-refs';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {div, frame, h1, hbox, p, span, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon/Icon';
@@ -20,9 +21,9 @@ import {PinPadModel} from '@xh/hoist/cmp/pinpad';
  */
 export const pinPadImpl = hoistCmp.factory({
     model: uses(PinPadModel),
-    render({model}) {
+    render({model}, ref) {
         return frame({
-            ref: model.ref,
+            ref: composeRefs(ref, model.ref),
             item: vframe({
                 className: 'xh-pinpad__frame',
                 items: [

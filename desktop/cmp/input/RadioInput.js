@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistInputPropTypes, HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
-import {computed} from '@xh/hoist/mobx';
+import {computed, makeObservable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import {filter, isObject} from 'lodash';
 import PT from 'prop-types';
@@ -70,6 +70,11 @@ class Model extends HoistInputModel {
             ret.value = this.toInternal(ret.value);
             return ret;
         });
+    }
+
+    constructor(props) {
+        super(props);
+        makeObservable(this);
     }
 
     //-------------------------

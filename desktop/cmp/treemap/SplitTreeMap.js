@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {fragment, frame, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
@@ -23,12 +23,13 @@ export const [SplitTreeMap, splitTreeMap]  = hoistCmp.withFactory({
     model: uses(SplitTreeMapModel),
     className: 'xh-split-treemap',
 
-    render({model, ...props}) {
+    render({model, ...props}, ref) {
         const {primaryMapModel, secondaryMapModel, orientation} = model,
             errors = uniq(compact([primaryMapModel.error, secondaryMapModel.error])),
             container = orientation === 'horizontal' ? hframe : vframe;
 
         return container({
+            ref,
             items: errors.length ? errorPanel({errors}) : childMaps(),
             ...props
         });

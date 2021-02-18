@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
 .xh-grid:not(.xh-data-view) {
@@ -109,49 +109,17 @@
 .xh-grid--hierarchical:not(.xh-data-view) {
   // Generate indentations for tree grids with hierarchical data.
   .ag-ltr {
-    .ag-row-group-indent-0 {
-      padding-left: calc(0 * var(--xh-grid-tree-indent));
-    }
+    @for $i from 0 to 20 {
+      .ag-row-group-indent-#{$i} {
+        padding-left: calc(#{$i} * var(--xh-grid-tree-indent));
+      }
 
-    .ag-row-group-indent-1 {
-      padding-left: calc(1 * var(--xh-grid-tree-indent));
+      .ag-row-level-#{$i} {
+        .ag-row-group-leaf-indent {
+          margin-left: var(--xh-grid-tree-indent);
+        }
+      }
     }
-
-    .ag-row-group-indent-2 {
-      padding-left: calc(2 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-3 {
-      padding-left: calc(3 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-4 {
-      padding-left: calc(4 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-5 {
-      padding-left: calc(5 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-6 {
-      padding-left: calc(6 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-7 {
-      padding-left: calc(7 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-8 {
-      padding-left: calc(8 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-9 {
-      padding-left: calc(9 * var(--xh-grid-tree-indent));
-    }
-  }
-
-  .ag-ltr .ag-row-group-leaf-indent {
-    margin-left: var(--xh-grid-tree-indent);
   }
 
   .ag-group-contracted + .ag-group-value:not(:empty) {
@@ -172,6 +140,15 @@
       &:not(.ag-row-selected),
       &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
         background-color: var(--xh-grid-tree-group-bg);
+      }
+    }
+
+    .xh-ag-grid--show-hover {
+      div[class*=" ag-row-group"],
+      div[class^="ag-row-group"] {
+        &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected) {
+          background-color: var(--xh-grid-bg-hover);
+        }
       }
     }
   }

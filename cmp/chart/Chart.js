@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {useEffect} from 'react';
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
-import {bindable, runInAction} from '@xh/hoist/mobx';
+import {bindable, runInAction, makeObservable} from '@xh/hoist/mobx';
 import {
     createObservableRef,
     getLayoutProps,
@@ -35,7 +35,7 @@ export const [Chart, chart] = hoistCmp.withFactory({
     model: uses(ChartModel),
     className: 'xh-chart',
 
-    render({model, className, aspectRatio, ...props}) {
+    render({model, className, aspectRatio, ...props}, ref) {
 
         if (!Highcharts) {
             console.error(
@@ -48,11 +48,12 @@ export const [Chart, chart] = hoistCmp.withFactory({
             });
         }
 
-        const impl = useLocalModel(() => new LocalModel(model, aspectRatio)),
-            ref = composeRefs(
-                useOnResize(impl.onResize),
-                useOnVisibleChange(impl.onVisibleChange)
-            );
+        const impl = useLocalModel(() => new LocalModel(model, aspectRatio));
+        ref = composeRefs(
+            ref,
+            useOnResize(impl.onResize),
+            useOnVisibleChange(impl.onVisibleChange)
+        );
 
         useEffect(() => impl.setAspectRatio(aspectRatio), [impl, aspectRatio]);
 
@@ -87,15 +88,15 @@ Chart.propTypes = {
     model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object])
 };
 
-
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
     @bindable aspectRatio;
     chartRef = createObservableRef();
     model;
     prevSeriesConfig;
 
     constructor(model, aspectRatio) {
+        super();
+        makeObservable(this);
         this.model = model;
         this.aspectRatio = aspectRatio;
         this.addReaction({
@@ -209,6 +210,7 @@ class LocalModel {
 
     destroy() {
         this.destroyHighChart();
+        super.destroy();
     }
 
     destroyHighChart() {

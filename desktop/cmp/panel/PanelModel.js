@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {
     HoistModel,
@@ -14,17 +14,17 @@ import {
     RenderMode,
     XH
 } from '@xh/hoist/core';
-import {action, observable, comparer} from '@xh/hoist/mobx';
+import {action, observable, comparer, makeObservable} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
 import {apiRemoved} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
+import {createRef} from 'react';
 
 /**
  * PanelModel supports configuration and state-management for user-driven Panel resizing and
  * expand/collapse, along with support for saving this state via a configured PersistenceProvider.
  */
-@HoistModel
-export class PanelModel {
+export class PanelModel extends HoistModel {
 
     //-----------------------
     // Immutable Properties
@@ -47,6 +47,7 @@ export class PanelModel {
     @managed refreshContextModel;
     @managed provider;
 
+
     //---------------------
     // Observable State
     //---------------------
@@ -62,6 +63,11 @@ export class PanelModel {
     get isActive() {
         return !this.collapsed;
     }
+
+    //-----------------
+    // Implementation
+    //-----------------
+    _domRef;
 
     /**
      * @param {Object} c - PanelModel configuration
@@ -102,6 +108,8 @@ export class PanelModel {
         showHeaderCollapseButton = true,
         ...rest
     }) {
+        super();
+        makeObservable(this);
         if ((collapsible || resizable) && (isNil(defaultSize) || isNil(side))) {
             console.error(
                 "Must specify 'defaultSize' and 'side' for a collapsible or resizable PanelModel. Panel sizing disabled."
@@ -130,6 +138,7 @@ export class PanelModel {
         this.showSplitter = showSplitter;
         this.showSplitterCollapseButton = showSplitterCollapseButton;
         this.showHeaderCollapseButton = showHeaderCollapseButton;
+        this._domRef = createRef();
 
         if (collapsible) {
             this.refreshContextModel = new ManagedRefreshContextModel(this);
@@ -172,12 +181,19 @@ export class PanelModel {
     //----------------------
     @action
     setCollapsed(collapsed) {
-        // When opening from collapsed position restore *default* size. This may be suboptimal
-        // in some cases -- you lose user set "size" -- but avoids confusing behavior where
-        // 'opening' a panel could cause it to shrink.
-        if (this.collapsed === true && !collapsed) {
-            this.size = this.defaultSize;
+
+        // When opening we never want to shrink -- in that degenerate case restore default size.
+        // Can happen when no min height and title bar, and user has sized panel to be very small.
+        if (this.collapsed && !collapsed) {
+            const el = this._domRef?.current,
+                currSize = this.vertical ? el?.offsetHeight : el?.offsetWidth,
+                {size} = this;
+            if (isNil(currSize) || isNil(size) || size < currSize) {
+                this.size = this.defaultSize;
+            }
         }
+
+
         this.collapsed = collapsed;
         this.dispatchResize();
     }

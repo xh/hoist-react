@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, useHoistInputModel, HoistInputPropTypes} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
@@ -12,14 +12,15 @@ import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {datePicker as bpDatePicker, popover} from '@xh/hoist/kit/blueprint';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
-import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {assign, clone} from 'lodash';
 import moment from 'moment';
+import {createRef} from 'react';
 import PT from 'prop-types';
 import './DateInput.scss';
 
@@ -111,6 +112,9 @@ DateInput.propTypes = {
         'auto'
     ]),
 
+    /** Boundary for calendar popover, as per Blueprint docs. Defaults to viewport. */
+    popoverBoundary: PT.oneOf(['scrollParent', 'viewport', 'window']),
+
     /** True to select contents when control receives focus. */
     selectOnFocus: PT.bool,
 
@@ -159,9 +163,8 @@ class Model extends HoistInputModel {
 
     @bindable popoverOpen = false;
 
-    inputRef = createObservableRef();
-    buttonRef = createObservableRef();
-    popoverRef = createObservableRef();
+    buttonRef = createRef();
+    popoverRef = createRef();
 
     // Prop-backed convenience getters
     get maxDate() {
@@ -187,6 +190,7 @@ class Model extends HoistInputModel {
 
     constructor(props) {
         super(props);
+        makeObservable(this);
     }
 
     toExternal(internal) {
@@ -392,7 +396,8 @@ const cmp = hoistCmp.factory(
                 autoFocus: false,
                 enforceFocus: false,
                 position: props.popoverPosition ?? 'auto',
-                popoverRef: model.popoverRef,
+                boundary: props.popoverBoundary ?? 'viewport',
+                popoverRef: (v) => {model.popoverRef.current = v},  // Workaround for #2272
                 onClose: model.onPopoverClose,
                 onInteraction: (nextOpenState) => {
                     if (props.showPickerOnFocus) {

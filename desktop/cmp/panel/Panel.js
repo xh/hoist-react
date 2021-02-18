@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {box, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {
@@ -26,6 +26,7 @@ import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
 import './Panel.scss';
 import {PanelModel} from './PanelModel';
+import composeRefs from '@seznam/compose-react-refs';
 
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
@@ -45,7 +46,6 @@ export const [Panel, panel] = hoistCmp.withFactory({
         publishMode: ModelPublishMode.LIMITED,
         createDefault: () => new PanelModel({collapsible: false, resizable: false})
     }),
-    memo: false,
     className: 'xh-panel',
 
     render({model, className,  ...props}, ref) {
@@ -137,6 +137,8 @@ export const [Panel, panel] = hoistCmp.withFactory({
             item = refreshContextView({model: refreshContextModel, item});
         }
 
+        ref = composeRefs(model._domRef, ref);
+
         // 4) Return wrapped in resizable and its affordances if needed.
         return resizable || collapsible || showSplitter ?
             resizeContainer({ref, item, className}) :
@@ -153,7 +155,7 @@ function parseLoadDecorator(prop, name, contextModel) {
     if (prop === 'onLoad') {
         const loadModel = contextModel?.loadModel;
         if (!loadModel) {
-            console.warn(`Cannot use 'onLoad' for '${name}'.  Context model is not an instance of @LoadSupport or have a 'loadModel' property.`);
+            console.warn(`Cannot use 'onLoad' for '${name}' - the linked context model must enable LoadSupport to support this feature.`);
             return null;
         }
         return cmp({model: loadModel, spinner: true});
@@ -189,7 +191,6 @@ Panel.propTypes = {
      *   + true for a default LoadingIndicator,
      *   + a PendingTaskModel for a default LoadingIndicator bound to a pending task,
      *   + the string 'onLoad' for a default LoadingIndicator bound to the loading of the current model.
-     *     (current model must include @LoadSupport).
      */
     loadingIndicator: PT.oneOfType([PT.instanceOf(PendingTaskModel), PT.element, PT.bool, PT.string]),
 
@@ -199,7 +200,6 @@ Panel.propTypes = {
      *   + true for a default mask,
      *   + a PendingTaskModel for a default load mask bound to a pending task,
      *   + the string 'onLoad' for a default load mask bound to the loading of the current model.
-     *     (current model must include @LoadSupport).
      */
     mask: PT.oneOfType([PT.instanceOf(PendingTaskModel), PT.element, PT.bool, PT.string]),
 

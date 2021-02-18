@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';
@@ -77,7 +77,7 @@ const cmp = hoistCmp.factory(
             onBlur: model.onBlur,
             onFocus: model.onFocus,
             onChange: (e) => model.noteValueChange(e.target.checked),
-            inputRef: model.inputRef,
+            inputRef: (v) => model.inputRef(v), // Workaround for #2272
             ref
         });
     }

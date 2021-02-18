@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
@@ -23,11 +23,11 @@ export const [Mask, mask] = hoistCmp.withFactory({
     className: 'xh-mask',
 
     render({model, className, ...props}) {
-        const isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false);
+        const isDisplayed = withDefault(props.isDisplayed, model?.isPending, false);
 
         if (!isDisplayed) return null;
 
-        const message = withDefault(props.message, model && model.message),
+        const message = withDefault(props.message, model?.message),
             inline = withDefault(props.inline, true),
             showSpinner = withDefault(props.spinner, false);
 

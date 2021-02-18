@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {p} from '@xh/hoist/cmp/layout';
-import {AppSpec, AppState, elem, ReactiveSupport} from '@xh/hoist/core';
+import {AppSpec, AppState, elem, HoistBase} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {
     AutoRefreshService,
@@ -45,11 +45,15 @@ const MIN_HOIST_CORE_VERSION = '8.6.1';
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
-@ReactiveSupport
-class XHClass {
+class XHClass extends HoistBase {
 
     _initCalled = false;
     _lastActivityMs = Date.now();
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     //----------------------------------------------------------------------------------------------
     // Metadata - set via webpack.DefinePlugin at build time.
@@ -151,22 +155,25 @@ class XHClass {
     accessDeniedMessage = null;
     exceptionHandler = new ExceptionHandler();
 
-    /** State of app - see AppState for valid values. */
+    /** @member {AppState} - current lifecycle state of the application. */
     @observable appState = AppState.PRE_AUTH;
 
-    /** Milliseconds since last detected user activity */
+    /** @member {number} - milliseconds since user activity / interaction was last detected. */
     get lastActivityMs() {return this._lastActivityMs}
 
-    /**
-     * Is Application running?
-     * Observable shortcut for appState == AppState.RUNNING.
-     */
+    /** @member {boolean} - true if application initialized and running (observable). */
     get appIsRunning() {return this.appState === AppState.RUNNING}
 
-    /** Currently authenticated user. */
+    /** @member {?string} - the currently authenticated user. */
     @observable authUsername = null;
 
-    /** Root level HoistAppModel. */
+    /**
+     * @member {AppModel} - root level {@see HoistAppModel}. Documented as type `AppModel` to
+     *      match the common choice of class name used within applications. This must be a class
+     *      that extends `HoistAppModel`, but writing the jsDoc annotation this way allows for
+     *      better discovery and linking by IDEs to app-specific subclasses and any interesting
+     *      properties or APIs they might have.
+     */
     appModel = null;
 
     /**
@@ -190,7 +197,7 @@ class XHClass {
     /**
      * Install HoistServices on this object.
      *
-     * @param {...Object} serviceClasses - Classes decorated with @HoistService
+     * @param {...Class} serviceClasses - Classes extending HoistService
      *
      * This method will create, initialize, and install the services classes listed on XH.
      * All services will be initialized concurrently. To guarantee execution order of service

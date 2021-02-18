@@ -2,33 +2,37 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
-import {action} from '@xh/hoist/mobx';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
+import {HoistModel, XH} from '@xh/hoist/core';
+import {FieldType} from '@xh/hoist/data';
+import {action, makeObservable} from '@xh/hoist/mobx';
+import {stripTags, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {
     debounce,
     escapeRegExp,
+    filter,
+    flatMap,
     get,
     intersection,
     isArray,
     isEmpty,
     isEqual,
-    without,
-    isUndefined
+    isUndefined,
+    without
 } from 'lodash';
 
-@HoistModel
-export class StoreFilterFieldImplModel {
+export class StoreFilterFieldImplModel extends HoistModel {
 
     model;
     bind;
+
+    /** @type {GridModel} */
     gridModel;
+    /** @type {Store} */
     store;
 
     filterBuffer;
-    filterOptions;
     onFilterChange;
     includeFields;
     excludeFields;
@@ -43,18 +47,18 @@ export class StoreFilterFieldImplModel {
         store,
         filterBuffer = 200,
         onFilterChange,
-        filterOptions,
         includeFields,
         excludeFields,
         matchMode = 'startWord'
     }) {
+        super();
+        makeObservable(this);
         this.model = model;
         this.bind = bind;
         this.gridModel = gridModel;
         this.store = store;
         this.filterBuffer = filterBuffer;
         this.onFilterChange = onFilterChange;
-        this.filterOptions = filterOptions;
         this.includeFields = includeFields;
         this.excludeFields = excludeFields;
         this.matchMode = matchMode;
@@ -76,7 +80,6 @@ export class StoreFilterFieldImplModel {
     // We allow these to be dynamic by updating on every render.
     updateFilterProps({
         onFilterChange,
-        filterOptions,
         includeFields,
         excludeFields
     }) {
@@ -84,11 +87,7 @@ export class StoreFilterFieldImplModel {
         this.onFilterChange = onFilterChange;
 
         // ...other changes require re-generation
-        if (!isEqual(
-            [filterOptions, includeFields, excludeFields],
-            [this.filterOptions, this.includeFields, this.excludeFields])
-        ) {
-            this.filterOptions = filterOptions;
+        if (!isEqual([includeFields, excludeFields], [this.includeFields, this.excludeFields])) {
             this.includeFields = includeFields;
             this.excludeFields = excludeFields;
             this.regenerateFilter();
@@ -123,19 +122,15 @@ export class StoreFilterFieldImplModel {
     regenerateFilter() {
         const {filter, filterText} = this,
             activeFields = this.getActiveFields(),
-            supportDotSeparated = !!activeFields.find(it => it.includes('.')),
-            searchTerm = escapeRegExp(filterText),
             initializing = isUndefined(filter);
 
         let newFilter = null;
-        if (searchTerm && !isEmpty(activeFields)) {
-            const regex = this.getRegex(searchTerm);
-            newFilter = (rec) => activeFields.some(f => {
-                // Use of lodash get() slower than direct access - use only when needed to support
-                // dot-separated field paths. (See note in getActiveFields() below.)
-                const fieldVal = supportDotSeparated ? get(rec.data, f) : rec.data[f];
-                return regex.test(fieldVal);
-            });
+        if (filterText && !isEmpty(activeFields)) {
+            const regex = this.getRegex(filterText),
+                valGetters = flatMap(activeFields, (fieldPath) => this.getValGetters(fieldPath));
+            newFilter = (rec) => valGetters.some(fn => (
+                regex.test(fn(rec))
+            ));
         }
 
         if (filter === newFilter) return;
@@ -143,7 +138,7 @@ export class StoreFilterFieldImplModel {
         this.filter = newFilter;
         if (!initializing && this.onFilterChange) this.onFilterChange(newFilter);
 
-        // Only respect the buffer for non-null changes.  Allows immediate initialization and quick clearing
+        // Only respect the buffer for non-null changes. Allows immediate initialization and quick clearing.
         if (!initializing && newFilter) {
             this.bufferedApplyFilter();
         } else {
@@ -152,6 +147,7 @@ export class StoreFilterFieldImplModel {
     }
 
     getRegex(searchTerm) {
+        searchTerm = escapeRegExp(searchTerm);
         switch (this.matchMode) {
             case 'any':
                 return new RegExp(searchTerm, 'i');
@@ -192,6 +188,7 @@ export class StoreFilterFieldImplModel {
             // Run exclude once more to support explicitly excluding a dot-sep field added above.
             if (excludeFields) ret = without(ret, ...excludeFields);
 
+            // Final filter for column visibility, or explicit request for inclusion.
             ret = ret.filter(f => {
                 return (
                     (includeFields && includeFields.includes(f)) ||
@@ -200,6 +197,44 @@ export class StoreFilterFieldImplModel {
                 );
             });
         }
+
         return ret;
+    }
+
+    getValGetters(fieldName) {
+        const {gridModel} = this,
+            {DATE, LOCAL_DATE} = FieldType;
+
+        // If a GridModel has been configured, the user is looking at rendered values in a grid and
+        // would reasonably expect the filter to work off what they see. Rendering can be expensive,
+        // so currently supported for Date-type fields only. (Dates *require* a rendered value to
+        // have any hope of matching.) This could be extended to other types if needed, perhaps
+        // with a flag to manage performance tradeoffs.
+        if (gridModel) {
+            const {store} = gridModel,
+                field = store.getField(fieldName);
+
+            if (field?.type === DATE || field?.type === LOCAL_DATE) {
+                const cols = filter(gridModel.getVisibleLeafColumns(), {field: fieldName});
+
+                // Empty return if no columns - even if this field has been force-included,
+                // we can't match it if we can't render it.
+                if (!cols) return [];
+
+                return cols.map(column => {
+                    const {renderer, getValueFn} = column;
+                    return (record) => {
+                        const ctx = {record, field, column, gridModel, store},
+                            ret = getValueFn(ctx);
+
+                        return renderer ? stripTags(renderer(ret, ctx)) : ret;
+                    };
+                });
+            }
+        }
+
+        // Otherwise just match raw.
+        // Use expensive get() only when needed to support dot-separated paths.
+        return fieldName.includes('.') ? (rec) => get(rec.data, fieldName) : (rec) => rec.data[fieldName];
     }
 }

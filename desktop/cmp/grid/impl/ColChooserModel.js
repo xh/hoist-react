@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 
 /**
  * State management for the ColChooser component.
@@ -14,8 +14,7 @@ import {action, observable} from '@xh/hoist/mobx';
  * It is not necessary to manually create instances of this class within an application.
  * @private
  */
-@HoistModel
-export class ColChooserModel {
+export class ColChooserModel extends HoistModel {
 
     gridModel;
     @managed lrModel;
@@ -36,6 +35,8 @@ export class ColChooserModel {
         width = 520,
         height = 300
     }) {
+        super();
+        makeObservable(this);
         this.gridModel = gridModel;
 
         this.commitOnChange = commitOnChange;
@@ -103,15 +104,17 @@ export class ColChooserModel {
     // Implementation
     //------------------------
     syncChooserData() {
-        const {gridModel, lrModel} = this;
+        const {gridModel, lrModel} = this,
+            columns = gridModel.getLeafColumns(),
+            hasGrouping = columns.some(it => it.chooserGroup);
 
-        const data = gridModel.getLeafColumns().map(it => {
+        const data = columns.map(it => {
             const visible = gridModel.isColumnVisible(it.colId);
             return {
                 value: it.colId,
                 text: it.chooserName,
                 description: it.chooserDescription,
-                group: it.chooserGroup,
+                group: hasGrouping ? (it.chooserGroup ?? 'Ungrouped') : null,
                 exclude: it.excludeFromChooser,
                 locked: visible && !it.hideable,
                 side: visible ? 'right' : 'left'

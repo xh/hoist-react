@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
 import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
@@ -10,7 +10,7 @@ import {QueryEngine} from './impl/QueryEngine';
 import {filterOption} from './impl/Option';
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
 import {FieldFilter, parseFilter} from '@xh/hoist/data';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -28,13 +28,12 @@ import {
     isFunction
 } from 'lodash';
 
-@HoistModel
-export class FilterChooserModel {
+export class FilterChooserModel extends HoistModel {
 
-    /** @member Filter */
+    /** @member {Filter} */
     @observable.ref value = null;
 
-    /** @member Filter[] */
+    /** @member {Filter[]} */
     @observable.ref favorites = [];
 
     /** @member {Store} */
@@ -44,8 +43,7 @@ export class FilterChooserModel {
     targetStore;
 
     /** @member {FilterChooserFieldSpec[]} */
-    @managed
-    fieldSpecs = [];
+    @managed fieldSpecs = [];
 
     /** @member {number} */
     maxResults;
@@ -61,8 +59,7 @@ export class FilterChooserModel {
     @observable favoritesIsOpen = false;
     inputRef = createObservableRef();
 
-    @managed
-    queryEngine;
+    @managed queryEngine;
 
     /**
      * @param c - FilterChooserModel configuration.
@@ -85,7 +82,8 @@ export class FilterChooserModel {
      *      FieldFilters, to be 'AND'ed together.
      * @param {(Filter[]|function)} [c.initialFavorites] - initial favorites as an array of filter
      *      configurations, or a function to produce such an array.
-     * @param {number} [c.maxResults] - maximum number of dropdown options to show before truncating.
+     * @param {number} [c.maxResults] - maximum number of dropdown options to show before
+     *     truncating.
      * @param {FilterChooserPersistOptions} [c.persistWith] - options governing persistence.
      */
     constructor({
@@ -98,6 +96,8 @@ export class FilterChooserModel {
         maxResults = 50,
         persistWith
     }) {
+        super();
+        makeObservable(this);
         this.sourceStore = sourceStore;
         this.targetStore = targetStore;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);

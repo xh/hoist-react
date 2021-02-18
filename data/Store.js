@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {ReactiveSupport, ManagedSupport} from '@xh/hoist/core';
-import {action, observable, bindable} from '@xh/hoist/mobx';
+import {HoistBase} from '@xh/hoist/core';
+import {action, observable, bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {parseFilter} from './filter/Utils';
@@ -28,9 +28,7 @@ import {Record} from './Record';
 /**
  * A managed and observable set of local, in-memory Records.
  */
-@ReactiveSupport
-@ManagedSupport
-export class Store {
+export class Store extends HoistBase {
 
     /** @member {Field[]} */
     fields = null;
@@ -42,14 +40,20 @@ export class Store {
     /** @member {boolean} */
     @observable filterIncludesChildren;
 
+    /** @member {boolean} */
+    loadTreeData;
+
+    /** @member {boolean} */
+    loadRootAsSummary;
+
     /** @member {Filter}  */
     @observable.ref filter;
 
     /** @member {number} - timestamp (ms) of the last time this store's data was changed. */
     @observable lastUpdated;
 
-    /** @member {number} - timestamp (ms) of the last time this store's data was loaded.*/
-    @observable lastLoaded;
+    /** @member {?number} - timestamp (ms) of the last time this store's data was loaded.*/
+    @observable lastLoaded = null;
 
     /** @member {Record} - record containing summary data. */
     @observable.ref summaryRecord = null;
@@ -57,9 +61,8 @@ export class Store {
     @observable.ref _committed;
     @observable.ref _current;
     @observable.ref _filtered;
-    _loadRootAsSummary = false;
 
-    /** @private -- used internally by any StoreFilterField that is bound to this store. */
+    /** @package - used internally by any StoreFilterField that is bound to this store. */
     @bindable xhFilterText = null;
 
     /**
@@ -78,9 +81,12 @@ export class Store {
      *      array, a single 'AND' filter will be created.
      * @param {boolean} [c.filterIncludesChildren] - true if all children of a passing record should
      *      also be considered passing (default false).
+     * @param {boolean} [c.loadTreeData] - true to load hierarchical/tree data. When this flag is
+     *      true, the children property on raw data objects will be used to load child records.
+     *      (default true).
      * @param {boolean} [c.loadRootAsSummary] - true to treat the root node in hierarchical data as
-     *      the summary record.
-     * @param {Object[]} [c.data] - source data to load
+     *      the summary record (default false).
+     * @param {Object[]} [c.data] - source data to load.
      */
     constructor({
         fields,
@@ -88,16 +94,20 @@ export class Store {
         processRawData = null,
         filter = null,
         filterIncludesChildren = false,
+        loadTreeData = true,
         loadRootAsSummary = false,
         data
     }) {
+        super();
+        makeObservable(this);
         this.fields = this.parseFields(fields);
         this.idSpec = isString(idSpec) ? (data) => data[idSpec] : idSpec;
         this.processRawData = processRawData;
         this.filter = parseFilter(filter);
         this.filterIncludesChildren = filterIncludesChildren;
-        this.lastLoaded = this.lastUpdated = Date.now();
-        this._loadRootAsSummary = loadRootAsSummary;
+        this.loadTreeData = loadTreeData;
+        this.loadRootAsSummary = loadRootAsSummary;
+        this.lastUpdated = Date.now();
 
         this.resetRecords();
 
@@ -132,8 +142,8 @@ export class Store {
      */
     @action
     loadData(rawData, rawSummaryData) {
-        // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary = true.
-        if (rawData.length !== 0 && this._loadRootAsSummary) {
+        // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary
+        if (rawData.length !== 0 && this.loadRootAsSummary) {
             throwIf(
                 rawData.length !== 1 || rawSummaryData,
                 'Incorrect call to loadData with loadRootAsSummary=true. Summary data should be in a single root node with top-level row data as its children.'
@@ -573,7 +583,7 @@ export class Store {
      * @param {boolean} loadRootAsSummary
      */
     setLoadRootAsSummary(loadRootAsSummary) {
-        this._loadRootAsSummary = loadRootAsSummary;
+        this.loadRootAsSummary = loadRootAsSummary;
     }
 
     /** @returns {number} - the count of the filtered records in the store. */
@@ -747,6 +757,7 @@ export class Store {
     }
 
     createRecords(rawData, parent, recordMap = new Map()) {
+        const {loadTreeData} = this;
         rawData.forEach(raw => {
             const rec = this.createRecord(raw, parent),
                 {id} = rec;
@@ -758,7 +769,7 @@ export class Store {
 
             recordMap.set(id, rec);
 
-            if (raw.children) {
+            if (loadTreeData && raw.children) {
                 this.createRecords(raw.children, rec, recordMap);
             }
         });

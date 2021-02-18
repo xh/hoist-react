@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, useLocalModel} from '@xh/hoist/core';
 import {FieldModel} from '@xh/hoist/cmp/form';
-import {action, computed, observable, bindable} from '@xh/hoist/mobx';
+import {action, computed, observable, bindable, makeObservable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {isEqual} from 'lodash';
 import {useEffect, useImperativeHandle} from 'react';
@@ -55,8 +55,7 @@ import ReactDOM from 'react-dom';
  * To create an instance of an Input component using this model use the hook
  * {@see useHoistInputModel}.
  */
-@HoistModel
-export class HoistInputModel {
+export class HoistInputModel extends HoistModel {
 
     /**
      * Does this input have the focus ?
@@ -113,6 +112,8 @@ export class HoistInputModel {
     domRef = createObservableRef();          // ref to outermost element, or class Component.
 
     constructor(props) {
+        super();
+        makeObservable(this);
         this.props = props;
         this.model = props.model;
         this.addReaction(this.externalValueReaction());

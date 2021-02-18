@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {cloneDeep, get, isEmpty, isFinite, partition, set, sumBy, unset, sortBy} from 'lodash';
 
@@ -30,8 +30,7 @@ import {cloneDeep, get, isEmpty, isFinite, partition, set, sumBy, unset, sortBy}
  *
  * @see https://www.highcharts.com/docs/chart-and-series-types/treemap for Highcharts config options
  */
-@HoistModel
-export class TreeMapModel {
+export class TreeMapModel extends HoistModel {
 
     //------------------------
     // Immutable public properties
@@ -118,6 +117,8 @@ export class TreeMapModel {
         emptyText,
         filter
     } = {}) {
+        super();
+        makeObservable(this);
         this.gridModel = gridModel;
         this.store = store ? store : gridModel ? gridModel.store : null;
         throwIf(!this.store,  'TreeMapModel requires either a Store or a GridModel');

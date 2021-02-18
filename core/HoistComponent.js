@@ -2,16 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {CreatesSpec, elemFactory, ModelPublishMode, ModelSpec, uses} from '@xh/hoist/core';
 import {useOwnedModelLinker} from '@xh/hoist/core/impl/UseOwnedModelLinker';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isString} from 'lodash';
-import {useObserver} from 'mobx-react';
+import {observer} from '@xh/hoist/mobx';
 import {forwardRef, memo, useContext, useDebugValue, useState} from 'react';
-import {ModelLookup, ModelLookupContext, modelLookupContextProvider} from './impl/ModelLookup';
+import {ModelLookup, matchesSelector, ModelLookupContext, modelLookupContextProvider} from './impl/ModelLookup';
 
 /**
  * Hoist utility for defining functional components. This is the primary method for creating
@@ -22,8 +22,9 @@ import {ModelLookup, ModelLookupContext, modelLookupContextProvider} from './imp
  * provided to / created by this component and if the component should publish its model to any
  * sub-components via context.
  *
- * By default, this utility applies the MobX 'observer' behavior on the returned component,
- * enabling MobX-powered reactivity and auto-re-rendering.
+ * By default, this utility wraps the returned component in the MobX 'observer' HOC, enabling
+ * MobX-powered reactivity and auto-re-rendering of observable properties read from models and
+ * any other sources of observable state.
  *
  * Forward refs (@link https://reactjs.org/docs/forwarding-refs.html) are supported by specifying a
  * render function that accepts two arguments. In that case, the second arg will be considered a
@@ -45,8 +46,8 @@ import {ModelLookup, ModelLookupContext, modelLookupContextProvider} from './imp
  *      Components that are known to be unable to make effective use of memo (e.g. container
  *      components) may set this to `false`. Not typically set by application code.
  * @param {boolean} [config.observer] - true (default) to enable MobX-powered reactivity via the
- *      `useObserver()` hook from mobx-react. Components that are known to dereference no
- *      observable state may set this to `false`. Not typically set by application code.
+ *      `observer()` HOC from mobx-react. Components that are known to dereference no observable
+ *      state may set this to `false`, but this is not typically done by application code.
  * @returns {function} - a functional Component for use within Hoist apps.
  *
  * This function also has two convenience "sub-functions" that are properties of it:
@@ -66,18 +67,20 @@ export function hoistComponent(config) {
         isObserver = withDefault(config.observer, true),
         isForwardRef = (render.length === 2);
 
-    // 1) Default and validate the modelSpec
+    // 1) Default and validate the modelSpec.
     const modelSpec = withDefault(config.model, uses('*'));
     throwIf(
         modelSpec && !(modelSpec instanceof ModelSpec),
         "The 'model' config passed to hoistComponent() is incorrectly specified: provide a spec returned by either uses() or creates()."
     );
 
-    // 2) Decorate with function wrappers with behaviors
+    warnIf(
+        !isMemo && isObserver,
+        'Cannot create an observer component without `memo`.  Memo is built-in to MobX observable. Component will be memoized.'
+    );
+
+    // 2) Decorate with function wrappers with behaviors.
     let ret = render;
-    if (isObserver) {
-        ret = (props, ref) => useObserver(() => render(props, ref));
-    }
     if (modelSpec) {
         ret = wrapWithModel(ret,  modelSpec, displayName);
     }
@@ -85,18 +88,24 @@ export function hoistComponent(config) {
         ret = wrapWithClassName(ret, className);
     }
     // 2a) Apply display name to wrapped function.  This is the "pre-react" functional component.
-    // and react dev tools expect it to be named.
+    // and React dev tools expect it to be named.
     ret.displayName = displayName;
 
-    // 3) Decorate with built-in react HOCs (these trampoline displayName)
-    if (isForwardRef) {
-        ret = forwardRef(ret);
-    }
-    if (isMemo) {
-        ret = memo(ret);
+    // 3) Wrap with HOCs.
+    // note that observer will take care of memo and forwardRef if needed
+    if (isObserver) {
+        // see https://github.com/mobxjs/mobx/issues/2527 for discuss of observer + forwardRef API
+        ret = observer(ret, {forwardRef: isForwardRef});
+    } else {
+        if (isForwardRef) {
+            ret = forwardRef(ret);
+        }
+        if (isMemo) {
+            ret = memo(ret);
+        }
     }
 
-    // 4) Mark and return
+    // 4) Mark and return.
     ret.displayName = displayName;
     ret.isHoistComponent = true;
 
@@ -133,14 +142,13 @@ hoistComponent.withFactory = (config) =>  {
 };
 
 
-//------------------------
-// Implementation
-//------------------------
+//------------------------------------
+// Implementation -- Core Wrappers
+//------------------------------------
 function wrapWithClassName(render, baseName) {
     return (props, ref) => {
         const className = classNames(baseName, props.className);
-        props = enhanceProps(props, 'className', className);
-        return render(props, ref);
+        return render(propsWithClassName(props, className), ref);
     };
 }
 
@@ -150,20 +158,41 @@ function wrapWithModel(render, spec, displayName) {
         wrapWithPublishedModel(render, spec, displayName);
 }
 
+
+//----------------------------------------------------------------------------------------
+// 1) Lookup/create model for this component using spec, but *NEVER* publish
+// received model explicitly to children.  No need to add any ContextProviders
+//-----------------------------------------------------------------------------------------
 function wrapWithSimpleModel(render, spec, displayName) {
-    return (props, ref) => {
-        const lookup = spec.fromContext ? useContext(ModelLookupContext) : null;
-        const {model} = useResolvedModel(spec, props, lookup, displayName);
-        if (model && model !== props.model) props = enhanceProps(props, 'model', model);
-        return render(props, ref);
-    };
+    return spec.fromContext ?
+        // a) with a context lookup
+        (props, ref) => {
+            const lookup = useContext(ModelLookupContext),
+                {model} = useResolvedModel(spec, props, lookup, displayName);
+            return render(propsWithModel(props, model), ref);
+        } :
+        // b) no context lookup needed, lean and mean.
+        (props, ref) => {
+            const {model} = useResolvedModel(spec, props, null, displayName);
+            return render(propsWithModel(props, model), ref);
+        };
 }
 
+//------------------------------------------------------------------------------------
+// 2) Lookup/create model for this component using spec, *AND* potentially publish
+// explicitly to children, if needed.  This may require inserting a ContextProvider
+//------------------------------------------------------------------------------------
 function wrapWithPublishedModel(render, spec, displayName) {
     return (props, ref) => {
-        const lookup = useContext(ModelLookupContext);
-        const {model, fromContext} = useResolvedModel(spec, props, lookup, displayName),
-            publishDefault = (spec.publishMode === ModelPublishMode.DEFAULT);
+        const publishDefault = (spec.publishMode === ModelPublishMode.DEFAULT);  // otherwise LIMITED
+
+        // Get the model and context
+        const lookup = useContext(ModelLookupContext),
+            {model, fromContext} = useResolvedModel(spec, props, lookup, displayName);
+
+        // Create any lookup needed for model, caching it in state.
+        // Avoid adding extra context if this model already in default context.
+        // Fixed cache here ok due to the "immutable" model from useResolvedModel
         const createLookup = () => {
             return (
                 model &&
@@ -171,13 +200,19 @@ function wrapWithPublishedModel(render, spec, displayName) {
             ) ? new ModelLookup(model, lookup, spec.publishMode) : null;
         };
         const [newLookup] = useState(createLookup);
-        if (model && model !== props.model) props = enhanceProps(props, 'model', model);
-        const rendering = render(props, ref);
+
+        // Render the app specified elements, either raw or wrapped in context
+        const rendering = render(propsWithModel(props, model), ref);
         return newLookup ? modelLookupContextProvider({value: newLookup, item: rendering}) : rendering;
     };
 }
 
+//-------------------------------------------------------------------------
+// Support to resolve/create model at render-time.  Used by wrappers above.
+//-------------------------------------------------------------------------
 function useResolvedModel(spec, props, lookup, displayName) {
+    // fixed cache here creates the "immutable" model behavior in hoist components
+    // (Need to force full remount with 'key' prop to resolve any new model)
     const [{model, isOwned, fromContext}] = useState(() => {
         return (spec instanceof CreatesSpec) ? createModel(spec) : lookupModel(spec, props, lookup, displayName);
     });
@@ -202,7 +237,7 @@ function lookupModel(spec, props, modelLookup, displayName) {
 
     // 2) props - instance
     if (model) {
-        throwIf(selector !== '*' && (!model.matchesSelector || !model.matchesSelector(selector)),
+        throwIf(!matchesSelector(model, selector, true),
             `Incorrect model passed to '${displayName}'. Expected: ${formatSelector(selector)} Received: ${model.constructor.name}`
         );
         return {model, isOwned: false, fromContext: false};
@@ -225,16 +260,29 @@ function lookupModel(spec, props, modelLookup, displayName) {
     return {model: null, isOwned: false, fromContext: false};
 }
 
+
+//--------------------------
+// Other helpers
+//--------------------------
 function formatSelector(selector) {
     if (isString(selector)) return selector;
     if (isFunction(selector)  && selector.isHoistModel) return selector.name;
     return '[Selector]';
 }
 
-function enhanceProps(props, name, value) {
+function enhancedProps(props, name, value) {
+    // Clone frozen props object, but don't re-clone when done multiple times for single render
     if (!Object.isExtensible(props)) {
         props = {...props};
     }
     props[name] = value;
     return props;
+}
+
+function propsWithModel(props, model) {
+    return (model && model !== props.model) ? enhancedProps(props, 'model', model) : props;
+}
+
+function propsWithClassName(props, className) {
+    return enhancedProps(props, 'className', className);
 }

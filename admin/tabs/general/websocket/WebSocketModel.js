@@ -2,22 +2,20 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {required} from '@xh/hoist/cmp/form';
 import {compactDateCol, GridModel, numberCol} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isDisplayed} from '@xh/hoist/utils/js';
 import {createRef} from 'react';
 
-@HoistModel
-@LoadSupport
-export class WebSocketModel {
+export class WebSocketModel extends HoistModel {
 
     viewRef = createRef();
 
@@ -69,6 +67,8 @@ export class WebSocketModel {
     _timer;
 
     constructor() {
+        super();
+        makeObservable(this);
         this._timer = Timer.create({
             runFn: () => {
                 if (isDisplayed(this.viewRef.current)) {

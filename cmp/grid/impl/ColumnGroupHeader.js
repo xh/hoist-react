@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {isFunction} from 'lodash';
 
@@ -55,8 +55,7 @@ export const columnGroupHeader = hoistCmp.factory({
     }
 });
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
     /** @member {ColumnGroup} */
     agColumnGroup;
 
@@ -65,6 +64,8 @@ class LocalModel {
     get isExpandable() {return this.agColumnGroup.isExpandable()}
 
     constructor({columnGroup: agColumnGroup}) {
+        super();
+        makeObservable(this);
         this.agColumnGroup = agColumnGroup.originalColumnGroup;
         this.syncIsExpanded();
         this.agColumnGroup.addEventListener('expandedChanged', this.syncIsExpanded);
@@ -72,6 +73,7 @@ class LocalModel {
 
     destroy() {
         this.agColumnGroup.removeEventListener('expandedChanged', this.syncIsExpanded);
+        super.destroy();
     }
 
     syncIsExpanded = () => this.setIsExpanded(this.agColumnGroup.isExpanded());

@@ -1,15 +1,13 @@
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {FieldType} from '@xh/hoist/data';
 import {fmtTime, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {checkMinVersion} from '@xh/hoist/utils/js';
 import {forOwn, sortBy} from 'lodash';
 
-@HoistModel
-@LoadSupport
-export class MemoryMonitorModel {
+export class MemoryMonitorModel extends HoistModel {
 
     /** @member {GridModel} */
     gridModel;
@@ -23,6 +21,7 @@ export class MemoryMonitorModel {
     }
 
     constructor() {
+        super();
         const mbCol = {width: 150, renderer: numberRenderer({precision: 2, useCommas: true})},
             pctCol = {width: 150, renderer: numberRenderer({precision: 2, useCommas: true, label: '%'})};
 

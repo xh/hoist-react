@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
@@ -36,7 +36,7 @@ export const colChooser = hoistCmp.factory({
             items: [
                 leftRightChooser({width, height}),
                 toolbar(
-                    leftRightChooserFilter({fields: ['text']}),
+                    leftRightChooserFilter(),
                     filler(),
                     button({
                         omit: !showRestoreDefaults,

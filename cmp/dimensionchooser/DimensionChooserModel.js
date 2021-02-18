@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {apiRemoved, throwIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
@@ -39,8 +39,7 @@ import {
  *  2) Add a reaction against this model's `value` property to fetch new data when it updates.
  *  3) Render a `DimensionChooser` control in your layout to bind to this model.
  */
-@HoistModel
-export class DimensionChooserModel {
+export class DimensionChooserModel extends HoistModel {
 
     /** @member {string[]} - names of dimensions selected for grouping. */
     @observable.ref value;
@@ -95,6 +94,8 @@ export class DimensionChooserModel {
         enableClear = false,
         ...rest
     }) {
+        super();
+        makeObservable(this);
         this.maxHistoryLength = maxHistoryLength;
         this.maxDepth = maxDepth;
         this.enableClear = enableClear;

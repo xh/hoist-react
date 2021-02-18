@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, useLocalModel} from '@xh/hoist/core';
 import {hotkey as hotkeyBp, hotkeys as hotkeysBp, HotkeysEvents} from '@xh/hoist/kit/blueprint';
@@ -32,15 +32,14 @@ export function useHotkeys(child, hotkeys) {
     );
 }
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
     localHotkeysEvents = new HotkeysEvents('local');
     globalHotkeysEvents = new HotkeysEvents('global');
 
     // Capture the handlers on initial render.  Following blueprint, assume these static.
     constructor(hotkeys) {
-
+        super();
         // Normalize to blueprint Hotkeys element
         if (isArray(hotkeys)) {
             hotkeys = hotkeys.map(it => isPlainObject(it) ? hotkeyBp(it) : it);
@@ -67,6 +66,7 @@ class LocalModel {
         document.removeEventListener('keyup', this.globalHotkeysEvents.handleKeyUp);
         this.globalHotkeysEvents.clear();
         this.localHotkeysEvents.clear();
+        super.destroy();
     }
 }
 

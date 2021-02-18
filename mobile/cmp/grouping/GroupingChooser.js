@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {div, hbox, vbox, filler, box, placeholder, span} from '@xh/hoist/cmp/layout';
@@ -35,16 +35,17 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
         popoverWidth = 250,
         popoverTitle = 'Group By',
         ...rest
-    }) {
+    }, ref) {
         const {value} = model,
             label = isEmpty(value) ? emptyText : model.getValueLabel(value),
             [layoutProps, buttonProps] = splitLayoutProps(rest);
 
         return box({
+            ref,
             className,
             ...layoutProps,
             items: [
-                popoverCmp({popoverTitle, popoverWidth}),
+                popoverCmp({popoverTitle, popoverWidth, emptyText}),
                 button({
                     className: 'xh-grouping-chooser-button',
                     item: span(label),
@@ -77,11 +78,10 @@ GroupingChooser.propTypes = {
 // Popover
 //---------------------------
 const popoverCmp = hoistCmp.factory(
-    ({model, popoverTitle, popoverWidth}) => {
-        const {editorIsOpen, favoritesIsOpen, isValid, value} = model,
+    ({model, popoverTitle, popoverWidth, emptyText}) => {
+        const {editorIsOpen, favoritesIsOpen, isAddMode, addDisabledMsg, isValid, value} = model,
             isOpen = editorIsOpen || favoritesIsOpen,
-            addFavoriteDisabled = isEmpty(value) || !!model.isFavorite(value),
-            addDimDisabled = !!model.addDisabledMsg;
+            addFavoriteDisabled = isEmpty(value) || !!model.isFavorite(value);
 
         return dialog({
             isOpen,
@@ -89,7 +89,7 @@ const popoverCmp = hoistCmp.factory(
             icon: favoritesIsOpen ? Icon.favorite({prefix: 'fas'}) : Icon.treeList(),
             className: 'xh-grouping-chooser-popover',
             width: popoverWidth,
-            content: favoritesIsOpen ? favoritesMenu() : editor(),
+            content: favoritesIsOpen ? favoritesMenu() : editor({emptyText}),
             onCancel: () => model.commitPendingValueAndClose(),
             buttons: favoritesIsOpen ?
                 [
@@ -104,9 +104,10 @@ const popoverCmp = hoistCmp.factory(
                 [
                     button({
                         icon: Icon.add(),
-                        disabled: !!addDimDisabled,
-                        omit: model.addControlShown,
-                        onClick: () => model.showAddControl()
+                        text: 'Add',
+                        disabled: !!addDisabledMsg,
+                        omit: isAddMode,
+                        onClick: () => model.addLevel()
                     }),
                     filler(),
                     button({
@@ -116,6 +117,7 @@ const popoverCmp = hoistCmp.factory(
                     }),
                     button({
                         icon: Icon.check(),
+                        text: 'Apply',
                         disabled: !isValid,
                         onClick: () => model.commitPendingValueAndClose()
                     })
@@ -128,37 +130,40 @@ const popoverCmp = hoistCmp.factory(
 // Editor
 //------------------
 const editor = hoistCmp.factory({
-    render({model}) {
+    render({model, emptyText}) {
         return vbox(
-            dragDropContext({
-                onDragEnd: (result) => model.onDragEnd(result),
-                item: droppable({
-                    droppableId: 'dimension-list',
-                    item: (dndProps) => dimensionList({
-                        ref: dndProps.innerRef,
-                        placeholder: dndProps.placeholder
-                    })
-                })
-            }),
-            addDimensionControl()
+            dimensionList({emptyText}),
+            addDimensionControl({omit: !model.addControlShown})
         );
     }
 });
 
 const dimensionList = hoistCmp.factory({
-    render({model, placeholder}, ref) {
-        return div({
-            ref,
-            className: 'xh-grouping-chooser__list',
-            items: [
-                ...model.pendingValue.map((dimension, idx) => {
-                    return dimensionRow({dimension, idx});
-                }),
-                placeholder
-            ]
+    render({model, emptyText}) {
+        if (!model.addControlShown && isEmpty(model.pendingValue)) {
+            return hbox({
+                className: 'xh-grouping-chooser__row',
+                items: [filler(), emptyText, filler()]
+            });
+        }
+
+        return dragDropContext({
+            onDragEnd: (result) => model.onDragEnd(result),
+            item: droppable({
+                droppableId: 'dimension-list',
+                item: (dndProps) => div({
+                    ref: dndProps.innerRef,
+                    className: 'xh-grouping-chooser__list',
+                    items: [
+                        ...model.pendingValue.map((dimension, idx) => dimensionRow({dimension, idx})),
+                        dndProps.placeholder
+                    ]
+                })
+            })
         });
     }
 });
+
 
 const dimensionRow = hoistCmp.factory({
     render({model, dimension, idx}) {
@@ -190,7 +195,7 @@ const dimensionRow = hoistCmp.factory({
                                 flex: 1,
                                 width: null,
                                 hideDropdownIndicator: true,
-                                disabled: isEmpty(options),
+                                disabled: options.length <= 1,
                                 onChange: (newDim) => model.replacePendingDimAtIdx(newDim, idx)
                             })
                         }),
@@ -211,7 +216,6 @@ const dimensionRow = hoistCmp.factory({
 
 const addDimensionControl = hoistCmp.factory({
     render({model}) {
-        if (!model.addControlShown || model.addDisabledMsg) return null;
         const options = getDimOptions(model.availableDims, model);
         return div({
             className: 'xh-grouping-chooser__add-control',
@@ -221,7 +225,7 @@ const addDimensionControl = hoistCmp.factory({
                     // ensure the Select loses its internal input state.
                     key: JSON.stringify(options),
                     options,
-                    placeholder: 'Add Dimension...',
+                    placeholder: 'Add...',
                     flex: 1,
                     width: null,
                     autoFocus: true,

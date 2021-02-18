@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {managed} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {HoistBase, managed} from '@xh/hoist/core';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {CubeField} from './CubeField';
 import {Query} from './Query';
@@ -21,14 +21,16 @@ import {isEmpty} from 'lodash';
  * that performing filtering, grouping, and aggregating.  It also support the creation of
  * observable "views" for showing realtime updates to this data..
  */
-export class Cube {
+export class Cube extends HoistBase {
 
     static RECORD_ID_DELIMITER = '>>';
 
     /** @member {Store} */
     @managed store;
-    /** @member {function} */
+    /** @member {LockFn} */
     lockFn;
+    /** @member {BucketSpecFn} */
+    bucketSpecFn;
     /** @member {Object} */
     @observable.ref
     info = null;
@@ -45,6 +47,11 @@ export class Cube {
      * @param {Object} [c.info] - app-specific metadata to be associated with this data.
      * @param {LockFn} [c.lockFn] - optional function to be called for each aggregate node to
      *      determine if it should be "locked", preventing drilldown into its children.
+     * @param {BucketSpecFn} [c.bucketSpecFn] - optional function to be called for each dimension
+     *      during row generation to determine if the children of that dimension should be bucketed
+     *      into additional dynamic dimensions.
+     * @param {OmitFn} [c.omitFn] - optional function to be called on all single child rows during
+     *      view processing.  Return true to omit the row.
      */
     constructor({
         fields,
@@ -52,16 +59,22 @@ export class Cube {
         idSpec = 'id',
         processRawData,
         info = {},
-        lockFn
+        lockFn,
+        bucketSpecFn,
+        omitFn
     }) {
+        super();
+        makeObservable(this);
         this.store = new Store({
             fields: this.parseFields(fields),
             idSpec,
             processRawData
         });
         this.store.loadData(data);
-        this.lockFn = lockFn;
         this.info = info;
+        this.lockFn = lockFn;
+        this.bucketSpecFn = bucketSpecFn;
+        this.omitFn = omitFn;
     }
 
     /** @returns {CubeField[]} - Fields configured for this Cube. */
@@ -72,6 +85,9 @@ export class Cube {
 
     /** @returns {Record[]} - records loaded in to this Cube. */
     get records() {return this.store.records}
+
+    /** @returns {number} - count of currently connected, auto-updating Views. */
+    get connectedViewCount() {return this._connectedViews.size}
 
 
     //------------------
@@ -224,6 +240,27 @@ export class Cube {
  * preventing drilldown into its children. If true returned for a node, no drilldown will be
  * allowed, and the row will be marked with a boolean "locked" property.
  *
- * @param {AggregateRow} row - node to be potentially locked.
+ * @param {(AggregateRow|BucketRow)} row - node to be potentially locked.
  * @returns boolean
+ */
+
+/**
+ * @callback OmitFn
+ *
+ * Function to be called for each single child during row generation to determine if
+ * it should be skipped.  Useful for removing aggregates that are degenerate due to context.
+ *
+ * @param {(AggregateRow|BucketRow)} row - node to be potentially locked.
+ * @returns boolean
+ */
+
+/**
+ * @callback BucketSpecFn
+ *
+ * Function to be called for each dimension to determine if children of said dimension should be
+ * bucketed into additional dynamic dimensions.
+ *
+ * @param {BaseRow[]} rows - the rows being checked for bucketing
+ * @returns {BucketSpec|null} - a BucketSpec for configuring the bucket to place child rows into,
+ *      or null to perform no bucketing
  */

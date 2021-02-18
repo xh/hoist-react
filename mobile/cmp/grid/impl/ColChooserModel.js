@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 import {clone, find, sortBy} from 'lodash';
 
@@ -15,8 +15,7 @@ import {clone, find, sortBy} from 'lodash';
  * It is not necessary to manually create instances of this class within an application.
  * @private
  */
-@HoistModel
-export class ColChooserModel {
+export class ColChooserModel extends HoistModel {
 
     gridModel;
 
@@ -41,6 +40,8 @@ export class ColChooserModel {
      * @param {GridModel} gridModel - model for the grid to be managed.
      */
     constructor(gridModel) {
+        super();
+        makeObservable(this);
         this.gridModel = gridModel;
 
         this.addReaction({

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Button, button} from '@xh/hoist/desktop/cmp/button';
@@ -11,7 +11,7 @@ import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
-import React from 'react';
+import {isValidElement} from 'react';
 
 export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     displayName: 'AppMenuButton',
@@ -144,6 +144,6 @@ function buildMenuItems({
         .filter(filterConsecutiveMenuSeparators())
         .map(it => {
             if (it === '-') return menuDivider();
-            return React.isValidElement(it) ? it : menuItem(it);
+            return isValidElement(it) ? it : menuItem(it);
         });
 }

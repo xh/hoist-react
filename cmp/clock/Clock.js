@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {box, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, managed, useLocalModel, XH} from '@xh/hoist/core';
 import {fmtDate, TIME_FMT} from '@xh/hoist/format';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, ONE_SECOND} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -24,7 +24,7 @@ export const [Clock, clock] = hoistCmp.withFactory({
     displayName: 'Clock',
     className: 'xh-clock',
 
-    render({timezone, format, updateInterval, prefix, suffix, errorString, ...props}) {
+    render({timezone, format, updateInterval, prefix, suffix, errorString, ...props}, ref) {
         format = format || TIME_FMT;
         updateInterval = updateInterval || ONE_SECOND;
         errorString = withDefault(errorString, '???');
@@ -34,6 +34,7 @@ export const [Clock, clock] = hoistCmp.withFactory({
 
         return box({
             ...props,
+            ref,
             item: span(impl.display)
         });
     }
@@ -62,8 +63,7 @@ Clock.propTypes = {
     updateInterval: PT.number
 };
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
     timezone;
     format;
     updateInterval;
@@ -77,6 +77,10 @@ class LocalModel {
     @observable display = '';
     @managed timer;
 
+    constructor() {
+        super();
+        makeObservable(this);
+    }
     setData({timezone, format, updateInterval, prefix, suffix, errorString}) {
         this.format = format;
         this.updateInterval = updateInterval;
