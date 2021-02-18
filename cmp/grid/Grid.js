@@ -221,7 +221,7 @@ class LocalModel extends HoistModel {
                 clipboardCopy: Icon.copy({asHtml: true})
             },
             frameworkComponents: {
-                agColumnHeader: (props) => columnHeader(props),
+                agColumnHeader: (props) => columnHeader({gridModel: model, ...props}),
                 agColumnGroupHeader: (props) => columnGroupHeader(props)
             },
             rowSelection: model.selModel.mode,

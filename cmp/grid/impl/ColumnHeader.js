@@ -123,10 +123,10 @@ class LocalModel extends HoistModel {
     _lastTouchStart = null;
     _lastMouseDown = null;
 
-    constructor({gridLocalModel, xhColumn, column: agColumn}) {
+    constructor({gridModel, xhColumn, column: agColumn}) {
         super();
         makeObservable(this);
-        this.gridModel = gridLocalModel.model;
+        this.gridModel = gridModel;
         this.xhColumn = xhColumn;
         this.agColumn = agColumn;
         this.colId = agColumn.colId;
