@@ -374,14 +374,6 @@ export class GridModel extends HoistModel {
     }
 
     /**
-     * @deprecated
-     * @see restoreDefaultsAsync
-     */
-    restoreDefaults() {
-        this.restoreDefaultsAsync();
-    }
-
-    /**
      * Export grid data using Hoist's server-side export.
      *
      * @param {ExportOptions} options - overrides of default export options to use for this export.
@@ -411,12 +403,17 @@ export class GridModel extends HoistModel {
     }
 
     /**
+     * Select records in the grid.
+     *
      * @param {(Object[]|Object)} records - single record/ID or array of records/IDs to select.
-     * @param {boolean} [clearSelection] - true to clear previous selection (rather than add to it).
+     * @param {Object} [options]
+     * @param {boolean} [options.ensureVisible] - true to make selection visible if it is within a
+     *      collapsed node or outside of the visible scroll window.
+     * @param {boolean} [options.clearSelection] - true to clear previous selection (rather than add to it).
      */
-    async selectAsync(records, clearSelection = true) {
+    async selectAsync(records, {ensureVisible = true, clearSelection = true} = {}) {
         this.selModel.select(records, clearSelection);
-        await this.ensureSelectionVisibleAsync();
+        if (ensureVisible) await this.ensureSelectionVisibleAsync();
     }
 
     /**
@@ -424,8 +421,12 @@ export class GridModel extends HoistModel {
      *
      * This method allows for a minimal delay to allow the underlying grid implementation to
      * render all pending data changes.
+     *
+     * @param {Object} [options]
+     * @param {boolean} [options.ensureVisible] - true to make selection visible if it is within a
+     *      collapsed node or outside of the visible scroll window.
      */
-    async selectFirstAsync() {
+    async selectFirstAsync({ensureVisible = true} = {}) {
         // await always async, allowing grid to render changes pending at time of call
         await when(() => this.isReady);
 
@@ -433,7 +434,7 @@ export class GridModel extends HoistModel {
         const id = this.agGridModel.getFirstSelectableRowNodeId();
         if (id != null) {
             this.selModel.select(id);
-            await this.ensureSelectionVisibleAsync();
+            if (ensureVisible) await this.ensureSelectionVisibleAsync();
         }
     }
 
@@ -466,10 +467,10 @@ export class GridModel extends HoistModel {
 
         // 1) Expand any selected nodes that are collapsed
         records.forEach(({id}) => {
-            let rowNode = agApi.getRowNode(id);
-            while (rowNode.parent && !rowNode.parent.expanded) {
-                agApi.setRowNodeExpanded(rowNode.parent, true);
-                rowNode = rowNode.parent;
+            for (let row = agApi.getRowNode(id)?.parent; row; row = row.parent) {
+                if (!row.expanded) {
+                    agApi.setRowNodeExpanded(row, true);
+                }
             }
         });
 
@@ -940,10 +941,33 @@ export class GridModel extends HoistModel {
             }
         }
     }
-
+    /** @deprecated */
     autoSizeColumns(colIds) {
-        apiDeprecated(true, 'GridModel.autoSizeColumns', "Use 'GridModel.autosizeAsync()' instead.");
+        apiDeprecated(true, 'autoSizeColumns', 'Use autosizeAsync() instead.');
         this.autosizeAsync({columns: colIds});
+    }
+
+    /** @deprecated */
+    restoreDefaults() {
+        apiDeprecated(true, 'restoreDefaults', 'Use restoreDefaultsAsync() instead.');
+        this.restoreDefaultsAsync();
+    }
+    /** @deprecated */
+    select(records, clearSelection) {
+        apiDeprecated(true, 'select', 'Use selectAsync() instead.');
+        this.selectAsync(records, {clearSelection, ensureVisible: false});
+    }
+
+    /** @deprecated */
+    selectFirst() {
+        apiDeprecated(true, 'selectFirst', 'Use selectFirstAsync() instead.');
+        this.selectFirstAsync({ensureVisible: false});
+    }
+
+    /** @deprecated */
+    ensureSelectionVisible() {
+        apiDeprecated(true, 'ensureSelectionVisible', 'Use ensureSelectionVisibleAsync() instead.');
+        this.ensureSelectionVisibleAsync();
     }
 
     //-----------------------
@@ -1167,23 +1191,6 @@ export class GridModel extends HoistModel {
     defaultGroupSortFn = (a, b) => {
         return a < b ? -1 : (a > b ? 1 : 0);
     };
-
-
-    // Deprecated methods
-    select(records, clearSelection) {
-        apiDeprecated(true, 'select', 'Use selectAsync() instead.');
-        this.selectAsync(records, clearSelection);
-    }
-
-    selectFirst() {
-        apiDeprecated(true, 'selectFirst', 'Use selectFirstAsync() instead.');
-        this.selectFirstAsync();
-    }
-
-    ensureSelectionVisible() {
-        apiDeprecated(true, 'ensureSelectionVisible', 'Use ensureSelectionVisibleAsync() instead.');
-        this.ensureSelectionVisibleAsync();
-    }
 }
 
 /**

@@ -20,7 +20,7 @@ export class StoreSelectionModel extends HoistModel {
     /** @member {string} */
     mode;
 
-    @observable.ref ids = [];
+    @observable.ref _ids = [];
 
     /**
      * @param {Object} c - StoreSelectionModel configuration.
@@ -38,7 +38,7 @@ export class StoreSelectionModel extends HoistModel {
     /** @return {Record[]} - currently selected Records. */
     @computed({equals: comparer.shallow})
     get records() {
-        return compact(this.ids.map(it => this.store.getById(it, true)));
+        return compact(this._ids.map(it => this.store.getById(it, true)));
     }
 
     /** @return {?Record} - single selected record, or null if multiple or no records selected. */
@@ -53,6 +53,7 @@ export class StoreSelectionModel extends HoistModel {
     }
 
     /** @return {number} - count of currently selected records. */
+    @computed
     get count() {
         return this.records.length;
     }
@@ -75,11 +76,11 @@ export class StoreSelectionModel extends HoistModel {
             return this.store.getById(id, true);
         });
 
-        if (isEqual(ids, this.ids)) {
+        if (isEqual(ids, this._ids)) {
             return;
         }
 
-        this.ids = clearSelection ? ids : union(this.ids, ids);
+        this._ids = clearSelection ? ids : union(this._ids, ids);
     }
 
     /** Select all filtered records. */
@@ -101,12 +102,12 @@ export class StoreSelectionModel extends HoistModel {
     // Implementation
     //------------------------
     cullSelectionReaction() {
-        // Remove recs from selection if they are no longer in store e.g. (due to filtering)
-        // Just cleanup and not mutating the ref.  The records @computed provides all observable state
+        // Remove recs from selection if they are no longer in store. Cleanup array in place without
+        // modifying observable -- the 'records' getter provides all observable state.
         const {store} = this;
         return {
             track: () => store.records,
-            run: () => remove(this.ids, id => !store.getById(id, true))
+            run: () => remove(this._ids, id => !store.getById(id, true))
         };
     }
 }
