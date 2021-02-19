@@ -121,7 +121,7 @@ export class DataViewModel extends HoistModel {
     }
 
     // Getters and methods trampolined from GridModel.
-    // Explicit trampolining to aid code-editor, future docs.
+    // Explicit trampolining to aid tooling and docs.
     get store()                 {return this.gridModel.store}
     get empty()                 {return this.gridModel.empty}
     get selModel()              {return this.gridModel.selModel}
@@ -131,13 +131,20 @@ export class DataViewModel extends HoistModel {
     get groupBy()               {return this.gridModel.groupBy}
     get sortBy()                {return this.gridModel.sortBy}
 
-    selectFirst()               {return this.gridModel.selectFirst()}
-    ensureSelectionVisible()    {return this.gridModel.ensureSelectionVisible()}
-    doLoadAsync(loadSpec)       {return this.gridModel.doLoadAsync(loadSpec)}
-    loadData(...args)           {return this.gridModel.loadData(...args)}
-    updateData(...args)         {return this.gridModel.updateData(...args)}
-    clear()                     {return this.gridModel.clear()}
-    setGroupBy(colIds)          {return this.gridModel.setGroupBy(colIds)}
-    setSortBy(sorters)          {return this.gridModel.setSortBy(sorters)}
-    setFilter(filter)           {return this.gridModel.setFilter(filter)}
+    selectAsync(...args)            {return this.gridModel.selectAsync(...args)}
+    preSelectFirstAsync(...args)    {return this.gridModel.preSelectFirstAsync(...args)}
+    selectFirstAsync(...args)       {return this.gridModel.selectFirstAsync(...args)}
+    ensureSelectionVisibleAsync()   {return this.gridModel.ensureSelectionVisibleAsync()}
+    doLoadAsync(loadSpec)           {return this.gridModel.doLoadAsync(loadSpec)}
+    loadData(...args)               {return this.gridModel.loadData(...args)}
+    updateData(...args)             {return this.gridModel.updateData(...args)}
+    clear()                         {return this.gridModel.clear()}
+    setGroupBy(colIds)              {return this.gridModel.setGroupBy(colIds)}
+    setSortBy(sorters)              {return this.gridModel.setSortBy(sorters)}
+    setFilter(filter)               {return this.gridModel.setFilter(filter)}
+
+    /** @deprecated */
+    selectFirst()                   {return this.gridModel.selectFirst()}
+    /** @deprecated */
+    ensureSelectionVisible()        {return this.gridModel.ensureSelectionVisible()}
 }

@@ -5,7 +5,6 @@ import {managed, HoistModel, XH} from '@xh/hoist/core';
 import {numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
 
 export class ActivityDetailModel extends HoistModel {
 
@@ -96,11 +95,7 @@ export class ActivityDetailModel extends HoistModel {
             leaves = this.getAllLeafRows(aggRec);
 
         gridModel.loadData(leaves);
-
-        await wait(1);
-        if (!gridModel.hasSelection) {
-            gridModel.selectFirst();
-        }
+        await gridModel.preSelectFirstAsync();
     }
 
     // Extract all leaf, track-entry-level rows from an aggregate record (at any level).

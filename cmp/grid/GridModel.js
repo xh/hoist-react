@@ -12,7 +12,7 @@ import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable, when} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {
     apiDeprecated,
@@ -374,14 +374,6 @@ export class GridModel extends HoistModel {
     }
 
     /**
-     * @deprecated
-     * @see restoreDefaultsAsync
-     */
-    restoreDefaults() {
-        this.restoreDefaultsAsync();
-    }
-
-    /**
      * Export grid data using Hoist's server-side export.
      *
      * @param {ExportOptions} options - overrides of default export options to use for this export.
@@ -411,26 +403,58 @@ export class GridModel extends HoistModel {
     }
 
     /**
+     * Select records in the grid.
+     *
      * @param {(Object[]|Object)} records - single record/ID or array of records/IDs to select.
-     * @param {boolean} [clearSelection] - true to clear previous selection (rather than add to it).
+     * @param {Object} [options]
+     * @param {boolean} [options.ensureVisible] - true to make selection visible if it is within a
+     *      collapsed node or outside of the visible scroll window. Default true.
+     * @param {boolean} [options.clearSelection] - true to clear previous selection (rather than
+     *      add to it). Default true.
      */
-    select(records, clearSelection = true) {
+    async selectAsync(records, {ensureVisible = true, clearSelection = true} = {}) {
         this.selModel.select(records, clearSelection);
+        if (ensureVisible) await this.ensureSelectionVisibleAsync();
     }
 
-    /** Select the first row in the grid. */
-    selectFirst() {
-        const {agGridModel, selModel} = this;
-        if (!agGridModel.agApi) {
-            console.warn('Called selectFirst before the grid was ready!');
-            return;
+    /**
+     * Select the first row in the grid.
+     *
+     * See {@see preSelectFirstAsync()} for a useful variant of this method.  preSelectFirstAsync()
+     * will not change the selection if there is not already a selection, which is what applications
+     * typically want to do when loading/reloading a grid.
+     *
+     * This method allows for a minimal delay to allow the underlying grid implementation to
+     * render all pending data changes.
+     *
+     * @param {Object} [options]
+     * @param {boolean} [options.ensureVisible] - true to make selection visible if it is within a
+     *      collapsed node or outside of the visible scroll window. Default true.
+     */
+    async selectFirstAsync({ensureVisible = true} = {}) {
+        const {selModel} = this;
+
+        // await always async, allowing grid to render changes pending at time of call
+        await when(() => this.isReady);
+
+        // Get first displayed row with data - i.e. backed by a record, not a full-width group row.
+        const id = this.agGridModel.getFirstSelectableRowNodeId();
+        if (id != null) {
+            selModel.select(id);
+            if (ensureVisible) await this.ensureSelectionVisibleAsync();
         }
-
-        // Find first displayed row with data - i.e. backed by a record, not a full-width group row.
-        const id = agGridModel.getFirstSelectableRowNodeId();
-
-        if (id) selModel.select(id);
     }
+
+
+    /**
+     * Select the first row in the grid, if no other selection present.
+     *
+     * This method delegates to {@see selectFirstAsync}.
+     */
+    async preSelectFirstAsync() {
+        if (this.selModel.isEmpty) return this.selectFirstAsync();
+    }
+
 
     /** Deselect all rows. */
     clearSelection() {
@@ -443,22 +467,39 @@ export class GridModel extends HoistModel {
      * If multiple records are selected, scroll to the first record and then the last. This will do
      * the minimum scrolling necessary to display the start of the selection and as much as
      * possible of the rest.
+     *
+     * Any selected records that are hidden because their parent rows are collapsed will first
+     * be revealed by expanding their parent rows.
+     *
+     * This method imposes a minimal delay to allow the underlying grid implementation to
+     * render all pending data changes.
      */
-    ensureSelectionVisible() {
+    async ensureSelectionVisibleAsync() {
+        // await always async, allowing grid to render changes pending at time of call
+        await when(() => this.isReady);
+
         const {records} = this.selModel,
-            {agApi} = this;
+            {agApi} = this,
+            indices = [];
 
-        if (!agApi) return;
+        // 1) Expand any selected nodes that are collapsed
+        records.forEach(({id}) => {
+            for (let row = agApi.getRowNode(id)?.parent; row; row = row.parent) {
+                if (!row.expanded) {
+                    agApi.setRowNodeExpanded(row, true);
+                }
+            }
+        });
 
-        const indices = [];
-        records.forEach(record => {
-            const rowNode = agApi.getRowNode(record.id);
-            if (rowNode) indices.push(rowNode.rowIndex);
+        // 2) Scroll to all selected nodes
+        records.forEach(({id}) => {
+            const rowNode = agApi.getRowNode(id);
+            if (!isNil(rowNode?.rowIndex)) indices.push(rowNode.rowIndex);
         });
 
         const indexCount = indices.length;
-        if (indexCount != records.length) {
-            console.warn('Grid row nodes not found for all selected records - grid data reaction/rendering likely in progress.');
+        if (indexCount !== records.length) {
+            console.warn('Grid row nodes not found for all selected records.');
         }
 
         if (indexCount === 1) {
@@ -917,10 +958,33 @@ export class GridModel extends HoistModel {
             }
         }
     }
-
+    /** @deprecated */
     autoSizeColumns(colIds) {
-        apiDeprecated(true, 'GridModel.autoSizeColumns', "Use 'GridModel.autosizeAsync()' instead.");
+        apiDeprecated(true, 'autoSizeColumns', 'Use autosizeAsync() instead.');
         this.autosizeAsync({columns: colIds});
+    }
+
+    /** @deprecated */
+    restoreDefaults() {
+        apiDeprecated(true, 'restoreDefaults', 'Use restoreDefaultsAsync() instead.');
+        this.restoreDefaultsAsync();
+    }
+    /** @deprecated */
+    select(records, clearSelection) {
+        apiDeprecated(true, 'select', 'Use selectAsync() instead.');
+        this.selectAsync(records, {clearSelection, ensureVisible: false});
+    }
+
+    /** @deprecated */
+    selectFirst() {
+        apiDeprecated(true, 'selectFirst', 'Use selectFirstAsync() or preSelectFirstAsync() instead.');
+        this.selectFirstAsync({ensureVisible: false});
+    }
+
+    /** @deprecated */
+    ensureSelectionVisible() {
+        apiDeprecated(true, 'ensureSelectionVisible', 'Use ensureSelectionVisibleAsync() instead.');
+        this.ensureSelectionVisibleAsync();
     }
 
     //-----------------------

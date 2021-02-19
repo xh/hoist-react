@@ -331,7 +331,7 @@ class LocalModel extends HoistModel {
             node.select(toSelect.has(node.id), true);
         });
 
-        if (gridModel) gridModel.ensureSelectionVisible();
+        gridModel?.ensureSelectionVisibleAsync();
     }
 
     //----------------------
