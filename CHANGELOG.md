@@ -21,7 +21,8 @@ exponential notation and `NaN` values are now converted to `null`.
 * Added new `Store.loadTreeData` config (default `true`) to enable or disable building of nested
   Records when the raw data elements being loaded have a `children` property.
 * Cube `View` now detects and properly handles streaming updates to source data that include changes
-  to row dimensions as well as measures.
+  to row dimensions as well as measures.*
+* `DataViewModel.itemHeight` can now be a function that returns a pixel height.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.0.0...develop)
 
