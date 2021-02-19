@@ -540,6 +540,7 @@ export class AgGridModel extends HoistModel {
 
     /**
      * @returns {Number} - pixel height for row if auto row height enabled, else null
+     * Please note that this does not work for cells using cellRendererFramework.
      */
     getAutoRowHeight(node) {
         if (!this.isReady) return null;
