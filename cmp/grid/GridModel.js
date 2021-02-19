@@ -408,8 +408,9 @@ export class GridModel extends HoistModel {
      * @param {(Object[]|Object)} records - single record/ID or array of records/IDs to select.
      * @param {Object} [options]
      * @param {boolean} [options.ensureVisible] - true to make selection visible if it is within a
-     *      collapsed node or outside of the visible scroll window.
-     * @param {boolean} [options.clearSelection] - true to clear previous selection (rather than add to it).
+     *      collapsed node or outside of the visible scroll window. Default true.
+     * @param {boolean} [options.clearSelection] - true to clear previous selection (rather than
+     *      add to it). Default true.
      */
     async selectAsync(records, {ensureVisible = true, clearSelection = true} = {}) {
         this.selModel.select(records, clearSelection);
@@ -424,16 +425,22 @@ export class GridModel extends HoistModel {
      *
      * @param {Object} [options]
      * @param {boolean} [options.ensureVisible] - true to make selection visible if it is within a
-     *      collapsed node or outside of the visible scroll window.
+     *      collapsed node or outside of the visible scroll window. Default true.
+     * @param {boolean} [options.ifNoSelection] - true to make this call a no-op if there is
+     *      already a selection in place. Default false.
      */
-    async selectFirstAsync({ensureVisible = true} = {}) {
+    async selectFirstAsync({ensureVisible = true, ifNoSelection = false} = {}) {
+        const {selModel} = this;
+
         // await always async, allowing grid to render changes pending at time of call
         await when(() => this.isReady);
+
+        if (ifNoSelection && selModel.isEmpty) return;
 
         // Get first displayed row with data - i.e. backed by a record, not a full-width group row.
         const id = this.agGridModel.getFirstSelectableRowNodeId();
         if (id != null) {
-            this.selModel.select(id);
+            selModel.select(id);
             if (ensureVisible) await this.ensureSelectionVisibleAsync();
         }
     }

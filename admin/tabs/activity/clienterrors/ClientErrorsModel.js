@@ -188,10 +188,8 @@ export class ClientErrorsModel extends HoistModel {
             });
 
             gridModel.loadData(data);
+            await gridModel.selectFirstAsync({ifNoSelection: true});
 
-            if (!gridModel.hasSelection) {
-                await gridModel.selectFirstAsync();
-            }
         } catch (e) {
             gridModel.clear();
             XH.handleException(e);

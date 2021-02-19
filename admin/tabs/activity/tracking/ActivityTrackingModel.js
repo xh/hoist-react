@@ -238,10 +238,8 @@ export class ActivityTrackingModel extends HoistModel {
 
         data.forEach(node => this.separateLeafRows(node));
         gridModel.loadData(data);
+        await gridModel.selectFirstAsync({ifNoSelection: true});
 
-        if (!gridModel.hasSelection) {
-            await gridModel.selectFirstAsync();
-        }
 
         chartsModel.setDataAndDims({data, dimensions});
     }
