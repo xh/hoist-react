@@ -420,22 +420,22 @@ export class GridModel extends HoistModel {
     /**
      * Select the first row in the grid.
      *
+     * See {@see preSelectFirstAsync()} for a useful variant of this method.  preSelectFirstAsync()
+     * will not change the selection if there is not already a selection, which is what applications
+     * typically want to do when loading/reloading a grid.
+     *
      * This method allows for a minimal delay to allow the underlying grid implementation to
      * render all pending data changes.
      *
      * @param {Object} [options]
      * @param {boolean} [options.ensureVisible] - true to make selection visible if it is within a
      *      collapsed node or outside of the visible scroll window. Default true.
-     * @param {boolean} [options.ifNoSelection] - true to make this call a no-op if there is
-     *      already a selection in place. Default false.
      */
-    async selectFirstAsync({ensureVisible = true, ifNoSelection = false} = {}) {
+    async selectFirstAsync({ensureVisible = true} = {}) {
         const {selModel} = this;
 
         // await always async, allowing grid to render changes pending at time of call
         await when(() => this.isReady);
-
-        if (ifNoSelection && !selModel.isEmpty) return;
 
         // Get first displayed row with data - i.e. backed by a record, not a full-width group row.
         const id = this.agGridModel.getFirstSelectableRowNodeId();
@@ -443,6 +443,16 @@ export class GridModel extends HoistModel {
             selModel.select(id);
             if (ensureVisible) await this.ensureSelectionVisibleAsync();
         }
+    }
+
+
+    /**
+     * Select the first row in the grid, if no other selection present.
+     *
+     * This method delegates to {@see selectFirstAsync}.
+     */
+    async preSelectFirstAsync() {
+        if (this.selModel.isEmpty) return this.selectFirstAsync();
     }
 
 
@@ -967,7 +977,7 @@ export class GridModel extends HoistModel {
 
     /** @deprecated */
     selectFirst() {
-        apiDeprecated(true, 'selectFirst', 'Use selectFirstAsync() instead.');
+        apiDeprecated(true, 'selectFirst', 'Use selectFirstAsync() or preSelectFirstAsync() instead.');
         this.selectFirstAsync({ensureVisible: false});
     }
 

@@ -238,7 +238,7 @@ export class ActivityTrackingModel extends HoistModel {
 
         data.forEach(node => this.separateLeafRows(node));
         gridModel.loadData(data);
-        await gridModel.selectFirstAsync({ifNoSelection: true});
+        await gridModel.preSelectFirstAsync();
 
 
         chartsModel.setDataAndDims({data, dimensions});

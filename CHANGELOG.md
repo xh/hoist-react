@@ -13,11 +13,14 @@
 
 ### 🎁 New Features
 
-* `GridModel` has three new async variants of existing methods: `selectFirstAsync`, `selectAsync`,
+* `GridModel` has new async variants of existing methods: `selectFirstAsync`, `selectAsync`,
   and `ensureSelectionVisibleAsync`. These methods build-in the necessary waiting for the underlying
   grid implementation to be ready and fully rendered to ensure reliable selection. In addition, the
   first two methods will internally call the third. The existing non-async counterparts for these
   methods have been deprecated.
+* GridModel has a new convenience method `preSelectFirstAsync` for initializing the selection in
+grids, without disturbing any existing selection.
+
 * Added new `Store.loadTreeData` config (default `true`) to enable or disable building of nested
   Records when the raw data elements being loaded have a `children` property.
 * Cube `View` now detects and properly handles streaming updates to source data that include changes

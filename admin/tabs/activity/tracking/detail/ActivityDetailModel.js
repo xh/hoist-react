@@ -95,8 +95,7 @@ export class ActivityDetailModel extends HoistModel {
             leaves = this.getAllLeafRows(aggRec);
 
         gridModel.loadData(leaves);
-        await gridModel.selectFirstAsync({ifNoSelection: true});
-
+        await gridModel.preSelectFirstAsync();
     }
 
     // Extract all leaf, track-entry-level rows from an aggregate record (at any level).
