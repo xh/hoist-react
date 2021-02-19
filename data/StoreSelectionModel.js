@@ -6,7 +6,7 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {action, computed, observable, makeObservable, comparer} from '@xh/hoist/mobx';
+import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {castArray, compact, remove, isEqual, union} from 'lodash';
 
 /**
@@ -36,7 +36,7 @@ export class StoreSelectionModel extends HoistModel {
     }
 
     /** @return {Record[]} - currently selected Records. */
-    @computed({equals: comparer.shallow})
+    @computed.struct
     get records() {
         return compact(this._ids.map(it => this.store.getById(it, true)));
     }
