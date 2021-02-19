@@ -126,6 +126,7 @@ export class DataViewModel extends HoistModel {
     get sortBy()                {return this.gridModel.sortBy}
 
     selectAsync(...args)            {return this.gridModel.selectAsync(...args)}
+    preSelectFirstAsync(...args)    {return this.gridModel.preSelectFirstAsync(...args)}
     selectFirstAsync(...args)       {return this.gridModel.selectFirstAsync(...args)}
     ensureSelectionVisibleAsync()   {return this.gridModel.ensureSelectionVisibleAsync()}
     doLoadAsync(loadSpec)           {return this.gridModel.doLoadAsync(loadSpec)}
