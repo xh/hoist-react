@@ -9,7 +9,9 @@ import {grid} from '@xh/hoist/cmp/grid';
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {apiRemoved} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {isFunction} from 'lodash';
 import PT from 'prop-types';
+
 import './DataView.scss';
 import {DataViewModel} from './DataViewModel';
 
@@ -74,13 +76,21 @@ class LocalModel extends HoistModel {
         this.agOptions = {
             headerHeight: 0,
             suppressMakeColumnVisibleAfterUnGroup: true,
-            getRowHeight: (params) => {
-                // Return (required) itemHeight for data rows.
-                if (!params.node?.group) return model.itemHeight;
+            getRowHeight: (agParams) => {
+                const {groupRowHeight, itemHeight} = model;
 
                 // For group rows, return groupRowHeight if specified, or use standard height
                 // (DataView does not participate in grid sizing modes.)
-                return model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode('standard');
+                if (agParams.node?.group) {
+                    return groupRowHeight ?? AgGrid.getRowHeightForSizingMode('standard');
+                }
+
+                // Return (required) itemHeight for data rows.
+                if (isFunction(itemHeight)) {
+                    return itemHeight({record: agParams.data, dataViewModel: model, agParams});
+                }
+
+                return itemHeight;
             }
         };
     }

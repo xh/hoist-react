@@ -8,7 +8,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {apiRemoved, throwIf} from '@xh/hoist/utils/js';
-import {isNumber} from 'lodash';
+import {isFunction, isNumber} from 'lodash';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
@@ -32,7 +32,8 @@ export class DataViewModel extends HoistModel {
      * @param {(Store|Object)} c.store - a Store instance, or a config to create one.
      * @param {Column~elementRendererFn} c.elementRenderer - function returning a React element for
      *      each data row.
-     * @param {number} itemHeight - Row height (in px) for each item displayed in the view.
+     * @param {(number|function)} itemHeight - Row height (in px) for each item displayed in the view,
+     *      or a function which returns a number. Function will receive {record, dataViewModel, agParams}.
      * @param {(string|string[])} [c.groupBy] - field(s) by which to do full-width row grouping.
      * @param {number} [c.groupRowHeight] - Height (in px) of a group row.
      * @param {Grid~groupRowRendererFn} [c.groupRowRenderer] - function returning a string used to
@@ -75,7 +76,12 @@ export class DataViewModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
-        throwIf(!isNumber(itemHeight), 'Must specify DataViewModel.itemHeight as a number to set a fixed pixel height for each item.');
+
+        throwIf(
+            !isFunction(itemHeight) && !isNumber(itemHeight),
+            'Must specify DataViewModel.itemHeight as a number or a function to set a pixel height for each item.'
+        );
+
         apiRemoved(restArgs.rowCls, 'rowCls', 'Use \'rowClassFn\' instead.');
         apiRemoved(restArgs.itemRenderer, 'itemRenderer', 'Use \'elementRenderer\' instead.');
 
