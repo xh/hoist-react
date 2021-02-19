@@ -258,8 +258,7 @@ export class Column {
         this.movable = withDefault(movable, true);
         this.sortable = withDefault(sortable, true);
 
-        // Pinned supports convenience true -> 'left'. OK to leave undefined if not given.
-        this.pinned = (pinned === true) ? 'left' : pinned;
+        this.pinned = this.parsePinned(pinned);
 
         this.renderer = renderer;
         this.elementRenderer = elementRenderer;
@@ -554,6 +553,13 @@ export class Column {
         if (isArray(fieldPath)) return get(record.data, fieldPath);
         return record.data[fieldPath];
     };
+
+    parsePinned(pinned) {
+        if (pinned === true) return 'left';
+        if (pinned === 'left' || pinned === 'right') return pinned;
+        return null;
+    }
+
 }
 
 export function getAgHeaderClassFn(column) {

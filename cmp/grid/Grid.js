@@ -630,7 +630,7 @@ class LocalModel extends HoistModel {
 
     // Catches column resizing on call to autoSize API.
     onColumnResized = (ev) => {
-        if (isDisplayed(this.viewRef.current) && ev.finished && ev.source == 'autosizeColumns') {
+        if (isDisplayed(this.viewRef.current) && ev.finished && ev.source === 'autosizeColumns') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
     };
