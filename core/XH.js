@@ -543,7 +543,7 @@ class XHClass extends HoistBase {
         this._initCalled = true;
 
         const S = AppState,
-            {appSpec, isMobileApp, isPhone, isTablet, isDesktop} = this;
+            {appSpec, isMobileApp, isPhone, isTablet, isDesktop, baseUrl} = this;
 
         if (appSpec.trackAppLoad) this.trackLoad();
 
@@ -566,9 +566,9 @@ class XHClass extends HoistBase {
             try {
                 await XH.fetch({url: 'ping'});
             } catch (e) {
-                const pingURL = XH.isDevelopmentMode ?
-                    `${XH.baseUrl}ping` :
-                    `${window.location.origin}${XH.baseUrl}ping`;
+                const pingURL = baseUrl.startsWith('http') ?
+                    `${baseUrl}ping` :
+                    `${window.location.origin}${baseUrl}ping`;
 
                 throw this.exception({
                     name: 'UI Server Unavailable',
