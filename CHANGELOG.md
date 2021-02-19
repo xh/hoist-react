@@ -4,9 +4,24 @@
 
 ### 🐞 Bug Fixes
 
-* Collapsible Panel will now restore its user specified-size when re-opened.  Previously
-the panel would be reset to the default size.
+* A collapsible `Panel` will now restore its user specified-size when re-opened. Previously the
+  panel would be reset to the default size.
+* `Store.lastLoaded` property now initialized to `null`. Previously this property had been set to
+  the construction time of the Store.
+* Tweak to `Grid` style rules to ensure sufficient specificity of rules related to indenting child
+  rows within tree grids.
 
+* Improvements to parsing of `Field`s of type 'int': We now correctly parse values presented in
+exponential notation and `NaN` values are now converted to `null`.
+
+
+
+### 🎁 New Features
+
+* Added new `Store.loadTreeData` config (default `true`) to enable or disable building of nested
+  Records when the raw data elements being loaded have a `children` property.
+* Cube `View` now detects and properly handles streaming updates to source data that include changes
+  to row dimensions as well as measures.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.0.0...develop)
 

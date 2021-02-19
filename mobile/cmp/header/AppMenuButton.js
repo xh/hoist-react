@@ -21,7 +21,7 @@ import PT from 'prop-types';
 export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     displayName: 'AppMenuButton',
     model: false,
-    className: 'xh-app-menu',
+    className: 'xh-app-menu-button',
 
     render(props) {
         const {className, extraItems, hideImpersonateItem, hideFeedbackItem, hideLogoutItem, hideOptionsItem, hideThemeItem, hideAboutItem, ...rest} = props;
@@ -29,6 +29,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
         return menuButton({
             className,
             menuItems: buildMenuItems(props),
+            popoverProps: {popoverClassName: 'xh-app-menu'},
             ...rest
         });
     }

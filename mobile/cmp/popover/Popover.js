@@ -35,8 +35,10 @@ export const [Popover, popover] = hoistCmp.withFactory({
         content,
         isOpen,
         onInteraction,
+        disabled = false,
         backdrop = false,
         position = 'auto',
+        popoverClassName,
         popperOptions
     }) {
         const impl = useLocalModel(() => new LocalModel()),
@@ -61,7 +63,10 @@ export const [Popover, popover] = hoistCmp.withFactory({
                     ref: impl.targetRef,
                     className: 'xh-popover__target-wrapper',
                     item: elementFromContent(target),
-                    onClick: () => impl.toggleOpen()
+                    onClick: () => {
+                        if (disabled) return;
+                        impl.toggleOpen();
+                    }
                 }),
                 ReactDom.createPortal(
                     fragment({
@@ -70,7 +75,7 @@ export const [Popover, popover] = hoistCmp.withFactory({
                             div({
                                 ref: impl.contentRef,
                                 style: popper?.styles?.popper,
-                                className: 'xh-popover__content-wrapper',
+                                className: classNames('xh-popover__content-wrapper', popoverClassName),
                                 items: elementFromContent(content)
                             }),
                             div({
@@ -105,6 +110,9 @@ Popover.propTypes = {
      */
     onInteraction: PT.func,
 
+    /** True to disable user interaction */
+    disabled: PT.bool,
+
     /** Whether to display a semi-transparent backdrop behind the popover */
     backdrop: PT.bool,
 
@@ -116,6 +124,9 @@ Popover.propTypes = {
         'left-bottom', 'left', 'left-top',
         'auto'
     ]),
+
+    /** Optional className applied to the popover content wrapper. */
+    popoverClassName: PT.string,
 
     /** Escape hatch to provide additional options to the PopperJS implementation */
     popperOptions: PT.object
