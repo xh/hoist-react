@@ -68,20 +68,20 @@ export class QueryEngine {
     // 1) No op yet, so field not fixed -- get field or value matches.
     //------------------------------------------------------------------------
     openSearching(q) {
-        // Get main field suggestions
+        // Suggest matching *fields* for the user to select on their way to a more targeted query.
         let ret = this.getFieldOpts(q.field);
 
-        // Potentially provide some additional match ideas
+        // If a single field matches, reasonable to assume user is looking to search on it.
+        // Suggest *all values from that field* for immediate selection with the = operator.
         if (ret.length === 1) {
-            // user clearly on a path to a single field, drilldown on it with = and an empty search
             ret.push(...this.getValueMatchesForField('=', '', ret[0].fieldSpec));
-        } else {
-            // field search ongoing with options above.
-            // But in case user looking for values, try a general search with = and the text given
-            this.fieldSpecs.forEach(spec => {
-                ret.push(...this.getValueMatchesForField('=', q.field, spec));
-            });
         }
+
+        // Also suggest *matching values* across all suggest-enabled fields to support the user
+        // searching for a value directly, without them needing to type or select a field name.
+        this.fieldSpecs.forEach(spec => {
+            ret.push(...this.getValueMatchesForField('=', q.field, spec));
+        });
 
         ret = this.sortAndTruncate(ret);
 
