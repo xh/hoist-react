@@ -435,7 +435,7 @@ export class GridModel extends HoistModel {
         // await always async, allowing grid to render changes pending at time of call
         await when(() => this.isReady);
 
-        if (ifNoSelection && selModel.isEmpty) return;
+        if (ifNoSelection && !selModel.isEmpty) return;
 
         // Get first displayed row with data - i.e. backed by a record, not a full-width group row.
         const id = this.agGridModel.getFirstSelectableRowNodeId();
