@@ -300,14 +300,14 @@ class LocalModel extends HoistModel {
         }
         if (!menu) return null;
 
-        const recId = params.node ? params.node.id : null,
+        const recId = params.node?.id,
+            colId = params.column?.colId,
             record = isNil(recId) ? null : store.getById(recId, true),
-            colId = params.column ? params.column.colId : null,
             column = isNil(colId) ? null : model.getColumn(colId),
-            selectedIds = selModel.ids;
+            {selection} = model;
 
         // Adjust selection to target record -- and sync to grid immediately.
-        if (record && !(selectedIds.includes(recId))) {
+        if (record && !(selection.includes(record))) {
             selModel.select(record);
         }
 
