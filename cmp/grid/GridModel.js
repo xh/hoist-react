@@ -643,8 +643,8 @@ export class GridModel extends HoistModel {
             if (!col) return null;
             return {
                 colId,
-                pinned,
-                hidden: hide,
+                pinned: pinned ?? null,
+                hidden: !!hide,
                 width: col.flex ? undefined : width
             };
         });
