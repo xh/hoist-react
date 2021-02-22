@@ -7,7 +7,7 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {castArray, compact, remove, isEqual, union} from 'lodash';
+import {castArray, compact, remove, isEqual, union, map} from 'lodash';
 
 /**
  * Model for managing store selections.
@@ -35,10 +35,15 @@ export class StoreSelectionModel extends HoistModel {
         this.addReaction(this.cullSelectionReaction());
     }
 
-    /** @return {Record[]} - currently selected Records. */
+    /** @return {Record[]} - currently selected records. */
     @computed.struct
     get records() {
         return compact(this._ids.map(it => this.store.getById(it, true)));
+    }
+
+    /** @return {*[]} - ids of currently selected records. */
+    get ids() {
+        return map(this.records, 'id');
     }
 
     /** @return {?Record} - single selected record, or null if multiple or no records selected. */

@@ -184,8 +184,7 @@ export class TreeMapModel extends HoistModel {
 
     @computed
     get selectedIds() {
-        const {gridModel} = this;
-        return gridModel ? gridModel.selection.map(it => it.id) : [];
+        return this.gridModel?.selModel.ids ?? [];
     }
 
     @computed
