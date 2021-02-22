@@ -53,7 +53,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                     options: selectOptions,
                     optionRenderer,
                     rsOptions: {
-                        defaultOptions: [],
+                        defaultOptions: false,
                         openMenuOnClick: false,
                         openMenuOnFocus: false,
                         isOptionDisabled: (opt) => opt.type === 'msg',

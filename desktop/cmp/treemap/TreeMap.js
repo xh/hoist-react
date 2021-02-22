@@ -106,6 +106,7 @@ TreeMap.propTypes = {
 
 class LocalModel extends HoistModel {
 
+    /** @member {TreeMapModel} */
     model;
     chartRef = createObservableRef();
     chart = null;
@@ -331,7 +332,7 @@ class LocalModel extends HoistModel {
             node.select(toSelect.has(node.id), true);
         });
 
-        if (gridModel) gridModel.ensureSelectionVisible();
+        gridModel?.ensureSelectionVisibleAsync();
     }
 
     //----------------------

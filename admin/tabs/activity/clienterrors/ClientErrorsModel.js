@@ -12,7 +12,6 @@ import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, comparer, observable, makeObservable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import moment from 'moment';
 
@@ -189,9 +188,8 @@ export class ClientErrorsModel extends HoistModel {
             });
 
             gridModel.loadData(data);
+            await gridModel.preSelectFirstAsync();
 
-            await wait(1);
-            if (!gridModel.hasSelection) gridModel.selectFirst();
         } catch (e) {
             gridModel.clear();
             XH.handleException(e);

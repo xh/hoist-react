@@ -59,22 +59,25 @@ class XHClass extends HoistBase {
     // Metadata - set via webpack.DefinePlugin at build time.
     // See @xh/hoist-dev-utils/configureWebpack.
     //----------------------------------------------------------------------------------------------
-    /** Short internal code for the application. */
+    /** @member {string} - short internal code for the application. */
     appCode = xhAppCode;
 
-    /** User-facing display name for the application. See also `XH.clientAppName`. */
+    /** @member {string} - user-facing display name for the app. See also `XH.clientAppName`. */
     appName = xhAppName;
 
-    /** SemVer or Snapshot version of the client build. */
+    /** @member {string} - semVer or Snapshot version of the client build. */
     appVersion = xhAppVersion;
 
-    /** Git commit hash (or equivalent) of the client build. */
+    /**
+     * @member {string} - optional identifier for the client build (e.g. a git commit hash or a
+     *      build ID from a CI system. Varies depending on how builds are configured.
+     */
     appBuild = xhAppBuild;
 
-    /** Root URL context/path - prepended to all relative fetch requests. */
+    /** @member {string} - root URL context/path - prepended to all relative fetch requests. */
     baseUrl = xhBaseUrl;
 
-    /** Whether build is for local development */
+    /** @member {boolean} - true if app is running in a local development environment. */
     isDevelopmentMode = xhIsDevelopmentMode;
 
     //----------------------------------------------------------------------------------------------
@@ -124,18 +127,43 @@ class XHClass extends HoistBase {
      */
     fetchJson(opts)             {return this.fetchService.fetchJson(opts)}
 
+    /**
+     * Primary convenience alias for reading soft configuration values.
+     * @param {string} key - identifier of the config to return.
+     * @param {*} [defaultVal] - value to return if there is no client-side config with this key.
+     * @return {*} - the soft-configured value.
+     */
     getConf(key, defaultVal)    {return this.configService.get(key, defaultVal)}
+
+    /**
+     * Primary convenience alias for reading user preference values.
+     * @param {string} key - identifier of the pref to return.
+     * @param {*} [defaultVal] - value to return if there is no pref with this key.
+     * @return {*} - the user's preference, or the data-driven default if pref not yet set by user.
+     */
     getPref(key, defaultVal)    {return this.prefService.get(key, defaultVal)}
+
+    /**
+     * Primary convenience alias for setting user preference values.
+     * @param {string} key - identifier of the pref to set.
+     * @param {*} val - the new value to persist for the current user.
+     */
     setPref(key, val)           {return this.prefService.set(key, val)}
 
     // Make these robust, so they don't fail if called early in initialization sequence
     track(opts)                 {return this.trackService?.track(opts)}
     getEnv(key)                 {return this.environmentService?.get(key) ?? null}
+
+    /** @return {?string} */
     getUser()                   {return this.identityService?.getUser() ?? null}
+    /** @return {?string} */
     getUsername()               {return this.identityService?.getUsername() ?? null}
 
+    /** @return {boolean} */
     get isMobileApp()           {return this.appSpec.isMobileApp}
+    /** @return {string} */
     get clientAppCode()         {return this.appSpec.clientAppCode}
+    /** @return {string} */
     get clientAppName()         {return this.appSpec.clientAppName}
 
     get isPhone()               {return this.uaParser.getDevice().type === 'mobile'}
@@ -515,7 +543,7 @@ class XHClass extends HoistBase {
         this._initCalled = true;
 
         const S = AppState,
-            {appSpec, isMobileApp, isPhone, isTablet, isDesktop} = this;
+            {appSpec, isMobileApp, isPhone, isTablet, isDesktop, baseUrl} = this;
 
         if (appSpec.trackAppLoad) this.trackLoad();
 
@@ -538,9 +566,9 @@ class XHClass extends HoistBase {
             try {
                 await XH.fetch({url: 'ping'});
             } catch (e) {
-                const pingURL = XH.isDevelopmentMode ?
-                    `${XH.baseUrl}ping` :
-                    `${window.location.origin}${XH.baseUrl}ping`;
+                const pingURL = baseUrl.startsWith('http') ?
+                    `${baseUrl}ping` :
+                    `${window.location.origin}${baseUrl}ping`;
 
                 throw this.exception({
                     name: 'UI Server Unavailable',

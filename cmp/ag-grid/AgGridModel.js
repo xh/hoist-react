@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable, computed} from '@xh/hoist/mobx';
 import {throwIf, apiDeprecated} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
@@ -107,8 +107,9 @@ export class AgGridModel extends HoistModel {
     /**
      * @returns {boolean} - true if the grid fully initialized and its state can be queried/mutated
      */
+    @computed
     get isReady() {
-        return !isNil(this.agApi);
+        return !isNil(this.agApi) && !isNil(this.agColumnApi);
     }
 
     /**
