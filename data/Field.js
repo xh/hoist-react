@@ -9,7 +9,7 @@ import {XH} from '@xh/hoist/core';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
-import {isDate, isString, toNumber, isFinite, startCase} from 'lodash';
+import {isDate, isString, toNumber, isFinite, startCase, unescape} from 'lodash';
 import DOMPurify from 'dompurify';
 
 /**
@@ -66,7 +66,10 @@ export function parseFieldValue(val, type, defaultValue = null, disableXssProtec
     if (val === undefined || val === null) val = defaultValue;
     if (val === null) return val;
 
-    if (!disableXssProtection && isString(val)) val = DOMPurify.sanitize(val);
+    if (!disableXssProtection && isString(val)) {
+        val = DOMPurify.sanitize(val);
+        val = unescape(val); // Unescape characters (i.e. '<', '>', '&', ''','"') after sanitization
+    }
 
     const FT = FieldType;
     switch (type) {
