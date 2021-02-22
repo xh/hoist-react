@@ -10,10 +10,8 @@
   the construction time of the Store.
 * Tweak to `Grid` style rules to ensure sufficient specificity of rules related to indenting child
   rows within tree grids.
-
 * Improvements to parsing of `Field`s of type 'int': We now correctly parse values presented in
 exponential notation and `NaN` values are now converted to `null`.
-
 
 
 ### 🎁 New Features
@@ -24,13 +22,15 @@ exponential notation and `NaN` values are now converted to `null`.
   first two methods will internally call the third. The existing non-async counterparts for these
   methods have been deprecated.
 * GridModel has a new convenience method `preSelectFirstAsync` for initializing the selection in
-grids, without disturbing any existing selection.
-
+  grids, without disturbing any existing selection.
 * Added new `Store.loadTreeData` config (default `true`) to enable or disable building of nested
   Records when the raw data elements being loaded have a `children` property.
 * Cube `View` now detects and properly handles streaming updates to source data that include changes
   to row dimensions as well as measures.*
 * `DataViewModel.itemHeight` can now be a function that returns a pixel height.
+* `LoadSpec` passed to doLoadAsync() now has additional properties `isLatest`, `isObsolete` and
+  `loadNumber`.  Use these properties to abandon out-of-order asynchronous returns from the
+   server.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.0.0...develop)
 

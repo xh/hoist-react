@@ -6,11 +6,11 @@
  */
 import {throwIf} from '@xh/hoist/utils/js';
 import {observable, makeObservable, runInAction} from '@xh/hoist/mobx';
-import {isPlainObject} from 'lodash';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 
-import {HoistBase} from './HoistBase';
-import {managed} from './HoistBaseDecorators';
+import {HoistBase} from '../HoistBase';
+import {managed} from '../HoistBaseDecorators';
+import {LoadSpec} from './LoadSpec';
 
 /**
  * Provides support for objects that participate in Hoist's loading/refresh lifecycle.
@@ -23,6 +23,9 @@ import {managed} from './HoistBaseDecorators';
  * Not typically created directly by applications.
  */
 export class LoadSupport extends HoistBase {
+
+    _lastRequested = null;
+    _lastSucceeded = null;
 
     /**
      * @member {PendingTaskModel} - model tracking the loading of this object.
@@ -48,24 +51,53 @@ export class LoadSupport extends HoistBase {
     }
 
     /**
-     * Load the target by calling its `doLoadAsync()` implementation.
+     * Load the target by calling its `doLoadAsync()` implementation
      *
-     * @param {LoadSpec} [loadSpec] - optional metadata about the underlying request, used within
-     *      Hoist and application code to adjust related behaviors such as error handling and
-     *      activity tracking.
+     * @param {LoadSpec} [loadSpec] - optional metadata about the underlying request. Not created
+     *      directly by applications - this parameter is available for implementations of
+     *      doLoadAsync that already have a LoadSpec and are delegating loading to this object.
      */
-    async loadAsync(loadSpec = {}) {
-        const {target} = this;
+    async loadAsync(loadSpec = null) {
         throwIf(
-            !isPlainObject(loadSpec),
-            'Unexpected param passed to loadAsync() - accepts loadSpec object only. If triggered via a reaction, ensure call is wrapped in a closure.'
+            loadSpec && !loadSpec.isLoadSpec,
+            'Unexpected param passed to loadAsync().  If triggered via a reaction, ensure call is wrapped in a closure.'
         );
+        loadSpec = loadSpec ?
+            new LoadSpec({isRefresh: loadSpec.isRefresh, isAutoRefresh: loadSpec.isAutoRefresh, owner: this}) :
+            new LoadSpec({owner: this});
 
-        // Skip auto-refresh if we have a pending triggered refresh
-        if (loadSpec.isAutoRefresh && this.loadModel.isPending) return;
+        return this.internalLoadAsync(loadSpec);
+    }
+
+    /**
+     * Refresh the target.
+     */
+    async refreshAsync() {
+        return this.internalLoadAsync(new LoadSpec({isRefresh: true, owner: this}));
+    }
+
+    /**
+     * Auto-refresh the target.
+     */
+    async autoRefreshAsync() {
+        return this.internalLoadAsync(new LoadSpec({isAutoRefresh: true, owner: this}));
+    }
+
+    //--------------------------
+    // Implementation
+    //--------------------------
+    async internalLoadAsync(loadSpec) {
+        let {target, loadModel} = this;
+
+        // Auto-refresh:
+        // Skip if we have a pending triggered refresh, and never link to loadModel
+        if (loadSpec.isAutoRefresh) {
+            if (loadModel.isPending) return;
+            loadModel = null;
+        }
 
         runInAction(() => this.lastLoadRequested = new Date());
-        const loadModel = !loadSpec.isAutoRefresh ? this.loadModel : null;
+        this._lastRequested = loadSpec;
 
         let exception = null;
         return target
@@ -81,7 +113,11 @@ export class LoadSupport extends HoistBase {
                     this.lastLoadException = exception;
                 });
 
-                if (this.target.isRefreshContextModel) return;
+                if (!exception) {
+                    this._lastSucceeded = loadSpec;
+                }
+
+                if (target.isRefreshContextModel) return;
 
                 const elapsed = this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime(),
                     msg = `[${target.constructor.name}] | ${getLoadTypeFromSpec(loadSpec)} | ${exception ? 'failed' : 'completed'} | ${elapsed}ms`;
@@ -98,19 +134,6 @@ export class LoadSupport extends HoistBase {
             });
     }
 
-    /**
-     * Refresh the target.
-     */
-    async refreshAsync() {
-        return this.loadAsync({isRefresh: true, isAutoRefresh: false});
-    }
-
-    /**
-     * Auto-refresh the target.
-     */
-    async autoRefreshAsync() {
-        return this.loadAsync({isRefresh: true, isAutoRefresh: true});
-    }
 }
 
 
@@ -118,7 +141,7 @@ export class LoadSupport extends HoistBase {
 * Load a collection of objects concurrently.
 *
 * @param {Object[]} objs - list of objects to be loaded
-* @param {LoadSpec} loadSpec - metadata related to this request.
+* @param {LoadSpec} [loadSpec] - metadata related to this request.
 *
 * Note that this method uses 'allSettled' in its implementation in order to
 * to avoid a failure of any single call from causing the method to throw.
@@ -132,16 +155,6 @@ export async function loadAllAsync(objs, loadSpec) {
 
     return ret;
 }
-
-
-/**
- * @typedef {Object} LoadSpec
- *
- * @property {boolean} [isRefresh] - true if this load was triggered by a refresh request.
- * @property {boolean} [isAutoRefresh] - true if this load was triggered by a programmatic
- *       refresh process, rather than a user action.
- */
-
 
 //------------------------
 // Implementation

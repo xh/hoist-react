@@ -13,7 +13,6 @@ export * from './elem';
 
 export * from './HoistBase';
 export * from './HoistBaseDecorators';
-export * from './LoadSupport';
 export * from './hooks/Models';
 
 export * from './modelspec/ModelSpec';
@@ -29,6 +28,7 @@ export * from './HoistService';
 
 export * from '../utils/async/PendingTaskModel';
 
+export * from './refresh/LoadSupport';
 export * from './refresh/RefreshContextModel';
 export * from './refresh/RefreshContextView';
 export * from './refresh/RootRefreshContextModel';
