@@ -185,7 +185,7 @@ export class TreeMapModel extends HoistModel {
     @computed
     get selectedIds() {
         if (!this.gridModel || this.gridModel.selModel.mode === 'disabled') return [];
-        return this.gridModel.selModel.ids;
+        return this.gridModel.selModel.records.map(it => it.id);
     }
 
     @computed
