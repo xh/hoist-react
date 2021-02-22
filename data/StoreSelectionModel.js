@@ -41,7 +41,7 @@ export class StoreSelectionModel extends HoistModel {
         return compact(this._ids.map(it => this.store.getById(it, true)));
     }
 
-    /** @return {*[]} - ids of currently selected records. */
+    /** @return {(string[]|number[])} - IDs of currently selected records. */
     get ids() {
         return map(this.records, 'id');
     }
