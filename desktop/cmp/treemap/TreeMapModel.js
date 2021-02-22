@@ -184,14 +184,14 @@ export class TreeMapModel extends HoistModel {
 
     @computed
     get selectedIds() {
-        if (!this.gridModel || this.gridModel.selModel.mode === 'disabled') return [];
-        return this.gridModel.selModel.records.map(it => it.id);
+        const {gridModel} = this;
+        return gridModel ? gridModel.selection.map(it => it.id) : [];
     }
 
     @computed
     get expandState() {
-        if (!this.gridModel || !this.gridModel.treeMode) return {};
-        return this.gridModel.expandState;
+        const {gridModel} = this;
+        return gridModel?.treeMode ? gridModel.expandState : {};
     }
 
     @computed
