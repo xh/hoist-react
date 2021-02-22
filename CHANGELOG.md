@@ -28,12 +28,6 @@
   to row dimensions as well as measures.*
 * `DataViewModel.itemHeight` can now be a function that returns a pixel height.
 
-### ⚙️ Technical
-
-* ⚠ **Note** that `StoreSelectionModel` previously exposed its collection of selected Record IDs in
-  an undocumented `ids` property, which has now been renamed `_ids`. Any app code which had
-  previously read this property should use the public `records` getter instead.
-
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.0.0...develop)
 
 
