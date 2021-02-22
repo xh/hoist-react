@@ -1,5 +1,15 @@
 # Changelog
 
+## v36.6.3 - 2021-02-22  (PATCH Release)
+
+### 🐞 Bug Fixes
+
+* Fixed regression where a tooltip can cause a react rendering issue by trying to render
+`undefined`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.6.2...v36.6.3)
+
+
 ## v36.6.2 - 2021-02-09  (PATCH Release)
 
 ### 🐞 Bug Fixes
