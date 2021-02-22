@@ -428,9 +428,12 @@ export class Column {
                     const {store} = record,
                         value = me.getValueFn({record, column: me, gridModel, agParams, store});
 
-                    return isFunction(tooltipSpec) ?
+                    const ret = isFunction(tooltipSpec) ?
                         tooltipSpec(value, {record, column: me, gridModel, agParams}) :
                         value;
+
+                    return ret ?? null;
+
                 }
             };
         }
