@@ -40,10 +40,17 @@ export class LoadSpec {
     /** @member {LoadSupport} - owner of this object. */
     owner;
 
-    get isLatest() {
+    /**
+     * @member {boolean} - true if there is exists a more recent request to load this object.
+     */
+    get isStale() {
         return this === this.owner._lastRequested;
     }
 
+    /**
+     * @member {boolean} - true if a more recent request to load this object has already
+     *      successfully completed.
+     */
     get isObsolete() {
         return this.owner._lastSucceeded?.loadNumber > this.loadNumber;
     }

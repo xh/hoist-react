@@ -28,7 +28,7 @@ exponential notation and `NaN` values are now converted to `null`.
 * Cube `View` now detects and properly handles streaming updates to source data that include changes
   to row dimensions as well as measures.*
 * `DataViewModel.itemHeight` can now be a function that returns a pixel height.
-* `LoadSpec` passed to doLoadAsync() now has additional properties `isLatest`, `isObsolete` and
+* `LoadSpec` passed to doLoadAsync() now has additional properties `isStale`, `isObsolete` and
   `loadNumber`.  Use these properties to abandon out-of-order asynchronous returns from the
    server.
 
