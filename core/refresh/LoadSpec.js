@@ -23,6 +23,8 @@
  */
 export class LoadSpec {
 
+    get isLoadSpec()    {return true}
+
     /** @member {number} - index of the associated load on this object.  0 for the first load. */
     loadNumber;
 
@@ -38,22 +40,27 @@ export class LoadSpec {
     /** @member {LoadSupport} - owner of this object. */
     owner;
 
-    get isLoadSpec()    {return true}
-
-    get isLatest()      {
+    get isLatest() {
         return this === this.owner._lastRequested;
     }
 
-    get isObsolete()    {
-        return this.owner._lastSucceeded.loadNumber > this.loadNumber;
+    get isObsolete() {
+        return this.owner._lastSucceeded?.loadNumber > this.loadNumber;
+    }
+
+    get typeDisplay() {
+        if (this.isAutoRefresh) return 'Auto-Refresh';
+        if (this.isRefresh)     return 'Refresh';
+        return 'Load';
     }
 
     /**
      *  @private
      *  Not for application use.  Used by LoadSupport.
      */
-    constructor({loadNumber, isRefresh, isAutoRefresh, owner}) {
-        this.loadNumber = loadNumber;
+    constructor({isRefresh, isAutoRefresh, owner}) {
+        const last = owner._lastRequested;
+        this.loadNumber = last ? last.loadNumber + 1 : 0;
         this.isRefresh = isRefresh || isAutoRefresh;
         this.isAutoRefresh = isAutoRefresh;
         this.owner = owner;

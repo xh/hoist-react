@@ -120,7 +120,7 @@ export class LoadSupport extends HoistBase {
                 if (target.isRefreshContextModel) return;
 
                 const elapsed = this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime(),
-                    msg = `[${target.constructor.name}] | ${getLoadTypeFromSpec(loadSpec)} | ${exception ? 'failed' : 'completed'} | ${elapsed}ms`;
+                    msg = `[${target.constructor.name}] | ${loadSpec.typeDisplay} | ${exception ? 'failed' : 'completed'} | ${elapsed}ms`;
 
                 if (exception) {
                     if (exception.isRoutine) {
@@ -156,11 +156,3 @@ export async function loadAllAsync(objs, loadSpec) {
     return ret;
 }
 
-//------------------------
-// Implementation
-//------------------------
-function getLoadTypeFromSpec(loadSpec) {
-    if (loadSpec.isAutoRefresh) return 'Auto-Refresh';
-    if (loadSpec.isRefresh) return 'Refresh';
-    return 'Load';
-}
