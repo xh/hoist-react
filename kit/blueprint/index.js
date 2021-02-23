@@ -4,10 +4,22 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {Dialog, FocusStyleManager, Overlay, Popover} from '@blueprintjs/core';
+import {
+    Classes,
+    ContextMenu,
+    Dialog,
+    FocusStyleManager,
+    Overlay,
+    Popover,
+    PopoverInteractionKind,
+    Position,
+    Toaster
+} from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
+import {HotkeysEvents} from '@blueprintjs/core/lib/esm/components/hotkeys/hotkeysEvents';
 import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
 import './styles.scss';
+
 
 // Only show focus indicators when tabbing through components - avoids drawing focus outlines
 // on focusable components when focused via mouse click.
@@ -21,16 +33,17 @@ Overlay.defaultProps.transitionDuration = 0;
 Overlay.defaultProps.transitionName = 'none';
 Popover.defaultProps.transitionDuration = 0;
 
+
+//---------------------
+// Re-exports
+//---------------------
 export {
     ContextMenu,
     Classes,
+    HotkeysEvents,
     PopoverInteractionKind,
     Position,
     Toaster
-} from '@blueprintjs/core';
-
-// Yikes -- require two non-published classes.
-export {HotkeysEvents} from '@blueprintjs/core/lib/esm/components/hotkeys/hotkeysEvents';
-
+};
 export * from './Wrappers';
 export * from './Dialog';
