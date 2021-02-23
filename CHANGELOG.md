@@ -2,6 +2,9 @@
 
 ## v39.0.0-SNAPSHOT - unreleased
 
+⚠ Please ensure your `@xh/hoist-dev-utils` dependency is >= v5.6.0. This is required to successfully
+resolve and bundle transitive dependencies of the upgraded `react-select` library.
+
 ### 🐞 Bug Fixes
 
 * A collapsible `Panel` will now restore its user specified-size when re-opened. Previously the
@@ -10,14 +13,13 @@
   the construction time of the Store.
 * Tweak to `Grid` style rules to ensure sufficient specificity of rules related to indenting child
   rows within tree grids.
-* Improvements to parsing of `Field`s of type 'int': We now correctly parse values presented in
-exponential notation and `NaN` values are now converted to `null`.
-
+* Improvements to parsing of `Field`s of type 'int': we now correctly parse values presented in
+  exponential notation and coerce `NaN` values to `null`.
 
 ### 🎁 New Features
 
-* `GridModel` has new async variants of existing methods: `selectFirstAsync`, `selectAsync`,
-  and `ensureSelectionVisibleAsync`. These methods build-in the necessary waiting for the underlying
+* `GridModel` has new async variants of existing methods: `selectFirstAsync`, `selectAsync`, and
+  `ensureSelectionVisibleAsync`. These methods build-in the necessary waiting for the underlying
   grid implementation to be ready and fully rendered to ensure reliable selection. In addition, the
   first two methods will internally call the third. The existing non-async counterparts for these
   methods have been deprecated.
@@ -29,10 +31,16 @@ exponential notation and `NaN` values are now converted to `null`.
   to row dimensions as well as measures.*
 * `DataViewModel.itemHeight` can now be a function that returns a pixel height.
 * `LoadSpec` passed to doLoadAsync() now has additional properties `isStale`, `isObsolete` and
-  `loadNumber`.  Use these properties to abandon out-of-order asynchronous returns from the
-   server.
+  `loadNumber`. Use these properties to abandon out-of-order asynchronous returns from the server.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.38 -> 3.39`
+* react-select `3.1 -> 4.1`
+* react-windowed-select `2.0 -> 3.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.0.0...develop)
+
 
 
 ## v38.0.0 - 2021-02-04
@@ -45,20 +53,16 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
 * We are introducing a new root superclass `HoistBase` which provides many of the syntax
   enhancements and conventions used throughout Hoist for persistence, resource management, and
   reactivity.
-
 * New base classes of `HoistModel` and `HoistService` replace the existing class decorators
   `@HoistModel` and `@HoistService`. Application models and services should now `extend` these base
   classes instead of applying the (now removed) decorators. For your application's `AppModel`,
   extend the new `HoistAppModel` superclass.
-
 * We have also removed the need for the explicit `@LoadSupport` annotation on these classes. The
   presence of a defined `doLoadAsync()` method is now sufficient to allow classes extending
   `HoistModel` and `HoistService` to participate in the loading and refreshing lifecycle as before.
-
 * We have deprecated support for class-based Components via the `@HoistComponent` class decorator.
   To continue to use this decorator, please import it from the `@xh\hoist\deprecated` package.
   Please note that we plan to remove `@HoistComponent` in a future version.
-
 * Due to changes in MobX v6.0.1, all classes that host observable fields and actions will now also
   need to provide a constructor containing a call to `makeObservable(this)`. This change will
   require updates to most `HoistModel` and `HoistService` classes. See

@@ -106,6 +106,7 @@ TreeMap.propTypes = {
 
 class LocalModel extends HoistModel {
 
+    /** @member {TreeMapModel} */
     model;
     chartRef = createObservableRef();
     chart = null;

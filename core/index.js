@@ -10,7 +10,6 @@ export * from './enums/RenderMode';
 
 export * from './elem';
 
-
 export * from './HoistBase';
 export * from './HoistBaseDecorators';
 export * from './hooks/Models';

@@ -423,18 +423,15 @@ class LocalModel extends HoistModel {
 
     selectionReaction() {
         const {model} = this,
-            {agGridModel} = model;
+            {agGridModel, selModel} = model;
 
         return {
-            track: () => [model.isReady, model.selection],
-            run: ([isReady, selection]) => {
+            track: () => [model.isReady, selModel.ids],
+            run: ([isReady, ids]) => {
                 if (!isReady) return;
 
-                // If ag-grid's selection differs from the selection model, set it to match.
-                const modelSelection = map(selection, 'id'),
-                    agSelection = agGridModel.getSelectedRowNodeIds();
-                if (!isEqual(modelSelection, agSelection)) {
-                    agGridModel.setSelectedRowNodeIds(modelSelection);
+                if (!isEqual(ids, agGridModel.getSelectedRowNodeIds())) {
+                    agGridModel.setSelectedRowNodeIds(ids);
                 }
             }
         };
