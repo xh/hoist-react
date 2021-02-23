@@ -17,7 +17,7 @@ import {isEmpty} from 'lodash';
  * ContextMenu
  *
  * Not typically used directly by applications.  To add a Context Menu to an application
- * see ContextMenuHost, or the 'contextMenu` prop on panel.
+ * use the 'contextMenu` prop on panel.
  *
  * @see StoreContextMenu to specify a context menu on store enabled components.
  * That API will receive specific information about the current selection
