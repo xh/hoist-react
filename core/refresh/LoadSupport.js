@@ -4,12 +4,11 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {throwIf} from '@xh/hoist/utils/js';
-import {observable, makeObservable, runInAction} from '@xh/hoist/mobx';
+import {managed} from '@xh/hoist/core';
+import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
-
+import {throwIf} from '@xh/hoist/utils/js';
 import {HoistBase} from '../HoistBase';
-import {managed} from '../HoistBaseDecorators';
 import {LoadSpec} from './LoadSpec';
 
 /**
@@ -37,10 +36,10 @@ export class LoadSupport extends HoistBase {
     /** @member {Date} - date when last load was initiated (observable) */
     @observable.ref lastLoadRequested = null;
 
-    /** @member {Date} -  date when last load completed (observable) */
+    /** @member {Date} - date when last load completed (observable) */
     @observable.ref lastLoadCompleted = null;
 
-    /** @member {Error} Any exception that occurred during last load (observable) */
+    /** @member {Error} - any exception that occurred during last load (observable) */
     @observable.ref lastLoadException = null;
 
     constructor(target) {
@@ -54,8 +53,9 @@ export class LoadSupport extends HoistBase {
      * Load the target by calling its `doLoadAsync()` implementation
      *
      * @param {LoadSpec} [loadSpec] - optional metadata about the underlying request. Not created
-     *      directly by applications - this parameter is available for implementations of
-     *      doLoadAsync that already have a LoadSpec and are delegating loading to this object.
+     *      directly by applications. Within app code, this parameter is typically used within
+     *      `doLoadAsync()` implementations when calling `loadAsync()` on *other* objects to
+     *      relay the `LoadSpec` that they were given.
      */
     async loadAsync(loadSpec = null) {
         throwIf(
@@ -138,13 +138,13 @@ export class LoadSupport extends HoistBase {
 
 
 /**
-* Load a collection of objects concurrently.
-*
-* @param {Object[]} objs - list of objects to be loaded
-* @param {LoadSpec} [loadSpec] - metadata related to this request.
-*
-* Note that this method uses 'allSettled' in its implementation in order to
-* to avoid a failure of any single call from causing the method to throw.
+ * Load a collection of objects concurrently.
+ *
+ * Note that this method uses 'allSettled' in its implementation, meaning a failure of any one call
+ * will not cause the entire batch to throw.
+ *
+ * @param {Object[]} objs - list of objects to be loaded
+ * @param {LoadSpec} [loadSpec] - metadata related to this request.
 */
 export async function loadAllAsync(objs, loadSpec) {
     const promises = objs.map(it => it.loadAsync(loadSpec)),
@@ -155,4 +155,3 @@ export async function loadAllAsync(objs, loadSpec) {
 
     return ret;
 }
-
