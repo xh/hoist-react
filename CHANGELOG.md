@@ -2,6 +2,9 @@
 
 ## v39.0.0-SNAPSHOT - unreleased
 
+⚠ Please ensure your `@xh/hoist-dev-utils` dependency is >= v5.6.0. This is required to successfully
+resolve and bundle transitive dependencies of the upgraded `react-select` library.
+
 ### 🐞 Bug Fixes
 
 * A collapsible `Panel` will now restore its user specified-size when re-opened. Previously the
