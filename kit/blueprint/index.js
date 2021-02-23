@@ -10,12 +10,13 @@ import {
     ContextMenu,
     Dialog,
     FocusStyleManager,
-    HotkeysProvider
+    HotkeysProvider,
     Overlay,
     Popover,
     PopoverInteractionKind,
     Position,
-    Toaster
+    Toaster,
+    useHotkeys
 } from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
@@ -42,7 +43,6 @@ export {
     useHotkeys,
     ContextMenu,
     Classes,
-    HotkeysEvents,
     PopoverInteractionKind,
     Position,
     Toaster
