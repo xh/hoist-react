@@ -30,8 +30,13 @@ resolve and bundle transitive dependencies of the upgraded `react-select` librar
 * Cube `View` now detects and properly handles streaming updates to source data that include changes
   to row dimensions as well as measures.*
 * `DataViewModel.itemHeight` can now be a function that returns a pixel height.
-* `LoadSpec` passed to doLoadAsync() now has additional properties `isStale`, `isObsolete` and
-  `loadNumber`. Use these properties to abandon out-of-order asynchronous returns from the server.
+* The `LoadSpec` object passed to `doLoadAsync()` is now a defined class with additional
+  properties `isStale`, `isObsolete` and `loadNumber`. Use these properties to abandon out-of-order
+  asynchronous returns from the server.
+  * 💥 NOTE that calls to `loadAsync()` no longer accept a plain object for their `loadSpec`
+    parameter. Application code such as `fooModel.loadAsync({isRefresh: true})` should be updated to
+    use the wrapper APIs provided by `LoadSupport` - e.g. `fooModel.refreshAsync()`. (This was
+    already the best practice, but is now enforced.)
 
 ### 📚 Libraries
 
