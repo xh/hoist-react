@@ -31,6 +31,8 @@
 ### 📚 Libraries
 
 * @blueprintjs/core `3.38 -> 3.39`
+* react-select `3.1 -> 4.1`
+* react-windowed-select `2.0 -> 3.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.0.0...develop)
 
