@@ -8,6 +8,8 @@ import {useHotkeys as useHotkeysBp} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
 import {cloneElement, useMemo} from 'react';
 
+/* eslint-disable react-hooks/exhaustive-deps */
+
 /**
  * Hook to add Key handling support to a component.
  *
