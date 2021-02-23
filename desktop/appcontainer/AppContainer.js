@@ -4,6 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {hotkeysProvider} from '@xh/hoist/kit/blueprint';
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {AppState, elem, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
@@ -59,15 +60,17 @@ export const AppContainer = hoistCmp({
         useOnMount(() => XH.initAsync());
 
         return fragment(
-            errorBoundary({
-                item: viewForState(),
-                onError: (e) => XH.handleException(e, {requireReload: true})
-            }),
-            // Modal component helpers rendered here at top-level to support display of messages
-            // and exceptions at any point during the app lifecycle.
-            exceptionDialog(),
-            messageSource(),
-            toastSource()
+            hotkeysProvider(
+                errorBoundary({
+                    item: viewForState(),
+                    onError: (e) => XH.handleException(e, {requireReload: true})
+                }),
+                // Modal component helpers rendered here at top-level to support display of messages
+                // and exceptions at any point during the app lifecycle.
+                exceptionDialog(),
+                messageSource(),
+                toastSource()
+            )
         );
     }
 });
@@ -156,3 +159,4 @@ const idlePanelHost = hoistCmp.factory({
         return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
     }
 });
+

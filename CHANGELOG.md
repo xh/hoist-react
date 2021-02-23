@@ -28,7 +28,12 @@
   to row dimensions as well as measures.*
 * `DataViewModel.itemHeight` can now be a function that returns a pixel height.
 
+### 📚 Libraries
+
+* @blueprintjs/core `3.38 -> 3.39`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.0.0...develop)
+
 
 
 ## v38.0.0 - 2021-02-04
