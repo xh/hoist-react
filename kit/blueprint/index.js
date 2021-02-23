@@ -4,7 +4,8 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {Dialog, FocusStyleManager, Overlay, Popover} from '@blueprintjs/core';
+import {elemFactory} from '@xh/hoist/core';
+import {Dialog, FocusStyleManager, HotkeysProvider, Overlay, Popover} from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
 import './styles.scss';
@@ -22,6 +23,7 @@ Overlay.defaultProps.transitionName = 'none';
 Popover.defaultProps.transitionDuration = 0;
 
 export {
+    useHotkeys,
     ContextMenu,
     Classes,
     PopoverInteractionKind,
@@ -29,8 +31,8 @@ export {
     Toaster
 } from '@blueprintjs/core';
 
-// Yikes -- require two non-published classes.
-export {HotkeysEvents} from '@blueprintjs/core/lib/esm/components/hotkeys/hotkeysEvents';
-
 export * from './Wrappers';
 export * from './Dialog';
+
+
+export const hotkeysProvider = elemFactory(HotkeysProvider);
