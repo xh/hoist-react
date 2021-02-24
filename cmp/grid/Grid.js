@@ -24,12 +24,13 @@ import {
     isArray,
     isEmpty,
     isEqual,
-    isFinite,
     isFunction,
     isNil,
     isString,
     map,
-    merge
+    merge,
+    max,
+    maxBy
 } from 'lodash';
 import PT from 'prop-types';
 import {createRef, isValidElement} from 'react';
@@ -151,21 +152,17 @@ class LocalModel extends HoistModel {
     agOptions;
     propsKeyDown;
     viewRef = createRef();
+    fixedRowHeight;
 
-    // The minimum required row height specified by the columns (if any) */
-    @computed
-    get rowHeight() {
+    getRowHeight(node) {
         const {model} = this;
-        const gridDefaultHeight = AgGrid.getRowHeightForSizingMode(model.sizingMode),
-            maxColHeight = Math.max(...map(model.columns, 'rowHeight').filter(isFinite));
-
-        return isFinite(maxColHeight) ? Math.max(gridDefaultHeight, maxColHeight) : gridDefaultHeight;
-    }
-
-    @computed
-    get groupRowHeight() {
-        const {model} = this;
-        return model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode(model.sizingMode);
+        if (node?.group) {
+            return model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode(model.sizingMode);
+        }
+        return max([
+            this.fixedRowHeight,
+            model.agGridModel.getAutoRowHeight(node)
+        ]);
     }
 
     // Do any root level records have children?
@@ -184,6 +181,7 @@ class LocalModel extends HoistModel {
         this.addReaction(this.columnStateReaction());
         this.addReaction(this.dataReaction());
         this.addReaction(this.groupReaction());
+        this.addReaction(this.rowHeightReaction());
 
         this.agOptions = merge(this.createDefaultAgOptions(props), props.agOptions || {});
         this.propsKeyDown = props.onKeyDown;
@@ -218,7 +216,7 @@ class LocalModel extends HoistModel {
                 agColumnGroupHeader: (props) => columnGroupHeader(props)
             },
             rowSelection: model.selModel.mode,
-            getRowHeight: (params) => params.node?.group ? this.groupRowHeight : this.rowHeight,
+            getRowHeight: ({node}) => this.getRowHeight(node),
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             noRowsOverlayComponentFramework: observer(() => div(model.emptyText)),
             onRowClicked: (e) => {
@@ -461,6 +459,20 @@ class LocalModel extends HoistModel {
         };
     }
 
+    rowHeightReaction() {
+        const {model} = this;
+        return {
+            track: () => [model.getVisibleLeafColumns(), model.sizingMode],
+            run: ([visibleCols, sizingMode]) => {
+                this.fixedRowHeight = max([
+                    AgGrid.getRowHeightForSizingMode(sizingMode),
+                    maxBy(visibleCols, 'rowHeight')?.rowHeight
+                ]);
+            },
+            fireImmediately: true
+        };
+    }
+
     columnsReaction() {
         const {model} = this;
         return {
@@ -609,6 +621,7 @@ class LocalModel extends HoistModel {
         if (isDisplayed(this.viewRef.current) && ev.finished && ev.source === 'autosizeColumns') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
+        ev.api.resetRowHeights();
     };
 
     // Catches row group changes triggered from ag-grid ui components
@@ -634,6 +647,7 @@ class LocalModel extends HoistModel {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
+        ev.api.resetRowHeights();
     };
 
     groupSortComparator = (nodeA, nodeB) => {

@@ -37,6 +37,8 @@ resolve and bundle transitive dependencies of the upgraded `react-select` librar
     parameter. Application code such as `fooModel.loadAsync({isRefresh: true})` should be updated to
     use the wrapper APIs provided by `LoadSupport` - e.g. `fooModel.refreshAsync()`. (This was
     already the best practice, but is now enforced.)
+* New `autoHeight` property on grid `Column`.  When set the grid will increase the row
+  height dynamically to accommodate cell content in this column.
 
 ### 📚 Libraries
 

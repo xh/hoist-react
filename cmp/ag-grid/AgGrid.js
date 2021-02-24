@@ -8,7 +8,7 @@ import {div, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, elem, XH} from '@xh/hoist/core';
 import {splitLayoutProps, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isNil} from 'lodash';
+import {isNil, max} from 'lodash';
 import './AgGrid.scss';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 import {AgGridModel} from './AgGridModel';
@@ -57,9 +57,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
         const impl = useLocalModel(() => new LocalModel(model, agGridProps));
         impl.onGridReady = onGridReady;
 
-        useOnUnmount(() => {
-            if (model) model.handleGridUnmount();
-        });
+        useOnUnmount(() => model?.handleGridUnmount());
 
         return frame({
             ref,
@@ -78,7 +76,8 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
                 // Default some ag-grid props, but allow overriding.
                 getRowHeight: impl.getRowHeight,
                 navigateToNextCell: impl.navigateToNextCell,
-
+                onColumnResized: impl.onColumnChange,
+                onColumnVisible: impl.onColumnChange,
                 // Pass others on directly.
                 ...agGridProps,
 
@@ -110,6 +109,11 @@ class LocalModel extends HoistModel {
     model;
     onGridReady;
 
+    get headerHeight() {
+        const {hideHeaders, sizingMode} = this.model;
+        return hideHeaders ? 0 : AgGrid.getHeaderHeightForSizingMode(sizingMode);
+    }
+
     constructor(model, agGridProps) {
         super();
         this.model = model;
@@ -118,12 +122,8 @@ class LocalModel extends HoistModel {
         // manage header height if was not explicitly provided to component
         if (isNil(agGridProps.headerHeight)) {
             this.addReaction({
-                track: () => [model.agApi, model.sizingMode, model.hideHeaders],
-                run: ([api, sizingMode, hideHeaders]) => {
-                    api?.setHeaderHeight(
-                        hideHeaders ? 0 : AgGrid.getHeaderHeightForSizingMode(sizingMode)
-                    );
-                }
+                track: () => [model.agApi, this.headerHeight],
+                run: ([api, headerHeight]) => api?.setHeaderHeight(headerHeight)
             });
         }
     }
@@ -141,5 +141,15 @@ class LocalModel extends HoistModel {
         }
     };
 
-    getRowHeight = () => AgGrid.getRowHeightForSizingMode(this.model.sizingMode);
+    onColumnChange = (ev) => {
+        ev.api.resetRowHeights();
+    };
+
+    getRowHeight = ({node}) => {
+        const {model} = this;
+        return max([
+            AgGrid.getRowHeightForSizingMode(model.sizingMode),
+            model.getAutoRowHeight(node)
+        ]);
+    }
 }
