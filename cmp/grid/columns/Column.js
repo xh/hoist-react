@@ -127,9 +127,9 @@ export class Column {
      *     sort icon when calculating the header width.
      * @param {number} [c.autosizeMinWidth] - minimum width in pixels when autosizing.
      * @param {number} [c.autosizeMaxWidth] - maximum width in pixels when autosizing.
-     * @param {boolean} [c.autoHeight] - true to let the Grid set row height based on the content 
-     *      of this column's cell.  Text will wrap within cell.   If column uses an elementRenderer 
-     *      autoHeight is ignored (treated as false).
+     * @param {boolean} [c.autoHeight] - true to dynamically grow the row height based on the
+     *      content of this column's cell.  If true, text will also be set to wrap within cells.
+     *      This property will be ignored if elementRenderer is set.
      * @param {boolean} [c.rendererIsComplex] - true if this renderer relies on more than
      *      just the value of the field associated with this column.  Set to true to ensure that
      *      the cells for this column are updated any time the record is changed.  Setting to true
@@ -296,7 +296,7 @@ export class Column {
         this.autoHeight = withDefault(autoHeight, false);
         warnIf(
             autoHeight && elementRenderer,
-            'autoHeight is ignored when elementRenderer is defined.  Row heights will not change to accomodate the height of the elementRenderer component'
+            'autoHeight is ignored when an elementRenderer is defined.  Row heights will not change to accommodate cell content for this column.'
         );
         this.tooltip = tooltip;
         this.tooltipElement = tooltipElement;
