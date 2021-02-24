@@ -279,13 +279,19 @@ export class TreeMapModel extends HoistModel {
         const {colorMode} = this;
         if (!data.length || colorMode === 'none') return data;
 
-        // 1) Extract heat values and split into positive and negative
-        const heatValues = this.store.records.map(it => it.data[this.heatField]);
+        // 1) Extract valid heat values
+        const heatValues = [];
+        this.store.records.forEach(it => {
+            const val = it.get(this.heatField);
+            if (isFinite(val)) heatValues.push(val);
+        });
+
+        // 2) Split heat values into positive and negative
         let [posHeatValues, negHeatValues] = partition(heatValues, it => it > 0);
         posHeatValues = sortBy(posHeatValues);
         negHeatValues = sortBy(negHeatValues.map(it => Math.abs(it)));
 
-        // 2) Calculate bounds and midpoints for each range
+        // 3) Calculate bounds and midpoints for each range
         let minPosHeat = 0, midPosHeat = 0, maxPosHeat = 0, minNegHeat = 0, midNegHeat = 0, maxNegHeat = 0;
         if (posHeatValues.length) {
             minPosHeat = posHeatValues[0];
@@ -298,7 +304,7 @@ export class TreeMapModel extends HoistModel {
             maxNegHeat = negHeatValues[negHeatValues.length - 1];
         }
 
-        // 3) Transform heatValue into a normalized colorValue, according to the colorMode.
+        // 4) Transform heatValue into a normalized colorValue, according to the colorMode.
         data.forEach(it => {
             const {heatValue} = it;
 
