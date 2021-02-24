@@ -37,13 +37,19 @@ at the class/component level and for essential public methods.
 
 ## Hoist usage, licensing, and support
 
-While we maintain open access to the Hoist codebase via these public repositories, Hoist is intended
-for use by clients of Extremely Heavy who are working with us to develop custom
-applications for their enterprise.
+Hoist is currently developed exclusively by Extremely Heavy and intended for use by XH and our
+client partners to develop enterprise web applications with XH's guidance and direction. That said,
+we have released the toolkit under the permissive and open Apache 2.0 license. This allows other
+developers, regardless of whether they are current XH clients or not, to checkout, use, modify, and
+otherwise explore Hoist and its source code. See [this project's license file](LICENSE.md) for the
+full license.
 
-Please refer to the
-[Hoist Core readme](https://github.com/xh/hoist-core#hoist-usage-licensing-and-support) for
-additional terms and conditions, all of which apply equally and entirely to Hoist React.
+We have selected an open source license as part of our ongoing commitment to openness, transparency,
+and ease-of-use, and to clarify and emphasize the suitability of Hoist for use within a wide variety
+of enterprise software projects. Note, however, that we cannot at this time commit to any particular
+support or contribution model outside of our consulting work. But if you are interested in Hoist
+and/or think it might be helpful for a project, please don't hesitate to
+[contact us](https://xh.io/contact)!
 
 ## Key Libraries and Dependencies
 
@@ -64,18 +70,17 @@ framework, please review the technologies below.
 
 ### Library Licensing Considerations
 
-👮 The majority of the libraries listed above and included within Hoist React as dependencies are
+⚖️ The majority of the libraries listed above and included within Hoist React as dependencies are
 open-source and fully free to use. Wherever possible, we have aimed to minimize exposure to
 third-party license costs and restrictions. The exceptions to this rule are listed below. For these
 libraries, client application(s) using Hoist React must acquire and register appropriate licenses.
 
-**Ag-Grid Enterprise** is required by Hoist React due to its support for a number of key, enterprise
-only features, including row grouping and tree grids. Ag-Grid offers several
-[licensing models](https://www.ag-grid.com/license-pricing.php) and requires a license key to be
-included with the application codebase to verify compliance and avoid console warnings. An
-appropriate key can be installed in any Hoist React application by via the `agGridLicenseKey`
-parameter to `configureWebpack()` within
-[hoist-dev-utils](https://github.com/xh/hoist-dev-utils/blob/master/configureWebpack.js).
+**Ag-Grid** is released by its developer under a dual licensing model, with the community edition
+available under a permissive MIT license and the Enterprise edition requiring a [paid license from
+ag-Grid](https://www.ag-grid.com/license-pricing.php). Applications wishing to use grids in Hoist
+React will need to provide a licensed version of ag-Grid.  A free community version is
+available, however many applications will want to license the enterprise version in order to make
+use of the important extra functionality it provides, including row grouping and tree grids.
 
 **Font Awesome** provides a greatly extended set of icons via its
 [Pro license](https://fontawesome.com/pro), and Hoist React references / relies on several of these
@@ -84,8 +89,8 @@ accessed via a unique URL. XH can configure appropriate access via npm configura
 enterprise npm repository proxy.
 
 **HighCharts HighStock** is the primary charting library in Hoist, and offers several [licensing and
-support options](https://shop.highsoft.com/highstock) for commercial use. Highcharts does not
-require the registration or maintenance of any in-code licence keys.
+support options](https://shop.highsoft.com/highstock) for commercial use. Application wishing to use
+charts in Hoist will need to provide a licensed version of Highcharts.
 
 ## ECMAScript 2016+
 
@@ -137,22 +142,17 @@ behaviors, but we have found it to be a helpful indicator of any Promise-based, 
 + Docs: <https://mobx.js.org/refguide/api.html>
 + Source: <https://github.com/mobxjs/mobx>
 
-|      Class/File      |                               Note                                |                 Link                  |
-|----------------------|-------------------------------------------------------------------|:-------------------------------------:|
-| `ReactiveSupport.js` | Mixin to add MobX reactivity to Components, Models, and Services. | [⚛️](core/mixins/ReactiveSupport.js)  |
-
 MobX is an essential building block of Hoist React, providing an application state management
 solution with "smart' reactivity, tight integration with React Components, and a general API for
 reactive programming that extends beyond Components. Please review and familiarize yourself with the
 MobX documentation to make the best use of Hoist React.
 
-All Hoist Components (functional or class-based) include 'observer' support from the 'mobx-react'
-project. This means that these Components are automatically re-rendered when any observable state
-they used during their last render is modified. This support provides the core engine of reactivity
-in Hoist.
+All Hoist Components include 'observer' support from the 'mobx-react' project. This means that
+these Components are automatically re-rendered when any observable state they used during their
+last render is modified. This support provides the core engine of reactivity in Hoist.
 
 In addition to Components, MobX is an essential tool for use by Models and Services within Hoist.
-The `ReactiveSupport` mixin (decorator, linked above) adds two key methods by default to these core
+The `HoistBase` class adds two key methods by default to these core
 Hoist artifacts - `addAutorun()` and `addReaction()`. These methods build on top of the native MobX
 autorun and reaction utilities with some additional syntax for clarity (in the case of reactions)
 and, importantly, a managed lifecycle that automatically disposes of these listeners when the owning
@@ -163,38 +163,52 @@ handling and validation of form field inputs, routing, and more. In many cases, 
 reactivity replaces and improves upon an event / callback based model for emitting and responding to
 state changes and other updates.
 
+
+## Core Concepts: XH
+
+Hoist creates and exports [`XH`, a singleton Model instance](core/XH.js), to coordinate the
+framework API at the top level and provide the most commonly used entry points to general
+functionality, including the creation, initialization, and aliases of key services. This model
+instance is installed as a `window.XH` global for convenient access on the console, although calling
+code should access `XH` via a standard import.
+
+This class provides methods for app initialization, exception handling, and service access. It
+instantiates Hoist service singletons and installs references to these instances. It also installs
+aliases on itself for the most common framework service calls, e.g. `XH.getConf()` as a shortcut to
+`XH.configService.get()`.
+
+|  Class/File     |                               Note                                         |           Link               |
+|-----------------|----------------------------------------------------------------------------|:----------------------------:|
+| `XH.js`         | Hoist's top-level Model / framework API entry-point, exported as `XH`.     |       [⚛️](core/XH.js)       |
+
+
 ## Core Concepts: Models, Components, and Services
 
-Three distinct types of objects (in the form of classes) compromise the backbone of a Hoist
-application: **Models, Components, and Services**. Any non-trivial application will define and
-create multiple instances of these core object types, and understanding how Hoist defines and uses
-these three core artifacts is essential to understanding how we at XH build and structure apps.
+Three distinct types of artifacts compromise the backbone of a Hoist application: **Models,
+Components, and Services**. Any non-trivial application will define and create multiple instances
+of these core object types, and understanding how Hoist defines and uses these three core artifacts
+is essential to understanding how we at XH build and structure apps.
 
-Hoist provides three corresponding decorators to mark a class as a particular type of object and to
-install shared functionality and extended features provided by the framework. A fourth decorator is
-used to declare the top-level Model for each client application, and a special singleton Model
-instance called `XH` is created and managed by Hoist as an entry point to core framework-level state
-and functionality.
+Models and services are class-based and base classes `HoistModel` and `HoistService` are
+provided by Hoist for these object.  `HoistAppModel` is a special base class for an Application's
+primary Model class that provides additional high-level info about the application.
 
-Finally all of these decorators rely on a set of utility functions defined within `ClassUtils` to
-add their particular functionality, behaviors, and methods to the decorated classes.
+Components are react functional components, but with additional wrapping provided by Hoist
+to support model specification and lookup and and observability.  Applications should use the
+factory function `hoistCmp` to define Components with this support.
 
-|     Class/File                |                                  Note                                  |             Link              |
-|-------------------------------|------------------------------------------------------------------------|:-----------------------------:|
-| `HoistModel.js`               | Mixin for adding core Model support.                                   |   [⚛️](core/HoistModel.js)   |
-| `HoistComponentClass.js`      | Mixin for creating class Components                                    | [⚛️](core/HoistComponentClass.js) |
-| `HoistComponentFunctional.js` | Factory for creating functional Components                             | [⚛️](core/HoistComponentFunctional.js) |
-| `HoistService.js`             | Mixin for adding core Service support.                                 |  [⚛️](core/HoistService.js)  |
-| `HoistAppModel.js`            | Mixin for adding additional support to an App's primary Model class.   |    [⚛️](core/HoistAppModel.js)    |
-| `XH.js`                       | Hoist's top-level Model / framework API entry-point, exported as `XH`. |       [⚛️](core/XH.js)       |
-| `ClassUtils.js`               | Library methods for providing and extending methods on core classes.   | [⚛️](utils/js/ClassUtils.js) |
+|     Class/File                |                                  Note                                  |             Link             |
+|-------------------------------|------------------------------------------------------------------------|:----------------------------:|
+| `HoistBase.js`                | Root Base class. Support for mobx, persistence, and resource management|       [⚛️](core/XH.js)       |
+| `HoistModel.js`               | Base class for Models                                                  |  [⚛️](core/HoistModel.js)    |
+| `HoistService.js`             | Base class for Services                                                |  [⚛️](core/HoistService.js)  |
+| `HoistComponent.js`           | Contains `hoistComponent`, factory for creating functional Components  |  [⚛️](core/HoistComponent.js)|
+| `HoistAppModel.js`            | Base class for an App's primary Model class.                           |  [⚛️](core/HoistAppModel.js) |
 
 ### HoistModel
 
 📝 "Models" within Hoist comprise the core class of objects for managing state and business logic.
-The `@HoistModel` decorator marks a class as a Model and installs core MobX and Event support.
-(Model classes do not require any particular superclass - all shared functionality and patterns are
-mixed in via the decorator.)
+The `HoistModel` base class marks a class as a Model and installs core MobX and other support.
 
 Important characteristics of Model object classes include:
 
@@ -210,9 +224,9 @@ can be designed and coded as a hierarchy of Model objects that reference propert
 on each other, defining what the application knows and what it does without necessarily diving into
 the specifics of how its visible Components are laid out or arranged.
 
-Components can accept one or more models as props, reference properties of these Models within their
-render methods, and call methods on these Models in response to user actions or inputs. This can
-help to structure or encapsulate a Component's API, but also works with MobX to minimize extra
+Components will reference properties of these Models within their render methods, and call methods
+on these Models in response to user actions or inputs. This can help to structure or encapsulate a
+Component's API, but also works with MobX to minimize extra
 render cycles and respond to state changes as efficiently as possible. The
 [`GridModel`](cmp/grid/GridModel.js) class is a notable example of managing a complex Component's
 configuration, state, and API surface via a Model. Hoist's `LeftRightChooser` Component is managed
@@ -221,56 +235,30 @@ includes nested GridModels.
 
 Models can also exist entirely independent of Components, or be generalized enough to be used as
 state sources for multiple, different Components. The
-['StoreSelectionModel'](data/StoreSelectionModel.js) and
-[`PendingTaskModel`](utils/async/PendingTaskModel.js) are examples.
-
-#### Singleton XH Model
-
-Hoist creates and exports [`XH`, a singleton Model instance](core/XH.js), to coordinate the
-framework API at the top level and provide the most commonly used entry points to general
-functionality, including the creation, initialization, and aliases of key services. This model
-instance is installed as a `window.XH` global for convenient access on the console, although calling
-code should access `XH` via a standard import.
-
-This class provides methods for app initialization, exception handling, and service access. It
-instantiates Hoist service singletons and installs references to these instances. It also installs
-aliases on itself for the most common framework service calls, e.g. `XH.getConf()` as a shortcut to
-`XH.configService.get()`.
+['StoreSelectionModel'](data/StoreSelectionModel.js) is a good example of this.
 
 #### HoistAppModel
 
 Each client application must define a top-level Model class using
-[the specialized `@HoistAppModel` decorator](core/HoistAppModel.js). This decorator installs core
-Model support as well as several additional methods specific to the high-level lifecycle of the
-application, including those dealing with init, and routing. This class instance is available via an
-import of the `XH` (as `XH.appModel`) and can be a useful place to hang global state specific to
-your application.
+[the specialized `HoistAppModel` base class](core/HoistAppModel.js). This class defines several
+additional methods specific to the high-level lifecycle of the application, including those dealing
+with init, and routing. This class instance is available via an import of the `XH` (as `XH.appModel`)
+and can be a useful place to hang global state specific to your application.
 
-Please review the inline documentation on the decorator for additional detailed information on what
+Please review the inline documentation on the class for additional detailed information on what
 it provides and how an Application should provide concrete implementations for certain key methods.
 For an example within Hoist React itself, see HoistAppModel for the
 [built-in Admin Console](admin/AppModel.js).
 
-#### Model Cleanup and Destruction
-
-The `HoistModel` decorator provides a `destroy()` method hook that should be called when a model is
-no longer needed. This lifecyle method ensures that all MobX disposers are called and any event
-listeners are cleared, ensuring the model's resources can be properly garbage collected. This is
-typically done by passing to model to `XH.safeDestroy()`.
-
-### HoistComponent
+### hoistComponent
 
 ⚛️ Components are the most familiar artifacts in React development, and are likely what come to
 mind first when most developers think of React. Functional components are the preferred method of
-defining components in React and Hoist. To define a functional component in Hoist, simply wrap a
-render function with the `hoistComponent` function. This will apply core Hoist support, including
-MobX observability, and support for Forwards refs, and will return the Component.
+defining components in React and Hoist. To define a functional component in Hoist, simply provide
+a render function to the `hoistComponent` function. This will apply core Hoist support, including
+MobX reactivity, model lookup, and support for forward refs, and will return the Component.
 
-Alternatively, Hoist continues to fully support ES6 class-based Components. These can be specified
-using the '@HoistComponent' decorator. This decorator will enable MobX reactivity and augment a
-Component with several useful convenience methods/getters such as `getDOMNode()` and `isDisplayed`.
-
-Note that many layout related HoistComponents provide "LayoutSupport". HoistComponents supporting
+Note that many layout related Components provide "LayoutSupport".  Components supporting
 this feature promote most flexbox layout properties (e.g. 'width', 'height', 'flex') to being first
 class props on the component itself. This allows many layout operations to be done in declarative
 Javascript.
@@ -287,17 +275,28 @@ Model and Component classes that's tailored to their needs.
 Service instances persist for the life of the app and have a defined initialization process. By
 convention they are stored within an `svc/` package within an app's file structure.
 
-Use the `@HoistService` decorator to mark a class as a global service within. As with the other
-decorators, this installs MobX and Event support and defines an empty `initAsync()` lifecycle
-method. To instantiate and make services available to application code, use the
-`XH.installServicesAsync()` method. This method will construct, initialize, and install the services
-as a property on the XH object. Note that there is a strict expectation that service classes will be
-named ending with the word 'Service', e.g. `MyCustomService.`. The installed instance in this case
-would then be made available to application code as `XH.myCustomService'.
+Use the `HoistService` class to mark a class as a global service within.  This installs MobX and
+support and defines an empty `initAsync()` lifecycle method. To instantiate and make services
+available to application code, use the`XH.installServicesAsync()` method. This method will construct,
+initialize, and install the services as a property on the XH object. Note that there is a strict
+expectation that service classes will be named ending with the word 'Service', e.g. `MyCustomService.`.
+The installed instance in this case would then be made available to application code as
+`XH.myCustomService'.
 
 Many core Hoist features are exposed on the client via services such as `PrefService`,
 `ConfigService`, and `IdentityService`. See these examples for a better understanding of the kind of
 tasks and code patterns commonly used within Service classes.
+
+#### Resource Management
+The `HoistBase` class provides a `destroy()` method that will be called when a model is
+no longer needed. This lifecycle method ensures that all MobX disposers are called and all resources
+are cleaned up when the object is no longer needed.  Related objects can also be marked as `@managed`,
+ensuring that these subsidiary objects will be cleaned up as well.
+
+For the most part, applications should not need to explicitly call `destroy()`.  Any models or
+services that Hoist instantiates (via `new`) will be destroyed by Hoist itself when no
+longer needed.  The main responsibility for applications is to ensure that any objects they
+explicitly create with `new` are either marked as `@managed` or destroyed explicitly in `destroy()`.
 
 
 ## Element Factories
@@ -800,4 +799,4 @@ sudo docker system prune -af
 
 📫☎️🌎 info@xh.io | <https://xh.io/contact>
 
-Copyright © 2020 Extremely Heavy Industries Inc.
+Copyright © 2021 Extremely Heavy Industries Inc.

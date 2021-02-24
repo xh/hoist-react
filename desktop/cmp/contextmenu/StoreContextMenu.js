@@ -2,8 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {XH} from '@xh/hoist/core';
 import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import copy from 'clipboard-copy';
@@ -36,6 +37,11 @@ export class StoreContextMenu {
      *          `exportExcel` - same as above.
      *          `exportCsv` - export grid data to CSV via Hoist's server-side export capabilities.
      *          `exportLocal` - export grid data to Excel via ag-Grid's built-in client side export.
+     *          `autosizeColumns` - autosize columns to fit their contents.
+     *          `restoreDefaults` - restore column, sorting, and grouping configs and clear any
+     *              persistent grid state.
+     *              @see GridModel.restoreDefaults
+     *
      *
      * @param {GridModel} [c.gridModel] - GridModel to bind to this contextMenu, used to enable
      *      implementation of menu items / tokens above.
@@ -57,6 +63,14 @@ export class StoreContextMenu {
 
     parseToken(token) {
         const {gridModel} = this;
+
+        // Export tokens are currently only supported on desktop devices.
+        if (!XH.isDesktop && token.startsWith('export')) return;
+
+        if (token === 'autoSizeColumns') {
+            console.warn('StoreContextMenu token `autoSizeColumns` has been deprecated. Use `autosizeColumns` instead.');
+            token = 'autosizeColumns';
+        }
 
         switch (token) {
             case 'copyCell':
@@ -90,7 +104,7 @@ export class StoreContextMenu {
             case 'exportExcel':
                 return new RecordAction({
                     text: 'Export to Excel',
-                    icon: Icon.download(),
+                    icon: Icon.fileExcel(),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
                     actionFn: () => gridModel.exportAsync({type: 'excelTable'})
@@ -98,7 +112,7 @@ export class StoreContextMenu {
             case 'exportCsv':
                 return new RecordAction({
                     text: 'Export to CSV',
-                    icon: Icon.download(),
+                    icon: Icon.file(),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
                     actionFn: () => gridModel.exportAsync({type: 'csv'})
@@ -120,11 +134,18 @@ export class StoreContextMenu {
                 ];
             case 'exportLocal':
                 return 'export';
-            case 'autoSizeColumns':
+            case 'autosizeColumns':
                 return new RecordAction({
                     text: 'Autosize Columns',
                     icon: Icon.arrowsLeftRight(),
-                    actionFn: () => gridModel.autoSizeColumns()
+                    hidden: !gridModel?.autosizeEnabled,
+                    actionFn: () => gridModel.autosizeAsync()
+                });
+            case 'restoreDefaults':
+                return new RecordAction({
+                    text: 'Restore Grid Defaults',
+                    icon: Icon.reset(),
+                    actionFn: () => gridModel.restoreDefaultsAsync()
                 });
             default:
                 return token;

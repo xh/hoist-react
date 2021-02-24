@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
@@ -31,11 +31,11 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
         children,
         className,
         vertical,
-        enableOverflowMenu = !vertical,
+        enableOverflowMenu = false,
         collapseFrom = 'end',
         minVisibleItems,
         ...rest
-    }) {
+    }, ref) {
         throwIf(vertical && enableOverflowMenu, 'Overflow menu not available for vertical toolbars.');
 
         const items = castArray(children)
@@ -48,6 +48,7 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
             overflow = enableOverflowMenu && Children.count(items) > 0;
 
         return container({
+            ref,
             ...rest,
             className: classNames(
                 className,
@@ -71,7 +72,7 @@ Toolbar.propTypes = {
 
     /**
      * Place items that overflow in a menu. Only available for horizontal toolbars.
-     * Default to true.
+     * Default to false.
      */
     enableOverflowMenu: PT.bool,
 

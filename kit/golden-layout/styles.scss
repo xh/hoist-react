@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
 @import '../../styles/helpers';
@@ -137,5 +137,16 @@
 
   .lm_content {
     display: none;
+  }
+}
+
+// On touch devices, we must ensure that the tab itself is never
+// the target for touch events. Instead, it's children (icon, title)
+// are the target.
+body:not(.xh-desktop) .lm_goldenlayout .lm_header .lm_tab {
+  pointer-events: none;
+
+  & * {
+    pointer-events: auto;
   }
 }

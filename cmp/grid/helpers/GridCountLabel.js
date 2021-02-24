@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '../GridModel';
 import {box} from '@xh/hoist/cmp/layout';
@@ -47,7 +47,7 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory({
             selCountString = () => {
                 const count = selection.length,
                     countStr = count ? fmtCount(count) : 'none',
-                    showCount = showSelectionCount == 'always' || (showSelectionCount == 'auto' && count > 1);
+                    showCount = showSelectionCount === 'always' || (showSelectionCount === 'auto' && count > 1);
 
                 return showCount ? ` (${countStr} selected)` : '';
             };

@@ -2,10 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {FieldModel, FormContext} from '@xh/hoist/cmp/form';
-import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, label as labelEl, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, uses, XH} from '@xh/hoist/core';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
@@ -18,6 +17,7 @@ import classNames from 'classnames';
 import {isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
 import PT from 'prop-types';
 import React, {Children, cloneElement, useContext, useState} from 'react';
+import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import './FormField.scss';
 
 /**
@@ -38,10 +38,9 @@ import './FormField.scss';
 export const [FormField, formField] = hoistCmp.withFactory({
     displayName: 'FormField',
     className: 'xh-form-field',
-    memo: false,
     model: uses(FieldModel, {fromContext: false, publishMode: ModelPublishMode.NONE}),
 
-    render({model, className, field, children, info, ...props}) {
+    render({model, className, field, children, info, ...props}, ref) {
 
         // Resolve FieldModel
         const formContext = useContext(FormContext);
@@ -94,6 +93,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
         if (inline) classes.push('xh-form-field-inline');
         if (minimal) classes.push('xh-form-field-minimal');
         if (readonly) classes.push('xh-form-field-readonly');
+        if (disabled) classes.push('xh-form-field-disabled');
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
 
@@ -123,6 +123,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
         }
 
         return box({
+            ref,
             key: model?.xhId,
             className: classNames(className, classes),
             ...getLayoutProps(props),
@@ -174,6 +175,9 @@ FormField.propTypes = {
      * Defaulted from containing Form.
      */
     commitOnChange: PT.bool,
+
+    /** True to disable user interaction. Defaulted from backing FieldModel. */
+    disabled: PT.bool,
 
     /** Property name on bound FormModel from which to read/write data. */
     field: PT.string,
@@ -241,7 +245,6 @@ FormField.propTypes = {
 };
 
 const readonlyChild = hoistCmp.factory({
-    memo: false,
     model: false,
 
     render({model, readonlyRenderer}) {
@@ -252,19 +255,22 @@ const readonlyChild = hoistCmp.factory({
 });
 
 const editableChild = hoistCmp.factory({
-    memo: false,
     model: false,
 
     render({model, child, childIsSizeable, childId, disabled, displayNotValid, leftErrorIcon, commitOnChange}) {
         const {props} = child,
             {propTypes} = child.type;
 
+
+        // Overrides -- be sure not to clobber selected properties on child
         const overrides = {
             model,
             bind: 'value',
+            id: childId,
             disabled: props.disabled || disabled,
-            id: childId
+            ref: composeRefs(model._boundInputRef, child.ref)
         };
+
 
         // If a sizeable child input doesn't specify its own dimensions,
         // the input should fill the available size of the FormField.
@@ -298,8 +304,8 @@ const blockChildren = ['CodeInput', 'JsonInput', 'Select', 'TextInput'];
 
 function getValidChild(children) {
     const child = Children.only(children);
-    throwIf(!child || !(child.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
-    throwIf(child.props.bind || child.props.model, 'HoistInputs should not specify "bind" or "model" props when used with FormField');
+    throwIf(!child, 'FormField must have a single child.');
+    throwIf(child.props.bind || child.props.model, 'Child Inputs should not specify "bind" or "model" props when used with FormField');
     return child;
 }
 

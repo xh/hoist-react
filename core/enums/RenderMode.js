@@ -2,15 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
 /**
  * Options for how contents should be rendered by their parent container.
- *
  * Used by TabContainerModel, DashContainerModel, and PanelModel.
- *
- * @enum {RenderMode}
+ * @enum {string}
  */
 export const RenderMode = Object.freeze({
 
@@ -24,7 +22,3 @@ export const RenderMode = Object.freeze({
     UNMOUNT_ON_HIDE: 'unmountOnHide'
 
 });
-
-/**
- * @typedef {string} RenderMode
- */

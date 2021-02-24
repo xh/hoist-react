@@ -2,9 +2,8 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {emptyFlexCol} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 
@@ -13,30 +12,30 @@ export const logLevelPanel = hoistCmp.factory(
 );
 
 const modelSpec = {
-    stateModel: 'xhLogLevelGrid',
-    enableColChooser: true,
+    persistWith: {localStorageKey: 'xhAdminLogLevelState'},
+    colChooserModel: true,
     enableExport: true,
     store: {
         url: 'rest/logLevelAdmin',
         fields: [
             {
                 name: 'name',
-                label: 'Log Name',
+                displayName: 'Log Name',
                 required: true
             },
             {
                 name: 'level',
-                label: 'Override',
+                displayName: 'Override',
                 lookupName: 'levels'
             },
             {
                 name: 'defaultLevel',
-                label: 'Initial',
+                displayName: 'Initial',
                 editable: false
             },
             {
                 name: 'effectiveLevel',
-                label: 'Effective',
+                displayName: 'Effective',
                 editable: false
             }
         ]
@@ -45,10 +44,9 @@ const modelSpec = {
     filterFields: ['name'],
     columns: [
         {field: 'name', width: 400},
-        {field: 'defaultLevel', headerName: 'Initial', width: 110},
-        {field: 'level', headerName: 'Override', width: 110},
-        {field: 'effectiveLevel', headerName: 'Effective', width: 110},
-        {...emptyFlexCol}
+        {field: 'defaultLevel', width: 110},
+        {field: 'level', width: 110},
+        {field: 'effectiveLevel', width: 110}
     ],
     editors: [
         {field: 'name'},

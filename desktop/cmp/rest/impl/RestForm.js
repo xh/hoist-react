@@ -2,18 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {form} from '@xh/hoist/cmp/form';
-import {filler, vframe} from '@xh/hoist/cmp/layout';
+import {div, filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {RestFormModel} from '@xh/hoist/desktop/cmp/rest/impl/RestFormModel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/kit/blueprint';
 import './RestForm.scss';
 import {restFormField} from './RestFormField';
 
@@ -32,11 +32,11 @@ export const restForm = hoistCmp.factory({
             className,
             isOpen: true,
             isCloseButtonShown: false,
-            items: [
-                formDisplay(),
-                tbar(),
-                mask({model: model.loadModel, spinner: true})
-            ]
+            item: panel({
+                item: formDisplay(),
+                bbar: tbar(),
+                mask: 'onLoad'
+            })
         });
     }
 });
@@ -45,29 +45,30 @@ const formDisplay = hoistCmp.factory(
     ({model}) => {
         const formFields = model.editors.map(editor => restFormField({editor}));
 
-        return dialogBody(
-            form({
-                fieldDefaults: {
-                    commitOnChange: true,
-                    minimal: true,
-                    inline: true,
-                    labelWidth: 120,
-                    labelAlign: 'right'
-                },
-                item: vframe(formFields)
+        return form({
+            fieldDefaults: {
+                commitOnChange: true,
+                minimal: true,
+                inline: true,
+                labelWidth: 120,
+                labelAlign: 'right'
+            },
+            item: div({
+                className: 'xh-rest-form__body',
+                items: formFields
             })
-        );
+        });
     }
 );
 
 const tbar = hoistCmp.factory(
     ({model}) => {
-        const {formModel} = model;
+        const {formModel, actions, currentRecord, gridModel} = model;
         return toolbar(
             recordActionBar({
-                actions: model.actions,
-                record: model.currentRecord,
-                gridModel: model.parent.gridModel
+                actions,
+                gridModel,
+                record: currentRecord
             }),
             filler(),
             button({

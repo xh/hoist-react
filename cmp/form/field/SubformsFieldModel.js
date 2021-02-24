@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {action, computed} from '@xh/hoist/mobx';
+import {ValidationState} from '@xh/hoist/cmp/form';
+import {managed, XH} from '@xh/hoist/core';
+import {action, computed, makeObservable, override} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {clone, defaults, flatMap, isArray, isUndefined, partition, without} from 'lodash';
 import {FormModel} from '../FormModel';
-import {ValidationState} from '../validation/ValidationState';
 import {BaseFieldModel} from './BaseFieldModel';
 
 /**
@@ -26,7 +26,6 @@ import {BaseFieldModel} from './BaseFieldModel';
  * validations on the subforms will also bubble up to this field, affecting its overall
  * validation state.
  */
-@HoistModel
 export class SubformsFieldModel extends BaseFieldModel {
 
     // (Sub)FormModels created by this model, tracked to support cleanup.
@@ -41,6 +40,7 @@ export class SubformsFieldModel extends BaseFieldModel {
      */
     constructor({subforms, initialValue = [],  ...rest}) {
         super({...rest});
+        makeObservable(this);
         this._modelConfig = subforms;
         this.init(initialValue);
     }
@@ -48,6 +48,10 @@ export class SubformsFieldModel extends BaseFieldModel {
     //-----------------------------
     // Overrides
     //-----------------------------
+    get hasFocus() {return false}
+    focus() {}
+    blur() {}
+
     getDataOrProxy() {
         return this.value.map(s => s.values);
     }
@@ -56,7 +60,7 @@ export class SubformsFieldModel extends BaseFieldModel {
         return this.value.map(s => s.getData());
     }
 
-    @action
+    @override
     init(initialValue) {
         if (!isUndefined(initialValue)) {
             this.initialValue = this.parseValue(initialValue);
@@ -65,7 +69,7 @@ export class SubformsFieldModel extends BaseFieldModel {
         this.cleanupModels();
     }
 
-    @action
+    @override
     setValue(v) {
         super.setValue(this.parseValue(v));
         this.cleanupModels();
@@ -94,13 +98,13 @@ export class SubformsFieldModel extends BaseFieldModel {
         return [...this.errors, ...subErrs];
     }
 
-    @action
+    @override
     reset() {
         super.reset();
         this.value.forEach(s => s.reset());
     }
 
-    @action
+    @override
     displayValidation(includeSubforms = true) {
         super.displayValidation(includeSubforms);
         if (includeSubforms) {
@@ -118,7 +122,7 @@ export class SubformsFieldModel extends BaseFieldModel {
         return this.value.some(s => s.isDirty) || super.isDirty;
     }
 
-    @action
+    @override
     async validateAsync({display = true} = {}) {
         const promises = this.value.map(m => m.validateAsync({display}));
         promises.push(super.validateAsync({display}));

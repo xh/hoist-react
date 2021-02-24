@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, useLocalModel} from '@xh/hoist/core';
-import {hotkey as hotkeyBp, hotkeys as hotkeysBp, HotkeysEvents} from '@xh/hoist/kit/blueprint';
-import {isArray, isEmpty, isPlainObject} from 'lodash';
-import {cloneElement, isValidElement} from 'react';
+import {useHotkeys as useHotkeysBp} from '@xh/hoist/kit/blueprint';
+import {isEmpty} from 'lodash';
+import {cloneElement, useMemo} from 'react';
+
+/* eslint-disable react-hooks/exhaustive-deps */
 
 /**
  * Hook to add Key handling support to a component.
@@ -21,52 +22,11 @@ import {cloneElement, isValidElement} from 'react';
  *      as prescribed by blueprint. A Hotkeys element may also be provided.
  */
 export function useHotkeys(child, hotkeys) {
-    const impl = useLocalModel(() => {
-        return !isEmpty(hotkeys) ? new LocalModel(hotkeys): null;
-    });
-    if (!child || !impl) return child;
+    if (!child || isEmpty(hotkeys)) return child;
 
-    return cloneElement(
-        child,
-        {onKeyUp: impl.onKeyUp, onKeyDown: impl.onKeyDown}
-    );
-}
+    const memoHotkeys = useMemo(() => hotkeys, []),
+        {handleKeyDown, handleKeyUp} = useHotkeysBp(memoHotkeys);
 
-@HoistModel
-class LocalModel {
-
-    localHotkeysEvents = new HotkeysEvents('local');
-    globalHotkeysEvents = new HotkeysEvents('global');
-
-    // Capture the handlers on initial render.  Following blueprint, assume these static.
-    constructor(hotkeys) {
-
-        // Normalize to blueprint Hotkeys element
-        if (isArray(hotkeys)) {
-            hotkeys = hotkeys.map(it => isPlainObject(it) ? hotkeyBp(it) : it);
-            hotkeys = hotkeysBp(hotkeys);
-        }
-
-        if (!isValidElement(hotkeys)) {
-            console.error("Incorrect specification of 'hotkeys' arg in useHotkeys()");
-            return;
-        }
-
-        //  Parse and add with blueprint api
-        this.localHotkeysEvents.setHotkeys(hotkeys.props);
-        this.globalHotkeysEvents.setHotkeys(hotkeys.props);
-        document.addEventListener('keydown', this.globalHotkeysEvents.handleKeyDown);
-        document.addEventListener('keyup', this.globalHotkeysEvents.handleKeyUp);
-    }
-
-    onKeyUp = (e) => this.localHotkeysEvents.handleKeyUp(e);
-    onKeyDown = (e) => this.localHotkeysEvents.handleKeyDown(e);
-
-    destroy() {
-        document.removeEventListener('keydown', this.globalHotkeysEvents.handleKeyDown);
-        document.removeEventListener('keyup', this.globalHotkeysEvents.handleKeyUp);
-        this.globalHotkeysEvents.clear();
-        this.localHotkeysEvents.clear();
-    }
+    return cloneElement(child, {onKeyDown: handleKeyDown, onKeyUp: handleKeyUp});
 }
 

@@ -2,13 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {useEffect} from 'react';
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
-import {bindable, runInAction} from '@xh/hoist/mobx';
+import {bindable, runInAction, makeObservable} from '@xh/hoist/mobx';
 import {
     createObservableRef,
     getLayoutProps,
@@ -34,14 +35,27 @@ export const [Chart, chart] = hoistCmp.withFactory({
     model: uses(ChartModel),
     className: 'xh-chart',
 
-    render({model, className, aspectRatio, ...props}) {
-        const impl = useLocalModel(() => new LocalModel(model)),
-            ref = composeRefs(
-                useOnResize(impl.onResize),
-                useOnVisibleChange(impl.onVisibleChange)
-            );
+    render({model, className, aspectRatio, ...props}, ref) {
 
-        impl.setAspectRatio(aspectRatio);
+        if (!Highcharts) {
+            console.error(
+                'Highcharts has not been imported in to this application. Please import and ' +
+                'register in Bootstrap.js. See the XH Toolbox app for an example.'
+            );
+            return div({
+                className: 'xh-text-color-accent xh-pad',
+                item: 'Highcharts library not available.'
+            });
+        }
+
+        const impl = useLocalModel(() => new LocalModel(model, aspectRatio));
+        ref = composeRefs(
+            ref,
+            useOnResize(impl.onResize),
+            useOnVisibleChange(impl.onVisibleChange)
+        );
+
+        useEffect(() => impl.setAspectRatio(aspectRatio), [impl, aspectRatio]);
 
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
         const layoutProps = getLayoutProps(props);
@@ -74,16 +88,17 @@ Chart.propTypes = {
     model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object])
 };
 
-
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
     @bindable aspectRatio;
     chartRef = createObservableRef();
     model;
     prevSeriesConfig;
 
-    constructor(model) {
+    constructor(model, aspectRatio) {
+        super();
+        makeObservable(this);
         this.model = model;
+        this.aspectRatio = aspectRatio;
         this.addReaction({
             track: () => [
                 this.aspectRatio,
@@ -195,6 +210,7 @@ class LocalModel {
 
     destroy() {
         this.destroyHighChart();
+        super.destroy();
     }
 
     destroyHighChart() {

@@ -2,9 +2,8 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-
 .CodeMirror {
   font-family: var(--xh-font-family-mono);
   font-size: var(--xh-font-size-px);
@@ -14,10 +13,14 @@
     box-shadow: inset 0 0 0 0 rgba(16, 22, 26, 0.4);
     -webkit-box-shadow: inset 0 0 0 0 rgba(16, 22, 26, 0.4);
   }
+
+  .xh-code-input--highlight {
+    background-color: var(--xh-bg-highlight);
+  }
 }
 
 .xh-code-input {
-  flex-direction: column;
+  height: 100px;
 
   &.xh-input-invalid {
     div.CodeMirror {
@@ -32,23 +35,54 @@
     }
   }
 
-  & > .CodeMirror {
-    height: 100px;
+  &__inner-wrapper {
+    position: relative;
     flex: 1;
-    display: flex;
-    flex-direction: column;
 
-    .CodeMirror-scroll {
-      flex: 1;
-      box-sizing: content-box !important;
+    & > .CodeMirror {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+
+      .CodeMirror-selected {
+        background-color: var(--xh-bg-highlight);
+      }
+
+      .CodeMirror-scroll {
+        box-sizing: content-box !important;
+      }
+
+      .CodeMirror-simplescroll-vertical,
+      .CodeMirror-simplescroll-horizontal {
+        background-color: var(--xh-scrollbar-bg);
+        > div {
+          background-color: var(--xh-scrollbar-thumb);
+          border: none;
+        }
+      }
+
+      .CodeMirror-scrollbar-filler {
+        background-color: var(--xh-scrollbar-bg);
+      }
+
+      .CodeMirror-simplescroll-horizontal {
+        height: var(--xh-scrollbar-size-px);
+      }
+
+      .CodeMirror-simplescroll-vertical {
+        width: var(--xh-scrollbar-size-px);
+      }
     }
   }
 
   &__action-buttons {
     position: absolute !important;
-    top: 0;
-    right: 6px;
-    z-index: 3; // render above code-mirror content to enable click
+    bottom: var(--xh-scrollbar-size-px);
+    right: var(--xh-scrollbar-size-px);
+    z-index: 3; // render on top of code-mirror content to enable click
 
     .xh-button {
       padding: 0;
@@ -58,19 +92,24 @@
     }
   }
 
-  &--dialog {
+  &__toolbar {
+    z-index: 3; // render on top of code-mirror content to enable click
+
+    .xh-button {
+      min-width: 22px;
+      min-height: 22px;
+      color: var(--xh-text-color-muted);
+    }
+  }
+
+  &__label {
+    min-width: 60px;
+    text-align: center;
+  }
+
+  &__dialog {
     width: 90vw;
     height: 90vh;
   }
-}
 
-.xh-form-field-inline .xh-code-input {
-  flex-direction: row;
-
-  & > .CodeMirror {
-    // Flex items won't shrink below their minimum content size, unless a width / min-width is defined.
-    // See https://dfmcphee.com/flex-items-and-min-width-0/
-    width: 0;
-    min-width: 0;
-  }
 }

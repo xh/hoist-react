@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, RootRefreshContextModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {AboutDialogModel} from './AboutDialogModel';
 import {ExceptionDialogModel} from './ExceptionDialogModel';
@@ -19,8 +19,7 @@ import {ToastSourceModel} from './ToastSourceModel';
 /**
  *  Root object for Framework GUI State.
  */
-@HoistModel
-export class AppContainerModel {
+export class AppContainerModel extends HoistModel {
 
     //------------
     // Sub-models
@@ -41,6 +40,11 @@ export class AppContainerModel {
      */
     @managed
     appLoadModel = new PendingTaskModel({mode: 'all'});
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     init() {
         const models = [
@@ -75,7 +79,7 @@ export class AppContainerModel {
         let updateVersion = version;
 
         // Display build tag for snaps only - not of much interest across actual version updates.
-        if (updateVersion.includes('SNAPSHOT') && build) {
+        if (updateVersion.includes('SNAPSHOT') && build && build != 'UNKNOWN') {
             updateVersion += ` (b${build})`;
         }
 

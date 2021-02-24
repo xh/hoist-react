@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {HoistModel, managed} from '@xh/hoist/core';
+import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {flatMap, forOwn, map, mapValues, pickBy, some, values} from 'lodash';
+import {flatMap, forOwn, map, mapValues, pickBy, some, values, forEach} from 'lodash';
 import {FieldModel} from './field/FieldModel';
 import {SubformsFieldModel} from './field/SubformsFieldModel';
 import {ValidationState} from './validation/ValidationState';
@@ -35,13 +35,13 @@ import {ValidationState} from './validation/ValidationState';
  *
  * @see FieldModel for details on state and validation maintained at the individual field level.
  */
-@HoistModel
-export class FormModel {
+export class FormModel extends HoistModel {
 
     /** @member {Object} - container object for FieldModel instances, keyed by field name. */
     @observable.ref fields = {};
 
     /** @return {FieldModel[]} - all FieldModel instances, as an array. */
+    @managed
     get fieldList() {return values(this.fields)}
 
     /** @member {FormModel} */
@@ -56,7 +56,7 @@ export class FormModel {
     _valuesProxy = this.createValuesProxy();
 
     /**
-     * @member {Object} - proxy for accessing all of the current data values in this form by name.
+     * @return {Object} - proxy for accessing all of the current data values in this form by name.
      *      Values accessed via this object are observable, and can be used directly in reactions to
      *      implement logic on change, such as disabling one field based on the value of another.
      *      Also passed to validation rules to facilitate observable cross-field validation.
@@ -78,6 +78,8 @@ export class FormModel {
             disabled = false,
             readonly = false
         } = {}) {
+        super();
+        makeObservable(this);
         this.disabled = disabled;
         this.readonly = readonly;
         const models = {};
@@ -91,12 +93,12 @@ export class FormModel {
         this.init(initialValues);
 
         // Set the owning formModel *last* after all fields in place with data.
-        // This (currently) kicks off the validation and other reativity.
+        // This (currently) kicks off the validation and other reactivity.
         forOwn(this.fields, f => f.formModel = this);
     }
 
     /**
-     * @param {String} fieldName
+     * @param {string} fieldName
      * @return {FieldModel}
      */
     getField(fieldName) {
@@ -135,16 +137,55 @@ export class FormModel {
         forOwn(this.fields, m => m.init(initialValues[m.name]));
     }
 
-    /** @member {boolean} - true if any fields have been changed since last reset/init. */
+    /**
+     * Set the value of one or more fields on this form.
+     *
+     * @param {Object} values - map of field name to value.
+     */
+    @action
+    setValues(values) {
+        const {fields} = this;
+        forEach(values, (v, k) => fields[k]?.setValue(v));
+    }
+
+    /** @return {boolean} - true if any fields have been changed since last reset/init. */
     @computed
     get isDirty() {
         return some(this.fields, m => m.isDirty);
     }
 
+    //-----------------------------------
+    // Focus Management
+    //-----------------------------------
+    /**
+     * The Field that is currently focused on this form.
+     *
+     * @see FieldModel.focus() for important information on this method
+     * and its limitations.
+     *
+     * @returns {FieldModel}
+     */
+    @computed
+    get focusedField() {
+        return this.fieldList.find(f => f.hasFocus);
+    }
+
+    /**
+     * Focus a field on this form.
+     *
+     * @param {string} - name of field to focus.
+     *
+     * @see FieldModel.focus() for important information on this method
+     * and its limitations.
+     */
+    focusField(name) {
+        this.getField(name)?.focus();
+    }
+
     //------------------------
     // Validation
     //------------------------
-    /** @member {ValidationState} - the current validation state. */
+    /** @return {ValidationState} - the current validation state. */
     @computed
     get validationState() {
         const VS = ValidationState,
@@ -154,18 +195,18 @@ export class FormModel {
         return VS.Valid;
     }
 
-    /** @member {boolean} - true if any fields are currently recomputing their validation state. */
+    /** @return {boolean} - true if any fields are currently recomputing their validation state. */
     @computed
     get isValidationPending() {
         return some(this.fields, m => m.isValidationPending);
     }
 
-    /** @member {boolean} - true if all fields are valid. */
+    /** @return {boolean} - true if all fields are valid. */
     get isValid() {
         return this.validationState == ValidationState.Valid;
     }
 
-    /** @member {String[]} - list of all validation errors for this form. */
+    /** @return {string[]} - list of all validation errors for this form. */
     get allErrors() {
         return flatMap(this.fields, s => s.allErrors);
     }
@@ -206,9 +247,5 @@ export class FormModel {
                 return undefined;
             }
         });
-    }
-
-    destroy() {
-        XH.safeDestroy(this.fieldList);
     }
 }

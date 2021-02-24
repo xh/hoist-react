@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, vbox} from '@xh/hoist/cmp/layout';
@@ -20,14 +20,16 @@ import {button, Button} from './Button';
  * available Grid columns. For use by applications when a button is desired in addition to the
  * context menu item built into the Grid component directly.
  *
- * Requires the `GridModel.enableColChooser` config option to be true.
+ * Requires the `GridModel.colChooserModel` config option. Set to true for default implementation.
  */
 export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
     displayName: 'ColChooserButton',
     model: false,
 
-    render({icon, title, gridModel, popoverPosition, chooserWidth, chooserHeight, ...rest}) {
+    render({icon, title, gridModel, popoverPosition, ...rest}, ref) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
+
+        const colChooserModel = gridModel?.colChooserModel;
 
         const displayButton = button({
             icon: withDefault(icon, Icon.gridPanel()),
@@ -40,7 +42,11 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
             return cloneElement(displayButton, {disabled: true});
         }
 
-        const {colChooserModel} = gridModel;
+        if (!colChooserModel) {
+            console.error('No ColChooserModel available on bound GridModel - enable via GridModel.colChooserModel config.');
+            return cloneElement(displayButton, {disabled: true});
+        }
+
         return popover({
             popoverClassName: 'xh-col-chooser-popover xh-popup--framed',
             position: withDefault(popoverPosition, 'auto'),
@@ -48,13 +54,12 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
             target: displayButton,
             content: vbox(
                 div({
+                    ref,
                     className: 'xh-popup__title',
                     item: 'Choose Columns'
                 }),
                 colChooser({
-                    model: colChooserModel,
-                    width: chooserWidth,
-                    height: chooserHeight
+                    model: colChooserModel
                 })
             ),
             onInteraction: (willOpen) => {
@@ -67,6 +72,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
         });
     }
 });
+
 ColChooserButton.propTypes = {
     ...Button.propTypes,
 
@@ -80,13 +86,7 @@ ColChooserButton.propTypes = {
         'bottom-right', 'bottom', 'bottom-left',
         'left-bottom', 'left', 'left-top',
         'auto'
-    ]),
-
-    /** Width for the opened chooser */
-    chooserWidth: PT.number,
-
-    /** Height for the opened chooser */
-    chooserHeight: PT.number
+    ])
 };
 
 

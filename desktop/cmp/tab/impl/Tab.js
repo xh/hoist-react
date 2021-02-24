@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {frame} from '@xh/hoist/cmp/layout';
 import {TabModel} from '@xh/hoist/cmp/tab';
@@ -34,8 +34,8 @@ export const tab = hoistCmp.factory({
         if (
             !isActive &&
             (
-                (renderMode == RenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode == RenderMode.LAZY && !wasActivated.current)
+                (renderMode === RenderMode.UNMOUNT_ON_HIDE) ||
+                (renderMode === RenderMode.LAZY && !wasActivated.current)
             )
         ) {
             return null;

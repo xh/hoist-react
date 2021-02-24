@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistService, managed, XH} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
@@ -26,8 +26,7 @@ import {withDefault} from '@xh/hoist/utils/js';
  *
  * @see RefreshContextModel - the underlying mechanism used to implement the refresh.
  */
-@HoistService
-export class AutoRefreshService {
+export class AutoRefreshService extends HoistService {
 
     @managed
     timer;

@@ -2,15 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistInput} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {reactSelect} from '@xh/hoist/kit/react-select';
-import {action, observable} from '@xh/hoist/mobx';
+import {reactSelect, reactCreatableSelect} from '@xh/hoist/kit/react-select';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {getLayoutProps, createObservableRef} from '@xh/hoist/utils/react';
 import {assign, isEmpty, isPlainObject} from 'lodash';
 import PT from 'prop-types';
 import './Select.scss';
@@ -18,82 +19,137 @@ import './Select.scss';
 /**
  * A managed wrapper around the React-Select dropdown component.
  *
- * This is simplified version of the desktop Select Input. Type-to-search has been excluded, due to concerns
- * about showing the on-device keyboard. Consequently, asynchronous queries, multiple selection and user-created
- * ad-hoc entries are not yet supported.
+ * This is simplified version of the desktop Select Input.
+ * Asynchronous queries and multiple selection are not supported.
  *
  * Supports custom dropdown option renderers.
  *
  * @see {@link https://react-select.com|React Select Docs}
  */
-@LayoutSupport
-@HoistComponent
-export class Select extends HoistInput {
+export const [Select, select] = hoistCmp.withFactory({
+    displayName: 'Select',
+    className: 'xh-select',
+    render(props, ref) {
+        return useHoistInputModel(cmp, props, ref, Model);
+    }
+});
+Select.propTypes = {
+    ...HoistInputPropTypes,
+    /**
+     * Function to return a "create a new option" string prompt. Requires `allowCreate` true.
+     * Passed current query input.
+     */
+    createMessageFn: PT.func,
 
-    static propTypes = {
-        ...HoistInput.propTypes,
+    /**
+     *  True to accept and commit input values not present in options or returned by a query.
+     *  Should be used with caution, as mobile keyboard can cause undesirable results.
+     * */
+    enableCreate: PT.bool,
 
-        /** True to hide the dropdown indicator, i.e. the down-facing arrow at the right of the Select. */
-        hideDropdownIndicator: PT.bool,
+    /**
+     * True to enable type-to-search keyboard input. Defaults to false to disable keyboard input,
+     * showing the dropdown menu on click. Should be used with caution, as mobile keyboard can
+     * cause undesirable results.
+     */
+    enableFilter: PT.bool,
 
-        /** Field on provided options for sourcing each option's display text (default `label`). */
-        labelField: PT.string,
+    /**
+     * Function called to filter available options for a given query string input.
+     * Used for filtering of options provided by `options` prop when `enableFilter` is true.
+     *
+     * Provided function should take an option and a query value and return a boolean.
+     * Defaults to a case-insensitive match on word starts.
+     */
+    filterFn: PT.func,
 
-        /** Placement of the dropdown menu relative to the input control. */
-        menuPlacement: PT.oneOf(['auto', 'top', 'bottom']),
+    /** True to hide the dropdown indicator, i.e. the down-facing arrow at the right of the Select. */
+    hideDropdownIndicator: PT.bool,
 
-        /** Function to return message indicating no options loaded. */
-        noOptionsMessageFn: PT.func,
+    /** Field on provided options for sourcing each option's display text (default `label`). */
+    labelField: PT.string,
 
-        /**
-         * Preset list of options for selection. Elements can be either a primitive or an object.
-         * Primitives will be displayed via toString().
-         * Objects must have either:
-         *      + A `label` property for display and a `value` property
-         *      + A `label` property and an `options` property containing an array of sub-options
-         *        to be grouped beneath the option.
-         *        These sub-options must be either primitives or `label`:`value` pairs: deeper nesting is unsupported.
-         *
-         * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
-         * of up-front in this prop.
-         */
-        options: PT.array,
+    /** Placement of the dropdown menu relative to the input control. */
+    menuPlacement: PT.oneOf(['auto', 'top', 'bottom']),
 
-        /**
-         * Function to render options in the dropdown list. Called for each option object (which
-         * will contain at minimum a value and label field, as well as any other fields present in
-         * the source objects). Returns a React.node.
-         */
-        optionRenderer: PT.func,
+    /** Width in pixels for the dropdown menu - if unspecified, defaults to control width. */
+    menuWidth: PT.number,
 
-        /** True to suppress the default check icon rendered for the currently selected option. */
-        hideSelectedOptionCheck: PT.bool,
+    /** Function to return message indicating no options loaded. */
+    noOptionsMessageFn: PT.func,
 
-        /** Text to display when control is empty. */
-        placeholder: PT.string,
+    /**
+     * Preset list of options for selection. Elements can be either a primitive or an object.
+     * Primitives will be displayed via toString().
+     * Objects must have either:
+     *      + A `label` property for display and a `value` property
+     *      + A `label` property and an `options` property containing an array of sub-options
+     *        to be grouped beneath the option.
+     *        These sub-options must be either primitives or `label`:`value` pairs: deeper nesting is unsupported.
+     *
+     * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
+     * of up-front in this prop.
+     */
+    options: PT.array,
 
-        /**
-         * Escape-hatch props passed directly to react-select. Use with care - not all props
-         * in the react-select API are guaranteed to be supported by this Hoist component,
-         * and providing them directly can interfere with the implementation of this class.
-         */
-        rsOptions: PT.object,
+    /**
+     * Function to render options in the dropdown list. Called for each option object (which
+     * will contain at minimum a value and label field, as well as any other fields present in
+     * the source objects). Returns a React.node.
+     */
+    optionRenderer: PT.func,
 
-        /** Field on provided options for sourcing each option's value (default `value`). */
-        valueField: PT.string
-    };
+    /** True to suppress the default check icon rendered for the currently selected option. */
+    hideSelectedOptionCheck: PT.bool,
 
-    static MENU_PORTAL_ID = 'xh-select-input-portal';
+    /** Text to display when control is empty. */
+    placeholder: PT.string,
 
-    baseClassName = 'xh-select';
+    /**
+     * Escape-hatch props passed directly to react-select. Use with care - not all props
+     * in the react-select API are guaranteed to be supported by this Hoist component,
+     * and providing them directly can interfere with the implementation of this class.
+     */
+    rsOptions: PT.object,
+
+    /** Field on provided options for sourcing each option's value (default `value`). */
+    valueField: PT.string
+};
+Select.MENU_PORTAL_ID = 'xh-select-input-portal';
+Select.hasLayoutSupport = true;
+
+//-----------------------
+// Implementation
+//-----------------------
+class Model extends HoistInputModel {
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
-    // Maintained for (but not passed to) async select to resolve value string <> option objects.
-    @observable.ref internalOptions = [];
-    @action setInternalOptions(options) {this.internalOptions = options}
+    @bindable.ref internalOptions = [];
 
-    constructor(props, context) {
-        super(props, context);
+    get creatableMode() {return !!this.props.enableCreate}
+    get filterMode() {return !!this.props.enableFilter}
+
+    reactSelectRef = createObservableRef();
+    get reactSelect() {return this.reactSelectRef.current}
+
+    blur() {
+        this.reactSelect?.blur();
+    }
+
+    focus() {
+        this.reactSelect?.focus();
+    }
+
+    // not working when enableCreate: true or enableFilter: true.
+    // react-select not putting created content into input.
+    // maybe not necessary, anyways, on mobile?
+    select() {
+        this.selectText();
+    }
+
+    constructor(props) {
+        super(props);
+        makeObservable(this);
         this.addReaction({
             track: () => this.props.options,
             run: (opts) => {
@@ -104,57 +160,23 @@ export class Select extends HoistInput {
         });
     }
 
-    render() {
-        const props = this.getNonLayoutProps(),
-            {width, ...layoutProps} = this.getLayoutProps(),
-            rsProps = {
-                options: this.internalOptions,
-                value: this.renderValue,
-
-                formatOptionLabel: this.formatOptionLabel,
-                isSearchable: false,
-                isDisabled: props.disabled,
-                menuPlacement: withDefault(props.menuPlacement, 'auto'),
-                noOptionsMessage: this.noOptionsMessageFn,
-                placeholder: withDefault(props.placeholder, 'Select...'),
-                tabIndex: props.tabIndex,
-                menuShouldBlockScroll: XH.isMobile,
-
-                // A shared div is created lazily here as needed, appended to the body, and assigned
-                // a high z-index to ensure options menus render over dialogs or other modals.
-                menuPortalTarget: this.getOrCreatePortalDiv(),
-
-                inputId: props.id,
-                classNamePrefix: 'xh-select',
-                theme: this.getThemeConfig(),
-
-                onBlur: this.onBlur,
-                onChange: this.onSelectChange,
-                onFocus: this.onFocus
-            };
-
-        if (props.hideDropdownIndicator) {
-            rsProps.components = {
-                ...rsProps.components,
-                DropdownIndicator: () => null,
-                IndicatorSeparator: () => null
-            };
-        }
-
-        assign(rsProps, props.rsOptions);
-
-        return box({
-            item: reactSelect(rsProps),
-            className: this.getClassName(),
-            ...layoutProps,
-            width: withDefault(width, null)
-        });
-    }
-
-
     //-------------------------
     // Options / value handling
     //-------------------------
+    filterOption = (opt, inputVal) => {
+        // 1) Use function provided by app
+        const {filterFn} = this.props;
+        if (filterFn) {
+            return filterFn(opt, inputVal);
+        }
+
+        // 2) ..or use default word start search
+        if (!inputVal) return true;
+        if (!opt.label) return false;
+        const regex = new RegExp(`(^|\\W)${inputVal}`, 'i');
+        return regex.test(opt.label);
+    };
+
     onSelectChange = (opt) => {
         this.noteValueChange(opt);
     };
@@ -223,7 +245,6 @@ export class Select extends HoistInput {
     //----------------------
     // Option Rendering
     //----------------------
-
     formatOptionLabel = (opt, params) => {
         // Always display the standard label string in the value container (context == 'value').
         // If we need to expose customization here, we could consider a dedicated prop.
@@ -291,6 +312,87 @@ export class Select extends HoistInput {
         return portal;
     }
 
+    createMessageFn = (q) => {
+        const {createMessageFn} = this.props;
+        return createMessageFn ? createMessageFn(q) : `Create "${q}"`;
+    };
+
+    selectText() {
+        const {reactSelect} = this;
+        if (!reactSelect) return;
+
+        // Use of windowedMode, creatable and async variants will create levels of nesting we must
+        // traverse to get to the underlying Select comp and its inputRef.
+        let selectComp = reactSelect.select;
+        while (selectComp && !selectComp.inputRef) {selectComp = selectComp.select}
+        const inputElem = selectComp?.inputRef;
+
+        if (this.hasFocus && inputElem && document.activeElement === inputElem) {
+            inputElem.select();
+        }
+    }
 }
 
-export const select = elemFactory(Select);
+const cmp = hoistCmp.factory(
+    ({model, className, ...props}, ref) => {
+        const {width, ...layoutProps} = getLayoutProps(props),
+            rsProps = {
+                options: model.internalOptions,
+                value: model.renderValue,
+
+                formatOptionLabel: model.formatOptionLabel,
+                isSearchable: model.filterMode || model.creatableMode,
+                isDisabled: props.disabled,
+                menuPlacement: withDefault(props.menuPlacement, 'auto'),
+                noOptionsMessage: model.noOptionsMessageFn,
+                placeholder: withDefault(props.placeholder, 'Select...'),
+                tabIndex: props.tabIndex,
+                menuShouldBlockScroll: XH.isMobileApp,
+
+                // A shared div is created lazily here as needed, appended to the body, and assigned
+                // a high z-index to ensure options menus render over dialogs or other modals.
+                menuPortalTarget: model.getOrCreatePortalDiv(),
+
+                inputId: props.id,
+                classNamePrefix: 'xh-select',
+                theme: model.getThemeConfig(),
+
+                onBlur: model.onBlur,
+                onChange: model.onSelectChange,
+                onFocus: model.onFocus,
+                filterOption: model.filterOption,
+                ref: model.reactSelectRef
+            };
+
+        if (props.hideDropdownIndicator) {
+            rsProps.components = {
+                ...rsProps.components,
+                DropdownIndicator: () => null,
+                IndicatorSeparator: () => null
+            };
+        }
+
+        if (props.menuWidth) {
+            rsProps.styles = {
+                menu: (provided) => ({...provided, width: `${props.menuWidth}px`}),
+                ...props.rsOptions?.styles
+            };
+        }
+
+        assign(rsProps, props.rsOptions);
+
+        if (model.creatableMode) {
+            rsProps.formatCreateLabel = model.createMessageFn;
+        }
+
+        const factory = model.creatableMode ? reactCreatableSelect : reactSelect;
+
+        return box({
+            item: factory(rsProps),
+            className,
+            ...layoutProps,
+            width: withDefault(width, null),
+            ref
+        });
+    }
+);

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
 export class Aggregator {
@@ -27,5 +27,27 @@ export class Aggregator {
      */
     replace(rows, currVal, update) {
         return this.aggregate(rows, update.field.name);
+    }
+
+
+    /**
+     * Call function on all *leaf* children of a set of children.
+     *
+     * @param {Array} rows - array of child rows
+     * @param {function} fn - the function to call on each leaf.
+     *
+     * @returns {boolean}
+     */
+    forEachLeaf(rows, fn) {
+        for (const row of rows) {
+            if (row.isLeaf) {
+                const res = fn(row);
+                if (res === false) return false;
+            } else {
+                const res = this.forEachLeaf(row.children, fn);
+                if (res === false) return false;
+            }
+        }
+        return true;
     }
 }

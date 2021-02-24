@@ -2,14 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
 import {stripTags, withDefault} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
 
-@HoistService
-export class TrackService {
+export class TrackService extends HoistService {
 
     /**
      * Primary service for tracking any activity that an application's admins want to track.
@@ -54,8 +53,8 @@ export class TrackService {
             if (options.elapsed !== undefined)  params.elapsed = options.elapsed;
             if (options.severity)               params.severity = options.severity;
 
-            const consoleMsg =
-                ['[Track]', params.category, params.msg, params.elapsed]
+            const elapsedStr = params.elapsed != null ? `${params.elapsed}ms` : null,
+                consoleMsg = ['[Track]', params.category, params.msg, elapsedStr]
                     .filter(it => it != null)
                     .join(' | ');
 

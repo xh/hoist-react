@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {apiRemoved, throwIf} from '@xh/hoist/utils/js';
-import {isNumber} from 'lodash';
+import {isFunction, isNumber} from 'lodash';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
@@ -16,8 +16,7 @@ import {isNumber} from 'lodash';
  *
  * This is the primary app entry-point for specifying DataView component options and behavior.
  */
-@HoistModel
-export class DataViewModel {
+export class DataViewModel extends HoistModel {
 
     @managed
     gridModel;
@@ -33,7 +32,8 @@ export class DataViewModel {
      * @param {(Store|Object)} c.store - a Store instance, or a config to create one.
      * @param {Column~elementRendererFn} c.elementRenderer - function returning a React element for
      *      each data row.
-     * @param {number} itemHeight - Row height (in px) for each item displayed in the view.
+     * @param {(number|function)} itemHeight - Row height (in px) for each item displayed in the view,
+     *      or a function which returns a number. Function will receive {record, dataViewModel, agParams}.
      * @param {(string|string[])} [c.groupBy] - field(s) by which to do full-width row grouping.
      * @param {number} [c.groupRowHeight] - Height (in px) of a group row.
      * @param {Grid~groupRowRendererFn} [c.groupRowRenderer] - function returning a string used to
@@ -74,7 +74,14 @@ export class DataViewModel {
         rowClassFn,
         ...restArgs
     }) {
-        throwIf(!isNumber(itemHeight), 'Must specify DataViewModel.itemHeight as a number to set a fixed pixel height for each item.');
+        super();
+        makeObservable(this);
+
+        throwIf(
+            !isFunction(itemHeight) && !isNumber(itemHeight),
+            'Must specify DataViewModel.itemHeight as a number or a function to set a pixel height for each item.'
+        );
+
         apiRemoved(restArgs.rowCls, 'rowCls', 'Use \'rowClassFn\' instead.');
         apiRemoved(restArgs.itemRenderer, 'itemRenderer', 'Use \'elementRenderer\' instead.');
 
@@ -114,7 +121,7 @@ export class DataViewModel {
     }
 
     // Getters and methods trampolined from GridModel.
-    // Explicit trampolining to aid code-editor, future docs.
+    // Explicit trampolining to aid tooling and docs.
     get store()                 {return this.gridModel.store}
     get empty()                 {return this.gridModel.empty}
     get selModel()              {return this.gridModel.selModel}
@@ -124,12 +131,20 @@ export class DataViewModel {
     get groupBy()               {return this.gridModel.groupBy}
     get sortBy()                {return this.gridModel.sortBy}
 
-    selectFirst()               {return this.gridModel.selectFirst()}
-    ensureSelectionVisible()    {return this.gridModel.ensureSelectionVisible()}
-    doLoadAsync(loadSpec)       {return this.gridModel.doLoadAsync(loadSpec)}
-    loadData(...args)           {return this.gridModel.loadData(...args)}
-    updateData(...args)         {return this.gridModel.updateData(...args)}
-    clear()                     {return this.gridModel.clear()}
-    setGroupBy(colIds)          {return this.gridModel.setGroupBy(colIds)}
-    setSortBy(sorters)          {return this.gridModel.setSortBy(sorters)}
+    selectAsync(...args)            {return this.gridModel.selectAsync(...args)}
+    preSelectFirstAsync(...args)    {return this.gridModel.preSelectFirstAsync(...args)}
+    selectFirstAsync(...args)       {return this.gridModel.selectFirstAsync(...args)}
+    ensureSelectionVisibleAsync()   {return this.gridModel.ensureSelectionVisibleAsync()}
+    doLoadAsync(loadSpec)           {return this.gridModel.doLoadAsync(loadSpec)}
+    loadData(...args)               {return this.gridModel.loadData(...args)}
+    updateData(...args)             {return this.gridModel.updateData(...args)}
+    clear()                         {return this.gridModel.clear()}
+    setGroupBy(colIds)              {return this.gridModel.setGroupBy(colIds)}
+    setSortBy(sorters)              {return this.gridModel.setSortBy(sorters)}
+    setFilter(filter)               {return this.gridModel.setFilter(filter)}
+
+    /** @deprecated */
+    selectFirst()                   {return this.gridModel.selectFirst()}
+    /** @deprecated */
+    ensureSelectionVisible()        {return this.gridModel.ensureSelectionVisible()}
 }

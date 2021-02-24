@@ -2,33 +2,33 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
-import {NO_CONTENT, RESET_CONTENT} from 'http-status-codes';
-import {isDate, isFunction, isNil, isNumber, omitBy} from 'lodash';
+import {throwIf, apiDeprecated, withDefault} from '@xh/hoist/utils/js';
+import {StatusCodes} from 'http-status-codes';
+import {isDate, isFunction, isNil, omitBy} from 'lodash';
 import {stringify} from 'qs';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 
 /**
- * Service to send an HTTP request to a URL.
+ * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
  *
  * Wrapper around the standard Fetch API with some enhancements to streamline the process for
  * the most common use-cases. The Fetch API will be called with CORS enabled, credentials
  * included, and redirects followed.
  *
- * Custom headers can be provided to fetch as a plain object. App-wide default headers
- * can be set using setDefaultHeaders.
+ * Custom headers can be provided to fetch as a plain object. App-wide default headers can be set
+ * using `setDefaultHeaders()`.
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API|Fetch API Docs}
  *
- * Note that the convenience methods 'fetchJson', 'postJson', 'putJson' all accept the same options
- * as the main entry point 'fetch', as they delegate to fetch after setting additional defaults.
+ * Note that the convenience methods `fetchJson`, `postJson`, `putJson` all accept the same options
+ * as the main entry point `fetch`, as they delegate to fetch after setting additional defaults.
  */
-@HoistService
-export class FetchService {
+export class FetchService extends HoistService {
 
     abortControllers = {};
     defaultHeaders = {};
@@ -48,7 +48,7 @@ export class FetchService {
      * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
      */
     async fetch(opts) {
-        return this.fetchInternalAsync(opts).timeout(this.parseTimeout(opts));
+        return this.withTimeoutAsync(this.fetchInternalAsync(opts), opts);
     }
 
     /**
@@ -57,13 +57,12 @@ export class FetchService {
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async fetchJson(opts) {
-        return this.fetchInternalAsync({
-            ...opts,
-            headers: {'Accept': 'application/json', ...opts.headers}
-        }).then(
-            r => [NO_CONTENT, RESET_CONTENT].includes(r.status) ? null : r.json()
-        ).timeout(
-            this.parseTimeout(opts)
+        return this.withTimeoutAsync(
+            this.fetchInternalAsync({
+                ...opts,
+                headers: {'Accept': 'application/json', ...opts.headers}
+            }).then(r => [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT].includes(r.status) ? null : r.json()),
+            opts
         );
     }
 
@@ -95,6 +94,15 @@ export class FetchService {
     }
 
     /**
+     * Send a PATCH request with a JSON body and decode the response as JSON.
+     * @param {FetchOptions} opts
+     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     */
+    async patchJson(opts) {
+        return this.sendJsonInternalAsync({method: 'PATCH', ...opts});
+    }
+
+    /**
      * Send a DELETE request with optional JSON body and decode the optional response as JSON.
      * @param {FetchOptions} opts
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
@@ -106,13 +114,22 @@ export class FetchService {
     //-----------------------
     // Implementation
     //-----------------------
+    async withTimeoutAsync(promise, opts) {
+        const timeout = withDefault(opts.timeout, 30 * SECONDS);
+        return promise
+            .timeout(timeout)
+            .catchWhen('Timeout Exception', e => {
+                throw Exception.fetchTimeout(opts, e, opts.timeout?.message);
+            });
+    }
+
     async fetchInternalAsync(opts) {
         const {defaultHeaders, abortControllers} = this;
         let {url, method, headers, body, params, autoAbortKey} = opts;
         throwIf(!url, 'No url specified in call to fetchService.');
         throwIf(headers instanceof Headers, 'headers must be a plain object in calls to fetchService.');
-        warnIf(opts.contentType, 'contentType has been deprecated - please pass a "Content-Type" header instead.');
-        warnIf(opts.acceptJson, 'acceptJson has been deprecated - please pass an {"Accept": "application/json"} header instead.');
+        apiDeprecated(opts.contentType, 'contentType', 'Please pass a "Content-Type" header instead.');
+        apiDeprecated(opts.acceptJson, 'acceptJson', 'Please pass an {"Accept": "application/json"} header instead.');
 
         // 1) Compute / install defaults
         if (!method) {
@@ -216,15 +233,6 @@ export class FetchService {
         }
     }
 
-    parseTimeout(opts) {
-        const {timeout, url} = opts;
-        if (!timeout) return null;
-
-        return isNumber(timeout) ?
-            {interval: timeout, message: `Failure calling ${url} - timed out after ${timeout}ms.`} :
-            timeout;
-    }
-
     qsFilterFn = (prefix, value) => {
         if (isDate(value))      return value.getTime();
         if (isLocalDate(value)) return value.isoString;
@@ -246,7 +254,10 @@ export class FetchService {
  * @property {Object} [headers] - headers to send with this request. A Content-Type header will
  *      be set if not provided by the caller directly or via one of the xxxJson convenience methods.
  * @property {(number|Object)} [timeout] - ms to wait for response before rejecting with a timeout
- *      exception.  May be specified as an object to customise the exception. See Promise.timeout().
+ *      exception.  Defaults to 30 seconds, but may be specified as null to specify no timeout.
+ *      May also be specified as an object to customise the exception. See Promise.timeout().
+ * @property {LoadSpec} [loadSpec] - optional metadata about the underlying request. Passed through
+ *      for downstream processing by utils such as {@see ExceptionHandler}.
  * @property {Object} [fetchOpts] - options to pass to the underlying fetch request.
  *      @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
  * @property {Object} [qsOpts] - options to pass to the param converter library, qs.

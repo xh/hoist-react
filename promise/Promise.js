@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {Exception} from '@xh/hoist/exception';
 import {castArray, isFunction, isNumber, isPlainObject} from 'lodash';
 
 /**
@@ -178,13 +178,16 @@ const enhancePromise = (promisePrototype) => {
         timeout(config) {
             if (config == null) return this;
             if (isNumber(config)) config = {interval: config};
-            config.message = config.message || `Operation timed out after ${config.interval}ms.`;
+            const interval = config.interval,
+                message = config.message ?? `Operation timed out after ${interval}ms.`;
 
             let completed = false;
             const promise = this.finally(() => completed = true);
 
-            const deadline = wait(config.interval).then(() => {
-                throwIf(!completed, config.message);
+            const deadline = wait(interval).then(() => {
+                if (!completed) {
+                    throw Exception.create({name: 'Timeout Exception', message, interval});
+                }
             });
 
             return Promise.race([deadline, promise]);
@@ -198,7 +201,7 @@ const enhancePromise = (promisePrototype) => {
          *
          * @param {Object|PendingTaskModel} cfg -- Configuration object, or PendingTaskModel
          * @param {PendingTaskModel} cfg.model - PendingTaskModel to link to.
-         * @param {String} [cfg.message] - Optional custom message for use by PendingTaskModel.
+         * @param {string} [cfg.message] - Optional custom message for use by PendingTaskModel.
          * @param {boolean} [cfg.omit] - optional flag to indicate linkage should be skipped
          *      If true, this method is no-op.  Provided as convenience for conditional masking.
          */

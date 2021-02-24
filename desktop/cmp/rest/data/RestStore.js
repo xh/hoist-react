@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
@@ -53,6 +53,20 @@ export class RestStore extends UrlStore {
         );
     }
 
+    async bulkDeleteRecordsAsync(records) {
+        const {url} = this,
+            ids = records.map(it => it.id),
+            resp = await XH.fetchJson({
+                url: `${url}/bulkDelete`,
+                params: {ids}
+            }).linkTo(
+                this.loadModel
+            );
+
+        await this.loadAsync();
+        return resp;
+    }
+
     async addRecordAsync(rec) {
         return this.saveRecordInternalAsync(rec, true)
             .linkTo(this.loadModel);
@@ -61,6 +75,19 @@ export class RestStore extends UrlStore {
     async saveRecordAsync(rec) {
         return this.saveRecordInternalAsync(rec, false)
             .linkTo(this.loadModel);
+    }
+
+    async bulkUpdateRecordsAsync(ids, newParams) {
+        const {url} = this,
+            resp = await XH.fetchService.putJson({
+                url: `${url}/bulkUpdate`,
+                body: {ids, newParams}
+            }).linkTo(
+                this.loadModel
+            );
+
+        await this.loadAsync();
+        return resp;
     }
 
     //--------------------------------

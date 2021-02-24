@@ -2,26 +2,25 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
-import {castArray, compact, intersection, isEqual, union} from 'lodash';
+import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
+import {castArray, compact, remove, isEqual, union, map} from 'lodash';
 
 /**
  * Model for managing store selections.
  * Typically accessed from a GridModel to observe/control Grid selection.
  */
-@HoistModel
-export class StoreSelectionModel {
+export class StoreSelectionModel extends HoistModel {
 
     /** @member {Store} */
     store;
     /** @member {string} */
     mode;
 
-    @observable.ref ids = [];
+    @observable.ref _ids = [];
 
     /**
      * @param {Object} c - StoreSelectionModel configuration.
@@ -29,34 +28,39 @@ export class StoreSelectionModel {
      * @param {string} [c.mode] - one of ['single', 'multiple', 'disabled'].
      */
     constructor({store, mode = 'single'}) {
+        super();
+        makeObservable(this);
         this.store = store;
         this.mode = mode;
         this.addReaction(this.cullSelectionReaction());
     }
 
-    /** Single selected record, or null if multiple or no records selected. */
-    @computed
-    get singleRecord() {
-        const ids = this.ids;
-        return ids.length === 1 ? this.store.getById(ids[0]) : null;
-    }
-
-    /** Currently selected records. */
-    @computed
+    /** @return {Record[]} - currently selected records. */
+    @computed.struct
     get records() {
-        return compact(this.ids.map(it => this.store.getById(it)));
+        return compact(this._ids.map(it => this.store.getById(it, true)));
     }
 
-    /** Is the selection empty? */
-    @computed
+    /** @return {(string[]|number[])} - IDs of currently selected records. */
+    get ids() {
+        return map(this.records, 'id');
+    }
+
+    /** @return {?Record} - single selected record, or null if multiple or no records selected. */
+    get singleRecord() {
+        const {records} = this;
+        return records.length === 1 ? records[0] : null;
+    }
+
+    /** @return {boolean} - true if selection is empty. */
     get isEmpty() {
-        return this.ids.length === 0;
+        return this.count === 0;
     }
 
-    /** Number of currently selected records. */
+    /** @return {number} - count of currently selected records. */
     @computed
     get count() {
-        return this.ids.length;
+        return this.records.length;
     }
 
     /**
@@ -66,9 +70,9 @@ export class StoreSelectionModel {
      */
     @action
     select(records, clearSelection = true) {
-        records = castArray(records);
-        if (this.mode == 'disabled') return;
-        if (this.mode == 'single' && records.length > 1) {
+        records = castArray(records ?? []);
+        if (this.mode === 'disabled') return;
+        if (this.mode === 'single' && records.length > 1) {
             records = [records[0]];
         }
         const ids = records.map(it => {
@@ -77,11 +81,11 @@ export class StoreSelectionModel {
             return this.store.getById(id, true);
         });
 
-        if (isEqual(ids, this.ids)) {
+        if (isEqual(ids, this._ids)) {
             return;
         }
 
-        this.ids = clearSelection ? ids : union(this.ids, ids);
+        this._ids = clearSelection ? ids : union(this._ids, ids);
     }
 
     /** Select all filtered records. */
@@ -103,17 +107,12 @@ export class StoreSelectionModel {
     // Implementation
     //------------------------
     cullSelectionReaction() {
-        // Remove recs from selection if they are no longer in store e.g. (due to filtering)
+        // Remove recs from selection if they are no longer in store. Cleanup array in place without
+        // modifying observable -- the 'records' getter provides all observable state.
+        const {store} = this;
         return {
-            track: () => this.store.records,
-            run: (records) => {
-                const storeIds = records.map(it => it.id),
-                    selection = this.ids,
-                    newSelection = intersection(storeIds, selection);
-                if (selection.length !== newSelection.length) {
-                    this.select(newSelection);
-                }
-            }
+            track: () => store.records,
+            run: () => remove(this._ids, id => !store.getById(id, true))
         };
     }
 }

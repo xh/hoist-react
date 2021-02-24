@@ -2,52 +2,38 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {castArray, groupBy, isEmpty, map} from 'lodash';
-import {action, observable} from 'mobx';
-import {ValueFilter} from './filter/ValueFilter';
-import {throwIf} from '../../utils/js';
-import {Cube} from './Cube';
-import {createAggregateRow} from './impl/AggregateRow';
-import {createLeafRow} from './impl/LeafRow';
+import {Cube, FieldFilter, Query} from '@xh/hoist/data';
+import {action, observable} from '@xh/hoist/mobx';
+import {throwIf} from '@xh/hoist/utils/js';
+import {castArray, forEach, groupBy, isEmpty, isNil, map} from 'lodash';
+import {AggregateRow} from './row/AggregateRow';
+import {BucketRow} from './row/BucketRow';
+import {LeafRow} from './row/LeafRow';
 
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.
- *
- * Not created directly by application.  Applications should use the method
- * Cube.createView() instead.
+ * Applications should create via the {@see Cube.createView()} factory.
  */
 export class View {
 
-    /**
-     * @member {Query}
-     * Query defining this View.  Update with updateView();
-     */
+    /** @member {Query} - Query defining this View. Update via `updateQuery()`. */
     @observable.ref
     query = null;
 
     /**
-     * @member {Object}
-     * Results of this view.  Will contain a single property 'rows' containing an array of
-     * hierarchical data objects. This is an observable property.
+     * @member {Object} - results of this view, an observable object with a `rows` property
+     *      containing an array of hierarchical data objects.
      */
     @observable.ref
     result = null;
 
-    /**
-     * @member {Store[]}
-     * Stores to which results of this view should be (re)loaded
-     */
+    /** @member {Store[]} - Stores to which results of this view should be (re)loaded. */
     stores = null;
 
-    /**
-     * @member {Object}
-     *
-     * Cube info associated with the view when it was last updated.
-     * This is an observable property.
-     */
+    /** @member {Object} - observable Cube info associated with this View when last updated. */
     @observable.ref
     info = null;
 
@@ -56,15 +42,14 @@ export class View {
     _leafMap = null;
 
     /**
-     * @private.  Applications should use createView() instead.
+     * @private - applications should use `Cube.createView()`.
      *
      * @param {Object} c - config object.
      * @param {Query} c.query - query to be used to construct this view.
-     * @param {(Store[] | Store)} [c.stores] - Stores to be loaded/reloaded with
-     *      data from this view.  Optional. To receive data only, use the
-     *      rows property instead.
-     * @param {boolean} [c.connect] - true to updated rows property and loaded
-     *      store when data in the underlying cube is changed.
+     * @param {(Store[]|Store)} [c.stores] - Stores to be loaded/reloaded with data from this view.
+     *      Optional - to receive data only, observe/read this class's `result` property instead.
+     * @param {boolean} [c.connect] - true to reactively update this class's `result` and connected
+     *      store(s) (if any) when data in the underlying Cube is changed.
      */
     constructor({query, connect = false, stores = []}) {
         this.query = query;
@@ -79,34 +64,33 @@ export class View {
     //--------------------
     // Main Public API
     //--------------------
-    get cube() {
-        return this.query.cube;
+    /** @return {Cube} */
+    get cube() {return this.query.cube}
+
+    /** @return {CubeField[]} */
+    get fields() {return this.query.fields}
+
+    /** @return {boolean} */
+    get isConnected() {return this.cube.viewIsConnected(this)}
+
+    /** @return {boolean} */
+    get isFiltered() {
+        return !isEmpty(this.cube.filters) && !isEmpty(this.query.filter);
     }
 
-    get fields() {
-        return this.query.fields;
-    }
-
-    get isConnected() {
-        return this.cube._connectedViews.has(this);
-    }
-
-    disconnect() {
-        this.cube._connectedViews.delete(this);
-    }
+    /** Stop receiving live updates into this view when the linked Cube data changes. */
+    disconnect() {this.cube.disconnectView(this)}
 
     /**
-     * Change the query in some way.
+     * Change the query in some way, re-computing the data in this View to reflect the new query.
      *
-     * Setting this property will cause the data in this view to be re-computed to reflect
-     * the new query.
-     *
-     * @param {Object} overrides - changes to be applied to the query.  May include any
-     *      arguments to the query constructor, other than cube.
+     * @param {Object} overrides - changes to be applied to the query. May include any arguments to
+     *      the query constructor with the exception of `cube`, which cannot be changed on a view
+     *      once set via the initial query.
      */
     @action
     updateQuery(overrides) {
-        throwIf(overrides.cubes, 'Cannot redirect view to a different cube in updateQuery().');
+        throwIf(overrides.cube, 'Cannot redirect view to a different cube in updateQuery().');
         this.query = this.query.clone(overrides);
         this.fullUpdate();
     }
@@ -154,8 +138,13 @@ export class View {
     fullUpdate() {
         this.generateRows();
 
-        this.stores.forEach(s => s.loadData(this._rows));
-        this.result = {rows: this._rows, leafMap: this._leafMap};
+        // Load stores and observable state.
+        // Skip degenerate root in stores/grids, but preserve in object api.
+        const {stores, _leafMap, _rows} = this,
+            storeRows = _leafMap.size !== 0 ? _rows : [];
+
+        stores.forEach(s => s.loadData(storeRows));
+        this.result = {rows: _rows, leafMap: _leafMap};
         this.info = this.cube.info;
     }
 
@@ -166,7 +155,7 @@ export class View {
         const updatedRows = new Set();
         updates.forEach(rec => {
             const leaf = _leafMap.get(rec.id);
-            leaf?._meta.applyDataUpdate(rec, updatedRows);
+            leaf?.applyDataUpdate(rec, updatedRows);
         });
         this.stores.forEach(store => {
             const recordUpdates = [];
@@ -187,72 +176,129 @@ export class View {
 
         const leafMap = this.generateLeaves(cube.store.records),
             leafArray = Array.from(leafMap.values());
+
         let newRows = this.groupAndInsertLeaves(leafArray, dimensions, rootId, {});
+        newRows = this.bucketRows(newRows, rootId, {});
+
         if (includeRoot) {
-            newRows = [createAggregateRow(this, rootId, newRows, null, 'Total', {})];
-        } else if (!query.includeLeaves && newRows[0]?._meta.isLeaf) {
+            newRows = [new AggregateRow(this, rootId, newRows, null, 'Total', {})];
+        } else if (!query.includeLeaves && newRows[0]?.isLeaf) {
             newRows = []; // degenerate case, no visible rows
         }
+
         this._leafMap = leafMap;
-        this._rows = newRows;
+
+        // This is the magic.  We only actually reveal to API the network of *data* nodes.
+        // This hides all the meta information, as well as unwanted leaves and skipped rows.
+        // Underlying network still there and updates will flow up through it via the leaves.
+        newRows.forEach(it => it.applyVisibleChildren());
+        this._rows = newRows.map(it => it.data);
     }
 
     groupAndInsertLeaves(leaves, dimensions, parentId, appliedDimensions) {
-        if (isEmpty(dimensions)) return leaves;
+        if (isEmpty(dimensions) || isEmpty(leaves)) return leaves;
 
         const dim = dimensions[0],
             dimName = dim.name,
-            groups = groupBy(leaves, (it) => it[dimName]);
+            groups = groupBy(leaves, (it) => it.data[dimName]);
 
         appliedDimensions = {...appliedDimensions};
         return map(groups, (groupLeaves, val) => {
             appliedDimensions[dimName] = val;
-            const id = parentId + Cube.RECORD_ID_DELIMITER + ValueFilter.encode(dimName, val);
-            const newChildren = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
-            return createAggregateRow(this, id, newChildren, dim, val, appliedDimensions);
+            const filter = new FieldFilter({field: dimName, op: '=', value: val}),
+                id = parentId + Cube.RECORD_ID_DELIMITER + Query.filterAsString(filter);
+
+            let children = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
+            children = this.bucketRows(children, id, appliedDimensions);
+
+            return new AggregateRow(this, id, children, dim, val, appliedDimensions);
         });
+    }
+
+    bucketRows(rows, parentId, appliedDimensions) {
+        if (!this.cube.bucketSpecFn) return rows;
+
+        const bucketSpec = this.cube.bucketSpecFn(rows);
+        if (!bucketSpec) return rows;
+
+        if (!this.query.includeLeaves && rows[0]?.isLeaf) return rows;
+
+        const {name: bucketName, bucketFn} = bucketSpec,
+            buckets = {},
+            ret = [];
+
+        // Determine which bucket to put this row into (if any)
+        rows.forEach(row => {
+            const bucketVal = bucketFn(row);
+            if (isNil(bucketVal)) {
+                ret.push(row);
+            } else {
+                if (!buckets[bucketVal]) buckets[bucketVal] = [];
+                buckets[bucketVal].push(row);
+            }
+        });
+
+        // Create new rows for each bucket and add to the result
+        forEach(buckets, (rows, bucketVal) => {
+            const id = parentId + Cube.RECORD_ID_DELIMITER + `${bucketName}=[${bucketVal}]`;
+            ret.push(new BucketRow(this, id, rows, bucketVal, bucketSpec, appliedDimensions));
+        });
+
+        return ret;
     }
 
     // return a list of simple updates for leaves we have or false if leaf population changing
     getSimpleUpdates(t) {
         if (!t) return [];
-        const {filters} = this.query,
-            {_leafMap} = this,
-            recordFilter = (r) => filters.every(f => f.fn(r));
+        const {_leafMap, query} = this;
 
-        // 1) Simple case: no filters
-        if (isEmpty(filters)) {
-            return isEmpty(t.add) && isEmpty(t.remove) ? t.update : false;
+        // 1) Simple case: no filter
+        if (!query.filter) {
+            return isEmpty(t.add) && isEmpty(t.remove) && !this.hasDimUpdates(t.update) ? t.update : false;
         }
 
-        // 2) Examine, accounting for filters
+        // 2) Examine, accounting for filter
         // 2a) Relevant adds or removes fail us
-        if (t.add?.some(recordFilter)) return false;
+        if (t.add?.some(rec => query.test(rec))) return false;
         if (t.remove?.some(id => _leafMap.has(id))) return false;
 
         // 2b) Examine updates, if they change w.r.t. filter then fail otherwise take relevant
         const ret = [];
         if (t.update) {
             for (const r of t.update) {
-                const passes = recordFilter(r),
+                const passes = query.test(r),
                     present = _leafMap.has(r.id);
-                if (passes !== present) return false;
 
+                if (passes !== present) return false;
                 if (present) ret.push(r);
             }
         }
 
+        // 2c) Examine the final set of updates for any changes to dimension field values which would
+        //     require rebuilding the row hierarchy
+        if (this.hasDimUpdates(ret)) return false;
+
         return ret;
+    }
+
+    hasDimUpdates(update) {
+        const {dimensions} = this.query;
+        if (isEmpty(dimensions)) return false;
+
+        const dimNames = dimensions.map(it => it.name);
+        for (const rec of update) {
+            const curRec = this._leafMap.get(rec.id);
+            if (dimNames.some(name => rec.data[name] !== curRec.data[name])) return true;
+        }
+
+        return false;
     }
 
     generateLeaves(records) {
         const ret = new Map();
-        let {filters} = this.query;
-        if (isEmpty(filters)) filters = null;
-
         records.forEach(rec => {
-            if (!filters || filters.every(f => f.fn(rec))) {
-                ret.set(rec.id, createLeafRow(this, rec));
+            if (this.query.test(rec)) {
+                ret.set(rec.id, new LeafRow(this, rec));
             }
         });
         return ret;

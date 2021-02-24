@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {box} from './Box';
@@ -45,5 +45,5 @@ export const [Filler, filler] = hoistCmp.withFactory({
 //--------------------------------
 // Convenience Factories
 //--------------------------------
-export function hspacer(width)  {return spacer({width})}
-export function vspacer(height) {return spacer({height})}
+export function hspacer(width = 10)  {return spacer({width})}
+export function vspacer(height = 10) {return spacer({height})}

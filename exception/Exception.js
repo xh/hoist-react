@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
 import {isString} from 'lodash';
@@ -17,7 +17,8 @@ import {isString} from 'lodash';
 export class Exception {
 
     /**
-     * Create and get back a Javascript Error object
+     * Create and get back a Javascript Error object.
+     * @see XH.exception - an alias for this factory off of XH.
      * @param {(Object|string)} cfg - Properties to add to the Error object.
      *      If a string, will become the 'message' value.
      * @returns {Error}
@@ -84,7 +85,27 @@ export class Exception {
             message: `Fetch request aborted, url: "${fetchOptions.url}"`,
             isRoutine: true,
             isFetchAborted: true,
-            fetchOptions
+            fetchOptions,
+            stack: null // Skip for fetch -- server-sourced exceptions do not include
+        });
+    }
+
+    /**
+     * Create an Error for when a fetch is timed out
+     * @param {Object} fetchOptions - original options the app passed to FetchService.fetch
+     * @param {Error} e - Error object for raw timeout
+     * @param {string} [message] - optional custom message
+     * @returns {Error}
+     */
+    static fetchTimeout(fetchOptions, e, message) {
+        message = message ?? `Timed out loading '${fetchOptions.url}' - no response after ${e.interval}ms.`;
+
+        return this.createInternal({
+            name: 'Fetch Timeout',
+            message,
+            isFetchTimeout: true,
+            fetchOptions,
+            stack: null
         });
     }
 
@@ -108,7 +129,8 @@ export class Exception {
             message,
             httpStatus: 0,  // native fetch doesn't put status on its Error
             originalMessage: e.message,
-            fetchOptions
+            fetchOptions,
+            stack: null
         });
     }
 

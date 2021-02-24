@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {cloneDeep, get, isEmpty, isFinite, partition, set, sumBy, unset} from 'lodash';
+import {cloneDeep, get, isEmpty, isFinite, partition, set, sumBy, unset, sortBy} from 'lodash';
 
 /**
  * Core Model for a TreeMap.
@@ -30,8 +30,7 @@ import {cloneDeep, get, isEmpty, isFinite, partition, set, sumBy, unset} from 'l
  *
  * @see https://www.highcharts.com/docs/chart-and-series-types/treemap for Highcharts config options
  */
-@HoistModel
-export class TreeMapModel {
+export class TreeMapModel extends HoistModel {
 
     //------------------------
     // Immutable public properties
@@ -118,6 +117,8 @@ export class TreeMapModel {
         emptyText,
         filter
     } = {}) {
+        super();
+        makeObservable(this);
         this.gridModel = gridModel;
         this.store = store ? store : gridModel ? gridModel.store : null;
         throwIf(!this.store,  'TreeMapModel requires either a Store or a GridModel');
@@ -172,25 +173,24 @@ export class TreeMapModel {
     @computed
     get valueFieldLabel() {
         const field = this.store.fields.find(it => it.name === this.valueField);
-        return field ? field.label : this.valueField;
+        return field ? field.displayName : this.valueField;
     }
 
     @computed
     get heatFieldLabel() {
         const field = this.store.fields.find(it => it.name === this.heatField);
-        return field ? field.label : this.heatField;
+        return field ? field.displayName : this.heatField;
     }
 
     @computed
     get selectedIds() {
-        if (!this.gridModel || this.gridModel.selModel.mode === 'disabled') return [];
-        return this.gridModel.selModel.ids;
+        return this.gridModel?.selModel.ids ?? [];
     }
 
     @computed
     get expandState() {
-        if (!this.gridModel || !this.gridModel.treeMode) return {};
-        return this.gridModel.expandState;
+        const {gridModel} = this;
+        return gridModel?.treeMode ? gridModel.expandState : {};
     }
 
     @computed
@@ -282,8 +282,8 @@ export class TreeMapModel {
         // 1) Extract heat values and split into positive and negative
         const heatValues = this.store.records.map(it => it.data[this.heatField]);
         let [posHeatValues, negHeatValues] = partition(heatValues, it => it > 0);
-        posHeatValues = posHeatValues.sort();
-        negHeatValues = negHeatValues.map(it => Math.abs(it)).sort();
+        posHeatValues = sortBy(posHeatValues);
+        negHeatValues = sortBy(negHeatValues.map(it => Math.abs(it)));
 
         // 2) Calculate bounds and midpoints for each range
         let minPosHeat = 0, midPosHeat = 0, maxPosHeat = 0, minNegHeat = 0, midNegHeat = 0, maxNegHeat = 0;

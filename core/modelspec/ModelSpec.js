@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
 /**
@@ -26,7 +26,7 @@ export class ModelSpec {
 /**
  * Options for how a Model should be published to context.
  *
- * @enum {ModelPublishMode}
+ * @enum {string}
  * @see {uses}
  * @see {creates}
  */

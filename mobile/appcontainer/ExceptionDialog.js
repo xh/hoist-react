@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
@@ -24,7 +24,8 @@ export const exceptionDialog = hoistCmp.factory({
     model: uses(ExceptionDialogModel),
 
     render({model}) {
-        const {exception, options} = model;
+        const {exception, options} = model,
+            {identityService} = XH;
 
         if (!exception) return null;
 
@@ -39,9 +40,15 @@ export const exceptionDialog = hoistCmp.factory({
                 buttons: [
                     button({
                         icon: Icon.search(),
-                        text: 'Show/Report Details',
+                        text: 'Details',
                         onClick: () => model.openDetails(),
                         omit: !options.showAsError
+                    }),
+                    button({
+                        omit: !identityService?.isImpersonating,
+                        text: 'End Impers',
+                        minimal: true,
+                        onClick: () => identityService.endImpersonateAsync()
                     }),
                     filler(),
                     dismissButton()

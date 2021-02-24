@@ -2,16 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {frame} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
+import {div, frame} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistModel, useLocalModel, uses, elem, XH} from '@xh/hoist/core';
 import {splitLayoutProps, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isNil} from 'lodash';
+import {isNil, max} from 'lodash';
 import './AgGrid.scss';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
-import {AgGridModel, agGridReact} from './index';
+import {AgGridModel} from './AgGridModel';
+import {AgGridReact} from '@xh/hoist/kit/ag-grid';
 
 /**
  * Minimal wrapper for AgGridReact, supporting direct use of the ag-Grid component with limited
@@ -36,19 +37,30 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
     className: 'xh-ag-grid',
     model: uses(AgGridModel),
 
-    render({model, key, className, onGridReady, ...props}) {
+    render({model, key, className, onGridReady, ...props}, ref) {
+
+        if (!AgGridReact) {
+            console.error(
+                'ag-Grid has not been imported in to this application. Please import and ' +
+                'register modules in Bootstrap.js. See the XH Toolbox app for an example.'
+            );
+            return div({
+                className: 'xh-text-color-accent xh-pad',
+                item: 'ag-Grid library not available.'
+            });
+        }
+
         const [layoutProps, agGridProps] = splitLayoutProps(props),
             {sizingMode, showHover, rowBorders, stripeRows, cellBorders, showCellFocus} = model,
-            {darkTheme, isMobile} = XH;
+            {darkTheme, isDesktop} = XH;
 
         const impl = useLocalModel(() => new LocalModel(model, agGridProps));
         impl.onGridReady = onGridReady;
 
-        useOnUnmount(() => {
-            if (model) model.handleGridUnmount();
-        });
+        useOnUnmount(() => model?.handleGridUnmount());
 
         return frame({
+            ref,
             className: classNames(
                 className,
                 darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
@@ -57,15 +69,15 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
                 stripeRows ? 'xh-ag-grid--stripe-rows' : 'xh-ag-grid--no-stripe-rows',
                 cellBorders ? 'xh-ag-grid--cell-borders' : 'xh-ag-grid--no-cell-borders',
                 showCellFocus ? 'xh-ag-grid--show-cell-focus' : 'xh-ag-grid--no-cell-focus',
-                !isMobile && showHover ? 'xh-ag-grid--show-hover' : 'xh-ag-grid--no-hover'
+                isDesktop && showHover ? 'xh-ag-grid--show-hover' : 'xh-ag-grid--no-hover'
             ),
             ...layoutProps,
-            item: agGridReact({
+            item: elem(AgGridReact, {
                 // Default some ag-grid props, but allow overriding.
                 getRowHeight: impl.getRowHeight,
                 navigateToNextCell: impl.navigateToNextCell,
-                headerHeight: model.headerHeight,
-
+                onColumnResized: impl.onColumnChange,
+                onColumnVisible: impl.onColumnChange,
                 // Pass others on directly.
                 ...agGridProps,
 
@@ -83,34 +95,35 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
  */
 AgGrid.ROW_HEIGHTS = {large: 32, standard: 28, compact: 24, tiny: 18};
 AgGrid.ROW_HEIGHTS_MOBILE = {large: 38, standard: 34, compact: 30, tiny: 26};
-AgGrid.getRowHeightForSizingMode = (mode) => (XH.isMobile ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS)[mode];
+AgGrid.getRowHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS)[mode];
 
 /**
  * Header heights (in pixels)
  */
 AgGrid.HEADER_HEIGHTS = {large: 36, standard: 32, compact: 28, tiny: 22};
 AgGrid.HEADER_HEIGHTS_MOBILE = {large: 42, standard: 38, compact: 34, tiny: 30};
-AgGrid.getHeaderHeightForSizingMode = (mode) => (XH.isMobile ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS)[mode];
+AgGrid.getHeaderHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS)[mode];
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
     model;
     onGridReady;
 
-    constructor(model, agGridProps) {
-        this.model = model;
-        this.rowKeyNavSupport = !XH.isMobile ? new RowKeyNavSupport(model) :  null;
+    get headerHeight() {
+        const {hideHeaders, sizingMode} = this.model;
+        return hideHeaders ? 0 : AgGrid.getHeaderHeightForSizingMode(sizingMode);
+    }
 
-        // Only update header height if was not explicitly provided to the component
+    constructor(model, agGridProps) {
+        super();
+        this.model = model;
+        this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(model) : null;
+
+        // manage header height if was not explicitly provided to component
         if (isNil(agGridProps.headerHeight)) {
             this.addReaction({
-                track: () => [this.model.agApi, this.model.sizingMode],
-                run: ([api, sizingMode]) => {
-                    if (!api) return;
-                    const height = AgGrid.getHeaderHeightForSizingMode(sizingMode);
-                    api.setHeaderHeight(height);
-                }
+                track: () => [model.agApi, this.headerHeight],
+                run: ([api, headerHeight]) => api?.setHeaderHeight(headerHeight)
             });
         }
     }
@@ -128,5 +141,15 @@ class LocalModel {
         }
     };
 
-    getRowHeight = () => AgGrid.getRowHeightForSizingMode(this.model.sizingMode);
+    onColumnChange = (ev) => {
+        ev.api.resetRowHeights();
+    };
+
+    getRowHeight = ({node}) => {
+        const {model} = this;
+        return max([
+            AgGrid.getRowHeightForSizingMode(model.sizingMode),
+            model.getAutoRowHeight(node)
+        ]);
+    }
 }

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -14,14 +14,7 @@ import store from 'store2';
  *
  * Relied upon by Hoist features such as local preference values and grid state.
  */
-@HoistService
-export class LocalStorageService {
-
-    async initAsync() {
-        if (this.supported) {
-            this.migrateLegacyNamespace();
-        }
-    }
+export class LocalStorageService extends HoistService {
 
     get(key, defaultValue) {
         const storage = this.getInstance(),
@@ -74,25 +67,5 @@ export class LocalStorageService {
 
     getNamespace() {
         return `${XH.appCode}.${XH.getUsername()}`;
-    }
-
-    // Added in April 2019 to support a switch to the new user-specific namespace without current
-    // users losing their local state. Remove when we are confident essential apps have been updated
-    // and accessed by end users to run this routine.
-    migrateLegacyNamespace() {
-        try {
-            const oldSpace = store.namespace(XH.appName);
-            if (oldSpace.size()) {
-                console.log('Migrating Namespace for Local Storage');
-                const newSpace = store.namespace(this.getNamespace());
-                if (!newSpace.size()) {
-                    newSpace.setAll(oldSpace.getAll());
-                    console.log(`Migrated ${oldSpace.size()} keys`);
-                }
-                oldSpace.clear();
-            }
-        } catch (e) {
-            console.error('Failure in Migrate Namespace for Local Storage', e);
-        }
     }
 }

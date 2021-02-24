@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
+import {HoistModel, managed, RefreshMode, RenderMode, XH, PersistenceProvider} from '@xh/hoist/core';
 import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, bindable, makeObservable} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
@@ -29,18 +29,30 @@ import {dashView} from './impl/DashView';
  * State should be structured as nested arrays of container objects, according to
  * GoldenLayout`s content config. Supported container types are `row`, `column` and `stack`.
  * Child containers and views should be provided as an array under the `contents` key.
- * Note that loading state will destroy and reinitialize all components. Therefore,
- * it is recommended you do so sparingly.
+ *
+ *      + `row` lay out its children horizontally.
+ *      + `column` lays out its children vertically.
+ *      + `stack` lays out its children as tabs. `stacks` can only contain `views` (more below)
+ *
+ * The children of `row` and `column` containers can be sized by providing width or height values.
+ * Numeric values represent relative sizes, expressed as a percentage of the available space.
+ * Pixel values can be provided as a string (e.g. '100px'), which will be converted to a relative
+ * size at parse time. Any unaccounted for space will be divided equally across the remaing children.
  *
  * We differ from GoldenLayout by offering a new type `view`. These should be configured as
  * id references to the provided DashViewSpec, e.g. {type: `view`, id: ViewSpec.id}. These should
  * be used instead of the `component` and `react-component` types provided by GoldenLayout.
+ *
+ * Note that loading state will destroy and reinitialize all components. Therefore,
+ * it is recommended you do so sparingly.
  *
  * e.g.
  *
  * [{
  *     type: 'row',
  *     contents: [
+ *          // The first child of this row has pixel width of '200px'.
+ *          // The column will take the remaining width.
  *         {
  *             type: 'stack',
  *             width: '200px',
@@ -52,7 +64,9 @@ import {dashView} from './impl/DashView';
  *         {
  *             type: 'column',
  *             contents: [
+ *                 // Relative height of 40%. The remaining 60% will be split equally by the other views.
  *                 {type: 'view', id: 'viewId', height: 40},
+ *                 {type: 'view', id: 'viewId'},
  *                 {type: 'view', id: 'viewId'}
  *             ]
  *         }
@@ -62,19 +76,27 @@ import {dashView} from './impl/DashView';
  * @see http://golden-layout.com/docs/ItemConfig.html
  * @see http://golden-layout.com/tutorials/getting-started-react.html
  */
-@HoistModel
-export class DashContainerModel {
+export class DashContainerModel extends HoistModel {
 
-    //------------------------
-    // Observable API
-    //------------------------
+    //---------------------------
+    // Observable Persisted State
+    //---------------------------
     /** @member {Object[]} */
     @observable.ref state;
+
+    //-----------------------------
+    // Observable Transient State
+    //------------------------------
     /** @member {GoldenLayout} */
     @observable.ref goldenLayout;
     /** @member {DashViewModel[]} */
     @managed @observable.ref viewModels = [];
-
+    /** @member {boolean} */
+    @bindable layoutLocked;
+    /** @member {boolean} */
+    @bindable contentLocked;
+    /** @member {boolean} */
+    @bindable renameLocked;
 
     //------------------------
     // Immutable public properties
@@ -98,18 +120,26 @@ export class DashContainerModel {
     modelLookupContext;
 
     /**
-     * @param {DashViewSpec[]} viewSpecs - A collection of viewSpecs, each describing a type of view
+     * @param {Object} c - DashContainerModel configuration.
+     * @param {DashViewSpec[]} c.viewSpecs - A collection of viewSpecs, each describing a type of view
      *      that can be displayed in this container
-     * @param {Object} [viewSpecDefaults] - Properties to be set on all viewSpecs.  Merges deeply.
-     * @param {Object[]} [initialState] - Default layout state for this container.
-     * @param {RenderMode} [renderMode] - strategy for rendering DashViews. Can be set
+     * @param {Object} [c.viewSpecDefaults] - Properties to be set on all viewSpecs.  Merges deeply.
+     * @param {Object[]} [c.initialState] - Default layout state for this container.
+     * @param {RenderMode} [c.renderMode] - strategy for rendering DashViews. Can be set
      *      per-view via `DashViewSpec.renderMode`. See enum for description of supported modes.
-     * @param {RefreshMode} [refreshMode] - strategy for refreshing DashViews. Can be set
+     * @param {RefreshMode} [c.refreshMode] - strategy for refreshing DashViews. Can be set
      *      per-view via `DashViewSpec.refreshMode`. See enum for description of supported modes.
-     * @param {Object} [goldenLayoutSettings] - custom settings to be passed to the GoldenLayout instance.
+     * @param {boolean} [c.layoutLocked] - prevent re-arranging views by dragging and dropping.
+     * @param {boolean} [c.contentLocked] - prevent adding and removing views.
+     * @param {boolean} [c.renameLocked] - prevent renaming views.
+     * @param {Object} [c.goldenLayoutSettings] - custom settings to be passed to the GoldenLayout instance.
      *      @see http://golden-layout.com/docs/Config.html
-     * @param {string} [emptyText] - text to display when the container is empty
-     * @param {string} [addViewButtonText] - text to display on the add view button
+     * @param {PersistOptions} [c.persistWith] - options governing persistence
+     * @param {string} [c.emptyText] - text to display when the container is empty
+     * @param {string} [c.addViewButtonText] - text to display on the add view button
+     * @param {Array} [c.extraMenuItems] - array of RecordActions, configs or token strings, with
+     *      which to create additional dash context menu items. Extra menu items will appear
+     *      in the menu section below the 'Add' action, including when the dash container is empty.
      */
     constructor({
         viewSpecs,
@@ -117,26 +147,52 @@ export class DashContainerModel {
         initialState = [],
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
+        layoutLocked = false,
+        contentLocked = false,
+        renameLocked = false,
         goldenLayoutSettings,
+        persistWith = null,
         emptyText = 'No views have been added to the container.',
-        addViewButtonText = 'Add View'
+        addViewButtonText = 'Add View',
+        extraMenuItems
     }) {
+        super();
+        makeObservable(this);
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {
             return new DashViewSpec(defaultsDeep({}, cfg, viewSpecDefaults));
         });
 
-        this.state = initialState;
+        this.restoreState = {initialState, layoutLocked, contentLocked, renameLocked};
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
+        this.layoutLocked = layoutLocked;
+        this.contentLocked = contentLocked;
+        this.renameLocked = renameLocked;
         this.goldenLayoutSettings = goldenLayoutSettings;
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
+        this.extraMenuItems = extraMenuItems;
+
+        // Read state from provider -- fail gently
+        let persistState = null;
+        if (persistWith) {
+            try {
+                this.provider = PersistenceProvider.create({path: 'dashContainer', ...persistWith});
+                persistState = this.provider.read();
+            } catch (e) {
+                console.error(e);
+                XH.safeDestroy(this.provider);
+                this.provider = null;
+            }
+        }
+
+        this.state = persistState?.state ?? initialState;
 
         // Initialize GoldenLayout with initial state once ref is ready
         this.addReaction({
-            track: () => this.containerRef.current,
+            track: () => [this.containerRef.current, this.layoutLocked],
             run: () => this.loadStateAsync(this.state)
         });
 
@@ -144,6 +200,22 @@ export class DashContainerModel {
             track: () => this.viewState,
             run: () => this.updateState()
         });
+    }
+
+    /**
+     * Restore the initial state as specified by the application at construction time. This is the
+     * state without any persisted state or user changes applied.
+     *
+     * This method will clear the persistent state saved for this component, if any.
+     */
+    @action
+    async restoreDefaultsAsync() {
+        const {restoreState} = this;
+        this.layoutLocked = restoreState.layoutLocked;
+        this.contentLocked = restoreState.contentLocked;
+        this.renameLocked = restoreState.renameLocked;
+        await this.loadStateAsync(restoreState.initialState);
+        this.provider?.clear();
     }
 
     /**
@@ -213,7 +285,7 @@ export class DashContainerModel {
     //------------------------
     updateState() {
         const {goldenLayout, containerRef} = this;
-        if (!goldenLayout.isInitialised || !containerRef.current) return;
+        if (!goldenLayout?.isInitialised || !containerRef.current) return;
 
         // If the layout becomes completely empty, ensure we have our minimal empty layout
         if (!goldenLayout.root.contentItems.length) {
@@ -230,6 +302,7 @@ export class DashContainerModel {
     publishState() {
         const {goldenLayout} = this;
         this.state = convertGLToState(goldenLayout, this);
+        this.provider?.write({state: this.state});
     }
 
     onItemDestroyed(item) {
@@ -317,6 +390,8 @@ export class DashContainerModel {
     }
 
     showContextMenu(e, {stack, viewModel, index}) {
+        if (this.contentLocked) return;
+
         const offset = {left: e.clientX, top: e.clientY},
             menu = dashContainerContextMenu({
                 stack,
@@ -424,6 +499,8 @@ export class DashContainerModel {
     }
 
     showTitleForm($tabEl) {
+        if (this.renameLocked) return;
+
         const $titleEl = $tabEl.find('.lm_title').first(),
             $inputEl = $tabEl.find('.title-form input').first(),
             currentTitle = $titleEl.text();
@@ -449,6 +526,10 @@ export class DashContainerModel {
                     showPopoutIcon: false,
                     showMaximiseIcon: false,
                     showCloseIcon: false,
+
+                    // Respect layoutLocked
+                    reorderEnabled: !this.layoutLocked,
+
                     ...this.goldenLayoutSettings
                 },
                 dimensions: {
@@ -495,5 +576,6 @@ export class DashContainerModel {
 
     destroy() {
         this.destroyGoldenLayout();
+        super.destroy();
     }
 }

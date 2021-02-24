@@ -33,6 +33,7 @@
   }
 
   .bp3-navbar-group {
+    overflow: hidden;
     height: var(--xh-navbar-height-px);
 
     .bp3-navbar-divider {
@@ -76,12 +77,13 @@
   margin: 0 !important;  // TODO - investigate this....
 }
 
-.bp3-tabs:not(.bp3-vertical) > .bp3-tab-list {
-  padding-left: var(--xh-pad-px);
-}
-
 .bp3-tab > svg:first-child {
   margin-right: var(--xh-pad-half-px);
+}
+
+// Vertical tab lists fill their width
+.bp3-tabs.bp3-vertical .bp3-tab-list {
+  flex: 1;
 }
 
 //------------------------
@@ -153,65 +155,8 @@ $pt-transition-duration: 100ms !default;
 }
 
 //------------------------
-// Buttons
+// Buttons - see desktop/cmp/button/Button.scss
 //------------------------
-.bp3-button {
-  // Use padding vars.
-  padding: var(--xh-pad-half-px) var(--xh-pad-px);
-
-  // With tighter default LR padding in minimal mode.
-  &.bp3-minimal {
-    padding: var(--xh-pad-half-px) var(--xh-pad-half-px);
-  }
-
-  // Except in button groups, which are already compressing buttons more closely together.
-  .bp3-button-group & {
-    padding: var(--xh-pad-half-px) var(--xh-pad-px);
-  }
-
-  border-radius: var(--xh-border-radius-px);
-  font-size: var(--xh-button-font-size-px);
-  white-space: nowrap;
-
-  &:not([class*="bp3-intent-"]) {
-    color: var(--xh-button-text-color);
-
-    .bp3-dark & {
-      color: var(--xh-button-text-color);
-    }
-  }
-
-  &.bp3-disabled {
-    opacity: 0.6;
-  }
-
-  &:not(.bp3-minimal) {
-    &:not([class*="bp3-intent-"]):not(:hover) {
-      background-color: var(--xh-button-bg);
-
-      // Handle background of buttons in minimal button groups, such as in toasts
-      .bp3-button-group.bp3-minimal & {
-        background: none;
-      }
-    }
-
-    &.bp3-intent-primary {
-      background-color: var(--xh-intent-primary);
-    }
-
-    &.bp3-intent-danger {
-      background-color: var(--xh-intent-danger);
-    }
-
-    &.bp3-intent-success {
-      background-color: var(--xh-intent-success);
-    }
-
-    &.bp3-intent-warning {
-      background-color: var(--xh-intent-warning);
-    }
-  }
-}
 
 //------------------------
 // Toasts
@@ -237,6 +182,51 @@ $pt-transition-duration: 100ms !default;
 
   .bp3-toast-message {
     word-break: break-word;
+  }
+}
+
+//------------------------
+// Tooltips
+//------------------------
+.bp3-tooltip {
+  &.bp3-intent-primary {
+    .bp3-popover-content {
+      background-color: var(--xh-intent-primary);
+    }
+
+    .bp3-popover-arrow-fill {
+      fill: var(--xh-intent-primary);
+    }
+  }
+
+  &.bp3-intent-danger {
+    .bp3-popover-content {
+      background-color: var(--xh-intent-danger);
+    }
+
+    .bp3-popover-arrow-fill {
+      fill: var(--xh-intent-danger);
+    }
+  }
+
+  &.bp3-intent-success {
+    .bp3-popover-content {
+      background-color: var(--xh-intent-success);
+    }
+
+    .bp3-popover-arrow-fill {
+      fill: var(--xh-intent-success);
+    }
+  }
+
+  &.bp3-intent-warning {
+    .bp3-popover-content {
+      background-color: var(--xh-intent-warning);
+    }
+
+    .bp3-popover-arrow-fill {
+      fill: var(--xh-intent-warning);
+    }
   }
 }
 
@@ -270,8 +260,22 @@ textarea.bp3-input,
   box-shadow: var(--xh-form-field-box-shadow);
 }
 
+.bp3-control,
+.bp3-dark .bp3-control {
+  input:focus ~ .bp3-control-indicator {
+    outline: var(--xh-form-field-focused-border-color) solid 1px !important;
+    outline-offset: 1px;
+  }
+}
+
+.bp3-slider-handle:focus {
+  outline: unset;  // override browser default styles
+  box-shadow: var(--xh-slider-handle-focused-box-shadow);
+}
+
 .bp3-input:focus,
-.bp3-dark .bp3-input:focus {
+.bp3-dark .bp3-input:focus,
+.bp3-dark textarea.bp3-input:focus {
   box-shadow: var(--xh-form-field-focused-box-shadow);
 }
 

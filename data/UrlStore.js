@@ -2,21 +2,24 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {LoadSupport, XH} from '@xh/hoist/core';
+import {XH, managed, LoadSupport} from '@xh/hoist/core';
 
 import {Store} from './Store';
 
 /**
  * A store with built-in support for loading data from a URL.
  */
-@LoadSupport
 export class UrlStore extends Store {
 
     url;
     dataRoot;
+
+    @managed
+    loadSupport = new LoadSupport(this);
+
 
     /**
      * @param {Object} c - UrlStore configuration.
@@ -33,13 +36,15 @@ export class UrlStore extends Store {
     /**
      * Reload store from url.
      */
+    async loadAsync(loadSpec) {
+        return this.loadSupport.loadAsync(loadSpec);
+    }
+
+
     async doLoadAsync(loadSpec) {
         const {url, dataRoot} = this;
-        return XH
-            .fetchJson({url, loadSpec})
-            .then(data => {
-                if (dataRoot) data = data[dataRoot];
-                return this.loadData(data);
-            });
+        let data = await XH.fetchJson({url, loadSpec});
+        if (dataRoot) data = data[dataRoot];
+        this.loadData(data);
     }
 }

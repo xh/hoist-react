@@ -2,34 +2,33 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {action, observable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {HoistBase} from '@xh/hoist/core';
+import {action, observable, bindable, makeObservable} from '@xh/hoist/mobx';
+import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
+import {parseFilter} from './filter/Utils';
 import {
     castArray,
     differenceBy,
     has,
     isArray,
     isEmpty,
-    isFunction,
     isNil,
-    isPlainObject,
     isString,
     remove as lodashRemove
 } from 'lodash';
-import {warnIf, withDefault} from '../utils/js';
+
 import {Field} from './Field';
 import {RecordSet} from './impl/RecordSet';
 import {Record} from './Record';
-import {StoreFilter} from './StoreFilter';
 
 /**
  * A managed and observable set of local, in-memory Records.
  */
-export class Store {
+export class Store extends HoistBase {
 
     /** @member {Field[]} */
     fields = null;
@@ -38,11 +37,23 @@ export class Store {
     /** @member {function} */
     processRawData;
 
+    /** @member {boolean} */
+    @observable filterIncludesChildren;
+
+    /** @member {boolean} */
+    loadTreeData;
+
+    /** @member {boolean} */
+    loadRootAsSummary;
+
+    /** @member {Filter}  */
+    @observable.ref filter;
+
     /** @member {number} - timestamp (ms) of the last time this store's data was changed. */
     @observable lastUpdated;
 
-    /** @member {number} - timestamp (ms) of the last time this store's data was loaded.*/
-    @observable lastLoaded;
+    /** @member {?number} - timestamp (ms) of the last time this store's data was loaded.*/
+    @observable lastLoaded = null;
 
     /** @member {Record} - record containing summary data. */
     @observable.ref summaryRecord = null;
@@ -50,12 +61,13 @@ export class Store {
     @observable.ref _committed;
     @observable.ref _current;
     @observable.ref _filtered;
-    _filter = null;
-    _loadRootAsSummary = false;
+
+    /** @package - used internally by any StoreFilterField that is bound to this store. */
+    @bindable xhFilterText = null;
 
     /**
      * @param {Object} c - Store configuration.
-     * @param {(string[]|Object[]|Field[])} c.fields - Fields, Field names, or Field config objects.
+     * @param {(string[]|FieldConfig[]|Field[])} c.fields - Field names, configs, or instances.
      * @param {(function|string)} [c.idSpec] - specification for selecting or producing an immutable
      *      unique id for each record. May be either a string property name (default is 'id') or a
      *      function to create an id from the raw unprocessed data. Will be normalized to a function
@@ -65,28 +77,39 @@ export class Store {
      * @param {function} [c.processRawData] - function to run on each individual data object
      *      presented to loadData() prior to creating a Record from that object. This function
      *      must return an object, cloning the original object if edits are necessary.
-     * @param {(StoreFilter|Object|function)} [c.filter] - initial filter for Records, or a
-     *      StoreFilter config to create.
+     * @param {(Filter|*|*[])} [c.filter] - one or more filters or configs to create one.  If an
+     *      array, a single 'AND' filter will be created.
+     * @param {boolean} [c.filterIncludesChildren] - true if all children of a passing record should
+     *      also be considered passing (default false).
+     * @param {boolean} [c.loadTreeData] - true to load hierarchical/tree data. When this flag is
+     *      true, the children property on raw data objects will be used to load child records.
+     *      (default true).
      * @param {boolean} [c.loadRootAsSummary] - true to treat the root node in hierarchical data as
-     *      the summary record.
-     * @param {Object[]} [c.data] - source data to load
+     *      the summary record (default false).
+     * @param {Object[]} [c.data] - source data to load.
      */
     constructor({
         fields,
         idSpec = 'id',
         processRawData = null,
         filter = null,
+        filterIncludesChildren = false,
+        loadTreeData = true,
         loadRootAsSummary = false,
         data
     }) {
+        super();
+        makeObservable(this);
         this.fields = this.parseFields(fields);
         this.idSpec = isString(idSpec) ? (data) => data[idSpec] : idSpec;
         this.processRawData = processRawData;
-        this.lastLoaded = this.lastUpdated = Date.now();
-        this._loadRootAsSummary = loadRootAsSummary;
+        this.filter = parseFilter(filter);
+        this.filterIncludesChildren = filterIncludesChildren;
+        this.loadTreeData = loadTreeData;
+        this.loadRootAsSummary = loadRootAsSummary;
+        this.lastUpdated = Date.now();
 
         this.resetRecords();
-        this.setFilter(filter);
 
         if (data) this.loadData(data);
     }
@@ -119,8 +142,8 @@ export class Store {
      */
     @action
     loadData(rawData, rawSummaryData) {
-        // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary = true.
-        if (rawData.length !== 0 && this._loadRootAsSummary) {
+        // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary
+        if (rawData.length !== 0 && this.loadRootAsSummary) {
             throwIf(
                 rawData.length !== 1 || rawSummaryData,
                 'Incorrect call to loadData with loadRootAsSummary=true. Summary data should be in a single root node with top-level row data as its children.'
@@ -129,13 +152,13 @@ export class Store {
             rawData = rawData[0].children ?? [];
         }
 
-        const records = this.createRecords(rawData);
+        const records = this.createRecords(rawData, null);
         this._committed = this._current = this._committed.withNewRecords(records);
         this.rebuildFiltered();
 
-        if (rawSummaryData) {
-            this.summaryRecord = this.createRecord(rawSummaryData, null, true);
-        }
+        this.summaryRecord = rawSummaryData ?
+            this.createRecord(rawSummaryData, null, true) :
+            null;
 
         this.lastLoaded = this.lastUpdated = Date.now();
     }
@@ -193,7 +216,13 @@ export class Store {
         // 1) Pre-process updates and adds into Records
         let updateRecs, addRecs;
         if (update) {
-            updateRecs = update.map(it => this.createRecord(it));
+            updateRecs = update.map(it => {
+                const recId = this.idSpec(it),
+                    rec = this.getOrThrow(recId),
+                    parent = rec.parent,
+                    isSummary = recId === this.summaryRecord?.id;
+                return this.createRecord(it, parent, isSummary);
+            });
         }
         if (add) {
             addRecs = new Map();
@@ -215,7 +244,7 @@ export class Store {
         }
 
         if (!summaryUpdateRec && rawSummaryData) {
-            summaryUpdateRec = this.createRecord({...summaryRecord.raw, ...rawSummaryData}, null, true);
+            summaryUpdateRec = this.createRecord(rawSummaryData, null, true);
         }
 
         if (summaryUpdateRec) {
@@ -258,7 +287,7 @@ export class Store {
     }
 
     /**
-     * Re-runs the StoreFilter on the current data. Applications only need to call this method if
+     * Re-runs the Filter on the current data. Applications only need to call this method if
      * the state underlying the filter, other than the record data itself, has changed. Store will
      * re-filter automatically whenever Record data is updated or modified.
      */
@@ -424,12 +453,17 @@ export class Store {
     }
 
     /**
-     * Get a specific Field, by name.
+     * Get a specific Field by name.
      * @param {string} name - field name to locate.
      * @return {Field}
      */
     getField(name) {
         return this.fields.find(it => it.name === name);
+    }
+
+    /** @return {string[]} */
+    get fieldNames() {
+        return this.fields.map(it => it.name);
     }
 
     /**
@@ -506,35 +540,50 @@ export class Store {
     }
 
     /**
-     * Set filter to be applied.
-     * @param {(StoreFilter|Object|function)} filter - StoreFilter to be applied to records, or
-     *      config or function to be used to create one.
+     * Set a filter on this store.
+     *
+     * @param {(Filter|*|*[])} filter - one or more filters or configs to create one.  If an
+     *      array, a single 'AND' filter will be created.
      */
+    @action
     setFilter(filter) {
-        if (isFunction(filter)) {
-            filter = new StoreFilter({fn: filter});
-        } else if (isPlainObject(filter)) {
-            filter = new StoreFilter(filter);
+        filter = parseFilter(filter);
+        if (this.filter != filter && !this.filter?.equals(filter)) {
+            this.filter = filter;
+            this.rebuildFiltered();
         }
 
-        this._filter = filter;
+        if (!filter) this.setXhFilterText(null);
+    }
 
+    @action
+    setFilterIncludesChildren(val) {
+        this.filterIncludesChildren = val;
         this.rebuildFiltered();
+    }
+
+    /** Convenience method to clear the Filter applied to this store. */
+    clearFilter() {
+        this.setFilter(null);
+    }
+
+    /**
+     *
+     * @param {(Record|string|number)} recOrId
+     * @return {boolean} - true if the Record is in the store, but currently excluded by a filter.
+     *      False if the record is either not in the Store at all, or not filtered out.
+     */
+    recordIsFiltered(recOrId) {
+        const id = recOrId.isRecord ? recOrId.id : recOrId;
+        return !this.getById(id, true) && !!this.getById(id, false);
     }
 
     /**
      * Set whether the root should be loaded as summary data in loadData().
-     *
-     * @param {boolean}
+     * @param {boolean} loadRootAsSummary
      */
-    setLoadRootAsSummary(val) {
-        this._loadRootAsSummary = val;
-    }
-
-
-    /** @returns {StoreFilter} - the current filter (if any) applied to the store. */
-    get filter() {
-        return this._filter;
+    setLoadRootAsSummary(loadRootAsSummary) {
+        this.loadRootAsSummary = loadRootAsSummary;
     }
 
     /** @returns {number} - the count of the filtered records in the store. */
@@ -571,14 +620,16 @@ export class Store {
      * Get a record by ID, or null if no matching record found.
      *
      * @param {(string|number)} id
-     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
+     * @param {boolean} [respectFilter] - false (default) to return a Record with the given
+     *      ID even if an active filter is excluding it from the primary `records` collection.
+     *      True to restrict matches to this Store's post-filter Record collection only.
      * @return {Record}
      */
-    getById(id, fromFiltered = false) {
+    getById(id, respectFilter = false) {
         if (isNil(id)) return null;
         if (id === this.summaryRecord?.id) return this.summaryRecord;
 
-        const rs = fromFiltered ? this._filtered : this._current;
+        const rs = respectFilter ? this._filtered : this._current;
         return rs.getById(id);
     }
 
@@ -589,11 +640,11 @@ export class Store {
      * be more convenient for most app-level callers.
      *
      * @param {(string|number)} id - id of record to be queried.
-     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
+     * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
-    getChildrenById(id, fromFiltered = false) {
-        const rs = fromFiltered ? this._filtered : this._current,
+    getChildrenById(id, respectFilter = false) {
+        const rs = respectFilter ? this._filtered : this._current,
             ret = rs.childrenMap.get(id);
         return ret ? ret : [];
     }
@@ -605,11 +656,11 @@ export class Store {
      * likely be more convenient for most app-level callers.
      *
      * @param {(string|number)} id - id of record to be queried.
-     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
+     * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
-    getDescendantsById(id, fromFiltered = false) {
-        const rs = fromFiltered ? this._filtered : this._current,
+    getDescendantsById(id, respectFilter = false) {
+        const rs = respectFilter ? this._filtered : this._current,
             ret = rs.getDescendantsById(id);
         return ret ? ret : [];
     }
@@ -621,11 +672,11 @@ export class Store {
      * be more convenient for most app-level callers.
      *
      * @param {(string|number)} id - id of record to be queried.
-     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
+     * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
-    getAncestorsById(id, fromFiltered = false) {
-        const rs = fromFiltered ? this._filtered : this._current,
+    getAncestorsById(id, respectFilter = false) {
+        const rs = respectFilter ? this._filtered : this._current,
             ret = rs.getAncestorsById(id);
         return ret ? ret : [];
     }
@@ -694,21 +745,19 @@ export class Store {
         }
 
         // Note idSpec run against raw data here.
-        const id = this.idSpec(raw),
-            rec = this.getById(id);
-
-        if (rec) {
-            // We are creating a record for an update. Lookup our parent record and determine if
-            // this is the the summary record based on the current state (if not provided).
-            parent = withDefault(parent, rec.parent);
-            isSummary = withDefault(isSummary, rec.id === this.summaryRecord?.id);
-        }
+        const id = this.idSpec(raw);
 
         data = this.parseFieldValues(data);
-        return new Record({id, data, raw, parent, store: this, isSummary});
+        const ret = new Record({id, data, raw, parent, store: this, isSummary});
+
+        // Freeze summary only.  Non-summary will get frozen by RecordSet. See Record.freeze()
+        if (isSummary) ret.freeze();
+
+        return ret;
     }
 
     createRecords(rawData, parent, recordMap = new Map()) {
+        const {loadTreeData} = this;
         rawData.forEach(raw => {
             const rec = this.createRecord(raw, parent),
                 {id} = rec;
@@ -720,7 +769,7 @@ export class Store {
 
             recordMap.set(id, rec);
 
-            if (raw.children) {
+            if (loadTreeData && raw.children) {
                 this.createRecords(raw.children, rec, recordMap);
             }
         });

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -27,16 +27,16 @@ import {cloneDeep, debounce, forEach, isEmpty, isEqual, isNil, pickBy} from 'lod
  * user values to local storage instead. This should be used for prefs that are more natural to
  * associate with a particular machine or browser (e.g. sizing or layout related options).
  */
-@HoistService
-export class PrefService {
+export class PrefService extends HoistService {
 
     _data = {};
     _updates = {};
     _localStorageKey = 'localPrefs';
 
     constructor() {
+        super();
         const pushFn = () => this.pushPendingAsync();
-        window.addEventListener('unload', pushFn);
+        window.addEventListener('beforeunload', pushFn);
         this.pushPendingBuffered = debounce(pushFn, 5 * SECONDS);
     }
 
@@ -100,6 +100,16 @@ export class PrefService {
         this._updates[key] = value;
         this.pushPendingBuffered();
     }
+
+    /**
+     * Restore a preference to its default value.
+     * @param key
+     */
+    unset(key) {
+        // TODO: round-trip this to the server as a proper unset?
+        this.set(key, this._data[key]?.defaultValue);
+    }
+
 
     /**
      * Set a preference value for the current user, and immediately trigger a sync to the server.
@@ -233,12 +243,8 @@ export class PrefService {
 
     validateBeforeSet(key, value) {
         const pref = this._data[key];
-
-
         throwIf(!pref, `Cannot set preference ${key}: not found`);
-
         throwIf(value === undefined, `Cannot set preference ${key}: value not defined`);
-
         throwIf(
             !this.valueIsOfType(value, pref.type),
             `Cannot set preference ${key}: must be of type ${pref.type}`

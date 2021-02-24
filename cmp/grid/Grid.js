@@ -2,8 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {fragment, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
@@ -11,22 +12,24 @@ import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynam
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {div} from '@xh/hoist/cmp/layout';
-import {computed, observable, observer, action, runInAction} from '@xh/hoist/mobx';
-import {isDisplayed, withShortDebug} from '@xh/hoist/utils/js';
+import {computed, observer} from '@xh/hoist/mobx';
+import {isDisplayed, withShortDebug, apiRemoved} from '@xh/hoist/utils/js';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
+import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
+
 import classNames from 'classnames';
 import {
+    compact,
     isArray,
     isEmpty,
     isEqual,
-    isFinite,
     isFunction,
     isNil,
     isString,
-    map,
     merge,
-    xor
+    max,
+    maxBy
 } from 'lodash';
 import PT from 'prop-types';
 import {createRef, isValidElement} from 'react';
@@ -56,21 +59,26 @@ export const [Grid, grid] = hoistCmp.withFactory({
     model: uses(GridModel),
     className: 'xh-grid',
 
-    render({model, className, ...props}) {
+    render({model, className, ...props}, ref) {
+        apiRemoved(props.hideHeaders, 'hideHeaders', 'Specify hideHeaders on the GridModel instead.');
 
         const impl = useLocalModel(() => new LocalModel(model, props)),
-            platformColChooser = XH.isMobile ? mobileColChooser : desktopColChooser;
+            platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser;
 
         // Don't render the agGridReact element with data or columns. Instead rely on API methods
         return fragment(
             frame({
-                className: classNames(className, impl.isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat'),
+                className: classNames(
+                    className,
+                    impl.isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat',
+                    model.treeMode ? getTreeStyleClasses(model.treeStyle) : null
+                ),
                 item: agGrid({
                     ...getLayoutProps(props),
                     ...impl.agOptions
                 }),
                 onKeyDown: impl.onKeyDown,
-                ref: impl.viewRef
+                ref: composeRefs(impl.viewRef, ref)
             }),
             (model.colChooserModel ? platformColChooser({model: model.colChooserModel}) : null)
         );
@@ -89,9 +97,6 @@ Grid.propTypes = {
      * Note that changes to these options after the component's initial render will be ignored.
      */
     agOptions: PT.object,
-
-    /** True to suppress display of the grid's header row. */
-    hideHeaders: PT.bool,
 
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(GridModel), PT.object]),
@@ -140,42 +145,34 @@ Grid.propTypes = {
 //------------------------
 // Implementation
 //------------------------
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
     model;
     agOptions;
     propsKeyDown;
     viewRef = createRef();
+    fixedRowHeight;
 
-    // The minimum required row height specified by the columns (if any) */
-    @computed
-    get rowHeight() {
-        const gridDefaultHeight = AgGrid.getRowHeightForSizingMode(this.model.sizingMode),
-            maxColHeight = Math.max(...map(this.model.columns, 'rowHeight').filter(isFinite));
-
-        return isFinite(maxColHeight) ? Math.max(gridDefaultHeight, maxColHeight) : gridDefaultHeight;
+    getRowHeight(node) {
+        const {model} = this;
+        if (node?.group) {
+            return model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode(model.sizingMode);
+        }
+        return max([
+            this.fixedRowHeight,
+            model.agGridModel.getAutoRowHeight(node)
+        ]);
     }
-
-    @computed
-    get groupRowHeight() {
-        return this.model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode(this.model.sizingMode);
-    }
-
-    // Observable stamp incremented every time the ag-Grid receives a new set of data.
-    // Used to ensure proper re-running / sequencing of data and selection reactions.
-    @observable _dataVersion = 0;
 
     // Do any root level records have children?
-    @observable isHierarchical = false;
-
-    // Have framework components been mounted? As of AgGrid v23, there is a noticeable
-    // delay between AgGrid.onGridReady and framework components (e.g. Column Headers)
-    // being rendered. By tracking this, we can wait until they have been rendered
-    // before we trigger the first data reaction and remove the loading overlay.
-    @observable frameworkCmpsMounted = false;
+    @computed
+    get isHierarchical() {
+        const {model} = this;
+        return model.treeMode && model.store.allRootCount !== model.store.allCount;
+    }
 
     constructor(model, props) {
+        super();
         this.model = model;
         this.addReaction(this.selectionReaction());
         this.addReaction(this.sortReaction());
@@ -183,19 +180,22 @@ class LocalModel {
         this.addReaction(this.columnStateReaction());
         this.addReaction(this.dataReaction());
         this.addReaction(this.groupReaction());
+        this.addReaction(this.rowHeightReaction());
 
         this.agOptions = merge(this.createDefaultAgOptions(props), props.agOptions || {});
         this.propsKeyDown = props.onKeyDown;
     }
 
     createDefaultAgOptions(props) {
-        const {model} = this,
-            {useDeltaSort, useTransactions} = model.experimental;
+        const {model} = this;
 
+        // 'immutableData' and 'rowDataChangeDetectionStrategy' props both deal with a *new* sets of rowData.
+        // We use transactions instead, but our data fully immutable so seems safest to set these as well.
         let ret = {
             model: model.agGridModel,
-            deltaSort: useDeltaSort && !model.treeMode,
-            deltaRowDataMode: !useTransactions,
+            immutableData: true,
+            rowDataChangeDetectionStrategy: 'IdentityCheck',
+            suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowNodeId: (data) => data.id,
             defaultColDef: {
                 sortable: true,
@@ -211,12 +211,11 @@ class LocalModel {
                 clipboardCopy: Icon.copy({asHtml: true})
             },
             frameworkComponents: {
-                agColumnHeader: (props) => columnHeader({gridLocalModel: this, ...props}),
+                agColumnHeader: (props) => columnHeader({gridModel: model, ...props}),
                 agColumnGroupHeader: (props) => columnGroupHeader(props)
             },
             rowSelection: model.selModel.mode,
-            rowDeselection: true,
-            getRowHeight: (params) => params.node?.group ? this.groupRowHeight : this.rowHeight,
+            getRowHeight: ({node}) => this.getRowHeight(node),
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             noRowsOverlayComponentFramework: observer(() => div(model.emptyText)),
             onRowClicked: (e) => {
@@ -237,21 +236,19 @@ class LocalModel {
             defaultGroupSortComparator: model.groupSortFn ? this.groupSortComparator : undefined,
             groupDefaultExpanded: 1,
             groupUseEntireRow: true,
-            groupRowInnerRenderer: model.groupRowRenderer,
             groupRowRendererFramework: model.groupRowElementRenderer,
-            rememberGroupStateWhenNewData: true, // turning this on by default so group state is maintained when apps are not using deltaRowDataMode
+            groupRowRendererParams: {
+                innerRenderer: model.groupRowRenderer,
+                suppressCount: !model.showGroupRowCounts
+            },
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
             },
-            autoSizePadding: 3 // allow cells to get a little tighter when autosizing
+            autoSizePadding: 3 // tighten up cells for ag-Grid native autosizing.  Remove when Hoist autosizing no longer experimental
         };
 
-        if (props.hideHeaders) {
-            ret.headerHeight = 0;
-        }
-
         // Platform specific defaults
-        if (XH.isMobile) {
+        if (XH.isMobileApp) {
             ret = {
                 ...ret,
                 suppressContextMenu: true,
@@ -290,7 +287,7 @@ class LocalModel {
     getContextMenuItems = (params) => {
         const {model} = this,
             {store, selModel, contextMenu} = model;
-        if (!contextMenu || XH.isMobile) return null;
+        if (!contextMenu || XH.isMobileApp) return null;
 
         let menu = null;
         if (isFunction(contextMenu)) {
@@ -300,14 +297,14 @@ class LocalModel {
         }
         if (!menu) return null;
 
-        const recId = params.node ? params.node.id : null,
+        const recId = params.node?.id,
+            colId = params.column?.colId,
             record = isNil(recId) ? null : store.getById(recId, true),
-            colId = params.column ? params.column.colId : null,
             column = isNil(colId) ? null : model.getColumn(colId),
-            selectedIds = selModel.ids;
+            {selection} = model;
 
         // Adjust selection to target record -- and sync to grid immediately.
-        if (record && !(selectedIds.includes(recId))) {
+        if (record && !(selection.includes(record))) {
             selModel.select(record);
         }
 
@@ -320,6 +317,8 @@ class LocalModel {
         const items = [];
 
         recordActions.forEach(action => {
+            if (isNil(action)) return;
+
             if (action === '-') {
                 items.push('separator');
                 return;
@@ -374,102 +373,109 @@ class LocalModel {
             {agGridModel, store, experimental} = model;
 
         return {
-            track: () => [agGridModel.agApi, this.frameworkCmpsMounted, store.lastLoaded, store.lastUpdated, store._filtered, model.showSummary],
-            run: ([api, frameworkCmpsMounted, lastLoaded, lastUpdated, newRs]) => {
-                if (!api || !frameworkCmpsMounted) return;
+            track: () => [model.isReady, store._filtered, model.showSummary],
+            run: ([isReady, newRs]) => {
+                if (!isReady) return;
 
-                const isUpdate = lastUpdated > lastLoaded,
+                const {agApi} = model,
                     prevRs = this._prevRs,
                     prevCount = prevRs ? prevRs.count : 0;
 
-                withShortDebug(`${isUpdate ? 'Updated' : 'Loaded'} Grid`, () => {
-                    if (prevCount !== 0 && experimental.useTransactions) {
-                        const transaction = this.genTransaction(newRs, prevRs);
+                withShortDebug(`Updating ag-Grid from Store`, () => {
+                    let transaction = null;
+                    if (prevCount !== 0) {
+                        transaction = this.genTransaction(newRs, prevRs);
                         console.debug(this.transactionLogStr(transaction));
 
                         if (!this.transactionIsEmpty(transaction)) {
-                            api.updateRowData(transaction);
+                            agApi.applyTransaction(transaction);
                         }
+
                     } else {
-                        api.setRowData(newRs.list);
+                        agApi.setRowData(newRs.list);
                     }
 
                     if (experimental.externalSort) {
-                        const {sortBy} = model;
-                        if (!isEqual(sortBy, this._lastSortBy)) api.setSortModel(sortBy);
-                        this._lastSortBy = sortBy;
+                        agGridModel.applySortBy(model.sortBy);
                     }
 
                     this.updatePinnedSummaryRowData();
 
-                    const refreshCols = model.columns.filter(c => !c.hidden && c.rendererIsComplex);
-                    if (!isEmpty(refreshCols)) {
-                        api.refreshCells({columns: refreshCols.map(c => c.colId), force: true});
+                    if (!isEmpty(transaction?.update)) {
+                        const refreshCols = model.columns.filter(c => !c.hidden && c.rendererIsComplex);
+                        if (refreshCols) {
+                            const rowNodes = compact(transaction.update.map(r => agApi.getRowNode(r.id))),
+                                columns = refreshCols.map(c => c.colId);
+                            agApi.refreshCells({rowNodes, columns, force: true});
+                        }
                     }
 
                     model.noteAgExpandStateChange();
                 }, this);
 
-                runInAction(() => {
-                    this._prevRs = newRs;
-
-                    // Set flag if data is hierarchical.
-                    this.isHierarchical = model.treeMode && store.allRootCount !== store.allCount;
-
-                    // Increment version counter to trigger selectionReaction w/latest data.
-                    this._dataVersion++;
-                });
+                this._prevRs = newRs;
             }
         };
     }
 
     selectionReaction() {
         const {model} = this,
-            {agGridModel} = model;
+            {agGridModel, selModel} = model;
 
         return {
-            track: () => [agGridModel.agApi, model.selection, this._dataVersion],
-            run: ([api]) => {
-                if (!api) return;
+            track: () => [model.isReady, selModel.ids],
+            run: ([isReady, ids]) => {
+                if (!isReady) return;
 
-                const modelSelection = model.selModel.ids,
-                    selectedIds = agGridModel.getSelectedRowNodeIds(),
-                    diff = xor(modelSelection, selectedIds);
-
-                // If ag-grid's selection differs from the selection model, set it to match.
-                if (diff.length > 0) {
-                    agGridModel.setSelectedRowNodeIds(modelSelection);
+                if (!isEqual(ids, agGridModel.getSelectedRowNodeIds())) {
+                    agGridModel.setSelectedRowNodeIds(ids);
                 }
             }
         };
     }
 
     sortReaction() {
-        const {agGridModel} = this.model,
-            {externalSort} = this.model.experimental;
+        const {model} = this,
+            {externalSort} = model.experimental;
 
         return {
-            track: () => [agGridModel.agApi, this.model.sortBy],
-            run: ([api, sortBy]) => {
-                if (api && !externalSort) api.setSortModel(sortBy);
+            track: () => [model.agColumnApi, model.sortBy],
+            run: ([colApi, sortBy]) => {
+                if (colApi && !externalSort) {
+                    model.agGridModel.applySortBy(sortBy);
+                }
             }
         };
     }
 
     groupReaction() {
-        const {agGridModel} = this.model;
+        const {model} = this;
         return {
-            track: () => [agGridModel.agColumnApi, this.model.groupBy],
+            track: () => [model.agColumnApi, model.groupBy],
             run: ([colApi, groupBy]) => {
                 if (colApi) colApi.setRowGroupColumns(groupBy);
             }
         };
     }
 
-    columnsReaction() {
-        const {agGridModel} = this.model;
+    rowHeightReaction() {
+        const {model} = this;
         return {
-            track: () => [agGridModel.agApi, this.model.columns],
+            track: () => [model.getVisibleLeafColumns(), model.sizingMode],
+            run: ([visibleCols, sizingMode]) => {
+                this.fixedRowHeight = max([
+                    AgGrid.getRowHeightForSizingMode(sizingMode),
+                    maxBy(visibleCols, 'rowHeight')?.rowHeight
+                ]);
+            },
+            fireImmediately: true
+        };
+    }
+
+    columnsReaction() {
+        const {model} = this;
+        return {
+            track: () => [model.agApi, model.columns],
             run: ([api]) => {
                 if (!api) return;
 
@@ -481,9 +487,9 @@ class LocalModel {
     }
 
     columnStateReaction() {
-        const {agGridModel} = this.model;
+        const {model} = this;
         return {
-            track: () => [agGridModel.agApi, agGridModel.agColumnApi, this.model.columnState],
+            track: () => [model.agApi, model.agColumnApi, model.columnState],
             run: ([api, colApi, colState]) => {
                 if (!api || !colApi) return;
 
@@ -528,7 +534,7 @@ class LocalModel {
                 });
 
                 this.doWithPreservedState({expansion: false}, () => {
-                    colApi.setColumnState(colState);
+                    colApi.applyColumnState({state: colState, applyOrder: true});
                 });
             }
         };
@@ -593,11 +599,6 @@ class LocalModel {
         return `[update: ${t.update ? t.update.length : 0} | add: ${t.add ? t.add.length : 0} | remove: ${t.remove ? t.remove.length : 0}]`;
     }
 
-    @action
-    noteFrameworkCmpMounted() {
-        this.frameworkCmpsMounted = true;
-    }
-
     //------------------------
     // Event Handlers on AG Grid.
     //------------------------
@@ -616,9 +617,10 @@ class LocalModel {
 
     // Catches column resizing on call to autoSize API.
     onColumnResized = (ev) => {
-        if (isDisplayed(this.viewRef.current) && ev.finished && ev.source == 'autosizeColumns') {
+        if (isDisplayed(this.viewRef.current) && ev.finished && ev.source === 'autosizeColumns') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
+        ev.api.resetRowHeights();
     };
 
     // Catches row group changes triggered from ag-grid ui components
@@ -644,6 +646,7 @@ class LocalModel {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
+        ev.api.resetRowHeights();
     };
 
     groupSortComparator = (nodeA, nodeB) => {

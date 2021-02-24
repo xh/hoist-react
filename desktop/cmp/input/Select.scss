@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
 // Host div for Select option menu portal.
@@ -37,6 +37,14 @@
 
       &--is-focused {
         box-shadow: var(--xh-form-field-focused-box-shadow);
+      }
+
+      &__left-icon {
+        color: var(--xh-text-color-muted);
+        display: inherit;
+        font-size: var(--xh-font-size-large-px);
+        margin-left: 7px;
+        width: var(--xh-font-size-large-px);
       }
     }
 
@@ -96,6 +104,43 @@
           color: var(--xh-input-disabled-text-color);
         }
       }
+    }
+  }
+}
+
+.xh-select--has-height {
+  > div {
+    height: 100%;
+  }
+
+  // This ".xh-select" is the prefix for nested BEM values below, not itself a level of nesting.
+  .xh-select {
+    &__control {
+      height: 100%;
+
+      &__left-icon {
+        height: 100%;
+        padding-top: 7px;
+      }
+    }
+
+    &__placeholder {
+      height: 100%;
+      padding-top: var(--xh-pad-half-px);
+    }
+
+    &__value-container {
+      align-content: flex-start;
+      margin: 1px;
+      height: calc(100% - 2px);
+      overflow-y: auto !important;
+    }
+
+    &__indicators {
+      position: absolute;
+      top: var(--xh-pad-half-px);
+      right: var(--xh-pad-half-px);
+      flex-direction: column;
     }
   }
 }

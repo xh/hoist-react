@@ -2,12 +2,24 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, bindable, observable} from '@xh/hoist/mobx';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
-import {cloneDeep, has, isArray, isEmpty, isEqual, isNil, last, set, startCase} from 'lodash';
+import {action, bindable, observable, makeObservable, computed} from '@xh/hoist/mobx';
+import {throwIf, apiDeprecated} from '@xh/hoist/utils/js';
+import {
+    cloneDeep,
+    concat,
+    find,
+    has,
+    isArray,
+    isEmpty,
+    isNil,
+    partition,
+    set,
+    startCase,
+    isEqual
+} from 'lodash';
 
 /**
  * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
@@ -17,8 +29,7 @@ import {cloneDeep, has, isArray, isEmpty, isEqual, isNil, last, set, startCase} 
  * This includes the ability to get and set the full state of the grid in a serializable form,
  * allowing applications to save "views" of the grid.
  */
-@HoistModel
-export class AgGridModel {
+export class AgGridModel extends HoistModel {
     static AUTO_GROUP_COL_ID = 'ag-Grid-AutoColumn';
 
     //------------------------
@@ -36,6 +47,8 @@ export class AgGridModel {
     @bindable showHover;
     /** @member {boolean} */
     @bindable showCellFocus;
+    /** @member {boolean} */
+    @bindable hideHeaders;
 
     /** @member {GridApi} */
     @observable.ref agApi = null;
@@ -50,6 +63,7 @@ export class AgGridModel {
      * @param {boolean} [c.cellBorders] - true to render cell borders.
      * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
+     * @param {boolean} [c.hideHeaders] - true to suppress display of the grid's header row.
      */
     constructor({
         sizingMode = 'standard',
@@ -58,9 +72,12 @@ export class AgGridModel {
         cellBorders = false,
         stripeRows = true,
         showCellFocus = false,
+        hideHeaders = false,
         compact
     } = {}) {
-        warnIf(compact !== undefined, "The 'compact' config has been deprecated. Use 'sizingMode' instead");
+        super();
+        makeObservable(this);
+        apiDeprecated(compact, 'compact', "Use 'sizingMode' instead");
         if (compact) sizingMode = 'compact';
 
         this.sizingMode = sizingMode;
@@ -69,6 +86,7 @@ export class AgGridModel {
         this.cellBorders = cellBorders;
         this.stripeRows = stripeRows;
         this.showCellFocus = showCellFocus;
+        this.hideHeaders = hideHeaders;
 
         this.addReaction({
             track: () => this.sizingMode,
@@ -81,15 +99,17 @@ export class AgGridModel {
                 // See: https://www.ag-grid.com/javascript-grid-row-height/#height-for-pinned-rows
                 this.setPinnedTopRowData(this.getPinnedTopRowData());
                 this.setPinnedBottomRowData(this.getPinnedBottomRowData());
-            }
+            },
+            debounce: 1 // Debounce required to support auto row height
         });
     }
 
     /**
      * @returns {boolean} - true if the grid fully initialized and its state can be queried/mutated
      */
+    @computed
     get isReady() {
-        return !isNil(this.agApi);
+        return !isNil(this.agApi) && !isNil(this.agColumnApi);
     }
 
     /**
@@ -220,29 +240,30 @@ export class AgGridModel {
     getSortState() {
         this.throwIfNotReady();
 
-        const {agApi, agColumnApi} = this,
+        const {agColumnApi} = this,
             isPivot = agColumnApi.isPivotMode();
 
-        let sortModel = agApi.getSortModel();
+        let sortState = agColumnApi.getColumnState().filter(it => it.sort);
 
         // When we have pivot columns we need to make sure we store the path to the sorted column
         // using the pivot keys and value column id, instead of using the auto-generate secondary
         // column id as this could be different with different data or even with the same data based
         // on the state of the grid when pivot mode was enabled.
         if (isPivot && !isEmpty(agColumnApi.getPivotColumns())) {
-            // ag-Grid may have left sort state in the model from before pivot mode was activated,
-            // which is not representative of the current grid state, so we need to remove any sorts
-            // on non-pivot columns
-            sortModel = sortModel.filter(it => it.colId.startsWith('pivot_'));
-
-            const secondaryCols = agColumnApi.getSecondaryColumns();
-            sortModel.forEach(sort => {
-                const col = secondaryCols.find(it => it.colId === sort.colId);
-                sort.colId = this.getPivotColumnId(col);
+            const secondarySortedCols = agColumnApi.getSecondaryColumns().filter(it => it.sort);
+            secondarySortedCols.forEach(col => {
+                col.colId = this.getPivotColumnId(col);
             });
+            sortState = concat(sortState, secondarySortedCols);
         }
 
-        return sortModel;
+        sortState = sortState.map(it => ({
+            colId: it.colId,
+            sort: it.sort,
+            sortIndex: it.sortIndex
+        }));
+
+        return sortState;
     }
 
     /**
@@ -252,33 +273,62 @@ export class AgGridModel {
     setSortState(sortState) {
         this.throwIfNotReady();
 
-        const sortModel = cloneDeep(sortState),
-            {agApi, agColumnApi} = this,
-            isPivot = agColumnApi.isPivotMode(),
-            havePivotCols = !isEmpty(agColumnApi.getPivotColumns());
+        const sortedColumnState = cloneDeep(sortState),
+            [primaryColumnState, secondaryColumnState] = partition(sortedColumnState, it => !isArray(it.colId)),
+            {agColumnApi: colApi, agApi} = this,
+            isPivot = colApi.isPivotMode(),
+            havePivotCols = !isEmpty(colApi.getPivotColumns()),
+            defaultState = {
+                sort: null,
+                sortIndex: null
+            };
 
-        sortModel.forEach(sort => {
-            if (isArray(sort.colId)) {
-                if (isPivot && havePivotCols) {
-                    // Find the appropriate secondary column
-                    const secondaryCols = agColumnApi.getSecondaryColumns(),
-                        col = secondaryCols.find(
-                            it => isEqual(sort.colId, this.getPivotColumnId(it)));
+        // ag-Grid does not allow "secondary" columns to be manipulated by applyColumnState
+        // so this approach is required for setting sort config on secondary columns.
+        if (isPivot && havePivotCols && !isEmpty(secondaryColumnState)) {
+            // 1st clear all pre-exisiting primary column sorts
+            // with an explicit clear of the auto_group column,
+            // which is not cleared by the defaultState config.
+            colApi.applyColumnState({
+                state: [{
+                    colId: AgGridModel.AUTO_GROUP_COL_ID,
+                    sort: null,
+                    sortIndex: null
+                }],
+                defaultState
+            });
 
-                    if (col) {
-                        sort.colId = col.colId;
-                    } else {
-                        console.warn(
-                            'Could not find a secondary column to associate with the pivot column path',
-                            sort.colId);
-                    }
-                } else {
-                    sort.colId = last(sort.colId);
+            // 2nd clear all pre-exisiting secondary column sorts
+            colApi.getSecondaryColumns().forEach(col => {
+                if (col) {
+                    // When using `applyColumnState`, `undefined` means do nothing, `null` means set to none, not cleared.
+                    // But when using the setSort & setSortIndex methods directly, to clear all sort settings as if no sort
+                    // had ever been specified, `undefined` must be used.
+                    col.setSort(undefined);
+                    col.setSortIndex(undefined);
                 }
-            }
+            });
+
+            // finally apply sorts from state to secondary columns
+            secondaryColumnState.forEach(state => {
+                const col = colApi.getSecondaryPivotColumn(state.colId[0], state.colId[1]);
+                if (col) {
+                    col.setSort(state.sort);
+                    col.setSortIndex(state.sortIndex);
+                } else {
+                    console.warn(
+                        'Could not find a secondary column to associate with the pivot column path',
+                        state.colId);
+                }
+            });
+        }
+
+        // always apply any sorts on primary columns (includes the auto_group column on pivot grids)
+        colApi.applyColumnState({
+            state: primaryColumnState,
+            defaultState
         });
 
-        agApi.setSortModel(sortModel);
         agApi.onSortChanged();
     }
 
@@ -288,10 +338,16 @@ export class AgGridModel {
     getColumnState() {
         this.throwIfNotReady();
 
-        const {agColumnApi} = this;
+        const {agColumnApi} = this,
+            columns = agColumnApi.getColumnState();
+
+        // sort config is collected in the getSortState function
+        const sortKeys = ['sort', 'sortIndex'];
+        columns.forEach(col => sortKeys.forEach(it => delete col[it]));
+
         return {
             isPivot: agColumnApi.isPivotMode(),
-            columns: agColumnApi.getColumnState()
+            columns: columns
         };
     }
 
@@ -319,7 +375,41 @@ export class AgGridModel {
         // Remove invalid columns. ag-Grid does not like calls to set state with unknown column IDs.
         columns = columns.filter(it => validColIds.includes(it.colId));
 
-        agColumnApi.setColumnState(columns);
+        agColumnApi.applyColumnState({state: columns, applyOrder: true});
+    }
+
+    /**
+     * Sets the sort state on the grid's column state
+     * @param {GridSorter[]} sortBy
+     */
+    applySortBy(sortBy) {
+        this.throwIfNotReady();
+        const {agColumnApi} = this,
+            prevSortBy = this._prevSortBy;
+
+        if (isEqual(prevSortBy, sortBy)) return;
+
+        // Preclear if only toggling abs for any sort. Ag-Grid doesn't handle abs and would skip
+        if (sortBy.some(curr =>
+            prevSortBy?.some(prev => curr.sort === prev.sort && curr.abs != prev.abs)
+        )) {
+            agColumnApi.applyColumnState({defaultState: {sort: null, sortIndex: null}});
+        }
+
+        // Calculate and set new state
+        const currState = agColumnApi.getColumnState(),
+            newState = [];
+        let idx = 0;
+        sortBy.forEach(({colId, sort}) => {
+            const col = find(currState, {colId});
+            if (col) newState.push({colId, sort, sortIndex: idx++});
+        });
+
+        agColumnApi.applyColumnState({
+            state: newState,
+            defaultState: {sort: null, sortIndex: null}
+        });
+        this._prevSortBy = sortBy;
     }
 
     /**
@@ -400,7 +490,7 @@ export class AgGridModel {
     }
 
     /**
-     * @returns {Number} - the id of the first row in the grid, after sorting and filtering, which
+     * @returns {number} - the id of the first row in the grid, after sorting and filtering, which
      *      has data associated with it (i.e. not a group or other synthetic row).
      */
     getFirstSelectableRowNodeId() {
@@ -449,6 +539,21 @@ export class AgGridModel {
         return this.getPinnedRowData('Bottom');
     }
 
+    /**
+     * Required height of row as determined by content in visible autoHeight columns.
+     *
+     *  If autoHeight not enabled for any visible columns, this method will return null.
+     *
+     * @param {Row} node - agGrid node.
+     * @returns {Number} - pixel height for row or null.
+     */
+    getAutoRowHeight(node) {
+        if (!this.isReady) return null;
+        const {columnController, autoHeightCalculator} = this.agApi.gridOptionsWrapper;
+        if (!columnController.isAutoRowHeightActive()) return null;
+        return autoHeightCalculator.getPreferredHeightForRow(node);
+    }
+
     //------------------------
     // Implementation
     //------------------------
@@ -481,7 +586,7 @@ export class AgGridModel {
     }
 
     getPivotColumnId(column) {
-        return [...column.colDef.pivotKeys, column.colDef.pivotValueColumn.colId];
+        return [column.colDef.pivotKeys, column.colDef.pivotValueColumn.colId];
     }
 
     getGroupNodePath(node) {

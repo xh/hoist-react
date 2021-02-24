@@ -2,33 +2,39 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {p} from '@xh/hoist/cmp/layout';
-import {AppSpec, AppState, elem, ReactiveSupport} from '@xh/hoist/core';
+import {AppSpec, AppState, elem, HoistBase} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {
     AutoRefreshService,
     ConfigService,
     EnvironmentService,
     FetchService,
+    GridAutosizeService,
     GridExportService,
     IdentityService,
     IdleService,
+    JsonBlobService,
     LocalStorageService,
     PrefService,
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
-import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
+import {getClientDeviceInfo, throwIf, withShortDebug, checkMinVersion} from '@xh/hoist/utils/js';
+import {compact, camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
+import parser from 'ua-parser-js';
+
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import '../styles/XH.scss';
 import {ExceptionHandler} from './ExceptionHandler';
 import {RouterModel} from './RouterModel';
+
+const MIN_HOIST_CORE_VERSION = '8.6.1';
 
 /**
  * Top-level Singleton model for Hoist. This is the main entry point for the API.
@@ -39,31 +45,39 @@ import {RouterModel} from './RouterModel';
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
-@ReactiveSupport
-class XHClass {
+class XHClass extends HoistBase {
 
     _initCalled = false;
+    _lastActivityMs = Date.now();
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     //----------------------------------------------------------------------------------------------
     // Metadata - set via webpack.DefinePlugin at build time.
     // See @xh/hoist-dev-utils/configureWebpack.
     //----------------------------------------------------------------------------------------------
-    /** Short internal code for the application. */
+    /** @member {string} - short internal code for the application. */
     appCode = xhAppCode;
 
-    /** User-facing display name for the application. See also `XH.clientAppName`. */
+    /** @member {string} - user-facing display name for the app. See also `XH.clientAppName`. */
     appName = xhAppName;
 
-    /** SemVer or Snapshot version of the client build. */
+    /** @member {string} - semVer or Snapshot version of the client build. */
     appVersion = xhAppVersion;
 
-    /** Git commit hash (or equivalent) of the client build. */
+    /**
+     * @member {string} - optional identifier for the client build (e.g. a git commit hash or a
+     *      build ID from a CI system. Varies depending on how builds are configured.
+     */
     appBuild = xhAppBuild;
 
-    /** Root URL context/path - prepended to all relative fetch requests. */
+    /** @member {string} - root URL context/path - prepended to all relative fetch requests. */
     baseUrl = xhBaseUrl;
 
-    /** Whether build is for local development */
+    /** @member {boolean} - true if app is running in a local development environment. */
     isDevelopmentMode = xhIsDevelopmentMode;
 
     //----------------------------------------------------------------------------------------------
@@ -78,12 +92,16 @@ class XHClass {
     environmentService;
     /** @member {FetchService} */
     fetchService;
+    /** @member {GridAutosizeService} */
+    gridAutosizeService;
     /** @member {GridExportService} */
     gridExportService;
     /** @member {IdentityService} */
     identityService;
     /** @member {IdleService} */
     idleService;
+    /** @member {JsonBlobService} */
+    jsonBlobService;
     /** @member {LocalStorageService} */
     localStorageService;
     /** @member {PrefService} */
@@ -109,18 +127,49 @@ class XHClass {
      */
     fetchJson(opts)             {return this.fetchService.fetchJson(opts)}
 
+    /**
+     * Primary convenience alias for reading soft configuration values.
+     * @param {string} key - identifier of the config to return.
+     * @param {*} [defaultVal] - value to return if there is no client-side config with this key.
+     * @return {*} - the soft-configured value.
+     */
     getConf(key, defaultVal)    {return this.configService.get(key, defaultVal)}
+
+    /**
+     * Primary convenience alias for reading user preference values.
+     * @param {string} key - identifier of the pref to return.
+     * @param {*} [defaultVal] - value to return if there is no pref with this key.
+     * @return {*} - the user's preference, or the data-driven default if pref not yet set by user.
+     */
     getPref(key, defaultVal)    {return this.prefService.get(key, defaultVal)}
+
+    /**
+     * Primary convenience alias for setting user preference values.
+     * @param {string} key - identifier of the pref to set.
+     * @param {*} val - the new value to persist for the current user.
+     */
     setPref(key, val)           {return this.prefService.set(key, val)}
-    getEnv(key)                 {return this.environmentService.get(key)}
-    track(opts)                 {return this.trackService.track(opts)}
 
-    getUser()                   {return this.identityService ? this.identityService.getUser() : null}
-    getUsername()               {return this.identityService ? this.identityService.getUsername() : null}
+    // Make these robust, so they don't fail if called early in initialization sequence
+    track(opts)                 {return this.trackService?.track(opts)}
+    getEnv(key)                 {return this.environmentService?.get(key) ?? null}
 
-    get isMobile()              {return this.appSpec.isMobile}
+    /** @return {?string} */
+    getUser()                   {return this.identityService?.getUser() ?? null}
+    /** @return {?string} */
+    getUsername()               {return this.identityService?.getUsername() ?? null}
+
+    /** @return {boolean} */
+    get isMobileApp()           {return this.appSpec.isMobileApp}
+    /** @return {string} */
     get clientAppCode()         {return this.appSpec.clientAppCode}
+    /** @return {string} */
     get clientAppName()         {return this.appSpec.clientAppName}
+
+    get isPhone()               {return this.uaParser.getDevice().type === 'mobile'}
+    get isTablet()              {return this.uaParser.getDevice().type === 'tablet'}
+    get isDesktop()             {return this.uaParser.getDevice().type === undefined}
+
 
     //---------------------------
     // Models
@@ -134,19 +183,25 @@ class XHClass {
     accessDeniedMessage = null;
     exceptionHandler = new ExceptionHandler();
 
-    /** State of app - see AppState for valid values. */
+    /** @member {AppState} - current lifecycle state of the application. */
     @observable appState = AppState.PRE_AUTH;
 
-    /**
-     * Is Application running?
-     * Observable shortcut for appState == AppState.RUNNING.
-     */
+    /** @member {number} - milliseconds since user activity / interaction was last detected. */
+    get lastActivityMs() {return this._lastActivityMs}
+
+    /** @member {boolean} - true if application initialized and running (observable). */
     get appIsRunning() {return this.appState === AppState.RUNNING}
 
-    /** Currently authenticated user. */
+    /** @member {?string} - the currently authenticated user. */
     @observable authUsername = null;
 
-    /** Root level HoistAppModel. */
+    /**
+     * @member {AppModel} - root level {@see HoistAppModel}. Documented as type `AppModel` to
+     *      match the common choice of class name used within applications. This must be a class
+     *      that extends `HoistAppModel`, but writing the jsDoc annotation this way allows for
+     *      better discovery and linking by IDEs to app-specific subclasses and any interesting
+     *      properties or APIs they might have.
+     */
     appModel = null;
 
     /**
@@ -170,7 +225,7 @@ class XHClass {
     /**
      * Install HoistServices on this object.
      *
-     * @param {...Object} serviceClasses - Classes decorated with @HoistService
+     * @param {...Class} serviceClasses - Classes extending HoistService
      *
      * This method will create, initialize, and install the services classes listed on XH.
      * All services will be initialized concurrently. To guarantee execution order of service
@@ -373,27 +428,44 @@ class XHClass {
     // Exception Support
     //--------------------------
     /**
-     * Handle an exception.
+     * Handle an exception. This method is an alias for {@see ExceptionHandler.handleException}.
      *
-     * This method may be called by applications in order to provide logging, reporting,
-     * and display of exceptions.  It it typically called directly in catch() blocks.
-     *
-     * This method is an alias for ExceptionHandler.handleException(). See that method for more
-     * information about available options.
+     * This method may be called by applications in order to provide logging, reporting, and
+     * display of exceptions. It it typically called directly in catch() blocks.
      *
      * See also Promise.catchDefault(). That method will delegate its arguments to this method
-     * and provides a more convenient interface for Promise-based code.
+     * and provides a more convenient interface for catching exceptions in Promise chains.
+     *
+     * @param {(Error|Object|string)} exception - Error or thrown object - if not an Error, an
+     *      Exception will be created via Exception.create().
+     * @param {Object} [options] - controls on how the exception should be shown and/or logged.
+     * @param {string} [options.message] - text (ideally user-friendly) describing the error.
+     * @param {string} [options.title] - title for an alert dialog, if shown.
+     * @param {boolean} [options.showAsError] - configure modal alert and logging to indicate that
+     *      this is an unexpected error. Default true for most exceptions, false for those marked
+     *      as `isRoutine`.
+     * @param {boolean} [options.logOnServer] - send the exception to the server to be stored for
+     *      review in the Hoist Admin Console. Default true when `showAsError` is true, excepting
+     *      'isAutoRefresh' fetch exceptions.
+     * @param {boolean} [options.showAlert] - display an alert dialog to the user. Default true,
+     *      excepting 'isAutoRefresh' and 'isFetchAborted' exceptions.
+     * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
+     *      dismiss - default false, excepting session-related exceptions.
+     * @param {Array} [options.hideParams] - A list of parameters that should be hidden from
+     *      the exception log and alert.
      */
     handleException(exception, options) {
-        return this.exceptionHandler.handleException(exception, options);
+        this.exceptionHandler.handleException(exception, options);
     }
 
     /**
-     * Create a new exception.
-     * @see Exception.create
+     * Create a new exception - {@see Exception} for Hoist conventions / extensions to JS Errors.
+     * @param {(Object|string)} cfg - properties to add to the returned Error.
+     *      If a string, will become the 'message' value.
+     * @returns {Error}
      */
-    exception(...args) {
-        return Exception.create(...args);
+    exception(cfg) {
+        return Exception.create(cfg);
     }
 
     //---------------------------
@@ -420,27 +492,26 @@ class XHClass {
     }
 
     /**
-     * Resets user customizations.
-     * Clears all user preferences and local grid state, then reloads the app.
+     * Resets user preferences and any persistent local application state, then reloads the app.
      */
     async restoreDefaultsAsync() {
-        return XH.prefService.clearAllAsync().then(() => {
-            XH.localStorageService.removeIf(key => key.startsWith('gridState'));
-            XH.reloadApp();
-        });
+        await this.prefService.clearAllAsync();
+        this.localStorageService.clear();
+        this.reloadApp();
     }
 
     /**
      * Helper method to destroy resources safely (e.g. child HoistModels). Will quietly skip args
      * that are null / undefined or that do not implement destroy().
      *
-     * @param {...Object} args - Objects to be destroyed.
+     * @param {...(Object|array)} args - objects to be destroyed. If any argument is an array,
+     *      each element in the array will be destroyed (this is *not* done recursively);.
      */
     safeDestroy(...args) {
         if (args) {
             args = flatten(args);
             args.forEach(it => {
-                if (it && it.destroy) {
+                if (it?.destroy) {
                     it.destroy();
                 }
             });
@@ -472,34 +543,41 @@ class XHClass {
         this._initCalled = true;
 
         const S = AppState,
-            {appSpec, isMobile} = this;
+            {appSpec, isMobileApp, isPhone, isTablet, isDesktop, baseUrl} = this;
 
         if (appSpec.trackAppLoad) this.trackLoad();
 
-        // add xh css classes to to power Hoist CSS selectors.
-        document.body.classList.add('xh-app', (isMobile ? 'xh-mobile' : 'xh-desktop'));
+        // Add xh css classes to to power Hoist CSS selectors.
+        document.body.classList.add(...compact([
+            'xh-app',
+            (isMobileApp ? 'xh-mobile' : 'xh-standard'),
+            (isDesktop ? 'xh-desktop' : null),
+            (isPhone ? 'xh-phone' : null),
+            (isTablet ? 'xh-tablet' : null)
+        ]));
+
+        this.createActivityListeners();
 
         try {
             await this.installServicesAsync(FetchService);
             await this.installServicesAsync(TrackService);
 
-            // Special handling for EnvironmentService, which makes the first fetch back to the Grails layer.
-            // For expediency, we assume that if this trivial endpoint fails, we have a connectivity problem.
+            // pre-flight allows clean recognition when we have no server.
             try {
-                await this.installServicesAsync(EnvironmentService);
+                await XH.fetch({url: 'ping'});
             } catch (e) {
-                const pingURL = XH.isDevelopmentMode ?
-                    `${XH.baseUrl}ping` :
-                    `${window.location.origin}${XH.baseUrl}ping`;
+                const pingURL = baseUrl.startsWith('http') ?
+                    `${baseUrl}ping` :
+                    `${window.location.origin}${baseUrl}ping`;
 
                 throw this.exception({
                     name: 'UI Server Unavailable',
-                    message: `Client cannot reach UI server.  Please check UI server at the following location: ${pingURL}`,
-                    detail: e.message
+                    detail: e.message,
+                    message: 'Client cannot reach UI server.  Please check UI server at the ' +
+                        `following location: ${pingURL}`
                 });
             }
 
-            this.setDocTitle();
             this.setAppState(S.PRE_AUTH);
 
             // Instantiate appModel, await optional pre-auth init.
@@ -511,7 +589,10 @@ class XHClass {
 
             // ...if not, throw in SSO mode (unexpected error case) or trigger a login prompt.
             if (!userIsAuthenticated) {
-                throwIf(appSpec.isSSO, 'Failed to authenticate user via SSO.');
+                throwIf(
+                    appSpec.isSSO,
+                    'Unable to complete required authentication (SSO/Oauth failure).'
+                );
                 this.setAppState(S.LOGIN_REQUIRED);
                 return;
             }
@@ -548,11 +629,25 @@ class XHClass {
             // Complete initialization process
             this.setAppState(S.INITIALIZING);
             await this.installServicesAsync(LocalStorageService);
-            await this.installServicesAsync(PrefService, ConfigService);
             await this.installServicesAsync(
-                AutoRefreshService, IdleService, GridExportService, WebSocketService
+                EnvironmentService, PrefService, ConfigService, JsonBlobService
+            );
+
+            // Confirm hoist-core version after environment service loaded
+            const hcVersion = XH.environmentService.get('hoistCoreVersion');
+            if (!checkMinVersion(hcVersion, MIN_HOIST_CORE_VERSION)) {
+                throw XH.exception(`
+                    This version of Hoist React requires the server to run Hoist Core
+                    v${MIN_HOIST_CORE_VERSION} or greater. Version ${hcVersion} detected.
+                `);
+            }
+
+            await this.installServicesAsync(
+                AutoRefreshService, IdleService, GridAutosizeService, GridExportService, WebSocketService
             );
             this.acm.init();
+
+            this.setDocTitle();
 
             // Delay to workaround hot-reload styling issues in dev.
             await wait(XH.isDevelopmentMode ? 300 : 1);
@@ -654,11 +749,18 @@ class XHClass {
                     case AppState.RUNNING:
                         XH.track({
                             category: 'App',
-                            msg: `Loaded ${this.clientAppName}`,
-                            elapsed: now - loadStarted - loginElapsed
+                            msg: `Loaded ${this.clientAppCode}`,
+                            elapsed: now - loadStarted - loginElapsed,
+                            data: {
+                                appVersion: this.appVersion,
+                                appBuild: this.appBuild,
+                                locationHref: window.location.href,
+                                ...getClientDeviceInfo()
+                            }
                         });
                         disposer();
                         break;
+
                     case AppState.LOGIN_REQUIRED:
                         loginStarted = now;
                         break;
@@ -668,15 +770,32 @@ class XHClass {
             }
         });
     }
-}
-export const XH = window.XH = new XHClass();
 
+    createActivityListeners() {
+        ['keydown', 'mousemove', 'mousedown', 'scroll', 'touchmove', 'touchstart'].forEach(name => {
+            window.addEventListener(name, () => {
+                this._lastActivityMs = Date.now();
+            });
+        });
+    }
+
+    get uaParser() {
+        if (!this._uaParser) this._uaParser = new parser();
+        return this._uaParser;
+    }
+}
+
+export const XH = window.XH = new XHClass();
 
 /**
  * @typedef {Object} MessageConfig - configuration object for a modal alert, confirm, or prompt.
  * @property {ReactNode} message - message to be displayed - a string or any valid React node.
  * @property {string} [title] - title of message box.
  * @property {Element} [icon] - icon to be displayed.
+ * @property {string} [messageKey] - unique key identifying the message.  If subsequent messages
+ *      are triggered with this key, they will replace this message.  Useful for usages that may
+ *      be producing messages recursively, or via timers and wish to avoid generating a large stack
+ *      of duplicates.
  * @property {MessageInput} [input] - config for input to be displayed (as a prompt).
  * @property {Object} [confirmProps] - props for primary confirm button.
  *      Must provide either text or icon for button to be displayed, or use a preconfigured

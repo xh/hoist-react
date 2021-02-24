@@ -2,27 +2,49 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {configure} from 'mobx';
-
-// As per https://github.com/mobxjs/mobx-react-lite/#observer-batching
-import 'mobx-react-lite/batchingForReactDom';
-
-export {
+import {
     action,
     autorun,
+    comparer,
     computed,
+    configure,
+    extendObservable,
+    makeObservable,
     observable,
+    override,
     reaction,
     runInAction,
     toJS,
     trace,
     untracked,
-    when,
-    comparer
+    when
 } from 'mobx';
-export {observer} from 'mobx-react';
-export {settable, bindable} from './decorators';
+import {observer} from 'mobx-react-lite';
+import {bindable, settable} from './decorators';
 
 configure({enforceActions: 'observed'});
+
+//---------------------
+// Re-exports
+//---------------------
+export {
+    action,
+    autorun,
+    bindable,
+    comparer,
+    computed,
+    extendObservable,
+    makeObservable,
+    observable,
+    observer,
+    override,
+    reaction,
+    runInAction,
+    settable,
+    toJS,
+    trace,
+    untracked,
+    when
+};

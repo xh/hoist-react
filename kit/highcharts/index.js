@@ -2,28 +2,37 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import Highcharts from 'highcharts/highstock';
-import highchartsExportData from 'highcharts/modules/export-data';
-import highchartsExporting from 'highcharts/modules/exporting';
-import highchartsHeatmap from 'highcharts/modules/heatmap';
-import highchartsOfflineExporting from 'highcharts/modules/offline-exporting';
-import highchartsTree from 'highcharts/modules/treemap';
 
-Highcharts.setOptions({
-    global: {
-        useUTC: false
-    },
-    lang: {
-        thousandsSep: ','
+import {checkVersion} from '@xh/hoist/utils/js/VersionUtils';
+
+export let Highcharts = null;
+
+const MIN_VERSION = '8.1.1';
+const MAX_VERSION = '8.*.*';
+
+/**
+ * Expose application versions of Highcharts to Hoist.
+ * Typically called in the Bootstrap.js. of the application.
+ */
+export function installHighcharts(HighchartsImpl) {
+    const {version} = HighchartsImpl;
+    if (!checkVersion(version, MIN_VERSION, MAX_VERSION)) {
+        console.error(
+            `This version of Hoist requires a Highcharts version between ${MIN_VERSION} and ` +
+            `${MAX_VERSION}. Version ${version} detected. Highcharts will be unavailable.`
+        );
+        return;
     }
-});
 
-highchartsExporting(Highcharts);
-highchartsOfflineExporting(Highcharts);
-highchartsExportData(Highcharts);
-highchartsTree(Highcharts);
-highchartsHeatmap(Highcharts);
-
-export {Highcharts};
+    HighchartsImpl.setOptions({
+        global: {
+            useUTC: false
+        },
+        lang: {
+            thousandsSep: ','
+        }
+    });
+    Highcharts = HighchartsImpl;
+}

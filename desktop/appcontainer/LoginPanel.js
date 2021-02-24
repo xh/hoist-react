@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {LoginPanelModel} from '@xh/hoist/appcontainer/login/LoginPanelModel';
 import {div, filler, form, viewport, vspacer} from '@xh/hoist/cmp/layout';
@@ -25,7 +25,7 @@ export const loginPanel = hoistCmp.factory({
 
     render({model}) {
         const {loginMessage} = XH.appSpec,
-            {loadModel, warning, isValid} = model;
+            {loadModel, warning, isValid, loginInProgress} = model;
 
         const onKeyDown = (ev) => {
             if (ev.key === 'Enter') model.submitAsync();
@@ -77,10 +77,10 @@ export const loginPanel = hoistCmp.factory({
                 bbar: [
                     filler(),
                     button({
-                        text: 'Login',
+                        text: loginInProgress ? 'Please wait...' : 'Login',
                         intent: 'primary',
                         icon: Icon.login(),
-                        disabled: !isValid,
+                        disabled: !isValid || loginInProgress,
                         onClick: () => model.submitAsync()
                     })
                 ]

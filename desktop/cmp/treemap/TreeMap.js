@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div, frame} from '@xh/hoist/cmp/layout';
@@ -39,12 +39,22 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     model: uses(TreeMapModel),
     className: 'xh-treemap',
 
-    render({model, className, ...props}) {
-        const impl = useLocalModel(() => new LocalModel(model)),
-            ref = composeRefs(
-                useOnResize(impl.onResizeAsync, {debounce: 100}),
-                useOnVisibleChange(impl.onVisibleChange)
+    render({model, className, ...props}, ref) {
+
+        if (!Highcharts) {
+            console.error(
+                'Highcharts has not been imported in to this application. Please import and ' +
+                'register in Bootstrap.js.  See Toolbox for an example.'
             );
+            return 'Highcharts not available';
+        }
+
+        const impl = useLocalModel(() => new LocalModel(model));
+        ref = composeRefs(
+            ref,
+            useOnResize(impl.onResizeAsync, {debounce: 100}),
+            useOnVisibleChange(impl.onVisibleChange)
+        );
 
         const renderError = (error) => frame({
             className: 'xh-treemap__error-message',
@@ -94,15 +104,16 @@ TreeMap.propTypes = {
 };
 
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
+    /** @member {TreeMapModel} */
     model;
     chartRef = createObservableRef();
     chart = null;
     clickCount = 0;
 
     constructor(model) {
+        super();
         this.model = model;
 
         // Detect double-clicks vs single-clicks
@@ -203,6 +214,7 @@ class LocalModel {
 
     destroy() {
         this.destroyHighChart();
+        super.destroy();
     }
 
     destroyHighChart() {
@@ -320,7 +332,7 @@ class LocalModel {
             node.select(toSelect.has(node.id), true);
         });
 
-        if (gridModel) gridModel.ensureSelectionVisible();
+        gridModel?.ensureSelectionVisibleAsync();
     }
 
     //----------------------

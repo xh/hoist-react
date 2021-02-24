@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 
 /**
@@ -14,8 +14,7 @@ import {warnIf} from '@xh/hoist/utils/js';
  * Not intended for direct application use. {@see XHClass#message()} and related for the public API.
  * @private
  */
-@HoistModel
-export class MessageModel {
+export class MessageModel extends HoistModel {
 
     // Immutable properties
     title;
@@ -26,6 +25,7 @@ export class MessageModel {
     cancelProps;
     onConfirm;
     onCancel;
+    messageKey;
 
     // Promise to be resolved when user has clicked on choice and its internal resolver
     result;
@@ -37,6 +37,7 @@ export class MessageModel {
         title,
         icon,
         message,
+        messageKey,
         input,
         confirmProps = {},
         cancelProps = {},
@@ -49,21 +50,25 @@ export class MessageModel {
         cancelText,
         cancelIntent
     }) {
+        super();
+        makeObservable(this);
         warnIf(
             (confirmText || confirmIntent || cancelText || cancelIntent),
-            'Message "confirmText", "confirmIntent", "cancelText", and "cancelIntent" configs have been deprecated - use "confirmProps" and "cancelProps" instead.'
+            'Message "confirmText", "confirmIntent", "cancelText", and "cancelIntent" configs have' +
+            ' been deprecated - use "confirmProps" and "cancelProps" instead.'
         );
 
         this.title = title;
         this.icon = icon;
         this.message = message;
+        this.messageKey = messageKey;
 
         if (input) {
             this.input = input;
             const {initialValue, rules} = input;
-            this.formModel = this.markManaged(new FormModel({
-                fields: [{name: 'value', initialValue, rules}]
-            }));
+            this.formModel = this.markManaged(
+                new FormModel({fields: [{name: 'value', initialValue, rules}]})
+            );
         }
 
         this.confirmProps = this.parseButtonProps(confirmProps, () => this.doConfirmAsync(), confirmText, confirmIntent);
@@ -113,6 +118,7 @@ export class MessageModel {
 
     destroy() {
         this.close();
+        super.destroy();
     }
 
     // Merge handler and deprecated props into consolidated object.

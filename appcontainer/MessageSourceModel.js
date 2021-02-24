@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
-import {isUndefined} from 'lodash';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {isUndefined, filter} from 'lodash';
 import {MessageModel} from './MessageModel';
 
 /**
@@ -14,12 +14,16 @@ import {MessageModel} from './MessageModel';
  * Not intended for direct application use. {@see XHClass#message()} and related for the public API.
  * @private
  */
-@HoistModel
-export class MessageSourceModel {
+export class MessageSourceModel extends HoistModel {
 
     @managed
     @observable.ref
     msgModels = [];
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     message(config) {
 
@@ -67,7 +71,12 @@ export class MessageSourceModel {
     //------------------------------------
     @action
     addModel(model) {
-        this.msgModels.push(model);
+        const {messageKey} = model,
+            {msgModels} = this;
+        if (messageKey) {
+            filter(msgModels, {messageKey}).forEach(m => m.close());
+        }
+        msgModels.push(model);
         this.cull();
     }
 

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {castArray, compact, flatten} from 'lodash';
 import {required} from './constraints';
@@ -65,7 +65,7 @@ export class Rule {
 /**
  * @callback ConstraintCb
  * @param {FieldModel} fieldModel
- * @param {Object} model
+ * @param {Object} map of values for all fields in form
  * @returns {(string|string[])} - String or array of strings describing errors,
  *      or null or undefined if rule passes successfully.
  */
@@ -73,6 +73,6 @@ export class Rule {
 /**
  * @callback WhenCb
  * @param {FieldModel} fieldModel
- * @param {Object} model
+ * @param {Object} map of values for all fields in form
  * @returns {boolean} - true if this rule is currently active.
  */

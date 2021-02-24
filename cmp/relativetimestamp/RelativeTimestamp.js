@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {box, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, managed, useLocalModel, XH} from '@xh/hoist/core';
 import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {apiRemoved, withDefault} from '@xh/hoist/utils/js';
@@ -24,7 +24,7 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
     displayName: 'RelativeTimestamp',
     className: 'xh-relative-timestamp',
 
-    render({model, timestamp, bind, options, ...props}) {
+    render({model, timestamp, bind, options, ...props}, ref) {
         const impl = useLocalModel(LocalModel);
 
         timestamp = withDefault(timestamp, (model && bind ? model[bind] : null));
@@ -33,6 +33,7 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
 
         return box({
             ...props,
+            ref,
             item: span({
                 className: 'xh-title-tip',
                 item: impl.display,
@@ -55,8 +56,7 @@ RelativeTimestamp.propTypes = {
     options: PT.object
 };
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
     options;
     timestamp;
@@ -68,6 +68,11 @@ class LocalModel {
         runFn: () => this.refreshDisplay(),
         interval: 5 * SECONDS
     });
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     setData(timestamp, options) {
         this.timestamp = timestamp;
@@ -109,7 +114,7 @@ export function getRelativeTimestamp(timestamp, options = {}) {
     options = {
         timestamp,
         allowFuture: false,
-        short: XH.isMobile,
+        short: XH.isMobileApp,
         futureSuffix: relTo ? `after ${relFmt}` : 'from now',
         pastSuffix: relTo ? `before ${relFmt}` : 'ago',
         equalString: relTo ? `${relFmtIsTime ? 'at' : 'on'}  ${relFmt}` : 'just now',
@@ -147,6 +152,10 @@ function doFormat(opts) {
         ret = (elapsed < 60 * SECONDS) ?
             '<1 minute' :
             moment.duration(elapsed).humanize();
+
+        // Moment outputs e.g. "a minute" instead of "1 minute". This creates some awkwardness
+        // when the leading number comes and goes - "<1 minute" -> "a minute" -> "2 minutes".
+        ret = ret.replace(/^(an|a) /, '1 ');
 
         if (short) ret = ret.replace('minute', 'min').replace('second', 'sec');
 

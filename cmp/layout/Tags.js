@@ -2,15 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {elemFactory} from '@xh/hoist/core';
-import React from 'react';
+import {Fragment} from 'react';
 
 //--------------------------------
 // React
 //--------------------------------
-export const fragment = elemFactory(React.Fragment);
+export const fragment = elemFactory(Fragment);
 
 //--------------------------------
 // Standard HTML
@@ -35,6 +35,8 @@ export const option = elemFactory('option');
 export const p = elemFactory('p');
 export const pre = elemFactory('pre');
 export const span = elemFactory('span');
+export const strong = elemFactory('strong');
+export const svg = elemFactory('svg');
 export const table = elemFactory('table');
 export const tbody = elemFactory('tbody');
 export const td = elemFactory('td');

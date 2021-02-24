@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {button, Button} from '@xh/hoist/desktop/cmp/button';
@@ -16,6 +16,7 @@ import PT from 'prop-types';
  */
 export const [ClipboardButton, clipboardButton] = hoistCmp.withFactory({
     displayName: 'ClipboardButton',
+    model: false,
 
     render(props) {
         let {icon, onClick, text, getCopyText, successMessage, ...rest} = props;
@@ -25,7 +26,8 @@ export const [ClipboardButton, clipboardButton] = hoistCmp.withFactory({
                 const {successMessage, getCopyText} = props;
 
                 try {
-                    await copy(getCopyText());
+                    const text = await getCopyText();
+                    await copy(text);
                     if (successMessage) {
                         XH.toast({
                             message: successMessage,
@@ -46,10 +48,11 @@ export const [ClipboardButton, clipboardButton] = hoistCmp.withFactory({
         });
     }
 });
+
 ClipboardButton.propTypes = {
     ...Button.propTypes,
 
-    /** Function returning the text to copy. */
+    /** Function returning the text to copy.  May be async. */
     getCopyText: PT.func.isRequired,
 
     /** Message to be displayed in a toast when copy is complete. */

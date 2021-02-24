@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {div, filler, fragment, span} from '@xh/hoist/cmp/layout';
@@ -23,6 +23,7 @@ const LEFT_PAD = 5;       // Left-padding for inputs.
 
 /**
  * Control for selecting a list of dimensions for grouping APIs.
+ * @see DimensionChooserModel
  */
 export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
     displayName: 'DimensionChooser',
@@ -34,21 +35,27 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
         dialogWidth = 250,
         buttonWidth = 150,
         emptyText = '[Ungrouped]'
-    }) {
-        const {value, dimensions} = model,
-            labels = isEmpty(value) ? [emptyText] : value.map(h => dimensions[h].label);
+    }, ref) {
+        const {value} = model,
+            labels = isEmpty(value) ?
+                [emptyText] :
+                value.map(dimName => model.getDimDisplayName(dimName));
 
-        return div(
-            dialogCmp({dialogWidth, emptyText}),
-            button({
-                className: 'xh-dim-button',
-                item: span(labels.join(' \u203a ')),
-                width: buttonWidth,
-                onClick: () => model.showMenu()
-            })
-        );
+        return div({
+            ref,
+            items: [
+                dialogCmp({dialogWidth, emptyText}),
+                button({
+                    className: 'xh-dim-button',
+                    item: span(labels.join(' \u203a ')),
+                    width: buttonWidth,
+                    onClick: () => model.showMenu()
+                })
+            ]
+        });
     }
 });
+
 DimensionChooser.propTypes = {
     /** Width in pixels of the target button (that triggers show of popover). */
     buttonWidth: PT.number,
@@ -96,10 +103,12 @@ const dialogCmp = hoistCmp.factory(
 //---------------------------
 const historyMenu = hoistCmp.factory(
     ({model, emptyText}) => {
-        const {history, dimensions} = model,
+        const {history} = model,
             historyItems = history.map((value, i) => {
                 const isActive = value === model.value,
-                    labels = isEmpty(value) ? [emptyText] : value.map(h => dimensions[h].label);
+                    labels = isEmpty(value) ?
+                        [emptyText] :
+                        value.map(dimName => model.getDimDisplayName(dimName));
 
                 return button({
                     className: classNames('dim-history-btn', isActive ? 'dim-history-btn--active' : null),
@@ -169,7 +178,7 @@ const selectMenu = hoistCmp.factory(
             children.push(addOrSelectButton({dialogWidth}));
         }
 
-        return children;
+        return fragment(children);
     }
 );
 

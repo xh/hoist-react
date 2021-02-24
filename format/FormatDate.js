@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {span} from '@xh/hoist/cmp/layout';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
@@ -21,7 +21,7 @@ const INVALID_DATE = moment(null).format();
 /**
  * Render dates and times with specified format
  *
- * @param {*} v - a date value to format, can be any value MomentJs can parse.
+ * @param {*} v - a date value to format, can be any value MomentJs can parse or a LocalDate.
  *      @see {@link https://momentjs.com/docs/#/parsing/|MomentJS Docs}
  * @param {(Object|string)} [opts] - a MomentJs format string or an options object.
  * @param {string} [opts.nullDisplay] - display string for null values.
