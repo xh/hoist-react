@@ -958,6 +958,7 @@ export class GridModel extends HoistModel {
             }
         }
     }
+
     /** @deprecated */
     autoSizeColumns(colIds) {
         apiDeprecated(true, 'autoSizeColumns', 'Use autosizeAsync() instead.');
@@ -969,6 +970,7 @@ export class GridModel extends HoistModel {
         apiDeprecated(true, 'restoreDefaults', 'Use restoreDefaultsAsync() instead.');
         this.restoreDefaultsAsync();
     }
+
     /** @deprecated */
     select(records, clearSelection) {
         apiDeprecated(true, 'select', 'Use selectAsync() instead.');
@@ -990,6 +992,10 @@ export class GridModel extends HoistModel {
     //-----------------------
     // Implementation
     //-----------------------
+    getAutoRowHeight(node) {
+        return this.agGridModel.getAutoRowHeight(node);
+    }
+
     gatherLeaves(columns, leaves = []) {
         columns.forEach(col => {
             if (col.groupId) this.gatherLeaves(col.children, leaves);

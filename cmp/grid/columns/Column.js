@@ -127,6 +127,9 @@ export class Column {
      *     sort icon when calculating the header width.
      * @param {number} [c.autosizeMinWidth] - minimum width in pixels when autosizing.
      * @param {number} [c.autosizeMaxWidth] - maximum width in pixels when autosizing.
+     * @param {boolean} [c.autoHeight] - true to dynamically grow the row height based on the
+     *      content of this column's cell.  If true, text will also be set to wrap within cells.
+     *      This property will be ignored if elementRenderer is set.
      * @param {boolean} [c.rendererIsComplex] - true if this renderer relies on more than
      *      just the value of the field associated with this column.  Set to true to ensure that
      *      the cells for this column are updated any time the record is changed.  Setting to true
@@ -192,6 +195,7 @@ export class Column {
         autosizeIncludeHeaderIcons,
         autosizeMinWidth,
         autosizeMaxWidth,
+        autoHeight,
         tooltip,
         tooltipElement,
         editable,
@@ -289,7 +293,11 @@ export class Column {
         this.autosizeIncludeHeaderIcons = withDefault(autosizeIncludeHeaderIcons, true);
         this.autosizeMinWidth = withDefault(autosizeMinWidth, this.minWidth);
         this.autosizeMaxWidth = withDefault(autosizeMaxWidth, this.maxWidth);
-
+        this.autoHeight = withDefault(autoHeight, false);
+        warnIf(
+            autoHeight && elementRenderer,
+            'autoHeight is ignored when an elementRenderer is defined.  Row heights will not change to accommodate cell content for this column.'
+        );
         this.tooltip = tooltip;
         this.tooltipElement = tooltipElement;
         warnIf(
@@ -526,6 +534,11 @@ export class Column {
 
                 return this.comparator(valueA, valueB, sortDir, abs, params);
             };
+        }
+
+        if (this.autoHeight) {
+            ret.autoHeight = true;
+            ret.wrapText = true;
         }
 
         // Finally, apply explicit app requests.  The customer is always right....
