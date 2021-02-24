@@ -1,6 +1,6 @@
 # Changelog
 
-## v39.0.0-SNAPSHOT - unreleased
+## v38.1.0 - 2021-02-24
 
 ⚠ Please ensure your `@xh/hoist-dev-utils` dependency is >= v5.6.0. This is required to successfully
 resolve and bundle transitive dependencies of the upgraded `react-select` library.
@@ -46,7 +46,7 @@ resolve and bundle transitive dependencies of the upgraded `react-select` librar
 * react-select `3.1 -> 4.1`
 * react-windowed-select `2.0 -> 3.0`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v38.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v38.0.0...v38.1.0)
 
 
 
