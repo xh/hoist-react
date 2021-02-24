@@ -27,8 +27,8 @@
 * Cube `View` now detects and properly handles streaming updates to source data that include changes
   to row dimensions as well as measures.*
 * `DataViewModel.itemHeight` can now be a function that returns a pixel height.
-* Grid `Column` now accepts `autoHeight:true` to let the grid set row height based on cell content.  
-  This is ignored if `Column.elementRenderer` is defined.
+* New `autoHeight` property on grid `Column`.  When set the grid will increase the row
+  height dynamically to accommodate cell content in this column.
 
 ### ⚙️ Technical
 
