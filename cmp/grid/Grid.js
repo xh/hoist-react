@@ -27,7 +27,6 @@ import {
     isFunction,
     isNil,
     isString,
-    map,
     merge,
     max,
     maxBy
