@@ -6,7 +6,7 @@
  */
 import {HoistBase} from './HoistBase';
 import {managed} from './HoistBaseDecorators';
-import {LoadSupport} from './LoadSupport';
+import {LoadSupport} from './refresh/LoadSupport';
 
 /**
  * Core superclass for stateful Models in Hoist. Models are used throughout the toolkit and
