@@ -5,7 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {wait} from '@xh/hoist/promise';
-
+import {Timer} from '@xh/hoist/utils/async';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 
 /**
  * Iterate over a collection and run a closure on each item - as with `for ... of` - but do so
@@ -74,6 +75,45 @@ export async function whileAsync(conditionFn, fn, {waitAfter = 50, waitFor = 1, 
         fn();
     }
     writeDebug(debug, waitCount, initialStart);
+}
+
+
+export async function isReadyAsync({
+    runFn,
+    interval = 500,
+    failMsg,
+    timeout = 30 * SECONDS,
+    debug = false
+}) {
+    let ret, runner;
+        
+    try {
+        ret = await new Promise((resolve, reject) => {
+            const internalRunFnAsync = async () => {
+                if (await runFn()) {
+                    resolve(true);
+                } else if (debug) {
+                    console.warn('runFn passed to isReadyAsync returned false. Retrying.');
+                }
+            };  
+
+            runner = Timer.create({
+                runFn: internalRunFnAsync,
+                interval,
+                timeout
+            });
+
+        }).timeout({
+            interval: timeout,
+            message: failMsg
+        });
+    } catch (error) {
+        ret = false;
+        console.error(error);
+    }
+
+    runner.cancel();
+    return ret;
 }
 
 //------------------------------
