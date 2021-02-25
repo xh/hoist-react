@@ -17,6 +17,7 @@ import {isDisplayed, withShortDebug, apiRemoved} from '@xh/hoist/utils/js';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
+import {isReadyAsync} from '@xh/hoistutils/async';
 
 import classNames from 'classnames';
 import {
@@ -424,10 +425,15 @@ class LocalModel extends HoistModel {
 
         return {
             track: () => [model.isReady, selModel.ids],
-            run: ([isReady, ids]) => {
+            run: async ([isReady, ids]) => {
                 if (!isReady) return;
 
-                if (!isEqual(ids, agGridModel.getSelectedRowNodeIds())) {
+                const matchingRowsFound = await isReadyAsync({
+                    runFn: ids.some(id => model.agApi.getRowNode(id)),
+                    failMsg: 'No matching rows found for selected records'
+                });
+
+                if (matchingRowsFound && !isEqual(ids, agGridModel.getSelectedRowNodeIds())) {
                     agGridModel.setSelectedRowNodeIds(ids);
                 }
             }
