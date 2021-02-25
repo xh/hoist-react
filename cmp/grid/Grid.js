@@ -17,7 +17,7 @@ import {isDisplayed, withShortDebug, apiRemoved} from '@xh/hoist/utils/js';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
-import {isReadyAsync} from '@xh/hoistutils/async';
+import {isReadyAsync} from '@xh/hoist/utils/async';
 
 import classNames from 'classnames';
 import {
