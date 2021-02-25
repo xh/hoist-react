@@ -428,7 +428,7 @@ class LocalModel extends HoistModel {
             run: async ([isReady, ids]) => {
                 if (!isReady) return;
 
-                const matchingRowsFound = await isReadyAsync({
+                const matchingRowsFound = isEmpty(ids) || await isReadyAsync({
                     runFn: () => ids.some(id => model.agApi.getRowNode(id)),
                     failMsg: 'No matching rows found for selected records'
                 });
