@@ -7,6 +7,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {numberRenderer} from '@xh/hoist/format';
 import {cloneDeep, get, isEmpty, isFinite, partition, set, sumBy, unset, sortBy} from 'lodash';
 
 /**
@@ -41,6 +42,10 @@ export class TreeMapModel extends HoistModel {
     gridModel;
     /** @member {number} */
     maxNodes;
+    /** @member {function} */
+    valueRenderer;
+    /** @member {function} */
+    heatRenderer;
     /** @member {function} */
     onClick;
     /** @member {function} */
@@ -84,6 +89,8 @@ export class TreeMapModel extends HoistModel {
      * @param {string} c.labelField - Record field to use to determine node label.
      * @param {string} c.valueField - Record field to use to determine node size.
      * @param {string} c.heatField - Record field to use to determine node color.
+     * @param {function} [c.valueRenderer] - Renderer to use when displaying value in the default tooltip.
+     * @param {function} [c.heatRenderer] - Renderer to use when displaying heat in the default tooltip.
      * @param {number} [c.maxDepth] - Maximum tree depth to render.
      * @param {string} [c.algorithm] - Layout algorithm to use. Either 'squarified',
      *     'sliceAndDice', 'stripes' or 'strip'. Defaults to 'squarified'.
@@ -108,6 +115,8 @@ export class TreeMapModel extends HoistModel {
         labelField = 'name',
         valueField = 'value',
         heatField = 'value',
+        valueRenderer = numberRenderer(),
+        heatRenderer = numberRenderer(),
         maxDepth,
         algorithm = 'squarified',
         colorMode = 'linear',
@@ -128,6 +137,8 @@ export class TreeMapModel extends HoistModel {
         this.labelField = labelField;
         this.valueField = valueField;
         this.heatField = heatField;
+        this.valueRenderer = valueRenderer;
+        this.heatRenderer = heatRenderer;
         this.maxDepth = maxDepth;
 
         throwIf(!['sliceAndDice', 'stripes', 'squarified', 'strip'].includes(algorithm), `Algorithm "${algorithm}" not recognised.`);
@@ -283,7 +294,7 @@ export class TreeMapModel extends HoistModel {
         const heatValues = [];
         this.store.records.forEach(it => {
             const val = it.get(this.heatField);
-            if (isFinite(val)) heatValues.push(val);
+            if (this.valueIsValid(val)) heatValues.push(val);
         });
 
         // 2) Split heat values into positive and negative
@@ -307,6 +318,11 @@ export class TreeMapModel extends HoistModel {
         // 4) Transform heatValue into a normalized colorValue, according to the colorMode.
         data.forEach(it => {
             const {heatValue} = it;
+
+            if (!this.valueIsValid(heatValue)) {
+                it.colorValue = 0.5; // Treat invalid values as zero
+                return;
+            }
 
             if (heatValue > 0) {
                 // Normalize positive values between 0.6-1
@@ -359,6 +375,10 @@ export class TreeMapModel extends HoistModel {
             // Return value between 0-1
             return (value - fromMin) / fromRange;
         }
+    }
+
+    valueIsValid(value) {
+        return isFinite(value);
     }
 
     //----------------------

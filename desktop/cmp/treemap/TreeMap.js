@@ -4,27 +4,22 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import composeRefs from '@seznam/compose-react-refs';
-import {box, div, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
-import {fmtNumber} from '@xh/hoist/format';
+import {box, div, placeholder} from '@xh/hoist/cmp/layout';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
+import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {start} from '@xh/hoist/promise';
 import {withShortDebug} from '@xh/hoist/utils/js';
-import {
-    createObservableRef,
-    getLayoutProps,
-    useOnResize,
-    useOnVisibleChange
-} from '@xh/hoist/utils/react';
-import equal from 'fast-deep-equal';
+import {createObservableRef, getLayoutProps, useOnResize, useOnVisibleChange} from '@xh/hoist/utils/react';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
+import composeRefs from '@seznam/compose-react-refs';
+import equal from 'fast-deep-equal';
 import PT from 'prop-types';
-import React from 'react';
-import {DarkTheme} from './theme/Dark';
-import {LightTheme} from './theme/Light';
+
 import './TreeMap.scss';
 import {TreeMapModel} from './TreeMapModel';
+import {DarkTheme} from './theme/Dark';
+import {LightTheme} from './theme/Light';
 
 /**
  * Component for rendering a TreeMap.
@@ -56,21 +51,6 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
             useOnVisibleChange(impl.onVisibleChange)
         );
 
-        const renderError = (error) => frame({
-            className: 'xh-treemap__error-message',
-            item: <p>{error}</p>
-        });
-
-        const renderPlaceholder = () => frame({
-            className: 'xh-treemap__placeholder',
-            item: <p>{model.emptyText}</p>
-        });
-
-        const renderChartHolder = () => div({
-            className: 'xh-treemap__chart-holder',
-            ref:  impl.chartRef
-        });
-
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
         const layoutProps = getLayoutProps(props);
         if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
@@ -79,14 +59,17 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
 
         // Render child item - note this will NOT render the actual HighCharts viz - only a shell
         // div to hold one. The chart itself will be rendered once the shell's ref resolves.
-        const {error, hasData} = model;
+        const {error, emptyText, hasData} = model;
         let item;
         if (error) {
-            item = renderError(error);
+            item = errorMessage({error});
         } else if (!hasData) {
-            item = renderPlaceholder();
+            item = placeholder(emptyText);
         } else {
-            item = renderChartHolder();
+            item = div({
+                className: 'xh-treemap__chart-holder',
+                ref: impl.chartRef
+            });
         }
 
         return box({
@@ -370,23 +353,31 @@ class LocalModel extends HoistModel {
     // Tooltip
     //----------------------
     defaultTooltip = (record) => {
-        const {labelField, valueField, heatField, valueFieldLabel, heatFieldLabel} = this.model,
+        const {labelField, valueField, heatField, valueFieldLabel, heatFieldLabel, valueRenderer, heatRenderer} = this.model,
             name = record.data[labelField],
             value = record.data[valueField],
             heat = record.data[heatField],
-            labelDiv = `<div class='xh-treemap-tooltip__label'>${name}</div>`,
+            labelDiv = `<div class='xh-treemap-tooltip__label'>${name}</div>`;
+
+        let valueDiv = '';
+        if (this.model.valueIsValid(value)) {
             valueDiv = (`
                 <div class='xh-treemap-tooltip__row'>
                     <div>${valueFieldLabel}:</div>
-                    <div>${fmtNumber(value)}</div>
-                </div>
-            `),
-            heatDiv = valueField === heatField ? '' : (`
-                <div class='xh-treemap-tooltip__row'>
-                    <div>${heatFieldLabel}:</div>
-                    <div>${fmtNumber(heat)}</div>
+                    <div>${valueRenderer(value)}</div>
                 </div>
             `);
+        }
+
+        let heatDiv = '';
+        if (valueField !== heatField && this.model.valueIsValid(heat)) {
+            heatDiv = (`
+                <div class='xh-treemap-tooltip__row'>
+                    <div>${heatFieldLabel}:</div>
+                    <div>${heatRenderer(heat)}</div>
+                </div>
+            `);
+        }
 
         return `<div class='xh-treemap-tooltip'>${labelDiv}${valueDiv}${heatDiv}</div>`;
     };

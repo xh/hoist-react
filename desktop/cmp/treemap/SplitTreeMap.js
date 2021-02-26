@@ -4,9 +4,10 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {fragment, frame, hframe, vframe} from '@xh/hoist/cmp/layout';
+import {fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {compact, uniq} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
@@ -76,8 +77,5 @@ const childMaps = hoistCmp.factory(
 );
 
 const errorPanel = hoistCmp.factory(
-    ({errors}) => frame({
-        className: 'xh-split-treemap__error-message',
-        items: errors.map(e => <p>{e}</p>)
-    })
+    ({errors}) => errorMessage({error: fragment(errors.map(e => <p>{e}</p>))})
 );
