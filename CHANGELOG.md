@@ -1,5 +1,14 @@
 # Changelog
 
+## v38.1.1 - 2021-02-26
+
+### ⚙️ Technical
+
+* New config `Store.fieldDefaults` supports defaulting config options for all `Field` instances
+  created by a `Store`.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v38.1.0...v38.1.1)
+
 ## v38.1.0 - 2021-02-24
 
 ⚠ Please ensure your `@xh/hoist-dev-utils` dependency is >= v5.6.0. This is required to successfully
@@ -47,7 +56,6 @@ resolve and bundle transitive dependencies of the upgraded `react-select` librar
 * react-windowed-select `2.0 -> 3.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.0.0...v38.1.0)
-
 
 
 ## v38.0.0 - 2021-02-04
