@@ -402,7 +402,7 @@ class LocalModel extends HoistModel {
 
                     this.updatePinnedSummaryRowData();
 
-                    if (!isEmpty(transaction?.update)) {
+                    if (transaction?.update) {
                         const refreshCols = model.columns.filter(c => !c.hidden && c.rendererIsComplex);
                         if (refreshCols) {
                             const rowNodes = compact(transaction.update.map(r => agApi.getRowNode(r.id))),
@@ -411,10 +411,12 @@ class LocalModel extends HoistModel {
                         }
                     }
 
+                    if (!transaction || transaction.add || transaction.remove) {
+                        wait(0).then(() => this.syncSelection());
+                    }
+
                     model.noteAgExpandStateChange();
                 }, this);
-
-                wait(0).then(() => this.syncSelection());
 
                 this._prevRs = newRs;
             }
