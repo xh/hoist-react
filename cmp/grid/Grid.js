@@ -17,6 +17,7 @@ import {isDisplayed, withShortDebug, apiRemoved} from '@xh/hoist/utils/js';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
+import {wait} from '@xh/hoist/promise';
 
 import classNames from 'classnames';
 import {
@@ -401,13 +402,17 @@ class LocalModel extends HoistModel {
 
                     this.updatePinnedSummaryRowData();
 
-                    if (!isEmpty(transaction?.update)) {
+                    if (transaction?.update) {
                         const refreshCols = model.columns.filter(c => !c.hidden && c.rendererIsComplex);
                         if (refreshCols) {
                             const rowNodes = compact(transaction.update.map(r => agApi.getRowNode(r.id))),
                                 columns = refreshCols.map(c => c.colId);
                             agApi.refreshCells({rowNodes, columns, force: true});
                         }
+                    }
+
+                    if (!transaction || transaction.add || transaction.remove) {
+                        wait(0).then(() => this.syncSelection());
                     }
 
                     model.noteAgExpandStateChange();
@@ -418,18 +423,13 @@ class LocalModel extends HoistModel {
         };
     }
 
+
     selectionReaction() {
-        const {model} = this,
-            {agGridModel, selModel} = model;
-
+        const {model} = this;
         return {
-            track: () => [model.isReady, selModel.ids],
-            run: ([isReady, ids]) => {
-                if (!isReady) return;
-
-                if (!isEqual(ids, agGridModel.getSelectedRowNodeIds())) {
-                    agGridModel.setSelectedRowNodeIds(ids);
-                }
+            track: () => [model.isReady, model.selection],
+            run: ([isReady]) => {
+                if (isReady) this.syncSelection();
             }
         };
     }
@@ -589,6 +589,14 @@ class LocalModel extends HoistModel {
             return ret;
 
         }, this);
+    }
+
+    syncSelection() {
+        const {agGridModel, selModel} = this.model,
+            {ids} = selModel;
+        if (!isEqual(ids, agGridModel.getSelectedRowNodeIds())) {
+            agGridModel.setSelectedRowNodeIds(ids);
+        }
     }
 
     transactionIsEmpty(t) {
