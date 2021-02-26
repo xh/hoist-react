@@ -17,6 +17,7 @@ import {isDisplayed, withShortDebug, apiRemoved} from '@xh/hoist/utils/js';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
+import {wait} from '@xh/hoist/promise';
 
 import classNames from 'classnames';
 import {
@@ -413,23 +414,20 @@ class LocalModel extends HoistModel {
                     model.noteAgExpandStateChange();
                 }, this);
 
+                wait(0).then(() => this.syncSelection());
+
                 this._prevRs = newRs;
             }
         };
     }
 
+
     selectionReaction() {
-        const {model} = this,
-            {agGridModel, selModel} = model;
-
+        const {model} = this;
         return {
-            track: () => [model.isReady, selModel.ids],
-            run: ([isReady, ids]) => {
-                if (!isReady) return;
-
-                if (!isEqual(ids, agGridModel.getSelectedRowNodeIds())) {
-                    agGridModel.setSelectedRowNodeIds(ids);
-                }
+            track: () => [model.isReady, model.selection],
+            run: ([isReady]) => {
+                if (isReady) this.syncSelection();
             }
         };
     }
@@ -589,6 +587,14 @@ class LocalModel extends HoistModel {
             return ret;
 
         }, this);
+    }
+
+    syncSelection() {
+        const {agGridModel, selModel} = this.model,
+            {ids} = selModel;
+        if (!isEqual(ids, agGridModel.getSelectedRowNodeIds())) {
+            agGridModel.setSelectedRowNodeIds(ids);
+        }
     }
 
     transactionIsEmpty(t) {
