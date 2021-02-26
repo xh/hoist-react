@@ -6,12 +6,12 @@
  */
 
 import {HoistBase} from '@xh/hoist/core';
-import {action, observable, bindable, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
-import {parseFilter} from './filter/Utils';
 import {
     castArray,
+    defaultsDeep,
     differenceBy,
     has,
     isArray,
@@ -22,6 +22,7 @@ import {
 } from 'lodash';
 
 import {Field} from './Field';
+import {parseFilter} from './filter/Utils';
 import {RecordSet} from './impl/RecordSet';
 import {Record} from './Record';
 
@@ -86,6 +87,8 @@ export class Store extends HoistBase {
      *      (default true).
      * @param {boolean} [c.loadRootAsSummary] - true to treat the root node in hierarchical data as
      *      the summary record (default false).
+     * @param {{}} [fieldDefaults] - default configs applied to all `Field` instances constructed
+     *      internally by this Store. {@see FieldConfig} for options.
      * @param {Object[]} [c.data] - source data to load.
      */
     constructor({
@@ -96,11 +99,12 @@ export class Store extends HoistBase {
         filterIncludesChildren = false,
         loadTreeData = true,
         loadRootAsSummary = false,
+        fieldDefaults = {},
         data
     }) {
         super();
         makeObservable(this);
-        this.fields = this.parseFields(fields);
+        this.fields = this.parseFields(fields, fieldDefaults);
         this.idSpec = isString(idSpec) ? (data) => data[idSpec] : idSpec;
         this.processRawData = processRawData;
         this.filter = parseFilter(filter);
@@ -712,15 +716,21 @@ export class Store extends HoistBase {
         this.summaryRecord = null;
     }
 
-    parseFields(fields) {
+    parseFields(fields, defaults) {
         const ret = fields.map(f => {
             if (f instanceof Field) return f;
+
             if (isString(f)) f = {name: f};
+
+            if (!isEmpty(defaults)) {
+                f = defaultsDeep({}, f, defaults);
+            }
+
             return new this.defaultFieldClass(f);
         });
 
         throwIf(
-            ret.some(it => it.name == 'id'),
+            ret.some(it => it.name === 'id'),
             `Applications should not specify a field for the id of a record. An id property is created
             automatically for all records. See Store.idSpec for more info.`
         );
