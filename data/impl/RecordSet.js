@@ -7,7 +7,7 @@
 
 import equal from 'fast-deep-equal';
 import {throwIf} from '@xh/hoist/utils/js';
-import {withShortDebug} from '../../utils/js';
+import {logDebug, withShortDebug} from '../../utils/js';
 
 /**
  * Internal container for Record management within a Store.
@@ -182,7 +182,7 @@ export class RecordSet {
             remove.forEach(id => {
                 if (!newRecords.has(id)) {
                     missingRemoves++;
-                    console.debug(`Attempted to remove non-existent record: ${id}`);
+                    logDebug(`Attempted to remove non-existent record: ${id}`, this.store);
                     return;
                 }
                 this.gatherDescendantIds(id, allRemoves);
@@ -197,7 +197,7 @@ export class RecordSet {
                     existing = newRecords.get(id);
                 if (!existing) {
                     missingUpdates++;
-                    console.debug(`Attempted to update non-existent record: ${id}`);
+                    logDebug(`Attempted to update non-existent record: ${id}`, this.store);
                     return;
                 }
                 newRecords.set(id, rec);
