@@ -7,6 +7,7 @@
 
 import equal from 'fast-deep-equal';
 import {throwIf} from '@xh/hoist/utils/js';
+import {withShortDebug} from '../../utils/js';
 
 /**
  * Internal container for Record management within a Store.
@@ -144,23 +145,26 @@ export class RecordSet {
     }
 
     withNewRecords(recordMap) {
-        // Reuse existing Record object instances where possible.  See Store.loadData().
-        // Be sure to freeze any new records that are accepted.  See Record.freeze()
-        if (this.empty) {
-            recordMap.forEach(r => r.freeze());
-        } else {
-            const newIds = recordMap.keys();
-            for (let id of newIds) {
-                const currRec = this.getById(id),
-                    newRec = recordMap.get(id);
+        withShortDebug('withNewRecords', () => {
 
-                if (currRec && this.areRecordsEqual(currRec, newRec)) {
-                    recordMap.set(id, currRec);
-                } else {
-                    newRec.freeze();
+            // Reuse existing Record object instances where possible.  See Store.loadData().
+            // Be sure to freeze any new records that are accepted.  See Record.freeze()
+            if (this.empty) {
+                recordMap.forEach(r => r.freeze());
+            } else {
+                const newIds = recordMap.keys();
+                for (let id of newIds) {
+                    const currRec = this.getById(id),
+                        newRec = recordMap.get(id);
+
+                    if (currRec && this.areRecordsEqual(currRec, newRec)) {
+                        recordMap.set(id, currRec);
+                    } else {
+                        newRec.freeze();
+                    }
                 }
             }
-        }
+        }, this.store);
 
         return new RecordSet(this.store, recordMap);
     }

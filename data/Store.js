@@ -20,6 +20,7 @@ import {
     isString,
     remove as lodashRemove
 } from 'lodash';
+import {withShortDebug} from '../utils/js';
 
 import {Field} from './Field';
 import {parseFilter} from './filter/Utils';
@@ -62,6 +63,7 @@ export class Store extends HoistBase {
     @observable.ref _committed;
     @observable.ref _current;
     @observable.ref _filtered;
+    _dataDefaults = null;
 
     /** @package - used internally by any StoreFilterField that is bound to this store. */
     @bindable xhFilterText = null;
@@ -115,6 +117,7 @@ export class Store extends HoistBase {
 
         this.resetRecords();
 
+        this._dataDefaults = this.createDataDefaults();
         if (data) this.loadData(data);
     }
 
@@ -146,25 +149,27 @@ export class Store extends HoistBase {
      */
     @action
     loadData(rawData, rawSummaryData) {
-        // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary
-        if (rawData.length !== 0 && this.loadRootAsSummary) {
-            throwIf(
-                rawData.length !== 1 || rawSummaryData,
-                'Incorrect call to loadData with loadRootAsSummary=true. Summary data should be in a single root node with top-level row data as its children.'
-            );
-            rawSummaryData = rawData[0];
-            rawData = rawData[0].children ?? [];
-        }
+        withShortDebug('loadData', () => {
+            // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary
+            if (rawData.length !== 0 && this.loadRootAsSummary) {
+                throwIf(
+                    rawData.length !== 1 || rawSummaryData,
+                    'Incorrect call to loadData with loadRootAsSummary=true. Summary data should be in a single root node with top-level row data as its children.'
+                );
+                rawSummaryData = rawData[0];
+                rawData = rawData[0].children ?? [];
+            }
 
-        const records = this.createRecords(rawData, null);
-        this._committed = this._current = this._committed.withNewRecords(records);
-        this.rebuildFiltered();
+            const records = this.createRecords(rawData, null);
+            this._committed = this._current = this._committed.withNewRecords(records);
+            this.rebuildFiltered();
 
-        this.summaryRecord = rawSummaryData ?
-            this.createRecord(rawSummaryData, null, true) :
-            null;
+            this.summaryRecord = rawSummaryData ?
+                this.createRecord(rawSummaryData, null, true) :
+                null;
 
-        this.lastLoaded = this.lastUpdated = Date.now();
+            this.lastLoaded = this.lastUpdated = Date.now();
+        }, this);
     }
 
     /**
@@ -324,7 +329,7 @@ export class Store extends HoistBase {
             throwIf(isNil(id), `Must provide 'id' property for new records.`);
             throwIf(this.getById(id), `Duplicate id '${id}' provided for new record.`);
 
-            const parsedData = this.parseFieldValues(it),
+            const parsedData = this.parseRaw(it),
                 parent = this.getById(parentId);
 
             return new Record({id, data: parsedData, store: this, parent, committedData: null});
@@ -377,8 +382,8 @@ export class Store extends HoistBase {
 
         const updateRecs = new Map();
         let hadDupes = false;
-        modifications.forEach(it => {
-            const {id, ...data} = it;
+        modifications.forEach(mod => {
+            let {id} = mod;
 
             // Ignore multiple updates for the same record - we are updating this Store in a
             // transaction after processing all modifications, so this method is not currently setup
@@ -389,12 +394,12 @@ export class Store extends HoistBase {
             }
 
             const currentRec = this.getOrThrow(id),
-                updatedData = this.parseFieldValues(data, true);
+                updatedData = this.parseUpdate(currentRec.data, mod);
 
             const updatedRec = new Record({
                 id: currentRec.id,
                 raw: currentRec.raw,
-                data: {...currentRec.data, ...updatedData},
+                data: updatedData,
                 parent: currentRec.parent,
                 store: currentRec.store,
                 committedData: currentRec.committedData
@@ -757,7 +762,7 @@ export class Store extends HoistBase {
         // Note idSpec run against raw data here.
         const id = this.idSpec(raw);
 
-        data = this.parseFieldValues(data);
+        data = this.parseRaw(data);
         const ret = new Record({id, data, raw, parent, store: this, isSummary});
 
         // Freeze summary only.  Non-summary will get frozen by RecordSet. See Record.freeze()
@@ -786,21 +791,43 @@ export class Store extends HoistBase {
         return recordMap;
     }
 
-    parseFieldValues(data, skipMissingFields = false) {
-        const ret = {};
+    parseRaw(data) {
+        const ret = Object.create(this._dataDefaults);
+        for (let field of this.fields) {
+            const {name} = field,
+                val = field.parseVal(data[name]);
+            if (val != null) {
+                ret[name] = val;
+            }
+        }
+        return ret;
+    }
+
+    // Like parseRaw, except we are only looking at keys present in update.
+    parseUpdate(data, update) {
+        const ret = Object.create(this._dataDefaults);
         this.fields.forEach(field => {
             const {name} = field;
-
-            // Sometimes we want to ignore fields which are not present in the data to preserve
-            // an undefined value, to allow merging of data with existing data. In these cases we
-            // do not want the configured default value for the field to be used, as we are dealing
-            // with a partial data object
-            if (skipMissingFields && !has(data, field.name)) return;
-
-            ret[name] = field.parseVal(data[name]);
+            if (has(update, name)) {
+                const val = field.parseVal(data[name]);
+                if (val != null) {
+                    ret[name] = val;
+                } else {
+                    delete ret[name];  // *Remove* nulls, consistent with unmodified representation
+                }
+            }
         });
         return ret;
     }
+
+    createDataDefaults() {
+        const ret = {};
+        this.fields.forEach(({name}) => {
+            ret[name] = null;
+        });
+        return ret;
+    }
+
 }
 
 /**
