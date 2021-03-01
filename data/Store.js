@@ -13,7 +13,6 @@ import {
     castArray,
     defaultsDeep,
     differenceBy,
-    reduce,
     isArray,
     isEmpty,
     isNil,
@@ -835,9 +834,10 @@ export class Store extends HoistBase {
     }
 
     createDataDefaults() {
-        return this.experimental.shareDefaults ?
-            reduce(this.fields, (ret, {name, defaultValue}) => ret[name] = defaultValue, {}) :
-            null;
+        if (!this.experimental.shareDefaults) return null;
+        const ret = {};
+        this.fields.forEach(({name, defaultValue}) => ret[name] = defaultValue);
+        return ret;
     }
 
     parseExperimental(experimental) {
