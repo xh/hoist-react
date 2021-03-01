@@ -1,17 +1,15 @@
 # Changelog
 
-## v39.0.0 - SNAPSHOT
+## v38.2.0 - 2021-03-01
 
 ### ⚙️ Technical
-* Store loading performance and memory usage has been improved:
-** Hoist will no longer store default properties explicitly on every record -- this yields major
-performance improvements for usages with 'wide' sparsely populated records (i.e. many `null` values).
+* New experimental property `Store.experimental.shareDefaults`.  If true, default field values will
+no longer be stored explicitly on every record.  This can yield major performance improvements for
+stores with sparsely populated records (i.e. many records with default values). Note that when set,
+the `data` property on `Record` will no longer contain keys for *all* fields as
+`own-enumerable` properties.  This may be a breaking change for some applications.
 
-### 💥 Breaking Changes
-* The `data` property on `Record` will no longer contain keys for *all* fields as `own-enumerable`
-properties.  In particular, keys `null` values will be stored on the `prototype` of that
-object instead. Applications that were relying on spreading the `data` object with `...` (or similar
-own-enumerable based operations) will need to explicitly gather all needed field values.
+[Commit Log](https://github.com/xh/hoist-react/compare/v38.1.1...v38.2.0)
 
 
 ## v38.1.1 - 2021-02-26

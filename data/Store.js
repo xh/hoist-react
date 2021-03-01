@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {HoistBase} from '@xh/hoist/core';
+import {HoistBase, XH} from '@xh/hoist/core';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
@@ -13,11 +13,12 @@ import {
     castArray,
     defaultsDeep,
     differenceBy,
-    has,
+    reduce,
     isArray,
     isEmpty,
     isNil,
     isString,
+    isUndefined,
     remove as lodashRemove
 } from 'lodash';
 import {withShortDebug} from '../utils/js';
@@ -91,6 +92,11 @@ export class Store extends HoistBase {
      *      the summary record (default false).
      * @param {{}} [fieldDefaults] - default configs applied to all `Field` instances constructed
      *      internally by this Store. {@see FieldConfig} for options.
+     * @param {Object} [c.experimental] - flags for experimental features. These features are
+     *     designed for early client-access and testing, but are not yet part of the Hoist API.
+     * @param {boolean} [c.experimental.shareDefaults] - If true, default field values will
+     *     not be stored explicitly on every record.  This can yield major performance
+     *     improvements for stores with sparsely populated records.
      * @param {Object[]} [c.data] - source data to load.
      */
     constructor({
@@ -102,10 +108,12 @@ export class Store extends HoistBase {
         loadTreeData = true,
         loadRootAsSummary = false,
         fieldDefaults = {},
+        experimental,
         data
     }) {
         super();
         makeObservable(this);
+        this.experimental = this.parseExperimental(experimental);
         this.fields = this.parseFields(fields, fieldDefaults);
         this.idSpec = isString(idSpec) ? (data) => data[idSpec] : idSpec;
         this.processRawData = processRawData;
@@ -792,42 +800,52 @@ export class Store extends HoistBase {
     }
 
     parseRaw(data) {
-        const ret = Object.create(this._dataDefaults);
-
-        // populate with parsed, non-default data.
-        for (let field of this.fields) {
+        const {shareDefaults} = this.experimental,
+            ret = shareDefaults ? Object.create(this._dataDefaults) : {};
+        this.fields.forEach(field => {
             const {name} = field,
                 val = field.parseVal(data[name]);
-            if (val !== field.defaultValue) {
+            if (!shareDefaults || val !== field.defaultValue) {
                 ret[name] = val;
             }
-        }
+        });
         return ret;
     }
 
-    // Like parseRaw, except we are only looking at keys present in update.
     parseUpdate(data, update) {
-        const ret = Object.create(this._dataDefaults);
+        const {shareDefaults} = this.experimental,
+            ret = shareDefaults ? Object.create(this._dataDefaults) : {};
         this.fields.forEach(field => {
-            const {name} = field;
-            if (has(update, name)) {
-                const val = field.parseVal(data[name]);
-                if (val !== field.defaultValue) {
+            const {name} = field,
+                updateVal = update[name];
+            if (!isUndefined(updateVal)) {
+                const val = field.parseVal(updateVal);
+                if (!shareDefaults || val !== field.defaultValue) {
                     ret[name] = val;
-                } else {
-                    delete ret[name];  // Remove defaults consistent with unmodified representation
+                }
+            } else {
+                const existingVal = data[name];
+                if (!isUndefined(existingVal)) {
+                    ret[name] = existingVal;
                 }
             }
         });
+
         return ret;
     }
 
     createDataDefaults() {
-        const ret = {};
-        this.fields.forEach(({name, defaultValue}) => {
-            ret[name] = defaultValue;
-        });
-        return ret;
+        return this.experimental.shareDefaults ?
+            reduce(this.fields, (ret, {name, defaultValue}) => ret[name] = defaultValue, {}) :
+            null;
+    }
+
+    parseExperimental(experimental) {
+        return {
+            shareDefaults: false,
+            ...XH.getConf('xhStoreExperimental', {}),
+            ...experimental
+        };
     }
 
 }
