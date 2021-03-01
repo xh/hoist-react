@@ -12,7 +12,7 @@ import {CubeField} from './CubeField';
 import {Query} from './Query';
 import {View} from './View';
 import {Store} from '../Store';
-import {isEmpty} from 'lodash';
+import {defaultsDeep, isEmpty} from 'lodash';
 
 /**
  * A data store that supports grouping, aggregating, and filtering data on multiple dimensions.
@@ -41,6 +41,8 @@ export class Cube extends HoistBase {
     /**
      * @param {Object} c - Cube configuration.
      * @param {(CubeField[]|CubeFieldConfig[])} c.fields - CubeField instances or configs.
+     * @param {{}} [fieldDefaults] - default configs applied to `CubeField` instances constructed
+     *      internally by this Cube for its Store. {@see CubeFieldConfig} for options.
      * @param {Object[]} [c.data] - array of initial raw data.
      * @param {(function|string)} [c.idSpec] - {@see Store.idSpec} - default 'id'.
      * @param {function} [c.processRawData] - {@see Store.processRawData}
@@ -55,6 +57,7 @@ export class Cube extends HoistBase {
      */
     constructor({
         fields,
+        fieldDefaults = {},
         data = [],
         idSpec = 'id',
         processRawData,
@@ -66,7 +69,7 @@ export class Cube extends HoistBase {
         super();
         makeObservable(this);
         this.store = new Store({
-            fields: this.parseFields(fields),
+            fields: this.parseFields(fields, fieldDefaults),
             idSpec,
             processRawData
         });
@@ -223,8 +226,16 @@ export class Cube extends HoistBase {
         this.info = Object.freeze(info);
     }
 
-    parseFields(fields = []) {
-        return fields.map(f => f instanceof CubeField ? f : new CubeField(f));
+    parseFields(fields = [], defaults) {
+        return fields.map(f => {
+            if (f instanceof CubeField) return f;
+
+            if (!isEmpty(defaults)) {
+                f = defaultsDeep({}, f, defaults);
+            }
+
+            return new CubeField(f);
+        });
     }
 
     destroy() {
