@@ -1,5 +1,19 @@
 # Changelog
 
+## v39.0.0 - SNAPSHOT
+
+### ⚙️ Technical
+* Store loading performance and memory usage has been improved:
+** Hoist will no longer store default properties explicitly on every record -- this yields major
+performance improvements for usages with 'wide' sparsely populated records (i.e. many `null` values).
+
+### 💥 Breaking Changes
+* The `data` property on `Record` will no longer contain keys for *all* fields as `own-enumerable`
+properties.  In particular, keys `null` values will be stored on the `prototype` of that
+object instead. Applications that were relying on spreading the `data` object with `...` (or similar
+own-enumerable based operations) will need to explicitly gather all needed field values.
+
+
 ## v38.1.1 - 2021-02-26
 
 ### ⚙️ Technical

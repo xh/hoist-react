@@ -793,10 +793,12 @@ export class Store extends HoistBase {
 
     parseRaw(data) {
         const ret = Object.create(this._dataDefaults);
+
+        // populate with parsed, non-default data.
         for (let field of this.fields) {
             const {name} = field,
                 val = field.parseVal(data[name]);
-            if (val != null) {
+            if (val !== field.defaultValue) {
                 ret[name] = val;
             }
         }
@@ -810,10 +812,10 @@ export class Store extends HoistBase {
             const {name} = field;
             if (has(update, name)) {
                 const val = field.parseVal(data[name]);
-                if (val != null) {
+                if (val !== field.defaultValue) {
                     ret[name] = val;
                 } else {
-                    delete ret[name];  // *Remove* nulls, consistent with unmodified representation
+                    delete ret[name];  // Remove defaults consistent with unmodified representation
                 }
             }
         });
@@ -822,8 +824,8 @@ export class Store extends HoistBase {
 
     createDataDefaults() {
         const ret = {};
-        this.fields.forEach(({name}) => {
-            ret[name] = null;
+        this.fields.forEach(({name, defaultValue}) => {
+            ret[name] = defaultValue;
         });
         return ret;
     }
