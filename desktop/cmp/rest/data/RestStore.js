@@ -91,8 +91,9 @@ export class RestStore extends UrlStore {
     }
 
     editableDataForRecord(record) {
-        const editable = keyBy(filter(record.fields, 'editable'), 'name');
-        return mapValues(editable, (v, k) => record.get(k));
+        const {data} = record,
+            editable = keyBy(filter(this.fields, 'editable'), 'name');
+        return mapValues(editable, (v, k) => data[k]);
     }
 
     //--------------------------------
