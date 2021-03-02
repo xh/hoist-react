@@ -824,7 +824,7 @@ export class Store extends HoistBase {
                 }
             } else {
                 const existingVal = data[name];
-                if (!isUndefined(existingVal)) {
+                if (!shareDefaults || !isUndefined(existingVal)) {
                     ret[name] = existingVal;
                 }
             }
