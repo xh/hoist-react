@@ -2,15 +2,24 @@
 
 ## v38.2.0 - 2021-03-01
 
+### 🐞 Bug Fixes
+
+* Fix to edge-case where `Grid` would lose its selection if set on the model prior to the component
+  mounting and ag-Grid full rendering.
+* Fix to prevent unintended triggering of app auto-refresh immediately after init.
+
 ### ⚙️ Technical
-* New experimental property `Store.experimental.shareDefaults`.  If true, default field values will
-no longer be stored explicitly on every record.  This can yield major performance improvements for
-stores with sparsely populated records (i.e. many records with default values). Note that when set,
-the `data` property on `Record` will no longer contain keys for *all* fields as
-`own-enumerable` properties.  This may be a breaking change for some applications.
+
+* New config `Cube.fieldDefaults` - matches same config added to `Store` in prior release.
+* App auto-refresh interval keys off of last *completed* refresh cycle if there is one. Avoids
+  over-eager refresh when cycle is fast relative to the time it takes to do the refresh.
+* New experimental property `Store.experimental.shareDefaults`. If true, default field values will
+  no longer be stored explicitly on every record. This can yield major performance improvements for
+  stores with sparsely populated records (i.e. many records with default values). Note that when
+  set, the `data` property on `Record` will no longer contain keys for *all* fields as
+  `own-enumerable` properties. This may be a breaking change for some applications.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.1.1...v38.2.0)
-
 
 ## v38.1.1 - 2021-02-26
 
