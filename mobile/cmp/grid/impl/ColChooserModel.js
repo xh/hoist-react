@@ -18,6 +18,8 @@ import {clone, find, sortBy} from 'lodash';
 export class ColChooserModel extends HoistModel {
 
     gridModel;
+    showRestoreDefaults;
+    autosizeOnCommit;
 
     @bindable.ref columns = [];
     @bindable pinFirst;
@@ -36,13 +38,17 @@ export class ColChooserModel extends HoistModel {
         return sortBy(this.getHidden(this.columns), 'text');
     }
 
-    /**
-     * @param {GridModel} gridModel - model for the grid to be managed.
-     */
-    constructor(gridModel) {
+    constructor({
+        gridModel,
+        showRestoreDefaults = true,
+        autosizeOnCommit = true
+    }) {
         super();
         makeObservable(this);
+
         this.gridModel = gridModel;
+        this.showRestoreDefaults = showRestoreDefaults;
+        this.autosizeOnCommit = autosizeOnCommit;
 
         this.addReaction({
             track: () => this.pinFirst,
@@ -108,20 +114,23 @@ export class ColChooserModel extends HoistModel {
     }
 
     commit() {
+        const {columns, gridModel, autosizeOnCommit} = this;
+
         // Ensure excluded columns remain at their original sort idx
-        const excluded = this.columns.filter(it => it.exclude);
+        const excluded = columns.filter(it => it.exclude);
         excluded.forEach(it => {
             const {colId, originalIdx} = it;
             this.moveToIndex(colId, originalIdx);
         });
 
         // Extract meaningful state changes
-        const colChanges = this.columns.map(it => {
+        const colChanges = columns.map(it => {
             const {colId, hidden, pinned} = it;
             return {colId, hidden, pinned};
         });
 
-        this.gridModel.applyColumnStateChanges(colChanges);
+        gridModel.applyColumnStateChanges(colChanges);
+        if (autosizeOnCommit) gridModel.autosizeAsync();
     }
 
     //------------------------

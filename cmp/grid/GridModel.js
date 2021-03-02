@@ -175,8 +175,7 @@ export class GridModel extends HoistModel {
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(ColChooserModelConfig|boolean)} [c.colChooserModel] - config with which to create a
-     *      ColChooserModel, or boolean `true` to enable default. Mobile apps should only specify
-     *      `true`, as colChooserModel mobile impl is not configurable.
+     *      ColChooserModel, or boolean `true` to enable default.
      * @param {?ReactNode} [c.restoreDefaultsWarning] - Confirmation warning to be presented to
      *      user before restoring default grid state. Set to null to skip user confirmation.
      * @param {GridModelPersistOptions} [c.persistWith] - options governing persistence.
@@ -1200,15 +1199,13 @@ export class GridModel extends HoistModel {
     }
 
     parseChooserModel(chooserModel) {
-        if (XH.isMobileApp) {
-            return chooserModel ? this.markManaged(new MobileColChooserModel(this)) : null;
-        }
+        const modelClass = XH.isMobileApp ? MobileColChooserModel : DesktopColChooserModel;
 
         if (isPlainObject(chooserModel)) {
-            return this.markManaged(new DesktopColChooserModel(defaults(chooserModel, {gridModel: this})));
+            return this.markManaged(new modelClass(defaults(chooserModel, {gridModel: this})));
         }
 
-        return chooserModel ? this.markManaged(new DesktopColChooserModel({gridModel: this})) : null;
+        return chooserModel ? this.markManaged(new modelClass({gridModel: this})) : null;
     }
 
     defaultGroupSortFn = (a, b) => {
@@ -1219,12 +1216,14 @@ export class GridModel extends HoistModel {
 /**
  * @typedef {Object} ColChooserModelConfig
  * @property {boolean} [commitOnChange] - Immediately render changed columns on grid (default true).
- *      Set to false to enable Save button for committing changes on save
+ *      Set to false to enable Save button for committing changes on save. Desktop only.
  * @property {boolean} [showRestoreDefaults] - show Restore Defaults button (default true).
  *      Set to false to hide Restore Grid Defaults button, which immediately
  *      commits grid defaults (all column, grouping, and sorting states).
- * @property {number} [width] - chooser width for popover and dialog.
- * @property {number} [height] - chooser height for popover and dialog.
+ * @property {boolean} [autosizeOnCommit] - Autosize grid columns after committing changes
+ *      (default false for desktop, true for mobile)
+ * @property {number} [width] - chooser width for popover and dialog. Desktop only.
+ * @property {number} [height] - chooser height for popover and dialog. Desktop only.
  */
 
 /**
