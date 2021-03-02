@@ -7,7 +7,7 @@
 import {HoistService, managed, XH} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
-import {withDefault} from '@xh/hoist/utils/js';
+import {withDefault, logDebug} from '@xh/hoist/utils/js';
 import {max} from 'lodash';
 
 /**
@@ -68,7 +68,7 @@ export class AutoRefreshService extends HoistService {
             last = max([ctx.lastLoadCompleted, ctx.lastLoadRequested, this.initTime]);
 
         if (olderThan(last, this.interval * SECONDS)) {
-            console.debug('Triggering application auto-refresh.');
+            logDebug('Triggering application auto-refresh.', this);
             await ctx.autoRefreshAsync();
         }
     }

@@ -13,7 +13,7 @@ import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {div} from '@xh/hoist/cmp/layout';
 import {computed, observer} from '@xh/hoist/mobx';
-import {isDisplayed, withShortDebug, apiRemoved} from '@xh/hoist/utils/js';
+import {isDisplayed, withShortDebug, logDebug, apiRemoved} from '@xh/hoist/utils/js';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
@@ -386,7 +386,7 @@ class LocalModel extends HoistModel {
                     let transaction = null;
                     if (prevCount !== 0) {
                         transaction = this.genTransaction(newRs, prevRs);
-                        console.debug(this.transactionLogStr(transaction));
+                        logDebug(this.transactionLogStr(transaction), Grid);
 
                         if (!this.transactionIsEmpty(transaction)) {
                             agApi.applyTransaction(transaction);
@@ -416,7 +416,7 @@ class LocalModel extends HoistModel {
                     }
 
                     model.noteAgExpandStateChange();
-                }, this);
+                }, Grid);
 
                 this._prevRs = newRs;
             }
@@ -588,7 +588,7 @@ class LocalModel extends HoistModel {
             if (!isEmpty(remove)) ret.remove = remove;
             return ret;
 
-        }, this);
+        }, Grid);
     }
 
     syncSelection() {

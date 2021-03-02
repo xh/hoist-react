@@ -5,6 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {wait} from '@xh/hoist/promise';
+import {logDebug} from '../js';
 
 
 /**
@@ -81,6 +82,6 @@ export async function whileAsync(conditionFn, fn, {waitAfter = 50, waitFor = 1, 
 //-------------------------------
 function writeDebug(debug, waitCount, initialStart) {
     if (debug) {
-        console.debug(`${debug} | completed | ${waitCount} waits | ${Date.now() - initialStart}ms`);
+        logDebug([debug, 'completed', `${waitCount} waits`, `${Date.now() - initialStart}ms`]);
     }
 }
