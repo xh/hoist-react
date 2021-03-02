@@ -17,7 +17,6 @@ import {
     isEmpty,
     isNil,
     isString,
-    forOwn,
     keyBy,
     remove as lodashRemove
 } from 'lodash';
@@ -804,15 +803,15 @@ export class Store extends HoistBase {
     }
 
     parseRaw(data) {
-        const {_fieldMap} = this,
-            {shareDefaults} = this.experimental;
+        const {shareDefaults} = this.experimental;
 
-        // a) create the new object
+        // a) create/prepare the data object
         const ret = shareDefaults ? Object.create(this._dataDefaults) : {};
 
         // b) apply parsed data as needed.
         if (shareDefaults) {
-            forOwn(data, (raw, name) => {
+            const {_fieldMap} = this;
+            forIn(data, (raw, name) => {
                 const field = _fieldMap[name];
                 if (field) {
                     const val = field.parseVal(raw);
@@ -840,7 +839,7 @@ export class Store extends HoistBase {
         Object.assign(ret, data);
 
         // b) apply changes
-        forOwn(update, (raw, name) => {
+        forIn(update, (raw, name) => {
             const field = _fieldMap[name];
             if (field) {
                 const val = field.parseVal(raw);
@@ -865,11 +864,22 @@ export class Store extends HoistBase {
     parseExperimental(experimental) {
         return {
             shareDefaults: false,
+            freezeData: false,
+            idImpliesTreeLocation: true,
             ...XH.getConf('xhStoreExperimental', {}),
             ...experimental
         };
     }
+}
 
+//---------------------------------------------------------------------
+// Iterate over the properties of a raw object.
+// Does *not* do ownProperty check, faster than lodash forIn/forOwn
+//-------------------------------------------------------------------
+function forIn(col, fn) {
+    for (let key in col) {
+        fn(col[key], key);
+    }
 }
 
 /**

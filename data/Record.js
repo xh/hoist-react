@@ -211,5 +211,8 @@ export class Record {
      * Not for application use.
      */
     finalize() {
+        if (this.store.experimental.freezeData) {
+            Object.freeze(this.data);
+        }
     }
 }
