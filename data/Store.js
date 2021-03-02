@@ -71,6 +71,8 @@ export class Store extends HoistBase {
     /**
      * @param {Object} c - Store configuration.
      * @param {(string[]|FieldConfig[]|Field[])} c.fields - Field names, configs, or instances.
+     * @param {{}} [fieldDefaults] - default configs applied to `Field` instances constructed
+     *      internally by this Store. {@see FieldConfig} for options
      * @param {(function|string)} [c.idSpec] - specification for selecting or producing an immutable
      *      unique id for each record. May be either a string property name (default is 'id') or a
      *      function to create an id from the raw unprocessed data. Will be normalized to a function
@@ -89,8 +91,6 @@ export class Store extends HoistBase {
      *      (default true).
      * @param {boolean} [c.loadRootAsSummary] - true to treat the root node in hierarchical data as
      *      the summary record (default false).
-     * @param {{}} [fieldDefaults] - default configs applied to all `Field` instances constructed
-     *      internally by this Store. {@see FieldConfig} for options.
      * @param {Object} [c.experimental] - flags for experimental features. These features are
      *     designed for early client-access and testing, but are not yet part of the Hoist API.
      * @param {boolean} [c.experimental.shareDefaults] - If true, default field values will
@@ -100,13 +100,13 @@ export class Store extends HoistBase {
      */
     constructor({
         fields,
+        fieldDefaults = {},
         idSpec = 'id',
         processRawData = null,
         filter = null,
         filterIncludesChildren = false,
         loadTreeData = true,
         loadRootAsSummary = false,
-        fieldDefaults = {},
         experimental,
         data
     }) {
