@@ -70,7 +70,7 @@ export class Store extends HoistBase {
      * @param {Object} c - Store configuration.
      * @param {(string[]|FieldConfig[]|Field[])} c.fields - Field names, configs, or instances.
      * @param {{}} [fieldDefaults] - default configs applied to `Field` instances constructed
-     *      internally by this Store. {@see FieldConfig} for options!
+     *      internally by this Store. {@see FieldConfig} for options
      * @param {(function|string)} [c.idSpec] - specification for selecting or producing an immutable
      *      unique id for each record. May be either a string property name (default is 'id') or a
      *      function to create an id from the raw unprocessed data. Will be normalized to a function
