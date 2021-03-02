@@ -17,7 +17,8 @@ import {
     isEmpty,
     isNil,
     isString,
-    isUndefined,
+    forOwn,
+    keyBy,
     remove as lodashRemove
 } from 'lodash';
 import {withShortDebug} from '../utils/js';
@@ -125,6 +126,7 @@ export class Store extends HoistBase {
         this.resetRecords();
 
         this._dataDefaults = this.createDataDefaults();
+        this._fieldMap = keyBy(this.fields, 'name');
         if (data) this.loadData(data);
     }
 
@@ -204,102 +206,105 @@ export class Store extends HoistBase {
      */
     @action
     updateData(rawData) {
-        if (isEmpty(rawData)) return null;
+        return withShortDebug('updateData', () => {
 
-        const changeLog = {};
+            if (isEmpty(rawData)) return null;
 
-        // Build a transaction object out of a flat list of adds and updates
-        let rawTransaction = null;
-        if (isArray(rawData)) {
-            const update = [], add = [];
-            rawData.forEach(it => {
-                const recId = this.idSpec(it);
-                if (this.getById(recId)) {
-                    update.push(it);
-                } else {
-                    add.push(it);
-                }
-            });
+            const changeLog = {};
 
-            rawTransaction = {update, add};
-        } else {
-            rawTransaction = rawData;
-        }
+            // Build a transaction object out of a flat list of adds and updates
+            let rawTransaction = null;
+            if (isArray(rawData)) {
+                const update = [], add = [];
+                rawData.forEach(it => {
+                    const recId = this.idSpec(it);
+                    if (this.getById(recId)) {
+                        update.push(it);
+                    } else {
+                        add.push(it);
+                    }
+                });
 
-        const {update, add, remove, rawSummaryData, ...other} = rawTransaction;
-        throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
-
-        // 1) Pre-process updates and adds into Records
-        let updateRecs, addRecs;
-        if (update) {
-            updateRecs = update.map(it => {
-                const recId = this.idSpec(it),
-                    rec = this.getOrThrow(recId),
-                    parent = rec.parent,
-                    isSummary = recId === this.summaryRecord?.id;
-                return this.createRecord(it, parent, isSummary);
-            });
-        }
-        if (add) {
-            addRecs = new Map();
-            add.forEach(it => {
-                if (it.hasOwnProperty('rawData') && it.hasOwnProperty('parentId')) {
-                    const parent = this.getOrThrow(it.parentId);
-                    this.createRecords([it.rawData], parent, addRecs);
-                } else {
-                    this.createRecords([it], null, addRecs);
-                }
-            });
-        }
-
-        // 2) Pre-process summary record, peeling it out of updates if needed
-        const {summaryRecord} = this;
-        let summaryUpdateRec;
-        if (summaryRecord) {
-            [summaryUpdateRec] = lodashRemove(updateRecs, {id: summaryRecord.id});
-        }
-
-        if (!summaryUpdateRec && rawSummaryData) {
-            summaryUpdateRec = this.createRecord(rawSummaryData, null, true);
-        }
-
-        if (summaryUpdateRec) {
-            this.summaryRecord = summaryUpdateRec;
-            changeLog.summaryRecord = this.summaryRecord;
-        }
-
-        // 3) Apply changes
-        let rsTransaction = {};
-        if (!isEmpty(updateRecs)) rsTransaction.update = updateRecs;
-        if (!isEmpty(addRecs)) rsTransaction.add = Array.from(addRecs.values());
-        if (!isEmpty(remove)) rsTransaction.remove = remove;
-
-        if (!isEmpty(rsTransaction)) {
-
-            // Apply updates to the committed RecordSet - these changes are considered to be
-            // sourced from the server / source of record and are coming in as committed.
-            this._committed = this._committed.withTransaction(rsTransaction);
-
-            if (this.isModified) {
-                // If this store had pre-existing local modifications, apply the updates over that
-                // local state. This might (or might not) effectively overwrite those local changes,
-                // so we normalize against the newly updated committed state to verify if any local
-                // modifications remain.
-                this._current = this._current.withTransaction(rsTransaction).normalize(this._committed);
+                rawTransaction = {update, add};
             } else {
-                // Otherwise, the updated RecordSet is both current and committed.
-                this._current = this._committed;
+                rawTransaction = rawData;
             }
 
-            this.rebuildFiltered();
-            Object.assign(changeLog, rsTransaction);
-        }
+            const {update, add, remove, rawSummaryData, ...other} = rawTransaction;
+            throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
 
-        if (!isEmpty(changeLog)) {
-            this.lastUpdated = Date.now();
-        }
+            // 1) Pre-process updates and adds into Records
+            let updateRecs, addRecs;
+            if (update) {
+                updateRecs = update.map(it => {
+                    const recId = this.idSpec(it),
+                        rec = this.getOrThrow(recId),
+                        parent = rec.parent,
+                        isSummary = recId === this.summaryRecord?.id;
+                    return this.createRecord(it, parent, isSummary);
+                });
+            }
+            if (add) {
+                addRecs = new Map();
+                add.forEach(it => {
+                    if (it.hasOwnProperty('rawData') && it.hasOwnProperty('parentId')) {
+                        const parent = this.getOrThrow(it.parentId);
+                        this.createRecords([it.rawData], parent, addRecs);
+                    } else {
+                        this.createRecords([it], null, addRecs);
+                    }
+                });
+            }
 
-        return !isEmpty(changeLog) ? changeLog : null;
+            // 2) Pre-process summary record, peeling it out of updates if needed
+            const {summaryRecord} = this;
+            let summaryUpdateRec;
+            if (summaryRecord) {
+                [summaryUpdateRec] = lodashRemove(updateRecs, {id: summaryRecord.id});
+            }
+
+            if (!summaryUpdateRec && rawSummaryData) {
+                summaryUpdateRec = this.createRecord(rawSummaryData, null, true);
+            }
+
+            if (summaryUpdateRec) {
+                this.summaryRecord = summaryUpdateRec;
+                changeLog.summaryRecord = this.summaryRecord;
+            }
+
+            // 3) Apply changes
+            let rsTransaction = {};
+            if (!isEmpty(updateRecs)) rsTransaction.update = updateRecs;
+            if (!isEmpty(addRecs)) rsTransaction.add = Array.from(addRecs.values());
+            if (!isEmpty(remove)) rsTransaction.remove = remove;
+
+            if (!isEmpty(rsTransaction)) {
+
+                // Apply updates to the committed RecordSet - these changes are considered to be
+                // sourced from the server / source of record and are coming in as committed.
+                this._committed = this._committed.withTransaction(rsTransaction);
+
+                if (this.isModified) {
+                    // If this store had pre-existing local modifications, apply the updates over that
+                    // local state. This might (or might not) effectively overwrite those local changes,
+                    // so we normalize against the newly updated committed state to verify if any local
+                    // modifications remain.
+                    this._current = this._current.withTransaction(rsTransaction).normalize(this._committed);
+                } else {
+                    // Otherwise, the updated RecordSet is both current and committed.
+                    this._current = this._committed;
+                }
+
+                this.rebuildFiltered();
+                Object.assign(changeLog, rsTransaction);
+            }
+
+            if (!isEmpty(changeLog)) {
+                this.lastUpdated = Date.now();
+            }
+
+            return !isEmpty(changeLog) ? changeLog : null;
+        }, this);
     }
 
     /**
@@ -772,8 +777,8 @@ export class Store extends HoistBase {
         data = this.parseRaw(data);
         const ret = new Record({id, data, raw, parent, store: this, isSummary});
 
-        // Freeze summary only.  Non-summary will get frozen by RecordSet. See Record.freeze()
-        if (isSummary) ret.freeze();
+        // Finalize summary only.  Non-summary finalized by RecordSet
+        if (isSummary) ret.finalize();
 
         return ret;
     }
@@ -799,33 +804,50 @@ export class Store extends HoistBase {
     }
 
     parseRaw(data) {
-        const {shareDefaults} = this.experimental,
-            ret = shareDefaults ? Object.create(this._dataDefaults) : {};
-        this.fields.forEach(field => {
-            const {name} = field,
-                val = field.parseVal(data[name]);
-            if (!shareDefaults || val !== field.defaultValue) {
-                ret[name] = val;
-            }
-        });
+        const {_fieldMap} = this,
+            {shareDefaults} = this.experimental;
+
+        // a) create the new object
+        const ret = shareDefaults ? Object.create(this._dataDefaults) : {};
+
+        // b) apply parsed data as needed.
+        if (shareDefaults) {
+            forOwn(data, (raw, name) => {
+                const field = _fieldMap[name];
+                if (field) {
+                    const val = field.parseVal(raw);
+                    if (val !== field.defaultValue) {
+                        ret[name] = val;
+                    }
+                }
+            });
+        } else {
+            this.fields.forEach(field => {
+                const {name} = field;
+                ret[name] = field.parseVal(data[name]);
+            });
+        }
+
         return ret;
     }
 
     parseUpdate(data, update) {
-        const {shareDefaults} = this.experimental,
-            ret = shareDefaults ? Object.create(this._dataDefaults) : {};
-        this.fields.forEach(field => {
-            const {name} = field,
-                updateVal = update[name];
-            if (!isUndefined(updateVal)) {
-                const val = field.parseVal(updateVal);
+        const {_fieldMap} = this,
+            {shareDefaults} = this.experimental;
+
+        // a) clone the existing object
+        const ret = shareDefaults ? Object.create(this._dataDefaults) : {};
+        Object.assign(ret, data);
+
+        // b) apply changes
+        forOwn(update, (raw, name) => {
+            const field = _fieldMap[name];
+            if (field) {
+                const val = field.parseVal(raw);
                 if (!shareDefaults || val !== field.defaultValue) {
                     ret[name] = val;
-                }
-            } else {
-                const existingVal = data[name];
-                if (!shareDefaults || !isUndefined(existingVal)) {
-                    ret[name] = existingVal;
+                } else {
+                    delete ret[name];
                 }
             }
         });
