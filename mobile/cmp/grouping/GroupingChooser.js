@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
-import {div, hbox, vbox, filler, box, placeholder, span} from '@xh/hoist/cmp/layout';
+import {div, hbox, vbox, vframe, filler, box, placeholder, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from '@xh/hoist/mobile/cmp/button';
@@ -32,7 +32,8 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
         model,
         className,
         emptyText = 'Ungrouped',
-        popoverWidth = 250,
+        popoverWidth = 270,
+        popoverMinHeight = 120,
         popoverTitle = 'Group By',
         ...rest
     }, ref) {
@@ -45,7 +46,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
             className,
             ...layoutProps,
             items: [
-                popoverCmp({popoverTitle, popoverWidth, emptyText}),
+                popoverCmp({popoverTitle, popoverWidth, popoverMinHeight, emptyText}),
                 button({
                     className: 'xh-grouping-chooser-button',
                     item: span(label),
@@ -70,6 +71,9 @@ GroupingChooser.propTypes = {
     /** Title for popover (default "GROUP BY") or null to suppress. */
     popoverTitle: PT.string,
 
+    /** Min height in pixels of the popover inner content (excl. header & toolbar). */
+    popoverMinHeight: PT.number,
+
     /** Width in pixels of the popover menu itself. */
     popoverWidth: PT.number
 };
@@ -78,7 +82,7 @@ GroupingChooser.propTypes = {
 // Popover
 //---------------------------
 const popoverCmp = hoistCmp.factory(
-    ({model, popoverTitle, popoverWidth, emptyText}) => {
+    ({model, popoverTitle, popoverWidth, popoverMinHeight, emptyText}) => {
         const {editorIsOpen, favoritesIsOpen, isAddMode, addDisabledMsg, isValid, value} = model,
             isOpen = editorIsOpen || favoritesIsOpen,
             addFavoriteDisabled = isEmpty(value) || !!model.isFavorite(value);
@@ -88,8 +92,12 @@ const popoverCmp = hoistCmp.factory(
             title: favoritesIsOpen ? 'Favorites' : popoverTitle,
             icon: favoritesIsOpen ? Icon.favorite({prefix: 'fas'}) : Icon.treeList(),
             className: 'xh-grouping-chooser-popover',
-            width: popoverWidth,
-            content: favoritesIsOpen ? favoritesMenu() : editor({emptyText}),
+            content: vframe({
+                className: 'xh-grouping-chooser-popover__content',
+                width: popoverWidth,
+                minHeight: popoverMinHeight,
+                item: favoritesIsOpen ? favoritesMenu() : editor({emptyText})
+            }),
             onCancel: () => model.commitPendingValueAndClose(),
             buttons: favoritesIsOpen ?
                 [
