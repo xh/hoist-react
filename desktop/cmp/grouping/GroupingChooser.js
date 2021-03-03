@@ -5,10 +5,11 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
-import {hbox, box, div, filler, fragment, vbox} from '@xh/hoist/cmp/layout';
+import {box, div, filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button, Button} from '@xh/hoist/desktop/cmp/button';
 import {select, Select} from '@xh/hoist/desktop/cmp/input';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
@@ -33,6 +34,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
         className,
         emptyText = 'Ungrouped',
         popoverWidth = 250,
+        popoverMinHeight = 150,
         popoverTitle = 'Group By',
         popoverPosition = 'bottom',
         styleButtonAsInput = true,
@@ -68,7 +70,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
                     }),
                     favoritesIcon()
                 ),
-                content: favoritesIsOpen ? favoritesMenu() : editor({popoverWidth, popoverTitle, emptyText}),
+                content: favoritesIsOpen ? favoritesMenu() : editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText}),
                 onInteraction: (nextOpenState, e) => {
                     if (isOpen && nextOpenState === false) {
                         // Prevent clicks with Select controls from closing popover
@@ -94,11 +96,8 @@ GroupingChooser.propTypes = {
     /** Primary component model instance. */
     model: PT.instanceOf(GroupingChooserModel),
 
-    /** Title for popover (default "GROUP BY") or null to suppress. */
-    popoverTitle: PT.string,
-
-    /** Width in pixels of the popover menu itself. */
-    popoverWidth: PT.number,
+    /** Min height in pixels of the popover menu itself. */
+    popoverMinHeight: PT.number,
 
     /** Position for chooser popover, as per Blueprint docs. */
     popoverPosition: PT.oneOf([
@@ -109,6 +108,12 @@ GroupingChooser.propTypes = {
         'auto'
     ]),
 
+    /** Title for popover (default "GROUP BY") or null to suppress. */
+    popoverTitle: PT.string,
+
+    /** Width in pixels of the popover menu itself. */
+    popoverWidth: PT.number,
+
     /** True (default) to style target button as an input field - blends better in toolbars. */
     styleButtonAsInput: PT.bool
 };
@@ -117,15 +122,17 @@ GroupingChooser.propTypes = {
 // Editor
 //------------------
 const editor = hoistCmp.factory({
-    render({model, popoverWidth, popoverTitle, emptyText}) {
-        return vbox({
+    render({model, popoverWidth, popoverMinHeight, popoverTitle, emptyText}) {
+        return panel({
             width: popoverWidth,
+            minHeight: popoverMinHeight,
             items: [
                 div({className: 'xh-popup__title', item: popoverTitle}),
                 dimensionList({emptyText}),
                 addDimensionControl({omit: !model.addControlShown}),
-                bbar()
-            ]
+                filler()
+            ],
+            bbar: bbar()
         });
     }
 });
@@ -376,6 +383,7 @@ const favoriteMenuItem = hoistCmp.factory({
             onClick: () => model.setValue(value),
             labelElement: button({
                 icon: Icon.delete(),
+                intent: 'danger',
                 onClick: (e) => {
                     model.removeFavorite(value);
                     e.stopPropagation();

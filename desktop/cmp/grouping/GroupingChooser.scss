@@ -145,10 +145,15 @@
       padding: 0 !important;
       min-width: 20px !important;
       min-height: 20px !important;
+      visibility: hidden;
     }
 
     &:hover {
       background-color: var(--xh-bg-highlight);
+
+      .xh-button {
+        visibility: unset;
+      }
     }
   }
 }
