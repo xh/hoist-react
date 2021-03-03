@@ -8,7 +8,6 @@ import {HoistService, managed, XH} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {withDefault, logDebug} from '@xh/hoist/utils/js';
-import {max} from 'lodash';
 
 /**
  * Service to triggers an app-wide auto-refresh (if enabled, on a configurable interval) via the
@@ -62,12 +61,15 @@ export class AutoRefreshService extends HoistService {
     async onTimerAsync() {
         if (!this.enabled) return;
 
-        // Wait after lastCompleted and lastRequested -- this prevents extra refreshes if user
-        // refreshing manually, or loading slow.  Note auto-loads skipped if any load in progress.
+        // Wait interval after lastCompleted -- this prevents extra refreshes if user refreshes
+        // manually, or loading slow.  Note auto-loads skipped if any load in progress.
         const ctx = XH.refreshContextModel,
-            last = max([ctx.lastLoadCompleted, ctx.lastLoadRequested, this.initTime]);
+            lastRequested = ctx.lastLoadRequested,
+            lastCompleted = ctx.lastLoadCompleted,
+            last = lastCompleted ?? this.initTime,
+            pendingLoad = lastRequested && lastRequested > lastCompleted;
 
-        if (olderThan(last, this.interval * SECONDS)) {
+        if (!pendingLoad && olderThan(last, this.interval * SECONDS)) {
             logDebug('Triggering application auto-refresh.', this);
             await ctx.autoRefreshAsync();
         }

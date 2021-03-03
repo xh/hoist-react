@@ -220,7 +220,7 @@ export class RecordSet {
     //------------------------
     areRecordsEqual(rec1, rec2) {
         return equal(rec1.data, rec2.data) &&
-            (this.store.experimental.idImpliesTreeLocation || equal(rec1.treePath, rec2.treePath));
+            (this.store.idEncodesTreePath || equal(rec1.treePath, rec2.treePath));
     }
 
     computeChildrenMap(recordMap) {

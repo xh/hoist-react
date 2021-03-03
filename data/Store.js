@@ -17,7 +17,6 @@ import {
     isEmpty,
     isNil,
     isString,
-    keyBy,
     remove as lodashRemove
 } from 'lodash';
 import {withShortDebug} from '../utils/js';
@@ -47,6 +46,12 @@ export class Store extends HoistBase {
 
     /** @member {boolean} */
     loadRootAsSummary;
+
+    /** @member {boolean} */
+    idEncodesTreePath;
+
+    /** @member {boolean} */
+    freezeData;
 
     /** @member {Filter}  */
     @observable.ref filter;
@@ -91,6 +96,12 @@ export class Store extends HoistBase {
      *      (default true).
      * @param {boolean} [c.loadRootAsSummary] - true to treat the root node in hierarchical data as
      *      the summary record (default false).
+     * @param {boolean} [c.freezeData] - true to freeze the internal data object of the record.
+     *      May be set to false to maximize performance.  Note that the internal data of the record
+     *      should in all cases be considered immutable (default true).
+     * @param {boolean} [c.idEncodesTreePath] - set to true to indicate that the id for a record
+     *      implies a fixed position of the record within the any tree hierarchy.  May be set to
+     *      true to maximize performance (default false).
      * @param {Object} [c.experimental] - flags for experimental features. These features are
      *     designed for early client-access and testing, but are not yet part of the Hoist API.
      * @param {boolean} [c.experimental.shareDefaults] - If true, default field values will
@@ -107,6 +118,8 @@ export class Store extends HoistBase {
         filterIncludesChildren = false,
         loadTreeData = true,
         loadRootAsSummary = false,
+        freezeData = true,
+        idEncodesTreePath = false,
         experimental,
         data
     }) {
@@ -120,12 +133,14 @@ export class Store extends HoistBase {
         this.filterIncludesChildren = filterIncludesChildren;
         this.loadTreeData = loadTreeData;
         this.loadRootAsSummary = loadRootAsSummary;
+        this.freezeData = freezeData;
+        this.idEncodesTreePath = idEncodesTreePath;
         this.lastUpdated = Date.now();
 
         this.resetRecords();
 
         this._dataDefaults = this.createDataDefaults();
-        this._fieldMap = keyBy(this.fields, 'name');
+        this._fieldMap = this.createFieldMap();
         if (data) this.loadData(data);
     }
 
@@ -812,7 +827,7 @@ export class Store extends HoistBase {
         if (shareDefaults) {
             const {_fieldMap} = this;
             forIn(data, (raw, name) => {
-                const field = _fieldMap[name];
+                const field = _fieldMap.get(name);
                 if (field) {
                     const val = field.parseVal(raw);
                     if (val !== field.defaultValue) {
@@ -840,7 +855,7 @@ export class Store extends HoistBase {
 
         // b) apply changes
         forIn(update, (raw, name) => {
-            const field = _fieldMap[name];
+            const field = _fieldMap.get(name);
             if (field) {
                 const val = field.parseVal(raw);
                 if (!shareDefaults || val !== field.defaultValue) {
@@ -861,11 +876,15 @@ export class Store extends HoistBase {
         return ret;
     }
 
+    createFieldMap() {
+        const ret = new Map();
+        this.fields.forEach(r => ret.set(r.name, r));
+        return ret;
+    }
+
     parseExperimental(experimental) {
         return {
             shareDefaults: false,
-            freezeData: false,
-            idImpliesTreeLocation: true,
             ...XH.getConf('xhStoreExperimental', {}),
             ...experimental
         };
@@ -873,12 +892,12 @@ export class Store extends HoistBase {
 }
 
 //---------------------------------------------------------------------
-// Iterate over the properties of a raw object.
+// Iterate over the properties of a raw data/update  object.
 // Does *not* do ownProperty check, faster than lodash forIn/forOwn
 //-------------------------------------------------------------------
-function forIn(col, fn) {
-    for (let key in col) {
-        fn(col[key], key);
+function forIn(obj, fn) {
+    for (let key in obj) {
+        fn(obj[key], key);
     }
 }
 

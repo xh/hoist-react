@@ -1,8 +1,13 @@
 # Changelog
 
-## v39.0.0-SNAPSHOT - unreleased
+## v38.3.0 - 2021-03-03
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v38.2.0...develop)
+### 🎁 New Features
+
+* New options on `Store` to help optimize loading of large data sets: `freezeData` and
+`idEncodesTreePath`.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v38.2.0...v38.3.0)
 
 ## v38.2.0 - 2021-03-01
 
