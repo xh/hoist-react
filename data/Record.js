@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import {isNil, has} from 'lodash';
 
 /**
@@ -202,16 +202,17 @@ export class Record {
     // Protected methods
     // --------------------------
     /**
-     * Freezes this Record and its data.
+     * Finalize this record for use in Store, post acceptance by RecordSet.
      *
-     * Note that we freeze the Record post-construction in RecordSet, only when we know that
+     * We finalize the Record post-construction in RecordSet, only when we know that
      * it is going to be accepted in the new RecordSet (and is not a duplicate).  This is a
-     * performance optimization to avoid freezing transient records.
+     * performance optimization to avoid operations like freezing on transient records.
      *
      * Not for application use.
      */
-    freeze() {
-        deepFreeze(this.data);
-        Object.freeze(this);
+    finalize() {
+        if (this.store.freezeData) {
+            Object.freeze(this.data);
+        }
     }
 }
