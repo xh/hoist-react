@@ -42,14 +42,37 @@ export class StoreSelectionModel extends HoistModel {
     }
 
     /** @return {(string[]|number[])} - IDs of currently selected records. */
+    @computed.struct
     get ids() {
         return map(this.records, 'id');
     }
 
-    /** @return {?Record} - single selected record, or null if multiple or no records selected. */
+    /**
+     * Single selected record, or null if multiple or no records selected.
+     *
+     * Note that this getter will also change if just the data of selected record is changed
+     * due to store loading or editing.  Applications only interested in the identity
+     * of the selection should use {@see selectedRecordId} instead.
+     *
+     * @return {?Record} -
+     */
     get singleRecord() {
         const {records} = this;
         return records.length === 1 ? records[0] : null;
+    }
+
+    /**
+     * ID of single selected record, or null if multiple or no records selected.
+     *
+     * Note that this getter will *not* change if just the data of selected record is changed
+     * (i.e. due to store loading or editing).  Applications also interested in the contents of the
+     * of the selection should use the {@see selectedRecord} getter instead.
+     *
+     * @return {?(string|number)}
+     */
+    get selectedRecordId() {
+        const {ids} = this;
+        return ids.length === 1 ? ids[0] : null;
     }
 
     /** @return {boolean} - true if selection is empty. */

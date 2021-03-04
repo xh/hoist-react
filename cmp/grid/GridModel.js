@@ -451,7 +451,7 @@ export class GridModel extends HoistModel {
      * This method delegates to {@see selectFirstAsync}.
      */
     async preSelectFirstAsync() {
-        if (this.selModel.isEmpty) return this.selectFirstAsync();
+        if (!this.hasSelection) return this.selectFirstAsync();
     }
 
 
@@ -515,8 +515,27 @@ export class GridModel extends HoistModel {
     /** @return {Record[]} - currently selected Records. */
     get selection() {return this.selModel.records}
 
-    /** @return {?Record} - single selected record, or null if multiple or no records selected. */
+    /**
+     * Single selected record, or null if multiple or no records selected.
+     *
+     * Note that this getter will also change if just the data of selected record is changed
+     * due to store loading or editing.  Applications only interested in the identity
+     * of the selection should use {@see selectedRecordId} instead.
+     *
+     * @return {?Record}
+     */
     get selectedRecord() {return this.selModel.singleRecord}
+
+    /**
+     * Id of single selected record, or null if multiple or no records selected.
+     *
+     * Note that this getter will *not* change if just the data of selected record is changed
+     * (i.e. due to store loading or editing).  Applications also interested in the contents of the
+     * of the selection should use the {@see selectedRecord} getter instead.
+     *
+     * @return {?Record}
+     */
+    get selectedRecordId() {return this.selModel.selectedRecordId}
 
     /** @return {boolean} - true if this grid has no records to show in its store. */
     get empty() {return this.store.empty}

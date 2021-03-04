@@ -128,6 +128,7 @@ export class DataViewModel extends HoistModel {
     get hasSelection()          {return this.gridModel.hasSelection}
     get selection()             {return this.gridModel.selection}
     get selectedRecord()        {return this.gridModel.selectedRecord}
+    get selectedRecordId()      {return this.gridModel.selectedRecordId}
     get groupBy()               {return this.gridModel.groupBy}
     get sortBy()                {return this.gridModel.sortBy}
 
