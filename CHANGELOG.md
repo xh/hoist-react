@@ -2,6 +2,11 @@
 
 ## v39.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* New property `selectedRecordId` on `StoreSelectionModel`, `GridModel`, and `DataViewModel`.
+  Observe this instead of `selectedRecord` when you wish to track only the `id` of the selected
+  record and not changes to its contents.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.3.0...develop)
 
 ## v38.3.0 - 2021-03-03
