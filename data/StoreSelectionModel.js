@@ -65,7 +65,7 @@ export class StoreSelectionModel extends HoistModel {
      * ID of single selected record, or null if multiple or no records selected.
      *
      * Note that this getter will *not* change if just the data of selected record is changed
-     * (i.e. due to store loading or editing).  Applications also interested in the contents of the
+     * due to store loading or editing.  Applications also interested in the contents of the
      * of the selection should use the {@see selectedRecord} getter instead.
      *
      * @return {?(string|number)}
