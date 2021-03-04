@@ -7,6 +7,8 @@
 * New options on `Store` to help optimize loading of large data sets: `freezeData` and
 `idEncodesTreePath`.
 
+* New option on `ColChooserModel` to force column resizing: `autosizeOnCommit`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.2.0...v38.3.0)
 
 ## v38.2.0 - 2021-03-01
