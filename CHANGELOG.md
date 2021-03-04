@@ -2,6 +2,9 @@
 
 ## v39.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* Support for string values for `equals` flag on `HoistBase.addReaction()`.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.3.0...develop)
 
 ## v38.3.0 - 2021-03-03
