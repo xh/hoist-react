@@ -5,11 +5,10 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {wait} from '@xh/hoist/promise';
-import {logDebug} from '../js';
 
 
 /**
- * Iterate over a collection and run a closure on each item - as with `for ... of` - but do so
+ * Iterate over an iterable and run a closure on each item - as with `for ... of` - but do so
  * asynchronously and with minimal waits inserted after a configurable time interval.
  *
  * Intended for long-running or compute-intensive loops that would otherwise lock up the browser
@@ -25,28 +24,22 @@ import {logDebug} from '../js';
  * @param {Function} fn - called with each item.
  * @param {Object} [opts] - additional options.
  * @param {number} [opts.waitAfter] - interval in ms after which the loop should pause and wait.
- *      If the loop completes before this interval has passed, no waits will be inserted.
- * @param {number} [opts.waitFor] - wait time in ms for each pause. The default of 1ms should be
+ *      If the loop completes before this interval has passed, no waits will be inserted. Default 50ms.
+ * @param {number} [opts.waitFor] - wait time in ms for each pause. The default of 0ms should be
  *      sufficient to allow an event loop cycle to run.
- * @param {string?} [opts.debug] - if provided, loop will debug log basic run info on completion.
  * @returns {Promise<void>}
  */
-export async function forEachAsync(collection, fn, {waitAfter = 50, waitFor = 1, debug = null} = {}) {
-    const initialStart = Date.now();
-    let nextBreak = initialStart + waitAfter,
-        waitCount = 0;
-
-    let idx = 0;
-    for (const item of collection) {
-        if (Date.now() > nextBreak) {
-            await wait(waitFor);
-            nextBreak = Date.now() + waitAfter;
-            waitCount++;
-        }
-        fn(item, idx++, collection);
-    }
-
-    writeDebug(debug, waitCount, initialStart);
+export async function forEachAsync(collection, fn, opts) {
+    const iterator = collection[Symbol.iterator]();
+    let curr = iterator.next(), idx = 0;
+    return whileAsync(
+        () => !curr.done,
+        () => {
+            fn(curr.value, idx++, collection);
+            curr = iterator.next();
+        },
+        opts
+    );
 }
 
 /**
@@ -55,33 +48,20 @@ export async function forEachAsync(collection, fn, {waitAfter = 50, waitFor = 1,
  * @param {function} fn - called without arguments for each iteration.
  * @param {Object} [opts] - additional options.
  * @param {number} [opts.waitAfter] - interval in ms after which the loop should pause and wait.
- *      If the loop completes before this interval has passed, no waits will be inserted.
- * @param {number} [opts.waitFor] - wait time in ms for each pause. The default of 1ms should be
+ *      If the loop completes before this interval has passed, no waits will be inserted. Default 50ms
+ * @param {number} [opts.waitFor] - wait time in ms for each pause. The default of 0ms should be
  *      sufficient to allow an event loop cycle to run.
- * @param {string?} [opts.debug] - if provided, loop will debug log basic run info on completion.
  * @returns {Promise<void>}
  */
-export async function whileAsync(conditionFn, fn, {waitAfter = 50, waitFor = 1, debug = null} = {}) {
+export async function whileAsync(conditionFn, fn, {waitAfter = 50, waitFor = 0} = {}) {
     const initialStart = Date.now();
-    let nextBreak = initialStart + waitAfter,
-        waitCount = 0;
-
+    let nextBreak = initialStart + waitAfter;
     while (conditionFn()) {
         if (Date.now() > nextBreak) {
             await wait(waitFor);
             nextBreak = Date.now() + waitAfter;
-            waitCount++;
         }
         fn();
     }
-    writeDebug(debug, waitCount, initialStart);
 }
 
-//------------------------------
-// Implementation
-//-------------------------------
-function writeDebug(debug, waitCount, initialStart) {
-    if (debug) {
-        logDebug([debug, 'completed', `${waitCount} waits`, `${Date.now() - initialStart}ms`]);
-    }
-}
