@@ -21,7 +21,7 @@ import {wait} from '@xh/hoist/promise';
  * run an async operation over a collection, consider a for...of loop as per implementation below.
  *
  * @param {Iterable} collection - items to iterate over
- * @param {Function} fn - called with each item.
+ * @param {function} fn - called with each item.
  * @param {Object} [opts] - additional options.
  * @param {number} [opts.waitAfter] - interval in ms after which the loop should pause and wait.
  *      If the loop completes before this interval has passed, no waits will be inserted. Default 50ms.
