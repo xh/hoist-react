@@ -5,6 +5,12 @@
 ### 🎁 New Features
 * Support for string values for `equals` flag on `HoistBase.addReaction()`.
 
+### 💥 Breaking Changes
+ * The method `HoistAppModel.preAuthInitAsync()` has been renamed to `preAuthAsync()`
+and should now be defined as `static`.  This change allows Hoist to defer construction
+of the AppModel until Hoist itself has been initialized, and also better reflects the
+the special status of this function, and when it is called in the Hoist lifecycle.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.3.0...develop)
 
 ## v38.3.0 - 2021-03-03

@@ -26,6 +26,15 @@ import {HoistModel} from './HoistModel';
 export class HoistAppModel extends HoistModel {
 
     /**
+     * Hoist will call this method early in the initialization sequence, prior to user
+     * authentication and full Hoist initialization. This means that several core services
+     * (identity, configs, prefs) will *not* be available, but it provides the app a hook to
+     * do early service initialization or other work to support flows such as OAuth.
+     */
+    static async preAuthAsync() {}
+
+
+    /**
      * Hoist will call this method after Hoist services have initialized and the application
      * has mounted. Use to trigger initialization of the app and any app-specific services.
      *
@@ -33,14 +42,6 @@ export class HoistAppModel extends HoistModel {
      * services using one or more phased calls to XH.installServicesAsync().
      */
     async initAsync() {}
-
-    /**
-     * Hoist will call this method early in the initialization sequence, prior to user
-     * authentication. This means that several core services (identity, configs, prefs)
-     * will *not* be available, but it provides the app a hook to do early service
-     * initialization or other work to support flows such as OAuth.
-     */
-    async preAuthInitAsync() {}
 
     /**
      * Called by {@see IdentityService.logoutAsync} to provide an app-specific hook prior
