@@ -7,7 +7,7 @@
 import {hoistCmp} from '@xh/hoist/core';
 import {frame, div, p} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {isString, isFunction} from 'lodash';
+import {isEmpty, isError, isString, isFunction} from 'lodash';
 import {isValidElement} from 'react';
 import PT from 'prop-types';
 
@@ -19,6 +19,8 @@ import './ErrorMessage.scss';
 export const [ErrorMessage, errorMessage] = hoistCmp.withFactory({
     className: 'xh-error-message',
     render({className, error, title, actionFn, actionButtonProps}, ref) {
+        if (!isError(error) && isEmpty(error)) return null;
+
         return frame({
             className,
             item: div({
@@ -35,10 +37,10 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory({
 });
 
 ErrorMessage.propTypes = {
-    /** Error to display. Either an exception, an element or a string */
-    error: PT.oneOfType([PT.instanceOf(Error), PT.element, PT.string]).isRequired,
+    /** Error to display. Either an exception, an element or a string. */
+    error: PT.oneOfType([PT.instanceOf(Error), PT.element, PT.string]),
 
-    /** Optional title to display above the error. Either an element or a string */
+    /** Optional title to display above the error. Either an element or a string. */
     title: PT.oneOfType([PT.element, PT.string]),
 
     /** If provided, will render an action button which triggers this function,
