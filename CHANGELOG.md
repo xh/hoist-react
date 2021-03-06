@@ -5,6 +5,12 @@
 ### 🎁 New Features
 * Support for string values for `equals` flag on `HoistBase.addReaction()`.
 
+###  ⚙️ Technical
+* Improvements to behavior/performance when browser tab is hidden:
+    ** Suspend auto-refresh.
+    ** Avoid long pauses in `forEachAsync()` and `whileAsync()`
+See https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.3.0...develop)
 
 ## v38.3.0 - 2021-03-03

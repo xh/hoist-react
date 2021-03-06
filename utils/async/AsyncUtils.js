@@ -16,6 +16,10 @@ import {wait} from '@xh/hoist/promise';
  * allowing ongoing rendering of UI updates (e.g. load masks) and generally keeping the browser
  * event loop running.
  *
+ * Note that if the browser tab is hidden (i.e. document.hidden is true) this loop will be executed
+ * without pauses.  In this case the pauses would be unduly large due to throttling of the event
+ * loop by the browser, and there is no user benefit to avoiding blocking the main thread.
+ *
  * NOTE this is NOT for use cases where the `fn` arg is itself async - i.e. it does not await the
  * call to `fn` and is instead for the opposite use case, where fn is *synchronous*. If looking to
  * run an async operation over a collection, consider a for...of loop as per implementation below.
@@ -54,6 +58,13 @@ export async function forEachAsync(collection, fn, opts) {
  * @returns {Promise<void>}
  */
 export async function whileAsync(conditionFn, fn, {waitAfter = 50, waitFor = 0} = {}) {
+
+    // Fallback to basic loop when doc hidden: no user benefit, and throttling causes outsize waits
+    if (document.hidden) {
+        while (conditionFn()) fn();
+        return;
+    }
+
     const initialStart = Date.now();
     let nextBreak = initialStart + waitAfter;
     while (conditionFn()) {
