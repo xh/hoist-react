@@ -3,7 +3,20 @@
 ## v39.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-* Support for string values for `equals` flag on `HoistBase.addReaction()`.
+
+* New property `selectedRecordId` on `StoreSelectionModel`, `GridModel`, and `DataViewModel`. Observe
+  this instead of `selectedRecord` when you wish to track only the `id` of the selected record and
+  not changes to its data.
+* The `HoistBase.addReaction()` now accepts convenient string values for its `equals` flag.
+
+### ⚙️ Technical
+
+* Improvements to behavior/performance of apps in hidden/inactive browser tabs. See the
+  [page visibility API reference](https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API)
+  for details. Now, when the browser tab is hidden:
+  * Auto-refresh is suspended.
+  * The `forEachAsync()` and `whileAsync()` utils run synchronously, without inserting waits that
+    would be overly throttled by the browser.
 
 ### 💥 Breaking Changes
  * The method `HoistAppModel.preAuthInitAsync()` has been renamed to `preAuthAsync()`
@@ -17,10 +30,10 @@ the special status of this function, and when it is called in the Hoist lifecycl
 
 ### 🎁 New Features
 
-* New options on `Store` to help optimize loading of large data sets: `freezeData` and
-`idEncodesTreePath`.
-
-* New option on `ColChooserModel` to force column resizing: `autosizeOnCommit`
+* New `Store.freezeData` and `Store.idEncodesTreePath` configs added as performance optimizations
+  when loading very large data sets (50k+ rows).
+* New `ColChooserModel.autosizeOnCommit` config triggers an autosize run whenever the chooser is
+  closed. (Defaulted to true on mobile.)
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.2.0...v38.3.0)
 

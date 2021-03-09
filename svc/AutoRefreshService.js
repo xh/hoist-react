@@ -59,7 +59,7 @@ export class AutoRefreshService extends HoistService {
     // Implementation
     //------------------------
     async onTimerAsync() {
-        if (!this.enabled) return;
+        if (!this.enabled || document.hidden) return;
 
         // Wait interval after lastCompleted -- this prevents extra refreshes if user refreshes
         // manually, or loading slow.  Note auto-loads skipped if any load in progress.
