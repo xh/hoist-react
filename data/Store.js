@@ -883,9 +883,11 @@ export class Store extends HoistBase {
     }
 
     parseExperimental(experimental) {
+        // Safe access to config to support possibility of Store creation prior to XH.init.
+        const config = XH.configService ? XH.getConf('xhStoreExperimental', {}) : {};
         return {
             shareDefaults: false,
-            ...XH.getConf('xhStoreExperimental', {}),
+            ...config,
             ...experimental
         };
     }

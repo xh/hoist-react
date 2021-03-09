@@ -3,9 +3,11 @@
 ## v39.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-* New property `selectedRecordId` on `StoreSelectionModel`, `GridModel`, and `DataViewModel`.
-  Observe this instead of `selectedRecord` when you wish to track only the `id` of the selected
-  record and not changes to its contents.
+
+* New property `selectedRecordId` on `StoreSelectionModel`, `GridModel`, and `DataViewModel`. Observe
+  this instead of `selectedRecord` when you wish to track only the `id` of the selected record and
+  not changes to its data.
+* The `HoistBase.addReaction()` now accepts convenient string values for its `equals` flag.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.3.0...develop)
 
@@ -13,10 +15,10 @@
 
 ### 🎁 New Features
 
-* New options on `Store` to help optimize loading of large data sets: `freezeData` and
-`idEncodesTreePath`.
-
-* New option on `ColChooserModel` to force column resizing: `autosizeOnCommit`
+* New `Store.freezeData` and `Store.idEncodesTreePath` configs added as performance optimizations
+  when loading very large data sets (50k+ rows).
+* New `ColChooserModel.autosizeOnCommit` config triggers an autosize run whenever the chooser is
+  closed. (Defaulted to true on mobile.)
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.2.0...v38.3.0)
 

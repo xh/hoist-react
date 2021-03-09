@@ -11,7 +11,7 @@ import {dateTimeCol, localDateCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, comparer, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import moment from 'moment';
 
@@ -161,7 +161,7 @@ export class ClientErrorsModel extends HoistModel {
         this.addReaction({
             track: () => this.getParams(),
             run: () => this.loadAsync(),
-            equals: comparer.structural
+            equals: 'structural'
         });
 
         this.addReaction({
