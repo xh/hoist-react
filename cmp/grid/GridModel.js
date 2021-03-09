@@ -516,24 +516,20 @@ export class GridModel extends HoistModel {
     get selection() {return this.selModel.records}
 
     /**
-     * Single selected record, or null if multiple or no records selected.
+     * @return {?Record} - single selected record, or null if multiple/no records selected.
      *
      * Note that this getter will also change if just the data of selected record is changed
      * due to store loading or editing.  Applications only interested in the identity
      * of the selection should use {@see selectedRecordId} instead.
-     *
-     * @return {?Record}
      */
     get selectedRecord() {return this.selModel.singleRecord}
 
     /**
-     * ID of single selected record, or null if multiple or no records selected.
+     * @return {?(string|number)} - ID of selected record, or null if multiple/no records selected.
      *
      * Note that this getter will *not* change if just the data of selected record is changed
      * due to store loading or editing.  Applications also interested in the contents of the
      * of the selection should use the {@see selectedRecord} getter instead.
-     *
-     * @return {?(string|number)}
      */
     get selectedRecordId() {return this.selModel.selectedRecordId}
 

@@ -48,13 +48,11 @@ export class StoreSelectionModel extends HoistModel {
     }
 
     /**
-     * Single selected record, or null if multiple or no records selected.
+     * @return {?Record} - single selected record, or null if multiple/no records selected.
      *
      * Note that this getter will also change if just the data of selected record is changed
      * due to store loading or editing.  Applications only interested in the identity
      * of the selection should use {@see selectedRecordId} instead.
-     *
-     * @return {?Record} -
      */
     get singleRecord() {
         const {records} = this;
@@ -62,13 +60,11 @@ export class StoreSelectionModel extends HoistModel {
     }
 
     /**
-     * ID of single selected record, or null if multiple or no records selected.
+     * @return {?(string|number)} - ID of selected record, or null if multiple/no records selected.
      *
      * Note that this getter will *not* change if just the data of selected record is changed
      * due to store loading or editing.  Applications also interested in the contents of the
-     * of the selection should use the {@see selectedRecord} getter instead.
-     *
-     * @return {?(string|number)}
+     * of the selection should use the {@see singleRecord} getter instead.
      */
     get selectedRecordId() {
         const {ids} = this;
