@@ -490,10 +490,12 @@ export class GridModel extends HoistModel {
             }
         });
 
+        await wait(0);
+
         // 2) Scroll to all selected nodes
         records.forEach(({id}) => {
-            const rowNode = agApi.getRowNode(id);
-            if (!isNil(rowNode?.rowIndex)) indices.push(rowNode.rowIndex);
+            const rowIndex = agApi.getRowNode(id)?.rowIndex;
+            if (!isNil(rowIndex)) indices.push(rowIndex);
         });
 
         const indexCount = indices.length;
