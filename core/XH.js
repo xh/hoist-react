@@ -580,9 +580,9 @@ class XHClass extends HoistBase {
 
             this.setAppState(S.PRE_AUTH);
 
-            // Instantiate appModel, await optional pre-auth init.
-            this.appModel = new this.appSpec.modelClass();
-            await this.appModel.preAuthInitAsync();
+            // consult (optional) pre-auth init for app
+            this.appModelClass = this.appSpec.modelClass;
+            await this.appModelClass.preAuthAsync();
 
             // Check if user has already been authenticated (prior login, OAuth, SSO)...
             const userIsAuthenticated = await this.getAuthStatusFromServerAsync();
@@ -652,6 +652,7 @@ class XHClass extends HoistBase {
             // Delay to workaround hot-reload styling issues in dev.
             await wait(XH.isDevelopmentMode ? 300 : 1);
 
+            this.appModel = new this.appModelClass();
             await this.appModel.initAsync();
             this.startRouter();
             this.startOptionsDialog();
