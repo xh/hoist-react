@@ -9,6 +9,15 @@
   not changes to its data.
 * The `HoistBase.addReaction()` now accepts convenient string values for its `equals` flag.
 
+### ⚙️ Technical
+
+* Improvements to behavior/performance of apps in hidden/inactive browser tabs. See the
+  [page visibility API reference](https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API)
+  for details. Now, when the browser tab is hidden:
+  * Auto-refresh is suspended.
+  * The `forEachAsync()` and `whileAsync()` utils run synchronously, without inserting waits that
+    would be overly throttled by the browser.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.3.0...develop)
 
 ## v38.3.0 - 2021-03-03
