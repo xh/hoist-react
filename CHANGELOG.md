@@ -9,6 +9,14 @@
   not changes to its data.
 * The `HoistBase.addReaction()` now accepts convenient string values for its `equals` flag.
 
+### 💥 Breaking Changes
+
+* The method `HoistAppModel.preAuthInitAsync()` has been renamed to `preAuthAsync()` and should now
+  be defined as `static` within apps that implement it to run custom pre-authentication routines.
+  * This change allows Hoist to defer construction of the `AppModel` until Hoist itself has been
+    initialized, and also better reflects the special status of this function and when it is called
+    in the Hoist lifecycle.
+
 ### ⚙️ Technical
 
 * Improvements to behavior/performance of apps in hidden/inactive browser tabs. See the
@@ -17,12 +25,6 @@
   * Auto-refresh is suspended.
   * The `forEachAsync()` and `whileAsync()` utils run synchronously, without inserting waits that
     would be overly throttled by the browser.
-
-### 💥 Breaking Changes
- * The method `HoistAppModel.preAuthInitAsync()` has been renamed to `preAuthAsync()`
-and should now be defined as `static`.  This change allows Hoist to defer construction
-of the AppModel until Hoist itself has been initialized, and also better reflects the
-the special status of this function, and when it is called in the Hoist lifecycle.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.3.0...develop)
 
