@@ -174,10 +174,10 @@ export class TreeMapModel extends HoistModel {
 
     @computed
     get total() {
-        return sumBy(this.data, it => {
-            // Only include root records that pass the filter
-            if (it.parent || (this._filter && !this._filter(it.record))) return 0;
-            return it.value;
+        const {valueField} = this;
+        return sumBy(this.store.rootRecords, record => {
+            if (this._filter && !this._filter(record)) return 0;
+            return Math.abs(record.data[valueField]);
         });
     }
 

@@ -1,6 +1,11 @@
 .xh-treemap {
   &__chart-holder {
-    margin: auto;
+    // Positioned absolute within container so it doesn't affect outer flex
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
   }
 
   text > tspan {
