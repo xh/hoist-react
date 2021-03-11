@@ -36,11 +36,11 @@ export const [SplitTreeMap, splitTreeMap]  = hoistCmp.withFactory({
         });
     }
 });
+
 SplitTreeMap.propTypes = {
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(SplitTreeMapModel), PT.object])
 };
-
 
 const childMaps = hoistCmp.factory(
     ({model}) => {
