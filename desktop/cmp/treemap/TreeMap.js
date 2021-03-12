@@ -108,6 +108,7 @@ class LocalModel extends HoistModel {
         const chartDependencies = () => ([
             this.chartRef.current,
             model.highChartsConfig,
+            model.algorithm,
             model.data,
             XH.darkTheme
         ]);

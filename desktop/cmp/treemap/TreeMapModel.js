@@ -162,8 +162,7 @@ export class TreeMapModel extends HoistModel {
                 this.labelField,
                 this.valueField,
                 this.heatField,
-                this.maxDepth,
-                this.algorithm
+                this.maxDepth
             ],
             run: ([rawData]) => {
                 this.processAndSetData(rawData);
