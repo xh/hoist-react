@@ -162,7 +162,8 @@ export class TreeMapModel extends HoistModel {
                 this.labelField,
                 this.valueField,
                 this.heatField,
-                this.maxDepth
+                this.maxDepth,
+                this.algorithm
             ],
             run: ([rawData]) => {
                 this.processAndSetData(rawData);
@@ -183,17 +184,16 @@ export class TreeMapModel extends HoistModel {
 
     @computed
     get valueFieldLabel() {
-        const field = this.store.fields.find(it => it.name === this.valueField);
+        const field = this.store.getField(this.valueField);
         return field ? field.displayName : this.valueField;
     }
 
     @computed
     get heatFieldLabel() {
-        const field = this.store.fields.find(it => it.name === this.heatField);
+        const field = this.store.getField(this.heatField);
         return field ? field.displayName : this.heatField;
     }
 
-    @computed
     get selectedIds() {
         return this.gridModel?.selModel.ids ?? [];
     }
@@ -211,8 +211,9 @@ export class TreeMapModel extends HoistModel {
 
     @computed
     get error() {
-        if (this.data.length > this.maxNodes) return 'Data node limit reached. Unable to render TreeMap.';
-        return null;
+        return (this.data.length > this.maxNodes) ?
+            'Data node limit reached. Unable to render TreeMap.' :
+            null;
     }
 
     //-------------------------
@@ -234,10 +235,10 @@ export class TreeMapModel extends HoistModel {
             ret = [];
 
         sourceRecords.forEach(record => {
-            const {id, children, treePath} = record,
-                name = record.data[labelField],
-                value = record.data[valueField],
-                heatValue = record.data[heatField];
+            const {id, children, data, treePath} = record,
+                name = data[labelField],
+                value = data[valueField],
+                heatValue = data[heatField];
 
             // Skip records without value
             if (!value) return;
@@ -287,20 +288,20 @@ export class TreeMapModel extends HoistModel {
      *  by a few nodes at the extremes.
      */
     normaliseColorValues(data) {
-        const {colorMode} = this;
+        const {colorMode, heatField} = this;
         if (!data.length || colorMode === 'none') return data;
 
         // 1) Extract valid heat values
         const heatValues = [];
         this.store.records.forEach(it => {
-            const val = it.get(this.heatField);
+            const val = it.get(heatField);
             if (this.valueIsValid(val)) heatValues.push(val);
         });
 
         // 2) Split heat values into positive and negative
         let [posHeatValues, negHeatValues] = partition(heatValues, it => it > 0);
         posHeatValues = sortBy(posHeatValues);
-        negHeatValues = sortBy(negHeatValues.map(it => Math.abs(it)));
+        negHeatValues = sortBy(negHeatValues.map(Math.abs));
 
         // 3) Calculate bounds and midpoints for each range
         let minPosHeat = 0, midPosHeat = 0, maxPosHeat = 0, minNegHeat = 0, midNegHeat = 0, maxNegHeat = 0;
@@ -406,18 +407,20 @@ export class TreeMapModel extends HoistModel {
     // Click handling
     //----------------------
     defaultOnClick = (record, e) => {
-        if (!this.gridModel) return;
+        const {gridModel} = this;
+        if (!gridModel) return;
 
         // Select nodes in grid
-        const {selModel} = this.gridModel;
+        const {selModel} = gridModel;
         if (selModel.mode === 'disabled') return;
 
         const multiSelect = selModel.mode === 'multiple' && e.shiftKey;
         selModel.select(record, !multiSelect);
+        gridModel.ensureSelectionVisibleAsync();
     };
 
     defaultOnDoubleClick = (record) => {
-        if (!this.gridModel || !this.gridModel.treeMode || isEmpty(record.children)) return;
+        if (!this.gridModel?.treeMode || isEmpty(record.children)) return;
         this.toggleNodeExpanded(record.treePath);
     };
 
