@@ -8,7 +8,7 @@ import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {box, div, placeholder} from '@xh/hoist/cmp/layout';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
-import {start} from '@xh/hoist/promise';
+import {wait} from '@xh/hoist/promise';
 import {withShortDebug} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps, useOnResize, useOnVisibleChange} from '@xh/hoist/utils/react';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
@@ -184,7 +184,8 @@ class LocalModel extends HoistModel {
     }
 
     startResize = ({width, height}) => {
-        if (!this.chart) return;
+        const {chart, model} = this;
+        if (!chart || model.isResizing) return;
 
         // Resizing can take time if there are a lot of nodes, leaving undesirable whitespace.
         // Apply a mask if the amount of whitespace is 'significant' enough to warrant masking.
@@ -193,30 +194,30 @@ class LocalModel extends HoistModel {
         width = Math.round(width);
         height = Math.round(height);
 
-        const currentWidth = this.chart.clipBox.width,
-            currentHeight = this.chart.clipBox.height,
+        const currentWidth = chart.clipBox.width,
+            currentHeight = chart.clipBox.height,
             widthChange = width - currentWidth,
             heightChange = height - currentHeight,
             threshold = 50;
 
         if (widthChange > threshold || heightChange > threshold) {
-            this.model.setIsResizing(true);
+            model.setIsResizing(true);
         }
     }
 
     onResizeAsync = async ({width, height}) => {
-        if (!this.chart) return;
+        const {chart, model} = this;
+        if (!chart) return;
 
         width = Math.round(width);
         height = Math.round(height);
 
-        await start(() => {
-            if (width > 0 && height > 0) {
-                this.chart.setSize(width, height, false);
-            }
-        });
+        if (width > 0 && height > 0) {
+            this.chart.setSize(width, height, false);
+        }
+        await wait(0);
 
-        this.model.setIsResizing(false);
+        model.setIsResizing(false);
         this.updateLabelVisibility();
     };
 
