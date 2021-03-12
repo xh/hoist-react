@@ -503,20 +503,35 @@ class LocalModel extends HoistModel {
 
                 // 1) Columns all in right place -- simply update incorrect props we maintain
                 if (isEqual(colState.map(c => c.colId), agColState.map(c => c.colId))) {
+                    let hasChanges = false;
                     colState.forEach((col, index) => {
                         const agCol = agColState[index],
                             id = col.colId;
 
-                        if (agCol.width != col.width) {
+                        if (agCol.width !== col.width) {
                             colApi.setColumnWidth(id, col.width);
+                            hasChanges = true;
                         }
-                        if (agCol.hide != col.hidden) {
+                        if (agCol.hide !== col.hidden) {
                             colApi.setColumnVisible(id, !col.hidden);
+                            hasChanges = true;
                         }
-                        if (agCol.pinned != col.pinned) {
+                        if (agCol.pinned !== col.pinned) {
                             colApi.setColumnPinned(id, col.pinned);
+                            hasChanges = true;
                         }
                     });
+
+                    // We need to tell agGrid to refresh its flexed column sizes due to
+                    // a regression introduced in 25.1.0
+                    // See: https://github.com/xh/hoist-react/issues/2341
+                    if (hasChanges) {
+                        colApi.columnController.refreshFlexedColumns({
+                            updateBodyWidths: true,
+                            fireResizedEvent: true
+                        });
+                    }
+
                     return;
                 }
 
