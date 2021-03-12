@@ -92,6 +92,7 @@ class LocalModel extends HoistModel {
     /** @member {TreeMapModel} */
     model;
     chartRef = createObservableRef();
+
     chart = null;
     clickCount = 0;
 
@@ -103,24 +104,24 @@ class LocalModel extends HoistModel {
         this.clickCount = 0;
         this.debouncedClickHandler = debounce(this.clickHandler, 500);
 
-        // Render HighChart when chartElem container ready in DOM, a relevant observable on the
-        // model API changes, and/or the source data array itself changes.
+        // Render HighChart when chartElem container ready in DOM, or dependencies updated
+        const chartDependencies = () => ([
+            this.chartRef.current,
+            model.highChartsConfig,
+            model.algorithm,
+            model.data,
+            XH.darkTheme
+        ]);
+
         this.addReaction({
-            track: () => [
-                XH.darkTheme,
-                this.chartRef.current,
-                model.highChartsConfig,
-                model.algorithm,
-                model.data
-            ],
+            track: chartDependencies,
             run: () => this.createOrReloadHighChart()
         });
 
-        // Sync selection on a deferred basis when model selection or data changes.
         this.addReaction({
-            track: () => [model.selectedIds, model.data],
+            track: () => [model.selectedIds, chartDependencies()],
             run: () => this.syncSelection(),
-            delay: 1 // Must wait for chart re-render triggered above.
+            debounce: 1  // prevents chattiness on reload and provides needed delay for chart to render
         });
     }
 
@@ -201,10 +202,8 @@ class LocalModel extends HoistModel {
     }
 
     destroyHighChart() {
-        if (this.chart) {
-            this.chart.destroy();
-            this.chart = null;
-        }
+        this.chart?.destroy();
+        this.chart = null;
     }
 
     //----------------------
@@ -301,7 +300,7 @@ class LocalModel extends HoistModel {
 
         // Fallback to parent node if selection exceeds max depth
         let toSelect;
-        if (maxDepth && gridModel && gridModel.treeMode) {
+        if (maxDepth && gridModel?.treeMode) {
             toSelect = new Set(selectedIds.map(id => {
                 const record = store.getById(id);
                 return record ? record.treePath.slice(0, maxDepth).pop() : null;
@@ -314,8 +313,6 @@ class LocalModel extends HoistModel {
         this.chart.series[0].data.forEach(node => {
             node.select(toSelect.has(node.id), true);
         });
-
-        gridModel?.ensureSelectionVisibleAsync();
     }
 
     //----------------------
@@ -327,11 +324,12 @@ class LocalModel extends HoistModel {
         // Show / hide labels by comparing label size to node size
         let hasChanges = false;
         this.chart.series[0].data.forEach(node => {
-            if (node.dataLabel && node.graphic) {
+            const {dataLabel, graphic} = node;
+            if (dataLabel && graphic) {
                 const buffer = 10,
-                    tooSmallWidth = (node.dataLabel.width + buffer) > node.graphic.element.width.baseVal.value,
-                    tooSmallHeight = (node.dataLabel.height + buffer) > node.graphic.element.height.baseVal.value,
-                    currentVisibility = node.dataLabel.styles.visibility,
+                    tooSmallWidth = (dataLabel.width + buffer) > graphic.element.width.baseVal.value,
+                    tooSmallHeight = (dataLabel.height + buffer) > graphic.element.height.baseVal.value,
+                    currentVisibility = dataLabel.styles.visibility,
                     newVisibility = tooSmallWidth || tooSmallHeight ? 'hidden' : 'visible';
 
                 if (currentVisibility !== newVisibility) {
@@ -343,9 +341,7 @@ class LocalModel extends HoistModel {
         });
 
         if (hasChanges) {
-            withShortDebug('Redrawing TreeMap due to label visibility change', () => {
-                this.chart.redraw();
-            }, this);
+            this.chart.redraw();
         }
     }
 
@@ -353,14 +349,15 @@ class LocalModel extends HoistModel {
     // Tooltip
     //----------------------
     defaultTooltip = (record) => {
-        const {labelField, valueField, heatField, valueFieldLabel, heatFieldLabel, valueRenderer, heatRenderer} = this.model,
-            name = record.data[labelField],
-            value = record.data[valueField],
-            heat = record.data[heatField],
+        const {model} = this,
+            {labelField, valueField, heatField, valueFieldLabel, heatFieldLabel, valueRenderer, heatRenderer} = model,
+            name = record.get(labelField),
+            value = record.get(valueField),
+            heat = record.get(heatField),
             labelDiv = `<div class='xh-treemap-tooltip__label'>${name}</div>`;
 
         let valueDiv = '';
-        if (this.model.valueIsValid(value)) {
+        if (model.valueIsValid(value)) {
             valueDiv = (`
                 <div class='xh-treemap-tooltip__row'>
                     <div>${valueFieldLabel}:</div>
@@ -370,7 +367,7 @@ class LocalModel extends HoistModel {
         }
 
         let heatDiv = '';
-        if (valueField !== heatField && this.model.valueIsValid(heat)) {
+        if (valueField !== heatField && model.valueIsValid(heat)) {
             heatDiv = (`
                 <div class='xh-treemap-tooltip__row'>
                     <div>${heatFieldLabel}:</div>

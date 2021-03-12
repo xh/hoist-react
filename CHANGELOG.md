@@ -9,6 +9,8 @@
   not changes to its data.
 * The `HoistBase.addReaction()` now accepts convenient string values for its `equals` flag.
 * New method `setDefaultTimeout` on `FetchService`.
+* New method `ChartModel.updateHighchartsConfig()` provides a more convenient API for changing
+    chart display.
 
 ### 💥 Breaking Changes
 
