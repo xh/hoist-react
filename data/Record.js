@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, has} from 'lodash';
+import {isNil} from 'lodash';
 
 /**
  * Wrapper object for each data element within a {@see Store}. Records must be assigned a unique ID
@@ -66,13 +66,10 @@ export class Record {
 
     /**
      * Return the current value of a field.
-     * This value will throw if the specified field is not present in this store.
      * @returns {*}
      */
     get(fieldName) {
-        const {data} = this;
-        throwIf(!has(data, fieldName), `Cannot access data for unknown field: '${fieldName}'`);
-        return data[fieldName];
+        return this.data[fieldName];
     }
 
     /**
