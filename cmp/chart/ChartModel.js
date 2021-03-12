@@ -43,7 +43,7 @@ export class ChartModel extends HoistModel {
      * @param {Object} config - Highcharts configuration object. May include any
      *      Highcharts options other than `series`, which should be set via `setSeries()`.
      *
-     *      See also {@see applyHighChartsConfig} for a method that will allow updating individual
+     *      See also {@see updateHighChartsConfig} for a method that will allow updating individual
      *      properties in this object.
      */
     @action
