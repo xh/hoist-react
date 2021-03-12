@@ -523,8 +523,7 @@ class LocalModel extends HoistModel {
                     });
 
                     // We need to tell agGrid to refresh its flexed column sizes due to
-                    // a regression introduced in 25.1.0
-                    // See: https://github.com/xh/hoist-react/issues/2341
+                    // a regression introduced in 25.1.0.  See #2341
                     if (hasChanges) {
                         colApi.columnController.refreshFlexedColumns({
                             updateBodyWidths: true,
