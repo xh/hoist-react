@@ -28,6 +28,7 @@
   * Auto-refresh is suspended.
   * The `forEachAsync()` and `whileAsync()` utils run synchronously, without inserting waits that
     would be overly throttled by the browser.
+*  Updates to support compatibility with agGrid 25.1.0.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.3.0...develop)
 
