@@ -11,7 +11,7 @@ import {capitalizeWords, fmtDate} from '@xh/hoist/format';
 import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {cloneDeep, sortBy} from 'lodash';
+import {sortBy} from 'lodash';
 import moment from 'moment';
 
 export class ChartsModel extends HoistModel {
@@ -77,7 +77,7 @@ export class ChartsModel extends HoistModel {
     }
 
     get showAsTimeseries() {
-        return this.dimensions[0] == 'day';
+        return this.dimensions[0] === 'day';
     }
 
     /** @returns {ChartModel} */
@@ -115,12 +115,14 @@ export class ChartsModel extends HoistModel {
 
     loadChart() {
         const {showAsTimeseries, chartModel, primaryDim} = this,
-            series = this.getSeriesData(),
-            highchartsConfig = cloneDeep(chartModel.highchartsConfig);
+            series = this.getSeriesData();
 
-        if (!showAsTimeseries) highchartsConfig.xAxis.title.text = this.getUnitsForDim(primaryDim);
+        if (!showAsTimeseries) {
+            chartModel.updateHighchartsConfig({
+                xAxis: {title: {text: this.getUnitsForDim(primaryDim)}}
+            });
+        }
 
-        chartModel.setHighchartsConfig(highchartsConfig);
         chartModel.setSeries(series);
     }
 
