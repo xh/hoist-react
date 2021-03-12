@@ -14,6 +14,7 @@ import {createObservableRef, getLayoutProps, useOnResize, useOnVisibleChange} fr
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import composeRefs from '@seznam/compose-react-refs';
 import equal from 'fast-deep-equal';
+import classNames from 'classnames';
 import PT from 'prop-types';
 
 import './TreeMap.scss';
@@ -35,7 +36,6 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     className: 'xh-treemap',
 
     render({model, className, ...props}, ref) {
-
         if (!Highcharts) {
             console.error(
                 'Highcharts has not been imported in to this application. Please import and ' +
@@ -47,6 +47,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
         const impl = useLocalModel(() => new LocalModel(model));
         ref = composeRefs(
             ref,
+            useOnResize(impl.startResize),
             useOnResize(impl.onResizeAsync, {debounce: 100}),
             useOnVisibleChange(impl.onVisibleChange)
         );
@@ -59,7 +60,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
 
         // Render child item - note this will NOT render the actual HighCharts viz - only a shell
         // div to hold one. The chart itself will be rendered once the shell's ref resolves.
-        const {error, emptyText, hasData} = model;
+        const {error, emptyText, hasData, isResizing} = model;
         let item;
         if (error) {
             item = errorMessage({error});
@@ -67,7 +68,10 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
             item = placeholder(emptyText);
         } else {
             item = div({
-                className: 'xh-treemap__chart-holder',
+                className: classNames(
+                    'xh-treemap__chart-holder',
+                    isResizing ? 'xh-treemap__chart-holder--resizing' : null
+                ),
                 ref: impl.chartRef
             });
         }
@@ -85,7 +89,6 @@ TreeMap.propTypes = {
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(TreeMapModel), PT.object])
 };
-
 
 class LocalModel extends HoistModel {
 
@@ -180,13 +183,40 @@ class LocalModel extends HoistModel {
         }, this);
     }
 
+    startResize = ({width, height}) => {
+        if (!this.chart) return;
+
+        // Resizing can take time if there are a lot of nodes, leaving undesirable whitespace.
+        // Apply a mask if the amount of whitespace is 'significant' enough to warrant masking.
+        // Use a heuristic to determine if the amount of whitespace is 'significant'. Whitespace
+        // is deemed to be significant if it extends beyond 50px in either direction.
+        width = Math.round(width);
+        height = Math.round(height);
+
+        const currentWidth = this.chart.clipBox.width,
+            currentHeight = this.chart.clipBox.height,
+            widthChange = width - currentWidth,
+            heightChange = height - currentHeight,
+            threshold = 50;
+
+        if (widthChange > threshold || heightChange > threshold) {
+            this.model.setIsResizing(true);
+        }
+    }
+
     onResizeAsync = async ({width, height}) => {
         if (!this.chart) return;
+
+        width = Math.round(width);
+        height = Math.round(height);
+
         await start(() => {
             if (width > 0 && height > 0) {
                 this.chart.setSize(width, height, false);
             }
         });
+
+        this.model.setIsResizing(false);
         this.updateLabelVisibility();
     };
 

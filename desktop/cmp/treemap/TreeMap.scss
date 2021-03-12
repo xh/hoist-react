@@ -6,6 +6,15 @@
     right: 0;
     left: 0;
     bottom: 0;
+
+    // While resizing, we want to hide the chart svg but keep the component in place
+    &--resizing {
+      background: var(--xh-mask-bg);
+
+      svg {
+        display: none;
+      }
+    }
   }
 
   text > tspan {

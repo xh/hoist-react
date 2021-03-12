@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {TreeMapModel} from './TreeMapModel';
 
@@ -41,6 +41,11 @@ export class SplitTreeMapModel extends HoistModel {
     //------------------------
     /** @member {Object} */
     @bindable.ref highchartsConfig = {};
+
+    @computed
+    get isResizing() {
+        return this.primaryMapModel.isResizing || this.secondaryMapModel.isResizing;
+    }
 
     /**
      * @param {Object} c - SplitTreeMapModel configuration.
