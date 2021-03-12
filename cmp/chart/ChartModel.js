@@ -60,7 +60,7 @@ export class ChartModel extends HoistModel {
      */
     @action
     updateHighchartsConfig(update) {
-        this.highchartsConfig = merge(cloneDeep(...this.highchartsConfig), update);
+        this.highchartsConfig = merge(cloneDeep(this.highchartsConfig), update);
     }
 
     /** @param {(Object|Object[])} series - one or more data series to be charted. */
