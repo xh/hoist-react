@@ -7,7 +7,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray} from 'lodash';
+import {castArray, cloneDeep, merge} from 'lodash';
 
 /**
  * Model to hold and maintain the configuration and data series for a Highcharts chart.
@@ -38,12 +38,29 @@ export class ChartModel extends HoistModel {
     }
 
     /**
-     * @param {Object} config - Highcharts configuration object for the managed chart. May include any
-     *      Highcharts opts other than `series`, which should be set via `setSeries()`.
+     * Set the Highcharts configuration.
+     *
+     * @param {Object} config - Highcharts configuration object. May include any
+     *      Highcharts options other than `series`, which should be set via `setSeries()`.
+     *
+     *      See also {@see applyHighChartsConfig} for a method that will allow updating individual
+     *      properties in this object.
      */
     @action
     setHighchartsConfig(config) {
         this.highchartsConfig = config;
+    }
+
+
+    /**
+     *  Merge new properties settings into the Highcharts configuration (Deep merge)
+     *
+     * @param {Object} update - Updates to Highcharts configuration settings.  May include any
+     *      Highcharts options other than `series`, which should be set via `setSeries()`.
+     */
+    @action
+    updateHighchartsConfig(update) {
+        this.highchartsConfig = merge(cloneDeep(...this.highchartsConfig), update);
     }
 
     /** @param {(Object|Object[])} series - one or more data series to be charted. */
