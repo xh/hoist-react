@@ -11,6 +11,8 @@
 * New method `setDefaultTimeout` on `FetchService`.
 * New method `ChartModel.updateHighchartsConfig()` provides a more convenient API for changing
     chart display.
+* New property `LocalDate.isToday` provides a more convenient API for testing 
+    if a LocalDate is the same as the current day.
 
 ### 💥 Breaking Changes
 
