@@ -8,7 +8,8 @@ import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {box, div, placeholder} from '@xh/hoist/cmp/layout';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
-import {start} from '@xh/hoist/promise';
+import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {wait} from '@xh/hoist/promise';
 import {withShortDebug} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps, useOnResize, useOnVisibleChange} from '@xh/hoist/utils/react';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
@@ -35,7 +36,6 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     className: 'xh-treemap',
 
     render({model, className, ...props}, ref) {
-
         if (!Highcharts) {
             console.error(
                 'Highcharts has not been imported in to this application. Please import and ' +
@@ -47,6 +47,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
         const impl = useLocalModel(() => new LocalModel(model));
         ref = composeRefs(
             ref,
+            useOnResize(impl.startResize),
             useOnResize(impl.onResizeAsync, {debounce: 100}),
             useOnVisibleChange(impl.onVisibleChange)
         );
@@ -59,24 +60,31 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
 
         // Render child item - note this will NOT render the actual HighCharts viz - only a shell
         // div to hold one. The chart itself will be rendered once the shell's ref resolves.
-        const {error, emptyText, hasData} = model;
-        let item;
+        const {error, emptyText, hasData, isMasking} = model;
+        let items;
         if (error) {
-            item = errorMessage({error});
+            items = errorMessage({error});
         } else if (!hasData) {
-            item = placeholder(emptyText);
+            items = placeholder(emptyText);
         } else {
-            item = div({
-                className: 'xh-treemap__chart-holder',
-                ref: impl.chartRef
-            });
+            items = [
+                div({
+                    className: 'xh-treemap__chart-holder',
+                    ref: impl.chartRef
+                }),
+                div({
+                    omit: !isMasking,
+                    className: 'xh-treemap__mask-holder',
+                    item: mask({isDisplayed: true, spinner: true})
+                })
+            ];
         }
 
         return box({
             ...layoutProps,
             className,
             ref,
-            item
+            items
         });
     }
 });
@@ -85,7 +93,6 @@ TreeMap.propTypes = {
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(TreeMapModel), PT.object])
 };
-
 
 class LocalModel extends HoistModel {
 
@@ -180,13 +187,41 @@ class LocalModel extends HoistModel {
         }, this);
     }
 
+    startResize = ({width, height}) => {
+        const {chart, model} = this;
+        if (!chart || model.isMasking) return;
+
+        // Resizing can take time if there are a lot of nodes, leaving undesirable whitespace.
+        // Apply a mask if the amount of whitespace is 'significant' enough to warrant masking.
+        // Use a heuristic to determine if the amount of whitespace is 'significant'. Whitespace
+        // is deemed to be significant if it extends beyond 50px in either direction.
+        width = Math.round(width);
+        height = Math.round(height);
+
+        const currentWidth = chart.clipBox.width,
+            currentHeight = chart.clipBox.height,
+            widthChange = width - currentWidth,
+            heightChange = height - currentHeight,
+            threshold = 50;
+
+        if (widthChange > threshold || heightChange > threshold) {
+            model.setIsMasking(true);
+        }
+    }
+
     onResizeAsync = async ({width, height}) => {
-        if (!this.chart) return;
-        await start(() => {
-            if (width > 0 && height > 0) {
-                this.chart.setSize(width, height, false);
-            }
-        });
+        const {chart, model} = this;
+        if (!chart) return;
+
+        width = Math.round(width);
+        height = Math.round(height);
+
+        if (width > 0 && height > 0) {
+            chart.setSize(width, height, false);
+        }
+        await wait(0);
+
+        model.setIsMasking(false);
         this.updateLabelVisibility();
     };
 
