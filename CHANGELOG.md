@@ -11,8 +11,10 @@
 * New method `setDefaultTimeout` on `FetchService`.
 * New method `ChartModel.updateHighchartsConfig()` provides a more convenient API for changing
     chart display.
-* New property `LocalDate.isToday` provides a more convenient API for testing 
+* New property `LocalDate.isToday` provides a more convenient API for testing
     if a LocalDate is the same as the current day.
+* Desktop `Toolbar` now accepts `compact` prop. Set to `true` to render the toolbar with reduced
+  height and font-size.
 
 ### 💥 Breaking Changes
 
