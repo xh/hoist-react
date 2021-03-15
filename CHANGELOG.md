@@ -11,6 +11,8 @@
 * New method `setDefaultTimeout` on `FetchService`.
 * New method `ChartModel.updateHighchartsConfig()` provides a more convenient API for changing
     chart display.
+* New property `LocalDate.isToday` provides a more convenient API for testing 
+    if a LocalDate is the same as the current day.
 
 ### 💥 Breaking Changes
 
@@ -19,6 +21,9 @@
   * This change allows Hoist to defer construction of the `AppModel` until Hoist itself has been
     initialized, and also better reflects the special status of this function and when it is called
     in the Hoist lifecycle.
+* Hoist grids now require ag-Grid v25.1.0 or higher - update your ag-Grid dependency in your app's
+  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for
+  details.
 
 ### ⚙️ Technical
 
@@ -28,6 +33,15 @@
   * Auto-refresh is suspended.
   * The `forEachAsync()` and `whileAsync()` utils run synchronously, without inserting waits that
     would be overly throttled by the browser.
+*  Updates to support compatibility with agGrid 25.1.0.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.39 -> 3.41`
+* @blueprintjs/datetime `3.20 -> 3.21`
+* @popperjs/core `2.8 -> 2.9`
+* core-js `3.8 -> 3.9`
+* react-select `4.1 -> 4.2`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.3.0...develop)
 
