@@ -1,13 +1,11 @@
 .xh-split-treemap {
-  &--resizing {
-    background: var(--xh-mask-bg);
-
-    .xh-panel {
-      visibility: hidden;
-    }
-
-    svg {
-      display: none;
-    }
+  &__mask-holder {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    background: var(--xh-bg);
+    z-index: 20;
   }
 }

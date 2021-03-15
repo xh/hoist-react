@@ -8,13 +8,13 @@ import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {box, div, placeholder} from '@xh/hoist/cmp/layout';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
+import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {wait} from '@xh/hoist/promise';
 import {withShortDebug} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps, useOnResize, useOnVisibleChange} from '@xh/hoist/utils/react';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import composeRefs from '@seznam/compose-react-refs';
 import equal from 'fast-deep-equal';
-import classNames from 'classnames';
 import PT from 'prop-types';
 
 import './TreeMap.scss';
@@ -60,27 +60,31 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
 
         // Render child item - note this will NOT render the actual HighCharts viz - only a shell
         // div to hold one. The chart itself will be rendered once the shell's ref resolves.
-        const {error, emptyText, hasData, isResizing} = model;
-        let item;
+        const {error, emptyText, hasData, isMasking} = model;
+        let items;
         if (error) {
-            item = errorMessage({error});
+            items = errorMessage({error});
         } else if (!hasData) {
-            item = placeholder(emptyText);
+            items = placeholder(emptyText);
         } else {
-            item = div({
-                className: classNames(
-                    'xh-treemap__chart-holder',
-                    isResizing ? 'xh-treemap__chart-holder--resizing' : null
-                ),
-                ref: impl.chartRef
-            });
+            items = [
+                div({
+                    className: 'xh-treemap__chart-holder',
+                    ref: impl.chartRef
+                }),
+                div({
+                    omit: !isMasking,
+                    className: 'xh-treemap__mask-holder',
+                    item: mask({isDisplayed: true, spinner: true})
+                })
+            ];
         }
 
         return box({
             ...layoutProps,
             className,
             ref,
-            item
+            items
         });
     }
 });
@@ -185,7 +189,7 @@ class LocalModel extends HoistModel {
 
     startResize = ({width, height}) => {
         const {chart, model} = this;
-        if (!chart || model.isResizing) return;
+        if (!chart || model.isMasking) return;
 
         // Resizing can take time if there are a lot of nodes, leaving undesirable whitespace.
         // Apply a mask if the amount of whitespace is 'significant' enough to warrant masking.
@@ -201,7 +205,7 @@ class LocalModel extends HoistModel {
             threshold = 50;
 
         if (widthChange > threshold || heightChange > threshold) {
-            model.setIsResizing(true);
+            model.setIsMasking(true);
         }
     }
 
@@ -213,11 +217,11 @@ class LocalModel extends HoistModel {
         height = Math.round(height);
 
         if (width > 0 && height > 0) {
-            this.chart.setSize(width, height, false);
+            chart.setSize(width, height, false);
         }
         await wait(0);
 
-        model.setIsResizing(false);
+        model.setIsMasking(false);
         this.updateLabelVisibility();
     };
 

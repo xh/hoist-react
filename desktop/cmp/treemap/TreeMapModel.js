@@ -75,7 +75,7 @@ export class TreeMapModel extends HoistModel {
     /** @member {string} */
     @bindable colorMode;
     /** @member {boolean} */
-    @bindable isResizing;
+    @bindable isMasking;
 
     _filter;
 

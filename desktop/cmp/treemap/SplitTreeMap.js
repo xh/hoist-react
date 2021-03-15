@@ -4,12 +4,12 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
+import {fragment, hframe, vframe, div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
+import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {compact, uniq} from 'lodash';
-import classNames from 'classnames';
 import PT from 'prop-types';
 import React from 'react';
 
@@ -28,16 +28,13 @@ export const [SplitTreeMap, splitTreeMap]  = hoistCmp.withFactory({
     className: 'xh-split-treemap',
 
     render({model, className, ...props}, ref) {
-        const {primaryMapModel, secondaryMapModel, orientation, isResizing} = model,
+        const {primaryMapModel, secondaryMapModel, orientation} = model,
             errors = uniq(compact([primaryMapModel.error, secondaryMapModel.error])),
             container = orientation === 'horizontal' ? hframe : vframe;
 
         return container({
             ref,
-            className: classNames(
-                className,
-                isResizing ? 'xh-split-treemap--resizing' : null
-            ),
+            className,
             items: errors.length ? errorPanel({errors}) : childMaps(),
             ...props
         });
@@ -51,7 +48,7 @@ SplitTreeMap.propTypes = {
 
 const childMaps = hoistCmp.factory(
     ({model}) => {
-        const {primaryMapModel, secondaryMapModel, mapTitleFn} = model,
+        const {primaryMapModel, secondaryMapModel, mapTitleFn, isMasking} = model,
             pTotal = primaryMapModel.total,
             sTotal = secondaryMapModel.total;
 
@@ -78,6 +75,11 @@ const childMaps = hoistCmp.factory(
                 compactHeader: true,
                 item: treeMap({model: secondaryMapModel}),
                 flex: sFlex
+            }),
+            div({
+                omit: !isMasking,
+                className: 'xh-split-treemap__mask-holder',
+                item: mask({isDisplayed: true, spinner: true})
             })
         ]);
     }

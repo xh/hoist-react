@@ -43,8 +43,8 @@ export class SplitTreeMapModel extends HoistModel {
     @bindable.ref highchartsConfig = {};
 
     @computed
-    get isResizing() {
-        return this.primaryMapModel.isResizing || this.secondaryMapModel.isResizing;
+    get isMasking() {
+        return this.primaryMapModel.isMasking || this.secondaryMapModel.isMasking;
     }
 
     /**
