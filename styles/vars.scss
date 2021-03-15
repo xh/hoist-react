@@ -644,10 +644,17 @@ body {
   --xh-tbar-border-color: var(--tbar-border-color, #{mc('grey', '400')});
   --xh-tbar-item-pad: var(--tbar-item-pad, var(--xh-pad-half));
   --xh-tbar-item-pad-px: calc(var(--xh-tbar-item-pad) * 1px);
+  --xh-tbar-font-size: var(--tbar-font-size, var(--xh-font-size));
+  --xh-tbar-font-size-px: calc(var(--xh-tbar-font-size) * 1px);
   --xh-tbar-min-size: var(--tbar-min-size, 41);
   --xh-tbar-min-size-px: calc(var(--xh-tbar-min-size) * 1px);
   --xh-tbar-separator-color: var(--tbar-separator-color, #{mc('grey', '400')});
   --xh-tbar-text-color: var(--tbar-text-color, var(--xh-text-color));
+  --xh-tbar-compact-font-size: var(--tbar-compact-font-size, var(--xh-font-size-small));
+  --xh-tbar-compact-font-size-px: calc(var(--xh-tbar-compact-font-size) * 1px);
+  --xh-tbar-compact-min-size: var(--tbar-compact-min-size, 24);
+  --xh-tbar-compact-min-size-px: calc(var(--xh-tbar-compact-min-size) * 1px);
+  --xh-tbar-compact-item-height-px: calc(var(--xh-tbar-compact-min-size-px) - 4px);
 
   &.xh-dark {
     --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
