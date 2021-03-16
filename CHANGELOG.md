@@ -3,7 +3,47 @@
 ## v39.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-* Support for string values for `equals` flag on `HoistBase.addReaction()`.
+
+* New property `selectedRecordId` on `StoreSelectionModel`, `GridModel`, and `DataViewModel`. Observe
+  this instead of `selectedRecord` when you wish to track only the `id` of the selected record and
+  not changes to its data.
+* The `HoistBase.addReaction()` now accepts convenient string values for its `equals` flag.
+* New method `setDefaultTimeout` on `FetchService`.
+* New method `ChartModel.updateHighchartsConfig()` provides a more convenient API for changing
+    chart display.
+* New property `LocalDate.isToday` provides a more convenient API for testing
+    if a LocalDate is the same as the current day.
+* Desktop `Toolbar` now accepts `compact` prop. Set to `true` to render the toolbar with reduced
+  height and font-size.
+
+### 💥 Breaking Changes
+
+* The method `HoistAppModel.preAuthInitAsync()` has been renamed to `preAuthAsync()` and should now
+  be defined as `static` within apps that implement it to run custom pre-authentication routines.
+  * This change allows Hoist to defer construction of the `AppModel` until Hoist itself has been
+    initialized, and also better reflects the special status of this function and when it is called
+    in the Hoist lifecycle.
+* Hoist grids now require ag-Grid v25.1.0 or higher - update your ag-Grid dependency in your app's
+  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for
+  details.
+
+### ⚙️ Technical
+
+* Improvements to behavior/performance of apps in hidden/inactive browser tabs. See the
+  [page visibility API reference](https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API)
+  for details. Now, when the browser tab is hidden:
+  * Auto-refresh is suspended.
+  * The `forEachAsync()` and `whileAsync()` utils run synchronously, without inserting waits that
+    would be overly throttled by the browser.
+*  Updates to support compatibility with agGrid 25.1.0.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.39 -> 3.41`
+* @blueprintjs/datetime `3.20 -> 3.21`
+* @popperjs/core `2.8 -> 2.9`
+* core-js `3.8 -> 3.9`
+* react-select `4.1 -> 4.2`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.3.0...develop)
 
@@ -11,10 +51,10 @@
 
 ### 🎁 New Features
 
-* New options on `Store` to help optimize loading of large data sets: `freezeData` and
-`idEncodesTreePath`.
-
-* New option on `ColChooserModel` to force column resizing: `autosizeOnCommit`
+* New `Store.freezeData` and `Store.idEncodesTreePath` configs added as performance optimizations
+  when loading very large data sets (50k+ rows).
+* New `ColChooserModel.autosizeOnCommit` config triggers an autosize run whenever the chooser is
+  closed. (Defaulted to true on mobile.)
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.2.0...v38.3.0)
 

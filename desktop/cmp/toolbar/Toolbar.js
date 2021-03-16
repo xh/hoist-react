@@ -30,7 +30,8 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
     render({
         children,
         className,
-        vertical,
+        compact = false,
+        vertical = false,
         enableOverflowMenu = false,
         collapseFrom = 'end',
         minVisibleItems,
@@ -52,8 +53,9 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
             ...rest,
             className: classNames(
                 className,
-                overflow ? 'xh-toolbar--overflow' : null,
-                vertical ? 'xh-toolbar--vertical' : null
+                compact ? 'xh-toolbar--compact' : null,
+                vertical ? 'xh-toolbar--vertical' : null,
+                overflow ? 'xh-toolbar--overflow' : null
             ),
             items: overflow ?
                 overflowBox({items, minVisibleItems, collapseFrom}) :
@@ -62,10 +64,12 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
     }
 });
 
-
 Toolbar.propTypes = {
     /** Custom classes that will be applied to this component */
     className: PT.string,
+
+    /** Set to true to style toolbar with reduced height and font-size. */
+    compact: PT.bool,
 
     /** Set to true to vertically align the items of this toolbar */
     vertical: PT.bool,

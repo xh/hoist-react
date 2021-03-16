@@ -1,5 +1,6 @@
 .xh-toolbar {
   padding: var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px) var(--xh-pad-half-px);
+  font-size: var(--xh-tbar-font-size-px);
   color: var(--xh-tbar-text-color);
   background-color: var(--xh-tbar-bg);
   width: 100%;
@@ -61,7 +62,7 @@
     width: var(--xh-tbar-min-size-px);
     padding: 0 var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px);
 
-    > *:not([class*='xh-no-pad']) {
+    &:not(.xh-toolbar--overflow) > *:not([class*='xh-no-pad']) {
       margin-top: var(--xh-tbar-item-pad-px);
       margin-left: 0;
     }
@@ -77,6 +78,102 @@
 
     &:last-child {
       border-left: 1px solid var(--xh-tbar-border-color);
+    }
+  }
+
+  // Compact mode
+  &--compact {
+    font-size: var(--xh-tbar-compact-font-size-px);
+
+    &:not(.xh-toolbar--vertical) {
+      min-height: unset;
+      height: var(--xh-tbar-compact-min-size-px);
+
+      .xh-toolbar__separator {
+        height: 12px;
+      }
+    }
+
+    &.xh-toolbar--vertical {
+      width: var(--xh-tbar-compact-min-size-px);
+
+      .xh-toolbar__separator {
+        width: 12px;
+      }
+    }
+
+    // Compact toolbar buttons
+    .xh-app.xh-dark.bp3-dark &,
+    .xh-app & {
+      button.xh-button.bp3-button.xh-button--minimal,
+      button.xh-button.bp3-button.xh-button--standard,
+      button.xh-button.bp3-button.xh-button--outlined {
+        padding: 3px var(--xh-pad-half-px);
+        min-height: var(--xh-tbar-compact-item-height-px);
+        max-height: var(--xh-tbar-compact-item-height-px);
+        font-size: var(--xh-tbar-compact-font-size-px);
+
+        svg:not(:last-child) {
+          margin-right: 4px;
+        }
+      }
+    }
+
+    // Compact toolbar inputs
+    .xh-input {
+      max-height: var(--xh-tbar-compact-item-height-px);
+      min-height: var(--xh-tbar-compact-item-height-px);
+
+      .bp3-input-group {
+        > input {
+          max-height: var(--xh-tbar-compact-item-height-px);
+          min-height: var(--xh-tbar-compact-item-height-px);
+        }
+
+        // Buttons inside other input elements
+        .bp3-button {
+          max-height: var(--xh-tbar-compact-item-height-px);
+          min-height: var(--xh-tbar-compact-item-height-px);
+        }
+
+        svg:not(.bp3-icon) {
+          font-size: 11px;
+          margin: 6px 2px;
+          opacity: 0.6;
+        }
+      }
+
+      &.xh-switch-input {
+        display: flex;
+        align-items: center;
+
+        .bp3-control-indicator {
+          margin-top: 1px;
+          margin-right: var(--xh-pad-half-px);
+        }
+      }
+
+      &.xh-select {
+        display: flex;
+        align-items: center;
+
+        .xh-select__control {
+          max-height: var(--xh-tbar-compact-item-height-px);
+          min-height: var(--xh-tbar-compact-item-height-px);
+        }
+
+        .xh-select__value-container {
+          max-height: var(--xh-tbar-compact-item-height-px);
+          min-height: var(--xh-tbar-compact-item-height-px);
+
+          & > * {
+            margin-top: 0;
+            margin-bottom: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+          }
+        }
+      }
     }
   }
 

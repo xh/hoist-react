@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {TreeMapModel} from './TreeMapModel';
 
@@ -42,6 +42,11 @@ export class SplitTreeMapModel extends HoistModel {
     /** @member {Object} */
     @bindable.ref highchartsConfig = {};
 
+    @computed
+    get isMasking() {
+        return this.primaryMapModel.isMasking || this.secondaryMapModel.isMasking;
+    }
+
     /**
      * @param {Object} c - SplitTreeMapModel configuration.
      * @param {SplitTreeMapFilterFn} [c.mapFilter] - filter used to allocate records between the
@@ -66,28 +71,19 @@ export class SplitTreeMapModel extends HoistModel {
         throwIf(!['vertical', 'horizontal'].includes(orientation), `Orientation "${orientation}" not recognised.`);
         this.orientation = orientation;
 
-        // Create child TreeMaps
-        this.primaryMapModel = new TreeMapModel({
-            ...rest,
-            filter: (record) => this.mapFilter(record)
-        });
-        this.secondaryMapModel = new TreeMapModel({
-            ...rest,
-            filter: (record) => !this.mapFilter(record)
-        });
+        this.primaryMapModel = new TreeMapModel({...rest, filter: (r) => this.mapFilter(r)});
+        this.secondaryMapModel = new TreeMapModel({...rest, filter: (r) => !this.mapFilter(r)});
     }
 
-    defaultMapFilter(record) {
-        const {valueField} = this.primaryMapModel;
-        return record.data[valueField] >= 0;
+    defaultMapFilter = (record) => {
+        return record.get(this.primaryMapModel.valueField) >= 0;
     }
-
 }
 
 /**
  * @callback SplitTreeMapFilterFn
  * @param {Record} record - record to evaluate for inclusion in the primary vs. secondary map.
- * @return {boolean} - true if record belongs to / should appear within the primary map, falsey to
+ * @return {boolean} - true if record belongs to / should appear within the primary map, falsy to
  *      have it allocated to the secondary map.
  */
 

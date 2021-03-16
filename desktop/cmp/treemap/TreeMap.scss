@@ -1,6 +1,22 @@
 .xh-treemap {
   &__chart-holder {
-    margin: auto;
+    // Positioned absolute within container so it doesn't affect outer flex
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+  }
+
+  // Mask intentionally covers but does not replace chart. We need to keep the
+  // chart component in place throughout.
+  &__mask-holder {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    background: var(--xh-bg);
   }
 
   text > tspan {
