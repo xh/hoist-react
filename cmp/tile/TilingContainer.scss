@@ -1,0 +1,7 @@
+.xh-tiling-container {
+  overflow-y: auto !important;
+
+  &__tile {
+    position: absolute !important;
+  }
+}

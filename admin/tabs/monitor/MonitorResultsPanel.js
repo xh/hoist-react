@@ -6,10 +6,11 @@
  */
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {monitorResultsDisplay} from './MonitorResultsDisplay';
+import {tilingContainer} from '@xh/hoist/cmp/tile';
+
+import './MonitorResultsPanel.scss';
 import {MonitorResultsModel} from './MonitorResultsModel';
 import {monitorResultsToolbar} from './MonitorResultsToolbar';
-import './MonitorResultsPanel.scss';
 
 export const monitorResultsPanel = hoistCmp.factory({
     model: creates(MonitorResultsModel),
@@ -20,7 +21,7 @@ export const monitorResultsPanel = hoistCmp.factory({
             mask: 'onLoad',
             className: 'xh-monitor-results-panel',
             tbar: monitorResultsToolbar(),
-            item: monitorResultsDisplay()
+            item: tilingContainer()
         });
     }
 });

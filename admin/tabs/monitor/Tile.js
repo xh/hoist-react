@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {div, vbox} from '@xh/hoist/cmp/layout';
+import {div, vframe, vbox} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -13,12 +13,12 @@ import './Tile.scss';
 
 export const tile = hoistCmp.factory(
     (props) => {
-        const {checksInStatus, lastStatusChanged, metric, metricUnit, message, name, status} = props.check,
+        const {checksInStatus, lastStatusChanged, metric, metricUnit, message, name, status} = props.data,
             {icon, statusText} = statusProperties(status),
             tileClass = 'xh-status-tile xh-status-tile-' + status.toLowerCase(),
             relativeString = getRelativeTimestamp(new Date(lastStatusChanged), {pastSuffix: ''});
 
-        return vbox({
+        return vframe({
             className: tileClass,
             items: [
                 div({
