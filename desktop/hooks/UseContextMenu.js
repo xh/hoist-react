@@ -48,6 +48,5 @@ export function useContextMenu(child, contextMenu) {
             ContextMenu.show(contextMenuOutput, {left: e.clientX, top: e.clientY}, null, XH.darkTheme);
         }
     };
-
     return cloneElement(child, {onContextMenu});
 }

@@ -6,6 +6,7 @@
  */
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
+import {useContextMenu} from '@xh/hoist/desktop/hooks';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -45,11 +46,11 @@ export const columnHeader = hoistCmp.factory({
             return div({className: 'xh-grid-header-sort-icon', item: icon});
         };
 
-        const menuIcon = () => {
+        const filterIcon = () => {
             if (!props.enableMenu) return null;
             return div({
-                className: 'xh-grid-header-menu-icon',
-                item: impl.isFiltered ? Icon.filter() : Icon.bars(),
+                className: impl.isFiltered ? 'xh-grid-header-menu-icon' : 'xh-grid-header-menu-ref',
+                item: impl.isFiltered ? Icon.filter() : null,
                 ref: impl.menuButtonRef,
                 onClick: (e) => {
                     e.stopPropagation();
@@ -89,7 +90,7 @@ export const columnHeader = hoistCmp.factory({
             };
         }
 
-        return div({
+        let headerCmp = div({
             className: classNames(props.className, extraClasses),
 
             onClick:        isDesktop  ? impl.onClick : null,
@@ -101,9 +102,20 @@ export const columnHeader = hoistCmp.factory({
             items: [
                 span({onMouseEnter, item: headerElem}),
                 sortIcon(),
-                menuIcon()
+                filterIcon()
             ]
         });
+
+        if (props.enableMenu) {
+            const contextMenu = [{
+                icon: Icon.filter(),
+                text: `Filter on ${props.displayName}`,
+                actionFn: () => props.showColumnMenu(impl.menuButtonRef.current)
+            }];
+            return useContextMenu(headerCmp, contextMenu);
+        }
+
+        return headerCmp;
     }
 });
 

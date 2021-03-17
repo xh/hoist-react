@@ -145,6 +145,7 @@ export class Column {
      *      of field name as a dot-separated path - e.g. `'country.name'` - where the default
      *      `getValueFn` will expect the field to be an object and render a nested property.
      *      False to support field names that contain dots *without* triggering this behavior.
+     * @param {boolean} [c.enableFilter] - true to enable ag-grid filter menu.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -202,6 +203,7 @@ export class Column {
         setValueFn,
         getValueFn,
         enableDotSeparatedFieldPath,
+        enableFilter,
         agOptions,
         ...rest
     }, gridModel) {
@@ -308,6 +310,8 @@ export class Column {
         this.editable = editable;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
+
+        this.enableFilter = enableFilter;
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -495,7 +499,7 @@ export class Column {
             );
         } else if (!agOptions.cellRenderer && !agOptions.cellRendererFramework) {
             // By always providing a minimal cell pass-through cellRenderer, we can ensure the
-            // cell contents are wrapped in a span by Ag-Grid. Our flexbox enabled cell styling
+            // cell contents are wrapped in a span by Ag-Grid. Our flbled cell styling
             // requires all cells to have an inner element to work properly. We check agOptions
             // in case the dev has specified either renderer option directly against the ag-Grid
             // API (done sometimes with components for performance reasons).
@@ -539,6 +543,11 @@ export class Column {
         if (this.autoHeight) {
             ret.autoHeight = true;
             ret.wrapText = true;
+        }
+
+        if (this.enableFilter) {
+            ret.suppressMenu = false;
+            ret.filter = 'agSetColumnFilter';
         }
 
         // Finally, apply explicit app requests.  The customer is always right....

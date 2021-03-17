@@ -66,6 +66,13 @@
     .xh-grid-header-menu-icon {
       cursor: pointer;
     }
+
+    // Ref to position grid header menu to right of display name
+    .xh-grid-header-menu-ref {
+      margin-top: var(--xh-pad-double-px);
+      margin-right: var(--xh-pad-half-px);
+      width: 0;
+    }
   }
 
   .xh-column-header-align-right {
@@ -311,5 +318,51 @@
   &--tiny {
     font-size: var(--xh-grid-tiny-header-font-size-px);
     padding: 0 var(--xh-grid-tiny-header-lr-pad-px);
+  }
+}
+
+
+//-------------------------
+// Grid Header Filter Menu
+//-------------------------
+.ag-filter {
+  & * {
+    font-family: var(--xh-button-font-family);
+  }
+}
+
+.ag-theme-balham .ag-mini-filter,
+.ag-theme-balham-dark .ag-mini-filter {
+  height: 25px;
+
+  .ag-text-field-input {
+    height: 25px;
+  }
+}
+
+.ag-filter-filter {
+  height: 25px;
+
+  .ag-input-field-input {
+    height: 25px;
+  }
+}
+
+.ag-theme-balham .ag-filter-apply-panel,
+.ag-theme-balham-dark .ag-filter-apply-panel {
+  padding: var(--xh-pad-half-px);
+
+  .ag-filter-apply-panel-button {
+    font-family: var(--xh-button-font-family);
+    font-size: var(--xh-button-font-size-small);
+    color: var(--xh-text-color);
+    background-color: transparent;
+    border: var(--xh-border-solid);
+    border-radius: var(--xh-border-radius-px);
+    height: 25px;
+  }
+
+  .ag-filter-apply-panel-button:hover {
+    background-color: var(--xh-button-active-bg);
   }
 }
