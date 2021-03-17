@@ -7,7 +7,7 @@
 import {HoistModel, managed, PersistenceProvider, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, apiRemoved, throwIf} from '@xh/hoist/utils/js';
-import {find, isUndefined, without, difference} from 'lodash';
+import {find, isString, isUndefined, without, difference} from 'lodash';
 import {TabModel} from './TabModel';
 
 /**
@@ -120,10 +120,11 @@ export class TabContainerModel extends HoistModel {
             this.addReaction({
                 track: () => this.activeTab,
                 run: (activeTab) => {
-                    const {route} = this;
+                    const {route} = this,
+                        {title, id} = activeTab;
                     XH.track({
                         category: 'Navigation',
-                        message: `Viewed ${activeTab.title} tab`,
+                        message: `Viewed ${isString(title) ? title : id} tab`,
                         // If using routing, data field specifies route for non-top-level tabs.
                         data: route && route !== 'default' ? {route: route} : null
                     });
