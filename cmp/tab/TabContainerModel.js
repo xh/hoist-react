@@ -195,10 +195,10 @@ export class TabContainerModel extends HoistModel {
             toActivate = this.nextTab ?? this.prevTab;
         }
         if (toRemove) {
-            this.setTabs(without(tabs, toRemove));
             if (toActivate) {
                 this.activateTab(toActivate);
             }
+            this.setTabs(without(tabs, toRemove));
         }
     }
 
