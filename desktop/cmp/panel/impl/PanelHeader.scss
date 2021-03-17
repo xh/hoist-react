@@ -40,7 +40,9 @@
     .xh-panel-header__title {
       writing-mode: vertical-lr;
       -ms-block-progression: lr;
-      width: calc(1em + 5px); // Width has to be font-size +5px for alignment as of potential Chrome 89 bug
+
+      // Width has to be font-size +5px for alignment // @see https://github.com/xh/hoist-react/issues/2335
+      width: calc(1em + 5px);
     }
 
     &.xh-panel-header--left {
