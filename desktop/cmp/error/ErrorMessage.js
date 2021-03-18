@@ -7,7 +7,7 @@
 import {hoistCmp} from '@xh/hoist/core';
 import {frame, div, p} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {isString, isFunction} from 'lodash';
+import {isString, isFunction, isNil} from 'lodash';
 import {isValidElement} from 'react';
 import PT from 'prop-types';
 
@@ -19,7 +19,7 @@ import './ErrorMessage.scss';
 export const [ErrorMessage, errorMessage] = hoistCmp.withFactory({
     className: 'xh-error-message',
     render({className, error, message, title, actionFn, actionButtonProps}, ref) {
-        if (!error) return null;
+        if (isNil(error)) return null;
 
         if (!message) {
             if (isString(error)) {
@@ -61,8 +61,8 @@ ErrorMessage.propTypes = {
     message: PT.oneOfType([PT.element, PT.string]),
 
     /**
-     * If provided, will render an action button which triggers this function,
-     * (see `actionButtonProps`).
+     * If provided, component will render an action button which triggers this function.
+     * Receives the value of the 'error' prop as its single argument.
      */
     actionFn: PT.func,
 
@@ -92,7 +92,7 @@ const actionButton = hoistCmp.factory(
         return button({
             text: 'Retry',
             minimal: false,
-            onClick: () => actionFn({error}),
+            onClick: () => actionFn(error),
             ...actionButtonProps
         });
     }
