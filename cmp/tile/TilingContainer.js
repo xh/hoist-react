@@ -45,6 +45,7 @@ export const [TilingContainer, tilingContainer] = hoistCmp.withFactory({
         minTileHeight,
         maxTileHeight
     }, ref) {
+        throwIf(!bind, 'TilingContainer must be bound to an observable array');
         throwIf(!content, 'TilingContainer requires content');
 
         const localModel = useLocalModel(() => new LocalModel({
@@ -83,7 +84,7 @@ TilingContainer.propTypes = {
      * Model property name from which this component should read its observable
      * collection of data objects.
      */
-    bind: PT.string,
+    bind: PT.string.isRequired,
 
     /**
      * Hoist Component (class or functional) to be rendered by this for each tile;
