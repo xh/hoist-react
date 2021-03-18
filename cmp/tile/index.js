@@ -5,4 +5,3 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 export * from './TilingContainer';
-export * from './TilingContainerModel';

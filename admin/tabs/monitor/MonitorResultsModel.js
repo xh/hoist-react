@@ -6,21 +6,16 @@
  */
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {TilingContainerModel} from '@xh/hoist/cmp/tile';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isDisplayed} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {min} from 'lodash';
 
-import {tile} from './Tile';
-
 export class MonitorResultsModel extends HoistModel {
 
     @observable.ref results = [];
     @observable lastRun = null;
-
-    @managed tilingContainerModel;
     @managed timer = null;
     viewRef = createObservableRef();
 
@@ -48,17 +43,6 @@ export class MonitorResultsModel extends HoistModel {
         super();
         makeObservable(this);
 
-        this.tilingContainerModel = new TilingContainerModel({
-            content: tile,
-            emptyText: 'No monitors configured for this application.',
-            spacing: 10,
-            desiredRatio: 3,
-            minWidth: 300,
-            maxWidth: 600,
-            minHeight: 160,
-            maxHeight: 160
-        });
-
         this.timer = Timer.create({
             runFn: () => this.autoRefreshAsync(),
             interval: 10 * SECONDS,
@@ -82,7 +66,6 @@ export class MonitorResultsModel extends HoistModel {
     @action
     completeLoad(success, vals) {
         this.results = success ? Object.values(vals) : [];
-        this.tilingContainerModel.loadData(this.results);
         this.getLastRun();
     }
 
