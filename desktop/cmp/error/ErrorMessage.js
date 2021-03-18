@@ -51,7 +51,7 @@ ErrorMessage.propTypes = {
     error: PT.oneOfType([PT.instanceOf(Error), PT.object,  PT.string]),
 
 
-    /** Optional title to display above the label. */
+    /** Optional title to display above the message. */
     title: PT.oneOfType([PT.element, PT.string]),
 
     /**
