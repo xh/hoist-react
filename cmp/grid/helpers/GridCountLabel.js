@@ -9,10 +9,12 @@ import {box} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {pluralize, singularize, withDefault} from '@xh/hoist/utils/js';
+import {isEmpty} from 'lodash';
 import PT from 'prop-types';
 
 /**
  * Displays the number of records loaded into a grid's store + (configurable) selection count.
+ * If ag-grid filter model is applied, the count reports agApi.displayedRowCount, instead of the store count
  *
  * Alternative to more general {@see StoreCountLabel}.
  */
@@ -35,12 +37,16 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory({
             return '';
         }
 
-        const {store, selection} = gridModel;
+        const {store, selection, agFilterModel} = gridModel;
 
         const fmtCount = (count) => fmtNumber(count, {precision: 0}),
             recCountString = () => {
-                const count = includeChildren ? store.count : store.rootCount,
+                let count = includeChildren ? store.count : store.rootCount,
                     unitLabel = count === 1 ? singularize(unit) : pluralize(unit);
+
+                if (!isEmpty(agFilterModel)) {
+                    count = gridModel.agApi?.getDisplayedRowCount();
+                }
 
                 return `${fmtCount(count)} ${unitLabel}`;
             },

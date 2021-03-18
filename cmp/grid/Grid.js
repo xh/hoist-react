@@ -233,6 +233,7 @@ class LocalModel extends HoistModel {
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
             onColumnPinned: this.onColumnPinned,
             onColumnVisible: this.onColumnVisible,
+            onFilterChanged: this.onFilterChanged,
             processCellForClipboard: this.processCellForClipboard,
             defaultGroupSortComparator: model.groupSortFn ? this.groupSortComparator : undefined,
             groupDefaultExpanded: 1,
@@ -670,6 +671,11 @@ class LocalModel extends HoistModel {
         }
         ev.api.resetRowHeights();
     };
+
+    onFilterChanged = (ev) => {
+        this.model.noteAgFilterChanged(ev.api.getFilterModel());
+        this.syncSelection();
+    }
 
     groupSortComparator = (nodeA, nodeB) => {
         const gridModel = this.model;

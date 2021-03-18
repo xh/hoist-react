@@ -146,6 +146,12 @@ export class Column {
      *      `getValueFn` will expect the field to be an object and render a nested property.
      *      False to support field names that contain dots *without* triggering this behavior.
      * @param {boolean} [c.enableFilter] - true to enable ag-grid filter menu.
+     * @param {string} [c.filter] - Ag-grid provided filters. Defaults are set based on {@see FieldType}
+     *      Valid values are: 'agTextColumnFilter', 'agNumberColumnFilter,' 'agDateColumnFilter,' and
+     *      'agSetColumnFilter' (enterprise-version only for excel-like filtering)
+     * @param {Object} [c.filterParams] - additional filter parameters to pass to provided filters.
+     *      If unspecified, Hoist will provide default params based on field type.
+     *      @see {@link https://www.ag-grid.com/javascript-grid/filter-provided/#provided-filter-params docs}
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -203,7 +209,11 @@ export class Column {
         setValueFn,
         getValueFn,
         enableDotSeparatedFieldPath,
+
         enableFilter,
+        filter,
+        filterParams,
+
         agOptions,
         ...rest
     }, gridModel) {
@@ -312,6 +322,8 @@ export class Column {
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
         this.enableFilter = enableFilter;
+        this.filter = filter;
+        this.filterParams = filterParams;
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -547,7 +559,8 @@ export class Column {
 
         if (this.enableFilter) {
             ret.suppressMenu = false;
-            ret.filter = 'agSetColumnFilter';
+            ret.filter = this.filter ?? this.getDefaultFilter();
+            ret.filterParams = this.filterParams ?? this.getDefaultFilterParams();
         }
 
         // Finally, apply explicit app requests.  The customer is always right....
@@ -582,6 +595,57 @@ export class Column {
         return null;
     }
 
+    getDefaultFilter() {
+        const {field, gridModel} = this,
+            type = gridModel.store.getField(field)?.type;
+        switch (type) {
+            case 'date':
+            case 'localDate':
+                return 'agDateColumnFilter';
+            case 'int':
+            case 'number':
+                return 'agNumberColumnFilter';
+            case 'auto':
+            case 'bool':
+            case 'string':
+                return 'agSetColumnFilter';
+            default: return 'agTextColumnFilter';
+        }
+    }
+
+    getDefaultFilterParams() {
+        const {field, gridModel} = this,
+            type = gridModel.store.getField(field)?.type;
+        switch (type) {
+            case 'date':
+            case 'localDate':
+                return {
+                    buttons: ['reset', 'apply'],
+                    suppressAndOrCondition: true,
+                    inRangeInclusive: true,
+                    comparator: (date, value) => {
+                        if (value.isLocalDate) {
+                            value = value.date;
+                        }
+                        if (value < date) return -1;
+                        if (value > date) return 1;
+                        return 0;
+                    }
+                };
+            case 'int':
+            case 'number':
+                return {
+                    buttons: ['reset', 'apply'],
+                    suppressAndOrCondition: true,
+                    inRangeInclusive: true,
+                    defaultOption: 'greaterThan'
+                };
+            default:
+                return {
+                    buttons: ['reset', 'apply']
+                };
+        }
+    }
 }
 
 export function getAgHeaderClassFn(column) {

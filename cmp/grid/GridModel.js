@@ -120,6 +120,8 @@ export class GridModel extends HoistModel {
     @observable.ref columnState = [];
     /** @member {Object} */
     @observable.ref expandState = {};
+    /** @member {Object} */
+    @observable.ref agFilterModel = {}
     /** @member {GridSorter[]} */
     @observable.ref sortBy = [];
     /** @member {string[]} */
@@ -736,6 +738,11 @@ export class GridModel extends HoistModel {
         if (isReady) {
             selModel.select(agGridModel.getSelectedRowNodeIds());
         }
+    }
+
+    @action
+    noteAgFilterChanged(agFilterModel) {
+        this.agFilterModel = agFilterModel;
     }
 
     /**
