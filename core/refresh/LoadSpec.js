@@ -80,8 +80,4 @@ export class LoadSpec {
         this.dateCreated = new Date();
         Object.freeze(this);
     }
-
-    toJSON() {
-        return {type: this.typeDisplay, loadNumber: this.loadNumber};
-    }
 }
