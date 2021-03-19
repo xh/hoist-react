@@ -42,6 +42,7 @@ export class MonitorResultsModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+
         this.timer = Timer.create({
             runFn: () => this.autoRefreshAsync(),
             interval: 10 * SECONDS,

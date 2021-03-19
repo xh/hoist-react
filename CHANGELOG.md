@@ -15,6 +15,8 @@
     if a LocalDate is the same as the current day.
 * Desktop `Toolbar` now accepts `compact` prop. Set to `true` to render the toolbar with reduced
   height and font-size.
+* New `TilingFrame` layout component, to render a collection of child items using a layout that
+  balances filling the available space against maintaining tile width / height ratio.
 
 ### 💥 Breaking Changes
 
