@@ -67,9 +67,7 @@ export const [TilingFrame, tilingFrame] = hoistCmp.withFactory({
             ref,
             className,
             ...layoutProps,
-            items: items.map((item, idx) => {
-                if (!localModel.layout) return null;
-
+            items: !localModel.layout ? null : items.map((item, idx) => {
                 const style = localModel.getTileStyle(idx),
                     className = 'xh-tiling-frame__tile';
 
