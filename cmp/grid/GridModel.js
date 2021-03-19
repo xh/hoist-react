@@ -29,6 +29,7 @@ import equal from 'fast-deep-equal';
 import {
     castArray,
     cloneDeep,
+    compact,
     defaults,
     defaultsDeep,
     difference,
@@ -679,8 +680,7 @@ export class GridModel extends HoistModel {
         this.validateColConfigs(colConfigs);
         colConfigs = this.enhanceColConfigsFromStore(colConfigs);
 
-        const columns = colConfigs.map(c => this.buildColumn(c));
-
+        const columns = compact(colConfigs.map(c => this.buildColumn(c)));
         this.validateColumns(columns);
 
         this.columns = columns;
@@ -890,12 +890,9 @@ export class GridModel extends HoistModel {
     }
 
     buildColumn(config) {
-        // return group
-        if (config.children) return new ColumnGroup(config, this);
-
         // Merge leaf config with defaults.
         // Ensure *any* tooltip or renderer setting on column itself always wins.
-        if (this.colDefaults) {
+        if (this.colDefaults && !config.children) {
             let colDefaults = {...this.colDefaults};
             if (config.tooltip || config.tooltipElement) {
                 colDefaults.tooltip = null;
@@ -908,6 +905,10 @@ export class GridModel extends HoistModel {
             config = defaultsDeep({}, config, colDefaults);
         }
 
+        const omit = isFunction(config.omit) ? config.omit() : config.omit;
+        if (omit) return null;
+
+        if (config.children) return new ColumnGroup(config, this);
         return new Column(config, this);
     }
 
