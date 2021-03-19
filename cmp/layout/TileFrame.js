@@ -13,7 +13,7 @@ import {minBy, castArray} from 'lodash';
 import composeRefs from '@seznam/compose-react-refs';
 import PT from 'prop-types';
 
-import './TilingFrame.scss';
+import './TileFrame.scss';
 
 /**
  * This component renders its children as space filling tiles of the equal size.
@@ -22,13 +22,13 @@ import './TilingFrame.scss';
  *
  * Supports a number of optional constraints on tile dimensions that can be used to produce more
  * stable layouts. These should be used judiciously, however, as each constraint limits the ability
- * of the TilingFrame to fill its available space.
+ * of the TileFrame to fill its available space.
  */
-export const [TilingFrame, tilingFrame] = hoistCmp.withFactory({
-    displayName: 'TilingFrame',
+export const [TileFrame, tileFrame] = hoistCmp.withFactory({
+    displayName: 'TileFrame',
     model: false,
 
-    className: 'xh-tiling-frame',
+    className: 'xh-tile-frame',
 
     render({
         children,
@@ -42,7 +42,7 @@ export const [TilingFrame, tilingFrame] = hoistCmp.withFactory({
         maxTileHeight,
         ...props
     }, ref) {
-        let localModel = useLocalModel(() => new LocalModel());
+        const localModel = useLocalModel(() => new LocalModel());
         children = castArray(children);
 
         useEffect(() => localModel.setConfigProps({
@@ -65,7 +65,7 @@ export const [TilingFrame, tilingFrame] = hoistCmp.withFactory({
         const items = localModel.layout ?
             children.map((item, idx) => box({
                 style: localModel.getTileStyle(idx),
-                className: 'xh-tiling-frame__tile',
+                className: 'xh-tile-frame__tile',
                 item
             })):
             null;
@@ -74,7 +74,7 @@ export const [TilingFrame, tilingFrame] = hoistCmp.withFactory({
     }
 });
 
-TilingFrame.propTypes = {
+TileFrame.propTypes = {
     /**
      * Desired tile width / height ratio (i.e. desiredRatio: 2 == twice as wide as tall).
      * Layouts will strive to meet this ratio, but the final ratio may vary. Defaults to 1 (i.e. square tiles)

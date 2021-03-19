@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {creates, hoistCmp} from '@xh/hoist/core';
-import {placeholder, tilingFrame} from '@xh/hoist/cmp/layout';
+import {placeholder, tileFrame} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {isEmpty} from 'lodash';
 
@@ -36,7 +36,7 @@ const body = hoistCmp.factory(
             return placeholder('No monitors configured for this application.');
         }
 
-        return tilingFrame({
+        return tileFrame({
             spacing: 10,
             desiredRatio: 3,
             minTileWidth: 300,

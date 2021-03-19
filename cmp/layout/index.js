@@ -9,5 +9,5 @@ export * from './Frame';
 export * from './Placeholder';
 export * from './Spacer';
 export * from './Tags';
-export * from './TilingFrame';
+export * from './TileFrame';
 export * from './Viewport';
