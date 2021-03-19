@@ -7,7 +7,7 @@
 import {hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {bindable, observable, action, computed, makeObservable} from '@xh/hoist/mobx';
 import {frame, box} from '@xh/hoist/cmp/layout';
-import {getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
+import {useOnResize} from '@xh/hoist/utils/react';
 import {useEffect} from 'react';
 import {minBy, castArray} from 'lodash';
 import composeRefs from '@seznam/compose-react-refs';
@@ -26,11 +26,12 @@ import './TilingFrame.scss';
  */
 export const [TilingFrame, tilingFrame] = hoistCmp.withFactory({
     displayName: 'TilingFrame',
+    model: false,
+
     className: 'xh-tiling-frame',
 
     render({
         children,
-        className,
         desiredRatio = 1,
         spacing = 0,
         minTileRatio,
@@ -41,13 +42,11 @@ export const [TilingFrame, tilingFrame] = hoistCmp.withFactory({
         maxTileHeight,
         ...props
     }, ref) {
-        const localModel = useLocalModel(() => new LocalModel()),
-            layoutProps = getLayoutProps(props),
-            items = castArray(children),
-            count = children.length;
+        let localModel = useLocalModel(() => new LocalModel());
+        children = castArray(children);
 
         useEffect(() => localModel.setConfigProps({
-            count,
+            children,
             desiredRatio,
             spacing,
             minTileRatio,
@@ -63,17 +62,15 @@ export const [TilingFrame, tilingFrame] = hoistCmp.withFactory({
             useOnResize(dimensions => localModel.setDimensions(dimensions), {debounce: 100})
         );
 
-        return frame({
-            ref,
-            className,
-            ...layoutProps,
-            items: !localModel.layout ? null : items.map((item, idx) => {
-                const style = localModel.getTileStyle(idx),
-                    className = 'xh-tiling-frame__tile';
+        const items = localModel.layout ?
+            children.map((item, idx) => box({
+                style: localModel.getTileStyle(idx),
+                className: 'xh-tiling-frame__tile',
+                item
+            })):
+            null;
 
-                return box({style, className, item});
-            })
-        });
+        return frame({ref, ...props, items});
     }
 });
 
@@ -137,7 +134,7 @@ class LocalModel extends HoistModel {
 
     @action
     setConfigProps({
-        count,
+        children,
         desiredRatio,
         spacing,
         minTileRatio,
@@ -147,7 +144,7 @@ class LocalModel extends HoistModel {
         minTileHeight,
         maxTileHeight
     }) {
-        this.count = count;
+        this.count = children.length;
         this.desiredRatio = desiredRatio;
         this.spacing = spacing;
         this.minTileRatio = minTileRatio;
@@ -157,6 +154,24 @@ class LocalModel extends HoistModel {
         this.minTileHeight = minTileHeight;
         this.maxTileHeight = maxTileHeight;
     }
+
+    getTileStyle(idx) {
+        const {spacing} = this,
+            {cols, tileWidth, tileHeight} = this.layout,
+            rowIdx = Math.floor(idx / cols),
+            colIdx = idx - (rowIdx * cols),
+            top = (tileHeight * rowIdx) + (rowIdx * spacing) + spacing,
+            left = (tileWidth * colIdx) + (colIdx * spacing) + spacing;
+
+        return {
+            top,
+            left,
+            width: tileWidth,
+            height: tileHeight,
+            marginBottom: spacing
+        };
+    }
+
 
     //-------------------
     // Implementation
@@ -172,7 +187,7 @@ class LocalModel extends HoistModel {
             const cols = i,
                 rows = Math.ceil(count / cols);
 
-            layouts.push(this.generateLayout(cols, rows, false));
+            layouts.push(this.generateScoredLayout(cols, rows, false));
         }
 
         // Choose layout with the best (i.e. lowest) score.
@@ -183,13 +198,13 @@ class LocalModel extends HoistModel {
             const {width, height} = dimensions,
                 colCount = height > width ? 1 : count,
                 rowCount = height > width ? count : 1;
-            layout = this.generateLayout(colCount, rowCount, true);
+            layout = this.generateScoredLayout(colCount, rowCount, true);
         }
 
-        return layout;
+        return layout?.layout;
     }
 
-    generateLayout(cols, rows, skipConstraints = false) {
+    generateScoredLayout(cols, rows, skipConstraints = false) {
         const {
                 dimensions,
                 count,
@@ -232,31 +247,8 @@ class LocalModel extends HoistModel {
             score = emptyCount > 0 ? ratioScore + Math.pow(emptyCount, 2) : ratioScore;
 
         return {
-            count,
-            rows,
-            cols,
-            tileWidth,
-            tileHeight,
-            ratio,
-            ratioScore,
-            score
-        };
-    }
-
-    getTileStyle(idx) {
-        const {spacing} = this,
-            {cols, tileWidth, tileHeight} = this.layout,
-            rowIdx = Math.floor(idx / cols),
-            colIdx = idx - (rowIdx * cols),
-            top = (tileHeight * rowIdx) + (rowIdx * spacing) + spacing,
-            left = (tileWidth * colIdx) + (colIdx * spacing) + spacing;
-
-        return {
-            top,
-            left,
-            width: tileWidth,
-            height: tileHeight,
-            marginBottom: spacing
+            score,
+            layout: {cols, tileWidth, tileHeight}
         };
     }
 }
