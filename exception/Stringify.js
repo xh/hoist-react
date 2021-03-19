@@ -15,27 +15,30 @@ import {stripTags, trimToDepth} from '@xh/hoist/utils/js';
  */
 export function stringifyErrorSafely(errorObject) {
     try {
-        let err = errorObject;
+        // Clone + protect against circularity, monstrosity with a general depth trim.
+        const err = trimToDepth(errorObject, 5);
 
-        // Tweak/optimize format, deleting info that may be misleading.
-        if (err.serverDetails && err.serverDetails.className === 'GrailsCompressingFilter') {
-            delete err.serverDetails.className;
-            delete err.serverDetails.lineNumber;
+        // Delete noisy grails exception
+        const {serverDetails} = err;
+        if (serverDetails?.className === 'GrailsCompressingFilter') {
+            delete serverDetails.className;
+            delete serverDetails.lineNumber;
         }
 
-        if (err.fetchOptions) {
-            delete err.fetchOptions.mask;
-            delete err.fetchOptions.scope;
+        // Remove verbose loadSpec from fetchOptions
+        const {fetchOptions} = err;
+        if (fetchOptions?.loadSpec) {
+            fetchOptions.loadType = fetchOptions.loadSpec.typeDisplay;
+            fetchOptions.loadNumber = fetchOptions.loadSpec.loadNumber;
+            delete fetchOptions.loadSpec;
         }
 
         // Clean-up 'stack', and also add it last, which can be useful for stringify
-        if (err.stack) {
-            err.stackTrace = err.stack.split(/\n/g);
+        const {stack} = err;
+        if (stack) {
+            err.stackTrace = stack.split(/\n/g);
             delete err.stack;
         }
-
-        // Protect against circularity, monstrosity with a general depth trim.
-        err = trimToDepth(err, 5);
 
         return stripTags(JSON.stringify(err, null, 4));
     } catch (e) {

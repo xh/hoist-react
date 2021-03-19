@@ -61,12 +61,6 @@ export class LoadSpec {
         return this.owner._lastSucceeded?.loadNumber > this.loadNumber;
     }
 
-    get typeDisplay() {
-        if (this.isAutoRefresh) return 'Auto-Refresh';
-        if (this.isRefresh)     return 'Refresh';
-        return 'Load';
-    }
-
     /**
      * @private - not for application use.
      * LoadSpecs are constructed by `LoadSupport` API wrappers.
@@ -76,8 +70,19 @@ export class LoadSpec {
         this.loadNumber = last ? last.loadNumber + 1 : 0;
         this.isRefresh = !!(isRefresh || isAutoRefresh);
         this.isAutoRefresh = !!isAutoRefresh;
+        this.typeDisplay = this.getTypeDisplay();
         this.owner = owner;
         this.dateCreated = new Date();
         Object.freeze(this);
+    }
+
+
+    //--------------------
+    // Implementation
+    //--------------------
+    getTypeDisplay() {
+        if (this.isAutoRefresh) return 'Auto-Refresh';
+        if (this.isRefresh)     return 'Refresh';
+        return 'Load';
     }
 }
