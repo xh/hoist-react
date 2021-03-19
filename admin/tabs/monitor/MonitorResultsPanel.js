@@ -5,9 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {creates, hoistCmp} from '@xh/hoist/core';
-import {placeholder} from '@xh/hoist/cmp/layout';
+import {placeholder, tilingFrame} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {tilingContainer} from '@xh/hoist/cmp/tile';
 import {isEmpty} from 'lodash';
 
 import './MonitorResultsPanel.scss';
@@ -31,20 +30,20 @@ export const monitorResultsPanel = hoistCmp.factory({
 
 const body = hoistCmp.factory(
     ({model}) => {
-        if (isEmpty(model.results)) {
+        const {results} = model;
+
+        if (isEmpty(results)) {
             return placeholder('No monitors configured for this application.');
         }
 
-        return tilingContainer({
-            model,
-            bind: 'results',
-            content: tile,
+        return tilingFrame({
             spacing: 10,
             desiredRatio: 3,
             minTileWidth: 300,
             maxTileWidth: 600,
             minTileHeight: 160,
-            maxTileHeight: 160
+            maxTileHeight: 160,
+            items: results.map(check => tile({check}))
         });
     }
 );

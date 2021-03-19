@@ -4,9 +4,10 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-export * from './Tags';
 export * from './Box';
 export * from './Frame';
 export * from './Placeholder';
 export * from './Spacer';
+export * from './Tags';
+export * from './TilingFrame';
 export * from './Viewport';

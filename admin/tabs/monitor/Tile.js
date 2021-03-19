@@ -13,7 +13,7 @@ import './Tile.scss';
 
 export const tile = hoistCmp.factory(
     (props) => {
-        const {checksInStatus, lastStatusChanged, metric, metricUnit, message, name, status} = props.value,
+        const {checksInStatus, lastStatusChanged, metric, metricUnit, message, name, status} = props.check,
             {icon, statusText} = statusProperties(status),
             tileClass = 'xh-status-tile xh-status-tile-' + status.toLowerCase(),
             relativeString = getRelativeTimestamp(new Date(lastStatusChanged), {pastSuffix: ''});

@@ -4,4 +4,10 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-export * from './TilingContainer';
+.xh-tiling-frame {
+  overflow-y: auto !important;
+
+  &__tile {
+    position: absolute !important;
+  }
+}
