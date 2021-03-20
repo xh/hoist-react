@@ -18,14 +18,15 @@ import {StoreFilterFieldImplModel} from './impl/StoreFilterFieldImplModel';
  * its value to the value of configured fields on a candidate object. If any field values match, the
  * object itself is considered a match.
  *
- * Designed to easily filter records within a Store - either directly (most common) or indirectly
- * via a callback (in cases where custom logic is required, such as layering on additional filters).
- * A Store can be bound to this component via either its `store` OR `gridModel` props, or manually
- * by writing an onFilterChange prop.
+ * This component is designed to be bound to a Store via either its `store` OR `gridModel` props.
+ * (If not configured to bind to a specific Store or GridModel, this component will bind by default
+ * to the store of the nearest GridModel found in context.) Binding in this way allows the component
+ * to auto-generate the fields in the store to be included in the filter, and also to automatically
+ * apply the filter to the Store.
  *
- * If not configured to bind to a specific Store or GridModel, this component will bind by default
- * to the store of the nearest GridModel found in context. If you do *not* want this behavior (e.g.
- * you are using the `onFilterChange` callback) be sure to explicitly set GridModel to *null*.
+ * In cases where the application is combining this filter with other filters, or applying
+ * additional application logic, the filter can be managed manually, by setting `autoApply` to
+ * `false`, and using the `onFilterChange` callback instead.
  *
  * Fields to be searched can be automatically determined from the bound Store or GridModel, and/or
  * customized via the include/excludeFields props. See prop comments for details.
@@ -53,6 +54,13 @@ export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory({
 });
 
 StoreFilterField.propTypes = {
+
+    /**
+     * Automatically apply the filter to bound store.  Defaults to true.  Applications
+     * that need to combine this filter with other filters, or otherwise manage its
+     * application manually should set this to false.
+     */
+    autoApply: PT.bool,
 
     /**
      * Field on optional model to which this component should bind its value. Specify this
@@ -93,8 +101,8 @@ StoreFilterField.propTypes = {
     model: PT.object,
 
     /**
-     * Callback to receive an updated Filter. Can be used in place of the `store` or
-     * `gridModel` prop when direct filtering of a bound store by this component is not desired.
+     * Callback to receive an updated Filter. Typically used in conjunction with `autoApply`
+     * false, in order to manually apply the filter of this component to a store.
      * NOTE that calls to this function are NOT buffered and will be made on each keystroke.
      */
     onFilterChange: PT.func,

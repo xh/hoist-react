@@ -18,6 +18,9 @@
 * New `TileFrame` layout component, to render a collection of child items using a layout that
   balances filling the available space against maintaining tile width / height ratio.
 * New `Column.omit` config supports conditionally excluding a column from its `GridModel`.
+* New `StoreFilterField.autoApply` property allows applications to more easily use `StoreFilterField`
+  in conjunction with other filters.  Set to `false` to indicate that the filter will be manually
+  applied by application.
 
 ### 💥 Breaking Changes
 
