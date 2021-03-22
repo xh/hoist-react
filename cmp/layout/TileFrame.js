@@ -5,11 +5,10 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
-import {bindable, observable, action, computed, makeObservable} from '@xh/hoist/mobx';
 import {frame, box} from '@xh/hoist/cmp/layout';
 import {useOnResize} from '@xh/hoist/utils/react';
-import {useEffect} from 'react';
-import {minBy, castArray} from 'lodash';
+import {useState} from 'react';
+import {minBy, castArray, isEqual} from 'lodash';
 import composeRefs from '@seznam/compose-react-refs';
 import PT from 'prop-types';
 
@@ -42,11 +41,16 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
         maxTileHeight,
         ...props
     }, ref) {
-        const localModel = useLocalModel(() => new LocalModel());
+        const localModel = useLocalModel(() => new LocalModel()),
+            [width, setWidth] = useState(),
+            [height, setHeight] = useState();
+
         children = castArray(children);
 
-        useEffect(() => localModel.setConfigProps({
-            children,
+        localModel.setParams({
+            count: children.length,
+            width,
+            height,
             desiredRatio,
             spacing,
             minTileRatio,
@@ -55,11 +59,14 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
             maxTileWidth,
             minTileHeight,
             maxTileHeight
-        }));
+        });
 
         ref = composeRefs(
             ref,
-            useOnResize(dimensions => localModel.setDimensions(dimensions), {debounce: 100})
+            useOnResize(({width, height}) => {
+                setWidth(width);
+                setHeight(height);
+            }, {debounce: 100})
         );
 
         const items = localModel.layout ?
@@ -109,54 +116,20 @@ TileFrame.propTypes = {
     maxTileHeight: PT.number
 };
 
+
 class LocalModel extends HoistModel {
 
-    @bindable.ref dimensions;
-    @observable count;
-    @observable desiredRatio;
-    @observable spacing;
-    @observable minTileRatio;
-    @observable maxTileRatio;
-    @observable minTileWidth;
-    @observable maxTileWidth;
-    @observable minTileHeight;
-    @observable maxTileHeight;
+    params;
+    layout;
 
-    @computed.struct
-    get layout() {
-        return this.selectLayout();
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
-
-    @action
-    setConfigProps({
-        children,
-        desiredRatio,
-        spacing,
-        minTileRatio,
-        maxTileRatio,
-        minTileWidth,
-        maxTileWidth,
-        minTileHeight,
-        maxTileHeight
-    }) {
-        this.count = children.length;
-        this.desiredRatio = desiredRatio;
-        this.spacing = spacing;
-        this.minTileRatio = minTileRatio;
-        this.maxTileRatio = maxTileRatio;
-        this.minTileWidth = minTileWidth;
-        this.maxTileWidth = maxTileWidth;
-        this.minTileHeight = minTileHeight;
-        this.maxTileHeight = maxTileHeight;
+    setParams(params) {
+        if (isEqual(params, this.params)) return;
+        this.params = params;
+        this.layout = this.createLayout();
     }
 
     getTileStyle(idx) {
-        const {spacing} = this,
+        const {spacing} = this.params,
             {cols, tileWidth, tileHeight} = this.layout,
             rowIdx = Math.floor(idx / cols),
             colIdx = idx - (rowIdx * cols),
@@ -172,21 +145,18 @@ class LocalModel extends HoistModel {
         };
     }
 
-
     //-------------------
     // Implementation
     //-------------------
-    selectLayout() {
-        const {dimensions, count} = this,
+    createLayout() {
+        const {width, height, count} = this.params,
             layouts = [];
 
-        if (!dimensions || !count) return null;
+        if (!width || !height || !count) return null;
 
         // Generate all possible tile layouts, from single column > single row.
-        for (let i = 1; i <= count; i++) {
-            const cols = i,
-                rows = Math.ceil(count / cols);
-
+        for (let cols = 1; cols <= count; cols++) {
+            const rows = Math.ceil(count / cols);
             layouts.push(this.generateScoredLayout(cols, rows, false));
         }
 
@@ -195,8 +165,7 @@ class LocalModel extends HoistModel {
         // Prefer single row if container has landscape orientation and single column if portrait.
         let layout = minBy(layouts, 'score');
         if (!layout) {
-            const {width, height} = dimensions,
-                colCount = height > width ? 1 : count,
+            const colCount = height > width ? 1 : count,
                 rowCount = height > width ? count : 1;
             layout = this.generateScoredLayout(colCount, rowCount, true);
         }
@@ -206,7 +175,8 @@ class LocalModel extends HoistModel {
 
     generateScoredLayout(cols, rows, skipConstraints = false) {
         const {
-                dimensions,
+                width,
+                height,
                 count,
                 desiredRatio,
                 spacing,
@@ -216,8 +186,7 @@ class LocalModel extends HoistModel {
                 maxTileWidth,
                 minTileHeight,
                 maxTileHeight
-            } = this,
-            {width, height} = dimensions,
+            } = this.params,
             emptyCount = (rows * cols) - count;
 
         // Calculate tile width / height
