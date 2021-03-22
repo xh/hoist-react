@@ -295,10 +295,8 @@ export class TreeMapModel extends HoistModel {
         const {colorMode, heatField} = this;
 
         if (!data.length || colorMode === 'none') {
-            return data.map(it => {
-                it.colorValue = 0.5;
-                return it;
-            });
+            data.forEach(it => it.colorValue = 0.5);
+            return data;
         }
 
         // 1) Extract valid heat values
