@@ -7,6 +7,8 @@
 import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {uniq} from 'lodash';
+
 import {TreeMapModel} from './TreeMapModel';
 
 /**
@@ -28,8 +30,6 @@ export class SplitTreeMapModel extends HoistModel {
     mapFilter;
     /** @member {function} */
     mapTitleFn;
-    /** @member {string} */
-    orientation;
 
     /** @member {TreeMapModel} */
     @managed primaryMapModel;
@@ -39,13 +39,8 @@ export class SplitTreeMapModel extends HoistModel {
     //------------------------
     // Observable API
     //------------------------
-    /** @member {Object} */
-    @bindable.ref highchartsConfig = {};
-
-    @computed
-    get isMasking() {
-        return this.primaryMapModel.isMasking || this.secondaryMapModel.isMasking;
-    }
+    /** @member {string} */
+    @bindable orientation;
 
     /**
      * @param {Object} c - SplitTreeMapModel configuration.
@@ -75,6 +70,67 @@ export class SplitTreeMapModel extends HoistModel {
         this.secondaryMapModel = new TreeMapModel({...rest, filter: (r) => !this.mapFilter(r)});
     }
 
+    // Getters derived from both underlying TreeMapModels.
+    @computed
+    get total() {
+        return this.primaryMapModel.total && this.secondaryMapModel.total;
+    }
+
+    @computed
+    get selectedIds() {
+        return uniq([...this.primaryMapModel.selectedIds, ...this.secondaryMapModel.selectedIds]);
+    }
+
+    @computed
+    get isMasking() {
+        return this.primaryMapModel.isMasking || this.secondaryMapModel.isMasking;
+    }
+
+    // Simple getters and methods trampolined from underlying TreeMapModels.
+    // Where possible, we consult only the primary map model, as we don't expect the two to become out of sync.
+    get hasData()           {return this.primaryMapModel.hasData}
+    get expandState()       {return this.primaryMapModel.expandState}
+    get error()             {return this.primaryMapModel.error}
+    get highchartsConfig()  {return this.primaryMapModel.highchartsConfig}
+    get labelField()        {return this.primaryMapModel.labelField}
+    get heatField()         {return this.primaryMapModel.heatField}
+    get maxDepth()          {return this.primaryMapModel.maxDepth}
+    get algorithm()         {return this.primaryMapModel.algorithm}
+    get colorMode()         {return this.primaryMapModel.colorMode}
+
+    setHighchartsConfig(...args) {
+        this.primaryMapModel.setHighchartsConfig(...args);
+        this.secondaryMapModel.setHighchartsConfig(...args);
+    }
+
+    setLabelField(...args) {
+        this.primaryMapModel.setLabelField(...args);
+        this.secondaryMapModel.setLabelField(...args);
+    }
+
+    setHeatField(...args) {
+        this.primaryMapModel.setHeatField(...args);
+        this.secondaryMapModel.setHeatField(...args);
+    }
+
+    setMaxDepth(...args) {
+        this.primaryMapModel.setMaxDepth(...args);
+        this.secondaryMapModel.setMaxDepth(...args);
+    }
+
+    setAlgorithm(...args) {
+        this.primaryMapModel.setAlgorithm(...args);
+        this.secondaryMapModel.setAlgorithm(...args);
+    }
+
+    setColorMode(...args) {
+        this.primaryMapModel.setColorMode(...args);
+        this.secondaryMapModel.setColorMode(...args);
+    }
+
+    //-------------------------
+    // Implementation
+    //-------------------------
     defaultMapFilter = (record) => {
         return record.get(this.primaryMapModel.valueField) >= 0;
     }
