@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
+import {bindable, action, computed, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {uniq} from 'lodash';
 
@@ -98,31 +98,37 @@ export class SplitTreeMapModel extends HoistModel {
     get algorithm()         {return this.primaryMapModel.algorithm}
     get colorMode()         {return this.primaryMapModel.colorMode}
 
+    @action
     setHighchartsConfig(...args) {
         this.primaryMapModel.setHighchartsConfig(...args);
         this.secondaryMapModel.setHighchartsConfig(...args);
     }
 
+    @action
     setLabelField(...args) {
         this.primaryMapModel.setLabelField(...args);
         this.secondaryMapModel.setLabelField(...args);
     }
 
+    @action
     setHeatField(...args) {
         this.primaryMapModel.setHeatField(...args);
         this.secondaryMapModel.setHeatField(...args);
     }
 
+    @action
     setMaxDepth(...args) {
         this.primaryMapModel.setMaxDepth(...args);
         this.secondaryMapModel.setMaxDepth(...args);
     }
 
+    @action
     setAlgorithm(...args) {
         this.primaryMapModel.setAlgorithm(...args);
         this.secondaryMapModel.setAlgorithm(...args);
     }
 
+    @action
     setColorMode(...args) {
         this.primaryMapModel.setColorMode(...args);
         this.secondaryMapModel.setColorMode(...args);
