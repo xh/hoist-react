@@ -14,6 +14,8 @@ import {RestFormModel} from '@xh/hoist/desktop/cmp/rest/impl/RestFormModel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
+import classNames from 'classnames';
+
 import './RestForm.scss';
 import {restFormField} from './RestFormField';
 
@@ -22,14 +24,14 @@ export const restForm = hoistCmp.factory({
     model: uses(RestFormModel),
     className: 'xh-rest-form',
 
-    render({model, className}) {
+    render({model, className, formClassName}) {
         const {isAdd, readonly, isOpen} = model;
         if (!isOpen) return null;
 
         return dialog({
             title: isAdd ? 'Add Record' : (!readonly ? 'Edit Record' : 'View Record'),
             icon: isAdd ? Icon.add() : Icon.edit(),
-            className,
+            className: classNames(className, formClassName),
             isOpen: true,
             isCloseButtonShown: false,
             item: panel({
