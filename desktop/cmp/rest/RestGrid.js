@@ -52,7 +52,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
                 item: grid({model: gridModel, agOptions, onRowDoubleClicked}),
                 mask: getMaskFromProp(model, mask)
             }),
-            restForm({model: formModel, formClassName})
+            restForm({model: formModel, className: formClassName})
         );
     }
 });
