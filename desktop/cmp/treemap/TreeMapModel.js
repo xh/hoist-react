@@ -24,7 +24,8 @@ import {cloneDeep, get, isEmpty, isFinite, partition, set, sumBy, unset, sortBy}
  * Node colors are normalized to a 0-1 range and mapped to a colorAxis via the following colorModes:
  * 'linear' distributes normalized color values across the colorAxis according to the heatField.
  * 'balanced' attempts to account for outliers by adjusting normalisation ranges around the median.
- * 'none' will ignore the colorAxis, and instead use the flat color.
+ * 'wash' ignores the intensity of the heat value, applying a single positive and negative color.
+ * 'none' will ignore the colorAxis, and instead use the neutral color.
  *
  * Color customization can be managed by setting colorAxis stops via the `highchartsConfig`.
  * @see Dark and Light themes for colorAxis example.
@@ -97,7 +98,7 @@ export class TreeMapModel extends HoistModel {
      * @param {string} [c.algorithm] - Layout algorithm to use. Either 'squarified',
      *     'sliceAndDice', 'stripes' or 'strip'. Defaults to 'squarified'.
      *     {@see https://www.highcharts.com/docs/chart-and-series-types/treemap} for examples.
-     * @param {string} [c.colorMode] - Heat color distribution mode. Either 'linear', 'balanced' or
+     * @param {string} [c.colorMode] - Heat color distribution mode. Either 'linear', 'balanced', 'wash' or
      *     'none'. Defaults to 'linear'.
      * @param {function} [c.onClick] - Callback to call when a node is clicked. Receives (record,
      *     e). If not provided, by default will select a record when using a GridModel.
@@ -146,7 +147,7 @@ export class TreeMapModel extends HoistModel {
         throwIf(!['sliceAndDice', 'stripes', 'squarified', 'strip'].includes(algorithm), `Algorithm "${algorithm}" not recognised.`);
         this.algorithm = algorithm;
 
-        throwIf(!['linear', 'balanced', 'none'].includes(colorMode), `Color mode "${colorMode}" not recognised.`);
+        throwIf(!['linear', 'balanced', 'wash', 'none'].includes(colorMode), `Color mode "${colorMode}" not recognised.`);
         this.colorMode = colorMode;
 
         this.onClick = withDefault(onClick, this.defaultOnClick);
@@ -287,10 +288,18 @@ export class TreeMapModel extends HoistModel {
      * b) 'balanced' attempts to account for outliers by adjusting the normalisation ranges around
      *  the median values. Can result in more defined color differences in a dataset that is skewed
      *  by a few nodes at the extremes.
+     * c) 'wash' ignores the intensity of the heat value, applying a flat positive or negative color.
+     * d) 'none' ignores the heat value altogether, coloring all nodes with the neutral color
      */
     normaliseColorValues(data) {
         const {colorMode, heatField} = this;
-        if (!data.length || colorMode === 'none') return data;
+
+        if (!data.length || colorMode === 'none') {
+            return data.map(it => {
+                it.colorValue = 0.5;
+                return it;
+            });
+        }
 
         // 1) Extract valid heat values
         const heatValues = [];
@@ -328,7 +337,7 @@ export class TreeMapModel extends HoistModel {
 
             if (heatValue > 0) {
                 // Normalize positive values between 0.6-1
-                if (minPosHeat === maxPosHeat) {
+                if (colorMode === 'wash' || minPosHeat === maxPosHeat) {
                     it.colorValue = 0.8;
                 } else if (colorMode === 'balanced' && posHeatValues.length > 2) {
                     if (it.colorValue >= midPosHeat) {
@@ -343,7 +352,7 @@ export class TreeMapModel extends HoistModel {
                 // Normalize negative values between 0-0.4
                 const absHeatValue = Math.abs(heatValue);
 
-                if (minNegHeat === maxNegHeat) {
+                if (colorMode === 'wash' || minNegHeat === maxNegHeat) {
                     it.colorValue = 0.2;
                 } else if (colorMode === 'balanced' && negHeatValues.length > 2) {
                     if (absHeatValue >= midNegHeat) {

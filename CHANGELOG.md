@@ -19,6 +19,8 @@
   balances filling the available space against maintaining tile width / height ratio.
 * New `Column.omit` config supports conditionally excluding a column from its `GridModel`.
 * RestGrid now takes a formClassName prop to be passed to RestForm.
+* `TreeMap` supports new `wash` value for `colorMode`, which retains the positive and negative
+  color while ignoring the intensity of the heat value.
 
 ### 💥 Breaking Changes
 
