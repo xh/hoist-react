@@ -18,6 +18,7 @@
 * New `TileFrame` layout component, to render a collection of child items using a layout that
   balances filling the available space against maintaining tile width / height ratio.
 * New `Column.omit` config supports conditionally excluding a column from its `GridModel`.
+* RestGrid now takes a formClassName prop to be passed to RestForm.
 
 ### 💥 Breaking Changes
 
