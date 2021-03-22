@@ -28,7 +28,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
         mask = true,
         agOptions,
         onRowDoubleClicked,
-       formClassName,
+        formClassName,
         ...props
     }, ref) {
 
