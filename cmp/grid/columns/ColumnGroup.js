@@ -48,13 +48,10 @@ export class ColumnGroup {
         Object.assign(this, rest);
 
         this.groupId = withDefault(groupId, headerName);
-
         this.headerName = withDefault(headerName, genDisplayName(this.groupId));
         this.headerClass = headerClass;
         this.headerAlign = headerAlign;
-
-        this.children = children.map(c => gridModel.buildColumn(c));
-
+        this.children = children;
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
     }
