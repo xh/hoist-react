@@ -6,7 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {castArray, merge} from 'lodash';
+import {merge} from 'lodash';
 import {div} from './Tags';
 
 /**
@@ -35,7 +35,7 @@ export const [Box, box] = hoistCmp.withFactory({
         return div({
             ref,
             ...restProps,
-            items: castArray(children)
+            items: children
         });
     }
 });
