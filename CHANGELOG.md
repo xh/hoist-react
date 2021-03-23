@@ -4,23 +4,27 @@
 
 ### 🎁 New Features
 
-* New property `selectedRecordId` on `StoreSelectionModel`, `GridModel`, and `DataViewModel`. Observe
-  this instead of `selectedRecord` when you wish to track only the `id` of the selected record and
-  not changes to its data.
+* New property `selectedRecordId` on `StoreSelectionModel`, `GridModel`, and `DataViewModel`.
+  Observe this instead of `selectedRecord` when you wish to track only the `id` of the selected
+  record and not changes to its data.
 * The `HoistBase.addReaction()` now accepts convenient string values for its `equals` flag.
 * New method `FetchService.setDefaultTimeout()`.
 * New method `ChartModel.updateHighchartsConfig()` provides a more convenient API for changing a
   chart's configuration post-construction.
-* New property `LocalDate.isToday` provides a more convenient API for testing if a LocalDate is the
-  same as the current day.
-* Desktop `Toolbar` now accepts `compact` prop. Set to `true` to render the toolbar with reduced
+* New `LocalDate.isToday` convenience getter.
+* Desktop `Toolbar` accepts new `compact` prop. Set to `true` to render the toolbar with reduced
   height and font-size.
-* New `TileFrame` layout component, to render a collection of child items using a layout that
-  balances filling the available space against maintaining tile width / height ratio.
+* New `TileFrame` layout component renders a collection of child items using a layout that balances
+  filling the available space against maintaining tile width / height ratio.
 * New `Column.omit` config supports conditionally excluding a column from its `GridModel`.
-* RestGrid now takes a formClassName prop to be passed to RestForm.
-* `TreeMap` supports new `wash` value for `colorMode`, which retains the positive and negative
+* New `StoreFilterField` prop `autoApply` allows developers to more easily use
+  `StoreFilterField` in conjunction with other filters or custom logic. Set to `false` and specify
+  an `onFilterChange` callback to take full control of filter application.
+* New `RestGrid` prop `formClassName` allows custom CSS class to be applied to its managed
+  `RestForm` dialog.
+* `TreeMapModel.colorMode` config supports new value `wash`, which retains the positive and negative
   color while ignoring the intensity of the heat value.
+
 
 ### 💥 Breaking Changes
 
@@ -2465,9 +2469,10 @@ leverage the context for model support discussed above.
 * ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are
   using `agOptions` to set sorting, filtering or resizing properties, these may need to change:
 
-  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and `agOptions.enableFilter`
-  have been removed. You can replicate their effects by using `agOptions.defaultColDef`. For
-  `Columns`, `suppressFilter` has been removed, an should be replaced with `filter: false`.
+  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and
+  `agOptions.enableFilter` have been removed. You can replicate their effects by using
+  `agOptions.defaultColDef`. For `Columns`, `suppressFilter` has been removed, an should be replaced
+  with `filter: false`.
 
 * `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.
   Applications should use the new Refresh architecture described above instead.
@@ -3278,9 +3283,9 @@ and ag-Grid upgrade, and more. 🚀
   * `Panel` and `Resizable` components have moved to their own packages in
     `@xh/hoist/desktop/cmp/panel` and `@xh/hoist/desktop/cmp/resizable`.
 * **Multiple changes and improvements made to tab-related APIs and components.**
-  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes` ->
-    `route` (to specify a starting route as a string) and `switcherPosition` has moved from a model
-    config to a prop on the `TabContainer` component.
+  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes`
+    -> `route` (to specify a starting route as a string) and `switcherPosition` has moved from a
+    model config to a prop on the `TabContainer` component.
   * `TabPane` and `TabPaneModel` have been renamed `Tab` and `TabModel`, respectively, with several
     related renames.
 * **Application entry-point classes decorated with `@HoistApp` must implement the new getter method
