@@ -4,26 +4,31 @@
 
 ### 🎁 New Features
 
-* New property `selectedRecordId` on `StoreSelectionModel`, `GridModel`, and `DataViewModel`.
-  Observe this instead of `selectedRecord` when you wish to track only the `id` of the selected
-  record and not changes to its data.
-* The `HoistBase.addReaction()` now accepts convenient string values for its `equals` flag.
-* New method `FetchService.setDefaultTimeout()`.
-* New method `ChartModel.updateHighchartsConfig()` provides a more convenient API for changing a
-  chart's configuration post-construction.
-* New `LocalDate.isToday` convenience getter.
-* Desktop `Toolbar` accepts new `compact` prop. Set to `true` to render the toolbar with reduced
-  height and font-size.
+#### Components + Props
 * New `TileFrame` layout component renders a collection of child items using a layout that balances
   filling the available space against maintaining tile width / height ratio.
-* New `Column.omit` config supports conditionally excluding a column from its `GridModel`.
+* Desktop `Toolbar` accepts new `compact` prop. Set to `true` to render the toolbar with reduced
+  height and font-size.
 * New `StoreFilterField` prop `autoApply` allows developers to more easily use
   `StoreFilterField` in conjunction with other filters or custom logic. Set to `false` and specify
   an `onFilterChange` callback to take full control of filter application.
 * New `RestGrid` prop `formClassName` allows custom CSS class to be applied to its managed
   `RestForm` dialog.
+
+#### Models + Configs
+* New property `selectedRecordId` on `StoreSelectionModel`, `GridModel`, and `DataViewModel`.
+  Observe this instead of `selectedRecord` when you wish to track only the `id` of the selected
+  record and not changes to its data.
 * `TreeMapModel.colorMode` config supports new value `wash`, which retains the positive and negative
   color while ignoring the intensity of the heat value.
+* New method `ChartModel.updateHighchartsConfig()` provides a more convenient API for changing a
+  chart's configuration post-construction.
+* New `Column.omit` config supports conditionally excluding a column from its `GridModel`.
+
+#### Services + Utils
+* New method `FetchService.setDefaultTimeout()`.
+* New convenience getter `LocalDate.isToday`.
+* `HoistBase.addReaction()` now accepts convenient string values for its `equals` flag.
 
 
 ### 💥 Breaking Changes
