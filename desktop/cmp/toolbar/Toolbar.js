@@ -12,11 +12,11 @@ import {overflowList, popover} from '@xh/hoist/kit/blueprint';
 import {filterConsecutiveToolbarSeparators} from '@xh/hoist/utils/impl';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {castArray} from 'lodash';
+import {isEmpty} from 'lodash';
 import PT from 'prop-types';
-import {Children} from 'react';
 import './Toolbar.scss';
 import {toolbarSeparator} from './ToolbarSep';
+import {Children} from 'react';
 
 /**
  * A toolbar with built-in styling and padding.
@@ -39,14 +39,12 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
     }, ref) {
         throwIf(vertical && enableOverflowMenu, 'Overflow menu not available for vertical toolbars.');
 
-        const items = castArray(children)
+        const items = Children.toArray(children)
             .filter(filterConsecutiveToolbarSeparators())
-            .map(it => {
-                return it === '-' ? toolbarSeparator() : it;
-            });
+            .map(it => it === '-' ? toolbarSeparator() : it);
 
         const container = vertical ? vbox : hbox,
-            overflow = enableOverflowMenu && Children.count(items) > 0;
+            overflow = enableOverflowMenu && !isEmpty(items);
 
         return container({
             ref,
@@ -100,7 +98,7 @@ const overflowBox = hoistCmp.factory({
     model: false, observer: false, memo: false,
     render({children, minVisibleItems, collapseFrom}) {
         return overflowList({
-            $items: Children.toArray(children),
+            $items: children,
             minVisibleItems,
             collapseFrom,
             visibleItemRenderer: (item) => item,

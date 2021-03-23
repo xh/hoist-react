@@ -19,9 +19,9 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {castArray, omitBy} from 'lodash';
+import {omitBy} from 'lodash';
 import PT from 'prop-types';
-import {isValidElement, useRef} from 'react';
+import {isValidElement, useRef, Children} from 'react';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
 import './Panel.scss';
@@ -106,7 +106,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
                 style: {display: collapsed ? 'none' : 'flex'},
                 items: [
                     parseToolbar(tbar),
-                    ...(castArray(children)),
+                    ...Children.toArray(children),
                     parseToolbar(bbar)
                 ]
             });

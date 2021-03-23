@@ -6,7 +6,6 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/onsen';
-import {castArray} from 'lodash';
 import PT from 'prop-types';
 import './DialogPanel.scss';
 import {panel, Panel} from './Panel';
@@ -22,7 +21,6 @@ export const [DialogPanel, dialogPanel] = hoistCmp.withFactory({
     className: 'xh-dialog xh-dialog-panel',
     memo: false, model: false, observer: false,
 
-
     render({className, isOpen, children, ...rest}) {
 
         if (!isOpen) return null;
@@ -32,7 +30,7 @@ export const [DialogPanel, dialogPanel] = hoistCmp.withFactory({
             isCancelable: false,
             className,
             items: panel({
-                items: castArray(children),
+                items: children,
                 ...rest
             })
         });

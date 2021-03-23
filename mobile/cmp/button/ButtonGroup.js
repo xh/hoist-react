@@ -23,7 +23,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory({
         const items = Children.toArray(children);
 
         items.forEach(button => {
-            throwIf(button && button.type !== Button, 'ButtonGroup child must be a Button.');
+            throwIf(button.type !== Button, 'ButtonGroup child must be a Button.');
         });
 
         return hbox({

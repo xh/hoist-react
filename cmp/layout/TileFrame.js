@@ -8,9 +8,10 @@ import {hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {frame, box} from '@xh/hoist/cmp/layout';
 import {useOnResize} from '@xh/hoist/utils/react';
 import {useState} from 'react';
-import {minBy, castArray, isEqual} from 'lodash';
+import {minBy, isEqual} from 'lodash';
 import composeRefs from '@seznam/compose-react-refs';
 import PT from 'prop-types';
+import {Children} from 'react';
 
 import './TileFrame.scss';
 
@@ -45,7 +46,7 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
             [width, setWidth] = useState(),
             [height, setHeight] = useState();
 
-        children = castArray(children);
+        children = Children.toArray(children);
 
         localModel.setParams({
             count: children.length,
