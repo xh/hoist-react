@@ -97,7 +97,7 @@ export class StoreContextMenu {
                 return new RecordAction({
                     text: 'Columns...',
                     icon: Icon.gridPanel(),
-                    hidden: !gridModel || !gridModel.colChooserModel,
+                    hidden: !gridModel?.colChooserModel,
                     actionFn: () => gridModel.colChooserModel.open()
                 });
             case 'export':
@@ -105,16 +105,16 @@ export class StoreContextMenu {
                 return new RecordAction({
                     text: 'Export to Excel',
                     icon: Icon.fileExcel(),
-                    hidden: !gridModel || !gridModel.enableExport,
-                    disabled: !gridModel || !gridModel.store.count,
+                    hidden: !gridModel?.enableExport,
+                    disabled: !gridModel?.store.count,
                     actionFn: () => gridModel.exportAsync({type: 'excelTable'})
                 });
             case 'exportCsv':
                 return new RecordAction({
                     text: 'Export to CSV',
                     icon: Icon.file(),
-                    hidden: !gridModel || !gridModel.enableExport,
-                    disabled: !gridModel || !gridModel.store.count,
+                    hidden: !gridModel?.enableExport,
+                    disabled: !gridModel?.store.count,
                     actionFn: () => gridModel.exportAsync({type: 'csv'})
                 });
             case 'expandCollapseAll':

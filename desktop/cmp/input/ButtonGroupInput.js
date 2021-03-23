@@ -9,9 +9,9 @@ import {hoistCmp} from '@xh/hoist/core';
 import {Button, ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
-import {castArray, filter} from 'lodash';
+import {filter} from 'lodash';
 import PT from 'prop-types';
-import {cloneElement} from 'react';
+import {cloneElement, Children} from 'react';
 
 /**
  * A segmented group of buttons, one of which is depressed to indicate the input's current value.
@@ -86,9 +86,7 @@ const cmp = hoistCmp.factory(
             ...buttonGroupProps
         } = getNonLayoutProps(props);
 
-        const buttons = castArray(children).map(button => {
-            if (!button) return null;
-
+        const buttons = Children.map(children, button => {
             const {value} = button.props,
                 btnDisabled = disabled || button.props.disabled;
 

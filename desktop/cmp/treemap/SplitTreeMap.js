@@ -4,14 +4,13 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {fragment, hframe, vframe, div} from '@xh/hoist/cmp/layout';
+import {fragment, hframe, vframe, div, p} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {compact, uniq} from 'lodash';
 import PT from 'prop-types';
-import React from 'react';
 
 import './SplitTreeMap.scss';
 import {SplitTreeMapModel} from './SplitTreeMapModel';
@@ -86,5 +85,5 @@ const childMaps = hoistCmp.factory(
 );
 
 const errorPanel = hoistCmp.factory(
-    ({errors}) => errorMessage({error: fragment(errors.map(e => <p>{e}</p>))})
+    ({errors}) => errorMessage({error: fragment(errors.map(e => p(e)))})
 );

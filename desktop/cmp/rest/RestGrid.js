@@ -28,6 +28,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
         mask = true,
         agOptions,
         onRowDoubleClicked,
+        formClassName,
         ...props
     }, ref) {
 
@@ -51,7 +52,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
                 item: grid({model: gridModel, agOptions, onRowDoubleClicked}),
                 mask: getMaskFromProp(model, mask)
             }),
-            restForm({model: formModel})
+            restForm({model: formModel, className: formClassName})
         );
     }
 });
@@ -82,7 +83,12 @@ RestGrid.propTypes = {
      * Callback to call when a row is double clicked. Function will receive an event
      * with a data node containing the row's data.
      */
-    onRowDoubleClicked: PT.func
+    onRowDoubleClicked: PT.func,
+
+    /**
+     * Classname to be passed to RestForm
+     */
+    formClassName: PT.string
 };
 
 

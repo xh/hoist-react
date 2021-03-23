@@ -114,7 +114,7 @@ class LocalModel extends HoistModel {
         // Render HighChart when chartElem container ready in DOM, or dependencies updated
         const chartDependencies = () => ([
             this.chartRef.current,
-            model.highChartsConfig,
+            model.highchartsConfig,
             model.algorithm,
             model.data,
             XH.darkTheme
@@ -284,22 +284,23 @@ class LocalModel extends HoistModel {
                     return isFunction(tooltip) ? tooltip(record) : defaultTooltip(record);
                 }
             },
-            series: [{
-                data,
-                type: 'treemap',
-                animation: false,
-                layoutAlgorithm: algorithm,
-                borderWidth: 0,
-                turboThreshold: maxNodes,
-                dataLabels: {
-                    enabled: true,
-                    allowOverlap: false,
-                    align: 'left',
-                    verticalAlign: 'top',
-                    style: {textOutline: 'none', visibility: 'hidden'}
-                },
-                events: {click: this.onClick}
-            }]
+            plotOptions: {
+                treemap: {
+                    layoutAlgorithm: algorithm,
+                    turboThreshold: maxNodes,
+                    animation: false,
+                    borderWidth: 0,
+                    events: {click: this.onClick},
+                    dataLabels: {
+                        enabled: true,
+                        allowOverlap: false,
+                        align: 'left',
+                        verticalAlign: 'top',
+                        style: {textOutline: 'none', visibility: 'hidden'}
+                    }
+                }
+            },
+            series: [{data, type: 'treemap'}]
         }, highchartsConfig);
     }
 
