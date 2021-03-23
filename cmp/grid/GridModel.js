@@ -909,9 +909,8 @@ export class GridModel extends HoistModel {
         if (omit) return null;
 
         if (config.children) {
-            config.children = compact(config.children.map(c => this.buildColumn(c)));
-            if (isEmpty(config.children)) return null;
-            return new ColumnGroup(config, this);
+            const children = compact(config.children.map(c => this.buildColumn(c)));
+            return !isEmpty(children) ? new ColumnGroup({...config, children}, this) : null;
         }
 
         return new Column(config, this);
