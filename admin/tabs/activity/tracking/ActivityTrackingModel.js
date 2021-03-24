@@ -345,7 +345,7 @@ export class ActivityTrackingModel extends HoistModel {
         }
     }
 
-    getDefaultStartDay() {return LocalDate.currentAppDay()}
+    getDefaultStartDay() {return LocalDate.currentAppDay().subtract(7, 'days')}
     getDefaultEndDay() {return LocalDate.currentAppDay()}
 
 }
