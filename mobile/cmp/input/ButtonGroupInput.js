@@ -55,6 +55,8 @@ const cmp = hoistCmp.factory(
         const {children, disabled, enableClear, tabIndex = 0, ...rest} = getNonLayoutProps(props);
 
         const buttons = Children.map(children, button => {
+            if (!button) return null;
+
             const {value} = button.props,
                 btnDisabled = disabled || button.props.disabled;
 
