@@ -334,12 +334,6 @@ textarea.bp3-input,
   z-index: 16;
 }
 
-// Avoid misaligned rightIcon within inputs.
-.bp3-button svg:not(.bp3-icon):first-child:last-child,
-.bp3-button .bp3-spinner + svg:not(.bp3-icon):last-child {
-  margin-left: 0;
-}
-
 // Controls ship with default bottom and (inline) right margins. We expose variables
 // to customize and default those to 0 to avoid adding margins by default.
 // Hoist theme text-color applied to elements not styled with a more specific selector.
