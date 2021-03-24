@@ -1,6 +1,6 @@
 # Changelog
 
-## v39.0.0-SNAPSHOT - unreleased
+## v39.0.0 - 2021-03-23
 
 ### 🎁 New Features
 
@@ -61,7 +61,7 @@
 * core-js `3.8 -> 3.9`
 * react-select `4.1 -> 4.2`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v38.3.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v38.3.0...v39.0.0)
 
 ## v38.3.0 - 2021-03-03
 
