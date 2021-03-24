@@ -2,7 +2,15 @@
 
 ## v40.0.0-SNAPSHOT - unreleased
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v39.0.0...develop)
+## v39.0.1 - 2021-03-24
+
+### 🐞 Bug Fixes
+
+* Fixes a regression preventing the loading of the Activity Tab in Admin Panel.
+* Fixes to issues with icon alignment in `DateInput`.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v39.0.0...v39.0.1)
+
 
 ## v39.0.0 - 2021-03-23
 
