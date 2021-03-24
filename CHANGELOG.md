@@ -1,7 +1,5 @@
 # Changelog
 
-## v40.0.0-SNAPSHOT - unreleased
-
 ## v39.0.1 - 2021-03-24
 
 ### 🐞 Bug Fixes
