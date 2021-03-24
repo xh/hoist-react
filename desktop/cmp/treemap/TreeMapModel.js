@@ -294,11 +294,32 @@ export class TreeMapModel extends HoistModel {
     normaliseColorValues(data) {
         const {colorMode, heatField} = this;
 
+        //---------------------
+        // ColorMode === 'none'
+        //---------------------
         if (!data.length || colorMode === 'none') {
             data.forEach(it => it.colorValue = 0.5);
             return data;
         }
 
+        //---------------------
+        // ColorMode === 'wash'
+        //---------------------
+        if (colorMode === 'wash') {
+            data.forEach(it => {
+                const {heatValue} = it,
+                    isValid = this.valueIsValid(heatValue);
+
+                if (isValid && heatValue > 0) it.colorValue = 0.8;
+                if (isValid && heatValue < 0) it.colorValue = 0.2;
+                if (!it.colorValue) it.colorValue = 0.5;
+            });
+            return data;
+        }
+
+        //---------------------
+        // ColorMode === 'linear|balanced'
+        //---------------------
         // 1) Extract valid heat values
         const heatValues = [];
         this.store.records.forEach(it => {
@@ -335,7 +356,7 @@ export class TreeMapModel extends HoistModel {
 
             if (heatValue > 0) {
                 // Normalize positive values between 0.6-1
-                if (colorMode === 'wash' || minPosHeat === maxPosHeat) {
+                if (minPosHeat === maxPosHeat) {
                     it.colorValue = 0.8;
                 } else if (colorMode === 'balanced' && posHeatValues.length > 2) {
                     if (it.colorValue >= midPosHeat) {
@@ -350,7 +371,7 @@ export class TreeMapModel extends HoistModel {
                 // Normalize negative values between 0-0.4
                 const absHeatValue = Math.abs(heatValue);
 
-                if (colorMode === 'wash' || minNegHeat === maxNegHeat) {
+                if (minNegHeat === maxNegHeat) {
                     it.colorValue = 0.2;
                 } else if (colorMode === 'balanced' && negHeatValues.length > 2) {
                     if (absHeatValue >= midNegHeat) {
