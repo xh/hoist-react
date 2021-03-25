@@ -1,6 +1,10 @@
 # Changelog
 
-## v40.0.0-SNAPSHOT - unreleasd
+## v40.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+* `GridExportService` supports empty grid exports. `ExportButton` is no longer disabled by default
+when bound `gridModel` is empty.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v39.0.1...develop)
 
