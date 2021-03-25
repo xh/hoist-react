@@ -48,11 +48,6 @@ export class GridExportService extends HoistService {
             meta = this.getColumnMetadata(exportColumns),
             rows = [];
 
-        if (records.length === 0) {
-            XH.toast({message: 'No data found to export', intent: 'danger', icon: Icon.warning()});
-            return;
-        }
-
         rows.push(this.getHeaderRow(exportColumns, type, gridModel));
 
         // If the grid includes a summary row, add it to the export payload as a root-level node
@@ -61,6 +56,8 @@ export class GridExportService extends HoistService {
                 this.getRecordRow(gridModel, summaryRecord, exportColumns, 0),
                 ...this.getRecordRowsRecursive(gridModel, records, exportColumns, 1)
             );
+        } else if (gridModel.empty) {
+            rows.push(this.getStubRow(exportColumns));
         } else {
             rows.push(...this.getRecordRowsRecursive(gridModel, records, exportColumns, 0));
         }
@@ -256,6 +253,10 @@ export class GridExportService extends HoistService {
 
         value = value.toString();
         return cellHasExportFormat ? {value, format: exportFormat} : value;
+    }
+
+    getStubRow(columns) {
+        return {data: Array.from(columns.length), depth: 0};
     }
 
     getContentType(type) {
