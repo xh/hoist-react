@@ -19,6 +19,7 @@ const modelSpec = {
     enableExport: true,
     store: {
         url: 'rest/monitorAdmin',
+        fieldDefaults: {disableXssProtection: true},
         fields: [
             {
                 name: 'code',

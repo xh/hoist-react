@@ -22,6 +22,7 @@ const modelSpec = {
     store: {
         url: 'rest/userPreferenceAdmin',
         reloadLookupsOnLoad: true,
+        fieldDefaults: {disableXssProtection: true},
         fields: [
             {
                 name: 'name',
