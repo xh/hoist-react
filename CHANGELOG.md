@@ -10,6 +10,15 @@
   console. Avoids content within configs and JSON blobs being unintentionally mangled + trusts
   admins not to paste in malicious content.
 
+### 📚 Libraries
+
+* @blueprintjs/core `3.41 -> 3.42`
+* @blueprintjs/datetime `3.21 -> 3.22`
+* codemirror `5.59 -> 5.60`
+* qs `6.9 -> 6.10`
+* react-beautiful-dnd `13.0 -> 13.1`
+* react-select `4.2 -> 4.3`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v39.0.1...develop)
 
 ## v39.0.1 - 2021-03-24
