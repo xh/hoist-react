@@ -15,7 +15,7 @@ import {
 import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
 import {fmtDateTime} from '@xh/hoist/format';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
-import {truncate} from 'lodash';
+import {isDate, truncate} from 'lodash';
 
 import {DifferModel} from '../../differ/DifferModel';
 
@@ -32,6 +32,7 @@ export class JsonBlobModel extends HoistModel {
         store: {
             url: 'rest/jsonBlobAdmin',
             reloadLookupsOnLoad: true,
+            fieldDefaults: {disableXssProtection: true},
             fields: [
                 {
                     name: 'token',
@@ -135,7 +136,9 @@ export class JsonBlobModel extends HoistModel {
             {field: 'value'},
             {field: 'meta'},
             {field: 'archived'},
-            {field: 'archivedDate'},
+            {field: 'archivedDate', formField: {readonlyRenderer: v => {
+                return (!isDate(v) || v.getTime() === 0) ? '-' : fmtDateTime(v);
+            }}},
             {field: 'dateCreated'},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}

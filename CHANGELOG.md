@@ -1,6 +1,14 @@
 # Changelog
 
-## v40.0.0-SNAPSHOT - unreleasd
+## v40.0.0-SNAPSHOT - unreleased
+
+### 🐞 Bug Fixes
+
+* Avoid `TileFrame` edge-case bug where the appearance of an internal scrollbar threw off layout
+  calculations.
+* Disable XSS protection (dompurify processing) on selected REST editor grids within the Hoist Admin
+  console. Avoids content within configs and JSON blobs being unintentionally mangled + trusts
+  admins not to paste in malicious content.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v39.0.1...develop)
 
@@ -8,8 +16,8 @@
 
 ### 🐞 Bug Fixes
 
-* Fixes a regression preventing the loading of the Activity Tab in Admin Panel.
-* Fixes to issues with icon alignment in `DateInput`.
+* Fixes regression preventing the loading of the Activity Tab in the Hoist Admin console.
+* Fixes icon alignment in `DateInput`.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v39.0.0...v39.0.1)
 

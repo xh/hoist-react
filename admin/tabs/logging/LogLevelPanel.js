@@ -17,6 +17,7 @@ const modelSpec = {
     enableExport: true,
     store: {
         url: 'rest/logLevelAdmin',
+        fieldDefaults: {disableXssProtection: true},
         fields: [
             {
                 name: 'name',
