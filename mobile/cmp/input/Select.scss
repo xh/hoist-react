@@ -81,3 +81,37 @@
     }
   }
 }
+
+//---------------
+// Fullscreen
+//---------------
+#xh-select-input-fullscreen-portal {
+  z-index: 22;
+
+  .xh-select {
+    margin: var(--xh-pad-px);
+
+    &__fullscreen-wrapper {
+      position: absolute !important;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--xh-bg);
+    }
+
+    &__fullscreen-toolbar {
+      background-color: var(--xh-navbar-bg);
+      color: var(--xh-navbar-title-color);
+      padding: var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px) 0;
+
+      & > span {
+        font-size: var(--xh-navbar-title-font-size-px);
+        flex: 1;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+}
