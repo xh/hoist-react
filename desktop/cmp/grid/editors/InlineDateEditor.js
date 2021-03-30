@@ -1,43 +1,42 @@
 import {hoistCmp} from '@xh/hoist/core';
 import {dateInput} from '@xh/hoist/desktop/cmp/input';
-import {makeObservable} from '@xh/hoist/mobx';
-import {start} from '@xh/hoist/promise';
 
 import {InlineEditorModel, useHoistInlineEditorModel} from './HoistInlineEditor';
 
-export const InlineDateEditor = hoistCmp({
+export const inlineDateEditor = hoistCmp.factory({
     displayName: 'InlineDateEditor',
     className: 'xh-inline-date-editor',
     model: false,
     memo: false,
     observer: false,
     render(props, ref) {
-        const inputProps = {
-            // Prefer a more minimal look for rendering in a cell
-            rightElement: null,
-            showActionsBar: true,
-            popoverPositions: 'bottom',
-            // Feels more natural for the editing to end after picking a date so the user does not need to press enter
-            onCommit: () => props.stopEditing(),
-            ...props.inputProps
-        };
-
-        return useHoistInlineEditorModel(dateInput, {...props, inputProps}, ref, Model);
+        return useHoistInlineEditorModel(dateInput, {
+            ...props,
+            inputProps: {
+                // Prefer a more minimal look for rendering in a cell
+                rightElement: null,
+                showActionsBar: true,
+                showPickerOnFocus: true,
+                popoverPositions: 'bottom',
+                ...props.inputProps
+            }
+        }, ref, Model);
     }
 });
 
 class Model extends InlineEditorModel {
-    constructor(props) {
-        super(props);
-        makeObservable(this);
+    onCommit() {
+        // If we are not full-row editing then stop the edit when a value has been committed
+        if (!this.gridModel.fullRowEditing) {
+            this.stopEditing();
+        }
 
-        // Open the date picker popover immediately once we are fully mounted
-        this.addReaction({
-            track: () => this.inputModel,
-            run: (inputModel) => {
-                if (!inputModel) return;
-                start(() => inputModel.setPopoverOpen(true));
-            }
-        });
+        // TODO: Need to figure out how to handle this when full row editing...
+    }
+
+    // Override to also open the popover on focus
+    focus() {
+        super.focus();
+        this.inputModel?.setPopoverOpen(true);
     }
 }

@@ -245,7 +245,8 @@ class LocalModel extends HoistModel {
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
             },
-            autoSizePadding: 3 // tighten up cells for ag-Grid native autosizing.  Remove when Hoist autosizing no longer experimental
+            autoSizePadding: 3, // tighten up cells for ag-Grid native autosizing.  Remove when Hoist autosizing no longer experimental,
+            editType: model.fullRowEditing ? 'fullRow' : undefined
         };
 
         // Platform specific defaults

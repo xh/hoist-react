@@ -8,7 +8,18 @@ import {div} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {castArray, clone, find, get, isArray, isFinite, isFunction, isNil, isNumber, isString} from 'lodash';
+import {
+    castArray,
+    clone,
+    find,
+    get,
+    isArray,
+    isFinite,
+    isFunction,
+    isNil,
+    isNumber,
+    isString
+} from 'lodash';
 import {forwardRef, useImperativeHandle, useState} from 'react';
 import {GridSorter} from '../impl/GridSorter';
 import {ExportFormat} from './ExportFormat';
@@ -138,6 +149,10 @@ export class Column {
      *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
      * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column
      *     editable.
+     * @param {Component} [c.editor] - inline editor component to use when editing cells in this
+     *      column.
+     * @param {function|Object} [c.editorParams] - additional params to pass to the editor component
+     *      or a function to create them. The params are mixed into the props for the component.
      * @param {Column~setValueFn} [c.setValueFn] - function for updating Record field for this
      *      column after inline editing.
      * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
@@ -199,6 +214,8 @@ export class Column {
         tooltip,
         tooltipElement,
         editable,
+        editor,
+        editorParams,
         setValueFn,
         getValueFn,
         enableDotSeparatedFieldPath,
@@ -306,6 +323,8 @@ export class Column {
         );
 
         this.editable = editable;
+        this.editor = editor;
+        this.editorParams = editorParams;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
@@ -489,7 +508,7 @@ export class Column {
                             }
                         };
                     });
-                    const {value, data} =  agParams;
+                    const {value, data} = agParams;
                     return elementRenderer(value, {record: data, column: this, gridModel, agParams});
                 })
             );
@@ -539,6 +558,28 @@ export class Column {
         if (this.autoHeight) {
             ret.autoHeight = true;
             ret.wrapText = true;
+        }
+
+        const {editor} = this;
+        if (editor) {
+            ret.cellEditorFramework = forwardRef((agParams, ref) => {
+                const {data: record} = agParams,
+                    params = {
+                        record,
+                        gridModel,
+                        column: this,
+                        agParams
+                    };
+
+                let {editorParams} = this;
+                if (isFunction(editorParams)) editorParams = editorParams(params);
+
+                return editor({
+                    ...params,
+                    ...editorParams,
+                    ref
+                });
+            });
         }
 
         // Finally, apply explicit app requests.  The customer is always right....

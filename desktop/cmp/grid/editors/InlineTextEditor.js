@@ -2,7 +2,7 @@ import {hoistCmp} from '@xh/hoist/core';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {useHoistInlineEditorModel} from './HoistInlineEditor';
 
-export const InlineTextEditor = hoistCmp({
+export const inlineTextEditor = hoistCmp.factory({
     displayName: 'InlineTextEditor',
     className: 'xh-inline-text-editor',
     model: false,
