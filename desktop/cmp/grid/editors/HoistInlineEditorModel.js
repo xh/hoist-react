@@ -14,29 +14,14 @@ import {start} from '@xh/hoist/promise';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import './InlineEditors.scss';
 
-export function useHoistInlineEditorModel(component, props, ref, modelSpec = InlineEditorModel) {
-    const {className, inputProps} = props,
-        impl = useLocalModel(() => new modelSpec(props));
-
-    useImperativeHandle(ref, () => ({
-        getValue: () => impl.value,
-
-        // This is called in full-row editing when the user tabs into the cell
-        focusIn: () => impl.focus()
-    }));
-
-    return component({
-        className: classNames('xh-inline-editor', className),
-        width: null,
-        model: impl,
-        bind: 'value',
-        commitOnChange: true,
-        onCommit: () => impl.onCommit(),
-        ref: composeRefs(ref, impl.ref),
-        ...inputProps
-    });
-}
-
+/**
+ * A Local Model supporting inline cell editor components in Hoist. Provides the base functionality
+ * needed for supporting inline cell editing in ag-grid and extension points for editors which need
+ * more complex behaviors.
+ *
+ * To create an instance of a component using this model use the hook
+ * {@see useHoistInlineEditorModel}
+ */
 export class InlineEditorModel extends HoistModel {
     @bindable value;
 
@@ -121,4 +106,39 @@ export class InlineEditorModel extends HoistModel {
             }
         };
     }
+}
+
+/**
+ * Hook to render a component to be used for inline cell editing in ag-grid.
+ *
+ * Implements the lifecycle methods required by ag-grid cell editors.
+ * See https://www.ag-grid.com/react-grid/react-hooks/#hooks-with-lifecycle-methods for more details.
+ *
+ * @param {function} component - react component to render - should be a HoistInput
+ * @param {Object} props - props passed to containing component
+ * @param {Object} ref - forwardRef passed to containing component
+ * @param {Class} modelSpec - specify to use particular subclass of HoistInlineEditorModel
+ * @return {element} - react element to be rendered
+ */
+export function useHoistInlineEditorModel(component, props, ref, modelSpec = InlineEditorModel) {
+    const {className, inputProps} = props,
+        impl = useLocalModel(() => new modelSpec(props));
+
+    useImperativeHandle(ref, () => ({
+        getValue: () => impl.value,
+
+        // This is called in full-row editing when the user tabs into the cell
+        focusIn: () => impl.focus()
+    }));
+
+    return component({
+        className: classNames('xh-inline-editor', className),
+        width: null,
+        model: impl,
+        bind: 'value',
+        commitOnChange: true,
+        onCommit: () => impl.onCommit(),
+        ref: composeRefs(ref, impl.ref),
+        ...inputProps
+    });
 }

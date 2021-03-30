@@ -6,7 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {dateInput} from '@xh/hoist/desktop/cmp/input';
-import {InlineEditorModel, useHoistInlineEditorModel} from './HoistInlineEditor';
+import {InlineEditorModel, useHoistInlineEditorModel} from './HoistInlineEditorModel';
 import {HoistInlineEditorPropTypes} from './HoistInlineEditorProps';
 
 export const [InlineDateEditor, inlineDateEditor] = hoistCmp.withFactory({
