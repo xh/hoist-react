@@ -149,10 +149,10 @@ export class Column {
      *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
      * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column
      *     editable.
-     * @param {Component} [c.editor] - inline editor component to use when editing cells in this
-     *      column.
-     * @param {function|Object} [c.editorParams] - additional params to pass to the editor component
-     *      or a function to create them. The params are mixed into the props for the component.
+     * @param {Column-cellEditorElementFn} [c.cellEditorElement] - function which returns a React
+     *     component to use as the cell editor. Will take precedence over `tooltip`.
+     * @param {Column-cellEditorPropsFn|Object} [c.cellEditorProps] - additional props to pass to
+     *      the cell editor component or a function to create them.
      * @param {Column~setValueFn} [c.setValueFn] - function for updating Record field for this
      *      column after inline editing.
      * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
@@ -214,8 +214,8 @@ export class Column {
         tooltip,
         tooltipElement,
         editable,
-        editor,
-        editorParams,
+        cellEditorElement,
+        cellEditorProps,
         setValueFn,
         getValueFn,
         enableDotSeparatedFieldPath,
@@ -323,8 +323,8 @@ export class Column {
         );
 
         this.editable = editable;
-        this.editor = editor;
-        this.editorParams = editorParams;
+        this.cellEditorElement = cellEditorElement;
+        this.cellEditorProps = cellEditorProps;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
@@ -560,8 +560,8 @@ export class Column {
             ret.wrapText = true;
         }
 
-        const {editor} = this;
-        if (editor) {
+        const {cellEditorElement} = this;
+        if (cellEditorElement) {
             ret.cellEditorFramework = forwardRef((agParams, ref) => {
                 const {data: record} = agParams,
                     params = {
@@ -574,7 +574,7 @@ export class Column {
                 let {editorParams} = this;
                 if (isFunction(editorParams)) editorParams = editorParams(params);
 
-                return editor({
+                return cellEditorElement({
                     ...params,
                     ...editorParams,
                     ref
@@ -781,4 +781,23 @@ export function getAgHeaderClassFn(column) {
  * @typedef {Object} Column~SortSpec - specifies how to perform sorting in a given column
  * @param {string} sort - direction to sort, either 'asc' or 'desc', or null to remove sort.
  * @param {boolean} [abs] - true to sort by absolute value
+ */
+
+/**
+ * @callback Column-cellEditorElementFn - function for a grid cell editor returning a React element
+ * @param {Object} params
+ * @param {Record} params.record - row-level data Record.
+ * @param {Column} params.column - column for the cell being edited.
+ * @param {GridModel} params.gridModel - gridModel for the grid.
+ * @return {Element} - the React element to use as the cell editor.
+ */
+
+/**
+ * @callback Column~cellEditorPropsFn - function returning additional props to pass to the cell
+ *      editor component.
+ * @param {Object} params
+ * @param {Record} params.record - row-level data Record.
+ * @param {Column} params.column - column for the cell being edited.
+ * @param {GridModel} params.gridModel - gridModel for the grid.
+ * @return {Object} - the params to pass to the cell editor component
  */

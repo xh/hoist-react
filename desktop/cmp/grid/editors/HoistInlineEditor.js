@@ -1,12 +1,17 @@
-import composeRefs from '@seznam/compose-react-refs/composeRefs';
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2021 Extremely Heavy Industries Inc.
+ */
+import {useImperativeHandle} from 'react';
+import composeRefs from '@seznam/compose-react-refs';
+import classNames from 'classnames';
+import {isNil} from 'lodash';
 import {HoistModel, useLocalModel} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import classNames from 'classnames';
-import {isNil} from 'lodash';
-import {useImperativeHandle} from 'react';
-
 import './InlineEditors.scss';
 
 export function useHoistInlineEditorModel(component, props, ref, modelSpec = InlineEditorModel) {
@@ -15,11 +20,9 @@ export function useHoistInlineEditorModel(component, props, ref, modelSpec = Inl
 
     useImperativeHandle(ref, () => ({
         getValue: () => impl.value,
+
         // This is called in full-row editing when the user tabs into the cell
-        focusIn: () => {
-            console.log('focusIn!');
-            impl.focus();
-        }
+        focusIn: () => impl.focus()
     }));
 
     return component({
