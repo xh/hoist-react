@@ -36,6 +36,7 @@ export class ConfigTabModel extends HoistModel {
         store: new RestStore({
             url: 'rest/configAdmin',
             reloadLookupsOnLoad: true,
+            fieldDefaults: {disableXssProtection: true},
             fields: [
                 {
                     name: 'name',
