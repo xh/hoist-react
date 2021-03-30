@@ -1,0 +1,53 @@
+.xh-ag-grid {
+  .ag-cell.ag-cell-inline-editing {
+    display: flex;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    height: 100%;
+    border: none;
+
+    .ag-react-container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      padding: 1px;
+
+      .bp3-popover-wrapper,
+      .bp3-popover-target > div {
+        display: flex;
+        flex: 1;
+        height: 100%;
+        width: 100%;
+      }
+
+      .xh-inline-editor {
+        width: 100%;
+        height: 100%;
+
+        .bp3-input-group {
+          display: flex;
+          flex: 1;
+          height: 100%;
+          width: 100%;
+
+          input {
+            width: 100%;
+            height: 100%;
+          }
+        }
+
+        &.xh-inline-checkbox-editor {
+          flex: 1 1 auto;
+          align-items: center;
+          display: flex;
+          justify-content: center;
+          padding: 0;
+
+          .bp3-control-indicator {
+            margin: 0;
+          }
+        }
+      }
+    }
+  }
+}
