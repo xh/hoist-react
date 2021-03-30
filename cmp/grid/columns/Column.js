@@ -151,8 +151,8 @@ export class Column {
      *     editable.
      * @param {Column-cellEditorElementFn} [c.cellEditorElement] - function which returns a React
      *     component to use as the cell editor. Will take precedence over `tooltip`.
-     * @param {Column-cellEditorPropsFn|Object} [c.cellEditorProps] - additional props to pass to
-     *      the cell editor component or a function to create them.
+     * @param {Column-cellEditorParamsFn|Object} [c.cellEditorParams] - additional params to pass to
+     *      the cellEditorElement function or a function to create them.
      * @param {Column~setValueFn} [c.setValueFn] - function for updating Record field for this
      *      column after inline editing.
      * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
@@ -215,7 +215,7 @@ export class Column {
         tooltipElement,
         editable,
         cellEditorElement,
-        cellEditorProps,
+        cellEditorParams,
         setValueFn,
         getValueFn,
         enableDotSeparatedFieldPath,
@@ -324,7 +324,7 @@ export class Column {
 
         this.editable = editable;
         this.cellEditorElement = cellEditorElement;
-        this.cellEditorProps = cellEditorProps;
+        this.cellEditorParams = cellEditorParams;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
@@ -571,12 +571,12 @@ export class Column {
                         agParams
                     };
 
-                let {editorParams} = this;
-                if (isFunction(editorParams)) editorParams = editorParams(params);
+                let {cellEditorParams} = this;
+                if (isFunction(cellEditorParams)) cellEditorParams = cellEditorParams(params);
 
                 return cellEditorElement({
                     ...params,
-                    ...editorParams,
+                    ...cellEditorParams,
                     ref
                 });
             });
@@ -793,11 +793,11 @@ export function getAgHeaderClassFn(column) {
  */
 
 /**
- * @callback Column~cellEditorPropsFn - function returning additional props to pass to the cell
- *      editor component.
+ * @callback Column~cellEditorParamsFn - function returning additional params to pass to the
+ *      cellEditorElement function
  * @param {Object} params
  * @param {Record} params.record - row-level data Record.
  * @param {Column} params.column - column for the cell being edited.
  * @param {GridModel} params.gridModel - gridModel for the grid.
- * @return {Object} - the params to pass to the cell editor component
+ * @return {Object} - the params to pass to the cellEditorElement function
  */
