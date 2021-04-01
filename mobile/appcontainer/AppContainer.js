@@ -17,6 +17,7 @@ import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
 import {pinPadImpl} from '@xh/hoist/mobile/cmp/pinpad/impl/PinPad';
 import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
 import {aboutDialog} from './AboutDialog';
+import {appBanner} from './AppBanner';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
 import {idlePanel} from './IdlePanel';
@@ -26,7 +27,6 @@ import {loginPanel} from './LoginPanel';
 import {messageSource} from './MessageSource';
 import {optionsDialog} from './OptionsDialog';
 import {toastSource} from './ToastSource';
-import {updateBar} from './UpdateBar';
 import {versionBar} from './VersionBar';
 
 installMobileImpls({
@@ -101,7 +101,7 @@ const appContainerView = hoistCmp.factory({
         return viewport(
             vframe(
                 impersonationBar(),
-                updateBar(),
+                appBanner(),
                 refreshContextView({
                     model: model.refreshContextModel,
                     item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))

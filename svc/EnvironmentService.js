@@ -78,14 +78,14 @@ export class EnvironmentService extends HoistService {
 
         // Compare latest version/build info from server against the same info (also supplied by
         // server) when the app initialized. A change indicates an update to the app and will
-        // prompt the user to refresh via the updateBar, unless suppressed via shouldUpdate flag.
+        // prompt the user to refresh via the AppBanner, unless suppressed via shouldUpdate flag.
         // Builds are checked here to trigger refresh prompts across SNAPSHOT updates for projects
         // with active dev/QA users.
         if (
             shouldUpdate &&
             (appVersion !== this.get('appVersion') || appBuild !== this.get('appBuild'))
         ) {
-            XH.appContainerModel.showUpdateBar(appVersion, appBuild);
+            XH.appContainerModel.showUpdateBanner(appVersion, appBuild);
         }
 
         // Note that the case of version mismatches across the client and server we do *not* show

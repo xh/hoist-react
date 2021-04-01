@@ -2,6 +2,10 @@
 
 ## v40.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `XH.showBanner()` to display a configurable banner across the top of viewport.
+
 ### 🐞 Bug Fixes
 
 * Avoid `TileFrame` edge-case bug where the appearance of an internal scrollbar threw off layout

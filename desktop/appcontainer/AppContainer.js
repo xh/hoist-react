@@ -21,6 +21,7 @@ import {useHotkeys, useContextMenu} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
 import {aboutDialog} from './AboutDialog';
+import {appBanner} from './AppBanner';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
 import {idlePanel} from './IdlePanel';
@@ -30,7 +31,6 @@ import {loginPanel} from './LoginPanel';
 import {messageSource} from './MessageSource';
 import {optionsDialog} from './OptionsDialog';
 import {toastSource} from './ToastSource';
-import {updateBar} from './UpdateBar';
 import {versionBar} from './VersionBar';
 
 installDesktopImpls({
@@ -106,7 +106,7 @@ const appContainerView = hoistCmp.factory({
         let ret = viewport(
             vframe(
                 impersonationBar(),
-                updateBar(),
+                appBanner(),
                 refreshContextView({
                     model: model.refreshContextModel,
                     item: frame(elem(appSpec.componentClass, {model: appModel}))

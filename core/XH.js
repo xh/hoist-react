@@ -414,7 +414,7 @@ class XHClass extends HoistBase {
      * @param {(ReactNode|string)} config.message - the message to show in the toast.
      * @param {Element} [config.icon] - icon to be displayed
      * @param {number} [config.timeout] - time in milliseconds to display the toast.
-     * @param {string} [config.intent] - the Blueprint intent (desktop only)
+     * @param {string} [config.intent] - the Blueprint intent.
      * @param {Object} [config.position] - Position in viewport to display toast. See Blueprint
      *     Position enum (desktop only).
      * @param {Component} [config.containerRef] - Component that should contain (locate) the Toast.
@@ -422,6 +422,30 @@ class XHClass extends HoistBase {
      */
     toast(config) {
         return this.acm.toastSourceModel.show(config);
+    }
+
+    /**
+     * Show or replace the single-instance AppBanner that displays across the top of the view port
+     *
+     * @param {Object} config - options for banner.
+     * @param {(ReactNode|string)} config.message - the message to show in the banner.
+     * @param {Element} [config.icon] - icon to be displayed.
+     * @param {string} [config.intent] - the Blueprint intent.
+     * @param {function} [config.actionFn] - If provided, banner will render an action button
+     *      which triggers this function.
+     * @param {Object} [config.actionButtonProps] - Set the properties of the action button
+     * @param {...*} [rest] - additional properties to pass to the banner component
+     */
+    showBanner(config) {
+        return this.acm.appBannerModel.show(config);
+    }
+
+    hideBanner() {
+        return this.acm.appBannerModel.hide();
+    }
+
+    get bannerIsShowing() {
+        return this.acm.appBannerModel.isShowing;
     }
 
     //--------------------------
