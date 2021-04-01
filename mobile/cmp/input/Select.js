@@ -15,6 +15,7 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, createObservableRef} from '@xh/hoist/utils/react';
 import {assign, isEmpty, isPlainObject} from 'lodash';
+import {Children} from 'react';
 import ReactDom from 'react-dom';
 import PT from 'prop-types';
 import './Select.scss';
@@ -117,7 +118,7 @@ Select.propTypes = {
     placeholder: PT.string,
 
     /** Text to display in header when in fullscreen mode. */
-    fullscreenTitle: PT.string,
+    title: PT.string,
 
     /**
      * Escape-hatch props passed directly to react-select. Use with care - not all props
@@ -177,7 +178,9 @@ class Model extends HoistInputModel {
             fireImmediately: true
         });
 
-        this.addReaction(this.fullscreenReaction());
+        if (this.fullscreenMode) {
+            this.addReaction(this.fullscreenReaction());
+        }
     }
 
     //-------------------------
@@ -440,7 +443,7 @@ const cmp = hoistCmp.factory(
             return ReactDom.createPortal(
                 fullscreenWrapper({
                     model,
-                    title: props.fullscreenTitle,
+                    title: props.title,
                     item: box({
                         item: control,
                         className,
@@ -476,7 +479,7 @@ const fullscreenWrapper = hoistCmp.factory(
                         span(title)
                     ]
                 }),
-                children
+                Children.only(children)
             ]
         });
     }
