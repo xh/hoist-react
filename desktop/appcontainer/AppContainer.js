@@ -21,7 +21,7 @@ import {useHotkeys, useContextMenu} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
 import {aboutDialog} from './AboutDialog';
-import {appBanner} from './AppBanner';
+import {banner} from './Banner';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
 import {idlePanel} from './IdlePanel';
@@ -106,7 +106,7 @@ const appContainerView = hoistCmp.factory({
         let ret = viewport(
             vframe(
                 impersonationBar(),
-                appBanner(),
+                bannerList(),
                 refreshContextView({
                     model: model.refreshContextModel,
                     item: frame(elem(appSpec.componentClass, {model: appModel}))
@@ -126,6 +126,16 @@ const appContainerView = hoistCmp.factory({
         ret = useHotkeys(ret, globalHotKeys(model));
 
         return ret;
+    }
+});
+
+const bannerList = hoistCmp.factory({
+    render({model}) {
+        return fragment({
+            items: model.bannerSourceModel.bannerModels.map(model => {
+                return banner({model, key: model.xhId});
+            })
+        });
     }
 });
 

@@ -17,7 +17,7 @@ import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
 import {pinPadImpl} from '@xh/hoist/mobile/cmp/pinpad/impl/PinPad';
 import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
 import {aboutDialog} from './AboutDialog';
-import {appBanner} from './AppBanner';
+import {banner} from './Banner';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
 import {idlePanel} from './IdlePanel';
@@ -101,7 +101,7 @@ const appContainerView = hoistCmp.factory({
         return viewport(
             vframe(
                 impersonationBar(),
-                appBanner(),
+                bannerList(),
                 refreshContextView({
                     model: model.refreshContextModel,
                     item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
@@ -113,6 +113,16 @@ const appContainerView = hoistCmp.factory({
             feedbackDialog(),
             optionsDialog()
         );
+    }
+});
+
+const bannerList = hoistCmp.factory({
+    render({model}) {
+        return fragment({
+            items: model.bannerSourceModel.bannerModels.map(model => {
+                return banner({model, key: model.xhId});
+            })
+        });
     }
 });
 

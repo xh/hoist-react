@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {AppBannerModel} from '@xh/hoist/appcontainer/AppBannerModel';
+import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {XH, uses, hoistCmp} from '@xh/hoist/core';
 import {div, filler} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -12,40 +12,35 @@ import {Icon} from '@xh/hoist/icon';
 import {isFunction} from 'lodash';
 import classNames from 'classnames';
 
-import './AppBanner.scss';
+import './Banner.scss';
 
 /** @private */
-export const appBanner = hoistCmp.factory({
-    displayName: 'AppBanner',
-    model: uses(AppBannerModel),
+export const banner = hoistCmp.factory({
+    displayName: 'Banner',
+    model: uses(BannerModel),
     render({model}) {
-        const {isShowing, config} = model;
-        if (!isShowing) return null;
-
         const {
-            className,
-            message,
             icon,
+            message,
             intent,
-            actionFn,
-            actionButtonProps,
-            ...props
-        } = config;
+            className,
+            props
+        } = model;
 
         return div({
             className: classNames(
-                'xh-app-banner',
+                'xh-banner',
                 className,
                 intent ? `xh-intent-${intent}` : null
             ),
             items: [
                 icon,
                 div({
-                    className: 'xh-app-banner__message',
+                    className: 'xh-banner__message',
                     item: message
                 }),
                 filler(),
-                actionButton({actionFn, actionButtonProps}),
+                actionButton(),
                 dismissButton()
             ],
             ...props
@@ -54,7 +49,8 @@ export const appBanner = hoistCmp.factory({
 });
 
 const actionButton = hoistCmp.factory(
-    ({actionFn, actionButtonProps}) => {
+    ({model}) => {
+        const {actionFn, actionButtonProps} = model;
         if (!isFunction(actionFn)) return null;
         return button({
             text: 'Action',
@@ -65,11 +61,16 @@ const actionButton = hoistCmp.factory(
 );
 
 const dismissButton = hoistCmp.factory(
-    () => {
+    ({model}) => {
+        const {enableClose, category, onClose} = model;
         return button({
+            omit: !enableClose,
             icon: Icon.close(),
             modifier: 'quiet',
-            onClick: () => XH.hideBanner()
+            onClick: () => {
+                XH.hideBanner(category);
+                if (isFunction(onClose)) onClose(model);
+            }
         });
     }
 );

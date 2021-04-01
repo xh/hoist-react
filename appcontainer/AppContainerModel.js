@@ -9,7 +9,7 @@ import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {Icon} from '@xh/hoist/icon';
 
 import {AboutDialogModel} from './AboutDialogModel';
-import {AppBannerModel} from './AppBannerModel';
+import {BannerSourceModel} from './BannerSourceModel';
 import {ExceptionDialogModel} from './ExceptionDialogModel';
 import {FeedbackDialogModel} from './FeedbackDialogModel';
 import {ImpersonationBarModel} from './ImpersonationBarModel';
@@ -33,7 +33,7 @@ export class AppContainerModel extends HoistModel {
     @managed impersonationBarModel = new ImpersonationBarModel();
     @managed messageSourceModel = new MessageSourceModel();
     @managed toastSourceModel = new ToastSourceModel();
-    @managed appBannerModel = new AppBannerModel();
+    @managed bannerSourceModel = new BannerSourceModel();
     @managed themeModel = new ThemeModel();
     @managed refreshContextModel = new RootRefreshContextModel();
 
@@ -63,7 +63,7 @@ export class AppContainerModel extends HoistModel {
     }
 
     /**
-     * Show the update AppBanner. Called by EnvironmentService when the server reports that a
+     * Show the update Banner. Called by EnvironmentService when the server reports that a
      * new (or at least different) version is available and the user should be prompted.
      *
      * @param {string} version - updated version from server.
@@ -75,15 +75,17 @@ export class AppContainerModel extends HoistModel {
             version += ` (b${build})`;
         }
 
-        // Show AppBanner
+        // Show Banner
         const mobile = XH.isMobileApp,
             message = mobile ? 'Update available!' : `A new version of ${XH.clientAppName} is available!`,
             buttonText = mobile ? version : `Update to ${version}`;
 
         XH.showBanner({
+            category: 'app-update',
             message,
             icon: Icon.rocket({size: 'lg'}),
             intent: 'warning',
+            enableClose: false,
             actionFn: () => XH.reloadApp(),
             actionButtonProps: {
                 icon: Icon.refresh(),

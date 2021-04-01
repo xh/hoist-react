@@ -425,27 +425,32 @@ class XHClass extends HoistBase {
     }
 
     /**
-     * Show or replace the single-instance AppBanner that displays across the top of the view port
+     * Show a Banner across the top of the view port. Banners are unique by their
+     * category prop - showing a new banner with an existing category will replace it.
      *
      * @param {Object} config - options for banner.
-     * @param {(ReactNode|string)} config.message - the message to show in the banner.
+     * @param {string} [config.category] - the category for the banner. Defaults to 'default'.
      * @param {Element} [config.icon] - icon to be displayed.
-     * @param {string} [config.intent] - the Blueprint intent.
+     * @param {(ReactNode|string)} [config.message] - the message to show in the banner.
+     * @param {string} [config.intent] - the Blueprint intent. Defaults to 'primary'.
+     * @param {string} [config.className] - CSS classname to provied to the banner component.
+     * @param {boolean} [config.enableClose] - Show a close button. Default true.
+     * @param {function} [config.onClose] - Callback function triggered when the user clicks
+     *      the close button.
      * @param {function} [config.actionFn] - If provided, banner will render an action button
      *      which triggers this function.
      * @param {Object} [config.actionButtonProps] - Set the properties of the action button
-     * @param {...*} [rest] - additional properties to pass to the banner component
+     * @param {...*} [props] - additional properties to pass to the banner component
      */
     showBanner(config) {
-        return this.acm.appBannerModel.show(config);
+        return this.acm.bannerSourceModel.show(config);
     }
 
-    hideBanner() {
-        return this.acm.appBannerModel.hide();
-    }
-
-    get bannerIsShowing() {
-        return this.acm.appBannerModel.isShowing;
+    /**
+     * @param {string} category - category to identify the banner. Defaults to 'default'.
+     */
+    hideBanner(category = 'default') {
+        return this.acm.bannerSourceModel.hide(category);
     }
 
     //--------------------------
