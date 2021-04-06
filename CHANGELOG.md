@@ -21,6 +21,12 @@
   console. Avoids content within configs and JSON blobs being unintentionally mangled + trusts
   admins not to paste in malicious content.
 
+### ⚙️ Technical
+
+* ⚠ For API consistency with the new `showBanner()` util, the `actionFn` prop for the recently-added
+  `ErrorMessage` component has been deprecated. Specify as an `onClick` handler within the
+  component's `actionButtonProps` prop instead.
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.41 -> 3.42`

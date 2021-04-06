@@ -20,7 +20,12 @@ import './ErrorMessage.scss';
 export const [ErrorMessage, errorMessage] = hoistCmp.withFactory({
     className: 'xh-error-message',
     render({className, error, message, title, actionFn, actionButtonProps}, ref) {
+        // TODO - remove in v42+
         apiDeprecated(actionFn, 'actionFn', "Use 'actionButtonProps' instead");
+        if (actionFn) {
+            actionButtonProps = {...actionButtonProps, onClick: actionFn};
+        }
+
         if (isNil(error)) return null;
 
         if (!message) {
@@ -47,13 +52,16 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory({
 
 ErrorMessage.propTypes = {
     /**
+     * If provided, component will render an inline action button - prompting to user to take some
+     * action that might resolve the error, such as retrying a failed data load. Accepts all props
+     * suitable for `Button`.
+     */
+    actionButtonProps: PT.object,
+
+    /**
      *  Error to display. If null or undefined this component will not be displayed.
      */
     error: PT.oneOfType([PT.instanceOf(Error), PT.object,  PT.string]),
-
-
-    /** Optional title to display above the message. */
-    title: PT.oneOfType([PT.element, PT.string]),
 
     /**
      *  Message to display for the error.
@@ -61,10 +69,8 @@ ErrorMessage.propTypes = {
      */
     message: PT.oneOfType([PT.element, PT.string]),
 
-    /**
-     * If provided, component will render an action button.
-     */
-    actionButtonProps: PT.object
+    /** Optional title to display above the message. */
+    title: PT.oneOfType([PT.element, PT.string])
 };
 
 const titleCmp = hoistCmp.factory(
