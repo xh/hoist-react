@@ -7,7 +7,7 @@
 import {hbox} from '@xh/hoist/cmp/layout';
 import {div} from '@xh/hoist/cmp/layout/Tags';
 import {hoistCmp} from '@xh/hoist/core';
-import {progressCircular} from '@xh/hoist/kit/onsen';
+import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import classNames from 'classnames';
 import {truncate} from 'lodash';
@@ -40,9 +40,9 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory({
         if (!isDisplayed || (!spinner && !message)) return null;
 
         const innerItems = () =>  {
-            const spinnerEl = progressCircular({indeterminate: true});
+            const spinnerEl = spinnerCmp({compact: true});
             if (!message) return [spinnerEl];
-            const msgBox = div({className: `$xh-loading-indicator__message`, item: message});
+            const msgBox = div({className: `xh-loading-indicator__message`, item: message});
 
             return corner === 'tl' || corner === 'bl' ?
                 [spinner ? spinnerEl : null, msgBox] :

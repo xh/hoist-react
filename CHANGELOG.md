@@ -2,6 +2,15 @@
 
 ## v40.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* New `Spinner` component returns a simple img-based spinner as an animated PNG, available in two
+  sizes. Used for the platform-specific `Mask` and `LoadingIndicator` components. Replaces previous
+  SVG-based implementations to reduce overhead when rendering spinners over remote connections.
+  * ⚠ Hoist re-exports and wrappers for the Blueprint `Spinner` and Onsen `ProgressCircular`
+    components have been removed. If you wish to continue using either of these components, you will
+    need to import it from the source library.
+
 ### 🐞 Bug Fixes
 
 * Avoid `TileFrame` edge-case bug where the appearance of an internal scrollbar threw off layout
@@ -38,17 +47,19 @@
 ### 🎁 New Features
 
 #### Components + Props
+
 * New `TileFrame` layout component renders a collection of child items using a layout that balances
   filling the available space against maintaining tile width / height ratio.
 * Desktop `Toolbar` accepts new `compact` prop. Set to `true` to render the toolbar with reduced
   height and font-size.
-* New `StoreFilterField` prop `autoApply` allows developers to more easily use
-  `StoreFilterField` in conjunction with other filters or custom logic. Set to `false` and specify
-  an `onFilterChange` callback to take full control of filter application.
+* New `StoreFilterField` prop `autoApply` allows developers to more easily use `StoreFilterField` in
+  conjunction with other filters or custom logic. Set to `false` and specify an `onFilterChange`
+  callback to take full control of filter application.
 * New `RestGrid` prop `formClassName` allows custom CSS class to be applied to its managed
   `RestForm` dialog.
 
 #### Models + Configs
+
 * New property `selectedRecordId` on `StoreSelectionModel`, `GridModel`, and `DataViewModel`.
   Observe this instead of `selectedRecord` when you wish to track only the `id` of the selected
   record and not changes to its data.
@@ -59,6 +70,7 @@
 * New `Column.omit` config supports conditionally excluding a column from its `GridModel`.
 
 #### Services + Utils
+
 * New method `FetchService.setDefaultTimeout()`.
 * New convenience getter `LocalDate.isToday`.
 * `HoistBase.addReaction()` now accepts convenient string values for its `equals` flag.
