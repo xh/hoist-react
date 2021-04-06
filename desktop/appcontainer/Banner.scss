@@ -12,7 +12,8 @@ body.xh-app .xh-banner {
   }
 
   &__message {
-    margin-right: var(--xh-pad-px);
+    flex: 1;
+    margin-right: var(--xh-pad-half-px);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

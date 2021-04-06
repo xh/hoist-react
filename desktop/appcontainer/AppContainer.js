@@ -133,11 +133,10 @@ const appContainerView = hoistCmp.factory({
 const bannerList = hoistCmp.factory({
     render({model}) {
         const {bannerModels} = model.bannerSourceModel;
-        return (isEmpty(bannerModels)) ?
-            null :
-            fragment({
-                items: bannerModels.map(model => banner({model, key: model.xhId}))
-            });
+        if (isEmpty(bannerModels)) return null;
+        return fragment({
+            items: bannerModels.map(model => banner({model, key: model.xhId}))
+        });
     }
 });
 

@@ -16,6 +16,7 @@ import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterF
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
 import {pinPadImpl} from '@xh/hoist/mobile/cmp/pinpad/impl/PinPad';
 import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
+import {isEmpty} from 'lodash';
 import {aboutDialog} from './AboutDialog';
 import {banner} from './Banner';
 import {exceptionDialog} from './ExceptionDialog';
@@ -118,10 +119,10 @@ const appContainerView = hoistCmp.factory({
 
 const bannerList = hoistCmp.factory({
     render({model}) {
+        const {bannerModels} = model.bannerSourceModel;
+        if (isEmpty(bannerModels)) return null;
         return fragment({
-            items: model.bannerSourceModel.bannerModels.map(model => {
-                return banner({model, key: model.xhId});
-            })
+            items: bannerModels.map(model => banner({model, key: model.xhId}))
         });
     }
 });

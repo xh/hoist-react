@@ -6,7 +6,7 @@
  */
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {XH, uses, hoistCmp} from '@xh/hoist/core';
-import {div, filler} from '@xh/hoist/cmp/layout';
+import {div} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -45,7 +45,6 @@ export const banner = hoistCmp.factory({
                     item: message
                 }),
                 actionButton(),
-                filler(),
                 dismissButton()
             ],
             ...props
