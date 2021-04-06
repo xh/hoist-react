@@ -44,6 +44,7 @@ export class BannerModel extends HoistModel {
         this.intent = intent;
         this.className = className;
         this.enableClose = enableClose;
+        this.onClose = onClose;
         this.actionFn = actionFn;
         this.actionButtonProps = actionButtonProps;
         this.props = props;
