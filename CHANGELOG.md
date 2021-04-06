@@ -2,6 +2,12 @@
 
 ## v40.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* New `Spinner` component returns a simple img-based spinner as an animated PNG, available in two
+  sizes. Used for the platform-specific `Mask` and `LoadingIndicator` components. Replaces previous
+  SVG-based implementations to reduce overhead when rendering spinners over remote connections.
+
 ### 🐞 Bug Fixes
 
 * Avoid `TileFrame` edge-case bug where the appearance of an internal scrollbar threw off layout

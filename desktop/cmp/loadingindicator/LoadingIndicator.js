@@ -6,8 +6,8 @@
  */
 import {hbox} from '@xh/hoist/cmp/layout';
 import {div} from '@xh/hoist/cmp/layout/Tags';
+import {spinner} from '@xh/hoist/cmp/spinner';
 import {hoistCmp} from '@xh/hoist/core';
-import {spinner} from '@xh/hoist/kit/blueprint';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
@@ -42,7 +42,7 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory({
             cornerCls = `xh-loading-indicator--${corner}`;
 
         const innerItems = () => {
-            let spinnerEl = spinner({size: 20});
+            let spinnerEl = spinner({compact: true});
 
             if (!message) return [spinnerEl];
 
