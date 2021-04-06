@@ -7,7 +7,8 @@
 import {hoistCmp} from '@xh/hoist/core';
 import {frame, div, p} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {isString, isFunction, isNil} from 'lodash';
+import {apiDeprecated} from '@xh/hoist/utils/js';
+import {isString, isEmpty, isNil} from 'lodash';
 import {isValidElement} from 'react';
 import PT from 'prop-types';
 
@@ -19,6 +20,7 @@ import './ErrorMessage.scss';
 export const [ErrorMessage, errorMessage] = hoistCmp.withFactory({
     className: 'xh-error-message',
     render({className, error, message, title, actionFn, actionButtonProps}, ref) {
+        apiDeprecated(actionFn, 'actionFn', "Use 'actionButtonProps' instead");
         if (isNil(error)) return null;
 
         if (!message) {
@@ -37,7 +39,7 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory({
                 items: [
                     titleCmp({title}),
                     messageCmp({message}),
-                    actionButton({actionFn, actionButtonProps, error})
+                    actionButton({actionButtonProps})
                 ]
             })
         });
@@ -61,12 +63,8 @@ ErrorMessage.propTypes = {
     message: PT.oneOfType([PT.element, PT.string]),
 
     /**
-     * If provided, component will render an action button which triggers this function.
-     * Receives the value of the 'error' prop as its single argument.
+     * If provided, component will render an action button.
      */
-    actionFn: PT.func,
-
-    /** Allows overriding the default properties of the action button. */
     actionButtonProps: PT.object
 };
 
@@ -87,12 +85,11 @@ const messageCmp = hoistCmp.factory(
 );
 
 const actionButton = hoistCmp.factory(
-    ({actionFn, actionButtonProps, error}) => {
-        if (!isFunction(actionFn)) return null;
+    ({actionButtonProps}) => {
+        if (isEmpty(actionButtonProps)) return null;
         return button({
             text: 'Retry',
             minimal: false,
-            onClick: () => actionFn(error),
             ...actionButtonProps
         });
     }

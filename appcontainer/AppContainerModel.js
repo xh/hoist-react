@@ -86,10 +86,10 @@ export class AppContainerModel extends HoistModel {
             icon: Icon.rocket({size: 'lg'}),
             intent: 'warning',
             enableClose: false,
-            actionFn: () => XH.reloadApp(),
             actionButtonProps: {
                 icon: Icon.refresh(),
-                text: buttonText
+                text: buttonText,
+                onClick: () => XH.reloadApp()
             }
         });
     }

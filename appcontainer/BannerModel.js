@@ -20,7 +20,6 @@ export class BannerModel extends HoistModel {
     className;
     enableClose;
     onClose;
-    actionFn;
     actionButtonProps;
     props;
 
@@ -32,7 +31,6 @@ export class BannerModel extends HoistModel {
         className,
         enableClose = true,
         onClose,
-        actionFn,
         actionButtonProps,
         ...props
     }) {
@@ -45,7 +43,6 @@ export class BannerModel extends HoistModel {
         this.className = className;
         this.enableClose = enableClose;
         this.onClose = onClose;
-        this.actionFn = actionFn;
         this.actionButtonProps = actionButtonProps;
         this.props = props;
     }

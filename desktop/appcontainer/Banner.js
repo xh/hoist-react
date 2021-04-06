@@ -10,7 +10,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {isFunction} from 'lodash';
+import {isFunction, isEmpty} from 'lodash';
 import classNames from 'classnames';
 
 import './Banner.scss';
@@ -54,13 +54,12 @@ export const banner = hoistCmp.factory({
 
 const actionButton = hoistCmp.factory(
     ({model}) => {
-        const {actionFn, actionButtonProps} = model;
-        if (!isFunction(actionFn)) return null;
+        const {actionButtonProps} = model;
+        if (isEmpty(actionButtonProps)) return null;
         return button({
             text: 'Action',
             minimal: false,
             intent: 'primary',
-            onClick: () => actionFn(),
             ...actionButtonProps
         });
     }
