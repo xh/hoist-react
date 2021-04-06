@@ -441,7 +441,7 @@ class XHClass extends HoistBase {
      * @param {function} [config.actionFn] - If provided, banner will render an action button
      *      which triggers this function.
      * @param {Object} [config.actionButtonProps] - Set the properties of the action button
-     * @param {...*} [props] - additional properties to pass to the banner component
+     * @param {...*} [config.rest] - additional properties to pass to the banner component
      */
     showBanner(config) {
         if (isString(config)) config = {message: config};
