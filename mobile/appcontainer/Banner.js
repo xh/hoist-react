@@ -55,18 +55,17 @@ const actionButton = hoistCmp.factory(
     ({model}) => {
         const {actionButtonProps} = model;
         if (isEmpty(actionButtonProps)) return null;
-        return button({
-            text: 'Action',
-            ...actionButtonProps
-        });
+
+        return button({...actionButtonProps});
     }
 );
 
 const dismissButton = hoistCmp.factory(
     ({model}) => {
         const {enableClose, category, onClose} = model;
+        if (!enableClose) return null;
+
         return button({
-            omit: !enableClose,
             icon: Icon.close(),
             modifier: 'quiet',
             className: 'xh-banner__dismiss-button',
