@@ -432,17 +432,19 @@ class XHClass extends HoistBase {
      * @param {string} [config.category] - the category for the banner. Defaults to 'default'.
      * @param {Element} [config.icon] - icon to be displayed.
      * @param {(ReactNode|string)} [config.message] - the message to show in the banner.
-     * @param {string} [config.intent] - the Blueprint intent. Defaults to 'primary'.
-     * @param {string} [config.className] - CSS classname to provied to the banner component.
+     * @param {string} [config.intent] - intent for banner styling. Defaults to 'primary'.
+     * @param {string} [config.className] - CSS classname provided to the banner component.
      * @param {boolean} [config.enableClose] - Show a close button. Default true.
-     * @param {function} [config.onClose] - Callback function triggered when the user clicks
-     *      the close button.
+     * @param {Banner-onCloseFn} [config.onClose] - Callback function triggered when the user
+     *      clicks the close button. (Note, banners closed via `XH.hideBanner()` or when the max
+     *      number of banners shown is exceed will NOT trigger this callback.)
      * @param {function} [config.actionFn] - If provided, banner will render an action button
      *      which triggers this function.
      * @param {Object} [config.actionButtonProps] - Set the properties of the action button
      * @param {...*} [props] - additional properties to pass to the banner component
      */
     showBanner(config) {
+        if (isString(config)) config = {message: config};
         return this.acm.bannerSourceModel.show(config);
     }
 
@@ -835,4 +837,9 @@ export const XH = window.XH = new XHClass();
  *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
  * @property {function} [onConfirm] - Callback to execute when confirm is clicked.
  * @property {function} [onCancel] - Callback to execute when cancel is clicked.
+ */
+
+/**
+ * @callback Banner-onCloseFn
+ * @param {BannerModel} model - the backing model for the banner which was just closed.
  */

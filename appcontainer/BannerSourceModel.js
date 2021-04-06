@@ -11,7 +11,8 @@ import {find, reject} from 'lodash';
 import {BannerModel} from './BannerModel';
 
 /**
- * Supports displaying Banners.
+ * Supporting model for managing the display of one or more app-wide banners.
+ * @see {XH.showBanner()}
  * @private
  */
 export class BannerSourceModel extends HoistModel {

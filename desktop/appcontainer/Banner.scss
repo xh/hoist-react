@@ -18,6 +18,13 @@ body.xh-app .xh-banner {
     text-overflow: ellipsis;
   }
 
+  &__dismiss-button {
+    color: white !important;
+    &:hover {
+      background-color: unset !important;
+    }
+  }
+
   &.xh-intent-primary {
     color: white;
     background-color: var(--xh-intent-primary);
@@ -36,5 +43,11 @@ body.xh-app .xh-banner {
   &.xh-intent-warning {
     color: white;
     background-color: var(--xh-intent-warning);
+  }
+
+  &.xh-intent-none {
+    .xh-banner__dismiss-button {
+      color: var(--xh-text-color) !important;
+    }
   }
 }

@@ -14,7 +14,11 @@ import classNames from 'classnames';
 
 import './Banner.scss';
 
-/** @private */
+/**
+ * Internal component to display a single instance of an app-wide banner.
+ * @see {XH.showBanner()}
+ * @private
+ */
 export const banner = hoistCmp.factory({
     displayName: 'Banner',
     model: uses(BannerModel),
@@ -31,7 +35,7 @@ export const banner = hoistCmp.factory({
             className: classNames(
                 'xh-banner',
                 className,
-                intent ? `xh-intent-${intent}` : null
+                intent ? `xh-intent-${intent}` : `xh-intent-none`
             ),
             items: [
                 icon,
@@ -67,6 +71,7 @@ const dismissButton = hoistCmp.factory(
             omit: !enableClose,
             icon: Icon.close(),
             modifier: 'quiet',
+            className: 'xh-banner__dismiss-button',
             onClick: () => {
                 XH.hideBanner(category);
                 if (isFunction(onClose)) onClose(model);
