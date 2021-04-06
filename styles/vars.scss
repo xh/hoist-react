@@ -581,6 +581,12 @@ body {
     --xh-scrollbar-thumb: var(--scrollbar-thumb, #{mc('blue-grey', '900')});
   }
 
+  //------------------------
+  // Banners
+  //------------------------
+  --xh-banner-height: var(--banner-height, 40);
+  --xh-banner-height-px: calc(var(--xh-banner-height) * 1px);
+
 
   //------------------------
   // Tabs

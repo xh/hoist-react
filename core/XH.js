@@ -414,7 +414,7 @@ class XHClass extends HoistBase {
      * @param {(ReactNode|string)} config.message - the message to show in the toast.
      * @param {Element} [config.icon] - icon to be displayed
      * @param {number} [config.timeout] - time in milliseconds to display the toast.
-     * @param {string} [config.intent] - the Blueprint intent (desktop only)
+     * @param {string} [config.intent] - the Blueprint intent.
      * @param {Object} [config.position] - Position in viewport to display toast. See Blueprint
      *     Position enum (desktop only).
      * @param {Component} [config.containerRef] - Component that should contain (locate) the Toast.
@@ -422,6 +422,37 @@ class XHClass extends HoistBase {
      */
     toast(config) {
         return this.acm.toastSourceModel.show(config);
+    }
+
+    /**
+     * Show a Banner across the top of the view port. Banners are unique by their
+     * category prop - showing a new banner with an existing category will replace it.
+     *
+     * @param {Object} config - options for banner.
+     * @param {string} [config.category] - the category for the banner. Defaults to 'default'.
+     * @param {Element} [config.icon] - icon to be displayed.
+     * @param {(ReactNode|string)} [config.message] - the message to show in the banner.
+     * @param {string} [config.intent] - intent for banner styling. Defaults to 'primary'.
+     * @param {string} [config.className] - CSS classname provided to the banner component.
+     * @param {boolean} [config.enableClose] - Show a close button. Default true.
+     * @param {Banner-onCloseFn} [config.onClose] - Callback function triggered when the user
+     *      clicks the close button. (Note, banners closed via `XH.hideBanner()` or when the max
+     *      number of banners shown is exceed will NOT trigger this callback.)
+     * @param {function} [config.actionFn] - If provided, banner will render an action button
+     *      which triggers this function.
+     * @param {Object} [config.actionButtonProps] - Set the properties of the action button
+     * @param {...*} [config.rest] - additional properties to pass to the banner component
+     */
+    showBanner(config) {
+        if (isString(config)) config = {message: config};
+        return this.acm.bannerSourceModel.show(config);
+    }
+
+    /**
+     * @param {string} category - category to identify the banner. Defaults to 'default'.
+     */
+    hideBanner(category = 'default') {
+        return this.acm.bannerSourceModel.hide(category);
     }
 
     //--------------------------
@@ -806,4 +837,9 @@ export const XH = window.XH = new XHClass();
  *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
  * @property {function} [onConfirm] - Callback to execute when confirm is clicked.
  * @property {function} [onCancel] - Callback to execute when cancel is clicked.
+ */
+
+/**
+ * @callback Banner-onCloseFn
+ * @param {BannerModel} model - the backing model for the banner which was just closed.
  */

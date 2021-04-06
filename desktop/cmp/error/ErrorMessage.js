@@ -7,7 +7,8 @@
 import {hoistCmp} from '@xh/hoist/core';
 import {frame, div, p} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {isString, isFunction, isNil} from 'lodash';
+import {apiDeprecated} from '@xh/hoist/utils/js';
+import {isString, isEmpty, isNil} from 'lodash';
 import {isValidElement} from 'react';
 import PT from 'prop-types';
 
@@ -19,6 +20,12 @@ import './ErrorMessage.scss';
 export const [ErrorMessage, errorMessage] = hoistCmp.withFactory({
     className: 'xh-error-message',
     render({className, error, message, title, actionFn, actionButtonProps}, ref) {
+        // TODO - remove in v42+
+        apiDeprecated(actionFn, 'actionFn', "Use 'actionButtonProps' instead");
+        if (actionFn) {
+            actionButtonProps = {...actionButtonProps, onClick: actionFn};
+        }
+
         if (isNil(error)) return null;
 
         if (!message) {
@@ -37,7 +44,7 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory({
                 items: [
                     titleCmp({title}),
                     messageCmp({message}),
-                    actionButton({actionFn, actionButtonProps, error})
+                    actionButton({actionButtonProps})
                 ]
             })
         });
@@ -46,13 +53,16 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory({
 
 ErrorMessage.propTypes = {
     /**
+     * If provided, component will render an inline action button - prompting to user to take some
+     * action that might resolve the error, such as retrying a failed data load. Accepts all props
+     * suitable for `Button`.
+     */
+    actionButtonProps: PT.object,
+
+    /**
      *  Error to display. If null or undefined this component will not be displayed.
      */
     error: PT.oneOfType([PT.instanceOf(Error), PT.object,  PT.string]),
-
-
-    /** Optional title to display above the message. */
-    title: PT.oneOfType([PT.element, PT.string]),
 
     /**
      *  Message to display for the error.
@@ -60,14 +70,8 @@ ErrorMessage.propTypes = {
      */
     message: PT.oneOfType([PT.element, PT.string]),
 
-    /**
-     * If provided, component will render an action button which triggers this function.
-     * Receives the value of the 'error' prop as its single argument.
-     */
-    actionFn: PT.func,
-
-    /** Allows overriding the default properties of the action button. */
-    actionButtonProps: PT.object
+    /** Optional title to display above the message. */
+    title: PT.oneOfType([PT.element, PT.string])
 };
 
 const titleCmp = hoistCmp.factory(
@@ -87,12 +91,11 @@ const messageCmp = hoistCmp.factory(
 );
 
 const actionButton = hoistCmp.factory(
-    ({actionFn, actionButtonProps, error}) => {
-        if (!isFunction(actionFn)) return null;
+    ({actionButtonProps}) => {
+        if (isEmpty(actionButtonProps)) return null;
         return button({
             text: 'Retry',
             minimal: false,
-            onClick: () => actionFn(error),
             ...actionButtonProps
         });
     }

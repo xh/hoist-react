@@ -4,6 +4,8 @@
 
 ### 🎁 New Features
 
+* Added `XH.showBanner()` to display a configurable banner across the top of viewport, as another
+  non-modal alternative for attention-getting application alerts.
 * New `Spinner` component returns a simple img-based spinner as an animated PNG, available in two
   sizes. Used for the platform-specific `Mask` and `LoadingIndicator` components. Replaces previous
   SVG-based implementations to reduce overhead when rendering spinners over remote connections.
@@ -18,6 +20,12 @@
 * Disable XSS protection (dompurify processing) on selected REST editor grids within the Hoist Admin
   console. Avoids content within configs and JSON blobs being unintentionally mangled + trusts
   admins not to paste in malicious content.
+
+### ⚙️ Technical
+
+* ⚠ For API consistency with the new `showBanner()` util, the `actionFn` prop for the recently-added
+  `ErrorMessage` component has been deprecated. Specify as an `onClick` handler within the
+  component's `actionButtonProps` prop instead.
 
 ### 📚 Libraries
 
