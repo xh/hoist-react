@@ -4,12 +4,12 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed, RootRefreshContextModel} from '@xh/hoist/core';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {HoistModel, managed, RootRefreshContextModel, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {AboutDialogModel} from './AboutDialogModel';
 import {BannerSourceModel} from './BannerSourceModel';
+import {ChangelogDialogModel} from './ChangelogDialogModel';
 import {ExceptionDialogModel} from './ExceptionDialogModel';
 import {FeedbackDialogModel} from './FeedbackDialogModel';
 import {ImpersonationBarModel} from './ImpersonationBarModel';
@@ -26,36 +26,37 @@ export class AppContainerModel extends HoistModel {
     //------------
     // Sub-models
     //------------
+    /** Link any async operations that should mask the entire application to this model. */
+    @managed appLoadModel = new PendingTaskModel({mode: 'all'});
+
     @managed aboutDialogModel = new AboutDialogModel();
+    @managed changelogDialogModel = new ChangelogDialogModel();
     @managed exceptionDialogModel = new ExceptionDialogModel();
-    @managed optionsDialogModel = new OptionsDialogModel();
     @managed feedbackDialogModel = new FeedbackDialogModel();
     @managed impersonationBarModel = new ImpersonationBarModel();
+    @managed optionsDialogModel = new OptionsDialogModel();
+
+    @managed bannerSourceModel = new BannerSourceModel();
     @managed messageSourceModel = new MessageSourceModel();
     @managed toastSourceModel = new ToastSourceModel();
-    @managed bannerSourceModel = new BannerSourceModel();
-    @managed themeModel = new ThemeModel();
-    @managed refreshContextModel = new RootRefreshContextModel();
 
-    /**
-     * Tracks globally loading promises.
-     * Link any async operations that should mask the entire application to this model.
-     */
-    @managed
-    appLoadModel = new PendingTaskModel({mode: 'all'});
+    @managed refreshContextModel = new RootRefreshContextModel();
+    @managed themeModel = new ThemeModel();
 
     init() {
         const models = [
+            this.appLoadModel,
             this.aboutDialogModel,
+            this.changelogDialogModel,
             this.exceptionDialogModel,
-            this.optionsDialogModel,
             this.feedbackDialogModel,
             this.impersonationBarModel,
+            this.optionsDialogModel,
+            this.bannerSourceModel,
             this.messageSourceModel,
             this.toastSourceModel,
-            this.themeModel,
-            this.appLoadModel,
-            this.refreshContextModel
+            this.refreshContextModel,
+            this.themeModel
         ];
         models.forEach(it => {
             if (it.init) it.init();

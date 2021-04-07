@@ -7,10 +7,11 @@
 import {p} from '@xh/hoist/cmp/layout';
 import {AppSpec, AppState, elem, HoistBase} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {
     AutoRefreshService,
+    ChangelogService,
     ConfigService,
     EnvironmentService,
     FetchService,
@@ -24,8 +25,8 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {getClientDeviceInfo, throwIf, withShortDebug, checkMinVersion} from '@xh/hoist/utils/js';
-import {compact, camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
+import {checkMinVersion, getClientDeviceInfo, throwIf, withShortDebug} from '@xh/hoist/utils/js';
+import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
 import parser from 'ua-parser-js';
 
@@ -86,6 +87,8 @@ class XHClass extends HoistBase {
     //----------------------------------------------------------------------------------------------
     /** @member {AutoRefreshService} */
     autoRefreshService;
+    /** @member {ChangelogService} */
+    changelogService;
     /** @member {ConfigService} */
     configService;
     /** @member {EnvironmentService} */
@@ -502,26 +505,34 @@ class XHClass extends HoistBase {
     //---------------------------
     // Miscellaneous
     //---------------------------
-    /** Show a dialog for users to set app options. */
-    showOptionsDialog() {
-        return this.acm.optionsDialogModel.show();
-    }
-
-    /** Show a dialog to elicit feedback text from users. */
-    showFeedbackDialog() {
-        return this.acm.feedbackDialogModel.show();
-    }
-
-    /** Show 'about' dialog with info about the app and environment. */
+    /** Show "about this app" dialog, powered by {@see EnvironmentService}. */
     showAboutDialog() {
-        return this.acm.aboutDialogModel.show();
+        this.acm.aboutDialogModel.show();
+    }
+
+    /** Show a "release notes" dialog, powered by {@see ChangelogService}. */
+    showChangelog() {
+        this.acm.changelogDialogModel.show();
+    }
+
+    /** Show a dialog to elicit feedback from the user. */
+    showFeedbackDialog() {
+        this.acm.feedbackDialogModel.show();
     }
 
     /** Show the impersonation bar to allow switching users. */
     showImpersonationBar() {
-        return this.acm.impersonationBarModel.show();
+        this.acm.impersonationBarModel.show();
     }
 
+    /** Show a dialog to allow the user to view and set app options. */
+    showOptionsDialog() {
+        this.acm.optionsDialogModel.show();
+    }
+
+    //---------------------------
+    // Miscellaneous
+    //---------------------------
     /**
      * Resets user preferences and any persistent local application state, then reloads the app.
      */
@@ -674,7 +685,8 @@ class XHClass extends HoistBase {
             }
 
             await this.installServicesAsync(
-                AutoRefreshService, IdleService, GridAutosizeService, GridExportService, WebSocketService
+                AutoRefreshService, ChangelogService, IdleService,
+                GridAutosizeService, GridExportService, WebSocketService
             );
             this.acm.init();
 
