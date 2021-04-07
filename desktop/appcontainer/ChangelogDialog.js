@@ -28,7 +28,7 @@ export const changelogDialog = hoistCmp.factory({
             icon: Icon.gift(),
             className: 'xh-changelog',
             item: changelogContents(),
-            onClose: () => model.onClose()
+            onClose: () => model.hide()
         });
     }
 });
@@ -46,7 +46,7 @@ const changelogContents = hoistCmp.factory(
                 button({
                     text: 'Close',
                     intent: 'primary',
-                    onClick: () => model.onClose()
+                    onClick: () => model.hide()
                 })
             ]
         });

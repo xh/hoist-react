@@ -27,18 +27,14 @@ export class ChangelogDialogModel extends HoistModel {
     @action
     show() {
         throwIf(!XH.changelogService.enabled, 'ChangelogService not enabled.');
-        XH.track({category: 'Navigation', message: 'Opened Changelog'});
         this.isOpen = true;
+        XH.changelogService.markLatestAsRead();
+        XH.track({category: 'Navigation', message: 'Opened Changelog'});
     }
 
     @action
     hide() {
         this.isOpen = false;
-    }
-
-    onClose() {
-        this.hide();
-        XH.changelogService.markLatestAsRead();
     }
 
 }

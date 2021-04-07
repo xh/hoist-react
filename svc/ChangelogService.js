@@ -14,20 +14,19 @@ import {isEmpty, forOwn} from 'lodash';
  * Service to display an application changelog (aka release notes) to end users, if so configured.
  *
  * Changelog entries are maintained in a CHANGELOG.md file within the project root, formatted as
- * per https://keepachangelog.com. Requires @xh/hoist-dev-utils v5.7+ with `parseChangelog: true`
- * set within the project's `webpack.config.js` to parse the markdown source into JSON and make
- * available via the special synthetic `@xh/app-changelog.json` import above.
+ * per https://keepachangelog.com. Requires @xh/hoist-dev-utils v5.7+ to parse the markdown source
+ * into JSON and make available via the special `@xh/app-changelog.json` import above.
  *
  * Alternatively, changelog entries can be supplied via an optional `xhChangelog` JSON app-config
  * matching the format of the {@see Changelog} typedef below, with the config taking precedence.
  *
  * If a changelog is available, the top-level app menu will include an item to view the log in a
  * dialog. If a string pref is defined with key `xhLastReadChangelog`, this service will track the
- * most recent version viewed by the user and the app will render a "What's new?" button in the top
- * appBar to alert the user. These app-level UI elements are currently desktop-only, can be
+ * most recent version viewed by the user, and the app will render a "What's new?" button in the
+ * top appBar to alert the user. These app-level UI elements are currently desktop-only, can all be
  * independently disabled, and only appear when this service is enabled.
  *
- * Several additional options can be set via soft-config - see below.
+ * Several additional options can be controlled via soft-config - see below.
  *
  * @see XH.showChangelog - public API for displaying the changelog, if enabled and populated.
  * @see whatsNewButton - utility button that conditionally renders when an unread entry exists for
@@ -82,8 +81,8 @@ export class ChangelogService extends HoistService {
 
     async initAsync() {
         const jsonFromConfig = XH.getConf(this.LOG_CONFIG_KEY, {});
-
         let fromConfig = false;
+
         if (!isEmpty(jsonFromConfig.versions)) {
             this.changelog = jsonFromConfig;
             fromConfig = true;
