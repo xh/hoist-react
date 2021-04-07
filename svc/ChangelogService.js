@@ -117,7 +117,7 @@ export class ChangelogService extends HoistService {
         return XH.getConf(this.SVC_CONFIG_KEY, {
             enabled: true,
             excludedVersions: [],
-            excludedCategories: ['Libraries', 'Technical']
+            excludedCategories: []
         });
     }
 
