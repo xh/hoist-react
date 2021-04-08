@@ -46,6 +46,8 @@ export class TabContainerModel extends HoistModel {
     /** @member {(string|ReactNode)} */
     emptyText;
 
+    _lastActiveTabId;
+
     /**
      * @param {Object} c - TabContainerModel configuration.
      * @param {Object[]} [c.tabs] - configs for TabModels to be displayed.
@@ -188,19 +190,23 @@ export class TabContainerModel extends HoistModel {
      */
     @action
     removeTab(tab) {
-        let {tabs} = this,
-            toRemove = find(tabs, (t) => t === tab || t.id === tab),
-            toActivate = this.activeTab;
+        const {tabs, activeTab} = this,
+            toRemove = find(tabs, (t) => t === tab || t.id === tab);
 
-        if (toRemove === toActivate) {
-            toActivate = this.nextTab ?? this.prevTab;
-        }
-        if (toRemove) {
+        if (!toRemove) return;
+
+        // Activate alternative tab if we are about to remove active
+        if (toRemove === activeTab) {
+            let toActivate = this.findTab(this._lastActiveTabId);
+            if (!toActivate || toActivate === toRemove) {
+                toActivate = this.nextTab ?? this.prevTab;
+            }
             if (toActivate) {
                 this.activateTab(toActivate);
             }
-            this.setTabs(without(tabs, toRemove));
         }
+
+        this.setTabs(without(tabs, toRemove));
     }
 
     //-------------------------------
@@ -270,6 +276,7 @@ export class TabContainerModel extends HoistModel {
         const tab = this.findTab(id);
         throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
+        this._lastActiveTabId = this.activeTabId;
         this.activeTabId = id;
         this.forwardRouterToTab(id);
     }
