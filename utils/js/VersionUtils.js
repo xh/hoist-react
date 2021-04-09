@@ -19,13 +19,13 @@ export function checkVersion(version, minVersion, maxVersion) {
  * @return boolean
  */
 export function checkMinVersion(version, minVersion) {
+    console.log(normalizeVersion(version));
     return (
         version &&
         minVersion &&
         semver.satisfies(
             normalizeVersion(version),
-            '>=',
-            normalizeVersion(minVersion),
+            '>=' + normalizeVersion(minVersion),
             {includePrerelease: true}
         )
     );
@@ -41,8 +41,7 @@ export function checkMaxVersion(version, maxVersion) {
         maxVersion &&
         semver.satisfies(
             normalizeVersion(version),
-            '<=',
-            normalizeVersion(maxVersion),
+            '<=' + normalizeVersion(maxVersion),
             {includePrerelease: true}
         )
     );
