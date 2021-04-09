@@ -17,9 +17,6 @@ import {isEmpty, forOwn} from 'lodash';
  * per https://keepachangelog.com. Requires @xh/hoist-dev-utils v5.7+ to parse the markdown source
  * into JSON and make available via the special `@xh/app-changelog.json` import above.
  *
- * Alternatively, changelog entries can be supplied via an optional `xhChangelog` JSON app-config
- * matching the format of the {@see Changelog} typedef below, with the config taking precedence.
- *
  * If a changelog is available, the top-level app menu will include an item to view the log in a
  * dialog. If a string pref is defined with key `xhLastReadChangelog`, this service will track the
  * most recent version viewed by the user, and the app will render a "What's new?" button in the
@@ -36,8 +33,6 @@ export class ChangelogService extends HoistService {
 
     // Optional JSON AppConfig key to soft-configure this service - see this.config for shape.
     SVC_CONFIG_KEY = 'xhChangelogConfig';
-    // Optional JSON AppConfig key to maintain or override the log entirely via config.
-    LOG_CONFIG_KEY = 'xhChangelog';
     // Optional string Preference key to track last read log entry + enable unread notifications.
     LAST_READ_PREF_KEY = 'xhLastReadChangelog';
 
@@ -80,31 +75,23 @@ export class ChangelogService extends HoistService {
     }
 
     async initAsync() {
-        const jsonFromConfig = XH.getConf(this.LOG_CONFIG_KEY, {});
-        let fromConfig = false;
+        this.changelog = !isEmpty(jsonFromMarkdown?.versions) ?
+            jsonFromMarkdown:
+            {title: null, versions: []};
 
-        if (!isEmpty(jsonFromConfig.versions)) {
-            this.changelog = jsonFromConfig;
-            fromConfig = true;
-        } else if (!isEmpty(jsonFromMarkdown.versions)) {
-            this.changelog = jsonFromMarkdown;
-        } else {
-            this.changelog = {title: null, versions: []};
-        }
-
-        this.versions = this.parseVersions(this.changelog, fromConfig);
+        this.versions = this.parseVersions(this.changelog);
         this.updateUnreadStatus();
     }
 
     markLatestAsRead() {
-        const {latestAvailableVersion, LAST_READ_PREF_KEY: prefKey} = this;
+        const {latestAvailableVersion} = this;
 
         if (!latestAvailableVersion || !this.lastReadPrefExists) {
             console.warn(`Unable to mark changelog as read - latest version or required pref not found.`);
             return;
         }
 
-        XH.setPref(prefKey, latestAvailableVersion);
+        XH.setPref(this.LAST_READ_PREF_KEY, latestAvailableVersion);
         this.updateUnreadStatus();
     }
 
@@ -124,28 +111,19 @@ export class ChangelogService extends HoistService {
         return XH.prefService.hasKey(this.LAST_READ_PREF_KEY);
     }
 
-    parseVersions(changelog, fromConfig) {
+    parseVersions(changelog) {
         try {
             const versions = [];
             (changelog.versions ?? [])
                 .filter(v => this.includeVersion(v.version))
                 .forEach(v => {
                     const categories = [];
-                    if (fromConfig) {
-                        // Simpler structure for config JSON, matching output.
-                        v.categories.forEach(({title, items}) => {
-                            if (this.includeCategory(title)) {
-                                categories.push({title, items});
-                            }
-                        });
-                    } else {
-                        // JSON parsed from markdown sets up categories as object keys.
-                        forOwn(v.parsed, (items, title) => {
-                            if (this.includeCategory(title)) {
-                                categories.push({title, items});
-                            }
-                        });
-                    }
+                    // JSON parsed from markdown sets up categories as object keys.
+                    forOwn(v.parsed, (items, title) => {
+                        if (this.includeCategory(title)) {
+                            categories.push({title, items});
+                        }
+                    });
 
                     versions.push({
                         version: v.version,

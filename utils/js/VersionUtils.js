@@ -20,8 +20,14 @@ export function checkVersion(version, minVersion, maxVersion) {
  */
 export function checkMinVersion(version, minVersion) {
     return (
-        version && minVersion &&
-        semver.satisfies(normalizeVersion(version), '>=' + normalizeVersion(minVersion))
+        version &&
+        minVersion &&
+        semver.satisfies(
+            normalizeVersion(version),
+            '>=',
+            normalizeVersion(minVersion),
+            {includePrerelease: true}
+        )
     );
 }
 
@@ -31,8 +37,14 @@ export function checkMinVersion(version, minVersion) {
  */
 export function checkMaxVersion(version, maxVersion) {
     return (
-        version && maxVersion &&
-        semver.satisfies(normalizeVersion(version), '<=' + normalizeVersion(maxVersion))
+        version &&
+        maxVersion &&
+        semver.satisfies(
+            normalizeVersion(version),
+            '<=',
+            normalizeVersion(maxVersion),
+            {includePrerelease: true}
+        )
     );
 }
 
