@@ -19,7 +19,6 @@ export function checkVersion(version, minVersion, maxVersion) {
  * @return boolean
  */
 export function checkMinVersion(version, minVersion) {
-    console.log(normalizeVersion(version));
     return (
         version &&
         minVersion &&
