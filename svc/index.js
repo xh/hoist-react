@@ -5,6 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 export * from './AutoRefreshService';
+export * from './ChangelogService';
 export * from './ConfigService';
 export * from './EnvironmentService';
 export * from './FetchService';

@@ -19,7 +19,10 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     className: 'xh-app-menu',
 
     render(props) {
-        const {className, extraItems, hideAdminItem, hideImpersonateItem, hideFeedbackItem, hideLogoutItem, hideOptionsItem, hideThemeItem, hideAboutItem, ...rest} = props;
+        const {
+            className, extraItems,
+            hideAboutItem, hideAdminItem, hideChangelogItem, hideFeedbackItem, hideImpersonateItem,
+            hideLogoutItem, hideOptionsItem, hideThemeItem, ...rest} = props;
 
         return popover({
             className,
@@ -37,23 +40,34 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
 AppMenuButton.propTypes = {
     ...Button.propTypes,
 
+    className: PT.string,
+
     /**
      * Array of app-specific menu items. Can contain `MenuItem` configs, React Elements, or the
      * special string token '-' (to render a `MenuDivider`).
      */
     extraItems: PT.array,
 
+    /** True to hide the About button */
+    hideAboutItem: PT.bool,
+
     /** True to hide the Admin Item. Always hidden for users w/o HOIST_ADMIN role. */
     hideAdminItem: PT.bool,
+
+    /**
+     * True to hide the Changelog (release notes) item.
+     * Always hidden when ChangelogService not enabled / populated.
+     */
+    hideChangelogItem: PT.bool,
+
+    /** True to hide the Feedback Item. */
+    hideFeedbackItem: PT.bool,
 
     /**
      * True to hide the Impersonate Item.
      * Always hidden for users w/o HOIST_ADMIN role or if impersonation is disabled.
      */
     hideImpersonateItem: PT.bool,
-
-    /** True to hide the Feedback Item. */
-    hideFeedbackItem: PT.bool,
 
     /** True to hide the Logout button. Defaulted to appSpec.isSSO. */
     hideLogoutItem: PT.bool,
@@ -62,29 +76,29 @@ AppMenuButton.propTypes = {
     hideOptionsItem: PT.bool,
 
     /** True to hide the Theme Toggle button. */
-    hideThemeItem: PT.bool,
+    hideThemeItem: PT.bool
 
-    /** True to hide the About button */
-    hideAboutItem: PT.bool
 };
 
 //---------------------------
 // Implementation
 //---------------------------
 function buildMenuItems({
-    hideOptionsItem,
-    hideFeedbackItem,
-    hideThemeItem,
+    hideAboutItem,
     hideAdminItem,
+    hideChangelogItem,
+    hideFeedbackItem,
     hideImpersonateItem,
     hideLogoutItem,
-    hideAboutItem,
+    hideOptionsItem,
+    hideThemeItem,
     extraItems = []
 }) {
-    hideOptionsItem = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions;
     hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdmin;
+    hideChangelogItem = hideChangelogItem || !XH.changelogService.enabled,
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
     hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);
+    hideOptionsItem = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions;
 
     const defaultItems = [
         {
@@ -120,9 +134,15 @@ function buildMenuItems({
         },
         '-',
         {
+            omit: hideChangelogItem,
+            text: 'Release Notes',
+            icon: Icon.gift(),
+            onClick: () => XH.showChangelog()
+        },
+        {
             omit: hideAboutItem,
-            icon: Icon.info(),
             text: `About ${XH.clientAppName}`,
+            icon: Icon.info(),
             onClick: () => XH.showAboutDialog()
         },
         '-',

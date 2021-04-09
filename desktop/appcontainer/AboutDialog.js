@@ -31,10 +31,9 @@ export const aboutDialog = hoistCmp.factory({
 
         return dialog({
             isOpen: true,
-            isCloseButtonShown: false,
+            title: `About ${XH.appName}`,
             icon: Icon.info({size: 'lg'}),
             className: 'xh-about-dialog',
-            title: `About ${XH.appName}`,
             style: {width: 450},
             items: [
                 frame({

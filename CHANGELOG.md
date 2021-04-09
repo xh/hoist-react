@@ -2,8 +2,14 @@
 
 ## v40.0.0-SNAPSHOT - unreleased
 
+⚠ Please ensure your `@xh/hoist-dev-utils` dependency is >= v5.7.0. This is required to support the
+new changelog feature described below. Even if you are not yet using the feature, you must update
+your dev-utils dependency for your project to build.
+
 ### 🎁 New Features
 
+* Added support for displaying an in-app changelog (release notes) to the user. See the new
+  ChangelogService for full details.
 * Added `XH.showBanner()` to display a configurable banner across the top of viewport, as another
   non-modal alternative for attention-getting application alerts.
 * New `Spinner` component returns a simple img-based spinner as an animated PNG, available in two
