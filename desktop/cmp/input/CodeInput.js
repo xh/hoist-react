@@ -16,6 +16,7 @@ import {dialog, textArea} from '@xh/hoist/kit/blueprint';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
 import * as codemirror from 'codemirror';
 import 'codemirror/addon/fold/brace-fold.js';
 import 'codemirror/addon/fold/foldcode.js';
@@ -463,11 +464,11 @@ const inputCmp = hoistCmp.factory(
 
 const toolbarCmp = hoistCmp.factory(
     ({model}) => {
-        const {actionButtons, showSearchInput} = model;
+        const {actionButtons, showSearchInput, fullScreen} = model;
 
         return toolbar({
             className: 'xh-code-input__toolbar',
-            compact: true,
+            compact: !fullScreen,
             items: [
                 searchInputCmp({omit: !showSearchInput}),
                 filler(),
@@ -479,13 +480,13 @@ const toolbarCmp = hoistCmp.factory(
 
 const searchInputCmp = hoistCmp.factory(
     ({model}) => {
-        const {query, cursor, currentMatchIdx, matchCount} = model;
+        const {query, cursor, currentMatchIdx, matchCount, fullScreen} = model;
 
         return fragment(
             // Frame wrapper added due to issues with textInput not supporting all layout props as it should.
             frame({
                 flex: 1,
-                maxWidth: 400,
+                maxWidth: !fullScreen ? 225 : 400,
                 item: textInput({
                     width: null,
                     flex: 1,
@@ -507,7 +508,10 @@ const searchInputCmp = hoistCmp.factory(
                 })
             }),
             label({
-                className: 'xh-code-input__label xh-no-pad',
+                className: classNames(
+                    'xh-code-input__label',
+                    !fullScreen ? 'xh-no-pad' : null
+                ),
                 item: matchCount ?
                     `${currentMatchIdx + 1} / ${matchCount}` :
                     span({item: '0 results', className: 'xh-text-color-muted'}),
@@ -516,7 +520,7 @@ const searchInputCmp = hoistCmp.factory(
             button({
                 icon: Icon.arrowUp(),
                 title: 'Find previous (shift+enter)',
-                className: 'xh-no-pad',
+                className: !fullScreen ? 'xh-no-pad' : null,
                 disabled: !matchCount,
                 onClick: () => model.findPrevious(),
                 omit: !query
@@ -524,7 +528,7 @@ const searchInputCmp = hoistCmp.factory(
             button({
                 icon: Icon.arrowDown(),
                 title: 'Find next (enter)',
-                className: 'xh-no-pad',
+                className: !fullScreen ? 'xh-no-pad' : null,
                 disabled: !matchCount,
                 onClick: () => model.findNext(),
                 omit: !query
