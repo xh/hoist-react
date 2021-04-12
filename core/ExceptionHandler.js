@@ -58,24 +58,12 @@ export class ExceptionHandler {
     handleException(exception, options) {
         if (this._isUnloading) return;
 
-        if (!(exception instanceof Error)) {
-            exception = Exception.create(exception);
-        }
-
-        options = this.parseOptions(exception, options);
-
-        if (options.hideParams) {
-            this.hideParams(exception, options);
-        }
-
-        this.cleanStack(exception);
+        ({exception, options} = this.parseArgs(exception, options));
 
         this.logException(exception, options);
-
         if (options.showAlert) {
             XH.appContainerModel.exceptionDialogModel.show(exception, options);
         }
-
         if (options.logOnServer) {
             this.logOnServerAsync({exception, userAlerted: options.showAlert});
         }
@@ -100,18 +88,7 @@ export class ExceptionHandler {
      */
     showException(exception, options) {
         if (this._isUnloading) return;
-
-        if (!(exception instanceof Error)) {
-            exception = Exception.create(exception);
-        }
-
-        options = this.parseOptions(exception, options);
-
-        if (options.hideParams) {
-            this.hideParams(exception, options);
-        }
-
-        this.cleanStack(exception);
+        ({exception, options} = this.parseArgs(exception, options));
         XH.appContainerModel.exceptionDialogModel.show(exception, options);
     }
 
@@ -162,6 +139,23 @@ export class ExceptionHandler {
     //--------------------------------
     // Implementation
     //--------------------------------
+    parseArgs(exception, options) {
+        if (!(exception instanceof Error)) {
+            exception = Exception.create(exception);
+        }
+
+        options = this.parseOptions(exception, options);
+
+        if (options.hideParams) {
+            this.hideParams(exception, options);
+        }
+
+        this.cleanStack(exception);
+
+        return {exception, options};
+    }
+
+
     hideParams(exception, options) {
         const {fetchOptions} = exception,
             {hideParams} = options;
