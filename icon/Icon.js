@@ -302,8 +302,8 @@ export const Icon = {
  * @return {string} - html of the <svg> tag representing the icon.
  */
 export function convertIconToHtml(iconElem) {
-    throwIf(!iconElem.type?.isHoistComponent,
-        'Icon not created by a Hoist Icon factory - cannot convert to SVG'
+    throwIf(!iconElem?.type?.isHoistComponent,
+        'Icon not provided, or not created by a Hoist Icon factory - cannot convert to HTML/SVG.'
     );
     return iconHtml(iconElem.props);
 }
@@ -316,8 +316,8 @@ export function convertIconToHtml(iconElem) {
  * @returns {Object} - json representation of icon.
  */
 export function serializeIcon(iconElem) {
-    throwIf(!iconElem.type?.isHoistComponent,
-        'Attempted to serialize an icon not created by a Hoist Icon factory.'
+    throwIf(!iconElem?.type?.isHoistComponent,
+        'Icon not provided, or not created by a Hoist Icon factory - cannot serialize.'
     );
 
     return pickBy(iconElem.props);
