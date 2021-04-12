@@ -6,6 +6,7 @@
  */
 import {RecordAction} from '@xh/hoist/data';
 import {convertIconToHtml} from '@xh/hoist/icon';
+import {throwIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 
 import './Actions.scss';
@@ -60,6 +61,8 @@ export const actionCol = {
             action = new RecordAction(action);
 
             const {icon, intent, disabled, tooltip, hidden} = action.getDisplaySpec({record, selectedRecords: [record], gridModel, column});
+            throwIf(!icon, 'An icon is required for any RecordAction rendered within a grid action column.');
+
             if (hidden) return;
 
             const buttonEl = document.createElement('button');
