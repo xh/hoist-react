@@ -493,6 +493,28 @@ class XHClass extends HoistBase {
     }
 
     /**
+     * Show an exception. This method is an alias for {@see ExceptionHandler.showException}.
+     *
+     * Intended to be used for the deferred / user-initiated showing of exceptions that have
+     * already been appropriately logged. Applications should typically prefer `handleException`.
+     *
+     * @param {(Error|Object|string)} exception - Error or thrown object - if not an Error, an
+     *      Exception will be created via `Exception.create()`.
+     * @param {Object} [options] - controls on how the exception should be shown and/or logged.
+     * @param {string} [options.message] - text (ideally user-friendly) describing the error.
+     * @param {string} [options.title] - title for an alert dialog, if shown.
+     * @param {boolean} [options.showAsError] - configure modal alert to indicate that this is an
+     *      unexpected error. Default true for most exceptions, false for those marked as `isRoutine`.
+     * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
+     *      dismiss - default false, excepting session-related exceptions.
+     * @param {string[]} [options.hideParams] - A list of parameters that should be hidden from
+     *      the exception alert.
+     */
+    showException(exception, options) {
+        this.exceptionHandler.showException(exception, options);
+    }
+
+    /**
      * Create a new exception - {@see Exception} for Hoist conventions / extensions to JS Errors.
      * @param {(Object|string)} cfg - properties to add to the returned Error.
      *      If a string, will become the 'message' value.

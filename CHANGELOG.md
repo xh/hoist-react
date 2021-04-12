@@ -18,6 +18,9 @@ your dev-utils dependency for your project to build.
   * ⚠ Hoist re-exports and wrappers for the Blueprint `Spinner` and Onsen `ProgressCircular`
     components have been removed. If you wish to continue using either of these components, you will
     need to import it from the source library.
+* New method `XH.showException()` allows using Hoist's built-in exception display to show exceptions
+  that have already been handled directly by application code.  Use as an alternative to
+  `XH.handleException()`.
 
 ### 🐞 Bug Fixes
 
