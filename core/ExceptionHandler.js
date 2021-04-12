@@ -81,6 +81,39 @@ export class ExceptionHandler {
         }
     }
 
+    /**
+     * Show an exception in an error dialog, without logging the error to the server or console.
+     * Intended to be used for the deferred / user-initiated showing of exceptions that have
+     * already been appropriately logged. Applications should typically prefer `handleException`.
+     *
+     * @param {(Error|Object|string)} exception - Error or thrown object - if not an Error, an
+     *      Exception will be created via `Exception.create()`.
+     * @param {Object} [options] - controls on how the exception should be shown and/or logged.
+     * @param {string} [options.message] - text (ideally user-friendly) describing the error.
+     * @param {string} [options.title] - title for an alert dialog, if shown.
+     * @param {boolean} [options.showAsError] - configure modal alert to indicate that this is an
+     *      unexpected error. Default true for most exceptions, false for those marked as `isRoutine`.
+     * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
+     *      dismiss - default false, excepting session-related exceptions.
+     * @param {string[]} [options.hideParams] - A list of parameters that should be hidden from
+     *      the exception alert.
+     */
+    showException(exception, options) {
+        if (this._isUnloading) return;
+
+        if (!(exception instanceof Error)) {
+            exception = Exception.create(exception);
+        }
+
+        options = this.parseOptions(exception, options);
+
+        if (options.hideParams) {
+            this.hideParams(exception, options);
+        }
+
+        this.cleanStack(exception);
+        XH.appContainerModel.exceptionDialogModel.show(exception, options);
+    }
 
     /**
      * Create a server-side exception entry. Client metadata will be set automatically.
