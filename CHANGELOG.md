@@ -19,7 +19,7 @@ your dev-utils dependency for your project to build.
     components have been removed. If you wish to continue using either of these components, you will
     need to import it from the source library.
 * New method `XH.showException()` allows using Hoist's built-in exception display to show exceptions
-  that have already been handled directly by application code.  Use as an alternative to
+  that have already been handled directly by application code. Use as an alternative to
   `XH.handleException()`.
 
 ### 🐞 Bug Fixes
@@ -29,6 +29,8 @@ your dev-utils dependency for your project to build.
 * Disable XSS protection (dompurify processing) on selected REST editor grids within the Hoist Admin
   console. Avoids content within configs and JSON blobs being unintentionally mangled + trusts
   admins not to paste in malicious content.
+* `CodeInput` respects standard XH theme vars for its background-color and (monospace) font family.
+  Its built-in toolbar has also been made compact and slightly re-organized.
 
 ### ⚙️ Technical
 
