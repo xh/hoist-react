@@ -5,15 +5,15 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {box, filler, fragment, frame, hbox, vbox, div, label, span} from '@xh/hoist/cmp/layout';
+import {box, div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog, textArea} from '@xh/hoist/kit/blueprint';
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import * as codemirror from 'codemirror';
@@ -467,10 +467,10 @@ const toolbarCmp = hoistCmp.factory(
 
         return toolbar({
             className: 'xh-code-input__toolbar',
+            compact: true,
             items: [
-                filler(),
                 searchInputCmp({omit: !showSearchInput}),
-                toolbarSep({omit: !showSearchInput}),
+                filler(),
                 ...actionButtons
             ]
         });
@@ -479,7 +479,7 @@ const toolbarCmp = hoistCmp.factory(
 
 const searchInputCmp = hoistCmp.factory(
     ({model}) => {
-        const {cursor, currentMatchIdx, matchCount} = model;
+        const {query, cursor, currentMatchIdx, matchCount} = model;
 
         return fragment(
             // Frame wrapper added due to issues with textInput not supporting all layout props as it should.
@@ -507,22 +507,27 @@ const searchInputCmp = hoistCmp.factory(
                 })
             }),
             label({
-                className: 'xh-code-input__label',
+                className: 'xh-code-input__label xh-no-pad',
                 item: matchCount ?
                     `${currentMatchIdx + 1} / ${matchCount}` :
-                    span({item: '0 results', className: 'xh-text-color-muted'})
+                    span({item: '0 results', className: 'xh-text-color-muted'}),
+                omit: !query
             }),
             button({
                 icon: Icon.arrowUp(),
                 title: 'Find previous (shift+enter)',
+                className: 'xh-no-pad',
                 disabled: !matchCount,
-                onClick: () => model.findPrevious()
+                onClick: () => model.findPrevious(),
+                omit: !query
             }),
             button({
                 icon: Icon.arrowDown(),
                 title: 'Find next (enter)',
+                className: 'xh-no-pad',
                 disabled: !matchCount,
-                onClick: () => model.findNext()
+                onClick: () => model.findNext(),
+                omit: !query
             })
         );
     }
