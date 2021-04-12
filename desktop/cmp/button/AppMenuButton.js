@@ -10,6 +10,7 @@ import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {withDefault} from '@xh/hoist/utils/js';
+import {isEmpty} from 'lodash';
 import PT from 'prop-types';
 import {isValidElement} from 'react';
 
@@ -155,15 +156,30 @@ function buildMenuItems({
         }
     ];
 
-    return [
+    return parseMenuItems([
         ...extraItems,
         '-',
         ...defaultItems
-    ]
+    ]);
+}
+
+function parseMenuItems(items) {
+    return items
         .filter(it => !it.omit)
         .filter(filterConsecutiveMenuSeparators())
         .map(it => {
             if (it === '-') return menuDivider();
-            return isValidElement(it) ? it : menuItem(it);
+            if (isValidElement(it)) {
+                return ['Blueprint3.MenuItem', 'Blueprint3.MenuDivider'].includes(it.type.displayName) ?
+                    it :
+                    menuItem({text: it});
+            }
+
+            const cfg = {...it};
+            if (!isEmpty(cfg.items)) {
+                cfg.items = parseMenuItems(cfg.items);
+                cfg.popoverProps = {openOnTargetFocus: false};
+            }
+            return menuItem(cfg);
         });
 }
