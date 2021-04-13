@@ -5,17 +5,18 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {box, filler, fragment, frame, hbox, vbox, div, label, span} from '@xh/hoist/cmp/layout';
+import {box, div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog, textArea} from '@xh/hoist/kit/blueprint';
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
 import * as codemirror from 'codemirror';
 import 'codemirror/addon/fold/brace-fold.js';
 import 'codemirror/addon/fold/foldcode.js';
@@ -463,14 +464,14 @@ const inputCmp = hoistCmp.factory(
 
 const toolbarCmp = hoistCmp.factory(
     ({model}) => {
-        const {actionButtons, showSearchInput} = model;
+        const {actionButtons, showSearchInput, fullScreen} = model;
 
         return toolbar({
             className: 'xh-code-input__toolbar',
+            compact: !fullScreen,
             items: [
-                filler(),
                 searchInputCmp({omit: !showSearchInput}),
-                toolbarSep({omit: !showSearchInput}),
+                filler(),
                 ...actionButtons
             ]
         });
@@ -479,13 +480,13 @@ const toolbarCmp = hoistCmp.factory(
 
 const searchInputCmp = hoistCmp.factory(
     ({model}) => {
-        const {cursor, currentMatchIdx, matchCount} = model;
+        const {query, cursor, currentMatchIdx, matchCount, fullScreen} = model;
 
         return fragment(
             // Frame wrapper added due to issues with textInput not supporting all layout props as it should.
             frame({
                 flex: 1,
-                maxWidth: 400,
+                maxWidth: !fullScreen ? 225 : 400,
                 item: textInput({
                     width: null,
                     flex: 1,
@@ -507,22 +508,30 @@ const searchInputCmp = hoistCmp.factory(
                 })
             }),
             label({
-                className: 'xh-code-input__label',
+                className: classNames(
+                    'xh-code-input__label',
+                    !fullScreen ? 'xh-no-pad' : null
+                ),
                 item: matchCount ?
                     `${currentMatchIdx + 1} / ${matchCount}` :
-                    span({item: '0 results', className: 'xh-text-color-muted'})
+                    span({item: '0 results', className: 'xh-text-color-muted'}),
+                omit: !query
             }),
             button({
                 icon: Icon.arrowUp(),
                 title: 'Find previous (shift+enter)',
+                className: !fullScreen ? 'xh-no-pad' : null,
                 disabled: !matchCount,
-                onClick: () => model.findPrevious()
+                onClick: () => model.findPrevious(),
+                omit: !query
             }),
             button({
                 icon: Icon.arrowDown(),
                 title: 'Find next (enter)',
+                className: !fullScreen ? 'xh-no-pad' : null,
                 disabled: !matchCount,
-                onClick: () => model.findNext()
+                onClick: () => model.findNext(),
+                omit: !query
             })
         );
     }
