@@ -141,9 +141,10 @@
         }
 
         // Buttons inside other input elements
-        .bp3-button {
-          max-height: 14px !important;
-          min-height: 14px !important;
+        .xh-button {
+          max-height: var(--xh-tbar-compact-item-height-px);
+          min-height: var(--xh-tbar-compact-item-height-px);
+          margin: 0 !important;
         }
 
         // Inline input icons made smaller, lighter, and alignment tweaked.

@@ -29,6 +29,12 @@ your dev-utils dependency for your project to build.
 * Disable XSS protection (dompurify processing) on selected REST editor grids within the Hoist Admin
   console. Avoids content within configs and JSON blobs being unintentionally mangled + trusts
   admins not to paste in malicious content.
+
+### ✨ Style
+
+* Buttons nested inline within desktop input components (e.g. clear buttons) tweaked to avoid
+  odd-looking background highlight on hover.
+* Background highlight color of minimal/outlined buttons tweaked for dark theme.
 * `CodeInput` respects standard XH theme vars for its background-color and (monospace) font family.
   Its built-in toolbar has also been made compact and slightly re-organized.
 
