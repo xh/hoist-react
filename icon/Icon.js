@@ -184,6 +184,7 @@ export const Icon = {
     inbox(p)            {return Icon.icon({...p,  iconName: 'inbox'})},
     info(p)             {return Icon.icon({...p,  iconName: 'info-circle'})},
     institution(p)      {return Icon.icon({...p,  iconName: 'university'})},
+    instrument(p)       {return Icon.icon({...p,  iconName: 'money-bill'})},
     json(p)             {return Icon.icon({...p,  iconName: 'brackets-curly'})},
     learn(p)            {return Icon.icon({...p,  iconName: 'graduation-cap'})},
     link(p)             {return Icon.icon({...p,  iconName: 'link'})},
