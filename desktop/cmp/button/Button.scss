@@ -302,8 +302,8 @@
           color: var(--xh-button-active-text-color);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-button-bg-lighter)}
-          &:active {background-color: var(--xh-button-bg-lightest)}
+          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-button-bg-darker)}
+          &:active {background-color: var(--xh-button-bg-lighter)}
         }
       }
 
