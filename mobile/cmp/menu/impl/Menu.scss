@@ -2,6 +2,7 @@
   position: fixed;
   margin: 0 !important;
   z-index: 21;
+  max-height: 90vh;
 
   &__title {
     padding: var(--xh-pad-half-px);
