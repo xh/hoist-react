@@ -7,6 +7,7 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {hoistCmp} from '@xh/hoist/core';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
+import {withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import PT from 'prop-types';
@@ -38,6 +39,7 @@ export const [Button, button] = hoistCmp.withFactory({
             style,
             text,
             title,
+            tooltip,
             active,
             elementRef,
             ...rest
@@ -78,7 +80,7 @@ export const [Button, button] = hoistCmp.withFactory({
                 ...layoutProps
             },
             text,
-            title,
+            title: withDefault(title, tooltip),
             ...rest
         });
     }
@@ -96,6 +98,8 @@ Button.propTypes = {
     outlined: PT.bool,
     style: PT.object,
     text: PT.node,
-    title: PT.string
+    title: PT.string,
+    /** Alias for title. */
+    tooltip: PT.string
 };
 
