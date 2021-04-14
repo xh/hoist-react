@@ -44,10 +44,12 @@ AppMenuButton.propTypes = {
     className: PT.string,
 
     /**
-     * Array of app-specific menu items. Can contain `MenuItem` configs, React Elements, or the
-     * special string token '-' (to render a `MenuDivider`).
+     * Array of extra menu items. Can contain:
+     *  + `MenuItems` or configs to create them.
+     *  + `MenuDividers` or the special string token '-'.
+     *  + React Elements or strings, which will be interpreted as the `text` property for a MenuItem.
      */
-    extraItems: PT.array,
+    extraItems: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.element])),
 
     /** True to hide the About button */
     hideAboutItem: PT.bool,
@@ -175,6 +177,7 @@ function parseMenuItems(items) {
                     menuItem({text: it});
             }
 
+            // Create menuItem from config, recursively parsing any submenus
             const cfg = {...it};
             if (!isEmpty(cfg.items)) {
                 cfg.items = parseMenuItems(cfg.items);
