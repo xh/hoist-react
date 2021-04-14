@@ -10,6 +10,7 @@ import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {withDefault} from '@xh/hoist/utils/js';
+import {isEmpty} from 'lodash';
 import PT from 'prop-types';
 import {isValidElement} from 'react';
 
@@ -43,10 +44,12 @@ AppMenuButton.propTypes = {
     className: PT.string,
 
     /**
-     * Array of app-specific menu items. Can contain `MenuItem` configs, React Elements, or the
-     * special string token '-' (to render a `MenuDivider`).
+     * Array of extra menu items. Can contain:
+     *  + `MenuItems` or configs to create them.
+     *  + `MenuDividers` or the special string token '-'.
+     *  + React Elements or strings, which will be interpreted as the `text` property for a MenuItem.
      */
-    extraItems: PT.array,
+    extraItems: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.element])),
 
     /** True to hide the About button */
     hideAboutItem: PT.bool,
@@ -155,15 +158,31 @@ function buildMenuItems({
         }
     ];
 
-    return [
+    return parseMenuItems([
         ...extraItems,
         '-',
         ...defaultItems
-    ]
+    ]);
+}
+
+function parseMenuItems(items) {
+    return items
         .filter(it => !it.omit)
         .filter(filterConsecutiveMenuSeparators())
         .map(it => {
             if (it === '-') return menuDivider();
-            return isValidElement(it) ? it : menuItem(it);
+            if (isValidElement(it)) {
+                return ['Blueprint3.MenuItem', 'Blueprint3.MenuDivider'].includes(it.type.displayName) ?
+                    it :
+                    menuItem({text: it});
+            }
+
+            // Create menuItem from config, recursively parsing any submenus
+            const cfg = {...it};
+            if (!isEmpty(cfg.items)) {
+                cfg.items = parseMenuItems(cfg.items);
+                cfg.popoverProps = {openOnTargetFocus: false};
+            }
+            return menuItem(cfg);
         });
 }

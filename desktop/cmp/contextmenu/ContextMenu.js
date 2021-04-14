@@ -34,7 +34,10 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory({
 
 ContextMenu.propTypes = {
     /**
-     *  Array of ContextMenuItems, configs to create them, Elements, or '-' (divider).
+     * Array of:
+     *  + `ContextMenuItems` or configs to create them.
+     *  + `MenuDividers` or the special string token '-'.
+     *  + React Elements or strings, which will be interpreted as the `text` property for a MenuItem.
      */
     menuItems: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.element])).isRequired
 };
