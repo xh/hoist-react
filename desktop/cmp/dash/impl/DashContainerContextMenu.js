@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
@@ -31,6 +31,7 @@ export const dashContainerContextMenu = hoistCmp.factory({
 //---------------------------
 function createMenuItems(props) {
     const {dashContainerModel, viewModel} = props,
+        {extraMenuItems, renameLocked} = dashContainerModel,
         ret = [];
 
     // Add context sensitive items if clicked on a tab
@@ -46,7 +47,8 @@ function createMenuItems(props) {
             {
                 text: 'Rename',
                 icon: Icon.edit(),
-                hidden: !viewSpec.allowRename,
+                hidden: renameLocked,
+                disabled: !viewSpec.allowRename,
                 actionFn: () => dashContainerModel.renameView(id)
             },
             {
@@ -58,6 +60,7 @@ function createMenuItems(props) {
             '-'
         );
     }
+
     const addMenuItems = createAddMenuItems(props);
     ret.push({
         text: 'Add',
@@ -65,6 +68,12 @@ function createMenuItems(props) {
         disabled: isEmpty(addMenuItems),
         items: addMenuItems
     });
+
+
+    if (extraMenuItems) {
+        ret.push('-');
+        extraMenuItems.forEach(it => ret.push(it));
+    }
 
     return ret;
 }

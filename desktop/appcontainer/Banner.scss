@@ -1,0 +1,54 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2021 Extremely Heavy Industries Inc.
+ */
+body.xh-app .xh-banner {
+  height: var(--xh-banner-height-px);
+
+  & > .xh-icon {
+    margin-right: var(--xh-pad-half-px);
+  }
+
+  &__message {
+    flex: 1;
+    margin-right: var(--xh-pad-half-px);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  &__dismiss-button {
+    color: white !important;
+    &:hover {
+      background-color: unset !important;
+    }
+  }
+
+  &.xh-intent-primary {
+    color: white;
+    background-color: var(--xh-intent-primary);
+  }
+
+  &.xh-intent-danger {
+    color: white;
+    background-color: var(--xh-intent-danger);
+  }
+
+  &.xh-intent-success {
+    color: white;
+    background-color: var(--xh-intent-success);
+  }
+
+  &.xh-intent-warning {
+    color: white;
+    background-color: var(--xh-intent-warning);
+  }
+
+  &.xh-intent-none {
+    .xh-banner__dismiss-button {
+      color: var(--xh-text-color) !important;
+    }
+  }
+}

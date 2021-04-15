@@ -2,14 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {isFunction} from 'lodash';
+import {isFunction, isPlainObject} from 'lodash';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
-import {filter, isPlainObject, pickBy} from 'lodash';
 import {RestStore} from './data/RestStore';
 import {RestFormModel} from './impl/RestFormModel';
 
@@ -58,16 +57,17 @@ export const deleteAction = {
 /**
  * Core Model for a RestGrid.
  */
-@HoistModel
-@LoadSupport
-export class RestGridModel {
+export class RestGridModel extends HoistModel {
 
     //----------------
     // Properties
     //----------------
+    /** @member {boolean} */
     readonly;
 
+    /** @member {RestGridEditor[]} */
     editors;
+
     toolbarActions;
     menuActions;
     formActions;
@@ -85,18 +85,21 @@ export class RestGridModel {
     unit;
     filterFields = null;
 
+    /** @member {GridModel} */
     @managed
     gridModel = null;
 
+    /** @member {RestFormModel} */
     @managed
     formModel = null;
 
+    /** @return {RestStore} */
     get store() {return this.gridModel.store}
-
+    /** @return {StoreSelectionModel} */
     get selModel() {return this.gridModel.selModel}
-
+    /** @return {Record[]} */
     get selection() {return this.gridModel.selection}
-
+    /** @return {Record} */
     get selectedRecord() {return this.gridModel.selectedRecord}
 
     /**
@@ -125,6 +128,7 @@ export class RestGridModel {
         store,
         ...rest
     }) {
+        super();
         this.readonly = readonly;
         this.editors = editors;
         this.toolbarActions = toolbarActions;
@@ -151,7 +155,7 @@ export class RestGridModel {
     }
 
     /** Load the underlying store. */
-    doLoadAsync(loadSpec) {
+    async doLoadAsync(loadSpec) {
         return this.store.loadAsync(loadSpec);
     }
 
@@ -168,10 +172,8 @@ export class RestGridModel {
     }
 
     cloneRecord(record) {
-        const editableFields = filter(record.fields, 'editable').map(it => it.name),
-            clone = pickBy(record.data, (v, k) => editableFields.includes(k));
-        const {prepareCloneFn} = this;
-        if (prepareCloneFn) prepareCloneFn({record, clone});
+        const clone = this.store.editableDataForRecord(record);
+        this.prepareCloneFn?.({record, clone});
         this.formModel.openClone(clone);
     }
 
@@ -250,4 +252,3 @@ export class RestGridModel {
  * @param {input.record} original record from the REST grid
  * @param {input.clone} cloned record that is used to populate the editor form
  */
-

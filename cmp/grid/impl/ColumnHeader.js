@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, computed} from '@xh/hoist/mobx';
-import {useOnMount, createObservableRef} from '@xh/hoist/utils/react';
+import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
 import classNames from 'classnames';
@@ -31,7 +31,6 @@ export const columnHeader = hoistCmp.factory({
 
     render(props) {
         const impl = useLocalModel(() => new LocalModel(props));
-        useOnMount(() => props.gridLocalModel.noteFrameworkCmpMounted());
 
         const sortIcon = () => {
             const {abs, sort} = impl.activeGridSorter ?? {};
@@ -109,8 +108,7 @@ export const columnHeader = hoistCmp.factory({
 });
 
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
     gridModel;
     xhColumn;
     agColumn;
@@ -125,13 +123,15 @@ class LocalModel {
     _lastTouchStart = null;
     _lastMouseDown = null;
 
-    constructor({gridLocalModel, xhColumn, column: agColumn, enableSorting}) {
-        this.gridModel = gridLocalModel.model;
+    constructor({gridModel, xhColumn, column: agColumn}) {
+        super();
+        makeObservable(this);
+        this.gridModel = gridModel;
         this.xhColumn = xhColumn;
         this.agColumn = agColumn;
         this.colId = agColumn.colId;
         this.isFiltered = agColumn.isFilterActive();
-        this.enableSorting = enableSorting;
+        this.enableSorting = xhColumn.sortable;
         this.availableSorts = this.parseAvailableSorts();
 
         agColumn.addEventListener('filterChanged', this.onFilterChanged);
@@ -139,6 +139,7 @@ class LocalModel {
 
     destroy() {
         this.agColumn.removeEventListener('filterChanged', this.onFilterChanged);
+        super.destroy();
     }
 
     // Get any active sortBy for this column, or null

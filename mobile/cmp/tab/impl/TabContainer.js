@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {div, frame} from '@xh/hoist/cmp/layout';
 import {tab as onsenTab, tabbar} from '@xh/hoist/kit/onsen';
@@ -20,13 +20,13 @@ import './Tabs.scss';
  * @private
  */
 export function tabContainerImpl({model, className, ...props}) {
-    throwIf(
-        !['top', 'bottom', 'none'].includes(model.switcherPosition),
-        "Mobile TabContainer tab switcher position must be 'none', 'top', or 'bottom'"
-    );
-
-    const {activeTab, switcherPosition} = model,
+    const {activeTab, switcher} = model,
         tabs = model.tabs.filter(it => !it.excludeFromSwitcher);
+
+    throwIf(
+        switcher && !['top', 'bottom'].includes(switcher?.orientation),
+        "Mobile TabContainer tab switcher orientation must be 'top', or 'bottom'"
+    );
 
     if (isEmpty(tabs)) {
         return page({
@@ -39,12 +39,13 @@ export function tabContainerImpl({model, className, ...props}) {
         });
     }
     return tabbar({
-        className: classNames(className, `xh-tab-container--${switcherPosition}`),
-        position: switcherPosition,
+        className: classNames(className, `xh-tab-container--${switcher?.orientation}`),
+        position: switcher?.orientation,
         index: activeTab ? tabs.indexOf(activeTab) : 0,
         renderTabs: () => tabs.map(renderTabModel),
         onPreChange: (e) => model.activateTab(tabs[e.index].id),
-        visible: switcherPosition !== 'none'
+        visible: !!switcher,
+        ...switcher
     });
 }
 

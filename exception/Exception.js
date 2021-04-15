@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
 import {isString} from 'lodash';
@@ -98,11 +98,12 @@ export class Exception {
      * @returns {Error}
      */
     static fetchTimeout(fetchOptions, e, message) {
-        message = message ?? `Failure calling '${fetchOptions.url}' - timed out after ${e.interval}ms.`;
+        message = message ?? `Timed out loading '${fetchOptions.url}' - no response after ${e.interval}ms.`;
 
         return this.createInternal({
             name: 'Fetch Timeout',
             message,
+            isFetchTimeout: true,
             fetchOptions,
             stack: null
         });

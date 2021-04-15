@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {grid} from '@xh/hoist/cmp/grid';
 import {div, hbox, input} from '@xh/hoist/cmp/layout';
@@ -43,11 +43,12 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory({
         enableAddMulti = enableMulti,
         showFileGrid = true,
         ...props
-    }) {
+    }, ref) {
         const {lastRejectedCount} = model,
-            fileNoun = (count) => `${count} ${count == 1 ? 'file' : 'files'}`;
+            fileNoun = (count) => `${count} ${count === 1 ? 'file' : 'files'}`;
 
         return hbox({
+            ref,
             ...props,
             items: [
                 dropzone({

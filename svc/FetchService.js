@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
@@ -14,25 +14,25 @@ import {stringify} from 'qs';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 
 /**
- * Service to send an HTTP request to a URL.
+ * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
  *
  * Wrapper around the standard Fetch API with some enhancements to streamline the process for
  * the most common use-cases. The Fetch API will be called with CORS enabled, credentials
  * included, and redirects followed.
  *
- * Custom headers can be provided to fetch as a plain object. App-wide default headers
- * can be set using setDefaultHeaders.
+ * Custom headers can be provided to fetch as a plain object. App-wide default headers can be set
+ * using `setDefaultHeaders()`.
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API|Fetch API Docs}
  *
- * Note that the convenience methods 'fetchJson', 'postJson', 'putJson' all accept the same options
- * as the main entry point 'fetch', as they delegate to fetch after setting additional defaults.
+ * Note that the convenience methods `fetchJson`, `postJson`, `putJson` all accept the same options
+ * as the main entry point `fetch`, as they delegate to fetch after setting additional defaults.
  */
-@HoistService
-export class FetchService {
+export class FetchService extends HoistService {
 
     abortControllers = {};
     defaultHeaders = {};
+    defaultTimeout = 30 * SECONDS;
 
     /**
      * Set default headers to be sent with all subsequent requests.
@@ -41,6 +41,17 @@ export class FetchService {
      */
     setDefaultHeaders(headers) {
         this.defaultHeaders = headers;
+    }
+
+    /**
+     * Set the default timeout for all requests on this service.
+     * If not set this value is 30 SECONDS.
+     *
+     * @param {(number|Object)} timeout - ms to wait for response before rejecting with a timeout
+     *      exception. May also be specified an Object or null. See {@see FetchOptions}.
+     */
+    setDefaultTimeout(timeout) {
+        this.defaultTimeout = timeout;
     }
 
     /**
@@ -116,11 +127,11 @@ export class FetchService {
     // Implementation
     //-----------------------
     async withTimeoutAsync(promise, opts) {
-        const timeout = withDefault(opts.timeout, 30 * SECONDS);
+        const timeout = withDefault(opts.timeout, this.defaultTimeout);
         return promise
             .timeout(timeout)
             .catchWhen('Timeout Exception', e => {
-                throw Exception.fetchTimeout(opts, e, opts.timeout?.message);
+                throw Exception.fetchTimeout(opts, e, timeout?.message);
             });
     }
 
@@ -257,6 +268,8 @@ export class FetchService {
  * @property {(number|Object)} [timeout] - ms to wait for response before rejecting with a timeout
  *      exception.  Defaults to 30 seconds, but may be specified as null to specify no timeout.
  *      May also be specified as an object to customise the exception. See Promise.timeout().
+ * @property {LoadSpec} [loadSpec] - optional metadata about the underlying request. Passed through
+ *      for downstream processing by utils such as {@see ExceptionHandler}.
  * @property {Object} [fetchOpts] - options to pass to the underlying fetch request.
  *      @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
  * @property {Object} [qsOpts] - options to pass to the param converter library, qs.

@@ -2,23 +2,20 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {dateTimeCol, localDateCol, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, comparer, observable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import moment from 'moment';
 
-@HoistModel
-@LoadSupport
-export class ClientErrorsModel {
+export class ClientErrorsModel extends HoistModel {
 
     persistWith = {localStorageKey: 'xhAdminClientErrorsState'};
 
@@ -40,6 +37,8 @@ export class ClientErrorsModel {
     @observable formattedErrorJson;
 
     constructor() {
+        super();
+        makeObservable(this);
         this.startDay = this.getDefaultStartDay();
         this.endDay = this.getDefaultEndDay();
 
@@ -162,7 +161,7 @@ export class ClientErrorsModel {
         this.addReaction({
             track: () => this.getParams(),
             run: () => this.loadAsync(),
-            equals: comparer.structural
+            equals: 'structural'
         });
 
         this.addReaction({
@@ -189,9 +188,8 @@ export class ClientErrorsModel {
             });
 
             gridModel.loadData(data);
+            await gridModel.preSelectFirstAsync();
 
-            await wait(1);
-            if (!gridModel.hasSelection) gridModel.selectFirst();
         } catch (e) {
             gridModel.clear();
             XH.handleException(e);

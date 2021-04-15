@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
@@ -23,8 +23,7 @@ import {keys} from 'lodash';
  * Note that this service does *not* currently attempt to reload or update configs once the client
  * application has loaded. A refresh of the application is required to load new entries.
  */
-@HoistService
-export class ConfigService {
+export class ConfigService extends HoistService {
 
     _data = {};
 
@@ -43,11 +42,12 @@ export class ConfigService {
     /**
      * Get the configured value for a given key. Typically accessed via `XH.getConf()` alias.
      *
-     * @param {string} key - config identifier to return.
+     * @param {string} key - identifier of the config to return.
      * @param {*} [defaultValue] - value to return if the configuration key is not found - i.e.
      *      the config has not been created on the server - instead of throwing. Use sparingly!
      *      In general it's better to not provide defaults here, but instead keep entries up-to-date
      *      via the Admin client and have it be obvious when one is missing.
+     * @return {*} - the soft-configured value.
      */
     get(key, defaultValue) {
         const data = this._data;

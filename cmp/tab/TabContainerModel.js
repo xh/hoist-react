@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, PersistenceProvider, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
-import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-import {find, isUndefined, without, difference} from 'lodash';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {ensureUniqueBy, apiRemoved, throwIf} from '@xh/hoist/utils/js';
+import {find, isString, isUndefined, without, difference} from 'lodash';
 import {TabModel} from './TabModel';
 
 /**
@@ -18,8 +18,7 @@ import {TabModel} from './TabModel';
  *
  * Note: Routing is currently enabled for desktop applications only.
  */
-@HoistModel
-export class TabContainerModel {
+export class TabContainerModel extends HoistModel {
 
     /** @member {TabModel[]} */
     @managed
@@ -32,8 +31,8 @@ export class TabContainerModel {
     /** @member {string} */
     @observable activeTabId;
 
-    /** @member {string} */
-    switcherPosition;
+    /** @member {boolean|Object} */
+    switcher;
 
     /** @member {boolean} */
     track;
@@ -47,6 +46,8 @@ export class TabContainerModel {
     /** @member {(string|ReactNode)} */
     emptyText;
 
+    _lastActiveTabId;
+
     /**
      * @param {Object} c - TabContainerModel configuration.
      * @param {Object[]} [c.tabs] - configs for TabModels to be displayed.
@@ -55,8 +56,9 @@ export class TabContainerModel {
      * @param {?string} [c.route] - base route name for this container. If set, this container will
      *      be route-enabled, with the route for each tab being "[route]/[tab.id]".
      *      Cannot be used with `persistWith`.
-     * @param {string} [c.switcherPosition] - Position of the switcher docked within this component.
-     *      Valid values are 'top', 'bottom', 'left', 'right', or 'none' if no switcher shown.
+     * @param {(boolean|Object)} [c.switcher] - indicates whether to include a default switcher
+     *      docked within this component. Specify as a boolean or an object containing props for a
+     *      TabSwitcher component. Set to false to not include a switcher. Defaults to true.
      * @param {boolean} [c.track] - True to enable activity tracking of tab views (default false).
      * @param {RenderMode} [c.renderMode] - strategy for rendering child tabs. Can be set
      *      per-tab via `TabModel.renderMode`. See enum for description of supported modes.
@@ -71,17 +73,27 @@ export class TabContainerModel {
         tabs = [],
         defaultTabId = null,
         route = null,
-        switcherPosition = XH.isMobileApp ? 'bottom' : 'top',
+        switcher = true,
         track = false,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
         persistWith,
-        emptyText = 'No tabs to display.'
+        emptyText = 'No tabs to display.',
+        switcherPosition
     }) {
-        throwIf(!['top', 'bottom', 'left', 'right', 'none'].includes(switcherPosition), 'Unsupported value for switcherPosition.');
+        super();
+        makeObservable(this);
+        apiRemoved(switcherPosition, 'switcherPosition', 'Please specify `switcher` instead.');
+
+        // Create default switcher props
+        if (switcher === true) {
+            switcher = {orientation: XH.isMobileApp ? 'bottom' : 'top'};
+        }
+
+        throwIf(switcher && !['top', 'bottom', 'left', 'right'].includes(switcher.orientation), 'Unsupported value for switcher orientation.');
         throwIf(route && persistWith, '"persistWith" and "route" cannot both be specified.');
 
-        this.switcherPosition = switcherPosition;
+        this.switcher = switcher;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.defaultTabId = defaultTabId;
@@ -110,10 +122,11 @@ export class TabContainerModel {
             this.addReaction({
                 track: () => this.activeTab,
                 run: (activeTab) => {
-                    const {route} = this;
+                    const {route} = this,
+                        {title, id} = activeTab;
                     XH.track({
                         category: 'Navigation',
-                        message: `Viewed ${activeTab.title} tab`,
+                        message: `Viewed ${isString(title) ? title : id} tab`,
                         // If using routing, data field specifies route for non-top-level tabs.
                         data: route && route !== 'default' ? {route: route} : null
                     });
@@ -177,19 +190,23 @@ export class TabContainerModel {
      */
     @action
     removeTab(tab) {
-        let {tabs} = this,
-            toRemove = find(tabs, (t) => t === tab || t.id === tab),
-            toActivate = this.activeTab;
+        const {tabs, activeTab} = this,
+            toRemove = find(tabs, (t) => t === tab || t.id === tab);
 
-        if (toRemove === toActivate) {
-            toActivate = this.nextTab ?? this.prevTab;
-        }
-        if (toRemove) {
-            this.setTabs(without(tabs, toRemove));
+        if (!toRemove) return;
+
+        // Activate alternative tab if we are about to remove active
+        if (toRemove === activeTab) {
+            let toActivate = this.findTab(this._lastActiveTabId);
+            if (!toActivate || toActivate === toRemove) {
+                toActivate = this.nextTab ?? this.prevTab;
+            }
             if (toActivate) {
                 this.activateTab(toActivate);
             }
         }
+
+        this.setTabs(without(tabs, toRemove));
     }
 
     //-------------------------------
@@ -257,10 +274,9 @@ export class TabContainerModel {
     @action
     setActiveTabId(id) {
         const tab = this.findTab(id);
-
         throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
-
+        this._lastActiveTabId = this.activeTabId;
         this.activeTabId = id;
         this.forwardRouterToTab(id);
     }

@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, RefreshMode, RenderMode, XH, PersistenceProvider} from '@xh/hoist/core';
 import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {action, observable, bindable} from '@xh/hoist/mobx';
+import {action, observable, bindable, makeObservable} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
@@ -76,8 +76,7 @@ import {dashView} from './impl/DashView';
  * @see http://golden-layout.com/docs/ItemConfig.html
  * @see http://golden-layout.com/tutorials/getting-started-react.html
  */
-@HoistModel
-export class DashContainerModel {
+export class DashContainerModel extends HoistModel {
 
     //---------------------------
     // Observable Persisted State
@@ -121,22 +120,26 @@ export class DashContainerModel {
     modelLookupContext;
 
     /**
-     * @param {DashViewSpec[]} viewSpecs - A collection of viewSpecs, each describing a type of view
+     * @param {Object} c - DashContainerModel configuration.
+     * @param {DashViewSpec[]} c.viewSpecs - A collection of viewSpecs, each describing a type of view
      *      that can be displayed in this container
-     * @param {Object} [viewSpecDefaults] - Properties to be set on all viewSpecs.  Merges deeply.
-     * @param {Object[]} [initialState] - Default layout state for this container.
-     * @param {RenderMode} [renderMode] - strategy for rendering DashViews. Can be set
+     * @param {Object} [c.viewSpecDefaults] - Properties to be set on all viewSpecs.  Merges deeply.
+     * @param {Object[]} [c.initialState] - Default layout state for this container.
+     * @param {RenderMode} [c.renderMode] - strategy for rendering DashViews. Can be set
      *      per-view via `DashViewSpec.renderMode`. See enum for description of supported modes.
-     * @param {RefreshMode} [refreshMode] - strategy for refreshing DashViews. Can be set
+     * @param {RefreshMode} [c.refreshMode] - strategy for refreshing DashViews. Can be set
      *      per-view via `DashViewSpec.refreshMode`. See enum for description of supported modes.
-     * @param {boolean} [layoutLocked] - prevent re-arranging views by dragging and dropping.
-     * @param {boolean} [contentLocked] - prevent adding and removing views.
-     * @param {boolean} [renameLocked] - prevent renaming views.
-     * @param {Object} [goldenLayoutSettings] - custom settings to be passed to the GoldenLayout instance.
+     * @param {boolean} [c.layoutLocked] - prevent re-arranging views by dragging and dropping.
+     * @param {boolean} [c.contentLocked] - prevent adding and removing views.
+     * @param {boolean} [c.renameLocked] - prevent renaming views.
+     * @param {Object} [c.goldenLayoutSettings] - custom settings to be passed to the GoldenLayout instance.
      *      @see http://golden-layout.com/docs/Config.html
      * @param {PersistOptions} [c.persistWith] - options governing persistence
-     * @param {string} [emptyText] - text to display when the container is empty
-     * @param {string} [addViewButtonText] - text to display on the add view button
+     * @param {string} [c.emptyText] - text to display when the container is empty
+     * @param {string} [c.addViewButtonText] - text to display on the add view button
+     * @param {Array} [c.extraMenuItems] - array of RecordActions, configs or token strings, with
+     *      which to create additional dash context menu items. Extra menu items will appear
+     *      in the menu section below the 'Add' action, including when the dash container is empty.
      */
     constructor({
         viewSpecs,
@@ -150,8 +153,11 @@ export class DashContainerModel {
         goldenLayoutSettings,
         persistWith = null,
         emptyText = 'No views have been added to the container.',
-        addViewButtonText = 'Add View'
+        addViewButtonText = 'Add View',
+        extraMenuItems
     }) {
+        super();
+        makeObservable(this);
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {
@@ -167,6 +173,7 @@ export class DashContainerModel {
         this.goldenLayoutSettings = goldenLayoutSettings;
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
+        this.extraMenuItems = extraMenuItems;
 
         // Read state from provider -- fail gently
         let persistState = null;
@@ -569,5 +576,6 @@ export class DashContainerModel {
 
     destroy() {
         this.destroyGoldenLayout();
+        super.destroy();
     }
 }

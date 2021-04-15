@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistService, managed, XH} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
-import {withDefault} from '@xh/hoist/utils/js';
+import {withDefault, logDebug} from '@xh/hoist/utils/js';
 
 /**
  * Service to triggers an app-wide auto-refresh (if enabled, on a configurable interval) via the
@@ -26,8 +26,7 @@ import {withDefault} from '@xh/hoist/utils/js';
  *
  * @see RefreshContextModel - the underlying mechanism used to implement the refresh.
  */
-@HoistService
-export class AutoRefreshService {
+export class AutoRefreshService extends HoistService {
 
     @managed
     timer;
@@ -60,15 +59,18 @@ export class AutoRefreshService {
     // Implementation
     //------------------------
     async onTimerAsync() {
-        if (!this.enabled) return;
+        if (!this.enabled || document.hidden) return;
 
-        // Base decision to load on when the context was last loaded -- this avoids extra refreshes if user
-        // also refreshing manually.  Note that lastLoadRequested undefined on the context until the first load.
+        // Wait interval after lastCompleted -- this prevents extra refreshes if user refreshes
+        // manually, or loading slow.  Note auto-loads skipped if any load in progress.
         const ctx = XH.refreshContextModel,
-            lastLoaded = withDefault(ctx.lastLoadRequested, this.initTime);
+            lastRequested = ctx.lastLoadRequested,
+            lastCompleted = ctx.lastLoadCompleted,
+            last = lastCompleted ?? this.initTime,
+            pendingLoad = lastRequested && lastRequested > lastCompleted;
 
-        if (olderThan(lastLoaded, this.interval * SECONDS)) {
-            console.debug('Triggering application auto-refresh.');
+        if (!pendingLoad && olderThan(last, this.interval * SECONDS)) {
+            logDebug('Triggering application auto-refresh.', this);
             await ctx.autoRefreshAsync();
         }
     }

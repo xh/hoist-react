@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
 import {appMenuButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
+import {whatsNewButton} from '@xh/hoist/desktop/cmp/button/WhatsNewButton';
 import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
@@ -32,6 +33,7 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
             icon,
             leftItems,
             rightItems,
+            hideWhatsNewButton,
             hideRefreshButton,
             hideAppMenuButton,
             className,
@@ -61,6 +63,7 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                     align: 'right',
                     items: [
                         ...rightItems || [],
+                        whatsNewButton({omit: hideWhatsNewButton}),
                         refreshButton({omit: hideRefreshButton}),
                         appMenuButton({
                             omit: hideAppMenuButton || appMenuButtonPosition != 'right',
@@ -85,6 +88,9 @@ AppBar.propTypes = {
 
     /** True to hide the Refresh button. */
     hideRefreshButton: PT.bool,
+
+    /** True to hide the "What's New?" button, even if an unread changelog entry is available. */
+    hideWhatsNewButton: PT.bool,
 
     /** Icon to display to the left of the title. */
     icon: PT.element,

@@ -1,32 +1,22 @@
-.xh-treemap,
-.xh-split-treemap {
-  &__error-message {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: var(--xh-bg-alt);
-
-    p {
-      padding: var(--xh-pad-px);
-      background: var(--xh-bg);
-      border: var(--xh-border-solid);
-      font-size: var(--xh-font-size-small-px);
-      max-width: 50%;
-    }
-  }
-}
-
 .xh-treemap {
-  &__placeholder {
-    padding: var(--xh-pad-px);
-    font-size: var(--xh-font-size-small-px);
-    color: var(--xh-text-color-muted);
-    background: var(--xh-bg-alt);
+  &__chart-holder {
+    // Positioned absolute within container so it doesn't affect outer flex
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
   }
 
-  &__chart-holder {
-    margin: auto;
+  // Mask intentionally covers but does not replace chart. We need to keep the
+  // chart component in place throughout.
+  &__mask-holder {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    background: var(--xh-bg);
   }
 
   text > tspan {

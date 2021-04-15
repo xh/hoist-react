@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -15,8 +15,9 @@ export const [ThemeToggleButton, themeToggleButton] = hoistCmp.withFactory({
     displayName: 'ThemeToggleButton',
     model: false,
 
-    render(props) {
+    render(props, ref) {
         return button({
+            ref,
             icon: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
             title: XH.darkTheme ? 'Switch to light theme' : 'Switch to dark theme',
             onClick: () => XH.toggleTheme(),

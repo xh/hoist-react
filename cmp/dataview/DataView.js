@@ -2,14 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {apiRemoved} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {isFunction} from 'lodash';
 import PT from 'prop-types';
+
 import './DataView.scss';
 import {DataViewModel} from './DataViewModel';
 
@@ -22,18 +24,20 @@ export const [DataView, dataView] = hoistCmp.withFactory({
     model: uses(DataViewModel),
     className: 'xh-data-view',
 
-    render({model, className, ...props}) {
+    render({model, className, ...props}, ref) {
         apiRemoved(props.itemHeight, 'itemHeight', 'Specify itemHeight on the DataViewModel instead.');
         apiRemoved(props.rowCls, 'rowCls', 'Specify rowClassFn on the DataViewModel instead.');
 
-        const [layoutProps, {onRowDoubleClicked}] = splitLayoutProps(props);
+        const [layoutProps, {onRowClicked, onRowDoubleClicked}] = splitLayoutProps(props);
         const localModel = useLocalModel(() => new LocalModel(model));
 
         return grid({
             ...layoutProps,
             className,
+            ref,
             model: model.gridModel,
             agOptions: localModel.agOptions,
+            onRowClicked,
             onRowDoubleClicked
         });
     }
@@ -44,18 +48,24 @@ DataView.propTypes = {
     model: PT.oneOfType([PT.instanceOf(DataViewModel), PT.object]),
 
     /**
+     * Callback when a row is clicked. Function will receive an event with a data node
+     * containing the row's data. (Note that this may be null - e.g. for clicks on group rows.)
+     */
+    onRowClicked: PT.func,
+
+    /**
      * Callback to call when a row is double clicked. Function will receive an event
      * with a data node containing the row's data.
      */
     onRowDoubleClicked: PT.func
 };
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
     model;
     agOptions;
 
     constructor(model) {
+        super();
         this.model = model;
 
         this.addReaction({
@@ -66,13 +76,21 @@ class LocalModel {
         this.agOptions = {
             headerHeight: 0,
             suppressMakeColumnVisibleAfterUnGroup: true,
-            getRowHeight: (params) => {
-                // Return (required) itemHeight for data rows.
-                if (!params.node?.group) return model.itemHeight;
+            getRowHeight: (agParams) => {
+                const {groupRowHeight, itemHeight} = model;
 
                 // For group rows, return groupRowHeight if specified, or use standard height
                 // (DataView does not participate in grid sizing modes.)
-                return model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode('standard');
+                if (agParams.node?.group) {
+                    return groupRowHeight ?? AgGrid.getRowHeightForSizingMode('standard');
+                }
+
+                // Return (required) itemHeight for data rows.
+                if (isFunction(itemHeight)) {
+                    return itemHeight({record: agParams.data, dataViewModel: model, agParams});
+                }
+
+                return itemHeight;
             }
         };
     }

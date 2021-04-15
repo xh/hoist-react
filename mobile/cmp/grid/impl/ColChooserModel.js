@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 import {clone, find, sortBy} from 'lodash';
 
@@ -15,10 +15,11 @@ import {clone, find, sortBy} from 'lodash';
  * It is not necessary to manually create instances of this class within an application.
  * @private
  */
-@HoistModel
-export class ColChooserModel {
+export class ColChooserModel extends HoistModel {
 
     gridModel;
+    showRestoreDefaults;
+    autosizeOnCommit;
 
     @bindable.ref columns = [];
     @bindable pinFirst;
@@ -37,11 +38,17 @@ export class ColChooserModel {
         return sortBy(this.getHidden(this.columns), 'text');
     }
 
-    /**
-     * @param {GridModel} gridModel - model for the grid to be managed.
-     */
-    constructor(gridModel) {
+    constructor({
+        gridModel,
+        showRestoreDefaults = true,
+        autosizeOnCommit = true
+    }) {
+        super();
+        makeObservable(this);
+
         this.gridModel = gridModel;
+        this.showRestoreDefaults = showRestoreDefaults;
+        this.autosizeOnCommit = autosizeOnCommit;
 
         this.addReaction({
             track: () => this.pinFirst,
@@ -107,20 +114,23 @@ export class ColChooserModel {
     }
 
     commit() {
+        const {columns, gridModel, autosizeOnCommit} = this;
+
         // Ensure excluded columns remain at their original sort idx
-        const excluded = this.columns.filter(it => it.exclude);
+        const excluded = columns.filter(it => it.exclude);
         excluded.forEach(it => {
             const {colId, originalIdx} = it;
             this.moveToIndex(colId, originalIdx);
         });
 
         // Extract meaningful state changes
-        const colChanges = this.columns.map(it => {
+        const colChanges = columns.map(it => {
             const {colId, hidden, pinned} = it;
             return {colId, hidden, pinned};
         });
 
-        this.gridModel.applyColumnStateChanges(colChanges);
+        gridModel.applyColumnStateChanges(colChanges);
+        if (autosizeOnCommit) gridModel.autosizeAsync();
     }
 
     //------------------------

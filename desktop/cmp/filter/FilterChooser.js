@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
-import {box, div, hbox, hframe} from '@xh/hoist/cmp/layout';
+import {box, div, hbox, vbox, hframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
@@ -26,16 +26,18 @@ import './FilterChooser.scss';
 export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
     model: uses(FilterChooserModel),
     className: 'xh-filter-chooser',
-    render({model, className, ...props}) {
+    render({model, className, ...props}, ref) {
         const [layoutProps, chooserProps] = splitLayoutProps(props),
             {inputRef, selectOptions, favoritesIsOpen} = model;
 
         return box({
+            ref,
             className,
             ...layoutProps,
             item: popover({
                 item: select({
                     flex: 1,
+                    height: layoutProps?.height,
                     bind: 'selectValue',
                     ref: inputRef,
 
@@ -51,14 +53,17 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                     options: selectOptions,
                     optionRenderer,
                     rsOptions: {
-                        defaultOptions: [],
+                        defaultOptions: false,
                         openMenuOnClick: false,
                         openMenuOnFocus: false,
                         isOptionDisabled: (opt) => opt.type === 'msg',
                         noOptionsMessage: () => null,
                         loadingMessage: () => null,
                         styles: {
-                            menuList: (base) => ({...base, maxHeight: 'unset'})
+                            menuList: (base) => ({
+                                ...base,
+                                maxHeight: withDefault(chooserProps.maxMenuHeight, '50vh')
+                            })
                         },
                         components: {
                             DropdownIndicator: () => favoritesIcon(model)
@@ -89,6 +94,9 @@ FilterChooser.propTypes = {
 
     /** Icon to display inline on the left side of the input. */
     leftIcon: PT.element,
+
+    /** Max-height of dropdown. Either a number in pixels or a valid CSS string, such as '80vh'. */
+    maxMenuHeight: PT.oneOfType([PT.number, PT.string]),
 
     /** Placement of the dropdown menu relative to the input control. */
     menuPlacement: PT.oneOf(['auto', 'top', 'bottom']),
@@ -155,13 +163,10 @@ const messageOption = hoistCmp.factory({
 //------------------
 function favoritesIcon(model) {
     if (!model.persistFavorites) return null;
-    const isFavorite = model.isFavorite(model.value);
     return Icon.favorite({
-        prefix: isFavorite ? 'fas' : 'far',
         className: classNames(
             'xh-select__indicator',
-            'xh-filter-chooser-favorite-icon',
-            isFavorite ? 'xh-filter-chooser-favorite-icon--active' : null
+            'xh-filter-chooser-favorite-icon'
         ),
         onClick: (e) => {
             model.openFavoritesMenu();
@@ -174,26 +179,29 @@ const favoritesMenu = hoistCmp.factory({
     render({model}) {
         const options = getFavoritesOptions(model),
             isFavorite = model.isFavorite(model.value),
-            addDisabled = isEmpty(model.value) || isFavorite,
+            omitAdd = isEmpty(model.value) || isFavorite,
             items = [];
 
         if (isEmpty(options)) {
-            items.push(menuItem({text: 'You have not yet saved any favorites...', disabled: true}));
+            items.push(menuItem({text: 'No favorites saved...', disabled: true}));
         } else {
             items.push(...options.map(it => favoriteMenuItem(it)));
         }
 
         items.push(
-            menuDivider(),
+            menuDivider({omit: omitAdd}),
             menuItem({
-                icon: Icon.add({className: addDisabled ? '' : 'xh-intent-success'}),
-                text: 'Add current filter to favorites',
-                disabled: addDisabled,
+                icon: Icon.add({className: 'xh-intent-success'}),
+                text: 'Add current',
+                omit: omitAdd,
                 onClick: () => model.addFavorite(model.value)
             })
         );
 
-        return menu({items});
+        return vbox(
+            div({className: 'xh-popup__title', item: 'Favorites'}),
+            menu({items})
+        );
     }
 });
 
@@ -204,8 +212,7 @@ const favoriteMenuItem = hoistCmp.factory({
             className: 'xh-filter-chooser-favorite',
             onClick: () => model.setValue(value),
             labelElement: button({
-                icon: Icon.cross(),
-                intent: 'danger',
+                icon: Icon.delete(),
                 onClick: (e) => {
                     model.removeFavorite(value);
                     e.stopPropagation();

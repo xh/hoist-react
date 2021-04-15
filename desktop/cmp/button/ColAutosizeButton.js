@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
@@ -18,7 +18,7 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory({
     displayName: 'ColAutosizeButton',
     model: false,
 
-    render({icon, title, onClick, gridModel, disabled, autosizeOptions = {}, ...rest}) {
+    render({icon, title, onClick, gridModel, disabled, autosizeOptions = {}, ...rest}, ref) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
 
         errorIf(!gridModel, "No GridModel available to ColAutosizeButton. Provide via a 'gridModel' prop, or context.");
@@ -31,6 +31,7 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory({
         );
 
         return button({
+            ref,
             icon: withDefault(icon, Icon.arrowsLeftRight()),
             title: withDefault(title, 'Autosize Columns'),
             onClick,

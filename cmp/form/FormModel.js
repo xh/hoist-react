@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {HoistModel, managed} from '@xh/hoist/core';
+import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {flatMap, forOwn, map, mapValues, pickBy, some, values, forEach} from 'lodash';
 import {FieldModel} from './field/FieldModel';
@@ -35,13 +35,13 @@ import {ValidationState} from './validation/ValidationState';
  *
  * @see FieldModel for details on state and validation maintained at the individual field level.
  */
-@HoistModel
-export class FormModel {
+export class FormModel extends HoistModel {
 
     /** @member {Object} - container object for FieldModel instances, keyed by field name. */
     @observable.ref fields = {};
 
     /** @return {FieldModel[]} - all FieldModel instances, as an array. */
+    @managed
     get fieldList() {return values(this.fields)}
 
     /** @member {FormModel} */
@@ -78,6 +78,8 @@ export class FormModel {
             disabled = false,
             readonly = false
         } = {}) {
+        super();
+        makeObservable(this);
         this.disabled = disabled;
         this.readonly = readonly;
         const models = {};
@@ -91,7 +93,7 @@ export class FormModel {
         this.init(initialValues);
 
         // Set the owning formModel *last* after all fields in place with data.
-        // This (currently) kicks off the validation and other reativity.
+        // This (currently) kicks off the validation and other reactivity.
         forOwn(this.fields, f => f.formModel = this);
     }
 
@@ -150,6 +152,34 @@ export class FormModel {
     @computed
     get isDirty() {
         return some(this.fields, m => m.isDirty);
+    }
+
+    //-----------------------------------
+    // Focus Management
+    //-----------------------------------
+    /**
+     * The Field that is currently focused on this form.
+     *
+     * @see FieldModel.focus() for important information on this method
+     * and its limitations.
+     *
+     * @returns {FieldModel}
+     */
+    @computed
+    get focusedField() {
+        return this.fieldList.find(f => f.hasFocus);
+    }
+
+    /**
+     * Focus a field on this form.
+     *
+     * @param {string} - name of field to focus.
+     *
+     * @see FieldModel.focus() for important information on this method
+     * and its limitations.
+     */
+    focusField(name) {
+        this.getField(name)?.focus();
     }
 
     //------------------------
@@ -217,9 +247,5 @@ export class FormModel {
                 return undefined;
             }
         });
-    }
-
-    destroy() {
-        XH.safeDestroy(this.fieldList);
     }
 }

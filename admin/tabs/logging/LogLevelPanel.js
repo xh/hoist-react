@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
@@ -17,6 +17,7 @@ const modelSpec = {
     enableExport: true,
     store: {
         url: 'rest/logLevelAdmin',
+        fieldDefaults: {disableXssProtection: true},
         fields: [
             {
                 name: 'name',

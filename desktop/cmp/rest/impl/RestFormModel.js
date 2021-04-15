@@ -2,18 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {isFunction} from 'lodash';
 import {FormModel, required} from '@xh/hoist/cmp/form';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, merge} from 'lodash';
+import {isFunction, isNil, merge} from 'lodash';
 
-@HoistModel
-export class RestFormModel {
+export class RestFormModel extends HoistModel {
 
     /** @member {RestGridModel} */
     parent = null;
@@ -24,8 +22,10 @@ export class RestFormModel {
     @observable isAdd = null;
     @observable isOpen = false;
 
+    /** @member {FormModel} */
     @managed
-    @observable formModel = null;
+    @observable
+    formModel;
 
     @observable types = {};
 
@@ -34,11 +34,27 @@ export class RestFormModel {
     get editors()           {return this.parent.editors}
     get gridModel()         {return this.parent.gridModel}
     get store()             {return this.parent.store}
-    get loadModel()         {return this.store.loadModel}
+    get loadModel()         {return this.store.loadSupport.loadModel}
 
+    /** @param {RestGridModel} parent */
     constructor(parent) {
+        super();
+        makeObservable(this);
         this.parent = parent;
     }
+
+    /**
+     * @param {String} field
+     * @return {RestField}
+     */
+    getStoreField(field) {return this.store.getField(field)}
+
+    /**
+     * @param {String} field
+     * @return {FieldModel}
+     */
+    getFormFieldModel(field) {return this.formModel.getField(field)}
+
 
     //-----------------
     // Actions
@@ -97,6 +113,7 @@ export class RestFormModel {
         return this.saveRecordAsync();
     }
 
+
     //---------------------
     // Implementation
     //---------------------
@@ -146,7 +163,7 @@ export class RestFormModel {
 
     fieldModelConfig(editor) {
         const name = editor.field,
-            restField = this.store.getField(name);
+            restField = this.getStoreField(name);
         throwIf(!restField, `Unknown field '${name}' in RestGrid.`);
 
         return merge({
@@ -162,15 +179,15 @@ export class RestFormModel {
     // Helpers
     //-------------------------
     calcType(fieldName) {
-        const restField = this.store.getField(fieldName);
+        const restField = this.getStoreField(fieldName);
         this.types[fieldName] = restField.typeField ? this.getDynamicType(restField.typeField) : restField.type;
     }
 
     getDynamicType(typeField) {
         // Favor (observable) value in form itself, if present!
-        const {currentRecord, store} = this,
-            field = store.getField(typeField),
-            formField = this.formModel.fields[typeField];
+        const {currentRecord, formModel} = this,
+            field = this.getStoreField(typeField),
+            formField = formModel.fields[typeField];
 
         let rawType = null;
         if (formField) {

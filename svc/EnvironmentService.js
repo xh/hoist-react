@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {agGridVersion} from '@xh/hoist/kit/ag-grid';
 import {version as blueprintCoreVersion} from '@blueprintjs/core/package.json';
@@ -14,10 +14,9 @@ import {deepFreeze} from '@xh/hoist/utils/js';
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {defaults} from 'lodash';
 import {version as mobxVersion} from 'mobx/package.json';
-import React from 'react';
+import {version as reactVersion} from 'react';
 
-@HoistService
-export class EnvironmentService {
+export class EnvironmentService extends HoistService {
 
     _data = {};
 
@@ -33,7 +32,7 @@ export class EnvironmentService {
             appName: XH.appName,
             clientVersion: XH.appVersion,
             clientBuild: XH.appBuild,
-            reactVersion: React.version,
+            reactVersion,
             hoistReactVersion,
             agGridVersion,
             mobxVersion,
@@ -58,6 +57,10 @@ export class EnvironmentService {
         return this.get('appEnvironment') === 'Production';
     }
 
+    isTest() {
+        return this.get('appEnvironment') === 'Test';
+    }
+
     //------------------------------
     // Implementation
     //------------------------------
@@ -75,14 +78,14 @@ export class EnvironmentService {
 
         // Compare latest version/build info from server against the same info (also supplied by
         // server) when the app initialized. A change indicates an update to the app and will
-        // prompt the user to refresh via the updateBar, unless suppressed via shouldUpdate flag.
+        // prompt the user to refresh via the Banner, unless suppressed via shouldUpdate flag.
         // Builds are checked here to trigger refresh prompts across SNAPSHOT updates for projects
         // with active dev/QA users.
         if (
             shouldUpdate &&
             (appVersion !== this.get('appVersion') || appBuild !== this.get('appBuild'))
         ) {
-            XH.appContainerModel.showUpdateBar(appVersion, appBuild);
+            XH.appContainerModel.showUpdateBanner(appVersion, appBuild);
         }
 
         // Note that the case of version mismatches across the client and server we do *not* show

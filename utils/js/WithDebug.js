@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {castArray, isString} from 'lodash';
 
@@ -43,6 +43,15 @@ export function withShortDebug(msgs, fn, source) {
     return loggedDo(msgs, fn, source, true);
 }
 
+/**
+ * Log a message for debugging, with standard conventions for filtering.
+ * @param {(String[]|String)} msgs
+ * @param {(Object|String)} [source] - Class, function or string to label the source of the message
+ */
+export function logDebug(msgs, source) {
+    return loggedDo(msgs, null, source);
+}
+
 //----------------------------------
 // Implementation
 //----------------------------------
@@ -51,6 +60,14 @@ function loggedDo(msgs, fn, source, short) {
     source = parseSource(source);
     msgs = castArray(msgs);
     const msg = msgs.join(' | ');
+
+    // Support simple message only
+    if (!fn) {
+        writeLog(msg, source);
+        return;
+    }
+
+    // ..otherwise a wrapped call..
     if (!short) writeLog(`${msg} | started`, source);
 
     const start = Date.now();
@@ -76,7 +93,8 @@ function loggedDo(msgs, fn, source, short) {
 
 function parseSource(source) {
     if (isString(source)) return source;
-    if (source && source.constructor) return source.constructor.name;
+    if (source?.displayName) return source.displayName;
+    if (source?.constructor) return source.constructor.name;
     return '';
 }
 

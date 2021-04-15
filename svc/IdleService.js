@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {AppState, HoistService, XH, managed} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
@@ -18,13 +18,13 @@ import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
  * This service consults the `xhIdleConfig` soft-config and the `xh.disableIdleDetection`
  * user preference to determine if and when it should suspend the app.
  */
-@HoistService
-export class IdleService {
+export class IdleService extends HoistService {
 
     @managed timer = null;
     timeout = null;
 
     constructor() {
+        super();
         this.addReaction({
             when: () => XH.appIsRunning,
             run: this.startMonitoring

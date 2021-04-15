@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
 import PT from 'prop-types';
@@ -28,8 +28,9 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
         mask = true,
         agOptions,
         onRowDoubleClicked,
+        formClassName,
         ...props
-    }) {
+    }, ref) {
 
         const {formModel, gridModel} = model;
 
@@ -45,12 +46,13 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
 
         return fragment(
             panel({
+                ref,
                 ...props,
                 tbar: restGridToolbar({model, extraToolbarItems}),
                 item: grid({model: gridModel, agOptions, onRowDoubleClicked}),
                 mask: getMaskFromProp(model, mask)
             }),
-            restForm({model: formModel})
+            restForm({model: formModel, className: formClassName})
         );
     }
 });
@@ -81,7 +83,12 @@ RestGrid.propTypes = {
      * Callback to call when a row is double clicked. Function will receive an event
      * with a data node containing the row's data.
      */
-    onRowDoubleClicked: PT.func
+    onRowDoubleClicked: PT.func,
+
+    /**
+     * Classname to be passed to RestForm
+     */
+    formClassName: PT.string
 };
 
 

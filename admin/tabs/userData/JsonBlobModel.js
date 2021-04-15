@@ -2,9 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {
     addAction,
     cloneAction,
@@ -15,13 +15,11 @@ import {
 import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
 import {fmtDateTime} from '@xh/hoist/format';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
-import {truncate} from 'lodash';
+import {isDate, truncate} from 'lodash';
 
 import {DifferModel} from '../../differ/DifferModel';
 
-@HoistModel
-@LoadSupport
-export class JsonBlobModel {
+export class JsonBlobModel extends HoistModel {
 
     persistWith = {localStorageKey: 'xhAdminJsonBlobState'};
 
@@ -34,6 +32,7 @@ export class JsonBlobModel {
         store: {
             url: 'rest/jsonBlobAdmin',
             reloadLookupsOnLoad: true,
+            fieldDefaults: {disableXssProtection: true},
             fields: [
                 {
                     name: 'token',
@@ -60,6 +59,10 @@ export class JsonBlobModel {
                     name: 'value',
                     type: 'json',
                     required: true
+                },
+                {
+                    name: 'meta',
+                    type: 'json'
                 },
                 {
                     name: 'description'
@@ -107,7 +110,7 @@ export class JsonBlobModel {
         sortBy: ['owner', 'name'],
         groupBy: 'type',
         unit: 'blob',
-        filterFields: ['name', 'owner', 'type', 'value', 'description'],
+        filterFields: ['name', 'owner', 'type', 'value', 'meta', 'description'],
         columns: [
             {field: 'token', width: 100, hidden: true},
             {field: 'archived', ...boolCheckCol, width: 100},
@@ -117,6 +120,7 @@ export class JsonBlobModel {
             {field: 'type', width: 200},
             {field: 'description', width: 200},
             {field: 'value', flex: 1, renderer: this.valueRenderer},
+            {field: 'meta', width: 200},
             {field: 'archivedDate', ...dateTimeCol, renderer: this.archivedDateRenderer, hidden: true},
             {field: 'dateCreated', ...dateTimeCol, hidden: true},
             {field: 'lastUpdated', ...dateTimeCol, hidden: true},
@@ -130,8 +134,11 @@ export class JsonBlobModel {
             {field: 'type'},
             {field: 'description', formField: {item: textArea()}},
             {field: 'value'},
+            {field: 'meta'},
             {field: 'archived'},
-            {field: 'archivedDate'},
+            {field: 'archivedDate', formField: {readonlyRenderer: v => {
+                return (!isDate(v) || v.getTime() === 0) ? '-' : fmtDateTime(v);
+            }}},
             {field: 'dateCreated'},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}

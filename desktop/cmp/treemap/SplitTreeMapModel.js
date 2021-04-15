@@ -2,11 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, action, computed, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {uniq} from 'lodash';
+
 import {TreeMapModel} from './TreeMapModel';
 
 /**
@@ -19,8 +21,7 @@ import {TreeMapModel} from './TreeMapModel';
  * Additionally, accepts and passes along all settings for TreeMapModel.
  * @see TreeMapModel
  */
-@HoistModel
-export class SplitTreeMapModel {
+export class SplitTreeMapModel extends HoistModel {
 
     //------------------------
     // Immutable public properties
@@ -29,8 +30,6 @@ export class SplitTreeMapModel {
     mapFilter;
     /** @member {function} */
     mapTitleFn;
-    /** @member {string} */
-    orientation;
 
     /** @member {TreeMapModel} */
     @managed primaryMapModel;
@@ -40,8 +39,8 @@ export class SplitTreeMapModel {
     //------------------------
     // Observable API
     //------------------------
-    /** @member {Object} */
-    @bindable.ref highchartsConfig = {};
+    /** @member {string} */
+    @bindable orientation;
 
     /**
      * @param {Object} c - SplitTreeMapModel configuration.
@@ -59,34 +58,94 @@ export class SplitTreeMapModel {
         orientation = 'vertical',
         ...rest
     } = {}) {
+        super();
+        makeObservable(this);
         this.mapFilter = withDefault(mapFilter, this.defaultMapFilter);
         this.mapTitleFn = mapTitleFn;
 
         throwIf(!['vertical', 'horizontal'].includes(orientation), `Orientation "${orientation}" not recognised.`);
         this.orientation = orientation;
 
-        // Create child TreeMaps
-        this.primaryMapModel = new TreeMapModel({
-            ...rest,
-            filter: (record) => this.mapFilter(record)
-        });
-        this.secondaryMapModel = new TreeMapModel({
-            ...rest,
-            filter: (record) => !this.mapFilter(record)
-        });
+        this.primaryMapModel = new TreeMapModel({...rest, filter: (r) => this.mapFilter(r)});
+        this.secondaryMapModel = new TreeMapModel({...rest, filter: (r) => !this.mapFilter(r)});
     }
 
-    defaultMapFilter(record) {
-        const {valueField} = this.primaryMapModel;
-        return record.data[valueField] >= 0;
+    // Getters derived from both underlying TreeMapModels.
+    @computed
+    get total() {
+        return this.primaryMapModel.total && this.secondaryMapModel.total;
     }
 
+    @computed
+    get selectedIds() {
+        return uniq([...this.primaryMapModel.selectedIds, ...this.secondaryMapModel.selectedIds]);
+    }
+
+    @computed
+    get isMasking() {
+        return this.primaryMapModel.isMasking || this.secondaryMapModel.isMasking;
+    }
+
+    // Simple getters and methods trampolined from underlying TreeMapModels.
+    // Where possible, we consult only the primary map model, as we don't expect the two to become out of sync.
+    get hasData()           {return this.primaryMapModel.hasData}
+    get expandState()       {return this.primaryMapModel.expandState}
+    get error()             {return this.primaryMapModel.error}
+    get highchartsConfig()  {return this.primaryMapModel.highchartsConfig}
+    get labelField()        {return this.primaryMapModel.labelField}
+    get heatField()         {return this.primaryMapModel.heatField}
+    get maxDepth()          {return this.primaryMapModel.maxDepth}
+    get algorithm()         {return this.primaryMapModel.algorithm}
+    get colorMode()         {return this.primaryMapModel.colorMode}
+
+    @action
+    setHighchartsConfig(...args) {
+        this.primaryMapModel.setHighchartsConfig(...args);
+        this.secondaryMapModel.setHighchartsConfig(...args);
+    }
+
+    @action
+    setLabelField(...args) {
+        this.primaryMapModel.setLabelField(...args);
+        this.secondaryMapModel.setLabelField(...args);
+    }
+
+    @action
+    setHeatField(...args) {
+        this.primaryMapModel.setHeatField(...args);
+        this.secondaryMapModel.setHeatField(...args);
+    }
+
+    @action
+    setMaxDepth(...args) {
+        this.primaryMapModel.setMaxDepth(...args);
+        this.secondaryMapModel.setMaxDepth(...args);
+    }
+
+    @action
+    setAlgorithm(...args) {
+        this.primaryMapModel.setAlgorithm(...args);
+        this.secondaryMapModel.setAlgorithm(...args);
+    }
+
+    @action
+    setColorMode(...args) {
+        this.primaryMapModel.setColorMode(...args);
+        this.secondaryMapModel.setColorMode(...args);
+    }
+
+    //-------------------------
+    // Implementation
+    //-------------------------
+    defaultMapFilter = (record) => {
+        return record.get(this.primaryMapModel.valueField) >= 0;
+    }
 }
 
 /**
  * @callback SplitTreeMapFilterFn
  * @param {Record} record - record to evaluate for inclusion in the primary vs. secondary map.
- * @return {boolean} - true if record belongs to / should appear within the primary map, falsey to
+ * @return {boolean} - true if record belongs to / should appear within the primary map, falsy to
  *      have it allocated to the secondary map.
  */
 

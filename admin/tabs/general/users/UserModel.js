@@ -2,17 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {boolCheckCol, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
-import {action, bindable} from '@xh/hoist/mobx';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {action, bindable, makeObservable} from '@xh/hoist/mobx';
 import {keyBy, keys} from 'lodash';
 
-@HoistModel
-@LoadSupport
-export class UserModel {
+export class UserModel extends HoistModel {
 
     persistWith = {localStorageKey: 'xhAdminUserState'};
 
@@ -36,6 +34,8 @@ export class UserModel {
     });
 
     constructor() {
+        super();
+        makeObservable(this);
         this.addReaction({
             track: () => [this.activeOnly, this.withRolesOnly],
             run: () => this.loadAsync()

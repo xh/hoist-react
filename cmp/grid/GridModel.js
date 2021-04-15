@@ -2,17 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
-import {Column, ColumnGroup, GridAutosizeMode} from '@xh/hoist/cmp/grid';
+import {Column, ColumnGroup, GridAutosizeMode, TreeStyle} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSupport, TreeStyle, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable, when} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {
     apiDeprecated,
@@ -22,12 +22,14 @@ import {
     ensureUnique,
     throwIf,
     warnIf,
-    withDefault
+    withDefault,
+    withShortDebug
 } from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
     cloneDeep,
+    compact,
     defaults,
     defaultsDeep,
     difference,
@@ -39,7 +41,6 @@ import {
     isPlainObject,
     isString,
     isUndefined,
-    last,
     map,
     max,
     min,
@@ -62,9 +63,7 @@ import {GridSorter} from './impl/GridSorter';
  *      collapse controls and indent child columns in addition to displaying its own data.
  *
  */
-@HoistModel
-@LoadSupport
-export class GridModel {
+export class GridModel extends HoistModel {
 
     static DEFAULT_RESTORE_DEFAULTS_WARNING =
         fragment(
@@ -177,8 +176,7 @@ export class GridModel {
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(ColChooserModelConfig|boolean)} [c.colChooserModel] - config with which to create a
-     *      ColChooserModel, or boolean `true` to enable default. Mobile apps should only specify
-     *      `true`, as colChooserModel mobile impl is not configurable.
+     *      ColChooserModel, or boolean `true` to enable default.
      * @param {?ReactNode} [c.restoreDefaultsWarning] - Confirmation warning to be presented to
      *      user before restoring default grid state. Set to null to skip user confirmation.
      * @param {GridModelPersistOptions} [c.persistWith] - options governing persistence.
@@ -198,6 +196,8 @@ export class GridModel {
      * @param {boolean} [c.cellBorders] - true to render cell borders.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      * @param {boolean} [c.hideHeaders] - true to suppress display of the grid's header row.
+     * @param {boolean} [c.lockColumnGroups] - true to disallow moving columns outside of their
+     *      groups.
      * @param {boolean} [c.enableColumnPinning] - true to allow the user to manually pin / unpin
      *      columns via UI affordances.
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
@@ -231,11 +231,6 @@ export class GridModel {
      *      should not immediately respond to user or programmatic changes to the sortBy property,
      *      but will instead wait for the next load of data, which is assumed to be pre-sorted.
      *      Default false.
-     * @param {boolean} [c.experimental.useDeltaSort] - Set to true to use ag-Grid's experimental
-     *      'deltaSort' feature designed to do incremental sorting.  Default false.
-     * @param {boolean} [c.experimental.useTransaction] - set to false to use ag-Grid's
-     *      immutableData to internally generate transactions on data updates.  When true,
-     *      Hoist will generate the transaction on data update. Default true.
      * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
@@ -257,12 +252,13 @@ export class GridModel {
         showHover = false,
         rowBorders = false,
         cellBorders = false,
-        treeStyle = TreeStyle.NONE,
-        stripeRows = (treeStyle === TreeStyle.NONE),
+        treeStyle = TreeStyle.HIGHLIGHTS,
+        stripeRows = (!treeMode || treeStyle === TreeStyle.NONE),
         showCellFocus = false,
         hideHeaders = false,
         compact,
 
+        lockColumnGroups = true,
         enableColumnPinning = true,
         enableExport = false,
         exportOptions = {},
@@ -280,6 +276,8 @@ export class GridModel {
         experimental,
         ...rest
     }) {
+        super();
+        makeObservable(this);
         this._defaultState = {columns, sortBy, groupBy};
 
         this.treeMode = treeMode;
@@ -313,6 +311,7 @@ export class GridModel {
             `Unsupported value for fillMode.`
         );
 
+        this.lockColumnGroups = lockColumnGroups;
         this.enableColumnPinning = enableColumnPinning;
         this.enableExport = enableExport;
         this.exportOptions = exportOptions;
@@ -375,14 +374,6 @@ export class GridModel {
     }
 
     /**
-     * @deprecated
-     * @see restoreDefaultsAsync
-     */
-    restoreDefaults() {
-        this.restoreDefaultsAsync();
-    }
-
-    /**
      * Export grid data using Hoist's server-side export.
      *
      * @param {ExportOptions} options - overrides of default export options to use for this export.
@@ -412,26 +403,58 @@ export class GridModel {
     }
 
     /**
+     * Select records in the grid.
+     *
      * @param {(Object[]|Object)} records - single record/ID or array of records/IDs to select.
-     * @param {boolean} [clearSelection] - true to clear previous selection (rather than add to it).
+     * @param {Object} [options]
+     * @param {boolean} [options.ensureVisible] - true to make selection visible if it is within a
+     *      collapsed node or outside of the visible scroll window. Default true.
+     * @param {boolean} [options.clearSelection] - true to clear previous selection (rather than
+     *      add to it). Default true.
      */
-    select(records, clearSelection = true) {
+    async selectAsync(records, {ensureVisible = true, clearSelection = true} = {}) {
         this.selModel.select(records, clearSelection);
+        if (ensureVisible) await this.ensureSelectionVisibleAsync();
     }
 
-    /** Select the first row in the grid. */
-    selectFirst() {
-        const {agGridModel, selModel} = this;
-        if (!agGridModel.agApi) {
-            console.warn('Called selectFirst before the grid was ready!');
-            return;
+    /**
+     * Select the first row in the grid.
+     *
+     * See {@see preSelectFirstAsync()} for a useful variant of this method.  preSelectFirstAsync()
+     * will not change the selection if there is not already a selection, which is what applications
+     * typically want to do when loading/reloading a grid.
+     *
+     * This method allows for a minimal delay to allow the underlying grid implementation to
+     * render all pending data changes.
+     *
+     * @param {Object} [options]
+     * @param {boolean} [options.ensureVisible] - true to make selection visible if it is within a
+     *      collapsed node or outside of the visible scroll window. Default true.
+     */
+    async selectFirstAsync({ensureVisible = true} = {}) {
+        const {selModel} = this;
+
+        // await always async, allowing grid to render changes pending at time of call
+        await when(() => this.isReady);
+
+        // Get first displayed row with data - i.e. backed by a record, not a full-width group row.
+        const id = this.agGridModel.getFirstSelectableRowNodeId();
+        if (id != null) {
+            selModel.select(id);
+            if (ensureVisible) await this.ensureSelectionVisibleAsync();
         }
-
-        // Find first displayed row with data - i.e. backed by a record, not a full-width group row.
-        const id = agGridModel.getFirstSelectableRowNodeId();
-
-        if (id) selModel.select(id);
     }
+
+
+    /**
+     * Select the first row in the grid, if no other selection present.
+     *
+     * This method delegates to {@see selectFirstAsync}.
+     */
+    async preSelectFirstAsync() {
+        if (!this.hasSelection) return this.selectFirstAsync();
+    }
+
 
     /** Deselect all rows. */
     clearSelection() {
@@ -444,22 +467,41 @@ export class GridModel {
      * If multiple records are selected, scroll to the first record and then the last. This will do
      * the minimum scrolling necessary to display the start of the selection and as much as
      * possible of the rest.
+     *
+     * Any selected records that are hidden because their parent rows are collapsed will first
+     * be revealed by expanding their parent rows.
+     *
+     * This method imposes a minimal delay to allow the underlying grid implementation to
+     * render all pending data changes.
      */
-    ensureSelectionVisible() {
+    async ensureSelectionVisibleAsync() {
+        // await always async, allowing grid to render changes pending at time of call
+        await when(() => this.isReady);
+
         const {records} = this.selModel,
-            {agApi} = this;
+            {agApi} = this,
+            indices = [];
 
-        if (!agApi) return;
+        // 1) Expand any selected nodes that are collapsed
+        records.forEach(({id}) => {
+            for (let row = agApi.getRowNode(id)?.parent; row; row = row.parent) {
+                if (!row.expanded) {
+                    agApi.setRowNodeExpanded(row, true);
+                }
+            }
+        });
 
-        const indices = [];
-        records.forEach(record => {
-            const rowNode = agApi.getRowNode(record.id);
-            if (rowNode) indices.push(rowNode.rowIndex);
+        await wait(0);
+
+        // 2) Scroll to all selected nodes
+        records.forEach(({id}) => {
+            const rowIndex = agApi.getRowNode(id)?.rowIndex;
+            if (!isNil(rowIndex)) indices.push(rowIndex);
         });
 
         const indexCount = indices.length;
-        if (indexCount != records.length) {
-            console.warn('Grid row nodes not found for all selected records - grid data reaction/rendering likely in progress.');
+        if (indexCount !== records.length) {
+            console.warn('Grid row nodes not found for all selected records.');
         }
 
         if (indexCount === 1) {
@@ -476,8 +518,23 @@ export class GridModel {
     /** @return {Record[]} - currently selected Records. */
     get selection() {return this.selModel.records}
 
-    /** @return {?Record} - single selected record, or null if multiple or no records selected. */
+    /**
+     * @return {?Record} - single selected record, or null if multiple/no records selected.
+     *
+     * Note that this getter will also change if just the data of selected record is changed
+     * due to store loading or editing.  Applications only interested in the identity
+     * of the selection should use {@see selectedRecordId} instead.
+     */
     get selectedRecord() {return this.selModel.singleRecord}
+
+    /**
+     * @return {?(string|number)} - ID of selected record, or null if multiple/no records selected.
+     *
+     * Note that this getter will *not* change if just the data of selected record is changed
+     * due to store loading or editing.  Applications also interested in the contents of the
+     * of the selection should use the {@see selectedRecord} getter instead.
+     */
+    get selectedRecordId() {return this.selModel.selectedRecordId}
 
     /** @return {boolean} - true if this grid has no records to show in its store. */
     get empty() {return this.store.empty}
@@ -591,10 +648,9 @@ export class GridModel {
         this.sortBy = sorters;
     }
 
-    /** Load the underlying store. */
     async doLoadAsync(loadSpec) {
-        throwIf(!this.store.isLoadSupport, 'Underlying store does not define support for loading.');
-        return this.store.loadAsync(loadSpec);
+        // Delegate to any store that has load support
+        return this.store.loadSupport?.loadAsync(loadSpec);
     }
 
     /** Load the underlying store. */
@@ -624,15 +680,8 @@ export class GridModel {
         this.validateColConfigs(colConfigs);
         colConfigs = this.enhanceColConfigsFromStore(colConfigs);
 
-        const columns = colConfigs.map(c => this.buildColumn(c));
-
+        const columns = compact(colConfigs.map(c => this.buildColumn(c)));
         this.validateColumns(columns);
-
-        const leaves = this.gatherLeaves(columns);
-        if (leaves.some(c => c.flex && c.maxWidth) && !find(leaves, {colId: 'xhEmptyFlex'})) {
-            console.debug('Adding empty flex column to workaround AG-4243');
-            columns.push(this.buildColumn(xhEmptyFlexCol));
-        }
 
         this.columns = columns;
         this.columnState = this.getLeafColumns()
@@ -651,8 +700,8 @@ export class GridModel {
             if (!col) return null;
             return {
                 colId,
-                pinned,
-                hidden: hide,
+                pinned: pinned ?? null,
+                hidden: !!hide,
                 width: col.flex ? undefined : width
             };
         });
@@ -730,12 +779,6 @@ export class GridModel {
             // 2.b) Install implied group sort orders and sort
             columnState.forEach(it => this.markGroupSortOrder(it));
             columnState = this.sortColumns(columnState);
-
-            // 2.c) Force AG-4243 workaround column to stay last (avoid user dragging)!
-            const emptyFlex = find(columnState, {colId: 'xhEmptyFlex'});
-            if (emptyFlex && last(columnState) !== emptyFlex) {
-                pull(columnState, emptyFlex).push(emptyFlex);
-            }
         }
 
         this.columnState = columnState;
@@ -847,12 +890,9 @@ export class GridModel {
     }
 
     buildColumn(config) {
-        // return group
-        if (config.children) return new ColumnGroup(config, this);
-
         // Merge leaf config with defaults.
         // Ensure *any* tooltip or renderer setting on column itself always wins.
-        if (this.colDefaults) {
+        if (this.colDefaults && !config.children) {
             let colDefaults = {...this.colDefaults};
             if (config.tooltip || config.tooltipElement) {
                 colDefaults.tooltip = null;
@@ -860,9 +900,17 @@ export class GridModel {
             }
             if (config.renderer || config.elementRenderer) {
                 colDefaults.renderer = null;
-                colDefaults.elementRender = null;
+                colDefaults.elementRenderer = null;
             }
             config = defaultsDeep({}, config, colDefaults);
+        }
+
+        const omit = isFunction(config.omit) ? config.omit() : config.omit;
+        if (omit) return null;
+
+        if (config.children) {
+            const children = compact(config.children.map(c => this.buildColumn(c)));
+            return !isEmpty(children) ? new ColumnGroup({...config, children}, this) : null;
         }
 
         return new Column(config, this);
@@ -911,29 +959,64 @@ export class GridModel {
         }
 
         // 3) Let service perform sizing, masking as appropriate.
-        const {agApi} = this;
+        const {agApi, empty} = this;
         const showMask = options.showMask && agApi;
         if (showMask) {
             agApi.showLoadingOverlay();
             await wait(100);
         }
 
-        await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
+        withShortDebug('Autosizing Grid', async () => {
+            await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
+        }, this);
 
         if (showMask) {
             await wait(100);
-            agApi.hideOverlay();
+            if (empty) {
+                agApi.showNoRowsOverlay();
+            } else {
+                agApi.hideOverlay();
+            }
         }
     }
 
+    /** @deprecated */
     autoSizeColumns(colIds) {
-        apiDeprecated(true, 'GridModel.autoSizeColumns', "Use 'GridModel.autosizeAsync()' instead.");
+        apiDeprecated(true, 'autoSizeColumns', 'Use autosizeAsync() instead.');
         this.autosizeAsync({columns: colIds});
+    }
+
+    /** @deprecated */
+    restoreDefaults() {
+        apiDeprecated(true, 'restoreDefaults', 'Use restoreDefaultsAsync() instead.');
+        this.restoreDefaultsAsync();
+    }
+
+    /** @deprecated */
+    select(records, clearSelection) {
+        apiDeprecated(true, 'select', 'Use selectAsync() instead.');
+        this.selectAsync(records, {clearSelection, ensureVisible: false});
+    }
+
+    /** @deprecated */
+    selectFirst() {
+        apiDeprecated(true, 'selectFirst', 'Use selectFirstAsync() or preSelectFirstAsync() instead.');
+        this.selectFirstAsync({ensureVisible: false});
+    }
+
+    /** @deprecated */
+    ensureSelectionVisible() {
+        apiDeprecated(true, 'ensureSelectionVisible', 'Use ensureSelectionVisibleAsync() instead.');
+        this.ensureSelectionVisibleAsync();
     }
 
     //-----------------------
     // Implementation
     //-----------------------
+    getAutoRowHeight(node) {
+        return this.agGridModel.getAutoRowHeight(node);
+    }
+
     gatherLeaves(columns, leaves = []) {
         columns.forEach(col => {
             if (col.groupId) this.gatherLeaves(col.children, leaves);
@@ -960,15 +1043,15 @@ export class GridModel {
         return sortBy(columns, [it => it._sortOrder]);
     }
 
-    collectIds(cols, groupIds = [], colIds = []) {
+    collectIds(cols, ids = []) {
         cols.forEach(col => {
-            if (col.colId) colIds.push(col.colId);
+            if (col.colId) ids.push(col.colId);
             if (col.groupId) {
-                groupIds.push(col.groupId);
-                this.collectIds(col.children, groupIds, colIds);
+                ids.push(col.groupId);
+                this.collectIds(col.children, ids);
             }
         });
-        return {groupIds, colIds};
+        return ids;
     }
 
     formatValuesForExport(params) {
@@ -988,9 +1071,9 @@ export class GridModel {
     // so it can be better re-used across Hoist APIs such as `Filter` and `FormModel`. However for
     // convenience, a `GridModel.store` config can also be very minimal (or non-existent), and
     // in this case GridModel should work out the required Store fields from column definitions.
-    parseAndSetColumnsAndStore(colConfigs, store) {
-        // 1) Default and pre-validate configs.
-        store = withDefault(store, {});
+    parseAndSetColumnsAndStore(colConfigs, store = {}) {
+
+        // 1) validate configs.
         this.validateStoreConfig(store);
         this.validateColConfigs(colConfigs);
 
@@ -1000,13 +1083,14 @@ export class GridModel {
         // 3) Create and set columns with (possibly) enhanced configs.
         this.setColumns(colConfigs);
 
-        // 4) Enhance store config and create (if needed), then set.
+        // 4) Create store if needed
         if (isPlainObject(store)) {
-            const storeConfig = this.enhanceStoreConfigFromColumns(store);
-            this.store = this.markManaged(new Store(storeConfig));
-        } else {
-            this.store = store;
+            store = this.enhanceStoreConfigFromColumns(store);
+            store = new Store({loadTreeData: this.treeMode, ...store});
+            this.markManaged(store);
         }
+
+        this.store = store;
     }
 
     validateStoreConfig(store) {
@@ -1030,10 +1114,8 @@ export class GridModel {
     validateColumns(cols) {
         if (isEmpty(cols)) return;
 
-        const {groupIds, colIds} = this.collectIds(cols);
-
-        ensureUnique(colIds, 'All colIds in a GridModel columns collection must be unique.');
-        ensureUnique(groupIds, 'All groupIds in a GridModel columns collection must be unique.');
+        const ids = this.collectIds(cols);
+        ensureUnique(ids, 'All colIds and groupIds in a GridModel columns collection must be unique.');
 
         const treeCols = cols.filter(it => it.isTreeColumn);
         warnIf(
@@ -1133,23 +1215,19 @@ export class GridModel {
 
         return {
             externalSort: false,
-            useTransactions: true,
-            useDeltaSort: false,
             ...XH.getConf('xhGridExperimental', {}),
             ...experimental
         };
     }
 
     parseChooserModel(chooserModel) {
-        if (XH.isMobileApp) {
-            return chooserModel ? this.markManaged(new MobileColChooserModel(this)) : null;
-        }
+        const modelClass = XH.isMobileApp ? MobileColChooserModel : DesktopColChooserModel;
 
         if (isPlainObject(chooserModel)) {
-            return this.markManaged(new DesktopColChooserModel(defaults(chooserModel, {gridModel: this})));
+            return this.markManaged(new modelClass(defaults(chooserModel, {gridModel: this})));
         }
 
-        return chooserModel ? this.markManaged(new DesktopColChooserModel({gridModel: this})) : null;
+        return chooserModel ? this.markManaged(new modelClass({gridModel: this})) : null;
     }
 
     defaultGroupSortFn = (a, b) => {
@@ -1157,44 +1235,17 @@ export class GridModel {
     };
 }
 
-//--------------------------------------------------------------------
-// Hidden flex column designed to workaround the following ag issue:
-//
-//   AG-4243: [Column Flex] When using column flex and maxWidth, last column
-//   header text isn't shown (See also hr ticket #1928)
-//
-// This column is inserted whenever there is a flex column with maxWidth.
-// Special handling ensures it is maintained as the last column.
-//-------------------------------------------------------------------------
-const xhEmptyFlexCol = {
-    colId: 'xhEmptyFlex',
-    headerName: null,
-    // Tiny flex value set here to avoidFlexCol competing with other flex cols in the same grid.
-    // This config's goal is only to soak up *extra* width - e.g. when there are no other flex cols,
-    // or when any other flex cols are constrained to a configured maxWidth.
-    flex: 0.001,
-    minWidth: 0,
-    movable: false,
-    resizable: false,
-    sortable: false,
-    excludeFromChooser: true,
-    excludeFromExport: true,
-    agOptions: {
-        filter: false,
-        suppressMenu: true
-    }
-};
-
-
 /**
  * @typedef {Object} ColChooserModelConfig
  * @property {boolean} [commitOnChange] - Immediately render changed columns on grid (default true).
- *      Set to false to enable Save button for committing changes on save
+ *      Set to false to enable Save button for committing changes on save. Desktop only.
  * @property {boolean} [showRestoreDefaults] - show Restore Defaults button (default true).
  *      Set to false to hide Restore Grid Defaults button, which immediately
  *      commits grid defaults (all column, grouping, and sorting states).
- * @property {number} [width] - chooser width for popover and dialog.
- * @property {number} [height] - chooser height for popover and dialog.
+ * @property {boolean} [autosizeOnCommit] - Autosize grid columns after committing changes
+ *      (default false for desktop, true for mobile)
+ * @property {number} [width] - chooser width for popover and dialog. Desktop only.
+ * @property {number} [height] - chooser height for popover and dialog. Desktop only.
  */
 
 /**

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {truncate} from 'lodash';
 import {usernameCol} from '@xh/hoist/admin/columns';
@@ -22,6 +22,7 @@ const modelSpec = {
     store: {
         url: 'rest/userPreferenceAdmin',
         reloadLookupsOnLoad: true,
+        fieldDefaults: {disableXssProtection: true},
         fields: [
             {
                 name: 'name',

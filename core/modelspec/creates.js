@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
@@ -17,7 +17,7 @@ import {ModelPublishMode, ModelSpec} from './ModelSpec';
  * for access by all sub-components.
  *
  * The model created will be considered to be 'owned' by the receiving component. If it implements
- * `@LoadSupport` it will be loaded on component mount, and it will always be destroyed on
+ * loading it will be loaded on component mount, and it will always be destroyed on
  * component unmount.
  *
  * @param {(Class|function)} spec - HoistModel Class to construct, or a function returning a

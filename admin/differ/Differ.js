@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler, fragment, frame, span} from '@xh/hoist/cmp/layout';
@@ -11,7 +11,8 @@ import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {identity, startCase} from 'lodash';
@@ -51,13 +52,7 @@ const contents = hoistCmp.factory(
                     item: `No ${model.displayName}s loaded for comparison.`,
                     padding: 10
                 }),
-            bbar: [
-                filler(),
-                button({
-                    text: 'Close',
-                    onClick: () => model.close()
-                })
-            ],
+            bbar: bbar(),
             mask: 'onLoad'
         });
     }
@@ -93,10 +88,27 @@ const tbar = hoistCmp.factory(
             filler(),
             clipboardButton({
                 text: `Copy ${startCase(model.displayName)}s`,
-                intent: 'primary',
                 icon: Icon.copy(),
                 getCopyText: () => model.fetchLocalConfigsAsync(),
                 successMessage: `${startCase(model.displayName)}s copied to clipboard - ready to paste into the diff tool on another instance for comparison.`
+            })
+        );
+    }
+);
+
+const bbar = hoistCmp.factory(
+    ({model}) => {
+        return toolbar(
+            filler(),
+            recordActionBar({
+                actions: [model.applyRemoteAction],
+                selModel: model.gridModel.selModel,
+                buttonProps: {intent: 'primary'}
+            }),
+            toolbarSep(),
+            button({
+                text: 'Close',
+                onClick: () => model.close()
             })
         );
     }

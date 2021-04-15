@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {elemFactory, hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import PT from 'prop-types';
@@ -31,7 +31,6 @@ const formContextProvider = elemFactory(FormContext.Provider);
 export const [Form, form] = hoistCmp.withFactory({
     displayName: 'Form',
     model: uses(FormModel, {publishMode: ModelPublishMode.NONE}),
-    memo: false,
 
     render({model, fieldDefaults, children}) {
         const parentContext = useContext(FormContext);

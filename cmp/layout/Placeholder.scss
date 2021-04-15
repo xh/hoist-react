@@ -1,0 +1,13 @@
+.xh-placeholder {
+  display: flex;
+  flex-direction: column;
+  flex: auto;
+  align-items: center;
+  justify-content: center;
+  padding: var(--xh-pad-px);
+  color: var(--xh-text-color-muted);
+
+  & > *:not(:last-child) {
+    margin-bottom: var(--xh-pad-px);
+  }
+}

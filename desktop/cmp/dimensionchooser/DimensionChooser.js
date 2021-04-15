@@ -2,11 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
-import {div} from '@xh/hoist/cmp/layout';
-import {hbox, vbox} from '@xh/hoist/cmp/layout/index';
+import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {select, Select} from '@xh/hoist/desktop/cmp/input';
@@ -43,7 +42,7 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
         popoverTitle = 'Group By',
         popoverPosition = 'bottom',
         selectProps
-    }) {
+    }, ref) {
         const {isMenuOpen, activeMode, value} = model;
         const getCurrDimensionLabels = () => {
                 return value.map(dimName => model.getDimDisplayName(dimName));
@@ -81,6 +80,7 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
 
         return div({
             className,
+            ref,
             item: popover({
                 target,
                 isOpen: isMenuOpen,
@@ -153,7 +153,6 @@ DimensionChooser.propTypes = {
     /** True (default) to style target button as an input field - blends better in toolbars. */
     styleButtonAsInput: PT.bool
 };
-
 
 const historyMenu = hoistCmp.factory(
     ({model, popoverWidth, popoverTitle, emptyText}) => vbox({

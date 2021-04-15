@@ -2,17 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import debouncePromise from 'debounce-promise';
-import {castArray, isEmpty, isNil, isPlainObject, keyBy, merge, isEqual} from 'lodash';
-import PT from 'prop-types';
-import React from 'react';
-import {createFilter, components} from 'react-select';
-
-import {HoistInput} from '@xh/hoist/cmp/input';
-import {box, div, hbox, span, fragment} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent, LayoutSupport, elem} from '@xh/hoist/core';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
+import {elem, hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {
     reactAsyncCreatableSelect,
@@ -21,10 +15,24 @@ import {
     reactSelect,
     reactWindowedSelect
 } from '@xh/hoist/kit/react-select';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-
+import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
+import debouncePromise from 'debounce-promise';
+import {
+    castArray,
+    escapeRegExp,
+    isEmpty,
+    isEqual,
+    isNil,
+    isPlainObject,
+    keyBy,
+    merge
+} from 'lodash';
+import PT from 'prop-types';
+import {components} from 'react-select';
 import './Select.scss';
 
 /**
@@ -40,139 +48,164 @@ import './Select.scss';
  * @see {@link https://react-select.com|React Select Docs}
  * @see {@link https://github.com/jacobworrel/react-windowed-select react-windowed-select}
  */
-@LayoutSupport
-@HoistComponent
-export class Select extends HoistInput {
+export const [Select, select] = hoistCmp.withFactory({
+    displayName: 'Select',
+    className: 'xh-select',
+    render(props, ref) {
+        return useHoistInputModel(cmp, props, ref, Model);
+    }
+});
+Select.propTypes = {
+    ...HoistInputPropTypes,
 
-    static propTypes = {
-        ...HoistInput.propTypes,
+    /** True to focus the control on render. */
+    autoFocus: PT.bool,
 
-        /** True to focus the control on render. */
-        autoFocus: PT.bool,
+    /**
+     * Function to return a "create a new option" string prompt. Requires `allowCreate` true.
+     * Passed current query input.
+     */
+    createMessageFn: PT.func,
 
-        /**
-         * Function to return a "create a new option" string prompt. Requires `allowCreate` true.
-         * Passed current query input.
-         */
-        createMessageFn: PT.func,
+    /** True (default) to close the menu after each selection. */
+    closeMenuOnSelect: PT.bool,
 
-        /** True to close the menu after each selection.  Defaults to true. */
-        closeMenuOnSelect: PT.bool,
+    /** True to show a "clear" button at the right of the control. */
+    enableClear: PT.bool,
 
-        /** True to show a "clear" button at the right of the control.  Defaults to false. */
-        enableClear: PT.bool,
+    /** True to accept and commit input values not present in options or returned by a query. */
+    enableCreate: PT.bool,
 
-        /** True to accept and commit input values not present in options or returned by a query. */
-        enableCreate: PT.bool,
+    /**
+     * True (default) to enable type-to-search keyboard input. False to disable keyboard input,
+     * showing the dropdown menu on click.
+     */
+    enableFilter: PT.bool,
 
-        /**
-         * True (default) to enable type-to-search keyboard input. False to disable keyboard input,
-         * showing the dropdown menu on click.
-         */
-        enableFilter: PT.bool,
+    /** True to allow entry/selection of multiple values - "tag picker" style. */
+    enableMulti: PT.bool,
 
-        /** True to allow entry/selection of multiple values - "tag picker" style. */
-        enableMulti: PT.bool,
+    /**
+     * True to use react-windowed-select for improved performance on large option lists.
+     * See https://github.com/jacobworrel/react-windowed-select/.
+     *
+     * Currently only supported when the enableCreate and queryFn props are not specified.
+     * These options require the use of specialized 'Async' or 'Creatable' selects from the
+     * underlying react-select library which are not fully implemented in react-windowed-select.
+     *
+     * Applications should use this option with care.
+     */
+    enableWindowed: PT.bool,
 
-        /**
-         * True to use react-windowed-select for improved performance on large option lists.
-         * See https://github.com/jacobworrel/react-windowed-select/.  Defaults to false.
-         *
-         * Currently only supported when the enableCreate and queryFn props are not specified.
-         * These options require the use of specialized 'Async' or 'Creatable' selects from the
-         * underlying react-select library which are not fully implemented in react-windowed-select.
-         *
-         * Applications should use this option with care.
-         */
-        enableWindowed: PT.bool,
+    /**
+     * Function called to filter available options for a given query string input.
+     * Used for filtering of options provided by `options` prop when `enableFilter` is true.
+     * Not to be confused with `queryFn` prop, used in asynchronous mode.
+     *
+     * Provided function should take an option and a query value and return a boolean.
+     * Defaults to a case-insensitive match on word starts.
+     */
+    filterFn: PT.func,
 
-        /** True to hide the dropdown indicator, i.e. the down-facing arrow at the right of the Select. */
-        hideDropdownIndicator: PT.bool,
+    /** True to hide the dropdown indicator, i.e. the down-facing arrow at the right of the Select. */
+    hideDropdownIndicator: PT.bool,
 
-        /** True to suppress the default check icon rendered for the currently selected option. */
-        hideSelectedOptionCheck: PT.bool,
+    /** True to suppress the default check icon rendered for the currently selected option. */
+    hideSelectedOptionCheck: PT.bool,
 
-        /** True to hide options in the drop down menu if they have been selected.  Defaults to same as enableMulti. */
-        hideSelectedOptions: PT.bool,
+    /**
+     * True to hide options in the drop down menu if they have been selected.
+     * Defaults to same as enableMulti.
+     */
+    hideSelectedOptions: PT.bool,
 
-        /** Field on provided options for sourcing each option's display text (default `label`). */
-        labelField: PT.string,
+    /** Field on provided options for sourcing each option's display text (default `label`). */
+    labelField: PT.string,
 
-        /** Icon to display inline on the left side of the input. */
-        leftIcon: PT.element,
+    /** Icon to display inline on the left side of the input. */
+    leftIcon: PT.element,
 
-        /** Function to return loading message during an async query. Passed current query input. */
-        loadingMessageFn: PT.func,
+    /** Function to return loading message during an async query. Passed current query input. */
+    loadingMessageFn: PT.func,
 
-        /** Placement of the dropdown menu relative to the input control. */
-        menuPlacement: PT.oneOf(['auto', 'top', 'bottom']),
+    /** Placement of the dropdown menu relative to the input control. */
+    menuPlacement: PT.oneOf(['auto', 'top', 'bottom']),
 
-        /** Width in pixels for the dropdown menu - if unspecified, defaults to control width. */
-        menuWidth: PT.number,
+    /** Width in pixels for the dropdown menu - if unspecified, defaults to control width. */
+    menuWidth: PT.number,
 
-        /** Function to return message indicating no options loaded. Passed current query input. */
-        noOptionsMessageFn: PT.func,
+    /** Function to return message indicating no options loaded. Passed current query input. */
+    noOptionsMessageFn: PT.func,
 
-        /** True to auto-open the dropdown menu on input focus. */
-        openMenuOnFocus: PT.bool,
+    /** True to auto-open the dropdown menu on input focus. */
+    openMenuOnFocus: PT.bool,
 
-        /**
-         * Function to render options in the dropdown list. Called for each option object (which
-         * will contain at minimum a value and label field, as well as any other fields present in
-         * the source objects). Returns a React.node.
-         */
-        optionRenderer: PT.func,
+    /**
+     * Function to render options in the dropdown list. Called for each option object (which
+     * will contain at minimum a value and label field, as well as any other fields present in
+     * the source objects). Returns a React.node.
+     */
+    optionRenderer: PT.func,
 
-        /**
-         * Preset list of options for selection. Elements can be either a primitive or an object.
-         * Primitives will be displayed via toString().
-         * Objects must have either:
-         *      + A `label` property for display and a `value` property
-         *      + A `label` property and an `options` property containing an array of sub-options
-         *        to be grouped beneath the option.
-         *        These sub-options must be either primitives or `label`:`value` pairs: deeper nesting is unsupported.
-         *
-         * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
-         * of up-front in this prop.
-         */
-        options: PT.array,
+    /**
+     * Preset list of options for selection. Elements can be either a primitive or an object.
+     * Primitives will be displayed via toString().
+     * Objects must have either:
+     *      + A `label` property for display and a `value` property
+     *      + A `label` property and an `options` property containing an array of sub-options
+     *        to be grouped beneath the option. These sub-options must be either primitives or
+     *        `label`:`value` pairs. Deeper nesting is unsupported.
+     *
+     * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
+     * of up-front in this prop.
+     */
+    options: PT.array,
 
-        /** Text to display when control is empty. */
-        placeholder: PT.string,
+    /** Text to display when control is empty. */
+    placeholder: PT.string,
 
-        /**
-         * Delay (in ms) to buffer calls to the async queryFn. Defaults to 300.
-         */
-        queryBuffer: PT.number,
+    /**
+     * Delay (in ms) to buffer calls to the async queryFn. Defaults to 300.
+     */
+    queryBuffer: PT.number,
 
-        /**
-         * Async function to return a list of options for a given query string input.
-         * Replaces the `options` prop - use one or the other.
-         */
-        queryFn: PT.func,
+    /**
+     * Async function to return a list of options for a given query string input.
+     * Replaces the `options` prop - use one or the other.
+     *
+     * For providing external (e.g. server-side) options based on user inputs. Not to be
+     * confused with `filterFn`, which should be used to filter through local options when
+     * not in async mode.
+     *
+     * Provided function should take a query value and return a Promise resolving to a
+     * list of options.
+     */
+    queryFn: PT.func,
 
-        /**
-         * Escape-hatch props passed directly to react-select. Use with care - not all props
-         * in the react-select API are guaranteed to be supported by this Hoist component,
-         * and providing them directly can interfere with the implementation of this class.
-         */
-        rsOptions: PT.object,
+    /**
+     * Escape-hatch props passed directly to react-select. Use with care - not all props
+     * in the react-select API are guaranteed to be supported by this Hoist component,
+     * and providing them directly can interfere with the implementation of this class.
+     */
+    rsOptions: PT.object,
 
-        /** True to select contents when control receives focus. */
-        selectOnFocus: PT.bool,
+    /** True to select contents when control receives focus. */
+    selectOnFocus: PT.bool,
 
-        /** Field on provided options for sourcing each option's value (default `value`). */
-        valueField: PT.string
-    };
+    /** Field on provided options for sourcing each option's value (default `value`). */
+    valueField: PT.string
+};
+Select.MENU_PORTAL_ID = 'xh-select-input-portal';
+Select.hasLayoutSupport = true;
 
-    static MENU_PORTAL_ID = 'xh-select-input-portal';
-
-    baseClassName = 'xh-select';
+//-----------------------
+// Implementation
+//-----------------------
+class Model extends HoistInputModel {
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
-    @observable.ref internalOptions = [];
-    @action setInternalOptions(options) {this.internalOptions = options}
+    @bindable.ref internalOptions = [];
 
     // Prop-backed convenience getters
     get asyncMode() {return !!this.props.queryFn}
@@ -191,21 +224,14 @@ export class Select extends HoistInput {
     // Managed value for underlying text input under certain conditions
     // This is a workaround for rs-select issue described in hoist-react #880
     @observable inputValue = null;
+    inputValueChangedSinceSelect = false;
     get manageInputValue() {
         return this.filterMode && !this.multiMode;
     }
 
-    // Custom local option filtering to leverage default filter fn w/change to show all options if
-    // input has not been changed since last select (i.e. user has not typed).
-    // Applied only when manageInputValue if true.
-    _inputChangedSinceSelect = false;
-    _defaultLocalFilterFn = createFilter();
-    _localFilterFn = (opt, inputVal) => {
-        return !this.inputValue || !this._inputChangedSinceSelect || this._defaultLocalFilterFn(opt, inputVal);
-    };
-
-    constructor(props, context) {
-        super(props, context);
+    constructor(props) {
+        super(props);
+        makeObservable(this);
 
         const queryBuffer = withDefault(props.queryBuffer, 300);
         if (queryBuffer) this.doQueryAsync = debouncePromise(this.doQueryAsync, queryBuffer);
@@ -220,97 +246,23 @@ export class Select extends HoistInput {
         });
     }
 
-    reactSelectRef = React.createRef();
-
-    render() {
-        const props = this.getNonLayoutProps(),
-            {width, ...layoutProps} = this.getLayoutProps(),
-            rsProps = {
-                value: this.renderValue,
-
-                autoFocus: props.autoFocus,
-                formatOptionLabel: this.formatOptionLabel,
-                isDisabled: props.disabled,
-                isMulti: props.enableMulti,
-                closeMenuOnSelect: props.closeMenuOnSelect,
-                hideSelectedOptions: this.hideSelectedOptions,
-
-                // Explicit false ensures consistent default for single and multi-value instances.
-                isClearable: withDefault(props.enableClear, false),
-                menuPlacement: withDefault(props.menuPlacement, 'auto'),
-                noOptionsMessage: this.noOptionsMessageFn,
-                openMenuOnFocus: props.openMenuOnFocus,
-                placeholder: withDefault(props.placeholder, 'Select...'),
-                tabIndex: props.tabIndex,
-
-                // Minimize (or hide) bulky dropdown
-                components: {
-                    DropdownIndicator: this.getDropdownIndicatorCmp(),
-                    ClearIndicator: this.getClearIndicatorCmp(),
-                    IndicatorSeparator: () => null,
-                    ValueContainer: this.getValueContainerCmp()
-                },
-
-                // A shared div is created lazily here as needed, appended to the body, and assigned
-                // a high z-index to ensure options menus render over dialogs or other modals.
-                menuPortalTarget: this.getOrCreatePortalDiv(),
-
-                inputId: props.id,
-                classNamePrefix: 'xh-select',
-                theme: this.getThemeConfig(),
-
-                onBlur: this.onBlur,
-                onChange: this.onSelectChange,
-                onFocus: this.onFocus,
-
-                ref: this.reactSelectRef
-            };
-
-        if (this.manageInputValue) {
-            rsProps.inputValue = this.inputValue || '';
-            rsProps.onInputChange = this.onInputChange;
-            rsProps.filterOption = this._localFilterFn;
-        }
-
-        if (this.asyncMode) {
-            rsProps.loadOptions = this.doQueryAsync;
-            rsProps.loadingMessage = this.loadingMessageFn;
-            if (this.renderValue) rsProps.defaultOptions = [this.renderValue];
-        } else {
-            rsProps.options = this.internalOptions;
-            rsProps.isSearchable = this.filterMode;
-        }
-
-        if (this.creatableMode) {
-            rsProps.formatCreateLabel = this.createMessageFn;
-        }
-
-        if (props.menuWidth) {
-            rsProps.styles = {
-                menu: (provided) => ({...provided, width: `${props.menuWidth}px`}),
-                ...props.rsOptions?.styles
-            };
-        }
-
-        const factory = this.getSelectFactory();
-
-        merge(rsProps, props.rsOptions);
-        return box({
-            item: factory(rsProps),
-            className: this.getClassName(),
-            onKeyDown: (e) => {
-                // Esc. and Enter can be listened for by parents -- stop the keydown event
-                // propagation only if react-select already likely to have used for menu management.
-                // note: menuIsOpen will be undefined on AsyncSelect due to a react-select bug.
-                const {menuIsOpen} = this.reactSelectRef.current ? this.reactSelectRef.current.state : {};
-                if (menuIsOpen && (e.key === 'Escape' || e.key === 'Enter')) {
-                    e.stopPropagation();
-                }
-            },
-            ...layoutProps,
-            width: withDefault(width, 200)
-        });
+    reactSelectRef = createObservableRef();
+    get reactSelect() {
+        return this.reactSelectRef.current;
     }
+
+    blur() {
+        this.reactSelect?.blur();
+    }
+
+    focus() {
+        this.reactSelect?.focus();
+    }
+
+    select() {
+        this.selectText();
+    }
+
 
     getSelectFactory() {
         const {creatableMode, asyncMode, windowedMode} = this;
@@ -328,7 +280,7 @@ export class Select extends HoistInput {
     onSelectChange = (opt) => {
         if (this.manageInputValue) {
             this.inputValue = opt ? opt.label : null;
-            this._inputChangedSinceSelect = false;
+            this.inputValueChangedSinceSelect = false;
         }
         this.noteValueChange(opt);
     };
@@ -341,16 +293,16 @@ export class Select extends HoistInput {
         if (this.manageInputValue) {
             if (action === 'input-change') {
                 this.inputValue = value;
-                this._inputChangedSinceSelect = true;
+                this.inputValueChangedSinceSelect = true;
                 if (!value) this.noteValueChange(null);
             } else if (action === 'input-blur') {
                 this.inputValue = null;
-                this._inputChangedSinceSelect = false;
+                this.inputValueChangedSinceSelect = false;
             }
         }
     };
 
-    @action
+    @override
     noteFocused() {
         if (this.manageInputValue) {
             const {renderValue} = this;
@@ -359,26 +311,66 @@ export class Select extends HoistInput {
         if (this.selectOnFocus) {
             wait(1).then(() => {
                 // Delay to allow re-render. For safety, only select if still focused!
-                const rsRef = this.reactSelectRef.current;
-                if (!rsRef) return;
-
-                // Use of windowedMode, creatable and async variants will create levels of nesting we must
-                // traverse to get to the underlying Select comp and its inputRef.
-                let selectComp = rsRef.select;
-                while (selectComp && !selectComp.inputRef) {selectComp = selectComp.select}
-                const inputElem = selectComp?.inputRef;
-
-                if (this.hasFocus && inputElem && document.activeElement === inputElem) {
-                    inputElem.select();
-                }
+                this.selectText();
             });
         }
         super.noteFocused();
     }
 
+    selectText() {
+        const {reactSelect} = this;
+        if (!reactSelect) return;
+
+        // Use of windowedMode, creatable and async variants will create levels of nesting we must
+        // traverse to get to the underlying Select comp and its inputRef.
+        let selectComp = reactSelect.select;
+        while (selectComp && !selectComp.inputRef) {selectComp = selectComp.select}
+        const inputElem = selectComp?.inputRef;
+
+        if (this.hasFocus && inputElem && document.activeElement === inputElem) {
+            inputElem.select();
+        }
+    }
+
+    @override
+    setInternalValue(val) {
+        const changed = !isEqual(val, this.internalValue);
+        super.setInternalValue(val);
+        if (changed && this.manageInputValue && this.hasFocus) {
+            const {renderValue} = this;
+            this.inputValue = renderValue ? renderValue.label : null;
+        }
+    }
+
     //-------------------------
     // Options / value handling
     //-------------------------
+    filterOption = (opt, inputVal) => {
+        const {props, asyncMode, inputValue, inputValueChangedSinceSelect} = this;
+
+        // 1) show all options if input has not changed since last select (i.e. user has not typed)
+        //    or if in async mode (i.e. queryFn specified).
+        if (
+            this.manageInputValue && (!inputValue || !inputValueChangedSinceSelect) ||
+            asyncMode
+        ) {
+            return true;
+        }
+
+        // 2) Use function provided by app
+        const {filterFn} = props;
+        if (filterFn) {
+            return filterFn(opt, inputVal);
+        }
+
+        // 3) ...or use default word start search
+        const searchTerm = escapeRegExp(inputVal);
+        if (!searchTerm) return true;
+        if (!opt.label) return false;
+        const regex = new RegExp(`(^|\\W)${searchTerm}`, 'i');
+        return regex.test(opt.label);
+    };
+
 
     // Convert external value into option object(s). Options created if missing - this takes the
     // external value from the model, and we will respect that even if we don't know about it.
@@ -603,6 +595,98 @@ export class Select extends HoistInput {
 
         return portal;
     }
-
 }
-export const select = elemFactory(Select);
+
+const cmp = hoistCmp.factory(
+    ({model, className, ...props}, ref) => {
+        const {width, height, ...layoutProps} = getLayoutProps(props),
+            rsProps = {
+                value: model.renderValue,
+
+                autoFocus: props.autoFocus,
+                formatOptionLabel: model.formatOptionLabel,
+                isDisabled: props.disabled,
+                isMulti: props.enableMulti,
+                closeMenuOnSelect: props.closeMenuOnSelect,
+                hideSelectedOptions: model.hideSelectedOptions,
+
+                // Explicit false ensures consistent default for single and multi-value instances.
+                isClearable: withDefault(props.enableClear, false),
+                menuPlacement: withDefault(props.menuPlacement, 'auto'),
+                noOptionsMessage: model.noOptionsMessageFn,
+                openMenuOnFocus: props.openMenuOnFocus,
+                placeholder: withDefault(props.placeholder, 'Select...'),
+                tabIndex: props.tabIndex,
+
+                // Minimize (or hide) bulky dropdown
+                components: {
+                    DropdownIndicator: model.getDropdownIndicatorCmp(),
+                    ClearIndicator: model.getClearIndicatorCmp(),
+                    IndicatorSeparator: () => null,
+                    ValueContainer: model.getValueContainerCmp()
+                },
+
+                // A shared div is created lazily here as needed, appended to the body, and assigned
+                // a high z-index to ensure options menus render over dialogs or other modals.
+                menuPortalTarget: model.getOrCreatePortalDiv(),
+
+                inputId: props.id,
+                classNamePrefix: 'xh-select',
+                theme: model.getThemeConfig(),
+
+                onBlur: model.onBlur,
+                onChange: model.onSelectChange,
+                onFocus: model.onFocus,
+                filterOption: model.filterOption,
+
+                ref: model.reactSelectRef
+            };
+
+        if (model.manageInputValue) {
+            rsProps.inputValue = model.inputValue || '';
+            rsProps.onInputChange = model.onInputChange;
+        }
+
+        if (model.asyncMode) {
+            rsProps.loadOptions = model.doQueryAsync;
+            rsProps.loadingMessage = model.loadingMessageFn;
+            if (model.renderValue) rsProps.defaultOptions = [model.renderValue];
+        } else {
+            rsProps.options = model.internalOptions;
+            rsProps.isSearchable = model.filterMode;
+        }
+
+        if (model.creatableMode) {
+            rsProps.formatCreateLabel = model.createMessageFn;
+        }
+
+        if (props.menuWidth) {
+            rsProps.styles = {
+                menu: (provided) => ({...provided, width: `${props.menuWidth}px`}),
+                ...props.rsOptions?.styles
+            };
+        }
+
+        const factory = model.getSelectFactory();
+
+        merge(rsProps, props.rsOptions);
+        return box({
+            item: factory(rsProps),
+            className: classNames(className, height ? 'xh-select--has-height' : null),
+            onKeyDown: (e) => {
+                // Esc. and Enter can be listened for by parents -- stop the keydown event
+                // propagation only if react-select already likely to have used for menu management.
+                // note: menuIsOpen will be undefined on AsyncSelect due to a react-select bug.
+                const {reactSelect} = model,
+                    {menuIsOpen} = reactSelect ? reactSelect.state : {};
+                if (menuIsOpen && (e.key === 'Escape' || e.key === 'Enter')) {
+                    e.stopPropagation();
+                }
+            },
+            ...layoutProps,
+            width: withDefault(width, 200),
+            height: height,
+            ref
+        });
+    }
+);

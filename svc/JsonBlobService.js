@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {XH, HoistService} from '@xh/hoist/core';
 
@@ -11,8 +11,7 @@ import {XH, HoistService} from '@xh/hoist/core';
  *
  * Server-side support is provided by hoist-core.
  */
-@HoistService
-export class JsonBlobService {
+export class JsonBlobService extends HoistService {
 
     async getAsync(token) {
         return XH.fetchJson({
@@ -43,19 +42,20 @@ export class JsonBlobService {
      * @param {string} type - reference key for which type of data this is.
      * @param {string} name.
      * @param {(Object|Array)} value - json serializable data to saved.
+     * @param {(Object|Array)} [meta] - json serializable metadata.
      * @param {string} [description] - optional description.
      */
     async createAsync({
         type,
         name,
         value,
+        meta,
         description
     }) {
-        value = JSON.stringify(value);
-        return XH.fetchJson({
-            url: 'xh/createJsonBlob',
-            params: {type, name, value, description}
-        });
+        const params = {type, name, value: JSON.stringify(value)};
+        if (meta) params.meta = JSON.stringify(meta);
+        if (description) params.description = description;
+        return XH.fetchJson({url: 'xh/createJsonBlob', params});
     }
 
     /**
@@ -65,12 +65,14 @@ export class JsonBlobService {
      * @param {Object} data - modifications to make.
      * @param {string} [data.name]
      * @param {(Object|Array)} [data.value]
+     * @param {(Object|Array)} [data.meta]
      * @param {string} [data.description]
      */
-    async updateAsync(token, {name, value, description}) {
+    async updateAsync(token, {name, value, meta, description}) {
         const params = {token};
         if (name) params.name = name;
         if (value) params.value = JSON.stringify(value);
+        if (meta) params.meta = JSON.stringify(meta);
         if (description) params.description = description;
         return XH.fetchJson({url: 'xh/updateJsonBlob', params});
     }

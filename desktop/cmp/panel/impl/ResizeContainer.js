@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
@@ -13,7 +13,6 @@ import {splitter} from './Splitter';
 
 export const resizeContainer = hoistCmp.factory({
     displayName: 'ResizeContainer',
-    memo: false,
     model: false,
     className: 'xh-resizable',
 

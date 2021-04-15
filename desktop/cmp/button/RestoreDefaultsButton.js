@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -23,7 +23,7 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmp.withFacto
         warningTitle = 'Are you sure you want to restore defaults?',
         warningMessage = 'All app options (including grid customizations) will be restored to their default settings, and the app will be reloaded.',
         ...buttonProps
-    }) {
+    }, ref) {
 
         const onClick = () => {
             XH.confirm({
@@ -35,6 +35,7 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmp.withFacto
         };
 
         return button({
+            ref,
             icon: Icon.reset(),
             text: 'Restore Defaults',
             intent: 'danger',

@@ -2,35 +2,34 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {ReactiveSupport, ManagedSupport} from '@xh/hoist/core';
-import {action, observable, bindable} from '@xh/hoist/mobx';
+import {HoistBase, XH} from '@xh/hoist/core';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
-import {parseFilter} from './filter/Utils';
 import {
     castArray,
+    defaultsDeep,
     differenceBy,
-    has,
     isArray,
     isEmpty,
     isNil,
     isString,
     remove as lodashRemove
 } from 'lodash';
+import {withShortDebug} from '../utils/js';
 
 import {Field} from './Field';
+import {parseFilter} from './filter/Utils';
 import {RecordSet} from './impl/RecordSet';
 import {Record} from './Record';
 
 /**
  * A managed and observable set of local, in-memory Records.
  */
-@ReactiveSupport
-@ManagedSupport
-export class Store {
+export class Store extends HoistBase {
 
     /** @member {Field[]} */
     fields = null;
@@ -42,14 +41,26 @@ export class Store {
     /** @member {boolean} */
     @observable filterIncludesChildren;
 
+    /** @member {boolean} */
+    loadTreeData;
+
+    /** @member {boolean} */
+    loadRootAsSummary;
+
+    /** @member {boolean} */
+    idEncodesTreePath;
+
+    /** @member {boolean} */
+    freezeData;
+
     /** @member {Filter}  */
     @observable.ref filter;
 
     /** @member {number} - timestamp (ms) of the last time this store's data was changed. */
     @observable lastUpdated;
 
-    /** @member {number} - timestamp (ms) of the last time this store's data was loaded.*/
-    @observable lastLoaded;
+    /** @member {?number} - timestamp (ms) of the last time this store's data was loaded.*/
+    @observable lastLoaded = null;
 
     /** @member {Record} - record containing summary data. */
     @observable.ref summaryRecord = null;
@@ -57,14 +68,16 @@ export class Store {
     @observable.ref _committed;
     @observable.ref _current;
     @observable.ref _filtered;
-    _loadRootAsSummary = false;
+    _dataDefaults = null;
 
-    /** @private -- used internally by any StoreFilterField that is bound to this store. */
+    /** @package - used internally by any StoreFilterField that is bound to this store. */
     @bindable xhFilterText = null;
 
     /**
      * @param {Object} c - Store configuration.
      * @param {(string[]|FieldConfig[]|Field[])} c.fields - Field names, configs, or instances.
+     * @param {{}} [fieldDefaults] - default configs applied to `Field` instances constructed
+     *      internally by this Store. {@see FieldConfig} for options
      * @param {(function|string)} [c.idSpec] - specification for selecting or producing an immutable
      *      unique id for each record. May be either a string property name (default is 'id') or a
      *      function to create an id from the raw unprocessed data. Will be normalized to a function
@@ -78,29 +91,56 @@ export class Store {
      *      array, a single 'AND' filter will be created.
      * @param {boolean} [c.filterIncludesChildren] - true if all children of a passing record should
      *      also be considered passing (default false).
+     * @param {boolean} [c.loadTreeData] - true to load hierarchical/tree data. When this flag is
+     *      true, the children property on raw data objects will be used to load child records.
+     *      (default true).
      * @param {boolean} [c.loadRootAsSummary] - true to treat the root node in hierarchical data as
-     *      the summary record.
-     * @param {Object[]} [c.data] - source data to load
+     *      the summary record (default false).
+     * @param {boolean} [c.freezeData] - true to freeze the internal data object of the record.
+     *      May be set to false to maximize performance.  Note that the internal data of the record
+     *      should in all cases be considered immutable (default true).
+     * @param {boolean} [c.idEncodesTreePath] - set to true to indicate that the id for a record
+     *      implies a fixed position of the record within the any tree hierarchy.  May be set to
+     *      true to maximize performance (default false).
+     * @param {Object} [c.experimental] - flags for experimental features. These features are
+     *     designed for early client-access and testing, but are not yet part of the Hoist API.
+     * @param {boolean} [c.experimental.shareDefaults] - If true, default field values will
+     *     not be stored explicitly on every record.  This can yield major performance
+     *     improvements for stores with sparsely populated records.
+     * @param {Object[]} [c.data] - source data to load.
      */
     constructor({
         fields,
+        fieldDefaults = {},
         idSpec = 'id',
         processRawData = null,
         filter = null,
         filterIncludesChildren = false,
+        loadTreeData = true,
         loadRootAsSummary = false,
+        freezeData = true,
+        idEncodesTreePath = false,
+        experimental,
         data
     }) {
-        this.fields = this.parseFields(fields);
+        super();
+        makeObservable(this);
+        this.experimental = this.parseExperimental(experimental);
+        this.fields = this.parseFields(fields, fieldDefaults);
         this.idSpec = isString(idSpec) ? (data) => data[idSpec] : idSpec;
         this.processRawData = processRawData;
         this.filter = parseFilter(filter);
         this.filterIncludesChildren = filterIncludesChildren;
-        this.lastLoaded = this.lastUpdated = Date.now();
-        this._loadRootAsSummary = loadRootAsSummary;
+        this.loadTreeData = loadTreeData;
+        this.loadRootAsSummary = loadRootAsSummary;
+        this.freezeData = freezeData;
+        this.idEncodesTreePath = idEncodesTreePath;
+        this.lastUpdated = Date.now();
 
         this.resetRecords();
 
+        this._dataDefaults = this.createDataDefaults();
+        this._fieldMap = this.createFieldMap();
         if (data) this.loadData(data);
     }
 
@@ -132,25 +172,27 @@ export class Store {
      */
     @action
     loadData(rawData, rawSummaryData) {
-        // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary = true.
-        if (rawData.length !== 0 && this._loadRootAsSummary) {
-            throwIf(
-                rawData.length !== 1 || rawSummaryData,
-                'Incorrect call to loadData with loadRootAsSummary=true. Summary data should be in a single root node with top-level row data as its children.'
-            );
-            rawSummaryData = rawData[0];
-            rawData = rawData[0].children ?? [];
-        }
+        withShortDebug('loadData', () => {
+            // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary
+            if (rawData.length !== 0 && this.loadRootAsSummary) {
+                throwIf(
+                    rawData.length !== 1 || rawSummaryData,
+                    'Incorrect call to loadData with loadRootAsSummary=true. Summary data should be in a single root node with top-level row data as its children.'
+                );
+                rawSummaryData = rawData[0];
+                rawData = rawData[0].children ?? [];
+            }
 
-        const records = this.createRecords(rawData, null);
-        this._committed = this._current = this._committed.withNewRecords(records);
-        this.rebuildFiltered();
+            const records = this.createRecords(rawData, null);
+            this._committed = this._current = this._committed.withNewRecords(records);
+            this.rebuildFiltered();
 
-        this.summaryRecord = rawSummaryData ?
-            this.createRecord(rawSummaryData, null, true) :
-            null;
+            this.summaryRecord = rawSummaryData ?
+                this.createRecord(rawSummaryData, null, true) :
+                null;
 
-        this.lastLoaded = this.lastUpdated = Date.now();
+            this.lastLoaded = this.lastUpdated = Date.now();
+        }, this);
     }
 
     /**
@@ -178,102 +220,105 @@ export class Store {
      */
     @action
     updateData(rawData) {
-        if (isEmpty(rawData)) return null;
+        return withShortDebug('updateData', () => {
 
-        const changeLog = {};
+            if (isEmpty(rawData)) return null;
 
-        // Build a transaction object out of a flat list of adds and updates
-        let rawTransaction = null;
-        if (isArray(rawData)) {
-            const update = [], add = [];
-            rawData.forEach(it => {
-                const recId = this.idSpec(it);
-                if (this.getById(recId)) {
-                    update.push(it);
-                } else {
-                    add.push(it);
-                }
-            });
+            const changeLog = {};
 
-            rawTransaction = {update, add};
-        } else {
-            rawTransaction = rawData;
-        }
+            // Build a transaction object out of a flat list of adds and updates
+            let rawTransaction = null;
+            if (isArray(rawData)) {
+                const update = [], add = [];
+                rawData.forEach(it => {
+                    const recId = this.idSpec(it);
+                    if (this.getById(recId)) {
+                        update.push(it);
+                    } else {
+                        add.push(it);
+                    }
+                });
 
-        const {update, add, remove, rawSummaryData, ...other} = rawTransaction;
-        throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
-
-        // 1) Pre-process updates and adds into Records
-        let updateRecs, addRecs;
-        if (update) {
-            updateRecs = update.map(it => {
-                const recId = this.idSpec(it),
-                    rec = this.getOrThrow(recId),
-                    parent = rec.parent,
-                    isSummary = recId === this.summaryRecord?.id;
-                return this.createRecord(it, parent, isSummary);
-            });
-        }
-        if (add) {
-            addRecs = new Map();
-            add.forEach(it => {
-                if (it.hasOwnProperty('rawData') && it.hasOwnProperty('parentId')) {
-                    const parent = this.getOrThrow(it.parentId);
-                    this.createRecords([it.rawData], parent, addRecs);
-                } else {
-                    this.createRecords([it], null, addRecs);
-                }
-            });
-        }
-
-        // 2) Pre-process summary record, peeling it out of updates if needed
-        const {summaryRecord} = this;
-        let summaryUpdateRec;
-        if (summaryRecord) {
-            [summaryUpdateRec] = lodashRemove(updateRecs, {id: summaryRecord.id});
-        }
-
-        if (!summaryUpdateRec && rawSummaryData) {
-            summaryUpdateRec = this.createRecord(rawSummaryData, null, true);
-        }
-
-        if (summaryUpdateRec) {
-            this.summaryRecord = summaryUpdateRec;
-            changeLog.summaryRecord = this.summaryRecord;
-        }
-
-        // 3) Apply changes
-        let rsTransaction = {};
-        if (!isEmpty(updateRecs)) rsTransaction.update = updateRecs;
-        if (!isEmpty(addRecs)) rsTransaction.add = Array.from(addRecs.values());
-        if (!isEmpty(remove)) rsTransaction.remove = remove;
-
-        if (!isEmpty(rsTransaction)) {
-
-            // Apply updates to the committed RecordSet - these changes are considered to be
-            // sourced from the server / source of record and are coming in as committed.
-            this._committed = this._committed.withTransaction(rsTransaction);
-
-            if (this.isModified) {
-                // If this store had pre-existing local modifications, apply the updates over that
-                // local state. This might (or might not) effectively overwrite those local changes,
-                // so we normalize against the newly updated committed state to verify if any local
-                // modifications remain.
-                this._current = this._current.withTransaction(rsTransaction).normalize(this._committed);
+                rawTransaction = {update, add};
             } else {
-                // Otherwise, the updated RecordSet is both current and committed.
-                this._current = this._committed;
+                rawTransaction = rawData;
             }
 
-            this.rebuildFiltered();
-            Object.assign(changeLog, rsTransaction);
-        }
+            const {update, add, remove, rawSummaryData, ...other} = rawTransaction;
+            throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
 
-        if (!isEmpty(changeLog)) {
-            this.lastUpdated = Date.now();
-        }
+            // 1) Pre-process updates and adds into Records
+            let updateRecs, addRecs;
+            if (update) {
+                updateRecs = update.map(it => {
+                    const recId = this.idSpec(it),
+                        rec = this.getOrThrow(recId),
+                        parent = rec.parent,
+                        isSummary = recId === this.summaryRecord?.id;
+                    return this.createRecord(it, parent, isSummary);
+                });
+            }
+            if (add) {
+                addRecs = new Map();
+                add.forEach(it => {
+                    if (it.hasOwnProperty('rawData') && it.hasOwnProperty('parentId')) {
+                        const parent = this.getOrThrow(it.parentId);
+                        this.createRecords([it.rawData], parent, addRecs);
+                    } else {
+                        this.createRecords([it], null, addRecs);
+                    }
+                });
+            }
 
-        return !isEmpty(changeLog) ? changeLog : null;
+            // 2) Pre-process summary record, peeling it out of updates if needed
+            const {summaryRecord} = this;
+            let summaryUpdateRec;
+            if (summaryRecord) {
+                [summaryUpdateRec] = lodashRemove(updateRecs, {id: summaryRecord.id});
+            }
+
+            if (!summaryUpdateRec && rawSummaryData) {
+                summaryUpdateRec = this.createRecord(rawSummaryData, null, true);
+            }
+
+            if (summaryUpdateRec) {
+                this.summaryRecord = summaryUpdateRec;
+                changeLog.summaryRecord = this.summaryRecord;
+            }
+
+            // 3) Apply changes
+            let rsTransaction = {};
+            if (!isEmpty(updateRecs)) rsTransaction.update = updateRecs;
+            if (!isEmpty(addRecs)) rsTransaction.add = Array.from(addRecs.values());
+            if (!isEmpty(remove)) rsTransaction.remove = remove;
+
+            if (!isEmpty(rsTransaction)) {
+
+                // Apply updates to the committed RecordSet - these changes are considered to be
+                // sourced from the server / source of record and are coming in as committed.
+                this._committed = this._committed.withTransaction(rsTransaction);
+
+                if (this.isModified) {
+                    // If this store had pre-existing local modifications, apply the updates over that
+                    // local state. This might (or might not) effectively overwrite those local changes,
+                    // so we normalize against the newly updated committed state to verify if any local
+                    // modifications remain.
+                    this._current = this._current.withTransaction(rsTransaction).normalize(this._committed);
+                } else {
+                    // Otherwise, the updated RecordSet is both current and committed.
+                    this._current = this._committed;
+                }
+
+                this.rebuildFiltered();
+                Object.assign(changeLog, rsTransaction);
+            }
+
+            if (!isEmpty(changeLog)) {
+                this.lastUpdated = Date.now();
+            }
+
+            return !isEmpty(changeLog) ? changeLog : null;
+        }, this);
     }
 
     /**
@@ -310,7 +355,7 @@ export class Store {
             throwIf(isNil(id), `Must provide 'id' property for new records.`);
             throwIf(this.getById(id), `Duplicate id '${id}' provided for new record.`);
 
-            const parsedData = this.parseFieldValues(it),
+            const parsedData = this.parseRaw(it),
                 parent = this.getById(parentId);
 
             return new Record({id, data: parsedData, store: this, parent, committedData: null});
@@ -363,8 +408,8 @@ export class Store {
 
         const updateRecs = new Map();
         let hadDupes = false;
-        modifications.forEach(it => {
-            const {id, ...data} = it;
+        modifications.forEach(mod => {
+            let {id} = mod;
 
             // Ignore multiple updates for the same record - we are updating this Store in a
             // transaction after processing all modifications, so this method is not currently setup
@@ -375,12 +420,12 @@ export class Store {
             }
 
             const currentRec = this.getOrThrow(id),
-                updatedData = this.parseFieldValues(data, true);
+                updatedData = this.parseUpdate(currentRec.data, mod);
 
             const updatedRec = new Record({
                 id: currentRec.id,
                 raw: currentRec.raw,
-                data: {...currentRec.data, ...updatedData},
+                data: updatedData,
                 parent: currentRec.parent,
                 store: currentRec.store,
                 committedData: currentRec.committedData
@@ -573,7 +618,7 @@ export class Store {
      * @param {boolean} loadRootAsSummary
      */
     setLoadRootAsSummary(loadRootAsSummary) {
-        this._loadRootAsSummary = loadRootAsSummary;
+        this.loadRootAsSummary = loadRootAsSummary;
     }
 
     /** @returns {number} - the count of the filtered records in the store. */
@@ -702,15 +747,21 @@ export class Store {
         this.summaryRecord = null;
     }
 
-    parseFields(fields) {
+    parseFields(fields, defaults) {
         const ret = fields.map(f => {
             if (f instanceof Field) return f;
+
             if (isString(f)) f = {name: f};
+
+            if (!isEmpty(defaults)) {
+                f = defaultsDeep({}, f, defaults);
+            }
+
             return new this.defaultFieldClass(f);
         });
 
         throwIf(
-            ret.some(it => it.name == 'id'),
+            ret.some(it => it.name === 'id'),
             `Applications should not specify a field for the id of a record. An id property is created
             automatically for all records. See Store.idSpec for more info.`
         );
@@ -737,16 +788,17 @@ export class Store {
         // Note idSpec run against raw data here.
         const id = this.idSpec(raw);
 
-        data = this.parseFieldValues(data);
+        data = this.parseRaw(data);
         const ret = new Record({id, data, raw, parent, store: this, isSummary});
 
-        // Freeze summary only.  Non-summary will get frozen by RecordSet. See Record.freeze()
-        if (isSummary) ret.freeze();
+        // Finalize summary only.  Non-summary finalized by RecordSet
+        if (isSummary) ret.finalize();
 
         return ret;
     }
 
     createRecords(rawData, parent, recordMap = new Map()) {
+        const {loadTreeData} = this;
         rawData.forEach(raw => {
             const rec = this.createRecord(raw, parent),
                 {id} = rec;
@@ -758,27 +810,94 @@ export class Store {
 
             recordMap.set(id, rec);
 
-            if (raw.children) {
+            if (loadTreeData && raw.children) {
                 this.createRecords(raw.children, rec, recordMap);
             }
         });
         return recordMap;
     }
 
-    parseFieldValues(data, skipMissingFields = false) {
-        const ret = {};
-        this.fields.forEach(field => {
-            const {name} = field;
+    parseRaw(data) {
+        const {shareDefaults} = this.experimental;
 
-            // Sometimes we want to ignore fields which are not present in the data to preserve
-            // an undefined value, to allow merging of data with existing data. In these cases we
-            // do not want the configured default value for the field to be used, as we are dealing
-            // with a partial data object
-            if (skipMissingFields && !has(data, field.name)) return;
+        // a) create/prepare the data object
+        const ret = shareDefaults ? Object.create(this._dataDefaults) : {};
 
-            ret[name] = field.parseVal(data[name]);
-        });
+        // b) apply parsed data as needed.
+        if (shareDefaults) {
+            const {_fieldMap} = this;
+            forIn(data, (raw, name) => {
+                const field = _fieldMap.get(name);
+                if (field) {
+                    const val = field.parseVal(raw);
+                    if (val !== field.defaultValue) {
+                        ret[name] = val;
+                    }
+                }
+            });
+        } else {
+            this.fields.forEach(field => {
+                const {name} = field;
+                ret[name] = field.parseVal(data[name]);
+            });
+        }
+
         return ret;
+    }
+
+    parseUpdate(data, update) {
+        const {_fieldMap} = this,
+            {shareDefaults} = this.experimental;
+
+        // a) clone the existing object
+        const ret = shareDefaults ? Object.create(this._dataDefaults) : {};
+        Object.assign(ret, data);
+
+        // b) apply changes
+        forIn(update, (raw, name) => {
+            const field = _fieldMap.get(name);
+            if (field) {
+                const val = field.parseVal(raw);
+                if (!shareDefaults || val !== field.defaultValue) {
+                    ret[name] = val;
+                } else {
+                    delete ret[name];
+                }
+            }
+        });
+
+        return ret;
+    }
+
+    createDataDefaults() {
+        if (!this.experimental.shareDefaults) return null;
+        const ret = {};
+        this.fields.forEach(({name, defaultValue}) => ret[name] = defaultValue);
+        return ret;
+    }
+
+    createFieldMap() {
+        const ret = new Map();
+        this.fields.forEach(r => ret.set(r.name, r));
+        return ret;
+    }
+
+    parseExperimental(experimental) {
+        return {
+            shareDefaults: false,
+            ...XH.getConf('xhStoreExperimental', {}),
+            ...experimental
+        };
+    }
+}
+
+//---------------------------------------------------------------------
+// Iterate over the properties of a raw data/update  object.
+// Does *not* do ownProperty check, faster than lodash forIn/forOwn
+//-------------------------------------------------------------------
+function forIn(obj, fn) {
+    for (let key in obj) {
+        fn(obj[key], key);
     }
 }
 

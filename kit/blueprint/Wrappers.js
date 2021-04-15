@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 //--------------------
 // Blueprint Imports
@@ -16,6 +16,7 @@ import {
     Checkbox,
     ControlGroup,
     Dialog,
+    Drawer,
     FileInput,
     FormGroup,
     Hotkey,
@@ -37,7 +38,6 @@ import {
     RadioGroup,
     RangeSlider,
     Slider,
-    Spinner,
     Switch,
     Tab,
     Tabs,
@@ -64,6 +64,7 @@ export {
     ControlGroup,
     DatePicker,
     Dialog,
+    Drawer,
     FileInput,
     FormGroup,
     Hotkeys,
@@ -85,7 +86,6 @@ export {
     RadioGroup,
     RangeSlider,
     Slider,
-    Spinner,
     Switch,
     Tab,
     Tabs,
@@ -107,6 +107,7 @@ export const
     checkbox = elemFactory(Checkbox),
     datePicker = elemFactory(DatePicker),
     dialog = elemFactory(Dialog),
+    drawer = elemFactory(Drawer),
     fileInput = elemFactory(FileInput),
     formGroup = elemFactory(FormGroup),
     hotkey = elemFactory(Hotkey),
@@ -128,7 +129,6 @@ export const
     radioGroup = elemFactory(RadioGroup),
     rangeSlider = elemFactory(RangeSlider),
     slider = elemFactory(Slider),
-    spinner = elemFactory(Spinner),
     switchControl = elemFactory(Switch),
     tabs = elemFactory(Tabs),
     tab = elemFactory(Tab),

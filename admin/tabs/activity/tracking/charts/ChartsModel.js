@@ -2,20 +2,19 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {cloneDeep, sortBy} from 'lodash';
+import {sortBy} from 'lodash';
 import moment from 'moment';
 
-@HoistModel
-export class ChartsModel {
+export class ChartsModel extends HoistModel {
 
     /** @member {ActivityTrackingModel} */
     parentModel;
@@ -78,7 +77,7 @@ export class ChartsModel {
     }
 
     get showAsTimeseries() {
-        return this.dimensions[0] == 'day';
+        return this.dimensions[0] === 'day';
     }
 
     /** @returns {ChartModel} */
@@ -104,6 +103,8 @@ export class ChartsModel {
     }
 
     constructor({parentModel}) {
+        super();
+        makeObservable(this);
         this.parentModel = parentModel;
 
         this.addReaction({
@@ -114,12 +115,14 @@ export class ChartsModel {
 
     loadChart() {
         const {showAsTimeseries, chartModel, primaryDim} = this,
-            series = this.getSeriesData(),
-            highchartsConfig = cloneDeep(chartModel.highchartsConfig);
+            series = this.getSeriesData();
 
-        if (!showAsTimeseries) highchartsConfig.xAxis.title.text = this.getUnitsForDim(primaryDim);
+        if (!showAsTimeseries) {
+            chartModel.updateHighchartsConfig({
+                xAxis: {title: {text: this.getUnitsForDim(primaryDim)}}
+            });
+        }
 
-        chartModel.setHighchartsConfig(highchartsConfig);
         chartModel.setSeries(series);
     }
 

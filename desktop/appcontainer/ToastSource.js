@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 import {div} from '@xh/hoist/cmp/layout';
@@ -28,12 +28,12 @@ export const toastSource = hoistCmp.factory({
 });
 
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
     _toasterMap = new Map();
 
     constructor(toastSourceModel) {
+        super();
         this.addReaction({
             track: () => toastSourceModel.toastModels,
             run: this.displayPendingToasts

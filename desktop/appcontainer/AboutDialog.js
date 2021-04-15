@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {AboutDialogModel} from '@xh/hoist/appcontainer/AboutDialogModel';
 import {filler, frame} from '@xh/hoist/cmp/layout';
@@ -31,10 +31,9 @@ export const aboutDialog = hoistCmp.factory({
 
         return dialog({
             isOpen: true,
-            isCloseButtonShown: false,
+            title: `About ${XH.appName}`,
             icon: Icon.info({size: 'lg'}),
             className: 'xh-about-dialog',
-            title: `About ${XH.appName}`,
             style: {width: 450},
             items: [
                 frame({

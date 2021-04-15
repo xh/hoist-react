@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hbox, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
@@ -22,15 +22,15 @@ export const [WebSocketIndicator, webSocketIndicator] = hoistCmp.withFactory({
         let icon, txt, tooltip;
 
         if (!enabled) {
-            icon = Icon.circle({prefix: 'fal', className: 'xh-text-color-muted'});
+            icon = Icon.disabled({className: 'xh-text-color-muted'});
             txt = 'Disabled';
             tooltip = 'WebSockets not enabled for this application';
         } else if (connected) {
-            icon = Icon.circle({prefix: 'fas', className: 'xh-green'});
+            icon = Icon.circle({prefix: 'fas', className: 'xh-intent-success'});
             txt = 'Connected';
             tooltip = `Last message: ${fmtTime(lastMessageTime)}`;
         } else {
-            icon = Icon.xCircle({prefix: 'fas', className: 'xh-red'});
+            icon = Icon.xCircle({className: 'xh-intent-danger'});
             txt = 'Disconnected';
             tooltip = 'WebSockets enabled but not connected (unexpected)';
         }

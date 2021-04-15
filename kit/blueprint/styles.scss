@@ -33,6 +33,7 @@
   }
 
   .bp3-navbar-group {
+    overflow: hidden;
     height: var(--xh-navbar-height-px);
 
     .bp3-navbar-divider {
@@ -51,7 +52,6 @@
       flex: 1;
 
       // Primary app icon
-
       > svg:first-child {
         color: var(--xh-navbar-title-color);
       }
@@ -76,12 +76,13 @@
   margin: 0 !important;  // TODO - investigate this....
 }
 
-.bp3-tabs:not(.bp3-vertical) > .bp3-tab-list {
-  padding-left: var(--xh-pad-px);
-}
-
 .bp3-tab > svg:first-child {
   margin-right: var(--xh-pad-half-px);
+}
+
+// Vertical tab lists fill their width
+.bp3-tabs.bp3-vertical .bp3-tab-list {
+  flex: 1;
 }
 
 //------------------------
@@ -153,8 +154,24 @@ $pt-transition-duration: 100ms !default;
 }
 
 //------------------------
-// Buttons - see desktop/cmp/button/Button.scss
+// Buttons
 //------------------------
+// See desktop/cmp/button/Button.scss for button styles.
+// Rule below applies only to buttons within BP inputs to disable default hover background-color
+// (which looks weird) and instead tweak the icon color to indicate it's active.
+.xh-app .xh-input .bp3-input-group .xh-button {
+  &.xh-button--minimal,
+  &.xh-button--outlined {
+    &.xh-button--enabled {
+      &:hover {
+        background-color: unset !important;
+        svg {
+          color: var(--xh-button-text-color) !important;
+        }
+      }
+    }
+  }
+}
 
 //------------------------
 // Toasts
@@ -258,8 +275,22 @@ textarea.bp3-input,
   box-shadow: var(--xh-form-field-box-shadow);
 }
 
+.bp3-control,
+.bp3-dark .bp3-control {
+  input:focus ~ .bp3-control-indicator {
+    outline: var(--xh-form-field-focused-border-color) solid 1px !important;
+    outline-offset: 1px;
+  }
+}
+
+.bp3-slider-handle:focus {
+  outline: unset;  // override browser default styles
+  box-shadow: var(--xh-slider-handle-focused-box-shadow);
+}
+
 .bp3-input:focus,
-.bp3-dark .bp3-input:focus {
+.bp3-dark .bp3-input:focus,
+.bp3-dark textarea.bp3-input:focus {
   box-shadow: var(--xh-form-field-focused-box-shadow);
 }
 
@@ -316,12 +347,6 @@ textarea.bp3-input,
 /* Apply blueprint's z-index of 16 for icons within a control group */
 .bp3-control-group .bp3-input-group svg:not(.bp3-icon) {
   z-index: 16;
-}
-
-// Avoid misaligned rightIcon within inputs.
-.bp3-button svg:not(.bp3-icon):first-child:last-child,
-.bp3-button .bp3-spinner + svg:not(.bp3-icon):last-child {
-  margin-left: 0;
 }
 
 // Controls ship with default bottom and (inline) right margins. We expose variables

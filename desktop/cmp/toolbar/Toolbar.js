@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
@@ -12,11 +12,11 @@ import {overflowList, popover} from '@xh/hoist/kit/blueprint';
 import {filterConsecutiveToolbarSeparators} from '@xh/hoist/utils/impl';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {castArray} from 'lodash';
+import {isEmpty} from 'lodash';
 import PT from 'prop-types';
-import {Children} from 'react';
 import './Toolbar.scss';
 import {toolbarSeparator} from './ToolbarSep';
+import {Children} from 'react';
 
 /**
  * A toolbar with built-in styling and padding.
@@ -30,29 +30,30 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
     render({
         children,
         className,
-        vertical,
+        compact = false,
+        vertical = false,
         enableOverflowMenu = false,
         collapseFrom = 'end',
         minVisibleItems,
         ...rest
-    }) {
+    }, ref) {
         throwIf(vertical && enableOverflowMenu, 'Overflow menu not available for vertical toolbars.');
 
-        const items = castArray(children)
+        const items = Children.toArray(children)
             .filter(filterConsecutiveToolbarSeparators())
-            .map(it => {
-                return it === '-' ? toolbarSeparator() : it;
-            });
+            .map(it => it === '-' ? toolbarSeparator() : it);
 
         const container = vertical ? vbox : hbox,
-            overflow = enableOverflowMenu && Children.count(items) > 0;
+            overflow = enableOverflowMenu && !isEmpty(items);
 
         return container({
+            ref,
             ...rest,
             className: classNames(
                 className,
-                overflow ? 'xh-toolbar--overflow' : null,
-                vertical ? 'xh-toolbar--vertical' : null
+                compact ? 'xh-toolbar--compact' : null,
+                vertical ? 'xh-toolbar--vertical' : null,
+                overflow ? 'xh-toolbar--overflow' : null
             ),
             items: overflow ?
                 overflowBox({items, minVisibleItems, collapseFrom}) :
@@ -61,10 +62,12 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
     }
 });
 
-
 Toolbar.propTypes = {
     /** Custom classes that will be applied to this component */
     className: PT.string,
+
+    /** Set to true to style toolbar with reduced height and font-size. */
+    compact: PT.bool,
 
     /** Set to true to vertically align the items of this toolbar */
     vertical: PT.bool,
@@ -95,7 +98,7 @@ const overflowBox = hoistCmp.factory({
     model: false, observer: false, memo: false,
     render({children, minVisibleItems, collapseFrom}) {
         return overflowList({
-            $items: Children.toArray(children),
+            $items: children,
             minVisibleItems,
             collapseFrom,
             visibleItemRenderer: (item) => item,

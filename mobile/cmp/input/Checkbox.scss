@@ -1,5 +1,9 @@
 .xh-input.xh-check-box {
-  border: none;
+  border: 1px transparent solid;
+
+  &:focus-within {
+    border: 1px solid var(--xh-focus-outline-color);
+  }
 
   :checked + .checkbox__checkmark::before {
     background-color: var(--xh-accent-color);
