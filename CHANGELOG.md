@@ -21,7 +21,7 @@ your dev-utils dependency for your project to build.
 * New method `XH.showException()` allows using Hoist's built-in exception display to show exceptions
   that have already been handled directly by application code. Use as an alternative to
   `XH.handleException()`.
-* The flag `GridModel.experimental.externalSort` has been promoted to a standard property on GridModel.
+* The flag `GridModel.experimental.externalSort` has been promoted to a standard property on `GridModel`.
 
 
 ### 🐞 Bug Fixes
@@ -37,7 +37,7 @@ your dev-utils dependency for your project to build.
 * Records in Hoist `Store` will now store default field values on a single prototype object; only
 non-default values will be explicitly stored on the `data` object.   Note that this means that
 the `data` property on `Record` will no longer contain keys for *all* fields as`own-enumerable`
-properties. This may be a breaking change for some applications.' This behavior was previously
+properties. This may be a breaking change for some applications. This behavior was previously
 available via the experimental flag `Store.experimental.shareDefaults`.
 
 ### ✨ Style
