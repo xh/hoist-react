@@ -21,6 +21,12 @@ your dev-utils dependency for your project to build.
 * New method `XH.showException()` allows using Hoist's built-in exception display to show exceptions
   that have already been handled directly by application code. Use as an alternative to
   `XH.handleException()`.
+* `XH.track()` now supports an additional `oncePerSession` option.  This flag can be set by
+   applications to avoid duplicate tracking messages for certain types of activity.
+* `NavigatorModel` now supports a `track` flag to automatically track user page views on mobile.
+  This is equivalent to the existing `track` flag on `TabContainerModel`.  Both of these
+  implementations use the new `oncePerSession` flag to avoid duplicate messages as a user browses
+  within a session.
 
 ### 🐞 Bug Fixes
 

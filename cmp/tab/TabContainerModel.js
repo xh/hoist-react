@@ -60,6 +60,7 @@ export class TabContainerModel extends HoistModel {
      *      docked within this component. Specify as a boolean or an object containing props for a
      *      TabSwitcher component. Set to false to not include a switcher. Defaults to true.
      * @param {boolean} [c.track] - True to enable activity tracking of tab views (default false).
+     *      Viewing of each tab will be tracked with the `oncePerSession` flag, to avoid duplication.
      * @param {RenderMode} [c.renderMode] - strategy for rendering child tabs. Can be set
      *      per-tab via `TabModel.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [c.refreshMode] - strategy for refreshing child tabs. Can be set
@@ -128,7 +129,8 @@ export class TabContainerModel extends HoistModel {
                         category: 'Navigation',
                         message: `Viewed ${isString(title) ? title : id} tab`,
                         // If using routing, data field specifies route for non-top-level tabs.
-                        data: route && route !== 'default' ? {route: route} : null
+                        data: route && route !== 'default' ? {route: route} : null,
+                        oncePerSession: true
                     });
                 }
             });
