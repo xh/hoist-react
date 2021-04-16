@@ -29,7 +29,8 @@ your dev-utils dependency for your project to build.
   within a session.
 
 ### 🐞 Bug Fixes
-
+* Fixes an issue where formatters in the `@xh/hoist/format` would sometimes modify their options
+  argument.
 * Avoid `TileFrame` edge-case bug where the appearance of an internal scrollbar threw off layout
   calculations.
 * Disable XSS protection (dompurify processing) on selected REST editor grids within the Hoist Admin
