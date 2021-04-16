@@ -53,11 +53,12 @@ your dev-utils dependency for your project to build.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.41 -> 3.42`
+* @blueprintjs/core `3.41 -> 3.43`
 * @blueprintjs/datetime `3.21 -> 3.22`
 * classnames `2.2 -> 2.3`
 * codemirror `5.59 -> 5.60`
 * core-js `3.9 -> 3.10`
+* filesize `6.1 -> 6.2`
 * qs `6.9 -> 6.10`
 * react-beautiful-dnd `13.0 -> 13.1`
 * react-select `4.2 -> 4.3`

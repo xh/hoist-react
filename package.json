@@ -26,8 +26,8 @@
     }
   },
   "dependencies": {
-    "@blueprintjs/core": "~3.42.0",
-    "@blueprintjs/datetime": "~3.22.0",
+    "@blueprintjs/core": "~3.43.0",
+    "@blueprintjs/datetime": "~3.22.1",
     "@fortawesome/fontawesome-pro": "~5.15.2",
     "@fortawesome/fontawesome-svg-core": "~1.2.34",
     "@fortawesome/pro-light-svg-icons": "~5.15.2",
@@ -45,7 +45,7 @@
     "dompurify": "~2.2.7",
     "downloadjs": "~1.4.7",
     "fast-deep-equal": "~3.1.1",
-    "filesize": "~6.1.0",
+    "filesize": "~6.2.5",
     "golden-layout": "~1.5.9",
     "http-status-codes": "~2.1.4",
     "lodash": "~4.17.21",
