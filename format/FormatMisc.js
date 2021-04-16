@@ -45,18 +45,18 @@ export function fmtSpan(v, {
 //-----------------
 // Implementation
 //-----------------
-function fmtSpanElement(v, opts = {}) {
+function fmtSpanElement(v, opts) {
     const {className, title, leadSpc, trailSpc} = opts,
         txt = (leadSpc ? ' ' : '') + v + (trailSpc ? ' ' : '');
 
     return span({
-        className: className,
-        title: title,
+        className,
+        title,
         item: txt
     });
 }
 
-function fmtSpanHtml(v, opts = {}) {
+function fmtSpanHtml(v, opts) {
     const {className, title, leadSpc, trailSpc} = opts,
         txt = (leadSpc ? ' ' : '') + v;
 

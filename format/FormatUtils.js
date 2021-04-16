@@ -12,19 +12,12 @@ import {defaults, isPlainObject} from 'lodash';
  * The returned renderer takes an optional config for its assigned formatter and itself returns
  * a function that takes only a value, for convenient use with e.g. grid cell rendering.
  *
- * If the formatter config is an object it will be cloned before being passed to its formatter
- * to ensure that the formatter gets its own clean copy each time it is called.
- *
  * @param {function} formatter - an existing formatter method.
  * @return {function(v: Object):function} - a configurable renderer.
  */
 export function createRenderer(formatter) {
     return function(config) {
-        const isObj = isPlainObject(config);
-        return v => {
-            const formatterConfig = isObj ? defaults({}, config) : config;
-            return formatter(v, formatterConfig);
-        };
+        return v => formatter(v, config);
     };
 }
 

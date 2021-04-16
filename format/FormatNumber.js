@@ -91,7 +91,8 @@ export function fmtNumber(v, {
  * @param {number} v - value to format.
  * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
-export function fmtThousands(v, opts = {})  {
+export function fmtThousands(v, opts)  {
+    opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
     v = v / THOUSAND;
@@ -106,6 +107,7 @@ export function fmtThousands(v, opts = {})  {
  * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
 export function fmtMillions(v, opts = {})  {
+    opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
@@ -121,7 +123,8 @@ export function fmtMillions(v, opts = {})  {
  * @param {number} v - value to format.
  * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
-export function fmtBillions(v, opts = {})  {
+export function fmtBillions(v)  {
+    opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
@@ -137,6 +140,7 @@ export function fmtBillions(v, opts = {})  {
  * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
 export function fmtQuantity(v, opts = {}) {
+    opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
@@ -157,7 +161,8 @@ export function fmtQuantity(v, opts = {}) {
  * @param {number} v - value to format.
  * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
-export function fmtPrice(v, opts = {}) {
+export function fmtPrice(v, opts) {
+    opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
@@ -177,6 +182,7 @@ export function fmtPrice(v, opts = {}) {
  * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
 export function fmtPercent(v, opts = {}) {
+    opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
@@ -338,13 +344,9 @@ function isInvalidInput(v) {
 }
 
 function processToolTip(tooltip, opts) {
-    if (tooltip === true) {
-        return fmtNumberTooltip(opts.originalValue, opts);
-    } else if (isFunction(tooltip)) {
-        return tooltip(opts.originalValue);
-    } else {
-        return null;
-    }
+    if (tooltip === true)   return fmtNumberTooltip(opts.originalValue, opts);
+    if (isFunction(tooltip) return tooltip(opts.originalValue);
+    return null;
 }
 
 export const numberRenderer = createRenderer(fmtNumber),
