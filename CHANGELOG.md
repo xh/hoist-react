@@ -57,8 +57,9 @@ your dev-utils dependency for your project to build.
 * ⚠ For API consistency with the new `showBanner()` util, the `actionFn` prop for the recently-added
   `ErrorMessage` component has been deprecated. Specify as an `onClick` handler within the
   component's `actionButtonProps` prop instead.
-* The `GridModel.experimental.externalSort` flag has been promoted from an experiment to a
-  fully-supported config. (Default remains `false`.)
+* ⚠ The `GridModel.experimental.externalSort` flag has been promoted from an experiment to a
+  fully-supported config. Default remains `false`, but apps that were enabling external sorting via
+  this flag must update to pass it directly: `new GridModel({externalSort: true, ...})`.
 
 ### 📚 Libraries
 
