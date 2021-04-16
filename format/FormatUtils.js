@@ -4,7 +4,6 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {defaults, isPlainObject} from 'lodash';
 
 /**
  * Generate a renderer for a given formatter function.

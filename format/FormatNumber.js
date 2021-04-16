@@ -106,7 +106,7 @@ export function fmtThousands(v, opts)  {
  * @param {number} v - value to format.
  * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
-export function fmtMillions(v, opts = {})  {
+export function fmtMillions(v, opts)  {
     opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
@@ -123,7 +123,7 @@ export function fmtMillions(v, opts = {})  {
  * @param {number} v - value to format.
  * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
-export function fmtBillions(v)  {
+export function fmtBillions(v, opts)  {
     opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
@@ -344,8 +344,8 @@ function isInvalidInput(v) {
 }
 
 function processToolTip(tooltip, opts) {
-    if (tooltip === true)   return fmtNumberTooltip(opts.originalValue, opts);
-    if (isFunction(tooltip) return tooltip(opts.originalValue);
+    if (tooltip === true) return fmtNumberTooltip(opts.originalValue, opts);
+    if (isFunction(tooltip)) return tooltip(opts.originalValue);
     return null;
 }
 
