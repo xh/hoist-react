@@ -24,18 +24,36 @@ export class Record {
     id;
     /** @member {(string|number)} */
     parentId;
-    /** @member {Object} */
-    committedData;
-    /** @member {Object} */
-    raw;
-    /** @member {Object} */
-    data;
     /** @member {Store} */
     store;
     /** @member {boolean} */
     isSummary;
     /** @member {string[]|number[]} */
     treePath;
+
+    /** @member {Object} - raw data loaded into via Store.loadData() or Store.updateData(). */
+    raw;
+
+    /**
+     * @member {Object}
+     *
+     * An object containing the current field values for this record.
+     *
+     * Note that this object will only contain explicit 'own' properties for fields that are
+     * not at their default values -- default values will be present via the prototype.  For an
+     * object providing an explicit enumeration of all field values @see {Record.values}.
+     */
+    data;
+
+    /**
+     * @member {Object}
+     *
+     * An object containing the fully committed field values for this record. This object has the
+     * same form as 'data'. If this record has not been locally modified, this property will
+     * point to the same object as `data`.
+     */
+    committedData;
+
 
     get isRecord() {return true}
 
@@ -121,6 +139,21 @@ export class Record {
     }
 
     /**
+     * An object with enumerated values for all fields in this record.
+     *
+     * Unlike 'data', the object returned by this property will contain an 'own' property
+     * for every field in the store.
+     *
+     * Useful for cloning or iterating over all field values in this record.
+     * @returns {Object}
+     */
+    get values() {
+        const val = this._values;
+        if (val) return val;
+        return this._values = new Proxy(this.data, {ownKeys: () => ['id', ...this.store.fieldNames]});
+    }
+
+    /**
      * Construct a Record from a raw source object. Extract values from the source object for all
      * Fields defined on the given Store and install them as data on the new Record.
      *
@@ -174,7 +207,7 @@ export class Record {
      * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
      */
     forEachChild(fn, fromFiltered = false) {
-        this.store.getChildrenById(this.id, fromFiltered).forEach(it => it.fn);
+        this.store.getChildrenById(this.id, fromFiltered).forEach(fn);
     }
 
     /**
@@ -183,7 +216,7 @@ export class Record {
      * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
      */
     forEachDescendant(fn, fromFiltered = false) {
-        this.store.getDescendantsById(this.id, fromFiltered).forEach(it => fn(it));
+        this.store.getDescendantsById(this.id, fromFiltered).forEach(fn);
     }
 
     /**
@@ -192,7 +225,7 @@ export class Record {
      * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
      */
     forEachAncestor(fn, fromFiltered = false) {
-        this.store.getAncestorsById(this.id, fromFiltered).forEach(it => fn(it));
+        this.store.getAncestorsById(this.id, fromFiltered).forEach(fn);
     }
 
     // --------------------------

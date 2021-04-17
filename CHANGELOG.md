@@ -37,8 +37,9 @@ your dev-utils dependency for your project to build.
 * Records in Hoist `Store` will now store default field values on a single prototype object; only
 non-default values will be explicitly stored on the `data` object.   Note that this means that
 the `data` property on `Record` will no longer contain keys for *all* fields as`own-enumerable`
-properties. This may be a breaking change for some applications. This behavior was previously
-available via the experimental flag `Store.experimental.shareDefaults`.
+properties. (This behavior was previously available via the experimental flag
+`Store.experimental.shareDefaults`.) Applications relying on a full enumeration of all record values
+should use the new 'values' getter instead.
 
 ### ✨ Style
 
