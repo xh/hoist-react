@@ -41,7 +41,7 @@ export class Record {
      *
      * Note that this object will only contain explicit 'own' properties for fields that are
      * not at their default values -- default values will be present via the prototype.  For an
-     * object providing an explicit enumeration of all field values @see {Record.values}.
+     * object providing an explicit enumeration of all field values @see {Record.getValues()}.
      */
     data;
 
@@ -139,7 +139,7 @@ export class Record {
     }
 
     /**
-     * An object with enumerated values for all fields in this record.
+     * Create an object with enumerated values for all fields in this record.
      *
      * Unlike 'data', the object returned by this property will contain an 'own' property
      * for every field in the store.
@@ -147,10 +147,12 @@ export class Record {
      * Useful for cloning or iterating over all field values in this record.
      * @returns {Object}
      */
-    get values() {
-        const val = this._values;
-        if (val) return val;
-        return this._values = new Proxy(this.data, {ownKeys: () => ['id', ...this.store.fieldNames]});
+    getValues() {
+        const ret = {id: this.id};
+        this.store.fields.forEach(({name}) => {
+            ret[name] = this.data[name];
+        });
+        return ret;
     }
 
     /**

@@ -35,7 +35,7 @@ non-default values will be explicitly stored on the `data` object.   Note that t
 the `data` property on `Record` will no longer contain keys for *all* fields as`own-enumerable`
 properties. (This behavior was previously available via the experimental flag
 `Store.experimental.shareDefaults`.) Applications relying on a full enumeration of all record values
-should use the new 'values' getter instead.
+should use the new `Record.getValues()` getter instead.
 
 ### 🐞 Bug Fixes
 
