@@ -25,6 +25,9 @@ export class NavigatorModel extends HoistModel {
     /** @member {Object[]} */
     pages = [];
 
+    /** @member {boolean} */
+    track;
+
     /** @member {RenderMode} */
     renderMode;
 
@@ -48,6 +51,8 @@ export class NavigatorModel extends HoistModel {
     /**
      * @param {Object[]} pages - configs for PageModels, representing all supported
      *      pages within this Navigator/App.
+     * @param {boolean} [track] - True to enable activity tracking of page views (default false).
+     *      Viewing of each page will be tracked with the `oncePerSession` flag, to avoid duplication.
      * @param {RenderMode} [renderMode] - strategy for rendering pages. Can be set per-page
      *      via `PageModel.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing pages. Can be set per-page
@@ -55,6 +60,7 @@ export class NavigatorModel extends HoistModel {
      */
     constructor({
         pages,
+        track = false,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY
     }) {
@@ -66,6 +72,7 @@ export class NavigatorModel extends HoistModel {
         ensureUniqueBy(pages, 'id', 'Multiple NavigatorModel PageModels have the same id.');
 
         this.pages = pages;
+        this.track = track;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
 
@@ -78,6 +85,19 @@ export class NavigatorModel extends HoistModel {
             track: () => this.stack,
             run: this.onStackChangeAsync
         });
+
+        if (track) {
+            this.addReaction({
+                track: () => this.activePageId,
+                run: (activePageId) => {
+                    XH.track({
+                        category: 'Navigation',
+                        message: `Viewed ${activePageId} page`,
+                        oncePerSession: true
+                    });
+                }
+            });
+        }
     }
 
     /**
