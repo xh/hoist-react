@@ -32,9 +32,9 @@ const INVALID_DATE = moment(null).format();
  * @param {*} [opts.originalValue] - holds the unaltered original value to be formatted.
  *      Not typically used by applications.
  */
-export function fmtDate(v, opts = {}) {
-    if (v == null) return opts.nullDisplay ?? '';
-    if (isString(opts)) opts = {fmt: opts};
+export function fmtDate(v, opts) {
+    if (v == null) return opts?.nullDisplay ?? '';
+    opts = isString(opts) ? {fmt: opts} : {...opts};
 
     defaults(opts, {fmt: DATE_FMT, tooltip: null});
     saveOriginal(v, opts);
@@ -43,7 +43,7 @@ export function fmtDate(v, opts = {}) {
         v.format(opts.fmt) :
         moment(v).format(opts.fmt);
 
-    if (ret == INVALID_DATE) {
+    if (ret === INVALID_DATE) {
         ret = '';
     } else if (opts.tooltip) {
         ret = fmtSpan(ret, {className: 'xh-title-tip', title: opts.tooltip(opts.originalValue), asElement: opts.asElement});
@@ -52,8 +52,8 @@ export function fmtDate(v, opts = {}) {
     return opts.asElement ? span(ret) : ret;
 }
 
-export function fmtDateTime(v, opts = {}) {
-    if (isString(opts)) opts = {fmt: opts};
+export function fmtDateTime(v, opts) {
+    opts = isString(opts) ? {fmt: opts} : {...opts};
     defaults(opts, {fmt: DATETIME_FMT});
     saveOriginal(v, opts);
 
@@ -61,8 +61,8 @@ export function fmtDateTime(v, opts = {}) {
 }
 
 
-export function fmtTime(v, opts = {}) {
-    if (isString(opts)) opts = {fmt: opts};
+export function fmtTime(v, opts) {
+    opts = isString(opts) ? {fmt: opts} : {...opts};
     defaults(opts, {fmt: TIME_FMT});
     saveOriginal(v, opts);
 

@@ -38,7 +38,8 @@ properties. (This behavior was previously available via the experimental flag
 should use the new `Record.getValues()` getter instead.
 
 ### 🐞 Bug Fixes
-
+* Fixes an issue where formatters in the `@xh/hoist/format` would sometimes modify their options
+  argument.
 * Avoid `TileFrame` edge-case bug where the appearance of an internal scrollbar threw off layout
   calculations.
 * Disable XSS protection (dompurify processing) on selected REST editor grids within the Hoist Admin
@@ -64,11 +65,12 @@ should use the new `Record.getValues()` getter instead.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.41 -> 3.42`
+* @blueprintjs/core `3.41 -> 3.43`
 * @blueprintjs/datetime `3.21 -> 3.22`
 * classnames `2.2 -> 2.3`
 * codemirror `5.59 -> 5.60`
 * core-js `3.9 -> 3.10`
+* filesize `6.1 -> 6.2`
 * qs `6.9 -> 6.10`
 * react-beautiful-dnd `13.0 -> 13.1`
 * react-select `4.2 -> 4.3`
