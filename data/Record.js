@@ -13,7 +13,9 @@ import {isNil} from 'lodash';
  * state of that data through possible updates, with support for tracking edits and "committing"
  * changes to provide dirty state.
  *
- * Records also store state related to any parent/child hierarchy, if present.
+ * Each Record holds a pointer to its parent record, if any, via that parent's ID. (Note this
+ * is deliberately not a direct object reference, to allow parent records to be recreated
+ * without requiring children to also be recreated.)
  *
  * Records are intended to be created and managed internally by Store implementations and should
  * most not typically be constructed directly within application code.
@@ -35,25 +37,21 @@ export class Record {
     raw;
 
     /**
-     * @member {Object}
-     *
-     * An object containing the current field values for this record.
+     * @member {Object} - an object containing the current field values for this record.
      *
      * Note that this object will only contain explicit 'own' properties for fields that are
-     * not at their default values -- default values will be present via the prototype.  For an
-     * object providing an explicit enumeration of all field values @see {Record.getValues()}.
+     * not at their default values - default values will be present via the prototype. For an
+     * object providing an explicit enumeration of all field values {@see Record.getValues()}.
      */
     data;
 
     /**
-     * @member {Object}
+     * @member {Object} - an object containing the fully committed field values for this record.
      *
-     * An object containing the fully committed field values for this record. This object has the
-     * same form as 'data'. If this record has not been locally modified, this property will
-     * point to the same object as `data`.
+     * This object has the same form as `data`. If this record has not been locally modified, this
+     * property will point to the same object as `data`.
      */
     committedData;
-
 
     get isRecord() {return true}
 
@@ -83,73 +81,51 @@ export class Record {
     }
 
     /**
-     * Return the current value of a field.
-     * @returns {*}
+     * @param {string} fieldName
+     * @returns {*} - the current value of a field.
      */
     get(fieldName) {
         return this.data[fieldName];
     }
 
-    /**
-     * The children of this record, respecting any filter (if applied).
-     * @returns {Record[]}
-     */
+    /** @returns {Record[]} - children of this record, respecting any filter (if applied). */
     get children() {
         return this.store.getChildrenById(this.id, true);
     }
 
-    /**
-     * All children of this record unfiltered.
-     * @returns {Record[]}
-     */
+    /** @returns {Record[]} - all children of this record, unfiltered. */
     get allChildren() {
         return this.store.getChildrenById(this.id, false);
     }
 
-    /**
-     * The descendants of this record, respecting any filter (if applied).
-     * @returns {Record[]}
-     */
+    /** @returns {Record[]} - descendants of this record, respecting any filter (if applied). */
     get descendants() {
         return this.store.getDescendantsById(this.id, true);
     }
 
-    /**
-     * All descendants of this record unfiltered.
-     * @returns {Record[]}
-     */
+    /** @returns {Record[]} - all descendants of this record, unfiltered. */
     get allDescendants() {
         return this.store.getDescendantsById(this.id, false);
     }
 
-    /**
-     * The ancestors of this record, respecting any filter (if applied).
-     * @returns {Record[]}
-     */
+    /** @returns {Record[]} - ancestors of this record, respecting any filter (if applied). */
     get ancestors() {
         return this.store.getAncestorsById(this.id, true);
     }
 
-    /**
-     * All ancestors of this record unfiltered.
-     * @returns {Record[]}
-     */
+    /** @returns {Record[]} - all ancestors of this record, unfiltered. */
     get allAncestors() {
         return this.store.getAncestorsById(this.id, false);
     }
 
     /**
-     * Create an object with enumerated values for all fields in this record.
-     *
-     * Unlike 'data', the object returned by this property will contain an 'own' property
-     * for every field in the store.
-     *
-     * Useful for cloning or iterating over all field values in this record.
-     * @returns {Object}
+     * @returns {Object} - a new object with enumerated values for all Fields in this Record.
+     *      Unlike 'data', the object returned by this method contains an 'own' property for every
+     *      Field in the Store. Useful for cloning/iterating over all values (including defaults).
      */
     getValues() {
         const ret = {id: this.id};
-        this.store.fields.forEach(({name}) => {
+        this.fields.forEach(({name}) => {
             ret[name] = this.data[name];
         });
         return ret;
@@ -161,10 +137,6 @@ export class Record {
      * Not typically called by applications directly. `Store` instances create `Record` instances
      * when loading or updating data through their public APIs. {@see Store.createRecord} for the
      * primary implementation, which includes parsing based on `data/Field` types and definitions.
-     *
-     * Each Record holds a pointer to its parent record, if any, via that parent's ID. (Note this
-     * is deliberately not a direct object reference, to allow parent records to be recreated
-     * without requiring children to also be recreated.)
      *
      * @param {Object} c - Record configuration
      * @param {(number|string)} c.id - Record ID
@@ -230,17 +202,18 @@ export class Record {
         this.store.getAncestorsById(this.id, fromFiltered).forEach(fn);
     }
 
+
     // --------------------------
     // Protected methods
     // --------------------------
     /**
      * Finalize this record for use in Store, post acceptance by RecordSet.
      *
-     * We finalize the Record post-construction in RecordSet, only when we know that
-     * it is going to be accepted in the new RecordSet (and is not a duplicate).  This is a
-     * performance optimization to avoid operations like freezing on transient records.
+     * We finalize the Record post-construction in RecordSet, only once we know that it is going to
+     * be accepted in the new RecordSet (and is not a duplicate).  This is a performance
+     * optimization to avoid operations like freezing on transient records.
      *
-     * Not for application use.
+     * @package - not for application use.
      */
     finalize() {
         if (this.store.freezeData) {

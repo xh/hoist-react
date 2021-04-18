@@ -9,42 +9,50 @@ your dev-utils dependency for your project to build.
 ### 🎁 New Features
 
 * Added support for displaying an in-app changelog (release notes) to the user. See the new
-  ChangelogService for full details.
+  `ChangelogService` for details and instructions on how to enable.
 * Added `XH.showBanner()` to display a configurable banner across the top of viewport, as another
   non-modal alternative for attention-getting application alerts.
+* New method `XH.showException()` uses Hoist's built-in exception display to show exceptions that
+  have already been handled directly by application code. Use as an alternative to
+  `XH.handleException()`.
+* `XH.track()` supports a new `oncePerSession` option. This flag can be set by applications to avoid
+  duplicate tracking messages for certain types of activity.
+* Mobile `NavigatorModel` now supports a `track` flag to automatically track user page views,
+  equivalent to the existing `track` flag on `TabContainerModel`. Both implementations now use the
+  new `oncePerSession` flag to avoid duplicate messages as a user browses within a session.
 * New `Spinner` component returns a simple img-based spinner as an animated PNG, available in two
   sizes. Used for the platform-specific `Mask` and `LoadingIndicator` components. Replaces previous
-  SVG-based implementations to reduce overhead when rendering spinners over remote connections.
-  * ⚠ Hoist re-exports and wrappers for the Blueprint `Spinner` and Onsen `ProgressCircular`
-    components have been removed. If you wish to continue using either of these components, you will
-    need to import it from the source library.
-* New method `XH.showException()` allows using Hoist's built-in exception display to show exceptions
-  that have already been handled directly by application code. Use as an alternative to
-  `XH.handleException()`.
-* `XH.track()` now supports an additional `oncePerSession` option. This flag can be set by
-  applications to avoid duplicate tracking messages for certain types of activity.
-* `NavigatorModel` now supports a `track` flag to automatically track user page views on mobile.
-  This is equivalent to the existing `track` flag on `TabContainerModel`. Both of these
-  implementations use the new `oncePerSession` flag to avoid duplicate messages as a user browses
-  within a session.
+  SVG-based implementations to mitigate rendering performance issues over remote connections.
 
 ### 💥 Breaking Changes
 
-* Records in Hoist `Store` will now store default field values on a single prototype object; only
-non-default values will be explicitly stored on the `data` object.   Note that this means that
-the `data` property on `Record` will no longer contain keys for *all* fields as`own-enumerable`
-properties. (This behavior was previously available via the experimental flag
-`Store.experimental.shareDefaults`.) Applications relying on a full enumeration of all record values
-should use the new `Record.getValues()` getter instead.
+* `Store` now creates a shared object to hold the default values for every `Field` and uses this
+  object as the prototype for the `data` property of every `Record` instance.
+  * Only non-default values are explicitly written to `Record.data`, making for a more efficient
+    representation of default values and improving the performance of `Record` change detection.
+  * Note this means that `Record.data` *no longer* contains keys for *all* fields as
+    `own-enumerable` properties.
+  * Applications requiring a full enumeration of all values should call the new `Record.getValues()`
+    method, which returns a new and fully populated object suitable for spreading or cloning.
+  * This behavior was previously available via `Store.experimental.shareDefaults` but is now always
+    enabled.
+* For API consistency with the new `showBanner()` util, the `actionFn` prop for the recently-added
+  `ErrorMessage` component has been deprecated. Specify as an `onClick` handler within the
+  component's `actionButtonProps` prop instead.
+* The `GridModel.experimental.externalSort` flag has been promoted from an experiment to a
+  fully-supported config. Default remains `false`, but apps that were using this flag must now pass
+  it directly: `new GridModel({externalSort: true, ...})`.
+* Hoist re-exports and wrappers for the Blueprint `Spinner` and Onsen `ProgressCircular` components
+  have been removed, in favor of the new Hoist `Spinner` component mentioned above.
+* Min version for `@xh/hoist-dev-utils` is now v5.7.0, as per above.
 
 ### 🐞 Bug Fixes
-* Fixes an issue where formatters in the `@xh/hoist/format` would sometimes modify their options
-  argument.
-* Avoid `TileFrame` edge-case bug where the appearance of an internal scrollbar threw off layout
+
+* Formatters in the `@xh/hoist/format` package no longer modify their options argument.
+* `TileFrame` edge-case bug fixed where the appearance of an internal scrollbar could thrash layout
   calculations.
-* Disable XSS protection (dompurify processing) on selected REST editor grids within the Hoist Admin
-  console. Avoids content within configs and JSON blobs being unintentionally mangled + trusts
-  admins not to paste in malicious content.
+* XSS protection (dompurify processing) disabled on selected REST editor grids within the Hoist
+  Admin console. Avoids content within configs and JSON blobs being unintentionally mangled.
 
 ### ✨ Style
 
@@ -53,15 +61,6 @@ should use the new `Record.getValues()` getter instead.
 * Background highlight color of minimal/outlined buttons tweaked for dark theme.
 * `CodeInput` respects standard XH theme vars for its background-color and (monospace) font family.
   Its built-in toolbar has also been made compact and slightly re-organized.
-
-### ⚙️ Technical
-
-* ⚠ For API consistency with the new `showBanner()` util, the `actionFn` prop for the recently-added
-  `ErrorMessage` component has been deprecated. Specify as an `onClick` handler within the
-  component's `actionButtonProps` prop instead.
-* ⚠ The `GridModel.experimental.externalSort` flag has been promoted from an experiment to a
-  fully-supported config. Default remains `false`, but apps that were enabling external sorting via
-  this flag must update to pass it directly: `new GridModel({externalSort: true, ...})`.
 
 ### 📚 Libraries
 
