@@ -8,10 +8,10 @@ import {stripTags, trimToDepth} from '@xh/hoist/utils/js';
 import {omitBy, isNil} from 'lodash';
 
 /**
- * Stringify an error object safely for submission to server.
- * This method will avoid circular references and will trim the depth of the stack.
+ * Serialize an error object safely for submission to server, or user display.
+ * This method will avoid circular references and will trim the depth of the object.
  *
- * @param {Error} errorObject - the error to serialize
+ * @param {Error} error
  * @return string
  */
 export function stringifyErrorSafely(error) {
