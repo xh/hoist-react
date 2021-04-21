@@ -29,7 +29,10 @@ export function stringifyErrorSafely(error) {
 
         ret = omitBy(ret, isNil);
 
-        // 2) Some ad-hod cleanups
+        // 2) Deep clone + protect against circularity/monstrosity with a general depth trim.
+        ret = trimToDepth(ret, 5);
+
+        // 3) Additional ad-hoc cleanups
         // Remove noisy grails exception wrapper info
         // Remove verbose loadSpec from fetchOptions
         const {serverDetails} = ret;
@@ -45,10 +48,9 @@ export function stringifyErrorSafely(error) {
             delete fetchOptions.loadSpec;
         }
 
-        // 3) Protect against circularity, monstrosity with a general depth trim.
-        ret = trimToDepth(ret, 5);
-
+        // 4) Stringify and cleanse
         return stripTags(JSON.stringify(ret, null, 4));
+
     } catch (e) {
         console.error('Could not convert error object to string:', error, e);
         return 'Unable to display error';
