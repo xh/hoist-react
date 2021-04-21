@@ -101,17 +101,16 @@ export class ExceptionHandler {
      * (Note the App version is POSTed to ensure we capture the version of the client the user is
      * actually running when the exception was generated.)
      *
-     * @param {Object} [options] - an options object
-     * @param {string} [options.exception] - an instance of the Javascript Error object.
-     *      Not strictly required, but hard to see when it would be omitted.
-     * @param {boolean} [options.userAlerted] - true if the user was shown a modal alert.
+     * @param {Object} options - an options object
+     * @param {Error} options.exception - an instance of the Javascript Error object.
+     * @param {boolean} options.userAlerted - true if the user was shown a modal alert.
      * @param {string} [options.userMessage] - a user-provided message, if any, detailing what they
      *      did to trigger the error, or any other details the user chooses to provide.
      * @returns {boolean} - true if message was successfully sent to server.
      */
     async logOnServerAsync({exception, userAlerted, userMessage}) {
         try {
-            const error = exception ? stringifyErrorSafely(exception) : null,
+            const error = stringifyErrorSafely(exception),
                 username = XH.getUsername();
 
             if (!username) {

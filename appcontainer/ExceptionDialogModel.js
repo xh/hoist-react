@@ -22,14 +22,12 @@ export class ExceptionDialogModel extends HoistModel {
 
     /** Exception currently being displayed */
     get exception() {
-        const d = this.displayData;
-        return d ? d.exception : null;
+        return this.displayData?.exception ?? null;
     }
 
     /** Options for exception currently being displayed */
     get options() {
-        const d = this.displayData;
-        return d ? d.options : {};
+        return this.displayData?.options ?? {};
     }
 
     /** Optional user supplied message */
@@ -42,7 +40,7 @@ export class ExceptionDialogModel extends HoistModel {
 
     @action
     show(exception, options) {
-        if (this.displayData?.options.requireReload)  return;
+        if (this.displayData?.options.requireReload) return;
         this.displayData = {exception, options};
     }
 
