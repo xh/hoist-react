@@ -1,5 +1,9 @@
 # Changelog
 
+## v41.0.0-SNAPSHOT - unreleased
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v40.0.0...develop)
+
 ## v40.0.0 - 2021-04-22
 
 ⚠ Please ensure your `@xh/hoist-dev-utils` dependency is >= v5.7.0. This is required to support the
