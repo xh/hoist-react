@@ -1,6 +1,6 @@
 # Changelog
 
-## v40.0.0-SNAPSHOT - unreleased
+## v40.0.0 - 2021-04-22
 
 ⚠ Please ensure your `@xh/hoist-dev-utils` dependency is >= v5.7.0. This is required to support the
 new changelog feature described below. Even if you are not yet using the feature, you must update
