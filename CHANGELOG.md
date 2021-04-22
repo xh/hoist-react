@@ -54,6 +54,11 @@ your dev-utils dependency for your project to build.
 * XSS protection (dompurify processing) disabled on selected REST editor grids within the Hoist
   Admin console. Avoids content within configs and JSON blobs being unintentionally mangled.
 
+### ⚙️ Technical
+
+* Improvements to exception serialization, especially raw javascript `Error`s thrown in client-side
+code.
+
 ### ✨ Style
 
 * Buttons nested inline within desktop input components (e.g. clear buttons) tweaked to avoid
