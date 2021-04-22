@@ -79,7 +79,7 @@ your dev-utils dependency for your project to build.
 * react-beautiful-dnd `13.0 -> 13.1`
 * react-select `4.2 -> 4.3`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v39.0.1...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v39.0.1...v40.0.0)
 
 ## v39.0.1 - 2021-03-24
 
