@@ -56,8 +56,8 @@ your dev-utils dependency for your project to build.
 
 ### ⚙️ Technical
 
-* Improvements to exception serialization, especially raw javascript `Error`s thrown in client-side
-code.
+* Improvements to exception serialization, especially for any raw javascript `Error` thrown by
+  client-side code.
 
 ### ✨ Style
 
@@ -69,8 +69,8 @@ code.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.41 -> 3.43`
-* @blueprintjs/datetime `3.21 -> 3.22`
+* @blueprintjs/core `3.41 -> 3.44`
+* @blueprintjs/datetime `3.21 -> 3.23`
 * classnames `2.2 -> 2.3`
 * codemirror `5.59 -> 5.60`
 * core-js `3.9 -> 3.10`
