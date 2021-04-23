@@ -46,6 +46,8 @@ export class TabContainerModel extends HoistModel {
     /** @member {(string|ReactNode)} */
     emptyText;
 
+    _lastActiveTabId;
+
     /**
      * @param {Object} c - TabContainerModel configuration.
      * @param {Object[]} [c.tabs] - configs for TabModels to be displayed.
@@ -58,6 +60,7 @@ export class TabContainerModel extends HoistModel {
      *      docked within this component. Specify as a boolean or an object containing props for a
      *      TabSwitcher component. Set to false to not include a switcher. Defaults to true.
      * @param {boolean} [c.track] - True to enable activity tracking of tab views (default false).
+     *      Viewing of each tab will be tracked with the `oncePerSession` flag, to avoid duplication.
      * @param {RenderMode} [c.renderMode] - strategy for rendering child tabs. Can be set
      *      per-tab via `TabModel.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [c.refreshMode] - strategy for refreshing child tabs. Can be set
@@ -126,7 +129,8 @@ export class TabContainerModel extends HoistModel {
                         category: 'Navigation',
                         message: `Viewed ${isString(title) ? title : id} tab`,
                         // If using routing, data field specifies route for non-top-level tabs.
-                        data: route && route !== 'default' ? {route: route} : null
+                        data: route && route !== 'default' ? {route: route} : null,
+                        oncePerSession: true
                     });
                 }
             });
@@ -188,19 +192,23 @@ export class TabContainerModel extends HoistModel {
      */
     @action
     removeTab(tab) {
-        let {tabs} = this,
-            toRemove = find(tabs, (t) => t === tab || t.id === tab),
-            toActivate = this.activeTab;
+        const {tabs, activeTab} = this,
+            toRemove = find(tabs, (t) => t === tab || t.id === tab);
 
-        if (toRemove === toActivate) {
-            toActivate = this.nextTab ?? this.prevTab;
-        }
-        if (toRemove) {
+        if (!toRemove) return;
+
+        // Activate alternative tab if we are about to remove active
+        if (toRemove === activeTab) {
+            let toActivate = this.findTab(this._lastActiveTabId);
+            if (!toActivate || toActivate === toRemove) {
+                toActivate = this.nextTab ?? this.prevTab;
+            }
             if (toActivate) {
                 this.activateTab(toActivate);
             }
-            this.setTabs(without(tabs, toRemove));
         }
+
+        this.setTabs(without(tabs, toRemove));
     }
 
     //-------------------------------
@@ -270,6 +278,7 @@ export class TabContainerModel extends HoistModel {
         const tab = this.findTab(id);
         throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
+        this._lastActiveTabId = this.activeTabId;
         this.activeTabId = id;
         this.forwardRouterToTab(id);
     }

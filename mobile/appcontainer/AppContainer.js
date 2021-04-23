@@ -16,7 +16,9 @@ import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterF
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
 import {pinPadImpl} from '@xh/hoist/mobile/cmp/pinpad/impl/PinPad';
 import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
+import {isEmpty} from 'lodash';
 import {aboutDialog} from './AboutDialog';
+import {banner} from './Banner';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
 import {idlePanel} from './IdlePanel';
@@ -26,7 +28,6 @@ import {loginPanel} from './LoginPanel';
 import {messageSource} from './MessageSource';
 import {optionsDialog} from './OptionsDialog';
 import {toastSource} from './ToastSource';
-import {updateBar} from './UpdateBar';
 import {versionBar} from './VersionBar';
 
 installMobileImpls({
@@ -101,7 +102,7 @@ const appContainerView = hoistCmp.factory({
         return viewport(
             vframe(
                 impersonationBar(),
-                updateBar(),
+                bannerList(),
                 refreshContextView({
                     model: model.refreshContextModel,
                     item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
@@ -113,6 +114,16 @@ const appContainerView = hoistCmp.factory({
             feedbackDialog(),
             optionsDialog()
         );
+    }
+});
+
+const bannerList = hoistCmp.factory({
+    render({model}) {
+        const {bannerModels} = model.bannerSourceModel;
+        if (isEmpty(bannerModels)) return null;
+        return fragment({
+            items: bannerModels.map(model => banner({model, key: model.xhId}))
+        });
     }
 });
 

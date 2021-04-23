@@ -372,7 +372,7 @@ class LocalModel extends HoistModel {
     //------------------------
     dataReaction() {
         const {model} = this,
-            {agGridModel, store, experimental} = model;
+            {agGridModel, store} = model;
 
         return {
             track: () => [model.isReady, store._filtered, model.showSummary],
@@ -397,7 +397,7 @@ class LocalModel extends HoistModel {
                         agApi.setRowData(newRs.list);
                     }
 
-                    if (experimental.externalSort) {
+                    if (model.externalSort) {
                         agGridModel.applySortBy(model.sortBy);
                     }
 
@@ -436,13 +436,12 @@ class LocalModel extends HoistModel {
     }
 
     sortReaction() {
-        const {model} = this,
-            {externalSort} = model.experimental;
+        const {model} = this;
 
         return {
             track: () => [model.agColumnApi, model.sortBy],
             run: ([colApi, sortBy]) => {
-                if (colApi && !externalSort) {
+                if (colApi && !model.externalSort) {
                     model.agGridModel.applySortBy(sortBy);
                 }
             }

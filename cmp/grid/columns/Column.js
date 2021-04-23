@@ -119,8 +119,8 @@ export class Column {
      * @param {string} [c.exportName] - name to use as a header within a file export. Defaults to
      *      `headerName`. Useful when `headerName` contains markup or other characters not suitable
      *      for use within an Excel or CSV file header.
-     * @param {(string|function)} [c.exportValue] - alternate field name to reference or function
-     *      to call when producing a value for a file export. {@see GridExportService}
+     * @param {(string|Column~exportValueFn)} [c.exportValue] - alternate field name to reference or
+     *      function to call when producing a value for a file export. {@see GridExportService}
      * @param {(ExportFormat|function)} [c.exportFormat] - structured format string for Excel-based
      *      exports, or a function to produce one. {@see ExportFormat}
      * @param {number} [c.exportWidth] - width in characters for Excel-based exports. Typically
@@ -675,6 +675,13 @@ export function getAgHeaderClassFn(column) {
  *      value should also have their `rendererIsComplex` flag set to true to ensure they are
  *      re-run whenever the record (and not just the primary value) changes.
  * @return {Element} - the React element to render.
+ */
+
+/**
+ * @callback Column~exportValueFn - function to return a value for export.
+ * @param {*} value - cell data value (column + row).
+ * @param {CellContext} context - additional data about the column, row and GridModel.
+ * @return {*} - value for export.
  */
 
 /**

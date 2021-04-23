@@ -19,7 +19,7 @@ import {
     isString,
     remove as lodashRemove
 } from 'lodash';
-import {withShortDebug} from '../utils/js';
+import {apiRemoved, withShortDebug} from '../utils/js';
 
 import {Field} from './Field';
 import {parseFilter} from './filter/Utils';
@@ -104,9 +104,6 @@ export class Store extends HoistBase {
      *      true to maximize performance (default false).
      * @param {Object} [c.experimental] - flags for experimental features. These features are
      *     designed for early client-access and testing, but are not yet part of the Hoist API.
-     * @param {boolean} [c.experimental.shareDefaults] - If true, default field values will
-     *     not be stored explicitly on every record.  This can yield major performance
-     *     improvements for stores with sparsely populated records.
      * @param {Object[]} [c.data] - source data to load.
      */
     constructor({
@@ -818,39 +815,29 @@ export class Store extends HoistBase {
     }
 
     parseRaw(data) {
-        const {shareDefaults} = this.experimental;
-
         // a) create/prepare the data object
-        const ret = shareDefaults ? Object.create(this._dataDefaults) : {};
+        const ret = Object.create(this._dataDefaults);
 
         // b) apply parsed data as needed.
-        if (shareDefaults) {
-            const {_fieldMap} = this;
-            forIn(data, (raw, name) => {
-                const field = _fieldMap.get(name);
-                if (field) {
-                    const val = field.parseVal(raw);
-                    if (val !== field.defaultValue) {
-                        ret[name] = val;
-                    }
+        const {_fieldMap} = this;
+        forIn(data, (raw, name) => {
+            const field = _fieldMap.get(name);
+            if (field) {
+                const val = field.parseVal(raw);
+                if (val !== field.defaultValue) {
+                    ret[name] = val;
                 }
-            });
-        } else {
-            this.fields.forEach(field => {
-                const {name} = field;
-                ret[name] = field.parseVal(data[name]);
-            });
-        }
+            }
+        });
 
         return ret;
     }
 
     parseUpdate(data, update) {
-        const {_fieldMap} = this,
-            {shareDefaults} = this.experimental;
+        const {_fieldMap} = this;
 
         // a) clone the existing object
-        const ret = shareDefaults ? Object.create(this._dataDefaults) : {};
+        const ret = Object.create(this._dataDefaults);
         Object.assign(ret, data);
 
         // b) apply changes
@@ -858,7 +845,7 @@ export class Store extends HoistBase {
             const field = _fieldMap.get(name);
             if (field) {
                 const val = field.parseVal(raw);
-                if (!shareDefaults || val !== field.defaultValue) {
+                if (val !== field.defaultValue) {
                     ret[name] = val;
                 } else {
                     delete ret[name];
@@ -870,7 +857,6 @@ export class Store extends HoistBase {
     }
 
     createDataDefaults() {
-        if (!this.experimental.shareDefaults) return null;
         const ret = {};
         this.fields.forEach(({name, defaultValue}) => ret[name] = defaultValue);
         return ret;
@@ -883,8 +869,8 @@ export class Store extends HoistBase {
     }
 
     parseExperimental(experimental) {
+        apiRemoved(experimental?.shareDefaults, 'shareDefaults');
         return {
-            shareDefaults: false,
             ...XH.getConf('xhStoreExperimental', {}),
             ...experimental
         };

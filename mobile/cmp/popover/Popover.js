@@ -45,9 +45,13 @@ export const [Popover, popover] = hoistCmp.withFactory({
             popper = usePopper(impl.targetEl, impl.contentEl, {
                 placement: impl.menuPositionToPlacement(position),
                 strategy: 'fixed',
-                modifiers: [
-                    {name: 'preventOverflow', options: {padding: 10}}
-                ],
+                modifiers: [{
+                    name: 'preventOverflow',
+                    options: {
+                        padding: 10,
+                        boundary: 'viewport'
+                    }
+                }],
                 ...popperOptions
             });
 

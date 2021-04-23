@@ -4,10 +4,12 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, RootRefreshContextModel} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {HoistModel, managed, RootRefreshContextModel, XH} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {AboutDialogModel} from './AboutDialogModel';
+import {BannerSourceModel} from './BannerSourceModel';
+import {ChangelogDialogModel} from './ChangelogDialogModel';
 import {ExceptionDialogModel} from './ExceptionDialogModel';
 import {FeedbackDialogModel} from './FeedbackDialogModel';
 import {ImpersonationBarModel} from './ImpersonationBarModel';
@@ -24,65 +26,72 @@ export class AppContainerModel extends HoistModel {
     //------------
     // Sub-models
     //------------
+    /** Link any async operations that should mask the entire application to this model. */
+    @managed appLoadModel = new PendingTaskModel({mode: 'all'});
+
     @managed aboutDialogModel = new AboutDialogModel();
+    @managed changelogDialogModel = new ChangelogDialogModel();
     @managed exceptionDialogModel = new ExceptionDialogModel();
-    @managed optionsDialogModel = new OptionsDialogModel();
     @managed feedbackDialogModel = new FeedbackDialogModel();
     @managed impersonationBarModel = new ImpersonationBarModel();
+    @managed optionsDialogModel = new OptionsDialogModel();
+
+    @managed bannerSourceModel = new BannerSourceModel();
     @managed messageSourceModel = new MessageSourceModel();
     @managed toastSourceModel = new ToastSourceModel();
-    @managed themeModel = new ThemeModel();
+
     @managed refreshContextModel = new RootRefreshContextModel();
-
-    /**
-     * Tracks globally loading promises.
-     * Link any async operations that should mask the entire application to this model.
-     */
-    @managed
-    appLoadModel = new PendingTaskModel({mode: 'all'});
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @managed themeModel = new ThemeModel();
 
     init() {
         const models = [
+            this.appLoadModel,
             this.aboutDialogModel,
+            this.changelogDialogModel,
             this.exceptionDialogModel,
-            this.optionsDialogModel,
             this.feedbackDialogModel,
             this.impersonationBarModel,
+            this.optionsDialogModel,
+            this.bannerSourceModel,
             this.messageSourceModel,
             this.toastSourceModel,
-            this.themeModel,
-            this.appLoadModel,
-            this.refreshContextModel
+            this.refreshContextModel,
+            this.themeModel
         ];
         models.forEach(it => {
             if (it.init) it.init();
         });
     }
 
-    /** Updated App version available, as reported by server. */
-    @observable updateVersion = null;
-
     /**
-     * Show the update toolbar prompt. Called by EnvironmentService when the server reports that a
+     * Show the update Banner. Called by EnvironmentService when the server reports that a
      * new (or at least different) version is available and the user should be prompted.
      *
      * @param {string} version - updated version from server.
      * @param {string} [build] - updated build from server - included for snapshot version prompts.
      */
-    @action
-    showUpdateBar(version, build) {
-        let updateVersion = version;
-
+    showUpdateBanner(version, build) {
         // Display build tag for snaps only - not of much interest across actual version updates.
-        if (updateVersion.includes('SNAPSHOT') && build && build != 'UNKNOWN') {
-            updateVersion += ` (b${build})`;
+        if (version.includes('SNAPSHOT') && build && build !== 'UNKNOWN') {
+            version += ` (b${build})`;
         }
 
-        this.updateVersion = updateVersion;
+        // Show Banner
+        const mobile = XH.isMobileApp,
+            message = mobile ? 'Update available!' : `A new version of ${XH.clientAppName} is available!`,
+            buttonText = mobile ? version : `Update to ${version}`;
+
+        XH.showBanner({
+            category: 'app-update',
+            message,
+            icon: Icon.rocket({size: 'lg'}),
+            intent: 'warning',
+            enableClose: false,
+            actionButtonProps: {
+                icon: Icon.refresh(),
+                text: buttonText,
+                onClick: () => XH.reloadApp()
+            }
+        });
     }
 }

@@ -234,7 +234,7 @@ export class GridExportService extends HoistService {
             value = record.data[exportValue];
         } else if (isFunction(exportValue)) {
             // If export value is a function that transforms the value
-            value = exportValue(value);
+            value = exportValue(value, {record, column, gridModel});
         } else if (aggData && !isNil(aggData[field])) {
             // If we found aggregate data calculated by agGrid
             value = aggData[field];

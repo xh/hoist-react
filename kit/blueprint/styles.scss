@@ -52,7 +52,6 @@
       flex: 1;
 
       // Primary app icon
-
       > svg:first-child {
         color: var(--xh-navbar-title-color);
       }
@@ -155,8 +154,24 @@ $pt-transition-duration: 100ms !default;
 }
 
 //------------------------
-// Buttons - see desktop/cmp/button/Button.scss
+// Buttons
 //------------------------
+// See desktop/cmp/button/Button.scss for button styles.
+// Rule below applies only to buttons within BP inputs to disable default hover background-color
+// (which looks weird) and instead tweak the icon color to indicate it's active.
+.xh-app .xh-input .bp3-input-group .xh-button {
+  &.xh-button--minimal,
+  &.xh-button--outlined {
+    &.xh-button--enabled {
+      &:hover {
+        background-color: unset !important;
+        svg {
+          color: var(--xh-button-text-color) !important;
+        }
+      }
+    }
+  }
+}
 
 //------------------------
 // Toasts
