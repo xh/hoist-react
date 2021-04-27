@@ -2,6 +2,12 @@
 
 ## v41.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+
+* The support for class-based Hoist Components via `@HoistComponent` has been removed.  This
+support had been officially deprecated in `v38`.  Please use functional components created by
+`hoistCmp` instead.
+
 ### 📚 Libraries
 * @mobx `6.1.8 -> 6.3.0`
 
