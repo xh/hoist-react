@@ -54,8 +54,7 @@ export function deepFreeze(obj) {
 
 /**
  * Output a deep copy of an object up to a given depth, beyond which child objects will be
- * replaced by a placeholder string. Typically used prior to stringifying potentially recursive
- * or deeply nested objects.
+ * replaced by a placeholder string.
  *
  * @param {Object} obj
  * @param {number} depth - maximum depth within the object tree that will be returned.
