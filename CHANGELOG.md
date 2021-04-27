@@ -2,8 +2,13 @@
 
 ## v41.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+* Improvements to exception serialization to better handle `LocalDate` and similar custom JS classes.
+
 ### 📚 Libraries
 * @mobx `6.1.8 -> 6.3.0`
+
+
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v40.0.0...develop)
 
