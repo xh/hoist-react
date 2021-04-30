@@ -6,6 +6,13 @@
     height: 100%;
     border: none;
 
+    // Remove the border when focused on a cell which is being inline edited as we already add a
+    // border around the input, so this causes some undesirable extra padding on the contents of the
+    // cell
+    &.ag-cell-focus {
+      border: none !important;
+    }
+
     .ag-react-container {
       display: flex;
       width: 100%;
