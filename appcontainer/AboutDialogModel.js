@@ -31,6 +31,7 @@ export class AboutDialogModel extends HoistModel {
 
     @action
     show() {
+        XH.track({category: 'Navigation', message: 'Opened About Dialog'});
         this.isOpen = true;
     }
 

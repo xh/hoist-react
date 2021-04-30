@@ -4,13 +4,12 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {configure} from 'mobx';
-
-export {
+import {
     action,
     autorun,
     comparer,
     computed,
+    configure,
     extendObservable,
     makeObservable,
     observable,
@@ -22,7 +21,30 @@ export {
     untracked,
     when
 } from 'mobx';
-export {observer} from 'mobx-react-lite';
-export {bindable, settable} from './decorators';
+import {observer} from 'mobx-react-lite';
+import {bindable, settable} from './decorators';
 
 configure({enforceActions: 'observed'});
+
+//---------------------
+// Re-exports
+//---------------------
+export {
+    action,
+    autorun,
+    bindable,
+    comparer,
+    computed,
+    extendObservable,
+    makeObservable,
+    observable,
+    observer,
+    override,
+    reaction,
+    runInAction,
+    settable,
+    toJS,
+    trace,
+    untracked,
+    when
+};

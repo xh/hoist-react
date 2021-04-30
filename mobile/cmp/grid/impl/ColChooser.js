@@ -36,7 +36,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
     className: 'xh-col-chooser',
 
     render({model, className}) {
-        const {isOpen, gridModel, pinnedColumn, visibleColumns, hiddenColumns} = model;
+        const {isOpen, gridModel, pinnedColumn, visibleColumns, hiddenColumns, showRestoreDefaults} = model;
         const impl = useLocalModel(LocalModel);
         impl.model = model;
 
@@ -96,6 +96,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
             }),
             bbar: [
                 button({
+                    omit: !showRestoreDefaults,
                     text: 'Reset',
                     modifier: 'quiet',
                     onClick: () => model.restoreDefaults()

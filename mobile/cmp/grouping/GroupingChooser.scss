@@ -62,7 +62,16 @@
 }
 
 .xh-grouping-chooser-popover {
+  .dialog {
+    min-width: unset;
+  }
+
   .xh-dialog__inner {
-    padding: var(--xh-pad-half-px);
+    padding: 0;
+  }
+
+  &__content {
+    padding: 3px var(--xh-pad-half-px);
+    min-width: 240px; // Required to allow for toolbars
   }
 }

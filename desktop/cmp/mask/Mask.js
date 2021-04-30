@@ -5,8 +5,9 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
+import {spinner} from '@xh/hoist/cmp/spinner';
 import {hoistCmp} from '@xh/hoist/core';
-import {Classes, overlay, spinner} from '@xh/hoist/kit/blueprint';
+import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import PT from 'prop-types';

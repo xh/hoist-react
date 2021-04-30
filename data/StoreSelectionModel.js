@@ -7,7 +7,7 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {castArray, compact, intersection, isEqual, union} from 'lodash';
+import {castArray, compact, remove, isEqual, union, map} from 'lodash';
 
 /**
  * Model for managing store selections.
@@ -20,7 +20,7 @@ export class StoreSelectionModel extends HoistModel {
     /** @member {string} */
     mode;
 
-    @observable.ref ids = [];
+    @observable.ref _ids = [];
 
     /**
      * @param {Object} c - StoreSelectionModel configuration.
@@ -35,29 +35,51 @@ export class StoreSelectionModel extends HoistModel {
         this.addReaction(this.cullSelectionReaction());
     }
 
-    /** @return {?Record} - single selected record, or null if multiple or no records selected. */
-    @computed
-    get singleRecord() {
-        const ids = this.ids;
-        return ids.length === 1 ? this.store.getById(ids[0]) : null;
+    /** @return {Record[]} - currently selected records. */
+    @computed.struct
+    get records() {
+        return compact(this._ids.map(it => this.store.getById(it, true)));
     }
 
-    /** @return {Record[]} - currently selected Records. */
-    @computed
-    get records() {
-        return compact(this.ids.map(it => this.store.getById(it)));
+    /** @return {(string[]|number[])} - IDs of currently selected records. */
+    @computed.struct
+    get ids() {
+        return map(this.records, 'id');
+    }
+
+    /**
+     * @return {?Record} - single selected record, or null if multiple/no records selected.
+     *
+     * Note that this getter will also change if just the data of selected record is changed
+     * due to store loading or editing.  Applications only interested in the identity
+     * of the selection should use {@see selectedRecordId} instead.
+     */
+    get singleRecord() {
+        const {records} = this;
+        return records.length === 1 ? records[0] : null;
+    }
+
+    /**
+     * @return {?(string|number)} - ID of selected record, or null if multiple/no records selected.
+     *
+     * Note that this getter will *not* change if just the data of selected record is changed
+     * due to store loading or editing.  Applications also interested in the contents of the
+     * of the selection should use the {@see singleRecord} getter instead.
+     */
+    get selectedRecordId() {
+        const {ids} = this;
+        return ids.length === 1 ? ids[0] : null;
     }
 
     /** @return {boolean} - true if selection is empty. */
-    @computed
     get isEmpty() {
-        return this.ids.length === 0;
+        return this.count === 0;
     }
 
     /** @return {number} - count of currently selected records. */
     @computed
     get count() {
-        return this.ids.length;
+        return this.records.length;
     }
 
     /**
@@ -68,8 +90,8 @@ export class StoreSelectionModel extends HoistModel {
     @action
     select(records, clearSelection = true) {
         records = castArray(records ?? []);
-        if (this.mode == 'disabled') return;
-        if (this.mode == 'single' && records.length > 1) {
+        if (this.mode === 'disabled') return;
+        if (this.mode === 'single' && records.length > 1) {
             records = [records[0]];
         }
         const ids = records.map(it => {
@@ -78,11 +100,11 @@ export class StoreSelectionModel extends HoistModel {
             return this.store.getById(id, true);
         });
 
-        if (isEqual(ids, this.ids)) {
+        if (isEqual(ids, this._ids)) {
             return;
         }
 
-        this.ids = clearSelection ? ids : union(this.ids, ids);
+        this._ids = clearSelection ? ids : union(this._ids, ids);
     }
 
     /** Select all filtered records. */
@@ -104,17 +126,12 @@ export class StoreSelectionModel extends HoistModel {
     // Implementation
     //------------------------
     cullSelectionReaction() {
-        // Remove recs from selection if they are no longer in store e.g. (due to filtering)
+        // Remove recs from selection if they are no longer in store. Cleanup array in place without
+        // modifying observable -- the 'records' getter provides all observable state.
+        const {store} = this;
         return {
-            track: () => this.store.records,
-            run: (records) => {
-                const storeIds = records.map(it => it.id),
-                    selection = this.ids,
-                    newSelection = intersection(storeIds, selection);
-                if (selection.length !== newSelection.length) {
-                    this.select(newSelection);
-                }
-            }
+            track: () => store.records,
+            run: () => remove(this._ids, id => !store.getById(id, true))
         };
     }
 }

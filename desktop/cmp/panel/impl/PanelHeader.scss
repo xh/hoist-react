@@ -33,27 +33,16 @@
     color: var(--xh-title-text-color) !important;
   }
 
-  // Compact mode
-  &--compact {
-    height: var(--xh-title-compact-height-px);
-    font-size: var(--xh-title-compact-font-size-px);
-    padding: 0 0 0 var(--xh-pad-half-px);
-
-    .xh-panel-header__title {
-      font-size: var(--xh-title-compact-font-size-px);
-    }
-
-    &.xh-vbox {
-      padding: var(--xh-pad-half-px) 0 0 0;
-      width: var(--xh-title-compact-height-px);
-    }
-  }
-
   // Vertical mode - collapsed to left or right
   &.xh-vbox {
+    width: var(--xh-title-height-px);
+
     .xh-panel-header__title {
       writing-mode: vertical-lr;
       -ms-block-progression: lr;
+
+      // Width has to be font-size +5px for alignment // @see https://github.com/xh/hoist-react/issues/2335
+      width: calc(1em + 5px);
     }
 
     &.xh-panel-header--left {
@@ -72,6 +61,22 @@
       & > .svg-inline--fa {
         margin: 0 0 10px 0;
       }
+    }
+  }
+
+  // Compact mode
+  &--compact {
+    height: var(--xh-title-compact-height-px);
+    font-size: var(--xh-title-compact-font-size-px);
+    padding: 0 0 0 var(--xh-pad-half-px);
+
+    .xh-panel-header__title {
+      font-size: var(--xh-title-compact-font-size-px);
+    }
+
+    &.xh-vbox {
+      padding: var(--xh-pad-half-px) 0 0 0;
+      width: var(--xh-title-compact-height-px);
     }
   }
 }

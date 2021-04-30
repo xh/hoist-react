@@ -27,21 +27,23 @@ export class ColChooserModel extends HoistModel {
 
     commitOnChange;
     showRestoreDefaults;
+    autosizeOnCommit;
 
     constructor({
         gridModel,
         commitOnChange = true,
         showRestoreDefaults = true,
+        autosizeOnCommit = false,
         width = 520,
         height = 300
     }) {
         super();
         makeObservable(this);
-        this.gridModel = gridModel;
 
+        this.gridModel = gridModel;
         this.commitOnChange = commitOnChange;
         this.showRestoreDefaults = showRestoreDefaults;
-
+        this.autosizeOnCommit = autosizeOnCommit;
         this.width = width;
         this.height = height;
 
@@ -77,7 +79,7 @@ export class ColChooserModel extends HoistModel {
     }
 
     commit() {
-        const {gridModel, lrModel} = this,
+        const {gridModel, lrModel, autosizeOnCommit} = this,
             {leftValues, rightValues} = lrModel,
             cols = gridModel.columnState;
 
@@ -91,6 +93,7 @@ export class ColChooserModel extends HoistModel {
         });
 
         gridModel.applyColumnStateChanges(colChanges);
+        if (autosizeOnCommit && colChanges.length) gridModel.autosizeAsync();
     }
 
     async restoreDefaultsAsync() {

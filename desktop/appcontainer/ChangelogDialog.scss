@@ -1,0 +1,70 @@
+.xh-changelog {
+  height: 80vh;
+  max-height: 700px;
+  width: 80vw;
+  max-width: 700px;
+
+  &__inner {
+    flex: 1;
+    overflow-y: scroll;
+    padding: var(--xh-pad-px);
+  }
+
+  &__version {
+    padding: var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-double-px) var(--xh-pad-px);
+
+    h2 {
+      border-bottom: var(--xh-border-solid);
+      font-weight: normal;
+      margin: 0 !important;
+    }
+
+    &--current {
+      background-color: var(--xh-bg-alt);
+      border: var(--xh-border-solid);
+      border-radius: var(--xh-border-radius-px);
+      margin-bottom: var(--xh-pad-px);
+    }
+
+    &__category {
+      padding: 0 var(--xh-pad-px);
+
+      h3 {
+        border: 1px solid var(--xh-text-color-muted);
+        border-radius: 2px;
+        display: inline-block;
+        font-weight: normal;
+        font-size: 1em;
+        padding: 2px 4px;
+      }
+
+      &--breaking-changes h3 {
+        background-color: var(--xh-intent-danger-trans1);
+        border-color: var(--xh-intent-danger-trans2);
+        color: var(--xh-intent-danger) !important;
+      }
+
+      &--new-features h3 {
+        background-color: var(--xh-intent-success-trans1);
+        border-color: var(--xh-intent-success-trans2);
+        color: var(--xh-intent-success) !important;
+      }
+
+      &--bug-fixes h3 {
+        background-color: var(--xh-intent-warning-trans1);
+        border-color: var(--xh-intent-warning-trans2);
+        color: var(--xh-intent-warning) !important;
+      }
+
+      &--technical h3 {
+        background-color: var(--xh-intent-primary-trans1);
+        border-color: var(--xh-intent-primary-trans2);
+        color: var(--xh-intent-primary) !important;
+      }
+
+      ul {
+        margin: 0;
+      }
+    }
+  }
+}

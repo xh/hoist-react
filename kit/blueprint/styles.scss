@@ -53,7 +53,6 @@
       flex: 1;
 
       // Primary app icon
-
       > svg:first-child {
         color: var(--xh-navbar-title-color);
       }
@@ -156,8 +155,24 @@ $pt-transition-duration: 100ms !default;
 }
 
 //------------------------
-// Buttons - see desktop/cmp/button/Button.scss
+// Buttons
 //------------------------
+// See desktop/cmp/button/Button.scss for button styles.
+// Rule below applies only to buttons within BP inputs to disable default hover background-color
+// (which looks weird) and instead tweak the icon color to indicate it's active.
+.xh-app .xh-input .bp3-input-group .xh-button {
+  &.xh-button--minimal,
+  &.xh-button--outlined {
+    &.xh-button--enabled {
+      &:hover {
+        background-color: unset !important;
+        svg {
+          color: var(--xh-button-text-color) !important;
+        }
+      }
+    }
+  }
+}
 
 //------------------------
 // Toasts
@@ -333,12 +348,6 @@ textarea.bp3-input,
 /* Apply blueprint's z-index of 16 for icons within a control group */
 .bp3-control-group .bp3-input-group svg:not(.bp3-icon) {
   z-index: 16;
-}
-
-// Avoid misaligned rightIcon within inputs.
-.bp3-button svg:not(.bp3-icon):first-child:last-child,
-.bp3-button .bp3-spinner + svg:not(.bp3-icon):last-child {
-  margin-left: 0;
 }
 
 // Controls ship with default bottom and (inline) right margins. We expose variables

@@ -12,7 +12,7 @@ import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {castArray, omitBy} from 'lodash';
+import {omitBy} from 'lodash';
 import PT from 'prop-types';
 import {isValidElement} from 'react';
 import {panelHeader} from './impl/PanelHeader';
@@ -25,7 +25,7 @@ import './Panel.scss';
 export const [Panel, panel] = hoistCmp.withFactory({
     displayName: 'Panel',
     className: 'xh-panel',
-    model: false, memo: false,
+    model: false,
 
     render(props, ref) {
         const contextModel = useContextModel('*');
@@ -60,7 +60,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
         const coreContentsEl = scrollable ? div : vbox,
             coreContents = coreContentsEl({
                 className: 'xh-panel__content',
-                items: castArray(children)
+                items: children
             });
 
         // 3) Prepare combined layout.

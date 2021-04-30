@@ -32,6 +32,7 @@ export class FetchService extends HoistService {
 
     abortControllers = {};
     defaultHeaders = {};
+    defaultTimeout = 30 * SECONDS;
 
     /**
      * Set default headers to be sent with all subsequent requests.
@@ -40,6 +41,17 @@ export class FetchService extends HoistService {
      */
     setDefaultHeaders(headers) {
         this.defaultHeaders = headers;
+    }
+
+    /**
+     * Set the default timeout for all requests on this service.
+     * If not set this value is 30 SECONDS.
+     *
+     * @param {(number|Object)} timeout - ms to wait for response before rejecting with a timeout
+     *      exception. May also be specified an Object or null. See {@see FetchOptions}.
+     */
+    setDefaultTimeout(timeout) {
+        this.defaultTimeout = timeout;
     }
 
     /**
@@ -115,11 +127,11 @@ export class FetchService extends HoistService {
     // Implementation
     //-----------------------
     async withTimeoutAsync(promise, opts) {
-        const timeout = withDefault(opts.timeout, 30 * SECONDS);
+        const timeout = withDefault(opts.timeout, this.defaultTimeout);
         return promise
             .timeout(timeout)
             .catchWhen('Timeout Exception', e => {
-                throw Exception.fetchTimeout(opts, e, opts.timeout?.message);
+                throw Exception.fetchTimeout(opts, e, timeout?.message);
             });
     }
 

@@ -7,10 +7,11 @@
 import {p} from '@xh/hoist/cmp/layout';
 import {AppSpec, AppState, elem, HoistBase} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {
     AutoRefreshService,
+    ChangelogService,
     ConfigService,
     EnvironmentService,
     FetchService,
@@ -24,8 +25,8 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {getClientDeviceInfo, throwIf, withShortDebug, checkMinVersion} from '@xh/hoist/utils/js';
-import {compact, camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
+import {checkMinVersion, getClientDeviceInfo, throwIf, withShortDebug} from '@xh/hoist/utils/js';
+import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
 import parser from 'ua-parser-js';
 
@@ -59,22 +60,25 @@ class XHClass extends HoistBase {
     // Metadata - set via webpack.DefinePlugin at build time.
     // See @xh/hoist-dev-utils/configureWebpack.
     //----------------------------------------------------------------------------------------------
-    /** Short internal code for the application. */
+    /** @member {string} - short internal code for the application. */
     appCode = xhAppCode;
 
-    /** User-facing display name for the application. See also `XH.clientAppName`. */
+    /** @member {string} - user-facing display name for the app. See also `XH.clientAppName`. */
     appName = xhAppName;
 
-    /** SemVer or Snapshot version of the client build. */
+    /** @member {string} - semVer or Snapshot version of the client build. */
     appVersion = xhAppVersion;
 
-    /** Git commit hash (or equivalent) of the client build. */
+    /**
+     * @member {string} - optional identifier for the client build (e.g. a git commit hash or a
+     *      build ID from a CI system. Varies depending on how builds are configured.
+     */
     appBuild = xhAppBuild;
 
-    /** Root URL context/path - prepended to all relative fetch requests. */
+    /** @member {string} - root URL context/path - prepended to all relative fetch requests. */
     baseUrl = xhBaseUrl;
 
-    /** Whether build is for local development */
+    /** @member {boolean} - true if app is running in a local development environment. */
     isDevelopmentMode = xhIsDevelopmentMode;
 
     //----------------------------------------------------------------------------------------------
@@ -83,6 +87,8 @@ class XHClass extends HoistBase {
     //----------------------------------------------------------------------------------------------
     /** @member {AutoRefreshService} */
     autoRefreshService;
+    /** @member {ChangelogService} */
+    changelogService;
     /** @member {ConfigService} */
     configService;
     /** @member {EnvironmentService} */
@@ -124,18 +130,43 @@ class XHClass extends HoistBase {
      */
     fetchJson(opts)             {return this.fetchService.fetchJson(opts)}
 
+    /**
+     * Primary convenience alias for reading soft configuration values.
+     * @param {string} key - identifier of the config to return.
+     * @param {*} [defaultVal] - value to return if there is no client-side config with this key.
+     * @return {*} - the soft-configured value.
+     */
     getConf(key, defaultVal)    {return this.configService.get(key, defaultVal)}
+
+    /**
+     * Primary convenience alias for reading user preference values.
+     * @param {string} key - identifier of the pref to return.
+     * @param {*} [defaultVal] - value to return if there is no pref with this key.
+     * @return {*} - the user's preference, or the data-driven default if pref not yet set by user.
+     */
     getPref(key, defaultVal)    {return this.prefService.get(key, defaultVal)}
+
+    /**
+     * Primary convenience alias for setting user preference values.
+     * @param {string} key - identifier of the pref to set.
+     * @param {*} val - the new value to persist for the current user.
+     */
     setPref(key, val)           {return this.prefService.set(key, val)}
 
     // Make these robust, so they don't fail if called early in initialization sequence
     track(opts)                 {return this.trackService?.track(opts)}
     getEnv(key)                 {return this.environmentService?.get(key) ?? null}
+
+    /** @return {?string} */
     getUser()                   {return this.identityService?.getUser() ?? null}
+    /** @return {?string} */
     getUsername()               {return this.identityService?.getUsername() ?? null}
 
+    /** @return {boolean} */
     get isMobileApp()           {return this.appSpec.isMobileApp}
+    /** @return {string} */
     get clientAppCode()         {return this.appSpec.clientAppCode}
+    /** @return {string} */
     get clientAppName()         {return this.appSpec.clientAppName}
 
     get isPhone()               {return this.uaParser.getDevice().type === 'mobile'}
@@ -386,7 +417,7 @@ class XHClass extends HoistBase {
      * @param {(ReactNode|string)} config.message - the message to show in the toast.
      * @param {Element} [config.icon] - icon to be displayed
      * @param {number} [config.timeout] - time in milliseconds to display the toast.
-     * @param {string} [config.intent] - the Blueprint intent (desktop only)
+     * @param {string} [config.intent] - the Blueprint intent.
      * @param {Object} [config.position] - Position in viewport to display toast. See Blueprint
      *     Position enum (desktop only).
      * @param {Component} [config.containerRef] - Component that should contain (locate) the Toast.
@@ -394,6 +425,37 @@ class XHClass extends HoistBase {
      */
     toast(config) {
         return this.acm.toastSourceModel.show(config);
+    }
+
+    /**
+     * Show a Banner across the top of the view port. Banners are unique by their
+     * category prop - showing a new banner with an existing category will replace it.
+     *
+     * @param {Object} config - options for banner.
+     * @param {string} [config.category] - the category for the banner. Defaults to 'default'.
+     * @param {Element} [config.icon] - icon to be displayed.
+     * @param {(ReactNode|string)} [config.message] - the message to show in the banner.
+     * @param {string} [config.intent] - intent for banner styling. Defaults to 'primary'.
+     * @param {string} [config.className] - CSS classname provided to the banner component.
+     * @param {boolean} [config.enableClose] - Show a close button. Default true.
+     * @param {Banner-onCloseFn} [config.onClose] - Callback function triggered when the user
+     *      clicks the close button. (Note, banners closed via `XH.hideBanner()` or when the max
+     *      number of banners shown is exceed will NOT trigger this callback.)
+     * @param {function} [config.actionFn] - If provided, banner will render an action button
+     *      which triggers this function.
+     * @param {Object} [config.actionButtonProps] - Set the properties of the action button
+     * @param {...*} [config.rest] - additional properties to pass to the banner component
+     */
+    showBanner(config) {
+        if (isString(config)) config = {message: config};
+        return this.acm.bannerSourceModel.show(config);
+    }
+
+    /**
+     * @param {string} category - category to identify the banner. Defaults to 'default'.
+     */
+    hideBanner(category = 'default') {
+        return this.acm.bannerSourceModel.hide(category);
     }
 
     //--------------------------
@@ -431,6 +493,28 @@ class XHClass extends HoistBase {
     }
 
     /**
+     * Show an exception. This method is an alias for {@see ExceptionHandler.showException}.
+     *
+     * Intended to be used for the deferred / user-initiated showing of exceptions that have
+     * already been appropriately logged. Applications should typically prefer `handleException`.
+     *
+     * @param {(Error|Object|string)} exception - Error or thrown object - if not an Error, an
+     *      Exception will be created via `Exception.create()`.
+     * @param {Object} [options] - controls on how the exception should be shown and/or logged.
+     * @param {string} [options.message] - text (ideally user-friendly) describing the error.
+     * @param {string} [options.title] - title for an alert dialog, if shown.
+     * @param {boolean} [options.showAsError] - configure modal alert to indicate that this is an
+     *      unexpected error. Default true for most exceptions, false for those marked as `isRoutine`.
+     * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
+     *      dismiss - default false, excepting session-related exceptions.
+     * @param {string[]} [options.hideParams] - A list of parameters that should be hidden from
+     *      the exception alert.
+     */
+    showException(exception, options) {
+        this.exceptionHandler.showException(exception, options);
+    }
+
+    /**
      * Create a new exception - {@see Exception} for Hoist conventions / extensions to JS Errors.
      * @param {(Object|string)} cfg - properties to add to the returned Error.
      *      If a string, will become the 'message' value.
@@ -443,26 +527,34 @@ class XHClass extends HoistBase {
     //---------------------------
     // Miscellaneous
     //---------------------------
-    /** Show a dialog for users to set app options. */
-    showOptionsDialog() {
-        return this.acm.optionsDialogModel.show();
-    }
-
-    /** Show a dialog to elicit feedback text from users. */
-    showFeedbackDialog() {
-        return this.acm.feedbackDialogModel.show();
-    }
-
-    /** Show 'about' dialog with info about the app and environment. */
+    /** Show "about this app" dialog, powered by {@see EnvironmentService}. */
     showAboutDialog() {
-        return this.acm.aboutDialogModel.show();
+        this.acm.aboutDialogModel.show();
+    }
+
+    /** Show a "release notes" dialog, powered by {@see ChangelogService}. */
+    showChangelog() {
+        this.acm.changelogDialogModel.show();
+    }
+
+    /** Show a dialog to elicit feedback from the user. */
+    showFeedbackDialog() {
+        this.acm.feedbackDialogModel.show();
     }
 
     /** Show the impersonation bar to allow switching users. */
     showImpersonationBar() {
-        return this.acm.impersonationBarModel.show();
+        this.acm.impersonationBarModel.show();
     }
 
+    /** Show a dialog to allow the user to view and set app options. */
+    showOptionsDialog() {
+        this.acm.optionsDialogModel.show();
+    }
+
+    //---------------------------
+    // Miscellaneous
+    //---------------------------
     /**
      * Resets user preferences and any persistent local application state, then reloads the app.
      */
@@ -515,7 +607,7 @@ class XHClass extends HoistBase {
         this._initCalled = true;
 
         const S = AppState,
-            {appSpec, isMobileApp, isPhone, isTablet, isDesktop} = this;
+            {appSpec, isMobileApp, isPhone, isTablet, isDesktop, baseUrl} = this;
 
         if (appSpec.trackAppLoad) this.trackLoad();
 
@@ -538,9 +630,9 @@ class XHClass extends HoistBase {
             try {
                 await XH.fetch({url: 'ping'});
             } catch (e) {
-                const pingURL = XH.isDevelopmentMode ?
-                    `${XH.baseUrl}ping` :
-                    `${window.location.origin}${XH.baseUrl}ping`;
+                const pingURL = baseUrl.startsWith('http') ?
+                    `${baseUrl}ping` :
+                    `${window.location.origin}${baseUrl}ping`;
 
                 throw this.exception({
                     name: 'UI Server Unavailable',
@@ -552,9 +644,9 @@ class XHClass extends HoistBase {
 
             this.setAppState(S.PRE_AUTH);
 
-            // Instantiate appModel, await optional pre-auth init.
-            this.appModel = new this.appSpec.modelClass();
-            await this.appModel.preAuthInitAsync();
+            // consult (optional) pre-auth init for app
+            this.appModelClass = this.appSpec.modelClass;
+            await this.appModelClass.preAuthAsync();
 
             // Check if user has already been authenticated (prior login, OAuth, SSO)...
             const userIsAuthenticated = await this.getAuthStatusFromServerAsync();
@@ -615,7 +707,8 @@ class XHClass extends HoistBase {
             }
 
             await this.installServicesAsync(
-                AutoRefreshService, IdleService, GridAutosizeService, GridExportService, WebSocketService
+                AutoRefreshService, ChangelogService, IdleService,
+                GridAutosizeService, GridExportService, WebSocketService
             );
             this.acm.init();
 
@@ -624,6 +717,7 @@ class XHClass extends HoistBase {
             // Delay to workaround hot-reload styling issues in dev.
             await wait(XH.isDevelopmentMode ? 300 : 1);
 
+            this.appModel = new this.appModelClass();
             await this.appModel.initAsync();
             this.startRouter();
             this.startOptionsDialog();
@@ -777,4 +871,9 @@ export const XH = window.XH = new XHClass();
  *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
  * @property {function} [onConfirm] - Callback to execute when confirm is clicked.
  * @property {function} [onCancel] - Callback to execute when cancel is clicked.
+ */
+
+/**
+ * @callback Banner-onCloseFn
+ * @param {BannerModel} model - the backing model for the banner which was just closed.
  */

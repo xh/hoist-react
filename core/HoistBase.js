@@ -13,12 +13,14 @@ import {
     isNil,
     isNumber,
     isPlainObject,
+    isString,
     isUndefined,
     upperFirst
 } from 'lodash';
 import {
     action,
     runInAction,
+    comparer,
     autorun as mobxAutorun,
     reaction as mobxReaction,
     when as mobxWhen
@@ -55,6 +57,12 @@ export class HoistBase {
      * passes, and the run function is executed once. (These map to mobX's native `reaction()`
      * and `when()` functions, respectively).
      *
+     * Specify the property 'equals' to determine how successive outputs of track will be compared.
+     * Hoist supports string specification of this (i.e. 'shallow','structural', or 'identity') and
+     * will map it to the underlying MobX `comparer` object.  For returns of arrays and objects,
+     * consider using the value 'shallow' over the default 'identity' to avoid triggering spurious
+     * changes. See MobX for more information.
+     *
      * Choose this method over an autorun when you wish to explicitly declare which observables
      * should be tracked. A common pattern is to have the track function return these
      * observables in a simple array or object, which the run function can use as its input or
@@ -62,7 +70,7 @@ export class HoistBase {
      * the observables to be watched, and not necessarily generating or transforming values.
      *
      *  This reaction will be disposed of automatically when this object is destroyed. It can also be
-     *  ended/disposed of manually using the native mobx disposer function returned by this method.
+     *  ended/disposed of manually using the native MobX disposer function returned by this method.
      *
      * @param {Object} conf - configuration of reaction, containing options accepted by MobX
      *      reaction() API, as well as arguments below.
@@ -81,8 +89,7 @@ export class HoistBase {
             (track && when) || (!track && !when),
             "Must specify either 'track' or 'when' in addReaction."
         );
-        validateMobxOptions(opts);
-
+        opts = parseReactionOptions(opts);
         run = bindAndDebounce(this, run, debounce);
 
         const disposer = track ? mobxReaction(track, run, opts) : mobxWhen(when, run, opts);
@@ -118,7 +125,6 @@ export class HoistBase {
         if (isFunction(conf)) conf = {run: conf};
         let {run, debounce, ...opts} = conf;
 
-        validateMobxOptions(opts);
         run = bindAndDebounce(this, run, debounce);
 
         const disposer = mobxAutorun(run, opts);
@@ -225,12 +231,20 @@ HoistBase.isHoistBase = true;
 // Implementation
 // Externalized to make private, obj is the instance
 //--------------------------------------------------
-function validateMobxOptions(options) {
+function parseReactionOptions(options) {
     throwIf(
         !isNil(options.runImmediately),
         '"runImmediately" is not a reaction option.  Did you mean "fireImmediately"?'
     );
+
+    if (isString(options.equals)) {
+        const equals = comparer[options.equals];
+        throwIf(!isFunction(equals), `Unknown value for equals: '${options.equals}'`);
+        options = {...options, equals};
+    }
+    return options;
 }
+
 
 function bindAndDebounce(obj, fn, debounce) {
     let ret = fn.bind(obj);

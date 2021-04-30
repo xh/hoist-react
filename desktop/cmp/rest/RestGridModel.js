@@ -4,12 +4,11 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {isFunction} from 'lodash';
+import {isFunction, isPlainObject} from 'lodash';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
-import {filter, isPlainObject, pickBy} from 'lodash';
 import {RestStore} from './data/RestStore';
 import {RestFormModel} from './impl/RestFormModel';
 
@@ -173,10 +172,8 @@ export class RestGridModel extends HoistModel {
     }
 
     cloneRecord(record) {
-        const editableFields = filter(record.fields, 'editable').map(it => it.name),
-            clone = pickBy(record.data, (v, k) => editableFields.includes(k));
-        const {prepareCloneFn} = this;
-        if (prepareCloneFn) prepareCloneFn({record, clone});
+        const clone = this.store.editableDataForRecord(record);
+        this.prepareCloneFn?.({record, clone});
         this.formModel.openClone(clone);
     }
 

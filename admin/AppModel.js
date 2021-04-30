@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {HoistAppModel, managed, XH} from '@xh/hoist/core';
+import {HoistAppModel, managed} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {activityTab} from './tabs/activity/ActivityTab';
 import {configTab} from './tabs/config/ConfigTab';
@@ -104,7 +104,7 @@ export class AppModel extends HoistAppModel {
             {id: 'config', icon: Icon.settings(), content: configTab},
             {id: 'activity', icon: Icon.analytics(), content: activityTab},
             {id: 'logging', icon: Icon.fileText(), content: loggingTab},
-            {id: 'monitor', icon: Icon.shieldCheck(), content: monitorTab, omit: !XH.getConf('xhEnableMonitoring', true)},
+            {id: 'monitor', icon: Icon.shieldCheck(), content: monitorTab},
             {id: 'userData', icon: Icon.users(), content: userDataTab}
         ];
     }

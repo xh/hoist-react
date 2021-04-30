@@ -4,12 +4,15 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {fragment, frame, hframe, vframe} from '@xh/hoist/cmp/layout';
+import {fragment, hframe, vframe, div, p} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {errorMessage} from '@xh/hoist/desktop/cmp/error';
+import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {compact, uniq} from 'lodash';
 import PT from 'prop-types';
-import React from 'react';
+
+import './SplitTreeMap.scss';
 import {SplitTreeMapModel} from './SplitTreeMapModel';
 import {treeMap} from './TreeMap';
 
@@ -23,27 +26,28 @@ export const [SplitTreeMap, splitTreeMap]  = hoistCmp.withFactory({
     model: uses(SplitTreeMapModel),
     className: 'xh-split-treemap',
 
-    render({model, ...props}, ref) {
+    render({model, className, ...props}, ref) {
         const {primaryMapModel, secondaryMapModel, orientation} = model,
             errors = uniq(compact([primaryMapModel.error, secondaryMapModel.error])),
             container = orientation === 'horizontal' ? hframe : vframe;
 
         return container({
             ref,
+            className,
             items: errors.length ? errorPanel({errors}) : childMaps(),
             ...props
         });
     }
 });
+
 SplitTreeMap.propTypes = {
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(SplitTreeMapModel), PT.object])
 };
 
-
 const childMaps = hoistCmp.factory(
     ({model}) => {
-        const {primaryMapModel, secondaryMapModel, mapTitleFn} = model,
+        const {primaryMapModel, secondaryMapModel, mapTitleFn, isMasking} = model,
             pTotal = primaryMapModel.total,
             sTotal = secondaryMapModel.total;
 
@@ -70,14 +74,16 @@ const childMaps = hoistCmp.factory(
                 compactHeader: true,
                 item: treeMap({model: secondaryMapModel}),
                 flex: sFlex
+            }),
+            div({
+                omit: !isMasking,
+                className: 'xh-split-treemap__mask-holder',
+                item: mask({isDisplayed: true, spinner: true})
             })
         ]);
     }
 );
 
 const errorPanel = hoistCmp.factory(
-    ({errors}) => frame({
-        className: 'xh-split-treemap__error-message',
-        items: errors.map(e => <p>{e}</p>)
-    })
+    ({errors}) => errorMessage({error: fragment(errors.map(e => p(e)))})
 );

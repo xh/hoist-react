@@ -10,7 +10,7 @@ import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isDisplayed} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {min} from 'lodash';
+import {min, sortBy} from 'lodash';
 
 export class MonitorResultsModel extends HoistModel {
 
@@ -42,9 +42,10 @@ export class MonitorResultsModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+
         this.timer = Timer.create({
             runFn: () => this.autoRefreshAsync(),
-            interval: 10 * SECONDS,
+            interval: 5 * SECONDS,
             delay: true
         });
     }
@@ -64,7 +65,7 @@ export class MonitorResultsModel extends HoistModel {
 
     @action
     completeLoad(success, vals) {
-        this.results = success ? Object.values(vals) : [];
+        this.results = sortBy(success ? Object.values(vals) : [], 'sortOrder');
         this.getLastRun();
     }
 

@@ -72,7 +72,7 @@ export class WebSocketModel extends HoistModel {
         this._timer = Timer.create({
             runFn: () => {
                 if (isDisplayed(this.viewRef.current)) {
-                    this.loadAsync({isAutoRefresh: true});
+                    this.autoRefreshAsync();
                 }
             },
             interval: 5 * SECONDS,

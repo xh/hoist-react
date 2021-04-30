@@ -7,6 +7,7 @@
 
 import equal from 'fast-deep-equal';
 import {throwIf} from '@xh/hoist/utils/js';
+import {logDebug} from '../../utils/js';
 
 /**
  * Internal container for Record management within a Store.
@@ -145,28 +146,25 @@ export class RecordSet {
 
     withNewRecords(recordMap) {
         // Reuse existing Record object instances where possible.  See Store.loadData().
-        // Be sure to freeze any new records that are accepted.  See Record.freeze()
+        // Be sure to finalize any new records that are accepted.
         if (this.empty) {
-            recordMap.forEach(r => r.freeze());
+            recordMap.forEach(r => r.finalize());
         } else {
-            const newIds = recordMap.keys();
-            for (let id of newIds) {
-                const currRec = this.getById(id),
-                    newRec = recordMap.get(id);
-
+            recordMap.forEach((newRec, id) => {
+                const currRec = this.getById(id);
                 if (currRec && this.areRecordsEqual(currRec, newRec)) {
                     recordMap.set(id, currRec);
                 } else {
-                    newRec.freeze();
+                    newRec.finalize();
                 }
-            }
+            });
         }
 
         return new RecordSet(this.store, recordMap);
     }
 
     withTransaction({update, add, remove}) {
-        // Be sure to freeze any new records that are accepted.  See Record.freeze()
+        // Be sure to finalize any new records that are accepted.
         const {recordMap} = this,
             newRecords = new Map(recordMap);
 
@@ -178,7 +176,7 @@ export class RecordSet {
             remove.forEach(id => {
                 if (!newRecords.has(id)) {
                     missingRemoves++;
-                    console.debug(`Attempted to remove non-existent record: ${id}`);
+                    logDebug(`Attempted to remove non-existent record: ${id}`, this.store);
                     return;
                 }
                 this.gatherDescendantIds(id, allRemoves);
@@ -193,11 +191,11 @@ export class RecordSet {
                     existing = newRecords.get(id);
                 if (!existing) {
                     missingUpdates++;
-                    console.debug(`Attempted to update non-existent record: ${id}`);
+                    logDebug(`Attempted to update non-existent record: ${id}`, this.store);
                     return;
                 }
                 newRecords.set(id, rec);
-                rec.freeze();
+                rec.finalize();
             });
         }
 
@@ -207,7 +205,7 @@ export class RecordSet {
                 const {id} = rec;
                 throwIf(newRecords.has(id), `Attempted to insert duplicate record: ${id}`);
                 newRecords.set(id, rec);
-                rec.freeze();
+                rec.finalize();
             });
         }
 
@@ -221,7 +219,8 @@ export class RecordSet {
     // Implementation
     //------------------------
     areRecordsEqual(rec1, rec2) {
-        return equal(rec1.treePath, rec2.treePath) && equal(rec1.data, rec2.data);
+        return equal(rec1.data, rec2.data) &&
+            (this.store.idEncodesTreePath || equal(rec1.treePath, rec2.treePath));
     }
 
     computeChildrenMap(recordMap) {

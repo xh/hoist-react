@@ -23,28 +23,24 @@ export class StoreContextMenu {
 
     /**
      * @param {Object} c - StoreContextMenu configuration.
-     * @param {Object[]} c.items - RecordActions, configs or token strings to create.
-     *
+     * @param {(RecordAction[]|Object[]|string[])} c.items - RecordActions/configs or string
+     *     tokens.
      *      If a String, value can be '-' for a separator, a Hoist token (below),
      *      or a token supported by ag-Grid for its native menu items.
-     *      @see {@link https://www.ag-grid.com/javascript-grid-context-menu/#built-in-menu-items|ag-Grid Docs}
-     *
      *      Hoist tokens, all of which require a GridModel:
      *          `copyCell` - copy cell value to clipboard.
      *          `colChooser` - display column chooser for a grid.
      *          `expandCollapseAll` - expand/collapse all parent rows on grouped or tree grid.
      *          `export` - export grid data to excel via Hoist's server-side export capabilities.
-     *          `exportExcel` - same as above.
-     *          `exportCsv` - export grid data to CSV via Hoist's server-side export capabilities.
-     *          `exportLocal` - export grid data to Excel via ag-Grid's built-in client side export.
+     *          `exportExcel` - alias for `export`.
+     *          `exportCsv` - export to CSV via Hoist's server-side export capabilities.
+     *          `exportLocal` - export to Excel via ag-Grid's built-in client side export.
      *          `autosizeColumns` - autosize columns to fit their contents.
      *          `restoreDefaults` - restore column, sorting, and grouping configs and clear any
-     *              persistent grid state.
-     *              @see GridModel.restoreDefaults
-     *
-     *
+     *              persistent grid state. {@see GridModel.restoreDefaults}
      * @param {GridModel} [c.gridModel] - GridModel to bind to this contextMenu, used to enable
      *      implementation of menu items / tokens above.
+     * @link https://www.ag-grid.com/javascript-grid-context-menu/#built-in-menu-items
      */
     constructor({items, gridModel}) {
         this.gridModel = gridModel;
@@ -97,7 +93,7 @@ export class StoreContextMenu {
                 return new RecordAction({
                     text: 'Columns...',
                     icon: Icon.gridPanel(),
-                    hidden: !gridModel || !gridModel.colChooserModel,
+                    hidden: !gridModel?.colChooserModel,
                     actionFn: () => gridModel.colChooserModel.open()
                 });
             case 'export':
@@ -105,16 +101,16 @@ export class StoreContextMenu {
                 return new RecordAction({
                     text: 'Export to Excel',
                     icon: Icon.fileExcel(),
-                    hidden: !gridModel || !gridModel.enableExport,
-                    disabled: !gridModel || !gridModel.store.count,
+                    hidden: !gridModel?.enableExport,
+                    disabled: !gridModel?.store.count,
                     actionFn: () => gridModel.exportAsync({type: 'excelTable'})
                 });
             case 'exportCsv':
                 return new RecordAction({
                     text: 'Export to CSV',
                     icon: Icon.file(),
-                    hidden: !gridModel || !gridModel.enableExport,
-                    disabled: !gridModel || !gridModel.store.count,
+                    hidden: !gridModel?.enableExport,
+                    disabled: !gridModel?.store.count,
                     actionFn: () => gridModel.exportAsync({type: 'csv'})
                 });
             case 'expandCollapseAll':

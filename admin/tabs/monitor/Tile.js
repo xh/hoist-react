@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {div, vbox} from '@xh/hoist/cmp/layout';
+import {div, vframe, vbox} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -18,7 +18,7 @@ export const tile = hoistCmp.factory(
             tileClass = 'xh-status-tile xh-status-tile-' + status.toLowerCase(),
             relativeString = getRelativeTimestamp(new Date(lastStatusChanged), {pastSuffix: ''});
 
-        return vbox({
+        return vframe({
             className: tileClass,
             items: [
                 div({

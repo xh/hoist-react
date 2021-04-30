@@ -184,6 +184,7 @@ export const Icon = {
     inbox(p)            {return Icon.icon({...p,  iconName: 'inbox'})},
     info(p)             {return Icon.icon({...p,  iconName: 'info-circle'})},
     institution(p)      {return Icon.icon({...p,  iconName: 'university'})},
+    instrument(p)       {return Icon.icon({...p,  iconName: 'file-certificate'})},
     json(p)             {return Icon.icon({...p,  iconName: 'brackets-curly'})},
     learn(p)            {return Icon.icon({...p,  iconName: 'graduation-cap'})},
     link(p)             {return Icon.icon({...p,  iconName: 'link'})},
@@ -302,8 +303,8 @@ export const Icon = {
  * @return {string} - html of the <svg> tag representing the icon.
  */
 export function convertIconToHtml(iconElem) {
-    throwIf(!iconElem.type?.isHoistComponent,
-        'Icon not created by a Hoist Icon factory - cannot convert to SVG'
+    throwIf(!iconElem?.type?.isHoistComponent,
+        'Icon not provided, or not created by a Hoist Icon factory - cannot convert to HTML/SVG.'
     );
     return iconHtml(iconElem.props);
 }
@@ -316,8 +317,8 @@ export function convertIconToHtml(iconElem) {
  * @returns {Object} - json representation of icon.
  */
 export function serializeIcon(iconElem) {
-    throwIf(!iconElem.type?.isHoistComponent,
-        'Attempted to serialize an icon not created by a Hoist Icon factory.'
+    throwIf(!iconElem?.type?.isHoistComponent,
+        'Icon not provided, or not created by a Hoist Icon factory - cannot serialize.'
     );
 
     return pickBy(iconElem.props);

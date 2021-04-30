@@ -36,6 +36,8 @@ export class StoreFilterFieldImplModel extends HoistModel {
     onFilterChange;
     includeFields;
     excludeFields;
+    matchMode;
+    autoApply;
 
     filter;
     bufferedApplyFilter;
@@ -49,7 +51,8 @@ export class StoreFilterFieldImplModel extends HoistModel {
         onFilterChange,
         includeFields,
         excludeFields,
-        matchMode = 'startWord'
+        matchMode = 'startWord',
+        autoApply = true
     }) {
         super();
         makeObservable(this);
@@ -62,6 +65,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
         this.includeFields = includeFields;
         this.excludeFields = excludeFields;
         this.matchMode = matchMode;
+        this.autoApply = autoApply;
 
         warnIf(!gridModel && !store && isEmpty(includeFields),
             "Must specify one of 'gridModel', 'store', or 'includeFields' or the filter will be a no-op."
@@ -120,7 +124,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
     }
 
     regenerateFilter() {
-        const {filter, filterText} = this,
+        const {filter, filterText, autoApply} = this,
             activeFields = this.getActiveFields(),
             initializing = isUndefined(filter);
 
@@ -138,11 +142,13 @@ export class StoreFilterFieldImplModel extends HoistModel {
         this.filter = newFilter;
         if (!initializing && this.onFilterChange) this.onFilterChange(newFilter);
 
-        // Only respect the buffer for non-null changes. Allows immediate initialization and quick clearing.
-        if (!initializing && newFilter) {
-            this.bufferedApplyFilter();
-        } else {
-            this.applyFilter();
+        if (autoApply) {
+            // Only respect the buffer for non-null changes. Allows immediate initialization and quick clearing.
+            if (!initializing && newFilter) {
+                this.bufferedApplyFilter();
+            } else {
+                this.applyFilter();
+            }
         }
     }
 

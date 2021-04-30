@@ -33,6 +33,7 @@ export class PreferenceModel extends HoistModel {
         store: {
             url: 'rest/preferenceAdmin',
             reloadLookupsOnLoad: true,
+            fieldDefaults: {disableXssProtection: true},
             fields: [
                 {
                     name: 'name',

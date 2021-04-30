@@ -20,7 +20,7 @@ export class GridSorter {
      */
     static parse(cfg) {
         if (isString(cfg)) {
-            const [colId, sort, abs] = cfg.split('|');
+            const [colId, sort, abs] = cfg.split('|').map(s => s.trim());
             cfg = {colId, sort, abs};
         }
         return new GridSorter(cfg);

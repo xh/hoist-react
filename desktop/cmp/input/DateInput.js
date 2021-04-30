@@ -105,12 +105,15 @@ DateInput.propTypes = {
      * @see https://blueprintjs.com/docs/#datetime/dateinput
      */
     popoverPosition: PT.oneOf([
-        'top', 'top-start', 'top-end', 
-        'bottom', 'bottom-start', 'bottom-end', 
-        'right', 'right-start', 'right-end', 
-        'left', 'left-start', 'left-end', 
+        'top', 'top-start', 'top-end',
+        'bottom', 'bottom-start', 'bottom-end',
+        'right', 'right-start', 'right-end',
+        'left', 'left-start', 'left-end',
         'auto', 'auto-start', 'auto-end'
     ]),
+
+    /** Boundary for calendar popover, as per Blueprint docs. Defaults to viewport. */
+    popoverBoundary: PT.oneOf(['scrollParent', 'viewport', 'window']),
 
     /** True to select contents when control receives focus. */
     selectOnFocus: PT.bool,
@@ -393,6 +396,7 @@ const cmp = hoistCmp.factory(
                 autoFocus: false,
                 enforceFocus: false,
                 placement: props.popoverPosition ?? 'auto',
+                boundary: props.popoverBoundary ?? 'viewport',
                 popoverRef: (v) => {model.popoverRef.current = v},  // Workaround for #2272
                 onClose: model.onPopoverClose,
                 onInteraction: (nextOpenState) => {

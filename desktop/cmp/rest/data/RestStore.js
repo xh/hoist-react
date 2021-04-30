@@ -6,7 +6,7 @@
  */
 import {XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {filter, pickBy} from 'lodash';
+import {filter, keyBy, mapValues} from 'lodash';
 import {RestField} from './RestField';
 
 /**
@@ -90,6 +90,12 @@ export class RestStore extends UrlStore {
         return resp;
     }
 
+    editableDataForRecord(record) {
+        const {data} = record,
+            editable = keyBy(filter(this.fields, 'editable'), 'name');
+        return mapValues(editable, (v, k) => data[k]);
+    }
+
     //--------------------------------
     // Implementation
     //--------------------------------
@@ -98,11 +104,7 @@ export class RestStore extends UrlStore {
         if (!isAdd) url += '/' + rec.id;
 
         // Only include editable fields in the request data
-        const editableFields = filter(this.fields, 'editable').map(it => it.name),
-            data = {
-                id: rec.id,
-                ...pickBy(rec.data, (v, k) => editableFields.includes(k))
-            };
+        const data = {id: rec.id, ...this.editableDataForRecord(rec)};
 
         const fetchMethod = isAdd ? 'postJson' : 'putJson',
             response = await XH.fetchService[fetchMethod]({url, body: {data}}),

@@ -108,8 +108,8 @@ export class Column {
      * @param {string} [c.exportName] - name to use as a header within a file export. Defaults to
      *      `headerName`. Useful when `headerName` contains markup or other characters not suitable
      *      for use within an Excel or CSV file header.
-     * @param {(string|function)} [c.exportValue] - alternate field name to reference or function
-     *      to call when producing a value for a file export. {@see GridExportService}
+     * @param {(string|Column~exportValueFn)} [c.exportValue] - alternate field name to reference or
+     *      function to call when producing a value for a file export. {@see GridExportService}
      * @param {(ExportFormat|function)} [c.exportFormat] - structured format string for Excel-based
      *      exports, or a function to produce one. {@see ExportFormat}
      * @param {number} [c.exportWidth] - width in characters for Excel-based exports. Typically
@@ -127,6 +127,9 @@ export class Column {
      *     sort icon when calculating the header width.
      * @param {number} [c.autosizeMinWidth] - minimum width in pixels when autosizing.
      * @param {number} [c.autosizeMaxWidth] - maximum width in pixels when autosizing.
+     * @param {boolean} [c.autoHeight] - true to dynamically grow the row height based on the
+     *      content of this column's cell.  If true, text will also be set to wrap within cells.
+     *      This property will be ignored if elementRenderer is set.
      * @param {boolean} [c.rendererIsComplex] - true if this renderer relies on more than
      *      just the value of the field associated with this column.  Set to true to ensure that
      *      the cells for this column are updated any time the record is changed.  Setting to true
@@ -192,6 +195,7 @@ export class Column {
         autosizeIncludeHeaderIcons,
         autosizeMinWidth,
         autosizeMaxWidth,
+        autoHeight,
         tooltip,
         tooltipElement,
         editable,
@@ -258,8 +262,7 @@ export class Column {
         this.movable = withDefault(movable, true);
         this.sortable = withDefault(sortable, true);
 
-        // Pinned supports convenience true -> 'left'. OK to leave undefined if not given.
-        this.pinned = (pinned === true) ? 'left' : pinned;
+        this.pinned = this.parsePinned(pinned);
 
         this.renderer = renderer;
         this.elementRenderer = elementRenderer;
@@ -290,7 +293,11 @@ export class Column {
         this.autosizeIncludeHeaderIcons = withDefault(autosizeIncludeHeaderIcons, true);
         this.autosizeMinWidth = withDefault(autosizeMinWidth, this.minWidth);
         this.autosizeMaxWidth = withDefault(autosizeMaxWidth, this.maxWidth);
-
+        this.autoHeight = withDefault(autoHeight, false);
+        warnIf(
+            autoHeight && elementRenderer,
+            'autoHeight is ignored when an elementRenderer is defined.  Row heights will not change to accommodate cell content for this column.'
+        );
         this.tooltip = tooltip;
         this.tooltipElement = tooltipElement;
         warnIf(
@@ -529,6 +536,11 @@ export class Column {
             };
         }
 
+        if (this.autoHeight) {
+            ret.autoHeight = true;
+            ret.wrapText = true;
+        }
+
         // Finally, apply explicit app requests.  The customer is always right....
         return {...ret, ...agOptions};
     }
@@ -554,6 +566,13 @@ export class Column {
         if (isArray(fieldPath)) return get(record.data, fieldPath);
         return record.data[fieldPath];
     };
+
+    parsePinned(pinned) {
+        if (pinned === true) return 'left';
+        if (pinned === 'left' || pinned === 'right') return pinned;
+        return null;
+    }
+
 }
 
 export function getAgHeaderClassFn(column) {
@@ -615,6 +634,13 @@ export function getAgHeaderClassFn(column) {
  *      value should also have their `rendererIsComplex` flag set to true to ensure they are
  *      re-run whenever the record (and not just the primary value) changes.
  * @return {Element} - the React element to render.
+ */
+
+/**
+ * @callback Column~exportValueFn - function to return a value for export.
+ * @param {*} value - cell data value (column + row).
+ * @param {CellContext} context - additional data about the column, row and GridModel.
+ * @return {*} - value for export.
  */
 
 /**

@@ -14,7 +14,7 @@ import {
     RenderMode,
     XH
 } from '@xh/hoist/core';
-import {action, observable, comparer, makeObservable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
 import {apiRemoved} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
@@ -164,7 +164,7 @@ export class PanelModel extends HoistModel {
         // Attach to provider last
         if (this.provider) {
             this.addReaction({
-                equals: comparer.shallow,
+                equals: 'shallow',
                 track: () => {
                     const state = {};
                     if (collapsible) state.collapsed = this.collapsed;

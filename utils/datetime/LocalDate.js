@@ -150,6 +150,11 @@ export class LocalDate {
     }
 
     /** @return {boolean} */
+    get isToday() {
+        return this === LocalDate.today();
+    }
+
+    /** @return {boolean} */
     @computeOnce
     get isWeekday() {
         const day = this._moment.day();

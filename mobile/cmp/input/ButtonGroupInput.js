@@ -9,9 +9,8 @@ import {hoistCmp} from '@xh/hoist/core';
 import {Button, buttonGroup} from '@xh/hoist/mobile/cmp/button';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
-import {castArray} from 'lodash';
 import PT from 'prop-types';
-import {cloneElement} from 'react';
+import {cloneElement, Children} from 'react';
 import './ButtonGroupInput.scss';
 
 /**
@@ -55,7 +54,7 @@ const cmp = hoistCmp.factory(
 
         const {children, disabled, enableClear, tabIndex = 0, ...rest} = getNonLayoutProps(props);
 
-        const buttons = castArray(children).map(button => {
+        const buttons = Children.map(children, button => {
             if (!button) return null;
 
             const {value} = button.props,

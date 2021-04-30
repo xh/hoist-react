@@ -5,8 +5,9 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
+import {HoistBase} from '@xh/hoist/core';
 import {Cube, FieldFilter, Query} from '@xh/hoist/data';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, forEach, groupBy, isEmpty, isNil, map} from 'lodash';
 import {AggregateRow} from './row/AggregateRow';
@@ -17,12 +18,11 @@ import {LeafRow} from './row/LeafRow';
  * Primary interface for consuming grouped and aggregated data from the cube.
  * Applications should create via the {@see Cube.createView()} factory.
  */
-export class View {
+export class View extends HoistBase {
 
     /** @member {Query} - Query defining this View. Update via `updateQuery()`. */
     @observable.ref
     query = null;
-
     /**
      * @member {Object} - results of this view, an observable object with a `rows` property
      *      containing an array of hierarchical data objects.
@@ -52,6 +52,9 @@ export class View {
      *      store(s) (if any) when data in the underlying Cube is changed.
      */
     constructor({query, connect = false, stores = []}) {
+        super();
+        makeObservable(this);
+
         this.query = query;
         this.stores = castArray(stores);
         this.fullUpdate();
