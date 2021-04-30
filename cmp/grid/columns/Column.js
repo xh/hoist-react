@@ -149,10 +149,8 @@ export class Column {
      *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
      * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column
      *     editable.
-     * @param {Column-cellEditorElementFn} [c.cellEditorElement] - function which returns a React
-     *     component to use as the cell editor. Will take precedence over `tooltip`.
-     * @param {Column-cellEditorParamsFn|Object} [c.cellEditorParams] - additional params to pass to
-     *      the cellEditorElement function or a function to create them.
+     * @param {Column-editorElementFn} [c.editorElement] - function which returns a React
+     *     component to use as the cell editor.
      * @param {Column~setValueFn} [c.setValueFn] - function for updating Record field for this
      *      column after inline editing.
      * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
@@ -214,8 +212,7 @@ export class Column {
         tooltip,
         tooltipElement,
         editable,
-        cellEditorElement,
-        cellEditorParams,
+        editorElement,
         setValueFn,
         getValueFn,
         enableDotSeparatedFieldPath,
@@ -323,8 +320,7 @@ export class Column {
         );
 
         this.editable = editable;
-        this.cellEditorElement = cellEditorElement;
-        this.cellEditorParams = cellEditorParams;
+        this.editorElement = editorElement;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
@@ -560,8 +556,8 @@ export class Column {
             ret.wrapText = true;
         }
 
-        const {cellEditorElement} = this;
-        if (cellEditorElement) {
+        const {editorElement} = this;
+        if (editorElement) {
             ret.cellEditorFramework = forwardRef((agParams, ref) => {
                 const {data: record} = agParams,
                     params = {
@@ -571,12 +567,9 @@ export class Column {
                         agParams
                     };
 
-                let {cellEditorParams} = this;
-                if (isFunction(cellEditorParams)) cellEditorParams = cellEditorParams(params);
 
-                return cellEditorElement({
+                return editorElement({
                     ...params,
-                    ...cellEditorParams,
                     ref
                 });
             });
@@ -791,7 +784,7 @@ export function getAgHeaderClassFn(column) {
  */
 
 /**
- * @callback Column-cellEditorElementFn - function for a grid cell editor returning a React element
+ * @callback Column-editorElementFn - function for a grid cell editor returning a React element
  * @param {Object} params
  * @param {Record} params.record - row-level data Record.
  * @param {Column} params.column - column for the cell being edited.
@@ -801,10 +794,10 @@ export function getAgHeaderClassFn(column) {
 
 /**
  * @callback Column~cellEditorParamsFn - function returning additional params to pass to the
- *      cellEditorElement function
+ *      editorElement function
  * @param {Object} params
  * @param {Record} params.record - row-level data Record.
  * @param {Column} params.column - column for the cell being edited.
  * @param {GridModel} params.gridModel - gridModel for the grid.
- * @return {Object} - the params to pass to the cellEditorElement function
+ * @return {Object} - the params to pass to the editorElement function
  */
