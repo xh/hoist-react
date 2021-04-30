@@ -37,6 +37,17 @@
           height: 100%;
           width: 100%;
 
+          .bp3-input-action {
+            button {
+              min-height: 18px;
+
+              .xh-icon {
+                margin-top: 3px;
+                font-size: var(--xh-font-size-px);
+              }
+            }
+          }
+
           input {
             width: 100%;
             height: 100%;
