@@ -559,17 +559,12 @@ export class Column {
         const {editorElement} = this;
         if (editorElement) {
             ret.cellEditorFramework = forwardRef((agParams, ref) => {
-                const {data: record} = agParams,
-                    params = {
-                        record,
-                        gridModel,
-                        column: this,
-                        agParams
-                    };
-
-
+                const {data} = agParams;
                 return editorElement({
-                    ...params,
+                    record: data,
+                    gridModel,
+                    column: this,
+                    agParams,
                     ref
                 });
             });
