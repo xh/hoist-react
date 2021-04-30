@@ -15,7 +15,7 @@ import {
     Popover,
     PopoverInteractionKind,
     Position,
-    Toaster,
+    OverlayToaster,
     useHotkeys
 } from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
@@ -45,7 +45,7 @@ export {
     Classes,
     PopoverInteractionKind,
     Position,
-    Toaster
+    OverlayToaster
 };
 export * from './Wrappers';
 export * from './Dialog';

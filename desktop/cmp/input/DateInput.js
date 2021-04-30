@@ -365,7 +365,7 @@ const cmp = hoistCmp.factory(
                     className: classNames('xh-date-input__picker-icon', enablePicker ? null : 'xh-date-input__picker-icon--disabled'),
                     icon: Icon.calendar(),
                     tabIndex: enableTextInput || disabled ? -1 : undefined,
-                    elementRef: model.buttonRef,
+                    ref: model.buttonRef,
                     onClick: enablePicker && !disabled ? model.onOpenPopoverClick : null
                 })
             ]

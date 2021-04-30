@@ -22,23 +22,22 @@
     align-items: stretch;
 
     .xh-input {
-      .bp3-input-group {
+      .bp4-input-group {
         width: 100%;
       }
 
-      &.bp3-popover2-target,
-      .bp3-popover2-target {
+      &.bp4-popover-target,
+      .bp4-popover-target {
         display: block;
       }
     }
 
-    // todo:  what is this solving?
-    .bp3-popover2-target:not(.xh-form-field-error-msg) {
+    .bp4-popover-wrapper:not(.xh-form-field-error-msg) {
       display: flex;
       flex: 1;
 
-      & > .bp3-popover2-target,
-      & > .bp3-popover2-target > .bp3-control-group {
+      & > .bp4-popover-target,
+      & > .bp4-popover-target > .bp4-control-group {
         display: flex;
         flex: 1;
       }

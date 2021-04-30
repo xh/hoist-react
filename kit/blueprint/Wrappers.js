@@ -19,8 +19,6 @@ import {
     Drawer,
     FileInput,
     FormGroup,
-    Hotkey,
-    Hotkeys,
     InputGroup,
     Label,
     Menu,
@@ -33,6 +31,7 @@ import {
     NumericInput,
     OverflowList,
     Overlay,
+    Popover,
     Radio,
     RadioGroup,
     RangeSlider,
@@ -48,7 +47,6 @@ import {
     Tree
 } from '@blueprintjs/core';
 import {DatePicker} from '@blueprintjs/datetime';
-import {Popover2 as Popover} from '@blueprintjs/popover2';
 import {elemFactory} from '@xh/hoist/core';
 
 //---------------------
@@ -67,8 +65,6 @@ export {
     Drawer,
     FileInput,
     FormGroup,
-    Hotkeys,
-    Hotkey,
     InputGroup,
     Label,
     Menu,
@@ -110,8 +106,6 @@ export const
     drawer = elemFactory(Drawer),
     fileInput = elemFactory(FileInput),
     formGroup = elemFactory(FormGroup),
-    hotkey = elemFactory(Hotkey),
-    hotkeys = elemFactory(Hotkeys),
     inputGroup = elemFactory(InputGroup),
     label = elemFactory(Label),
     menu = elemFactory(Menu),

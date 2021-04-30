@@ -4,7 +4,6 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import composeRefs from '@seznam/compose-react-refs';
 import {hoistCmp} from '@xh/hoist/core';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -41,7 +40,6 @@ export const [Button, button] = hoistCmp.withFactory({
             title,
             tooltip,
             active,
-            elementRef,
             ...rest
         } = nonLayoutProps;
 
@@ -68,7 +66,7 @@ export const [Button, button] = hoistCmp.withFactory({
             active,
             autoFocus,
             className: classNames(className, classes),
-            elementRef: composeRefs(ref, elementRef),
+            ref,
             disabled,
             icon,
             intent,

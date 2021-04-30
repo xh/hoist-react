@@ -73,7 +73,7 @@ class Model extends HoistInputModel {
     }
 
     get sliderHandle() {
-        return this.domEl?.querySelector('.bp3-slider-handle');
+        return this.domEl?.querySelector('.bp4-slider-handle');
     }
 }
 

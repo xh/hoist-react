@@ -284,7 +284,7 @@ class LocalModel extends HoistModel  {
 
     get tabEls() {
         if (!this.el) return [];
-        return Array.from(this.el.querySelectorAll('.bp3-tab'));
+        return Array.from(this.el.querySelectorAll('.bp4-tab'));
     }
 
     getTabDimensions(tab) {
