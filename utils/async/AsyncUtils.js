@@ -22,7 +22,7 @@ import {wait} from '@xh/hoist/promise';
  *
  * NOTE this is NOT for use cases where the `fn` arg is itself async - i.e. it does not await the
  * call to `fn` and is instead for the opposite use case, where fn is *synchronous*. If looking to
- * run an async operation over a collection, consider a for...of loop as per implementation below.
+ * run an async operation over a collection, consider a simple and blocking for...of loop.
  *
  * @param {Iterable} collection - items to iterate over
  * @param {function} fn - called with each item.
