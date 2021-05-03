@@ -26,7 +26,6 @@ import {
     difference,
     filter,
     findIndex,
-    forOwn,
     isEmpty,
     isEqual,
     isFinite,
@@ -124,7 +123,6 @@ export const columnHeader = hoistCmp.factory({
     }
 });
 
-
 export const setFilterPopover = hoistCmp.factory({
     render({impl}) {
         const {isOpen, isFiltered, setFilterGridModel, colId, xhColumn} = impl;
@@ -133,9 +131,10 @@ export const setFilterPopover = hoistCmp.factory({
             position: 'bottom',
             boundary: 'viewport',
             hasBackdrop: true,
+            interactionKind: 'click',
             isOpen,
             onInteraction: (open) => {
-                if (!open) impl.closePopover();
+                if (!open) impl.cancelAndUndoPendingValue();
             },
             target: div({
                 item: isFiltered ? Icon.filter() : Icon.bars(),
@@ -156,6 +155,8 @@ export const setFilterPopover = hoistCmp.factory({
                 tbar: toolbar({
                     compact: true,
                     item: storeFilterField({
+                        model: impl,
+                        bind: 'filterText',
                         icon: null,
                         flex: 1,
                         store: setFilterGridModel.store,
@@ -195,18 +196,21 @@ class LocalModel extends HoistModel {
     agColumn;
     colId;
     menuButtonRef = createObservableRef();
-    @observable isFiltered = false;
     enableSorting;
     availableSorts;
 
+    // Set Filter Menu
     @managed @observable.ref
     setFilterGridModel;
+    @managed
+    virtualStore;
 
     _initialValue = {};
     @observable.ref committedValue = {};
     @observable.ref pendingValue = {};
-
-    @bindable isOpen;
+    @bindable filterText = null;
+    @observable isFiltered = false;
+    @bindable isOpen = false;
 
     _doubleClick = false;
     _lastTouch = null;
@@ -223,6 +227,7 @@ class LocalModel extends HoistModel {
         this.colId = agColumn.colId;
         this.enableSorting = xhColumn.sortable;
         this.availableSorts = this.parseAvailableSorts();
+
         this.setFilterGridModel = this.createSetFilterGridModel();
         this.virtualStore = new Store({...this.gridModel.store});
 
@@ -271,12 +276,12 @@ class LocalModel extends HoistModel {
             this.virtualStore.setFilter(filter);
         }
 
-        const allVals = uniqBy(this.virtualStore.allRecords, (rec) => rec.raw[colId]),
-            visibleVals = uniqBy(this.virtualStore.records, (rec) => rec.raw[colId]),
-            hiddenVals = difference(allVals, visibleVals).map(rec => rec.raw[colId]),
+        const allVals = uniqBy(this.virtualStore.allRecords, (rec) => rec.data[colId]),
+            visibleVals = uniqBy(this.virtualStore.records, (rec) => rec.data[colId]),
+            hiddenVals = difference(allVals, visibleVals).map(rec => rec.data[colId]),
             currentVals = visibleVals.map(it => ({
-                [colId]: it.raw[colId],
-                isChecked: this.committedValue[it.raw[colId]] ?? false
+                [colId]: it.data[colId],
+                isChecked: this.committedValue[it.data[colId]] ?? false
             }));
 
         // Only load set filter grid with VISIBLE values
@@ -368,10 +373,14 @@ class LocalModel extends HoistModel {
 
     @action
     toggleBulk(isChecked) {
-        const currValue = forOwn(clone(this.pendingValue), (v, k, pendingVal) => {
-            pendingVal[k] = isChecked;
-        });
-        this.setPendingValue(currValue);
+        const {records} = this.setFilterGridModel.store,
+            ret = clone(this.pendingValue);
+
+        for (let rec of records) {
+            ret[rec.id] = isChecked;
+        }
+
+        this.setPendingValue(ret);
     }
 
     @action
@@ -383,15 +392,18 @@ class LocalModel extends HoistModel {
 
         const ret = [];
         for (const key in currValue) {
-            ret.push({
-                id: key.toString(),
-                isChecked: currValue[key]
-            });
+            if (setFilterGridModel.store.getById(key)) {
+                ret.push({
+                    id: key,
+                    isChecked: currValue[key]
+                });
+            }
         }
 
         setFilterGridModel.store.modifyRecords(ret);
     }
 
+    @action
     commitPendingValue() {
         const {pendingValue, colId} = this,
             ret = clone(this.committedValue);
@@ -426,9 +438,11 @@ class LocalModel extends HoistModel {
         this.isFiltered = !isEqual(this.committedValue, this._initialValue);
     }
 
+    @action
     cancelAndUndoPendingValue() {
         this.setPendingValue(this.committedValue);
         this.commitPendingValue();
+        this.filterText = null;
 
         this.closePopover();
     }
@@ -447,12 +461,6 @@ class LocalModel extends HoistModel {
 
     closePopover() {
         this.setIsOpen(false);
-    }
-
-
-    destroy() {
-        // this.agColumn.removeEventListener('filterChanged', this.onFilterChanged);
-        super.destroy();
     }
 
     // Get any active sortBy for this column, or null
