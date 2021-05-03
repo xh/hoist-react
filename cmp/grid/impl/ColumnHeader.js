@@ -4,17 +4,42 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {div, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
-import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
-import {createObservableRef} from '@xh/hoist/utils/react';
-import {debounced} from '@xh/hoist/utils/js';
-import {olderThan} from '@xh/hoist/utils/datetime';
-import classNames from 'classnames';
-import {filter, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString} from 'lodash';
-import {GridSorter} from './GridSorter';
+import {grid, GridModel} from '@xh/hoist/cmp/grid';
 import {Column} from '@xh/hoist/cmp/grid/columns/Column';
+import {div, filler, span} from '@xh/hoist/cmp/layout';
+import {storeFilterField} from '@xh/hoist/cmp/store';
+import {hoistCmp, HoistModel, managed, useLocalModel, XH} from '@xh/hoist/core';
+import {CompoundFilter, FieldFilter, Store} from '@xh/hoist/data';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {checkbox} from '@xh/hoist/desktop/cmp/input';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {Icon} from '@xh/hoist/icon';
+import {popover} from '@xh/hoist/kit/blueprint';
+import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {olderThan} from '@xh/hoist/utils/datetime';
+import {debounced} from '@xh/hoist/utils/js';
+import {createObservableRef} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
+import {
+    clone,
+    difference,
+    filter,
+    findIndex,
+    forOwn,
+    isEmpty,
+    isEqual,
+    isFinite,
+    isFunction,
+    isString,
+    isUndefined,
+    keys,
+    omit,
+    pickBy,
+    uniqBy,
+    without
+} from 'lodash';
+import {GridSorter} from './GridSorter';
 
 /**
  * A custom ag-Grid header component.
@@ -46,16 +71,7 @@ export const columnHeader = hoistCmp.factory({
         };
 
         const menuIcon = () => {
-            if (!props.enableMenu) return null;
-            return div({
-                className: 'xh-grid-header-menu-icon',
-                item: impl.isFiltered ? Icon.filter() : Icon.bars(),
-                ref: impl.menuButtonRef,
-                onClick: (e) => {
-                    e.stopPropagation();
-                    props.showColumnMenu(impl.menuButtonRef.current);
-                }
-            });
+            return props.enableMenu ? setFilterPopover({impl}) : null;
         };
 
         const extraClasses = [
@@ -89,9 +105,8 @@ export const columnHeader = hoistCmp.factory({
             };
         }
 
-        return div({
+        let headerCmp = div({
             className: classNames(props.className, extraClasses),
-
             onClick:        isDesktop  ? impl.onClick : null,
             onDoubleClick:  isDesktop  ? impl.onDoubleClick : null,
             onMouseDown:    isDesktop  ? impl.onMouseDown : null,
@@ -104,9 +119,75 @@ export const columnHeader = hoistCmp.factory({
                 menuIcon()
             ]
         });
+
+        return headerCmp;
     }
 });
 
+
+export const setFilterPopover = hoistCmp.factory({
+    render({impl}) {
+        const {isOpen, isFiltered, setFilterGridModel, colId, xhColumn} = impl;
+        return popover({
+            className: 'xh-grid-header-menu-icon',
+            position: 'bottom',
+            boundary: 'viewport',
+            hasBackdrop: true,
+            isOpen,
+            onInteraction: (open) => {
+                if (!open) impl.closePopover();
+            },
+            target: div({
+                item: isFiltered ? Icon.filter() : Icon.bars(),
+                onClick: (e) => {
+                    e.stopPropagation();
+                    impl.openPopover();
+                }
+            }),
+            content: panel({
+                onClick: (e) => e.stopPropagation(),
+                compactHeader: true,
+                title: `Filter on ${xhColumn.displayName}`,
+                item: grid({
+                    model: setFilterGridModel,
+                    height: 250,
+                    width: 240
+                }),
+                tbar: toolbar({
+                    compact: true,
+                    item: storeFilterField({
+                        icon: null,
+                        flex: 1,
+                        store: setFilterGridModel.store,
+                        includeFields: [colId]
+                    })
+                }),
+                bbar: toolbar({
+                    compact: true,
+                    items: [
+                        button({
+                            icon: Icon.undo(),
+                            text: 'Reset',
+                            intent: 'danger',
+                            onClick: () => impl.resetFilter()
+                        }),
+                        filler(),
+                        button({
+                            text: 'Cancel',
+                            onClick: () => impl.cancelAndUndoPendingValue()
+                        }),
+                        button({
+                            icon: Icon.check(),
+                            text: 'Apply',
+                            intent: 'success',
+                            onClick: () => impl.commitPendingValue()
+                        })
+                    ]
+                })
+            })
+        });
+    }
+});
 
 class LocalModel extends HoistModel {
     gridModel;
@@ -114,9 +195,18 @@ class LocalModel extends HoistModel {
     agColumn;
     colId;
     menuButtonRef = createObservableRef();
-    @bindable isFiltered = false;
+    @observable isFiltered = false;
     enableSorting;
     availableSorts;
+
+    @managed @observable.ref
+    setFilterGridModel;
+
+    _initialValue = {};
+    @observable.ref committedValue = {};
+    @observable.ref pendingValue = {};
+
+    @bindable isOpen;
 
     _doubleClick = false;
     _lastTouch = null;
@@ -126,19 +216,242 @@ class LocalModel extends HoistModel {
     constructor({gridModel, xhColumn, column: agColumn}) {
         super();
         makeObservable(this);
+
         this.gridModel = gridModel;
         this.xhColumn = xhColumn;
         this.agColumn = agColumn;
         this.colId = agColumn.colId;
-        this.isFiltered = agColumn.isFilterActive();
         this.enableSorting = xhColumn.sortable;
         this.availableSorts = this.parseAvailableSorts();
+        this.setFilterGridModel = this.createSetFilterGridModel();
+        this.virtualStore = new Store({...this.gridModel.store});
 
-        agColumn.addEventListener('filterChanged', this.onFilterChanged);
+        this.addReaction({
+            track: () => [this.gridModel.store.filter, this.gridModel.store.allRecords],
+            run: ([filter, allRecs]) => {
+                if (this.virtualStore.empty) {
+                    this.initializeVirtualStore();
+                    return;
+                }
+                this.virtualStore.updateData(allRecs.map(rec => rec.raw));
+                this.processAndSetFilter(filter);
+            }
+        });
     }
 
+    initializeVirtualStore() {
+        const allRecords = this.gridModel.store.allRecords.map(rec => (rec.raw)),
+            {colId} = this;
+        this.virtualStore.loadData(allRecords);
+
+        const ret = {};
+        uniqBy(allRecords, (rec) => rec[colId]).forEach(it => {
+            ret[it[colId]] = true;
+        });
+
+        this._initialValue = ret;
+        this.committedValue = ret;
+
+        this.processAndSetFilter();
+    }
+
+    @action
+    processAndSetFilter(filter) {
+        if (!this.setFilterGridModel) return;
+
+        const {colId} = this;
+        // TODO - make more correct
+        if (filter?.isCompoundFilter) {
+            const fieldFilters = filter.getFieldFiltersForField(colId),
+                equalsFilter = fieldFilters.find(it => it.op === '='),
+                newFilters = without(filter.filters, equalsFilter);
+
+            this.virtualStore.setFilter({op: 'AND', filters: newFilters});
+        } else if (filter?.isFieldFilter && filter.field !== colId) {
+            this.virtualStore.setFilter(filter);
+        }
+
+        const allVals = uniqBy(this.virtualStore.allRecords, (rec) => rec.raw[colId]),
+            visibleVals = uniqBy(this.virtualStore.records, (rec) => rec.raw[colId]),
+            hiddenVals = difference(allVals, visibleVals).map(rec => rec.raw[colId]),
+            currentVals = visibleVals.map(it => ({
+                [colId]: it.raw[colId],
+                isChecked: this.committedValue[it.raw[colId]] ?? false
+            }));
+
+        // Only load set filter grid with VISIBLE values
+        this.setFilterGridModel.loadData(currentVals);
+        const ret = omit(this.committedValue, hiddenVals);
+        currentVals.forEach(rec => {
+            if (!ret.hasOwnProperty(rec[colId])) {
+                ret[rec[colId]] = this.committedValue[rec[colId]] ?? false;
+            }
+        });
+        this.setPendingValue(ret);
+    }
+
+    createSetFilterGridModel() {
+        if (!this.xhColumn.enableFilter) return null;
+
+        const {renderer, rendererIsComplex} = this.xhColumn;
+        return new GridModel({
+            sortBy: this.colId,
+            store: {
+                idSpec: (raw) => raw[this.colId].toString(),
+                fields: [
+                    this.colId,
+                    {name: 'isChecked', type: 'bool'}
+                ]
+            },
+            emptyText: 'No records found...',
+            selModel: {mode: 'multiple'},
+            sizingMode: 'compact',
+            columns: [
+                {
+                    field: 'isChecked',
+                    sortable: false,
+                    headerName: ({gridModel}) => {
+                        const {store} = gridModel;
+                        return checkbox({
+                            disabled: store.empty,
+                            displayUnsetState: true,
+                            value: this.allVisibleRecsChecked,
+                            onChange: () => this.toggleBulk(!this.allVisibleRecsChecked)
+                        });
+                    },
+                    width: 30,
+                    rendererIsComplex: true,
+                    elementRenderer: (v, {record}) => {
+                        return checkbox({
+                            displayUnsetState: true,
+                            value: record.data.isChecked,
+                            onChange: () => this.toggleNode(!v, record.id)
+                        });
+                    }
+                },
+                {
+                    field: this.colId,
+                    flex: 1,
+                    renderer,
+                    rendererIsComplex
+                }
+            ]
+        });
+    }
+
+    @computed
+    get allVisibleRecsChecked() {
+        if (!this.setFilterGridModel) return false;
+
+        const {records} = this.setFilterGridModel.store;
+        if (isEmpty(records)) {
+            return false;
+        }
+
+        const isChecked = records[0].data.isChecked;
+        for (let record of records) {
+            if (record.data.isChecked !== isChecked) return null;
+        }
+        return isChecked;
+    }
+
+
+    @action
+    toggleNode(isChecked, value) {
+        const {pendingValue} = this,
+            currValue = {
+                ...pendingValue,
+                [value]: isChecked
+            };
+        this.setPendingValue(currValue);
+    }
+
+    @action
+    toggleBulk(isChecked) {
+        const currValue = forOwn(clone(this.pendingValue), (v, k, pendingVal) => {
+            pendingVal[k] = isChecked;
+        });
+        this.setPendingValue(currValue);
+    }
+
+    @action
+    setPendingValue(currValue) {
+        const {pendingValue, setFilterGridModel} = this;
+        if (isEqual(currValue, pendingValue)) return;
+
+        this.pendingValue = currValue;
+
+        const ret = [];
+        for (const key in currValue) {
+            ret.push({
+                id: key.toString(),
+                isChecked: currValue[key]
+            });
+        }
+
+        setFilterGridModel.store.modifyRecords(ret);
+    }
+
+    commitPendingValue() {
+        const {pendingValue, colId} = this,
+            ret = clone(this.committedValue);
+
+        for (const val in pendingValue) {
+            ret[val] = pendingValue[val];
+        }
+
+        this.committedValue = ret;
+
+        const fieldFilter = new FieldFilter({
+            field: this.colId,
+            value: keys(pickBy(ret, v => v)),
+            op: '='
+        });
+
+        const {store} = this.gridModel,
+            {filter} = store;
+
+        if (filter?.isCompoundFilter) {
+            const fieldFilters = filter.getFieldFiltersForField(this.colId),
+                equalsFilter = fieldFilters.find(it => it.op === '='),
+                newFilters = without(filter.filters, equalsFilter);
+
+            store.setFilter(new CompoundFilter({filters: [...newFilters, fieldFilter], op: 'AND'}));
+        } else if (filter?.isFieldFilter && filter.field !== colId) {
+            store.setFilter(new CompoundFilter({filters: [filter, fieldFilter], op: 'AND'}));
+        } else {
+            store.setFilter(fieldFilter);
+        }
+
+        this.isFiltered = !isEqual(this.committedValue, this._initialValue);
+    }
+
+    cancelAndUndoPendingValue() {
+        this.setPendingValue(this.committedValue);
+        this.commitPendingValue();
+
+        this.closePopover();
+    }
+
+    @action
+    resetFilter() {
+        this.setFilterGridModel.store.setFilter(null);
+        this.committedValue = {};
+        this.setPendingValue(this._initialValue);
+        this.commitPendingValue();
+    }
+
+    openPopover() {
+        this.setIsOpen(true);
+    }
+
+    closePopover() {
+        this.setIsOpen(false);
+    }
+
+
     destroy() {
-        this.agColumn.removeEventListener('filterChanged', this.onFilterChanged);
+        // this.agColumn.removeEventListener('filterChanged', this.onFilterChanged);
         super.destroy();
     }
 
@@ -190,7 +503,7 @@ class LocalModel extends HoistModel {
         this._lastTouch = Date.now();
     };
 
-    onFilterChanged = () => this.setIsFiltered(this.agColumn.isFilterActive());
+    // onFilterChanged = () => this.setIsFiltered(this.gridModel.store.isFiltered);
 
     //-------------------
     // Implementation

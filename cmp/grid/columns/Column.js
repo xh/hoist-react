@@ -202,6 +202,7 @@ export class Column {
         setValueFn,
         getValueFn,
         enableDotSeparatedFieldPath,
+        enableFilter,
         agOptions,
         ...rest
     }, gridModel) {
@@ -308,6 +309,8 @@ export class Column {
         this.editable = editable;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
+
+        this.enableFilter = enableFilter;
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -539,6 +542,10 @@ export class Column {
         if (this.autoHeight) {
             ret.autoHeight = true;
             ret.wrapText = true;
+        }
+
+        if (this.enableFilter) {
+            ret.suppressMenu = false;
         }
 
         // Finally, apply explicit app requests.  The customer is always right....
