@@ -134,7 +134,7 @@ export const setFilterPopover = hoistCmp.factory({
             interactionKind: 'click',
             isOpen,
             onInteraction: (open) => {
-                if (!open) impl.cancelAndUndoPendingValue();
+                if (!open) impl.cancelAndUndoPendingFilter();
             },
             target: div({
                 item: isFiltered ? Icon.filter() : Icon.bars(),
@@ -175,13 +175,13 @@ export const setFilterPopover = hoistCmp.factory({
                         filler(),
                         button({
                             text: 'Cancel',
-                            onClick: () => impl.cancelAndUndoPendingValue()
+                            onClick: () => impl.cancelAndUndoPendingFilter()
                         }),
                         button({
                             icon: Icon.check(),
                             text: 'Apply',
                             intent: 'success',
-                            onClick: () => impl.commitPendingValue()
+                            onClick: () => impl.commitPendingFilter()
                         })
                     ]
                 })
@@ -205,12 +205,14 @@ class LocalModel extends HoistModel {
     @managed
     virtualStore;
 
-    _initialValue = {};
-    @observable.ref committedValue = {};
-    @observable.ref pendingValue = {};
+    _initialFilter = {};
+    @observable.ref committedFilter = {};
+    @observable.ref pendingFilter = {};
     @bindable filterText = null;
     @observable isFiltered = false;
     @bindable isOpen = false;
+    virtualStoreLastUpdated = null;
+    currentStoreFilter = null;
 
     _doubleClick = false;
     _lastTouch = null;
@@ -232,37 +234,38 @@ class LocalModel extends HoistModel {
         this.virtualStore = new Store({...this.gridModel.store});
 
         this.addReaction({
-            track: () => [this.gridModel.store.filter, this.gridModel.store.allRecords],
-            run: ([filter, allRecs]) => {
-                if (this.virtualStore.empty) {
-                    this.initializeVirtualStore();
-                    return;
-                }
-                this.virtualStore.updateData(allRecs.map(rec => rec.raw));
+            track: () => [this.gridModel.store.filter, this.gridModel.store.lastUpdated, this.isOpen],
+            run: ([filter, lastUpdated, isOpen]) => {
+                if (!isOpen && !lastUpdated) return;
+                this.loadVirtualStore();
                 this.processAndSetFilter(filter);
             }
         });
     }
 
-    initializeVirtualStore() {
-        const allRecords = this.gridModel.store.allRecords.map(rec => (rec.raw)),
-            {colId} = this;
-        this.virtualStore.loadData(allRecords);
+    loadVirtualStore() {
+        const {virtualStore, virtualStoreLastUpdated, gridModel, colId} = this,
+            allRecords = gridModel.store.allRecords.map(rec => (rec.raw));
+
+        if (virtualStoreLastUpdated === gridModel.store.lastUpdated) return;
+        // TODO - handle lastUpdated timestamp on autorefresh - check if data changed?
+        if (!virtualStoreLastUpdated || (virtualStoreLastUpdated !== gridModel.store.lastUpdated)) {
+            virtualStore.loadData(allRecords);
+            this.virtualStoreLastUpdated = gridModel.store.lastUpdated;
+        }
 
         const ret = {};
         uniqBy(allRecords, (rec) => rec[colId]).forEach(it => {
             ret[it[colId]] = true;
         });
 
-        this._initialValue = ret;
-        this.committedValue = ret;
-
-        this.processAndSetFilter();
+        this._initialFilter = ret;
+        this.committedFilter = ret;
     }
 
     @action
     processAndSetFilter(filter) {
-        if (!this.setFilterGridModel) return;
+        if (!this.setFilterGridModel || filter?.equals(this.currentStoreFilter)) return;
 
         const {colId} = this;
         // TODO - make more correct
@@ -274,6 +277,8 @@ class LocalModel extends HoistModel {
             this.virtualStore.setFilter({op: 'AND', filters: newFilters});
         } else if (filter?.isFieldFilter && filter.field !== colId) {
             this.virtualStore.setFilter(filter);
+        } else if (filter?.isFieldFilter && filter.field === colId && filter.op !== '=') {
+            this.virtualStore.setFilter(filter);
         }
 
         const allVals = uniqBy(this.virtualStore.allRecords, (rec) => rec.data[colId]),
@@ -281,18 +286,18 @@ class LocalModel extends HoistModel {
             hiddenVals = difference(allVals, visibleVals).map(rec => rec.data[colId]),
             currentVals = visibleVals.map(it => ({
                 [colId]: it.data[colId],
-                isChecked: this.committedValue[it.data[colId]] ?? false
+                isChecked: this.committedFilter[it.data[colId]] ?? false
             }));
 
         // Only load set filter grid with VISIBLE values
         this.setFilterGridModel.loadData(currentVals);
-        const ret = omit(this.committedValue, hiddenVals);
+        const ret = omit(this.committedFilter, hiddenVals);
         currentVals.forEach(rec => {
             if (!ret.hasOwnProperty(rec[colId])) {
-                ret[rec[colId]] = this.committedValue[rec[colId]] ?? false;
+                ret[rec[colId]] = this.committedFilter[rec[colId]] ?? false;
             }
         });
-        this.setPendingValue(ret);
+        this.setPendingFilter(ret);
     }
 
     createSetFilterGridModel() {
@@ -337,7 +342,7 @@ class LocalModel extends HoistModel {
                 {
                     field: this.colId,
                     flex: 1,
-                    renderer,
+                    renderer, // TODO - handle cases like bool check col where rendered values look null
                     rendererIsComplex
                 }
             ]
@@ -363,32 +368,32 @@ class LocalModel extends HoistModel {
 
     @action
     toggleNode(isChecked, value) {
-        const {pendingValue} = this,
+        const {pendingFilter} = this,
             currValue = {
-                ...pendingValue,
+                ...pendingFilter,
                 [value]: isChecked
             };
-        this.setPendingValue(currValue);
+        this.setPendingFilter(currValue);
     }
 
     @action
     toggleBulk(isChecked) {
         const {records} = this.setFilterGridModel.store,
-            ret = clone(this.pendingValue);
+            ret = clone(this.pendingFilter);
 
         for (let rec of records) {
             ret[rec.id] = isChecked;
         }
 
-        this.setPendingValue(ret);
+        this.setPendingFilter(ret);
     }
 
     @action
-    setPendingValue(currValue) {
-        const {pendingValue, setFilterGridModel} = this;
-        if (isEqual(currValue, pendingValue)) return;
+    setPendingFilter(currValue) {
+        const {pendingFilter, setFilterGridModel} = this;
+        if (isEqual(currValue, pendingFilter)) return;
 
-        this.pendingValue = currValue;
+        this.pendingFilter = currValue;
 
         const ret = [];
         for (const key in currValue) {
@@ -404,15 +409,15 @@ class LocalModel extends HoistModel {
     }
 
     @action
-    commitPendingValue() {
-        const {pendingValue, colId} = this,
-            ret = clone(this.committedValue);
+    commitPendingFilter() {
+        const {pendingFilter, colId} = this,
+            ret = clone(this.committedFilter);
 
-        for (const val in pendingValue) {
-            ret[val] = pendingValue[val];
+        for (const val in pendingFilter) {
+            ret[val] = pendingFilter[val];
         }
 
-        this.committedValue = ret;
+        this.committedFilter = ret;
 
         const fieldFilter = new FieldFilter({
             field: this.colId,
@@ -428,20 +433,20 @@ class LocalModel extends HoistModel {
                 equalsFilter = fieldFilters.find(it => it.op === '='),
                 newFilters = without(filter.filters, equalsFilter);
 
-            store.setFilter(new CompoundFilter({filters: [...newFilters, fieldFilter], op: 'AND'}));
+            this.currentStoreFilter = new CompoundFilter({filters: [...newFilters, fieldFilter], op: 'AND'});
         } else if (filter?.isFieldFilter && filter.field !== colId) {
-            store.setFilter(new CompoundFilter({filters: [filter, fieldFilter], op: 'AND'}));
+            this.currentStoreFilter = new CompoundFilter({filters: [filter, fieldFilter], op: 'AND'});
         } else {
-            store.setFilter(fieldFilter);
+            this.currentStoreFilter = fieldFilter;
         }
-
-        this.isFiltered = !isEqual(this.committedValue, this._initialValue);
+        store.setFilter(this.currentStoreFilter);
+        this.isFiltered = !isEqual(this.committedFilter, this._initialFilter);
     }
 
     @action
-    cancelAndUndoPendingValue() {
-        this.setPendingValue(this.committedValue);
-        this.commitPendingValue();
+    cancelAndUndoPendingFilter() {
+        this.setPendingFilter(this.committedFilter);
+        this.commitPendingFilter();
         this.filterText = null;
 
         this.closePopover();
@@ -450,9 +455,9 @@ class LocalModel extends HoistModel {
     @action
     resetFilter() {
         this.setFilterGridModel.store.setFilter(null);
-        this.committedValue = {};
-        this.setPendingValue(this._initialValue);
-        this.commitPendingValue();
+        this.committedFilter = {};
+        this.setPendingFilter(this._initialFilter);
+        this.commitPendingFilter();
     }
 
     openPopover() {
