@@ -544,9 +544,6 @@ export class Column {
                     // If sortValue is a function that transforms the value
                     valueA = sortValue(valueA, {recordA, column: this, gridModel});
                     valueB = sortValue(valueB, {recordB, column: this, gridModel});
-                } else {
-                    valueA = valueA;
-                    valueB = valueB;
                 }
 
                 return this.comparator(valueA, valueB, sortDir, abs, params);
