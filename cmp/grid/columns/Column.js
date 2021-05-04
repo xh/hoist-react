@@ -81,8 +81,10 @@ export class Column {
      * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column.  If
      *      false (default) absolute value sorts will be ignored when cycling through the
      *     sortingOrder.
+     * @param {(string|Column~sortValueFn)} [c.sortValue] - alternate field name to reference or
+     *      function to call when producing a value for this column to be sorted by
      * @param {Column~comparatorFn} [c.comparator] - function for comparing column values for
-     *     sorting
+     *     sorting.
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
      * @param {boolean} [c.sortable] - false to prevent user from sorting on this column.
@@ -171,6 +173,7 @@ export class Column {
         rowHeight,
         absSort,
         sortingOrder,
+        sortValue,
         comparator,
         resizable,
         movable,
@@ -256,6 +259,7 @@ export class Column {
 
         this.absSort = withDefault(absSort, false);
         this.sortingOrder = withDefault(sortingOrder, Column.DEFAULT_SORTING_ORDER);
+        this.sortValue = sortValue;
         this.comparator = comparator;
 
         this.resizable = withDefault(resizable, true);
@@ -514,7 +518,7 @@ export class Column {
         } else {
             // ...or process custom comparator with the Hoist-defined comparatorFn API.
             ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
-                const {gridModel, colId} = this,
+                const {gridModel, colId, sortValue} = this,
                     // Note: sortCfg and agNodes can be undefined if comparator called during show
                     // of agGrid column header set filter menu.
                     sortCfg = find(gridModel.sortBy, {colId}),
@@ -532,6 +536,19 @@ export class Column {
                         agNodeB
                     };
 
+                if (isString(sortValue)) {
+                    // If sortValue points to a different field
+                    valueA = recordA?.data[sortValue] ?? valueA; // Group rows have no record.
+                    valueB = recordB?.data[sortValue] ?? valueB;
+                } else if (isFunction(sortValue)) {
+                    // If sortValue is a function that transforms the value
+                    valueA = sortValue(valueA, {recordA, column: this, gridModel});
+                    valueB = sortValue(valueB, {recordB, column: this, gridModel});
+                } else {
+                    valueA = valueA;
+                    valueB = valueB;
+                }
+
                 return this.comparator(valueA, valueB, sortDir, abs, params);
             };
         }
@@ -548,8 +565,20 @@ export class Column {
     //--------------------
     // Implementation
     //--------------------
-    defaultComparator = (v1, v2) => {
-        const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
+    defaultComparator = (v1, v2, agNodeA, agNodeB) => {
+        const {gridModel, colId, sortValue} = this,
+            sortCfg = find(gridModel.sortBy, {colId}),
+            recordA = agNodeA?.data,
+            recordB = agNodeB?.data;
+
+        if (isString(sortValue)) {
+            v1 = recordA?.data[sortValue] ?? v1;
+            v2 = recordB?.data[sortValue] ?? v2;
+        } else if (isFunction(sortValue)) {
+            v1 = sortValue(v1, {recordA, column: this, gridModel});
+            v2 = sortValue(v2, {recordB, column: this, gridModel});
+        }
+
         return sortCfg ? sortCfg.comparator(v1, v2) : GridSorter.defaultComparator(v1, v2);
     };
 
