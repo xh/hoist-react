@@ -62,7 +62,7 @@ function parseMenuItems(items) {
         .map(item => {
             if (item === '-') return menuDivider();
             if (isValidElement(item)) {
-                return ['Blueprint3.MenuItem', 'Blueprint3.MenuDivider'].includes(item.type.displayName) ?
+                return ['Blueprint4.MenuItem', 'Blueprint4.MenuDivider'].includes(item.type.displayName) ?
                     item :
                     menuItem({text: item});
             }

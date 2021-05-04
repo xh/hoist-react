@@ -112,7 +112,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
 
         if (minimal) {
             childEl = tooltip({
-                target: childEl,
+                item: childEl,
                 targetClassName: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
                 targetTagName: !blockChildren.includes(getReactElementName(child)) || child.props.width ? 'span' : 'div',
                 position: tooltipPosition,
@@ -236,10 +236,10 @@ FormField.propTypes = {
      * @see https://blueprintjs.com/docs/#core/components/popover
      */
     tooltipPosition: PT.oneOf([
-        'top', 'top-start', 'top-end', 
-        'bottom', 'bottom-start', 'bottom-end', 
-        'right', 'right-start', 'right-end', 
-        'left', 'left-start', 'left-end', 
+        'top', 'top-start', 'top-end',
+        'bottom', 'bottom-start', 'bottom-end',
+        'right', 'right-start', 'right-end',
+        'left', 'left-start', 'left-end',
         'auto', 'auto-start', 'auto-end'
     ])
 };
