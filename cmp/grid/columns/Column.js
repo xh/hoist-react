@@ -82,7 +82,7 @@ export class Column {
      *      false (default) absolute value sorts will be ignored when cycling through the
      *     sortingOrder.
      * @param {(string|Column~sortValueFn)} [c.sortValue] - alternate field name to reference or
-     *      function to call when producing a value for this column to be sorted by
+     *      function to call when producing a value for this column to be sorted by.
      * @param {Column~comparatorFn} [c.comparator] - function for comparing column values for
      *     sorting.
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
