@@ -1,15 +1,22 @@
 # Welcome to Hoist React
 
-Hoist is a web application development toolkit developed by
-[Extremely Heavy](https://xh.io/).
+Additional docs of interest:
+* [CHANGELOG.md](https://github.com/xh/hoist-react/blob/develop/CHANGELOG.md) - record of all Hoist
+  versions + not-yet-released changes within our SNAPSHOT pre-release.
+* [docs/build-and-deploy.md](https://github.com/xh/hoist-react/blob/develop/docs/build-and-deploy.md)
+  \- notes on CI configuration and build/deploy considerations.
+* [docs/development-environment.md](https://github.com/xh/hoist-react/blob/develop/docs/development-environment.md)
+  \- notes on local development environment configuration for Hoist and app developers.
+
+Hoist is a web application development toolkit developed by [Extremely Heavy](https://xh.io/).
 
 Hoist is designed as a "full stack" UI development framework, meaning that it has both server and
 client components that work together to provide an integrated set of tools and utilities for quickly
 constructing sophisticated front-end interfaces - or entire applications - with a strong focus on
 building for the enterprise.
 
-Please refer to the [Hoist Core](https://github.com/xh/hoist-core) repository readme for an
-overview of Hoist as a whole: its reason for existing, server-side tech stack, general features and
+Please refer to the [Hoist Core](https://github.com/xh/hoist-core) repository readme for an overview
+of Hoist as a whole: its reason for existing, server-side tech stack, general features and
 capabilities.
 
 This repository is *hoist-react*, which is the current reference client-side implementation of
@@ -53,12 +60,12 @@ and/or think it might be helpful for a project, please don't hesitate to
 
 ## Key Libraries and Dependencies
 
-📚 Hoist React is built on a collection of remarkable third-party libraries that have been
-selected, combined and integrated by Extremely Heavy. To make the best use of this
-framework, please review the technologies below.
+📚 Hoist React is built on a collection of remarkable third-party libraries that have been selected,
+combined and integrated by Extremely Heavy. To make the best use of this framework, please review
+the technologies below.
 
-|   Library    |                                          Notes                                          |                Link                |
-|--------------|-----------------------------------------------------------------------------------------|:----------------------------------:|
+|   Library    |                                          Notes                                          |               Link                |
+|--------------|-----------------------------------------------------------------------------------------|:---------------------------------:|
 | React        | Core technology for efficient componentization and rendering of modern web applications |    [🔗](https://reactjs.org/)     |
 | Mobx         | Flexible, well-balanced state management and smart reactivity.                          |    [🔗](https://mobx.js.org/)     |
 | Webpack      | Endlessly extensible (if occasionally baffling) bundle and build tool.                  |   [🔗](https://webpack.js.org/)   |
@@ -78,9 +85,9 @@ libraries, client application(s) using Hoist React must acquire and register app
 **Ag-Grid** is released by its developer under a dual licensing model, with the community edition
 available under a permissive MIT license and the Enterprise edition requiring a [paid license from
 ag-Grid](https://www.ag-grid.com/license-pricing.php). Applications wishing to use grids in Hoist
-React will need to provide a licensed version of ag-Grid.  A free community version is
-available, however many applications will want to license the enterprise version in order to make
-use of the important extra functionality it provides, including row grouping and tree grids.
+React will need to provide a licensed version of ag-Grid. A free community version is available,
+however many applications will want to license the enterprise version in order to make use of the
+important extra functionality it provides, including row grouping and tree grids.
 
 **Font Awesome** provides a greatly extended set of icons via its
 [Pro license](https://fontawesome.com/pro), and Hoist React references / relies on several of these
@@ -147,16 +154,16 @@ solution with "smart' reactivity, tight integration with React Components, and a
 reactive programming that extends beyond Components. Please review and familiarize yourself with the
 MobX documentation to make the best use of Hoist React.
 
-All Hoist Components include 'observer' support from the 'mobx-react' project. This means that
-these Components are automatically re-rendered when any observable state they used during their
-last render is modified. This support provides the core engine of reactivity in Hoist.
+All Hoist Components include 'observer' support from the 'mobx-react' project. This means that these
+Components are automatically re-rendered when any observable state they used during their last
+render is modified. This support provides the core engine of reactivity in Hoist.
 
 In addition to Components, MobX is an essential tool for use by Models and Services within Hoist.
-The `HoistBase` class adds two key methods by default to these core
-Hoist artifacts - `addAutorun()` and `addReaction()`. These methods build on top of the native MobX
-autorun and reaction utilities with some additional syntax for clarity (in the case of reactions)
-and, importantly, a managed lifecycle that automatically disposes of these listeners when the owning
-artifact's `destroy` method is called. See that class for further details on this API.
+The `HoistBase` class adds two key methods by default to these core Hoist artifacts - `addAutorun()`
+and `addReaction()`. These methods build on top of the native MobX autorun and reaction utilities
+with some additional syntax for clarity (in the case of reactions) and, importantly, a managed
+lifecycle that automatically disposes of these listeners when the owning artifact's `destroy` method
+is called. See that class for further details on this API.
 
 Hoist leverages MobX in a wide variety of other contexts, including observable data stores, the
 handling and validation of form field inputs, routing, and more. In many cases, MobX-provided
@@ -177,33 +184,33 @@ instantiates Hoist service singletons and installs references to these instances
 aliases on itself for the most common framework service calls, e.g. `XH.getConf()` as a shortcut to
 `XH.configService.get()`.
 
-|  Class/File     |                               Note                                         |           Link               |
-|-----------------|----------------------------------------------------------------------------|:----------------------------:|
-| `XH.js`         | Hoist's top-level Model / framework API entry-point, exported as `XH`.     |       [⚛️](core/XH.js)       |
+| Class/File |                                  Note                                  |      Link       |
+|------------|------------------------------------------------------------------------|:---------------:|
+| `XH.js`    | Hoist's top-level Model / framework API entry-point, exported as `XH`. | [⚛️](core/XH.js) |
 
 
 ## Core Concepts: Models, Components, and Services
 
 Three distinct types of artifacts compromise the backbone of a Hoist application: **Models,
-Components, and Services**. Any non-trivial application will define and create multiple instances
-of these core object types, and understanding how Hoist defines and uses these three core artifacts
-is essential to understanding how we at XH build and structure apps.
+Components, and Services**. Any non-trivial application will define and create multiple instances of
+these core object types, and understanding how Hoist defines and uses these three core artifacts is
+essential to understanding how we at XH build and structure apps.
 
-Models and services are class-based and base classes `HoistModel` and `HoistService` are
-provided by Hoist for these object.  `HoistAppModel` is a special base class for an Application's
-primary Model class that provides additional high-level info about the application.
+Models and services are class-based and base classes `HoistModel` and `HoistService` are provided by
+Hoist for these object. `HoistAppModel` is a special base class for an Application's primary Model
+class that provides additional high-level info about the application.
 
-Components are react functional components, but with additional wrapping provided by Hoist
-to support model specification and lookup and and observability.  Applications should use the
-factory function `hoistCmp` to define Components with this support.
+Components are react functional components, but with additional wrapping provided by Hoist to
+support model specification and lookup and and observability. Applications should use the factory
+function `hoistCmp` to define Components with this support.
 
-|     Class/File                |                                  Note                                  |             Link             |
-|-------------------------------|------------------------------------------------------------------------|:----------------------------:|
-| `HoistBase.js`                | Root Base class. Support for mobx, persistence, and resource management|       [⚛️](core/XH.js)       |
-| `HoistModel.js`               | Base class for Models                                                  |  [⚛️](core/HoistModel.js)    |
-| `HoistService.js`             | Base class for Services                                                |  [⚛️](core/HoistService.js)  |
-| `HoistComponent.js`           | Contains `hoistComponent`, factory for creating functional Components  |  [⚛️](core/HoistComponent.js)|
-| `HoistAppModel.js`            | Base class for an App's primary Model class.                           |  [⚛️](core/HoistAppModel.js) |
+|     Class/File      |                                  Note                                   |            Link             |
+|---------------------|-------------------------------------------------------------------------|:---------------------------:|
+| `HoistBase.js`      | Root Base class. Support for mobx, persistence, and resource management |       [⚛️](core/XH.js)       |
+| `HoistModel.js`     | Base class for Models                                                   |   [⚛️](core/HoistModel.js)   |
+| `HoistService.js`   | Base class for Services                                                 |  [⚛️](core/HoistService.js)  |
+| `HoistComponent.js` | Contains `hoistComponent`, factory for creating functional Components   | [⚛️](core/HoistComponent.js) |
+| `HoistAppModel.js`  | Base class for an App's primary Model class.                            | [⚛️](core/HoistAppModel.js)  |
 
 ### HoistModel
 
@@ -226,12 +233,12 @@ the specifics of how its visible Components are laid out or arranged.
 
 Components will reference properties of these Models within their render methods, and call methods
 on these Models in response to user actions or inputs. This can help to structure or encapsulate a
-Component's API, but also works with MobX to minimize extra
-render cycles and respond to state changes as efficiently as possible. The
-[`GridModel`](cmp/grid/GridModel.js) class is a notable example of managing a complex Component's
-configuration, state, and API surface via a Model. Hoist's `LeftRightChooser` Component is managed
-via its [dedicated Model class](desktop/cmp/leftrightchooser/LeftRightChooserModel.js), which
-includes nested GridModels.
+Component's API, but also works with MobX to minimize extra render cycles and respond to state
+changes as efficiently as possible. The [`GridModel`](cmp/grid/GridModel.js) class is a notable
+example of managing a complex Component's configuration, state, and API surface via a Model. Hoist's
+`LeftRightChooser` Component is managed via its
+[dedicated Model class](desktop/cmp/leftrightchooser/LeftRightChooserModel.js), which includes
+nested GridModels.
 
 Models can also exist entirely independent of Components, or be generalized enough to be used as
 state sources for multiple, different Components. The
@@ -242,26 +249,25 @@ state sources for multiple, different Components. The
 Each client application must define a top-level Model class using
 [the specialized `HoistAppModel` base class](core/HoistAppModel.js). This class defines several
 additional methods specific to the high-level lifecycle of the application, including those dealing
-with init, and routing. This class instance is available via an import of the `XH` (as `XH.appModel`)
-and can be a useful place to hang global state specific to your application.
+with init, and routing. This class instance is available via an import of the `XH` (as
+`XH.appModel`) and can be a useful place to hang global state specific to your application.
 
-Please review the inline documentation on the class for additional detailed information on what
-it provides and how an Application should provide concrete implementations for certain key methods.
-For an example within Hoist React itself, see HoistAppModel for the
+Please review the inline documentation on the class for additional detailed information on what it
+provides and how an Application should provide concrete implementations for certain key methods. For
+an example within Hoist React itself, see HoistAppModel for the
 [built-in Admin Console](admin/AppModel.js).
 
 ### hoistComponent
 
-⚛️ Components are the most familiar artifacts in React development, and are likely what come to
-mind first when most developers think of React. Functional components are the preferred method of
-defining components in React and Hoist. To define a functional component in Hoist, simply provide
-a render function to the `hoistComponent` function. This will apply core Hoist support, including
-MobX reactivity, model lookup, and support for forward refs, and will return the Component.
+⚛️ Components are the most familiar artifacts in React development, and are likely what come to mind
+first when most developers think of React. Functional components are the preferred method of
+defining components in React and Hoist. To define a functional component in Hoist, simply provide a
+render function to the `hoistComponent` function. This will apply core Hoist support, including MobX
+reactivity, model lookup, and support for forward refs, and will return the Component.
 
-Note that many layout related Components provide "LayoutSupport".  Components supporting
-this feature promote most flexbox layout properties (e.g. 'width', 'height', 'flex') to being first
-class props on the component itself. This allows many layout operations to be done in declarative
-Javascript.
+Note that many layout related Components provide "LayoutSupport". Components supporting this feature
+promote most flexbox layout properties (e.g. 'width', 'height', 'flex') to being first class props
+on the component itself. This allows many layout operations to be done in declarative Javascript.
 
 ### HoistService
 
@@ -275,34 +281,35 @@ Model and Component classes that's tailored to their needs.
 Service instances persist for the life of the app and have a defined initialization process. By
 convention they are stored within an `svc/` package within an app's file structure.
 
-Use the `HoistService` class to mark a class as a global service within.  This installs MobX and
+Use the `HoistService` class to mark a class as a global service within. This installs MobX and
 support and defines an empty `initAsync()` lifecycle method. To instantiate and make services
-available to application code, use the`XH.installServicesAsync()` method. This method will construct,
-initialize, and install the services as a property on the XH object. Note that there is a strict
-expectation that service classes will be named ending with the word 'Service', e.g. `MyCustomService.`.
-The installed instance in this case would then be made available to application code as
-`XH.myCustomService'.
+available to application code, use the`XH.installServicesAsync()` method. This method will
+construct, initialize, and install the services as a property on the XH object. Note that there is a
+strict expectation that service classes will be named ending with the word 'Service', e.g.
+`MyCustomService.`. The installed instance in this case would then be made available to application
+code as `XH.myCustomService'.
 
 Many core Hoist features are exposed on the client via services such as `PrefService`,
 `ConfigService`, and `IdentityService`. See these examples for a better understanding of the kind of
 tasks and code patterns commonly used within Service classes.
 
 #### Resource Management
-The `HoistBase` class provides a `destroy()` method that will be called when a model is
-no longer needed. This lifecycle method ensures that all MobX disposers are called and all resources
-are cleaned up when the object is no longer needed.  Related objects can also be marked as `@managed`,
+
+The `HoistBase` class provides a `destroy()` method that will be called when a model is no longer
+needed. This lifecycle method ensures that all MobX disposers are called and all resources are
+cleaned up when the object is no longer needed. Related objects can also be marked as `@managed`,
 ensuring that these subsidiary objects will be cleaned up as well.
 
-For the most part, applications should not need to explicitly call `destroy()`.  Any models or
-services that Hoist instantiates (via `new`) will be destroyed by Hoist itself when no
-longer needed.  The main responsibility for applications is to ensure that any objects they
-explicitly create with `new` are either marked as `@managed` or destroyed explicitly in `destroy()`.
+For the most part, applications should not need to explicitly call `destroy()`. Any models or
+services that Hoist instantiates (via `new`) will be destroyed by Hoist itself when no longer
+needed. The main responsibility for applications is to ensure that any objects they explicitly
+create with `new` are either marked as `@managed` or destroyed explicitly in `destroy()`.
 
 
 ## Element Factories
 
-| Class/File |                        Note                        |        Link         |
-|------------|----------------------------------------------------|:-------------------:|
+| Class/File |                        Note                        |       Link        |
+|------------|----------------------------------------------------|:-----------------:|
 | `elem.js`  | Utils for creating elements and element factories. | [⚛️](core/elem.js) |
 
 
@@ -376,411 +383,6 @@ will be filled in as soon as possible. These include planned notes on:
 - [ ] HoistInput form controls and model-based management of form fields
 - [ ] Top-level AppBar and related app infrastructure components
 - [ ] Bundled Icon enums
-
-## Build and Deployment
-
-🛠️ This section details the general steps we use to build a typical full-stack Hoist React
-application. We consider the Grails-based back-end and React-based front-end to be two sides of the
-same application. We build and deploy them together, and so the below includes info on building the
-Grails / Gradle based server. That is technically the domain of
-[Hoist Core](https://github.com/xh/hoist-core) but is detailed here to provide a consolidated look
-at the build process.
-
-***At a high level, the build process:***
-* Builds the Grails back-end via Gradle, producing a WAR file.
-* Builds the JS front-end via Webpack, producing a set of production ready client assets.
-* Copies both outputs into a pair of Docker containers and publishes those containers as the
-  end-product of the build.
-* Deploys the new images, immediately or in a later step.
-
-Hoist does not mandate the use of any particular CI system, although we recommend and use
-[Jetbrains Teamcity](https://www.jetbrains.com/teamcity/) across multiple project deployments. The
-examples in this section do reference some Teamcity terms (although these concepts are very general
-and applicable to any common CI system).
-
-Hoist also does not require the use of Docker or containerization in general, nor does it rely on
-any particular container orchestration technology (e.g. Kubernetes). That said, the move towards
-Docker-based deployments is clearly a popular one, and we have found containers to be a useful way
-to bundle up and somewhat abstract away the two-part nature of full-stack Hoist UI applications.
-
-💡 Note that the use of `appCode` throughout this section is a placeholder for the actual shortname
-assigned to your application. This is a short, camelCased variant of the longer `appName` and is set
-within the application source code via both the Gradle and Webpack configs.
-
-### 1\) Setup/Prep
-
-####  1.1) Refresh and Lint JS Client
-
-We do this first to fail fast if the client code doesn’t pass the linter checks, which is relatively
-common. This step could also run any preflight unit tests, etc. should you be diligent enough to
-have them.
-
-```bash
-yarn
-yarn lint
-```
-
-#### 1.2) Set Gradle project name
-
-It’s best to be explicit with Gradle about the name of the project. By default it uses the name of
-the containing directory, which in a CI build is probably a random hash.
-
-Project names can be set via a `settings.gradle`in the project root, but we often don’t want to
-check in a `settings.gradle` with each app project. as we commonly build and test [custom Grails
-plugins](https://github.com/xh/hoist-core#custom-plugins-for-enterprise-deployments) by running in
-a [multi-project build mode](https://docs.gradle.org/current/userguide/multi_project_builds.html)
-with an under-development Grails plugin and the app checked out as siblings in a parent wrapper
-directory. That parent directory (which is local to the developer’s machine and not in source
-control) has its own `settings.gradle` file to bind the app and plugin together. You can’t have more
-than one `settings.gradle` in a Gradle project, so this dev-time setup would conflict with a checked
-in version should one exist
-
-As a workaround, we can have the build system take the app name (we use a project-level Teamcity
-`%param%`) and then write out a `settings.gradle` file in place within the checked out source.
-
-```bash
-echo "rootProject.name = \"%appCode%\"" > settings.gradle
-```
-
-This step could be avoided by checking in a `settings.gradle` with the app and, should you need the
-special plugin development setup outlined above, manually deleting or renaming it (and remembering
-to not check that change into source control). In many cases, in-line Grails plugin development will
-be a rarity or limited to XH or a smaller set of developers.
-
-### 2\) Server and Client Builds
-
-#### 2.1) Build (and optionally publish) Grails server WAR with Gradle
-
-This step calls into a `build.gradle` script checked in with each project to build the Grails
-server-side into a WAR and then publish that to an internal Maven repo.
-
-Publishing the built WAR to an internal Maven repo is not necessary, but it does give us some parity
-with how we build and publish Grails plugins and is relatively standard with versioned Java
-artifacts. That said, the “real” output of the build will be a pair of Docker containers (below),
-and we’re not pushing the corresponding client JS assets to Maven or baking them into the WAR - both
-of which make publishing the WAR somewhat arbitrary. 🤷 The choice as to whether or not to publish
-can depend on the nature of the app and the standards/controls expected within the organization.
-
-This step takes an application version, which is baked into the build. This can be left out, in
-which case it will default to the version specified within the app’s `gradle.properties` file. Our
-convention is to leave `gradle.properties` checked in with the next snapshot version and have the
-builds override via a Gradle `-P` option when doing a particular versioned build. This means that
-“snapshot” builds can simply leave the argument off, versioned builds can supply it (we use a
-Teamcity param supplied via a required prompt), and `gradle.properties` only needs to change in
-source control when a new major release moves us to a new snapshot.
-
-When publishing, the build script is typically also setup to accept credentials w/deploy rights to
-the internal Maven repository. The
-[Toolbox build script](https://github.com/xh/toolbox/blob/develop/build.gradle) provides an
-example - see the `publishing` section.
-
-Teamcity can use its dedicated “Gradle runner” to provide a more customized view on the task, or a
-simple command runner could be used. In both cases, a Gradle wrapper should be checked in with the
-project and used according to Gradle best practices.
-
-```bash
-# If publishing - will build WAR then push to Maven as per particular config in build.gradle
-./gradlew publishApp -PxhAppVersion=%appVersion% -PmavenDeployUser=%deployUser% -PmavenDeployPassword=%deployPwd%
-
-# If building WAR only
-./gradlew war -PxhAppVersion=%appVersion%
-```
-
-In both cases, the output is a `appCode-appVersion.war` file file within `/build/libs`.
-
-#### 2.2) Build JS Client with Webpack
-
-This step builds all the client-side assets (JS/CSS/static resources) with Webpack, taking the
-source and dependencies and producing concatenated, minified, and hashed files suitable for serving
-to browsers. We use `yarn` as our package manager / runner tool, although `npm` is also fine if
-preferred.
-
-This step takes several arguments that are passed via a script in `package.json` to Webpack. Each
-project has a `webpack.config.js` file checked into the root of its `client-app` directory that
-accepts any args and runs them through a script provided by
-[hoist-dev-utils](https://github.com/xh/hoist-dev-utils/blob/master/configureWebpack.js) to
-produce a fully-based Webpack configuration object. The two args typically set during the build
-process (as opposed to being checked in to the app's `webpack.config.js`) are:
-
-* `appVersion` - the same x.y.z version supplied to the server-side build above. We take the same
-  approach on the client as we do on the server, where the next snapshot version is left defaulted
-  within the app’s `webpack.config.js` file and then overridden via this arg for versioned builds
-  only.
-* `appBuild` - this is an optional arg that gets baked into the client code and exposed as a
-  variable for display in the built-in Hoist admin client. We use it to pass a git commit hash,
-  which then provides another way to cross-reference exactly what snapshot of the codebase was used
-  to build any given running application.
-
-An example Teamcity command line runner. ⚠️ Note this must run with `client-app` as its working
-directory:
-
-```bash
-appVersion=%appVersion%
-# Source commit hash from CI system - approach here depends on TC build config/template
-gitCommit=%build.vcs.number%
-# Grab a shorter version of the full hash
-appBuild=${gitCommit:0:10}
-echo "Building $appVersion $appBuild"
-yarn build --env.appVersion=$appVersion --env.appBuild=$appBuild
-```
-
-The output is a set of files within `/client-app/build/` .
-
-### 3\) Docker images
-
-🐳 The primary outputs of the overall build process are a pair of Docker containers, one for the
-Grails server and one for the client JS assets. These include the build assets and are tagged with
-the desired version, making them (as a pair) a complete and deployable instance of the application.
-
-Applications should be checked in with a `/docker/` directory containing Dockerfiles and configs for
-both the server and client containers. Both can be based on
-[public images published by XH](https://hub.docker.com/r/xhio/), although an inspection of
-[those](https://github.com/xh/xh-tomcat) [images](https://github.com/xh/xh-nginx) will show that
-they are very thin layers on top of the official Tomcat and nginx images on Docker Hub.
-
-#### 3.1) Build and Publish Tomcat Docker image
-
-The Grails server component is deployed within a Tomcat container. The app should have a minimal
-`/docker/tomcat/Dockerfile` (checked into source control) such as:
-
-```dockerfile
-FROM xhio/xh-tomcat:latest
-COPY setenv.sh bin/
-COPY *.war webapps/ROOT.war
-```
-
-The `setenv.sh` referenced here can also be checked in with the app project and used to set
-environment variables / Java Opts required by Tomcat. This typically contains a reasonable `Xmx`
-(max JVM heap) value for the app and a pointer to an “instance config” file used by Hoist apps to
-bootstrap themselves with DB credentials and other low-level configuration required at startup. By
-convention we place this file within a Docker volume that’s mounted to `/appCode` within each
-container
-
-All this means that a `/docker/tomcat/setenv.sh` typically looks like:
-
-```bash
-export JAVA_OPTS="$JAVA_OPTS -Xmx2G -Dio.xh.hoist.instanceConfigFile=/appCode/conf.yml"
-```
-
-That leaves the build with the job of generating a suitable tag for the container, running the
-Docker build, and then pushing to an appropriate (likely internal) Docker registry. The container
-tag should include the appCode + `-tomcat` to indicate that this is the Grails-side container.
-
-An example Teamcity command line runner. ⚠️ Note this must run with `docker/tomcat` as its working
-directory:
-
-```bash
-# Copy the WAR built above into the Docker context.
-cp ../../build/libs/*.war .
-
-# Determine an appropriate container tag from CI params.
-containerTag=%internalDockerRegistry%/%appCode%-tomcat:%appVersion%
-echo "Building Docker container $containerTag"
-sudo docker build --pull -t "$containerTag" .
-
-# Note whether build was successful, push if so, return error if not.
-ret=$?
-if [ $ret -eq 0 ]
-then
-  sudo docker push "$containerTag"
-  ret=$?
-else
-  echo "Docker container build failed and was not pushed"
-fi
-
-# Cleanup and relay exit code to CI
-rm *.war
-exit $ret
-```
-
-#### 3.2) Build and Publish nginx Docker image
-
-The static JS resources are deployed within an nginx container. The app should have a minimal
-`/docker/nginx/Dockerfile/ ` (checked into source control) such as:
-
-```dockerfile
-FROM xhio/xh-nginx:latest
-COPY app.conf $/XH_NGINX_CONFIG_PATH/
-COPY build/ $/XH_NGINX_CONTENT_PATH/
-```
-
-Note that the `$XH` environment variables are set for convenience within the `xh-nginx` base image
-Dockerfile.
-
-The `app.conf` referenced here is an app-specific nginx configuration that should be checked in
-alongside the Dockerfile. It should setup the available routes to serve each bundled client app,
-configure SSL certificates if needed, do any required redirects, and (importantly) include a *proxy
-configuration* to pass traffic through from the nginx container to the Tomcat container. Hoist
-deploys typically bind only the nginx ports to the host machine, then link the nginx and Tomcat
-containers together via Docker so there’s a single point of entry (nginx) for incoming requests.
-This means that no CORS or further, external proxy configuration is required to have the
-nginx-dosted client communicate with its Tomcat back-end.
-
-While the exact content of the `app.conf` file will vary depending on the app, a representative
-example is below:
-
-```
-server {
-    server_name  localhost;
-    include includes/xh-secure-redirect.conf;
-}
-
-server {
-    server_name  localhost;
-    listen 443 ssl;
-    root   /usr/share/nginx/html;
-
-    ssl_certificate     /appCode/ssl/appCode.crt;
-    ssl_certificate_key /appCode/ssl/appCode.pem;
-
-    # Redirect root to /app/
-    location = / {
-        return 301 $scheme://$host/app/;
-    }
-
-    # Static JS/CSS/etc assets not matching a more specific selector below
-    location / {
-        expires $expires;
-    }
-
-    # App entry points - ensure trailing slash, match or fallback to index for sub-routes
-    location = /admin {
-        return 301 $uri/;
-    }
-
-    location /admin/ {
-        try_files $uri /admin/index.html;
-        expires $expires;
-    }
-
-    location = /app {
-        return 301 $uri/;
-    }
-
-    location /app/ {
-        try_files $uri /app/index.html;
-        expires $expires;
-    }
-
-    # Proxy to Grails back-end - appCode-tomcat is defined by Docker (e.g. via link)
-    location /api/ {
-        proxy_pass http://appCode-tomcat:8080/;
-        include includes/xh-proxy.conf;
-    }
-}
-```
-
-***Note that this example configuration:***
-
-* Uses `appCode` as a placeholder - use the same code as configured in the app’s server and client
-  builds!
-* Calls several optional nginx config includes, sourced from the base `xh-nginx` image. The base
-  image also copies in [an overall config](https://github.com/xh/xh-nginx/blob/master/xh.conf)
-  that enables gzip compression and sets the `$expires` variable referenced above.
-* Redirects insecure requests to HTTPS on port 443 and terminates SSL itself, using certificates
-  sourced from `/appCode/ssl` - the conventional location for Hoist apps to store certs and keys
-  within an attached Docker volume.
-* Sets up locations for each client-app entry point / bundle - here we are shipping two JS apps with
-  this container: `app` - the business-user facing app itself - and `admin` - the built-in Hoist
-  Admin console. Apps might have other entry points, such as `mobile` or other more specific
-  bundles.
-* Uses the `try_files` directive to attempt to service requests at sub-paths by handing back asset
-  files if they exist, but otherwise falling back to `index.html` within that path. This allows for
-  the use of HTML5 “pushState” routing, where in-app routes are written to the URL without the use
-  of a traditional `#` symbol (e.g. <http://host/app/details/123>).
-* Creates a proxy endpoint at `/api/` to pass traffic through to the Tomcat back-end. This path is
-  expected by the JS client, which will automatically prepend it to the path of any local/relative
-  Ajax requests. This can be customized if needed on the client by adjusting the `baserUrl` param
-  passed to `configureWebpack()`.
-
-The build system now simply needs to copy the built client-side resources into the Docker context
-and build the image. The sample below is simplified, but could also include the return code checks
-in the Tomcat example above. Note the `-nginx` suffix on the container tag. ⚠️ This example must
-also run with `docker/nginx` as its working directory:
-
-```bash
-cp -R ../../client-app/build/ .
-containerTag=%internalDockerRegistry%/%appCode%-nginx:%appVersion%
-echo "Building Docker container $containerTag"
-sudo docker build --pull -t "$containerTag" .
-sudo docker push "$containerTag"
-```
-
-#### 3.3) Docker cleanup
-
-✨ At this point the build is complete and new versioned or snapshot images containing all the
-runtime code have been pushed to a Docker registry and are ready for deployment.
-
-It might be beneficial to add one more step to clean up local Docker images on the build agent, to
-avoid them continuing to grow and take up disk space indefinitely. Note this forces Docker to pull
-the base images anew each time, which takes a small amount of time/bandwidth. It could probably be
-made more targeted if desired:
-
-```bash
-sudo docker system prune -af
-```
-
-### 4\) Docker deployment
-
-🚢 We typically setup distinct targets for build vs. deploy, and configure deployment targets to
-prompt for the version number and/or Docker hostname. This process will differ significantly
-depending on the use (or not) of orchestration technology such as Kubernetes or AWS Elastic
-Container Service (ECS).
-
-Regardless of the specific implementation, the following points should apply:
-
-* Both `appCode-tomcat` and `appCode-nginx` containers should be deployed as a service / pair, and
-  be kept at the same version.
-* The Tomcat container does not need to have any ports exposed/mapped onto the host (although it
-  could if direct access is desired).
-* The nginx container typically exposes ports 80 and 443, although if a load balancer or similar is
-  also in play that might vary (and would require appropriate adjustments to the `app.conf` nginx
-  file outlined above).
-* The nginx container must be able to reach the Tomcat container at the same name included in its
-  `app.conf` file - by convention, it expects to use `appCode-tomcat`. With straight Docker, this
-  can be accomplished via the `--link` option (see below).
-* A shared volume can be used to host the instance config .yml file for the Grails server, SSL certs
-  as required for nginx, and logs if so configured. This volume must be created in advance on the
-  host and populated with any required bootstrap files. How that’s done again will depend on the
-  particular Docker environment in play.
-
-A sample Teamcity SSH-exec runner using Docker directly:
-
-```bash
-appCode=%appCode%
-tomcatName=$appCode-tomcat
-tomcatImage=%internalDockerRegistry%/$tomcatName:%appVersion%
-echo "Deploying $tomcatImage"
-
-# Stop and remove existing Tomcat container
-sudo docker container stop $tomcatName
-sudo docker container rm $tomcatName
-
-# Pull Tomcat image at specified version
-sudo docker image pull $tomcatImage
-
-# Run Tomcat image and mount local docker volume for YML config / log storage
-sudo docker run -d --name $tomcatName --mount type=volume,src=$appCode,dst=/$appCode --restart always $tomcatImage
-echo "Deploying $tomcatImage complete"
-
-nginxName=$appCode-nginx
-nginxImage=%internalDockerRegistry%/$nginxName:%appVersion%
-echo "Deploying $nginxImage"
-
-# Stop and remove existing nginx container
-sudo docker container stop $nginxName
-sudo docker container rm $nginxName
-
-# Pull nginx image at specified version
-sudo docker image pull $nginxImage
-
-# Run nginx image - link to Tomcat for proxying, expose ports, and mount local docker volume for SSL certificate access
-sudo docker run -d --name $nginxName --link $tomcatName:$tomcatName -p 80:80 -p 443:443 --mount type=volume,src=$appCode,dst=/$appCode --restart always $nginxImage
-echo "Deploying $nginxImage complete"
-
-# Prune Docker, cleaning up dangling images and avoiding disk space bloat
-sudo docker system prune -af
-```
 
 ## Work In Progress
 
