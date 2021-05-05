@@ -6,6 +6,7 @@
 
 * `ErrorMessage` will read its 'error' directly from its context model, if not provided by the
 dedicated `error` prop.
+* `ExpandCollapseButton` now works for grouped grids in addition to tree grids.
 
 
 ### ⚙️ Technical
