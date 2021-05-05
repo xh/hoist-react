@@ -305,7 +305,6 @@ class LocalModel extends HoistModel {
 
         const {renderer, rendererIsComplex} = this.xhColumn;
         return new GridModel({
-            sortBy: this.colId,
             store: {
                 idSpec: (raw) => raw[this.colId].toString(),
                 fields: [
@@ -313,9 +312,12 @@ class LocalModel extends HoistModel {
                     {name: 'isChecked', type: 'bool'}
                 ]
             },
+            selModel: 'disabled',
             emptyText: 'No records found...',
-            selModel: {mode: 'multiple'},
+            contextMenu: null,
             sizingMode: 'compact',
+            stripeRows: false,
+            sortBy: this.colId,
             columns: [
                 {
                     field: 'isChecked',
