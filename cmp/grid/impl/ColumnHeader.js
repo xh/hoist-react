@@ -33,6 +33,7 @@ import {
     isString,
     isUndefined,
     keys,
+    mapValues,
     omit,
     pickBy,
     uniqBy,
@@ -244,11 +245,11 @@ class LocalModel extends HoistModel {
     }
 
     loadVirtualStore() {
-        const {virtualStore, virtualStoreLastUpdated, gridModel, colId} = this,
+        const {virtualStore, virtualStoreLastUpdated, gridModel, colId, committedFilter} = this,
             allRecords = gridModel.store.allRecords.map(rec => (rec.raw));
 
         if (virtualStoreLastUpdated === gridModel.store.lastUpdated) return;
-        // TODO - handle lastUpdated timestamp on autorefresh - check if data changed?
+
         if (!virtualStoreLastUpdated || (virtualStoreLastUpdated !== gridModel.store.lastUpdated)) {
             virtualStore.loadData(allRecords);
             this.virtualStoreLastUpdated = gridModel.store.lastUpdated;
@@ -256,11 +257,12 @@ class LocalModel extends HoistModel {
 
         const ret = {};
         uniqBy(allRecords, (rec) => rec[colId]).forEach(it => {
-            ret[it[colId]] = true;
+            const key = it[colId];
+            ret[key] = !isEmpty(committedFilter) ? committedFilter[key] : true;
         });
 
-        this._initialFilter = ret;
         this.committedFilter = ret;
+        this._initialFilter = mapValues(ret, () => true);
     }
 
     @action
