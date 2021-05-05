@@ -2,6 +2,12 @@
 
 ## v41.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `ErrorMessage` will read its 'error' directly from its context model, if not provided by the
+dedicated `error` prop.
+
+
 ### ⚙️ Technical
 * Improvements to exception serialization to better handle `LocalDate` and similar custom JS classes.
 

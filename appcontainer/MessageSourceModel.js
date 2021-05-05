@@ -62,7 +62,7 @@ export class MessageSourceModel extends HoistModel {
             ...config,
             confirmProps: {text: 'OK', ...config.confirmProps},
             cancelProps: {text: 'Cancel', ...config.cancelProps},
-            input: config.input || {}
+            input: config.input ?? {}
         });
     }
 
