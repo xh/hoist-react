@@ -39,10 +39,16 @@ NumberInput.propTypes = {
      Inputs suffixed with k, m, or b will be calculated as thousands, millions, or billions respectively */
     enableShorthandUnits: PT.bool,
 
-    /** Minimum value */
+    /**
+     * Minimum value - NOTE, as with underlying HTML input, this ONLY constrains step-wise updates
+     * made via increment/decrement handling, does NOT validate or block out-of-bounds inputs.
+     */
     min: PT.number,
 
-    /** Maximum value */
+    /**
+     * Maximum value - NOTE, as with underlying HTML input, this ONLY constrains step-wise updates
+     * made via increment/decrement handling, does NOT validate or block out-of-bounds inputs.
+     */
     max: PT.number,
 
     /** Onsen modifier string */

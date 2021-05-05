@@ -62,13 +62,19 @@ NumberInput.propTypes = {
     /** Icon to display inline on the left side of the input. */
     leftIcon: PT.element,
 
-    /** Minimum value */
+    /**
+     * Minimum value - NOTE, as with underlying HTML input, this ONLY constrains step-wise updates
+     * made via increment/decrement handling, does NOT validate or block out-of-bounds inputs.
+     */
     min: PT.number,
 
     /** Major step size for increment/decrement handling. */
     majorStepSize: PT.number,
 
-    /** Maximum value */
+    /**
+     * Maximum value - NOTE, as with underlying HTML input, this ONLY constrains step-wise updates
+     * made via increment/decrement handling, does NOT validate or block out-of-bounds inputs.
+     */
     max: PT.number,
 
     /** Minor step size for increment/decrement handling. */
