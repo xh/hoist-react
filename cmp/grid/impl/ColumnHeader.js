@@ -6,12 +6,19 @@
  */
 import {grid, GridModel} from '@xh/hoist/cmp/grid';
 import {Column} from '@xh/hoist/cmp/grid/columns/Column';
-import {div, filler, span} from '@xh/hoist/cmp/layout';
+import {div, filler, span, vbox} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
+import {tabContainer, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {hoistCmp, HoistModel, managed, useLocalModel, XH} from '@xh/hoist/core';
 import {CompoundFilter, FieldFilter, Store} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {checkbox} from '@xh/hoist/desktop/cmp/input';
+import {
+    buttonGroupInput,
+    checkbox,
+    textInput,
+    select,
+    numberInput
+} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -126,7 +133,9 @@ export const columnHeader = hoistCmp.factory({
 
 export const setFilterPopover = hoistCmp.factory({
     render({impl}) {
-        const {isOpen, isFiltered, setFilterGridModel, colId, xhColumn} = impl;
+        const {isOpen, isFiltered, setFilterGridModel, colId, xhColumn, tabContainerModel} = impl,
+            isSetFilter = tabContainerModel.activeTabId === 'setFilter';
+
         return popover({
             className: 'xh-grid-header-menu-icon',
             position: 'bottom',
@@ -147,13 +156,44 @@ export const setFilterPopover = hoistCmp.factory({
             content: panel({
                 onClick: (e) => e.stopPropagation(),
                 compactHeader: true,
-                title: `Filter on ${xhColumn.displayName}`,
-                item: grid({
-                    model: setFilterGridModel,
-                    height: 250,
-                    width: 240
+                title: `Filter ${xhColumn.displayName} by:`,
+                headerItems: [
+                    buttonGroupInput({
+                        minHeight: 20,
+                        maxHeight: 20,
+                        marginRight: 2,
+                        model: impl,
+                        intent: 'primary',
+                        bind: 'tabId',
+                        items: [
+                            button({
+                                style: {
+                                    fontSize: 10,
+                                    minHeight: 20,
+                                    maxHeight: 20
+                                },
+                                value: 'setFilter',
+                                text: 'Set',
+                                width: 40
+                            }),
+                            button({
+                                style: {
+                                    fontSize: 10,
+                                    minHeight: 20,
+                                    maxHeight: 20
+                                },
+                                value: 'inputFilter',
+                                text: 'Input',
+                                width: 40
+                            })
+                        ]
+                    })
+                ],
+                item: tabContainer({
+                    model: tabContainerModel
                 }),
                 tbar: toolbar({
+                    omit: !isSetFilter,
                     compact: true,
                     item: storeFilterField({
                         model: impl,
@@ -171,7 +211,11 @@ export const setFilterPopover = hoistCmp.factory({
                             icon: Icon.undo(),
                             text: 'Reset',
                             intent: 'danger',
-                            onClick: () => impl.resetFilter()
+                            onClick: () => {
+                                isSetFilter ?
+                                    impl.resetSetFilter() :
+                                    impl.resetInputFilter();
+                            }
                         }),
                         filler(),
                         button({
@@ -182,11 +226,55 @@ export const setFilterPopover = hoistCmp.factory({
                             icon: Icon.check(),
                             text: 'Apply',
                             intent: 'success',
-                            onClick: () => impl.commitPendingFilter()
+                            onClick: () => {
+                                isSetFilter ?
+                                    impl.commitPendingFilter() :
+                                    impl.commitInputFilter();
+                            }
                         })
                     ]
                 })
             })
+        });
+    }
+});
+
+const inputFilter = hoistCmp.factory({
+    render({model}) {
+        const {colId, virtualStore} = model;
+        return vbox({
+            alignItems: 'center',
+            justifyContent: 'center',
+            items: [
+                select({
+                    bind: 'op',
+                    options:
+                        virtualStore.getField(colId).type === 'number' ?
+                            [
+                                {label: 'Equals', value: '='},
+                                {label: 'Not Equals', value: '!='},
+                                {label: 'Greater Than', value: '>'},
+                                {label: 'Greater Than Or Equal to', value: '>='},
+                                {label: 'Less Than', value: '<'},
+                                {label: 'Less Than or Equal to', value: '<='}
+                            ] :
+                            [
+                                {label: 'Equals', value: '='},
+                                {label: 'Not Equals', value: '!='},
+                                {label: 'Contains', value: 'like'}
+                            ]
+                }),
+                virtualStore.getField(colId).type === 'number' ?
+                    numberInput({
+                        bind: 'inputVal',
+                        enableShorthandUnits: true
+                    }) :
+                    textInput({
+                        bind: 'inputVal'
+                    })
+            ],
+            height: 250,
+            width: 240
         });
     }
 });
@@ -205,6 +293,28 @@ class LocalModel extends HoistModel {
     setFilterGridModel;
     @managed
     virtualStore;
+    @managed
+    tabContainerModel = new TabContainerModel({
+        tabs: [
+            {
+                id: 'setFilter',
+                title: 'Set',
+                content: () => grid({
+                    model: this.setFilterGridModel,
+                    height: 226,
+                    width: 240
+                })
+            },
+            {
+                id: 'inputFilter',
+                title: 'Input',
+                content: () => inputFilter({model: this})
+            }
+        ],
+        switcher: false
+    });
+    @bindable tabId = null;
+
 
     _initialFilter = {};
     @observable.ref committedFilter = {};
@@ -215,15 +325,27 @@ class LocalModel extends HoistModel {
     virtualStoreLastUpdated = null;
     currentStoreFilter = null;
 
+    @bindable op = '!=';
+    @bindable inputVal = null;
+    @bindable committedInputFilter = null;
+
     _doubleClick = false;
     _lastTouch = null;
     _lastTouchStart = null;
     _lastMouseDown = null;
 
+    get inputFilter() {
+        if (!this.op || !this.inputVal) return null;
+        return new FieldFilter({
+            field: this.colId,
+            op: this.op,
+            value: this.inputVal
+        });
+    }
+
     constructor({gridModel, xhColumn, column: agColumn}) {
         super();
         makeObservable(this);
-
         this.gridModel = gridModel;
         this.xhColumn = xhColumn;
         this.agColumn = agColumn;
@@ -241,6 +363,11 @@ class LocalModel extends HoistModel {
                 this.loadVirtualStore();
                 this.processAndSetFilter(filter);
             }
+        });
+
+        this.addReaction({
+            track: () => this.tabId,
+            run: (tabId) => this.tabContainerModel.activateTab(tabId)
         });
     }
 
@@ -274,8 +401,8 @@ class LocalModel extends HoistModel {
 
     @action
     processAndSetFilter(filter) {
-        const {setFilterGridModel, currentStoreFilter, virtualStore, committedFilter} = this;
-        if (!setFilterGridModel || filter?.equals(currentStoreFilter)) return;
+        const {setFilterGridModel, virtualStore, committedFilter} = this;
+        if (!setFilterGridModel) return;
 
         const {colId} = this;
 
@@ -422,6 +549,58 @@ class LocalModel extends HoistModel {
     }
 
     @action
+    commitInputFilter() {
+        const {inputFilter, colId, gridModel, op, committedInputFilter} = this,
+            {store} = gridModel,
+            {filter} = store;
+
+        let equalValueToRemove;
+
+        if (committedInputFilter) {
+            if (committedInputFilter.op === '=') {
+                equalValueToRemove = committedInputFilter.value;
+            }
+        }
+
+        this.committedInputFilter = inputFilter;
+
+        if (filter?.isCompoundFilter) {
+            const fieldFilters = filter.getFieldFiltersForField(this.colId),
+                equalsFilter = fieldFilters.find(it => it.op === '=');
+
+            if (equalsFilter && op === '=') {
+                const newFilter = clone(equalsFilter);
+                newFilter.value = [...without(equalsFilter.value, equalValueToRemove), this.inputVal];
+
+                this.currentStoreFilter = new CompoundFilter({
+                    filters: [...without(filter.filters, equalsFilter), newFilter],
+                    op: 'AND'
+                });
+            } else {
+                this.currentStoreFilter = new CompoundFilter({
+                    filters: [...without(filter.filters, committedInputFilter), inputFilter],
+                    op: 'AND'
+                });
+            }
+        } else if (filter?.isFieldFilter && filter.field !== colId) {
+            this.currentStoreFilter = new CompoundFilter({filters: [filter, inputFilter], op: 'AND'});
+        } else if (filter?.isFieldFilter && filter.field === colId) {
+            if (filter.op === '=' && op === '=') {
+                const newFilter = clone(filter);
+                newFilter.value = [...without(filter.value, equalValueToRemove), this.inputVal];
+                this.currentStoreFilter = newFilter;
+            } else {
+                this.currentStoreFilter = new CompoundFilter({filters: without([filter, inputFilter], committedInputFilter), op: 'AND'});
+            }
+        } else {
+            this.currentStoreFilter = inputFilter;
+        }
+
+        store.setFilter(this.currentStoreFilter);
+        this.isFiltered = true;
+    }
+
+    @action
     commitPendingFilter() {
         const {pendingFilter, colId, gridModel} = this,
             ret = clone(this.committedFilter);
@@ -465,11 +644,16 @@ class LocalModel extends HoistModel {
     }
 
     @action
-    resetFilter() {
-        this.setFilterGridModel.store.setFilter(null);
+    resetSetFilter() {
+        this.setFilterGridModel.store.setFilter();
         this.committedFilter = {};
         this.setPendingFilter(this._initialFilter);
         this.commitPendingFilter();
+    }
+
+    @action
+    resetInputFilter() {
+        this.inputVal = null;
     }
 
     openPopover() {
