@@ -232,7 +232,7 @@ class LocalModel extends HoistModel {
         this.availableSorts = this.parseAvailableSorts();
 
         this.setFilterGridModel = this.createSetFilterGridModel();
-        this.virtualStore = new Store({...this.gridModel.store});
+        this.virtualStore = new Store({...this.gridModel.store, loadRootAsSummary: false});
 
         this.addReaction({
             track: () => [this.gridModel.store.filter, this.gridModel.store.lastUpdated, this.isOpen],
@@ -244,9 +244,16 @@ class LocalModel extends HoistModel {
         });
     }
 
+    getLeaves(root) {
+        if (!root.children) return [root];
+        return root.children.flatMap(child => this.getLeaves(child));
+    }
+
     loadVirtualStore() {
         const {virtualStore, virtualStoreLastUpdated, gridModel, colId, committedFilter} = this,
-            allRecords = gridModel.store.allRecords.map(rec => (rec.raw));
+            allRecords = gridModel.treeMode ?
+                this.getLeaves(gridModel.store.summaryRecord.raw) :
+                gridModel.store.allRecords.map(rec => (rec.raw));
 
         if (virtualStoreLastUpdated === gridModel.store.lastUpdated) return;
 
@@ -258,7 +265,7 @@ class LocalModel extends HoistModel {
         const ret = {};
         uniqBy(allRecords, (rec) => rec[colId]).forEach(it => {
             const key = it[colId];
-            ret[key] = !isEmpty(committedFilter) ? committedFilter[key] : true;
+            ret[key] = committedFilter[key] ?? true;
         });
 
         this.committedFilter = ret;
@@ -267,36 +274,37 @@ class LocalModel extends HoistModel {
 
     @action
     processAndSetFilter(filter) {
-        if (!this.setFilterGridModel || filter?.equals(this.currentStoreFilter)) return;
+        const {setFilterGridModel, currentStoreFilter, virtualStore, committedFilter} = this;
+        if (!setFilterGridModel || filter?.equals(currentStoreFilter)) return;
 
         const {colId} = this;
-        // TODO - make more correct
+
         if (filter?.isCompoundFilter) {
             const fieldFilters = filter.getFieldFiltersForField(colId),
                 equalsFilter = fieldFilters.find(it => it.op === '='),
                 newFilters = without(filter.filters, equalsFilter);
 
-            this.virtualStore.setFilter({op: 'AND', filters: newFilters});
+            virtualStore.setFilter({op: 'AND', filters: newFilters});
         } else if (filter?.isFieldFilter && filter.field !== colId) {
-            this.virtualStore.setFilter(filter);
+            virtualStore.setFilter(filter);
         } else if (filter?.isFieldFilter && filter.field === colId && filter.op !== '=') {
-            this.virtualStore.setFilter(filter);
+            virtualStore.setFilter(filter);
         }
 
-        const allVals = uniqBy(this.virtualStore.allRecords, (rec) => rec.data[colId]),
-            visibleVals = uniqBy(this.virtualStore.records, (rec) => rec.data[colId]),
+        const allVals = uniqBy(virtualStore.allRecords, (rec) => rec.data[colId]),
+            visibleVals = uniqBy(virtualStore.records, (rec) => rec.data[colId]),
             hiddenVals = difference(allVals, visibleVals).map(rec => rec.data[colId]),
             currentVals = visibleVals.map(it => ({
                 [colId]: it.data[colId],
-                isChecked: this.committedFilter[it.data[colId]] ?? false
+                isChecked: committedFilter[it.data[colId]] ?? false
             }));
 
         // Only load set filter grid with VISIBLE values
-        this.setFilterGridModel.loadData(currentVals);
-        const ret = omit(this.committedFilter, hiddenVals);
+        setFilterGridModel.loadData(currentVals);
+        const ret = omit(committedFilter, hiddenVals);
         currentVals.forEach(rec => {
             if (!ret.hasOwnProperty(rec[colId])) {
-                ret[rec[colId]] = this.committedFilter[rec[colId]] ?? false;
+                ret[rec[colId]] = committedFilter[rec[colId]] ?? false;
             }
         });
         this.setPendingFilter(ret);
@@ -305,7 +313,7 @@ class LocalModel extends HoistModel {
     createSetFilterGridModel() {
         if (!this.xhColumn.enableFilter) return null;
 
-        const {renderer, rendererIsComplex} = this.xhColumn;
+        const {renderer, rendererIsComplex, headerName} = this.xhColumn;
         return new GridModel({
             store: {
                 idSpec: (raw) => raw[this.colId].toString(),
@@ -346,6 +354,7 @@ class LocalModel extends HoistModel {
                 {
                     field: this.colId,
                     flex: 1,
+                    headerName,
                     renderer, // TODO - handle cases like bool check col where rendered values look null
                     rendererIsComplex
                 }
@@ -414,7 +423,7 @@ class LocalModel extends HoistModel {
 
     @action
     commitPendingFilter() {
-        const {pendingFilter, colId} = this,
+        const {pendingFilter, colId, gridModel} = this,
             ret = clone(this.committedFilter);
 
         for (const val in pendingFilter) {
@@ -423,14 +432,13 @@ class LocalModel extends HoistModel {
 
         this.committedFilter = ret;
 
-        const fieldFilter = new FieldFilter({
-            field: this.colId,
-            value: keys(pickBy(ret, v => v)),
-            op: '='
-        });
-
-        const {store} = this.gridModel,
-            {filter} = store;
+        const {store} = gridModel,
+            {filter} = store,
+            fieldFilter = new FieldFilter({
+                field: this.colId,
+                value: keys(pickBy(ret, v => v)),
+                op: '='
+            });
 
         if (filter?.isCompoundFilter) {
             const fieldFilters = filter.getFieldFiltersForField(this.colId),
