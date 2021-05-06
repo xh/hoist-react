@@ -591,11 +591,11 @@ export class Column {
 
     getSortValue(v, record) {
         const {sortValue, gridModel} = this;
-        if (!sortValue) return v
+        if (!sortValue) return v;
 
         return isFunction(sortValue) ?
             sortValue(v, {record, column: this, gridModel}) :
-            record?.data[sortValue] ?? v
+            record?.data[sortValue] ?? v;
     }
 
 }
