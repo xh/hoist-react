@@ -513,12 +513,20 @@ export class Column {
         }
 
         if (this.comparator === undefined) {
-            // Default comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
-            ret.comparator = this.defaultComparator;
+            // Use default comparator with appropriate inputs
+            ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
+                const recordA = agNodeA?.data,
+                    recordB = agNodeB?.data;
+
+                valueA = this.getSortValue(valueA, recordA),
+                valueB = this.getSortValue(valueB, recordB);
+
+                return this.defaultComparator(valueA, valueB);
+            }
         } else {
             // ...or process custom comparator with the Hoist-defined comparatorFn API.
             ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
-                const {gridModel, colId, sortValue} = this,
+                const {gridModel, colId} = this,
                     // Note: sortCfg and agNodes can be undefined if comparator called during show
                     // of agGrid column header set filter menu.
                     sortCfg = find(gridModel.sortBy, {colId}),
@@ -555,15 +563,9 @@ export class Column {
     //--------------------
     // Implementation
     //--------------------
-    defaultComparator = (v1, v2, agNodeA, agNodeB) => {
-        const {gridModel, colId, sortValue} = this,
-            sortCfg = find(gridModel.sortBy, {colId}),
-            recordA = agNodeA?.data,
-            recordB = agNodeB?.data;
-
-        v1 = this.getSortValue(v1, recordA);
-        v2 = this.getSortValue(v2, recordB);
-
+    // Default comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
+    defaultComparator = (v1, v2) => {
+        const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
         return sortCfg ? sortCfg.comparator(v1, v2) : GridSorter.defaultComparator(v1, v2);
     };
 
@@ -589,13 +591,11 @@ export class Column {
 
     getSortValue(v, record) {
         const {sortValue, gridModel} = this;
-        if (isString(sortValue)) {
-            return record?.data[sortValue] ?? v; // Group rows have no record.
-        } else if (isFunction(sortValue)) {
-            return sortValue(v, {record, column: this, gridModel});
-        } else {
-            return v
-        }
+        if (!sortValue) return v
+
+        return isFunction(sortValue) ?
+            sortValue(v, {record, column: this, gridModel}) :
+            record?.data[sortValue] ?? v
     }
 
 }
@@ -666,6 +666,13 @@ export function getAgHeaderClassFn(column) {
  * @param {*} value - cell data value (column + row).
  * @param {CellContext} context - additional data about the column, row and GridModel.
  * @return {*} - value for export.
+ */
+
+/**
+ * @callback Column~sortValueFn - function to return a value for sorting.
+ * @param {*} value - cell data value (column + row).
+ * @param {CellContext} context - additional data about the column, row and GridModel.
+ * @return {*} - value for sort.
  */
 
 /**
