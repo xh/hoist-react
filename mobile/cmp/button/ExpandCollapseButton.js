@@ -13,7 +13,7 @@ import {isEmpty} from 'lodash';
 import PT from 'prop-types';
 
 /**
- * A convenience button to expand / collapse all rows in a tree grid
+ * A convenience button to expand / collapse all rows in grouped or tree grid.
  */
 export const [ExpandCollapseButton, expandCollapseButton] = hoistCmp.withFactory({
     displayName: 'ExpandCollapseButton',
@@ -26,13 +26,13 @@ export const [ExpandCollapseButton, expandCollapseButton] = hoistCmp.withFactory
     }) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
 
-        if (!gridModel?.treeMode) {
-            console.error("No GridModel available with treeMode enabled. Provide via a 'gridModel' prop, or context.");
+        if (!gridModel) {
+            console.error("No GridModel available. Provide via a 'gridModel' prop, or context.");
             return button({icon: Icon.expand(), disabled: true, ...props});
         }
 
         const shouldCollapse = !isEmpty(gridModel.expandState),
-            disabled = gridModel.store.allRootCount === gridModel.store.allCount,
+            disabled = gridModel.treeMode ? gridModel.store.allRootCount === gridModel.store.allCount : isEmpty(gridModel.groupBy),
             icon = shouldCollapse ? Icon.collapse() : Icon.expand();
 
         onClick = onClick ?? (() => shouldCollapse ? gridModel.collapseAll() : gridModel.expandAll());

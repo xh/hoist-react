@@ -258,7 +258,8 @@ class LocalModel extends HoistModel {
             credits: false,
             title: false,
             legend: {enabled: false},
-            exporting: {enabled: false}
+            exporting: {enabled: false},
+            tooltip: {hideDelay: 0}  // prevent simult. display in adjacent maps (e.g. SplitTreeMap)
         };
     }
 
