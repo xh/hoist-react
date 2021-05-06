@@ -536,15 +536,8 @@ export class Column {
                         agNodeB
                     };
 
-                if (isString(sortValue)) {
-                    // If sortValue points to a different field
-                    valueA = recordA?.data[sortValue] ?? valueA; // Group rows have no record.
-                    valueB = recordB?.data[sortValue] ?? valueB;
-                } else if (isFunction(sortValue)) {
-                    // If sortValue is a function that transforms the value
-                    valueA = sortValue(valueA, {recordA, column: this, gridModel});
-                    valueB = sortValue(valueB, {recordB, column: this, gridModel});
-                }
+                valueA = this.getSortValue(valueA, recordA);
+                valueB = this.getSortValue(valueB, recordB);
 
                 return this.comparator(valueA, valueB, sortDir, abs, params);
             };
@@ -568,13 +561,8 @@ export class Column {
             recordA = agNodeA?.data,
             recordB = agNodeB?.data;
 
-        if (isString(sortValue)) {
-            v1 = recordA?.data[sortValue] ?? v1;
-            v2 = recordB?.data[sortValue] ?? v2;
-        } else if (isFunction(sortValue)) {
-            v1 = sortValue(v1, {recordA, column: this, gridModel});
-            v2 = sortValue(v2, {recordB, column: this, gridModel});
-        }
+        v1 = this.getSortValue(v1, recordA);
+        v2 = this.getSortValue(v2, recordB);
 
         return sortCfg ? sortCfg.comparator(v1, v2) : GridSorter.defaultComparator(v1, v2);
     };
@@ -597,6 +585,17 @@ export class Column {
         if (pinned === true) return 'left';
         if (pinned === 'left' || pinned === 'right') return pinned;
         return null;
+    }
+
+    getSortValue(v, record) {
+        const {sortValue, gridModel} = this;
+        if (isString(sortValue)) {
+            return record?.data[sortValue] ?? v; // Group rows have no record.
+        } else if (isFunction(sortValue)) {
+            return sortValue(v, {record, column: this, gridModel});
+        } else {
+            return v
+        }
     }
 
 }
