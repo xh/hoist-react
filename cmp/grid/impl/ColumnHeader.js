@@ -135,7 +135,7 @@ export const columnHeader = hoistCmp.factory({
 
 export const setFilterPopover = hoistCmp.factory({
     render({impl}) {
-        const {isOpen, isFiltered, setFilterGridModel, colId, xhColumn, tabContainerModel} = impl,
+        const {isOpen, isFiltered, setFilterGridModel, colId, xhColumn, type, tabContainerModel} = impl,
             isSetFilter = tabContainerModel.activeTabId === 'setFilter';
 
         return popover({
@@ -179,6 +179,7 @@ export const setFilterPopover = hoistCmp.factory({
                                 width: 40
                             }),
                             button({
+                                disabled: type === 'bool',
                                 style: {
                                     fontSize: 10,
                                     minHeight: 20,
@@ -243,11 +244,8 @@ export const setFilterPopover = hoistCmp.factory({
 
 const inputFilter = hoistCmp.factory({
     render({model}) {
-        const {colId, virtualStore} = model,
-            {type} = virtualStore.getField(colId);
-
+        const {type} = model;
         let cmp;
-
         switch (type) {
             case 'number':
             case 'int':
@@ -352,6 +350,10 @@ class LocalModel extends HoistModel {
     _lastTouch = null;
     _lastTouchStart = null;
     _lastMouseDown = null;
+
+    get type() {
+        return this.virtualStore.getField(this.colId).type;
+    }
 
     get inputFilter() {
         if (!this.op || isNull(this.inputVal)) return null;
@@ -633,7 +635,7 @@ class LocalModel extends HoistModel {
 
     @action
     commitPendingFilter() {
-        const {pendingFilter, colId, gridModel, committedInputFilter} = this,
+        const {pendingFilter, colId, type, gridModel, committedInputFilter} = this,
             ret = clone(this.committedFilter);
 
         let equalValueToAdd;
@@ -653,6 +655,14 @@ class LocalModel extends HoistModel {
         if (equalValueToAdd) {
             value.push(equalValueToAdd);
             value = uniq(value);
+        }
+
+        if (type === 'bool') {
+            value = value.map(it => {
+                if (it === 'true') return true;
+                if (it === 'false') return false;
+                return null;
+            });
         }
 
         this.committedFilter = ret;
