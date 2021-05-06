@@ -19,8 +19,15 @@ import './ErrorMessage.scss';
  */
 export const [ErrorMessage, errorMessage] = hoistCmp.withFactory({
     className: 'xh-error-message',
-    render({className, error, message, title, actionFn, actionButtonProps}, ref) {
-        // TODO - remove in v42+
+    render({
+        className,
+        model,
+        error = model?.error,
+        message,
+        title,
+        actionFn,
+        actionButtonProps
+    }, ref) {
         apiDeprecated(actionFn, 'actionFn', "Use 'actionButtonProps' instead");
         if (actionFn) {
             actionButtonProps = {...actionButtonProps, onClick: actionFn};
@@ -59,7 +66,8 @@ ErrorMessage.propTypes = {
     actionButtonProps: PT.object,
 
     /**
-     *  Error to display. If null or undefined this component will not be displayed.
+     *  Error to display. If undefined, this component will look for an error property on its model.
+     *  If no error is found, this component will not be displayed.
      */
     error: PT.oneOfType([PT.instanceOf(Error), PT.object,  PT.string]),
 

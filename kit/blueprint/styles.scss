@@ -58,7 +58,8 @@
     }
 
     &.bp3-align-right {
-      > *:not(.bp3-navbar-divider) {
+      // Apply standardized spacing to extra navBar items, excepting dividers and xh-no-pad elements.
+      > *:not(.bp3-navbar-divider):not(.xh-no-pad) {
         margin-left: var(--xh-pad-px);
       }
 

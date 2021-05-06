@@ -4,8 +4,8 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {stripTags, trimToDepth} from '@xh/hoist/utils/js';
-import {omitBy, isNil} from 'lodash';
+import {stripTags} from '@xh/hoist/utils/js';
+import {omitBy, isNil, forOwn, isObject, isArray} from 'lodash';
 
 /**
  * Serialize an error object safely for submission to server, or user display.
@@ -29,8 +29,8 @@ export function stringifyErrorSafely(error) {
 
         ret = omitBy(ret, isNil);
 
-        // 2) Deep clone + protect against circularity/monstrosity with a general depth trim.
-        ret = trimToDepth(ret, 5);
+        // 2) Deep clone/protect against circularity/monstrosity
+        ret = cloneAndTrim(ret);
 
         // 3) Additional ad-hoc cleanups
         // Remove noisy grails exception wrapper info
@@ -55,4 +55,27 @@ export function stringifyErrorSafely(error) {
         console.error('Could not convert error object to string:', error, e);
         return 'Unable to display error';
     }
+}
+
+// Create a depth-constrained, deep copy of an object for safe-use in stringify
+//   - Skip private _XXXX properties.
+//   - Don't touch objects that implement toJSON()
+function cloneAndTrim(obj, depth = 5) {
+    if (depth < 1) return null;
+
+    const ret = {};
+    forOwn(obj, (val, key) => {
+        if (key.startsWith('_')) return;
+        if (!val.toJSON) {
+            if (isObject(val)) {
+                val = depth > 1 ? cloneAndTrim(val, depth - 1) : '{...}';
+            }
+            if (isArray(val)) {
+                val = depth > 1 ? val.map(it => cloneAndTrim(it, depth - 1)) : '[...]';
+            }
+        }
+        ret[key] = val;
+    });
+
+    return ret;
 }

@@ -2,7 +2,17 @@
 
 ## v41.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `ErrorMessage` will read its 'error' directly from its context model, if not provided by the
+dedicated `error` prop.
+* `ExpandCollapseButton` now works for grouped grids in addition to tree grids.
+* `Column` class now supports a `sortValue` property. SortValue can be a string to represent another
+  field to sort by for the column, or a function that produces a value for each cell to use for sorting.
+  The values produced by this property will also be passed to the custom comparator if it is defined.
+
 ### ⚙️ Technical
+* Improvements to exception serialization to better handle `LocalDate` and similar custom JS classes.
 
 * The support for class-based Hoist Components via `@HoistComponent` has been removed.  This
 support had been officially deprecated in `v38`.  Please use functional components created by
@@ -10,6 +20,7 @@ support had been officially deprecated in `v38`.  Please use functional componen
 
 ### 📚 Libraries
 * @mobx `6.1.8 -> 6.3.0`
+
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v40.0.0...develop)
 
