@@ -32,15 +32,11 @@
       }
     }
 
-    .bp4-popover-wrapper:not(.xh-form-field-error-msg) {
+
+    & > .bp4-popover-target,
+    & > .bp4-popover-target > .bp4-control-group {
       display: flex;
       flex: 1;
-
-      & > .bp4-popover-target,
-      & > .bp4-popover-target > .bp4-control-group {
-        display: flex;
-        flex: 1;
-      }
     }
   }
 

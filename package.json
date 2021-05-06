@@ -35,7 +35,7 @@
     "@fortawesome/pro-solid-svg-icons": "~5.15.2",
     "@fortawesome/react-fontawesome": "~0.1.14",
     "@onsenui/fastclick": "~1.1.1",
-    "@popperjs/core": "~2.9.1",
+    "@popperjs/core": "~2.9.2",
     "@seznam/compose-react-refs": "~1.0.5",
     "classnames": "~2.3.0",
     "clipboard-copy": "~4.0.1",
