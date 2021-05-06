@@ -723,6 +723,7 @@ class LocalModel extends HoistModel {
 
     openPopover() {
         this.setIsOpen(true);
+        this.setTabId('setFilter');
     }
 
     closePopover() {
