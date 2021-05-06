@@ -522,7 +522,7 @@ export class Column {
                 valueB = this.getSortValue(valueB, recordB);
 
                 return this.defaultComparator(valueA, valueB);
-            }
+            };
         } else {
             // ...or process custom comparator with the Hoist-defined comparatorFn API.
             ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
