@@ -6,7 +6,7 @@
  */
 import {grid, GridModel} from '@xh/hoist/cmp/grid';
 import {Column} from '@xh/hoist/cmp/grid/columns/Column';
-import {div, filler, span, vbox} from '@xh/hoist/cmp/layout';
+import {div, filler, span, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {tabContainer, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {hoistCmp, HoistModel, managed, useLocalModel, XH} from '@xh/hoist/core';
@@ -17,7 +17,7 @@ import {
     checkbox,
     textInput,
     select,
-    numberInput
+    numberInput, dateInput
 } from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -37,12 +37,14 @@ import {
     isEqual,
     isFinite,
     isFunction,
+    isNull,
     isString,
     isUndefined,
     keys,
     mapValues,
     omit,
     pickBy,
+    uniq,
     uniqBy,
     without
 } from 'lodash';
@@ -241,7 +243,30 @@ export const setFilterPopover = hoistCmp.factory({
 
 const inputFilter = hoistCmp.factory({
     render({model}) {
-        const {colId, virtualStore} = model;
+        const {colId, virtualStore} = model,
+            {type} = virtualStore.getField(colId);
+
+        let cmp;
+
+        switch (type) {
+            case 'number':
+            case 'int':
+                cmp = numberInput({
+                    bind: 'inputVal',
+                    enableShorthandUnits: true,
+                    enableClear: true
+                }); break;
+            case 'localDate':
+            case 'date':
+                cmp = dateInput({
+                    bind: 'inputVal',
+                    valueType: type,
+                    enableClear: true
+                }); break;
+            default:
+                cmp = textInput({bind: 'inputVal', enableClear: true});
+        }
+
         return vbox({
             alignItems: 'center',
             justifyContent: 'center',
@@ -249,7 +274,7 @@ const inputFilter = hoistCmp.factory({
                 select({
                     bind: 'op',
                     options:
-                        virtualStore.getField(colId).type === 'number' ?
+                        ['number', 'int', 'localDate', 'date'].includes(type) ?
                             [
                                 {label: 'Equals', value: '='},
                                 {label: 'Not Equals', value: '!='},
@@ -264,14 +289,8 @@ const inputFilter = hoistCmp.factory({
                                 {label: 'Contains', value: 'like'}
                             ]
                 }),
-                virtualStore.getField(colId).type === 'number' ?
-                    numberInput({
-                        bind: 'inputVal',
-                        enableShorthandUnits: true
-                    }) :
-                    textInput({
-                        bind: 'inputVal'
-                    })
+                vspacer(),
+                cmp
             ],
             height: 250,
             width: 240
@@ -335,11 +354,11 @@ class LocalModel extends HoistModel {
     _lastMouseDown = null;
 
     get inputFilter() {
-        if (!this.op || !this.inputVal) return null;
+        if (!this.op || isNull(this.inputVal)) return null;
         return new FieldFilter({
             field: this.colId,
             op: this.op,
-            value: this.inputVal
+            value: this.inputVal.toString().trim()
         });
     }
 
@@ -401,21 +420,27 @@ class LocalModel extends HoistModel {
 
     @action
     processAndSetFilter(filter) {
-        const {setFilterGridModel, virtualStore, committedFilter} = this;
+        const {setFilterGridModel, virtualStore, committedFilter, committedInputFilter} = this;
         if (!setFilterGridModel) return;
 
         const {colId} = this;
 
-        if (filter?.isCompoundFilter) {
+        if (!filter) {
+            virtualStore.setFilter(null);
+        } else if (filter.isCompoundFilter) {
             const fieldFilters = filter.getFieldFiltersForField(colId),
                 equalsFilter = fieldFilters.find(it => it.op === '='),
                 newFilters = without(filter.filters, equalsFilter);
 
             virtualStore.setFilter({op: 'AND', filters: newFilters});
-        } else if (filter?.isFieldFilter && filter.field !== colId) {
+        } else if (filter.isFieldFilter && filter.field !== colId) {
             virtualStore.setFilter(filter);
-        } else if (filter?.isFieldFilter && filter.field === colId && filter.op !== '=') {
+        } else if (filter.isFieldFilter && filter.field === colId && filter.op !== '=') {
             virtualStore.setFilter(filter);
+        } else if (filter.isFieldFilter && filter.field === colId && filter.op === '=') {
+            if (filter.equals(committedInputFilter)) {
+                virtualStore.setFilter(filter);
+            }
         }
 
         const allVals = uniqBy(virtualStore.allRecords, (rec) => rec.data[colId]),
@@ -423,7 +448,7 @@ class LocalModel extends HoistModel {
             hiddenVals = difference(allVals, visibleVals).map(rec => rec.data[colId]),
             currentVals = visibleVals.map(it => ({
                 [colId]: it.data[colId],
-                isChecked: committedFilter[it.data[colId]] ?? false
+                isChecked: committedFilter[it.data[colId]] || (committedInputFilter?.value == it.data[colId] ?? false)
             }));
 
         // Only load set filter grid with VISIBLE values
@@ -431,7 +456,7 @@ class LocalModel extends HoistModel {
         const ret = omit(committedFilter, hiddenVals);
         currentVals.forEach(rec => {
             if (!ret.hasOwnProperty(rec[colId])) {
-                ret[rec[colId]] = committedFilter[rec[colId]] ?? false;
+                ret[rec[colId]] = committedFilter[rec[colId]] || (committedInputFilter?.value == rec[colId] ?? false);
             }
         });
         this.setPendingFilter(ret);
@@ -561,9 +586,6 @@ class LocalModel extends HoistModel {
                 equalValueToRemove = committedInputFilter.value;
             }
         }
-
-        this.committedInputFilter = inputFilter;
-
         if (filter?.isCompoundFilter) {
             const fieldFilters = filter.getFieldFiltersForField(this.colId),
                 equalsFilter = fieldFilters.find(it => it.op === '=');
@@ -585,9 +607,16 @@ class LocalModel extends HoistModel {
         } else if (filter?.isFieldFilter && filter.field !== colId) {
             this.currentStoreFilter = new CompoundFilter({filters: [filter, inputFilter], op: 'AND'});
         } else if (filter?.isFieldFilter && filter.field === colId) {
-            if (filter.op === '=' && op === '=') {
-                const newFilter = clone(filter);
-                newFilter.value = [...without(filter.value, equalValueToRemove), this.inputVal];
+            if (!inputFilter) {
+                this.currentStoreFilter = null;
+            } else if (filter.op === op) {
+                let newFilter;
+                if (FieldFilter.ARRAY_OPERATORS.includes(op)) {
+                    newFilter = clone(filter);
+                    newFilter.value = [...without(filter.value, equalValueToRemove), this.inputVal];
+                } else {
+                    newFilter = inputFilter;
+                }
                 this.currentStoreFilter = newFilter;
             } else {
                 this.currentStoreFilter = new CompoundFilter({filters: without([filter, inputFilter], committedInputFilter), op: 'AND'});
@@ -596,17 +625,34 @@ class LocalModel extends HoistModel {
             this.currentStoreFilter = inputFilter;
         }
 
+        this.committedInputFilter = inputFilter;
+
         store.setFilter(this.currentStoreFilter);
         this.isFiltered = true;
     }
 
     @action
     commitPendingFilter() {
-        const {pendingFilter, colId, gridModel} = this,
+        const {pendingFilter, colId, gridModel, committedInputFilter} = this,
             ret = clone(this.committedFilter);
+
+        let equalValueToAdd;
+
+        if (committedInputFilter) {
+            if (committedInputFilter.op === '=') {
+                equalValueToAdd = committedInputFilter.value;
+            }
+        }
 
         for (const val in pendingFilter) {
             ret[val] = pendingFilter[val];
+        }
+
+        let value = keys(pickBy(ret, v => v));
+
+        if (equalValueToAdd) {
+            value.push(equalValueToAdd);
+            value = uniq(value);
         }
 
         this.committedFilter = ret;
@@ -615,7 +661,7 @@ class LocalModel extends HoistModel {
             {filter} = store,
             fieldFilter = new FieldFilter({
                 field: this.colId,
-                value: keys(pickBy(ret, v => v)),
+                value,
                 op: '='
             });
 
@@ -624,12 +670,21 @@ class LocalModel extends HoistModel {
                 equalsFilter = fieldFilters.find(it => it.op === '='),
                 newFilters = without(filter.filters, equalsFilter);
 
+            if (committedInputFilter) newFilters.push(committedInputFilter);
+
             this.currentStoreFilter = new CompoundFilter({filters: [...newFilters, fieldFilter], op: 'AND'});
         } else if (filter?.isFieldFilter && filter.field !== colId) {
-            this.currentStoreFilter = new CompoundFilter({filters: [filter, fieldFilter], op: 'AND'});
-        } else {
+            const filters = [filter, fieldFilter];
+            if (committedInputFilter) filters.push(committedInputFilter);
+            this.currentStoreFilter = new CompoundFilter({filters, op: 'AND'});
+        } else if (!committedInputFilter) {
             this.currentStoreFilter = fieldFilter;
+        } else {
+            this.currentStoreFilter = new CompoundFilter({filters: [fieldFilter, committedInputFilter], op: 'AND'});
         }
+
+        console.log(this.currentStoreFilter);
+
         store.setFilter(this.currentStoreFilter);
         this.isFiltered = !isEqual(this.committedFilter, this._initialFilter);
     }
@@ -637,7 +692,7 @@ class LocalModel extends HoistModel {
     @action
     cancelAndUndoPendingFilter() {
         this.setPendingFilter(this.committedFilter);
-        this.commitPendingFilter();
+        // this.commitPendingFilter();
         this.filterText = null;
 
         this.closePopover();
@@ -645,7 +700,6 @@ class LocalModel extends HoistModel {
 
     @action
     resetSetFilter() {
-        this.setFilterGridModel.store.setFilter();
         this.committedFilter = {};
         this.setPendingFilter(this._initialFilter);
         this.commitPendingFilter();
@@ -654,6 +708,7 @@ class LocalModel extends HoistModel {
     @action
     resetInputFilter() {
         this.inputVal = null;
+        this.commitInputFilter();
     }
 
     openPopover() {
