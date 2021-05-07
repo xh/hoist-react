@@ -15,8 +15,8 @@ dedicated `error` prop.
 * Improvements to exception serialization to better handle `LocalDate` and similar custom JS classes.
 
 ### 📚 Libraries
+* @blueprintjs `3.44 -> 4.0.0`
 * @mobx `6.1.8 -> 6.3.0`
-
 
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v40.0.0...develop)
