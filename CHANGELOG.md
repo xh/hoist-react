@@ -11,6 +11,10 @@ dedicated `error` prop.
   field to sort by for the column, or a function that produces a value for each cell to use for sorting.
   The values produced by this property will also be passed to the custom comparator if it is defined.
 
+### 💥 Breaking Changes
+
+* `DimensionChooser` and `DimensionChooserModel` have been removed from the framework.  
+  Replace with `GroupingChooser` and `GroupingChooserModel`.
 ### ⚙️ Technical
 * Improvements to exception serialization to better handle `LocalDate` and similar custom JS classes.
 
