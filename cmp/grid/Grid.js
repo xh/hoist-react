@@ -216,6 +216,7 @@ class LocalModel extends HoistModel {
                 agColumnGroupHeader: (props) => columnGroupHeader(props)
             },
             rowSelection: model.selModel.mode,
+            tooltipShowDelay: 0,
             getRowHeight: ({node}) => this.getRowHeight(node),
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             noRowsOverlayComponentFramework: observer(() => div(model.emptyText)),
