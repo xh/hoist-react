@@ -15,6 +15,7 @@ dedicated `error` prop.
 
 * `DimensionChooser` and `DimensionChooserModel` have been removed from the framework.  
   Replace with `GroupingChooser` and `GroupingChooserModel`.
+  
 ### ⚙️ Technical
 * Improvements to exception serialization to better handle `LocalDate` and similar custom JS classes.
 
