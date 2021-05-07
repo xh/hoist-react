@@ -52,8 +52,9 @@ export function stringifyErrorSafely(error) {
         return stripTags(JSON.stringify(ret, null, 4));
 
     } catch (e) {
-        console.error('Could not convert error object to string:', error, e);
-        return 'Unable to display error';
+        const message = 'Failed to serialize error';
+        console.error(message, error, e);
+        return JSON.stringify({message}, null, 4);
     }
 }
 
