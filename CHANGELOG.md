@@ -3,7 +3,6 @@
 ## v41.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-
 * `ErrorMessage` will read its 'error' directly from its context model, if not provided by the
 dedicated `error` prop.
 * `ExpandCollapseButton` now works for grouped grids in addition to tree grids.
@@ -12,17 +11,14 @@ dedicated `error` prop.
   The values produced by this property will also be passed to the custom comparator if it is defined.
 
 ### 💥 Breaking Changes
+* `DimensionChooser` has been removed from the framework. This component was deprecated in
+version 37.0.0.  Use `GroupingChooser` instead.
 
-* `DimensionChooser` and `DimensionChooserModel` have been removed from the framework.  
-  Replace with `GroupingChooser` and `GroupingChooserModel`.
-  
 ### ⚙️ Technical
 * Improvements to exception serialization to better handle `LocalDate` and similar custom JS classes.
 
 ### 📚 Libraries
 * @mobx `6.1.8 -> 6.3.0`
-
-
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v40.0.0...develop)
 
