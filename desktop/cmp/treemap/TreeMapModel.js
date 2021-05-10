@@ -355,7 +355,7 @@ export class TreeMapModel extends HoistModel {
                     } else {
                         it.colorValue = this.normalizeToRange(heatValue, minHeat, midHeat, 0.6, 0.8);
                     }
-                } else if (colorMode === 'linear' || heatValues.length === 2) {
+                } else if (colorMode === 'linear' || heatValues.length <= 2) {
                     it.colorValue = this.normalizeToRange(heatValue, minHeat, maxHeat, 0.6, 1);
                 }
             } else if (heatValue < 0) {
@@ -367,7 +367,7 @@ export class TreeMapModel extends HoistModel {
                     } else {
                         it.colorValue = this.normalizeToRange(absHeatValue, midHeat, minHeat, 0.2, 0.4);
                     }
-                } else if (colorMode === 'linear' || heatValues.length === 2) {
+                } else if (colorMode === 'linear' || heatValues.length <= 2) {
                     it.colorValue = this.normalizeToRange(absHeatValue, maxHeat, minHeat, 0, 0.4);
                 }
             } else {
