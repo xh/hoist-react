@@ -63,6 +63,7 @@ export class ColChooserModel extends HoistModel {
     restoreDefaults() {
         this.gridModel.restoreDefaults();
         this.syncChooserData();
+        this.close();
     }
 
     @action
