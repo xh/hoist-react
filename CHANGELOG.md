@@ -9,6 +9,8 @@ dedicated `error` prop.
 * `Column` class now supports a `sortValue` property. SortValue can be a string to represent another
   field to sort by for the column, or a function that produces a value for each cell to use for sorting.
   The values produced by this property will also be passed to the custom comparator if it is defined.
+* `TreeMapModel` and `SplitTreeMapModel` now support a `maxHeat` property, which can be used to provide
+  a stable absolute maximum brightness (positive or negative) within the entire HeatMap.
 
 ### 💥 Breaking Changes
 * `DimensionChooser` has been removed from the framework. This component was deprecated in
