@@ -8,7 +8,7 @@ import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {numberRenderer} from '@xh/hoist/format';
-import {cloneDeep, get, isEmpty, isFinite, partition, set, sumBy, unset, sortBy} from 'lodash';
+import {cloneDeep, get, isEmpty, isFinite, max, mean, set, sumBy, unset} from 'lodash';
 
 /**
  * Core Model for a TreeMap.
@@ -70,6 +70,8 @@ export class TreeMapModel extends HoistModel {
     /** @member {string} */
     @bindable heatField;
     /** @member {number} */
+    @bindable maxHeat;
+    /** @member {number} */
     @bindable maxDepth;
     /** @member {string} */
     @bindable algorithm;
@@ -94,6 +96,8 @@ export class TreeMapModel extends HoistModel {
      * @param {string} c.heatField - Record field to use to determine node color.
      * @param {function} [c.valueRenderer] - Renderer to use when displaying value in the default tooltip.
      * @param {function} [c.heatRenderer] - Renderer to use when displaying heat in the default tooltip.
+     * @param {number} [c.maxHeat] - Value for providing a clamped, stable upper boundary on heat color
+     *      intensity. If not provided, maxHeat will be determined by the dataset on each load.
      * @param {number} [c.maxDepth] - Maximum tree depth to render.
      * @param {string} [c.algorithm] - Layout algorithm to use. Either 'squarified',
      *     'sliceAndDice', 'stripes' or 'strip'. Defaults to 'squarified'.
@@ -120,6 +124,7 @@ export class TreeMapModel extends HoistModel {
         heatField = 'value',
         valueRenderer = numberRenderer(),
         heatRenderer = numberRenderer(),
+        maxHeat,
         maxDepth,
         algorithm = 'squarified',
         colorMode = 'linear',
@@ -142,6 +147,7 @@ export class TreeMapModel extends HoistModel {
         this.heatField = heatField;
         this.valueRenderer = valueRenderer;
         this.heatRenderer = heatRenderer;
+        this.maxHeat = maxHeat;
         this.maxDepth = maxDepth;
 
         throwIf(!['sliceAndDice', 'stripes', 'squarified', 'strip'].includes(algorithm), `Algorithm "${algorithm}" not recognised.`);
@@ -165,7 +171,8 @@ export class TreeMapModel extends HoistModel {
                 this.labelField,
                 this.valueField,
                 this.heatField,
-                this.maxDepth
+                this.maxDepth,
+                this.maxHeat
             ],
             run: ([rawData]) => {
                 this.processAndSetData(rawData);
@@ -324,28 +331,15 @@ export class TreeMapModel extends HoistModel {
         const heatValues = [];
         this.store.records.forEach(it => {
             const val = it.get(heatField);
-            if (this.valueIsValid(val)) heatValues.push(val);
+            if (this.valueIsValid(val)) heatValues.push(Math.abs(val));
         });
+        heatValues.sort();
 
-        // 2) Split heat values into positive and negative
-        let [posHeatValues, negHeatValues] = partition(heatValues, it => it > 0);
-        posHeatValues = sortBy(posHeatValues);
-        negHeatValues = sortBy(negHeatValues.map(Math.abs));
+        // 2) Transform heatValue into a normalized colorValue, according to the colorMode.
+        const minHeat = 0,
+            midHeat = mean(heatValues),
+            maxHeat = isFinite(this.maxHeat) ? this.maxHeat : max(heatValues);
 
-        // 3) Calculate bounds and midpoints for each range
-        let minPosHeat = 0, midPosHeat = 0, maxPosHeat = 0, minNegHeat = 0, midNegHeat = 0, maxNegHeat = 0;
-        if (posHeatValues.length) {
-            minPosHeat = posHeatValues[0];
-            midPosHeat = posHeatValues[Math.floor(posHeatValues.length / 2)];
-            maxPosHeat = posHeatValues[posHeatValues.length - 1];
-        }
-        if (negHeatValues.length) {
-            minNegHeat = negHeatValues[0];
-            midNegHeat = negHeatValues[Math.floor(negHeatValues.length / 2)];
-            maxNegHeat = negHeatValues[negHeatValues.length - 1];
-        }
-
-        // 4) Transform heatValue into a normalized colorValue, according to the colorMode.
         data.forEach(it => {
             const {heatValue} = it;
 
@@ -356,31 +350,26 @@ export class TreeMapModel extends HoistModel {
 
             if (heatValue > 0) {
                 // Normalize positive values between 0.6-1
-                if (minPosHeat === maxPosHeat) {
-                    it.colorValue = 0.8;
-                } else if (colorMode === 'balanced' && posHeatValues.length > 2) {
-                    if (it.colorValue >= midPosHeat) {
-                        it.colorValue = this.normalizeToRange(heatValue, midPosHeat, maxPosHeat, 0.8, 1);
+                if (colorMode === 'balanced' && heatValues.length > 2) {
+                    if (it.colorValue >= midHeat) {
+                        it.colorValue = this.normalizeToRange(heatValue, midHeat, maxHeat, 0.8, 1);
                     } else {
-                        it.colorValue = this.normalizeToRange(heatValue, minPosHeat, midPosHeat, 0.6, 0.8);
+                        it.colorValue = this.normalizeToRange(heatValue, minHeat, midHeat, 0.6, 0.8);
                     }
-                } else if (colorMode === 'linear' || posHeatValues.length === 2) {
-                    it.colorValue = this.normalizeToRange(heatValue, minPosHeat, maxPosHeat, 0.6, 1);
+                } else if (colorMode === 'linear' || heatValues.length === 2) {
+                    it.colorValue = this.normalizeToRange(heatValue, minHeat, maxHeat, 0.6, 1);
                 }
             } else if (heatValue < 0) {
                 // Normalize negative values between 0-0.4
                 const absHeatValue = Math.abs(heatValue);
-
-                if (minNegHeat === maxNegHeat) {
-                    it.colorValue = 0.2;
-                } else if (colorMode === 'balanced' && negHeatValues.length > 2) {
-                    if (absHeatValue >= midNegHeat) {
-                        it.colorValue = this.normalizeToRange(absHeatValue, maxNegHeat, midNegHeat, 0, 0.2);
+                if (colorMode === 'balanced' && heatValues.length > 2) {
+                    if (absHeatValue >= midHeat) {
+                        it.colorValue = this.normalizeToRange(absHeatValue, maxHeat, midHeat, 0, 0.2);
                     } else {
-                        it.colorValue = this.normalizeToRange(absHeatValue, midNegHeat, minNegHeat, 0.2, 0.4);
+                        it.colorValue = this.normalizeToRange(absHeatValue, midHeat, minHeat, 0.2, 0.4);
                     }
-                } else if (colorMode === 'linear' || negHeatValues.length === 2) {
-                    it.colorValue = this.normalizeToRange(absHeatValue, maxNegHeat, minNegHeat, 0, 0.4);
+                } else if (colorMode === 'linear' || heatValues.length === 2) {
+                    it.colorValue = this.normalizeToRange(absHeatValue, maxHeat, minHeat, 0, 0.4);
                 }
             } else {
                 it.colorValue = 0.5; // Exactly zero
