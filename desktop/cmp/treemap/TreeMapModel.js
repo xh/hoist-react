@@ -333,7 +333,6 @@ export class TreeMapModel extends HoistModel {
             const val = it.get(heatField);
             if (this.valueIsValid(val)) heatValues.push(Math.abs(val));
         });
-        heatValues.sort();
 
         // 2) Transform heatValue into a normalized colorValue, according to the colorMode.
         const minHeat = 0,
