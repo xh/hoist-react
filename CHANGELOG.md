@@ -10,11 +10,15 @@ dedicated `error` prop.
   field to sort by for the column, or a function that produces a value for each cell to use for sorting.
   The values produced by this property will also be passed to the custom comparator if it is defined.
 * `TreeMapModel` and `SplitTreeMapModel` now support a `maxHeat` property, which can be used to provide
-  a stable absolute maximum brightness (positive or negative) within the entire HeatMap.
+  a stable absolute maximum brightness (positive or negative) within the entire TreeMap.
 
 ### 💥 Breaking Changes
 * `DimensionChooser` has been removed from the framework. This component was deprecated in
 version 37.0.0.  Use `GroupingChooser` instead.
+* `TreeMapModel.colorMode` value 'balanced' is no longer supported.  This mode was somewhat arbitrary
+and the need for it has been obviated by the new TreeMapModel `maxHeat` property.  Applications
+should use `maxHeat` to prevent outlier values from dominating the color range of the TreeMap.
+
 
 ### ⚙️ Technical
 * Improvements to exception serialization to better handle `LocalDate` and similar custom JS classes.
