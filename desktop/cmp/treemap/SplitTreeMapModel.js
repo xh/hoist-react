@@ -95,6 +95,7 @@ export class SplitTreeMapModel extends HoistModel {
     get labelField()        {return this.primaryMapModel.labelField}
     get heatField()         {return this.primaryMapModel.heatField}
     get maxDepth()          {return this.primaryMapModel.maxDepth}
+    get maxHeat()           {return this.primaryMapModel.maxHeat}
     get algorithm()         {return this.primaryMapModel.algorithm}
     get colorMode()         {return this.primaryMapModel.colorMode}
 
@@ -120,6 +121,12 @@ export class SplitTreeMapModel extends HoistModel {
     setMaxDepth(...args) {
         this.primaryMapModel.setMaxDepth(...args);
         this.secondaryMapModel.setMaxDepth(...args);
+    }
+
+    @action
+    setMaxHeat(...args) {
+        this.primaryMapModel.setMaxHeat(...args);
+        this.secondaryMapModel.setMaxHeat(...args);
     }
 
     @action
