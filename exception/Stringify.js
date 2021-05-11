@@ -67,7 +67,7 @@ function cloneAndTrim(obj, depth = 5) {
     const ret = {};
     forOwn(obj, (val, key) => {
         if (key.startsWith('_')) return;
-        if (!val.toJSON) {
+        if (val && !val.toJSON) {
             if (isObject(val)) {
                 val = depth > 1 ? cloneAndTrim(val, depth - 1) : '{...}';
             }
