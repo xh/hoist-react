@@ -376,7 +376,7 @@ class LocalModel extends HoistModel {
 
     get isFiltered() {
         if (!this.storeFilter) return false;
-        return !isEmpty(this.getFieldFilters(this.storeFilter.filters ?? [this.storeFilter], this.colId));
+        return !isEmpty(this.getColFilters(this.storeFilter.filters ?? [this.storeFilter]));
     }
 
     get customFilter() {
@@ -466,74 +466,75 @@ class LocalModel extends HoistModel {
             {store} = gridModel,
             {filter} = store;
 
-        if (!customFilter) {
-            // If no custom filter and existing filter
-            if (filter) {
-                const currFieldFilters = filter?.filters ?? [filter],
-                    fieldFilters = this.getFieldFilters(currFieldFilters, colId),
-                    currCommittedCustomFilter = fieldFilters?.find(it => it.equals(committedCustomFilter)),
-                    currEqualsFilterIncludingCustomValue = fieldFilters?.find(it => (
-                        isArray(it.value) ?
-                            it.value.includes(committedCustomFilter?.value) :
-                            it.value === committedCustomFilter?.value) && it.op === '=');
+        // If existing store filter, remove committed custom filter if any,
+        // or remove custom input value OR'd with any '=' field filter
+        if (filter) {
+            const currStoreFilters = filter?.filters ?? [filter],
+                colFilters = this.getColFilters(currStoreFilters),
+                currCommittedCustomFilter = colFilters?.find(it => it.equals(committedCustomFilter)),
+                currEqualsFilterIncludingCustomValue = colFilters?.find(it => (
+                    isArray(it.value) ?
+                        it.value.includes(committedCustomFilter?.value) :
+                        it.value === committedCustomFilter?.value) && it.op === '=');
 
-                if (currCommittedCustomFilter) {
-                    const newFilters = compact([...without(currFieldFilters, ...fieldFilters), ...without(fieldFilters, currCommittedCustomFilter)]);
-                    this.storeFilter = newFilters.length > 1 ?
-                        new CompoundFilter({filters: newFilters, op: 'AND'}) :
-                        newFilters;
-                } else if (currEqualsFilterIncludingCustomValue) {
-                    const newValue = without(currEqualsFilterIncludingCustomValue.value, committedCustomFilter.value),
-                        newEqualFieldFilter = new FieldFilter({field: this.colId, value: newValue, op: '='}),
-                        newFilters = compact([...without(currFieldFilters, ...fieldFilters), ...without(fieldFilters, currEqualsFilterIncludingCustomValue), newEqualFieldFilter]);
-                    this.storeFilter = newFilters.length > 1 ?
-                        new CompoundFilter({filters: newFilters, op: 'AND'}) :
-                        newFilters;
-                }
-                if (isEmpty(this.storeFilter)) {
-                    this.storeFilter = null;
-                }
-            } else {
-                this.storeFilter = null;
+            if (currCommittedCustomFilter) {
+                const newFilters = compact([
+                    ...without(currStoreFilters, ...colFilters),
+                    ...without(colFilters, currCommittedCustomFilter)
+                ]);
+                this.storeFilter = newFilters.length > 1 ?
+                    new CompoundFilter({filters: newFilters, op: 'AND'}) :
+                    newFilters;
+            } else if (currEqualsFilterIncludingCustomValue) {
+                const newValue = without(currEqualsFilterIncludingCustomValue.value, committedCustomFilter.value),
+                    newEqualFieldFilter = new FieldFilter({
+                        field: this.colId,
+                        value: newValue,
+                        op: '='
+                    }),
+                    newFilters = compact([
+                        ...without(currStoreFilters, ...colFilters),
+                        ...without(colFilters, currEqualsFilterIncludingCustomValue),
+                        newEqualFieldFilter
+                    ]);
+                this.storeFilter = newFilters.length > 1 ?
+                    new CompoundFilter({filters: newFilters, op: 'AND'}) :
+                    newFilters;
             }
-
+            if (isEmpty(this.storeFilter)) this.storeFilter = null;
+        }
+        // 1) Set new filter with current committed filter removed
+        if (!customFilter) {
             this.committedCustomFilter = null;
             store.setFilter(this.storeFilter);
+            // Re-commit existing set filter
             this.commitSetFilter();
             return;
         }
 
-        if (filter?.isCompoundFilter) {
-            const equalsFilter = this.getEqualsFieldFilter(filter.filters, colId);
+        // 2) Apply new custom filter
+        const {storeFilter} = this;
+        if (storeFilter?.isCompoundFilter) {
+            const equalsFilter = this.getEqualsColFilter(storeFilter.filters);
             if (equalsFilter && op === '=') {
-                const newFilters = compact([...without(filter.filters, equalsFilter, committedCustomFilter), customFilter]);
+                const newFilters = compact([...without(storeFilter.filters, equalsFilter), customFilter]);
                 this.storeFilter = newFilters.length > 1 ?
                     new CompoundFilter({filters: newFilters, op: 'AND'}) :
                     customFilter;
             } else {
-                const newFilters = compact([...without(filter.filters, committedCustomFilter), customFilter]);
-                this.storeFilter = newFilters.length > 1 ?
-                    new CompoundFilter({filters: newFilters, op: 'AND'}) :
-                    customFilter;
+                const newFilters = [...storeFilter.filters, customFilter];
+                this.storeFilter = new CompoundFilter({filters: newFilters, op: 'AND'});
             }
-        } else if (filter?.isFieldFilter && customFilter && (filter.field !== colId || op !== '=')) {
+        } else if (filter?.isFieldFilter && (filter.field !== colId || op !== '=')) {
             this.storeFilter = new CompoundFilter({filters: [filter, customFilter], op: 'AND'});
-        } else if (!customFilter && !isEqual(this.committedSetFilter, this._initialSetFilter)) {
-            this.storeFilter = {
-                field: colId,
-                op: '=',
-                value: keys(pickBy(this.committedSetFilter, v => v))
-            };
         } else {
             this.storeFilter = customFilter;
         }
-
+        // If custom filter is '=', mark value as checked in committed set filter
         if (customFilter?.op === '=' && this.committedSetFilter.hasOwnProperty(customFilter.value)) {
             this.committedSetFilter[customFilter.value] = true;
         }
-
         this.committedCustomFilter = customFilter;
-
         store.setFilter(this.storeFilter);
     }
 
@@ -542,25 +543,19 @@ class LocalModel extends HoistModel {
         const {pendingSetFilter, colId, type, gridModel, committedCustomFilter} = this,
             ret = clone(this.committedSetFilter);
 
-        let equalValueToAdd;
-
-        if (committedCustomFilter) {
-            if (committedCustomFilter.op === '=') {
-                equalValueToAdd = committedCustomFilter.value;
-            }
-        }
-
+        // Sync committed set filter with new pending values
         for (const val in pendingSetFilter) {
             ret[val] = pendingSetFilter[val];
         }
+        this.committedSetFilter = ret;
 
         let value = keys(pickBy(ret, v => v));
-
-        if (equalValueToAdd) {
-            value.push(equalValueToAdd);
+        // Include any equal input values from custom filter
+        if (committedCustomFilter?.op === '=') {
+            value.push(committedCustomFilter.value);
             value = uniq(value);
         }
-
+        // Parse boolean strings to their primitive values
         if (type === 'bool') {
             value = value.map(it => {
                 if (it === 'true') return true;
@@ -580,24 +575,21 @@ class LocalModel extends HoistModel {
                 null;
 
         if (filter?.isCompoundFilter) {
-            const equalsFilter = this.getEqualsFieldFilter(filter.filters, this.colId),
-                newFilters = without(filter.filters, equalsFilter);
+            const equalsFilter = this.getEqualsColFilter(filter.filters),
+                newFilters = compact([...without(filter.filters, equalsFilter), fieldFilter]);
 
-            if (committedCustomFilter) newFilters.push(committedCustomFilter);
-
-            this.storeFilter = new CompoundFilter({filters: compact([...newFilters, fieldFilter]), op: 'AND'});
-        } else if (filter?.isFieldFilter && filter.field !== colId) {
-            const filters = compact([filter, fieldFilter]);
-            if (committedCustomFilter) filters.push(committedCustomFilter);
-            this.storeFilter = new CompoundFilter({filters, op: 'AND'});
-        } else if (!committedCustomFilter) {
-            this.storeFilter = fieldFilter;
+            this.storeFilter = newFilters.length > 1 ?
+                new CompoundFilter({filters: newFilters, op: 'AND'}) :
+                newFilters[0];
+        } else if (filter?.isFieldFilter && filter.field !== colId && fieldFilter) {
+            this.storeFilter = new CompoundFilter({filters: [filter, fieldFilter], op: 'AND'});
+        } else if (committedCustomFilter?.op !== '=' && fieldFilter) {
+            this.storeFilter = new CompoundFilter({filters: [fieldFilter, committedCustomFilter], op: 'AND'});
         } else {
-            this.storeFilter = new CompoundFilter({filters: compact([fieldFilter, committedCustomFilter]), op: 'AND'});
+            this.storeFilter = fieldFilter;
         }
 
         store.setFilter(this.storeFilter);
-        this.committedSetFilter = ret;
     }
 
     //---------------------------
@@ -642,7 +634,7 @@ class LocalModel extends HoistModel {
         if (!filter) {
             virtualStore.setFilter(null);
         } else if (filter.isCompoundFilter) {
-            const equalsFilter = this.getEqualsFieldFilter(filter.filters, colId),
+            const equalsFilter = this.getEqualsColFilter(filter.filters),
                 appliedFilters = without(filter.filters, equalsFilter);
             virtualStore.setFilter({op: 'AND', filters: appliedFilters});
         } else if (
@@ -751,12 +743,12 @@ class LocalModel extends HoistModel {
         });
     }
 
-    getFieldFilters(filters, field) {
-        return filter(filters, {field});
+    getColFilters(filters) {
+        return filter(filters, {field: this.colId});
     }
 
-    getEqualsFieldFilter(filters, field) {
-        return this.getFieldFilters(filters, field).find(it => it.op === '=');
+    getEqualsColFilter(filters) {
+        return this.getColFilters(filters).find(it => it.op === '=');
     }
     //-------------------
     // Sorting
