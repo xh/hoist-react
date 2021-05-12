@@ -60,9 +60,12 @@ export class ColChooserModel extends HoistModel {
         });
     }
 
-    restoreDefaults() {
-        this.gridModel.restoreDefaults();
-        this.syncChooserData();
+    async restoreDefaultsAsync() {
+        const restored = await this.gridModel.restoreDefaultsAsync();
+        if (restored) {
+            this.syncChooserData();
+            this.close();
+        }
     }
 
     @action

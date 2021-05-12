@@ -255,8 +255,7 @@ class LocalModel extends HoistModel {
             ret = {
                 ...ret,
                 suppressContextMenu: true,
-                allowContextMenuWithControlKey: false,
-                scrollbarWidth: 0
+                allowContextMenuWithControlKey: false
             };
         } else {
             ret = {
