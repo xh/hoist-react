@@ -49,7 +49,7 @@ export class InlineEditorModel extends HoistModel {
     }
 
     get inputEl() {
-        return this.inputModel?.inputRef.current;
+        return this.inputModel?.inputEl;
     }
 
     constructor(props) {
