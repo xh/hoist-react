@@ -145,6 +145,9 @@ export class Column {
      *      of field name as a dot-separated path - e.g. `'country.name'` - where the default
      *      `getValueFn` will expect the field to be an object and render a nested property.
      *      False to support field names that contain dots *without* triggering this behavior.
+     * @param {boolean} [c.enableFilter] - true to enable an Excel-like column header filter menu.
+     *      Menu includes an enumerated, checkbox set filter and a custom input filter dependent on
+     *      its `Field.type`.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -311,6 +314,7 @@ export class Column {
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
         this.enableFilter = enableFilter;
+        warnIf(enableFilter && this.colId !== this.field, `Column '${this.colId}' is not a Store field. Enable filter will be ignored.`);
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};

@@ -8,7 +8,7 @@
 import {throwIf} from '@xh/hoist/utils/js';
 import {parseFilter} from './Utils';
 import {Filter} from './Filter';
-import {compact, filter, isEmpty, isEqualWith} from 'lodash';
+import {compact, isEmpty, isEqualWith} from 'lodash';
 
 /**
  * Combines multiple filters (including other nested CompoundFilters) via an AND or OR operator.
@@ -48,9 +48,6 @@ export class CompoundFilter extends Filter {
         };
     }
 
-    getFieldFiltersForField(field) {
-        return filter(this.filters, {field});
-    }
     //-----------------
     // Overrides
     //-----------------
