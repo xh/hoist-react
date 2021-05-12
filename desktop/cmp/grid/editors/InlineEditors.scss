@@ -55,6 +55,22 @@
           }
         }
 
+        &.xh-inline-select-editor {
+          .xh-select__control,
+          .xh-select__value-container,
+          .xh-select__input {
+            min-height: 100%;
+            max-height: 100%;
+          }
+
+          .xh-select__value-container,
+          .xh-select__value-container > * {
+            margin: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+          }
+        }
+
         &.xh-inline-checkbox-editor {
           flex: 1 1 auto;
           align-items: center;
@@ -70,27 +86,43 @@
     }
   }
 
-  &--standard .xh-inline-editor input {
-    padding-left: var(--xh-grid-cell-lr-pad-px);
-    padding-right: var(--xh-grid-cell-lr-pad-px);
-    font-size: var(--xh-grid-font-size-px);
+  &--standard .xh-inline-editor {
+    &.xh-inline-select-editor .xh-select__value-container,
+    input {
+      padding-left: var(--xh-grid-cell-lr-pad-px);
+      padding-right: var(--xh-grid-cell-lr-pad-px);
+      font-size: var(--xh-grid-font-size-px);
+      line-height: var(--xh-grid-font-size-px);
+    }
   }
 
-  &--large .xh-inline-editor input {
-    padding-left: var(--xh-grid-large-cell-lr-pad-px);
-    padding-right: var(--xh-grid-large-cell-lr-pad-px);
-    font-size: var(--xh-grid-large-font-size-px);
+  &--large .xh-inline-editor {
+    &.xh-inline-select-editor .xh-select__value-container,
+    input {
+      padding-left: var(--xh-grid-large-cell-lr-pad-px);
+      padding-right: var(--xh-grid-large-cell-lr-pad-px);
+      font-size: var(--xh-grid-large-font-size-px);
+      line-height: var(--xh-grid-large-font-size-px);
+    }
   }
 
-  &--compact .xh-inline-editor input {
-    padding-left: var(--xh-grid-compact-cell-lr-pad-px);
-    padding-right: var(--xh-grid-compact-cell-lr-pad-px);
-    font-size: var(--xh-grid-compact-font-size-px);
+  &--compact .xh-inline-editor {
+    &.xh-inline-select-editor .xh-select__value-container,
+    input {
+      padding-left: var(--xh-grid-compact-cell-lr-pad-px);
+      padding-right: var(--xh-grid-compact-cell-lr-pad-px);
+      font-size: var(--xh-grid-compact-font-size-px);
+      line-height: var(--xh-grid-compact-font-size-px);
+    }
   }
 
-  &--tiny .xh-inline-editor input {
-    padding-left: var(--xh-grid-tiny-cell-lr-pad-px);
-    padding-right: var(--xh-grid-tiny-cell-lr-pad-px);
-    font-size: var(--xh-grid-tiny-font-size-px);
+  &--tiny .xh-inline-editor {
+    &.xh-inline-select-editor .xh-select__value-container,
+    input {
+      padding-left: var(--xh-grid-tiny-cell-lr-pad-px);
+      padding-right: var(--xh-grid-tiny-cell-lr-pad-px);
+      font-size: var(--xh-grid-tiny-font-size-px);
+      line-height: var(--xh-grid-tiny-font-size-px);
+    }
   }
 }
