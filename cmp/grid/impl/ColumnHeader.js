@@ -468,15 +468,14 @@ class LocalModel extends HoistModel {
 
         if (!customFilter) {
             // If no custom filter and existing filter
-
             if (filter) {
                 const currFieldFilters = filter?.filters ?? [filter],
                     fieldFilters = this.getFieldFilters(currFieldFilters, colId),
                     currCommittedCustomFilter = fieldFilters?.find(it => it.equals(committedCustomFilter)),
                     currEqualsFilterIncludingCustomValue = fieldFilters?.find(it => (
                         isArray(it.value) ?
-                            it.value.includes(committedCustomFilter.value) :
-                            it.value === committedCustomFilter.value) && it.op === '=');
+                            it.value.includes(committedCustomFilter?.value) :
+                            it.value === committedCustomFilter?.value) && it.op === '=');
 
                 if (currCommittedCustomFilter) {
                     const newFilters = compact([...without(currFieldFilters, ...fieldFilters), ...without(fieldFilters, currCommittedCustomFilter)]);
