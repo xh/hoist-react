@@ -11,6 +11,8 @@ dedicated `error` prop.
   The values produced by this property will also be passed to the custom comparator if it is defined.
 * `TreeMapModel` and `SplitTreeMapModel` now support a `maxHeat` property, which can be used to provide
   a stable absolute maximum brightness (positive or negative) within the entire TreeMap.
+* `GridModel` now supports a `hideEmptyTextBeforeLoad` property, which prevents showing the empty text
+  until the store has been loaded at least once.
 
 ### 💥 Breaking Changes
 * `DimensionChooser` has been removed from the framework. This component was deprecated in
