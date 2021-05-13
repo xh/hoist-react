@@ -213,8 +213,12 @@ function wrapWithPublishedModel(render, spec, displayName) {
 function useResolvedModel(spec, props, lookup, displayName) {
     // fixed cache here creates the "immutable" model behavior in hoist components
     // (Need to force full remount with 'key' prop to resolve any new model)
+    // This is also the right time to set any 'modelRef' prop.
     const [{model, isOwned, fromContext}] = useState(() => {
-        return (spec instanceof CreatesSpec) ? createModel(spec) : lookupModel(spec, props, lookup, displayName);
+        const resolved = (spec instanceof CreatesSpec) ? createModel(spec) : lookupModel(spec, props, lookup, displayName),
+            {modelRef} = props;
+        if (isFunction(modelRef)) modelRef(resolved.model);
+        return resolved;
     });
     useOwnedModelLinker(isOwned ? model : null);
     useDebugValue(model, m => m.constructor.name + (isOwned ? ' (owned)' : ''));
