@@ -19,8 +19,8 @@ import {startCase} from 'lodash';
 export class TabModel extends HoistModel {
 
     id;
-    @bindable.ref title;
-    @bindable.ref icon;
+    @observable.ref title;
+    @observable.ref icon;
     @bindable tooltip;
     @observable disabled;
     excludeFromSwitcher;
@@ -36,16 +36,16 @@ export class TabModel extends HoistModel {
      * @param {string} c.id - unique ID, used by container for locating tabs and generating routes.
      * @param {TabContainerModel} c.containerModel - parent TabContainerModel. Provided by the
      *      container when constructing these models - no need to specify manually.
-     * @param {Element} [c.title] - display title for the Tab in the container's TabSwitcher.
-     * @param {Element} [c.icon] - display icon for the Tab in the container's TabSwitcher.
-     * @param {(string|element)} [c.tooltip] - tooltip for the Tab in the container's TabSwitcher.
-     * @param {string} [c.disabled] - true to disable this tab in the TabSwitcher and block routing.
-     * @param {string} [c.excludeFromSwitcher] - true to hide this Tab in the TabSwitcher,
+     * @param {ReactElement} [c.title] - display title for the Tab in the container's TabSwitcher.
+     * @param {ReactElement} [c.icon] - display icon for the Tab in the container's TabSwitcher.
+     * @param {ReactElement} [c.tooltip] - tooltip for the Tab in the container's TabSwitcher.
+     * @param {boolean} [c.disabled] - true to disable this tab in the TabSwitcher and block routing.
+     * @param {boolean} [c.excludeFromSwitcher] - true to hide this Tab in the TabSwitcher,
      *      but still be able to activate the tab manually or via routing.
      * @param {boolean} [c.showRemoveAction] - display an affordance to allow the user to remove
      *      this tab from its container.
-     * @param {(ReactElement|Object|function)} c.content - Hoist Component (class or functional) to be rendered by this
-     *      Tab; or function returning react element to be rendered by this Tab.
+     * @param {(ReactElement|Object|function)} c.content - item to be rendered by this tab - either
+     *      a Hoist Component or a function returning a ReactElement (e.g. a Hoist elemFactory).
      * @param {RenderMode} [c.renderMode] - strategy for rendering this tab. If null, will
      *      default to its container's mode. See enum for description of supported modes.
      * @param {RefreshMode} [c.refreshMode] - strategy for refreshing this tab. If null, will
@@ -88,19 +88,35 @@ export class TabModel extends HoistModel {
         this.containerModel.activateTab(this.id);
     }
 
+    /** @return {RenderMode} */
     get renderMode() {
         return this._renderMode ?? this.containerModel.renderMode;
     }
 
+    /** @return {RefreshMode} */
     get refreshMode() {
         return this._refreshMode ?? this.containerModel.refreshMode;
     }
 
+    /** @return {boolean} */
     @computed
     get isActive() {
         return this.containerModel.activeTabId === this.id;
     }
 
+    /** @param {ReactElement} icon */
+    @action
+    setIcon(icon) {
+        this.icon = icon;
+    }
+
+    /** @param {ReactElement} title */
+    @action
+    setTitle(title) {
+        this.title = title;
+    }
+
+    /** @param {boolean} disabled */
     @action
     setDisabled(disabled) {
         if (disabled && this.isActive) {

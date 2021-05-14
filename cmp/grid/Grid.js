@@ -172,6 +172,13 @@ class LocalModel extends HoistModel {
         return model.treeMode && model.store.allRootCount !== model.store.allCount;
     }
 
+    @computed
+    get emptyText() {
+        const {store, hideEmptyTextBeforeLoad, emptyText} = this.model;
+        if (hideEmptyTextBeforeLoad && !store.lastLoaded) return null;
+        return emptyText;
+    }
+
     constructor(model, props) {
         super();
         this.model = model;
@@ -219,7 +226,7 @@ class LocalModel extends HoistModel {
             tooltipShowDelay: 0,
             getRowHeight: ({node}) => this.getRowHeight(node),
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
-            noRowsOverlayComponentFramework: observer(() => div(model.emptyText)),
+            noRowsOverlayComponentFramework: observer(() => div(this.emptyText)),
             onRowClicked: (e) => {
                 this.onRowClicked(e);
                 if (props.onRowClicked) props.onRowClicked(e);

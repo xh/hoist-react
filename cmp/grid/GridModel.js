@@ -110,6 +110,8 @@ export class GridModel extends HoistModel {
     restoreDefaultsWarning;
     /** @member {boolean} */
     fullRowEditing;
+    /** @member {boolean} */
+    hideEmptyTextBeforeLoad;
 
     /** @member {AgGridModel} */
     @managed agGridModel;
@@ -184,6 +186,8 @@ export class GridModel extends HoistModel {
      * @param {GridModelPersistOptions} [c.persistWith] - options governing persistence.
      * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
+     * @param {boolean} [c.hideEmptyTextBeforeLoad] - true (default) to hide empty text until
+     *      after the Store has been loaded at least once.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
      *      colId and sort direction.
      * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
@@ -245,6 +249,7 @@ export class GridModel extends HoistModel {
         selModel,
         colChooserModel,
         emptyText = null,
+        hideEmptyTextBeforeLoad = true,
         sortBy = [],
         groupBy = null,
         showGroupRowCounts = true,
@@ -290,6 +295,7 @@ export class GridModel extends HoistModel {
         this.showSummary = showSummary;
 
         this.emptyText = emptyText;
+        this.hideEmptyTextBeforeLoad = hideEmptyTextBeforeLoad;
         this.rowClassFn = rowClassFn;
         this.groupRowHeight = groupRowHeight;
         this.groupRowRenderer = groupRowRenderer;
@@ -356,7 +362,6 @@ export class GridModel extends HoistModel {
      * @return {boolean} true if defaults were restored
      */
     async restoreDefaultsAsync() {
-
         if (this.restoreDefaultsWarning) {
             const confirmed = await XH.confirm({
                 title: 'Please Confirm',
@@ -371,7 +376,6 @@ export class GridModel extends HoistModel {
         }
 
         const {columns, sortBy, groupBy} = this._defaultState;
-
         this.setColumns(columns);
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
@@ -461,7 +465,6 @@ export class GridModel extends HoistModel {
     async preSelectFirstAsync() {
         if (!this.hasSelection) return this.selectFirstAsync();
     }
-
 
     /** Deselect all rows. */
     clearSelection() {
