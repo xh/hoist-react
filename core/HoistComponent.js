@@ -45,7 +45,7 @@ import {ModelLookup, matchesSelector, ModelLookupContext, modelLookupContextProv
  * @param {boolean} [config.observer] - true (default) to enable MobX-powered reactivity via the
  *      `observer()` HOC from mobx-react. Components that are known to dereference no observable
  *      state may set this to `false`, but this is not typically done by application code.
- * @returns {HoistComponent} - a functional React Component for use within Hoist apps.
+ * @returns {function} - a functional React Component for use within Hoist apps.
  *
  * @see hoistCmp - a shorthand alias to this function.
  *
@@ -289,19 +289,3 @@ function propsWithModel(props, model) {
 function propsWithClassName(props, className) {
     return enhancedProps(props, 'className', className);
 }
-
-/**
- * @typedef {function} HoistComponent
- *
- * A functional React Component for use within Hoist apps.
- *
- * @param {Object} props
- * @param ((HoistModel|Object)} [props.model] - the actual HoistModel instance, or config for one to
- *      be used.  Note that this typically does *not* need to be specified, as it is being created
- *      internally by the component, or received via context.
- * @param {Object} [props.modelRef] - set this to a ref in order to gain a reference to the actual
- *      model associated with this component.
- * @param {String} [props.className] - an instance specific css class, to be combined with any built-in
- *      Component classNames and applied as appropriate to the Component's DOM.
- * @param {...*} [props.rest] - additional component specific props.
- */
