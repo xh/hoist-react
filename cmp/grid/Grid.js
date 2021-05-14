@@ -172,6 +172,13 @@ class LocalModel extends HoistModel {
         return model.treeMode && model.store.allRootCount !== model.store.allCount;
     }
 
+    @computed
+    get emptyText() {
+        const {store, hideEmptyTextBeforeLoad, emptyText} = this.model;
+        if (hideEmptyTextBeforeLoad && !store.lastLoaded) return null;
+        return emptyText;
+    }
+
     constructor(model, props) {
         super();
         this.model = model;
@@ -216,9 +223,10 @@ class LocalModel extends HoistModel {
                 agColumnGroupHeader: (props) => columnGroupHeader(props)
             },
             rowSelection: model.selModel.mode,
+            tooltipShowDelay: 0,
             getRowHeight: ({node}) => this.getRowHeight(node),
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
-            noRowsOverlayComponentFramework: observer(() => div(model.emptyText)),
+            noRowsOverlayComponentFramework: observer(() => div(this.emptyText)),
             onRowClicked: (e) => {
                 this.onRowClicked(e);
                 if (props.onRowClicked) props.onRowClicked(e);
@@ -244,8 +252,7 @@ class LocalModel extends HoistModel {
             },
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
-            },
-            autoSizePadding: 3 // tighten up cells for ag-Grid native autosizing.  Remove when Hoist autosizing no longer experimental
+            }
         };
 
         // Platform specific defaults
@@ -253,8 +260,7 @@ class LocalModel extends HoistModel {
             ret = {
                 ...ret,
                 suppressContextMenu: true,
-                allowContextMenuWithControlKey: false,
-                scrollbarWidth: 0
+                allowContextMenuWithControlKey: false
             };
         } else {
             ret = {

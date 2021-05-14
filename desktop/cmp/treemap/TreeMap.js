@@ -60,11 +60,11 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
 
         // Render child item - note this will NOT render the actual HighCharts viz - only a shell
         // div to hold one. The chart itself will be rendered once the shell's ref resolves.
-        const {error, emptyText, hasData, isMasking} = model;
+        const {error, empty, emptyText, isMasking} = model;
         let items;
         if (error) {
             items = errorMessage({error});
-        } else if (!hasData) {
+        } else if (empty) {
             items = placeholder(emptyText);
         } else {
             items = [

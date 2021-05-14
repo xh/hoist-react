@@ -52,8 +52,9 @@ export function stringifyErrorSafely(error) {
         return stripTags(JSON.stringify(ret, null, 4));
 
     } catch (e) {
-        console.error('Could not convert error object to string:', error, e);
-        return 'Unable to display error';
+        const message = 'Failed to serialize error';
+        console.error(message, error, e);
+        return JSON.stringify({message}, null, 4);
     }
 }
 
@@ -66,7 +67,7 @@ function cloneAndTrim(obj, depth = 5) {
     const ret = {};
     forOwn(obj, (val, key) => {
         if (key.startsWith('_')) return;
-        if (!val.toJSON) {
+        if (val && !val.toJSON) {
             if (isObject(val)) {
                 val = depth > 1 ? cloneAndTrim(val, depth - 1) : '{...}';
             }
