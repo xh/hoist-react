@@ -22,6 +22,9 @@
 
 ### 💥 Breaking Changes
 
+* The support for class-based Hoist Components via `@HoistComponent` has been removed.  This
+support had been officially deprecated in `v38`.  Please use functional components created by
+`hoistCmp` instead.
 * `DimensionChooser` has been removed from the framework. This component was deprecated in version
   37.0.0. Use `GroupingChooser` instead.
 * `TreeMapModel.colorMode` value 'balanced' is no longer supported. This mode was somewhat arbitrary
@@ -29,6 +32,7 @@
   should use `maxHeat` to prevent outlier values from dominating the color range of the TreeMap.
 
 ### 🐞 Bug Fixes
+
 * Fix disable behavior for Hoist-provided button components using popover.
 
 ### ⚙️ Technical
