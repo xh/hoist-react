@@ -3,30 +3,39 @@
 ## v41.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
+
 * `ErrorMessage` will read its 'error' directly from its context model, if not provided by the
-dedicated `error` prop.
+  dedicated `error` prop.
 * `ExpandCollapseButton` now works for grouped grids in addition to tree grids.
 * `Column` class now supports a `sortValue` property. SortValue can be a string to represent another
-  field to sort by for the column, or a function that produces a value for each cell to use for sorting.
-  The values produced by this property will also be passed to the custom comparator if it is defined.
-* `TreeMapModel` and `SplitTreeMapModel` now support a `maxHeat` property, which can be used to provide
-  a stable absolute maximum brightness (positive or negative) within the entire TreeMap.
-* `GridModel` now supports a `hideEmptyTextBeforeLoad` property, which prevents showing the `emptyText`
-  until the store has been loaded at least once. Apps that depend on showing `emptyText` before first
-  load should set this property to `false`.
+  field to sort by for the column, or a function that produces a value for each cell to use for
+  sorting. The values produced by this property will also be passed to the custom comparator if it
+  is defined.
+* `TreeMapModel` and `SplitTreeMapModel` now support a `maxHeat` property, which can be used to
+  provide a stable absolute maximum brightness (positive or negative) within the entire TreeMap.
+* `GridModel` now supports a `hideEmptyTextBeforeLoad` property, which prevents showing the
+  `emptyText` until the store has been loaded at least once. Apps that depend on showing `emptyText`
+  before first load should set this property to `false`.
+* All Hoist Components now support a `modelRef` prop. Supply a ref to this prop in order to gain a
+  pointer to a Component's backing `HoistModel`.
+
 
 ### 💥 Breaking Changes
-* `DimensionChooser` has been removed from the framework. This component was deprecated in
-version 37.0.0.  Use `GroupingChooser` instead.
-* `TreeMapModel.colorMode` value 'balanced' is no longer supported.  This mode was somewhat arbitrary
-and the need for it has been obviated by the new TreeMapModel `maxHeat` property.  Applications
-should use `maxHeat` to prevent outlier values from dominating the color range of the TreeMap.
+
+* `DimensionChooser` has been removed from the framework. This component was deprecated in version
+  37.0.0. Use `GroupingChooser` instead.
+* `TreeMapModel.colorMode` value 'balanced' is no longer supported. This mode was somewhat arbitrary
+  and the need for it has been obviated by the new TreeMapModel `maxHeat` property. Applications
+  should use `maxHeat` to prevent outlier values from dominating the color range of the TreeMap.
 
 
 ### ⚙️ Technical
-* Improvements to exception serialization to better handle `LocalDate` and similar custom JS classes.
+
+* Improvements to exception serialization to better handle `LocalDate` and similar custom JS
+  classes.
 
 ### 📚 Libraries
+
 * @mobx `6.1.8 -> 6.3.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v40.0.0...develop)
