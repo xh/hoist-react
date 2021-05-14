@@ -23,14 +23,16 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
         const {
             className, extraItems,
             hideAboutItem, hideAdminItem, hideChangelogItem, hideFeedbackItem, hideImpersonateItem,
-            hideLogoutItem, hideOptionsItem, hideThemeItem, ...rest} = props;
+            hideLogoutItem, hideOptionsItem, hideThemeItem, disabled, ...rest} = props;
 
         return popover({
             className,
+            disabled,
             position: 'bottom-right',
             minimal: true,
             target: button({
                 icon: Icon.bars(),
+                disabled,
                 ...rest
             }),
             content: menu(buildMenuItems(props))

@@ -12,7 +12,6 @@ import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
-import {cloneElement} from 'react';
 import {button, Button} from './Button';
 
 /**
@@ -26,32 +25,32 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
     displayName: 'ColChooserButton',
     model: false,
 
-    render({icon, title, gridModel, popoverPosition, ...rest}, ref) {
+    render({icon, title, gridModel, popoverPosition, disabled, ...rest}, ref) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
 
         const colChooserModel = gridModel?.colChooserModel;
 
-        const displayButton = button({
-            icon: withDefault(icon, Icon.gridPanel()),
-            title: withDefault(title, 'Choose grid columns...'),
-            ...rest
-        });
-
         if (!gridModel) {
             console.error("No GridModel available to ColChooserButton.  Provide via a 'gridModel' prop, or context.");
-            return cloneElement(displayButton, {disabled: true});
+            disabled = true;
         }
 
         if (!colChooserModel) {
             console.error('No ColChooserModel available on bound GridModel - enable via GridModel.colChooserModel config.');
-            return cloneElement(displayButton, {disabled: true});
+            disabled = true;
         }
 
         return popover({
             popoverClassName: 'xh-col-chooser-popover xh-popup--framed',
             position: withDefault(popoverPosition, 'auto'),
             isOpen: colChooserModel.isPopoverOpen,
-            target: displayButton,
+            target: button({
+                icon: withDefault(icon, Icon.gridPanel()),
+                title: withDefault(title, 'Choose grid columns...'),
+                disabled,
+                ...rest
+            }),
+            disabled,
             content: vbox(
                 div({
                     ref,
