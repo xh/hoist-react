@@ -19,6 +19,8 @@ version 37.0.0.  Use `GroupingChooser` instead.
 and the need for it has been obviated by the new TreeMapModel `maxHeat` property.  Applications
 should use `maxHeat` to prevent outlier values from dominating the color range of the TreeMap.
 
+### 🐞 Bug Fixes
+* Fix disable behavior for Hoist-provided button components using popover.
 
 ### ⚙️ Technical
 * Improvements to exception serialization to better handle `LocalDate` and similar custom JS classes.
