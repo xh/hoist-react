@@ -1,4 +1,46 @@
 .xh-split-treemap {
+  &__map-holder {
+    flex-shrink: 0 !important;
+    flex-basis: 10px !important;
+  }
+
+  &__header {
+    align-items: center;
+    flex: none;
+    user-select: none;
+    background-color: var(--xh-title-bg);
+    color: var(--xh-title-text-color);
+
+    &__title {
+      display: flex;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: var(--xh-title-font-family);
+      font-size: var(--xh-title-compact-font-size-px);
+    }
+
+    // Vertical mode
+    .xh-vframe > & {
+      padding: 0 0 0 var(--xh-pad-half-px);
+      height: var(--xh-title-compact-height-px);
+    }
+
+    // Horizontal mode
+    .xh-hframe > & {
+      padding: var(--xh-pad-half-px) 0 0 0;
+      width: var(--xh-title-compact-height-px);
+      flex-direction: column-reverse !important;
+      justify-content: flex-end;
+
+      .xh-split-treemap__header__title {
+        writing-mode: vertical-lr;
+        -ms-block-progression: lr;
+        transform: rotate(180deg);
+        width: calc(1em + 5px);
+      }
+    }
+  }
+
   &__mask-holder {
     position: absolute;
     top: 0;
