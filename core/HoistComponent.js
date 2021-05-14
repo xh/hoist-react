@@ -7,8 +7,9 @@
 import {CreatesSpec, elemFactory, ModelPublishMode, ModelSpec, uses} from '@xh/hoist/core';
 import {useOwnedModelLinker} from '@xh/hoist/core/impl/UseOwnedModelLinker';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {useOnMount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isFunction, isPlainObject, isString} from 'lodash';
+import {isFunction, isPlainObject, isString, isObject} from 'lodash';
 import {observer} from '@xh/hoist/mobx';
 import {forwardRef, memo, useContext, useDebugValue, useState} from 'react';
 import {ModelLookup, matchesSelector, ModelLookupContext, modelLookupContextProvider} from './impl/ModelLookup';
@@ -212,14 +213,23 @@ function wrapWithPublishedModel(render, spec, displayName) {
 function useResolvedModel(spec, props, lookup, displayName) {
     // fixed cache here creates the "immutable" model behavior in hoist components
     // (Need to force full remount with 'key' prop to resolve any new model)
-    // This is also the right time to set any 'modelRef' prop.
-    const [{model, isOwned, fromContext}] = useState(() => {
-        const resolved = (spec instanceof CreatesSpec) ? createModel(spec) : lookupModel(spec, props, lookup, displayName),
-            {modelRef} = props;
-        if (isFunction(modelRef)) modelRef(resolved.model);
-        return resolved;
-    });
+    const [{model, isOwned, fromContext}] = useState(() => (
+        spec instanceof CreatesSpec ? createModel(spec) : lookupModel(spec, props, lookup, displayName)
+    ));
+
+    // register and load owned model
     useOwnedModelLinker(isOwned ? model : null);
+
+    // wire any modelRef
+    useOnMount(() => {
+        const {modelRef} = props;
+        if (isFunction(modelRef)) {
+            modelRef(model);
+        } else if (isObject(modelRef)) {
+            modelRef.current = model;
+        }
+    });
+
     useDebugValue(model, m => m.constructor.name + (isOwned ? ' (owned)' : ''));
 
     return {model, fromContext};
