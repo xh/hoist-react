@@ -11,6 +11,9 @@ dedicated `error` prop.
   The values produced by this property will also be passed to the custom comparator if it is defined.
 * `TreeMapModel` and `SplitTreeMapModel` now support a `maxHeat` property, which can be used to provide
   a stable absolute maximum brightness (positive or negative) within the entire TreeMap.
+* All Hoist Components now support a `modelRef` prop.  Supply a ref to this prop in order to gain
+a pointer to a Component's backing HoistModel.
+
 
 ### 💥 Breaking Changes
 * `DimensionChooser` has been removed from the framework. This component was deprecated in

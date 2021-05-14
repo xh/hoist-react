@@ -30,9 +30,6 @@ import {ModelLookup, matchesSelector, ModelLookupContext, modelLookupContextProv
  * render function that accepts two arguments. In that case, the second arg will be considered a
  * ref, and this utility will apply `React.forwardRef` as required.
  *
- * @see hoistCmp - a shorthand alias to this function.
- * @see HoistComponent - decorator for an alternate, class-based approach to defining Components.
- *
  * @param {(Object|function)} config - config object, or a render function defining the component.
  * @param {function} [config.render] - render function defining the component.
  * @param {ModelSpec} [config.model] - spec defining the model to be rendered by this component.
@@ -48,10 +45,12 @@ import {ModelLookup, matchesSelector, ModelLookupContext, modelLookupContextProv
  * @param {boolean} [config.observer] - true (default) to enable MobX-powered reactivity via the
  *      `observer()` HOC from mobx-react. Components that are known to dereference no observable
  *      state may set this to `false`, but this is not typically done by application code.
- * @returns {function} - a functional Component for use within Hoist apps.
+ * @returns {HoistComponent} - a functional React Component for use within Hoist apps.
+ *
+ * @see hoistCmp - a shorthand alias to this function.
  *
  * This function also has two convenience "sub-functions" that are properties of it:
- *   - `hoistComponent.factory` - returns an elemFactory for the newly defined component,
+ *   - `hoistComponent.factory` - returns an elemFactory for the newly defined Component,
  *           instead of the Component itself.
  *   - `hoistComponent.withFactory` - returns a 2-element list containing both the newly defined
  *          Component and an elemFactory for it.
@@ -290,3 +289,19 @@ function propsWithModel(props, model) {
 function propsWithClassName(props, className) {
     return enhancedProps(props, 'className', className);
 }
+
+/**
+ * @typedef {function} HoistComponent
+ *
+ * A functional React Component for use within Hoist apps.
+ *
+ * @param {Object} props
+ * @param ((HoistModel|Object)} [props.model] - the actual HoistModel instance, or config for one to
+ *      be used.  Note that this typically does *not* need to be specified, as it is being created
+ *      internally by the component, or received via context.
+ * @param {Object} [props.modelRef] - set this to a ref in order to gain a reference to the actual
+ *      model associated with this component.
+ * @param {String} [props.className] - an instance specific css class, to be combined with any built-in
+ *      Component classNames and applied as appropriate to the Component's DOM.
+ * @param {...*} [props.rest] - additional component specific props.
+ */
