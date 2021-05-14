@@ -40,38 +40,35 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
             disabled = true;
         }
 
-        const displayButton = button({
-            icon: withDefault(icon, Icon.gridPanel()),
-            title: withDefault(title, 'Choose grid columns...'),
+        return popover({
+            popoverClassName: 'xh-col-chooser-popover xh-popup--framed',
+            position: withDefault(popoverPosition, 'auto'),
+            isOpen: colChooserModel.isPopoverOpen,
+            target: button({
+                icon: withDefault(icon, Icon.gridPanel()),
+                title: withDefault(title, 'Choose grid columns...'),
+                disabled,
+                ...rest
+            }),
             disabled,
-            ...rest
-        });
-
-        return disabled ?
-            displayButton :
-            popover({
-                popoverClassName: 'xh-col-chooser-popover xh-popup--framed',
-                position: withDefault(popoverPosition, 'auto'),
-                isOpen: colChooserModel.isPopoverOpen,
-                target: displayButton,
-                content: vbox(
-                    div({
-                        ref,
-                        className: 'xh-popup__title',
-                        item: 'Choose Columns'
-                    }),
-                    colChooser({
-                        model: colChooserModel
-                    })
-                ),
-                onInteraction: (willOpen) => {
-                    if (willOpen) {
-                        colChooserModel.openPopover();
-                    } else {
-                        colChooserModel.close();
-                    }
+            content: vbox(
+                div({
+                    ref,
+                    className: 'xh-popup__title',
+                    item: 'Choose Columns'
+                }),
+                colChooser({
+                    model: colChooserModel
+                })
+            ),
+            onInteraction: (willOpen) => {
+                if (willOpen) {
+                    colChooserModel.openPopover();
+                } else {
+                    colChooserModel.close();
                 }
-            });
+            }
+        });
     }
 });
 
