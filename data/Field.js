@@ -8,8 +8,9 @@
 import {XH} from '@xh/hoist/core';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
+import {StoreFieldRule} from '@xh/hoist/data';
 import equal from 'fast-deep-equal';
-import {isDate, isString, toNumber, isFinite, startCase} from 'lodash';
+import {isDate, isString, toNumber, isFinite, startCase, isFunction} from 'lodash';
 import DOMPurify from 'dompurify';
 
 /**
@@ -25,6 +26,8 @@ export class Field {
     displayName;
     /** @member {*} */
     defaultValue;
+    /** @member {StoreFieldRule[]} */
+    rules;
     /** @member {boolean} */
     disableXssProtection;
 
@@ -34,12 +37,14 @@ export class Field {
         type = FieldType.AUTO,
         displayName,
         defaultValue = null,
+        rules = [],
         disableXssProtection = false
     }) {
         this.name = name;
         this.type = type;
         this.displayName = withDefault(displayName, genDisplayName(name));
         this.defaultValue = defaultValue;
+        this.rules = this.processRuleSpecs(rules);
         this.disableXssProtection = disableXssProtection;
     }
 
@@ -50,6 +55,17 @@ export class Field {
 
     isEqual(val1, val2) {
         return equal(val1, val2);
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
+    processRuleSpecs(ruleSpecs) {
+        return ruleSpecs.map(spec => {
+            if (spec instanceof StoreFieldRule) return spec;
+            if (isFunction(spec)) return new StoreFieldRule({check: spec});
+            return new StoreFieldRule(spec);
+        });
     }
 }
 
@@ -120,6 +136,8 @@ export function genDisplayName(fieldName) {
  * @property {string} [displayName] - user-facing / longer name for display, defaults to `name`
  *      transformed via `genDisplayName()` (e.g. 'myField' -> 'My Field').
  * @property {*} [defaultValue] - value to be used for records with a null, or non-existent value.
+ * @property {(StoreFieldRule[]|Object[]|Function[])} [rules] - Rules, rule configs, or validation
+ *      functions to apply to this field.
  * @property {boolean} [disableXssProtection] - true to disable built-in XSS (cross-site scripting)
  *      protection, applied by default to all incoming String values via the DOMPurify library.
  *      DOMPurify provides fast escaping of dangerous HTML, scripting, and other content that can
