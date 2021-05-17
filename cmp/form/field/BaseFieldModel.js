@@ -4,9 +4,8 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {Rule, ValidationState} from '@xh/hoist/cmp/form';
 import {managed, HoistModel} from '@xh/hoist/core';
-import {genDisplayName} from '@xh/hoist/data';
+import {FormFieldRule, ValidationState, genDisplayName} from '@xh/hoist/data';
 import {action, computed, observable, runInAction, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -36,7 +35,7 @@ export class BaseFieldModel extends HoistModel {
     /** @member {string} */
     @observable displayName;
 
-    /** @member {Rule[]} */
+    /** @member {FormFieldRule[]} */
     rules = null;
 
     /**
@@ -90,7 +89,7 @@ export class BaseFieldModel extends HoistModel {
      * @param {*} [c.initialValue] - initial value of this field.
      * @param {boolean} [c.disabled] - true to disable the input control for this field.
      * @param {boolean} [c.readonly] - true to render a read-only value (vs. an input control).
-     * @param {(Rule[]|Object[]|Function[])} [c.rules] - Rules, rule configs, or validation
+     * @param {(FormFieldRule[]|Object[]|Function[])} [c.rules] - Rules, rule configs, or validation
      *      functions to apply to this field.
      */
     constructor({
@@ -318,12 +317,11 @@ export class BaseFieldModel extends HoistModel {
         return this.value;
     }
 
-
     processRuleSpecs(ruleSpecs) {
         return ruleSpecs.map(spec => {
-            if (spec instanceof Rule) return spec;
-            if (isFunction(spec)) return new Rule({check: spec});
-            return new Rule(spec);
+            if (spec instanceof FormFieldRule) return spec;
+            if (isFunction(spec)) return new FormFieldRule({check: spec});
+            return new FormFieldRule(spec);
         });
     }
 

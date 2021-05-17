@@ -4,27 +4,14 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {castArray, compact, flatten} from 'lodash';
+import {compact, flatten} from 'lodash';
+import {BaseRule} from './BaseRule';
 import {required} from './constraints';
 
 /**
- * Immutable object representing a validation rule.
+ * Immutable object representing a validation rule for a Form FieldModel.
  */
-export class Rule {
-
-    check;
-    when;
-
-    /**
-     * @param c - Rule configuration.
-     * @param {(ConstraintCb|ConstraintCb[])} c.check - function(s) to perform validation.
-     * @param {WhenCb} [c.when] - function to determine when this rule is active.
-     *      If not specified rule is considered to be always active.
-     */
-    constructor({check, when}) {
-        this.check = castArray(check);
-        this.when = when;
-    }
+export class FormFieldRule extends BaseRule {
 
     /**
      * Compute current set of errors (if any) for this rule.
@@ -57,22 +44,8 @@ export class Rule {
     }
 
     async evalConstraintAsync(constraint, field) {
-        return await constraint(field, field.formModel.values);
+        const {value, displayName} = field,
+            fieldState = {value, displayName};
+        return await constraint(fieldState, field.formModel.values);
     }
 }
-
-
-/**
- * @callback ConstraintCb
- * @param {FieldModel} fieldModel
- * @param {Object} map of values for all fields in form
- * @returns {(string|string[])} - String or array of strings describing errors,
- *      or null or undefined if rule passes successfully.
- */
-
-/**
- * @callback WhenCb
- * @param {FieldModel} fieldModel
- * @param {Object} map of values for all fields in form
- * @returns {boolean} - true if this rule is currently active.
- */
