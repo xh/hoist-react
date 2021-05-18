@@ -234,6 +234,33 @@
     background: var(--xh-bg);
     border: var(--xh-border-solid);
   }
+
+  // Validation tooltip styling. Adjust depending on if within a default tooltip or custom tooltipElement.
+  &--validation {
+    margin: 0;
+
+    &--single {
+      list-style-type: none;
+    }
+  }
+
+  &--default > .xh-grid-tooltip--validation {
+    padding: 0 var(--xh-pad-half-px) 0 2em;
+
+    &--single {
+      padding: 0 var(--xh-pad-half-px);
+    }
+  }
+
+  &--custom > .xh-grid-tooltip--validation {
+    padding: var(--xh-pad-half-px) var(--xh-pad-half-px) var(--xh-pad-half-px) 2em;
+    background: var(--xh-bg);
+    border: var(--xh-border-solid);
+
+    &--single {
+      padding: var(--xh-pad-half-px);
+    }
+  }
 }
 
 //-----------

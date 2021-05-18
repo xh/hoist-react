@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {div} from '@xh/hoist/cmp/layout';
+import {div, ul, li} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
@@ -14,6 +14,7 @@ import {
     find,
     get,
     isArray,
+    isEmpty,
     isFinite,
     isFunction,
     isNil,
@@ -21,6 +22,7 @@ import {
     isString
 } from 'lodash';
 import {forwardRef, useImperativeHandle, useState} from 'react';
+import classNames from 'classnames';
 import {GridSorter} from '../impl/GridSorter';
 import {ExportFormat} from './ExportFormat';
 
@@ -425,12 +427,11 @@ export class Column {
         }
 
         // Tooltip Handling
-        const {tooltip, tooltipElement} = this,
+        const {tooltip, tooltipElement, editorElement} = this,
             tooltipSpec = tooltipElement ?? tooltip;
 
-        if (tooltipSpec) {
+        if (tooltipSpec || editorElement) {
             ret.tooltipValueGetter = (obj) => {
-
                 // We actually return the *record* itself, rather then ag-Grid's default escaped value.
                 // We need it below, where it will be handled to class as a prop.
                 // Note that we must always return a value - see hoist-react #2058, #2181
@@ -446,11 +447,27 @@ export class Column {
                 }), [location]);
 
                 const agParams = props,
-                    {value: record} = agParams;  // Value actually contains store record -- see above
+                    {value: record} = agParams; // Value actually contains store record -- see above
 
                 if (location === 'header') return div(this.headerTooltip);
 
                 if (!record?.isRecord) return null;
+
+                // Override with validation errors, if present
+                if (editorElement) {
+                    const errors = gridModel.store.getErrorsForRecordField(record, field);
+                    if (!isEmpty(errors)) {
+                        return ul({
+                            className: classNames(
+                                'xh-grid-tooltip--validation',
+                                errors.length === 1 ? 'xh-grid-tooltip--validation--single' : null
+                            ),
+                            items: errors.map((it, idx) => li({key: idx, item: it}))
+                        });
+                    }
+                }
+                if (editorElement && !tooltipSpec) return null;
+
                 const {store} = record,
                     val = this.getValueFn({record, column: this, gridModel, agParams, store});
 
@@ -571,7 +588,6 @@ export class Column {
             ret.wrapText = true;
         }
 
-        const {editorElement} = this;
         if (editorElement) {
             ret.cellEditorFramework = forwardRef((agParams, ref) => {
                 const {data} = agParams;
