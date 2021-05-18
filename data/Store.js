@@ -763,6 +763,15 @@ export class Store extends HoistBase {
         return VS.Valid;
     }
 
+    /** @return {ValidationState} - the current validation state for a field on a given record. */
+    getRecordFieldValidationState(record, field) {
+        const VS = ValidationState;
+        if (!record.isModified) return VS.Valid;
+
+        const errors = this.getErrorsForRecordField(record, field);
+        return isEmpty(errors) ? VS.Valid : VS.NotValid;
+    }
+
     /** @return {boolean} - true if any records are currently recomputing their validation state. */
     get isValidationPending() {
         return this._validationTask.isPending;
@@ -776,6 +785,11 @@ export class Store extends HoistBase {
     /** @return {boolean} - true if given record is valid. */
     recordIsValid(record) {
         return this.getRecordValidationState(record) === ValidationState.Valid;
+    }
+
+    /** @return {boolean} - true if a field on a given record is valid. */
+    recordFieldIsValid(record, field) {
+        return this.getRecordFieldValidationState(record, field) === ValidationState.Valid;
     }
 
     /** @return {number} - count of all validation errors for this store. */
@@ -794,6 +808,13 @@ export class Store extends HoistBase {
     getErrorsForRecord(recOrId) {
         const id = recOrId.isRecord ? recOrId.id : recOrId;
         return flatten(values(this._errors[id]));
+    }
+
+    /** @return {string[]} - list of all validation errors for the field on a given record. */
+    getErrorsForRecordField(recOrId, fieldOrId) {
+        const id = recOrId.isRecord ? recOrId.id : recOrId,
+            field = fieldOrId.isField ? field.name : fieldOrId;
+        return flatten(this._errors[id]?.[field]);
     }
 
     /**

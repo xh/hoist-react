@@ -18,6 +18,8 @@ import DOMPurify from 'dompurify';
  */
 export class Field {
 
+    get isField() {return true}
+
     /** @member {string} */
     name;
     /** @member {FieldType} */
