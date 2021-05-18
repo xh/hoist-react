@@ -152,7 +152,8 @@ export class Column {
      * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column
      *     editable.
      * @param {Column-editorElementFn} [c.editorElement] - function which returns a React
-     *     component to use as the cell editor.
+     *     component to use as the cell editor. Adding an editorElement will also install
+     *     a cellClassRule to display the validation state of the cell in question.
      * @param {Column~setValueFn} [c.setValueFn] - function for updating Record field for this
      *      column after inline editing.
      * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
@@ -372,7 +373,6 @@ export class Column {
                         const record = agParams.node.data;
                         return editable({record, store: record.store, gridModel, column: this, agParams});
                     }
-
                     return editable;
                 },
                 valueSetter: (agParams) => {
@@ -583,6 +583,9 @@ export class Column {
                     ref
                 });
             });
+            ret.cellClassRules = {
+                'xh-invalid-cell': ({data: record}) => record && !record.store.recordFieldIsValid(record, field)
+            };
         }
 
         // Finally, apply explicit app requests.  The customer is always right....

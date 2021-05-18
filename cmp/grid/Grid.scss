@@ -100,6 +100,12 @@
     padding-left: 0;
     padding-right: 0;
   }
+
+  // Highlight invalid cells
+  .ag-cell.xh-invalid-cell {
+    border: var(--xh-form-field-invalid-border);
+    background-color: var(--xh-intent-danger-trans1);
+  }
 }
 
 
