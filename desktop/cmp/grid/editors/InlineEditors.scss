@@ -55,7 +55,7 @@
           }
         }
 
-        &.xh-inline-select-editor {
+        &.xh-select-editor {
           .xh-select__control,
           .xh-select__value-container,
           .xh-select__input {
@@ -71,7 +71,7 @@
           }
         }
 
-        &.xh-inline-checkbox-editor {
+        &.xh-checkbox-editor {
           flex: 1 1 auto;
           align-items: center;
           display: flex;
@@ -87,7 +87,7 @@
   }
 
   &--standard .xh-inline-editor {
-    &.xh-inline-select-editor .xh-select__value-container,
+    &.xh-select-editor .xh-select__value-container,
     input {
       padding-left: var(--xh-grid-cell-lr-pad-px);
       padding-right: var(--xh-grid-cell-lr-pad-px);
@@ -97,7 +97,7 @@
   }
 
   &--large .xh-inline-editor {
-    &.xh-inline-select-editor .xh-select__value-container,
+    &.xh-select-editor .xh-select__value-container,
     input {
       padding-left: var(--xh-grid-large-cell-lr-pad-px);
       padding-right: var(--xh-grid-large-cell-lr-pad-px);
@@ -107,7 +107,7 @@
   }
 
   &--compact .xh-inline-editor {
-    &.xh-inline-select-editor .xh-select__value-container,
+    &.xh-select-editor .xh-select__value-container,
     input {
       padding-left: var(--xh-grid-compact-cell-lr-pad-px);
       padding-right: var(--xh-grid-compact-cell-lr-pad-px);
@@ -117,7 +117,7 @@
   }
 
   &--tiny .xh-inline-editor {
-    &.xh-inline-select-editor .xh-select__value-container,
+    &.xh-select-editor .xh-select__value-container,
     input {
       padding-left: var(--xh-grid-tiny-cell-lr-pad-px);
       padding-right: var(--xh-grid-tiny-cell-lr-pad-px);

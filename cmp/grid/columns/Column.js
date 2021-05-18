@@ -151,8 +151,7 @@ export class Column {
      *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
      * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column
      *     editable.
-     * @param {Column-editorElementFn} [c.editorElement] - function which returns a React
-     *     component to use as the cell editor.
+     * @param {Column-editorFn} [c.editor] - Cell editor Component or a function to create one
      * @param {Column~setValueFn} [c.setValueFn] - function for updating Record field for this
      *      column after inline editing.
      * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
@@ -215,7 +214,7 @@ export class Column {
         tooltip,
         tooltipElement,
         editable,
-        editorElement,
+        editor,
         setValueFn,
         getValueFn,
         enableDotSeparatedFieldPath,
@@ -324,7 +323,7 @@ export class Column {
         );
 
         this.editable = editable;
-        this.editorElement = editorElement;
+        this.editor = editor;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
@@ -571,11 +570,11 @@ export class Column {
             ret.wrapText = true;
         }
 
-        const {editorElement} = this;
-        if (editorElement) {
+        const {editor} = this;
+        if (editor) {
             ret.cellEditorFramework = forwardRef((agParams, ref) => {
                 const {data} = agParams;
-                return editorElement({
+                return editor({
                     record: data,
                     gridModel,
                     column: this,
@@ -811,7 +810,7 @@ export function getAgHeaderClassFn(column) {
  */
 
 /**
- * @callback Column-editorElementFn - function for a grid cell editor returning a React element
+ * @callback Column-editorFn - function for a grid cell editor returning a React element
  * @param {Object} params
  * @param {Record} params.record - row-level data Record.
  * @param {Column} params.column - column for the cell being edited.
@@ -821,10 +820,10 @@ export function getAgHeaderClassFn(column) {
 
 /**
  * @callback Column~cellEditorParamsFn - function returning additional params to pass to the
- *      editorElement function
+ *      editor function
  * @param {Object} params
  * @param {Record} params.record - row-level data Record.
  * @param {Column} params.column - column for the cell being edited.
  * @param {GridModel} params.gridModel - gridModel for the grid.
- * @return {Object} - the params to pass to the editorElement function
+ * @return {Object} - the params to pass to the editor function
  */

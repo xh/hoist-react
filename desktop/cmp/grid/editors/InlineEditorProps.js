@@ -7,7 +7,7 @@
 
 import PT from 'prop-types';
 
-export const HoistInlineEditorPropTypes = {
+export const InlineEditorPropTypes = {
     /** Props to pass through to the underlying HoistInput component */
     inputProps: PT.object
 };
