@@ -19,6 +19,7 @@ export const [SelectEditor, selectEditor] = hoistCmp.withFactory({
         props.inputProps = {
             hideDropdownIndicator: true,
             hideSelectedOptionCheck: true,
+            selectOnFocus: false,
             rsOptions: {
                 styles: {
                     menu: styles => ({
