@@ -801,6 +801,7 @@ export class Store extends HoistBase {
      * @returns {Promise<boolean>}
      */
     async validateAsync() {
+        if (!this.isModified) return true;
         const promises = map(this.records, record => this.validateRecordAsync(record));
         await Promise.all(promises);
         return this.isValid;
