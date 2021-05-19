@@ -174,7 +174,10 @@ export class GridExportService extends HoistService {
             }
             return ret;
         });
-        if (type === 'excelTable' && uniq(headers).length !== headers.length) {
+
+        // Excel does not like duplicate (case-insensitive) header names in tables and will prompt
+        // the user to "repair" the file when opened if present.
+        if (type === 'excelTable' && uniq(headers.map(it => it.toLowerCase())).length !== headers.length) {
             console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers.');
         }
         return {data: headers, depth: 0};
