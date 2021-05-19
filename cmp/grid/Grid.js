@@ -569,7 +569,7 @@ class LocalModel extends HoistModel {
             track: () => [model.isReady, store.isValidationPending],
             run: ([isReady, pending]) => {
                 if (!isReady || pending) return;
-                const refreshCols = model.columns.filter(c => c.editorElement);
+                const refreshCols = model.columns.filter(c => c.editor);
                 if (!isEmpty(refreshCols)) {
                     const columns = refreshCols.map(c => c.colId);
                     model.agApi.refreshCells({columns, force: true});
