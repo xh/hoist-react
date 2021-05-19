@@ -52,7 +52,7 @@ export class TreeMapModel extends HoistModel {
     onDoubleClick;
     /** @member {(boolean|TreeMapModel~tooltipFn)} */
     tooltip;
-    /** @member {string} */
+    /** @member {(Element|string)} */
     emptyText;
 
     //------------------------
@@ -213,8 +213,8 @@ export class TreeMapModel extends HoistModel {
     }
 
     @computed
-    get hasData() {
-        return !isEmpty(this.data);
+    get empty() {
+        return isEmpty(this.data);
     }
 
     @computed
