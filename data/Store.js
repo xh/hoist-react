@@ -251,7 +251,7 @@ export class Store extends HoistBase {
                     const recId = this.idSpec(it),
                         rec = this.getOrThrow(
                             recId,
-                            'In order to update grid data, records must have consistent persistent ids. XH.genId will not provide such ids.'
+                            'In order to update grid data, records must have stable ids. Note: XH.genId() will not provide such ids.'
                         ),
                         parent = rec.parent,
                         isSummary = recId === this.summaryRecord?.id;
