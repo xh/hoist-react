@@ -153,9 +153,9 @@ export class Column {
      *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
      * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column
      *     editable.
-     * @param {Column-editorElementFn} [c.editorElement] - function which returns a React
-     *     component to use as the cell editor. Adding an editorElement will also install
-     *     a cellClassRule to display the validation state of the cell in question.
+     * @param {Column-editorFn} [c.editor] - Cell editor Component or a function to create one.
+     *      Adding an editor will also install a cellClassRule and tooltip to display the
+     *      validation state of the cell in question.
      * @param {Column~setValueFn} [c.setValueFn] - function for updating Record field for this
      *      column after inline editing.
      * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
@@ -218,7 +218,7 @@ export class Column {
         tooltip,
         tooltipElement,
         editable,
-        editorElement,
+        editor,
         setValueFn,
         getValueFn,
         enableDotSeparatedFieldPath,
@@ -327,7 +327,7 @@ export class Column {
         );
 
         this.editable = editable;
-        this.editorElement = editorElement;
+        this.editor = editor;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
@@ -427,10 +427,10 @@ export class Column {
         }
 
         // Tooltip Handling
-        const {tooltip, tooltipElement, editorElement} = this,
+        const {tooltip, tooltipElement, editor} = this,
             tooltipSpec = tooltipElement ?? tooltip;
 
-        if (tooltipSpec || editorElement) {
+        if (tooltipSpec || editor) {
             ret.tooltipValueGetter = (obj) => {
                 // We actually return the *record* itself, rather then ag-Grid's default escaped value.
                 // We need it below, where it will be handled to class as a prop.
@@ -454,7 +454,7 @@ export class Column {
                 if (!record?.isRecord) return null;
 
                 // Override with validation errors, if present
-                if (editorElement) {
+                if (editor) {
                     const errors = gridModel.store.getErrorsForRecordField(record, field);
                     if (!isEmpty(errors)) {
                         return ul({
@@ -466,7 +466,7 @@ export class Column {
                         });
                     }
                 }
-                if (editorElement && !tooltipSpec) return null;
+                if (editor && !tooltipSpec) return null;
 
                 const {store} = record,
                     val = this.getValueFn({record, column: this, gridModel, agParams, store});
@@ -588,10 +588,10 @@ export class Column {
             ret.wrapText = true;
         }
 
-        if (editorElement) {
+        if (editor) {
             ret.cellEditorFramework = forwardRef((agParams, ref) => {
                 const {data} = agParams;
-                return editorElement({
+                return editor({
                     record: data,
                     gridModel,
                     column: this,
@@ -830,7 +830,7 @@ export function getAgHeaderClassFn(column) {
  */
 
 /**
- * @callback Column-editorElementFn - function for a grid cell editor returning a React element
+ * @callback Column-editorFn - function for a grid cell editor returning a React element
  * @param {Object} params
  * @param {Record} params.record - row-level data Record.
  * @param {Column} params.column - column for the cell being edited.
@@ -840,10 +840,10 @@ export function getAgHeaderClassFn(column) {
 
 /**
  * @callback Column~cellEditorParamsFn - function returning additional params to pass to the
- *      editorElement function
+ *      editor function
  * @param {Object} params
  * @param {Record} params.record - row-level data Record.
  * @param {Column} params.column - column for the cell being edited.
  * @param {GridModel} params.gridModel - gridModel for the grid.
- * @return {Object} - the params to pass to the editorElement function
+ * @return {Object} - the params to pass to the editor function
  */

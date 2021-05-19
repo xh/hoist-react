@@ -20,7 +20,7 @@ import './InlineEditors.scss';
  * more complex behaviors.
  *
  * To create an instance of a component using this model use the hook
- * {@see useHoistInlineEditorModel}
+ * {@see useInlineEditorModel}
  */
 export class InlineEditorModel extends HoistModel {
     @bindable value;
@@ -85,12 +85,6 @@ export class InlineEditorModel extends HoistModel {
         this.agParams?.stopEditing();
     }
 
-    // Stub for subclasses to implement for special handling when value is committed for certain
-    // types of editors (date, select)
-    onCommit() {
-
-    }
-
     //-----------------------
     // Implementation
     //-----------------------
@@ -117,10 +111,10 @@ export class InlineEditorModel extends HoistModel {
  * @param {function} component - react component to render - should be a HoistInput
  * @param {Object} props - props passed to containing component
  * @param {Object} ref - forwardRef passed to containing component
- * @param {Class} modelSpec - specify to use particular subclass of HoistInlineEditorModel
+ * @param {Class} modelSpec - specify to use particular subclass of InlineEditorModel
  * @return {element} - react element to be rendered
  */
-export function useHoistInlineEditorModel(component, props, ref, modelSpec = InlineEditorModel) {
+export function useInlineEditorModel(component, props, ref, modelSpec = InlineEditorModel) {
     const {className, inputProps} = props,
         impl = useLocalModel(() => new modelSpec(props));
 
@@ -137,7 +131,6 @@ export function useHoistInlineEditorModel(component, props, ref, modelSpec = Inl
         model: impl,
         bind: 'value',
         commitOnChange: true,
-        onCommit: () => impl.onCommit(),
         ref: composeRefs(ref, impl.ref),
         ...inputProps
     });

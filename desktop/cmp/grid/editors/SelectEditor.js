@@ -6,12 +6,12 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {select} from '@xh/hoist/desktop/cmp/input';
-import {useHoistInlineEditorModel} from './HoistInlineEditorModel';
-import {HoistInlineEditorPropTypes} from './HoistInlineEditorProps';
+import {useInlineEditorModel} from './InlineEditorModel';
+import {InlineEditorPropTypes} from './InlineEditorProps';
 
-export const [InlineSelectEditor, inlineSelectEditor] = hoistCmp.withFactory({
-    displayName: 'InlineSelectEditor',
-    className: 'xh-inline-select-editor',
+export const [SelectEditor, selectEditor] = hoistCmp.withFactory({
+    displayName: 'SelectEditor',
+    className: 'xh-select-editor',
     model: false,
     memo: false,
     observer: false,
@@ -19,6 +19,7 @@ export const [InlineSelectEditor, inlineSelectEditor] = hoistCmp.withFactory({
         props.inputProps = {
             hideDropdownIndicator: true,
             hideSelectedOptionCheck: true,
+            selectOnFocus: false,
             rsOptions: {
                 styles: {
                     menu: styles => ({
@@ -31,9 +32,9 @@ export const [InlineSelectEditor, inlineSelectEditor] = hoistCmp.withFactory({
             },
             ...props.inputProps
         };
-        return useHoistInlineEditorModel(select, props, ref);
+        return useInlineEditorModel(select, props, ref);
     }
 });
-InlineSelectEditor.propTypes = {
-    ...HoistInlineEditorPropTypes
+SelectEditor.propTypes = {
+    ...InlineEditorPropTypes
 };
