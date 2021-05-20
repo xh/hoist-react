@@ -249,7 +249,10 @@ export class Store extends HoistBase {
             if (update) {
                 updateRecs = update.map(it => {
                     const recId = this.idSpec(it),
-                        rec = this.getOrThrow(recId),
+                        rec = this.getOrThrow(
+                            recId,
+                            'In order to update grid data, records must have stable ids. Note: XH.genId() will not provide such ids.'
+                        ),
                         parent = rec.parent,
                         isSummary = recId === this.summaryRecord?.id;
                     return this.createRecord(it, parent, isSummary);
@@ -726,10 +729,12 @@ export class Store extends HoistBase {
     //------------------------
     // Private Implementation
     //------------------------
-
-    getOrThrow(id) {
+    getOrThrow(id, errorMsg) {
         const ret = this.getById(id);
-        throwIf(!ret, `Could not find record with id '${id}'`);
+
+        let msg = `Could not find record with id '${id}'.`;
+        if (errorMsg) msg += ` ${errorMsg}`;
+        throwIf(!ret, msg);
         return ret;
     }
 
