@@ -731,7 +731,10 @@ export class Store extends HoistBase {
     //------------------------
     getOrThrow(id, errorMsg) {
         const ret = this.getById(id);
-        throwIf(!ret, `Could not find record with id '${id}'. ${errorMsg}`);
+
+        let msg = `Could not find record with id '${id}'.`;
+        if (errorMsg) msg += ` ${errorMsg}`;
+        throwIf(!ret, msg);
         return ret;
     }
 
