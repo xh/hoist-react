@@ -39,8 +39,7 @@ support had been officially deprecated in `v38`.  Please use functional componen
 
 * Improvements to exception serialization to better handle `LocalDate` and similar custom JS
   classes.
-* BlueprintJS' [`EditableText`](https://blueprintjs.com/docs/#core/components/editable-text) component brought into framework.  Can now be imported with:
-  `import {editableText, EditableText} from '@xh/hoist/kit/blueprint';`
+* Blueprint `EditableText` component re-exported (w/elemFactory wrapper) from `kit/blueprint`.
 
 ### 📚 Libraries
 
