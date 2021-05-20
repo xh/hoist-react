@@ -39,6 +39,7 @@ support had been officially deprecated in `v38`.  Please use functional componen
 
 * Improvements to exception serialization to better handle `LocalDate` and similar custom JS
   classes.
+* Blueprint `EditableText` component re-exported (w/elemFactory wrapper) from `kit/blueprint`.
 
 ### 📚 Libraries
 
