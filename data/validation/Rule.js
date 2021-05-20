@@ -7,12 +7,9 @@
 import {castArray} from 'lodash';
 
 /**
- * Abstract Base class for validation Rules.
- *
- * @see FormFieldRule
- * @see StoreFieldRule
+ * Immutable object representing a validation rule.
  */
-export class BaseRule {
+export class Rule {
 
     check;
     when;

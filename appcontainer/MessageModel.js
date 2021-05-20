@@ -137,6 +137,6 @@ export class MessageModel extends HoistModel {
  * @typedef {Object} MessageInput
  * @property {Element} [item] - the react element to render; should be a HoistInput, defaults to a
  *      platform appropriate TextInput.
- * @property {FormFieldRule[]} [rules] - validation constraints to apply.
+ * @property {Rule[]} [rules] - validation constraints to apply.
  * @property {*} [initialValue] - initial value for the input.
  */

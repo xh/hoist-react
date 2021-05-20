@@ -8,7 +8,7 @@
 import {HoistBase, managed} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
-import {cloneDeep, flatten, isEmpty, map} from 'lodash';
+import {cloneDeep, compact, flatten, isEmpty, map} from 'lodash';
 
 import {ValidationState} from '../validation/ValidationState';
 
@@ -104,7 +104,7 @@ export class StoreValidator extends HoistBase {
      */
     async validateRecordAsync(record) {
         if (!record.isModified) return true;
-        const promises = map(this.store.fields, field => this.validateRecordFieldAsync(field, record));
+        const promises = map(this.store.fields, field => this.validateRecordFieldAsync(record, field));
         await Promise.all(promises).linkTo(this._validationTask);
         return record.isValid;
     }
@@ -126,10 +126,10 @@ export class StoreValidator extends HoistBase {
     //---------------------------------------
     // Validating Record Fields
     //---------------------------------------
-    async validateRecordFieldAsync(field, record) {
-        const promises = field.rules.map(async (r, idx) => {
-            const result = await r.evaluateAsync(field, record);
-            this.updateErrors(field, record, idx, result);
+    async validateRecordFieldAsync(record, field) {
+        const promises = field.rules.map(async (rule, idx) => {
+            const result = await this.evaluateRuleAsync(record, field, rule);
+            this.updateErrors(record, field, idx, result);
         });
         await Promise.all(promises);
     }
@@ -153,8 +153,29 @@ export class StoreValidator extends HoistBase {
     //---------------------------------------
     // Implementation
     //---------------------------------------
+    async evaluateRuleAsync(record, field, rule) {
+        if (this.ruleIsActive(record, field, rule)) {
+            const promises = rule.check.map(async (constraint) => {
+                const {name, displayName} = field,
+                    value = record.get(name),
+                    fieldState = {value, displayName};
+
+                return await constraint(fieldState, record.getValues());
+            });
+
+            const ret = await Promise.all(promises);
+            return compact(flatten(ret));
+        }
+        return [];
+    }
+
+    ruleIsActive(record, field, rule) {
+        const {when} = rule;
+        return !when || when(field, record.getValues());
+    }
+
     @action
-    updateErrors(field, record, idx, result) {
+    updateErrors(record, field, idx, result) {
         const {id} = record, {name} = field,
             errors = cloneDeep(this._errors);
 

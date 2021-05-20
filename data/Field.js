@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
-import {StoreFieldRule} from '@xh/hoist/data';
+import {Rule} from '@xh/hoist/data';
 import equal from 'fast-deep-equal';
 import {isDate, isString, toNumber, isFinite, startCase, isFunction} from 'lodash';
 import DOMPurify from 'dompurify';
@@ -28,7 +28,7 @@ export class Field {
     displayName;
     /** @member {*} */
     defaultValue;
-    /** @member {StoreFieldRule[]} */
+    /** @member {Rule[]} */
     rules;
     /** @member {boolean} */
     disableXssProtection;
@@ -64,9 +64,9 @@ export class Field {
     //------------------------
     processRuleSpecs(ruleSpecs) {
         return ruleSpecs.map(spec => {
-            if (spec instanceof StoreFieldRule) return spec;
-            if (isFunction(spec)) return new StoreFieldRule({check: spec});
-            return new StoreFieldRule(spec);
+            if (spec instanceof Rule) return spec;
+            if (isFunction(spec)) return new Rule({check: spec});
+            return new Rule(spec);
         });
     }
 }
@@ -138,7 +138,7 @@ export function genDisplayName(fieldName) {
  * @property {string} [displayName] - user-facing / longer name for display, defaults to `name`
  *      transformed via `genDisplayName()` (e.g. 'myField' -> 'My Field').
  * @property {*} [defaultValue] - value to be used for records with a null, or non-existent value.
- * @property {(StoreFieldRule[]|Object[]|Function[])} [rules] - Rules, rule configs, or validation
+ * @property {(Rule[]|Object[]|Function[])} [rules] - Rules, rule configs, or validation
  *      functions to apply to this field.
  * @property {boolean} [disableXssProtection] - true to disable built-in XSS (cross-site scripting)
  *      protection, applied by default to all incoming String values via the DOMPurify library.
