@@ -566,15 +566,16 @@ class LocalModel extends HoistModel {
             {store} = model;
 
         return {
-            track: () => [model.isReady, store.isValidationPending],
-            run: ([isReady, pending]) => {
-                if (!isReady || pending) return;
-                const refreshCols = model.columns.filter(c => c.editor);
+            track: () => [model.isReady, store.validator.errors],
+            run: ([isReady]) => {
+                if (!isReady) return;
+                const refreshCols = model.columns.filter(c => c.editor || c.rendererIsComplex);
                 if (!isEmpty(refreshCols)) {
                     const columns = refreshCols.map(c => c.colId);
                     model.agApi.refreshCells({columns, force: true});
                 }
-            }
+            },
+            debounce: 1
         };
     }
 

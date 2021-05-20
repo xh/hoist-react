@@ -6,32 +6,25 @@
  */
 
 import {HoistBase, managed, XH} from '@xh/hoist/core';
-import {action, computed, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {throwIf, warnIf, apiRemoved, withShortDebug} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
-    cloneDeep,
     defaultsDeep,
     differenceBy,
-    flatten,
     isArray,
     isEmpty,
     isNil,
     isString,
-    keys,
-    map,
-    remove as lodashRemove,
-    values
+    remove as lodashRemove
 } from 'lodash';
-import {apiRemoved, withShortDebug} from '../utils/js';
 
 import {Field} from './Field';
 import {parseFilter} from './filter/Utils';
 import {RecordSet} from './impl/RecordSet';
+import {StoreValidator} from './impl/StoreValidator';
 import {Record} from './Record';
-import {ValidationState} from './validation/ValidationState';
 
 /**
  * A managed and observable set of local, in-memory Records.
@@ -40,8 +33,10 @@ export class Store extends HoistBase {
 
     /** @member {Field[]} */
     fields = null;
+
     /** @member {function} */
     idSpec;
+
     /** @member {function} */
     processRawData;
 
@@ -75,6 +70,9 @@ export class Store extends HoistBase {
     /** @package - used internally by any StoreFilterField that is bound to this store. */
     @bindable xhFilterText = null;
 
+    /** @member {StoreValidator} */
+    @managed validator = new StoreValidator(this);
+
     //----------------------
     // Implementation State
     //----------------------
@@ -82,17 +80,6 @@ export class Store extends HoistBase {
     @observable.ref _current;
     @observable.ref _filtered;
     _dataDefaults = null;
-
-    @managed
-    _validationTask = new PendingTaskModel({mode: 'all'});
-
-    // Todo: A cleaner, easier to grok way to store these
-    // Stores the result of evaluating each record against the rules. Each entry is a map
-    // of record id, each of which is in turn a map of field names. Each field name key
-    // is an array with the result of evaluating each rule, where each element will be array of strings
-    // containing any validation errors for the rule. If validation for the rule has not
-    // completed will contain null.
-    @observable _errors = {};
 
     /**
      * @param {Object} c - Store configuration.
@@ -454,23 +441,17 @@ export class Store extends HoistBase {
                 committedData: currentRec.committedData
             });
 
-            // Don't do anything if the record data hasn't actually changed.
-            if (equal(currentRec.data, updatedRec.data)) return;
-
-            // If the updated data now matches the committed record data, restore the committed
-            // record to properly reflect the (lack of) dirty state.
-            if (equal(updatedRec.data, updatedRec.committedData)) {
-                updateRecs.set(id, this.getCommittedOrThrow(id));
-            } else {
+            if (!equal(currentRec.data, updatedRec.data)) {
                 updateRecs.set(id, updatedRec);
             }
         });
 
+        if (isEmpty(updateRecs)) return;
+
         warnIf(hadDupes, 'Store.modifyRecords() called with multiple updates for the same Records. Only the first modification for each Record was processed.');
 
         this._current = this._current
-            .withTransaction({update: Array.from(updateRecs.values())})
-            .normalize(this._committed);
+            .withTransaction({update: Array.from(updateRecs.values())});
 
         this.rebuildFiltered();
     }
@@ -739,104 +720,19 @@ export class Store extends HoistBase {
         return ret ? ret : [];
     }
 
-    //------------------------
-    // Validation
-    //------------------------
-    /** @return {ValidationState} - the current validation state of the store. */
-    @computed
-    get validationState() {
-        const VS = ValidationState,
-            states = map(this.records, record => this.getRecordValidationState(record));
-        if (states.includes(VS.NotValid)) return VS.NotValid;
-        if (states.includes(VS.Unknown)) return VS.Unknown;
-        return VS.Valid;
-    }
-
-    /** @return {ValidationState} - the current validation state for a given record. */
-    getRecordValidationState(record) {
-        const VS = ValidationState;
-        if (!record.isModified) return VS.Valid;
-
-        const errors = this.getErrorsForRecord(record);
-        if (errors.some(e => !isEmpty(e))) return VS.NotValid;
-        if (errors.some(e => isNil(e))) return VS.Unknown;
-        return VS.Valid;
-    }
-
-    /** @return {ValidationState} - the current validation state for a field on a given record. */
-    getRecordFieldValidationState(record, field) {
-        const VS = ValidationState;
-        if (!record.isModified) return VS.Valid;
-
-        const errors = this.getErrorsForRecordField(record, field);
-        return isEmpty(errors) ? VS.Valid : VS.NotValid;
-    }
-
-    /** @return {boolean} - true if any records are currently recomputing their validation state. */
-    get isValidationPending() {
-        return this._validationTask.isPending;
-    }
-
     /** @return {boolean} - true if all records are valid. */
     get isValid() {
-        return this.validationState === ValidationState.Valid;
+        return this.validator.isValid;
     }
 
-    /** @return {boolean} - true if given record is valid. */
-    recordIsValid(record) {
-        return this.getRecordValidationState(record) === ValidationState.Valid;
-    }
-
-    /** @return {boolean} - true if a field on a given record is valid. */
-    recordFieldIsValid(record, field) {
-        return this.getRecordFieldValidationState(record, field) === ValidationState.Valid;
-    }
-
-    /** @return {number} - count of all validation errors for this store. */
-    @computed
-    get errorCount() {
-        return this.allErrors.length;
-    }
-
-    /** @return {string[]} - list of all validation errors for this store. */
-    @computed
-    get allErrors() {
-        return flatten(keys(this._errors).map(id => flatten(this.getErrorsForRecord(id))));
-    }
-
-    /** @return {Object} - Map by field of all validation errors for a given record. */
-    getErrorsForRecord(recOrId) {
-        const id = recOrId.isRecord ? recOrId.id : recOrId;
-        return flatten(values(this._errors[id]));
-    }
-
-    /** @return {string[]} - list of all validation errors for the field on a given record. */
-    getErrorsForRecordField(recOrId, fieldOrId) {
-        const id = recOrId.isRecord ? recOrId.id : recOrId,
-            field = fieldOrId.isField ? field.name : fieldOrId;
-        return flatten(this._errors[id]?.[field]);
-    }
-
-    /**
-     * Recompute validations for all records and return true if the store is valid.
-     * @returns {Promise<boolean>}
-     */
+    /** @returns {Promise<boolean>} - Recompute validations for all records and return true if the store is valid. */
     async validateAsync() {
-        if (!this.isModified) return true;
-        const promises = map(this.records, record => this.validateRecordAsync(record));
-        await Promise.all(promises);
-        return this.isValid;
+        return this.validator.validateAsync();
     }
 
-    /**
-     * Recompute validations for a given record and return true if the record is valid.
-     * @returns {Promise<boolean>}
-     */
+    /** @returns {Promise<boolean>} - Recompute validations for a given record and return true if the record is valid. */
     async validateRecordAsync(record) {
-        if (!record.isModified) return true;
-        const promises = map(this.fields, field => this.validateRecordFieldAsync(field, record));
-        await Promise.all(promises).linkTo(this._validationTask);
-        return this.recordIsValid(record);
+        return this.validator.validateRecordAsync(record);
     }
 
     /** Destroy this store, cleaning up any resources used. */
@@ -893,25 +789,6 @@ export class Store extends HoistBase {
     @action
     rebuildFiltered() {
         this._filtered = this._current.withFilter(this.filter);
-    }
-
-    async validateRecordFieldAsync(field, record) {
-        const promises = field.rules.map(async (r, idx) => {
-            const result = await r.evaluateAsync(field, record);
-            this.updateErrors(field, record, idx, result);
-        });
-        await Promise.all(promises);
-    }
-
-    @action
-    updateErrors(field, record, idx, result) {
-        const {id} = record, {name} = field,
-            errors = cloneDeep(this._errors);
-
-        if (isEmpty(errors[id])) errors[id] = {};
-        if (isEmpty(errors[id][name])) errors[id][name] = [];
-        errors[id][name][idx] = result;
-        this._errors = errors;
     }
 
     //---------------------------------------

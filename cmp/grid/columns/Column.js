@@ -454,8 +454,8 @@ export class Column {
                 if (!record?.isRecord) return null;
 
                 // Override with validation errors, if present
-                if (editor) {
-                    const errors = gridModel.store.getErrorsForRecordField(record, field);
+                if (editor && !record.fieldIsValid(field)) {
+                    const errors = record.fieldErrors(field);
                     if (!isEmpty(errors)) {
                         return ul({
                             className: classNames(
@@ -600,7 +600,7 @@ export class Column {
                 });
             });
             ret.cellClassRules = {
-                'xh-invalid-cell': ({data: record}) => record && !record.store.recordFieldIsValid(record, field)
+                'xh-invalid-cell': ({data: record}) => record && !record.fieldIsValid(field)
             };
         }
 

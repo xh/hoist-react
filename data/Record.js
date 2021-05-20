@@ -4,8 +4,10 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {computed} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
+import {ValidationState} from './validation/ValidationState';
 
 /**
  * Wrapper object for each data element within a {@see Store}. Records must be assigned a unique ID
@@ -118,6 +120,24 @@ export class Record {
         return this.store.getAncestorsById(this.id, false);
     }
 
+    /** @return {boolean} */
+    @computed
+    get isValid() {
+        return this.validationState === ValidationState.Valid;
+    }
+
+    /** @return {ValidationState} - the current validation state of the record. */
+    @computed
+    get validationState() {
+        return this.store.validator.getRecordValidationState(this);
+    }
+
+    /** @return {Object} - Map by field of all validation errors. */
+    @computed
+    get errors() {
+        return this.store.validator.getErrorsForRecord(this);
+    }
+
     /**
      * @returns {Object} - a new object with enumerated values for all Fields in this Record.
      *      Unlike 'data', the object returned by this method contains an 'own' property for every
@@ -202,6 +222,30 @@ export class Record {
         this.store.getAncestorsById(this.id, fromFiltered).forEach(fn);
     }
 
+    /**
+     * The current validation state for a field
+     * @param {Field} field
+     * @return {ValidationState}
+     */
+    getFieldValidationState(field) {
+        return this.store.validator.getRecordFieldValidationState(this, field);
+    }
+
+    /**
+     * @param {Field} field
+     * @return {boolean}
+     */
+    fieldIsValid(field) {
+        return this.getFieldValidationState(field) === ValidationState.Valid;
+    }
+
+    /**
+     * @param {Field} field
+     * @return {string[]}
+     */
+    fieldErrors(field) {
+        return this.store.validator.getErrorsForRecordField(this, field);
+    }
 
     // --------------------------
     // Protected methods
