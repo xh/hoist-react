@@ -4,7 +4,6 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {computed} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 import {ValidationState} from './validation/ValidationState';
@@ -120,22 +119,39 @@ export class Record {
         return this.store.getAncestorsById(this.id, false);
     }
 
-    /** @return {boolean} */
-    @computed
+    /** @return {boolean} - true if the record is confirmed to be Valid. */
     get isValid() {
         return this.validationState === ValidationState.Valid;
     }
 
-    /** @return {ValidationState} - the current validation state of the record. */
-    @computed
-    get validationState() {
-        return this.store.validator.getRecordValidationState(this);
+    /** @return {boolean} - true if the record is confirmed to be NotValid. */
+    get isNotValid() {
+        return this.validationState === ValidationState.NotValid;
     }
 
-    /** @return {Object} - Map by field of all validation errors. */
-    @computed
+    /** @return {ValidationState} - the current validation state of the record. */
+    get validationState() {
+        return this.validator?.validationState ?? ValidationState.Unknown;
+    }
+
+    /** @return {Object} - Map of field names to list of errors. */
     get errors() {
-        return this.store.validator.getErrorsForRecord(this);
+        return this.validator?.errors ?? {};
+    }
+
+    /** @return {number} - count of all validation errors for the record. */
+    get errorCount() {
+        return this.validator?.errorCount ?? 0;
+    }
+
+    /** @return {boolean} - true if any fields are currently recomputing their validation state. */
+    get isValidationPending() {
+        return this.validator?.isPending ?? false;
+    }
+
+    /** @return {RecordValidator} */
+    get validator() {
+        return this.store.validator.findRecordValidator(this.id);
     }
 
     /**
@@ -220,31 +236,6 @@ export class Record {
      */
     forEachAncestor(fn, fromFiltered = false) {
         this.store.getAncestorsById(this.id, fromFiltered).forEach(fn);
-    }
-
-    /**
-     * The current validation state for a field
-     * @param {Field} field
-     * @return {ValidationState}
-     */
-    getFieldValidationState(field) {
-        return this.store.validator.getRecordFieldValidationState(this, field);
-    }
-
-    /**
-     * @param {Field} field
-     * @return {boolean}
-     */
-    fieldIsValid(field) {
-        return this.getFieldValidationState(field) === ValidationState.Valid;
-    }
-
-    /**
-     * @param {Field} field
-     * @return {string[]}
-     */
-    fieldErrors(field) {
-        return this.store.validator.getErrorsForRecordField(this, field);
     }
 
     // --------------------------

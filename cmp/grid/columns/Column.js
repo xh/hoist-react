@@ -454,17 +454,15 @@ export class Column {
                 if (!record?.isRecord) return null;
 
                 // Override with validation errors, if present
-                if (editor && !record.fieldIsValid(field)) {
-                    const errors = record.fieldErrors(field);
-                    if (!isEmpty(errors)) {
-                        return ul({
-                            className: classNames(
-                                'xh-grid-tooltip--validation',
-                                errors.length === 1 ? 'xh-grid-tooltip--validation--single' : null
-                            ),
-                            items: errors.map((it, idx) => li({key: idx, item: it}))
-                        });
-                    }
+                const errors = record.errors[field];
+                if (editor && !isEmpty(errors)) {
+                    return ul({
+                        className: classNames(
+                            'xh-grid-tooltip--validation',
+                            errors.length === 1 ? 'xh-grid-tooltip--validation--single' : null
+                        ),
+                        items: errors.map((it, idx) => li({key: idx, item: it}))
+                    });
                 }
                 if (editor && !tooltipSpec) return null;
 
@@ -600,7 +598,7 @@ export class Column {
                 });
             });
             ret.cellClassRules = {
-                'xh-invalid-cell': ({data: record}) => record && !record.fieldIsValid(field)
+                'xh-invalid-cell': ({data: record}) => record && !isEmpty(record.errors[field])
             };
         }
 

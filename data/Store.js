@@ -71,7 +71,7 @@ export class Store extends HoistBase {
     @bindable xhFilterText = null;
 
     /** @member {StoreValidator} */
-    @managed validator = new StoreValidator(this);
+    @managed validator = new StoreValidator({store: this});
 
     //----------------------
     // Implementation State
@@ -147,11 +147,6 @@ export class Store extends HoistBase {
         this._dataDefaults = this.createDataDefaults();
         this._fieldMap = this.createFieldMap();
         if (data) this.loadData(data);
-
-        this.addReaction({
-            track: () => this._current,
-            run: () => this.validateAsync()
-        });
     }
 
     /** Remove all records from the store. Equivalent to calling `loadData([])`. */
