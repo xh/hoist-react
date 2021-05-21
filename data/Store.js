@@ -715,19 +715,19 @@ export class Store extends HoistBase {
         return ret ? ret : [];
     }
 
-    /** @return {boolean} - true if all records are valid. */
+    /** @return {boolean} - true if the store is confirmed to be Valid. */
     get isValid() {
         return this.validator.isValid;
+    }
+
+    /** @return {boolean} - true if the store is confirmed to be NotValid. */
+    get isNotValid() {
+        return this.validator.isNotValid;
     }
 
     /** @returns {Promise<boolean>} - Recompute validations for all records and return true if the store is valid. */
     async validateAsync() {
         return this.validator.validateAsync();
-    }
-
-    /** @returns {Promise<boolean>} - Recompute validations for a given record and return true if the record is valid. */
-    async validateRecordAsync(record) {
-        return this.validator.validateRecordAsync(record);
     }
 
     /** Destroy this store, cleaning up any resources used. */
