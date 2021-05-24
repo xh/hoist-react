@@ -214,7 +214,7 @@ function useResolvedModel(spec, props, lookup, displayName) {
     // fixed cache here creates the "immutable" model behavior in hoist components
     // (Need to force full remount with 'key' prop to resolve any new model)
     const [{model, isOwned, fromContext}] = useState(() => (
-        spec instanceof CreatesSpec ? createModel(spec) : lookupModel(spec, props, lookup, displayName)
+        spec instanceof CreatesSpec ? createModel(spec, props) : lookupModel(spec, props, lookup, displayName)
     ));
 
     // register and load owned model
@@ -235,8 +235,8 @@ function useResolvedModel(spec, props, lookup, displayName) {
     return {model, fromContext};
 }
 
-function createModel(spec) {
-    return {model: spec.createFn(), isOwned: true, fromContext: false};
+function createModel(spec, props) {
+    return {model: spec.createFn(props), isOwned: true, fromContext: false};
 }
 
 function lookupModel(spec, props, modelLookup, displayName) {
@@ -265,7 +265,7 @@ function lookupModel(spec, props, modelLookup, displayName) {
     // 4) default create
     const create = spec.createDefault;
     if (create) {
-        const model = (isFunction(create) ? create() : new selector());
+        const model = (isFunction(create) ? create(props) : new selector());
         return {model, isOwned: true, fromContext: false};
     }
 
