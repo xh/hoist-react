@@ -36,8 +36,8 @@ import PT from 'prop-types';
 import {createRef, isValidElement} from 'react';
 import './Grid.scss';
 import {GridModel} from './GridModel';
-import {columnGroupHeader} from './impl/ColumnGroupHeader';
-import {columnHeader} from './impl/ColumnHeader';
+import {columnGroupHeader} from './impl/header/ColumnGroupHeader';
+import {columnHeader} from './impl/header/ColumnHeader';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.

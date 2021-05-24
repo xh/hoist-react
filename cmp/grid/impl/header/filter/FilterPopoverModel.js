@@ -1,5 +1,6 @@
-import {grid, GridModel} from '@xh/hoist/cmp/grid';
-import {customFilter} from '@xh/hoist/cmp/grid/impl/FilterPopover';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {customFilter} from '@xh/hoist/cmp/grid/impl/header/filter/CustomFilter';
+import {enumFilter} from '@xh/hoist/cmp/grid/impl/header/filter/EnumFilter';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {CompoundFilter, FieldFilter, Store} from '@xh/hoist/data';
@@ -49,12 +50,8 @@ export class FilterPopoverModel extends HoistModel {
         tabs: [
             {
                 id: 'enumFilter',
-                title: 'Set',
-                content: () => grid({
-                    model: this.enumFilterGridModel,
-                    height: 226,
-                    width: 240 // TODO - fix styling
-                })
+                title: 'Values',
+                content: () => enumFilter({model: this})
             },
             {
                 id: 'customFilter',
@@ -149,6 +146,14 @@ export class FilterPopoverModel extends HoistModel {
         this.setPendingEnumFilter(ret);
     }
 
+    reset() {
+        if (this.tabId === 'enumFilter') {
+            this.resetEnumFilter();
+        } else {
+            this.resetCustomFilter();
+        }
+    }
+
     @action
     resetEnumFilter() {
         this.committedEnumFilter = {};
@@ -163,11 +168,19 @@ export class FilterPopoverModel extends HoistModel {
     }
 
     @action
-    cancelAndUndoFilters() {
+    cancel() {
         this.setPendingEnumFilter(this.committedEnumFilter);
         this.setPendingCustomFilter(this.committedCustomFilter);
         this.filterText = null;
         this.closeMenu();
+    }
+
+    commit() {
+        if (this.tabId === 'enumFilter') {
+            this.commitEnumFilter();
+        } else {
+            this.commitCustomFilter();
+        }
     }
 
     @action
@@ -217,7 +230,7 @@ export class FilterPopoverModel extends HoistModel {
         if (!customFilter) {
             this.committedCustomFilter = null;
             store.setFilter(this.storeFilter);
-            // Re-commit existing set filter
+            // Re-commit existing enum filter
             this.commitEnumFilter();
             return;
         }

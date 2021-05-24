@@ -4,12 +4,11 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {ColumnHeaderModel} from '@xh/hoist/cmp/grid/impl/ColumnHeaderModel';
-import {filterPopover} from '@xh/hoist/cmp/grid/impl/FilterPopover';
+import {ColumnHeaderModel} from '@xh/hoist/cmp/grid/impl/header/ColumnHeaderModel';
+import {filterPopover} from '@xh/hoist/cmp/grid/impl/header/filter/FilterPopover';
 import {div, span} from '@xh/hoist/cmp/layout';
-import {creates, hoistCmp, XH} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {useOnMount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isString, isUndefined} from 'lodash';
 
@@ -24,10 +23,10 @@ import {isFunction, isString, isUndefined} from 'lodash';
 export const columnHeader = hoistCmp.factory({
     displayName: 'ColumnHeader',
     className: 'xh-grid-header',
-    model: creates(ColumnHeaderModel),
 
-    render({model, ...props}) {
-        useOnMount(() => model.init(props));
+    render(props) {
+        // Needs to be local model to get initial props.
+        const model = useLocalModel(() => new ColumnHeaderModel(props));
 
         const extraClasses = [
             model.activeGridSorter ? 'xh-grid-header-sorted' : null,
@@ -69,8 +68,8 @@ export const columnHeader = hoistCmp.factory({
 
             items: [
                 span({onMouseEnter, item: headerElem}),
-                sortIcon({omit: !model.activeGridSorter}),
-                filterPopover({omit: !model.enableFilter})
+                sortIcon({model, omit: !model.activeGridSorter}),
+                filterPopover({model: model.filterPopoverModel, omit: !model.filterPopoverModel})
             ]
         });
     }
@@ -78,9 +77,6 @@ export const columnHeader = hoistCmp.factory({
 
 const sortIcon = hoistCmp.factory({
     render({model}) {
-        if (model.colId === 'company') {
-            console.log(model.activeGridSorter);
-        }
         const {abs, sort} = model.activeGridSorter;
         if (!sort) return null;
 

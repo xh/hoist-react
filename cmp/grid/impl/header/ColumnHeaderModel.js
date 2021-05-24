@@ -1,29 +1,28 @@
 import {Column} from '@xh/hoist/cmp/grid';
-import {FilterPopoverModel} from '@xh/hoist/cmp/grid/impl/FilterPopoverModel';
-import {GridSorter} from '@xh/hoist/cmp/grid/impl/GridSorter';
-import {HoistModel} from '@xh/hoist/core';
-import {computed, makeObservable} from '@xh/hoist/mobx';
+import {FilterPopoverModel} from '@xh/hoist/cmp/grid/impl/header/filter/FilterPopoverModel';
+import {GridSorter} from '@xh/hoist/cmp/grid/impl/header/GridSorter';
+import {HoistModel, managed} from '@xh/hoist/core';
+import {computed} from '@xh/hoist/mobx';
 import {olderThan} from '@xh/hoist/utils/datetime';
 import {debounced} from '@xh/hoist/utils/js';
 import {filter, findIndex, isEmpty, isFinite, isString} from 'lodash';
-import {action, observable} from 'mobx';
 
 export class ColumnHeaderModel extends HoistModel {
-    @observable.ref gridModel;
-    @observable.ref xhColumn;
+    gridModel;
+    xhColumn;
     agColumn;
     colId;
     availableSorts;
-    @observable enableSorting;
-    @observable enableFilter;
+    enableSorting;
+    enableFilter;
+
+    @managed
     filterPopoverModel;
 
     _doubleClick = false;
     _lastTouch = null;
     _lastTouchStart = null;
     _lastMouseDown = null;
-
-    _initCalled = false;
 
     //-------------------
     // Sorting
@@ -79,17 +78,9 @@ export class ColumnHeaderModel extends HoistModel {
     //-------------------
     // Implementation
     //-------------------
-    constructor() {
+    constructor(initialProps) {
         super();
-        makeObservable(this);
-    }
-
-    @action
-    init({gridModel, xhColumn, column: agColumn}) {
-        // Avoid multiple calls, which can occur if ColumnHeader remounted.
-        if (this._initCalled) return;
-        this._initCalled = true;
-
+        const {gridModel, xhColumn, column: agColumn} = initialProps;
         this.gridModel = gridModel;
         this.xhColumn = xhColumn;
         this.agColumn = agColumn;
