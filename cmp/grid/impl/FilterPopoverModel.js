@@ -376,6 +376,8 @@ export class FilterPopoverModel extends HoistModel {
             }
         });
         this.setPendingEnumFilter(ret);
+
+        this.storeFilter = filter;
     }
 
     @action
@@ -466,6 +468,7 @@ export class FilterPopoverModel extends HoistModel {
     constructor({gridModel, xhColumn, agColumn}) {
         super();
         makeObservable(this);
+
         this.gridModel = gridModel;
         this.xhColumn = xhColumn;
         this.colId = agColumn.colId;
