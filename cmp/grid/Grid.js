@@ -189,6 +189,7 @@ class LocalModel extends HoistModel {
         this.addReaction(this.dataReaction());
         this.addReaction(this.groupReaction());
         this.addReaction(this.rowHeightReaction());
+        this.addReaction(this.validationDisplayReaction());
 
         this.agOptions = merge(this.createDefaultAgOptions(props), props.agOptions || {});
         this.propsKeyDown = props.onKeyDown;
@@ -412,7 +413,7 @@ class LocalModel extends HoistModel {
 
                     if (transaction?.update) {
                         const refreshCols = model.columns.filter(c => !c.hidden && c.rendererIsComplex);
-                        if (refreshCols) {
+                        if (!isEmpty(refreshCols)) {
                             const rowNodes = compact(transaction.update.map(r => agApi.getRowNode(r.id))),
                                 columns = refreshCols.map(c => c.colId);
                             agApi.refreshCells({rowNodes, columns, force: true});
@@ -430,7 +431,6 @@ class LocalModel extends HoistModel {
             }
         };
     }
-
 
     selectionReaction() {
         const {model} = this;
@@ -558,6 +558,24 @@ class LocalModel extends HoistModel {
                     colApi.applyColumnState({state: colState, applyOrder: true});
                 });
             }
+        };
+    }
+
+    validationDisplayReaction() {
+        const {model} = this,
+            {store} = model;
+
+        return {
+            track: () => [model.isReady, store.validator.errors],
+            run: ([isReady]) => {
+                if (!isReady) return;
+                const refreshCols = model.columns.filter(c => c.editor || c.rendererIsComplex);
+                if (!isEmpty(refreshCols)) {
+                    const columns = refreshCols.map(c => c.colId);
+                    model.agApi.refreshCells({columns, force: true});
+                }
+            },
+            debounce: 1
         };
     }
 

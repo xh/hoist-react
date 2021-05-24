@@ -4,16 +4,14 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {Rule, ValidationState} from '@xh/hoist/cmp/form';
 import {managed, HoistModel} from '@xh/hoist/core';
-import {genDisplayName} from '@xh/hoist/data';
+import {Rule, ValidationState, genDisplayName, required} from '@xh/hoist/data';
 import {action, computed, observable, runInAction, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {withDefault} from '@xh/hoist/utils/js';
 import {compact, flatten, isEmpty, isFunction, isNil, isUndefined} from 'lodash';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
-
 
 /**
  * Abstract Base class for FieldModels.
@@ -291,7 +289,7 @@ export class BaseFieldModel extends HoistModel {
      */
     @computed
     get isRequired() {
-        return this.rules.some(r => r.requiresValue(this));
+        return this.rules.some(r => this.ruleIsActive(r) && r.check.includes(required));
     }
 
     /**
@@ -318,7 +316,6 @@ export class BaseFieldModel extends HoistModel {
         return this.value;
     }
 
-
     processRuleSpecs(ruleSpecs) {
         return ruleSpecs.map(spec => {
             if (spec instanceof Rule) return spec;
@@ -334,13 +331,34 @@ export class BaseFieldModel extends HoistModel {
 
     async evaluateAsync() {
         const runId = ++this._validationRunId;
-        const promises = this.rules.map(async (r, idx) => {
-            const result = await r.evaluateAsync(this);
+        const promises = this.rules.map(async (rule, idx) => {
+            const result = await this.evaluateRuleAsync(rule);
             if (runId === this._validationRunId) {
                 runInAction(() => this._errors[idx] = result);
             }
         });
         await Promise.all(promises);
+    }
+
+    async evaluateRuleAsync(rule) {
+        if (this.ruleIsActive(rule)) {
+            const promises = rule.check.map(async (constraint) => {
+                const {value, displayName} = this,
+                    fieldState = {value, displayName};
+
+                return await constraint(fieldState, this.formModel.values);
+            });
+
+            const ret = await Promise.all(promises);
+            return compact(flatten(ret));
+        }
+        return [];
+    }
+
+    ruleIsActive(rule) {
+        if (!this.formModel) return false;
+        const {when} = rule;
+        return !when || when(this, this.formModel.values);
     }
 
     deriveValidationState() {

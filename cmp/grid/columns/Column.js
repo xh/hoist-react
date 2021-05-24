@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {div} from '@xh/hoist/cmp/layout';
+import {div, ul, li} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
@@ -14,6 +14,7 @@ import {
     find,
     get,
     isArray,
+    isEmpty,
     isFinite,
     isFunction,
     isNil,
@@ -21,6 +22,7 @@ import {
     isString
 } from 'lodash';
 import {forwardRef, useImperativeHandle, useState} from 'react';
+import classNames from 'classnames';
 import {GridSorter} from '../impl/GridSorter';
 import {ExportFormat} from './ExportFormat';
 
@@ -151,7 +153,9 @@ export class Column {
      *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
      * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column
      *     editable.
-     * @param {Column-editorFn} [c.editor] - Cell editor Component or a function to create one
+     * @param {Column-editorFn} [c.editor] - Cell editor Component or a function to create one.
+     *      Adding an editor will also install a cellClassRule and tooltip to display the
+     *      validation state of the cell in question.
      * @param {Column~setValueFn} [c.setValueFn] - function for updating Record field for this
      *      column after inline editing.
      * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
@@ -371,7 +375,6 @@ export class Column {
                         const record = agParams.node.data;
                         return editable({record, store: record.store, gridModel, column: this, agParams});
                     }
-
                     return editable;
                 },
                 valueSetter: (agParams) => {
@@ -424,12 +427,11 @@ export class Column {
         }
 
         // Tooltip Handling
-        const {tooltip, tooltipElement} = this,
+        const {tooltip, tooltipElement, editor} = this,
             tooltipSpec = tooltipElement ?? tooltip;
 
-        if (tooltipSpec) {
+        if (tooltipSpec || editor) {
             ret.tooltipValueGetter = (obj) => {
-
                 // We actually return the *record* itself, rather then ag-Grid's default escaped value.
                 // We need it below, where it will be handled to class as a prop.
                 // Note that we must always return a value - see hoist-react #2058, #2181
@@ -445,11 +447,25 @@ export class Column {
                 }), [location]);
 
                 const agParams = props,
-                    {value: record} = agParams;  // Value actually contains store record -- see above
+                    {value: record} = agParams; // Value actually contains store record -- see above
 
                 if (location === 'header') return div(this.headerTooltip);
 
                 if (!record?.isRecord) return null;
+
+                // Override with validation errors, if present
+                const errors = record.errors[field];
+                if (editor && !isEmpty(errors)) {
+                    return ul({
+                        className: classNames(
+                            'xh-grid-tooltip--validation',
+                            errors.length === 1 ? 'xh-grid-tooltip--validation--single' : null
+                        ),
+                        items: errors.map((it, idx) => li({key: idx, item: it}))
+                    });
+                }
+                if (editor && !tooltipSpec) return null;
+
                 const {store} = record,
                     val = this.getValueFn({record, column: this, gridModel, agParams, store});
 
@@ -570,7 +586,6 @@ export class Column {
             ret.wrapText = true;
         }
 
-        const {editor} = this;
         if (editor) {
             ret.cellEditorFramework = forwardRef((agParams, ref) => {
                 const {data} = agParams;
@@ -582,6 +597,9 @@ export class Column {
                     ref
                 });
             });
+            ret.cellClassRules = {
+                'xh-invalid-cell': ({data: record}) => record && !isEmpty(record.errors[field])
+            };
         }
 
         // Finally, apply explicit app requests.  The customer is always right....

@@ -6,6 +6,7 @@
  */
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
+import {ValidationState} from './validation/ValidationState';
 
 /**
  * Wrapper object for each data element within a {@see Store}. Records must be assigned a unique ID
@@ -118,6 +119,41 @@ export class Record {
         return this.store.getAncestorsById(this.id, false);
     }
 
+    /** @return {boolean} - true if the record is confirmed to be Valid. */
+    get isValid() {
+        return this.validationState === ValidationState.Valid;
+    }
+
+    /** @return {boolean} - true if the record is confirmed to be NotValid. */
+    get isNotValid() {
+        return this.validationState === ValidationState.NotValid;
+    }
+
+    /** @return {ValidationState} - the current validation state of the record. */
+    get validationState() {
+        return this.validator?.validationState ?? ValidationState.Unknown;
+    }
+
+    /** @return {Object} - Map of field names to list of errors. */
+    get errors() {
+        return this.validator?.errors ?? {};
+    }
+
+    /** @return {number} - count of all validation errors for the record. */
+    get errorCount() {
+        return this.validator?.errorCount ?? 0;
+    }
+
+    /** @return {boolean} - true if any fields are currently recomputing their validation state. */
+    get isValidationPending() {
+        return this.validator?.isPending ?? false;
+    }
+
+    /** @return {RecordValidator} */
+    get validator() {
+        return this.store.validator.findRecordValidator(this.id);
+    }
+
     /**
      * @returns {Object} - a new object with enumerated values for all Fields in this Record.
      *      Unlike 'data', the object returned by this method contains an 'own' property for every
@@ -201,7 +237,6 @@ export class Record {
     forEachAncestor(fn, fromFiltered = false) {
         this.store.getAncestorsById(this.id, fromFiltered).forEach(fn);
     }
-
 
     // --------------------------
     // Protected methods

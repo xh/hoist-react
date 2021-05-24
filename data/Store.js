@@ -5,9 +5,9 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {HoistBase, XH} from '@xh/hoist/core';
+import {HoistBase, managed, XH} from '@xh/hoist/core';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, apiRemoved, withShortDebug} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -19,11 +19,11 @@ import {
     isString,
     remove as lodashRemove
 } from 'lodash';
-import {apiRemoved, withShortDebug} from '../utils/js';
 
 import {Field} from './Field';
 import {parseFilter} from './filter/Utils';
 import {RecordSet} from './impl/RecordSet';
+import {StoreValidator} from './impl/StoreValidator';
 import {Record} from './Record';
 
 /**
@@ -33,8 +33,10 @@ export class Store extends HoistBase {
 
     /** @member {Field[]} */
     fields = null;
+
     /** @member {function} */
     idSpec;
+
     /** @member {function} */
     processRawData;
 
@@ -65,13 +67,19 @@ export class Store extends HoistBase {
     /** @member {Record} - record containing summary data. */
     @observable.ref summaryRecord = null;
 
+    /** @package - used internally by any StoreFilterField that is bound to this store. */
+    @bindable xhFilterText = null;
+
+    /** @member {StoreValidator} */
+    @managed validator = new StoreValidator({store: this});
+
+    //----------------------
+    // Implementation State
+    //----------------------
     @observable.ref _committed;
     @observable.ref _current;
     @observable.ref _filtered;
     _dataDefaults = null;
-
-    /** @package - used internally by any StoreFilterField that is bound to this store. */
-    @bindable xhFilterText = null;
 
     /**
      * @param {Object} c - Store configuration.
@@ -428,23 +436,17 @@ export class Store extends HoistBase {
                 committedData: currentRec.committedData
             });
 
-            // Don't do anything if the record data hasn't actually changed.
-            if (equal(currentRec.data, updatedRec.data)) return;
-
-            // If the updated data now matches the committed record data, restore the committed
-            // record to properly reflect the (lack of) dirty state.
-            if (equal(updatedRec.data, updatedRec.committedData)) {
-                updateRecs.set(id, this.getCommittedOrThrow(id));
-            } else {
+            if (!equal(currentRec.data, updatedRec.data)) {
                 updateRecs.set(id, updatedRec);
             }
         });
 
+        if (isEmpty(updateRecs)) return;
+
         warnIf(hadDupes, 'Store.modifyRecords() called with multiple updates for the same Records. Only the first modification for each Record was processed.');
 
         this._current = this._current
-            .withTransaction({update: Array.from(updateRecs.values())})
-            .normalize(this._committed);
+            .withTransaction({update: Array.from(updateRecs.values())});
 
         this.rebuildFiltered();
     }
@@ -713,6 +715,21 @@ export class Store extends HoistBase {
         return ret ? ret : [];
     }
 
+    /** @return {boolean} - true if the store is confirmed to be Valid. */
+    get isValid() {
+        return this.validator.isValid;
+    }
+
+    /** @return {boolean} - true if the store is confirmed to be NotValid. */
+    get isNotValid() {
+        return this.validator.isNotValid;
+    }
+
+    /** @returns {Promise<boolean>} - Recompute validations for all records and return true if the store is valid. */
+    async validateAsync() {
+        return this.validator.validateAsync();
+    }
+
     /** Destroy this store, cleaning up any resources used. */
     destroy() {}
 
@@ -726,7 +743,6 @@ export class Store extends HoistBase {
     //------------------------
     // Private Implementation
     //------------------------
-
     getOrThrow(id) {
         const ret = this.getById(id);
         throwIf(!ret, `Could not find record with id '${id}'`);

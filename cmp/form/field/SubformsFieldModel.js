@@ -4,8 +4,8 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {ValidationState} from '@xh/hoist/cmp/form';
 import {managed, XH} from '@xh/hoist/core';
+import {ValidationState} from '@xh/hoist/data';
 import {action, computed, makeObservable, override} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {clone, defaults, flatMap, isArray, isUndefined, partition, without} from 'lodash';
