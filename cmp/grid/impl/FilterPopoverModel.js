@@ -480,7 +480,8 @@ export class FilterPopoverModel extends HoistModel {
                 track: () => [store.filter, store.lastUpdated],
                 run: ([filter, lastUpdated]) => {
                     if (lastUpdated) this.loadStoreAndUpdateFilter(filter, lastUpdated);
-                }
+                },
+                fireImmediately: true
             });
 
             this.addReaction({
