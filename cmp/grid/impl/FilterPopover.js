@@ -19,8 +19,8 @@ export const filterPopover = hoistCmp.factory({
     render({model}) {
         const {filterPopoverModel} = model;
         if (!filterPopoverModel) return null;
-        const {isOpen, isFiltered, setFilterGridModel, colId, xhColumn, type, tabContainerModel} = filterPopoverModel,
-            isSetFilter = tabContainerModel.activeTabId === 'setFilter';
+        const {isOpen, isFiltered, enumFilterGridModel, colId, xhColumn, type, tabContainerModel} = filterPopoverModel,
+            isEnumFilter = tabContainerModel.activeTabId === 'enumFilter';
 
         return popover({
             className: 'xh-grid-header-menu-icon',
@@ -58,7 +58,7 @@ export const filterPopover = hoistCmp.factory({
                                     minHeight: 20,
                                     maxHeight: 20
                                 },
-                                value: 'setFilter',
+                                value: 'enumFilter',
                                 text: 'Set',
                                 width: 40
                             }),
@@ -80,14 +80,14 @@ export const filterPopover = hoistCmp.factory({
                     model: tabContainerModel
                 }),
                 tbar: toolbar({
-                    omit: !isSetFilter,
+                    omit: !isEnumFilter,
                     compact: true,
                     item: storeFilterField({
                         model: model,
                         bind: 'filterText',
                         icon: null,
                         flex: 1,
-                        store: setFilterGridModel.store,
+                        store: enumFilterGridModel.store,
                         includeFields: [colId]
                     })
                 }),
@@ -99,8 +99,8 @@ export const filterPopover = hoistCmp.factory({
                             text: 'Reset',
                             intent: 'danger',
                             onClick: () => {
-                                isSetFilter ?
-                                    filterPopoverModel.resetSetFilter() :
+                                isEnumFilter ?
+                                    filterPopoverModel.resetEnumFilter() :
                                     filterPopoverModel.resetCustomFilter();
                             }
                         }),
@@ -114,8 +114,8 @@ export const filterPopover = hoistCmp.factory({
                             text: 'Apply',
                             intent: 'success',
                             onClick: () => {
-                                isSetFilter ?
-                                    filterPopoverModel.commitSetFilter() :
+                                isEnumFilter ?
+                                    filterPopoverModel.commitEnumFilter() :
                                     filterPopoverModel.commitCustomFilter();
                             }
                         })
