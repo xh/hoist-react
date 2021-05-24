@@ -71,14 +71,18 @@ export class Store extends HoistBase {
     @bindable xhFilterText = null;
 
     /** @member {StoreValidator} */
-    @managed validator = new StoreValidator({store: this});
+    @managed validator;
 
     //----------------------
     // Implementation State
     //----------------------
+    /** @type {RecordSet} */
     @observable.ref _committed;
+    /** @type {RecordSet} */
     @observable.ref _current;
+    /** @type {RecordSet} */
     @observable.ref _filtered;
+
     _dataDefaults = null;
 
     /**
@@ -144,6 +148,7 @@ export class Store extends HoistBase {
 
         this.resetRecords();
 
+        this.validator = new StoreValidator({store: this});
         this._dataDefaults = this.createDataDefaults();
         this._fieldMap = this.createFieldMap();
         if (data) this.loadData(data);
@@ -761,6 +766,7 @@ export class Store extends HoistBase {
         return ret;
     }
 
+    @action
     resetRecords() {
         this._committed = this._current = this._filtered = new RecordSet(this);
         this.summaryRecord = null;
