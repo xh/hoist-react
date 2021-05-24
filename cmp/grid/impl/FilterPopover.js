@@ -128,7 +128,7 @@ export const filterPopover = hoistCmp.factory({
 
 export const customFilter = hoistCmp.factory({
     render({model}) {
-        const {type} = model.filterPopoverModel;
+        const {type} = model;
         let cmp;
         switch (type) {
             case 'number':
