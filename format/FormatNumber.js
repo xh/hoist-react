@@ -35,6 +35,8 @@ const UP_TICK = '▴',
  *      align vertically with negative ledgers in columns.
  * @param {boolean} [opts.withPlusSign] - true to prepend positive numbers with a '+'.
  * @param {boolean} [opts.withSignGlyph] - true to prepend an up / down arrow.
+ * @param {boolean} [opts.withCommas] - whether to include comma delimiters, defaults to true.
+ * @param {boolean} [opts.omitFourDigitComma] - true to omit delimiter if value is less than 10,000
  * @param {string?} [opts.prefix] - prefix to prepend to value (between the number and its sign).
  * @param {string?} [opts.label] - label to append to value.
  * @param {string} [opts.labelCls] - CSS class of label <span>,
@@ -60,6 +62,8 @@ export function fmtNumber(v, {
     forceLedgerAlign = true,
     withPlusSign = false,
     withSignGlyph = false,
+    withCommas= true,
+    omitFourDigitComma = false,
     prefix = null,
     label = null,
     labelCls = 'xh-units-label',
@@ -71,7 +75,7 @@ export function fmtNumber(v, {
 
     if (isInvalidInput(v)) return nullDisplay;
 
-    formatConfig = formatConfig || buildFormatConfig(v, precision, zeroPad);
+    formatConfig = formatConfig || buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma);
     const str = numbro(v).format(formatConfig).replace('-', '');
     let sign = null;
 
@@ -312,10 +316,10 @@ function valueColor(v, colorSpec) {
     return colorSpec.neutral;
 }
 
-function buildFormatConfig(v, precision, zeroPad) {
+function buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma) {
     const num = Math.abs(v);
 
-    const config = {thousandSeparated: num >= 1000};
+    const config = {};
     let mantissa = undefined;
 
     if (precision % 1 === 0) {
@@ -334,6 +338,8 @@ function buildFormatConfig(v, precision, zeroPad) {
             mantissa = 0;
         }
     }
+
+    config.thousandSeparated = withCommas && (!omitFourDigitComma || num > 9999) ;
     config.mantissa = mantissa;
     config.trimMantissa = !zeroPad && mantissa != 0;
     return config;

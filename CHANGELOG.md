@@ -18,6 +18,8 @@
   before first load should set this property to `false`.
 * All Hoist Components now support a `modelRef` prop. Supply a ref to this prop in order to gain a
   pointer to a Component's backing `HoistModel`.
+* Number formatters now take two new options: `withCommas` to control the presence of delimiters in
+  the string output, and `omitFourDigitComma` to suppress them for numbers under 10,000.
 
 
 ### 💥 Breaking Changes
