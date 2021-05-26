@@ -3,7 +3,18 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {CompoundFilter, FieldFilter} from '@xh/hoist/data';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {clone, compact, isEmpty, isEqual, keys, pickBy, uniq, without} from 'lodash';
+import {
+    clone,
+    compact, difference,
+    isEmpty,
+    isEqual,
+    keys,
+    mapValues, omit,
+    pickBy,
+    uniq,
+    uniqBy,
+    without
+} from 'lodash';
 
 export class EnumFilterModel extends HoistModel {
     /** @member {FilterPopoverModel} */
@@ -37,6 +48,10 @@ export class EnumFilterModel extends HoistModel {
 
     get virtualStore() {
         return this.parentModel.virtualStore;
+    }
+
+    get committedCustomFilter() {
+        return this.parentModel.customFilterModel.committedFilter;
     }
 
     get type() {
@@ -90,8 +105,7 @@ export class EnumFilterModel extends HoistModel {
 
     @action
     commit() {
-        const {pendingFilter, colId, type, parentModel} = this,
-            {customFilterModel} = parentModel,
+        const {pendingFilter, colId, type, committedCustomFilter, parentModel} = this,
             ret = clone(this.committedFilter);
 
         let pendingStoreFilter = null;
@@ -104,8 +118,8 @@ export class EnumFilterModel extends HoistModel {
 
         let value = keys(pickBy(ret, v => v));
         // Include any equal input values from custom filter
-        if (customFilterModel.committedFilter?.op === '=') {
-            value.push(customFilterModel.committedFilter.value);
+        if (committedCustomFilter?.op === '=') {
+            value.push(committedCustomFilter.value);
             value = uniq(value);
         }
         // Parse boolean strings to their primitive values
@@ -135,8 +149,8 @@ export class EnumFilterModel extends HoistModel {
                 newFilters[0];
         } else if (storeFilter?.isFieldFilter && storeFilter.field !== colId && fieldFilter) {
             pendingStoreFilter = new CompoundFilter({filters: [storeFilter, fieldFilter], op: 'AND'});
-        } else if (customFilterModel.committedFilter?.op !== '=' && fieldFilter) {
-            pendingStoreFilter = new CompoundFilter({filters: [fieldFilter, customFilterModel.committedFilter], op: 'AND'});
+        } else if (committedCustomFilter?.op !== '=' && fieldFilter) {
+            pendingStoreFilter = new CompoundFilter({filters: [fieldFilter, committedCustomFilter], op: 'AND'});
         } else {
             pendingStoreFilter = fieldFilter;
         }
@@ -226,5 +240,47 @@ export class EnumFilterModel extends HoistModel {
         this.xhColumn = parentModel.xhColumn;
 
         this.gridModel = this.createGridModel();
+
+        this.addReaction({
+            track: () => this.virtualStore.records,
+            run: () => this.updateFilters(),
+            fireImmediately: true
+        });
+    }
+
+    @action
+    updateFilters() {
+        const {colId, virtualStore, committedCustomFilter} = this,
+            ret = {},
+            allVals = uniqBy(virtualStore.allRecords, (rec) => rec.data[colId]);
+
+        allVals.forEach(it => {
+            const key = it.data[colId];
+            ret[key] = this.committedFilter[key] ?? true;
+        });
+
+        this.committedFilter = ret;
+        this.initialFilter = mapValues(ret, () => true);
+
+        const {committedFilter} = this,
+            visibleVals = uniqBy(virtualStore.records, (rec) => rec.data[colId]),
+            hiddenVals = difference(allVals, visibleVals).map(rec => rec.data[colId]),
+            currentVals = visibleVals.map(it => ({
+                [colId]: it.data[colId],
+                isChecked: committedFilter[it.data[colId]] ||
+                    (committedCustomFilter?.value == it.data[colId] ?? false)
+            }));
+
+        // Only load set filter grid with VISIBLE values
+        this.gridModel.loadData(currentVals);
+        const pendingFilter = omit(committedFilter, hiddenVals);
+        currentVals.forEach(rec => {
+            if (!pendingFilter.hasOwnProperty(rec[colId])) {
+                pendingFilter[rec[colId]] =
+                    committedFilter[rec[colId]] ||
+                    (committedCustomFilter?.value == rec[colId] ?? false);
+            }
+        });
+        this.setPendingFilter(pendingFilter);
     }
 }

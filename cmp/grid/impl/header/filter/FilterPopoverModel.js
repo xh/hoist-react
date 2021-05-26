@@ -5,15 +5,13 @@ import {EnumFilterModel} from '@xh/hoist/cmp/grid/impl/header/filter/EnumFilterM
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {difference, filter, isEmpty, mapValues, omit, uniqBy, without} from 'lodash';
+import {action, bindable, makeObservable} from '@xh/hoist/mobx';
+import {filter, isEmpty, without} from 'lodash';
 
 export class FilterPopoverModel extends HoistModel {
     gridModel;
     xhColumn;
     colId;
-
-    @observable.ref storeFilter = null; // `gridModel.store.filter`
 
     /**
      * @member {Store} - Store to be kept in sync with `gridModel.store,` with filters applied
@@ -31,8 +29,12 @@ export class FilterPopoverModel extends HoistModel {
 
     virtualStoreLastUpdated = null; // Kept in sync with `gridModel.store` to avoid unnecessary updates
 
+    get store() {
+        return this.gridModel.store;
+    }
+
     get storeFilter() {
-        return this.gridModel.store.filter;
+        return this.store.filter;
     }
 
     get isFiltered() {
@@ -89,36 +91,23 @@ export class FilterPopoverModel extends HoistModel {
             this.virtualStoreLastUpdated = lastUpdated;
             this.loadVirtualStore();
         }
-        this.processAndSetFilter(filter);
+        this.processFilter(filter);
     }
 
     loadVirtualStore() {
-        const {virtualStore, gridModel, colId, enumFilterModel} = this,
-            allRecords = gridModel.treeMode ?
-                gridModel.store.allRecords
-                    .filter(rec => isEmpty(rec.children))
-                    .map(rec => rec.data) :
-                gridModel.store.allRecords
-                    .map(rec => rec.data);
+        const {virtualStore, store} = this,
+            {allRecords} = store;
 
-        virtualStore.loadData(allRecords);
-
-        const ret = {};
-        uniqBy(allRecords, (rec) => rec[colId])
-            .forEach(it => {
-                const key = it[colId];
-                ret[key] = enumFilterModel.committedFilter[key] ?? true;
-            });
-
-        enumFilterModel.setCommittedFilter(ret);
-        enumFilterModel.setInitialFilter(mapValues(ret, () => true));
+        virtualStore.loadData(
+            this.gridModel.treeMode ?
+                allRecords.filter(rec => isEmpty(rec.children)).map(rec => rec.data) :
+                allRecords.map(rec => rec.data)
+        );
     }
 
     @action
-    processAndSetFilter(filter) {
-        const {virtualStore, enumFilterModel, customFilterModel} = this;
-
-        const {colId} = this;
+    processFilter(filter) {
+        const {colId, virtualStore, customFilterModel} = this;
         if (!filter) {
             virtualStore.setFilter(null);
         } else if (filter.isCompoundFilter) {
@@ -130,33 +119,15 @@ export class FilterPopoverModel extends HoistModel {
             (
                 filter.field !== colId ||
                 filter.op !== '=' ||
-                filter.equals(customFilterModel.committedFilter) // Only apply '=' field filter when it is a custom filter
+                // TODO - revisit if this is desired behavior
+                // Apply '=' field filter when it is a custom filter
+                filter.equals(customFilterModel.committedFilter)
             )
         ) {
             virtualStore.setFilter(filter);
         } else {
             virtualStore.setFilter(null);
         }
-
-        const allVals = uniqBy(virtualStore.allRecords, (rec) => rec.data[colId]),
-            visibleVals = uniqBy(virtualStore.records, (rec) => rec.data[colId]),
-            hiddenVals = difference(allVals, visibleVals).map(rec => rec.data[colId]),
-            currentVals = visibleVals.map(it => ({
-                [colId]: it.data[colId],
-                isChecked: enumFilterModel.committedFilter[it.data[colId]] || (customFilterModel.committedFilter?.value == it.data[colId] ?? false)
-            }));
-
-        // Only load set filter grid with VISIBLE values
-        enumFilterModel.gridModel.loadData(currentVals);
-        const ret = omit(enumFilterModel.committedFilter, hiddenVals);
-        currentVals.forEach(rec => {
-            if (!ret.hasOwnProperty(rec[colId])) {
-                ret[rec[colId]] = enumFilterModel.committedFilter[rec[colId]] || (customFilterModel.committedFilter?.value == rec[colId] ?? false);
-            }
-        });
-        this.enumFilterModel.setPendingFilter(ret);
-
-        this.storeFilter = filter;
     }
 
     //-------------------
@@ -171,8 +142,7 @@ export class FilterPopoverModel extends HoistModel {
         this.colId = agColumn.colId;
 
         if (xhColumn.field === this.colId) {
-            const {store} = this.gridModel;
-            this.virtualStore = new Store({...store, loadRootAsSummary: false});
+            this.virtualStore = new Store({...this.store, loadRootAsSummary: false});
 
             this.enumFilterModel = new EnumFilterModel(this);
             this.customFilterModel = new CustomFilterModel(this);
@@ -194,9 +164,9 @@ export class FilterPopoverModel extends HoistModel {
             });
 
             this.addReaction({
-                track: () => [store.filter, store.lastUpdated],
-                run: ([filter, lastUpdated]) => {
-                    if (lastUpdated) this.loadStoreAndUpdateFilter(filter, lastUpdated);
+                track: () => [this.storeFilter, this.store.lastUpdated],
+                run: ([storeFilter, lastUpdated]) => {
+                    if (lastUpdated) this.loadStoreAndUpdateFilter(storeFilter, lastUpdated);
                 },
                 fireImmediately: true
             });

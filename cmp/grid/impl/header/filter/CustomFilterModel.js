@@ -91,16 +91,14 @@ export class CustomFilterModel extends HoistModel {
             if (isEmpty(pendingStoreFilter)) pendingStoreFilter = null;
         }
 
-        // 1) Set new filter with current committed filter removed
+        // Case 1: Set new filter with current committed filter removed
         if (!customFilter) {
             this.committedFilter = null;
             store.setFilter(pendingStoreFilter);
-            // Re-commit existing enum filter
-            enumFilterModel.commit();
             return;
         }
 
-        // 2) Apply new custom filter
+        // Case 2: Apply new custom filter
         if (storeFilter?.isCompoundFilter) {
             const equalsFilter = parentModel.getEqualsColFilter(storeFilter.filters);
             if (equalsFilter && op === '=') {
@@ -117,7 +115,7 @@ export class CustomFilterModel extends HoistModel {
         } else {
             pendingStoreFilter = customFilter;
         }
-        // If custom filter is '=', mark value as checked in committed set filter
+        // If custom filter is '=', ensure value is checked in enum filter
         if (customFilter?.op === '=' && enumFilterModel.committedFilter.hasOwnProperty(customFilter.value)) {
             const pendingEnumFilter = clone(enumFilterModel.committedFilter);
             pendingEnumFilter[customFilter.value] = true;
