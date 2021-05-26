@@ -8,6 +8,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
+import './FilterPopover.scss';
 
 export const filterPopover = hoistCmp.factory({
     render({model}) {
@@ -38,8 +39,8 @@ export const filterPopover = hoistCmp.factory({
 const content = hoistCmp.factory({
     render({model}) {
         const {xhColumn} = model;
-
         return panel({
+            className: 'filter-popover',
             onClick: (e) => e.stopPropagation(),
             compactHeader: true,
             title: `Filter ${xhColumn.displayName} by:`,
@@ -53,16 +54,16 @@ const content = hoistCmp.factory({
 
 const tbar = hoistCmp.factory({
     render({model}) {
-        const {enumFilterGridModel, colId, tabId} = model;
+        const {enumFilterModel, colId, enumTabActive} = model;
         return toolbar({
-            omit: tabId !== 'enumFilter',
+            omit: !enumTabActive,
             compact: true,
             item: storeFilterField({
                 model: model,
                 bind: 'filterText',
                 icon: null,
                 flex: 1,
-                store: enumFilterGridModel.store,
+                store: enumFilterModel.gridModel.store,
                 includeFields: [colId]
             })
         });
@@ -99,32 +100,20 @@ const bbar = hoistCmp.factory({
 const switcher = hoistCmp.factory({
     render({model}) {
         return buttonGroupInput({
+            className: 'filter-popover__tab-switcher',
             omit: model.type === 'bool',
-            minHeight: 20,
-            maxHeight: 20,
-            marginRight: 2,
             intent: 'primary',
             bind: 'tabId',
             items: [
                 button({
-                    style: {
-                        fontSize: 10,
-                        minHeight: 20,
-                        maxHeight: 20
-                    },
+                    className: 'filter-popover__tab-switcher--button',
                     value: 'enumFilter',
-                    text: 'Set',
-                    width: 40
+                    text: 'Values'
                 }),
                 button({
-                    style: {
-                        fontSize: 10,
-                        minHeight: 20,
-                        maxHeight: 20
-                    },
+                    className: 'filter-popover__tab-switcher--button',
                     value: 'customFilter',
-                    text: 'Custom',
-                    width: 40
+                    text: 'Custom'
                 })
             ]
         });
