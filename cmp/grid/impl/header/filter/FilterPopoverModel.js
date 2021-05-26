@@ -6,7 +6,7 @@ import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
 import {action, bindable, makeObservable} from '@xh/hoist/mobx';
-import {filter, isEmpty, without} from 'lodash';
+import {filter, isEmpty, isEqual, without} from 'lodash';
 
 export class FilterPopoverModel extends HoistModel {
     gridModel;
@@ -41,6 +41,15 @@ export class FilterPopoverModel extends HoistModel {
         const {storeFilter} = this;
         if (!storeFilter) return false;
         return !isEmpty(this.getColFilters(storeFilter.filters ?? [storeFilter]));
+    }
+
+    get hasEnumFilter() {
+        const {initialFilter, committedFilter} = this.enumFilterModel;
+        return !isEqual(initialFilter, committedFilter);
+    }
+
+    get hasCustomFilter() {
+        return !!this.customFilterModel.committedFilter;
     }
 
     get enumTabActive() {

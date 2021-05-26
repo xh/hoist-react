@@ -11,4 +11,29 @@
       max-height: 20px !important;
     }
   }
+
+  .custom-filter {
+    height: 250px;
+    width: 240px;
+
+    &__operator-label {
+      margin-top: var(--xh-pad-px);
+      margin-left: var(--xh-pad-px);
+      align-items: flex-end;
+
+      > * {
+        margin-right: var(--xh-pad-half-px);
+      }
+    }
+
+    &__input {
+      margin-top: var(--xh-pad-px);
+      justify-content: center;
+    }
+  }
+}
+
+.op-label {
+  font-weight: 500;
+  margin-right: 1px;
 }

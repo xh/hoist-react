@@ -72,6 +72,7 @@ const tbar = hoistCmp.factory({
 
 const bbar = hoistCmp.factory({
     render({model}) {
+        const {enumTabActive, hasEnumFilter, hasCustomFilter} = model;
         return toolbar({
             compact: true,
             items: [
@@ -79,6 +80,7 @@ const bbar = hoistCmp.factory({
                     icon: Icon.undo(),
                     text: 'Reset',
                     intent: 'danger',
+                    disabled: enumTabActive ? !hasEnumFilter : !hasCustomFilter,
                     onClick: () => model.reset()
                 }),
                 filler(),

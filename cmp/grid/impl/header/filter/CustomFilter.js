@@ -1,59 +1,100 @@
-import {vbox, vspacer} from '@xh/hoist/cmp/layout';
+import {library} from '@fortawesome/fontawesome-svg-core';
+import {
+    faEquals,
+    faGreaterThan,
+    faGreaterThanEqual,
+    faLessThan,
+    faLessThanEqual,
+    faNotEqual
+} from '@fortawesome/pro-regular-svg-icons';
+import {hbox, hspacer, label, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {dateInput, numberInput, select, textInput} from '@xh/hoist/desktop/cmp/input';
+import {Icon} from '@xh/hoist/icon';
+
+library.add(faGreaterThanEqual, faGreaterThan, faLessThanEqual, faLessThan, faEquals, faNotEqual);
 
 export const customFilter = hoistCmp.factory({
     render({model}) {
-        const {type} = model;
+        const {type} = model,
+            props = {bind: 'inputVal', enableClear: true, width: 150};
         let cmp;
         switch (type) {
             case 'number':
             case 'int':
-                cmp = numberInput({
-                    bind: 'inputVal',
-                    enableShorthandUnits: true,
-                    enableClear: true
-                });
+                cmp = numberInput({...props, enableShorthandUnits: true});
                 break;
             case 'localDate':
             case 'date':
-                cmp = dateInput({
-                    bind: 'inputVal',
-                    valueType: type,
-                    enableClear: true
-                });
+                cmp = dateInput({...props, valueType: type});
                 break;
             default:
-                cmp = textInput({bind: 'inputVal', enableClear: true});
+                cmp = textInput(props);
         }
 
         return vbox({
-            alignItems: 'center',
-            justifyContent: 'center',
+            className: 'custom-filter',
             items: [
-                select({
-                    bind: 'op',
-                    options:
-                        ['number', 'int', 'localDate', 'date'].includes(type) ?
-                            [
-                                {label: 'Equals', value: '='},
-                                {label: 'Not Equals', value: '!='},
-                                {label: 'Greater Than', value: '>'},
-                                {label: 'Greater Than Or Equal to', value: '>='},
-                                {label: 'Less Than', value: '<'},
-                                {label: 'Less Than or Equal to', value: '<='}
-                            ] :
-                            [
-                                {label: 'Equals', value: '='},
-                                {label: 'Not Equals', value: '!='},
-                                {label: 'Contains', value: 'like'}
-                            ]
+                hbox({
+                    className: 'custom-filter__operator-label',
+                    items: [
+                        label('Where'),
+                        select({
+                            width: 50,
+                            enableFilter: false,
+                            hideDropdownIndicator: true,
+                            hideSelectedOptionCheck: true,
+                            options: ['any', 'every']
+                        }),
+                        label(':')
+                    ]
                 }),
-                vspacer(),
-                cmp
-            ],
-            height: 250,
-            width: 240
+                hbox({
+                    className: 'custom-filter__input',
+                    items: [
+                        select({
+                            width: 45,
+                            bind: 'op',
+                            enableFilter: false,
+                            hideDropdownIndicator: true,
+                            optionRenderer: (opt) => hbox(getOpIcon(opt.value)),
+                            options: ['number', 'int', 'localDate', 'date'].includes(type) ?
+                                ['=', '!=', '>', '>=', '<', '<=']
+                                    .map(value => ({label: getOpIcon(value), value})) :
+                                ['=', '!=', 'like']
+                                    .map(value => ({label: getOpIcon(value), value}))
+                        }),
+                        hspacer(5),
+                        cmp,
+                        button({
+                            icon: Icon.add(),
+                            title: 'Add condition'
+                        })
+                    ]
+                })
+            ]
         });
     }
 });
+
+function getOpIcon(op) {
+    switch (op) {
+        case '=':
+            return Icon.icon({iconName: 'equals'});
+        case '!=':
+            return Icon.icon({iconName: 'not-equal'});
+        case '>':
+            return Icon.icon({iconName: 'greater-than'});
+        case '>=':
+            return Icon.icon({iconName: 'greater-than-equal'});
+        case '<':
+            return Icon.icon({iconName: 'less-than'});
+        case '<=':
+            return Icon.icon({iconName: 'less-than-equal'});
+        case 'like':
+            return span({className: 'op-label', item: 'like'});
+        case 'notLike':
+            return span({className: 'op-label', item: 'not like'});
+    }
+}

@@ -51,6 +51,8 @@ export class CustomFilterModel extends HoistModel {
         const {customFilter, colId, op, committedFilter, store, storeFilter, parentModel} = this,
             {enumFilterModel} = parentModel;
 
+        if (customFilter?.equals(committedFilter)) return;
+
         let pendingStoreFilter = null;
 
         // If existing store filter, remove committed custom filter if any,

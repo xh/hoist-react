@@ -11,7 +11,6 @@ import {
     keys,
     mapValues, omit,
     pickBy,
-    uniq,
     uniqBy,
     without
 } from 'lodash';
@@ -96,6 +95,8 @@ export class EnumFilterModel extends HoistModel {
         this.setPendingFilter(ret);
     }
 
+    // Clears committed filter and sets value to initial filter
+    // TODO - review desired behavior
     @action
     reset() {
         this.committedFilter = {};
@@ -108,7 +109,7 @@ export class EnumFilterModel extends HoistModel {
         const {pendingFilter, colId, type, committedCustomFilter, parentModel} = this,
             ret = clone(this.committedFilter);
 
-        let pendingStoreFilter = null;
+        let pendingStoreFilter;
 
         // Sync committed set filter with new pending values
         for (const val in pendingFilter) {
@@ -117,11 +118,6 @@ export class EnumFilterModel extends HoistModel {
         this.committedFilter = ret;
 
         let value = keys(pickBy(ret, v => v));
-        // Include any equal input values from custom filter
-        if (committedCustomFilter?.op === '=') {
-            value.push(committedCustomFilter.value);
-            value = uniq(value);
-        }
         // Parse boolean strings to their primitive values
         if (type === 'bool') {
             value = value.map(it => {
@@ -147,10 +143,13 @@ export class EnumFilterModel extends HoistModel {
             pendingStoreFilter = newFilters.length > 1 ?
                 new CompoundFilter({filters: newFilters, op: 'AND'}) :
                 newFilters[0];
-        } else if (storeFilter?.isFieldFilter && storeFilter.field !== colId && fieldFilter) {
+        } else if (
+            storeFilter?.isFieldFilter &&
+            storeFilter.field !== colId && fieldFilter
+        ) {
             pendingStoreFilter = new CompoundFilter({filters: [storeFilter, fieldFilter], op: 'AND'});
-        } else if (committedCustomFilter?.op !== '=' && fieldFilter) {
-            pendingStoreFilter = new CompoundFilter({filters: [fieldFilter, committedCustomFilter], op: 'AND'});
+        } else if (committedCustomFilter?.op == '=') {
+            pendingStoreFilter = this.storeFilter;
         } else {
             pendingStoreFilter = fieldFilter;
         }
