@@ -71,7 +71,7 @@ export function fmtTime(v, opts) {
 /**
  * Render dates formatted based on distance in time from current day
  *
- * @param {*} v - a date value to format, can be any value MomentJs can parse, or a LocalDate
+ * @param {*} v - a date value to format, can be any value MomentJs can parse, or a LocalDate.
  *      @see {@link https://momentjs.com/docs/#/parsing/|MomentJS Docs}
  * @param {Object} [opts]
  * @param {string} [opts.sameDayFmt] - format for dates matching current day, defaults to 'hh:mma' for
