@@ -35,8 +35,9 @@ const UP_TICK = '▴',
  *      align vertically with negative ledgers in columns.
  * @param {boolean} [opts.withPlusSign] - true to prepend positive numbers with a '+'.
  * @param {boolean} [opts.withSignGlyph] - true to prepend an up / down arrow.
- * @param {boolean} [opts.withCommas] - whether to include comma delimiters, defaults to true.
- * @param {boolean} [opts.omitFourDigitComma] - true to omit delimiter if value is less than 10,000
+ * @param {boolean} [opts.withCommas] - true to include comma delimiters.
+ * @param {boolean} [opts.omitFourDigitComma] - set this to true to omit comma if value has exactly
+ *      4 digits (i.e. 1500 instead of 1,500).
  * @param {string?} [opts.prefix] - prefix to prepend to value (between the number and its sign).
  * @param {string?} [opts.label] - label to append to value.
  * @param {string} [opts.labelCls] - CSS class of label <span>,
@@ -62,7 +63,7 @@ export function fmtNumber(v, {
     forceLedgerAlign = true,
     withPlusSign = false,
     withSignGlyph = false,
-    withCommas= true,
+    withCommas = true,
     omitFourDigitComma = false,
     prefix = null,
     label = null,
@@ -339,7 +340,8 @@ function buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma
         }
     }
 
-    config.thousandSeparated = withCommas && (!omitFourDigitComma || num > 9999) ;
+    config.thousandSeparated = withCommas &&
+        !(omitFourDigitComma && num < 10000 && (mantissa == 0 || (!zeroPad && Number.isInteger(num))));
     config.mantissa = mantissa;
     config.trimMantissa = !zeroPad && mantissa != 0;
     return config;
