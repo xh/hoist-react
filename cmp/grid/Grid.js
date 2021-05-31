@@ -295,7 +295,7 @@ class LocalModel extends HoistModel {
     }
 
     getContextMenuItems = (params) => {
-        const {model} = this,
+        const {model, agOptions} = this,
             {store, selModel, contextMenu} = model;
         if (!contextMenu || XH.isMobileApp) return null;
 
@@ -314,7 +314,7 @@ class LocalModel extends HoistModel {
             {selection} = model;
 
         // Adjust selection to target record -- and sync to grid immediately.
-        if (record && !(selection.includes(record))) {
+        if (record && !(selection.includes(record)) && !agOptions.suppressRowClickSelection) {
             selModel.select(record);
         }
 

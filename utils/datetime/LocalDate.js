@@ -6,7 +6,7 @@
  */
 import {XH} from '@xh/hoist/core';
 import {throwIf, computeOnce} from '@xh/hoist/utils/js';
-import {isString} from 'lodash';
+import {isString, isNil} from 'lodash';
 import moment from 'moment';
 
 /**
@@ -45,6 +45,7 @@ export class LocalDate {
      * @returns {LocalDate}
      */
     static get(s) {
+        if (isNil(s)) return s;
         throwIf(!isString(s) || !LocalDate.fmtRegEx.test(s), 'LocalDate.get() requires a string of the form "YYYYMMDD"');
 
         let {_instances} = this,
@@ -68,7 +69,7 @@ export class LocalDate {
      * @returns {LocalDate}
      */
     static from(val) {
-        throwIf(!val, 'Cannot create LocalDate from null or undefined.');
+        if (isNil(val)) return val;
         if (val.isLocalDate) return val;
         const m = moment.isMoment(val) ? val : moment(val);
         return this.get(m.format('YYYYMMDD'));

@@ -18,6 +18,8 @@
   before first load should set this property to `false`.
 * All Hoist Components now support a `modelRef` prop. Supply a ref to this prop in order to gain a
   pointer to a Component's backing `HoistModel`.
+* `fmtNumber()` supports new flags `withCommas` and `omitFourDigitComma` to customize the treatment of
+commas in number displays.
 
 
 ### 💥 Breaking Changes
@@ -70,6 +72,7 @@ your dev-utils dependency for your project to build.
 * New `Spinner` component returns a simple img-based spinner as an animated PNG, available in two
   sizes. Used for the platform-specific `Mask` and `LoadingIndicator` components. Replaces previous
   SVG-based implementations to mitigate rendering performance issues over remote connections.
+
 
 ### 💥 Breaking Changes
 
