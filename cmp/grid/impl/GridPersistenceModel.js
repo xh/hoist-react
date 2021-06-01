@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH, managed, PersistenceProvider, LocalStorageProvider} from '@xh/hoist/core';
-import {observable, action} from '@xh/hoist/mobx';
+import {HoistModel, XH, managed, PersistenceProvider} from '@xh/hoist/core';
+import {observable, action, makeObservable} from '@xh/hoist/mobx';
 import {find, isUndefined, omit} from 'lodash';
 
 
@@ -13,8 +13,7 @@ import {find, isUndefined, omit} from 'lodash';
  * Model to manage persisting state from GridModel.
  * @private
  */
-@HoistModel
-export class GridPersistenceModel {
+export class GridPersistenceModel extends HoistModel {
 
     VERSION = 1;  // Increment to abandon state.
     gridModel;
@@ -39,6 +38,8 @@ export class GridPersistenceModel {
             ...persistWith
         }
     ) {
+        super();
+        makeObservable(this);
         this.gridModel = gridModel;
 
         persistWith = {path: 'grid', ...persistWith};
@@ -175,13 +176,17 @@ export class GridPersistenceModel {
 
     legacyState() {
         const {provider, VERSION} = this;
-        if (VERSION === 1 && provider instanceof LocalStorageProvider) {
-            const legacyKey = 'gridState.v1.' + provider.key,
-                data = XH.localStorageService.get(legacyKey);
-            if (data) {
-                provider.write({...data, version: VERSION});
-                XH.localStorageService.remove(legacyKey);
-                return data;
+        if (VERSION === 1) {
+            let legacyKey = provider.legacyStateKey ?? provider.key;
+            if (legacyKey) {
+                legacyKey = 'gridState.v1.' + legacyKey;
+                let data = XH.localStorageService.get(legacyKey);
+                if (data) {
+                    data = {...data, version: VERSION};
+                    provider.write(data);
+                    XH.localStorageService.remove(legacyKey);
+                    return data;
+                }
             }
         }
         return null;

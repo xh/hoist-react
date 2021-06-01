@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {filter, pickBy} from 'lodash';
+import {filter, keyBy, mapValues} from 'lodash';
 import {RestField} from './RestField';
 
 /**
@@ -53,6 +53,20 @@ export class RestStore extends UrlStore {
         );
     }
 
+    async bulkDeleteRecordsAsync(records) {
+        const {url} = this,
+            ids = records.map(it => it.id),
+            resp = await XH.fetchJson({
+                url: `${url}/bulkDelete`,
+                params: {ids}
+            }).linkTo(
+                this.loadModel
+            );
+
+        await this.loadAsync();
+        return resp;
+    }
+
     async addRecordAsync(rec) {
         return this.saveRecordInternalAsync(rec, true)
             .linkTo(this.loadModel);
@@ -63,6 +77,25 @@ export class RestStore extends UrlStore {
             .linkTo(this.loadModel);
     }
 
+    async bulkUpdateRecordsAsync(ids, newParams) {
+        const {url} = this,
+            resp = await XH.fetchService.putJson({
+                url: `${url}/bulkUpdate`,
+                body: {ids, newParams}
+            }).linkTo(
+                this.loadModel
+            );
+
+        await this.loadAsync();
+        return resp;
+    }
+
+    editableDataForRecord(record) {
+        const {data} = record,
+            editable = keyBy(filter(this.fields, 'editable'), 'name');
+        return mapValues(editable, (v, k) => data[k]);
+    }
+
     //--------------------------------
     // Implementation
     //--------------------------------
@@ -71,11 +104,7 @@ export class RestStore extends UrlStore {
         if (!isAdd) url += '/' + rec.id;
 
         // Only include editable fields in the request data
-        const editableFields = filter(this.fields, 'editable').map(it => it.name),
-            data = {
-                id: rec.id,
-                ...pickBy(rec.data, (v, k) => editableFields.includes(k))
-            };
+        const data = {id: rec.id, ...this.editableDataForRecord(rec)};
 
         const fetchMethod = isAdd ? 'postJson' : 'putJson',
             response = await XH.fetchService[fetchMethod]({url, body: {data}}),

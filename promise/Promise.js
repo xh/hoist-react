@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
@@ -66,9 +66,10 @@ const enhancePromise = (promisePrototype) => {
     Object.assign(promisePrototype, {
 
         /**
-         * Version of then() that wraps the callback in a MobX action.
-         * This should be used in a promise chain that modifies MobX observables.
+         * Version of `then()` that wraps the callback in a MobX action, for use in a Promise chain
+         * that modifies MobX observables.
          *
+         * @memberOf Promise.prototype
          * @param {function} [fn] - function appropriate as an argument to `then()`.
          */
         thenAction(fn) {
@@ -76,9 +77,9 @@ const enhancePromise = (promisePrototype) => {
         },
 
         /**
-         * Version of catch() that will only catch certain exceptions.
-         * @see Promise.catch()
+         * Version of `catch()` that will only catch certain exceptions.
          *
+         * @memberOf Promise.prototype
          * @param {(function|string|string[])} selector - closure that takes an exception and
          *      returns a boolean. May also be specified as an exception name or list of names.
          *      Only exceptions passing this selector will be handled by this method.
@@ -92,20 +93,22 @@ const enhancePromise = (promisePrototype) => {
         },
 
         /**
-         * Version of catch() that will invoke default application exception handling.
-         * Typically called in last line in promise chain.
+         * Version of `catch()` that passes the error onto Hoist's default exception handler for
+         * convention-driven logging and alerting. Typically called last in a Promise chain.
          *
-         * @param {Object} [options] - options suitable for passing to XH.handleException().
+         * @memberOf Promise.prototype
+         * @param {Object} [options] - valid options for {@see XH.handleException()}.
          */
         catchDefault(options) {
             return this.catch(e => XH.handleException(e, options));
         },
 
         /**
-         * Version of catchDefault() that will only catch certain exceptions.
+         * Version of `catchDefault()` that will only catch certain exceptions.
          *
+         * @memberOf Promise.prototype
          * @param {(function|string|string[])} selector - see catchWhen().
-         * @param {Object} [options] - options suitable for passing to XH.handleException().
+         * @param {Object} [options] - valid options for {@see XH.handleException()}.
          */
         catchDefaultWhen(selector, options) {
             return this.catch(e => {
@@ -115,13 +118,12 @@ const enhancePromise = (promisePrototype) => {
         },
 
         /**
-         * Track a Promise.
-         * @see TrackService.track()
+         * Track a Promise (with timing) via Hoist activity tracking.
          *
-         * @param {Object} [trackCfg] - valid options object for TrackService.track().
-         * @param {boolean} [trackCfg.omit] - optional to indicate when no tracking will be performed
-         *      (useful when trackCfg conditionally generated - i.e. to suppress tracking for
-         *      auto-refresh calls triggered by a Timer).
+         * @memberOf Promise.prototype
+         * @param {Object} [trackCfg] - valid options for {@see TrackService.track()}.
+         * @param {boolean} [trackCfg.omit] - set to true to disable tracking, useful when trackCfg
+         *      conditionally generated (e.g. to suppress tracking for auto-refreshes).
          */
         track(trackCfg) {
             if (!trackCfg || trackCfg.omit) return this;
@@ -139,10 +141,11 @@ const enhancePromise = (promisePrototype) => {
         },
 
         /**
-         * Wait on a potentially async function, before passing the originally received value through.
+         * Wait on a potentially async function before passing on the original value.
          * Useful when we want to block and do something on the promise chain, but do not want to
          * manipulate the values being passed through.
          *
+         * @memberOf Promise.prototype
          * @param {function} onFulfillment - function to receive the pass-through value when ready.
          */
         tap(onFulfillment) {
@@ -167,9 +170,10 @@ const enhancePromise = (promisePrototype) => {
         },
 
         /**
-         * Return a promise that will reject if this promise has not been settled after the specified
-         * interval has passed.
+         * Return a promise that will reject if this promise has not been settled after the
+         * specified interval has passed.
          *
+         * @memberOf Promise.prototype
          * @param {(Object|number)} [config] - object as per below, or interval in ms (if number).
          *      If null, no timeout enforced.
          * @param {number} [config.interval] - interval value in ms.
@@ -195,10 +199,11 @@ const enhancePromise = (promisePrototype) => {
 
 
         /**
-         * Link this promise to an instance of a PendingTaskModel. See that class for details on what
-         * PendingTaskModels provide and how they can be used to coordinate masking and progress
-         * messages on one or more async operations.
+         * Link this promise to an instance of a {@see PendingTaskModel}. See that class for details
+         * on what PendingTaskModels provide and how they can be used to coordinate masking and
+         * progress messages on one or more async operations.
          *
+         * @memberOf Promise.prototype
          * @param {Object|PendingTaskModel} cfg -- Configuration object, or PendingTaskModel
          * @param {PendingTaskModel} cfg.model - PendingTaskModel to link to.
          * @param {string} [cfg.message] - Optional custom message for use by PendingTaskModel.

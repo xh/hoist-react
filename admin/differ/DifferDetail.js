@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {filler, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
@@ -23,6 +23,7 @@ export const differDetail = hoistCmp.factory({
         return dialog({
             title: 'Detail',
             isOpen: model.record,
+            className: 'xh-admin-diff-detail',
             onClose: () => model.close(),
             item: panel({
                 item: diffTable(),
@@ -36,6 +37,7 @@ export const differDetail = hoistCmp.factory({
                         text: 'Accept Remote',
                         icon: Icon.cloudDownload(),
                         intent: 'primary',
+                        minimal: false,
                         onClick: () => model.confirmApplyRemote()
                     })
                 ]
@@ -58,16 +60,15 @@ const diffTable = hoistCmp.factory(
             return tr(td(field), td(localCell), td(remoteCell));
         });
 
-        return table({
-            className: 'diff-table',
-            item: tbody(
+        return table(
+            tbody(
                 tr(
-                    th('Property'),
+                    th(''),
                     th('Local'),
                     th('Remote')
                 ),
                 ...rows
             )
-        });
+        );
     }
 );

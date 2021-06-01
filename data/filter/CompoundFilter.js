@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
 import {throwIf} from '@xh/hoist/utils/js';
@@ -42,8 +42,10 @@ export class CompoundFilter extends Filter {
 
     /** Outputs JSON appropriate for recreation via `parseFilter` */
     toJSON() {
-        const {filters, op} = this;
-        return {filters, op};
+        return {
+            filters: this.filters.map(f => f.toJSON()),
+            op: this.op
+        };
     }
 
     //-----------------

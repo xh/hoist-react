@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {boolCheckCol, dateTimeCol, numberCol} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
@@ -15,10 +15,11 @@ export const monitorEditorPanel = hoistCmp.factory(
 
 const modelSpec = {
     persistWith: {localStorageKey: 'xhAdminMonitorState'},
-    enableColChooser: true,
+    colChooserModel: true,
     enableExport: true,
     store: {
         url: 'rest/monitorAdmin',
+        fieldDefaults: {disableXssProtection: true},
         fields: [
             {
                 name: 'code',

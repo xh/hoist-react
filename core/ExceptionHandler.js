@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {Exception, stringifyErrorSafely} from '@xh/hoist/exception';
 import {stripTags} from '@xh/hoist/utils/js';
@@ -58,29 +58,39 @@ export class ExceptionHandler {
     handleException(exception, options) {
         if (this._isUnloading) return;
 
-        if (!(exception instanceof Error)) {
-            exception = Exception.create(exception);
-        }
-
-        options = this.parseOptions(exception, options);
-
-        if (options.hideParams) {
-            this.hideParams(exception, options);
-        }
-
-        this.cleanStack(exception);
+        ({exception, options} = this.parseArgs(exception, options));
 
         this.logException(exception, options);
-
         if (options.showAlert) {
             XH.appContainerModel.exceptionDialogModel.show(exception, options);
         }
-
         if (options.logOnServer) {
             this.logOnServerAsync({exception, userAlerted: options.showAlert});
         }
     }
 
+    /**
+     * Show an exception in an error dialog, without logging the error to the server or console.
+     * Intended to be used for the deferred / user-initiated showing of exceptions that have
+     * already been appropriately logged. Applications should typically prefer `handleException`.
+     *
+     * @param {(Error|Object|string)} exception - Error or thrown object - if not an Error, an
+     *      Exception will be created via `Exception.create()`.
+     * @param {Object} [options] - controls on how the exception should be shown and/or logged.
+     * @param {string} [options.message] - text (ideally user-friendly) describing the error.
+     * @param {string} [options.title] - title for an alert dialog, if shown.
+     * @param {boolean} [options.showAsError] - configure modal alert to indicate that this is an
+     *      unexpected error. Default true for most exceptions, false for those marked as `isRoutine`.
+     * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
+     *      dismiss - default false, excepting session-related exceptions.
+     * @param {string[]} [options.hideParams] - A list of parameters that should be hidden from
+     *      the exception alert.
+     */
+    showException(exception, options) {
+        if (this._isUnloading) return;
+        ({exception, options} = this.parseArgs(exception, options));
+        XH.appContainerModel.exceptionDialogModel.show(exception, options);
+    }
 
     /**
      * Create a server-side exception entry. Client metadata will be set automatically.
@@ -91,17 +101,16 @@ export class ExceptionHandler {
      * (Note the App version is POSTed to ensure we capture the version of the client the user is
      * actually running when the exception was generated.)
      *
-     * @param {Object} [options] - an options object
-     * @param {string} [options.exception] - an instance of the Javascript Error object.
-     *      Not strictly required, but hard to see when it would be omitted.
-     * @param {boolean} [options.userAlerted] - true if the user was shown a modal alert.
+     * @param {Object} options - an options object
+     * @param {Error} options.exception - an instance of the Javascript Error object.
+     * @param {boolean} options.userAlerted - true if the user was shown a modal alert.
      * @param {string} [options.userMessage] - a user-provided message, if any, detailing what they
      *      did to trigger the error, or any other details the user chooses to provide.
      * @returns {boolean} - true if message was successfully sent to server.
      */
     async logOnServerAsync({exception, userAlerted, userMessage}) {
         try {
-            const error = exception ? stringifyErrorSafely(exception) : null,
+            const error = stringifyErrorSafely(exception),
                 username = XH.getUsername();
 
             if (!username) {
@@ -129,6 +138,23 @@ export class ExceptionHandler {
     //--------------------------------
     // Implementation
     //--------------------------------
+    parseArgs(exception, options) {
+        if (!(exception instanceof Error)) {
+            exception = Exception.create(exception);
+        }
+
+        options = this.parseOptions(exception, options);
+
+        if (options.hideParams) {
+            this.hideParams(exception, options);
+        }
+
+        this.cleanStack(exception);
+
+        return {exception, options};
+    }
+
+
     hideParams(exception, options) {
         const {fetchOptions} = exception,
             {hideParams} = options;
@@ -172,6 +198,7 @@ export class ExceptionHandler {
         if (this.sessionExpired(e)) {
             ret.title = 'Authentication Error';
             ret.message = 'Your session has expired. Please login.';
+            ret.showAsError = false;
             ret.requireReload = true;
         }
 

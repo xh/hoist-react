@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {castArray, merge} from 'lodash';
+import {merge} from 'lodash';
 import {div} from './Tags';
 
 /**
@@ -35,7 +35,7 @@ export const [Box, box] = hoistCmp.withFactory({
         return div({
             ref,
             ...restProps,
-            items: castArray(children)
+            items: children
         });
     }
 });

@@ -2,24 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-$action-col-pad: 5;
-$action-col-pad-px: $action-col-pad * 1px;
-
-// This CSS-modules export makes this value accessible from JS -note the import in Actions.js.
-//noinspection CssInvalidPseudoSelector
-:export {
-  /* stylelint-disable-next-line property-case */
-  actionColPad: $action-col-pad;
-}
-
 .xh-action-col-cell {
-  &.ag-cell {
-    padding: 0 $action-col-pad-px;
-  }
-
   .xh-show-on-hover {
     .xh-record-action-button {
       visibility: hidden;
@@ -30,6 +16,11 @@ $action-col-pad-px: $action-col-pad * 1px;
   button.xh-record-action-button {
     max-width: 24px;
   }
+
+  // Ensure buttons center-align within their button group if column set to (default) align:center.
+  &.xh-align-center .xh-button-group {
+    justify-content: center;
+  }
 }
 
 // Tighten up buttons in for the various grid sizing modes to avoid clipping/overflow.
@@ -39,7 +30,6 @@ $action-col-pad-px: $action-col-pad * 1px;
       button.xh-record-action-button {
         min-height: 28px;
         max-height: 28px;
-        padding-top: 4px;
 
         svg.svg-inline--fa {
           width: 1.2em;
@@ -53,7 +43,6 @@ $action-col-pad-px: $action-col-pad * 1px;
       button.xh-record-action-button {
         min-height: 20px;
         max-height: 20px;
-        padding-top: 4px;
 
         svg.svg-inline--fa {
           width: 0.9em;
@@ -65,7 +54,6 @@ $action-col-pad-px: $action-col-pad * 1px;
   &--tiny {
     .xh-action-col-cell {
       button.xh-record-action-button {
-        padding-top: 1px;
         max-height: 14px;
         min-height: 14px;
 

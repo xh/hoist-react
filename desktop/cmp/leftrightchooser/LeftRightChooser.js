@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {grid} from '@xh/hoist/cmp/grid';
 import {hframe, vbox} from '@xh/hoist/cmp/layout';
@@ -25,7 +25,7 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory({
     model: uses(LeftRightChooserModel),
     className: 'xh-lr-chooser',
 
-    render({model, ...props}) {
+    render({model, ...props}, ref) {
         const {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
             gridOptions = {
                 onRowDoubleClicked: (e) => {
@@ -44,6 +44,7 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory({
         if (!rightGroupingExpanded) rightGridOptions.agOptions.groupDefaultExpanded = 0;
 
         return vbox({
+            ref,
             items: [
                 hframe({
                     className: 'xh-lr-chooser__grid-frame',

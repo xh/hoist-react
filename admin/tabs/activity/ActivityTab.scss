@@ -11,6 +11,12 @@
   .xh-units-label {
     font-size: var(--xh-font-size-small-px);
   }
+
+  &__metric-switcher {
+    .xh-button {
+      text-align: center;
+    }
+  }
 }
 
 .xh-admin-activity-detail {

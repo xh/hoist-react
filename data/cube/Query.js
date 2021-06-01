@@ -2,18 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {XH, ManagedSupport} from '@xh/hoist/core';
-import {parseFilter} from '../filter/Utils';
-import {castArray, find} from 'lodash';
+import {XH} from '@xh/hoist/core';
+import {parseFilter} from '@xh/hoist/data';
 import {apiRemoved} from '@xh/hoist/utils/js';
+import {castArray, find} from 'lodash';
 
 /**
  *  Specification used to define the shape of the data returned by a Cube.
  */
-@ManagedSupport
 export class Query {
 
     /** @member {CubeField[]} */

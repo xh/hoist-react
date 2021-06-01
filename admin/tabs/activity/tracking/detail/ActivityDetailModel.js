@@ -4,11 +4,9 @@ import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
 import {managed, HoistModel, XH} from '@xh/hoist/core';
 import {numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {action, observable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 
-@HoistModel
-export class ActivityDetailModel {
+export class ActivityDetailModel extends HoistModel {
 
     /** @member {ActivityTrackingModel} */
     parentModel;
@@ -20,11 +18,13 @@ export class ActivityDetailModel {
     @observable formattedData;
 
     constructor({parentModel}) {
+        super();
+        makeObservable(this);
         this.parentModel = parentModel;
 
         this.gridModel = new GridModel({
             sortBy: 'dateCreated|desc',
-            enableColChooser: true,
+            colChooserModel: true,
             enableExport: true,
             exportOptions: {
                 columns: 'ALL',
@@ -95,11 +95,7 @@ export class ActivityDetailModel {
             leaves = this.getAllLeafRows(aggRec);
 
         gridModel.loadData(leaves);
-
-        await wait(1);
-        if (!gridModel.hasSelection) {
-            gridModel.selectFirst();
-        }
+        await gridModel.preSelectFirstAsync();
     }
 
     // Extract all leaf, track-entry-level rows from an aggregate record (at any level).

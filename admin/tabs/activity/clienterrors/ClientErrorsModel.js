@@ -2,28 +2,27 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
-import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {dateTimeCol, localDateCol, GridModel} from '@xh/hoist/cmp/grid';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, comparer, observable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import moment from 'moment';
 
-@HoistModel
-@LoadSupport
-export class ClientErrorsModel {
+export class ClientErrorsModel extends HoistModel {
 
     persistWith = {localStorageKey: 'xhAdminClientErrorsState'};
 
-    @bindable.ref startDate;
-    @bindable.ref endDate;
+    /** @member {LocalDate} */
+    @bindable.ref startDay;
+    /** @member {LocalDate} */
+    @bindable.ref endDay;
 
     /** @member {GridModel} */
     @managed gridModel;
@@ -38,12 +37,14 @@ export class ClientErrorsModel {
     @observable formattedErrorJson;
 
     constructor() {
-        this.startDate = this.getDefaultStartDate();
-        this.endDate = this.getDefaultEndDate();
+        super();
+        makeObservable(this);
+        this.startDay = this.getDefaultStartDay();
+        this.endDay = this.getDefaultEndDay();
 
         this.gridModel = new GridModel({
             persistWith: this.persistWith,
-            enableColChooser: true,
+            colChooserModel: true,
             enableExport: true,
             store: {
                 fields: [
@@ -56,6 +57,7 @@ export class ClientErrorsModel {
                     {name: 'msg', displayName: 'User Message', type: 'string'},
                     {name: 'error', displayName: 'Error Details', type: 'string'},
                     {name: 'dateCreated', displayName: 'Timestamp', type: 'date'},
+                    {name: 'day', displayName: 'App Day', type: 'localDate'},
                     {name: 'userAlerted', type: 'bool'}
                 ]
             },
@@ -87,9 +89,7 @@ export class ClientErrorsModel {
                     align: 'center',
                     width: 50,
                     exportName: 'User Alerted?',
-                    renderer: v => {
-                        return v ? Icon.window({asHtml: true}) : '';
-                    }
+                    renderer: v => v ? Icon.window({asHtml: true}) : ''
                 },
                 {field: 'id', headerName: 'Entry ID', width: 100, align: 'right', hidden: true},
                 {field: 'username', ...usernameCol},
@@ -97,16 +97,16 @@ export class ClientErrorsModel {
                 {field: 'device', width: 100},
                 {field: 'userAgent', width: 130, hidden: true},
                 {field: 'appVersion', width: 130},
-                {field: 'appEnvironment', headerName: 'Environment', width: 130},
-                {field: 'msg', headerName: 'User Message', width: 130, hidden: true},
+                {field: 'appEnvironment',  width: 130},
+                {field: 'msg', width: 130, hidden: true},
                 {
                     field: 'error',
-                    headerName: 'Error Details',
                     flex: true,
                     minWidth: 150,
                     renderer: (e) => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
                 },
-                {field: 'dateCreated', headerName: 'Timestamp', ...dateTimeCol}
+                {field: 'dateCreated', ...dateTimeCol},
+                {field: 'day',  ...localDateCol}
             ]
         });
 
@@ -161,7 +161,7 @@ export class ClientErrorsModel {
         this.addReaction({
             track: () => this.getParams(),
             run: () => this.loadAsync(),
-            equals: comparer.structural
+            equals: 'structural'
         });
 
         this.addReaction({
@@ -172,8 +172,8 @@ export class ClientErrorsModel {
 
     @action
     resetQuery() {
-        this.startDate = this.getDefaultStartDate();
-        this.endDate = this.getDefaultEndDate();
+        this.startDay = this.getDefaultStartDay();
+        this.endDay = this.getDefaultEndDay();
         this.filterChooserModel.setValue(null);
     }
 
@@ -188,9 +188,8 @@ export class ClientErrorsModel {
             });
 
             gridModel.loadData(data);
+            await gridModel.preSelectFirstAsync();
 
-            await wait(1);
-            if (!gridModel.hasSelection) gridModel.selectFirst();
         } catch (e) {
             gridModel.clear();
             XH.handleException(e);
@@ -216,31 +215,36 @@ export class ClientErrorsModel {
 
     @action
     adjustDates(dir) {
-        const tomorrow = LocalDate.tomorrow(),
-            start = this.startDate,
-            end = this.endDate,
+        const appDay = LocalDate.currentAppDay(),
+            start = this.startDay,
+            end = this.endDay,
             diff = end.diff(start),
             incr = diff + 1;
 
         let newStart = start[dir](incr),
             newEnd = end[dir](incr);
 
-        if (newEnd > tomorrow) {
-            newStart = tomorrow.subtract(Math.abs(diff));
-            newEnd = tomorrow;
+        if (newEnd > appDay) {
+            newStart = appDay.subtract(Math.abs(diff));
+            newEnd = appDay;
         }
 
-        this.startDate = newStart;
-        this.endDate = newEnd;
+        this.startDay = newStart;
+        this.endDay = newEnd;
+    }
+
+    // Set the start date by taking the end date and pushing back [value] [units] - then pushing
+    // forward one day as the day range query is inclusive.
+    @action
+    adjustStartDate(value, unit) {
+        this.startDay = this.endDay.subtract(value, unit).nextDay();
     }
 
     getParams() {
-        const {startDate, endDate} = this;
-        return {startDate, endDate};
+        const {startDay, endDay} = this;
+        return {startDay, endDay};
     }
 
-    // TODO - see https://github.com/xh/hoist-react/issues/400 for why we push endDate out to tomorrow.
-    getDefaultStartDate() {return LocalDate.today().subtract(1, 'months')}
-    getDefaultEndDate() {return LocalDate.tomorrow()}
-
+    getDefaultStartDay() {return LocalDate.currentAppDay()}
+    getDefaultEndDay() {return LocalDate.currentAppDay()}
 }

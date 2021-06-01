@@ -2,10 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import composeRefs from '@seznam/compose-react-refs';
 import {hoistCmp} from '@xh/hoist/core';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
+import {withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import PT from 'prop-types';
@@ -22,11 +24,26 @@ export const [Button, button] = hoistCmp.withFactory({
     model: false,
     className: 'xh-button',
 
-    render(props) {
-        const [layoutProps, {
-                autoFocus, className, disabled, icon, intent, minimal = true, onClick, outlined, style, text, title, ...rest
-            }] = splitLayoutProps(props),
+    render(props, ref) {
+        const [layoutProps, nonLayoutProps] = splitLayoutProps(props),
             classes = [];
+        const {
+            autoFocus,
+            className,
+            disabled,
+            icon,
+            intent,
+            minimal = true,
+            onClick,
+            outlined,
+            style,
+            text,
+            title,
+            tooltip,
+            active,
+            elementRef,
+            ...rest
+        } = nonLayoutProps;
 
         if (autoFocus) classes.push('xh-button--autofocus-enabled');
 
@@ -45,10 +62,13 @@ export const [Button, button] = hoistCmp.withFactory({
         if (minimal) classes.push('xh-button--minimal');
         if (outlined) classes.push('xh-button--outlined');
         if (!minimal && !outlined) classes.push('xh-button--standard');
+        if (active) classes.push('xh-button--active');
 
         return bpButton({
+            active,
             autoFocus,
             className: classNames(className, classes),
+            elementRef: composeRefs(ref, elementRef),
             disabled,
             icon,
             intent,
@@ -60,13 +80,14 @@ export const [Button, button] = hoistCmp.withFactory({
                 ...layoutProps
             },
             text,
-            title,
+            title: withDefault(title, tooltip),
             ...rest
         });
     }
 });
 
 Button.propTypes = {
+    active: PT.bool,
     autoFocus: PT.bool,
     className: PT.string,
     disabled: PT.bool,
@@ -76,7 +97,9 @@ Button.propTypes = {
     onClick: PT.func,
     outlined: PT.bool,
     style: PT.object,
-    text: PT.string,
-    title: PT.string
+    text: PT.node,
+    title: PT.string,
+    /** Alias for title. */
+    tooltip: PT.string
 };
 

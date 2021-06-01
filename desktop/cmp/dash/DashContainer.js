@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {div, frame, vbox, vspacer} from '@xh/hoist/cmp/layout';
@@ -29,13 +29,14 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory({
     model: uses(DashContainerModel),
     className: 'xh-dash-container',
 
-    render({model, className}) {
+    render({model, className}, ref) {
         // Store current ModelLookupContext in model, to be applied in views later
         const modelLookupContext = useContext(ModelLookupContext);
         useOnMount(() => model.setModelLookupContext(modelLookupContext));
 
         // Get enhance container ref with GoldenLayout resize handling
-        const ref = composeRefs(
+        ref = composeRefs(
+            ref,
             model.containerRef,
             useOnResize(() => model.onResize(), {debounce: 100})
         );

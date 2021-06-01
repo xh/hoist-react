@@ -2,89 +2,66 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {HoistInputPropTypes, HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {hoistCmp} from '@xh/hoist/core';
 import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
-import {action, observable} from '@xh/hoist/mobx';
+import {computed, makeObservable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
-import {isObject} from 'lodash';
+import {filter, isObject} from 'lodash';
 import PT from 'prop-types';
 import './RadioInput.scss';
 
 /**
  * An input for managing Radio Buttons.
  */
-@HoistComponent
-export class RadioInput extends HoistInput {
+export const [RadioInput, radioInput] = hoistCmp.withFactory({
+    displayName: 'RadioInput',
+    className: 'xh-radio-input',
+    render(props, ref) {
+        return useHoistInputModel(cmp, props, ref, Model);
+    }
+});
+RadioInput.propTypes = {
+    ...HoistInputPropTypes,
+    /** True to display each radio button inline with each other. */
+    inline: PT.bool,
 
-    static propTypes = {
-        ...HoistInput.propTypes,
+    /** Alignment of each option's label relative its radio button, default right. */
+    labelAlign: PT.oneOf(['left', 'right']),
 
-        /** True to display each radio button inline with each other. */
-        inline: PT.bool,
+    /**
+     * Array of available options, of the form:
+     *
+     *      [{value: string, label: string, disabled: bool}, ...]
+     *          - or -
+     *      [val, val, ...]
+     */
+    options: PT.arrayOf(PT.oneOfType([PT.object, PT.string]))
+};
 
-        /** Alignment of each option's label relative its radio button, default right. */
-        labelAlign: PT.oneOf(['left', 'right']),
+//-----------------------
+// Implementation
+//-----------------------
+class Model extends HoistInputModel {
 
-        /**
-         * Array of available options, of the form:
-         *
-         *      [{value: string, label: string, disabled: bool}, ...]
-         *          - or -
-         *      [val, val, ...]
-         */
-        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string]))
-    };
-
-    baseClassName = 'xh-radio-input';
-
-    @observable.ref internalOptions = [];
-    @action setInternalOptions(options) {this.internalOptions = options}
-
-    constructor(props, context) {
-        super(props, context);
-        this.addReaction({
-            track: () => this.props.options,
-            run: (opts) => {
-                opts = this.normalizeOptions(opts);
-                this.setInternalOptions(opts);
-            },
-            fireImmediately: true
-        });
+    blur() {
+        this.enabledInputs.forEach(it => it.blur());
     }
 
-    render() {
-        const {props, internalOptions} = this,
-            labelAlign = withDefault(props.labelAlign, 'right');
-
-        const items = internalOptions.map(opt => {
-            return radio({
-                alignIndicator: labelAlign == 'left' ? 'right' : 'left',
-                disabled: opt.disabled,
-                label: opt.label,
-                value: opt.value,
-                className: 'xh-radio-input-option'
-            });
-        });
-
-        return radioGroup({
-            items,
-            disabled: props.disabled,
-            inline: props.inline,
-            selectedValue: this.renderValue,
-            className: this.getClassName(),
-            onChange: this.onChange
-        });
+    focus() {
+        this.enabledInputs[0]?.focus();
     }
 
+    get enabledInputs() {
+        const btns = this.domEl?.querySelectorAll('input') ?? [];
+        return filter(btns, {disabled: false});
+    }
 
-    //-------------------------
-    // Options / value handling
-    //-------------------------
-    normalizeOptions(options) {
-        options = options || [];
+    @computed
+    get normalizedOptions() {
+        const options = this.props.options ?? [];
         return options.map(o => {
             const ret = isObject(o) ?
                 {label: o.label, value: o.value, disabled: o.disabled} :
@@ -95,8 +72,44 @@ export class RadioInput extends HoistInput {
         });
     }
 
+    constructor(props) {
+        super(props);
+        makeObservable(this);
+    }
+
+    //-------------------------
+    // Options / value handling
+    //-------------------------
     onChange = (e) => {
         this.noteValueChange(e.target.value);
     }
 }
-export const radioInput = elemFactory(RadioInput);
+
+const cmp = hoistCmp.factory(
+    ({model, className, ...props}, ref) => {
+        const {normalizedOptions} = model,
+            labelAlign = withDefault(props.labelAlign, 'right');
+
+        const items = normalizedOptions.map(opt => {
+            return radio({
+                alignIndicator: labelAlign === 'left' ? 'right' : 'left',
+                disabled: opt.disabled,
+                label: opt.label,
+                value: opt.value,
+                className: 'xh-radio-input-option',
+                onFocus: model.onFocus,
+                onBlur: model.onBlur
+            });
+        });
+
+        return radioGroup({
+            className,
+            items,
+            disabled: props.disabled,
+            inline: props.inline,
+            selectedValue: model.renderValue,
+            onChange: model.onChange,
+            ref
+        });
+    }
+);

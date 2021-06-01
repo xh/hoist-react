@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
 @import '~sass-material-colors/sass/sass-material-colors';
@@ -52,9 +52,9 @@ body {
   --xh-yellow-light: var(--yellow-light, #{mc('yellow', '50')});
 
   &.xh-dark {
-    --xh-black: var(--black, #12171a);
+    --xh-black: var(--black, hsl(202, 17%, 9%));
     --xh-gray-dark: var(--gray-dark, #{mc('grey', '900')});
-    --xh-green: var(--green, #009e0a); // could not find a MC green that works, especially in grids....
+    --xh-green: var(--green, hsl(124, 100%, 31%)); // could not find a MC green that works, especially in grids....
     --xh-green-muted: var(--green-muted, #{mc-muted('green', '800', 20%, 5%)});
     --xh-red: var(--red, #{mc('red', 'a700')});
   }
@@ -199,12 +199,12 @@ body {
   //-----------------------------------------
   --xh-bg: var(--bg, white);
   --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-light));
-  --xh-bg-highlight: var(--bg-highlight, #{mc-trans('blue', '200')});
+  --xh-bg-highlight: var(--bg-highlight, hsl(205, 85%, 85%));
 
   &.xh-dark {
     --xh-bg: var(--bg, var(--xh-black));
     --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-dark));
-    --xh-bg-highlight: var(--bg-highlight, #{mc-trans('light-blue', '500', 0.65)});
+    --xh-bg-highlight: var(--bg-highlight, hsl(200, 50%, 27%));
   }
 
 
@@ -246,6 +246,7 @@ body {
   // Buttons - override available to color active button in buttonGroups w/standard (null/neutral) intent styling.
   --xh-button-active-bg: var(--button-active-bg, var(--xh-button-bg-darkest));
   --xh-button-active-text-color: var(--button-active-text-color, var(--xh-button-text-color));
+  --xh-button-active-box-shadow: var(--button-active-box-shadow, #{inset 0 0 0 1px rgba(16, 22, 26, 0.2), inset 0 1px 2px rgba(16, 22, 26, 0.2)});
 
   &.xh-dark {
     // This breaks the standard of having the active button bg default to the pressed bg, but in
@@ -333,10 +334,16 @@ body {
 
 
   //------------------------
+  // Slider Handles
+  //------------------------
+  --xh-slider-handle-focused-box-shadow: var(--slider-handle-focused-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-focused-border-color), 0 0 0 1px var(--xh-form-field-focused-border-color)});
+
+
+  //------------------------
   // Grids
   //------------------------
   --xh-grid-bg-highlight: var(--grid-bg-highlight, var(--xh-bg-highlight));
-  --xh-grid-bg-hover: var(--grid-bg-hover, #{mc-trans('blue', '200', 0.8)});
+  --xh-grid-bg-hover: var(--grid-bg-hover, hsl(205, 85%, 90%));
   --xh-grid-bg-odd: var(--grid-bg-odd, #{mc('grey', '100')});
   --xh-grid-bg: var(--grid-bg, var(--xh-bg));
   --xh-grid-border-color: var(--grid-border-color, #{mc('grey', '200')});
@@ -351,6 +358,9 @@ body {
   --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '400')});
   --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '200')});
   --xh-grid-group-text-color: var(--grid-group-text-color, white);
+  --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(205, 85%, 95%));
+  --xh-grid-tree-group-border-color: var(--grid-tree-group-border-color, var(--xh-grid-bg-highlight));
+  --xh-grid-total-row-bg: var(--grid-total-row-bg, var(--xh-grid-tree-group-bg));
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-blue-gray-light));
   --xh-grid-header-border-color: var(--grid-header-border-color, var(--xh-grid-border-color));
   --xh-grid-header-icon-color: var(--grid-header-icon-color, var(--xh-text-color-muted));
@@ -359,8 +369,6 @@ body {
   --xh-grid-header-font-size-px: calc(var(--xh-grid-header-font-size) * 1px);
   --xh-grid-header-font-weight: var(--grid-header-font-weight, 600);
   --xh-grid-header-text-color: var(--grid-header-text-color, var(--xh-text-color));
-  --xh-grid-line-height-px: calc(var(--xh-grid-line-height) * 1px);
-  --xh-grid-line-height: var(--grid-line-height, 26);
   --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '300')});
   --xh-grid-summary-row-border-color: var(--grid-summary-row-border-color, var(--xh-grid-border-color));
   --xh-grid-text-color: var(--grid-text-color, var(--xh-text-color));
@@ -376,8 +384,6 @@ body {
   --xh-grid-large-header-font-size-px: calc(var(--xh-grid-large-header-font-size) * 1px);
   --xh-grid-large-header-lr-pad: var(--grid-large-header-lr-pad, 12);
   --xh-grid-large-header-lr-pad-px: calc(var(--xh-grid-large-header-lr-pad) * 1px);
-  --xh-grid-large-line-height: var(--grid-large-line-height, 30);
-  --xh-grid-large-line-height-px: calc(var(--xh-grid-large-line-height) * 1px);
 
   // Compact Grid
   --xh-grid-compact-cell-lr-pad: var(--grid-compact-cell-lr-pad, 4);
@@ -388,8 +394,6 @@ body {
   --xh-grid-compact-header-font-size-px: calc(var(--xh-grid-compact-header-font-size) * 1px);
   --xh-grid-compact-header-lr-pad: var(--grid-compact-header-lr-pad, 6);
   --xh-grid-compact-header-lr-pad-px: calc(var(--xh-grid-compact-header-lr-pad) * 1px);
-  --xh-grid-compact-line-height: var(--grid-compact-line-height, 22);
-  --xh-grid-compact-line-height-px: calc(var(--xh-grid-compact-line-height) * 1px);
 
   // Tiny Grid
   --xh-grid-tiny-cell-lr-pad: var(--grid-tiny-cell-lr-pad, 2);
@@ -400,8 +404,6 @@ body {
   --xh-grid-tiny-header-font-size-px: calc(var(--xh-grid-tiny-header-font-size) * 1px);
   --xh-grid-tiny-header-lr-pad: var(--grid-tiny-header-lr-pad, 4);
   --xh-grid-tiny-header-lr-pad-px: calc(var(--xh-grid-tiny-header-lr-pad) * 1px);
-  --xh-grid-tiny-line-height: var(--grid-tiny-line-height, 18);
-  --xh-grid-tiny-line-height-px: calc(var(--xh-grid-tiny-line-height) * 1px);
 
   // Multifield renderer
   --xh-grid-multifield-top-font-size: var(--grid-multifield-top-font-size, 12);
@@ -413,11 +415,15 @@ body {
 
   // Dark Grid
   &.xh-dark {
-    --xh-grid-bg-odd: var(--grid-bg-odd, #151f24);
-    --xh-grid-border-color: var(--grid-border-color, #293233);
+    --xh-grid-bg-highlight: var(--grid-bg-highlight, var(--xh-bg-highlight));
+    --xh-grid-bg-hover: var(--grid-bg-hover, hsl(200, 50%, 17%));
+    --xh-grid-bg-odd: var(--grid-bg-odd, hsl(200, 26%, 11%));
+    --xh-grid-border-color: var(--grid-border-color, hsl(186, 11%, 18%));
     --xh-grid-cell-change-bg-highlight: var(--grid-cell-bg-highlight, #{mc-trans('orange', '800', 0.8)});
     --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '800')});
     --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '700')});
+    --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(200, 50%, 12%));
+    --xh-grid-total-row-bg: var(--grid-total-row-bg, var(--xh-grid-tree-group-bg));
     --xh-grid-header-bg: var(--grid-header-bg, var(--xh-black));
     --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '800')});
   }
@@ -425,9 +431,7 @@ body {
   // Mobile Grid
   &.xh-mobile {
     --xh-grid-font-size: var(--grid-font-size, 14);
-    --xh-grid-line-height: var(--grid-line-height, 30);
     --xh-grid-compact-font-size: var(--grid-compact-font-size, 13);
-    --xh-grid-compact-line-height: var(--grid-compact-line-height, 26);
   }
 
 
@@ -469,6 +473,19 @@ body {
     --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.2));
   }
 
+  //------------------------
+  // Popovers
+  //------------------------
+  --xh-popover-box-shadow: var(--popover-shadow, #{0 0 20px rgba(0, 0, 0, 0.4)});
+  --xh-backdrop-bg: var(--backdrop-bg, #{mc-trans('blue-grey', '300', 0.2)});
+
+  &.xh-dark {
+    --xh-popover-box-shadow: var(--popover-shadow, #{0 0 20px rgba(0, 0, 0, 0.7)});
+  }
+
+  &.xh-mobile {
+    --xh-backdrop-bg: var(--backdrop-bg, rgba(0, 0, 0, 0.4));
+  }
 
   //-------------------------
   // Navbar (aka AppBar)
@@ -564,6 +581,12 @@ body {
     --xh-scrollbar-thumb: var(--scrollbar-thumb, #{mc('blue-grey', '900')});
   }
 
+  //------------------------
+  // Banners
+  //------------------------
+  --xh-banner-height: var(--banner-height, 40);
+  --xh-banner-height-px: calc(var(--xh-banner-height) * 1px);
+
 
   //------------------------
   // Tabs
@@ -627,10 +650,17 @@ body {
   --xh-tbar-border-color: var(--tbar-border-color, #{mc('grey', '400')});
   --xh-tbar-item-pad: var(--tbar-item-pad, var(--xh-pad-half));
   --xh-tbar-item-pad-px: calc(var(--xh-tbar-item-pad) * 1px);
+  --xh-tbar-font-size: var(--tbar-font-size, var(--xh-font-size));
+  --xh-tbar-font-size-px: calc(var(--xh-tbar-font-size) * 1px);
   --xh-tbar-min-size: var(--tbar-min-size, 41);
   --xh-tbar-min-size-px: calc(var(--xh-tbar-min-size) * 1px);
   --xh-tbar-separator-color: var(--tbar-separator-color, #{mc('grey', '400')});
   --xh-tbar-text-color: var(--tbar-text-color, var(--xh-text-color));
+  --xh-tbar-compact-font-size: var(--tbar-compact-font-size, var(--xh-font-size-small));
+  --xh-tbar-compact-font-size-px: calc(var(--xh-tbar-compact-font-size) * 1px);
+  --xh-tbar-compact-min-size: var(--tbar-compact-min-size, 24);
+  --xh-tbar-compact-min-size-px: calc(var(--xh-tbar-compact-min-size) * 1px);
+  --xh-tbar-compact-item-height-px: calc(var(--xh-tbar-compact-min-size-px) - 4px);
 
   &.xh-dark {
     --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});

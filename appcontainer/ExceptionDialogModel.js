@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 
 /**
  * Manages the default display of exceptions.
@@ -15,31 +15,32 @@ import {action, observable} from '@xh/hoist/mobx';
  *
  * @private
  */
-@HoistModel
-export class ExceptionDialogModel {
+export class ExceptionDialogModel extends HoistModel {
 
     @observable.ref displayData;
     @observable detailsIsOpen = false;
 
     /** Exception currently being displayed */
     get exception() {
-        const d = this.displayData;
-        return d ? d.exception : null;
+        return this.displayData?.exception ?? null;
     }
 
     /** Options for exception currently being displayed */
     get options() {
-        const d = this.displayData;
-        return d ? d.options : {};
+        return this.displayData?.options ?? {};
     }
 
     /** Optional user supplied message */
     @observable userMessage = '';
 
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     @action
     show(exception, options) {
-        if (this.displayData?.options.requireReload)  return;
+        if (this.displayData?.options.requireReload) return;
         this.displayData = {exception, options};
     }
 

@@ -2,14 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {isFunction, isPlainObject} from 'lodash';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {action} from '@xh/hoist/mobx';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
-import {filter, isPlainObject, pickBy} from 'lodash';
 import {RestStore} from './data/RestStore';
 import {RestFormModel} from './impl/RestFormModel';
 
@@ -48,26 +47,27 @@ export const deleteAction = {
     text: 'Delete',
     icon: Icon.delete(),
     intent: 'danger',
-    recordsRequired: 1,
+    recordsRequired: true,
     displayFn: ({record}) => ({
         hidden: record && record.id === null // Hide this action if we are acting on a "new" record
     }),
-    actionFn: ({record, gridModel}) => gridModel.restGridModel.confirmDeleteRecord(record)
+    actionFn: ({gridModel}) => gridModel.restGridModel.confirmDeleteRecords()
 };
 
 /**
  * Core Model for a RestGrid.
  */
-@HoistModel
-@LoadSupport
-export class RestGridModel {
+export class RestGridModel extends HoistModel {
 
     //----------------
     // Properties
     //----------------
+    /** @member {boolean} */
     readonly;
 
+    /** @member {RestGridEditor[]} */
     editors;
+
     toolbarActions;
     menuActions;
     formActions;
@@ -75,26 +75,31 @@ export class RestGridModel {
     actionWarning = {
         add: null,
         edit: null,
-        del: 'Are you sure you want to delete the selected record?'
+        del: (recs) => (recs.length > 1 ?
+            `Are you sure you want to delete the selected ${recs.length} ${pluralize(this.unit)}?` :
+            `Are you sure you want to delete the selected ${this.unit}?`)
     };
 
     prepareCloneFn;
 
-    unit = null;
+    unit;
     filterFields = null;
 
+    /** @member {GridModel} */
     @managed
     gridModel = null;
 
+    /** @member {RestFormModel} */
     @managed
     formModel = null;
 
+    /** @return {RestStore} */
     get store() {return this.gridModel.store}
-
+    /** @return {StoreSelectionModel} */
     get selModel() {return this.gridModel.selModel}
-
+    /** @return {Record[]} */
     get selection() {return this.gridModel.selection}
-
+    /** @return {Record} */
     get selectedRecord() {return this.gridModel.selectedRecord}
 
     /**
@@ -102,7 +107,8 @@ export class RestGridModel {
      * @param {Object[]|RecordAction[]} [toolbarActions] - actions to display in the toolbar. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [menuActions] - actions to display in the grid context menu. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [formActions] - actions to display in the form toolbar. Defaults to delete.
-     * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
+     * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'del') to string or a fn to create one. See default prop.
+     *      Function will be passed an array of selected records to be acted upon.
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {PrepareCloneFn} [prepareCloneFn] - called prior to passing the original record and cloned record to the editor form
@@ -122,6 +128,7 @@ export class RestGridModel {
         store,
         ...rest
     }) {
+        super();
         this.readonly = readonly;
         this.editors = editors;
         this.toolbarActions = toolbarActions;
@@ -148,7 +155,7 @@ export class RestGridModel {
     }
 
     /** Load the underlying store. */
-    doLoadAsync(loadSpec) {
+    async doLoadAsync(loadSpec) {
         return this.store.loadAsync(loadSpec);
     }
 
@@ -160,73 +167,66 @@ export class RestGridModel {
     //-----------------
     // Actions
     //------------------
-    @action
     addRecord() {
         this.formModel.openAdd();
     }
 
-    @action
     cloneRecord(record) {
-        const editableFields = filter(record.fields, 'editable').map(it => it.name),
-            clone = pickBy(record.data, (v, k) => editableFields.includes(k));
-        const {prepareCloneFn} = this;
-        if (prepareCloneFn) prepareCloneFn({record, clone});
+        const clone = this.store.editableDataForRecord(record);
+        this.prepareCloneFn?.({record, clone});
         this.formModel.openClone(clone);
     }
 
-    @action
-    deleteSelection() {
-        const record = this.selectedRecord;
-        if (record) this.deleteRecord(record);
-    }
-
-    @action
-    deleteRecord(record) {
+    async deleteRecordAsync(record) {
         throwIf(this.readonly, 'Record not deleted: this grid is read-only');
-        this.store.deleteRecordAsync(record)
+        return this.store.deleteRecordAsync(record)
             .then(() => this.formModel.close())
+            .linkTo(this.loadModel)
             .catchDefault();
     }
 
-    @action
-    editSelection() {
-        const record = this.selectedRecord;
-        if (record) this.editRecord(record);
+    async bulkDeleteRecordsAsync(records) {
+        throwIf(this.readonly, 'Records not deleted: this grid is read-only');
+        return this.store.bulkDeleteRecordsAsync(records)
+            .then(resp => {
+                const intent = resp.fail > 0 ? 'warning' : 'success',
+                    message = `Deleted ${resp.success} ${pluralize(this.unit)} with ${resp.fail} failures`;
+
+                XH.toast({intent, message});
+            })
+            .linkTo(this.loadModel)
+            .catchDefault();
     }
 
-    @action
     editRecord(record) {
         this.formModel.openEdit(record);
     }
 
-    @action
     viewRecord(record) {
         this.formModel.openView(record);
     }
 
-    confirmDeleteSelection() {
-        const record = this.selectedRecord;
-        if (record) this.confirmDeleteRecord(record);
-    }
+    confirmDeleteRecords() {
+        const records = this.selection,
+            warning = this.actionWarning.del,
+            delFn = () => records.length > 1 ? this.bulkDeleteRecordsAsync(records) : this.deleteRecordAsync(records[0]);
 
-    confirmDeleteRecord(record) {
-        const warning = this.actionWarning.del;
-        if (warning) {
+        if (!warning) {
+            delFn();
+        } else {
+            const message = isFunction(warning) ? warning(records) : warning;
             XH.confirm({
-                message: warning,
+                message,
                 title: 'Warning',
                 icon: Icon.warning({size: 'lg'}),
-                onConfirm: () => this.deleteRecord(record)
+                onConfirm: delFn
             });
-        } else {
-            this.deleteRecord(record);
         }
     }
 
     async exportAsync(...args) {
         return this.gridModel.exportAsync(...args);
     }
-
 
     //-----------------
     // Implementation
@@ -252,4 +252,3 @@ export class RestGridModel {
  * @param {input.record} original record from the REST grid
  * @param {input.clone} cloned record that is used to populate the editor form
  */
-

@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {find, isEqual, keys, merge} from 'lodash';
 import {page} from './impl/Page';
@@ -15,8 +15,7 @@ import {PageModel} from './PageModel';
  * Model for handling stack-based navigation between Onsen pages.
  * Provides support for routing based navigation.
  */
-@HoistModel
-export class NavigatorModel {
+export class NavigatorModel extends HoistModel {
     /** @member {boolean} */
     @bindable disableAppRefreshButton;
 
@@ -25,6 +24,9 @@ export class NavigatorModel {
 
     /** @member {Object[]} */
     pages = [];
+
+    /** @member {boolean} */
+    track;
 
     /** @member {RenderMode} */
     renderMode;
@@ -49,6 +51,8 @@ export class NavigatorModel {
     /**
      * @param {Object[]} pages - configs for PageModels, representing all supported
      *      pages within this Navigator/App.
+     * @param {boolean} [track] - True to enable activity tracking of page views (default false).
+     *      Viewing of each page will be tracked with the `oncePerSession` flag, to avoid duplication.
      * @param {RenderMode} [renderMode] - strategy for rendering pages. Can be set per-page
      *      via `PageModel.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing pages. Can be set per-page
@@ -56,15 +60,19 @@ export class NavigatorModel {
      */
     constructor({
         pages,
+        track = false,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY
     }) {
+        super();
+        makeObservable(this);
         warnIf(renderMode === RenderMode.ALWAYS, 'RenderMode.ALWAYS is not supported in Navigator. Pages are always can\'t exist before being mounted.');
 
         ensureNotEmpty(pages, 'NavigatorModel needs at least one page.');
         ensureUniqueBy(pages, 'id', 'Multiple NavigatorModel PageModels have the same id.');
 
         this.pages = pages;
+        this.track = track;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
 
@@ -77,6 +85,19 @@ export class NavigatorModel {
             track: () => this.stack,
             run: this.onStackChangeAsync
         });
+
+        if (track) {
+            this.addReaction({
+                track: () => this.activePageId,
+                run: (activePageId) => {
+                    XH.track({
+                        category: 'Navigation',
+                        message: `Viewed ${activePageId} page`,
+                        oncePerSession: true
+                    });
+                }
+            });
+        }
     }
 
     /**

@@ -2,45 +2,50 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {castArray, isString} from 'lodash';
 
 /**
- * Track a function execution with debug logging and timing info.
+ * Track a function execution, logging the provided message(s) on debug once before running the
+ * function and then again with timing information after the tracked function returns.
  *
- * This function will output messages before and after the execution of the tracked function.
+ * If the function passed to this util returns a Promise, it will wait until the Promise resolves
+ * or completes to finish its logging. The actual object returned by the tracked function will
+ * always be returned directly to the caller.
  *
- * If the tracked function passed to this function returns a Promise, the function will
- * wait until the Promise resolves or completes to finish its logging. In any case, the
- * actual object returned by the tracked function will be returned directly to
- * the caller.
- *
- *
- * @param {(String[]|String)} msgs
+ * @param {(string[]|string)} msgs
  * @param {function} fn
- * @param {(Object|String)} [source] - Class, function or string to label the source of the message
+ * @param {(Object|string)} [source] - class, function or string to label the source of the message
  */
 export function withDebug(msgs, fn, source) {
     return loggedDo(msgs, fn, source, false);
 }
 
 /**
- * Track a function execution with debug logging and timing info.
+ * Track a function execution, logging the provided message(s) on debug with timing information in
+ * a single message after the tracked function returns.
  *
- * This function will output a single message after the tracked function completes.
+ * If the function passed to this util returns a Promise, it will wait until the Promise resolves
+ * or completes to finish its logging. The actual object returned by the tracked function will
+ * always be returned directly to the caller.
  *
- * If the tracked function passed to this function returns a Promise, the function will
- * wait until the Promise resolves or completes to finish its logging. In any case, the
- * actual object returned by the tracked function will be returned directly to
- * the caller.
- *
- * @param {(String[]|String)} msgs
+ * @param {(string[]|string)} msgs
  * @param {function} fn
- * @param {(Object|String)} [source] - Class, function or string to label the source of the message
+ * @param {(Object|string)} [source] - class, function or string to label the source of the message
  */
 export function withShortDebug(msgs, fn, source) {
     return loggedDo(msgs, fn, source, true);
+}
+
+/**
+ * Log a message for debugging with standardized formatting.
+ *
+ * @param {(string[]|string)} msgs
+ * @param {(Object|string)} [source] - class, function or string to label the source of the message
+ */
+export function logDebug(msgs, source) {
+    return loggedDo(msgs, null, source);
 }
 
 //----------------------------------
@@ -51,6 +56,14 @@ function loggedDo(msgs, fn, source, short) {
     source = parseSource(source);
     msgs = castArray(msgs);
     const msg = msgs.join(' | ');
+
+    // Support simple message only
+    if (!fn) {
+        writeLog(msg, source);
+        return;
+    }
+
+    // ..otherwise a wrapped call..
     if (!short) writeLog(`${msg} | started`, source);
 
     const start = Date.now();
@@ -76,7 +89,8 @@ function loggedDo(msgs, fn, source, short) {
 
 function parseSource(source) {
     if (isString(source)) return source;
-    if (source && source.constructor) return source.constructor.name;
+    if (source?.displayName) return source.displayName;
+    if (source?.constructor) return source.constructor.name;
     return '';
 }
 

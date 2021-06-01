@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
@@ -34,7 +34,10 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory({
 
 ContextMenu.propTypes = {
     /**
-     *  Array of ContextMenuItems, configs to create them, Elements, or '-' (divider).
+     * Array of:
+     *  + `ContextMenuItems` or configs to create them.
+     *  + `MenuDividers` or the special string token '-'.
+     *  + React Elements or strings, which will be interpreted as the `text` property for a MenuItem.
      */
     menuItems: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.element])).isRequired
 };

@@ -2,10 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-
-import {ReactiveSupport} from '@xh/hoist/core';
+import {HoistBase} from '@xh/hoist/core';
 import {FieldFilter, FieldType, genDisplayName, parseFieldValue} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {LocalDate} from '@xh/hoist/utils/datetime';
@@ -19,8 +18,7 @@ import {isFunction, isNil} from 'lodash';
  * Apps should NOT instantiate this class directly. Instead {@see FilterChooserModel.fieldSpecs}
  * for the relevant config to set these options.
  */
-@ReactiveSupport
-export class FilterChooserFieldSpec {
+export class FilterChooserFieldSpec extends HoistBase {
 
     /** @member {string} */
     field;
@@ -91,6 +89,7 @@ export class FilterChooserFieldSpec {
         example,
         store
     }) {
+        super();
         this.field = field;
         this.store = store;
 

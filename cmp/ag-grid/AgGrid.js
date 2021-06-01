@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {div, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, elem, XH} from '@xh/hoist/core';
 import {splitLayoutProps, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isNil} from 'lodash';
+import {isNil, max} from 'lodash';
 import './AgGrid.scss';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 import {AgGridModel} from './AgGridModel';
@@ -37,7 +37,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
     className: 'xh-ag-grid',
     model: uses(AgGridModel),
 
-    render({model, key, className, onGridReady, ...props}) {
+    render({model, key, className, onGridReady, ...props}, ref) {
 
         if (!AgGridReact) {
             console.error(
@@ -57,11 +57,10 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
         const impl = useLocalModel(() => new LocalModel(model, agGridProps));
         impl.onGridReady = onGridReady;
 
-        useOnUnmount(() => {
-            if (model) model.handleGridUnmount();
-        });
+        useOnUnmount(() => model?.handleGridUnmount());
 
         return frame({
+            ref,
             className: classNames(
                 className,
                 darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
@@ -77,8 +76,8 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
                 // Default some ag-grid props, but allow overriding.
                 getRowHeight: impl.getRowHeight,
                 navigateToNextCell: impl.navigateToNextCell,
-                headerHeight: model.headerHeight,
-
+                onColumnResized: impl.onColumnChange,
+                onColumnVisible: impl.onColumnChange,
                 // Pass others on directly.
                 ...agGridProps,
 
@@ -105,25 +104,26 @@ AgGrid.HEADER_HEIGHTS = {large: 36, standard: 32, compact: 28, tiny: 22};
 AgGrid.HEADER_HEIGHTS_MOBILE = {large: 42, standard: 38, compact: 34, tiny: 30};
 AgGrid.getHeaderHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS)[mode];
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
     model;
     onGridReady;
 
-    constructor(model, agGridProps) {
-        this.model = model;
-        this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(model) :  null;
+    get headerHeight() {
+        const {hideHeaders, sizingMode} = this.model;
+        return hideHeaders ? 0 : AgGrid.getHeaderHeightForSizingMode(sizingMode);
+    }
 
-        // Only update header height if was not explicitly provided to the component
+    constructor(model, agGridProps) {
+        super();
+        this.model = model;
+        this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(model) : null;
+
+        // manage header height if was not explicitly provided to component
         if (isNil(agGridProps.headerHeight)) {
             this.addReaction({
-                track: () => [this.model.agApi, this.model.sizingMode],
-                run: ([api, sizingMode]) => {
-                    if (!api) return;
-                    const height = AgGrid.getHeaderHeightForSizingMode(sizingMode);
-                    api.setHeaderHeight(height);
-                }
+                track: () => [model.agApi, this.headerHeight],
+                run: ([api, headerHeight]) => api?.setHeaderHeight(headerHeight)
             });
         }
     }
@@ -141,5 +141,15 @@ class LocalModel {
         }
     };
 
-    getRowHeight = () => AgGrid.getRowHeightForSizingMode(this.model.sizingMode);
+    onColumnChange = (ev) => {
+        ev.api.resetRowHeights();
+    };
+
+    getRowHeight = ({node}) => {
+        const {model} = this;
+        return max([
+            AgGrid.getRowHeightForSizingMode(model.sizingMode),
+            model.getAutoRowHeight(node)
+        ]);
+    }
 }

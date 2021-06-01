@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -14,8 +14,7 @@ import store from 'store2';
  *
  * Relied upon by Hoist features such as local preference values and grid state.
  */
-@HoistService
-export class LocalStorageService {
+export class LocalStorageService extends HoistService {
 
     get(key, defaultValue) {
         const storage = this.getInstance(),

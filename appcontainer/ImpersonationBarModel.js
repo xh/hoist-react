@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -13,11 +13,15 @@ import {throwIf} from '@xh/hoist/utils/js';
  *
  *  @private
  */
-@HoistModel
-export class ImpersonationBarModel {
+export class ImpersonationBarModel extends HoistModel {
 
     @observable showRequested = false;
     @observable.ref targets = [];
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     init() {
         this.addAutorun(() => {
@@ -31,7 +35,7 @@ export class ImpersonationBarModel {
 
     @action
     show() {
-        throwIf(!XH.identityService.canImpersonate, 'User does not have right to impersonate or impersonation is disabled.');
+        throwIf(!XH.identityService.canAuthUserImpersonate, 'User does not have right to impersonate or impersonation is disabled.');
         this.showRequested = true;
     }
 

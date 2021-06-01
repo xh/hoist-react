@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {XH} from '@xh/hoist/core';
 import {throwIf, computeOnce} from '@xh/hoist/utils/js';
-import {isString} from 'lodash';
+import {isString, isNil} from 'lodash';
 import moment from 'moment';
 
 /**
@@ -44,6 +45,7 @@ export class LocalDate {
      * @returns {LocalDate}
      */
     static get(s) {
+        if (isNil(s)) return s;
         throwIf(!isString(s) || !LocalDate.fmtRegEx.test(s), 'LocalDate.get() requires a string of the form "YYYYMMDD"');
 
         let {_instances} = this,
@@ -67,7 +69,7 @@ export class LocalDate {
      * @returns {LocalDate}
      */
     static from(val) {
-        throwIf(!val, 'Cannot create LocalDate from null or undefined.');
+        if (isNil(val)) return val;
         if (val.isLocalDate) return val;
         const m = moment.isMoment(val) ? val : moment(val);
         return this.get(m.format('YYYYMMDD'));
@@ -76,6 +78,23 @@ export class LocalDate {
     /** @returns {LocalDate} - a LocalDate representing the current day. */
     static today() {
         return this.from(moment());
+    }
+
+    /** @returns {LocalDate} - a LocalDate representing the current day in the App TimeZone */
+    static currentAppDay() {
+        const svc = XH.environmentService,
+            clientOffset = svc.get('clientTimeZoneOffset'),
+            appOffset = svc.get('appTimeZoneOffset');
+        return LocalDate.from(Date.now() + appOffset - clientOffset);
+
+    }
+
+    /** @returns {LocalDate} - a LocalDate representing the current day in the Server TimeZone */
+    static currentServerDay() {
+        const svc = XH.environmentService,
+            clientOffset = svc.get('clientTimeZoneOffset'),
+            serverOffset = svc.get('serverTimeZoneOffset');
+        return LocalDate.from(Date.now() + serverOffset - clientOffset);
     }
 
     /** @returns {LocalDate} - a LocalDate representing the next day. */
@@ -132,6 +151,11 @@ export class LocalDate {
     }
 
     /** @return {boolean} */
+    get isToday() {
+        return this === LocalDate.today();
+    }
+
+    /** @return {boolean} */
     @computeOnce
     get isWeekday() {
         const day = this._moment.day();
@@ -143,6 +167,12 @@ export class LocalDate {
 
     /** @return {boolean} */
     get isEndOfMonth() {return this === this.endOfMonth()}
+
+    /** @return {boolean} */
+    get isStartOfQuarter() {return this === this.startOfQuarter()}
+
+    /** @return {boolean} */
+    get isEndOfQuarter() {return this === this.endOfQuarter()}
 
     /** @return {boolean} */
     get isStartOfYear() {return this === this.startOfYear()}
@@ -196,6 +226,12 @@ export class LocalDate {
 
     /** @return {LocalDate} */
     @computeOnce
+    startOfQuarter() {
+        return this.startOf('quarter');
+    }
+
+    /** @return {LocalDate} */
+    @computeOnce
     startOfYear() {
         return this.startOf('year');
     }
@@ -210,6 +246,12 @@ export class LocalDate {
     @computeOnce
     endOfMonth() {
         return this.endOf('month');
+    }
+
+    /** @return {LocalDate} */
+    @computeOnce
+    endOfQuarter() {
+        return this.endOf('quarter');
     }
 
     /** @return {LocalDate} */
@@ -245,7 +287,7 @@ export class LocalDate {
     previousWeekday() {
         switch (this._moment.day()) {
             case 1:     return this.subtract(3);
-            case 7:     return this.subtract(2);
+            case 0:     return this.subtract(2);
             default:    return this.subtract(1);
         }
     }

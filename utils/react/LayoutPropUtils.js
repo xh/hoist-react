@@ -2,9 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {forOwn, isEmpty, isNumber, isString, omit, pick} from 'lodash';
+import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
 
 
 /**
@@ -53,7 +53,9 @@ export function getLayoutProps(props) {
 
     // Dimensions: translate numbers / bare strings into pixels.
     const dimConfig = pick(ret, dimKeys);
-    forOwn(dimConfig, (v, k) => {ret[k] = toPx(v)});
+    forOwn(dimConfig, (v, k) => {
+        if (!isNil(v)) ret[k] = toPx(v);
+    });
 
     // Extra handling for margin and padding to support TLBR multi-value strings.
     if (ret.margin) ret.margin = toTlbrPx(ret.margin);

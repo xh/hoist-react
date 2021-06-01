@@ -2,19 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isDisplayed} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {min} from 'lodash';
+import {min, sortBy} from 'lodash';
 
-@HoistModel
-@LoadSupport
-export class MonitorResultsModel {
+export class MonitorResultsModel extends HoistModel {
+
     @observable.ref results = [];
     @observable lastRun = null;
     @managed timer = null;
@@ -41,9 +40,12 @@ export class MonitorResultsModel {
     }
 
     constructor() {
+        super();
+        makeObservable(this);
+
         this.timer = Timer.create({
             runFn: () => this.autoRefreshAsync(),
-            interval: 10 * SECONDS,
+            interval: 5 * SECONDS,
             delay: true
         });
     }
@@ -63,7 +65,7 @@ export class MonitorResultsModel {
 
     @action
     completeLoad(success, vals) {
-        this.results = success ? Object.values(vals) : [];
+        this.results = sortBy(success ? Object.values(vals) : [], 'sortOrder');
         this.getLastRun();
     }
 

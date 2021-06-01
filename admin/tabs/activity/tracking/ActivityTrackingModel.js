@@ -2,38 +2,34 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {ActivityDetailModel} from '@xh/hoist/admin/tabs/activity/tracking/detail/ActivityDetailModel';
-import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
+import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Cube} from '@xh/hoist/data';
 import {fmtDate, fmtNumber, numberRenderer} from '@xh/hoist/format';
-import {action} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
+import {action, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isFinite} from 'lodash';
 import moment from 'moment';
-
 import {ChildCountAggregator, LeafCountAggregator, RangeAggregator} from '../aggregators';
 import {ChartsModel} from './charts/ChartsModel';
 
 export const PERSIST_ACTIVITY = {localStorageKey: 'xhAdminActivityState'};
 
-@HoistModel
-@LoadSupport
-export class ActivityTrackingModel {
+export class ActivityTrackingModel extends HoistModel {
 
     persistWith = PERSIST_ACTIVITY;
 
     /** @member {FormModel} */
     @managed formModel;
-    /** @member {DimensionChooserModel} */
-    @managed dimChooserModel;
+    /** @member {GroupingChooserModel} */
+    @managed groupingChooserModel;
     /** @member {Cube} */
     @managed cube;
     /** @member {FilterChooserModel} */
@@ -46,7 +42,7 @@ export class ActivityTrackingModel {
     /** @member {ChartsModel} */
     @managed chartsModel;
 
-    get dimensions() {return this.dimChooserModel.value}
+    get dimensions() {return this.groupingChooserModel.value}
 
     /**
      * @returns {string} - summary of currently active query / filters.
@@ -57,17 +53,20 @@ export class ActivityTrackingModel {
         return `${XH.appName} Activity`;
     }
 
-    get endDate() {return this.formModel.values.endDate}
+    /** @return {LocalDate} */
+    get endDay() {return this.formModel.values.endDay}
 
     _monthFormat = 'MMM YYYY';
     _defaultDims = ['day', 'username'];
     _defaultFilter = [{field: 'category', op: '=', value: 'App'}]
 
     constructor() {
+        super();
+        makeObservable(this);
         this.formModel = new FormModel({
             fields: [
-                {name: 'startDate', initialValue: this.getDefaultStartDate()},
-                {name: 'endDate', initialValue: this.getDefaultEndDate()}
+                {name: 'startDay', initialValue: this.getDefaultStartDay()},
+                {name: 'endDay', initialValue: this.getDefaultEndDay()}
             ]
         });
 
@@ -82,7 +81,7 @@ export class ActivityTrackingModel {
                 {name: 'browser', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'userAgent', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'elapsed', type: 'int', aggregator: 'AVG'},
-                {name: 'impersonating', type: 'bool'},
+                {name: 'impersonating', type: 'string'},
                 {name: 'dateCreated', displayName: 'Timestamp', type: 'date'},
                 {name: 'data', type: 'json'},
                 {name: 'count', type: 'int', aggregator: new ChildCountAggregator()},
@@ -90,7 +89,7 @@ export class ActivityTrackingModel {
             ]
         });
 
-        this.dimChooserModel = new DimensionChooserModel({
+        this.groupingChooserModel = new GroupingChooserModel({
             dimensions: this.cube.dimensions,
             persistWith: this.persistWith,
             initialValue: this._defaultDims
@@ -139,12 +138,13 @@ export class ActivityTrackingModel {
 
         this.gridModel = new GridModel({
             treeMode: true,
+            treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
             persistWith: {
                 ...this.persistWith,
                 path: 'aggGridModel',
                 persistSort: false
             },
-            enableColChooser: true,
+            colChooserModel: true,
             enableExport: true,
             exportOptions: {filename: `${XH.appCode}-activity-summary`},
             emptyText: 'No activity reported...',
@@ -177,7 +177,7 @@ export class ActivityTrackingModel {
                     field: 'day',
                     width: 200,
                     align: 'right',
-                    headerName: 'Date Range',
+                    headerName: 'App Day',
                     renderer: this.dateRangeRenderer,
                     exportValue: this.dateRangeRenderer,
                     comparator: this.dateRangeComparator.bind(this),
@@ -187,13 +187,14 @@ export class ActivityTrackingModel {
             ]
         });
 
+
         this.activityDetailModel = new ActivityDetailModel({parentModel: this});
         this.chartsModel = new ChartsModel({parentModel: this});
 
         this.addReaction({
             track: () => {
                 const vals = this.formModel.values;
-                return [vals.startDate, vals.endDate];
+                return [vals.startDay, vals.endDay];
             },
             run: () => this.loadAsync(),
             debounce: 100
@@ -216,7 +217,7 @@ export class ActivityTrackingModel {
             });
 
             data.forEach(it => {
-                it.day = LocalDate.from(it.dateCreated);
+                it.day = LocalDate.from(it.day);
                 it.month = it.day.format(this._monthFormat);
             });
 
@@ -237,9 +238,8 @@ export class ActivityTrackingModel {
 
         data.forEach(node => this.separateLeafRows(node));
         gridModel.loadData(data);
+        await gridModel.preSelectFirstAsync();
 
-        await wait(1);
-        if (!gridModel.hasSelection) gridModel.selectFirst();
 
         chartsModel.setDataAndDims({data, dimensions});
     }
@@ -261,33 +261,41 @@ export class ActivityTrackingModel {
 
     @action
     resetQuery() {
-        const {formModel, filterChooserModel, dimChooserModel, _defaultDims, _defaultFilter} = this;
+        const {formModel, filterChooserModel, groupingChooserModel, _defaultDims, _defaultFilter} = this;
         formModel.init({
-            startDate: this.getDefaultStartDate(),
-            endDate: this.getDefaultEndDate()
+            startDay: this.getDefaultStartDay(),
+            endDay: this.getDefaultEndDay()
         });
         filterChooserModel.setValue(_defaultFilter);
-        dimChooserModel.setValue(_defaultDims);
+        groupingChooserModel.setValue(_defaultDims);
     }
 
     adjustDates(dir) {
-        const {startDate, endDate} = this.formModel.fields,
-            tomorrow = LocalDate.tomorrow(),
-            start = startDate.value,
-            end = endDate.value,
+        const {startDay, endDay} = this.formModel.fields,
+            appDay = LocalDate.currentAppDay(),
+            start = startDay.value,
+            end = endDay.value,
             diff = end.diff(start),
             incr = diff + 1;
 
         let newStart = start[dir](incr),
             newEnd = end[dir](incr);
 
-        if (newEnd > tomorrow) {
-            newStart = tomorrow.subtract(Math.abs(diff));
-            newEnd = tomorrow;
+        if (newEnd > appDay) {
+            newStart = appDay.subtract(Math.abs(diff));
+            newEnd = appDay;
         }
 
-        startDate.setValue(newStart);
-        endDate.setValue(newEnd);
+        startDay.setValue(newStart);
+        endDay.setValue(newEnd);
+    }
+
+    // Set the start date by taking the end date and pushing back [value] [units] - then pushing
+    // forward one day as the day range query is inclusive.
+    adjustStartDate(value, unit) {
+        this.formModel.setValues({
+            startDay: this.endDay.subtract(value, unit).nextDay()
+        });
     }
 
     toggleRowExpandCollapse(agParams) {
@@ -337,8 +345,7 @@ export class ActivityTrackingModel {
         }
     }
 
-    // TODO - see https://github.com/xh/hoist-react/issues/400 for why we push endDate out to tomorrow.
-    getDefaultStartDate() {return LocalDate.today().subtract(1, 'months')}
-    getDefaultEndDate() {return LocalDate.tomorrow()}
+    getDefaultStartDay() {return LocalDate.currentAppDay().subtract(7, 'days')}
+    getDefaultEndDay() {return LocalDate.currentAppDay()}
 
 }

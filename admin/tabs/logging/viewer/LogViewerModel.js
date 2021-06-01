@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, managed, persist, XH} from '@xh/hoist/core';
+import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
@@ -17,9 +17,7 @@ import {LogDisplayModel} from './LogDisplayModel';
 /**
  * @private
  */
-@HoistModel
-@LoadSupport
-export class LogViewerModel {
+export class LogViewerModel extends HoistModel {
 
     persistWith = {localStorageKey: 'xhAdminLogViewerState'};
 
@@ -60,6 +58,8 @@ export class LogViewerModel {
     });
 
     constructor() {
+        super();
+        makeObservable(this);
         this.addReaction(this.syncSelectionReaction());
         this.addReaction(this.toggleTailReaction());
         this.addReaction(this.reloadReaction());
@@ -74,12 +74,16 @@ export class LogViewerModel {
     @action
     async doLoadAsync(loadSpec) {
         const {store, selModel} = this.filesGridModel;
-        await store.loadAsync(loadSpec);
-        if (selModel.isEmpty) {
-            const latestAppLog = store.records.find(rec => rec.data.filename == `${XH.appCode}.log`);
-            if (latestAppLog) {
-                selModel.select(latestAppLog);
+        try {
+            await store.loadAsync(loadSpec);
+            if (selModel.isEmpty) {
+                const latestAppLog = store.records.find(rec => rec.data.filename == `${XH.appCode}.log`);
+                if (latestAppLog) {
+                    selModel.select(latestAppLog);
+                }
             }
+        } catch (e) {
+            XH.handleException(e, {title: 'Error loading list of available log files'});
         }
     }
 

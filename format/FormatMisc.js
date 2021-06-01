@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {span} from '@xh/hoist/cmp/layout';
 import {capitalize} from 'lodash';
@@ -45,18 +45,18 @@ export function fmtSpan(v, {
 //-----------------
 // Implementation
 //-----------------
-function fmtSpanElement(v, opts = {}) {
+function fmtSpanElement(v, opts) {
     const {className, title, leadSpc, trailSpc} = opts,
         txt = (leadSpc ? ' ' : '') + v + (trailSpc ? ' ' : '');
 
     return span({
-        className: className,
-        title: title,
+        className,
+        title,
         item: txt
     });
 }
 
-function fmtSpanHtml(v, opts = {}) {
+function fmtSpanHtml(v, opts) {
     const {className, title, leadSpc, trailSpc} = opts,
         txt = (leadSpc ? ' ' : '') + v;
 

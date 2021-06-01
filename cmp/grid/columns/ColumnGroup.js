@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {genDisplayName} from '@xh/hoist/data';
 import {apiRemoved, throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -48,13 +48,10 @@ export class ColumnGroup {
         Object.assign(this, rest);
 
         this.groupId = withDefault(groupId, headerName);
-
         this.headerName = withDefault(headerName, genDisplayName(this.groupId));
         this.headerClass = headerClass;
         this.headerAlign = headerAlign;
-
-        this.children = children.map(c => gridModel.buildColumn(c));
-
+        this.children = children;
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
     }
@@ -67,7 +64,7 @@ export class ColumnGroup {
             headerClass: getAgHeaderClassFn(this),
             headerGroupComponentParams: {gridModel, xhColumnGroup: this},
             children: this.children.map(it => it.getAgSpec()),
-            marryChildren: true, // enforce 'sealed' column groups
+            marryChildren: gridModel.lockColumnGroups,
             ...this.agOptions
         };
     }

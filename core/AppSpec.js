@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -27,8 +27,10 @@ export class AppSpec {
      *      the project's Webpack config, but can be set here to a more specific value (e.g.
      *      'MyApp Mobile').
      * @param {boolean} c.isMobileApp - true if the app should use the Hoist mobile toolkit.
-     * @param {Class} c.modelClass - root Model class for App, decorated with `@HoistAppModel`.
-     * @param {Class} c.componentClass - root Component class for App, decorated with `@HoistComponent`.
+     * @param {Class} c.modelClass - root Model class for the application. Note this is a reference
+     *      to the class itself, not an instance, and must extend {@see HoistAppModel}.
+     * @param {Class} c.componentClass - root HoistComponent for the application. Despite the name,
+     *      functional components are fully supported and expected.
      * @param {Class} c.containerClass - Container component to be used to host this application.
      *      This class determines the platform used by Hoist. The value should be imported from
      *      either `@xh/hoist/desktop/AppContainer` or `@xh/hoist/mobile/AppContainer`.

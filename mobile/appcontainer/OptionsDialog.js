@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {OptionsDialogModel} from '@xh/hoist/appcontainer/OptionsDialogModel';
 import {form} from '@xh/hoist/cmp/form';
 import {filler, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button} from '@xh/hoist/mobile/cmp/button';
+import {button, restoreDefaultsButton} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {formField} from '@xh/hoist/mobile/cmp/form';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
@@ -25,9 +25,9 @@ export const optionsDialog = hoistCmp.factory({
     model: uses(OptionsDialogModel),
 
     render({model}) {
-        const {isOpen, loadModel, formModel, reloadRequired} = model;
+        if (!model.hasOptions || !model.isOpen) return null;
 
-        if (!isOpen) return null;
+        const {loadModel, formModel, reloadRequired} = model;
 
         return dialog({
             title: 'Options',
@@ -46,12 +46,7 @@ export const optionsDialog = hoistCmp.factory({
                 })
             ],
             buttons: [
-                button({
-                    disabled: !formModel.isDirty,
-                    text: 'Reset',
-                    modifier: 'quiet',
-                    onClick: () => formModel.reset()
-                }),
+                restoreDefaultsButton(),
                 filler(),
                 button({
                     text: 'Cancel',

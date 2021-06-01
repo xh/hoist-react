@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {chart} from '@xh/hoist/cmp/chart';
 import {filler} from '@xh/hoist/cmp/layout';
@@ -37,7 +37,7 @@ export const chartsPanel = hoistCmp.factory({
                     onClick: () => model.toggleDialog()
                 })
             ],
-            bbar: [metricSwitcher()],
+            bbar: [metricSwitcher({multiline: true})],
             model: {
                 side: 'bottom',
                 defaultSize: 370
@@ -81,26 +81,28 @@ const chartDialog = hoistCmp.factory(
 );
 
 const metricSwitcher = hoistCmp.factory(
-    ({model}) => {
+    ({model, multiline}) => {
         return buttonGroupInput({
+            className: 'xh-admin-activity-panel__metric-switcher',
             bind: 'metric',
-            flex: 1,
+            outlined: true,
+            flex: 2,
             items: [
                 button({
-                    text: model.getLabelForMetric('entryCount'),
+                    text: model.getLabelForMetric('entryCount', multiline),
                     outlined: true,
                     flex: 1,
                     value: 'entryCount'
                 }),
                 button({
-                    text: model.getLabelForMetric('count'),
+                    text: model.getLabelForMetric('count', multiline),
                     value: 'count',
                     outlined: true,
                     flex: 1,
                     omit: !model.secondaryDim
                 }),
                 button({
-                    text: model.getLabelForMetric('elapsed'),
+                    text: model.getLabelForMetric('elapsed', multiline),
                     outlined: true,
                     flex: 1,
                     value: 'elapsed'

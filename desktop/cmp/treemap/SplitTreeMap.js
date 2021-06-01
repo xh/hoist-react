@@ -2,14 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {fragment, frame, hframe, vframe} from '@xh/hoist/cmp/layout';
+import {placeholder, fragment, hframe, vframe, hbox, vbox, box, div, p} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {errorMessage} from '@xh/hoist/desktop/cmp/error';
+import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {compact, uniq} from 'lodash';
 import PT from 'prop-types';
-import React from 'react';
+
+import './SplitTreeMap.scss';
 import {SplitTreeMapModel} from './SplitTreeMapModel';
 import {treeMap} from './TreeMap';
 
@@ -23,27 +25,31 @@ export const [SplitTreeMap, splitTreeMap]  = hoistCmp.withFactory({
     model: uses(SplitTreeMapModel),
     className: 'xh-split-treemap',
 
-    render({model, ...props}) {
+    render({model, className, ...props}, ref) {
         const {primaryMapModel, secondaryMapModel, orientation} = model,
             errors = uniq(compact([primaryMapModel.error, secondaryMapModel.error])),
             container = orientation === 'horizontal' ? hframe : vframe;
 
         return container({
+            ref,
+            className,
             items: errors.length ? errorPanel({errors}) : childMaps(),
             ...props
         });
     }
 });
+
 SplitTreeMap.propTypes = {
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(SplitTreeMapModel), PT.object])
 };
 
-
 const childMaps = hoistCmp.factory(
     ({model}) => {
-        const {primaryMapModel, secondaryMapModel, mapTitleFn} = model,
-            pTotal = primaryMapModel.total,
+        const {primaryMapModel, secondaryMapModel, empty, emptyText, isMasking} = model;
+        if (empty) return placeholder(emptyText);
+
+        const pTotal = primaryMapModel.total,
             sTotal = secondaryMapModel.total;
 
         let pFlex = 1, sFlex = 1;
@@ -58,25 +64,52 @@ const childMaps = hoistCmp.factory(
         }
 
         return fragment([
-            panel({
-                title: mapTitleFn ? mapTitleFn(primaryMapModel, true) : undefined,
-                compactHeader: true,
-                item: treeMap({model: primaryMapModel}),
-                flex: pFlex
+            // Primary Map
+            mapTitle({isPrimary: true}),
+            box({
+                omit: !pTotal,
+                flex: pFlex,
+                className: 'xh-split-treemap__map-holder',
+                item: treeMap({model: primaryMapModel})
             }),
-            panel({
-                title: mapTitleFn ? mapTitleFn(secondaryMapModel, false) : undefined,
-                compactHeader: true,
-                item: treeMap({model: secondaryMapModel}),
-                flex: sFlex
+
+            // Secondary Map
+            mapTitle({isPrimary: false}),
+            box({
+                omit: !sTotal,
+                flex: sFlex,
+                className: 'xh-split-treemap__map-holder',
+                item: treeMap({model: secondaryMapModel})
+            }),
+
+            // Mask
+            div({
+                omit: !isMasking,
+                className: 'xh-split-treemap__mask-holder',
+                item: mask({isDisplayed: true, spinner: true})
             })
         ]);
     }
 );
 
+const mapTitle = hoistCmp.factory(
+    ({model, isPrimary}) => {
+        const {mapTitleFn, orientation} = model,
+            treeMapModel = isPrimary ? model.primaryMapModel : model.secondaryMapModel;
+
+        if (!mapTitleFn || !treeMapModel.total) return null;
+
+        const container = orientation === 'vertical' ? hbox : vbox;
+        return container({
+            className: 'xh-split-treemap__header',
+            item: div({
+                className: 'xh-split-treemap__header__title',
+                item: mapTitleFn(treeMapModel, isPrimary)
+            })
+        });
+    }
+);
+
 const errorPanel = hoistCmp.factory(
-    ({errors}) => frame({
-        className: 'xh-split-treemap__error-message',
-        items: errors.map(e => <p>{e}</p>)
-    })
+    ({errors}) => errorMessage({error: fragment(errors.map(e => p(e)))})
 );

@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {castArray, clone, find, get, isArray, isFinite, isFunction, isNil, isNumber, isEmpty} from 'lodash';
-import {Component} from 'react';
+import {castArray, clone, find, get, isArray, isFinite, isFunction, isNil, isNumber, isString} from 'lodash';
+import {forwardRef, useImperativeHandle, useState} from 'react';
 import {GridSorter} from '../impl/GridSorter';
 import {ExportFormat} from './ExportFormat';
 
@@ -81,8 +81,10 @@ export class Column {
      * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column.  If
      *      false (default) absolute value sorts will be ignored when cycling through the
      *     sortingOrder.
+     * @param {(string|Column~sortValueFn)} [c.sortValue] - alternate field name to reference or
+     *      function to call when producing a value for this column to be sorted by.
      * @param {Column~comparatorFn} [c.comparator] - function for comparing column values for
-     *     sorting
+     *     sorting.
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
      * @param {boolean} [c.sortable] - false to prevent user from sorting on this column.
@@ -108,17 +110,17 @@ export class Column {
      * @param {string} [c.exportName] - name to use as a header within a file export. Defaults to
      *      `headerName`. Useful when `headerName` contains markup or other characters not suitable
      *      for use within an Excel or CSV file header.
-     * @param {(string|function)} [c.exportValue] - alternate field name to reference or function
-     *      to call when producing a value for a file export. {@see GridExportService}
+     * @param {(string|Column~exportValueFn)} [c.exportValue] - alternate field name to reference or
+     *      function to call when producing a value for a file export. {@see GridExportService}
      * @param {(ExportFormat|function)} [c.exportFormat] - structured format string for Excel-based
      *      exports, or a function to produce one. {@see ExportFormat}
      * @param {number} [c.exportWidth] - width in characters for Excel-based exports. Typically
-     *     used
-     *      with ExportFormat.LONG_TEXT to enable text wrapping.
+     *     used with ExportFormat.LONG_TEXT to enable text wrapping.
      * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or
-     *      tool tip function, which is based on AG Grid tooltip callback.
+     *      tooltip function, which is based on AG Grid tooltip callback. Incompatible with
+     *      `tooltipElement`.
      * @param {Column~tooltipElementFn} [c.tooltipElement] - function which returns a React
-     *     component.
+     *     component to display as a tooltip. Will take precedence over `tooltip`.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
      * @param {boolean} [c.autosizable] - allow autosizing this column.
      * @param {boolean} [c.autosizeIncludeHeader] - true to include the header width when
@@ -127,6 +129,9 @@ export class Column {
      *     sort icon when calculating the header width.
      * @param {number} [c.autosizeMinWidth] - minimum width in pixels when autosizing.
      * @param {number} [c.autosizeMaxWidth] - maximum width in pixels when autosizing.
+     * @param {boolean} [c.autoHeight] - true to dynamically grow the row height based on the
+     *      content of this column's cell.  If true, text will also be set to wrap within cells.
+     *      This property will be ignored if elementRenderer is set.
      * @param {boolean} [c.rendererIsComplex] - true if this renderer relies on more than
      *      just the value of the field associated with this column.  Set to true to ensure that
      *      the cells for this column are updated any time the record is changed.  Setting to true
@@ -168,6 +173,7 @@ export class Column {
         rowHeight,
         absSort,
         sortingOrder,
+        sortValue,
         comparator,
         resizable,
         movable,
@@ -192,6 +198,7 @@ export class Column {
         autosizeIncludeHeaderIcons,
         autosizeMinWidth,
         autosizeMaxWidth,
+        autoHeight,
         tooltip,
         tooltipElement,
         editable,
@@ -252,14 +259,14 @@ export class Column {
 
         this.absSort = withDefault(absSort, false);
         this.sortingOrder = withDefault(sortingOrder, Column.DEFAULT_SORTING_ORDER);
+        this.sortValue = sortValue;
         this.comparator = comparator;
 
         this.resizable = withDefault(resizable, true);
         this.movable = withDefault(movable, true);
         this.sortable = withDefault(sortable, true);
 
-        // Pinned supports convenience true -> 'left'. OK to leave undefined if not given.
-        this.pinned = (pinned === true) ? 'left' : pinned;
+        this.pinned = this.parsePinned(pinned);
 
         this.renderer = renderer;
         this.elementRenderer = elementRenderer;
@@ -290,9 +297,17 @@ export class Column {
         this.autosizeIncludeHeaderIcons = withDefault(autosizeIncludeHeaderIcons, true);
         this.autosizeMinWidth = withDefault(autosizeMinWidth, this.minWidth);
         this.autosizeMaxWidth = withDefault(autosizeMaxWidth, this.maxWidth);
-
+        this.autoHeight = withDefault(autoHeight, false);
+        warnIf(
+            autoHeight && elementRenderer,
+            'autoHeight is ignored when an elementRenderer is defined.  Row heights will not change to accommodate cell content for this column.'
+        );
         this.tooltip = tooltip;
         this.tooltipElement = tooltipElement;
+        warnIf(
+            tooltip && tooltipElement,
+            `Column specified with both tooltip && tooltipElement. Tooltip will be ignored. [colId=${this.colId}]`
+        );
 
         this.editable = editable;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
@@ -310,15 +325,16 @@ export class Column {
      * Produce a Column definition appropriate for AG Grid.
      */
     getAgSpec() {
-        const {gridModel, field, headerName} = this,
-            me = this,
+        const {gridModel, field, headerName, displayName, agOptions} = this,
             ret = {
                 field,
                 colId: this.colId,
+                // headerValueGetter should always return a string
+                // for display in draggable shadow box, aGrid Tool panel.
+                // Hoist ColumnHeader will handle display of Element values in the header.
                 headerValueGetter: (agParams) => {
-                    return agParams.location === 'header' ?
-                        isFunction(headerName) ? headerName({column: this, gridModel, agParams}) : headerName :
-                        this.chooserName;
+                    let ret = isFunction(headerName) ? headerName({column: this, gridModel, agParams}) : headerName;
+                    return isString(ret) ? ret : displayName;
                 },
                 headerClass: getAgHeaderClassFn(this),
                 headerTooltip: this.headerTooltip,
@@ -326,7 +342,7 @@ export class Column {
                 minWidth: this.minWidth,
                 maxWidth: this.maxWidth,
                 resizable: this.resizable,
-                sortable: this.sortable,
+                sortable: false,   // Prevent ag-Grid built-in sorting affordances.  Our custom header provides.
                 suppressMovable: !this.movable,
                 lockPinned: !gridModel.enableColumnPinning || XH.isMobileApp,
                 pinned: this.pinned,
@@ -394,39 +410,41 @@ export class Column {
         }
 
         // Tooltip Handling
-        const {tooltip, tooltipElement} = this;
-        if (tooltip || tooltipElement) {
-            ret.tooltipValueGetter = (agParams) => {
-                const value = isFunction(tooltip) ?
-                    tooltip(agParams.value, {record: agParams.data, column: me, gridModel, agParams}) :
-                    agParams.value;
+        const {tooltip, tooltipElement} = this,
+            tooltipSpec = tooltipElement ?? tooltip;
 
-                // Note that due to a known AgGrid issue, a tooltip must always return a value
-                // or risk not showing when the value later changes.
-                // See https://github.com/xh/hoist-react/issues/2058
-                return isEmpty(value) ? '*EMPTY*' : value;
+        if (tooltipSpec) {
+            ret.tooltipValueGetter = (obj) => {
+
+                // We actually return the *record* itself, rather then ag-Grid's default escaped value.
+                // We need it below, where it will be handled to class as a prop.
+                // Note that we must always return a value - see hoist-react #2058, #2181
+                return obj.data ?? '*EMPTY*';
             };
-            ret.tooltipComponentFramework = class extends Component {
-                getReactContainerClasses() {
-                    if (this.props.location === 'header') return ['ag-tooltip'];
-                    return ['xh-grid-tooltip', tooltipElement ? 'xh-grid-tooltip--custom' : 'xh-grid-tooltip--default'];
-                }
-                render() {
-                    const agParams = this.props,
-                        {location, api, rowIndex} = agParams;
-
-                    if (location === 'header') return div(me.headerTooltip);
-
-                    const record = api.getDisplayedRowAtIndex(rowIndex)?.data;
-                    if (record && tooltipElement) {
-                        // ag-Grid cmp gets escaped value, lookup raw value from record instead
-                        const {store} = record,
-                            value = me.getValueFn({record, column: me, gridModel, agParams, store});
-                        return tooltipElement(value, {record, column: me, gridModel, agParams});
+            ret.tooltipComponentFramework = forwardRef((props, ref) => {
+                const {location} = props;
+                useImperativeHandle(ref, () => ({
+                    getReactContainerClasses() {
+                        if (location === 'header') return ['ag-tooltip'];
+                        return ['xh-grid-tooltip', tooltipElement ? 'xh-grid-tooltip--custom' : 'xh-grid-tooltip--default'];
                     }
-                    return agParams.value === '*EMPTY*' ? null : agParams.value;
-                }
-            };
+                }), [location]);
+
+                const agParams = props,
+                    {value: record} = agParams;  // Value actually contains store record -- see above
+
+                if (location === 'header') return div(this.headerTooltip);
+
+                if (!record?.isRecord) return null;
+                const {store} = record,
+                    val = this.getValueFn({record, column: this, gridModel, agParams, store});
+
+                const ret = isFunction(tooltipSpec) ?
+                    tooltipSpec(val, {record, column: this, gridModel, agParams}) :
+                    val;
+
+                return ret ?? null;
+            });
         }
 
         // Generate CSS classes for cells.
@@ -464,26 +482,47 @@ export class Column {
                 return renderer(agParams.value, {record: agParams.data, column: this, gridModel, agParams});
             });
         } else if (elementRenderer) {
-            setElementRenderer(class extends Component {
-                render() {
-                    const agParams = this.props,
-                        {value, data: record} = agParams;
-                    return elementRenderer(value, {record, column: me, gridModel, agParams});
-                }
-
-                refresh() {return false}
-            });
+            setElementRenderer(
+                forwardRef((props, ref) => {
+                    const [agParams, setAgParams] = useState(props);
+                    useImperativeHandle(ref, () => {
+                        return {
+                            refresh: (agParams) => {
+                                setAgParams(agParams);
+                                return true;
+                            }
+                        };
+                    });
+                    const {value, data} =  agParams;
+                    return elementRenderer(value, {record: data, column: this, gridModel, agParams});
+                })
+            );
+        } else if (!agOptions.cellRenderer && !agOptions.cellRendererFramework) {
+            // By always providing a minimal cell pass-through cellRenderer, we can ensure the
+            // cell contents are wrapped in a span by Ag-Grid. Our flexbox enabled cell styling
+            // requires all cells to have an inner element to work properly. We check agOptions
+            // in case the dev has specified either renderer option directly against the ag-Grid
+            // API (done sometimes with components for performance reasons).
+            setRenderer((agParams) => agParams.value?.toString());
         }
 
         const sortCfg = find(gridModel.sortBy, {colId: ret.colId});
         if (sortCfg) {
             ret.sort = sortCfg.sort;
-            ret.sortedAt = gridModel.sortBy.indexOf(sortCfg);
+            ret.sortIndex = gridModel.sortBy.indexOf(sortCfg);
         }
 
         if (this.comparator === undefined) {
-            // Default comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
-            ret.comparator = this.defaultComparator;
+            // Use default comparator with appropriate inputs
+            ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
+                const recordA = agNodeA?.data,
+                    recordB = agNodeB?.data;
+
+                valueA = this.getSortValue(valueA, recordA),
+                valueB = this.getSortValue(valueB, recordB);
+
+                return this.defaultComparator(valueA, valueB);
+            };
         } else {
             // ...or process custom comparator with the Hoist-defined comparatorFn API.
             ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
@@ -505,17 +544,26 @@ export class Column {
                         agNodeB
                     };
 
+                valueA = this.getSortValue(valueA, recordA);
+                valueB = this.getSortValue(valueB, recordB);
+
                 return this.comparator(valueA, valueB, sortDir, abs, params);
             };
         }
 
+        if (this.autoHeight) {
+            ret.autoHeight = true;
+            ret.wrapText = true;
+        }
+
         // Finally, apply explicit app requests.  The customer is always right....
-        return {...ret, ...this.agOptions};
+        return {...ret, ...agOptions};
     }
 
     //--------------------
     // Implementation
     //--------------------
+    // Default comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
     defaultComparator = (v1, v2) => {
         const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
         return sortCfg ? sortCfg.comparator(v1, v2) : GridSorter.defaultComparator(v1, v2);
@@ -534,6 +582,22 @@ export class Column {
         if (isArray(fieldPath)) return get(record.data, fieldPath);
         return record.data[fieldPath];
     };
+
+    parsePinned(pinned) {
+        if (pinned === true) return 'left';
+        if (pinned === 'left' || pinned === 'right') return pinned;
+        return null;
+    }
+
+    getSortValue(v, record) {
+        const {sortValue, gridModel} = this;
+        if (!sortValue) return v;
+
+        return isFunction(sortValue) ?
+            sortValue(v, {record, column: this, gridModel}) :
+            record?.data[sortValue] ?? v;
+    }
+
 }
 
 export function getAgHeaderClassFn(column) {
@@ -598,6 +662,20 @@ export function getAgHeaderClassFn(column) {
  */
 
 /**
+ * @callback Column~exportValueFn - function to return a value for export.
+ * @param {*} value - cell data value (column + row).
+ * @param {CellContext} context - additional data about the column, row and GridModel.
+ * @return {*} - value for export.
+ */
+
+/**
+ * @callback Column~sortValueFn - function to return a value for sorting.
+ * @param {*} value - cell data value (column + row).
+ * @param {CellContext} context - additional data about the column, row and GridModel.
+ * @return {*} - value for sort.
+ */
+
+/**
  * @callback Column~cellClassFn - function to generate grid cell CSS classes.
  * @param {*} value - cell data value (column + row).
  * @param {CellContext} context - additional data about the column, row and GridModel.
@@ -644,7 +722,7 @@ export function getAgHeaderClassFn(column) {
  * @callback Column~tooltipElementFn - function for a grid cell tooltip returning a React element.
  * @param {*} value - tooltip value.
  * @param {TooltipMetadata} metadata - additional data about the column and row.
- * @return {Element} - the React element to show as a toooltip.
+ * @return {Element} - the React element to show as a tooltip.
  */
 
 /**

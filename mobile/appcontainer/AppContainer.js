@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
@@ -16,7 +16,9 @@ import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterF
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
 import {pinPadImpl} from '@xh/hoist/mobile/cmp/pinpad/impl/PinPad';
 import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
+import {isEmpty} from 'lodash';
 import {aboutDialog} from './AboutDialog';
+import {banner} from './Banner';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
 import {idlePanel} from './IdlePanel';
@@ -26,7 +28,6 @@ import {loginPanel} from './LoginPanel';
 import {messageSource} from './MessageSource';
 import {optionsDialog} from './OptionsDialog';
 import {toastSource} from './ToastSource';
-import {updateBar} from './UpdateBar';
 import {versionBar} from './VersionBar';
 
 installMobileImpls({
@@ -60,7 +61,11 @@ export const AppContainer = hoistCmp({
                 item: viewForState(),
                 onError: (e) => XH.handleException(e, {requireReload: true})
             }),
-            exceptionDialog()
+            // Modal component helpers rendered here at top-level to support display of messages
+            // and exceptions at any point during the app lifecycle.
+            exceptionDialog(),
+            messageSource(),
+            toastSource()
         );
     }
 });
@@ -97,7 +102,7 @@ const appContainerView = hoistCmp.factory({
         return viewport(
             vframe(
                 impersonationBar(),
-                updateBar(),
+                bannerList(),
                 refreshContextView({
                     model: model.refreshContextModel,
                     item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
@@ -105,12 +110,20 @@ const appContainerView = hoistCmp.factory({
                 versionBar()
             ),
             mask({model: model.appLoadModel, spinner: true}),
-            messageSource(),
-            toastSource(),
+            aboutDialog(),
             feedbackDialog(),
-            optionsDialog(),
-            aboutDialog()
+            optionsDialog()
         );
+    }
+});
+
+const bannerList = hoistCmp.factory({
+    render({model}) {
+        const {bannerModels} = model.bannerSourceModel;
+        if (isEmpty(bannerModels)) return null;
+        return fragment({
+            items: bannerModels.map(model => banner({model, key: model.xhId}))
+        });
     }
 });
 

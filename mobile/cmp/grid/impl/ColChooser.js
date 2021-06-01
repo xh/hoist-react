@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {div, filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
@@ -18,7 +18,7 @@ import {ColChooserModel} from './ColChooserModel';
 
 /**
  * Hoist UI for user selection and discovery of available Grid columns, enabled via the
- * GridModel.enableColChooser config option.
+ * GridModel.colChooserModel config option.
  *
  * This component displays available columns in a list, with currently visible columns
  * identified by a checkmark icon to the right of the column name. Users can toggle column
@@ -36,7 +36,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
     className: 'xh-col-chooser',
 
     render({model, className}) {
-        const {isOpen, gridModel, pinnedColumn, visibleColumns, hiddenColumns} = model;
+        const {isOpen, gridModel, pinnedColumn, visibleColumns, hiddenColumns, showRestoreDefaults} = model;
         const impl = useLocalModel(LocalModel);
         impl.model = model;
 
@@ -96,9 +96,10 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
             }),
             bbar: [
                 button({
+                    omit: !showRestoreDefaults,
                     text: 'Reset',
                     modifier: 'quiet',
-                    onClick: () => model.restoreDefaults()
+                    onClick: () => model.restoreDefaultsAsync()
                 }),
                 filler(),
                 button({
@@ -203,8 +204,7 @@ const row = hoistCmp.factory({
 });
 
 
-@HoistModel
-class LocalModel {
+class LocalModel extends HoistModel {
 
     model;
 

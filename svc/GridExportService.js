@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {ExportFormat} from '@xh/hoist/cmp/grid';
 import {HoistService, XH} from '@xh/hoist/core';
@@ -16,8 +16,7 @@ import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq, compact} 
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
  * @see Column API for options to control exported values and formats.
  */
-@HoistService
-export class GridExportService {
+export class GridExportService extends HoistService {
 
     /**
      * Export a GridModel to a file. Typically called via `GridModel.exportAsync()`.
@@ -175,7 +174,10 @@ export class GridExportService {
             }
             return ret;
         });
-        if (type === 'excelTable' && uniq(headers).length !== headers.length) {
+
+        // Excel does not like duplicate (case-insensitive) header names in tables and will prompt
+        // the user to "repair" the file when opened if present.
+        if (type === 'excelTable' && uniq(headers.map(it => it.toLowerCase())).length !== headers.length) {
             console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers.');
         }
         return {data: headers, depth: 0};
@@ -235,7 +237,7 @@ export class GridExportService {
             value = record.data[exportValue];
         } else if (isFunction(exportValue)) {
             // If export value is a function that transforms the value
-            value = exportValue(value);
+            value = exportValue(value, {record, column, gridModel});
         } else if (aggData && !isNil(aggData[field])) {
             // If we found aggregate data calculated by agGrid
             value = aggData[field];

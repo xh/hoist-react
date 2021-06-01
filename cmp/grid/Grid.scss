@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
 .xh-grid:not(.xh-data-view) {
@@ -82,10 +82,19 @@
     }
   }
 
+  // Floating viewports host total rows.
+  .ag-floating-bottom,
+  .ag-floating-top {
+    // Background on viewport itself covers area left blank by presence of a flex column.
+    background-color: var(--xh-grid-total-row-bg);
+    .ag-row-pinned.ag-row-first {
+      background-color: var(--xh-grid-total-row-bg);
+    }
+  }
+
   //------------------------
   // Core Cell Classes
   //------------------------
-
   // No LR padding when center aligned - not relevant / allows narrow cols (icons) to center align.
   .ag-cell.xh-align-center {
     padding-left: 0;
@@ -93,59 +102,73 @@
   }
 }
 
+
 //------------------------
 // Trees and Grouping
 //------------------------
 .xh-grid--hierarchical:not(.xh-data-view) {
   // Generate indentations for tree grids with hierarchical data.
   .ag-ltr {
-    .ag-row-group-indent-0 {
-      padding-left: calc(0 * var(--xh-grid-tree-indent));
-    }
+    @for $i from 0 to 20 {
+      .ag-row-group-indent-#{$i} {
+        padding-left: calc(#{$i} * var(--xh-grid-tree-indent));
+      }
 
-    .ag-row-group-indent-1 {
-      padding-left: calc(1 * var(--xh-grid-tree-indent));
+      .ag-row-level-#{$i} {
+        .ag-row-group-leaf-indent {
+          margin-left: var(--xh-grid-tree-indent);
+        }
+      }
     }
-
-    .ag-row-group-indent-2 {
-      padding-left: calc(2 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-3 {
-      padding-left: calc(3 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-4 {
-      padding-left: calc(4 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-5 {
-      padding-left: calc(5 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-6 {
-      padding-left: calc(6 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-7 {
-      padding-left: calc(7 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-8 {
-      padding-left: calc(8 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-9 {
-      padding-left: calc(9 * var(--xh-grid-tree-indent));
-    }
-  }
-
-  .ag-ltr .ag-row-group-leaf-indent {
-    margin-left: var(--xh-grid-tree-indent);
   }
 
   .ag-group-contracted + .ag-group-value:not(:empty) {
     margin-left: 0;
+  }
+
+  // Adjust left padding for tree columns.
+  .ag-cell.xh-tree-column {
+    padding-left: calc(var(--xh-grid-tree-indent) - var(--xh-grid-tree-icon-px));
+  }
+
+  //------------------------
+  // Tree grid styling modes
+  //------------------------
+  &.xh-grid--tree-style-highlights {
+    div[class*=" ag-row-group"],
+    div[class^="ag-row-group"] {
+      &:not(.ag-row-selected),
+      &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+        background-color: var(--xh-grid-tree-group-bg);
+      }
+    }
+
+    .xh-ag-grid--show-hover {
+      div[class*=" ag-row-group"],
+      div[class^="ag-row-group"] {
+        &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected) {
+          background-color: var(--xh-grid-bg-hover);
+        }
+      }
+    }
+  }
+
+  &.xh-grid--tree-style-borders {
+    .ag-row-level-0[class*=" ag-row-group"],
+    .ag-row-level-0[class^="ag-row-group"], {
+      &:not(.ag-row-first) {
+        border-top: 1px solid var(--xh-grid-tree-group-border-color);
+      }
+    }
+
+    // Floating viewports host total rows.
+    .ag-floating-bottom {
+      border-color: var(--xh-grid-tree-group-border-color);
+    }
+
+    .ag-floating-top {
+      border-color: var(--xh-grid-tree-group-border-color);
+    }
   }
 }
 
@@ -194,6 +217,7 @@
 .xh-grid-tooltip {
   position: absolute;
 
+  &.ag-tooltip-hiding,
   &:empty {
     display: none;
   }

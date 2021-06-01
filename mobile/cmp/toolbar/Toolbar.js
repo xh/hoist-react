@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
@@ -18,8 +18,9 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
     className: 'xh-toolbar',
     model: false, memo: false, observer: false,
 
-    render({className, vertical, ...rest}) {
+    render({className, vertical, ...rest}, ref) {
         return (vertical ? vbox : hbox)({
+            ref,
             className: classNames(className, vertical ? 'xh-toolbar--vertical' : null),
             ...rest
         });
