@@ -194,17 +194,20 @@ class LocalModel extends HoistModel {
         let tileWidth = Math.floor((width - spacing) / cols) - spacing,
             tileHeight = Math.floor((height - spacing) / rows) - spacing;
 
+        // Invalidate layouts that don't meet constraints
         if (!skipConstraints) {
             if (minTileWidth && tileWidth < minTileWidth) return null;
             if (maxTileWidth && tileWidth > maxTileWidth) return null;
         }
 
+        // Enforce constraints
+        if (minTileWidth && tileWidth < minTileWidth) tileWidth = minTileWidth;
+        if (maxTileWidth && tileWidth > maxTileWidth) tileWidth = maxTileWidth;
         if (minTileHeight && tileHeight < minTileHeight) tileHeight = minTileHeight;
         if (maxTileHeight && tileHeight > maxTileHeight) tileHeight = maxTileHeight;
 
         // Calculate tile width / height ratio
         const ratio = tileWidth / tileHeight;
-
         if (!skipConstraints) {
             if (minTileRatio && ratio < minTileRatio) return null;
             if (maxTileRatio && ratio > maxTileRatio) return null;
