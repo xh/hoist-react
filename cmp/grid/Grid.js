@@ -410,7 +410,7 @@ class LocalModel extends HoistModel {
 
                     if (transaction?.update) {
                         // Refresh cells in columns with complex renderers
-                        const refreshCols = model.columns.filter(c => !c.hidden && c.rendererIsComplex);
+                        const refreshCols = model.getVisibleLeafColumns().filter(c => c.rendererIsComplex);
                         if (refreshCols) {
                             const rowNodes = compact(transaction.update.map(r => agApi.getRowNode(r.id))),
                                 columns = refreshCols.map(c => c.colId);
@@ -418,7 +418,7 @@ class LocalModel extends HoistModel {
                         }
 
                         // Refresh row heights if autoHeight is enabled
-                        if (agApi.gridOptionsWrapper.columnController.isAutoRowHeightActive()) {
+                        if (model.getVisibleLeafColumns().some(c => c.autoHeight)) {
                             agApi.resetRowHeights();
                         }
                     }
