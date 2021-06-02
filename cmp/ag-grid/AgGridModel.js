@@ -542,7 +542,7 @@ export class AgGridModel extends HoistModel {
     /**
      * Required height of row as determined by content in visible autoHeight columns.
      *
-     *  If autoHeight not enabled for any visible columns, this method will return null.
+     * If autoHeight not enabled for any visible columns, this method will return null.
      *
      * @param {Row} node - agGrid node.
      * @returns {Number} - pixel height for row or null.
