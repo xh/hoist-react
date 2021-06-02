@@ -111,23 +111,29 @@ export class InlineEditorModel extends HoistModel {
  * @param {function} component - react component to render - should be a HoistInput
  * @param {Object} props - props passed to containing component
  * @param {Object} ref - forwardRef passed to containing component
- * @param {Class} modelSpec - specify to use particular subclass of InlineEditorModel
+ * @param {boolean} [isPopup] - true if this editor should be rendered as a popup over the cell instead
+ *      of withing the actual cell element. Popups editors will have their width set to match the
+ *      cell by default.
+ * @param {Class} [modelSpec] - specify to use particular subclass of InlineEditorModel
  * @return {element} - react element to be rendered
  */
-export function useInlineEditorModel(component, props, ref, modelSpec = InlineEditorModel) {
+export function useInlineEditorModel(component, props, ref, isPopup = false, modelSpec = InlineEditorModel) {
     const {className, inputProps} = props,
         impl = useLocalModel(() => new modelSpec(props));
 
     useImperativeHandle(ref, () => ({
         getValue: () => impl.value,
 
+        isPopup: () => isPopup,
+
         // This is called in full-row editing when the user tabs into the cell
         focusIn: () => impl.focus()
     }));
 
+    console.log(props);
     return component({
         className: classNames('xh-inline-editor', className),
-        width: null,
+        width: isPopup ? props.agParams.eGridCell.clientWidth : null,
         model: impl,
         bind: 'value',
         commitOnChange: true,

@@ -399,6 +399,12 @@ export class Column {
                         gridModel,
                         agParams
                     });
+                },
+                suppressKeyboardEvent: ({editing, event}) => {
+                    if (!editing) return false;
+
+                    // Allow shift+enter to add newlines in certain editors
+                    if (event.shiftKey && event.key === 'Enter') return true;
                 }
             };
 
