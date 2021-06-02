@@ -150,7 +150,7 @@ class LocalModel extends HoistModel {
     // Implementation
     //-------------------
     createLayout() {
-        const {width, height, count} = this.params,
+        const {width, height, count, minTileWidth} = this.params,
             layouts = [];
 
         if (!width || !height || !count) return null;
@@ -163,11 +163,12 @@ class LocalModel extends HoistModel {
 
         // Choose layout with the best (i.e. lowest) score.
         // Fall back to single row or single column layout if unable to satisfy constraints.
-        // Prefer single row if container has landscape orientation and single column if portrait.
+        // Prefer single column if container has portrait orientation or a minTileWidth constraint.
         let layout = minBy(layouts, 'score');
         if (!layout) {
-            const colCount = height > width ? 1 : count,
-                rowCount = height > width ? count : 1;
+            const singleCol = height > width || minTileWidth,
+                colCount = singleCol ? 1 : count,
+                rowCount = singleCol ? count : 1;
             layout = this.generateScoredLayout(colCount, rowCount, true);
         }
 
