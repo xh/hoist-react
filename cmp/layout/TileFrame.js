@@ -16,9 +16,9 @@ import {Children} from 'react';
 import './TileFrame.scss';
 
 /**
- * This component renders its children as space filling tiles of the equal size.
- * It will generate a tiling layout that attempts to compromise between limiting empty space,
- * and keeping the tile width / height ratio as close to the desired ratio as possible.
+ * This component renders its children as equally-sized tiles, resized and arranged to fill the
+ * available space within the container while maintaining even padding between tiles and keeping
+ * tile width / height as close to a specified ratio as possible.
  *
  * Supports a number of optional constraints on tile dimensions that can be used to produce more
  * stable layouts. These should be used judiciously, however, as each constraint limits the ability
