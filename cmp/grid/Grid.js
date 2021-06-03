@@ -62,6 +62,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
 
     render({model, className, ...props}, ref) {
         apiRemoved(props.hideHeaders, 'hideHeaders', 'Specify hideHeaders on the GridModel instead.');
+        apiRemoved(props.onRowDoubleClicked, 'onRowDoubleClicked', 'Specify onRowDoubleClicked on the GridModel instead.');
 
         const impl = useLocalModel(() => new LocalModel(model, props)),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser;

@@ -217,6 +217,9 @@ export class GridModel extends HoistModel {
      * @param {GridGroupSortFn} [c.groupSortFn] - function to use to sort full-row groups.
      *      Called with two group values to compare in the form of a standard JS comparator.
      *      Default is an ascending string sort. Set to `null` to prevent sorting of groups.
+     * @param {function} [c.onRowDoubleClicked] - Callback when a row is double
+     *     clicked. Function will receive an event with a data node containing the row's data.
+     *     (Note that this may be null - e.g. for clicks on group rows.)
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or
      *      token strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu. Desktop only.
@@ -235,9 +238,6 @@ export class GridModel extends HoistModel {
      *      Default false.
      * @param {Object} [c.experimental] - flags for experimental features. These features are
      *     designed for early client-access and testing, but are not yet part of the Hoist API.
-     * @param {GridOnRowDoubleClickedFn} [c.onRowDoubleClicked] - Callback when a row is double
-     *     clicked. Function will receive an event with a data node containing the row's data.
-     *     (Note that this may be null - e.g. for clicks on group rows.)
      * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
@@ -278,12 +278,13 @@ export class GridModel extends HoistModel {
         groupRowElementRenderer,
         groupSortFn,
 
+        onRowDoubleClicked,
+
         contextMenu,
         useVirtualColumns = false,
         autosizeOptions = {},
         restoreDefaultsWarning = GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
         experimental,
-        onRowDoubleClicked,
         ...rest
     }) {
         super();
@@ -1276,11 +1277,6 @@ export class GridModel extends HoistModel {
  * @param {RowNode} metadata.nodeA - first raw ag-Grid row node.
  * @param {RowNode} metadata.nodeB - second raw ag-Grid row node.
  * @returns {number} - 0 if group values are equal, <0 if `a` sorts first, >0 if `b` sorts first.
- */
-
-/**
- * @callback GridOnRowDoubleClicked - ...
- * @param {RowNode} metadata.nodeA - double-clicked ag-Grid row node.
  */
 
 /**
