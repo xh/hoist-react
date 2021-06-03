@@ -63,6 +63,8 @@ export const [Grid, grid] = hoistCmp.withFactory({
     render({model, className, ...props}, ref) {
         apiRemoved(props.hideHeaders, 'hideHeaders', 'Specify hideHeaders on the GridModel instead.');
         apiRemoved(props.onRowDoubleClicked, 'onRowDoubleClicked', 'Specify onRowDoubleClicked on the GridModel instead.');
+        apiRemoved(props.onCellClicked, 'onCellClicked', 'Specify onCellClicked on the GridModel instead.');
+        apiRemoved(props.onCellDoubleClicked, 'onCellDoubleClicked', 'Specify onCellDoubleClicked on the GridModel instead.');
 
         const impl = useLocalModel(() => new LocalModel(model, props)),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser;
@@ -107,40 +109,7 @@ Grid.propTypes = {
      * Callback when the grid has initialized. The component will call this with the ag-Grid
      * event after running its internal handler to associate the ag-Grid APIs with its model.
      */
-    onGridReady: PT.func,
-
-    /**
-     * Callback when a key down event is detected on this component. Function will receive an
-     * event with the standard 'target' element.
-     *
-     * Note that the ag-Grid API provides limited ability to customize keyboard handling.
-     * This handler is designed to allow application to workaround this.
-     */
-    onKeyDown: PT.func,
-
-    /**
-     * Callback when a row is clicked. Function will receive an event with a data node
-     * containing the row's data. (Note that this may be null - e.g. for clicks on group rows.)
-     */
-    onRowClicked: PT.func,
-
-    // /**
-    //  * Callback when a row is double clicked. Function will receive an event with a data node
-    //  * containing the row's data. (Note that this may be null - e.g. for clicks on group rows.)
-    //  */
-    // onRowDoubleClicked: PT.func,
-
-    /**
-     * Callback when a cell is clicked. Function will receive an event with a data node, cell
-     * value, and column.
-     */
-    onCellClicked: PT.func,
-
-    /**
-     * Callback when a cell is double clicked. Function will receive an event with a data node,
-     * cell value, and column.
-     */
-    onCellDoubleClicked: PT.func
+    onGridReady: PT.func
 };
 
 
@@ -233,8 +202,8 @@ class LocalModel extends HoistModel {
                 if (props.onRowClicked) props.onRowClicked(e);
             },
             onRowDoubleClicked: model.onRowDoubleClicked,
-            onCellClicked: props.onCellClicked,
-            onCellDoubleClicked: props.onCellDoubleClicked,
+            onCellClicked: model.onCellClicked,
+            onCellDoubleClicked: model.onCellDoubleClicked,
             onRowGroupOpened: this.onRowGroupOpened,
             onSelectionChanged: this.onSelectionChanged,
             onDragStopped: this.onDragStopped,
