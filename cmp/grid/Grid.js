@@ -123,11 +123,11 @@ Grid.propTypes = {
      */
     onRowClicked: PT.func,
 
-    /**
-     * Callback when a row is double clicked. Function will receive an event with a data node
-     * containing the row's data. (Note that this may be null - e.g. for clicks on group rows.)
-     */
-    onRowDoubleClicked: PT.func,
+    // /**
+    //  * Callback when a row is double clicked. Function will receive an event with a data node
+    //  * containing the row's data. (Note that this may be null - e.g. for clicks on group rows.)
+    //  */
+    // onRowDoubleClicked: PT.func,
 
     /**
      * Callback when a cell is clicked. Function will receive an event with a data node, cell
@@ -231,7 +231,7 @@ class LocalModel extends HoistModel {
                 this.onRowClicked(e);
                 if (props.onRowClicked) props.onRowClicked(e);
             },
-            onRowDoubleClicked: props.onRowDoubleClicked,
+            onRowDoubleClicked: model.onRowDoubleClicked,
             onCellClicked: props.onCellClicked,
             onCellDoubleClicked: props.onCellDoubleClicked,
             onRowGroupOpened: this.onRowGroupOpened,
