@@ -8,6 +8,7 @@
   // Scrollbar will be shown above the content in order to not take up width.
   // Consider increasing the spacing for TileFrames that are expected to scroll.
   overflow-y: overlay !important;
+  overflow-x: overlay !important;
 
   &__tile {
     position: absolute !important;
