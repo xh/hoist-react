@@ -34,8 +34,8 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
         children,
         desiredRatio = 1,
         spacing = 0,
-        minTileRatio = 0.25,
-        maxTileRatio = 4.0,
+        minTileRatio,
+        maxTileRatio,
         minTileWidth,
         maxTileWidth,
         minTileHeight,
@@ -93,10 +93,10 @@ TileFrame.propTypes = {
     /** The space between tiles (in px) */
     spacing: PT.number,
 
-    /** Min tile ratio. Defaults to 0.25 */
+    /** Min tile ratio. */
     minTileRatio: PT.number,
 
-    /** Max tile ratio. Defaults to 4.0 */
+    /** Max tile ratio. */
     maxTileRatio: PT.number,
 
     /** Min tile width (in px). */
