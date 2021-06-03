@@ -317,7 +317,7 @@ export class Column {
         this.autoHeight = withDefault(autoHeight, false);
         warnIf(
             autoHeight && elementRenderer,
-            'autoHeight is ignored when an elementRenderer is defined.  Row heights will not change to accommodate cell content for this column.'
+            'autoHeight is ignored when an elementRenderer is defined. Row heights will not change to accommodate cell content for this column.'
         );
         this.tooltip = tooltip;
         this.tooltipElement = tooltipElement;

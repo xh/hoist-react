@@ -18,20 +18,17 @@
   before first load should set this property to `false`.
 * All Hoist Components now support a `modelRef` prop. Supply a ref to this prop in order to gain a
   pointer to a Component's backing `HoistModel`.
-* `fmtNumber()` supports new flags `withCommas` and `omitFourDigitComma` to customize the treatment of
-commas in number displays.
+* `fmtNumber()` supports new flags `withCommas` and `omitFourDigitComma` to customize the treatment
+  of commas in number displays.
 
 
 ### 💥 Breaking Changes
 
-* The support for class-based Hoist Components via `@HoistComponent` has been removed.  This
-support had been officially deprecated in `v38`.  Please use functional components created by
-`hoistCmp` instead.
-* `DimensionChooser` has been removed from the framework. This component was deprecated in version
-  37.0.0. Use `GroupingChooser` instead.
-* `TreeMapModel.colorMode` value 'balanced' is no longer supported. This mode was somewhat arbitrary
-  and the need for it has been obviated by the new TreeMapModel `maxHeat` property. Applications
-  should use `maxHeat` to prevent outlier values from dominating the color range of the TreeMap.
+* Removed support for class-based Hoist Components via the `@HoistComponent` decorator (deprecated
+* in v38). Use functional components created via the `hoistCmp()` factory instead.
+* Removed `DimensionChooser` (deprecated in v37). Use `GroupingChooser` instead.
+* Removed `TreeMapModel.colorMode` value 'balanced'. Applications should use the new `maxHeat`
+  config to prevent outlier values from dominating the color range of the TreeMap.
 
 ### 🐞 Bug Fixes
 
@@ -45,7 +42,12 @@ support had been officially deprecated in `v38`.  Please use functional componen
 
 ### 📚 Libraries
 
-* @mobx `6.1.8 -> 6.3.0`
+* @blueprintjs/core `3.44 -> 3.45`
+* codemirror `5.60 -> 5.61`
+* core-js `3.10 -> 3.13`
+* filesize `6.2 -> 6.3`
+* mobx `6.1 -> 6.3`
+* react-windowed-select `3.0 -> 3.1`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v40.0.0...develop)
 
