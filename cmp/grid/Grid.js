@@ -62,6 +62,8 @@ export const [Grid, grid] = hoistCmp.withFactory({
 
     render({model, className, ...props}, ref) {
         apiRemoved(props.hideHeaders, 'hideHeaders', 'Specify hideHeaders on the GridModel instead.');
+        apiRemoved(props.onKeyDown, 'onKeyDown', 'Specify onKeyDown on the GridModel instead.');
+        apiRemoved(props.onRowClicked, 'onRowClicked', 'Specify onRowClicked on the GridModel instead.');
         apiRemoved(props.onRowDoubleClicked, 'onRowDoubleClicked', 'Specify onRowDoubleClicked on the GridModel instead.');
         apiRemoved(props.onCellClicked, 'onCellClicked', 'Specify onCellClicked on the GridModel instead.');
         apiRemoved(props.onCellDoubleClicked, 'onCellDoubleClicked', 'Specify onCellDoubleClicked on the GridModel instead.');
@@ -120,7 +122,6 @@ class LocalModel extends HoistModel {
 
     model;
     agOptions;
-    propsKeyDown;
     viewRef = createRef();
     fixedRowHeight;
 
@@ -161,7 +162,6 @@ class LocalModel extends HoistModel {
         this.addReaction(this.rowHeightReaction());
 
         this.agOptions = merge(this.createDefaultAgOptions(props), props.agOptions || {});
-        this.propsKeyDown = props.onKeyDown;
     }
 
     createDefaultAgOptions(props) {
@@ -197,13 +197,10 @@ class LocalModel extends HoistModel {
             getRowHeight: ({node}) => this.getRowHeight(node),
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             noRowsOverlayComponentFramework: observer(() => div(this.emptyText)),
-            onRowClicked: (e) => {
-                this.onRowClicked(e);
-                if (props.onRowClicked) props.onRowClicked(e);
-            },
             onRowDoubleClicked: model.onRowDoubleClicked,
             onCellClicked: model.onCellClicked,
             onCellDoubleClicked: model.onCellDoubleClicked,
+            onRowClicked: this.onRowClicked,
             onRowGroupOpened: this.onRowGroupOpened,
             onSelectionChanged: this.onSelectionChanged,
             onDragStopped: this.onDragStopped,
@@ -683,20 +680,24 @@ class LocalModel extends HoistModel {
     }
 
     onKeyDown = (evt) => {
-        const {selModel} = this.model;
-        if ((evt.ctrlKey || evt.metaKey) && evt.key == 'a' && selModel.mode === 'multiple') {
+        const {model} = this,
+            {selModel} = model;
+        if ((evt.ctrlKey || evt.metaKey) && evt.key === 'a' && selModel.mode === 'multiple') {
             selModel.selectAll();
             return;
         }
 
-        if (this.propsKeyDown) this.propsKeyDown(evt);
+        if (model.onKeyDown) model.onKeyDown(evt);
     };
 
     onRowClicked = (evt) => {
-        const {selModel} = this.model;
+        const {model} = this,
+            {selModel} = model;
         if (evt.rowPinned) {
             selModel.clear();
         }
+
+        if (model.onRowClicked) model.onRowClicked(evt);
     };
 }
 

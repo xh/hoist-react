@@ -289,6 +289,8 @@ export class GridModel extends HoistModel {
         groupRowElementRenderer,
         groupSortFn,
 
+        onKeyDown,
+        onRowClicked,
         onRowDoubleClicked,
         onCellClicked,
         onCellDoubleClicked,
@@ -365,6 +367,8 @@ export class GridModel extends HoistModel {
         this.selModel = this.parseSelModel(selModel);
         this.persistenceModel = persistWith ? new GridPersistenceModel(this, persistWith) : null;
         this.experimental = this.parseExperimental(experimental);
+        this.onKeyDown = onKeyDown;
+        this.onRowClicked = onRowClicked;
         this.onRowDoubleClicked = onRowDoubleClicked;
         this.onCellClicked = onCellClicked;
         this.onCellDoubleClicked = onCellDoubleClicked;
