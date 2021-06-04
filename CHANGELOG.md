@@ -34,9 +34,10 @@ just-in-time initialization of Form data that can take advantage of context, suc
   config to prevent outlier values from dominating the color range of the TreeMap.
 * The behavior of `FormModel.init()` has been changed such that it will always re-initialize *all*
 fields. (Previously, it would only initialize fields explicitly passed to it in its single
-argument).  We believe this is inline with what users expected this method to do, and should not
-cause problems for most applications. The main effect will be to allow the removal of  "work-around"
-code that provides duplicate settings of the initial values to this method.
+argument).  We believe this is inline with what users expected this method to do, and will
+mainly allow the removal of  "work-around" code that provides duplicate settings of the initial
+values to this method.  We do not expect any changes will be required to applications, but
+developers using this method should be sure to test their forms carefully.
 
 
 ### 🐞 Bug Fixes
