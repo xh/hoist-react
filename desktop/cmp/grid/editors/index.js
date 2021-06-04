@@ -10,3 +10,4 @@ export * from './DateEditor';
 export * from './NumberEditor';
 export * from './SelectEditor';
 export * from './TextEditor';
+export * from './TextAreaEditor';
