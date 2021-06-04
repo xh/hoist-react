@@ -29,6 +29,8 @@
 * Removed `DimensionChooser` (deprecated in v37). Use `GroupingChooser` instead.
 * Removed `TreeMapModel.colorMode` value 'balanced'. Applications should use the new `maxHeat`
   config to prevent outlier values from dominating the color range of the TreeMap.
+* All css variables beginning with `--navbar` have been changed to use `--appbar` to match the hoist
+  component name, any application utilizing these variables will need to also make this change.
 
 ### 🐞 Bug Fixes
 
