@@ -26,6 +26,7 @@
     font-size: var(--xh-font-size-large-em);
     background-color: rgba(255, 255, 255, 0.2);
     border-bottom: 1px solid white;
+    white-space: nowrap;
   }
 
   &__content {
