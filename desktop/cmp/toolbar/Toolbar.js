@@ -74,7 +74,8 @@ Toolbar.propTypes = {
 
     /**
      * Place items that overflow in a menu. Only available for horizontal toolbars.
-     * Default to false.
+     * Default to false. NOTE, the move of components into a menu when they overflow will trigger a
+     * remount of those components.
      */
     enableOverflowMenu: PT.bool,
 

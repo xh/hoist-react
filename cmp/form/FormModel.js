@@ -84,9 +84,10 @@ export class FormModel extends HoistModel {
         this.readonly = readonly;
         const models = {};
         fields.forEach(f => {
-            const model = f instanceof FieldModel ? f : (f.subforms ? new SubformsFieldModel(f) : new FieldModel(f));
-            throwIf(models[model.name], 'Form cannot contain multiple fields with same name: ' + model.name);
-            models[model.name] = model;
+            const model = f instanceof FieldModel ? f : (f.subforms ? new SubformsFieldModel(f) : new FieldModel(f)),
+                {name} = model;
+            throwIf(models[name], 'Form cannot contain multiple fields with same name: ' + name);
+            models[name] = model;
         });
         this.fields = models;
 
@@ -115,10 +116,14 @@ export class FormModel extends HoistModel {
     getData(dirtyOnly = false) {
         const fields = dirtyOnly ? pickBy(this.fields, f => f.isDirty) : this.fields;
         return mapValues(fields, v =>  v.getData());
-
     }
 
-    /** Reset fields to initial values and reset validation. */
+    /**
+     * Reset fields to initial values and reset validation.
+     *
+     * This is typically used by interfaces to restore a 'dirty' user-modified form to a state
+     * where all field values are at their initial values.
+     */
     @action
     reset() {
         forOwn(this.fields, m => m.reset());
@@ -127,8 +132,9 @@ export class FormModel extends HoistModel {
     /**
      * Set the initial value of all fields and reset the form.
      *
-     * This is the main entry point for loading new data (or an empty new record) into the form for
-     * editing. If initial values are undefined for any field, existing initial values will be used.
+     * This is the main programmatic entry point for loading new data (or an empty new record)
+     * into the form for editing. If initial values are undefined for any field, the original
+     * initial values specified during model construction will be used.
      *
      * @param {Object} initialValues - map of field name to value.
      */

@@ -8,7 +8,8 @@ import {managed, XH} from '@xh/hoist/core';
 import {ValidationState} from '@xh/hoist/data';
 import {action, computed, makeObservable, override} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {clone, defaults, flatMap, isArray, isUndefined, partition, without} from 'lodash';
+import {clone, defaults, flatMap, isArray, partition, without} from 'lodash';
+import {executeIfFunction, withDefault} from '../../../utils/js';
 import {FormModel} from '../FormModel';
 import {BaseFieldModel} from './BaseFieldModel';
 
@@ -35,13 +36,15 @@ export class SubformsFieldModel extends BaseFieldModel {
     /**
      * @param {Object} c - FieldModel configuration.
      * @param {Object} c.subforms - config for FormModel representing a subform.
-     * @param {Object[]} [c.initialValue]
+     * @param {Object[]} [c.initialValue] - initial value of this field.  If a function, will be
+     *      executed dynamically when form is initialized to provide value.
      * @param {...} c.rest - arguments for BaseFieldModel
      */
     constructor({subforms, initialValue = [],  ...rest}) {
         super({...rest});
         makeObservable(this);
         this._modelConfig = subforms;
+        this._origInitialValue = initialValue;
         this.init(initialValue);
     }
 
@@ -61,10 +64,9 @@ export class SubformsFieldModel extends BaseFieldModel {
     }
 
     @override
-    init(initialValue) {
-        if (!isUndefined(initialValue)) {
-            this.initialValue = this.parseValue(initialValue);
-        }
+    init(value) {
+        value = executeIfFunction(withDefault(value, this._origInitialValue));
+        this.initialValue = this.parseValue(value);
         this.reset();
         this.cleanupModels();
     }

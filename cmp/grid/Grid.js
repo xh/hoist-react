@@ -295,7 +295,7 @@ class LocalModel extends HoistModel {
     }
 
     getContextMenuItems = (params) => {
-        const {model} = this,
+        const {model, agOptions} = this,
             {store, selModel, contextMenu} = model;
         if (!contextMenu || XH.isMobileApp) return null;
 
@@ -314,7 +314,7 @@ class LocalModel extends HoistModel {
             {selection} = model;
 
         // Adjust selection to target record -- and sync to grid immediately.
-        if (record && !(selection.includes(record))) {
+        if (record && !(selection.includes(record)) && !agOptions.suppressRowClickSelection) {
             selModel.select(record);
         }
 
@@ -412,11 +412,19 @@ class LocalModel extends HoistModel {
                     this.updatePinnedSummaryRowData();
 
                     if (transaction?.update) {
-                        const refreshCols = model.columns.filter(c => !c.hidden && c.rendererIsComplex);
+                        const visibleCols = model.getVisibleLeafColumns();
+
+                        // Refresh cells in columns with complex renderers
+                        const refreshCols = visibleCols.filter(c => c.rendererIsComplex);
                         if (!isEmpty(refreshCols)) {
                             const rowNodes = compact(transaction.update.map(r => agApi.getRowNode(r.id))),
                                 columns = refreshCols.map(c => c.colId);
                             agApi.refreshCells({rowNodes, columns, force: true});
+                        }
+
+                        // Refresh row heights if autoHeight is enabled
+                        if (visibleCols.some(c => c.autoHeight)) {
+                            agApi.resetRowHeights();
                         }
                     }
 
