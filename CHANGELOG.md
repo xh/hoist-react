@@ -20,6 +20,9 @@
   pointer to a Component's backing `HoistModel`.
 * `fmtNumber()` supports new flags `withCommas` and `omitFourDigitComma` to customize the treatment
   of commas in number displays.
+* `FieldModel` now supports providing its `initialValue` as a function.  This allows
+just-in-time initialization of Form data that can take advantage of context, such as the current
+ time.
 
 
 ### 💥 Breaking Changes
@@ -29,6 +32,12 @@
 * Removed `DimensionChooser` (deprecated in v37). Use `GroupingChooser` instead.
 * Removed `TreeMapModel.colorMode` value 'balanced'. Applications should use the new `maxHeat`
   config to prevent outlier values from dominating the color range of the TreeMap.
+* The behavior of `FormModel.init()` has been changed such that it will always re-initialize *all*
+fields. (Previously, it would only initialize fields explicitly passed to it in its single
+argument).  We believe this is inline with what users expected this method to do, and should not
+cause problems for most applications. The main effect will be to allow the removal of  "work-around"
+code that provides duplicate settings of the initial values to this method.
+
 
 ### 🐞 Bug Fixes
 
