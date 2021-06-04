@@ -40,9 +40,7 @@ const body = hoistCmp.factory(
             spacing: 10,
             desiredRatio: 3,
             minTileWidth: 150,
-            maxTileWidth: 450,
             minTileHeight: 150,
-            maxTileHeight: 450,
             items: results.map(check => tile({check}))
         });
     }
