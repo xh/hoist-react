@@ -88,6 +88,7 @@ export class BaseFieldModel extends HoistModel {
      * @param {string} c.name - unique name for this field within its parent FormModel.
      * @param {string} [c.displayName] - user-facing name for labels and validation messages.
      * @param {*} [c.initialValue] - initial value of this field.
+     * @param {Function} [c.setValue] - custom setter function.
      * @param {boolean} [c.disabled] - true to disable the input control for this field.
      * @param {boolean} [c.readonly] - true to render a read-only value (vs. an input control).
      * @param {(Rule[]|Object[]|Function[])} [c.rules] - Rules, rule configs, or validation
@@ -97,6 +98,7 @@ export class BaseFieldModel extends HoistModel {
         name,
         displayName,
         initialValue = null,
+        setValue = null,
         disabled = false,
         readonly = false,
         rules = []
@@ -111,6 +113,7 @@ export class BaseFieldModel extends HoistModel {
         this._readonly = readonly;
         this.rules = this.processRuleSpecs(rules);
         this._errors = this.rules.map(() => null);
+        if (setValue) this.setValue = setValue;
     }
 
     //-----------------------------
