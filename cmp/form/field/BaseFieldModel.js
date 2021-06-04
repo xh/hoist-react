@@ -68,6 +68,8 @@ export class BaseFieldModel extends HoistModel {
     //----------------------
     @observable _disabled;
     @observable _readonly;
+    
+    /** @member {FormModel} */
     _formModel;
     _origInitialValue;
 
