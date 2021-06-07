@@ -20,6 +20,9 @@
   pointer to a Component's backing `HoistModel`.
 * `fmtNumber()` supports new flags `withCommas` and `omitFourDigitComma` to customize the treatment
   of commas in number displays.
+* `FieldModel` now supports providing its `initialValue` as a function.  This allows
+just-in-time initialization of Form data that can take advantage of context, such as the current
+ time.
 
 
 ### 💥 Breaking Changes
@@ -29,14 +32,13 @@
 * Removed `DimensionChooser` (deprecated in v37). Use `GroupingChooser` instead.
 * Removed `TreeMapModel.colorMode` value 'balanced'. Applications should use the new `maxHeat`
   config to prevent outlier values from dominating the color range of the TreeMap.
-* The following `Grid`, `DataView`, and `RestGrid` props have been converted to fields on
-  `GridModel`, `DataViewModel`, and `RestGridModel`, respectively. All grid options of these types
-  are now on the model hierarchy, allowing consistent application code and developer discovery.
-  + `onKeyDown`
-  + `onRowClicked`
-  + `onRowDoubleClicked`
-  + `onCellClicked`
-  + `onCellDoubleClicked`
+* The behavior of `FormModel.init()` has been changed such that it will always re-initialize *all*
+fields. (Previously, it would only initialize fields explicitly passed to it in its single
+argument).  We believe this is inline with what users expected this method to do, and will
+mainly allow the removal of code providing duplicate settings of initial values to this method.  
+We do not expect any changes will be required to applications, but developers using this method 
+should be sure to test their forms carefully.
+
 
 ### 🐞 Bug Fixes
 
