@@ -148,6 +148,15 @@ export class RestGridModel extends HoistModel {
             restGridModel: this,
             store: this.parseStore(store),
             enableExport: true,
+            onRowDoubleClicked: (row) => {
+                if (!row.data) return;
+
+                if (!this.readonly) {
+                    this.formModel.openEdit(row.data);
+                } else {
+                    this.formModel.openView(row.data);
+                }
+            },
             ...rest
         });
 

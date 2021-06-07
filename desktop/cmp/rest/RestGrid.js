@@ -11,7 +11,7 @@ import {grid} from '@xh/hoist/cmp/grid';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {withDefault} from '@xh/hoist/utils/js';
+import {apiRemoved} from '../../../utils/js';
 
 import {restForm} from './impl/RestForm';
 import {restGridToolbar} from './impl/RestGridToolbar';
@@ -27,29 +27,20 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
         extraToolbarItems,
         mask = true,
         agOptions,
-        onRowDoubleClicked,
         formClassName,
         ...props
     }, ref) {
 
+        apiRemoved(props.onRowDoubleClicked, 'onRowDoubleClicked', 'Specify onRowDoubleClicked on the RestGridModel instead.');
+
         const {formModel, gridModel} = model;
-
-        onRowDoubleClicked = withDefault(onRowDoubleClicked,  (row) => {
-            if (!row.data) return;
-
-            if (!model.readonly) {
-                formModel.openEdit(row.data);
-            } else {
-                formModel.openView(row.data);
-            }
-        });
 
         return fragment(
             panel({
                 ref,
                 ...props,
                 tbar: restGridToolbar({model, extraToolbarItems}),
-                item: grid({model: gridModel, agOptions, onRowDoubleClicked}),
+                item: grid({model: gridModel, agOptions}),
                 mask: getMaskFromProp(model, mask)
             }),
             restForm({model: formModel, className: formClassName})
@@ -78,12 +69,6 @@ RestGrid.propTypes = {
      * specifying a Mask instance.
      */
     mask: PT.oneOfType([PT.element, PT.bool]),
-
-    /**
-     * Callback to call when a row is double clicked. Function will receive an event
-     * with a data node containing the row's data.
-     */
-    onRowDoubleClicked: PT.func,
 
     /**
      * Classname to be passed to RestForm
