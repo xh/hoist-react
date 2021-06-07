@@ -11,7 +11,7 @@ import {grid} from '@xh/hoist/cmp/grid';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {apiRemoved} from '../../../utils/js';
+import {apiRemoved} from '@xh/hoist/utils/js';
 
 import {restForm} from './impl/RestForm';
 import {restGridToolbar} from './impl/RestGridToolbar';

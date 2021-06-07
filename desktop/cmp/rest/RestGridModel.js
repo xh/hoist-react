@@ -114,8 +114,8 @@ export class RestGridModel extends HoistModel {
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {PrepareCloneFn} [prepareCloneFn] - called prior to passing the original record and cloned record to the editor form
      * @param {RestGridEditor[]} editors - specifications for fields to be displayed in editor form.
-     * @param {function} [onRowDoubleClicked] - Callback to call when a row is double clicked. Function will receive an event with
-     *      a data node containing the row's data.
+     * @param {function} [onRowDoubleClicked] - Callback to call when a row is double clicked.
+     *      Function will receive an event with a data node containing the row's data.
      * @param {*} ...rest - arguments for GridModel.
      */
     constructor({
