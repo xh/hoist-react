@@ -9,6 +9,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
+import {withDefault} from '../../../utils/js';
 import {RestStore} from './data/RestStore';
 import {RestFormModel} from './impl/RestFormModel';
 
@@ -113,6 +114,8 @@ export class RestGridModel extends HoistModel {
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {PrepareCloneFn} [prepareCloneFn] - called prior to passing the original record and cloned record to the editor form
      * @param {RestGridEditor[]} editors - specifications for fields to be displayed in editor form.
+     * @param {function} [onRowDoubleClicked] - Callback to call when a row is double clicked. Function will receive an event with
+     *      a data node containing the row's data.
      * @param {*} ...rest - arguments for GridModel.
      */
     constructor({
@@ -125,6 +128,7 @@ export class RestGridModel extends HoistModel {
         unit = 'record',
         filterFields,
         editors = [],
+        onRowDoubleClicked,
         store,
         ...rest
     }) {
@@ -142,21 +146,23 @@ export class RestGridModel extends HoistModel {
         this.unit = unit;
         this.filterFields = filterFields;
 
+        onRowDoubleClicked = withDefault(onRowDoubleClicked,  (row) => {
+            if (!row.data) return;
+
+            if (!this.readonly) {
+                this.formModel.openEdit(row.data);
+            } else {
+                this.formModel.openView(row.data);
+            }
+        });
+
         this.gridModel = new GridModel({
             contextMenu: [...this.menuActions, '-', ...GridModel.defaultContextMenu],
             exportOptions: {filename: pluralize(unit)},
             restGridModel: this,
             store: this.parseStore(store),
             enableExport: true,
-            onRowDoubleClicked: (row) => {
-                if (!row.data) return;
-
-                if (!this.readonly) {
-                    this.formModel.openEdit(row.data);
-                } else {
-                    this.formModel.openView(row.data);
-                }
-            },
+            onRowDoubleClicked,
             ...rest
         });
 

@@ -29,6 +29,14 @@
 * Removed `DimensionChooser` (deprecated in v37). Use `GroupingChooser` instead.
 * Removed `TreeMapModel.colorMode` value 'balanced'. Applications should use the new `maxHeat`
   config to prevent outlier values from dominating the color range of the TreeMap.
+* The following `Grid`, `DataView`, and `RestGrid` props have been converted to fields on
+  `GridModel`, `DataViewModel`, and `RestGridModel`, respectively. All grid options of these types
+  are now on the model hierarchy, allowing consistent application code and developer discovery.
+  + `onKeyDown`
+  + `onRowClicked`
+  + `onRowDoubleClicked`
+  + `onCellClicked`
+  + `onCellDoubleClicked`
 
 ### 🐞 Bug Fixes
 

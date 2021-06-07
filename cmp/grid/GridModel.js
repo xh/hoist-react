@@ -217,10 +217,10 @@ export class GridModel extends HoistModel {
      * @param {GridGroupSortFn} [c.groupSortFn] - function to use to sort full-row groups.
      *      Called with two group values to compare in the form of a standard JS comparator.
      *      Default is an ascending string sort. Set to `null` to prevent sorting of groups.
-     * @param {function} [c.onKeyDown] - Callback when a key down event is detected on this
-     *      component. Function will receive an event with the standard 'target' element. Note that
+     * @param {function} [c.onKeyDown] - Callback when a key down event is detected on the
+     *      grid. Function will receive an event with the standard 'target' element. Note that
      *      the ag-Grid API provides limited ability to customize keyboard handling. This handler is
-     *      designed to allow application to workaround this.
+     *      designed to allow applications to workaround this.
      * @param {function} [c.onRowClicked] - Callback when a row is clicked. Function will receive an
      *      event with a data node containing the row's data. (Note that this may be null - e.g. for
      *      clicks on group rows.)
