@@ -226,6 +226,7 @@
 .xh-grid-tooltip {
   position: absolute;
 
+  &.ag-tooltip-hiding,
   &:empty {
     display: none;
   }

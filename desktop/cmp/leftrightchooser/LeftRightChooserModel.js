@@ -131,6 +131,7 @@ export class LeftRightChooserModel extends HoistModel {
             selModel: 'multiple',
             sortBy: leftSorted ? 'text' : null,
             emptyText: leftEmptyText,
+            onRowDoubleClicked: (e) => this.onRowDoubleClicked(e),
             columns: [leftTextCol, groupCol]
         });
 
@@ -139,6 +140,7 @@ export class LeftRightChooserModel extends HoistModel {
             selModel: 'multiple',
             sortBy: rightSorted ? 'text' : null,
             emptyText: rightEmptyText,
+            onRowDoubleClicked: (e) => this.onRowDoubleClicked(e),
             columns: [rightTextCol, groupCol]
         });
 
@@ -190,6 +192,10 @@ export class LeftRightChooserModel extends HoistModel {
                     ...r
                 };
             });
+    }
+
+    onRowDoubleClicked(e) {
+        if (e.data) this.moveRows([e.data]);
     }
 
     moveRows(rows) {

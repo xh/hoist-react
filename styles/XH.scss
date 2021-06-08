@@ -134,6 +134,7 @@ body.xh-app {
   .xh-margin-left { margin-left: var(--xh-pad-px); }
   .xh-margin-lr { margin: 0 var(--xh-pad-px); }
   .xh-margin-tb { margin: var(--xh-pad-px) 0; }
+  .xh-margin-none { margin: 0 !important; }
 
   .xh-pad { padding: var(--xh-pad-px); }
   .xh-pad-double { padding: var(--xh-pad-double-px); }
@@ -144,6 +145,7 @@ body.xh-app {
   .xh-pad-left { padding-left: var(--xh-pad-px); }
   .xh-pad-lr { padding: 0 var(--xh-pad-px); }
   .xh-pad-tb { padding: var(--xh-pad-px) 0; }
+  .xh-pad-none { padding: 0 !important; }
 }
 
 // Lightly patterned background with light and dark theme variants.

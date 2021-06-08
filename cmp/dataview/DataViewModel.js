@@ -52,6 +52,11 @@ export class DataViewModel extends HoistModel {
      *      or token strings with which to create grid context menu items.  May also be specified
      *      as a function returning a StoreContextMenu. Desktop only.
      * @param {RowClassFn} [c.rowClassFn] - closure to generate CSS class names for a row.
+     * @param {function} [c.onRowClicked] - Callback when a row is clicked. Function will receive an
+     *      event with a data node containing the row's data. (Note that this may be null - e.g. for
+     *      clicks on group rows.)
+     * @param {function} [c.onRowDoubleClicked] - Callback to call when a row is double clicked.
+     *      Function will receive an event with a data node containing the row's data.
      * @param {...*} [c.restArgs] - additional configs will be passed to the underlying
      *      GridModel. Note this is for advanced usage - not all configs supported, and many will
      *      override DataView defaults in ways that will break this component.
@@ -72,6 +77,8 @@ export class DataViewModel extends HoistModel {
         stripeRows = false,
         contextMenu = null,
         rowClassFn,
+        onRowClicked,
+        onRowDoubleClicked,
         ...restArgs
     }) {
         super();
@@ -115,6 +122,8 @@ export class DataViewModel extends HoistModel {
             groupRowRenderer,
             groupRowElementRenderer,
             rowClassFn,
+            onRowClicked,
+            onRowDoubleClicked,
             columns,
             ...restArgs
         });

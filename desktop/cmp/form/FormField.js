@@ -53,6 +53,10 @@ export const [FormField, formField] = hoistCmp.withFactory({
         const formModel = formContext.model;
         model = model || (formModel && field ? formModel.fields[field] : null);
 
+        if (!model) {
+            console.warn(`Unable to bind FormField to field "${field}" on backing FormModel`);
+        }
+
         // Model related props
         const isRequired = model?.isRequired || false,
             readonly = model?.readonly || false,
@@ -268,7 +272,7 @@ const editableChild = hoistCmp.factory({
             bind: 'value',
             id: childId,
             disabled: props.disabled || disabled,
-            ref: composeRefs(model._boundInputRef, child.ref)
+            ref: composeRefs(model?._boundInputRef, child.ref)
         };
 
 

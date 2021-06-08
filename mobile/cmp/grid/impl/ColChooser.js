@@ -99,7 +99,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
                     omit: !showRestoreDefaults,
                     text: 'Reset',
                     modifier: 'quiet',
-                    onClick: () => model.restoreDefaults()
+                    onClick: () => model.restoreDefaultsAsync()
                 }),
                 filler(),
                 button({

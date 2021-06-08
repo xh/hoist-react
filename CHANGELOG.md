@@ -5,16 +5,69 @@
 ### 🎁 New Features
 
 * `ErrorMessage` will read its 'error' directly from its context model, if not provided by the
-dedicated `error` prop.
+  dedicated `error` prop.
+* `ExpandCollapseButton` now works for grouped grids in addition to tree grids.
+* `Column` class now supports a `sortValue` property. SortValue can be a string to represent another
+  field to sort by for the column, or a function that produces a value for each cell to use for
+  sorting. The values produced by this property will also be passed to the custom comparator if it
+  is defined.
+* `TreeMapModel` and `SplitTreeMapModel` now support a `maxHeat` property, which can be used to
+  provide a stable absolute maximum brightness (positive or negative) within the entire TreeMap.
+* `GridModel` now supports a `hideEmptyTextBeforeLoad` property, which prevents showing the
+  `emptyText` until the store has been loaded at least once. Apps that depend on showing `emptyText`
+  before first load should set this property to `false`.
+* All Hoist Components now support a `modelRef` prop. Supply a ref to this prop in order to gain a
+  pointer to a Component's backing `HoistModel`.
+* `fmtNumber()` supports new flags `withCommas` and `omitFourDigitComma` to customize the treatment
+  of commas in number displays.
+* `FieldModel` now supports providing its `initialValue` as a function.  This allows
+just-in-time initialization of Form data that can take advantage of context, such as the current
+ time.
 
+
+### 💥 Breaking Changes
+
+* Removed support for class-based Hoist Components via the `@HoistComponent` decorator (deprecated
+* in v38). Use functional components created via the `hoistCmp()` factory instead.
+* Removed `DimensionChooser` (deprecated in v37). Use `GroupingChooser` instead.
+* Removed `TreeMapModel.colorMode` value 'balanced'. Applications should use the new `maxHeat`
+  config to prevent outlier values from dominating the color range of the TreeMap.
+* All css variables beginning with `--navbar` have been changed to use `--appbar` to match the hoist
+  component name, any application utilizing these variables will need to also make this change.
+* The behavior of `FormModel.init()` has been changed such that it will always re-initialize *all*
+fields. (Previously, it would only initialize fields explicitly passed to it in its single
+argument).  We believe this is inline with what users expected this method to do, and will
+mainly allow the removal of code providing duplicate settings of initial values to this method.
+We do not expect any changes will be required to applications, but developers using this method
+should be sure to test their forms carefully.
+* The following `Grid`, `DataView`, and `RestGrid` props have been converted to fields on
+  `GridModel`, `DataViewModel`, and `RestGridModel`, respectively. All grid options of these types
+  are now on the model hierarchy, allowing consistent application code and developer discovery.
+    + `onKeyDown`
+    + `onRowClicked`
+    + `onRowDoubleClicked`
+    + `onCellClicked`
+    + `onCellDoubleClicked`
+
+
+### 🐞 Bug Fixes
+
+* Fix disable behavior for Hoist-provided button components using popover.
 
 ### ⚙️ Technical
-* Improvements to exception serialization to better handle `LocalDate` and similar custom JS classes.
+
+* Improvements to exception serialization to better handle `LocalDate` and similar custom JS
+  classes.
+* Blueprint `EditableText` component re-exported (w/elemFactory wrapper) from `kit/blueprint`.
 
 ### 📚 Libraries
-* @mobx `6.1.8 -> 6.3.0`
 
-
+* @blueprintjs/core `3.44 -> 3.45`
+* codemirror `5.60 -> 5.61`
+* core-js `3.10 -> 3.13`
+* filesize `6.2 -> 6.3`
+* mobx `6.1 -> 6.3`
+* react-windowed-select `3.0 -> 3.1`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v40.0.0...develop)
 
@@ -41,6 +94,7 @@ your dev-utils dependency for your project to build.
 * New `Spinner` component returns a simple img-based spinner as an animated PNG, available in two
   sizes. Used for the platform-specific `Mask` and `LoadingIndicator` components. Replaces previous
   SVG-based implementations to mitigate rendering performance issues over remote connections.
+
 
 ### 💥 Breaking Changes
 

@@ -108,6 +108,8 @@ export class GridModel extends HoistModel {
     autosizeOptions;
     /** @member {ReactNode} */
     restoreDefaultsWarning;
+    /** @member {boolean} */
+    hideEmptyTextBeforeLoad;
 
     /** @member {AgGridModel} */
     @managed agGridModel;
@@ -182,6 +184,8 @@ export class GridModel extends HoistModel {
      * @param {GridModelPersistOptions} [c.persistWith] - options governing persistence.
      * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
+     * @param {boolean} [c.hideEmptyTextBeforeLoad] - true (default) to hide empty text until
+     *      after the Store has been loaded at least once.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
      *      colId and sort direction.
      * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
@@ -213,6 +217,20 @@ export class GridModel extends HoistModel {
      * @param {GridGroupSortFn} [c.groupSortFn] - function to use to sort full-row groups.
      *      Called with two group values to compare in the form of a standard JS comparator.
      *      Default is an ascending string sort. Set to `null` to prevent sorting of groups.
+     * @param {function} [c.onKeyDown] - Callback when a key down event is detected on the
+     *      grid. Function will receive an event with the standard 'target' element. Note that
+     *      the ag-Grid API provides limited ability to customize keyboard handling. This handler is
+     *      designed to allow applications to workaround this.
+     * @param {function} [c.onRowClicked] - Callback when a row is clicked. Function will receive an
+     *      event with a data node containing the row's data. (Note that this may be null - e.g. for
+     *      clicks on group rows.)
+     * @param {function} [c.onRowDoubleClicked] - Callback when a row is double clicked. Function
+     *      will receive an event with a data node containing the row's data. (Note that this may be
+     *      null - e.g. for clicks on group rows.)
+     * @param {function} [c.onCellClicked] - Callback when a cell is clicked. Function will receive
+     *      an event with a data node, cell value, and column.
+     * @param {function} [c.onCellDoubleClicked] - Callback when a cell is double clicked. Function
+     *      will receive an event with a data node, cell value, and column.
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or
      *      token strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu. Desktop only.
@@ -242,6 +260,7 @@ export class GridModel extends HoistModel {
         selModel,
         colChooserModel,
         emptyText = null,
+        hideEmptyTextBeforeLoad = true,
         sortBy = [],
         groupBy = null,
         showGroupRowCounts = true,
@@ -270,6 +289,12 @@ export class GridModel extends HoistModel {
         groupRowElementRenderer,
         groupSortFn,
 
+        onKeyDown,
+        onRowClicked,
+        onRowDoubleClicked,
+        onCellClicked,
+        onCellDoubleClicked,
+
         contextMenu,
         useVirtualColumns = false,
         autosizeOptions = {},
@@ -286,6 +311,7 @@ export class GridModel extends HoistModel {
         this.showSummary = showSummary;
 
         this.emptyText = emptyText;
+        this.hideEmptyTextBeforeLoad = hideEmptyTextBeforeLoad;
         this.rowClassFn = rowClassFn;
         this.groupRowHeight = groupRowHeight;
         this.groupRowRenderer = groupRowRenderer;
@@ -341,6 +367,11 @@ export class GridModel extends HoistModel {
         this.selModel = this.parseSelModel(selModel);
         this.persistenceModel = persistWith ? new GridPersistenceModel(this, persistWith) : null;
         this.experimental = this.parseExperimental(experimental);
+        this.onKeyDown = onKeyDown;
+        this.onRowClicked = onRowClicked;
+        this.onRowDoubleClicked = onRowDoubleClicked;
+        this.onCellClicked = onCellClicked;
+        this.onCellDoubleClicked = onCellDoubleClicked;
     }
 
     /**
@@ -351,7 +382,6 @@ export class GridModel extends HoistModel {
      * @return {boolean} true if defaults were restored
      */
     async restoreDefaultsAsync() {
-
         if (this.restoreDefaultsWarning) {
             const confirmed = await XH.confirm({
                 title: 'Please Confirm',
@@ -366,7 +396,6 @@ export class GridModel extends HoistModel {
         }
 
         const {columns, sortBy, groupBy} = this._defaultState;
-
         this.setColumns(columns);
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
@@ -456,7 +485,6 @@ export class GridModel extends HoistModel {
     async preSelectFirstAsync() {
         if (!this.hasSelection) return this.selectFirstAsync();
     }
-
 
     /** Deselect all rows. */
     clearSelection() {

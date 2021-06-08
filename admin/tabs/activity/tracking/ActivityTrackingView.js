@@ -107,8 +107,7 @@ const aggregateView = hoistCmp.factory(
             items: [
                 grid({
                     flex: 1,
-                    agOptions: {groupDefaultExpanded: 1},
-                    onRowDoubleClicked: (e) => model.toggleRowExpandCollapse(e)
+                    agOptions: {groupDefaultExpanded: 1}
                 }),
                 chartsPanel()
             ]
