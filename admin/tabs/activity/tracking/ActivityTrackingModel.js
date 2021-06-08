@@ -65,8 +65,8 @@ export class ActivityTrackingModel extends HoistModel {
         makeObservable(this);
         this.formModel = new FormModel({
             fields: [
-                {name: 'startDay', initialValue: this.getDefaultStartDay()},
-                {name: 'endDay', initialValue: this.getDefaultEndDay()}
+                {name: 'startDay', initialValue: () => this.getDefaultStartDay()},
+                {name: 'endDay', initialValue: () => this.getDefaultEndDay()}
             ]
         });
 
@@ -149,6 +149,7 @@ export class ActivityTrackingModel extends HoistModel {
             exportOptions: {filename: `${XH.appCode}-activity-summary`},
             emptyText: 'No activity reported...',
             sortBy: ['cubeLabel'],
+            onRowDoubleClicked: (e) => this.toggleRowExpandCollapse(e),
             columns: [
                 {
                     field: 'cubeLabel',
@@ -262,10 +263,7 @@ export class ActivityTrackingModel extends HoistModel {
     @action
     resetQuery() {
         const {formModel, filterChooserModel, groupingChooserModel, _defaultDims, _defaultFilter} = this;
-        formModel.init({
-            startDay: this.getDefaultStartDay(),
-            endDay: this.getDefaultEndDay()
-        });
+        formModel.init();
         filterChooserModel.setValue(_defaultFilter);
         groupingChooserModel.setValue(_defaultDims);
     }
