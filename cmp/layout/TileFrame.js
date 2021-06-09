@@ -27,7 +27,6 @@ import './TileFrame.scss';
 export const [TileFrame, tileFrame] = hoistCmp.withFactory({
     displayName: 'TileFrame',
     model: false, memo: false, observer: false,
-
     className: 'xh-tile-frame',
 
     render({
@@ -160,8 +159,6 @@ class LocalModel extends HoistModel {
 
     generateScoredLayout(cols) {
         const {
-            count,
-            desiredRatio,
             minTileRatio,
             maxTileRatio,
             minTileWidth,
@@ -169,6 +166,7 @@ class LocalModel extends HoistModel {
             minTileHeight,
             maxTileHeight
         } = this.params;
+
         const layout = this.generateLayout(cols),
             ratio = layout.tileWidth / layout.tileHeight;
 
@@ -179,13 +177,7 @@ class LocalModel extends HoistModel {
         if (minTileRatio && ratio < minTileRatio) return null;
         if (maxTileRatio && ratio > maxTileRatio) return null;
 
-        // We want to compromise between having as little empty space as possible,
-        // and keeping the tile ratio as close to the desired ratio as possible.
-        // This heuristic generates a score for each layout, where a lower score is better.
-        const emptyCount = (layout.rows * cols) - count,
-            ratioScore = Math.abs(desiredRatio - ratio),
-            score = emptyCount > 0 ? ratioScore + Math.pow(emptyCount, 2) : ratioScore;
-
+        const score = this.getRatioScore(layout);
         return {layout, score};
     }
 
@@ -223,5 +215,31 @@ class LocalModel extends HoistModel {
             tileWidth: Math.floor((width - spacing) / cols) - spacing,
             tileHeight: Math.floor((height - spacing) / rows) - spacing
         };
+    }
+
+    // We want to compromise between having as little empty space as possible,
+    // and keeping the tile ratio as close to the desired ratio as possible.
+    // This heuristic generates a score for each layout, where a lower score is better.
+    scoreLayout(layout) {
+        const ratioScore = this.getRatioScore(layout),
+            emptyScore = this.getEmptyScore(layout);
+
+        return ratioScore + emptyScore;
+    }
+
+    getRatioScore(layout) {
+        const {desiredRatio} = this.params,
+            ratio = layout.tileWidth / layout.tileHeight,
+            invertedDesiredRatio = 1 / desiredRatio,
+            invertedRatio = layout.tileHeight / layout.tileWidth;
+
+        return Math.abs(desiredRatio - ratio) + Math.abs(invertedDesiredRatio - invertedRatio);
+    }
+
+    getEmptyScore(layout) {
+        const {count} = this.params,
+            emptyCount = (layout.rows * layout.cols) - count;
+
+        return Math.pow(emptyCount, 2);
     }
 }
