@@ -84,7 +84,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
             minimal = defaultProp('minimal', props, formContext, false),
             leftErrorIcon = defaultProp('leftErrorIcon', props, formContext, false),
             clickableLabel = defaultProp('clickableLabel', props, formContext, true),
-            labelAlign = defaultProp('labelAlign', props, formContext, 'left'),
+            labelTextAlign = defaultProp('labelTextAlign', props, formContext, 'left'),
             labelWidth = defaultProp('labelWidth', props, formContext, null),
             label = defaultProp('label', props, formContext, model?.displayName),
             commitOnChange = defaultProp('commitOnChange', props, formContext, undefined),
@@ -138,7 +138,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
                     items: [label, requiredIndicator],
                     htmlFor: clickableLabel ? childId : null,
                     style: {
-                        textAlign: labelAlign,
+                        textAlign: labelTextAlign,
                         width: labelWidth,
                         minWidth: isNil(labelWidth) ? 80 : 0
                     }
@@ -202,7 +202,7 @@ FormField.propTypes = {
     label: PT.node,
 
     /** Alignment of label text, default 'left'. */
-    labelAlign: PT.oneOf(['left', 'right']),
+    labelTextAlign: PT.oneOf(['left', 'right']),
 
     /** Width of the label in pixels. */
     labelWidth: PT.number,
