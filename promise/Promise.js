@@ -19,7 +19,7 @@ import {castArray, isFunction, isNumber, isPlainObject} from 'lodash';
  *
  * Note: This method will start executing its input function only after a minimal (1ms) delay.
  * This establishes a minimal level of asynchronicity for the entire chain, and is especially
- * important if the chain contains calls to 'bind', 'track' or 'timeout'
+ * important if the chain contains calls to 'linkTo', 'track' or 'timeout'
  *
  * @param {function} [fn] - function appropriate as an argument to `then()`.
  * @returns {Promise}
