@@ -32,6 +32,8 @@ just-in-time initialization of Form data that can take advantage of context, suc
 * Removed `DimensionChooser` (deprecated in v37). Use `GroupingChooser` instead.
 * Removed `TreeMapModel.colorMode` value 'balanced'. Applications should use the new `maxHeat`
   config to prevent outlier values from dominating the color range of the TreeMap.
+* All css variables beginning with `--navbar` have been changed to use `--appbar` to match the hoist
+  component name, any application utilizing these variables will need to also make this change.
 * The behavior of `FormModel.init()` has been changed such that it will always re-initialize *all*
 fields. (Previously, it would only initialize fields explicitly passed to it in its single
 argument).  We believe this is inline with what users expected this method to do, and will
