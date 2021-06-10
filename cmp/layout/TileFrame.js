@@ -231,7 +231,7 @@ class LocalModel extends HoistModel {
         const {desiredRatio} = this.params,
             ratio = layout.tileWidth / layout.tileHeight,
             invertedDesiredRatio = 1 / desiredRatio,
-            invertedRatio = layout.tileHeight / layout.tileWidth;
+            invertedRatio = 1 / ratio;
 
         return Math.abs(desiredRatio - ratio) + Math.abs(invertedDesiredRatio - invertedRatio);
     }
