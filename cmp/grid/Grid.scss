@@ -103,8 +103,8 @@
 
   // Highlight invalid cells
   .ag-cell.xh-invalid-cell {
-    border: var(--xh-form-field-invalid-border);
-    background-color: var(--xh-intent-danger-trans1);
+    border: var(--xh-form-field-invalid-border) !important;
+    background-color: var(--xh-intent-danger-trans1) !important;
   }
 }
 
