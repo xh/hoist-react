@@ -158,7 +158,7 @@ class XHClass extends HoistBase {
     track(opts)                 {return this.trackService?.track(opts)}
     getEnv(key)                 {return this.environmentService?.get(key) ?? null}
 
-    /** @return {?string} */
+    /** @return {?HoistUser} */
     getUser()                   {return this.identityService?.getUser() ?? null}
     /** @return {?string} */
     getUsername()               {return this.identityService?.getUsername() ?? null}

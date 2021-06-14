@@ -219,6 +219,20 @@ export class GridModel extends HoistModel {
      * @param {GridGroupSortFn} [c.groupSortFn] - function to use to sort full-row groups.
      *      Called with two group values to compare in the form of a standard JS comparator.
      *      Default is an ascending string sort. Set to `null` to prevent sorting of groups.
+     * @param {function} [c.onKeyDown] - Callback when a key down event is detected on the
+     *      grid. Function will receive an event with the standard 'target' element. Note that
+     *      the ag-Grid API provides limited ability to customize keyboard handling. This handler is
+     *      designed to allow applications to workaround this.
+     * @param {function} [c.onRowClicked] - Callback when a row is clicked. Function will receive an
+     *      event with a data node containing the row's data. (Note that this may be null - e.g. for
+     *      clicks on group rows.)
+     * @param {function} [c.onRowDoubleClicked] - Callback when a row is double clicked. Function
+     *      will receive an event with a data node containing the row's data. (Note that this may be
+     *      null - e.g. for clicks on group rows.)
+     * @param {function} [c.onCellClicked] - Callback when a cell is clicked. Function will receive
+     *      an event with a data node, cell value, and column.
+     * @param {function} [c.onCellDoubleClicked] - Callback when a cell is double clicked. Function
+     *      will receive an event with a data node, cell value, and column.
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or
      *      token strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu. Desktop only.
@@ -277,6 +291,12 @@ export class GridModel extends HoistModel {
         groupRowRenderer,
         groupRowElementRenderer,
         groupSortFn,
+
+        onKeyDown,
+        onRowClicked,
+        onRowDoubleClicked,
+        onCellClicked,
+        onCellDoubleClicked,
 
         contextMenu,
         useVirtualColumns = false,
@@ -352,6 +372,11 @@ export class GridModel extends HoistModel {
         this.selModel = this.parseSelModel(selModel);
         this.persistenceModel = persistWith ? new GridPersistenceModel(this, persistWith) : null;
         this.experimental = this.parseExperimental(experimental);
+        this.onKeyDown = onKeyDown;
+        this.onRowClicked = onRowClicked;
+        this.onRowDoubleClicked = onRowDoubleClicked;
+        this.onCellClicked = onCellClicked;
+        this.onCellDoubleClicked = onCellDoubleClicked;
     }
 
     /**

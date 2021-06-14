@@ -28,9 +28,6 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory({
     render({model, ...props}, ref) {
         const {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
             gridOptions = {
-                onRowDoubleClicked: (e) => {
-                    if (e.data) model.moveRows([e.data]);
-                },
                 agOptions: {
                     defaultColDef: {
                         resizable: false

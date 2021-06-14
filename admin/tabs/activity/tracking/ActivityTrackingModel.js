@@ -149,6 +149,7 @@ export class ActivityTrackingModel extends HoistModel {
             exportOptions: {filename: `${XH.appCode}-activity-summary`},
             emptyText: 'No activity reported...',
             sortBy: ['cubeLabel'],
+            onRowDoubleClicked: (e) => this.toggleRowExpandCollapse(e),
             columns: [
                 {
                     field: 'cubeLabel',
