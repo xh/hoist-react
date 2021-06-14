@@ -165,8 +165,9 @@ class LocalModel extends HoistModel {
         if (minTileHeight && layout.tileHeight < minTileHeight) layout.tileHeight = minTileHeight;
         if (maxTileHeight && layout.tileHeight > maxTileHeight) layout.tileHeight = maxTileHeight;
 
-        // 3) Invalidate layouts that are wider than the container
-        if (this.hasWidthConstraints && this.getRequiredWidth(layout) > width) return null;
+        // 3) Invalidate multi-column layouts that are wider than the container.
+        // The single column layout is always valid as a fallback for when your minTileWidth exceeds the container width
+        if (minTileWidth && layout.cols > 1 && this.getRequiredWidth(layout) > width) return null;
 
         const score = this.scoreLayout(layout);
         return {layout, score};
@@ -212,10 +213,10 @@ class LocalModel extends HoistModel {
     // Returns a value normalised between 0-1 representing how much of the available width
     // is empty. A higher score indicates more empty space.
     getWidthFillingScore(layout) {
-        if (!this.hasWidthConstraints) return 0;
+        const {minTileWidth, maxTileWidth, width} = this.params;
+        if (!minTileWidth && !maxTileWidth) return 0;
 
-        const {width} = this.params,
-            requiredWidth = this.getRequiredWidth(layout),
+        const requiredWidth = this.getRequiredWidth(layout),
             excessWidth = Math.max(0, width - requiredWidth);
 
         return (excessWidth / width) * 10;
@@ -223,10 +224,5 @@ class LocalModel extends HoistModel {
 
     getRequiredWidth(layout) {
         return (layout.tileWidth * layout.cols) + ((layout.cols + 1) * this.params.spacing);
-    }
-
-    get hasWidthConstraints() {
-        const {minTileWidth, maxTileWidth} = this.params;
-        return minTileWidth || maxTileWidth;
     }
 }
