@@ -53,6 +53,7 @@ should be sure to test their forms carefully.
 ### 🐞 Bug Fixes
 
 * Fix disable behavior for Hoist-provided button components using popover.
+* Fix turning off autocomplete for `TextInput` by default.
 
 ### ⚙️ Technical
 
