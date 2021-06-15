@@ -29,9 +29,9 @@ TextInput.propTypes = {
     /**
      *  HTML `autocomplete` attribute to set on underlying <input> element.
      *
-     *  Defaults to non-valid value 'nope' for fields of type text and 'new-password' for fields
-     *  of type 'password' to defeat browser auto-completion, which is typically not desired in
-     *  Hoist applications. Set to 'on' or a more specific autocomplete token to enable.
+     *  Defaults to 'off' for fields of type text and 'new-password' for fields of type 'password'
+     *  to defeat browser auto-completion, which is typically not desired in Hoist applications.
+     *  Set to 'on' or a more specific autocomplete token to enable.
      *
      * @see https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofilling-form-controls%3A-the-autocomplete-attribute
      * See https://developer.mozilla.org/en-US/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion
@@ -100,7 +100,7 @@ const cmp = hoistCmp.factory(
         return input({
             value: model.renderValue || '',
 
-            autoComplete: withDefault(props.autoComplete, props.type === 'password' ? 'new-password' : 'nope'),
+            autoComplete: withDefault(props.autoComplete, props.type === 'password' ? 'new-password' : 'off'),
             disabled: props.disabled,
             modifier: props.modifier,
             placeholder: props.placeholder,
