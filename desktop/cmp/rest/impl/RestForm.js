@@ -51,7 +51,7 @@ const formDisplay = hoistCmp.factory(
                 minimal: true,
                 inline: true,
                 labelWidth: 120,
-                labelAlign: 'right'
+                labelTextAlign: 'right'
             },
             item: div({
                 className: 'xh-rest-form__body',
