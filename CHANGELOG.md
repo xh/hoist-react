@@ -48,11 +48,10 @@ should be sure to test their forms carefully.
     + `onRowDoubleClicked`
     + `onCellClicked`
     + `onCellDoubleClicked`
-* The property `labelAlign` has been renamed to `labelTextAlign` on the `FormField` component and
-  `labelSide` on the `SwitchInput`, `RadioInput`, and `Checkbox` components to clarify the different
-  effects.
-
-
+* Renaming of the confusing and ambiguous property name `labelAlign` in several components:
+    + `FormField`: `labelAlign` has been renamed to `labelTextAlign`
+    + `SwitchInput`, `RadioInput`, and `Checkbox`: `labelAlign` has been renamed `labelSide`. 
+    
 ### 🐞 Bug Fixes
 
 * Fix disable behavior for Hoist-provided button components using popover.
