@@ -49,7 +49,8 @@ should be sure to test their forms carefully.
     + `onCellClicked`
     + `onCellDoubleClicked`
 * The property `labelAlign` has been renamed to `labelTextAlign` on the `FormField` component and
-  `labelSide` on the `SwitchInput`, `RadioInput`, and `Checkbox` components to clarify the different effects.
+  `labelSide` on the `SwitchInput`, `RadioInput`, and `Checkbox` components to clarify the different
+  effects.
 
 
 ### 🐞 Bug Fixes
