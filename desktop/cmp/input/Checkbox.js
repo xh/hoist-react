@@ -48,7 +48,7 @@ Checkbox.propTypes = {
      */
     displayUnsetState: PT.bool,
 
-    /** Alignment of the inline label relative to the control itself, default right. */
+    /** Placement of the inline label relative to the control itself, default right. */
     labelSide: PT.oneOf(['left', 'right'])
 };
 

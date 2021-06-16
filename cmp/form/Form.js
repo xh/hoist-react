@@ -34,7 +34,7 @@ export const [Form, form] = hoistCmp.withFactory({
     model: uses(FormModel, {publishMode: ModelPublishMode.NONE}),
 
     render({model, fieldDefaults, children}) {
-        apiRemoved(fieldDefaults.labelAlign, 'labelAlign', 'Use labelTextAlign instead.');
+        apiRemoved(fieldDefaults?.labelAlign, 'labelAlign', 'Use labelTextAlign instead.');
 
         const parentContext = useContext(FormContext);
 
