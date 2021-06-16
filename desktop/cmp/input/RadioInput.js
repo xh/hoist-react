@@ -30,7 +30,7 @@ RadioInput.propTypes = {
     /** True to display each radio button inline with each other. */
     inline: PT.bool,
 
-    /** Alignment of each option's label relative its radio button, default right. */
+    /** Placement of each option's label relative its radio button, default right. */
     labelSide: PT.oneOf(['left', 'right']),
 
     /**

@@ -37,7 +37,7 @@ SwitchInput.propTypes = {
      */
     label: PT.oneOfType([PT.string, PT.element]),
 
-    /** Alignment of the inline label relative to the control itself, default right. */
+    /** Placement of the inline label relative to the control itself, default right. */
     labelSide: PT.oneOf(['left', 'right'])
 };
 
