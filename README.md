@@ -200,8 +200,8 @@ Models and services are class-based and base classes `HoistModel` and `HoistServ
 Hoist for these object. `HoistAppModel` is a special base class for an Application's primary Model
 class that provides additional high-level info about the application.
 
-Components are react functional components, but with additional wrapping provided by Hoist to
-support model specification and lookup and and observability. Applications should use the factory
+Components are React functional components, but with additional wrapping provided by Hoist to
+support model specification and lookup and observability. Applications should use the factory
 function `hoistCmp` to define Components with this support.
 
 |     Class/File      |                                  Note                                   |            Link             |
@@ -260,12 +260,12 @@ an example within Hoist React itself, see HoistAppModel for the
 ### hoistComponent
 
 ⚛️ Components are the most familiar artifacts in React development, and are likely what come to mind
-first when most developers think of React. Functional components are the preferred method of
-defining components in React and Hoist. To define a functional component in Hoist, simply provide a
-render function to the `hoistComponent` function. This will apply core Hoist support, including MobX
-reactivity, model lookup, and support for forward refs, and will return the Component.
+first when most developers think of React. Hoist supports functional components, React's preferred
+method of defining components. To define a functional component in Hoist, simply provide a render
+function to the `hoistCmp` factory function. This will apply core Hoist support, including
+MobX reactivity, model lookup, and support for forward refs, and will return the Component.
 
-Note that many layout related Components provide "LayoutSupport". Components supporting this feature
+Note that many layout-related Components provide layout support. Components supporting this feature
 promote most flexbox layout properties (e.g. 'width', 'height', 'flex') to being first class props
 on the component itself. This allows many layout operations to be done in declarative Javascript.
 
@@ -276,7 +276,7 @@ logic, independent of and distinct from any particular UI component. Services ca
 internal state and data structures and expose methods for use by the rest of the application. A
 common use for Services is to fetch and post data to the server, potentially transforming,
 validating, or defaulting outbound queries and inbound data to provide a local API to application
-Model and Component classes that's tailored to their needs.
+Model classes that's tailored to their needs.
 
 Service instances persist for the life of the app and have a defined initialization process. By
 convention they are stored within an `svc/` package within an app's file structure.
@@ -322,7 +322,7 @@ application Component.
 
 We believe that this factory approach excels for declarative specification of code-heavy element
 trees. New users of Hoist are invited to examine the source code of our core components to see
-examples of its use. Its probably the most notable hallmark of our internal code, and where Hoist
+examples of its use. It's probably the most notable hallmark of our internal code, and where Hoist
 diverges most visibly from other React projects.
 
 It's worth noting that this approach is based on an extremely thin layer (<20 lines of code) around
@@ -333,7 +333,7 @@ JSX (see below).
 ## What about JSX?
 
 JSX is the XML-like extension to Javascript typically used to specify and configure React
-components. While it's syntax and appearance within otherwise "vanilla" Javascript code might appear
+components. While its syntax and appearance within otherwise "vanilla" Javascript code might appear
 strange to non-React developers, JSX syntax and conventions are a de-facto standard in the React
 community, familiar to React developers, and found in all React guides and tutorials.
 
@@ -342,12 +342,12 @@ community, familiar to React developers, and found in all React guides and tutor
 All Hoist components can be created with JSX tags, and developers of Hoist-based applications can
 exclusively use JSX if they wish. In fact, for element trees with a significant amount of hypertext,
 JSX might be a better choice then element factories, and we frequently make internal use of it for
-that purpose. Also, JSX can be used interchangably with element factories, even within the same
+that purpose. Also, JSX can be used interchangeably with element factories, even within the same
 render method.
 
 Note that JSX is pre-processed (via Babel) into calls to React.createElement() before running in the
 browser. Ultimately this produces similar runtime Javascript to the element factory approach
-reccomended above.
+recommended above.
 
 
 ## Bundled and Managed Components
