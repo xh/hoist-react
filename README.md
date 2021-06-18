@@ -61,7 +61,7 @@ and/or think it might be helpful for a project, please don't hesitate to
 ## Key Libraries and Dependencies
 
 📚 Hoist React is built on a collection of remarkable third-party libraries that have been selected,
-combined and integrated by Extremely Heavy. To make the best use of this framework, please review
+combined, and integrated by Extremely Heavy. To make the best use of this framework, please review
 the technologies below.
 
 |   Library    |                                          Notes                                          |               Link                |
@@ -96,7 +96,7 @@ accessed via a unique URL. XH can configure appropriate access via npm configura
 enterprise npm repository proxy.
 
 **HighCharts HighStock** is the primary charting library in Hoist, and offers several [licensing and
-support options](https://shop.highsoft.com/highstock) for commercial use. Application wishing to use
+support options](https://shop.highsoft.com/highstock) for commercial use. Applications wishing to use
 charts in Hoist will need to provide a licensed version of Highcharts.
 
 ## ECMAScript 2016+
@@ -150,7 +150,7 @@ behaviors, but we have found it to be a helpful indicator of any Promise-based, 
 + Source: <https://github.com/mobxjs/mobx>
 
 MobX is an essential building block of Hoist React, providing an application state management
-solution with "smart' reactivity, tight integration with React Components, and a general API for
+solution with "smart" reactivity, tight integration with React Components, and a general API for
 reactive programming that extends beyond Components. Please review and familiarize yourself with the
 MobX documentation to make the best use of Hoist React.
 
@@ -286,8 +286,8 @@ support and defines an empty `initAsync()` lifecycle method. To instantiate and 
 available to application code, use the`XH.installServicesAsync()` method. This method will
 construct, initialize, and install the services as a property on the XH object. Note that there is a
 strict expectation that service classes will be named ending with the word 'Service', e.g.
-`MyCustomService.`. The installed instance in this case would then be made available to application
-code as `XH.myCustomService'.
+`MyCustomService`. The installed instance in this case would then be made available to application
+code as `XH.myCustomService`.
 
 Many core Hoist features are exposed on the client via services such as `PrefService`,
 `ConfigService`, and `IdentityService`. See these examples for a better understanding of the kind of
@@ -327,7 +327,7 @@ diverges most visibly from other React projects.
 
 It's worth noting that this approach is based on an extremely thin layer (<20 lines of code) around
 the core React `createElement()` API, and does not impose or rely on any special requirements or
-additional libraries. Its also worth noting that this approach is only superficially different from
+additional libraries. It's also worth noting that this approach is only superficially different from
 JSX (see below).
 
 ## What about JSX?
@@ -356,7 +356,7 @@ Hoist includes a wide variety of carefully selected and integrated UI Components
 immediate use within an application. Most of these are built on / composed of Components provided by
 well-regarded (and generally awesome) third-party libraries.
 
-An central goal of the Hoist toolkit, however, is to provide a more **managed, normalized, and
+A central goal of the Hoist toolkit, however, is to provide a more **managed, normalized, and
 integrated** set of patterns, APIs, and links on top of the "raw" library components. This enables
 them to work better together, integrate with and leverage core Hoist services such as soft
 configuration and user preferences, and appear to end-users as a cohesive and highly polished
