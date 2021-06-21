@@ -1,13 +1,14 @@
+import {hoistCmp} from '@xh/hoist/core';
 import {div, filler} from '@xh/hoist/cmp/layout';
+import {popover} from '@xh/hoist/kit/blueprint';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {tabContainer} from '@xh/hoist/cmp/tab';
-import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {popover} from '@xh/hoist/kit/blueprint';
+
 import './FilterPopover.scss';
 
 export const filterPopover = hoistCmp.factory({
@@ -15,7 +16,7 @@ export const filterPopover = hoistCmp.factory({
         const {isOpen, isFiltered} = model;
 
         return popover({
-            className: 'xh-grid-header-menu-icon',
+            className: 'xh-filter-popover__icon',
             position: 'bottom',
             boundary: 'viewport',
             hasBackdrop: true,
@@ -40,7 +41,7 @@ const content = hoistCmp.factory({
     render({model}) {
         const {xhColumn} = model;
         return panel({
-            className: 'filter-popover',
+            className: 'xh-filter-popover',
             onClick: (e) => e.stopPropagation(),
             compactHeader: true,
             title: `Filter ${xhColumn.displayName} by:`,
@@ -102,18 +103,18 @@ const bbar = hoistCmp.factory({
 const switcher = hoistCmp.factory({
     render({model}) {
         return buttonGroupInput({
-            className: 'filter-popover__tab-switcher',
+            className: 'xh-filter-popover__tab-switcher',
             omit: model.type === 'bool',
             intent: 'primary',
             bind: 'tabId',
             items: [
                 button({
-                    className: 'filter-popover__tab-switcher--button',
+                    className: 'xh-filter-popover__tab-switcher--button',
                     value: 'enumFilter',
                     text: 'Values'
                 }),
                 button({
-                    className: 'filter-popover__tab-switcher--button',
+                    className: 'xh-filter-popover__tab-switcher--button',
                     value: 'customFilter',
                     text: 'Custom'
                 })

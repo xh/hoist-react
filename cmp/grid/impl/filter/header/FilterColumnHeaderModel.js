@@ -1,13 +1,14 @@
-import {Column} from '@xh/hoist/cmp/grid';
-import {FilterPopoverModel} from '@xh/hoist/cmp/grid/impl/header/filter/FilterPopoverModel';
-import {GridSorter} from '@xh/hoist/cmp/grid/impl/header/GridSorter';
 import {HoistModel, managed} from '@xh/hoist/core';
+import {Column} from '@xh/hoist/cmp/grid';
 import {computed} from '@xh/hoist/mobx';
 import {olderThan} from '@xh/hoist/utils/datetime';
 import {debounced} from '@xh/hoist/utils/js';
 import {filter, findIndex, isEmpty, isFinite, isString} from 'lodash';
 
-export class ColumnHeaderModel extends HoistModel {
+import {GridSorter} from '../../GridSorter';
+import {FilterPopoverModel} from '../popover/FilterPopoverModel';
+
+export class FilterColumnHeaderModel extends HoistModel {
     gridModel;
     xhColumn;
     agColumn;
@@ -80,13 +81,14 @@ export class ColumnHeaderModel extends HoistModel {
     //-------------------
     constructor(initialProps) {
         super();
-        const {gridModel, xhColumn, column: agColumn} = initialProps;
+        const {gridModel, xhColumn, column: agColumn} = initialProps,
+            {sortable, enableFilter, field} = xhColumn;
+
         this.gridModel = gridModel;
         this.xhColumn = xhColumn;
         this.agColumn = agColumn;
         this.colId = agColumn.colId;
         this.availableSorts = this.parseAvailableSorts();
-        const {sortable, enableFilter, field} = xhColumn;
         this.enableSorting = sortable;
 
         if (enableFilter && field === this.colId) {
@@ -130,7 +132,6 @@ export class ColumnHeaderModel extends HoistModel {
             if (isFinite(currIdx)) idx = (currIdx + 1) % availableSorts.length;
         }
 
-
         return availableSorts[idx];
     }
 
@@ -152,6 +153,7 @@ export class ColumnHeaderModel extends HoistModel {
             if (isString(spec) || spec === null) spec = {sort: spec};
             return new GridSorter({...spec, colId});
         });
+
         return absSort ? ret : ret.filter(it => !it.abs);
     }
 }

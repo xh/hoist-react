@@ -1,4 +1,11 @@
-.filter-popover {
+.xh-filter-popover {
+  &__icon {
+    margin: var(--xh-pad-half-px) 0 0 var(--xh-pad-half-px);
+    flex: none !important;
+    width: 1.5em;
+    color: var(--xh-grid-header-icon-color);
+  }
+
   &__tab-switcher {
     min-height: 20px;
     max-height: 20px;

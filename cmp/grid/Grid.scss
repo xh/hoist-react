@@ -65,15 +65,6 @@
 
     .xh-grid-header-menu-icon {
       cursor: pointer;
-      flex: none;
-      margin-top: var(--xh-pad-half-px);
-    }
-
-    // Ref to position grid header menu to right of display name
-    .xh-grid-header-menu-ref {
-      margin-top: var(--xh-pad-double-px);
-      margin-right: var(--xh-pad-half-px);
-      width: 0;
     }
   }
 

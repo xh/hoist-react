@@ -4,13 +4,14 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {ColumnHeaderModel} from '@xh/hoist/cmp/grid/impl/header/ColumnHeaderModel';
-import {filterPopover} from '@xh/hoist/cmp/grid/impl/header/filter/FilterPopover';
-import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useLocalModel, XH} from '@xh/hoist/core';
+import {div, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
 import {isFunction, isString, isUndefined} from 'lodash';
+
+import {FilterColumnHeaderModel} from './FilterColumnHeaderModel';
+import {filterPopover} from '../popover/FilterPopover';
 
 /**
  * A custom ag-Grid header component.
@@ -18,19 +19,22 @@ import {isFunction, isString, isUndefined} from 'lodash';
  * Relays sorting events directly to the controlling GridModel. Supports absolute value sorting
  * by checking `Column.absSort` to determine next sortBy and by rendering custom sort icons.
  *
+ * Supports column level filtering with `Column.enableFilter`
+ *
  * @private
  */
-export const columnHeader = hoistCmp.factory({
-    displayName: 'ColumnHeader',
+export const filterColumnHeader = hoistCmp.factory({
+    displayName: 'FilterColumnHeader',
     className: 'xh-grid-header',
 
     render(props) {
         // Needs to be local model to get initial props.
-        const model = useLocalModel(() => new ColumnHeaderModel(props));
+        const model = useLocalModel(() => new FilterColumnHeaderModel(props));
 
         const extraClasses = [
             model.activeGridSorter ? 'xh-grid-header-sorted' : null,
-            model.hasNonPrimarySort ? 'xh-grid-header-multisort' : null
+            model.hasNonPrimarySort ? 'xh-grid-header-multisort' : null,
+            model.enableFilter ? 'xh-grid-header-filter-enabled' : null
         ];
 
         const {xhColumn, gridModel} = model,

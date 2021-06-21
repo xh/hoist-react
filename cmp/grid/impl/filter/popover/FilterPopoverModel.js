@@ -1,12 +1,13 @@
-import {customFilter} from '@xh/hoist/cmp/grid/impl/header/filter/CustomFilter';
-import {CustomFilterModel} from '@xh/hoist/cmp/grid/impl/header/filter/CustomFilterModel';
-import {enumFilter} from '@xh/hoist/cmp/grid/impl/header/filter/EnumFilter';
-import {EnumFilterModel} from '@xh/hoist/cmp/grid/impl/header/filter/EnumFilterModel';
-import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, managed} from '@xh/hoist/core';
-import {Store} from '@xh/hoist/data';
 import {action, bindable, makeObservable} from '@xh/hoist/mobx';
+import {TabContainerModel} from '@xh/hoist/cmp/tab';
+import {Store} from '@xh/hoist/data';
 import {filter, isEmpty, isEqual, without} from 'lodash';
+
+import {customFilter} from './CustomFilter';
+import {CustomFilterModel} from './CustomFilterModel';
+import {enumFilter} from './EnumFilter';
+import {EnumFilterModel} from './EnumFilterModel';
 
 export class FilterPopoverModel extends HoistModel {
     gridModel;

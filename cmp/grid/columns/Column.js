@@ -10,7 +10,7 @@ import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {castArray, clone, find, get, isArray, isFinite, isFunction, isNil, isNumber, isString} from 'lodash';
 import {forwardRef, useImperativeHandle, useState} from 'react';
-import {GridSorter} from '../impl/header/GridSorter';
+import {GridSorter} from '../impl/GridSorter';
 import {ExportFormat} from './ExportFormat';
 
 /**

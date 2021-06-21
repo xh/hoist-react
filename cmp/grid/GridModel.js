@@ -48,7 +48,7 @@ import {
     sortBy
 } from 'lodash';
 import {GridPersistenceModel} from './impl/GridPersistenceModel';
-import {GridSorter} from './impl/header/GridSorter';
+import {GridSorter} from './impl/GridSorter';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,

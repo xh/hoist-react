@@ -1,5 +1,5 @@
-import {grid} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
+import {grid} from '@xh/hoist/cmp/grid';
 
 export const enumFilter = hoistCmp.factory({
     render({model}) {
