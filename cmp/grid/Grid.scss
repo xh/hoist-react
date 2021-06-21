@@ -180,6 +180,13 @@
 }
 
 //------------------------
+// Row highlight
+//------------------------
+.xh-grid--highlight-row-on-click .xh-ag-grid .ag-row .ag-cell-data-changed {
+  background-color: var(--xh-grid-bg-highlight) !important;
+}
+
+//------------------------
 // Multi-field (mobile)
 //------------------------
 .xh-multifield-renderer {

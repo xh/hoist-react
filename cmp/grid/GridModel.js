@@ -110,6 +110,8 @@ export class GridModel extends HoistModel {
     restoreDefaultsWarning;
     /** @member {boolean} */
     hideEmptyTextBeforeLoad;
+    /** @member {boolean} */
+    highlightRowOnClick;
 
     /** @member {AgGridModel} */
     @managed agGridModel;
@@ -247,6 +249,10 @@ export class GridModel extends HoistModel {
      *      should not immediately respond to user or programmatic changes to the sortBy property,
      *      but will instead wait for the next load of data, which is assumed to be pre-sorted.
      *      Default false.
+     * @param {boolean} [c.highlightRowOnClick] - Set to true to highlight a row on click. Intended
+     *      to provide feedback to users in grids without selection. Note that setting this changes
+     *      the default color provided to Column.highlightOnChange. Default true for phones and
+     *      tablets, false for desktop.
      * @param {Object} [c.experimental] - flags for experimental features. These features are
      *     designed for early client-access and testing, but are not yet part of the Hoist API.
      * @param {*} [c...rest] - additional data to attach to this model instance.
@@ -299,6 +305,7 @@ export class GridModel extends HoistModel {
         useVirtualColumns = false,
         autosizeOptions = {},
         restoreDefaultsWarning = GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
+        highlightRowOnClick = XH.isPhone || XH.isTablet,
         experimental,
         ...rest
     }) {
@@ -328,6 +335,7 @@ export class GridModel extends HoistModel {
             fillMode: 'none'
         });
         this.restoreDefaultsWarning = restoreDefaultsWarning;
+        this.highlightRowOnClick = highlightRowOnClick;
 
         apiRemoved(rest.contextMenuFn, 'contextMenuFn', 'Use contextMenu instead');
         apiRemoved(rest.enableColChooser, 'enableColChooser', "Use 'colChooserModel' instead");

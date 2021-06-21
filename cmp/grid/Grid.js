@@ -77,7 +77,8 @@ export const [Grid, grid] = hoistCmp.withFactory({
                 className: classNames(
                     className,
                     impl.isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat',
-                    model.treeMode ? getTreeStyleClasses(model.treeStyle) : null
+                    model.treeMode ? getTreeStyleClasses(model.treeStyle) : null,
+                    model.highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null
                 ),
                 item: agGrid({
                     ...getLayoutProps(props),
@@ -682,6 +683,7 @@ class LocalModel extends HoistModel {
     onKeyDown = (evt) => {
         const {model} = this,
             {selModel} = model;
+
         if ((evt.ctrlKey || evt.metaKey) && evt.key === 'a' && selModel.mode === 'multiple') {
             selModel.selectAll();
             return;
@@ -693,8 +695,17 @@ class LocalModel extends HoistModel {
     onRowClicked = (evt) => {
         const {model} = this,
             {selModel} = model;
+
         if (evt.rowPinned) {
             selModel.clear();
+        }
+
+        if (model.highlightRowOnClick) {
+            model.agApi.flashCells({
+                rowNodes: [evt.node],
+                flashDelay: 100,
+                fadeDelay: 100
+            });
         }
 
         if (model.onRowClicked) model.onRowClicked(evt);
