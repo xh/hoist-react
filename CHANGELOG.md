@@ -50,8 +50,8 @@ should be sure to test their forms carefully.
     + `onCellDoubleClicked`
 * Renaming of the confusing and ambiguous property name `labelAlign` in several components:
     + `FormField`: `labelAlign` has been renamed to `labelTextAlign`
-    + `SwitchInput`, `RadioInput`, and `Checkbox`: `labelAlign` has been renamed `labelSide`. 
-    
+    + `SwitchInput`, `RadioInput`, and `Checkbox`: `labelAlign` has been renamed `labelSide`.
+
 ### 🐞 Bug Fixes
 
 * Fix disable behavior for Hoist-provided button components using popover.
@@ -371,9 +371,9 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
 * Hoist grids now require ag-Grid v25.0.1 or higher - if your app uses ag-Grid, update your ag-Grid
   dependency in your app's `package.json` file.
 * The `uses()` function (called within `hoistComponent()` factory configs for model context lookups)
-  no longer accepts class names as strings. Pass the class itself (or superclass) of the model you
-  wish to select for your component. `Uses` will throw if given any string other than "*", making
-  the need for any updates clear.
+  and the `useContextModel()` function no longer accept class names as strings. Pass the class
+  itself (or superclass) of the model you wish to select for your component. `Uses` will throw if
+  given any string other than "*", making the need for any updates clear in that case.
 * The `Ref` class, deprecated in v26, has now been removed. Use `createObservableRef` instead.
 * `AppMenuModel` has been removed. The `AppMenuButton` is now configured via
   `AppBar.appMenuButtonProps`. As with desktop, menu items can be added with

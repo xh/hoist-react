@@ -32,8 +32,11 @@ export class Exception {
 
     /**
      * Create an Error for when fetch calls go bad...
-     * @param {Object} fetchOptions - original options the app passed to FetchService.fetch
-     * @param {Response} response - resolved value from native fetch
+     * @param {Object} fetchOptions - original options provided to `FetchService.fetch()`.
+     * @param {Response} response - return value of native fetch, with the addition of an optional
+     *      `responseText` property containing the already-awaited output of `response.text()`. If
+     *      `responseText` is determined to be a JSON object containing a `name` property, it will
+     *      be treated as a serialized exception and used to construct the returned Error.
      * @returns {Error}
      */
     static fetchError(fetchOptions, response) {
