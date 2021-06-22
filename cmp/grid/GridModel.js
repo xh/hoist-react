@@ -457,7 +457,7 @@ export class GridModel extends HoistModel {
      * Select the first row in the grid.
      *
      * See {@see preSelectFirstAsync()} for a useful variant of this method.  preSelectFirstAsync()
-     * will not change the selection if there is not already a selection, which is what applications
+     * will not change the selection if there is already a selection, which is what applications
      * typically want to do when loading/reloading a grid.
      *
      * This method allows for a minimal delay to allow the underlying grid implementation to
