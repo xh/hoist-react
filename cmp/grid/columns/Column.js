@@ -414,13 +414,8 @@ export class Column {
             tooltipSpec = tooltipElement ?? tooltip;
 
         if (tooltipSpec) {
-            ret.tooltipValueGetter = (obj) => {
-
-                // We actually return the *record* itself, rather then ag-Grid's default escaped value.
-                // We need it below, where it will be handled to class as a prop.
-                // Note that we must always return a value - see hoist-react #2058, #2181
-                return obj.data ?? '*EMPTY*';
-            };
+            // ag-Grid requires a return from getter, but value we actually use is computed below
+            ret.tooltipValueGetter = () => 'tooltip';
             ret.tooltipComponentFramework = forwardRef((props, ref) => {
                 const {location} = props;
                 useImperativeHandle(ref, () => ({
@@ -431,7 +426,7 @@ export class Column {
                 }), [location]);
 
                 const agParams = props,
-                    {value: record} = agParams;  // Value actually contains store record -- see above
+                    {data: record} = agParams;
 
                 if (location === 'header') return div(this.headerTooltip);
 
