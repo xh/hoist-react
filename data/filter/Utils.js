@@ -51,3 +51,19 @@ export function parseFilter(spec) {
     console.error('Unable to identify filter type:', spec);
     return null;
 }
+
+/**
+ * Recursively flatten a CompoundFilter, and return an array of all nested non-Compound filters
+ *
+ * @returns {Filter[]} - array of all nested non compound filters
+ */
+export function flattenFilter(spec) {
+    if (!spec) return [];
+
+    const {filters} = spec;
+    if (!filters) return [spec];
+
+    const ret = [];
+    filters.forEach(it => ret.push(...flattenFilter(it)));
+    return ret;
+}

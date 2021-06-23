@@ -1,11 +1,15 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2021 Extremely Heavy Industries Inc.
+ */
 import {hoistCmp} from '@xh/hoist/core';
 import {div, filler} from '@xh/hoist/cmp/layout';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {storeFilterField} from '@xh/hoist/cmp/store';
 import {tabContainer} from '@xh/hoist/cmp/tab';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
+import {buttonGroup, button} from '@xh/hoist/desktop/cmp/button';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 
@@ -13,20 +17,20 @@ import './FilterPopover.scss';
 
 export const filterPopover = hoistCmp.factory({
     render({model}) {
-        const {isOpen, isFiltered} = model;
-
+        const {isOpen, hasFilter} = model;
         return popover({
+            isOpen,
             className: 'xh-filter-popover__icon',
+            popoverClassName: 'xh-popup--framed',
             position: 'bottom',
             boundary: 'viewport',
             hasBackdrop: true,
             interactionKind: 'click',
-            isOpen,
             onInteraction: (open) => {
-                if (!open) model.cancel();
+                if (!open) model.closeMenu();
             },
             target: div({
-                item: isFiltered ? Icon.filter() : Icon.bars(),
+                item: hasFilter ? Icon.filter() : Icon.bars(),
                 onClick: (e) => {
                     e.stopPropagation();
                     model.openMenu();
@@ -38,42 +42,22 @@ export const filterPopover = hoistCmp.factory({
 });
 
 const content = hoistCmp.factory({
-    render({model}) {
-        const {xhColumn} = model;
+    render() {
         return panel({
+            title: `Filter`,
             className: 'xh-filter-popover',
-            onClick: (e) => e.stopPropagation(),
             compactHeader: true,
-            title: `Filter ${xhColumn.displayName} by:`,
+            onClick: (e) => e.stopPropagation(),
             headerItems: [switcher()],
             item: tabContainer(),
-            tbar: tbar(),
             bbar: bbar()
-        });
-    }
-});
-
-const tbar = hoistCmp.factory({
-    render({model}) {
-        const {enumFilterModel, colId, enumTabActive} = model;
-        return toolbar({
-            omit: !enumTabActive,
-            compact: true,
-            item: storeFilterField({
-                model: model,
-                bind: 'filterText',
-                icon: null,
-                flex: 1,
-                store: enumFilterModel.gridModel.store,
-                includeFields: [colId]
-            })
         });
     }
 });
 
 const bbar = hoistCmp.factory({
     render({model}) {
-        const {enumTabActive, hasEnumFilter, hasCustomFilter} = model;
+        const {enumFilterTabActive, hasEnumFilter, hasCustomFilter} = model;
         return toolbar({
             compact: true,
             items: [
@@ -81,13 +65,13 @@ const bbar = hoistCmp.factory({
                     icon: Icon.undo(),
                     text: 'Reset',
                     intent: 'danger',
-                    disabled: enumTabActive ? !hasEnumFilter : !hasCustomFilter,
+                    disabled: enumFilterTabActive ? !hasEnumFilter : !hasCustomFilter,
                     onClick: () => model.reset()
                 }),
                 filler(),
                 button({
                     text: 'Cancel',
-                    onClick: () => model.cancel()
+                    onClick: () => model.closeMenu()
                 }),
                 button({
                     icon: Icon.check(),
@@ -100,25 +84,29 @@ const bbar = hoistCmp.factory({
     }
 });
 
-const switcher = hoistCmp.factory({
-    render({model}) {
-        return buttonGroupInput({
-            className: 'xh-filter-popover__tab-switcher',
+const switcher = hoistCmp.factory(
+    ({model}) => {
+        const {tabs} = model.tabContainerModel;
+        return buttonGroup({
             omit: model.type === 'bool',
-            intent: 'primary',
-            bind: 'tabId',
-            items: [
-                button({
-                    className: 'xh-filter-popover__tab-switcher--button',
-                    value: 'enumFilter',
-                    text: 'Values'
-                }),
-                button({
-                    className: 'xh-filter-popover__tab-switcher--button',
-                    value: 'customFilter',
-                    text: 'Custom'
-                })
-            ]
+            className: 'xh-filter-popover__tab-switcher',
+            items: tabs.map(it => switcherButton({...it}))
         });
     }
-});
+);
+
+const switcherButton = hoistCmp.factory(
+    ({model, id, title}) => {
+        const {tabContainerModel} = model,
+            {activeTabId} = tabContainerModel;
+
+        return button({
+            className: 'xh-filter-popover__tab-switcher__button',
+            text: title,
+            active: activeTabId === id,
+            intent: 'primary',
+            minimal: false,
+            onClick: () => tabContainerModel.activateTab(id)
+        });
+    }
+);

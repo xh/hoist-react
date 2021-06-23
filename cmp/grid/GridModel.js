@@ -8,7 +8,7 @@ import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Column, ColumnGroup, GridAutosizeMode, TreeStyle} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
+import {FieldType, Store, StoreSelectionModel, parseFilter} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
@@ -45,7 +45,8 @@ import {
     max,
     min,
     pull,
-    sortBy
+    sortBy,
+    values
 } from 'lodash';
 import {GridPersistenceModel} from './impl/GridPersistenceModel';
 import {GridSorter} from './impl/GridSorter';
@@ -127,6 +128,8 @@ export class GridModel extends HoistModel {
     @observable.ref sortBy = [];
     /** @member {string[]} */
     @observable.ref groupBy = null;
+    /** @member {Object} */
+    @observable.ref columnFilters = {};
     /** @member {(string|boolean)} */
     @observable showSummary = false;
     /** @member {string} */
@@ -678,6 +681,32 @@ export class GridModel extends HoistModel {
         this.sortBy = sorters;
     }
 
+    /**
+     * @param {string} colId - colId to identify this filter
+     * @param {(Filter|Object)} filter - Filter, or configs to create. If null, the filter will be removed
+     */
+    @action
+    setColumnFilter({colId, filter}) {
+        throwIf(!this.findColumn(this.columns, colId), `ColumnFilter colId ${colId} not found in grid columns`);
+
+        // Update Column Filter map
+        const columnFilters = {...this.columnFilters};
+        if (filter) {
+            columnFilters[colId] = parseFilter(filter);
+        } else {
+            delete columnFilters[colId];
+        }
+        this.columnFilters = columnFilters;
+
+        // Set filter on the store
+        const filters = values(columnFilters);
+        let storeFilter;
+        if (!isEmpty(filters)) {
+            storeFilter = filters.length > 1 ? {filters, op: 'AND'} : filters[0];
+        }
+        this.setFilter(storeFilter);
+    }
+
     async doLoadAsync(loadSpec) {
         // Delegate to any store that has load support
         return this.store.loadSupport?.loadAsync(loadSpec);
@@ -702,7 +731,6 @@ export class GridModel extends HoistModel {
     setFilter(filter) {
         this.store.setFilter(filter);
     }
-
 
     /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action

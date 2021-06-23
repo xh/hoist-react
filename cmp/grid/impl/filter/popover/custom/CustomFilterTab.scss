@@ -1,0 +1,41 @@
+.xh-custom-filter-tab {
+  &__list {
+    padding: var(--xh-pad-half-px) 0;
+    overflow-y: auto;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+
+    .xh-select {
+      flex: none;
+      width: 45px !important;
+
+      .xh-select__control {
+        background: none;
+        box-shadow: none;
+      }
+
+      .xh-select__value-container {
+        justify-content: center;
+      }
+
+      .xh-select__single-value {
+        color: var(--xh-input-text-color);
+      }
+    }
+
+    .xh-input > .bp3-input-group {
+      width: 100%;
+    }
+
+    &:not(:last-of-type) {
+      margin-bottom: var(--xh-pad-half-px);
+    }
+  }
+
+  &__operator-display {
+    font-weight: 500;
+  }
+}

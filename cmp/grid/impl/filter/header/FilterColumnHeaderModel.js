@@ -1,3 +1,9 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2021 Extremely Heavy Industries Inc.
+ */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {Column} from '@xh/hoist/cmp/grid';
 import {computed} from '@xh/hoist/mobx';

@@ -1,34 +1,55 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2021 Extremely Heavy Industries Inc.
+ */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {action, bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {Store} from '@xh/hoist/data';
-import {filter, isEmpty, isEqual, without} from 'lodash';
+import {compact, isEmpty} from 'lodash';
 
-import {customFilter} from './CustomFilter';
-import {CustomFilterModel} from './CustomFilterModel';
-import {enumFilter} from './EnumFilter';
-import {EnumFilterModel} from './EnumFilterModel';
+import {customFilterTab} from './custom/CustomFilterTab';
+import {CustomFilterTabModel} from './custom/CustomFilterTabModel';
+import {enumFilterTab} from './enum/EnumFilterTab';
+import {EnumFilterTabModel} from './enum/EnumFilterTabModel';
 
 export class FilterPopoverModel extends HoistModel {
     gridModel;
     xhColumn;
     colId;
 
+    @bindable isOpen = false;
+
+    @managed tabContainerModel;
+    @managed enumFilterTabModel;
+    @managed customFilterTabModel;
+
     /**
-     * @member {Store} - Store to be kept in sync with `gridModel.store,` with filters applied
-     * to obtain set values for display in enumerated set filter. i.e. excluding any '=' op
-     * `FieldFilter` on `colId`. Only filtered `records` will be loaded into `enumFilterGridModel`.
+     * @member {Object} - Filter config output by this model
      */
-    @managed virtualStore;
+    @computed.struct
+    get filter() {
+        const filters = compact([this.enumFilterTabModel.filter, this.customFilterTabModel.filter]);
+        if (isEmpty(filters)) return null;
+        return filters.length > 1 ? {filters, op: 'AND'} : filters[0];
+    }
 
-    @managed
-    tabContainerModel;
+    get hasFilter() {
+        return !!this.filter;
+    }
 
-    @bindable tabId = null;
+    get hasEnumFilter() {
+        return !!this.enumFilterTabModel.filter;
+    }
 
-    @bindable isOpen = false; // Controlled popover filter menu
+    get hasCustomFilter() {
+        return !!this.customFilterTabModel.filter;
+    }
 
-    virtualStoreLastUpdated = null; // Kept in sync with `gridModel.store` to avoid unnecessary updates
+    get enumFilterTabActive() {
+        return this.tabContainerModel.activeTabId === 'enumFilter';
+    }
 
     get store() {
         return this.gridModel.store;
@@ -38,161 +59,64 @@ export class FilterPopoverModel extends HoistModel {
         return this.store.filter;
     }
 
-    get isFiltered() {
-        const {storeFilter} = this;
-        if (!storeFilter) return false;
-        return !isEmpty(this.getColFilters(storeFilter.filters ?? [storeFilter]));
+    get type() {
+        return this.store.getField(this.colId).type;
     }
 
-    get hasEnumFilter() {
-        const {initialFilter, committedFilter} = this.enumFilterModel;
-        return !isEqual(initialFilter, committedFilter);
-    }
-
-    get hasCustomFilter() {
-        return !!this.customFilterModel.committedFilter;
-    }
-
-    get enumTabActive() {
-        return this.tabId == 'enumFilter';
-    }
-
-    //---------------------------
-    // Filtering Public Actions
-    //---------------------------
-    openMenu() {
-        this.setIsOpen(true);
-        this.setTabId('enumFilter');
-    }
-
-    closeMenu() {
-        this.setIsOpen(false);
-    }
-
-    cancel() {
-        const {enumFilterModel, customFilterModel} = this;
-        enumFilterModel.setPendingFilter(enumFilterModel.committedFilter);
-        enumFilterModel.setFilterText(null);
-        customFilterModel.setPendingFilter(customFilterModel.committedFilter);
-        this.closeMenu();
-    }
-
-    reset() {
-        if (this.enumTabActive) {
-            this.enumFilterModel.reset();
-        } else {
-            this.customFilterModel.reset();
-        }
-    }
-
-    commit() {
-        if (this.enumTabActive) {
-            this.enumFilterModel.commit();
-        } else {
-            this.customFilterModel.commit();
-        }
-    }
-
-    //---------------------------
-    // Filtering Implementation
-    //---------------------------
-    loadStoreAndUpdateFilter(filter, lastUpdated) {
-        if (this.virtualStoreLastUpdated !== lastUpdated) {
-            this.virtualStoreLastUpdated = lastUpdated;
-            this.loadVirtualStore();
-        }
-        this.processFilter(filter);
-    }
-
-    loadVirtualStore() {
-        const {virtualStore, store} = this,
-            {allRecords} = store;
-
-        virtualStore.loadData(
-            this.gridModel.treeMode ?
-                allRecords.filter(rec => isEmpty(rec.children)).map(rec => rec.data) :
-                allRecords.map(rec => rec.data)
-        );
-    }
-
-    @action
-    processFilter(filter) {
-        const {colId, virtualStore, customFilterModel} = this;
-        if (!filter) {
-            virtualStore.setFilter(null);
-        } else if (filter.isCompoundFilter) {
-            const equalsFilter = this.getEqualsColFilter(filter.filters),
-                appliedFilters = without(filter.filters, equalsFilter);
-            virtualStore.setFilter({op: 'AND', filters: appliedFilters});
-        } else if (
-            filter.isFieldFilter &&
-            (
-                filter.field !== colId ||
-                filter.op !== '=' ||
-                // TODO - revisit if this is desired behavior
-                // Apply '=' field filter when it is a custom filter
-                filter.equals(customFilterModel.committedFilter)
-            )
-        ) {
-            virtualStore.setFilter(filter);
-        } else {
-            virtualStore.setFilter(null);
-        }
-    }
-
-    //-------------------
-    // Implementation
-    //-------------------
     constructor({gridModel, xhColumn, agColumn}) {
         super();
         makeObservable(this);
 
+        const {colId} = agColumn;
         this.gridModel = gridModel;
         this.xhColumn = xhColumn;
-        this.colId = agColumn.colId;
+        this.colId = colId;
 
-        if (xhColumn.field === this.colId) {
-            this.virtualStore = new Store({...this.store, loadRootAsSummary: false});
-
-            this.enumFilterModel = new EnumFilterModel(this);
-            this.customFilterModel = new CustomFilterModel(this);
-
-            this.tabContainerModel = new TabContainerModel({
-                tabs: [
-                    {
-                        id: 'enumFilter',
-                        title: 'Values',
-                        content: () => enumFilter({model: this.enumFilterModel})
-                    },
-                    {
-                        id: 'customFilter',
-                        title: 'Custom',
-                        content: () => customFilter({model: this.customFilterModel})
-                    }
-                ],
-                switcher: false
-            });
-
-            this.addReaction({
-                track: () => [this.storeFilter, this.store.lastUpdated],
-                run: ([storeFilter, lastUpdated]) => {
-                    if (lastUpdated) this.loadStoreAndUpdateFilter(storeFilter, lastUpdated);
+        this.enumFilterTabModel = new EnumFilterTabModel(this);
+        this.customFilterTabModel = new CustomFilterTabModel(this);
+        this.tabContainerModel = new TabContainerModel({
+            switcher: false,
+            tabs: [
+                {
+                    id: 'enumFilter',
+                    title: 'Values',
+                    content: enumFilterTab
                 },
-                fireImmediately: true
-            });
+                {
+                    id: 'customFilter',
+                    title: 'Custom',
+                    content: customFilterTab
+                }
+            ]
+        });
 
-            this.addReaction({
-                track: () => this.tabId,
-                run: (tabId) => this.tabContainerModel.activateTab(tabId)
-            });
+        this.addReaction({
+            track: () => this.filter,
+            run: (filter) => gridModel.setColumnFilter({colId, filter})
+        });
+    }
+
+    commit() {
+        if (this.enumFilterTabActive) {
+            this.enumFilterTabModel.commit();
+        } else {
+            this.customFilterTabModel.commit();
         }
     }
 
-    getColFilters(filters) {
-        return filter(filters, {field: this.colId});
+    reset() {
+        if (this.enumFilterTabActive) {
+            this.enumFilterTabModel.reset();
+        } else {
+            this.customFilterTabModel.reset();
+        }
     }
 
-    getEqualsColFilter(filters) {
-        return this.getColFilters(filters).find(it => it.op === '=');
+    openMenu() {
+        this.setIsOpen(true);
+    }
+
+    closeMenu() {
+        this.setIsOpen(false);
     }
 }
