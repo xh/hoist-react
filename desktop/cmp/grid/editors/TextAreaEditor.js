@@ -1,7 +1,8 @@
 import {hoistCmp} from '../../../../core';
 import {textArea} from '../../input';
-import {useInlineEditorModel} from './InlineEditorModel';
-import {InlineEditorPropTypes} from './InlineEditorProps';
+import {useInlineEditorModel} from './impl/InlineEditorModel';
+import {EditorPropTypes} from './EditorPropTypes';
+import './Editors.scss';
 
 export const [TextAreaEditor, textAreaEditor] = hoistCmp.withFactory({
     displayName: 'TextAreaEditor',
@@ -21,5 +22,5 @@ export const [TextAreaEditor, textAreaEditor] = hoistCmp.withFactory({
     }
 });
 TextAreaEditor.propTypes = {
-    ...InlineEditorPropTypes
+    ...EditorPropTypes
 };

@@ -4,6 +4,14 @@
 
 ### 🎁 New Features
 
+
+* `GridModel` now supports native in-line editing of its bound store with the following new
+properties:
+  + `Column.editable`
+  + `Column.editor`
+  + `GridModel.fullRowEditing`
+Editors currently provided include `CheckboxEditor`, `DateEditor`, `NumberEditor`, `SelectEditor`
+`TextAreaEditor` and `TextEditor`.  Applications may provide custom editors as well.
 * All Hoist Components now support a `modelRef` prop. Supply a ref to this prop in order to gain a
   pointer to a Component's backing `HoistModel`.
 * New `Column.sortValue` config takes an alternate field name (as a string) to sort the column by

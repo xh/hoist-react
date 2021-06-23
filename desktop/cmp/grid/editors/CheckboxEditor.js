@@ -6,8 +6,10 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
-import {useInlineEditorModel} from './InlineEditorModel';
-import {InlineEditorPropTypes} from './InlineEditorProps';
+import {useInlineEditorModel} from './impl/InlineEditorModel';
+import {EditorPropTypes} from './EditorPropTypes';
+import './Editors.scss';
+
 
 export const [CheckboxEditor, checkboxEditor] = hoistCmp.withFactory({
     displayName: 'CheckboxEditor',
@@ -20,5 +22,5 @@ export const [CheckboxEditor, checkboxEditor] = hoistCmp.withFactory({
     }
 });
 CheckboxEditor.propTypes = {
-    ...InlineEditorPropTypes
+    ...EditorPropTypes
 };

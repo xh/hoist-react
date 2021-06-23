@@ -153,7 +153,7 @@ export class Column {
      *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
      * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column
      *     editable.
-     * @param {Column-editorFn} [c.editor] - Cell editor Component or a function to create one.
+     * @param {Column~editorFn} [c.editor] - Cell editor Component or a function to create one.
      *      Adding an editor will also install a cellClassRule and tooltip to display the
      *      validation state of the cell in question.
      * @param {Column~setValueFn} [c.setValueFn] - function for updating Record field for this
@@ -801,6 +801,17 @@ export function getAgHeaderClassFn(column) {
  * @return {boolean} - true if cell is editable
  */
 
+
+/**
+ * @callback Column~editorFn - grid cell editor component, or function to return one.
+ *      This value will be used to create a new Component whenever editing is initiated on a cell.
+ * @param {Object} params
+ * @param {Record} params.record - row-level data Record.
+ * @param {Column} params.column - column for the cell being edited.
+ * @param {GridModel} params.gridModel - gridModel for the grid.
+ * @return {Element} - the React element to use as the cell editor.
+ */
+
 /**
  * @callback Column~setValueFn - function to update the value of a Record field after inline editing
  * @param {Object} params
@@ -829,21 +840,3 @@ export function getAgHeaderClassFn(column) {
  * @param {boolean} [abs] - true to sort by absolute value
  */
 
-/**
- * @callback Column-editorFn - function for a grid cell editor returning a React element
- * @param {Object} params
- * @param {Record} params.record - row-level data Record.
- * @param {Column} params.column - column for the cell being edited.
- * @param {GridModel} params.gridModel - gridModel for the grid.
- * @return {Element} - the React element to use as the cell editor.
- */
-
-/**
- * @callback Column~cellEditorParamsFn - function returning additional params to pass to the
- *      editor function
- * @param {Object} params
- * @param {Record} params.record - row-level data Record.
- * @param {Column} params.column - column for the cell being edited.
- * @param {GridModel} params.gridModel - gridModel for the grid.
- * @return {Object} - the params to pass to the editor function
- */
