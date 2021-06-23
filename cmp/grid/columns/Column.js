@@ -456,17 +456,19 @@ export class Column {
                 if (!record?.isRecord) return null;
 
                 // Override with validation errors, if present
-                const errors = record.errors[field];
-                if (editor && !isEmpty(errors)) {
-                    return ul({
-                        className: classNames(
-                            'xh-grid-tooltip--validation',
-                            errors.length === 1 ? 'xh-grid-tooltip--validation--single' : null
-                        ),
-                        items: errors.map((it, idx) => li({key: idx, item: it}))
-                    });
+                if (editor) {
+                    const errors = record.errors[field];
+                    if (!isEmpty(errors)) {
+                        return ul({
+                            className: classNames(
+                                'xh-grid-tooltip--validation',
+                                errors.length === 1 ? 'xh-grid-tooltip--validation--single' : null
+                            ),
+                            items: errors.map((it, idx) => li({key: idx, item: it}))
+                        });
+                    }
+                    if (!tooltipSpec) return null;
                 }
-                if (editor && !tooltipSpec) return null;
 
                 const {store} = record,
                     val = this.getValueFn({record, column: this, gridModel, agParams, store});

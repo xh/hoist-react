@@ -3,15 +3,18 @@
 ## v41.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-
-
-* `GridModel` now supports native in-line editing of its bound store with the following new
-properties:
-  + `Column.editable`
-  + `Column.editor`
-  + `GridModel.fullRowEditing`
-Editors currently provided include `CheckboxEditor`, `DateEditor`, `NumberEditor`, `SelectEditor`
-`TextAreaEditor` and `TextEditor`.  Applications may provide custom editors as well.
+* Version 41 supports streamlined inline editing via several enhancements:
+    +  `Column` now supports a new `editor` property.  Set this property to an editor component
+     to enable editing of cells in that column.  Editors currently provided include
+    `CheckboxEditor`, `DateEditor`, `NumberEditor`, `SelectEditor` `TextAreaEditor` and
+    `TextEditor`.  Applications may provide custom editors as well.
+    + `Store` now contains built-in support for validation of its non-committed records.
+    To enable, specify the new `rules` property on the `Field`s in your `Store`.  Note that these
+    rules and constraints use the same API as the forms package, and rules and constraints may be
+    shared between the `data` and `form` packages freely.
+    + `GridModel` will automatically display editors and record validation messages as the user
+    moves between cells and records.  `GridModel` also supports a new property `fullRowEditing` to
+    govern whether editors are displayed for the focused cells only, or for the entire row.
 * All Hoist Components now support a `modelRef` prop. Supply a ref to this prop in order to gain a
   pointer to a Component's backing `HoistModel`.
 * New `Column.sortValue` config takes an alternate field name (as a string) to sort the column by
@@ -55,6 +58,8 @@ Editors currently provided include `CheckboxEditor`, `DateEditor`, `NumberEditor
   component name.
 * Removed `TreeMapModel.colorMode` value 'balanced'. Use the new `maxHeat` config to prevent outlier
   values from dominating the color range of the TreeMap.
+* The classes `Rule` and `ValidationState` and all constraint functions (e.g. `required`, `validEmail`,
+`numberIs`, etc.) have been moved from the `cmp\form` package to the `data` package.
 
 ### 🐞 Bug Fixes
 

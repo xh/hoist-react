@@ -71,7 +71,6 @@ export class PendingTaskModel {
     //-----------------------------
     // Implementation
     //-----------------------------
-    @computed
     get anyPending() {
         return this._pendingCount > 0;
     }
