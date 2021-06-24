@@ -60,9 +60,9 @@
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.44 -> 3.45`
-* codemirror `5.60 -> 5.61`
-* core-js `3.10 -> 3.13`
+* @blueprintjs/core `3.44 -> 3.46`
+* codemirror `5.60 -> 5.62`
+* core-js `3.10 -> 3.15`
 * filesize `6.2 -> 6.3`
 * mobx `6.1 -> 6.3`
 * react-windowed-select `3.0 -> 3.1`
