@@ -154,7 +154,7 @@ export function stringExcludes(...excludeVals) {
 }
 
 /**
- * Validate JSON syntax
+ * Validate that a value is JSON
  *
  * @type ConstraintCb
  */
