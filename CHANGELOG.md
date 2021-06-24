@@ -47,6 +47,9 @@
   component name.
 * Removed `TreeMapModel.colorMode` value 'balanced'. Use the new `maxHeat` config to prevent outlier
   values from dominating the color range of the TreeMap.
+* Hoist grids now require ag-Grid v25.3.0 or higher - update your ag-Grid dependency in your app's
+  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for
+  details.
 
 ### 🐞 Bug Fixes
 
