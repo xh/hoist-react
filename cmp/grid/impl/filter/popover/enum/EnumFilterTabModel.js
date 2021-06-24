@@ -10,6 +10,7 @@ import {parseFilter, flattenFilter} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {
+    castArray,
     compact,
     clone,
     isEmpty,
@@ -41,15 +42,19 @@ export class EnumFilterTabModel extends HoistModel {
     @bindable filterText = null; // Bound search term for `StoreFilterField`
 
     /**
-     * @member {Object} - Filter config output by this model
+     * @member {Object} - FieldFilter config output by this model
      */
     @computed.struct
     get filter() {
         const {initialValue, committedValue, colId} = this;
         if (isEqual(initialValue, committedValue)) return null;
 
-        const value = this.getCommittedValueList();
-        return {field: colId, value, op: '='};
+        const values = this.getCommittedValueList();
+        return {
+            field: colId,
+            op: '=',
+            value: values.length === 1 ? values[0] : values
+        };
     }
 
     @computed
@@ -175,7 +180,7 @@ export class EnumFilterTabModel extends HoistModel {
             // If the store filter contains equals filters for this column, set the committed
             // value to reflect that store filter.
             columnFilters.forEach(filter => {
-                if (filter.op === '=') values.push(...filter.value);
+                if (filter.op === '=') values.push(...castArray(filter.value));
             });
 
             if (values.length) {

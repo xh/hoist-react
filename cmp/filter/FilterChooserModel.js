@@ -95,7 +95,7 @@ export class FilterChooserModel extends HoistModel {
         initialFavorites = [],
         maxResults = 50,
         persistWith
-    }) {
+    } = {}) {
         super();
         makeObservable(this);
         this.sourceStore = sourceStore;
@@ -141,6 +141,11 @@ export class FilterChooserModel extends HoistModel {
                 track: () => this.value,
                 run: (v) => targetStore.setFilter(v),
                 fireImmediately: true
+            });
+
+            this.addReaction({
+                track: () => targetStore.filter,
+                run: (filter) => this.setValue(filter)
             });
         }
     }
@@ -374,7 +379,7 @@ export class FilterChooserModel extends HoistModel {
         }
 
         if (f.isCompoundFilter) {
-            if (f.op != 'AND') {
+            if (f.op !== 'AND') {
                 console.error('Invalid "OR" filter for FilterChooser', f);
                 return false;
             }

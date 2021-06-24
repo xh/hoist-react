@@ -700,7 +700,7 @@ export class GridModel extends HoistModel {
 
         // Set filter on the store
         const filters = values(columnFilters);
-        let storeFilter;
+        let storeFilter = null;
         if (!isEmpty(filters)) {
             storeFilter = filters.length > 1 ? {filters, op: 'AND'} : filters[0];
         }
