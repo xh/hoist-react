@@ -9,7 +9,7 @@ import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
 import {QueryEngine} from './impl/QueryEngine';
 import {filterOption} from './impl/Option';
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
-import {FieldFilter, parseFilter} from '@xh/hoist/data';
+import {FieldFilter, parseFilter, combineValueFilters} from '@xh/hoist/data';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -162,7 +162,6 @@ export class FilterChooserModel extends HoistModel {
      */
     @action
     setValue(value) {
-
         // Always round trip the new value to internal state, but avoid
         // spurious change to the external value.
         try {
@@ -203,7 +202,7 @@ export class FilterChooserModel extends HoistModel {
         const [filters, suggestions] = partition(selectValue, 'op');
 
         // Round-trip actual filters through main value setter above.
-        this.setValue(this.recombineOrFilters(filters.map(f => new FieldFilter(f))));
+        this.setValue(combineValueFilters(filters).map(f => new FieldFilter(f)));
 
         // And then programmatically re-enter any suggestion
         if (suggestions.length === 1) this.autoComplete(suggestions[0]);
@@ -245,16 +244,6 @@ export class FilterChooserModel extends HoistModel {
             return isArray(f.value) && !f.isEmptyCheck() ?
                 f.value.map(value => new FieldFilter({...f, value})) :
                 f;
-        });
-    }
-
-    // Recombine value filters on '=' and 'like' on same field into single FieldFilter
-    recombineOrFilters(filters) {
-        const groupMap = groupBy(filters, ({op, field}) => [op, field].join('|'));
-        return flatMap(groupMap, (filters, key) => {
-            return (filters.length > 1 && (key.startsWith('=') || key.startsWith('like'))) ?
-                new FieldFilter({...filters[0], value: filters.map(it => it.value)}) :
-                filters;
         });
     }
 

@@ -38,4 +38,20 @@
   &__operator-display {
     font-weight: 500;
   }
+
+  &__implicit_or_message {
+    display: flex;
+    padding: var(--xh-pad-half-px);
+    background-color: var(--xh-bg-alt);
+    border-top: var(--xh-border-solid);
+    color: var(--xh-text-color-muted);
+
+    .xh-icon {
+      margin-right: var(--xh-pad-half-px);
+    }
+
+    div {
+      font-size: var(--xh-font-size-small-px);
+    }
+  }
 }

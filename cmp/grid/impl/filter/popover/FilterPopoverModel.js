@@ -43,6 +43,10 @@ export class FilterPopoverModel extends HoistModel {
         return this.store.getField(this.colId).type;
     }
 
+    get hasFilter() {
+        return !isEmpty(this.columnFilters);
+    }
+
     @computed
     get requiresCustomFilter() {
         const {columnFilters} = this;
@@ -50,8 +54,8 @@ export class FilterPopoverModel extends HoistModel {
         return columnFilters.length > 1 || columnFilters[0].op !== '=';
     }
 
-    get hasFilter() {
-        return !isEmpty(this.columnFilters);
+    get disableEnumFilter() {
+        return this.xhColumn.disableEnumFilter;
     }
 
     constructor({gridModel, xhColumn, agColumn}) {
@@ -125,21 +129,22 @@ export class FilterPopoverModel extends HoistModel {
     //-------------------
     @action
     loadStoreFilter() {
-        const {columnFilters, requiresCustomFilter} = this;
+        const {columnFilters, requiresCustomFilter, disableEnumFilter} = this;
+
         this.enumFilterTabModel.reset();
         this.customFilterTabModel.reset();
 
-        if (isEmpty(columnFilters)) {
-            // 1) There are no column filters in the store
-            this.tabContainerModel.activateTab('enumFilter');
-        } else if (requiresCustomFilter) {
-            // 2) There are column filters that can only be represented on the custom filter tab
-            this.tabContainerModel.activateTab('customFilter');
-            this.customFilterTabModel.loadStoreFilter();
-        } else {
-            // 3) There is a column filter that can be represented on the enum filter tab
-            this.tabContainerModel.activateTab('enumFilter');
-            this.enumFilterTabModel.loadStoreFilter();
+        if (!isEmpty(columnFilters)) {
+            if (requiresCustomFilter) {
+                // There are column filters that can only be represented on the custom filter tab
+                this.customFilterTabModel.loadStoreFilter();
+            } else {
+                // There is a column filter that can be represented on the enum filter tab
+                this.enumFilterTabModel.loadStoreFilter();
+            }
         }
+
+        const tab = requiresCustomFilter || disableEnumFilter ? 'customFilter' : 'enumFilter';
+        this.tabContainerModel.activateTab(tab);
     }
 }

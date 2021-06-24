@@ -85,9 +85,11 @@ const bbar = hoistCmp.factory({
 
 const switcher = hoistCmp.factory(
     ({model}) => {
-        const {tabs} = model.tabContainerModel;
+        const {type, disableEnumFilter} = model,
+            {tabs} = model.tabContainerModel;
+
         return buttonGroup({
-            omit: model.type === 'bool',
+            omit: disableEnumFilter || type === 'bool',
             className: 'xh-filter-popover__tab-switcher',
             items: tabs.map(it => switcherButton({...it}))
         });

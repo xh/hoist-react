@@ -150,6 +150,9 @@ export class Column {
      * @param {boolean} [c.enableFilter] - true to enable an Excel-like column header filter menu.
      *      Menu includes an enumerated, checkbox set filter and a custom input filter dependent on
      *      its `Field.type`.
+     * @param {boolean} [c.disableEnumFilter] - true to remove the enumerated filter control from
+     *      the filter menu. Useful for columns with many discrete values (e.g. numerical columns),
+     *      where filtering by specific values is not useful.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -209,6 +212,7 @@ export class Column {
         getValueFn,
         enableDotSeparatedFieldPath,
         enableFilter,
+        disableEnumFilter,
         agOptions,
         ...rest
     }, gridModel) {
@@ -319,6 +323,7 @@ export class Column {
 
         this.enableFilter = enableFilter;
         warnIf(enableFilter && this.colId !== this.field, `Column '${this.colId}' is not a Store field. Enable filter will be ignored.`);
+        this.disableEnumFilter = disableEnumFilter;
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};

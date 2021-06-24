@@ -6,7 +6,8 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {compact, isEmpty} from 'lodash';
+import {combineValueFilters} from '@xh/hoist/data';
+import {castArray, compact, isEmpty} from 'lodash';
 
 import {CustomFilterRowModel} from './CustomFilterRowModel';
 
@@ -22,10 +23,20 @@ export class CustomFilterTabModel extends HoistModel {
      */
     @computed.struct
     get filter() {
-        const filters = compact(this.rowModels.map(it => it.value));
+        const filters = combineValueFilters(compact(this.rowModels.map(it => it.value)));
         if (isEmpty(filters)) return null;
         const {op} = this;
         return filters.length > 1 ? {filters, op} : filters[0];
+    }
+
+    @computed
+    get hasImplicitOr() {
+        let equalsCount = 0, likeCount = 0;
+        this.rowModels.forEach(it => {
+            if (it.op === '=') equalsCount++;
+            if (it.op === 'like') likeCount++;
+        });
+        return equalsCount > 1 || likeCount > 1;
     }
 
     get columnFilters() {
@@ -77,8 +88,14 @@ export class CustomFilterTabModel extends HoistModel {
 
         // Create rows based on store filter.
         columnFilters.forEach(filter => {
-            if (filter.op === '=') return; // Skip equals filters, these are handled by enum tab
-            rowModels.push(new CustomFilterRowModel({parentModel: this, ...filter}));
+            const {op, value} = filter;
+            if (op === '=' || op === 'like') {
+                castArray(value).forEach(it => {
+                    rowModels.push(new CustomFilterRowModel({parentModel: this, op, value: it}));
+                });
+            } else {
+                rowModels.push(new CustomFilterRowModel({parentModel: this, op, value}));
+            }
         });
 
         // Add an empty pending row

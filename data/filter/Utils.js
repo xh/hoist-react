@@ -6,7 +6,7 @@
  */
 
 import {CompoundFilter, FieldFilter, FunctionFilter} from '@xh/hoist/data';
-import {isArray, isFunction} from 'lodash';
+import {flatMap, groupBy, isArray, isFunction} from 'lodash';
 
 /**
  * Parse a filter from an object or array representation.
@@ -66,4 +66,19 @@ export function flattenFilter(spec) {
     const ret = [];
     filters.forEach(it => ret.push(...flattenFilter(it)));
     return ret;
+}
+
+/**
+ * Recombine FieldFilters on '=' and 'like' on same field into single FieldFilter.
+ * Filters other than '=' and 'like' FieldFilters will be returned unmodified.
+ *
+ * @returns {Filter[]}
+ */
+export function combineValueFilters(filters = []) {
+    const groupMap = groupBy(filters, ({op, field}) => [op, field].join('|'));
+    return flatMap(groupMap, (filters, key) => {
+        return (filters.length > 1 && (key.startsWith('=') || key.startsWith('like'))) ?
+            {...filters[0], value: filters.map(it => it.value)} :
+            filters;
+    });
 }
