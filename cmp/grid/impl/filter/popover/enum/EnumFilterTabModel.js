@@ -40,6 +40,7 @@ export class EnumFilterTabModel extends HoistModel {
     @observable.ref pendingValue = {}; // Local state of enumerated values loaded in `gridModel`
 
     @bindable filterText = null; // Bound search term for `StoreFilterField`
+    @observable hasHiddenValues = false; // Are values hidden due to filters on other columns?
 
     /**
      * @member {Object} - FieldFilter config output by this model
@@ -201,13 +202,14 @@ export class EnumFilterTabModel extends HoistModel {
             const testFn = parseFilter(cleanStoreFilter).getTestFn(store);
             filteredRecords = allRecords.filter(it => testFn(it));
         }
+        const options = uniq(filteredRecords.map(rec => rec.data[colId]));
+        this.hasHiddenValues = options.length < allValues.length;
 
-        const options = uniq(filteredRecords.map(rec => rec.data[colId])),
-            data = options.map(value => {
-                const isChecked = committedValue[value];
-                return {[colId]: value, isChecked};
-            });
-
+        // Load options into the grid
+        const data = options.map(value => {
+            const isChecked = committedValue[value];
+            return {[colId]: value, isChecked};
+        });
         this.gridModel.loadData(data);
 
         // Clear StoreFilterField
