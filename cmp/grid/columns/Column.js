@@ -563,10 +563,6 @@ export class Column {
             ret.wrapText = true;
         }
 
-        if (this.enableFilter) {
-            ret.suppressMenu = false;
-        }
-
         // Finally, apply explicit app requests.  The customer is always right....
         return {...ret, ...agOptions};
     }
