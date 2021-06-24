@@ -20,6 +20,7 @@
 * `ErrorMessage` will now automatically look for an `error` property on its primary context model.
 * `fmtNumber()` supports new flags `withCommas` and `omitFourDigitComma` to customize the treatment
   of commas in number displays.
+* `isValidJson` function added to form validation constraints.
 
 ### 💥 Breaking Changes
 
