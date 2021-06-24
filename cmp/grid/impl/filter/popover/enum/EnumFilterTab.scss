@@ -14,4 +14,9 @@
       font-size: var(--xh-font-size-small-px);
     }
   }
+
+  &__custom-filter-message {
+    display: flex;
+    flex-direction: column;
+  }
 }

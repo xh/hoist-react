@@ -5,9 +5,10 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
+import {observable, action, computed, makeObservable} from '@xh/hoist/mobx';
+import {flattenFilter} from '@xh/hoist/data';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {compact, isEmpty} from 'lodash';
+import {isEmpty} from 'lodash';
 
 import {customFilterTab} from './custom/CustomFilterTab';
 import {CustomFilterTabModel} from './custom/CustomFilterTabModel';
@@ -19,37 +20,12 @@ export class FilterPopoverModel extends HoistModel {
     xhColumn;
     colId;
 
-    @bindable isOpen = false;
+    @observable.ref filter = null;
+    @observable isOpen = false;
 
     @managed tabContainerModel;
     @managed enumFilterTabModel;
     @managed customFilterTabModel;
-
-    /**
-     * @member {Object} - Filter config output by this model
-     */
-    @computed.struct
-    get filter() {
-        const filters = compact([this.enumFilterTabModel.filter, this.customFilterTabModel.filter]);
-        if (isEmpty(filters)) return null;
-        return filters.length > 1 ? {filters, op: 'AND'} : filters[0];
-    }
-
-    get hasFilter() {
-        return !!this.filter;
-    }
-
-    get hasEnumFilter() {
-        return !!this.enumFilterTabModel.filter;
-    }
-
-    get hasCustomFilter() {
-        return !!this.customFilterTabModel.filter;
-    }
-
-    get enumFilterTabActive() {
-        return this.tabContainerModel.activeTabId === 'enumFilter';
-    }
 
     get store() {
         return this.gridModel.store;
@@ -59,8 +35,23 @@ export class FilterPopoverModel extends HoistModel {
         return this.store.filter;
     }
 
+    get columnFilters() {
+        return flattenFilter(this.storeFilter).filter(it => it.field === this.colId);
+    }
+
     get type() {
         return this.store.getField(this.colId).type;
+    }
+
+    @computed
+    get requiresCustomFilter() {
+        const {columnFilters} = this;
+        if (isEmpty(columnFilters)) return false;
+        return columnFilters.length > 1 || columnFilters[0].op !== '=';
+    }
+
+    get hasFilter() {
+        return !isEmpty(this.columnFilters);
     }
 
     constructor({gridModel, xhColumn, agColumn}) {
@@ -90,32 +81,65 @@ export class FilterPopoverModel extends HoistModel {
             ]
         });
 
+        // Load store filter into the appropriate tab
         this.addReaction({
-            track: () => this.filter,
-            run: (filter) => gridModel.setColumnFilter({colId, filter})
+            track: () => [this.columnFilters, this.store.lastUpdated],
+            run: () => this.loadStoreFilter(),
+            fireImmediately: true
         });
     }
 
+    @action
     commit() {
-        if (this.enumFilterTabActive) {
-            this.enumFilterTabModel.commit();
+        const {gridModel, colId} = this;
+        let filter;
+        if (this.tabContainerModel.activeTabId === 'enumFilter') {
+            filter = this.enumFilterTabModel.filter;
         } else {
-            this.customFilterTabModel.commit();
+            filter = this.customFilterTabModel.filter;
         }
+        gridModel.setColumnFilter({colId, filter});
         this.closeMenu();
     }
 
-    clear() {
-        this.enumFilterTabModel.clear();
-        this.customFilterTabModel.clear();
-        this.closeMenu();
+    @action
+    clear(close = true) {
+        const {gridModel, colId} = this;
+        gridModel.setColumnFilter({colId, filter: null});
+        if (close) this.closeMenu();
     }
 
+    @action
     openMenu() {
-        this.setIsOpen(true);
+        this.isOpen = true;
     }
 
+    @action
     closeMenu() {
-        this.setIsOpen(false);
+        this.isOpen = false;
+        this.enumFilterTabModel.setFilterText(null);
+    }
+
+    //-------------------
+    // Implementation
+    //-------------------
+    @action
+    loadStoreFilter() {
+        const {columnFilters, requiresCustomFilter} = this;
+        this.enumFilterTabModel.reset();
+        this.customFilterTabModel.reset();
+
+        if (isEmpty(columnFilters)) {
+            // 1) There are no column filters in the store
+            this.tabContainerModel.activateTab('enumFilter');
+        } else if (requiresCustomFilter) {
+            // 2) There are column filters that can only be represented on the custom filter tab
+            this.tabContainerModel.activateTab('customFilter');
+            this.customFilterTabModel.loadStoreFilter();
+        } else {
+            // 3) There is a column filter that can be represented on the enum filter tab
+            this.tabContainerModel.activateTab('enumFilter');
+            this.enumFilterTabModel.loadStoreFilter();
+        }
     }
 }

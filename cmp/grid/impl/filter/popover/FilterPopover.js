@@ -9,8 +9,8 @@ import {div, filler} from '@xh/hoist/cmp/layout';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {tabContainer} from '@xh/hoist/cmp/tab';
-import {buttonGroup, button} from '@xh/hoist/desktop/cmp/button';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {buttonGroup, button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 import './FilterPopover.scss';
@@ -57,7 +57,6 @@ const content = hoistCmp.factory({
 
 const bbar = hoistCmp.factory({
     render({model}) {
-        const {enumFilterTabActive, hasEnumFilter, hasCustomFilter} = model;
         return toolbar({
             compact: true,
             items: [
@@ -65,7 +64,7 @@ const bbar = hoistCmp.factory({
                     icon: Icon.undo(),
                     text: 'Clear',
                     intent: 'danger',
-                    disabled: enumFilterTabActive ? !hasEnumFilter : !hasCustomFilter,
+                    disabled: !model.hasFilter,
                     onClick: () => model.clear()
                 }),
                 filler(),

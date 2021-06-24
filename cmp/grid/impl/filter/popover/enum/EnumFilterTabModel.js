@@ -6,20 +6,10 @@
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {parseFilter, flattenFilter} from '@xh/hoist/data';
+import {parseFilter} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
-import {
-    castArray,
-    compact,
-    clone,
-    isEmpty,
-    isEqual,
-    keys,
-    forOwn,
-    pickBy,
-    uniq
-} from 'lodash';
+import {castArray, compact, clone, isEmpty, isEqual, uniq} from 'lodash';
 
 export class EnumFilterTabModel extends HoistModel {
     /** @member {FilterPopoverModel} */
@@ -32,12 +22,20 @@ export class EnumFilterTabModel extends HoistModel {
     @managed @observable.ref gridModel;
 
     /**
+     * @member {String[]} List of all (i.e. including hidden) values to display in the grid
+     */
+    @observable.ref allValues = [];
+
+    /**
+     * @member {String[]} List of all available (i.e. excluding hidden) values to display in the grid
+     */
+    @observable.ref availableValues = [];
+
+    /**
      * @member {Object} Key-value pairs of enumerated value to boolean, indicating whether value is
      * checked/unchecked (i.e. included in '=' `FieldFilter`)
      */
-    @bindable.ref initialValue = {}; // All values for column (with no filter applied, all true)
-    @bindable.ref committedValue = {}; // All values in committed filter state
-    @observable.ref pendingValue = {}; // Local state of enumerated values loaded in `gridModel`
+    @observable.ref pendingValue = {};
 
     @bindable filterText = null; // Bound search term for `StoreFilterField`
     @observable hasHiddenValues = false; // Are values hidden due to filters on other columns?
@@ -47,10 +45,11 @@ export class EnumFilterTabModel extends HoistModel {
      */
     @computed.struct
     get filter() {
-        const {initialValue, committedValue, colId} = this;
-        if (isEqual(initialValue, committedValue)) return null;
+        const {allValues, colId} = this,
+            values = this.getValueList();
 
-        const values = this.getCommittedValueList();
+        if (isEqual(allValues, values)) return null;
+
         return {
             field: colId,
             op: '=',
@@ -80,6 +79,10 @@ export class EnumFilterTabModel extends HoistModel {
         return this.parentModel.storeFilter;
     }
 
+    get columnFilters() {
+        return this.parentModel.columnFilters;
+    }
+
     get colId() {
         return this.parentModel.colId;
     }
@@ -96,124 +99,95 @@ export class EnumFilterTabModel extends HoistModel {
         this.gridModel = this.createGridModel();
 
         this.addReaction({
-            track: () => [this.storeFilter, this.store.lastUpdated],
-            run: () => this.syncState(),
-            fireImmediately: true
+            track: () => [this.availableValues, this.pendingValue],
+            run: () => this.syncGrid()
         });
     }
 
-    @action
-    commit() {
-        const {pendingValue} = this,
-            ret = clone(this.committedValue);
-
-        for (const val in pendingValue) {
-            ret[val] = pendingValue[val];
-        }
-
-        this.committedValue = ret;
+    loadStoreFilter() {
+        this.doLoadStoreFilter();
     }
 
     @action
-    clear() {
-        this.committedValue = {};
-        this.setPendingValue(this.initialValue);
-        this.commit();
+    reset() {
+        this.doReset();
     }
 
     @action
     toggleNode(isChecked, value) {
-        const {pendingValue} = this,
-            currValue = {
-                ...pendingValue,
-                [value]: isChecked
-            };
-        this.setPendingValue(currValue);
+        this.pendingValue = {
+            ...this.pendingValue,
+            [value]: isChecked
+        };
     }
 
     @action
     toggleBulk(isChecked) {
         const {records} = this.gridModel.store,
-            ret = clone(this.pendingValue);
+            newValue = clone(this.pendingValue);
         for (let rec of records) {
-            ret[rec.id] = isChecked;
+            newValue[rec.id] = isChecked;
         }
-        this.setPendingValue(ret);
-    }
-
-    @action
-    setPendingValue(newValue) {
-        const {pendingValue, gridModel} = this;
-        if (isEqual(newValue, pendingValue)) return;
-
         this.pendingValue = newValue;
-        const ret = [];
-        for (const key in newValue) {
-            if (gridModel.store.getById(key)) {
-                ret.push({id: key, isChecked: newValue[key]});
-            }
-        }
-        gridModel.store.modifyRecords(ret);
     }
 
     //-------------------
     // Implementation
     //-------------------
     @action
-    syncState() {
-        const {storeFilter, store, colId} = this,
+    doReset() {
+        const {store, colId, storeFilter} = this,
             allRecords = store.allRecords.filter(rec => isEmpty(rec.allChildren)),
             allValues = uniq(allRecords.map(rec => rec.data[colId])),
-            initialValue = {},
-            committedValue = {};
+            pendingValue = {};
 
         // Initialize values to all true (default)
-        allValues.forEach(key => {
-            initialValue[key] = true;
-            committedValue[key] = true;
-        });
-
-        // Read committed value from the store filter.
-        if (storeFilter) {
-            const columnFilters = flattenFilter(storeFilter).filter(it => it.field === colId),
-                values = [];
-
-            // If the store filter contains equals filters for this column, set the committed
-            // value to reflect that store filter.
-            columnFilters.forEach(filter => {
-                if (filter.op === '=') values.push(...castArray(filter.value));
-            });
-
-            if (values.length) {
-                forOwn(committedValue, (v, key) => {
-                    committedValue[key] = values.includes(key);
-                });
-            }
-        }
-
-        this.initialValue = initialValue;
-        this.committedValue = this.pendingValue = committedValue;
+        allValues.forEach(key => pendingValue[key] = true);
+        this.allValues = allValues;
+        this.pendingValue = pendingValue;
 
         // Apply external store filters *not* pertaining to this field to get the
-        // filtered set of values to offer as options.
+        // filtered set of available values to offer as options.
         const cleanStoreFilter = this.cleanFilter(storeFilter);
         let filteredRecords = allRecords;
         if (cleanStoreFilter) {
             const testFn = parseFilter(cleanStoreFilter).getTestFn(store);
             filteredRecords = allRecords.filter(it => testFn(it));
         }
-        const options = uniq(filteredRecords.map(rec => rec.data[colId]));
-        this.hasHiddenValues = options.length < allValues.length;
 
-        // Load options into the grid
-        const data = options.map(value => {
-            const isChecked = committedValue[value];
+        this.availableValues = uniq(filteredRecords.map(rec => rec.data[colId]));
+        this.hasHiddenValues = this.availableValues.length < allValues.length;
+    }
+
+    @action
+    doLoadStoreFilter() {
+        const {allValues, columnFilters} = this,
+            pendingValue = {};
+
+        if (!isEmpty(columnFilters)) {
+            const values = [];
+
+            columnFilters.forEach(filter => {
+                if (filter.op === '=') values.push(...castArray(filter.value));
+            });
+
+            if (values.length) {
+                allValues.forEach(value => {
+                    pendingValue[value] = values.includes(value);
+                });
+            }
+        }
+
+        this.pendingValue = pendingValue;
+    }
+
+    syncGrid() {
+        const {availableValues, pendingValue, colId} = this;
+        const data = availableValues.map(value => {
+            const isChecked = pendingValue[value];
             return {[colId]: value, isChecked};
         });
         this.gridModel.loadData(data);
-
-        // Clear StoreFilterField
-        this.setFilterText(null);
     }
 
     /**
@@ -286,12 +260,18 @@ export class EnumFilterTabModel extends HoistModel {
         });
     }
 
-    getCommittedValueList() {
-        let ret = keys(pickBy(this.committedValue, v => v));
+    getValueList() {
+        const {allValues, pendingValue} = this,
+            ret = [];
+
+        allValues.forEach(value => {
+            const include = pendingValue[value] ?? true;
+            if (include) ret.push(value);
+        });
 
         // Parse boolean strings to their primitive values
         if (this.type === 'bool') {
-            ret = ret.map(it => {
+            return ret.map(it => {
                 if (it === 'true') return true;
                 if (it === 'false') return false;
                 return null;
