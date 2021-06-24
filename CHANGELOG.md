@@ -4,70 +4,68 @@
 
 ### 🎁 New Features
 
-* `ErrorMessage` will read its 'error' directly from its context model, if not provided by the
-  dedicated `error` prop.
-* `ExpandCollapseButton` now works for grouped grids in addition to tree grids.
-* `Column` class now supports a `sortValue` property. SortValue can be a string to represent another
-  field to sort by for the column, or a function that produces a value for each cell to use for
-  sorting. The values produced by this property will also be passed to the custom comparator if it
-  is defined.
-* `TreeMapModel` and `SplitTreeMapModel` now support a `maxHeat` property, which can be used to
-  provide a stable absolute maximum brightness (positive or negative) within the entire TreeMap.
-* `GridModel` now supports a `hideEmptyTextBeforeLoad` property, which prevents showing the
-  `emptyText` until the store has been loaded at least once. Apps that depend on showing `emptyText`
-  before first load should set this property to `false`.
 * All Hoist Components now support a `modelRef` prop. Supply a ref to this prop in order to gain a
   pointer to a Component's backing `HoistModel`.
+* New `Column.sortValue` config takes an alternate field name (as a string) to sort the column by
+  that field's value, or a function to produce a custom cell-level value for comparison. The values
+  produced by this property will be also passed to any custom comparator, if one is defined.
+* New `GridModel.hideEmptyTextBeforeLoad` config prevents showing the `emptyText` until the store
+  has been loaded at least once. Apps that depend on showing `emptyText` before first load should
+  set this property to `false`.
+* `ExpandCollapseButton` now works for grouped grids in addition to tree grids.
+* `FieldModel.initialValue` config now accepts functions, allowing for just-in-time initialization
+  of Form data (e.g. to pre-populate a Date field with the current time).
+* `TreeMapModel` and `SplitTreeMapModel` now support a `maxHeat` property, which can be used to
+  provide a stable absolute maximum brightness (positive or negative) within the entire TreeMap.
+* `ErrorMessage` will now automatically look for an `error` property on its primary context model.
 * `fmtNumber()` supports new flags `withCommas` and `omitFourDigitComma` to customize the treatment
   of commas in number displays.
-* `FieldModel` now supports providing its `initialValue` as a function.  This allows
-just-in-time initialization of Form data that can take advantage of context, such as the current
- time.
-
 
 ### 💥 Breaking Changes
 
 * Removed support for class-based Hoist Components via the `@HoistComponent` decorator (deprecated
-* in v38). Use functional components created via the `hoistCmp()` factory instead.
+  in v38). Use functional components created via the `hoistCmp()` factory instead.
 * Removed `DimensionChooser` (deprecated in v37). Use `GroupingChooser` instead.
-* Removed `TreeMapModel.colorMode` value 'balanced'. Applications should use the new `maxHeat`
-  config to prevent outlier values from dominating the color range of the TreeMap.
-* All css variables beginning with `--navbar` have been changed to use `--appbar` to match the hoist
-  component name, any application utilizing these variables will need to also make this change.
-* The behavior of `FormModel.init()` has been changed such that it will always re-initialize *all*
-fields. (Previously, it would only initialize fields explicitly passed to it in its single
-argument).  We believe this is inline with what users expected this method to do, and will
-mainly allow the removal of code providing duplicate settings of initial values to this method.
-We do not expect any changes will be required to applications, but developers using this method
-should be sure to test their forms carefully.
-* The following `Grid`, `DataView`, and `RestGrid` props have been converted to fields on
-  `GridModel`, `DataViewModel`, and `RestGridModel`, respectively. All grid options of these types
-  are now on the model hierarchy, allowing consistent application code and developer discovery.
-    + `onKeyDown`
-    + `onRowClicked`
-    + `onRowDoubleClicked`
-    + `onCellClicked`
-    + `onCellDoubleClicked`
-* Renaming of the confusing and ambiguous property name `labelAlign` in several components:
-    + `FormField`: `labelAlign` has been renamed to `labelTextAlign`
-    + `SwitchInput`, `RadioInput`, and `Checkbox`: `labelAlign` has been renamed `labelSide`. 
-    
+* Changed the behavior of `FormModel.init()` to always re-initialize *all* fields. (Previously, it
+  would only initialize fields explicitly passed via its single argument). We believe that this is
+  more in line with developer expectations and will allow the removal of app workarounds to force a
+  reset of all values. Most apps using FormModel should not need to change, but please review and
+  test any usages of this particular method.
+* Replaced the `Grid`, `DataView`, and `RestGrid` props below with new configurable fields on
+  `GridModel`, `DataViewModel`, and `RestGridModel`, respectively. This further consolidates grid
+  options into the model layer, allowing for more consistent application code and developer
+  discovery.
+  + `onKeyDown`
+  + `onRowClicked`
+  + `onRowDoubleClicked`
+  + `onCellClicked`
+  + `onCellDoubleClicked`
+* Renamed the confusing and ambiguous property name `labelAlign` in several components:
+  + `FormField`: `labelAlign` has been renamed to `labelTextAlign`
+  + `SwitchInput`, `RadioInput`, and `Checkbox`: `labelAlign` has been renamed `labelSide`.
+* Renamed all CSS variables beginning with `--navbar` to start with `--appbar`, matching the Hoist
+  component name.
+* Removed `TreeMapModel.colorMode` value 'balanced'. Use the new `maxHeat` config to prevent outlier
+  values from dominating the color range of the TreeMap.
+* Hoist grids now require ag-Grid v25.3.0 or higher - update your ag-Grid dependency in your app's
+  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for
+  details.
+
 ### 🐞 Bug Fixes
 
-* Fix disable behavior for Hoist-provided button components using popover.
-* Fix turning off autocomplete for `TextInput` by default.
+* Fixed disable behavior for Hoist-provided button components using popover.
+* Fixed default disabling of autocomplete within `TextInput`.
 
 ### ⚙️ Technical
 
-* Improvements to exception serialization to better handle `LocalDate` and similar custom JS
-  classes.
-* Blueprint `EditableText` component re-exported (w/elemFactory wrapper) from `kit/blueprint`.
+* Improved exception serialization to better handle `LocalDate` and similar custom JS classes.
+* Re-exported Blueprint `EditableText` component (w/elemFactory wrapper) from `kit/blueprint`.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.44 -> 3.45`
-* codemirror `5.60 -> 5.61`
-* core-js `3.10 -> 3.13`
+* @blueprintjs/core `3.44 -> 3.46`
+* codemirror `5.60 -> 5.62`
+* core-js `3.10 -> 3.15`
 * filesize `6.2 -> 6.3`
 * mobx `6.1 -> 6.3`
 * react-windowed-select `3.0 -> 3.1`
@@ -371,9 +369,9 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
 * Hoist grids now require ag-Grid v25.0.1 or higher - if your app uses ag-Grid, update your ag-Grid
   dependency in your app's `package.json` file.
 * The `uses()` function (called within `hoistComponent()` factory configs for model context lookups)
-  no longer accepts class names as strings. Pass the class itself (or superclass) of the model you
-  wish to select for your component. `Uses` will throw if given any string other than "*", making
-  the need for any updates clear.
+  and the `useContextModel()` function no longer accept class names as strings. Pass the class
+  itself (or superclass) of the model you wish to select for your component. `Uses` will throw if
+  given any string other than "*", making the need for any updates clear in that case.
 * The `Ref` class, deprecated in v26, has now been removed. Use `createObservableRef` instead.
 * `AppMenuModel` has been removed. The `AppMenuButton` is now configured via
   `AppBar.appMenuButtonProps`. As with desktop, menu items can be added with
