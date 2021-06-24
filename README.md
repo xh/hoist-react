@@ -61,7 +61,7 @@ and/or think it might be helpful for a project, please don't hesitate to
 ## Key Libraries and Dependencies
 
 📚 Hoist React is built on a collection of remarkable third-party libraries that have been selected,
-combined, and integrated by Extremely Heavy. To make the best use of this framework, please review
+combined and integrated by Extremely Heavy. To make the best use of this framework, please review
 the technologies below.
 
 |   Library    |                                          Notes                                          |               Link                |
@@ -96,7 +96,7 @@ accessed via a unique URL. XH can configure appropriate access via npm configura
 enterprise npm repository proxy.
 
 **HighCharts HighStock** is the primary charting library in Hoist, and offers several [licensing and
-support options](https://shop.highsoft.com/highstock) for commercial use. Applications wishing to use
+support options](https://shop.highsoft.com/highstock) for commercial use. Application wishing to use
 charts in Hoist will need to provide a licensed version of Highcharts.
 
 ## ECMAScript 2016+
@@ -150,7 +150,7 @@ behaviors, but we have found it to be a helpful indicator of any Promise-based, 
 + Source: <https://github.com/mobxjs/mobx>
 
 MobX is an essential building block of Hoist React, providing an application state management
-solution with "smart" reactivity, tight integration with React Components, and a general API for
+solution with "smart' reactivity, tight integration with React Components, and a general API for
 reactive programming that extends beyond Components. Please review and familiarize yourself with the
 MobX documentation to make the best use of Hoist React.
 
@@ -200,8 +200,8 @@ Models and services are class-based and base classes `HoistModel` and `HoistServ
 Hoist for these object. `HoistAppModel` is a special base class for an Application's primary Model
 class that provides additional high-level info about the application.
 
-Components are React functional components, but with additional wrapping provided by Hoist to
-support model specification and lookup and observability. Applications should use the factory
+Components are react functional components, but with additional wrapping provided by Hoist to
+support model specification and lookup and and observability. Applications should use the factory
 function `hoistCmp` to define Components with this support.
 
 |     Class/File      |                                  Note                                   |            Link             |
@@ -260,12 +260,12 @@ an example within Hoist React itself, see HoistAppModel for the
 ### hoistComponent
 
 ⚛️ Components are the most familiar artifacts in React development, and are likely what come to mind
-first when most developers think of React. Hoist supports functional components, React's preferred
-method of defining components. To define a functional component in Hoist, simply provide a render
-function to the `hoistCmp` factory function. This will apply core Hoist support, including
-MobX reactivity, model lookup, and support for forward refs, and will return the Component.
+first when most developers think of React. Functional components are the preferred method of
+defining components in React and Hoist. To define a functional component in Hoist, simply provide a
+render function to the `hoistComponent` function. This will apply core Hoist support, including MobX
+reactivity, model lookup, and support for forward refs, and will return the Component.
 
-Note that many layout-related Components provide layout support. Components supporting this feature
+Note that many layout related Components provide "LayoutSupport". Components supporting this feature
 promote most flexbox layout properties (e.g. 'width', 'height', 'flex') to being first class props
 on the component itself. This allows many layout operations to be done in declarative Javascript.
 
@@ -276,7 +276,7 @@ logic, independent of and distinct from any particular UI component. Services ca
 internal state and data structures and expose methods for use by the rest of the application. A
 common use for Services is to fetch and post data to the server, potentially transforming,
 validating, or defaulting outbound queries and inbound data to provide a local API to application
-Model classes that's tailored to their needs.
+Model and Component classes that's tailored to their needs.
 
 Service instances persist for the life of the app and have a defined initialization process. By
 convention they are stored within an `svc/` package within an app's file structure.
@@ -286,8 +286,8 @@ support and defines an empty `initAsync()` lifecycle method. To instantiate and 
 available to application code, use the`XH.installServicesAsync()` method. This method will
 construct, initialize, and install the services as a property on the XH object. Note that there is a
 strict expectation that service classes will be named ending with the word 'Service', e.g.
-`MyCustomService`. The installed instance in this case would then be made available to application
-code as `XH.myCustomService`.
+`MyCustomService.`. The installed instance in this case would then be made available to application
+code as `XH.myCustomService'.
 
 Many core Hoist features are exposed on the client via services such as `PrefService`,
 `ConfigService`, and `IdentityService`. See these examples for a better understanding of the kind of
@@ -322,18 +322,18 @@ application Component.
 
 We believe that this factory approach excels for declarative specification of code-heavy element
 trees. New users of Hoist are invited to examine the source code of our core components to see
-examples of its use. It's probably the most notable hallmark of our internal code, and where Hoist
+examples of its use. Its probably the most notable hallmark of our internal code, and where Hoist
 diverges most visibly from other React projects.
 
 It's worth noting that this approach is based on an extremely thin layer (<20 lines of code) around
 the core React `createElement()` API, and does not impose or rely on any special requirements or
-additional libraries. It's also worth noting that this approach is only superficially different from
+additional libraries. Its also worth noting that this approach is only superficially different from
 JSX (see below).
 
 ## What about JSX?
 
 JSX is the XML-like extension to Javascript typically used to specify and configure React
-components. While its syntax and appearance within otherwise "vanilla" Javascript code might appear
+components. While it's syntax and appearance within otherwise "vanilla" Javascript code might appear
 strange to non-React developers, JSX syntax and conventions are a de-facto standard in the React
 community, familiar to React developers, and found in all React guides and tutorials.
 
@@ -342,12 +342,12 @@ community, familiar to React developers, and found in all React guides and tutor
 All Hoist components can be created with JSX tags, and developers of Hoist-based applications can
 exclusively use JSX if they wish. In fact, for element trees with a significant amount of hypertext,
 JSX might be a better choice then element factories, and we frequently make internal use of it for
-that purpose. Also, JSX can be used interchangeably with element factories, even within the same
+that purpose. Also, JSX can be used interchangably with element factories, even within the same
 render method.
 
 Note that JSX is pre-processed (via Babel) into calls to React.createElement() before running in the
 browser. Ultimately this produces similar runtime Javascript to the element factory approach
-recommended above.
+reccomended above.
 
 
 ## Bundled and Managed Components
@@ -356,7 +356,7 @@ Hoist includes a wide variety of carefully selected and integrated UI Components
 immediate use within an application. Most of these are built on / composed of Components provided by
 well-regarded (and generally awesome) third-party libraries.
 
-A central goal of the Hoist toolkit, however, is to provide a more **managed, normalized, and
+An central goal of the Hoist toolkit, however, is to provide a more **managed, normalized, and
 integrated** set of patterns, APIs, and links on top of the "raw" library components. This enables
 them to work better together, integrate with and leverage core Hoist services such as soft
 configuration and user preferences, and appear to end-users as a cohesive and highly polished
