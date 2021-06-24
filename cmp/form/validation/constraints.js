@@ -152,3 +152,16 @@ export function stringExcludes(...excludeVals) {
         if (fail) return `${displayName} must not include "${fail}"`;
     };
 }
+
+/**
+ * Validate JSON syntax
+ *
+ * @type ConstraintCb
+ */
+export const isValidJson = ({value, displayName}) => {
+    try {
+        JSON.parse(value);
+    } catch {
+        return `${displayName} is not valid JSON`;
+    }
+};
