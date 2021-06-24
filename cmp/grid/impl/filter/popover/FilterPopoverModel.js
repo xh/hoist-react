@@ -47,6 +47,14 @@ export class FilterPopoverModel extends HoistModel {
         return !isEmpty(this.columnFilters);
     }
 
+    get hasPendingFilter() {
+        if (this.tabContainerModel.activeTabId === 'enumFilter') {
+            return !!this.enumFilterTabModel.filter;
+        } else {
+            return !!this.customFilterTabModel.filter;
+        }
+    }
+
     @computed
     get requiresCustomFilter() {
         const {columnFilters} = this;

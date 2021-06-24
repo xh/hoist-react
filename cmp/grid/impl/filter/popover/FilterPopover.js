@@ -76,6 +76,7 @@ const bbar = hoistCmp.factory({
                     icon: Icon.check(),
                     text: 'Apply',
                     intent: 'success',
+                    disabled: !model.hasPendingFilter,
                     onClick: () => model.commit()
                 })
             ]
