@@ -102,14 +102,13 @@ export class FilterPopoverModel extends HoistModel {
         } else {
             this.customFilterTabModel.commit();
         }
+        this.closeMenu();
     }
 
-    reset() {
-        if (this.enumFilterTabActive) {
-            this.enumFilterTabModel.reset();
-        } else {
-            this.customFilterTabModel.reset();
-        }
+    clear() {
+        this.enumFilterTabModel.clear();
+        this.customFilterTabModel.clear();
+        this.closeMenu();
     }
 
     openMenu() {

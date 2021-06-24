@@ -12,11 +12,6 @@ import {Icon} from '@xh/hoist/icon';
 
 import {CustomFilterRowModel} from './CustomFilterRowModel';
 
-// Todo: Add these icons to main library?
-import {library} from '@fortawesome/fontawesome-svg-core';
-import {faEquals, faGreaterThan, faGreaterThanEqual, faLessThan, faLessThanEqual, faNotEqual} from '@fortawesome/pro-regular-svg-icons';
-library.add(faGreaterThanEqual, faGreaterThan, faLessThanEqual, faLessThan, faEquals, faNotEqual);
-
 export const customFilterRow = hoistCmp.factory({
     model: uses(CustomFilterRowModel),
     render({model}) {
@@ -51,22 +46,22 @@ const operatorDisplay = hoistCmp.factory(
         let item = op;
         switch (op) {
             case '=':
-                item = Icon.icon({iconName: 'equals'});
+                item = Icon.equals();
                 break;
             case '!=':
-                item = Icon.icon({iconName: 'not-equal'});
+                item = Icon.notEquals();
                 break;
             case '>':
-                item = Icon.icon({iconName: 'greater-than'});
+                item = Icon.greaterThan();
                 break;
             case '>=':
-                item = Icon.icon({iconName: 'greater-than-equal'});
+                item = Icon.greaterThanEqual();
                 break;
             case '<':
-                item = Icon.icon({iconName: 'less-than'});
+                item = Icon.lessThan();
                 break;
             case '<=':
-                item = Icon.icon({iconName: 'less-than-equal'});
+                item = Icon.lessThanEqual();
                 break;
         }
         return hbox({className: 'xh-custom-filter-tab__operator-display', item});

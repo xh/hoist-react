@@ -80,7 +80,7 @@ export class CustomFilterTabModel extends HoistModel {
     }
 
     @action
-    reset() {
+    clear() {
         XH.safeDestroy(this.rowModels);
         this.rowModels = [new CustomFilterRowModel({parentModel: this})];
         this.commit();

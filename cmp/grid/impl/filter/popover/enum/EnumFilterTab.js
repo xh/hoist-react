@@ -9,6 +9,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid} from '@xh/hoist/cmp/grid';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {storeFilterField} from '@xh/hoist/cmp/store';
+import {Icon} from '@xh/hoist/icon';
 
 import {EnumFilterTabModel} from './EnumFilterTabModel';
 
@@ -23,16 +24,14 @@ export const enumFilterTab = hoistCmp.factory({
 });
 
 const tbar = hoistCmp.factory({
-    render({model}) {
-        const {gridModel, colId} = model;
+    render() {
         return toolbar({
             compact: true,
             item: storeFilterField({
                 bind: 'filterText',
-                icon: null,
-                flex: 1,
-                store: gridModel.store,
-                includeFields: [colId]
+                leftIcon: Icon.search(),
+                placeholder: 'Search...',
+                flex: 1
             })
         });
     }

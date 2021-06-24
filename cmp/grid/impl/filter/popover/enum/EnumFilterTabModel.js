@@ -109,7 +109,7 @@ export class EnumFilterTabModel extends HoistModel {
     }
 
     @action
-    reset() {
+    clear() {
         this.committedValue = {};
         this.setPendingValue(this.initialValue);
         this.commit();
@@ -268,6 +268,7 @@ export class EnumFilterTabModel extends HoistModel {
                 {
                     field: this.colId,
                     flex: 1,
+                    sortable: false,
                     headerName,
                     align,
                     headerAlign,

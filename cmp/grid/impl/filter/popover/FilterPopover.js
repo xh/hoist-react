@@ -63,10 +63,10 @@ const bbar = hoistCmp.factory({
             items: [
                 button({
                     icon: Icon.undo(),
-                    text: 'Reset',
+                    text: 'Clear',
                     intent: 'danger',
                     disabled: enumFilterTabActive ? !hasEnumFilter : !hasCustomFilter,
-                    onClick: () => model.reset()
+                    onClick: () => model.clear()
                 }),
                 filler(),
                 button({
