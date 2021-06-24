@@ -70,7 +70,14 @@ const operatorDisplay = hoistCmp.factory(
 
 const inputField = hoistCmp.factory(
     ({type}) => {
-        const props = {bind: 'inputVal', enableClear: true, flex: 1, width: null};
+        const props = {
+            bind: 'inputVal',
+            commitOnChange: true,
+            enableClear: true,
+            flex: 1,
+            width: null
+        };
+
         let ret;
         switch (type) {
             case 'number':
