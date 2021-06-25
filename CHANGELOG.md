@@ -20,6 +20,7 @@
 * `ErrorMessage` will now automatically look for an `error` property on its primary context model.
 * `fmtNumber()` supports new flags `withCommas` and `omitFourDigitComma` to customize the treatment
   of commas in number displays.
+* `isValidJson` function added to form validation constraints.
 
 ### 💥 Breaking Changes
 
@@ -47,6 +48,9 @@
   component name.
 * Removed `TreeMapModel.colorMode` value 'balanced'. Use the new `maxHeat` config to prevent outlier
   values from dominating the color range of the TreeMap.
+* Hoist grids now require ag-Grid v25.3.0 or higher - update your ag-Grid dependency in your app's
+  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for
+  details.
 
 ### 🐞 Bug Fixes
 
@@ -60,9 +64,9 @@
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.44 -> 3.45`
-* codemirror `5.60 -> 5.61`
-* core-js `3.10 -> 3.13`
+* @blueprintjs/core `3.44 -> 3.46`
+* codemirror `5.60 -> 5.62`
+* core-js `3.10 -> 3.15`
 * filesize `6.2 -> 6.3`
 * mobx `6.1 -> 6.3`
 * react-windowed-select `3.0 -> 3.1`
