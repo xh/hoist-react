@@ -4,7 +4,6 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-export * from './InlineEditorModel';
 export * from './CheckboxEditor';
 export * from './DateEditor';
 export * from './NumberEditor';

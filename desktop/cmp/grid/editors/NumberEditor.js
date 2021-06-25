@@ -6,8 +6,9 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {numberInput} from '@xh/hoist/desktop/cmp/input';
-import {useInlineEditorModel} from './InlineEditorModel';
-import {InlineEditorPropTypes} from './InlineEditorProps';
+import {useInlineEditorModel} from './impl/InlineEditorModel';
+import {EditorPropTypes} from './EditorPropTypes';
+import './Editors.scss';
 
 export const [NumberEditor, numberEditor] = hoistCmp.withFactory({
     displayName: 'NumberEditor',
@@ -20,5 +21,5 @@ export const [NumberEditor, numberEditor] = hoistCmp.withFactory({
     }
 });
 NumberEditor.propTypes = {
-    ...InlineEditorPropTypes
+    ...EditorPropTypes
 };
