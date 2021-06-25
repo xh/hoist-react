@@ -32,6 +32,7 @@
 * `ErrorMessage` will now automatically look for an `error` property on its primary context model.
 * `fmtNumber()` supports new flags `withCommas` and `omitFourDigitComma` to customize the treatment
   of commas in number displays.
+* `isValidJson` function added to form validation constraints.
 
 ### 💥 Breaking Changes
 
@@ -61,6 +62,9 @@
   values from dominating the color range of the TreeMap.
 * The classes `Rule` and `ValidationState` and all constraint functions (e.g. `required`,
   `validEmail`, `numberIs`, etc.) have been moved from the `cmp\form` package to the `data` package.
+* Hoist grids now require ag-Grid v25.3.0 or higher - update your ag-Grid dependency in your app's
+  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for
+  details.
 
 ### 🐞 Bug Fixes
 
