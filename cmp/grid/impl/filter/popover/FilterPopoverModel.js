@@ -92,13 +92,6 @@ export class FilterPopoverModel extends HoistModel {
                 }
             ]
         });
-
-        // Load store filter into the appropriate tab
-        this.addReaction({
-            track: () => [this.columnFilters, this.store.lastUpdated],
-            run: () => this.loadStoreFilter(),
-            fireImmediately: true
-        });
     }
 
     @action
@@ -124,12 +117,12 @@ export class FilterPopoverModel extends HoistModel {
     @action
     openMenu() {
         this.isOpen = true;
+        this.loadStoreFilter();
     }
 
     @action
     closeMenu() {
         this.isOpen = false;
-        this.enumFilterTabModel.setFilterText(null);
     }
 
     //-------------------

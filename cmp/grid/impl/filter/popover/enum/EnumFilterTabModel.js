@@ -157,6 +157,7 @@ export class EnumFilterTabModel extends HoistModel {
 
         this.availableValues = uniq(filteredRecords.map(rec => rec.data[colId]));
         this.hasHiddenValues = this.availableValues.length < allValues.length;
+        this.filterText = null;
     }
 
     @action
