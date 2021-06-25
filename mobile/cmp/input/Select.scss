@@ -101,12 +101,12 @@
     }
 
     &__fullscreen-toolbar {
-      background-color: var(--xh-navbar-bg);
-      color: var(--xh-navbar-title-color);
+      background-color: var(--xh-appbar-bg);
+      color: var(--xh-appbar-title-color);
       padding: var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px) 0;
 
       & > span {
-        font-size: var(--xh-navbar-title-font-size-px);
+        font-size: var(--xh-appbar-title-font-size-px);
         flex: 1;
         overflow: hidden;
         white-space: nowrap;
