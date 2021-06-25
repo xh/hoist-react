@@ -32,9 +32,9 @@ const INVALID_DATE = moment(null).format();
  * @param {*} [opts.originalValue] - holds the unaltered original value to be formatted.
  *      Not typically used by applications.
  */
-export function fmtDate(v, opts = {}) {
-    if (v == null) return opts.nullDisplay ?? '';
-    if (isString(opts)) opts = {fmt: opts};
+export function fmtDate(v, opts) {
+    if (v == null) return opts?.nullDisplay ?? '';
+    opts = isString(opts) ? {fmt: opts} : {...opts};
 
     defaults(opts, {fmt: DATE_FMT, tooltip: null});
     saveOriginal(v, opts);
@@ -43,7 +43,7 @@ export function fmtDate(v, opts = {}) {
         v.format(opts.fmt) :
         moment(v).format(opts.fmt);
 
-    if (ret == INVALID_DATE) {
+    if (ret === INVALID_DATE) {
         ret = '';
     } else if (opts.tooltip) {
         ret = fmtSpan(ret, {className: 'xh-title-tip', title: opts.tooltip(opts.originalValue), asElement: opts.asElement});
@@ -52,17 +52,16 @@ export function fmtDate(v, opts = {}) {
     return opts.asElement ? span(ret) : ret;
 }
 
-export function fmtDateTime(v, opts = {}) {
-    if (isString(opts)) opts = {fmt: opts};
+export function fmtDateTime(v, opts) {
+    opts = isString(opts) ? {fmt: opts} : {...opts};
     defaults(opts, {fmt: DATETIME_FMT});
     saveOriginal(v, opts);
 
     return fmtDate(v, opts);
 }
 
-
-export function fmtTime(v, opts = {}) {
-    if (isString(opts)) opts = {fmt: opts};
+export function fmtTime(v, opts) {
+    opts = isString(opts) ? {fmt: opts} : {...opts};
     defaults(opts, {fmt: TIME_FMT});
     saveOriginal(v, opts);
 
@@ -72,10 +71,11 @@ export function fmtTime(v, opts = {}) {
 /**
  * Render dates formatted based on distance in time from current day
  *
- * @param {*} v - a date value to format, can be any value MomentJs can parse.
+ * @param {*} v - a date value to format, can be any value MomentJs can parse, or a LocalDate.
  *      @see {@link https://momentjs.com/docs/#/parsing/|MomentJS Docs}
  * @param {Object} [opts]
- * @param {string} [opts.sameDayFmt] - format for dates matching current day, defaults to 'hh:mma'.
+ * @param {string} [opts.sameDayFmt] - format for dates matching current day, defaults to 'hh:mma' for
+ *      dates, 'MMM D' for LocalDates.
  * @param {string} [opts.nearFmt] - format for dates within the number of months specified by the
  *      distantThreshold, defaults to 'MMM D'.
  * @param {string} [opts.distantFmt] - format for dates > number of months specified by the
@@ -91,7 +91,7 @@ export function fmtTime(v, opts = {}) {
  * Note: Moments are mutable. Calling any of the manipulation methods will change the original moment.
  */
 export function fmtCompactDate(v, {
-    sameDayFmt = TIME_FMT,
+    sameDayFmt = isLocalDate(v) ? MONTH_DAY_FMT : TIME_FMT,
     nearFmt = MONTH_DAY_FMT,
     distantFmt = DATE_FMT,
     distantThreshold = 6,
@@ -99,6 +99,8 @@ export function fmtCompactDate(v, {
     asElement = false,
     originalValue = v
 } = {}) {
+    if (isLocalDate(v)) v = v.date;
+
     const now = moment(),
         today = fmtDate(new Date()),
         valueDay = fmtDate(v),

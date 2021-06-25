@@ -5,7 +5,18 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {Exception} from '@xh/hoist/exception';
-import {forOwn, isEmpty, isObject, isArray, isObjectLike, mixin, uniq, uniqBy, isUndefined} from 'lodash';
+import {
+    forOwn,
+    isEmpty,
+    isFunction,
+    isObject,
+    isArray,
+    isObjectLike,
+    mixin,
+    uniq,
+    uniqBy,
+    isUndefined
+} from 'lodash';
 import _inflection from 'lodash-inflection';
 
 mixin(_inflection);
@@ -54,8 +65,7 @@ export function deepFreeze(obj) {
 
 /**
  * Output a deep copy of an object up to a given depth, beyond which child objects will be
- * replaced by a placeholder string. Typically used prior to stringifying potentially recursive
- * or deeply nested objects.
+ * replaced by a placeholder string.
  *
  * @param {Object} obj
  * @param {number} depth - maximum depth within the object tree that will be returned.
@@ -244,4 +254,13 @@ export function filterConsecutive(predicate) {
 
         return true;
     };
+}
+
+/**
+ * Return value passed or the result of executing it, if it is a function.
+ *
+ * @param {(*|function)} v
+ */
+export function executeIfFunction(v) {
+    return isFunction(v) ? v() : v;
 }

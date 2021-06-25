@@ -13,7 +13,9 @@ import {isNil} from 'lodash';
  * state of that data through possible updates, with support for tracking edits and "committing"
  * changes to provide dirty state.
  *
- * Records also store state related to any parent/child hierarchy, if present.
+ * Each Record holds a pointer to its parent record, if any, via that parent's ID. (Note this
+ * is deliberately not a direct object reference, to allow parent records to be recreated
+ * without requiring children to also be recreated.)
  *
  * Records are intended to be created and managed internally by Store implementations and should
  * most not typically be constructed directly within application code.
@@ -24,18 +26,32 @@ export class Record {
     id;
     /** @member {(string|number)} */
     parentId;
-    /** @member {Object} */
-    committedData;
-    /** @member {Object} */
-    raw;
-    /** @member {Object} */
-    data;
     /** @member {Store} */
     store;
     /** @member {boolean} */
     isSummary;
     /** @member {string[]|number[]} */
     treePath;
+
+    /** @member {Object} - raw data loaded into via Store.loadData() or Store.updateData(). */
+    raw;
+
+    /**
+     * @member {Object} - an object containing the current field values for this record.
+     *
+     * Note that this object will only contain explicit 'own' properties for fields that are
+     * not at their default values - default values will be present via the prototype. For an
+     * object providing an explicit enumeration of all field values {@see Record.getValues()}.
+     */
+    data;
+
+    /**
+     * @member {Object} - an object containing the fully committed field values for this record.
+     *
+     * This object has the same form as `data`. If this record has not been locally modified, this
+     * property will point to the same object as `data`.
+     */
+    committedData;
 
     get isRecord() {return true}
 
@@ -65,85 +81,76 @@ export class Record {
     }
 
     /**
-     * Return the current value of a field.
-     * @returns {*}
+     * @param {string} fieldName
+     * @returns {*} - the current value of a field.
      */
     get(fieldName) {
         return this.data[fieldName];
     }
 
-    /**
-     * The children of this record, respecting any filter (if applied).
-     * @returns {Record[]}
-     */
+    /** @returns {Record[]} - children of this record, respecting any filter (if applied). */
     get children() {
         return this.store.getChildrenById(this.id, true);
     }
 
-    /**
-     * All children of this record unfiltered.
-     * @returns {Record[]}
-     */
+    /** @returns {Record[]} - all children of this record, unfiltered. */
     get allChildren() {
         return this.store.getChildrenById(this.id, false);
     }
 
-    /**
-     * The descendants of this record, respecting any filter (if applied).
-     * @returns {Record[]}
-     */
+    /** @returns {Record[]} - descendants of this record, respecting any filter (if applied). */
     get descendants() {
         return this.store.getDescendantsById(this.id, true);
     }
 
-    /**
-     * All descendants of this record unfiltered.
-     * @returns {Record[]}
-     */
+    /** @returns {Record[]} - all descendants of this record, unfiltered. */
     get allDescendants() {
         return this.store.getDescendantsById(this.id, false);
     }
 
-    /**
-     * The ancestors of this record, respecting any filter (if applied).
-     * @returns {Record[]}
-     */
+    /** @returns {Record[]} - ancestors of this record, respecting any filter (if applied). */
     get ancestors() {
         return this.store.getAncestorsById(this.id, true);
     }
 
-    /**
-     * All ancestors of this record unfiltered.
-     * @returns {Record[]}
-     */
+    /** @returns {Record[]} - all ancestors of this record, unfiltered. */
     get allAncestors() {
         return this.store.getAncestorsById(this.id, false);
     }
 
     /**
-     * Construct a Record from a raw source object. Extract values from the source object for all
-     * Fields defined on the given Store and install them as data on the new Record.
+     * @returns {Object} - a new object with enumerated values for all Fields in this Record.
+     *      Unlike 'data', the object returned by this method contains an 'own' property for every
+     *      Field in the Store. Useful for cloning/iterating over all values (including defaults).
+     */
+    getValues() {
+        const ret = {id: this.id};
+        this.fields.forEach(({name}) => {
+            ret[name] = this.data[name];
+        });
+        return ret;
+    }
+
+    /**
+     * Construct a Record from a pre-processed `data` source object.
      *
-     * This process will apply basic conversions if required, based on the specified Field types.
-     * Properties of the raw object *not* included in the store's Fields config will be ignored.
-     *
-     * Also tracks a pointer to its parent record, if any, via that parent's ID. (Note this is
-     * deliberately not a direct object reference, to allow parent records to be recreated without
-     * requiring children to also be recreated.)
+     * Not typically called by applications directly. `Store` instances create `Record` instances
+     * when loading or updating data through their public APIs. {@see Store.createRecord} for the
+     * primary implementation, which includes parsing based on `data/Field` types and definitions.
      *
      * @param {Object} c - Record configuration
-     * @param {(number|string)} c.id - record ID
-     * @param {Store} c.store - store containing this record.
-     * @param {Object} c.data - data for this record, pre-processed if applicable by
-     *      `store.processRawData()` and `Field.parseVal()`.  Note: This must be a new object
-     *      dedicated to this record.  This object will be enhanced with an id and frozen.
-     * @param {Object} [c.raw] - the original data for the record, prior to any store
+     * @param {(number|string)} c.id - Record ID
+     * @param {Store} c.store - Store containing this Record.
+     * @param {Object} c.data - data for this Record, pre-processed if applicable by
+     *      `Store.processRawData()` and `Field.parseVal()`. Note: This must be a new object
+     *      dedicated to this Record. This object will be enhanced with an id and frozen.
+     * @param {Object} [c.raw] - the original data for the Record, prior to any Store
      *      pre-processing.  This data is for reference only and will not be altered by this object.
      * @param {Object?} [c.committedData] - the committed version of the data that was loaded
      *      into a Record in the Store. Pass `null` to indicate that this is a "new" Record that has
      *      been added since the last load.
-     * @param {Record} [c.parent] - parent record, if any.
-     * @param {boolean} [c.isSummary] - whether this record is a summary record, used to show
+     * @param {Record} [c.parent] - parent Record, if any.
+     * @param {boolean} [c.isSummary] - whether this Record is a summary Record, used to show
      *      aggregate, grand-total level information in grids when enabled.
      */
     constructor({
@@ -174,7 +181,7 @@ export class Record {
      * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
      */
     forEachChild(fn, fromFiltered = false) {
-        this.store.getChildrenById(this.id, fromFiltered).forEach(it => it.fn);
+        this.store.getChildrenById(this.id, fromFiltered).forEach(fn);
     }
 
     /**
@@ -183,7 +190,7 @@ export class Record {
      * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
      */
     forEachDescendant(fn, fromFiltered = false) {
-        this.store.getDescendantsById(this.id, fromFiltered).forEach(it => fn(it));
+        this.store.getDescendantsById(this.id, fromFiltered).forEach(fn);
     }
 
     /**
@@ -192,8 +199,9 @@ export class Record {
      * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
      */
     forEachAncestor(fn, fromFiltered = false) {
-        this.store.getAncestorsById(this.id, fromFiltered).forEach(it => fn(it));
+        this.store.getAncestorsById(this.id, fromFiltered).forEach(fn);
     }
+
 
     // --------------------------
     // Protected methods
@@ -201,11 +209,11 @@ export class Record {
     /**
      * Finalize this record for use in Store, post acceptance by RecordSet.
      *
-     * We finalize the Record post-construction in RecordSet, only when we know that
-     * it is going to be accepted in the new RecordSet (and is not a duplicate).  This is a
-     * performance optimization to avoid operations like freezing on transient records.
+     * We finalize the Record post-construction in RecordSet, only once we know that it is going to
+     * be accepted in the new RecordSet (and is not a duplicate).  This is a performance
+     * optimization to avoid operations like freezing on transient records.
      *
-     * Not for application use.
+     * @package - not for application use.
      */
     finalize() {
         if (this.store.freezeData) {

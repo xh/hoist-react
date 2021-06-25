@@ -46,6 +46,7 @@
   border: var(--xh-border-solid);
   overflow: hidden;
   white-space: nowrap;
+  min-width: 150px;
 
   &__label {
     padding: var(--xh-pad-half-px);

@@ -45,7 +45,6 @@ const contents = hoistCmp.factory(
             tbar: tbar(),
             item: model.hasLoaded ?
                 grid({
-                    onRowDoubleClicked: (e) => model.detailModel.open(e.data),
                     agOptions: {popupParent: null}
                 }) :
                 frame({

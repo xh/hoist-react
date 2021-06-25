@@ -89,6 +89,7 @@ export class DifferModel extends HoistModel {
             groupBy: 'status',
             enableExport: true,
             showHover: true,
+            onRowDoubleClicked: (e) => this.detailModel.open(e.data),
             columns: [
                 {
                     ...actionCol,

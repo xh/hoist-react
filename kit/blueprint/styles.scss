@@ -1,76 +1,6 @@
 @import '~@blueprintjs/core/src/common/react-transition';
 
 //------------------------
-// NavBar
-//------------------------
-.bp3-navbar,
-.bp3-dark .bp3-navbar {
-  display: flex;
-  align-items: center;
-  flex-wrap: nowrap;
-  color: var(--xh-navbar-color);
-  background-color: var(--xh-navbar-bg);
-  height: var(--xh-navbar-height-px);
-  border-bottom: 1px solid var(--xh-navbar-border-color);
-  padding: 0 var(--xh-pad-px);
-
-  // Curiously, Admin Log Viewer would cause navbar to shrink without min-height
-  min-height: var(--xh-navbar-height-px);
-
-  .bp3-navbar-divider {
-    border-left-color: var(--xh-tbar-separator-color);
-  }
-
-  > * {
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .bp3-navbar-heading {
-    color: var(--xh-navbar-title-color);
-    font-size: var(--xh-navbar-title-font-size-px);
-    margin-left: var(--xh-pad-px);
-  }
-
-  .bp3-navbar-group {
-    overflow: hidden;
-    height: var(--xh-navbar-height-px);
-
-    .bp3-navbar-divider {
-      margin: 0 var(--xh-pad-px);
-    }
-
-    // Replace default float behaviour in favour of flexbox
-    float: none;
-
-    > .svg-inline--fa {
-      margin: 0 5px 0 0;
-    }
-
-    &.bp3-align-left {
-      // Flex simulates left alignment
-      flex: 1;
-
-      // Primary app icon
-
-      > svg:first-child {
-        color: var(--xh-navbar-title-color);
-      }
-    }
-
-    &.bp3-align-right {
-      > *:not(.bp3-navbar-divider) {
-        margin-left: var(--xh-pad-px);
-      }
-
-      .bp3-navbar-divider {
-        margin-right: 0;
-      }
-    }
-  }
-}
-
-//------------------------
 // Tabs
 //------------------------
 .bp3-tab-panel > div {
@@ -155,8 +85,24 @@ $pt-transition-duration: 100ms !default;
 }
 
 //------------------------
-// Buttons - see desktop/cmp/button/Button.scss
+// Buttons
 //------------------------
+// See desktop/cmp/button/Button.scss for button styles.
+// Rule below applies only to buttons within BP inputs to disable default hover background-color
+// (which looks weird) and instead tweak the icon color to indicate it's active.
+.xh-app .xh-input .bp3-input-group .xh-button {
+  &.xh-button--minimal,
+  &.xh-button--outlined {
+    &.xh-button--enabled {
+      &:hover {
+        background-color: unset !important;
+        svg {
+          color: var(--xh-button-text-color) !important;
+        }
+      }
+    }
+  }
+}
 
 //------------------------
 // Toasts

@@ -16,9 +16,9 @@ import {Children} from 'react';
 import './TileFrame.scss';
 
 /**
- * This component renders its children as space filling tiles of the equal size.
- * It will generate a tiling layout that attempts to compromise between limiting empty space,
- * and keeping the tile width / height ratio as close to the desired ratio as possible.
+ * This component renders its children as equally-sized tiles, resized and arranged to fill the
+ * available space within the container while maintaining even padding between tiles and keeping
+ * tile width / height as close to a specified ratio as possible.
  *
  * Supports a number of optional constraints on tile dimensions that can be used to produce more
  * stable layouts. These should be used judiciously, however, as each constraint limits the ability
@@ -27,15 +27,12 @@ import './TileFrame.scss';
 export const [TileFrame, tileFrame] = hoistCmp.withFactory({
     displayName: 'TileFrame',
     model: false, memo: false, observer: false,
-
     className: 'xh-tile-frame',
 
     render({
         children,
         desiredRatio = 1,
         spacing = 0,
-        minTileRatio,
-        maxTileRatio,
         minTileWidth,
         maxTileWidth,
         minTileHeight,
@@ -54,8 +51,6 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
             height,
             desiredRatio,
             spacing,
-            minTileRatio,
-            maxTileRatio,
             minTileWidth,
             maxTileWidth,
             minTileHeight,
@@ -85,38 +80,26 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
 TileFrame.propTypes = {
     /**
      * Desired tile width / height ratio (i.e. desiredRatio: 2 == twice as wide as tall).
-     * Layouts will strive to meet this ratio, but the final ratio may vary. Defaults to 1 (i.e. square tiles)
+     * The container will strive to meet this ratio, but the final ratio may vary.
+     * Defaults to 1 (i.e. square tiles)
      */
     desiredRatio: PT.number,
 
     /** The space between tiles (in px) */
     spacing: PT.number,
 
-    /** Min tile ratio. Only layouts that meet this condition will be considered */
-    minTileRatio: PT.number,
-
-    /** Max tile ratio. Only layouts that meet this condition will be considered */
-    maxTileRatio: PT.number,
-
-    /** Min tile width (in px). Only layouts that meet this condition will be considered */
+    /** Min tile width (in px). */
     minTileWidth: PT.number,
 
-    /** Max tile width (in px). Only layouts that meet this condition will be considered */
+    /** Max tile width (in px). */
     maxTileWidth: PT.number,
 
-    /**
-     * Min tile height (in px). Unlike minTileWidth, failing to meet this condition does not
-     * automatically invalidate the layout. Instead, the container will scroll if necessary
-     */
+    /** Min tile height (in px).*/
     minTileHeight: PT.number,
 
-    /**
-     * Max tile height (in px). Unlike maxTileWidth, failing to meet this condition does not
-     * automatically invalidate the layout. Instead, the container will scroll if necessary
-     */
+    /** Max tile height (in px).*/
     maxTileHeight: PT.number
 };
-
 
 class LocalModel extends HoistModel {
 
@@ -150,75 +133,96 @@ class LocalModel extends HoistModel {
     // Implementation
     //-------------------
     createLayout() {
-        const {width, height, count} = this.params,
-            layouts = [];
+        const {width, height, count} = this.params;
 
         if (!width || !height || !count) return null;
 
         // Generate all possible tile layouts, from single column > single row.
+        const scoredLayouts = [];
         for (let cols = 1; cols <= count; cols++) {
-            const rows = Math.ceil(count / cols);
-            layouts.push(this.generateScoredLayout(cols, rows, false));
+            scoredLayouts.push(this.generateScoredLayout(cols));
         }
 
-        // Choose layout with the best (i.e. lowest) score.
-        // Fall back to single row or single column layout if unable to satisfy constraints.
-        // Prefer single row if container has landscape orientation and single column if portrait.
-        let layout = minBy(layouts, 'score');
-        if (!layout) {
-            const colCount = height > width ? 1 : count,
-                rowCount = height > width ? count : 1;
-            layout = this.generateScoredLayout(colCount, rowCount, true);
-        }
-
-        return layout?.layout;
+        return minBy(scoredLayouts, 'score')?.layout;
     }
 
-    generateScoredLayout(cols, rows, skipConstraints = false) {
+    generateScoredLayout(cols) {
         const {
-                width,
-                height,
-                count,
-                desiredRatio,
-                spacing,
-                minTileRatio,
-                maxTileRatio,
-                minTileWidth,
-                maxTileWidth,
-                minTileHeight,
-                maxTileHeight
-            } = this.params,
-            emptyCount = (rows * cols) - count;
+            width,
+            minTileWidth,
+            maxTileWidth,
+            minTileHeight,
+            maxTileHeight
+        } = this.params;
 
-        // Calculate tile width / height
-        let tileWidth = Math.floor((width - spacing) / cols) - spacing,
+        // 1) Generate layout
+        const layout = this.generateLayout(cols);
+        if (!layout) return null;
+
+        // 2) Enforce size constraints
+        if (minTileWidth && layout.tileWidth < minTileWidth) layout.tileWidth = minTileWidth;
+        if (maxTileWidth && layout.tileWidth > maxTileWidth) layout.tileWidth = maxTileWidth;
+        if (minTileHeight && layout.tileHeight < minTileHeight) layout.tileHeight = minTileHeight;
+        if (maxTileHeight && layout.tileHeight > maxTileHeight) layout.tileHeight = maxTileHeight;
+
+        // 3) Invalidate multi-column layouts that are wider than the container.
+        // The single column layout is always valid as a fallback for when your minTileWidth exceeds the container width
+        if (minTileWidth && layout.cols > 1 && this.getRequiredWidth(layout) > width) return null;
+
+        const score = this.scoreLayout(layout);
+        return {layout, score};
+    }
+
+    generateLayout(cols) {
+        const {width, height, count, spacing} = this.params,
+            rows = Math.ceil(count / cols),
+            tileWidth = Math.floor((width - spacing) / cols) - spacing,
             tileHeight = Math.floor((height - spacing) / rows) - spacing;
 
-        if (!skipConstraints) {
-            if (minTileWidth && tileWidth < minTileWidth) return null;
-            if (maxTileWidth && tileWidth > maxTileWidth) return null;
-        }
+        if (tileWidth <= 0 || tileHeight <= 0) return null;
+        return {cols, rows, tileWidth, tileHeight};
+    }
 
-        if (minTileHeight && tileHeight < minTileHeight) tileHeight = minTileHeight;
-        if (maxTileHeight && tileHeight > maxTileHeight) tileHeight = maxTileHeight;
+    // This heuristic generates a score for each layout, where a lower score is better.
+    scoreLayout(layout) {
+        const ratioScore = this.getRatioScore(layout),
+            emptyScore = this.getEmptyScore(layout),
+            widthFillingScore = this.getWidthFillingScore(layout);
 
-        // Calculate tile width / height ratio
-        const ratio = tileWidth / tileHeight;
+        return ratioScore + emptyScore + widthFillingScore;
+    }
 
-        if (!skipConstraints) {
-            if (minTileRatio && ratio < minTileRatio) return null;
-            if (maxTileRatio && ratio > maxTileRatio) return null;
-        }
+    // A higher score indicates further deviance from the desired ratio.
+    getRatioScore(layout) {
+        const {desiredRatio} = this.params,
+            ratio = layout.tileWidth / layout.tileHeight,
+            invertedDesiredRatio = 1 / desiredRatio,
+            invertedRatio = 1 / ratio;
 
-        // We want to compromise between having as little empty space as possible,
-        // and keeping the tile ratio as close to the desired ratio as possible.
-        // This heuristic generates a score for each layout, where a lower score is better.
-        const ratioScore = Math.abs(desiredRatio - ratio),
-            score = emptyCount > 0 ? ratioScore + Math.pow(emptyCount, 2) : ratioScore;
+        return Math.abs(desiredRatio - ratio) + Math.abs(invertedDesiredRatio - invertedRatio);
+    }
 
-        return {
-            score,
-            layout: {cols, tileWidth, tileHeight}
-        };
+    // A higher score indicates more empty tile space
+    getEmptyScore(layout) {
+        const {count} = this.params,
+            emptyCount = (layout.rows * layout.cols) - count;
+
+        return Math.pow(emptyCount, 2);
+    }
+
+    // Returns a value normalised between 0-1 representing how much of the available width
+    // is empty. A higher score indicates more empty space.
+    getWidthFillingScore(layout) {
+        const {minTileWidth, maxTileWidth, width} = this.params;
+        if (!minTileWidth && !maxTileWidth) return 0;
+
+        const requiredWidth = this.getRequiredWidth(layout),
+            excessWidth = Math.max(0, width - requiredWidth);
+
+        return (excessWidth / width) * 10;
+    }
+
+    getRequiredWidth(layout) {
+        return (layout.tileWidth * layout.cols) + ((layout.cols + 1) * this.params.spacing);
     }
 }

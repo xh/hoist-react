@@ -91,6 +91,7 @@ export const Icon = {
     balanceScaleLeft(p) {return Icon.icon({...p,  iconName: 'balance-scale-left'})},
     balanceScaleRight(p) {return Icon.icon({...p, iconName: 'balance-scale-right'})},
     bars(p)             {return Icon.icon({...p,  iconName: 'bars'})},
+    browser(p)          {return Icon.icon({...p,  iconName: 'browser'})},
     bolt(p)             {return Icon.icon({...p,  iconName: 'bolt'})},
     book(p)             {return Icon.icon({...p,  iconName: 'book'})},
     bookmark(p)         {return Icon.icon({...p,  iconName: 'bookmark'})},
@@ -166,11 +167,13 @@ export const Icon = {
     folder(p)           {return Icon.icon({...p,  iconName: 'folder'})},
     folderOpen(p)       {return Icon.icon({...p,  iconName: 'folder-open'})},
     fund(p)             {return Icon.icon({...p,  iconName: 'university'})},
+    func(p)             {return Icon.icon({...p,  iconName: 'function'})},
     gauge(p)            {return Icon.icon({...p,  iconName: 'tachometer'})},
     gear(p)             {return Icon.icon({...p,  iconName: 'cog'})},
     gears(p)            {return Icon.icon({...p,  iconName: 'cogs'})},
     gift(p)             {return Icon.icon({...p,  iconName: 'gift'})},
     globe(p)            {return Icon.icon({...p,  iconName: 'globe'})},
+    globeAmericas(p)    {return Icon.icon({...p,  iconName: 'globe-americas'})},
     grid(p)             {return Icon.icon({...p,  iconName: 'th'})},
     gridLarge(p)        {return Icon.icon({...p,  iconName: 'th-large'})},
     gridPanel(p)        {return Icon.icon({...p,  iconName: 'table'})},
@@ -178,12 +181,14 @@ export const Icon = {
     hand(p)             {return Icon.icon({...p,  iconName: 'hand-paper'})},
     handshake(p)        {return Icon.icon({...p,  iconName: 'handshake'})},
     health(p)           {return Icon.icon({...p,  iconName: 'stethoscope'})},
+    heartRate(p)        {return Icon.icon({...p,  iconName: 'heart-rate'})},
     history(p)          {return Icon.icon({...p,  iconName: 'history'})},
     home(p)             {return Icon.icon({...p,  iconName: 'home'})},
     impersonate(p)      {return Icon.icon({...p,  iconName: 'user-friends'})},
     inbox(p)            {return Icon.icon({...p,  iconName: 'inbox'})},
     info(p)             {return Icon.icon({...p,  iconName: 'info-circle'})},
     institution(p)      {return Icon.icon({...p,  iconName: 'university'})},
+    instrument(p)       {return Icon.icon({...p,  iconName: 'file-certificate'})},
     json(p)             {return Icon.icon({...p,  iconName: 'brackets-curly'})},
     learn(p)            {return Icon.icon({...p,  iconName: 'graduation-cap'})},
     link(p)             {return Icon.icon({...p,  iconName: 'link'})},
@@ -197,6 +202,7 @@ export const Icon = {
     mapSigns(p)         {return Icon.icon({...p,  iconName: 'map-signs'})},
     mask(p)             {return Icon.icon({...p,  iconName: 'mask'})},
     minusCircle(p)      {return Icon.icon({...p,  iconName: 'minus-circle'})},
+    mobile(p)           {return Icon.icon({...p,  iconName: 'mobile-alt'})},
     moon(p)             {return Icon.icon({...p,  iconName: 'moon'})},
     news(p)             {return Icon.icon({...p,  iconName: 'newspaper'})},
     office(p)           {return Icon.icon({...p,  iconName: 'building'})},
@@ -205,6 +211,7 @@ export const Icon = {
     paste(p)            {return Icon.icon({...p,  iconName: 'paste'})},
     pause(p)            {return Icon.icon({...p,  iconName: 'pause'})},
     pauseCircle(p)      {return Icon.icon({...p,  iconName: 'pause-circle'})},
+    phone(p)            {return Icon.icon({...p,  iconName: 'phone-alt'})},
     pin(p)              {return Icon.icon({...p,  iconName: 'thumbtack'})},
     play(p)             {return Icon.icon({...p,  iconName: 'play'})},
     playCircle(p)       {return Icon.icon({...p,  iconName: 'play-circle'})},
@@ -216,6 +223,7 @@ export const Icon = {
     question(p)         {return Icon.icon({...p,  iconName: 'question'})},
     questionCircle(p)   {return Icon.icon({...p,  iconName: 'question-circle'})},
     random(p)           {return Icon.icon({...p,  iconName: 'random'})},
+    receipt(p)          {return Icon.icon({...p,  iconName: 'receipt'})},
     redo(p)             {return Icon.icon({...p,  iconName: 'redo'})},
     refresh(p)          {return Icon.icon({...p,  iconName: 'sync'})},
     reset(p)            {return Icon.icon({...p,  iconName: 'undo'})},
@@ -249,7 +257,8 @@ export const Icon = {
     unlink(p)           {return Icon.icon({...p,  iconName: 'unlink'})},
     unlock(p)           {return Icon.icon({...p,  iconName: 'lock-open'})},
     upload(p)           {return Icon.icon({...p,  iconName: 'upload'})},
-    user(p)             {return Icon.icon({...p,  iconName: 'user-circle'})},
+    user(p)             {return Icon.icon({...p,  iconName: 'user'})},
+    userCircle(p)       {return Icon.icon({...p,  iconName: 'user-circle'})},
     userClock(p)        {return Icon.icon({...p,  iconName: 'user-clock'})},
     users(p)            {return Icon.icon({...p,  iconName: 'users'})},
     warning(p)          {return Icon.icon({...p,  iconName: 'exclamation-triangle'})},
@@ -302,8 +311,8 @@ export const Icon = {
  * @return {string} - html of the <svg> tag representing the icon.
  */
 export function convertIconToHtml(iconElem) {
-    throwIf(!iconElem.type?.isHoistComponent,
-        'Icon not created by a Hoist Icon factory - cannot convert to SVG'
+    throwIf(!iconElem?.type?.isHoistComponent,
+        'Icon not provided, or not created by a Hoist Icon factory - cannot convert to HTML/SVG.'
     );
     return iconHtml(iconElem.props);
 }
@@ -316,8 +325,8 @@ export function convertIconToHtml(iconElem) {
  * @returns {Object} - json representation of icon.
  */
 export function serializeIcon(iconElem) {
-    throwIf(!iconElem.type?.isHoistComponent,
-        'Attempted to serialize an icon not created by a Hoist Icon factory.'
+    throwIf(!iconElem?.type?.isHoistComponent,
+        'Icon not provided, or not created by a Hoist Icon factory - cannot serialize.'
     );
 
     return pickBy(iconElem.props);

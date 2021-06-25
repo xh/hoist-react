@@ -84,6 +84,11 @@
   // Compact mode
   &--compact {
     font-size: var(--xh-tbar-compact-font-size-px);
+    // Tighten up padding on edges and between items.
+    padding-left: 0;
+    padding-right: 2px;
+    --xh-tbar-item-pad: 4;
+    --xh-tbar-item-pad-px: 4px;
 
     &:not(.xh-toolbar--vertical) {
       min-height: unset;
@@ -125,20 +130,27 @@
       min-height: var(--xh-tbar-compact-item-height-px);
 
       .bp3-input-group {
+        // This padding reserves space for a left-icon - default 30px overly wide in compact mode.
+        .bp3-input:not(:first-child) {
+          padding-left: 20px;
+        }
+
         > input {
           max-height: var(--xh-tbar-compact-item-height-px);
           min-height: var(--xh-tbar-compact-item-height-px);
         }
 
         // Buttons inside other input elements
-        .bp3-button {
+        .xh-button {
           max-height: var(--xh-tbar-compact-item-height-px);
           min-height: var(--xh-tbar-compact-item-height-px);
+          margin: 0 !important;
         }
 
+        // Inline input icons made smaller, lighter, and alignment tweaked.
         svg:not(.bp3-icon) {
-          font-size: 11px;
-          margin: 6px 2px;
+          font-size: var(--xh-tbar-compact-font-size-px);
+          margin: 5px 2px 5px 4px;
           opacity: 0.6;
         }
       }
@@ -160,17 +172,34 @@
         .xh-select__control {
           max-height: var(--xh-tbar-compact-item-height-px);
           min-height: var(--xh-tbar-compact-item-height-px);
+
+          // Matched to other inline input icons (above).
+          &__left-icon {
+            font-size: var(--xh-tbar-compact-font-size-px);
+            margin: 5px 2px 5px 4px;
+            opacity: 0.6;
+          }
         }
 
         .xh-select__value-container {
           max-height: var(--xh-tbar-compact-item-height-px);
           min-height: var(--xh-tbar-compact-item-height-px);
 
+          // No need for padding if there is a leading leftIcon.
+          &:not(:first-child) {
+            padding-left: 0;
+          }
+
           & > * {
             margin-top: 0;
             margin-bottom: 0;
             padding-top: 0;
             padding-bottom: 0;
+          }
+
+          // Ensure multi-val tags fit w/o scrolling.
+          .xh-select__multi-value__label {
+            padding: 2px 0 0 4px;
           }
         }
       }

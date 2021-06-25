@@ -13,4 +13,5 @@ export * from './FeedbackButton';
 export * from './ThemeToggleButton';
 export * from './LogoutButton';
 export * from './RefreshButton';
+export * from './RestoreDefaultsButton';
 export * from './NavigatorBackButton';

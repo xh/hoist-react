@@ -27,8 +27,10 @@ export const [DataView, dataView] = hoistCmp.withFactory({
     render({model, className, ...props}, ref) {
         apiRemoved(props.itemHeight, 'itemHeight', 'Specify itemHeight on the DataViewModel instead.');
         apiRemoved(props.rowCls, 'rowCls', 'Specify rowClassFn on the DataViewModel instead.');
+        apiRemoved(props.onRowClicked, 'onRowClicked', 'Specify onRowClicked on the DataViewModel instead.');
+        apiRemoved(props.onRowDoubleClicked, 'onRowDoubleClicked', 'Specify onRowDoubleClicked on the DataViewModel instead.');
 
-        const [layoutProps, {onRowClicked, onRowDoubleClicked}] = splitLayoutProps(props);
+        const [layoutProps] = splitLayoutProps(props);
         const localModel = useLocalModel(() => new LocalModel(model));
 
         return grid({
@@ -36,28 +38,14 @@ export const [DataView, dataView] = hoistCmp.withFactory({
             className,
             ref,
             model: model.gridModel,
-            agOptions: localModel.agOptions,
-            onRowClicked,
-            onRowDoubleClicked
+            agOptions: localModel.agOptions
         });
     }
 });
 
 DataView.propTypes = {
     /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(DataViewModel), PT.object]),
-
-    /**
-     * Callback when a row is clicked. Function will receive an event with a data node
-     * containing the row's data. (Note that this may be null - e.g. for clicks on group rows.)
-     */
-    onRowClicked: PT.func,
-
-    /**
-     * Callback to call when a row is double clicked. Function will receive an event
-     * with a data node containing the row's data.
-     */
-    onRowDoubleClicked: PT.func
+    model: PT.oneOfType([PT.instanceOf(DataViewModel), PT.object])
 };
 
 class LocalModel extends HoistModel {

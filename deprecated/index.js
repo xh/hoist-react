@@ -4,5 +4,3 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-
-export * from './HoistComponentClass';

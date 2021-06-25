@@ -1,25 +1,159 @@
 # Changelog
 
-## v40.0.0-SNAPSHOT - unreleased
+## v41.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* All Hoist Components now support a `modelRef` prop. Supply a ref to this prop in order to gain a
+  pointer to a Component's backing `HoistModel`.
+* New `Column.sortValue` config takes an alternate field name (as a string) to sort the column by
+  that field's value, or a function to produce a custom cell-level value for comparison. The values
+  produced by this property will be also passed to any custom comparator, if one is defined.
+* New `GridModel.hideEmptyTextBeforeLoad` config prevents showing the `emptyText` until the store
+  has been loaded at least once. Apps that depend on showing `emptyText` before first load should
+  set this property to `false`.
+* `ExpandCollapseButton` now works for grouped grids in addition to tree grids.
+* `FieldModel.initialValue` config now accepts functions, allowing for just-in-time initialization
+  of Form data (e.g. to pre-populate a Date field with the current time).
+* `TreeMapModel` and `SplitTreeMapModel` now support a `maxHeat` property, which can be used to
+  provide a stable absolute maximum brightness (positive or negative) within the entire TreeMap.
+* `ErrorMessage` will now automatically look for an `error` property on its primary context model.
+* `fmtNumber()` supports new flags `withCommas` and `omitFourDigitComma` to customize the treatment
+  of commas in number displays.
+* `isValidJson` function added to form validation constraints.
+
+### 💥 Breaking Changes
+
+* Removed support for class-based Hoist Components via the `@HoistComponent` decorator (deprecated
+  in v38). Use functional components created via the `hoistCmp()` factory instead.
+* Removed `DimensionChooser` (deprecated in v37). Use `GroupingChooser` instead.
+* Changed the behavior of `FormModel.init()` to always re-initialize *all* fields. (Previously, it
+  would only initialize fields explicitly passed via its single argument). We believe that this is
+  more in line with developer expectations and will allow the removal of app workarounds to force a
+  reset of all values. Most apps using FormModel should not need to change, but please review and
+  test any usages of this particular method.
+* Replaced the `Grid`, `DataView`, and `RestGrid` props below with new configurable fields on
+  `GridModel`, `DataViewModel`, and `RestGridModel`, respectively. This further consolidates grid
+  options into the model layer, allowing for more consistent application code and developer
+  discovery.
+  + `onKeyDown`
+  + `onRowClicked`
+  + `onRowDoubleClicked`
+  + `onCellClicked`
+  + `onCellDoubleClicked`
+* Renamed the confusing and ambiguous property name `labelAlign` in several components:
+  + `FormField`: `labelAlign` has been renamed to `labelTextAlign`
+  + `SwitchInput`, `RadioInput`, and `Checkbox`: `labelAlign` has been renamed `labelSide`.
+* Renamed all CSS variables beginning with `--navbar` to start with `--appbar`, matching the Hoist
+  component name.
+* Removed `TreeMapModel.colorMode` value 'balanced'. Use the new `maxHeat` config to prevent outlier
+  values from dominating the color range of the TreeMap.
+* Hoist grids now require ag-Grid v25.3.0 or higher - update your ag-Grid dependency in your app's
+  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for
+  details.
 
 ### 🐞 Bug Fixes
 
-* Avoid `TileFrame` edge-case bug where the appearance of an internal scrollbar threw off layout
-  calculations.
-* Disable XSS protection (dompurify processing) on selected REST editor grids within the Hoist Admin
-  console. Avoids content within configs and JSON blobs being unintentionally mangled + trusts
-  admins not to paste in malicious content.
+* Fixed disable behavior for Hoist-provided button components using popover.
+* Fixed default disabling of autocomplete within `TextInput`.
+
+### ⚙️ Technical
+
+* Improved exception serialization to better handle `LocalDate` and similar custom JS classes.
+* Re-exported Blueprint `EditableText` component (w/elemFactory wrapper) from `kit/blueprint`.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.41 -> 3.42`
-* @blueprintjs/datetime `3.21 -> 3.22`
+* @blueprintjs/core `3.44 -> 3.46`
+* codemirror `5.60 -> 5.62`
+* core-js `3.10 -> 3.15`
+* filesize `6.2 -> 6.3`
+* mobx `6.1 -> 6.3`
+* react-windowed-select `3.0 -> 3.1`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v40.0.0...develop)
+
+## v40.0.0 - 2021-04-22
+
+⚠ Please ensure your `@xh/hoist-dev-utils` dependency is >= v5.7.0. This is required to support the
+new changelog feature described below. Even if you are not yet using the feature, you must update
+your dev-utils dependency for your project to build.
+
+### 🎁 New Features
+
+* Added support for displaying an in-app changelog (release notes) to the user. See the new
+  `ChangelogService` for details and instructions on how to enable.
+* Added `XH.showBanner()` to display a configurable banner across the top of viewport, as another
+  non-modal alternative for attention-getting application alerts.
+* New method `XH.showException()` uses Hoist's built-in exception display to show exceptions that
+  have already been handled directly by application code. Use as an alternative to
+  `XH.handleException()`.
+* `XH.track()` supports a new `oncePerSession` option. This flag can be set by applications to avoid
+  duplicate tracking messages for certain types of activity.
+* Mobile `NavigatorModel` now supports a `track` flag to automatically track user page views,
+  equivalent to the existing `track` flag on `TabContainerModel`. Both implementations now use the
+  new `oncePerSession` flag to avoid duplicate messages as a user browses within a session.
+* New `Spinner` component returns a simple img-based spinner as an animated PNG, available in two
+  sizes. Used for the platform-specific `Mask` and `LoadingIndicator` components. Replaces previous
+  SVG-based implementations to mitigate rendering performance issues over remote connections.
+
+
+### 💥 Breaking Changes
+
+* `Store` now creates a shared object to hold the default values for every `Field` and uses this
+  object as the prototype for the `data` property of every `Record` instance.
+  * Only non-default values are explicitly written to `Record.data`, making for a more efficient
+    representation of default values and improving the performance of `Record` change detection.
+  * Note this means that `Record.data` *no longer* contains keys for *all* fields as
+    `own-enumerable` properties.
+  * Applications requiring a full enumeration of all values should call the new `Record.getValues()`
+    method, which returns a new and fully populated object suitable for spreading or cloning.
+  * This behavior was previously available via `Store.experimental.shareDefaults` but is now always
+    enabled.
+* For API consistency with the new `showBanner()` util, the `actionFn` prop for the recently-added
+  `ErrorMessage` component has been deprecated. Specify as an `onClick` handler within the
+  component's `actionButtonProps` prop instead.
+* The `GridModel.experimental.externalSort` flag has been promoted from an experiment to a
+  fully-supported config. Default remains `false`, but apps that were using this flag must now pass
+  it directly: `new GridModel({externalSort: true, ...})`.
+* Hoist re-exports and wrappers for the Blueprint `Spinner` and Onsen `ProgressCircular` components
+  have been removed, in favor of the new Hoist `Spinner` component mentioned above.
+* Min version for `@xh/hoist-dev-utils` is now v5.7.0, as per above.
+
+### 🐞 Bug Fixes
+
+* Formatters in the `@xh/hoist/format` package no longer modify their options argument.
+* `TileFrame` edge-case bug fixed where the appearance of an internal scrollbar could thrash layout
+  calculations.
+* XSS protection (dompurify processing) disabled on selected REST editor grids within the Hoist
+  Admin console. Avoids content within configs and JSON blobs being unintentionally mangled.
+
+### ⚙️ Technical
+
+* Improvements to exception serialization, especially for any raw javascript `Error` thrown by
+  client-side code.
+
+### ✨ Style
+
+* Buttons nested inline within desktop input components (e.g. clear buttons) tweaked to avoid
+  odd-looking background highlight on hover.
+* Background highlight color of minimal/outlined buttons tweaked for dark theme.
+* `CodeInput` respects standard XH theme vars for its background-color and (monospace) font family.
+  Its built-in toolbar has also been made compact and slightly re-organized.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.41 -> 3.44`
+* @blueprintjs/datetime `3.21 -> 3.23`
+* classnames `2.2 -> 2.3`
 * codemirror `5.59 -> 5.60`
+* core-js `3.9 -> 3.10`
+* filesize `6.1 -> 6.2`
 * qs `6.9 -> 6.10`
 * react-beautiful-dnd `13.0 -> 13.1`
 * react-select `4.2 -> 4.3`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v39.0.1...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v39.0.1...v40.0.0)
 
 ## v39.0.1 - 2021-03-24
 
@@ -36,20 +170,22 @@
 ### 🎁 New Features
 
 #### Components + Props
+
 * New `TileFrame` layout component renders a collection of child items using a layout that balances
   filling the available space against maintaining tile width / height ratio.
 * Desktop `Toolbar` accepts new `compact` prop. Set to `true` to render the toolbar with reduced
   height and font-size.
-* New `StoreFilterField` prop `autoApply` allows developers to more easily use
-  `StoreFilterField` in conjunction with other filters or custom logic. Set to `false` and specify
-  an `onFilterChange` callback to take full control of filter application.
+* New `StoreFilterField` prop `autoApply` allows developers to more easily use `StoreFilterField` in
+  conjunction with other filters or custom logic. Set to `false` and specify an `onFilterChange`
+  callback to take full control of filter application.
 * New `RestGrid` prop `formClassName` allows custom CSS class to be applied to its managed
   `RestForm` dialog.
 
 #### Models + Configs
-* New property `selectedRecordId` on `StoreSelectionModel`, `GridModel`, and `DataViewModel`.
-  Observe this instead of `selectedRecord` when you wish to track only the `id` of the selected
-  record and not changes to its data.
+
+* New property `selectedRecordId` on `StoreSelectionModel`, `GridModel`, and `DataViewModel`. Observe
+  this instead of `selectedRecord` when you wish to track only the `id` of the selected record and
+  not changes to its data.
 * `TreeMapModel.colorMode` config supports new value `wash`, which retains the positive and negative
   color while ignoring the intensity of the heat value.
 * New method `ChartModel.updateHighchartsConfig()` provides a more convenient API for changing a
@@ -57,6 +193,7 @@
 * New `Column.omit` config supports conditionally excluding a column from its `GridModel`.
 
 #### Services + Utils
+
 * New method `FetchService.setDefaultTimeout()`.
 * New convenience getter `LocalDate.isToday`.
 * `HoistBase.addReaction()` now accepts convenient string values for its `equals` flag.
@@ -233,9 +370,9 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
 * Hoist grids now require ag-Grid v25.0.1 or higher - if your app uses ag-Grid, update your ag-Grid
   dependency in your app's `package.json` file.
 * The `uses()` function (called within `hoistComponent()` factory configs for model context lookups)
-  no longer accepts class names as strings. Pass the class itself (or superclass) of the model you
-  wish to select for your component. `Uses` will throw if given any string other than "*", making
-  the need for any updates clear.
+  and the `useContextModel()` function no longer accept class names as strings. Pass the class
+  itself (or superclass) of the model you wish to select for your component. `Uses` will throw if
+  given any string other than "*", making the need for any updates clear in that case.
 * The `Ref` class, deprecated in v26, has now been removed. Use `createObservableRef` instead.
 * `AppMenuModel` has been removed. The `AppMenuButton` is now configured via
   `AppBar.appMenuButtonProps`. As with desktop, menu items can be added with
@@ -2505,10 +2642,9 @@ leverage the context for model support discussed above.
 * ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are
   using `agOptions` to set sorting, filtering or resizing properties, these may need to change:
 
-  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and
-  `agOptions.enableFilter` have been removed. You can replicate their effects by using
-  `agOptions.defaultColDef`. For `Columns`, `suppressFilter` has been removed, an should be replaced
-  with `filter: false`.
+  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and `agOptions.enableFilter`
+  have been removed. You can replicate their effects by using `agOptions.defaultColDef`. For
+  `Columns`, `suppressFilter` has been removed, an should be replaced with `filter: false`.
 
 * `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.
   Applications should use the new Refresh architecture described above instead.
@@ -3319,9 +3455,9 @@ and ag-Grid upgrade, and more. 🚀
   * `Panel` and `Resizable` components have moved to their own packages in
     `@xh/hoist/desktop/cmp/panel` and `@xh/hoist/desktop/cmp/resizable`.
 * **Multiple changes and improvements made to tab-related APIs and components.**
-  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes`
-    -> `route` (to specify a starting route as a string) and `switcherPosition` has moved from a
-    model config to a prop on the `TabContainer` component.
+  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes` ->
+    `route` (to specify a starting route as a string) and `switcherPosition` has moved from a model
+    config to a prop on the `TabContainer` component.
   * `TabPane` and `TabPaneModel` have been renamed `Tab` and `TabModel`, respectively, with several
     related renames.
 * **Application entry-point classes decorated with `@HoistApp` must implement the new getter method

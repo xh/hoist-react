@@ -16,8 +16,8 @@ import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
  */
 export class IdentityService extends HoistService {
 
-    _authUser = null;
-    _apparentUser = null;
+    _authUser;
+    _apparentUser;
 
     async initAsync() {
         const data = await XH.fetchJson({url: 'xh/getIdentity'});
@@ -29,42 +29,39 @@ export class IdentityService extends HoistService {
         }
     }
 
-    /**
-     * The current acting user (see authUser below for notes on impersonation). This is a JS
-     * object with username, displayName, email, roles, and any other properties serialized by
-     * HoistUser on the server, as well as hasRole() and hasGate() convenience functions.
-     */
+    /** @return {HoistUser} - current acting user (see authUser for notes on impersonation) */
     get user() {
         return this._apparentUser;
     }
 
-    /** The current acting user's username. */
+    /** @return {string} - current acting user's username. */
     get username() {
-        return this._apparentUser ? this._apparentUser.username : null;
+        return this.user?.username ?? null;
     }
 
-    /** The current acting user - method form for aliasing by XH. */
+    /** @return {HoistUser} - current acting user - method form for aliasing by XH. */
     getUser() {
         return this.user;
     }
 
-    /** The current acting user's username - method form for aliasing by XH. */
+    /** @return {string} - current acting user's username - method form for aliasing by XH. */
     getUsername() {
         return this.username;
     }
 
     /**
-     * The actual user who authenticated to the web application. This will be the same as the user
-     * except when an administrator is impersonation another user for troubleshooting or testing.
-     * In those cases, this getter will return the actual administrator, whereas this.user will
-     * return the user they are impersonating.
+     * @return {HoistUser} - actual user who authenticated to the web application.
+     *      This will be the same as the user except when an administrator is impersonation another
+     *      user for troubleshooting or testing. In those cases, this getter will return the actual
+     *      administrator, whereas `this.user` will return the user they are impersonating.
      */
     get authUser() {
         return this._authUser;
     }
 
+    /** @return {string} */
     get authUsername() {
-        return this._authUser ? this._authUser.username : null;
+        return this.authUser?.username ?? null;
     }
 
     /**
@@ -134,9 +131,7 @@ export class IdentityService extends HoistService {
         });
     }
 
-    /**
-     * Exit any active impersonation, reloading the app to resume normal day-to-day life as yourself.
-     */
+    /** Exit any active impersonation, reloading the app to resume accessing it as yourself. */
     async endImpersonateAsync() {
         return XH.fetchJson({
             url: 'xh/endImpersonate'
@@ -175,3 +170,14 @@ export class IdentityService extends HoistService {
     }
 
 }
+
+/**
+ * @typedef {Object} HoistUser - may contain other custom properties serialized by an application.
+ * @property {string} username
+ * @property {string} email
+ * @property {string} displayName
+ * @property {string[]} roles
+ * @property {boolean} isHoistAdmin
+ * @property {function(string): boolean} hasRole
+ * @property {function(string): boolean} hasGate
+ */

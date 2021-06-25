@@ -86,15 +86,21 @@ export class SplitTreeMapModel extends HoistModel {
         return this.primaryMapModel.isMasking || this.secondaryMapModel.isMasking;
     }
 
+    @computed
+    get empty() {
+        return this.primaryMapModel.empty && this.secondaryMapModel.empty;
+    }
+
     // Simple getters and methods trampolined from underlying TreeMapModels.
     // Where possible, we consult only the primary map model, as we don't expect the two to become out of sync.
-    get hasData()           {return this.primaryMapModel.hasData}
     get expandState()       {return this.primaryMapModel.expandState}
     get error()             {return this.primaryMapModel.error}
+    get emptyText()         {return this.primaryMapModel.emptyText}
     get highchartsConfig()  {return this.primaryMapModel.highchartsConfig}
     get labelField()        {return this.primaryMapModel.labelField}
     get heatField()         {return this.primaryMapModel.heatField}
     get maxDepth()          {return this.primaryMapModel.maxDepth}
+    get maxHeat()           {return this.primaryMapModel.maxHeat}
     get algorithm()         {return this.primaryMapModel.algorithm}
     get colorMode()         {return this.primaryMapModel.colorMode}
 
@@ -120,6 +126,12 @@ export class SplitTreeMapModel extends HoistModel {
     setMaxDepth(...args) {
         this.primaryMapModel.setMaxDepth(...args);
         this.secondaryMapModel.setMaxDepth(...args);
+    }
+
+    @action
+    setMaxHeat(...args) {
+        this.primaryMapModel.setMaxHeat(...args);
+        this.secondaryMapModel.setMaxHeat(...args);
     }
 
     @action

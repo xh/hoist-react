@@ -7,8 +7,9 @@
 import {CreatesSpec, elemFactory, ModelPublishMode, ModelSpec, uses} from '@xh/hoist/core';
 import {useOwnedModelLinker} from '@xh/hoist/core/impl/UseOwnedModelLinker';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {useOnMount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isFunction, isPlainObject, isString} from 'lodash';
+import {isFunction, isPlainObject, isString, isObject} from 'lodash';
 import {observer} from '@xh/hoist/mobx';
 import {forwardRef, memo, useContext, useDebugValue, useState} from 'react';
 import {ModelLookup, matchesSelector, ModelLookupContext, modelLookupContextProvider} from './impl/ModelLookup';
@@ -30,9 +31,6 @@ import {ModelLookup, matchesSelector, ModelLookupContext, modelLookupContextProv
  * render function that accepts two arguments. In that case, the second arg will be considered a
  * ref, and this utility will apply `React.forwardRef` as required.
  *
- * @see hoistCmp - a shorthand alias to this function.
- * @see HoistComponent - decorator for an alternate, class-based approach to defining Components.
- *
  * @param {(Object|function)} config - config object, or a render function defining the component.
  * @param {function} [config.render] - render function defining the component.
  * @param {ModelSpec} [config.model] - spec defining the model to be rendered by this component.
@@ -48,10 +46,12 @@ import {ModelLookup, matchesSelector, ModelLookupContext, modelLookupContextProv
  * @param {boolean} [config.observer] - true (default) to enable MobX-powered reactivity via the
  *      `observer()` HOC from mobx-react. Components that are known to dereference no observable
  *      state may set this to `false`, but this is not typically done by application code.
- * @returns {function} - a functional Component for use within Hoist apps.
+ * @returns {function} - a functional React Component for use within Hoist apps.
+ *
+ * @see hoistCmp - a shorthand alias to this function.
  *
  * This function also has two convenience "sub-functions" that are properties of it:
- *   - `hoistComponent.factory` - returns an elemFactory for the newly defined component,
+ *   - `hoistComponent.factory` - returns an elemFactory for the newly defined Component,
  *           instead of the Component itself.
  *   - `hoistComponent.withFactory` - returns a 2-element list containing both the newly defined
  *          Component and an elemFactory for it.
@@ -213,10 +213,23 @@ function wrapWithPublishedModel(render, spec, displayName) {
 function useResolvedModel(spec, props, lookup, displayName) {
     // fixed cache here creates the "immutable" model behavior in hoist components
     // (Need to force full remount with 'key' prop to resolve any new model)
-    const [{model, isOwned, fromContext}] = useState(() => {
-        return (spec instanceof CreatesSpec) ? createModel(spec) : lookupModel(spec, props, lookup, displayName);
-    });
+    const [{model, isOwned, fromContext}] = useState(() => (
+        spec instanceof CreatesSpec ? createModel(spec) : lookupModel(spec, props, lookup, displayName)
+    ));
+
+    // register and load owned model
     useOwnedModelLinker(isOwned ? model : null);
+
+    // wire any modelRef
+    useOnMount(() => {
+        const {modelRef} = props;
+        if (isFunction(modelRef)) {
+            modelRef(model);
+        } else if (isObject(modelRef)) {
+            modelRef.current = model;
+        }
+    });
+
     useDebugValue(model, m => m.constructor.name + (isOwned ? ' (owned)' : ''));
 
     return {model, fromContext};

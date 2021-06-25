@@ -8,7 +8,7 @@ import {HoistInputPropTypes, HoistInputModel, useHoistInputModel} from '@xh/hois
 import {hoistCmp} from '@xh/hoist/core';
 import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
 import {computed, makeObservable} from '@xh/hoist/mobx';
-import {withDefault} from '@xh/hoist/utils/js';
+import {withDefault, apiRemoved} from '@xh/hoist/utils/js';
 import {filter, isObject} from 'lodash';
 import PT from 'prop-types';
 import './RadioInput.scss';
@@ -20,6 +20,8 @@ export const [RadioInput, radioInput] = hoistCmp.withFactory({
     displayName: 'RadioInput',
     className: 'xh-radio-input',
     render(props, ref) {
+        apiRemoved(props.labelAlign, 'labelAlign', 'Use labelSide instead.');
+
         return useHoistInputModel(cmp, props, ref, Model);
     }
 });
@@ -28,8 +30,8 @@ RadioInput.propTypes = {
     /** True to display each radio button inline with each other. */
     inline: PT.bool,
 
-    /** Alignment of each option's label relative its radio button, default right. */
-    labelAlign: PT.oneOf(['left', 'right']),
+    /** Placement of each option's label relative its radio button, default right. */
+    labelSide: PT.oneOf(['left', 'right']),
 
     /**
      * Array of available options, of the form:
@@ -88,11 +90,11 @@ class Model extends HoistInputModel {
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
         const {normalizedOptions} = model,
-            labelAlign = withDefault(props.labelAlign, 'right');
+            labelSide = withDefault(props.labelSide, 'right');
 
         const items = normalizedOptions.map(opt => {
             return radio({
-                alignIndicator: labelAlign === 'left' ? 'right' : 'left',
+                alignIndicator: labelSide === 'left' ? 'right' : 'left',
                 disabled: opt.disabled,
                 label: opt.label,
                 value: opt.value,

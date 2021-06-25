@@ -11,7 +11,7 @@ import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
-import {errorIf, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {errorIf, throwIf, withDefault, apiRemoved} from '@xh/hoist/utils/js';
 import {getLayoutProps, getReactElementName} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
@@ -41,6 +41,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
     model: uses(FieldModel, {fromContext: false, publishMode: ModelPublishMode.NONE}),
 
     render({model, className, field, children, info, ...props}, ref) {
+        apiRemoved(props.labelAlign, 'labelAlign', 'Use labelTextAlign instead.');
 
         // Resolve FieldModel
         const formContext = useContext(FormContext);
@@ -52,6 +53,10 @@ export const [FormField, formField] = hoistCmp.withFactory({
         );
         const formModel = formContext.model;
         model = model || (formModel && field ? formModel.fields[field] : null);
+
+        if (!model) {
+            console.warn(`Unable to bind FormField to field "${field}" on backing FormModel`);
+        }
 
         // Model related props
         const isRequired = model?.isRequired || false,
@@ -80,7 +85,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
             minimal = defaultProp('minimal', props, formContext, false),
             leftErrorIcon = defaultProp('leftErrorIcon', props, formContext, false),
             clickableLabel = defaultProp('clickableLabel', props, formContext, true),
-            labelAlign = defaultProp('labelAlign', props, formContext, 'left'),
+            labelTextAlign = defaultProp('labelTextAlign', props, formContext, 'left'),
             labelWidth = defaultProp('labelWidth', props, formContext, null),
             label = defaultProp('label', props, formContext, model?.displayName),
             commitOnChange = defaultProp('commitOnChange', props, formContext, undefined),
@@ -134,7 +139,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
                     items: [label, requiredIndicator],
                     htmlFor: clickableLabel ? childId : null,
                     style: {
-                        textAlign: labelAlign,
+                        textAlign: labelTextAlign,
                         width: labelWidth,
                         minWidth: isNil(labelWidth) ? 80 : 0
                     }
@@ -198,7 +203,7 @@ FormField.propTypes = {
     label: PT.node,
 
     /** Alignment of label text, default 'left'. */
-    labelAlign: PT.oneOf(['left', 'right']),
+    labelTextAlign: PT.oneOf(['left', 'right']),
 
     /** Width of the label in pixels. */
     labelWidth: PT.number,
@@ -268,7 +273,7 @@ const editableChild = hoistCmp.factory({
             bind: 'value',
             id: childId,
             disabled: props.disabled || disabled,
-            ref: composeRefs(model._boundInputRef, child.ref)
+            ref: composeRefs(model?._boundInputRef, child.ref)
         };
 
 

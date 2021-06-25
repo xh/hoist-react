@@ -8,13 +8,16 @@ import {filler, hbox, label} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {isEmpty} from 'lodash';
 
 export const monitorResultsToolbar = hoistCmp.factory(
     ({model}) => {
-        const {passed, warned, failed, inactive, results} = model;
+        const {passed, warned, failed, inactive, results} = model,
+            getClassName = (hide) => {
+                return `xh-monitor-result-count ${hide ? 'xh-monitor-result-count--hidden' : ''}`;
+            };
 
         return toolbar(
             button({
@@ -24,29 +27,33 @@ export const monitorResultsToolbar = hoistCmp.factory(
                 onClick: () => model.forceRunAllMonitors()
             }),
             hbox({
-                className: !failed ? 'hidden' : '',
+                className: getClassName(!failed),
                 items: [
+                    toolbarSep(),
                     Icon.error({prefix: 'fas', className: 'xh-red'}),
                     label(`${failed} failed`)
                 ]
             }),
             hbox({
-                className: !warned ? 'hidden' : '',
+                className: getClassName(!warned),
                 items: [
+                    toolbarSep(),
                     Icon.warning({prefix: 'fas', className: 'xh-orange'}),
                     label(`${warned} warned`)
                 ]
             }),
             hbox({
-                className: !passed ? 'hidden' : '',
+                className: getClassName(!passed),
                 items: [
+                    toolbarSep(),
                     Icon.checkCircle({prefix: 'fas', className: 'xh-green'}),
                     label(`${passed} passed`)
                 ]
             }),
             hbox({
-                className: !inactive ? 'hidden' : '',
+                className: getClassName(!inactive),
                 items: [
+                    toolbarSep(),
                     Icon.disabled({prefix: 'fas', className: 'xh-gray'}),
                     label(`${inactive} inactive`)
                 ]

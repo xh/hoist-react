@@ -5,8 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {box, div, vbox, vspacer} from '@xh/hoist/cmp/layout';
+import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
 import {hoistCmp} from '@xh/hoist/core';
-import {progressCircular} from '@xh/hoist/kit/onsen';
 import PT from 'prop-types';
 import './Mask.scss';
 
@@ -36,7 +36,7 @@ export const [Mask, mask] = hoistCmp.withFactory({
             item: vbox({
                 className: 'xh-mask-body',
                 items: [
-                    spinner ? progressCircular({indeterminate: true}) : null,
+                    spinner ? spinnerCmp() : null,
                     spinner ? vspacer(10) : null,
                     message ? box({className: 'xh-mask-text', item: message}) : null
                 ]

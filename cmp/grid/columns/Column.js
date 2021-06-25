@@ -81,8 +81,10 @@ export class Column {
      * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column.  If
      *      false (default) absolute value sorts will be ignored when cycling through the
      *     sortingOrder.
+     * @param {(string|Column~sortValueFn)} [c.sortValue] - alternate field name to reference or
+     *      function to call when producing a value for this column to be sorted by.
      * @param {Column~comparatorFn} [c.comparator] - function for comparing column values for
-     *     sorting
+     *     sorting.
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
      * @param {boolean} [c.sortable] - false to prevent user from sorting on this column.
@@ -108,8 +110,8 @@ export class Column {
      * @param {string} [c.exportName] - name to use as a header within a file export. Defaults to
      *      `headerName`. Useful when `headerName` contains markup or other characters not suitable
      *      for use within an Excel or CSV file header.
-     * @param {(string|function)} [c.exportValue] - alternate field name to reference or function
-     *      to call when producing a value for a file export. {@see GridExportService}
+     * @param {(string|Column~exportValueFn)} [c.exportValue] - alternate field name to reference or
+     *      function to call when producing a value for a file export. {@see GridExportService}
      * @param {(ExportFormat|function)} [c.exportFormat] - structured format string for Excel-based
      *      exports, or a function to produce one. {@see ExportFormat}
      * @param {number} [c.exportWidth] - width in characters for Excel-based exports. Typically
@@ -171,6 +173,7 @@ export class Column {
         rowHeight,
         absSort,
         sortingOrder,
+        sortValue,
         comparator,
         resizable,
         movable,
@@ -256,6 +259,7 @@ export class Column {
 
         this.absSort = withDefault(absSort, false);
         this.sortingOrder = withDefault(sortingOrder, Column.DEFAULT_SORTING_ORDER);
+        this.sortValue = sortValue;
         this.comparator = comparator;
 
         this.resizable = withDefault(resizable, true);
@@ -296,7 +300,7 @@ export class Column {
         this.autoHeight = withDefault(autoHeight, false);
         warnIf(
             autoHeight && elementRenderer,
-            'autoHeight is ignored when an elementRenderer is defined.  Row heights will not change to accommodate cell content for this column.'
+            'autoHeight is ignored when an elementRenderer is defined. Row heights will not change to accommodate cell content for this column.'
         );
         this.tooltip = tooltip;
         this.tooltipElement = tooltipElement;
@@ -410,13 +414,8 @@ export class Column {
             tooltipSpec = tooltipElement ?? tooltip;
 
         if (tooltipSpec) {
-            ret.tooltipValueGetter = (obj) => {
-
-                // We actually return the *record* itself, rather then ag-Grid's default escaped value.
-                // We need it below, where it will be handled to class as a prop.
-                // Note that we must always return a value - see hoist-react #2058, #2181
-                return obj.data ?? '*EMPTY*';
-            };
+            // ag-Grid requires a return from getter, but value we actually use is computed below
+            ret.tooltipValueGetter = () => 'tooltip';
             ret.tooltipComponentFramework = forwardRef((props, ref) => {
                 const {location} = props;
                 useImperativeHandle(ref, () => ({
@@ -427,7 +426,7 @@ export class Column {
                 }), [location]);
 
                 const agParams = props,
-                    {value: record} = agParams;  // Value actually contains store record -- see above
+                    {data: record} = agParams;
 
                 if (location === 'header') return div(this.headerTooltip);
 
@@ -509,8 +508,16 @@ export class Column {
         }
 
         if (this.comparator === undefined) {
-            // Default comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
-            ret.comparator = this.defaultComparator;
+            // Use default comparator with appropriate inputs
+            ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
+                const recordA = agNodeA?.data,
+                    recordB = agNodeB?.data;
+
+                valueA = this.getSortValue(valueA, recordA),
+                valueB = this.getSortValue(valueB, recordB);
+
+                return this.defaultComparator(valueA, valueB);
+            };
         } else {
             // ...or process custom comparator with the Hoist-defined comparatorFn API.
             ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
@@ -532,6 +539,9 @@ export class Column {
                         agNodeB
                     };
 
+                valueA = this.getSortValue(valueA, recordA);
+                valueB = this.getSortValue(valueB, recordB);
+
                 return this.comparator(valueA, valueB, sortDir, abs, params);
             };
         }
@@ -548,6 +558,7 @@ export class Column {
     //--------------------
     // Implementation
     //--------------------
+    // Default comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
     defaultComparator = (v1, v2) => {
         const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
         return sortCfg ? sortCfg.comparator(v1, v2) : GridSorter.defaultComparator(v1, v2);
@@ -571,6 +582,15 @@ export class Column {
         if (pinned === true) return 'left';
         if (pinned === 'left' || pinned === 'right') return pinned;
         return null;
+    }
+
+    getSortValue(v, record) {
+        const {sortValue, gridModel} = this;
+        if (!sortValue) return v;
+
+        return isFunction(sortValue) ?
+            sortValue(v, {record, column: this, gridModel}) :
+            record?.data[sortValue] ?? v;
     }
 
 }
@@ -634,6 +654,20 @@ export function getAgHeaderClassFn(column) {
  *      value should also have their `rendererIsComplex` flag set to true to ensure they are
  *      re-run whenever the record (and not just the primary value) changes.
  * @return {Element} - the React element to render.
+ */
+
+/**
+ * @callback Column~exportValueFn - function to return a value for export.
+ * @param {*} value - cell data value (column + row).
+ * @param {CellContext} context - additional data about the column, row and GridModel.
+ * @return {*} - value for export.
+ */
+
+/**
+ * @callback Column~sortValueFn - function to return a value for sorting.
+ * @param {*} value - cell data value (column + row).
+ * @param {CellContext} context - additional data about the column, row and GridModel.
+ * @return {*} - value for sort.
  */
 
 /**

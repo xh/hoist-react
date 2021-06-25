@@ -487,31 +487,31 @@ body {
     --xh-backdrop-bg: var(--backdrop-bg, rgba(0, 0, 0, 0.4));
   }
 
-  //-------------------------
-  // Navbar (aka AppBar)
-  //-------------------------
-  --xh-navbar-bg: var(--navbar-bg, var(--xh-bg-alt));
-  --xh-navbar-border-color: var(--navbar-border-color, transparent);
-  --xh-navbar-color: var(--navbar-color, var(--xh-text-color));
-  --xh-navbar-height: var(--navbar-height, 42);
-  --xh-navbar-height-px: calc(var(--xh-navbar-height) * 1px);
-  --xh-navbar-title-color: var(--navbar-title-color, #{mc('blue-grey', '700')});
-  --xh-navbar-title-font-size: var(--navbar-title-font-size, calc(var(--xh-font-size) * 1.9));
-  --xh-navbar-title-font-size-px: calc(var(--xh-navbar-title-font-size) * 1px);
+  //---------
+  // AppBar
+  //---------
+  --xh-appbar-bg: var(--appbar-bg, var(--xh-bg-alt));
+  --xh-appbar-border-color: var(--appbar-border-color, transparent);
+  --xh-appbar-color: var(--appbar-color, var(--xh-text-color));
+  --xh-appbar-height: var(--appbar-height, 42);
+  --xh-appbar-height-px: calc(var(--xh-appbar-height) * 1px);
+  --xh-appbar-title-color: var(--appbar-title-color, #{mc('blue-grey', '700')});
+  --xh-appbar-title-font-size: var(--appbar-title-font-size, calc(var(--xh-font-size) * 1.9));
+  --xh-appbar-title-font-size-px: calc(var(--xh-appbar-title-font-size) * 1px);
 
   &.xh-dark {
-    --xh-navbar-border-color: var(--navbar-border-color, #{mc('blue-grey', '700')});
-    --xh-navbar-title-color: var(--navbar-title-color, #{mc('blue-grey', '50')});
+    --xh-appbar-border-color: var(--appbar-border-color, #{mc('blue-grey', '700')});
+    --xh-appbar-title-color: var(--appbar-title-color, #{mc('blue-grey', '50')});
   }
 
   &.xh-mobile {
-    --xh-navbar-bg: var(--navbar-bg, #{mc('blue-grey', '600')});
-    --xh-navbar-color: var(--navbar-color, #{mc('blue-grey', '50')});
-    --xh-navbar-title-color: var(--navbar-title-color, var(--xh-navbar-color));
-    --xh-navbar-title-font-size: var(--navbar-title-font-size, 19);
+    --xh-appbar-bg: var(--appbar-bg, #{mc('blue-grey', '600')});
+    --xh-appbar-color: var(--appbar-color, #{mc('blue-grey', '50')});
+    --xh-appbar-title-color: var(--appbar-title-color, var(--xh-appbar-color));
+    --xh-appbar-title-font-size: var(--appbar-title-font-size, 19);
 
     &.xh-dark {
-      --xh-navbar-bg: var(--navbar-bg, #{mc('blue-grey', '700')});
+      --xh-appbar-bg: var(--appbar-bg, #{mc('blue-grey', '700')});
     }
   }
 
@@ -580,6 +580,12 @@ body {
     --xh-scrollbar-bg: var(--scrollbar-bg, var(--xh-black));
     --xh-scrollbar-thumb: var(--scrollbar-thumb, #{mc('blue-grey', '900')});
   }
+
+  //------------------------
+  // Banners
+  //------------------------
+  --xh-banner-height: var(--banner-height, 40);
+  --xh-banner-height-px: calc(var(--xh-banner-height) * 1px);
 
 
   //------------------------

@@ -2,13 +2,14 @@
   position: fixed;
   margin: 0 !important;
   z-index: 21;
+  max-height: 90vh;
 
   &__title {
     padding: var(--xh-pad-half-px);
-    color: var(--xh-navbar-title-color);
+    color: var(--xh-appbar-title-color);
     font-size: var(--xh-font-size-small-px);
     text-align: center;
-    background-color: var(--xh-navbar-bg);
+    background-color: var(--xh-appbar-bg);
     border-bottom: var(--xh-border-solid);
   }
 

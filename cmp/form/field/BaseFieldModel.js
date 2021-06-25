@@ -9,8 +9,8 @@ import {managed, HoistModel} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {action, computed, observable, runInAction, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {withDefault} from '@xh/hoist/utils/js';
-import {compact, flatten, isEmpty, isFunction, isNil, isUndefined} from 'lodash';
+import {withDefault, executeIfFunction} from '@xh/hoist/utils/js';
+import {compact, flatten, isEmpty, isFunction, isNil} from 'lodash';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 
@@ -22,9 +22,6 @@ import {PendingTaskModel} from '@xh/hoist/utils/async';
  * @see SubformsFieldModel
  */
 export class BaseFieldModel extends HoistModel {
-
-    /** @member {FormModel} */
-    _formModel;
 
     /** @member {*} */
     @observable.ref initialValue;
@@ -71,6 +68,10 @@ export class BaseFieldModel extends HoistModel {
     //----------------------
     @observable _disabled;
     @observable _readonly;
+    
+    /** @member {FormModel} */
+    _formModel;
+    _origInitialValue;
 
     _boundInputRef = createObservableRef();
 
@@ -87,7 +88,8 @@ export class BaseFieldModel extends HoistModel {
      * @param {Object} c - FieldModel configuration.
      * @param {string} c.name - unique name for this field within its parent FormModel.
      * @param {string} [c.displayName] - user-facing name for labels and validation messages.
-     * @param {*} [c.initialValue] - initial value of this field.
+     * @param {*} [c.initialValue] - initial value of this field.  If a function, will be
+     *      executed dynamically when form is initialized to provide value.
      * @param {boolean} [c.disabled] - true to disable the input control for this field.
      * @param {boolean} [c.readonly] - true to render a read-only value (vs. an input control).
      * @param {(Rule[]|Object[]|Function[])} [c.rules] - Rules, rule configs, or validation
@@ -105,8 +107,8 @@ export class BaseFieldModel extends HoistModel {
         makeObservable(this);
         this.name = name;
         this.displayName = withDefault(displayName, genDisplayName(name));
-        this.value = initialValue;
-        this.initialValue = initialValue;
+        this._origInitialValue = initialValue;
+        this.value = this.initialValue = executeIfFunction(initialValue);
         this._disabled = disabled;
         this._readonly = readonly;
         this.rules = this.processRuleSpecs(rules);
@@ -180,13 +182,13 @@ export class BaseFieldModel extends HoistModel {
 
     /**
      * Set the initial value of the field, reset to that value, and reset validation state.
-     * @param {*} initialValue
+     *
+     * @param {*} [value] - if undefined, field will be reset to initial value specified
+     *      when field was constructed.
      */
     @action
-    init(initialValue) {
-        if (!isUndefined(initialValue)) {
-            this.initialValue = initialValue;
-        }
+    init(value) {
+        this.initialValue = executeIfFunction(withDefault(value, this._origInitialValue));
         this.reset();
     }
 

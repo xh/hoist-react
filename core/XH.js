@@ -7,10 +7,12 @@
 import {p} from '@xh/hoist/cmp/layout';
 import {AppSpec, AppState, elem, HoistBase} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
+import {MINUTES} from '@xh/hoist/utils/datetime';
 import {
     AutoRefreshService,
+    ChangelogService,
     ConfigService,
     EnvironmentService,
     FetchService,
@@ -24,8 +26,8 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {getClientDeviceInfo, throwIf, withShortDebug, checkMinVersion} from '@xh/hoist/utils/js';
-import {compact, camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
+import {checkMinVersion, getClientDeviceInfo, throwIf, withShortDebug} from '@xh/hoist/utils/js';
+import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
 import parser from 'ua-parser-js';
 
@@ -86,6 +88,8 @@ class XHClass extends HoistBase {
     //----------------------------------------------------------------------------------------------
     /** @member {AutoRefreshService} */
     autoRefreshService;
+    /** @member {ChangelogService} */
+    changelogService;
     /** @member {ConfigService} */
     configService;
     /** @member {EnvironmentService} */
@@ -154,7 +158,7 @@ class XHClass extends HoistBase {
     track(opts)                 {return this.trackService?.track(opts)}
     getEnv(key)                 {return this.environmentService?.get(key) ?? null}
 
-    /** @return {?string} */
+    /** @return {?HoistUser} */
     getUser()                   {return this.identityService?.getUser() ?? null}
     /** @return {?string} */
     getUsername()               {return this.identityService?.getUsername() ?? null}
@@ -414,7 +418,7 @@ class XHClass extends HoistBase {
      * @param {(ReactNode|string)} config.message - the message to show in the toast.
      * @param {Element} [config.icon] - icon to be displayed
      * @param {number} [config.timeout] - time in milliseconds to display the toast.
-     * @param {string} [config.intent] - the Blueprint intent (desktop only)
+     * @param {string} [config.intent] - the Blueprint intent.
      * @param {Object} [config.position] - Position in viewport to display toast. See Blueprint
      *     Position enum (desktop only).
      * @param {Component} [config.containerRef] - Component that should contain (locate) the Toast.
@@ -422,6 +426,37 @@ class XHClass extends HoistBase {
      */
     toast(config) {
         return this.acm.toastSourceModel.show(config);
+    }
+
+    /**
+     * Show a Banner across the top of the view port. Banners are unique by their
+     * category prop - showing a new banner with an existing category will replace it.
+     *
+     * @param {Object} config - options for banner.
+     * @param {string} [config.category] - the category for the banner. Defaults to 'default'.
+     * @param {Element} [config.icon] - icon to be displayed.
+     * @param {(ReactNode|string)} [config.message] - the message to show in the banner.
+     * @param {string} [config.intent] - intent for banner styling. Defaults to 'primary'.
+     * @param {string} [config.className] - CSS classname provided to the banner component.
+     * @param {boolean} [config.enableClose] - Show a close button. Default true.
+     * @param {Banner-onCloseFn} [config.onClose] - Callback function triggered when the user
+     *      clicks the close button. (Note, banners closed via `XH.hideBanner()` or when the max
+     *      number of banners shown is exceed will NOT trigger this callback.)
+     * @param {function} [config.actionFn] - If provided, banner will render an action button
+     *      which triggers this function.
+     * @param {Object} [config.actionButtonProps] - Set the properties of the action button
+     * @param {...*} [config.rest] - additional properties to pass to the banner component
+     */
+    showBanner(config) {
+        if (isString(config)) config = {message: config};
+        return this.acm.bannerSourceModel.show(config);
+    }
+
+    /**
+     * @param {string} category - category to identify the banner. Defaults to 'default'.
+     */
+    hideBanner(category = 'default') {
+        return this.acm.bannerSourceModel.hide(category);
     }
 
     //--------------------------
@@ -459,6 +494,28 @@ class XHClass extends HoistBase {
     }
 
     /**
+     * Show an exception. This method is an alias for {@see ExceptionHandler.showException}.
+     *
+     * Intended to be used for the deferred / user-initiated showing of exceptions that have
+     * already been appropriately logged. Applications should typically prefer `handleException`.
+     *
+     * @param {(Error|Object|string)} exception - Error or thrown object - if not an Error, an
+     *      Exception will be created via `Exception.create()`.
+     * @param {Object} [options] - controls on how the exception should be shown and/or logged.
+     * @param {string} [options.message] - text (ideally user-friendly) describing the error.
+     * @param {string} [options.title] - title for an alert dialog, if shown.
+     * @param {boolean} [options.showAsError] - configure modal alert to indicate that this is an
+     *      unexpected error. Default true for most exceptions, false for those marked as `isRoutine`.
+     * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
+     *      dismiss - default false, excepting session-related exceptions.
+     * @param {string[]} [options.hideParams] - A list of parameters that should be hidden from
+     *      the exception alert.
+     */
+    showException(exception, options) {
+        this.exceptionHandler.showException(exception, options);
+    }
+
+    /**
      * Create a new exception - {@see Exception} for Hoist conventions / extensions to JS Errors.
      * @param {(Object|string)} cfg - properties to add to the returned Error.
      *      If a string, will become the 'message' value.
@@ -471,26 +528,34 @@ class XHClass extends HoistBase {
     //---------------------------
     // Miscellaneous
     //---------------------------
-    /** Show a dialog for users to set app options. */
-    showOptionsDialog() {
-        return this.acm.optionsDialogModel.show();
-    }
-
-    /** Show a dialog to elicit feedback text from users. */
-    showFeedbackDialog() {
-        return this.acm.feedbackDialogModel.show();
-    }
-
-    /** Show 'about' dialog with info about the app and environment. */
+    /** Show "about this app" dialog, powered by {@see EnvironmentService}. */
     showAboutDialog() {
-        return this.acm.aboutDialogModel.show();
+        this.acm.aboutDialogModel.show();
+    }
+
+    /** Show a "release notes" dialog, powered by {@see ChangelogService}. */
+    showChangelog() {
+        this.acm.changelogDialogModel.show();
+    }
+
+    /** Show a dialog to elicit feedback from the user. */
+    showFeedbackDialog() {
+        this.acm.feedbackDialogModel.show();
     }
 
     /** Show the impersonation bar to allow switching users. */
     showImpersonationBar() {
-        return this.acm.impersonationBarModel.show();
+        this.acm.impersonationBarModel.show();
     }
 
+    /** Show a dialog to allow the user to view and set app options. */
+    showOptionsDialog() {
+        this.acm.optionsDialogModel.show();
+    }
+
+    //---------------------------
+    // Miscellaneous
+    //---------------------------
     /**
      * Resets user preferences and any persistent local application state, then reloads the app.
      */
@@ -643,7 +708,8 @@ class XHClass extends HoistBase {
             }
 
             await this.installServicesAsync(
-                AutoRefreshService, IdleService, GridAutosizeService, GridExportService, WebSocketService
+                AutoRefreshService, ChangelogService, IdleService,
+                GridAutosizeService, GridExportService, WebSocketService
             );
             this.acm.init();
 
@@ -688,7 +754,10 @@ class XHClass extends HoistBase {
 
     async getAuthStatusFromServerAsync() {
         return await this.fetchService
-            .fetchJson({url: 'xh/authStatus'})
+            .fetchJson({
+                url: 'xh/authStatus',
+                timeout: 3 * MINUTES     // Accomodate delay for user at a credentials prompt
+            })
             .then(r => r.authenticated)
             .catch(e => {
                 // 401s normal / expected for non-SSO apps when user not yet logged in.
@@ -806,4 +875,9 @@ export const XH = window.XH = new XHClass();
  *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
  * @property {function} [onConfirm] - Callback to execute when confirm is clicked.
  * @property {function} [onCancel] - Callback to execute when cancel is clicked.
+ */
+
+/**
+ * @callback Banner-onCloseFn
+ * @param {BannerModel} model - the backing model for the banner which was just closed.
  */

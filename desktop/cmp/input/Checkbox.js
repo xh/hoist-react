@@ -6,7 +6,7 @@
  */
 import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
+import {withDefault, apiRemoved} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 import {hoistCmp} from '@xh/hoist/core';
 import {isNil} from 'lodash';
@@ -19,6 +19,8 @@ export const [Checkbox, checkbox] = hoistCmp.withFactory({
     displayName: 'Checkbox',
     className: 'xh-check-box',
     render(props, ref) {
+        apiRemoved(props.labelAlign, 'labelAlign', 'Use labelSide instead.');
+
         return useHoistInputModel(cmp, props, ref);
     }
 });
@@ -46,8 +48,8 @@ Checkbox.propTypes = {
      */
     displayUnsetState: PT.bool,
 
-    /** Alignment of the inline label relative to the control itself, default right. */
-    labelAlign: PT.oneOf(['left', 'right'])
+    /** Placement of the inline label relative to the control itself, default right. */
+    labelSide: PT.oneOf(['left', 'right'])
 };
 
 //----------------------------------
@@ -56,7 +58,7 @@ Checkbox.propTypes = {
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
         const {renderValue} = model,
-            labelAlign = withDefault(props.labelAlign, 'right'),
+            labelSide = withDefault(props.labelSide, 'right'),
             displayUnsetState = withDefault(props.displayUnsetState, false),
             valueIsUnset = isNil(renderValue);
 
@@ -64,7 +66,7 @@ const cmp = hoistCmp.factory(
             autoFocus: props.autoFocus,
             checked: !!renderValue,
             indeterminate: valueIsUnset && displayUnsetState,
-            alignIndicator: labelAlign === 'left' ? 'right' : 'left',
+            alignIndicator: labelSide === 'left' ? 'right' : 'left',
             disabled: props.disabled,
             inline: withDefault(props.inline, true),
             label: props.label,
