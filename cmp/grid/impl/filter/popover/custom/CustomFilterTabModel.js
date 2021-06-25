@@ -7,7 +7,7 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {combineValueFilters} from '@xh/hoist/data';
-import {castArray, compact, isEmpty} from 'lodash';
+import {castArray, compact, isEmpty, every} from 'lodash';
 
 import {CustomFilterRowModel} from './CustomFilterRowModel';
 
@@ -37,6 +37,10 @@ export class CustomFilterTabModel extends HoistModel {
             if (it.op === 'like') likeCount++;
         });
         return equalsCount > 1 || likeCount > 1;
+    }
+
+    get storeFilter() {
+        return this.parentModel.storeFilter;
     }
 
     get columnFilters() {
@@ -83,7 +87,7 @@ export class CustomFilterTabModel extends HoistModel {
     //-------------------
     @action
     doLoadStoreFilter() {
-        const {columnFilters} = this,
+        const {columnFilters, storeFilter} = this,
             rowModels = [];
 
         // Create rows based on store filter.
@@ -98,11 +102,32 @@ export class CustomFilterTabModel extends HoistModel {
             }
         });
 
+        // Rehydrate operator from CompoundFilter
+        if (columnFilters.length > 1) {
+            const compoundFilter = this.getOuterCompoundFilter(storeFilter);
+            if (compoundFilter) this.op = compoundFilter.op;
+        }
+
         // Add an empty pending row
         if (isEmpty(rowModels)) {
             rowModels.push(new CustomFilterRowModel({parentModel: this}));
         }
 
         this.rowModels = rowModels;
+    }
+
+    // Find the CompoundFilter that wraps the filters for this column
+    getOuterCompoundFilter(filter) {
+        if (!filter.isCompoundFilter) return null;
+
+        // This is the outer compound filter if all its children
+        // are FieldFilters on this field.
+        if (every(filter.filters, it => it.field === this.colId)) {
+            return filter;
+        }
+
+        // Otherwise, check any CompoundFilter children
+        const results = compact(filter.filters.map(it => this.getOuterCompoundFilter(it)));
+        return results.length === 1 ? results[0] : null;
     }
 }
