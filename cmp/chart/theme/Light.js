@@ -32,7 +32,8 @@ export const LightTheme = {
             theme: {
                 fill: altBg,
                 stroke: borderColor,
-                style: {color: textColor}
+                style: {color: textColor},
+                r: 4
             }
         }
     },
