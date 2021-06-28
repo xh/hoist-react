@@ -12,7 +12,7 @@ import {wait} from '@xh/hoist/promise';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import composeRefs from '@seznam/compose-react-refs';
-import {isNaN, isNil, isNumber} from 'lodash';
+import {isNaN, isNil, isNumber, round} from 'lodash';
 import PT from 'prop-types';
 
 /**
@@ -190,6 +190,15 @@ const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props);
 
+        // BP NumberInput bases expected precision off of dps in minorStepSize, if specified.
+        // The default BP value of 0.1 for this prop emits a console warning any time the input
+        // value extends beyond 1 dp. Re-default here to sync with our `precision` prop.
+        // See https://blueprintjs.com/docs/#core/components/numeric-input.numeric-precision
+        const precision = withDefault(props.precision, 4),
+            minorStepSize = precision ?
+                withDefault(props.minorStepSize, round(Math.pow(10, -precision), precision)) :
+                null;
+
         return numericInput({
             value: model.formatRenderValue(model.renderValue),
 
@@ -202,7 +211,7 @@ const cmp = hoistCmp.factory(
             max: props.max,
             majorStepSize: props.majorStepSize,
             min: props.min,
-            minorStepSize: props.minorStepSize,
+            minorStepSize,
             placeholder: props.placeholder,
             rightElement: props.rightElement,
             stepSize: props.stepSize,
