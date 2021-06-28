@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {isLocalDate} from '@xh/hoist/utils/datetime';
-import {isArray, isEmpty, isNil, isString} from 'lodash';
+import {isArray, isEmpty, isFinite, isNil, isString} from 'lodash';
 import moment from 'moment';
 /**
  * A set of validation functions to assist in form field validation.
@@ -44,8 +44,8 @@ export const validEmail = ({value, displayName}) => {
 /**
  * Validate length of a string.
  * @param {Object} c
- * @param {number} [c.min] - minimum length for the string to be checked.
- * @param {number} [c.max] - maximum length for the string to be checked.
+ * @param {number} [c.min] - minimum length
+ * @param {number} [c.max] - maximum length
  * @returns ConstraintCb
  */
 export function lengthIs({min, max}) {
@@ -61,18 +61,22 @@ export function lengthIs({min, max}) {
  * Validate a number.
  *
  * @param {Object} c
- * @param {number} [c.min] - minimum value for the number to be checked.
- * @param {number} [c.max] - maximum value for the number to be checked.
+ * @param {number} [c.min] - minimum value (value must be gte)
+ * @param {number} [c.max] - maximum value (value must be lte)
+ * @param {number} [c.gt] - greater than
+ * @param {number} [c.lt] - less than
  * @param {boolean} [c.notZero] - true to disallow 0.
  * @returns ConstraintCb
  */
-export function numberIs({min, max, notZero}) {
+export function numberIs({min, max, gt, lt, notZero}) {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
 
         if (notZero && value === 0) return `${displayName} must not be zero.`;
-        if (min != null && value < min) return `${displayName} must be greater than or equal to ${min}.`;
-        if (max != null && value > max) return `${displayName} must be less than or equal to ${max}.`;
+        if (isFinite(min) && value < min) return `${displayName} must be greater than or equal to ${min}.`;
+        if (isFinite(max) && value > max) return `${displayName} must be less than or equal to ${max}.`;
+        if (isFinite(gt) && value <= gt) return `${displayName} must be greater than ${gt}.`;
+        if (isFinite(lt) && value >= lt) return `${displayName} must be less than ${lt}.`;
     };
 }
 
