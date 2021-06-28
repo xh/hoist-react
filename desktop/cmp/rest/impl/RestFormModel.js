@@ -4,8 +4,9 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {FormModel, required} from '@xh/hoist/cmp/form';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {FormModel} from '@xh/hoist/cmp/form';
+import {required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';

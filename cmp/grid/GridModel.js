@@ -110,6 +110,8 @@ export class GridModel extends HoistModel {
     /** @member {ReactNode} */
     restoreDefaultsWarning;
     /** @member {boolean} */
+    fullRowEditing;
+    /** @member {boolean} */
     hideEmptyTextBeforeLoad;
 
     /** @member {AgGridModel} */
@@ -243,6 +245,7 @@ export class GridModel extends HoistModel {
      *      obscured by horizontal scrolling. Note that setting this value to true may limit the
      *      ability of the grid to autosize offscreen columns effectively. Default false.
      * @param {GridAutosizeOptions} [c.autosizeOptions] - default autosize options.
+     * @param {boolean} [c.fullRowEditing] - true to enable full row editing. Default false.
      * @param {boolean} [c.externalSort] - Set to true to if application will be
      *      reloading data when the sortBy property changes on this model (either programmatically,
      *      or via user-click.)  Useful for applications with large data sets that are performing
@@ -302,6 +305,7 @@ export class GridModel extends HoistModel {
         useVirtualColumns = false,
         autosizeOptions = {},
         restoreDefaultsWarning = GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
+        fullRowEditing = false,
         experimental,
         ...rest
     }) {
@@ -331,6 +335,7 @@ export class GridModel extends HoistModel {
             fillMode: 'none'
         });
         this.restoreDefaultsWarning = restoreDefaultsWarning;
+        this.fullRowEditing = fullRowEditing;
 
         apiRemoved(rest.contextMenuFn, 'contextMenuFn', 'Use contextMenu instead');
         apiRemoved(rest.enableColChooser, 'enableColChooser', "Use 'colChooserModel' instead");
@@ -1207,6 +1212,7 @@ export class GridModel extends HoistModel {
             const field = storeFields.find(f => f.name === col.field);
             if (!field) return col;
 
+            // TODO: Set the editor based on field type
             return {
                 displayName: field.displayName,
                 align: numTypes.includes(field.type) ? 'right' : undefined,

@@ -33,3 +33,7 @@ export * from './cube/Cube';
 export * from './cube/CubeField';
 export * from './cube/Query';
 export * from './cube/View';
+
+export * from './validation/constraints';
+export * from './validation/Rule';
+export * from './validation/ValidationState';

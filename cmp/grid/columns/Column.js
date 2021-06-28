@@ -4,12 +4,25 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {div} from '@xh/hoist/cmp/layout';
+import {div, ul, li} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {castArray, clone, find, get, isArray, isFinite, isFunction, isNil, isNumber, isString} from 'lodash';
+import {
+    castArray,
+    clone,
+    find,
+    get,
+    isArray,
+    isEmpty,
+    isFinite,
+    isFunction,
+    isNil,
+    isNumber,
+    isString
+} from 'lodash';
 import {forwardRef, useImperativeHandle, useState} from 'react';
+import classNames from 'classnames';
 import {GridSorter} from '../impl/GridSorter';
 import {ExportFormat} from './ExportFormat';
 
@@ -140,6 +153,9 @@ export class Column {
      *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
      * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column
      *     editable.
+     * @param {Column~editorFn} [c.editor] - Cell editor Component or a function to create one.
+     *      Adding an editor will also install a cellClassRule and tooltip to display the
+     *      validation state of the cell in question.
      * @param {Column~setValueFn} [c.setValueFn] - function for updating Record field for this
      *      column after inline editing.
      * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
@@ -208,6 +224,7 @@ export class Column {
         tooltip,
         tooltipElement,
         editable,
+        editor,
         setValueFn,
         getValueFn,
         enableDotSeparatedFieldPath,
@@ -318,6 +335,7 @@ export class Column {
         );
 
         this.editable = editable;
+        this.editor = editor;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
@@ -369,7 +387,6 @@ export class Column {
                         const record = agParams.node.data;
                         return editable({record, store: record.store, gridModel, column: this, agParams});
                     }
-
                     return editable;
                 },
                 valueSetter: (agParams) => {
@@ -394,6 +411,12 @@ export class Column {
                         gridModel,
                         agParams
                     });
+                },
+                suppressKeyboardEvent: ({editing, event}) => {
+                    if (!editing) return false;
+
+                    // Allow shift+enter to add newlines in certain editors
+                    if (event.shiftKey && event.key === 'Enter') return true;
                 }
             };
 
@@ -422,10 +445,10 @@ export class Column {
         }
 
         // Tooltip Handling
-        const {tooltip, tooltipElement} = this,
+        const {tooltip, tooltipElement, editor} = this,
             tooltipSpec = tooltipElement ?? tooltip;
 
-        if (tooltipSpec) {
+        if (tooltipSpec || editor) {
             // ag-Grid requires a return from getter, but value we actually use is computed below
             ret.tooltipValueGetter = () => 'tooltip';
             ret.tooltipComponentFramework = forwardRef((props, ref) => {
@@ -443,6 +466,22 @@ export class Column {
                 if (location === 'header') return div(this.headerTooltip);
 
                 if (!record?.isRecord) return null;
+
+                // Override with validation errors, if present
+                if (editor) {
+                    const errors = record.errors[field];
+                    if (!isEmpty(errors)) {
+                        return ul({
+                            className: classNames(
+                                'xh-grid-tooltip--validation',
+                                errors.length === 1 ? 'xh-grid-tooltip--validation--single' : null
+                            ),
+                            items: errors.map((it, idx) => li({key: idx, item: it}))
+                        });
+                    }
+                    if (!tooltipSpec) return null;
+                }
+
                 const {store} = record,
                     val = this.getValueFn({record, column: this, gridModel, agParams, store});
 
@@ -500,7 +539,7 @@ export class Column {
                             }
                         };
                     });
-                    const {value, data} =  agParams;
+                    const {value, data} = agParams;
                     return elementRenderer(value, {record: data, column: this, gridModel, agParams});
                 })
             );
@@ -561,6 +600,22 @@ export class Column {
         if (this.autoHeight) {
             ret.autoHeight = true;
             ret.wrapText = true;
+        }
+
+        if (editor) {
+            ret.cellEditorFramework = forwardRef((agParams, ref) => {
+                const {data} = agParams;
+                return editor({
+                    record: data,
+                    gridModel,
+                    column: this,
+                    agParams,
+                    ref
+                });
+            });
+            ret.cellClassRules = {
+                'xh-invalid-cell': ({data: record}) => record && !isEmpty(record.errors[field])
+            };
         }
 
         // Finally, apply explicit app requests.  The customer is always right....
@@ -760,6 +815,17 @@ export function getAgHeaderClassFn(column) {
  * @return {boolean} - true if cell is editable
  */
 
+
+/**
+ * @callback Column~editorFn - grid cell editor component, or function to return one.
+ *      This value will be used to create a new Component whenever editing is initiated on a cell.
+ * @param {Object} params
+ * @param {Record} params.record - row-level data Record.
+ * @param {Column} params.column - column for the cell being edited.
+ * @param {GridModel} params.gridModel - gridModel for the grid.
+ * @return {Element} - the React element to use as the cell editor.
+ */
+
 /**
  * @callback Column~setValueFn - function to update the value of a Record field after inline editing
  * @param {Object} params
@@ -787,3 +853,4 @@ export function getAgHeaderClassFn(column) {
  * @param {string} sort - direction to sort, either 'asc' or 'desc', or null to remove sort.
  * @param {boolean} [abs] - true to sort by absolute value
  */
+

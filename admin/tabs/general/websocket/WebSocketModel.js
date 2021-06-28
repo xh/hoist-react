@@ -4,10 +4,10 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {required} from '@xh/hoist/cmp/form';
-import {compactDateCol, GridModel, numberCol} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {compactDateCol, GridModel, numberCol} from '@xh/hoist/cmp/grid';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
+import {required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
