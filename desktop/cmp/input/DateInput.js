@@ -18,7 +18,7 @@ import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {assign, clone} from 'lodash';
+import {assign, clone, isEmpty, isString} from 'lodash';
 import moment from 'moment';
 import {createRef} from 'react';
 import PT from 'prop-types';
@@ -42,6 +42,9 @@ export const [DateInput, dateInput] = hoistCmp.withFactory({
 DateInput.propTypes = {
     ...HoistInputPropTypes,
     value: PT.oneOfType([PT.instanceOf(Date), PT.instanceOf(LocalDate)]),
+
+    /** True to commit on every change/keystroke, default false. */
+    commitOnChange: PT.bool,
 
     /** Props passed to ReactDayPicker component, as per DayPicker docs. */
     dayPickerProps: PT.object,
@@ -163,8 +166,14 @@ class Model extends HoistInputModel {
 
     @bindable popoverOpen = false;
 
+    @bindable textValue = null;
+
     buttonRef = createRef();
     popoverRef = createRef();
+
+    get commitOnChange() {
+        return withDefault(this.props.commitOnChange, false);
+    }
 
     // Prop-backed convenience getters
     get maxDate() {
@@ -184,13 +193,36 @@ class Model extends HoistInputModel {
         return isLocalDate(initialMonth) ? initialMonth.date : initialMonth;
     }
 
-    get valueType()             {return withDefault(this.props.valueType, 'date')}
-    get strictInputParsing()    {return withDefault(this.props.strictInputParsing, false)}
-    get timePrecision()         {return this.valueType === 'localDate' ? null : this.props.timePrecision}
+    get valueType() {return withDefault(this.props.valueType, 'date')}
+    get strictInputParsing() {return withDefault(this.props.strictInputParsing, false)}
+    get timePrecision() {return this.valueType === 'localDate' ? null : this.props.timePrecision}
 
     constructor(props) {
         super(props);
         makeObservable(this);
+
+        // Initialize our textValue from the externalValue
+        if (this.externalValue) {
+            // If the external value is a string then we start with that
+            if (isString(this.externalValue)) {
+                this.textValue = this.externalValue;
+                this.setInternalValue(null);
+            } else {
+                this.textValue = this.formatDate(this.externalValue);
+            }
+        }
+
+        this.addReaction({
+            track: () => this.textValue,
+            run: (value) => {
+                if (isEmpty(value)) {
+                    this.onDateChange(null);
+                } else {
+                    const date = this.parseDate(value, true);
+                    if (date) this.onDateChange(date);
+                }
+            }
+        });
     }
 
     toExternal(internal) {
@@ -220,6 +252,7 @@ class Model extends HoistInputModel {
 
     noteBlurred() {
         super.noteBlurred();
+        this.setTextValue(this.formatDate(this.renderValue));
         wait(1).then(() => {
             if (!this.hasFocus) {
                 this.setPopoverOpen(false);
@@ -229,6 +262,7 @@ class Model extends HoistInputModel {
 
     onClearBtnClick = (ev) => {
         this.noteValueChange(null);
+        this.setTextValue(null);
         this.doCommit();
         this.consumeEvent(ev);
     };
@@ -239,9 +273,8 @@ class Model extends HoistInputModel {
     };
 
     onKeyDown = (ev) => {
-        if (ev.key === 'Enter') {
+        if (ev.key === 'Enter' || ev.key === 'Tab') {
             this.doCommit();
-            this.consumeEvent(ev);
         } else if (this.popoverOpen && ev.key === 'Escape') {
             this.setPopoverOpen(false);
             this.consumeEvent(ev);
@@ -263,14 +296,10 @@ class Model extends HoistInputModel {
         }
     };
 
-    onInputCommit = (value) => {
-        const date = this.parseDate(value);
-        this.onDateChange(date);
-    };
-
     onDatePickerChange = (date, isUserChange) => {
         if (!isUserChange) return;
         this.onDateChange(date);
+        this.setTextValue(this.formatDate(date));
 
         // If no time component, selecting a date in the picker is most likely a "click and done"
         // operation for the user, so we dismiss the picker for them. When there *is* a time to set,
@@ -326,8 +355,8 @@ class Model extends HoistInputModel {
         return fmtDate(date, {fmt: this.getFormat()});
     }
 
-    parseDate(dateString) {
-        const parsedMoment = moment(dateString, this.getFormat(), this.strictInputParsing);
+    parseDate(dateString, strict = this.strictInputParsing) {
+        const parsedMoment = moment(dateString, this.getFormat(), strict);
         return parsedMoment.isValid() ? parsedMoment.toDate() : null;
     }
 
@@ -421,11 +450,10 @@ const cmp = hoistCmp.factory(
 
                 item: div({
                     item: textInput({
-                        value: model.formatDate(renderValue),
+                        bind: 'textValue',
                         className: classNames(className, !enableTextInput && !disabled ? 'xh-date-input--picker-only' : null),
-                        onCommit: model.onInputCommit,
                         rightElement,
-
+                        commitOnChange: model.commitOnChange,
                         disabled: disabled || !enableTextInput,
                         leftIcon: props.leftIcon,
                         tabIndex: props.tabIndex,
