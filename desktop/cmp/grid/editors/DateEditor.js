@@ -17,6 +17,12 @@ export const [DateEditor, dateEditor] = hoistCmp.withFactory({
     memo: false,
     observer: false,
     render(props, ref) {
+        props.inputProps = {
+            rightElement: null,
+            showPickerOnFocus: true,
+            ...props.inputProps
+        };
+
         return useInlineEditorModel(dateInput, props, ref);
     }
 });
