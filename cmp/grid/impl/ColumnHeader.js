@@ -4,17 +4,20 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {XH, hoistCmp, HoistModel, useLocalModel, managed} from '@xh/hoist/core';
 import {div, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
+import {Column} from '@xh/hoist/cmp/grid';
+import {Icon} from '@xh/hoist/icon';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
-import classNames from 'classnames';
 import {filter, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString} from 'lodash';
+import classNames from 'classnames';
+
 import {GridSorter} from './GridSorter';
-import {Column} from '@xh/hoist/cmp/grid/columns/Column';
+import {FilterPopoverModel} from './filter/FilterPopoverModel';
+import {filterPopover} from './filter/FilterPopover';
 
 /**
  * A custom ag-Grid header component.
@@ -49,11 +52,11 @@ export const columnHeader = hoistCmp.factory({
             if (!props.enableMenu) return null;
             return div({
                 className: 'xh-grid-header-menu-icon',
-                item: impl.isFiltered ? Icon.filter() : Icon.bars(),
-                ref: impl.menuButtonRef,
+                item: impl.isAgFiltered ? Icon.filter() : Icon.bars(),
+                ref: impl.agFilterButtonRef,
                 onClick: (e) => {
                     e.stopPropagation();
-                    props.showColumnMenu(impl.menuButtonRef.current);
+                    props.showColumnMenu(impl.agFilterButtonRef.current);
                 }
             });
         };
@@ -90,8 +93,7 @@ export const columnHeader = hoistCmp.factory({
         }
 
         return div({
-            className: classNames(props.className, extraClasses),
-
+            className:      classNames(props.className, extraClasses),
             onClick:        isDesktop  ? impl.onClick : null,
             onDoubleClick:  isDesktop  ? impl.onDoubleClick : null,
             onMouseDown:    isDesktop  ? impl.onMouseDown : null,
@@ -101,7 +103,7 @@ export const columnHeader = hoistCmp.factory({
             items: [
                 span({onMouseEnter, item: headerElem}),
                 sortIcon(),
-                menuIcon()
+                impl.enableFilter ? filterPopover({model: impl.filterPopoverModel}) : menuIcon()
             ]
         });
     }
@@ -113,10 +115,16 @@ class LocalModel extends HoistModel {
     xhColumn;
     agColumn;
     colId;
-    menuButtonRef = createObservableRef();
-    @bindable isFiltered = false;
     enableSorting;
     availableSorts;
+
+    // Hoist Filtering
+    enableFilter;
+    @managed filterPopoverModel;
+
+    // AG Filtering
+    @bindable isAgFiltered = false;
+    agFilterButtonRef = createObservableRef();
 
     _doubleClick = false;
     _lastTouch = null;
@@ -126,15 +134,22 @@ class LocalModel extends HoistModel {
     constructor({gridModel, xhColumn, column: agColumn}) {
         super();
         makeObservable(this);
+
+        const {sortable, enableFilter, field} = xhColumn;
         this.gridModel = gridModel;
         this.xhColumn = xhColumn;
         this.agColumn = agColumn;
         this.colId = agColumn.colId;
-        this.isFiltered = agColumn.isFilterActive();
-        this.enableSorting = xhColumn.sortable;
+        this.enableSorting = sortable;
         this.availableSorts = this.parseAvailableSorts();
 
-        agColumn.addEventListener('filterChanged', this.onFilterChanged);
+        if (enableFilter && field === this.colId) {
+            this.filterPopoverModel = new FilterPopoverModel({gridModel, xhColumn, agColumn});
+            this.enableFilter = true;
+        } else {
+            this.isAgFiltered = agColumn.isFilterActive();
+            agColumn.addEventListener('filterChanged', this.onFilterChanged);
+        }
     }
 
     destroy() {
@@ -153,6 +168,15 @@ class LocalModel extends HoistModel {
     get hasNonPrimarySort() {
         const {activeGridSorter} = this;
         return activeGridSorter ? this.gridModel.sortBy.indexOf(activeGridSorter) > 0 : false;
+    }
+
+    get isFiltered() {
+        return this.isAgFiltered || this.filterPopoverModel?.isFiltered;
+    }
+
+    // Ag-Grid's filter callback
+    onFilterChanged = () => {
+        this.setIsAgFiltered(this.agColumn.isFilterActive());
     }
 
     // Desktop click handling
@@ -189,8 +213,6 @@ class LocalModel extends HoistModel {
 
         this._lastTouch = Date.now();
     };
-
-    onFilterChanged = () => this.setIsFiltered(this.agColumn.isFilterActive());
 
     //-------------------
     // Implementation
@@ -231,7 +253,6 @@ class LocalModel extends HoistModel {
             if (isFinite(currIdx)) idx = (currIdx + 1) % availableSorts.length;
         }
 
-
         return availableSorts[idx];
     }
 
@@ -253,6 +274,7 @@ class LocalModel extends HoistModel {
             if (isString(spec) || spec === null) spec = {sort: spec};
             return new GridSorter({...spec, colId});
         });
+
         return absSort ? ret : ret.filter(it => !it.abs);
     }
 }

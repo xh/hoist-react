@@ -38,7 +38,6 @@ import './Grid.scss';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
 import {columnHeader} from './impl/ColumnHeader';
-import {filterColumnHeader} from './impl/filter/header/FilterColumnHeader';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -190,11 +189,8 @@ class LocalModel extends HoistModel {
                 clipboardCopy: Icon.copy({asHtml: true})
             },
             frameworkComponents: {
-                agColumnGroupHeader: (props) => columnGroupHeader(props),
-                agColumnHeader: (props) => {
-                    const cmp = props.xhColumn.enableFilter ? filterColumnHeader : columnHeader;
-                    return cmp({gridModel: model, ...props});
-                }
+                agColumnHeader: (props) => columnHeader({gridModel: model, ...props}),
+                agColumnGroupHeader: (props) => columnGroupHeader(props)
             },
             rowSelection: model.selModel.mode,
             tooltipShowDelay: 0,

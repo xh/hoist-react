@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {div, filler} from '@xh/hoist/cmp/layout';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -14,8 +14,10 @@ import {buttonGroup, button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 import './FilterPopover.scss';
+import {FilterPopoverModel} from './FilterPopoverModel';
 
 export const filterPopover = hoistCmp.factory({
+    model: uses(FilterPopoverModel),
     render({model}) {
         const {isOpen, hasFilter} = model;
         return popover({
