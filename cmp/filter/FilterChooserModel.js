@@ -156,9 +156,14 @@ export class FilterChooserModel extends HoistModel {
      * @param {(Filter|* |[])} value -  Configuration for a filter appropriate to be
      *      shown in this field.
      *
-     * Currently this control only supports a flat collection of FilterFields, to
-     * be 'AND'ed together. Filters that cannot be parsed or are not supported
-     * will cause the control to be cleared.
+     * Supports an 'AND' CompoundFilter or a collection of FieldFilters to be
+     * 'AND'ed together.
+     *
+     * 'OR' CompoundFilters or nested CompoundFilters are partially supported -
+     * they will be displayed as tags and can be removed, but not created using
+     * the control.
+     *
+     * Any other Filter is not supported and will cause the control to be cleared.
      */
     @action
     setValue(value) {
@@ -171,13 +176,18 @@ export class FilterChooserModel extends HoistModel {
                 value = this.value ?? null;
             }
 
-            const fieldFilters = this.toFieldFilters(value),
-                options = fieldFilters.map(f => this.createFilterOption(f));
-            this.selectOptions = !isEmpty(options) ? options : null;
-            this.selectValue = sortBy(fieldFilters.map(f => JSON.stringify(f)), f => {
-                const idx = this.selectValue?.indexOf(f);
-                return isFinite(idx) && idx > -1 ? idx : fieldFilters.length;
-            });
+            const displayFilters = this.toDisplayFilters(value),
+                options = displayFilters.map(f => this.createFilterOption(f)),
+                selectOptions = !isEmpty(options) ? options : null,
+                selectValue = sortBy(displayFilters.map(f => JSON.stringify(f)), f => {
+                    const idx = this.selectValue?.indexOf(f);
+                    return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
+                });
+
+            // Set value after options, to ensure it is able to be rendered correctly
+            this.selectOptions = selectOptions;
+            wait(1).thenAction(() => this.selectValue = selectValue);
+
             if (!this.value?.equals(value)) {
                 console.debug('Setting FilterChooser value:', value);
                 this.value = value;
@@ -202,15 +212,15 @@ export class FilterChooserModel extends HoistModel {
         const [filters, suggestions] = partition(selectValue, 'op');
 
         // Round-trip actual filters through main value setter above.
-        this.setValue(combineValueFilters(filters).map(f => new FieldFilter(f)));
+        this.setValue(combineValueFilters(filters));
 
         // And then programmatically re-enter any suggestion
         if (suggestions.length === 1) this.autoComplete(suggestions[0]);
     }
 
-    // Transfer the value filter to the canonical set of individual field filters for display.
+    // Transfer the value filter to the canonical set of individual filters for display.
     // Implicit 'ORs' on '=' and 'like' will be split.
-    toFieldFilters(filter) {
+    toDisplayFilters(filter) {
         if (!filter) return [];
 
         let ret;
@@ -218,15 +228,16 @@ export class FilterChooserModel extends HoistModel {
             throw XH.exception(`Unsupported Filter in FilterChooserModel: ${s}`);
         };
 
-        // 1) Flatten to FieldFilters.
-        if (filter.isCompoundFilter) {
-            if (filter.operator === 'OR') unsupported('OR not supported.');
+        // 1) Flatten AND CompoundFilters to FieldFilters.
+        if (filter.isCompoundFilter && filter.op === 'AND') {
             ret = filter.filters;
         } else  {
             ret = [filter];
         }
         ret.forEach(f => {
-            if (!f.isFieldFilter) unsupported('Filters must be FieldFilters.');
+            if (!f.isFieldFilter && !f.isCompoundFilter) {
+                unsupported('Filters must be FieldFilters or CompoundFilters.');
+            }
         });
 
         // 2) Recognize unsupported ANDing of '=' and 'like' for a given Field.
@@ -285,7 +296,7 @@ export class FilterChooserModel extends HoistModel {
     get favoritesOptions() {
         return this.favorites.map(value => ({
             value,
-            filterOptions: this.toFieldFilters(value).map(f => this.createFilterOption(f))
+            filterOptions: this.toDisplayFilters(value).map(f => this.createFilterOption(f))
         }));
     }
 
@@ -368,14 +379,6 @@ export class FilterChooserModel extends HoistModel {
         }
 
         if (f.isCompoundFilter) {
-            if (f.op !== 'AND') {
-                console.error('Invalid "OR" filter for FilterChooser', f);
-                return false;
-            }
-            if (f.filters.some(it => !it.isFieldFilter)) {
-                console.error('Invalid complex filter for FilterChooser', f);
-                return false;
-            }
             return f.filters.every(it => this.validateFilter(it));
         }
 
