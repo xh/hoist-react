@@ -18,5 +18,10 @@
   &__custom-filter-message {
     display: flex;
     flex-direction: column;
+    align-items: center;
+
+    .xh-button {
+      margin-top: var(--xh-pad-px);
+    }
   }
 }

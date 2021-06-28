@@ -56,7 +56,7 @@ export class FilterPopoverModel extends HoistModel {
     }
 
     @computed
-    get requiresCustomFilter() {
+    get isCustomFilter() {
         const {columnFilters} = this;
         if (isEmpty(columnFilters)) return false;
         return columnFilters.length > 1 || columnFilters[0].op !== '=';
@@ -111,7 +111,11 @@ export class FilterPopoverModel extends HoistModel {
     clear(close = true) {
         const {gridModel, colId} = this;
         gridModel.setColumnFilter({colId, filter: null});
-        if (close) this.closeMenu();
+        if (close) {
+            this.closeMenu();
+        } else {
+            this.loadStoreFilter();
+        }
     }
 
     @action
@@ -130,13 +134,13 @@ export class FilterPopoverModel extends HoistModel {
     //-------------------
     @action
     loadStoreFilter() {
-        const {columnFilters, requiresCustomFilter, disableEnumFilter} = this;
+        const {columnFilters, isCustomFilter, disableEnumFilter} = this;
 
         this.enumFilterTabModel.reset();
         this.customFilterTabModel.reset();
 
         if (!isEmpty(columnFilters)) {
-            if (requiresCustomFilter) {
+            if (isCustomFilter) {
                 // There are column filters that can only be represented on the custom filter tab
                 this.customFilterTabModel.loadStoreFilter();
             } else {
@@ -145,7 +149,7 @@ export class FilterPopoverModel extends HoistModel {
             }
         }
 
-        const tab = requiresCustomFilter || disableEnumFilter ? 'customFilter' : 'enumFilter';
+        const tab = isCustomFilter || disableEnumFilter ? 'customFilter' : 'enumFilter';
         this.tabContainerModel.activateTab(tab);
     }
 }
