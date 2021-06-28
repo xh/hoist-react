@@ -268,6 +268,11 @@ class Model extends HoistInputModel {
         this.onDateChange(date);
     };
 
+    onInputChange = (value) => {
+        const date = this.parseDate(value, true);
+        if (date) this.onDateChange(date);
+    };
+
     onDatePickerChange = (date, isUserChange) => {
         if (!isUserChange) return;
         this.onDateChange(date);
@@ -326,8 +331,8 @@ class Model extends HoistInputModel {
         return fmtDate(date, {fmt: this.getFormat()});
     }
 
-    parseDate(dateString) {
-        const parsedMoment = moment(dateString, this.getFormat(), this.strictInputParsing);
+    parseDate(dateString, strictInputParsing = this.strictInputParsing) {
+        const parsedMoment = moment(dateString, this.getFormat(), strictInputParsing);
         return parsedMoment.isValid() ? parsedMoment.toDate() : null;
     }
 
@@ -424,6 +429,7 @@ const cmp = hoistCmp.factory(
                         value: model.formatDate(renderValue),
                         className: classNames(className, !enableTextInput && !disabled ? 'xh-date-input--picker-only' : null),
                         onCommit: model.onInputCommit,
+                        onChange: model.onInputChange,
                         rightElement,
 
                         disabled: disabled || !enableTextInput,
