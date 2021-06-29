@@ -297,7 +297,11 @@ class LocalModel extends HoistModel {
                         allowOverlap: false,
                         align: 'left',
                         verticalAlign: 'top',
-                        style: {textOutline: 'none', visibility: 'hidden'}
+                        style: {
+                            textOutline: 'none',
+                            visibility: 'hidden',
+                            fontWeight: 'normal'
+                        }
                     }
                 }
             },
