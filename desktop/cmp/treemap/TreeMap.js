@@ -300,7 +300,8 @@ class LocalModel extends HoistModel {
                         style: {
                             textOutline: 'none',
                             visibility: 'hidden',
-                            fontWeight: 'normal'
+                            fontWeight: 'normal',
+                            fontFamily: 'var(--xh-font-family)'
                         }
                     }
                 }

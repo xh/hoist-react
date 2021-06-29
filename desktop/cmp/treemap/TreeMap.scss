@@ -19,12 +19,6 @@
     background: var(--xh-bg);
   }
 
-  text > tspan {
-    font-family: var(--xh-font-family);
-    font-size: var(--xh-font-size-small-px);
-    font-weight: normal;
-  }
-
   rect.highcharts-point {
     outline-style: solid;
     outline-width: 1px;
