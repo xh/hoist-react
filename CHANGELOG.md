@@ -4,6 +4,18 @@
 
 ### 🎁 New Features
 
+* Inline editing of Grid/Record data is now officially supported:
+  + New `Column.editor` config accepts an editor component to enable managed editing of the cells in
+    that column. New `CheckboxEditor`, `DateEditor`, `NumberEditor`, `SelectEditor`, `TextAreaEditor`
+    and `TextEditor` components wrap their corresponding HoistInputs with the required hook-based
+    API and can be passed to this new config directly.
+  + `Store` now contains built-in support for validation of its uncommitted records. To enable,
+    specify the new `rules` property on the `Field`s in your `Store`. Note that these rules and
+    constraints use the same API as the forms package, and rules and constraints may be shared
+    between the `data` and `form` packages freely.
+  + `GridModel` will automatically display editors and record validation messages as the user moves
+    between cells and records. The new `GridModel.fullRowEditing` config controls whether editors
+    are displayed for the focused cell only or for the entire row.
 * All Hoist Components now support a `modelRef` prop. Supply a ref to this prop in order to gain a
   pointer to a Component's backing `HoistModel`.
 * New `Column.sortValue` config takes an alternate field name (as a string) to sort the column by
@@ -48,6 +60,8 @@
   component name.
 * Removed `TreeMapModel.colorMode` value 'balanced'. Use the new `maxHeat` config to prevent outlier
   values from dominating the color range of the TreeMap.
+* The classes `Rule` and `ValidationState` and all constraint functions (e.g. `required`,
+  `validEmail`, `numberIs`, etc.) have been moved from the `cmp\form` package to the `data` package.
 * Hoist grids now require ag-Grid v25.3.0 or higher - update your ag-Grid dependency in your app's
   `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for
   details.
@@ -56,6 +70,7 @@
 
 * Fixed disable behavior for Hoist-provided button components using popover.
 * Fixed default disabling of autocomplete within `TextInput`.
+* Squelched console warning re. precision/stepSize emitted by Blueprint-based `numberInput`.
 
 ### ⚙️ Technical
 
@@ -96,7 +111,6 @@ your dev-utils dependency for your project to build.
 * New `Spinner` component returns a simple img-based spinner as an animated PNG, available in two
   sizes. Used for the platform-specific `Mask` and `LoadingIndicator` components. Replaces previous
   SVG-based implementations to mitigate rendering performance issues over remote connections.
-
 
 ### 💥 Breaking Changes
 
@@ -511,10 +525,6 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
 * dompurify `added @ 2.2`
 * react `16.13 -> 17.0`
 * semver `added @ 7.3`
-
-#### 📚 Required App Library Upgrades
-
-* ag-Grid `23.x -> 24.1`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.6.1...v37.0.0)
 

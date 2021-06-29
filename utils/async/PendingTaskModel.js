@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
 
 /**
@@ -48,6 +48,7 @@ export class PendingTaskModel {
      * This observable property is the main public entry point for this object.
      * Its behavior depends on the 'type' property.
      */
+    @computed
     get isPending() {
         return this.mode === 'all' ? this.anyPending : this.lastPending;
     }

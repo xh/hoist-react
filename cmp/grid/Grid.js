@@ -161,6 +161,7 @@ class LocalModel extends HoistModel {
         this.addReaction(this.dataReaction());
         this.addReaction(this.groupReaction());
         this.addReaction(this.rowHeightReaction());
+        this.addReaction(this.validationDisplayReaction());
 
         this.agOptions = merge(this.createDefaultAgOptions(props), props.agOptions || {});
     }
@@ -220,7 +221,9 @@ class LocalModel extends HoistModel {
             },
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
-            }
+            },
+            autoSizePadding: 3, // tighten up cells for ag-Grid native autosizing.  Remove when Hoist autosizing no longer experimental,
+            editType: model.fullRowEditing ? 'fullRow' : undefined
         };
 
         // Platform specific defaults
@@ -381,7 +384,7 @@ class LocalModel extends HoistModel {
 
                         // Refresh cells in columns with complex renderers
                         const refreshCols = visibleCols.filter(c => c.rendererIsComplex);
-                        if (refreshCols) {
+                        if (!isEmpty(refreshCols)) {
                             const rowNodes = compact(transaction.update.map(r => agApi.getRowNode(r.id))),
                                 columns = refreshCols.map(c => c.colId);
                             agApi.refreshCells({rowNodes, columns, force: true});
@@ -404,7 +407,6 @@ class LocalModel extends HoistModel {
             }
         };
     }
-
 
     selectionReaction() {
         const {model} = this;
@@ -532,6 +534,24 @@ class LocalModel extends HoistModel {
                     colApi.applyColumnState({state: colState, applyOrder: true});
                 });
             }
+        };
+    }
+
+    validationDisplayReaction() {
+        const {model} = this,
+            {store} = model;
+
+        return {
+            track: () => [model.isReady, store.validator.errors],
+            run: ([isReady]) => {
+                if (!isReady) return;
+                const refreshCols = model.columns.filter(c => c.editor || c.rendererIsComplex);
+                if (!isEmpty(refreshCols)) {
+                    const columns = refreshCols.map(c => c.colId);
+                    model.agApi.refreshCells({columns, force: true});
+                }
+            },
+            debounce: 1
         };
     }
 
