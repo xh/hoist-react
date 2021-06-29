@@ -65,6 +65,9 @@
 * Hoist grids now require ag-Grid v25.3.0 or higher - update your ag-Grid dependency in your app's
   `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for
   details.
+* Hoist charts now require Highcharts v9.1.0 or higher - update your Highcharts dependency in your
+  app's `package.json` file. See the
+  [Highcharts Changelog](https://www.highcharts.com/changelog/#highcharts-stock) for details.
 
 ### 🐞 Bug Fixes
 
@@ -85,7 +88,6 @@
 * filesize `6.2 -> 6.3`
 * mobx `6.1 -> 6.3`
 * react-windowed-select `3.0 -> 3.1`
-* highcharts `8.2.2 -> 9.1.2`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v40.0.0...develop)
 
