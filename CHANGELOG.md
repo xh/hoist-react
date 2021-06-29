@@ -70,6 +70,7 @@
 
 * Fixed disable behavior for Hoist-provided button components using popover.
 * Fixed default disabling of autocomplete within `TextInput`.
+* Squelched console warning re. precision/stepSize emitted by Blueprint-based `numberInput`.
 
 ### ⚙️ Technical
 
