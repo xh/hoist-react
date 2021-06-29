@@ -27,20 +27,16 @@ export class FilterPopoverModel extends HoistModel {
     @managed enumFilterTabModel;
     @managed customFilterTabModel;
 
-    get store() {
-        return this.gridModel.store;
-    }
-
-    get storeFilter() {
-        return this.store.filter;
+    get currentFilter() {
+        return this.gridModel.filterTarget.filter;
     }
 
     get columnFilters() {
-        return flattenFilter(this.storeFilter).filter(it => it.field === this.colId);
+        return flattenFilter(this.currentFilter).filter(it => it.field === this.colId);
     }
 
     get type() {
-        return this.store.getField(this.colId).type;
+        return this.gridModel.store.getField(this.colId).type;
     }
 
     get hasFilter() {
@@ -114,14 +110,14 @@ export class FilterPopoverModel extends HoistModel {
         if (close) {
             this.closeMenu();
         } else {
-            this.loadStoreFilter();
+            this.syncWithFilter();
         }
     }
 
     @action
     openMenu() {
         this.isOpen = true;
-        this.loadStoreFilter();
+        this.syncWithFilter();
     }
 
     @action
@@ -133,7 +129,7 @@ export class FilterPopoverModel extends HoistModel {
     // Implementation
     //-------------------
     @action
-    loadStoreFilter() {
+    syncWithFilter() {
         const {columnFilters, isCustomFilter, disableEnumFilter} = this;
 
         this.enumFilterTabModel.reset();
@@ -142,10 +138,10 @@ export class FilterPopoverModel extends HoistModel {
         if (!isEmpty(columnFilters)) {
             if (isCustomFilter) {
                 // There are column filters that can only be represented on the custom filter tab
-                this.customFilterTabModel.loadStoreFilter();
+                this.customFilterTabModel.syncWithFilter();
             } else {
                 // There is a column filter that can be represented on the enum filter tab
-                this.enumFilterTabModel.loadStoreFilter();
+                this.enumFilterTabModel.syncWithFilter();
             }
         }
 

@@ -8,7 +8,7 @@ import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Column, ColumnGroup, GridAutosizeMode, TreeStyle} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {FieldType, Store, StoreSelectionModel, parseFilter} from '@xh/hoist/data';
+import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
@@ -45,8 +45,7 @@ import {
     max,
     min,
     pull,
-    sortBy,
-    values
+    sortBy
 } from 'lodash';
 import {GridPersistenceModel} from './impl/GridPersistenceModel';
 import {GridSorter} from './impl/GridSorter';
@@ -113,6 +112,10 @@ export class GridModel extends HoistModel {
     fullRowEditing;
     /** @member {boolean} */
     hideEmptyTextBeforeLoad;
+    /** @member {(Store|View)} */
+    filterSource;
+    /** @member {(Store|View)} */
+    filterTarget;
 
     /** @member {AgGridModel} */
     @managed agGridModel;
@@ -130,8 +133,6 @@ export class GridModel extends HoistModel {
     @observable.ref sortBy = [];
     /** @member {string[]} */
     @observable.ref groupBy = null;
-    /** @member {Object} */
-    @observable.ref columnFilters = {};
     /** @member {(string|boolean)} */
     @observable showSummary = false;
     /** @member {string} */
@@ -169,6 +170,13 @@ export class GridModel extends HoistModel {
      */
     get autosizeEnabled() {
         return this.autosizeOptions.mode !== GridAutosizeMode.DISABLED;
+    }
+
+    /**
+     * @return {Filter}
+     */
+    get filter() {
+        return this.filterTarget.filter;
     }
 
     /**
@@ -253,6 +261,12 @@ export class GridModel extends HoistModel {
      *      should not immediately respond to user or programmatic changes to the sortBy property,
      *      but will instead wait for the next load of data, which is assumed to be pre-sorted.
      *      Default false.
+     * @param {(Store|View)} [c.filterSource] - Store or cube View to be used to provide suggested
+     *      data values in column filters (if configured). Defaults to this GridModel's Store.
+     * @param {(Store|View)} [c.filterTarget] - Store or cube View that should actually be filtered
+     *      as column filters are applied. May be the same as `filterSource`. Provide 'null' if you
+     *      wish to combine this model's filter with other filters, send it to the server, or otherwise
+     *      observe and handle filter changes manually. Defaults to this GridModel's Store.
      * @param {Object} [c.experimental] - flags for experimental features. These features are
      *     designed for early client-access and testing, but are not yet part of the Hoist API.
      * @param {*} [c...rest] - additional data to attach to this model instance.
@@ -306,6 +320,10 @@ export class GridModel extends HoistModel {
         autosizeOptions = {},
         restoreDefaultsWarning = GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
         fullRowEditing = false,
+
+        filterSource,
+        filterTarget,
+
         experimental,
         ...rest
     }) {
@@ -380,6 +398,9 @@ export class GridModel extends HoistModel {
         this.onRowDoubleClicked = onRowDoubleClicked;
         this.onCellClicked = onCellClicked;
         this.onCellDoubleClicked = onCellDoubleClicked;
+
+        this.filterSource = !isUndefined(filterSource) ? filterSource : this.store;
+        this.filterTarget = !isUndefined(filterTarget) ? filterTarget : this.store;
     }
 
     /**
@@ -694,22 +715,26 @@ export class GridModel extends HoistModel {
     setColumnFilter({colId, filter}) {
         throwIf(!this.findColumn(this.columns, colId), `ColumnFilter colId ${colId} not found in grid columns`);
 
-        // Update Column Filter map
-        const columnFilters = {...this.columnFilters};
-        if (filter) {
-            columnFilters[colId] = parseFilter(filter);
-        } else {
-            delete columnFilters[colId];
-        }
-        this.columnFilters = columnFilters;
+        const currFilter = this.filterTarget.filter,
+            currFilters = currFilter?.isCompoundFilter ? currFilter.filters : [currFilter],
+            newFilters = [];
 
-        // Set filter on the store
-        const filters = values(columnFilters);
-        let storeFilter = null;
-        if (!isEmpty(filters)) {
-            storeFilter = filters.length > 1 ? {filters, op: 'AND'} : filters[0];
+        // Strip out any existing filters for this colId
+        currFilters.forEach(filter => {
+            if (!filter) return;
+            if (filter.isFieldFilter && filter.field === colId) return;
+            if (filter.isCompoundFilter && find(filter.filters, it => it.field === colId)) return;
+            newFilters.push(filter);
+        });
+
+        // Add in new filter
+        if (filter) newFilters.push(filter);
+
+        let newFilter = null;
+        if (!isEmpty(newFilters)) {
+            newFilter = newFilters.length > 1 ? {filters: newFilters, op: 'AND'} : newFilters[0];
         }
-        this.setFilter(storeFilter);
+        this.setFilter(newFilter);
     }
 
     async doLoadAsync(loadSpec) {
@@ -732,9 +757,14 @@ export class GridModel extends HoistModel {
         this.store.clear();
     }
 
-    /** Filter the underlying store.*/
+    /** Set the filter on the filterTarget .*/
     setFilter(filter) {
-        this.store.setFilter(filter);
+        const {filterTarget} = this;
+        if (filterTarget.isView) {
+            filterTarget.updateQuery({filter});
+        } else {
+            filterTarget.setFilter(filter);
+        }
     }
 
     /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */

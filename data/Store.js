@@ -31,6 +31,8 @@ import {Record} from './Record';
  */
 export class Store extends HoistBase {
 
+    get isStore() {return true}
+
     /** @member {Field[]} */
     fields = null;
 

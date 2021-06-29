@@ -39,8 +39,8 @@ export class CustomFilterTabModel extends HoistModel {
         return equalsCount > 1 || likeCount > 1;
     }
 
-    get storeFilter() {
-        return this.parentModel.storeFilter;
+    get currentFilter() {
+        return this.parentModel.currentFilter;
     }
 
     get columnFilters() {
@@ -61,8 +61,8 @@ export class CustomFilterTabModel extends HoistModel {
         this.parentModel = parentModel;
     }
 
-    loadStoreFilter() {
-        this.doLoadStoreFilter();
+    syncWithFilter() {
+        this.doSyncWithFilter();
     }
 
     @action
@@ -86,11 +86,11 @@ export class CustomFilterTabModel extends HoistModel {
     // Implementation
     //-------------------
     @action
-    doLoadStoreFilter() {
-        const {columnFilters, storeFilter} = this,
+    doSyncWithFilter() {
+        const {columnFilters, currentFilter} = this,
             rowModels = [];
 
-        // Create rows based on store filter.
+        // Create rows based on filter.
         columnFilters.forEach(filter => {
             const {op, value} = filter;
             if (op === '=' || op === 'like') {
@@ -104,7 +104,7 @@ export class CustomFilterTabModel extends HoistModel {
 
         // Rehydrate operator from CompoundFilter
         if (columnFilters.length > 1) {
-            const compoundFilter = this.getOuterCompoundFilter(storeFilter);
+            const compoundFilter = this.getOuterCompoundFilter(currentFilter);
             if (compoundFilter) this.op = compoundFilter.op;
         }
 

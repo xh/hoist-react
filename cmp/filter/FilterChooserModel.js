@@ -12,7 +12,7 @@ import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
 import {FieldFilter, parseFilter, combineValueFilters} from '@xh/hoist/data';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, apiDeprecated} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     compact,
@@ -36,11 +36,11 @@ export class FilterChooserModel extends HoistModel {
     /** @member {Filter[]} */
     @observable.ref favorites = [];
 
-    /** @member {Store} */
-    sourceStore;
+    /** @member {(Store|View)} */
+    filterSource;
 
-    /** @member {Store} */
-    targetStore;
+    /** @member {(Store|View)} */
+    filterTarget;
 
     /** @member {FilterChooserFieldSpec[]} */
     @managed fieldSpecs = [];
@@ -65,17 +65,18 @@ export class FilterChooserModel extends HoistModel {
      * @param c - FilterChooserModel configuration.
      * @param {(string[]|Object[]} [c.fieldSpecs] - specifies the fields this model
      *      supports for filtering and customizes how their available values will be parsed and
-     *      displayed. Should be configs for a `FilterChooserFieldSpec`. If a
-     *      `sourceStore` is provided, these may be specified as field names in that Store
-     *      or omitted entirely, indicating that all Store fields should be filter-enabled.
+     *      displayed. Should be configs for a `FilterChooserFieldSpec`. If a `filterSource`
+     *      is provided, these may be specified as field names in that source or omitted entirely,
+     *      indicating that all fields should be filter-enabled.
      * @param {Object} [c.fieldSpecDefaults] - default properties to be
      *      assigned to all FilterChooserFieldSpecs created by this object.
-     * @param {Store} [c.sourceStore] - Store to be used to lookup matching Field-level defaults
-     *      for `fieldSpecs` and to provide suggested data values (if configured) from user input.
-     * @param {Store} [c.targetStore] - Store that should actually be filtered as this model's
-     *      value changes. May be the same as `sourceStore`. Leave undefined if you wish to combine
-     *      this model's values with other filters, send it to the server, or otherwise observe
-     *      and handle value changes manually.
+     * @param {(Store|View)} [c.filterSource] - Store or cube View to be used to lookup matching
+     *      Field-level defaults for `fieldSpecs` and to provide suggested data values (if configured)
+     *      from user input.
+     * @param {(Store|View)} [c.filterTarget] - Store or cube View that should actually be filtered
+     *      as this model's value changes. May be the same as `filterSource`. Leave undefined if you
+     *      wish to combine this model's values with other filters, send it to the server,
+     *      or otherwise observe and handle value changes manually.
      * @param {(Filter|* |[]|function)} [c.initialValue] - Configuration for a filter appropriate
      *      to be rendered and managed by FilterChooser, or a function to produce the same.
      *      Note that FilterChooser currently can only edit and create a flat collection of
@@ -89,17 +90,23 @@ export class FilterChooserModel extends HoistModel {
     constructor({
         fieldSpecs,
         fieldSpecDefaults,
-        sourceStore = null,
-        targetStore = null,
+        filterSource = null,
+        filterTarget = null,
         initialValue = null,
         initialFavorites = [],
         maxResults = 50,
-        persistWith
+        persistWith,
+        sourceStore,
+        targetStore
     } = {}) {
         super();
         makeObservable(this);
-        this.sourceStore = sourceStore;
-        this.targetStore = targetStore;
+
+        apiDeprecated(sourceStore, 'sourceStore', "Use 'filterSource' instead");
+        apiDeprecated(targetStore, 'targetStore', "Use 'filterTarget' instead");
+
+        this.filterSource = filterSource ?? sourceStore;
+        this.filterTarget = filterTarget ?? targetStore;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
         this.maxResults = maxResults;
         this.queryEngine = new QueryEngine(this);
@@ -136,15 +143,21 @@ export class FilterChooserModel extends HoistModel {
         this.setValue(value);
         this.setFavorites(favorites);
 
-        if (targetStore) {
+        if (filterTarget) {
             this.addReaction({
                 track: () => this.value,
-                run: (v) => targetStore.setFilter(v),
+                run: (filter) => {
+                    if (filterTarget.isView) {
+                        filterTarget.updateQuery({filter});
+                    } else {
+                        filterTarget.setFilter(filter);
+                    }
+                },
                 fireImmediately: true
             });
 
             this.addReaction({
-                track: () => targetStore.filter,
+                track: () => filterTarget.filter,
                 run: (filter) => this.setValue(filter)
             });
         }
@@ -344,20 +357,21 @@ export class FilterChooserModel extends HoistModel {
     // FilterChooserFieldSpec handling
     //--------------------------------
     parseFieldSpecs(specs, fieldSpecDefaults) {
-        const {sourceStore} = this;
+        const {filterSource} = this;
 
         throwIf(
-            !sourceStore && (!specs || specs.some(isString)),
-            'Must provide a sourceStore if fieldSpecs are not provided, or provided as strings.'
+            !filterSource && (!specs || specs.some(isString)),
+            'Must provide a filterSource if fieldSpecs are not provided, or provided as strings.'
         );
 
         // If no specs provided, include all store fields.
-        if (!specs) specs = sourceStore.fieldNames;
+        if (!specs) specs = filterSource.fieldNames;
 
+        const store = filterSource.isView ? filterSource.cube.store : filterSource;
         return specs.map(spec => {
             if (isString(spec)) spec = {field: spec};
             return new FilterChooserFieldSpec({
-                store: sourceStore,
+                store,
                 ...fieldSpecDefaults,
                 ...spec
             });

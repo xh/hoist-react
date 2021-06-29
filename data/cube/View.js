@@ -20,6 +20,8 @@ import {LeafRow} from './row/LeafRow';
  */
 export class View extends HoistBase {
 
+    get isView() {return true}
+
     /** @member {Query} - Query defining this View. Update via `updateQuery()`. */
     @observable.ref
     query = null;
@@ -56,8 +58,7 @@ export class View extends HoistBase {
         makeObservable(this);
 
         this.query = query;
-        this.stores = castArray(stores);
-        this.fullUpdate();
+        this.setStores(stores);
 
         if (connect) {
             this.cube._connectedViews.add(this);
@@ -72,6 +73,12 @@ export class View extends HoistBase {
 
     /** @return {CubeField[]} */
     get fields() {return this.query.fields}
+
+    /** @return {string[]} */
+    get fieldNames() {return this.fields.map(it => it.name)}
+
+    /** @return {Filter} */
+    get filter() {return this.query.filter}
 
     /** @return {boolean} */
     get isConnected() {return this.cube.viewIsConnected(this)}
@@ -111,6 +118,14 @@ export class View extends HoistBase {
             _leafMap.forEach(leaf => values.add(leaf[field.name]));
             return {field, values};
         });
+    }
+
+    /**
+     * @param {(Store[]|Store)} stores - Stores to be loaded/reloaded with data from this view.
+     */
+    setStores(stores) {
+        this.stores = castArray(stores);
+        this.fullUpdate();
     }
 
     //-----------------------

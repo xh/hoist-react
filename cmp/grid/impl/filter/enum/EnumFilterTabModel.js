@@ -16,8 +16,7 @@ export class EnumFilterTabModel extends HoistModel {
     parentModel;
 
     /**
-     * @member {GridModel} - Checkbox grid to display enumerated set of record values to add
-     * or remove from `gridModel.store.filter`
+     * @member {GridModel} - Checkbox grid to display enumerated set of values
      */
     @managed @observable.ref gridModel;
 
@@ -71,12 +70,8 @@ export class EnumFilterTabModel extends HoistModel {
         return isChecked;
     }
 
-    get store() {
-        return this.parentModel.store;
-    }
-
-    get storeFilter() {
-        return this.parentModel.storeFilter;
+    get currentFilter() {
+        return this.parentModel.currentFilter;
     }
 
     get columnFilters() {
@@ -104,8 +99,8 @@ export class EnumFilterTabModel extends HoistModel {
         });
     }
 
-    loadStoreFilter() {
-        this.doLoadStoreFilter();
+    syncWithFilter() {
+        this.doSyncWithFilter();
     }
 
     @action
@@ -136,8 +131,10 @@ export class EnumFilterTabModel extends HoistModel {
     //-------------------
     @action
     doReset() {
-        const {store, colId, storeFilter} = this,
-            allRecords = store.allRecords.filter(rec => isEmpty(rec.allChildren)),
+        const {colId, currentFilter} = this,
+            {filterSource} = this.parentModel.gridModel,
+            sourceStore = filterSource.isView ? filterSource.cube.store : filterSource,
+            allRecords = sourceStore.allRecords.filter(rec => isEmpty(rec.allChildren)),
             allValues = uniq(allRecords.map(rec => rec.data[colId])),
             pendingValue = {};
 
@@ -146,12 +143,12 @@ export class EnumFilterTabModel extends HoistModel {
         this.allValues = allValues;
         this.pendingValue = pendingValue;
 
-        // Apply external store filters *not* pertaining to this field to get the
-        // filtered set of available values to offer as options.
-        const cleanStoreFilter = this.cleanFilter(storeFilter);
+        // Apply external filters *not* pertaining to this field to the filterSource
+        // to get the filtered set of available values to offer as options.
+        const cleanedFilter = this.cleanFilter(currentFilter);
         let filteredRecords = allRecords;
-        if (cleanStoreFilter) {
-            const testFn = parseFilter(cleanStoreFilter).getTestFn(store);
+        if (cleanedFilter) {
+            const testFn = parseFilter(cleanedFilter).getTestFn(sourceStore);
             filteredRecords = allRecords.filter(it => testFn(it));
         }
 
@@ -161,7 +158,7 @@ export class EnumFilterTabModel extends HoistModel {
     }
 
     @action
-    doLoadStoreFilter() {
+    doSyncWithFilter() {
         const {allValues, columnFilters} = this,
             pendingValue = {};
 

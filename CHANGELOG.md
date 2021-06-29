@@ -1,5 +1,28 @@
 # Changelog
 
+## v42.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* Column-level filtering is now official supported for desktop grids:
+  + New `Column.enableFilter` to enable a column-level filter affordance in a grid column header.
+    The filter control offers two tabs - a "Values" tab for enumerative, value-based filter, and
+    a "Custom" tab to build complex filtering queries with multiple clauses.
+  + Use `Column.disableEnumFilter` to remove the "Values" tab for certain columns. Applicable
+    for columns with many discrete values (e.g. numerical columns), where filtering by specific
+    values may not be useful.
+  + Use `GridModel.filterSource` to control which `Store` or cube `View` value suggestions are
+    sourced from. Defaults to the `GridModel`'s `Store`.
+  + Use `GridModel.filterTarget` to control which `Store` or cube `View` the generated filter
+    is applied to. Defaults to the `GridModel`'s `Store`.
+
+### 💥 Breaking Changes
+
+* `FilterChooserModel.sourceStore` and `FilterChooserModel.targetstore` have been renamed
+  `FilterChooserModel.filterSource` and `FilterChooserModel.filterTarget` respectively. Furthermore,
+  both configs now support either a `Store` or a cube `View`. This is to provide a common API with
+  the new `GridModel` filtering described above.
+
 ## v41.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
