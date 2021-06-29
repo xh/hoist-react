@@ -25,6 +25,7 @@ export class View extends HoistBase {
     /** @member {Query} - Query defining this View. Update via `updateQuery()`. */
     @observable.ref
     query = null;
+
     /**
      * @member {Object} - results of this view, an observable object with a `rows` property
      *      containing an array of hierarchical data objects.

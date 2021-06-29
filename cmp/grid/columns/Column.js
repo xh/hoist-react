@@ -339,8 +339,17 @@ export class Column {
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
+        if (enableFilter && this.colId !== this.field) {
+            console.warn(`Column '${this.colId}' is not a Store field. 'enableFilter' will be ignored.`);
+            enableFilter = false;
+        }
+
+        if (enableFilter && this.field === 'cubeLabel') {
+            console.warn(`Column '${this.colId}' is a cube label column. 'enableFilter' will be ignored.`);
+            enableFilter = false;
+        }
+
         this.enableFilter = enableFilter;
-        warnIf(enableFilter && this.colId !== this.field, `Column '${this.colId}' is not a Store field. Enable filter will be ignored.`);
         this.disableEnumFilter = disableEnumFilter;
 
         this.gridModel = gridModel;
