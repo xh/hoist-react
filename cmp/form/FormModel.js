@@ -6,11 +6,11 @@
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
+import {ValidationState} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {flatMap, forOwn, map, mapValues, pickBy, some, values, forEach} from 'lodash';
 import {FieldModel} from './field/FieldModel';
 import {SubformsFieldModel} from './field/SubformsFieldModel';
-import {ValidationState} from './validation/ValidationState';
 
 /**
  * FormModel is the main entry point for Form specification. This Model's `fields` collection holds
