@@ -16,7 +16,7 @@ export const DarkTheme = {
         stops: [
             [0, '#8e0711'], // Max negative
             [0.4, '#fee0d2'], // Min negative
-            [0.5, '#1F232B'], // Zero
+            [0.5, '#BBBBBB'], // Zero
             [0.6, '#e5f5e0'], // Min positive
             [1, '#057009'] // Max positive
         ]
