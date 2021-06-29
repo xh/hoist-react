@@ -7,7 +7,6 @@
 import {hoistCmp} from '@xh/hoist/core';
 import {dateInput} from '@xh/hoist/desktop/cmp/input';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
-import {merge} from 'lodash';
 import {EditorPropTypes} from './EditorPropTypes';
 import './Editors.scss';
 
@@ -18,12 +17,6 @@ export const [DateEditor, dateEditor] = hoistCmp.withFactory({
     memo: false,
     observer: false,
     render(props, ref) {
-        props = merge({
-            inputProps: {
-                rightElement: null,
-                showPickerOnFocus: true
-            }
-        }, props);
         return useInlineEditorModel(dateInput, props, ref);
     }
 });

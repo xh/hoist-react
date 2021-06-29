@@ -5,6 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {useImperativeHandle} from 'react';
+import composeRefs from '@seznam/compose-react-refs';
 import classNames from 'classnames';
 import {isNil} from 'lodash';
 import {HoistModel, useLocalModel} from '@xh/hoist/core';
@@ -46,7 +47,7 @@ export function useInlineEditorModel(component, props, ref, isPopup = false) {
         model: impl,
         bind: 'value',
         commitOnChange: true,
-        ref: impl.ref,
+        ref: composeRefs(ref, impl.ref),
         ...inputProps
     });
 }

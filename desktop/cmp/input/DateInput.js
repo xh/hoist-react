@@ -18,7 +18,7 @@ import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {assign, clone, trim} from 'lodash';
+import {assign, clone} from 'lodash';
 import moment from 'moment';
 import {createRef} from 'react';
 import PT from 'prop-types';
@@ -56,20 +56,10 @@ DateInput.propTypes = {
     enableClear: PT.bool,
 
     /**
-     * MomentJS format string for date display. Defaults to `YYYY-MM-DD HH:mm:ss`,
+     * MomentJS format string for date display and parsing. Defaults to `YYYY-MM-DD HH:mm:ss`,
      * with default presence of time components determined by the timePrecision prop.
      */
     formatString: PT.string,
-
-
-    /**
-     * MomentJS format string(s) for date parsing. Defaults to the format string, followed by an
-     * additional set of common variants.  Default presence of time components in these strings is
-     * determined by the timePrecision prop.  Formats will be evaluated in priority order specified
-     * as described here: https://momentjs.com/guides/#/parsing/multiple-formats/
-     */
-    parseStrings: PT.oneOfType([PT.array, PT.string]),
-
 
     /**
      * Month to display in calendar popover on first render.
@@ -175,7 +165,6 @@ class Model extends HoistInputModel {
 
     buttonRef = createRef();
     popoverRef = createRef();
-    textInputRef = createRef();
 
     // Prop-backed convenience getters
     get maxDate() {
@@ -252,6 +241,7 @@ class Model extends HoistInputModel {
     onKeyDown = (ev) => {
         if (ev.key === 'Enter') {
             this.doCommit();
+            this.consumeEvent(ev);
         } else if (this.popoverOpen && ev.key === 'Escape') {
             this.setPopoverOpen(false);
             this.consumeEvent(ev);
@@ -276,16 +266,6 @@ class Model extends HoistInputModel {
     onInputCommit = (value) => {
         const date = this.parseDate(value);
         this.onDateChange(date);
-    };
-
-    onInputChange = (value) => {
-        if (!value && !trim(value)) this.onDateChange(null);
-        const date = this.parseDate(value, true);
-        if (date) this.onDateChange(date);
-    };
-
-    onInputKeyDown = (ev) => {
-        if (ev.key === 'Tab') this.textInputRef.current?.doCommit();
     };
 
     onDatePickerChange = (date, isUserChange) => {
@@ -328,35 +308,26 @@ class Model extends HoistInputModel {
         return date;
     }
 
-    getFormatString() {
-        const {formatString} = this.props;
+    getFormat() {
+        const {timePrecision} = this,
+            {formatString} = this.props;
 
-        return formatString ?? this.addTimeFmt('YYYY-MM-DD');
-    }
-
-    getParseStrings() {
-        const {formatString, parseStrings} = this.props;
-
-        if (parseStrings) return parseStrings;
-
-        const ret = ['YYYY-MM-DD', 'YYYYMMDD', 'YYYY/MM/DD', 'YYYY-M-DD', 'YYYY/M/DD'].map(s => this.addTimeFmt(s));
-        if (formatString && !ret.includes(formatString)) ret.unshift(formatString);
-
+        if (formatString) return formatString;
+        let ret = 'YYYY-MM-DD';
+        if (timePrecision === 'minute') {
+            ret += ' HH:mm';
+        } else if (timePrecision === 'second') {
+            ret += ' HH:mm:ss';
+        }
         return ret;
     }
 
-    addTimeFmt(fmt) {
-        if (this.timePrecision === 'minute') return fmt + ' HH:mm';
-        if (this.timePrecision === 'second') return fmt + ' HH:mm:ss';
-        return fmt;
-    }
-
     formatDate(date) {
-        return fmtDate(date, {fmt: this.getFormatString()});
+        return fmtDate(date, {fmt: this.getFormat()});
     }
 
-    parseDate(dateString, strictInputParsing = this.strictInputParsing) {
-        const parsedMoment = moment(dateString, this.getParseStrings(), strictInputParsing);
+    parseDate(dateString) {
+        const parsedMoment = moment(dateString, this.getFormat(), this.strictInputParsing);
         return parsedMoment.isValid() ? parsedMoment.toDate() : null;
     }
 
@@ -453,9 +424,8 @@ const cmp = hoistCmp.factory(
                         value: model.formatDate(renderValue),
                         className: classNames(className, !enableTextInput && !disabled ? 'xh-date-input--picker-only' : null),
                         onCommit: model.onInputCommit,
-                        onChange: model.onInputChange,
-                        onKeyDown: model.onInputKeyDown,
                         rightElement,
+
                         disabled: disabled || !enableTextInput,
                         leftIcon: props.leftIcon,
                         tabIndex: props.tabIndex,
@@ -463,7 +433,6 @@ const cmp = hoistCmp.factory(
                         textAlign: props.textAlign,
                         selectOnFocus: props.selectOnFocus,
                         inputRef: model.inputRef,
-                        ref: model.textInputRef,
                         ...getLayoutProps(props)
                     }),
                     onClick: !enableTextInput && !disabled ? model.onOpenPopoverClick : null
