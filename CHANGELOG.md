@@ -33,6 +33,9 @@
 * `fmtNumber()` supports new flags `withCommas` and `omitFourDigitComma` to customize the treatment
   of commas in number displays.
 * `isValidJson` function added to form validation constraints.
+* Mobile's `Select` now supports an `enableFullscreen` prop. Use this to render the select control
+  in a full-screen modal dialog when focused, which guarantees the control will be rendered in the
+  top half of the viewport, above the mobile keyboard.
 *  `DateInput` has been improved to allow more flexible parsing of user input with multiple
 formats.  See the new prop `DateInput.parseStrings`.
 
