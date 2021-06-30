@@ -18,7 +18,7 @@ import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {assign, clone, trim} from 'lodash';
+import {assign, castArray, clone, trim} from 'lodash';
 import moment from 'moment';
 import {createRef} from 'react';
 import PT from 'prop-types';
@@ -337,9 +337,9 @@ class Model extends HoistInputModel {
     getParseStrings() {
         const {formatString, parseStrings} = this.props;
 
-        if (parseStrings) return parseStrings;
+        if (parseStrings) return castArray(parseStrings);
 
-        const ret = ['YYYY-MM-DD', 'YYYYMMDD', 'YYYY/MM/DD', 'YYYY-M-DD', 'YYYY/M/DD'].map(s => this.addTimeFmt(s));
+        const ret = ['YYYY-MM-DD', 'YYYYMMDD', 'YYYY-M-DD', 'MM/DD/YYYY', 'M/D/YYYY'].map(s => this.addTimeFmt(s));
         if (formatString && !ret.includes(formatString)) ret.unshift(formatString);
 
         return ret;

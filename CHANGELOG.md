@@ -33,6 +33,8 @@
 * `fmtNumber()` supports new flags `withCommas` and `omitFourDigitComma` to customize the treatment
   of commas in number displays.
 * `isValidJson` function added to form validation constraints.
+*  `DateInput` has been improved to allow more flexible parsing of user input with multiple
+formats.  See the new prop `DateInput.parseStrings`.
 
 ### 💥 Breaking Changes
 
