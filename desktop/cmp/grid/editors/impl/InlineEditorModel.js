@@ -5,7 +5,6 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {useImperativeHandle} from 'react';
-import composeRefs from '@seznam/compose-react-refs';
 import classNames from 'classnames';
 import {isNil} from 'lodash';
 import {HoistModel, useLocalModel} from '@xh/hoist/core';
@@ -29,8 +28,8 @@ import {createObservableRef} from '@xh/hoist/utils/react';
  * @return {ReactElement} - React Element to be rendered
  */
 export function useInlineEditorModel(component, props, ref, isPopup = false) {
-    const {className, inputProps} = props,
-        impl = useLocalModel(() => new InlineEditorModel(props));
+    const {className, inputProps, agParams} = props,
+        impl = useLocalModel(() => new InlineEditorModel(agParams));
 
     useImperativeHandle(ref, () => ({
         getValue: () => impl.value,
@@ -43,11 +42,11 @@ export function useInlineEditorModel(component, props, ref, isPopup = false) {
 
     return component({
         className: classNames('xh-inline-editor', className),
-        width: isPopup ? props.agParams.eGridCell.clientWidth : null,
+        width: isPopup ? agParams.eGridCell.clientWidth : null,
         model: impl,
         bind: 'value',
         commitOnChange: true,
-        ref: composeRefs(ref, impl.ref),
+        ref: impl.ref,
         ...inputProps
     });
 }
@@ -64,62 +63,40 @@ class InlineEditorModel extends HoistModel {
 
     ref = createObservableRef();
 
-    /** @member {Column} */
-    column;
-
-    /** @member {GridModel} */
-    gridModel;
-
-    /** @member {Record} */
-    record;
-
     /** @member {ICellEditorParams} */
     agParams;
 
-    get startedEdit() {
-        return this.agParams?.cellStartedEdit;
-    }
-
-    /** @returns {HoistInputModel} */
-    get inputModel() {
-        return this.ref.current;
-    }
-
     get inputEl() {
-        return this.inputModel?.inputEl;
+        return this.ref.current?.inputEl;
     }
 
-    constructor(props) {
+    constructor(agParams) {
         super();
         makeObservable(this);
 
-        this.props = props;
-        this.column = props.column;
-        this.gridModel = props.gridModel;
-        this.record = props.record;
-        this.agParams = props.agParams;
-
-        const {value, charPress} = props.agParams;
-        this.value = charPress ?? value;
+        this.agParams = agParams;
+        this.value = agParams.value;
 
         // Focus into the input once the component is rendered but only do so if this cell started
         // the editing process. If using full row editing the editor may be rendered but we do not
         // want to focus the input if it was not the cell which initiated the editing.
-        if (this.startedEdit) this.addReaction(this.focusOnRenderReaction());
+        if (agParams.cellStartedEdit) {
+            this.addReaction(this.focusOnRenderReaction());
+        }
     }
 
     focus() {
-        const {inputEl} = this,
-            selectOnFocus = isNil(this.agParams.charPress);
-
+        const {inputEl} = this;
         if (!inputEl) return;
 
         inputEl.focus();
-        if (selectOnFocus) inputEl.select();
-    }
 
-    stopEditing() {
-        this.agParams?.stopEditing();
+        const {charPress} = this.agParams;
+        if (isNil(charPress)) {
+            inputEl.select();
+        } else {
+            inputEl.value = charPress;
+        }
     }
 
     //-----------------------
