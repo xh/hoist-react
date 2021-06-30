@@ -759,12 +759,7 @@ export class GridModel extends HoistModel {
 
     /** Set the filter on the filterTarget .*/
     setFilter(filter) {
-        const {filterTarget} = this;
-        if (filterTarget.isView) {
-            filterTarget.updateQuery({filter});
-        } else {
-            filterTarget.setFilter(filter);
-        }
+        this.filterTarget.setFilter(filter);
     }
 
     /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */

@@ -12,7 +12,7 @@ import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
 import {FieldFilter, parseFilter, combineValueFilters} from '@xh/hoist/data';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {throwIf, apiDeprecated} from '@xh/hoist/utils/js';
+import {throwIf, apiRemoved} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     compact,
@@ -96,17 +96,16 @@ export class FilterChooserModel extends HoistModel {
         initialFavorites = [],
         maxResults = 50,
         persistWith,
-        sourceStore,
-        targetStore
+        ...rest
     } = {}) {
         super();
         makeObservable(this);
 
-        apiDeprecated(sourceStore, 'sourceStore', "Use 'filterSource' instead");
-        apiDeprecated(targetStore, 'targetStore', "Use 'filterTarget' instead");
+        apiRemoved(rest.sourceStore, 'sourceStore', "Use 'filterSource' instead");
+        apiRemoved(rest.targetStore, 'targetStore', "Use 'filterTarget' instead");
 
-        this.filterSource = filterSource ?? sourceStore;
-        this.filterTarget = filterTarget ?? targetStore;
+        this.filterSource = filterSource;
+        this.filterTarget = filterTarget;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
         this.maxResults = maxResults;
         this.queryEngine = new QueryEngine(this);
@@ -146,13 +145,7 @@ export class FilterChooserModel extends HoistModel {
         if (filterTarget) {
             this.addReaction({
                 track: () => this.value,
-                run: (filter) => {
-                    if (filterTarget.isView) {
-                        filterTarget.updateQuery({filter});
-                    } else {
-                        filterTarget.setFilter(filter);
-                    }
-                },
+                run: (filter) => filterTarget.setFilter(filter),
                 fireImmediately: true
             });
 
@@ -169,8 +162,8 @@ export class FilterChooserModel extends HoistModel {
      * @param {(Filter|* |[])} value -  Configuration for a filter appropriate to be
      *      shown in this field.
      *
-     * Supports an 'AND' CompoundFilter or a collection of FieldFilters to be
-     * 'AND'ed together.
+     * Supports one or more FieldFilters to be 'AND'ed together, or
+     * an 'AND' CompoundFilter containing such a collection of FieldFilters.
      *
      * 'OR' CompoundFilters or nested CompoundFilters are partially supported -
      * they will be displayed as tags and can be removed, but not created using
@@ -356,6 +349,8 @@ export class FilterChooserModel extends HoistModel {
     //--------------------------------
     // FilterChooserFieldSpec handling
     //--------------------------------
+    // Todo: If filterSource is a cube view, do we need to rebuild fields on query change?
+    // Or, pass view into FilterChooserFieldSpec and setup reaction in loadValues there?
     parseFieldSpecs(specs, fieldSpecDefaults) {
         const {filterSource} = this;
 

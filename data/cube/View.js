@@ -129,6 +129,13 @@ export class View extends HoistBase {
         this.fullUpdate();
     }
 
+    /**
+     * @param {Filter} filter - Update the filter on the current Query.
+     */
+    setFilter(filter) {
+        this.updateQuery({filter});
+    }
+
     //-----------------------
     // Entry point for cube
     //-----------------------
