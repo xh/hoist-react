@@ -36,6 +36,8 @@
 * Mobile's `Select` now supports an `enableFullscreen` prop. Use this to render the select control
   in a full-screen modal dialog when focused, which guarantees the control will be rendered in the
   top half of the viewport, above the mobile keyboard.
+*  `DateInput` has been improved to allow more flexible parsing of user input with multiple
+formats.  See the new prop `DateInput.parseStrings`.
 
 ### 💥 Breaking Changes
 
@@ -68,6 +70,9 @@
 * Hoist grids now require ag-Grid v25.3.0 or higher - update your ag-Grid dependency in your app's
   `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for
   details.
+* Hoist charts now require Highcharts v9.1.0 or higher - update your Highcharts dependency in your
+  app's `package.json` file. See the
+  [Highcharts Changelog](https://www.highcharts.com/changelog/#highcharts-stock) for details.
 
 ### 🐞 Bug Fixes
 

@@ -124,12 +124,10 @@ export class BaseRow {
             if (canAggregate[name]) {
                 const oldValue = data[name],
                     newValue = field.aggregator.replace(children, oldValue, update);
-                if (oldValue !== newValue) {
-                    update.oldValue = oldValue;
-                    update.newValue = newValue;
-                    myUpdates.push(update);
-                    data[name] = newValue;
-                }
+                update.oldValue = oldValue;
+                update.newValue = newValue;
+                myUpdates.push(update);
+                data[name] = newValue;
             }
         });
 
