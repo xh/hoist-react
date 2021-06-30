@@ -87,6 +87,7 @@
   .ag-floating-top {
     // Background on viewport itself covers area left blank by presence of a flex column.
     background-color: var(--xh-grid-total-row-bg);
+
     .ag-row-pinned.ag-row-first {
       background-color: var(--xh-grid-total-row-bg);
     }
@@ -101,10 +102,51 @@
     padding-right: 0;
   }
 
-  // Highlight invalid cells
+  // Render badge on invalid cells
   .ag-cell.xh-invalid-cell {
-    border: var(--xh-form-field-invalid-border) !important;
-    background-color: var(--xh-intent-danger-trans1) !important;
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      border-color: transparent;
+      border-right-color: var(--xh-intent-danger);
+      border-top-color: var(--xh-intent-danger);
+      border-style: solid;
+    }
+
+    // Render badge on top of nested editor, and move to account for padding while editing
+    &.ag-cell-inline-editing::before {
+      z-index: 1;
+      margin-top: 1px;
+      margin-right: 1px;
+    }
+  }
+
+  .xh-ag-grid {
+    &--tiny {
+      .ag-cell.xh-invalid-cell::before {
+        border-width: 3px;
+      }
+    }
+
+    &--compact {
+      .ag-cell.xh-invalid-cell::before {
+        border-width: 4px;
+      }
+    }
+
+    &--standard {
+      .ag-cell.xh-invalid-cell::before {
+        border-width: 5px;
+      }
+    }
+
+    &--large {
+      .ag-cell.xh-invalid-cell::before {
+        border-width: 6px;
+      }
+    }
   }
 }
 
