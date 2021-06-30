@@ -13,6 +13,8 @@ import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
 import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/ColChooserDialog';
 import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/ColChooserModel';
+import {columnFilter} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnFilter';
+import {ColumnFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnFilterModel';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
@@ -41,7 +43,9 @@ installDesktopImpls({
     storeFilterFieldImpl,
     pinPadImpl,
     colChooser,
+    columnFilter,
     ColChooserModel,
+    ColumnFilterModel,
     StoreContextMenu
 });
 /**

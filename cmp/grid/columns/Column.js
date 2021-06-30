@@ -339,6 +339,11 @@ export class Column {
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
+        if (enableFilter && XH.isMobileApp) {
+            console.warn(`'enableFilter' is not supported on mobile and will be ignored.`);
+            enableFilter = false;
+        }
+
         if (enableFilter && this.colId !== this.field) {
             console.warn(`Column '${this.colId}' is not a Store field. 'enableFilter' will be ignored.`);
             enableFilter = false;

@@ -8,6 +8,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {observable, action, computed, makeObservable} from '@xh/hoist/mobx';
 import {flattenFilter} from '@xh/hoist/data';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
+import {wait} from '@xh/hoist/promise';
 import {isEmpty} from 'lodash';
 
 import {customFilterTab} from './custom/CustomFilterTab';
@@ -15,13 +16,14 @@ import {CustomFilterTabModel} from './custom/CustomFilterTabModel';
 import {enumFilterTab} from './enum/EnumFilterTab';
 import {EnumFilterTabModel} from './enum/EnumFilterTabModel';
 
-export class FilterPopoverModel extends HoistModel {
+export class ColumnFilterModel extends HoistModel {
     gridModel;
     xhColumn;
     colId;
 
     @observable.ref filter = null;
     @observable isOpen = false;
+    @observable showMask = false;
 
     @managed tabContainerModel;
     @managed enumFilterTabModel;
@@ -99,8 +101,14 @@ export class FilterPopoverModel extends HoistModel {
         } else {
             filter = this.customFilterTabModel.filter;
         }
-        gridModel.setColumnFilter({colId, filter});
-        this.closeMenu();
+
+        // Applying filter can take time for large datasets.
+        // Show a mask to provide feedback to user.
+        this.showMask = true;
+        wait(1).then(() => {
+            gridModel.setColumnFilter({colId, filter});
+            this.closeMenu();
+        });
     }
 
     @action
@@ -117,6 +125,7 @@ export class FilterPopoverModel extends HoistModel {
     @action
     openMenu() {
         this.isOpen = true;
+        this.showMask = false;
         this.syncWithFilter();
     }
 

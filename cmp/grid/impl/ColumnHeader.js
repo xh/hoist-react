@@ -9,6 +9,7 @@ import {div, span} from '@xh/hoist/cmp/layout';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {Column} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
+import {columnFilter, ColumnFilterModel} from '@xh/hoist/dynamics/desktop';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
@@ -16,8 +17,6 @@ import {filter, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString}
 import classNames from 'classnames';
 
 import {GridSorter} from './GridSorter';
-import {FilterPopoverModel} from './filter/FilterPopoverModel';
-import {filterPopover} from './filter/FilterPopover';
 
 /**
  * A custom ag-Grid header component.
@@ -103,7 +102,7 @@ export const columnHeader = hoistCmp.factory({
             items: [
                 span({onMouseEnter, item: headerElem}),
                 sortIcon(),
-                impl.enableFilter ? filterPopover({model: impl.filterPopoverModel}) : menuIcon()
+                impl.enableFilter ? columnFilter({model: impl.columnFilterModel}) : menuIcon()
             ]
         });
     }
@@ -120,7 +119,7 @@ class LocalModel extends HoistModel {
 
     // Hoist Filtering
     enableFilter;
-    @managed filterPopoverModel;
+    @managed columnFilterModel;
 
     // AG Filtering
     @bindable isAgFiltered = false;
@@ -143,8 +142,8 @@ class LocalModel extends HoistModel {
         this.enableSorting = sortable;
         this.availableSorts = this.parseAvailableSorts();
 
-        if (enableFilter && field === this.colId) {
-            this.filterPopoverModel = new FilterPopoverModel({gridModel, xhColumn, agColumn});
+        if (!XH.isMobileApp && enableFilter && field === this.colId) {
+            this.columnFilterModel = new ColumnFilterModel({gridModel, xhColumn, agColumn});
             this.enableFilter = true;
         } else {
             this.isAgFiltered = agColumn.isFilterActive();
@@ -171,7 +170,7 @@ class LocalModel extends HoistModel {
     }
 
     get isFiltered() {
-        return this.isAgFiltered || this.filterPopoverModel?.isFiltered;
+        return this.isAgFiltered || this.columnFilterModel?.isFiltered;
     }
 
     // Ag-Grid's filter callback
