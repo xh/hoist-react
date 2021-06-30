@@ -136,7 +136,7 @@ DateInput.propTypes = {
 
     /**
      * True to parse any dates entered via the text input with moment's "strict" mode enabled.
-     * This ensures that the input entry matches the format specified by `formatString` exactly.
+     * This ensures that the input entry matches the format(s) specified by `parseStrings` exactly.
      * If it does not, the input will be considered invalid and the value set to `null`.
      * @see https://momentjs.com/guides/#/parsing/strict-mode/
      */
