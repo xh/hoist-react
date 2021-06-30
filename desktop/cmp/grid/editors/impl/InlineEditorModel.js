@@ -28,8 +28,8 @@ import {createObservableRef} from '@xh/hoist/utils/react';
  * @return {ReactElement} - React Element to be rendered
  */
 export function useInlineEditorModel(component, props, ref, isPopup = false) {
-    const {className, inputProps} = props,
-        impl = useLocalModel(() => new InlineEditorModel(props));
+    const {className, inputProps, agParams} = props,
+        impl = useLocalModel(() => new InlineEditorModel(agParams));
 
     useImperativeHandle(ref, () => ({
         getValue: () => impl.value,
@@ -42,7 +42,7 @@ export function useInlineEditorModel(component, props, ref, isPopup = false) {
 
     return component({
         className: classNames('xh-inline-editor', className),
-        width: isPopup ? props.agParams.eGridCell.clientWidth : null,
+        width: isPopup ? agParams.eGridCell.clientWidth : null,
         model: impl,
         bind: 'value',
         commitOnChange: true,
