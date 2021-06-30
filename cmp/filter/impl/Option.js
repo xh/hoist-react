@@ -30,38 +30,45 @@ export function fieldOption({fieldSpec, isExact = false}) {
 }
 
 /**
- * Create an option representing an existing or suggested filter.
+ * Create an option representing an existing or suggested FieldFilter.
  * @return {FilterChooserOption}
  */
-export function filterOption({filter, fieldSpec, isExact = false}) {
-    let label,
+export function fieldFilterOption({filter, fieldSpec, isExact = false}) {
+    let {fieldType, displayName} = fieldSpec,
         displayOp,
         displayValue;
 
-    if (filter.isFieldFilter) {
-        const {fieldType, displayName} = fieldSpec;
-        if (filter.isEmptyCheck()) {
-            displayOp = 'is';
-            displayValue = (filter.op === '!=' ? 'not empty' : 'empty');
-        } else {
-            displayOp = filter.op;
-            displayValue = fieldSpec.renderValue(parseFieldValue(filter.value, fieldType, null));
-        }
-        label = `${displayName} ${displayOp} ${displayValue}`;
-    } else if (filter.isCompoundFilter) {
-        label = `${filter.op} Compound Filter`;
+    if (filter.isEmptyCheck()) {
+        displayOp = 'is';
+        displayValue = (filter.op === '!=' ? 'not empty' : 'empty');
+    } else {
+        displayOp = filter.op;
+        displayValue = fieldSpec.renderValue(parseFieldValue(filter.value, fieldType, null));
     }
 
     return {
         type: 'filter',
         value: JSON.stringify(filter),
-        label,
+        label: `${displayName} ${displayOp} ${displayValue}`,
         isExact,
 
         displayOp,
         displayValue,
         filter,
         fieldSpec
+    };
+}
+
+/**
+ * Create an option representing a compound filter. For display purposes only.
+ * @return {FilterChooserOption}
+ */
+export function compoundFilterOption({filter, fieldNames}) {
+    return {
+        type: 'filter',
+        value: JSON.stringify(filter),
+        label: `[${filter.op} Filter on ${fieldNames.join()}]`,
+        isExact: false
     };
 }
 

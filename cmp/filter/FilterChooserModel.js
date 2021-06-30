@@ -7,7 +7,7 @@
 
 import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
 import {QueryEngine} from './impl/QueryEngine';
-import {filterOption} from './impl/Option';
+import {fieldFilterOption, compoundFilterOption} from './impl/Option';
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
 import {FieldFilter, parseFilter, combineValueFilters} from '@xh/hoist/data';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
@@ -25,7 +25,8 @@ import {
     flatMap,
     forEach,
     isArray,
-    isFunction
+    isFunction,
+    uniq
 } from 'lodash';
 
 export class FilterChooserModel extends HoistModel {
@@ -293,7 +294,12 @@ export class FilterChooserModel extends HoistModel {
     // Options
     //---------------------------------
     createFilterOption(filter) {
-        return filterOption({filter, fieldSpec: this.getFieldSpec(filter.field)});
+        if (filter.isFieldFilter) {
+            return fieldFilterOption({filter, fieldSpec: this.getFieldSpec(filter.field)});
+        } else if (filter.isCompoundFilter) {
+            const fieldNames = uniq(filter.filters.map(it => this.getFieldSpec(it.field)?.displayName));
+            return compoundFilterOption({filter, fieldNames});
+        }
     }
 
     //--------------------

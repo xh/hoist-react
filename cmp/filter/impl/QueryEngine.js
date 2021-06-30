@@ -6,7 +6,7 @@
  */
 
 import {FieldFilter} from '@xh/hoist/data';
-import {fieldOption, filterOption, msgOption} from './Option';
+import {fieldOption, fieldFilterOption, msgOption} from './Option';
 import {fmtNumber} from '@xh/hoist/format';
 
 import {
@@ -102,7 +102,7 @@ export class QueryEngine {
                 const op = value.startsWith('not') ? '!=' : '=';
                 value = [null, ''];
                 ret.push(
-                    filterOption({
+                    fieldFilterOption({
                         filter: new FieldFilter({field: spec.field, op, value}),
                         fieldSpec: spec,
                         isExact: true
@@ -144,7 +144,7 @@ export class QueryEngine {
             (!forceSelection || !supportsSuggestions) &&
             ret.every(it => it.filter?.value !== value)) {
             ret.push(
-                filterOption({
+                fieldFilterOption({
                     filter: new FieldFilter({field: spec.field, op: q.op, value}),
                     fieldSpec: spec
                 })
@@ -203,7 +203,7 @@ export class QueryEngine {
             const formattedValue = spec.renderValue(v);
             if (testFn(formattedValue, v)) {
                 ret.push(
-                    filterOption({
+                    fieldFilterOption({
                         filter: new FieldFilter({field: spec.field, op, value: v}),
                         fieldSpec: spec,
                         isExact: value === v || caselessEquals(formattedValue, queryStr)
