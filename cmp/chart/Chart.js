@@ -22,6 +22,7 @@ import {ChartModel} from './ChartModel';
 import {installZoomoutGesture} from './impl/zoomout';
 import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
+import './Chart.scss';
 
 installZoomoutGesture(Highcharts);
 
