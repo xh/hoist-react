@@ -297,11 +297,12 @@ class LocalModel extends HoistModel {
                         allowOverlap: false,
                         align: 'left',
                         verticalAlign: 'top',
+                        // See stylesheet for additional label style overrides.
                         style: {
+                            // Disable default outlining via HC pseudo-property.
                             textOutline: 'none',
-                            visibility: 'hidden',
-                            fontWeight: 'normal',
-                            fontFamily: 'var(--xh-font-family)'
+                            // Default to hidden, updated selectively in updateLabelVisibility().
+                            visibility: 'hidden'
                         }
                     }
                 }
@@ -368,7 +369,7 @@ class LocalModel extends HoistModel {
         this.chart.series[0].data.forEach(node => {
             const {dataLabel, graphic} = node;
             if (dataLabel && graphic) {
-                const buffer = 10,
+                const buffer = 5,
                     tooSmallWidth = (dataLabel.width + buffer) > graphic.element.width.baseVal.value,
                     tooSmallHeight = (dataLabel.height + buffer) > graphic.element.height.baseVal.value,
                     currentVisibility = dataLabel.styles.visibility,
