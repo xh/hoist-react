@@ -112,6 +112,11 @@
         white-space: nowrap;
         text-overflow: ellipsis;
       }
+
+      .xh-button {
+        background: transparent !important;
+        color: var(--xh-appbar-title-color) !important;
+      }
     }
   }
 }

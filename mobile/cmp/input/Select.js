@@ -61,7 +61,7 @@ Select.propTypes = {
 
     /**
      * True to render the select control in a full-screen modal dialog when focused.
-     * Usually applicable when enableCreate|enableFilter, as we can guarantee the control
+     * Recommended for use with enableCreate|enableFilter, as we can guarantee the control
      * will be rendered in the top half of the viewport, above the mobile keyboard.
      */
     enableFullscreen: PT.bool,
