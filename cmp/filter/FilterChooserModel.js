@@ -367,7 +367,7 @@ export class FilterChooserModel extends HoistModel {
         // If no specs provided, include all store fields.
         if (!specs) specs = filterSource.fieldNames;
 
-        const store = filterSource.isView ? filterSource.cube.store : filterSource;
+        const store = filterSource?.isView ? filterSource.cube.store : filterSource;
         return specs.map(spec => {
             if (isString(spec)) spec = {field: spec};
             return new FilterChooserFieldSpec({
