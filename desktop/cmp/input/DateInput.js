@@ -339,7 +339,7 @@ class Model extends HoistInputModel {
 
         if (parseStrings) return castArray(parseStrings);
 
-        const ret = ['YYYY-MM-DD', 'YYYYMMDD', 'YYYY-M-DD', 'MM/DD/YYYY', 'M/D/YYYY'].map(s => this.addTimeFmt(s));
+        const ret = ['YYYY-MM-DD', 'YYYYMMDD', 'YYYY-M-DD', 'M/D/YYYY'].map(s => this.addTimeFmt(s));
         if (formatString && !ret.includes(formatString)) ret.unshift(formatString);
 
         return ret;
