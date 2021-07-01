@@ -1,6 +1,10 @@
 # Changelog
 
-## v41.0.0-SNAPSHOT - unreleased
+## v42.0.0-SNAPSHOT - unreleased
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v41.0.0...develop)
+
+## v41.0.0 - 2021-07-01
 
 ### 🎁 New Features
 
@@ -94,7 +98,7 @@
 * mobx `6.1 -> 6.3`
 * react-windowed-select `3.0 -> 3.1`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v40.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v40.0.0...v41.0.0)
 
 ## v40.0.0 - 2021-04-22
 
