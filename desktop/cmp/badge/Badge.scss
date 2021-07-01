@@ -1,0 +1,24 @@
+.xh-badge {
+  border-radius: 4px;
+  font-size: 0.5em;
+  font-weight: bold;
+  padding: 2px 3px;
+  background: var(--xh-blue-gray);
+  color: white;
+
+  &--intent-primary {
+    background-color: var(--xh-intent-primary);
+  }
+
+  &--intent-success {
+    background-color: var(--xh-intent-success);
+  }
+
+  &--intent-warning {
+    background-color: var(--xh-intent-warning);
+  }
+
+  &--intent-danger {
+    background-color: var(--xh-intent-danger);
+  }
+}
