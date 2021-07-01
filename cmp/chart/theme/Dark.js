@@ -37,14 +37,7 @@ export const DarkTheme = {
                 fill: altBg,
                 stroke: borderColor,
                 style: {color: textColor},
-                r: 4,
-                states: {
-                    hover: {
-                        fill: altBg,
-                        stroke: accentColor,
-                        style: {color: accentColor}
-                    }
-                }
+                r: 4
             }
         }
     },

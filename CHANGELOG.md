@@ -18,6 +18,8 @@
     are displayed for the focused cell only or for the entire row.
 * All Hoist Components now support a `modelRef` prop. Supply a ref to this prop in order to gain a
   pointer to a Component's backing `HoistModel`.
+* `DateInput` has been improved to allow more flexible parsing of user input with multiple formats.
+  See the new prop `DateInput.parseStrings`.
 * New `Column.sortValue` config takes an alternate field name (as a string) to sort the column by
   that field's value, or a function to produce a custom cell-level value for comparison. The values
   produced by this property will be also passed to any custom comparator, if one is defined.
@@ -27,12 +29,15 @@
 * `ExpandCollapseButton` now works for grouped grids in addition to tree grids.
 * `FieldModel.initialValue` config now accepts functions, allowing for just-in-time initialization
   of Form data (e.g. to pre-populate a Date field with the current time).
-* `TreeMapModel` and `SplitTreeMapModel` now support a `maxHeat` property, which can be used to
+* `TreeMapModel` and `SplitTreeMapModel` now support a `maxHeat` config, which can be used to
   provide a stable absolute maximum brightness (positive or negative) within the entire TreeMap.
 * `ErrorMessage` will now automatically look for an `error` property on its primary context model.
 * `fmtNumber()` supports new flags `withCommas` and `omitFourDigitComma` to customize the treatment
   of commas in number displays.
 * `isValidJson` function added to form validation constraints.
+* New `Select.enableFullscreen` prop added to the mobile component. Set to true (default on phones)
+  to render the input in a full-screen modal when focused, ensuring there is enough room for the
+  on-screen keyboard.
 
 ### 💥 Breaking Changes
 
@@ -65,6 +70,9 @@
 * Hoist grids now require ag-Grid v25.3.0 or higher - update your ag-Grid dependency in your app's
   `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for
   details.
+* Hoist charts now require Highcharts v9.1.0 or higher - update your Highcharts dependency in your
+  app's `package.json` file. See the
+  [Highcharts Changelog](https://www.highcharts.com/changelog/#highcharts-stock) for details.
 
 ### 🐞 Bug Fixes
 
@@ -82,7 +90,7 @@
 * @blueprintjs/core `3.44 -> 3.46`
 * codemirror `5.60 -> 5.62`
 * core-js `3.10 -> 3.15`
-* filesize `6.2 -> 6.3`
+* filesize `6.2 -> 6.4`
 * mobx `6.1 -> 6.3`
 * react-windowed-select `3.0 -> 3.1`
 
@@ -197,9 +205,9 @@ your dev-utils dependency for your project to build.
 
 #### Models + Configs
 
-* New property `selectedRecordId` on `StoreSelectionModel`, `GridModel`, and `DataViewModel`. Observe
-  this instead of `selectedRecord` when you wish to track only the `id` of the selected record and
-  not changes to its data.
+* New property `selectedRecordId` on `StoreSelectionModel`, `GridModel`, and `DataViewModel`.
+  Observe this instead of `selectedRecord` when you wish to track only the `id` of the selected
+  record and not changes to its data.
 * `TreeMapModel.colorMode` config supports new value `wash`, which retains the positive and negative
   color while ignoring the intensity of the heat value.
 * New method `ChartModel.updateHighchartsConfig()` provides a more convenient API for changing a
@@ -2652,9 +2660,10 @@ leverage the context for model support discussed above.
 * ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are
   using `agOptions` to set sorting, filtering or resizing properties, these may need to change:
 
-  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and `agOptions.enableFilter`
-  have been removed. You can replicate their effects by using `agOptions.defaultColDef`. For
-  `Columns`, `suppressFilter` has been removed, an should be replaced with `filter: false`.
+  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and
+  `agOptions.enableFilter` have been removed. You can replicate their effects by using
+  `agOptions.defaultColDef`. For `Columns`, `suppressFilter` has been removed, an should be replaced
+  with `filter: false`.
 
 * `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.
   Applications should use the new Refresh architecture described above instead.
@@ -3129,9 +3138,9 @@ list. Note, this component is being replaced in Hoist v16 by the react-select li
 
 ## v13.0.0
 
-🍀Lucky v13 brings with it a number of enhancements for forms and validation, grouped column support
-in the core Grid API, a fully wrapped MultiSelect component, decorator syntax adjustments, and a
-number of other fixes and enhancements.
+🍀Lucky v13 brings with it a number of enhancements for forms and validation, grouped column
+support in the core Grid API, a fully wrapped MultiSelect component, decorator syntax adjustments,
+and a number of other fixes and enhancements.
 
 It also includes contributions from new ExHI team members Arjun and Brendan. 🎉
 
@@ -3465,9 +3474,9 @@ and ag-Grid upgrade, and more. 🚀
   * `Panel` and `Resizable` components have moved to their own packages in
     `@xh/hoist/desktop/cmp/panel` and `@xh/hoist/desktop/cmp/resizable`.
 * **Multiple changes and improvements made to tab-related APIs and components.**
-  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes` ->
-    `route` (to specify a starting route as a string) and `switcherPosition` has moved from a model
-    config to a prop on the `TabContainer` component.
+  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes`
+    -> `route` (to specify a starting route as a string) and `switcherPosition` has moved from a
+    model config to a prop on the `TabContainer` component.
   * `TabPane` and `TabPaneModel` have been renamed `Tab` and `TabModel`, respectively, with several
     related renames.
 * **Application entry-point classes decorated with `@HoistApp` must implement the new getter method

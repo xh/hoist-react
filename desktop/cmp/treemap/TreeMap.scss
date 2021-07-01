@@ -19,12 +19,6 @@
     background: var(--xh-bg);
   }
 
-  text > tspan {
-    font-family: var(--xh-font-family);
-    font-size: var(--xh-font-size-small-px);
-    font-weight: normal;
-  }
-
   rect.highcharts-point {
     outline-style: solid;
     outline-width: 1px;
@@ -38,6 +32,13 @@
       outline-offset: -3px;
       outline-color: var(--xh-blue-light);
     }
+  }
+
+  .highcharts-data-label text {
+    font-family: var(--xh-font-family);
+    // Use of !important overrides default styles applied inline to the label elements by HC.
+    font-size: var(--xh-font-size-small-px) !important;
+    font-weight: normal !important;
   }
 }
 

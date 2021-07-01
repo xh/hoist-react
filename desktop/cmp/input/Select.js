@@ -263,7 +263,6 @@ class Model extends HoistInputModel {
         this.selectText();
     }
 
-
     getSelectFactory() {
         const {creatableMode, asyncMode, windowedMode} = this;
         if (windowedMode) {
