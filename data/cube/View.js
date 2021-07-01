@@ -122,6 +122,15 @@ export class View extends HoistBase {
     }
 
     /**
+     * Get a specific Field by name.
+     * @param {string} name - field name to locate.
+     * @return {CubeField}
+     */
+    getField(name) {
+        return this.fields.find(it => it.name === name);
+    }
+
+    /**
      * @param {(Store[]|Store)} stores - Stores to be loaded/reloaded with data from this view.
      */
     setStores(stores) {

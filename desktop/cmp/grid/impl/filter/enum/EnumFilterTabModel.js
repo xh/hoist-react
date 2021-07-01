@@ -86,6 +86,10 @@ export class EnumFilterTabModel extends HoistModel {
         return this.parentModel.type;
     }
 
+    get valueSource() {
+        return this.parentModel.valueSource;
+    }
+
     constructor(parentModel) {
         super();
         makeObservable(this);
@@ -131,9 +135,8 @@ export class EnumFilterTabModel extends HoistModel {
     //-------------------
     @action
     doReset() {
-        const {colId, currentFilter} = this,
-            {filterSource} = this.parentModel.gridModel,
-            sourceStore = filterSource.isView ? filterSource.cube.store : filterSource,
+        const {colId, currentFilter, valueSource} = this,
+            sourceStore = valueSource.isView ? valueSource.cube.store : valueSource,
             allRecords = sourceStore.allRecords.filter(rec => isEmpty(rec.allChildren)),
             allValues = uniq(allRecords.map(rec => rec.data[colId])),
             pendingValue = {};
@@ -143,7 +146,7 @@ export class EnumFilterTabModel extends HoistModel {
         this.allValues = allValues;
         this.pendingValue = pendingValue;
 
-        // Apply external filters *not* pertaining to this field to the filterSource
+        // Apply external filters *not* pertaining to this field to the sourceStore
         // to get the filtered set of available values to offer as options.
         const cleanedFilter = this.cleanFilter(currentFilter);
         let filteredRecords = allRecords;

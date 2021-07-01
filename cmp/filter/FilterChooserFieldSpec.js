@@ -73,7 +73,7 @@ export class FilterChooserFieldSpec extends HoistBase {
      *      filter chooser control into a typed data value for use in filtering comparisons.
      * @param {string} [c.example] - sample / representative value displayed by `FilterChooser`
      *      components to aid usability
-     * @param {Store} [c.store] - set from controlling `FilterChooserModel.filterSource` config, used
+     * @param {Store} [c.store] - set from controlling `FilterChooserModel.valueSource` config, used
      *      to source matching data `Field` and extract values if configured.
      */
     constructor({

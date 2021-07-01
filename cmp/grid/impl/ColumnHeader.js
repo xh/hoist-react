@@ -134,7 +134,7 @@ class LocalModel extends HoistModel {
         super();
         makeObservable(this);
 
-        const {sortable, enableFilter, field} = xhColumn;
+        const {sortable, enableFilter} = xhColumn;
         this.gridModel = gridModel;
         this.xhColumn = xhColumn;
         this.agColumn = agColumn;
@@ -142,7 +142,7 @@ class LocalModel extends HoistModel {
         this.enableSorting = sortable;
         this.availableSorts = this.parseAvailableSorts();
 
-        if (!XH.isMobileApp && enableFilter && field === this.colId) {
+        if (!XH.isMobileApp && enableFilter && gridModel.filterModel) {
             this.columnHeaderFilterModel = new ColumnHeaderFilterModel({gridModel, xhColumn, agColumn});
             this.enableFilter = true;
         } else {

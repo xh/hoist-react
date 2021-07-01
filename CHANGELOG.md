@@ -5,23 +5,29 @@
 ### 🎁 New Features
 
 * Column-level filtering is now official supported for desktop grids:
-  + New `Column.enableFilter` to enable a column-level filter affordance in a grid column header.
-    The filter control offers two tabs - a "Values" tab for enumerative, value-based filter, and
-    a "Custom" tab to build complex filtering queries with multiple clauses.
-  + Use `Column.disableEnumFilter` to remove the "Values" tab for certain columns. Applicable
-    for columns with many discrete values (e.g. numerical columns), where filtering by specific
-    values may not be useful.
-  + Use `GridModel.filterSource` to control which `Store` or cube `View` value suggestions are
-    sourced from. Defaults to the `GridModel`'s `Store`.
-  + Use `GridModel.filterTarget` to control which `Store` or cube `View` the generated filter
-    is applied to. Defaults to the `GridModel`'s `Store`.
+  + `GridModel` now has a `filterModel` config, which accepts a config for the new `GridFilterModel`
+    or a boolean `true` to create the default `GridFilterModel`. When a `GridModel` has a `filterModel`,
+    filtering affordances will be added to any column with `enableFilter`.
+    `GridFilterModel` accepts the following configuration options:
+    + `GridFilterModel.valueSource` - controls which `Store` or cube `View` value suggestions
+      are sourced from. The default `GridFilterModel` sets this to the `GridModel`'s `Store`.
+    + `GridFilterModel.target` - controls which `Store` or cube `View` the generated filter
+      is applied to. The default `GridFilterModel` sets this to the `GridModel`'s `Store`.
+    + `GridFilterModel.initialFilter` - sets an initial filter in the `GridFilterModel`.
+  + New `Column.enableFilter` to enable a column-level filter affordance in the column header.
+    Note the that the `GridModel` must have a `filterModel`. The filter control offers two tabs - a
+    "Values" tab for enumerative, value-based filter, and a "Custom" tab to build complex filtering
+    queries with multiple clauses.
+  + Set `Column.enableEnumFilter` to `false` to remove the "Values" tab for the specified columns.
+    Applicable for columns with many discrete values (e.g. numerical columns), where filtering by
+    specific values may not be useful.
 
 ### 💥 Breaking Changes
 
-* `FilterChooserModel.sourceStore` and `FilterChooserModel.targetstore` have been renamed
-  `FilterChooserModel.filterSource` and `FilterChooserModel.filterTarget` respectively. Furthermore,
-  both configs now support either a `Store` or a cube `View`. This is to provide a common API with
-  the new `GridModel` filtering described above.
+* `FilterChooserModel.sourceStore` and `FilterChooserModel.targetStore` have been renamed
+  `FilterChooserModel.valueSource` and `FilterChooserModel.target` respectively. Furthermore, both
+  configs now support either a `Store` or a cube `View`. This is to provide a common API with
+  the new `GridFilterModel` filtering described above.
 
 ## v41.0.0-SNAPSHOT - unreleased
 

@@ -38,10 +38,10 @@ export class FilterChooserModel extends HoistModel {
     @observable.ref favorites = [];
 
     /** @member {(Store|View)} */
-    filterSource;
+    valueSource;
 
     /** @member {(Store|View)} */
-    filterTarget;
+    target;
 
     /** @member {FilterChooserFieldSpec[]} */
     @managed fieldSpecs = [];
@@ -66,16 +66,16 @@ export class FilterChooserModel extends HoistModel {
      * @param c - FilterChooserModel configuration.
      * @param {(string[]|Object[]} [c.fieldSpecs] - specifies the fields this model
      *      supports for filtering and customizes how their available values will be parsed and
-     *      displayed. Should be configs for a `FilterChooserFieldSpec`. If a `filterSource`
+     *      displayed. Should be configs for a `FilterChooserFieldSpec`. If a `valueSource`
      *      is provided, these may be specified as field names in that source or omitted entirely,
      *      indicating that all fields should be filter-enabled.
      * @param {Object} [c.fieldSpecDefaults] - default properties to be
      *      assigned to all FilterChooserFieldSpecs created by this object.
-     * @param {(Store|View)} [c.filterSource] - Store or cube View to be used to lookup matching
+     * @param {(Store|View)} [c.valueSource] - Store or cube View to be used to lookup matching
      *      Field-level defaults for `fieldSpecs` and to provide suggested data values (if configured)
      *      from user input.
-     * @param {(Store|View)} [c.filterTarget] - Store or cube View that should actually be filtered
-     *      as this model's value changes. May be the same as `filterSource`. Leave undefined if you
+     * @param {(Store|View)} [c.target] - Store or cube View that should actually be filtered
+     *      as this model's value changes. May be the same as `valueSource`. Leave undefined if you
      *      wish to combine this model's values with other filters, send it to the server,
      *      or otherwise observe and handle value changes manually.
      * @param {(Filter|* |[]|function)} [c.initialValue] - Configuration for a filter appropriate
@@ -91,8 +91,8 @@ export class FilterChooserModel extends HoistModel {
     constructor({
         fieldSpecs,
         fieldSpecDefaults,
-        filterSource = null,
-        filterTarget = null,
+        valueSource = null,
+        target = null,
         initialValue = null,
         initialFavorites = [],
         maxResults = 50,
@@ -102,11 +102,11 @@ export class FilterChooserModel extends HoistModel {
         super();
         makeObservable(this);
 
-        apiRemoved(rest.sourceStore, 'sourceStore', "Use 'filterSource' instead");
-        apiRemoved(rest.targetStore, 'targetStore', "Use 'filterTarget' instead");
+        apiRemoved(rest.sourceStore, 'sourceStore', "Use 'valueSource' instead");
+        apiRemoved(rest.targetStore, 'targetStore', "Use 'target' instead");
 
-        this.filterSource = filterSource;
-        this.filterTarget = filterTarget;
+        this.valueSource = valueSource;
+        this.target = target;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
         this.maxResults = maxResults;
         this.queryEngine = new QueryEngine(this);
@@ -143,15 +143,15 @@ export class FilterChooserModel extends HoistModel {
         this.setValue(value);
         this.setFavorites(favorites);
 
-        if (filterTarget) {
+        if (target) {
             this.addReaction({
                 track: () => this.value,
-                run: (filter) => filterTarget.setFilter(filter),
+                run: (filter) => target.setFilter(filter),
                 fireImmediately: true
             });
 
             this.addReaction({
-                track: () => filterTarget.filter,
+                track: () => target.filter,
                 run: (filter) => this.setValue(filter)
             });
         }
@@ -355,20 +355,20 @@ export class FilterChooserModel extends HoistModel {
     //--------------------------------
     // FilterChooserFieldSpec handling
     //--------------------------------
-    // Todo: If filterSource is a cube view, do we need to rebuild fields on query change?
+    // Todo: If valueSource is a cube view, do we need to rebuild fields on query change?
     // Or, pass view into FilterChooserFieldSpec and setup reaction in loadValues there?
     parseFieldSpecs(specs, fieldSpecDefaults) {
-        const {filterSource} = this;
+        const {valueSource} = this;
 
         throwIf(
-            !filterSource && (!specs || specs.some(isString)),
-            'Must provide a filterSource if fieldSpecs are not provided, or provided as strings.'
+            !valueSource && (!specs || specs.some(isString)),
+            'Must provide a valueSource if fieldSpecs are not provided, or provided as strings.'
         );
 
         // If no specs provided, include all store fields.
-        if (!specs) specs = filterSource.fieldNames;
+        if (!specs) specs = valueSource.fieldNames;
 
-        const store = filterSource?.isView ? filterSource.cube.store : filterSource;
+        const store = valueSource?.isView ? valueSource.cube.store : valueSource;
         return specs.map(spec => {
             if (isString(spec)) spec = {field: spec};
             return new FilterChooserFieldSpec({

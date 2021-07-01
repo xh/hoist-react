@@ -97,7 +97,7 @@ export class ActivityTrackingModel extends HoistModel {
 
         this.filterChooserModel = new FilterChooserModel({
             initialValue: this._defaultFilter,
-            filterSource: this.cube.store,
+            valueSource: this.cube.store,
             fieldSpecs: [
                 'category',
                 'month',

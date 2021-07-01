@@ -30,7 +30,7 @@ export class ColumnHeaderFilterModel extends HoistModel {
     @managed customFilterTabModel;
 
     get currentFilter() {
-        return this.gridModel.filterTarget.filter;
+        return this.gridModel.filterModel.filter;
     }
 
     get columnFilters() {
@@ -38,7 +38,11 @@ export class ColumnHeaderFilterModel extends HoistModel {
     }
 
     get type() {
-        return this.gridModel.store.getField(this.colId).type;
+        return this.valueSource?.getField(this.colId).type;
+    }
+
+    get valueSource() {
+        return this.gridModel.filterModel.valueSource;
     }
 
     get hasFilter() {
@@ -60,8 +64,8 @@ export class ColumnHeaderFilterModel extends HoistModel {
         return columnFilters.length > 1 || columnFilters[0].op !== '=';
     }
 
-    get disableEnumFilter() {
-        return this.xhColumn.disableEnumFilter;
+    get enableEnumFilter() {
+        return this.xhColumn.enableEnumFilter;
     }
 
     constructor({gridModel, xhColumn, agColumn}) {
@@ -94,7 +98,6 @@ export class ColumnHeaderFilterModel extends HoistModel {
 
     @action
     commit() {
-        const {gridModel, colId} = this;
         let filter;
         if (this.tabContainerModel.activeTabId === 'enumFilter') {
             filter = this.enumFilterTabModel.filter;
@@ -106,15 +109,14 @@ export class ColumnHeaderFilterModel extends HoistModel {
         // Show a mask to provide feedback to user.
         this.showMask = true;
         wait(1).then(() => {
-            gridModel.setColumnFilter({colId, filter});
+            this.setColumnFilter(filter);
             this.closeMenu();
         });
     }
 
     @action
     clear(close = true) {
-        const {gridModel, colId} = this;
-        gridModel.setColumnFilter({colId, filter: null});
+        this.setColumnFilter(null);
         if (close) {
             this.closeMenu();
         } else {
@@ -139,7 +141,7 @@ export class ColumnHeaderFilterModel extends HoistModel {
     //-------------------
     @action
     syncWithFilter() {
-        const {columnFilters, isCustomFilter, disableEnumFilter} = this;
+        const {columnFilters, isCustomFilter, enableEnumFilter} = this;
 
         this.enumFilterTabModel.reset();
         this.customFilterTabModel.reset();
@@ -154,7 +156,11 @@ export class ColumnHeaderFilterModel extends HoistModel {
             }
         }
 
-        const tab = isCustomFilter || disableEnumFilter ? 'customFilter' : 'enumFilter';
+        const tab = isCustomFilter || !enableEnumFilter ? 'customFilter' : 'enumFilter';
         this.tabContainerModel.activateTab(tab);
+    }
+
+    setColumnFilter(filter) {
+        this.gridModel.filterModel.setColumnFilter(this.colId, filter);
     }
 }
