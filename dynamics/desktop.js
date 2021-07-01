@@ -19,13 +19,13 @@
 export let tabContainerImpl = null;
 export let dockContainerImpl = null;
 export let colChooser = null;
-export let columnFilter = null;
+export let columnHeaderFilter = null;
 export let storeFilterFieldImpl = null;
 export let pinPadImpl = null;
 
 export let StoreContextMenu = null;
 export let ColChooserModel = null;
-export let ColumnFilterModel = null;
+export let ColumnHeaderFilterModel = null;
 
 /**
  * Provide implementations of functions and classes exported in this file.
@@ -38,9 +38,9 @@ export function installDesktopImpls(impls) {
     storeFilterFieldImpl = impls.storeFilterFieldImpl;
     pinPadImpl = impls.pinPadImpl;
     colChooser = impls.colChooser;
-    columnFilter = impls.columnFilter;
+    columnHeaderFilter = impls.columnHeaderFilter;
 
     StoreContextMenu = impls.StoreContextMenu;
     ColChooserModel = impls.ColChooserModel;
-    ColumnFilterModel = impls.ColumnFilterModel;
+    ColumnHeaderFilterModel = impls.ColumnHeaderFilterModel;
 }

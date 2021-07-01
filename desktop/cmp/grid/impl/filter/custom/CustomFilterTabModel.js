@@ -12,7 +12,7 @@ import {castArray, compact, isEmpty, every} from 'lodash';
 import {CustomFilterRowModel} from './CustomFilterRowModel';
 
 export class CustomFilterTabModel extends HoistModel {
-    /** @member {ColumnFilterModel} */
+    /** @member {ColumnHeaderFilterModel} */
     parentModel;
 
     @bindable op = 'AND';

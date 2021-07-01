@@ -16,7 +16,7 @@ import {CustomFilterTabModel} from './custom/CustomFilterTabModel';
 import {enumFilterTab} from './enum/EnumFilterTab';
 import {EnumFilterTabModel} from './enum/EnumFilterTabModel';
 
-export class ColumnFilterModel extends HoistModel {
+export class ColumnHeaderFilterModel extends HoistModel {
     gridModel;
     xhColumn;
     colId;

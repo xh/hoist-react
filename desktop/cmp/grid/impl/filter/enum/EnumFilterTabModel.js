@@ -12,7 +12,7 @@ import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {castArray, compact, clone, isEmpty, isEqual, uniq} from 'lodash';
 
 export class EnumFilterTabModel extends HoistModel {
-    /** @member {ColumnFilterModel} */
+    /** @member {ColumnHeaderFilterModel} */
     parentModel;
 
     /**

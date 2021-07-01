@@ -14,16 +14,17 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {buttonGroup, button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
-import './ColumnFilter.scss';
-import {ColumnFilterModel} from './ColumnFilterModel';
+import './ColumnHeaderFilter.scss';
+import {ColumnHeaderFilterModel} from './ColumnHeaderFilterModel';
 
-export const columnFilter = hoistCmp.factory({
-    model: uses(ColumnFilterModel),
+/** @private */
+export const columnHeaderFilter = hoistCmp.factory({
+    model: uses(ColumnHeaderFilterModel),
     render({model}) {
         const {isOpen, hasFilter} = model;
         return popover({
             isOpen,
-            className: 'xh-column-filter__icon',
+            className: 'xh-column-header-filter__icon',
             popoverClassName: 'xh-popup--framed',
             position: 'bottom',
             boundary: 'viewport',
@@ -48,7 +49,7 @@ const content = hoistCmp.factory({
     render({model}) {
         return panel({
             title: `Filter`,
-            className: 'xh-column-filter',
+            className: 'xh-column-header-filter',
             compactHeader: true,
             onClick: (e) => e.stopPropagation(),
             headerItems: [switcher()],
@@ -100,7 +101,7 @@ const switcher = hoistCmp.factory(
 
         return buttonGroup({
             omit: disableEnumFilter || type === 'bool',
-            className: 'xh-column-filter__tab-switcher',
+            className: 'xh-column-header-filter__tab-switcher',
             items: tabs.map(it => switcherButton({...it}))
         });
     }
@@ -112,7 +113,7 @@ const switcherButton = hoistCmp.factory(
             {activeTabId} = tabContainerModel;
 
         return button({
-            className: 'xh-column-filter__tab-switcher__button',
+            className: 'xh-column-header-filter__tab-switcher__button',
             text: title,
             active: activeTabId === id,
             intent: 'primary',

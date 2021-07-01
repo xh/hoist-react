@@ -9,7 +9,7 @@ import {div, span} from '@xh/hoist/cmp/layout';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {Column} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {columnFilter, ColumnFilterModel} from '@xh/hoist/dynamics/desktop';
+import {columnHeaderFilter, ColumnHeaderFilterModel} from '@xh/hoist/dynamics/desktop';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
@@ -102,7 +102,7 @@ export const columnHeader = hoistCmp.factory({
             items: [
                 span({onMouseEnter, item: headerElem}),
                 sortIcon(),
-                impl.enableFilter ? columnFilter({model: impl.columnFilterModel}) : menuIcon()
+                impl.enableFilter ? columnHeaderFilter({model: impl.columnHeaderFilterModel}) : menuIcon()
             ]
         });
     }
@@ -119,7 +119,7 @@ class LocalModel extends HoistModel {
 
     // Hoist Filtering
     enableFilter;
-    @managed columnFilterModel;
+    @managed columnHeaderFilterModel;
 
     // AG Filtering
     @bindable isAgFiltered = false;
@@ -143,7 +143,7 @@ class LocalModel extends HoistModel {
         this.availableSorts = this.parseAvailableSorts();
 
         if (!XH.isMobileApp && enableFilter && field === this.colId) {
-            this.columnFilterModel = new ColumnFilterModel({gridModel, xhColumn, agColumn});
+            this.columnHeaderFilterModel = new ColumnHeaderFilterModel({gridModel, xhColumn, agColumn});
             this.enableFilter = true;
         } else {
             this.isAgFiltered = agColumn.isFilterActive();
@@ -170,7 +170,7 @@ class LocalModel extends HoistModel {
     }
 
     get isFiltered() {
-        return this.isAgFiltered || this.columnFilterModel?.isFiltered;
+        return this.isAgFiltered || this.columnHeaderFilterModel?.isFiltered;
     }
 
     // Ag-Grid's filter callback
