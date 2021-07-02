@@ -69,8 +69,8 @@ export class FilterChooserModel extends HoistModel {
      *      displayed. Should be configs for a `FilterChooserFieldSpec`. If a `valueSource`
      *      is provided, these may be specified as field names in that source or omitted entirely,
      *      indicating that all fields should be filter-enabled.
-     * @param {Object} [c.fieldSpecDefaults] - default properties to be
-     *      assigned to all FilterChooserFieldSpecs created by this object.
+     * @param {Object} [c.fieldSpecDefaults] - default properties to be assigned to all
+     *      FilterChooserFieldSpecs created by this model.
      * @param {(Store|View)} [c.valueSource] - Store or cube View to be used to lookup matching
      *      Field-level defaults for `fieldSpecs` and to provide suggested data values (if configured)
      *      from user input.
@@ -355,8 +355,6 @@ export class FilterChooserModel extends HoistModel {
     //--------------------------------
     // FilterChooserFieldSpec handling
     //--------------------------------
-    // Todo: If valueSource is a cube view, do we need to rebuild fields on query change?
-    // Or, pass view into FilterChooserFieldSpec and setup reaction in loadValues there?
     parseFieldSpecs(specs, fieldSpecDefaults) {
         const {valueSource} = this;
 
@@ -365,14 +363,13 @@ export class FilterChooserModel extends HoistModel {
             'Must provide a valueSource if fieldSpecs are not provided, or provided as strings.'
         );
 
-        // If no specs provided, include all store fields.
+        // If no specs provided, include all source fields.
         if (!specs) specs = valueSource.fieldNames;
 
-        const store = valueSource?.isView ? valueSource.cube.store : valueSource;
         return specs.map(spec => {
             if (isString(spec)) spec = {field: spec};
             return new FilterChooserFieldSpec({
-                store,
+                source: valueSource,
                 ...fieldSpecDefaults,
                 ...spec
             });

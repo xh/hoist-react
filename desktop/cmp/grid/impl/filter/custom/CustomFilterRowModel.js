@@ -6,7 +6,6 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
-import {FieldFilter} from '@xh/hoist/data';
 import {isNil} from 'lodash';
 
 export class CustomFilterRowModel extends HoistModel {
@@ -21,28 +20,15 @@ export class CustomFilterRowModel extends HoistModel {
      */
     @computed.struct
     get value() {
-        const {colId: field, op, inputVal: value} = this;
+        const {op, inputVal: value} = this,
+            {field} = this.fieldSpec;
+
         if (isNil(value)) return null;
         return {field, op, value};
     }
 
-    get colId() {
-        return this.parentModel.colId;
-    }
-
-    get type() {
-        return this.parentModel.type;
-    }
-
-    get operatorOptions() {
-        const {type} = this;
-        if (['number', 'int', 'localDate', 'date'].includes(type)) {
-            // Comparison operators [<,<=,>,>=] supported
-            return FieldFilter.OPERATORS;
-        } else {
-            // Comparison operators [<,<=,>,>=] not supported
-            return FieldFilter.ARRAY_OPERATORS;
-        }
+    get fieldSpec() {
+        return this.parentModel.fieldSpec;
     }
 
     constructor({

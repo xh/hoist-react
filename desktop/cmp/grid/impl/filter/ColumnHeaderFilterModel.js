@@ -17,9 +17,9 @@ import {enumFilterTab} from './enum/EnumFilterTab';
 import {EnumFilterTabModel} from './enum/EnumFilterTabModel';
 
 export class ColumnHeaderFilterModel extends HoistModel {
-    gridModel;
-    xhColumn;
-    colId;
+    filterModel;
+    column;
+    fieldSpec;
 
     @observable.ref filter = null;
     @observable isOpen = false;
@@ -29,20 +29,20 @@ export class ColumnHeaderFilterModel extends HoistModel {
     @managed enumFilterTabModel;
     @managed customFilterTabModel;
 
+    get field() {
+        return this.fieldSpec.field;
+    }
+
     get currentFilter() {
-        return this.gridModel.filterModel.filter;
+        return this.filterModel.filter;
     }
 
     get columnFilters() {
-        return flattenFilter(this.currentFilter).filter(it => it.field === this.colId);
-    }
-
-    get type() {
-        return this.valueSource?.getField(this.colId).type;
+        return flattenFilter(this.currentFilter).filter(it => it.field === this.field);
     }
 
     get valueSource() {
-        return this.gridModel.filterModel.valueSource;
+        return this.filterModel.valueSource;
     }
 
     get hasFilter() {
@@ -64,18 +64,13 @@ export class ColumnHeaderFilterModel extends HoistModel {
         return columnFilters.length > 1 || columnFilters[0].op !== '=';
     }
 
-    get enableEnumFilter() {
-        return this.xhColumn.enableEnumFilter;
-    }
-
-    constructor({gridModel, xhColumn, agColumn}) {
+    constructor({filterModel, column}) {
         super();
         makeObservable(this);
 
-        const {colId} = agColumn;
-        this.gridModel = gridModel;
-        this.xhColumn = xhColumn;
-        this.colId = colId;
+        this.filterModel = filterModel;
+        this.column = column;
+        this.fieldSpec = filterModel.getFieldSpec(column.field);
 
         this.enumFilterTabModel = new EnumFilterTabModel(this);
         this.customFilterTabModel = new CustomFilterTabModel(this);
@@ -141,7 +136,7 @@ export class ColumnHeaderFilterModel extends HoistModel {
     //-------------------
     @action
     syncWithFilter() {
-        const {columnFilters, isCustomFilter, enableEnumFilter} = this;
+        const {columnFilters, isCustomFilter, fieldSpec} = this;
 
         this.enumFilterTabModel.reset();
         this.customFilterTabModel.reset();
@@ -156,11 +151,11 @@ export class ColumnHeaderFilterModel extends HoistModel {
             }
         }
 
-        const tab = isCustomFilter || !enableEnumFilter ? 'customFilter' : 'enumFilter';
+        const tab = isCustomFilter || !fieldSpec.enableEnumFilter ? 'customFilter' : 'enumFilter';
         this.tabContainerModel.activateTab(tab);
     }
 
     setColumnFilter(filter) {
-        this.gridModel.filterModel.setColumnFilter(this.colId, filter);
+        this.filterModel.setColumnFilter(this.field, filter);
     }
 }

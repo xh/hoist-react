@@ -96,11 +96,11 @@ const bbar = hoistCmp.factory({
 
 const switcher = hoistCmp.factory(
     ({model}) => {
-        const {type, enableEnumFilter} = model,
+        const {fieldType, enableEnumFilter} = model.fieldSpec,
             {tabs} = model.tabContainerModel;
 
         return buttonGroup({
-            omit: !enableEnumFilter || type === 'bool',
+            omit: !enableEnumFilter || fieldType === 'bool',
             className: 'xh-column-header-filter__tab-switcher',
             items: tabs.map(it => switcherButton({...it}))
         });

@@ -40,6 +40,9 @@ export class View extends HoistBase {
     @observable.ref
     info = null;
 
+    /** @member {number} - timestamp (ms) of the last time this view's data was changed. */
+    @observable lastUpdated;
+
     // Implementation
     _rows = null;
     _leafMap = null;
@@ -181,6 +184,7 @@ export class View extends HoistBase {
         stores.forEach(s => s.loadData(storeRows));
         this.result = {rows: _rows, leafMap: _leafMap};
         this.info = this.cube.info;
+        this.lastUpdated = Date.now();
     }
 
     @action
@@ -201,6 +205,7 @@ export class View extends HoistBase {
         });
         this.result = {rows: this._rows, leafMap: this._leafMap};
         this.info = this.cube.info;
+        this.lastUpdated = Date.now();
     }
 
     // Generate a new full data representation

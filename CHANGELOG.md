@@ -6,21 +6,25 @@
 
 * Column-level filtering is now official supported for desktop grids:
   + `GridModel` now has a `filterModel` config, which accepts a config for the new `GridFilterModel`
-    or a boolean `true` to create the default `GridFilterModel`. When a `GridModel` has a `filterModel`,
-    filtering affordances will be added to any column with `enableFilter`.
-    `GridFilterModel` accepts the following configuration options:
+    or a boolean `true` to create the default `GridFilterModel`. `GridFilterModel` is designed to be
+    analogous to `FilterChooserModel`. When a `GridModel` has a `filterModel`, filtering affordances
+    will be added to any column that is marked `filterable`. `GridFilterModel` accepts the following
+    configuration options:
+    + `GridFilterModel.fieldSpecs` - specifies the fields this model supports for filtering. Should
+      be configs for a `GridFilterFieldSpec`. If a `valueSource` is provided, these may be specified
+      as field names in that source or omitted entirely, indicating that all fields should be
+      filter-enabled.
+    + `GridFilterModel.fieldSpecDefaults` - default properties to be assigned to all
+      `GridFilterFieldSpecs` created by this model.
     + `GridFilterModel.valueSource` - controls which `Store` or cube `View` value suggestions
       are sourced from. The default `GridFilterModel` sets this to the `GridModel`'s `Store`.
     + `GridFilterModel.target` - controls which `Store` or cube `View` the generated filter
       is applied to. The default `GridFilterModel` sets this to the `GridModel`'s `Store`.
     + `GridFilterModel.initialFilter` - sets an initial filter in the `GridFilterModel`.
-  + New `Column.enableFilter` to enable a column-level filter affordance in the column header.
++ New `Column.filterable` to enable a column-level filter affordance in the column header.
     Note the that the `GridModel` must have a `filterModel`. The filter control offers two tabs - a
     "Values" tab for enumerative, value-based filter, and a "Custom" tab to build complex filtering
     queries with multiple clauses.
-  + Set `Column.enableEnumFilter` to `false` to remove the "Values" tab for the specified columns.
-    Applicable for columns with many discrete values (e.g. numerical columns), where filtering by
-    specific values may not be useful.
 
 ### 💥 Breaking Changes
 

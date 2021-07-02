@@ -183,7 +183,7 @@ export class GridModel extends HoistModel {
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(GridFilterModelConfig|boolean)} [c.filterModel] - config with which to create a
-     *      GridFilterModel, or boolean `true` to enable default.
+     *      GridFilterModel, or boolean `true` to enable default. Desktop only.
      * @param {(ColChooserModelConfig|boolean)} [c.colChooserModel] - config with which to create a
      *      ColChooserModel, or boolean `true` to enable default.
      * @param {?ReactNode} [c.restoreDefaultsWarning] - Confirmation warning to be presented to
@@ -1253,6 +1253,8 @@ export class GridModel extends HoistModel {
     }
 
     parseFilterModel(filterModel) {
+        if (XH.isMobileApp) return null;
+
         if (isPlainObject(filterModel)) {
             const config = defaults(filterModel, {gridModel: this});
             return this.markManaged(new GridFilterModel(config));

@@ -39,20 +39,16 @@ export class CustomFilterTabModel extends HoistModel {
         return equalsCount > 1 || likeCount > 1;
     }
 
+    get fieldSpec() {
+        return this.parentModel.fieldSpec;
+    }
+
     get currentFilter() {
         return this.parentModel.currentFilter;
     }
 
     get columnFilters() {
         return this.parentModel.columnFilters;
-    }
-
-    get colId() {
-        return this.parentModel.colId;
-    }
-
-    get type() {
-        return this.parentModel.type;
     }
 
     constructor(parentModel) {
@@ -122,7 +118,8 @@ export class CustomFilterTabModel extends HoistModel {
 
         // This is the outer compound filter if all its children
         // are FieldFilters on this field.
-        if (every(filter.filters, it => it.field === this.colId)) {
+        const {field} = this.fieldSpec;
+        if (every(filter.filters, it => it.field === field)) {
             return filter;
         }
 

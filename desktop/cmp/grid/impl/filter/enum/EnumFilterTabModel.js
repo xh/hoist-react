@@ -44,13 +44,13 @@ export class EnumFilterTabModel extends HoistModel {
      */
     @computed.struct
     get filter() {
-        const {allValues, colId} = this,
+        const {allValues, field} = this,
             values = this.getValueList();
 
         if (isEqual(allValues, values)) return null;
 
         return {
-            field: colId,
+            field: field,
             op: '=',
             value: values.length === 1 ? values[0] : values
         };
@@ -70,20 +70,20 @@ export class EnumFilterTabModel extends HoistModel {
         return isChecked;
     }
 
+    get field() {
+        return this.parentModel.field;
+    }
+
+    get fieldSpec() {
+        return this.parentModel.fieldSpec;
+    }
+
     get currentFilter() {
         return this.parentModel.currentFilter;
     }
 
     get columnFilters() {
         return this.parentModel.columnFilters;
-    }
-
-    get colId() {
-        return this.parentModel.colId;
-    }
-
-    get type() {
-        return this.parentModel.type;
     }
 
     get valueSource() {
@@ -135,10 +135,10 @@ export class EnumFilterTabModel extends HoistModel {
     //-------------------
     @action
     doReset() {
-        const {colId, currentFilter, valueSource} = this,
+        const {field, currentFilter, valueSource} = this,
             sourceStore = valueSource.isView ? valueSource.cube.store : valueSource,
             allRecords = sourceStore.allRecords.filter(rec => isEmpty(rec.allChildren)),
-            allValues = uniq(allRecords.map(rec => rec.data[colId])),
+            allValues = uniq(allRecords.map(rec => rec.data[field])),
             pendingValue = {};
 
         // Initialize values to all true (default)
@@ -155,7 +155,7 @@ export class EnumFilterTabModel extends HoistModel {
             filteredRecords = allRecords.filter(it => testFn(it));
         }
 
-        this.availableValues = uniq(filteredRecords.map(rec => rec.data[colId]));
+        this.availableValues = uniq(filteredRecords.map(rec => rec.data[field]));
         this.hasHiddenValues = this.availableValues.length < allValues.length;
         this.filterText = null;
     }
@@ -183,10 +183,10 @@ export class EnumFilterTabModel extends HoistModel {
     }
 
     syncGrid() {
-        const {availableValues, pendingValue, colId} = this;
+        const {availableValues, pendingValue, field} = this;
         const data = availableValues.map(value => {
             const isChecked = pendingValue[value];
-            return {[colId]: value, isChecked};
+            return {[field]: value, isChecked};
         });
         this.gridModel.loadData(data);
     }
@@ -201,7 +201,7 @@ export class EnumFilterTabModel extends HoistModel {
         if (filters) {
             const ret = compact(filters.map(it => this.cleanFilter(it)));
             return !isEmpty(ret) ? {op, filters: ret} : null;
-        } else if (field === this.colId) {
+        } else if (field === this.field) {
             return null;
         }
 
@@ -209,12 +209,14 @@ export class EnumFilterTabModel extends HoistModel {
     }
 
     createGridModel() {
-        const {renderer, rendererIsComplex, align, headerAlign, headerName} = this.parentModel.xhColumn; // Render values as they are in `gridModel`
+        const {field} = this,
+            {renderer, rendererIsComplex, align, headerAlign, headerName} = this.parentModel.column; // Render values as they are in `gridModel`
+
         return new GridModel({
             store: {
-                idSpec: (raw) => raw[this.colId].toString(),
+                idSpec: (raw) => raw[field].toString(),
                 fields: [
-                    this.colId,
+                    field,
                     {name: 'isChecked', type: 'bool'}
                 ]
             },
@@ -223,7 +225,7 @@ export class EnumFilterTabModel extends HoistModel {
             contextMenu: null,
             sizingMode: 'compact',
             stripeRows: false,
-            sortBy: this.colId,
+            sortBy: field,
             columns: [
                 {
                     field: 'isChecked',
@@ -248,7 +250,7 @@ export class EnumFilterTabModel extends HoistModel {
                     }
                 },
                 {
-                    field: this.colId,
+                    field,
                     flex: 1,
                     sortable: false,
                     headerName,
@@ -271,7 +273,7 @@ export class EnumFilterTabModel extends HoistModel {
         });
 
         // Parse boolean strings to their primitive values
-        if (this.type === 'bool') {
+        if (this.fieldSpec.fieldType === 'bool') {
             return ret.map(it => {
                 if (it === 'true') return true;
                 if (it === 'false') return false;

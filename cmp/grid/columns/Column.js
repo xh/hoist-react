@@ -101,6 +101,9 @@ export class Column {
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
      * @param {boolean} [c.sortable] - false to prevent user from sorting on this column.
+     * @param {boolean} [c.filterable] - true to enable an Excel-like column header filter menu.
+     *      Menu includes an enumerated, checkbox set filter and a custom input filter dependent on
+     *      for building complex queries.
      * @param {(boolean|string)} [c.pinned] - set to true/'left' or 'right' to pin (aka "lock") the
      *      column to the side of the grid, ensuring it's visible while horizontally scrolling.
      * @param {Column~rendererFn} [c.renderer] - function returning a formatted string for each
@@ -163,12 +166,6 @@ export class Column {
      *      of field name as a dot-separated path - e.g. `'country.name'` - where the default
      *      `getValueFn` will expect the field to be an object and render a nested property.
      *      False to support field names that contain dots *without* triggering this behavior.
-     * @param {boolean} [c.enableFilter] - true to enable an Excel-like column header filter menu.
-     *      Menu includes an enumerated, checkbox set filter and a custom input filter dependent on
-     *      its `Field.type`.
-     * @param {boolean} [c.enableEnumFilter] - true (default) to include the enumerated filter control
-     *      in the filter menu. Recommended set to false for columns with many discrete values
-     *      (e.g. numerical columns), where filtering by specific values is not useful.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -200,6 +197,7 @@ export class Column {
         resizable,
         movable,
         sortable,
+        filterable,
         pinned,
         renderer,
         rendererIsComplex,
@@ -228,8 +226,6 @@ export class Column {
         setValueFn,
         getValueFn,
         enableDotSeparatedFieldPath,
-        enableFilter,
-        enableEnumFilter,
         agOptions,
         ...rest
     }, gridModel) {
@@ -339,23 +335,22 @@ export class Column {
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
-        if (enableFilter && XH.isMobileApp) {
-            console.warn(`'enableFilter' is not supported on mobile and will be ignored.`);
-            enableFilter = false;
+        if (filterable && XH.isMobileApp) {
+            console.warn(`'filterable' is not supported on mobile and will be ignored.`);
+            filterable = false;
         }
 
-        if (enableFilter && this.colId !== this.field) {
-            console.warn(`Column '${this.colId}' is not a Store field. 'enableFilter' will be ignored.`);
-            enableFilter = false;
+        if (filterable && this.colId !== this.field) {
+            console.warn(`Column '${this.colId}' is not a Store field. 'filterable' will be ignored.`);
+            filterable = false;
         }
 
-        if (enableFilter && this.field === 'cubeLabel') {
-            console.warn(`Column '${this.colId}' is a cube label column. 'enableFilter' will be ignored.`);
-            enableFilter = false;
+        if (filterable && this.field === 'cubeLabel') {
+            console.warn(`Column '${this.colId}' is a cube label column. 'filterable' will be ignored.`);
+            filterable = false;
         }
 
-        this.enableFilter = withDefault(enableFilter, false);
-        this.enableEnumFilter = withDefault(enableEnumFilter, true);
+        this.filterable = withDefault(filterable, false);
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};

@@ -15,7 +15,7 @@ import {CustomFilterRowModel} from './CustomFilterRowModel';
 export const customFilterRow = hoistCmp.factory({
     model: uses(CustomFilterRowModel),
     render({model}) {
-        const {operatorOptions, type} = model;
+        const options = model.fieldSpec.ops;
         return hbox({
             className: 'xh-custom-filter-tab__row',
             items: [
@@ -24,10 +24,10 @@ export const customFilterRow = hoistCmp.factory({
                     enableFilter: false,
                     hideDropdownIndicator: true,
                     hideSelectedOptionCheck: true,
-                    options: operatorOptions.map(value => ({label: operatorDisplay({op: value}), value})),
+                    options: options.map(value => ({label: operatorDisplay({op: value}), value})),
                     optionRenderer: (opt) => operatorDisplay({op: opt.value})
                 }),
-                inputField({type}),
+                inputField(),
                 button({
                     icon: Icon.delete(),
                     intent: 'danger',
@@ -69,24 +69,25 @@ const operatorDisplay = hoistCmp.factory(
 );
 
 const inputField = hoistCmp.factory(
-    ({type}) => {
-        const props = {
-            bind: 'inputVal',
-            commitOnChange: true,
-            enableClear: true,
-            flex: 1,
-            width: null
-        };
+    ({model}) => {
+        const {fieldType} = model.fieldSpec,
+            props = {
+                bind: 'inputVal',
+                commitOnChange: true,
+                enableClear: true,
+                flex: 1,
+                width: null
+            };
 
         let ret;
-        switch (type) {
+        switch (fieldType) {
             case 'number':
             case 'int':
                 ret = numberInput({...props, enableShorthandUnits: true});
                 break;
             case 'localDate':
             case 'date':
-                ret = dateInput({...props, valueType: type});
+                ret = dateInput({...props, valueType: fieldType});
                 break;
             default:
                 ret = textInput(props);
