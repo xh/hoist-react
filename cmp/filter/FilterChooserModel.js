@@ -193,7 +193,7 @@ export class FilterChooserModel extends HoistModel {
 
             // Set value after options, to ensure it is able to be rendered correctly
             this.selectOptions = selectOptions;
-            wait(1).thenAction(() => this.selectValue = selectValue);
+            wait(0).thenAction(() => this.selectValue = selectValue);
 
             if (!this.value?.equals(value)) {
                 console.debug('Setting FilterChooser value:', value);

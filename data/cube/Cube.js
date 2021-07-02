@@ -131,11 +131,13 @@ export class Cube extends HoistBase {
      *      To receive data only, use the 'results' property of the returned object instead.
      * @param {boolean} [c.connect] - true to update View automatically when data in
      *      the underlying cube is changed. Default false.
+     * @param {PendingTaskModel} [c.loadModel] - PendingTaskModel to link the View to during
+     *      potentially expensive operations. If not provided, one will be created.
      * @returns {View}
      */
-    createView({query, stores, connect = false}) {
+    createView({query, stores, connect = false, loadModel}) {
         query = new Query({...query, cube: this});
-        return new View({query, stores, connect});
+        return new View({query, stores, connect, loadModel});
     }
 
     /**

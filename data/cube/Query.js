@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {parseFilter} from '@xh/hoist/data';
 import {apiRemoved} from '@xh/hoist/utils/js';
-import {castArray, find} from 'lodash';
+import {isEqual, castArray, find} from 'lodash';
 
 /**
  *  Specification used to define the shape of the data returned by a Cube.
@@ -100,6 +100,20 @@ export class Query {
      */
     test(record) {
         return this._testFn ? this._testFn(record) : true;
+    }
+
+    /**
+     * @returns {boolean} - true if the provided other Query is equivalent to this instance.
+     */
+    equals(other) {
+        return (
+            isEqual(this.cube, other.cube) &&
+            isEqual(this.fields, other.fields) &&
+            isEqual(this.dimensions, other.dimensions) &&
+            ((!this.filter && !other.filter) || this.filter?.equals(other.filter)) &&
+            this.includeRoot === other.includeRoot &&
+            this.includeLeaves === other.includeLeaves
+        );
     }
 
     //------------------------

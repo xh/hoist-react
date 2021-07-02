@@ -8,8 +8,11 @@
 import {HoistBase} from '@xh/hoist/core';
 import {Cube, FieldFilter, Query} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {PendingTaskModel, forEachAsync} from '@xh/hoist/utils/async';
+import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, forEach, groupBy, isEmpty, isNil, map} from 'lodash';
+
 import {AggregateRow} from './row/AggregateRow';
 import {BucketRow} from './row/BucketRow';
 import {LeafRow} from './row/LeafRow';
@@ -23,22 +26,22 @@ export class View extends HoistBase {
     get isView() {return true}
 
     /** @member {Query} - Query defining this View. Update via `updateQuery()`. */
-    @observable.ref
-    query = null;
+    @observable.ref query = null;
 
     /**
      * @member {Object} - results of this view, an observable object with a `rows` property
      *      containing an array of hierarchical data objects.
      */
-    @observable.ref
-    result = null;
+    @observable.ref result = null;
 
     /** @member {Store[]} - Stores to which results of this view should be (re)loaded. */
     stores = null;
 
+    /** @member {PendingTaskModel} - PendingTaskModel linked to during operations */
+    loadModel = null;
+
     /** @member {Object} - observable Cube info associated with this View when last updated. */
-    @observable.ref
-    info = null;
+    @observable.ref info = null;
 
     /** @member {number} - timestamp (ms) of the last time this view's data was changed. */
     @observable lastUpdated;
@@ -56,12 +59,20 @@ export class View extends HoistBase {
      *      Optional - to receive data only, observe/read this class's `result` property instead.
      * @param {boolean} [c.connect] - true to reactively update this class's `result` and connected
      *      store(s) (if any) when data in the underlying Cube is changed.
+     * @param {PendingTaskModel} [c.loadModel] - PendingTaskModel to link to during potentially
+     *      expensive operations. If not provided, one will be created.
      */
-    constructor({query, connect = false, stores = []}) {
+    constructor({
+        query,
+        stores = [],
+        connect = false,
+        loadModel
+    }) {
         super();
         makeObservable(this);
 
         this.query = query;
+        this.loadModel = loadModel ?? this.markManaged(new PendingTaskModel());
         this.setStores(stores);
 
         if (connect) {
@@ -105,8 +116,10 @@ export class View extends HoistBase {
     @action
     updateQuery(overrides) {
         throwIf(overrides.cube, 'Cannot redirect view to a different cube in updateQuery().');
-        this.query = this.query.clone(overrides);
-        this.fullUpdate();
+        const newQuery = this.query.clone(overrides);
+        if (this.query.equals(newQuery)) return;
+        this.query = newQuery;
+        this.fullUpdateAsync().linkTo(this.loadModel);
     }
 
     /**
@@ -138,7 +151,7 @@ export class View extends HoistBase {
      */
     setStores(stores) {
         this.stores = castArray(stores);
-        this.fullUpdate();
+        this.fullUpdateAsync().linkTo(this.loadModel);
     }
 
     /**
@@ -151,9 +164,8 @@ export class View extends HoistBase {
     //-----------------------
     // Entry point for cube
     //-----------------------
-    @action
     noteCubeLoaded() {
-        this.fullUpdate();
+        this.fullUpdateAsync().linkTo(this.loadModel);
     }
 
     @action
@@ -161,9 +173,9 @@ export class View extends HoistBase {
         const simpleUpdates = this.getSimpleUpdates(changeLog);
 
         if (!simpleUpdates) {
-            this.fullUpdate();
+            this.fullUpdateAsync().linkTo(this.loadModel);
         } else if (!isEmpty(simpleUpdates)) {
-            this.dataOnlyUpdate(simpleUpdates);
+            this.dataOnlyUpdateAsync(simpleUpdates).linkTo(this.loadModel);
         } else {
             this.info = this.cube.info;
         }
@@ -172,38 +184,47 @@ export class View extends HoistBase {
     //------------------------
     // Implementation
     //------------------------
-    @action
-    fullUpdate() {
+    async fullUpdateAsync() {
+        // Todo: Why do we need this (and with such a large interval) in order for the mask to show?
+        await wait(100);
+
         this.generateRows();
 
-        // Load stores and observable state.
         // Skip degenerate root in stores/grids, but preserve in object api.
-        const {stores, _leafMap, _rows} = this,
+        const {_leafMap, _rows} = this,
             storeRows = _leafMap.size !== 0 ? _rows : [];
 
-        stores.forEach(s => s.loadData(storeRows));
-        this.result = {rows: _rows, leafMap: _leafMap};
-        this.info = this.cube.info;
-        this.lastUpdated = Date.now();
+        await forEachAsync(this.stores, store => {
+            store.loadData(storeRows);
+        });
+
+        this.updateResults();
     }
 
-    @action
-    dataOnlyUpdate(updates) {
-        const {_leafMap} = this;
+    async dataOnlyUpdateAsync(updates) {
+        await wait(100);
 
-        const updatedRows = new Set();
+        const {_leafMap} = this,
+            updatedRows = new Set();
+
         updates.forEach(rec => {
             const leaf = _leafMap.get(rec.id);
             leaf?.applyDataUpdate(rec, updatedRows);
         });
-        this.stores.forEach(store => {
+
+        await forEachAsync(this.stores, store => {
             const recordUpdates = [];
             updatedRows.forEach(row => {
                 if (store.getById(row.id)) recordUpdates.push(row);
             });
             store.updateData({update: recordUpdates});
         });
-        this.result = {rows: this._rows, leafMap: this._leafMap};
+    }
+
+    @action
+    updateResults() {
+        const {_leafMap, _rows} = this;
+        this.result = {rows: _rows, leafMap: _leafMap};
         this.info = this.cube.info;
         this.lastUpdated = Date.now();
     }
