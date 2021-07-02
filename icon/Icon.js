@@ -244,6 +244,8 @@ export const Icon = {
     sync(p)             {return Icon.icon({...p,  iconName: 'sync'})},
     tab(p)              {return Icon.icon({...p,  iconName: 'folder'})},
     table(p)            {return Icon.icon({...p,  iconName: 'table'})},
+    tag(p)              {return Icon.icon({...p,  iconName: 'tag'})},
+    tags(p)             {return Icon.icon({...p,  iconName: 'tags'})},
     target(p)           {return Icon.icon({...p,  iconName: 'bullseye-arrow'})},
     thumbsDown(p)       {return Icon.icon({...p,  iconName: 'thumbs-down'})},
     thumbsUp(p)         {return Icon.icon({...p,  iconName: 'thumbs-up'})},
