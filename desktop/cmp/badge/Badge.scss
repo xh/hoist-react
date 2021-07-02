@@ -1,8 +1,10 @@
 .xh-badge {
+  display: flex;
   border-radius: 4px;
   font-size: 0.5em;
   font-weight: bold;
-  padding: 2px 3px;
+  justify-content: center;
+  margin: 0 0 10px 5px;
   background: var(--xh-blue-gray);
   color: white;
 
