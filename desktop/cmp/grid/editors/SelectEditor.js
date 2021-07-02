@@ -6,7 +6,6 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {select} from '@xh/hoist/desktop/cmp/input';
-import {merge} from 'lodash';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
 import {EditorPropTypes} from './EditorPropTypes';
 import './Editors.scss';
@@ -18,7 +17,8 @@ export const [SelectEditor, selectEditor] = hoistCmp.withFactory({
     memo: false,
     observer: false,
     render(props, ref) {
-        props = merge({
+        props = {
+            ...props,
             inputProps: {
                 hideDropdownIndicator: true,
                 hideSelectedOptionCheck: true,
@@ -32,9 +32,10 @@ export const [SelectEditor, selectEditor] = hoistCmp.withFactory({
                             minWidth: '100%'
                         })
                     }
-                }
+                },
+                ...props.inputProps
             }
-        }, props);
+        };
 
         return useInlineEditorModel(select, props, ref);
     }
