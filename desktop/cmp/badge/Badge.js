@@ -16,7 +16,10 @@ import './Badge.scss';
  */
 export const [Badge, badge] = hoistCmp.withFactory({
     displayName: 'Badge',
+    model: false,
+
     className: 'xh-badge',
+
     render({intent, className, ...props}) {
         return div({
             className: classNames(
