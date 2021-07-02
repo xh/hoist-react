@@ -35,6 +35,10 @@ export class FieldFilter extends Filter {
     static OPERATORS = ['=', '!=', '>', '>=', '<', '<=', 'like'];
     static ARRAY_OPERATORS = ['=', '!=', 'like'];
 
+    // Value that represents an empty check filter (i.e. 'field is empty')
+    static EMPTY_VALUE = [null, ''];
+    static EMPTY_STR = '[empty]';
+
     /**
      * Constructor - not typically called by apps - create from config via `parseFilter()` instead.
      *
@@ -122,9 +126,11 @@ export class FieldFilter extends Filter {
     }
 
     isEmptyCheck() {
-        const {value, op} = this;
+        const {value, op} = this,
+            {EMPTY_VALUE} = FieldFilter;
+
         return (
-            isEqual(value, [null, '']) || isEqual(value, ['', null]) &&
+            isEqual(value, EMPTY_VALUE) || isEqual(value, EMPTY_VALUE.slice().reverse()) &&
             (op === '!=' || op === '=')
         );
     }

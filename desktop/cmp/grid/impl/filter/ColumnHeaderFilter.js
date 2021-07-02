@@ -13,6 +13,7 @@ import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {buttonGroup, button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {FieldType} from '@xh/hoist/data';
 
 import './ColumnHeaderFilter.scss';
 import {ColumnHeaderFilterModel} from './ColumnHeaderFilterModel';
@@ -100,7 +101,7 @@ const switcher = hoistCmp.factory(
             {tabs} = model.tabContainerModel;
 
         return buttonGroup({
-            omit: !enableEnumFilter || fieldType === 'bool',
+            omit: !enableEnumFilter || fieldType === FieldType.BOOL,
             className: 'xh-column-header-filter__tab-switcher',
             items: tabs.map(it => switcherButton({...it}))
         });

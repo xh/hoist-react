@@ -6,7 +6,7 @@
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {parseFilter} from '@xh/hoist/data';
+import {FieldFilter, parseFilter} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {castArray, compact, clone, isEmpty, isEqual, uniq} from 'lodash';
@@ -135,10 +135,10 @@ export class EnumFilterTabModel extends HoistModel {
     //-------------------
     @action
     doReset() {
-        const {field, currentFilter, valueSource} = this,
+        const {field, currentFilter, valueSource, parentModel} = this,
             sourceStore = valueSource.isView ? valueSource.cube.store : valueSource,
             allRecords = sourceStore.allRecords.filter(rec => isEmpty(rec.allChildren)),
-            allValues = uniq(allRecords.map(rec => rec.data[field])),
+            allValues = uniq(allRecords.map(rec => parentModel.handleEmptyString(rec.data[field]))),
             pendingValue = {};
 
         // Initialize values to all true (default)
@@ -155,21 +155,24 @@ export class EnumFilterTabModel extends HoistModel {
             filteredRecords = allRecords.filter(it => testFn(it));
         }
 
-        this.availableValues = uniq(filteredRecords.map(rec => rec.data[field]));
+        this.availableValues = uniq(filteredRecords.map(rec => parentModel.handleEmptyString(rec.data[field])));
         this.hasHiddenValues = this.availableValues.length < allValues.length;
         this.filterText = null;
     }
 
     @action
     doSyncWithFilter() {
-        const {allValues, columnFilters} = this,
+        const {allValues, columnFilters, parentModel} = this,
             pendingValue = {};
 
         if (!isEmpty(columnFilters)) {
             const values = [];
 
             columnFilters.forEach(filter => {
-                if (filter.op === '=') values.push(...castArray(filter.value));
+                if (filter.op === '=') {
+                    const newValues = castArray(filter.value).map(it => parentModel.handleEmptyString(it));
+                    values.push(...newValues);
+                }
             });
 
             if (values.length) {
@@ -210,6 +213,7 @@ export class EnumFilterTabModel extends HoistModel {
 
     createGridModel() {
         const {field} = this,
+            {EMPTY_STR} = FieldFilter,
             {renderer, rendererIsComplex, align, headerAlign, headerName} = this.parentModel.column; // Render values as they are in `gridModel`
 
         return new GridModel({
@@ -226,10 +230,10 @@ export class EnumFilterTabModel extends HoistModel {
             sizingMode: 'compact',
             stripeRows: false,
             sortBy: field,
+            colDefaults: {sortable: false},
             columns: [
                 {
                     field: 'isChecked',
-                    sortable: false,
                     headerName: ({gridModel}) => {
                         const {store} = gridModel;
                         return checkbox({
@@ -252,12 +256,17 @@ export class EnumFilterTabModel extends HoistModel {
                 {
                     field,
                     flex: 1,
-                    sortable: false,
                     headerName,
                     align,
                     headerAlign,
                     renderer, // TODO - handle cases like bool check col where rendered values look null
-                    rendererIsComplex
+                    rendererIsComplex,
+                    comparator: (v1, v2, sortDir, abs, {defaultComparator}) => {
+                        const mul = sortDir === 'desc' ? -1 : 1;
+                        if (v1 === EMPTY_STR) return 1 * mul;
+                        if (v2 === EMPTY_STR) return -1 * mul;
+                        return defaultComparator(v1, v2);
+                    }
                 }
             ]
         });
@@ -269,17 +278,8 @@ export class EnumFilterTabModel extends HoistModel {
 
         allValues.forEach(value => {
             const include = pendingValue[value] ?? true;
-            if (include) ret.push(value);
+            if (include) ret.push(this.parentModel.parseValue(value, '='));
         });
-
-        // Parse boolean strings to their primitive values
-        if (this.fieldSpec.fieldType === 'bool') {
-            return ret.map(it => {
-                if (it === 'true') return true;
-                if (it === 'false') return false;
-                return null;
-            });
-        }
 
         return ret;
     }

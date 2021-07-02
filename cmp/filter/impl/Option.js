@@ -5,8 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-
-import {parseFieldValue} from '@xh/hoist/data';
+import {FieldFilter, parseFieldValue} from '@xh/hoist/data';
 
 
 // ---------------------------------------------------------
@@ -39,8 +38,9 @@ export function fieldFilterOption({filter, fieldSpec, isExact = false}) {
         displayValue;
 
     if (filter.isEmptyCheck()) {
+        const {EMPTY_STR} = FieldFilter;
         displayOp = 'is';
-        displayValue = (filter.op === '!=' ? 'not empty' : 'empty');
+        displayValue = (filter.op === '!=' ? 'not ' + EMPTY_STR : EMPTY_STR);
     } else {
         displayOp = filter.op;
         displayValue = fieldSpec.renderValue(parseFieldValue(filter.value, fieldType, null));

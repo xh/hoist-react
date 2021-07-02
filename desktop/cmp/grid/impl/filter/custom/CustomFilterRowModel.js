@@ -12,6 +12,9 @@ export class CustomFilterRowModel extends HoistModel {
     /** @member {CustomFilterTabModel} */
     parentModel;
 
+    /** @member {ColumnHeaderFilterModel} */
+    colFilterModel;
+
     @bindable op;
     @bindable inputVal;
 
@@ -20,10 +23,12 @@ export class CustomFilterRowModel extends HoistModel {
      */
     @computed.struct
     get value() {
-        const {op, inputVal: value} = this,
+        const {op, inputVal} = this,
             {field} = this.fieldSpec;
 
-        if (isNil(value)) return null;
+        if (isNil(inputVal)) return null;
+
+        const value = this.colFilterModel.handleEmptyString(inputVal);
         return {field, op, value};
     }
 
@@ -40,8 +45,9 @@ export class CustomFilterRowModel extends HoistModel {
         makeObservable(this);
 
         this.parentModel = parentModel;
+        this.colFilterModel = parentModel.parentModel;
         this.op = op;
-        this.inputVal = value;
+        this.inputVal = value ? this.colFilterModel.parseValue(value, op) : null;
     }
 
     removeRow() {

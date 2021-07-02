@@ -9,7 +9,7 @@ import {FieldFilter, FieldType, genDisplayName, parseFieldValue} from '@xh/hoist
 import {fmtDate} from '@xh/hoist/format';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
-import {isFunction} from 'lodash';
+import {isFunction, isString} from 'lodash';
 
 /**
  * Defines field-level filtering options and provides metadata for presenting these options in
@@ -148,7 +148,7 @@ export class BaseFieldSpec extends HoistBase {
 
             // Special handling for default localDate to supports user entering dash-separated dates,
             // which is likely given that we show resolved dates in that format.
-            if (fieldType === FieldType.LOCAL_DATE) {
+            if (fieldType === FieldType.LOCAL_DATE && isString(value)) {
                 return LocalDate.get(value.replace(/-/g, ''));
             }
 

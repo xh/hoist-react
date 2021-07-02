@@ -100,7 +100,7 @@ export class QueryEngine {
         ['empty', 'not empty'].forEach(value => {
             if (caselessStartsWith(value, q.value)) {
                 const op = value.startsWith('not') ? '!=' : '=';
-                value = [null, ''];
+                value = FieldFilter.EMPTY_VALUE;
                 ret.push(
                     fieldFilterOption({
                         filter: new FieldFilter({field: spec.field, op, value}),
