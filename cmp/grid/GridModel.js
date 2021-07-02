@@ -723,6 +723,11 @@ export class GridModel extends HoistModel {
             .map(({colId, width, hidden, pinned}) => ({colId, width, hidden, pinned}));
     }
 
+    setColumnState(colState) {
+        colState = this.persistenceModel.cleanColumnState(colState);
+        this.applyColumnStateChanges(colState);
+    }
+
     showColChooser() {
         if (this.colChooserModel) {
             this.colChooserModel.open();
