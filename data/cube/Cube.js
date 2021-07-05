@@ -71,7 +71,9 @@ export class Cube extends HoistBase {
         this.store = new Store({
             fields: this.parseFields(fields, fieldDefaults),
             idSpec,
-            processRawData
+            processRawData,
+            freezeData: false,
+            idEncodesTreePath: true
         });
         this.store.loadData(data);
         this.info = info;
