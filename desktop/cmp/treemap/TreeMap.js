@@ -10,7 +10,7 @@ import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {wait} from '@xh/hoist/promise';
-import {withShortDebug} from '@xh/hoist/utils/js';
+import {logWithDebug, withDebug} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps, useOnResize, useOnVisibleChange} from '@xh/hoist/utils/react';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import composeRefs from '@seznam/compose-react-refs';
@@ -175,16 +175,14 @@ class LocalModel extends HoistModel {
         if (parentDims.width === 0 || parentDims.height === 0) return;
 
         assign(config.chart, parentDims, {renderTo: chartElem});
-        withShortDebug(`Creating new TreeMap | ${newData.length} records`, () => {
+        withDebug(`Creating new TreeMap | ${newData.length} records`, () => {
             this.chart = Highcharts.chart(config);
         }, this);
     }
 
+    @logWithDebug
     reloadSeriesData(newData) {
-        if (!this.chart) return;
-        withShortDebug(`Updating TreeMap series | ${newData.length} records`, () => {
-            this.chart.series[0].setData(newData, true, false);
-        }, this);
+        this.chart?.series[0].setData(newData, true, false);
     }
 
     startResize = ({width, height}) => {

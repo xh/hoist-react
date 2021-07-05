@@ -6,6 +6,7 @@
  */
 import {debounce, isFunction} from 'lodash';
 import {throwIf, getOrCreate} from './LangUtils';
+import {withDebug} from './WithDebug';
 
 /**
  * Decorates a class method so that it is debounced by the specified duration.
@@ -46,6 +47,22 @@ export function computeOnce(target, key, descriptor) {
         ...descriptor,
         [baseFnName]: function() {
             return getOrCreate(this, '_xh_' + key, () => baseFn.call(this));
+        }
+    };
+}
+
+/**
+ * Modify a method so that it execution is tracked and timed with a debug message
+ *
+ * @see {withDebug}
+ */
+export function logWithDebug(target, key, descriptor) {
+    const {value} = descriptor;
+    throwIf(!isFunction(value), 'debug should be applied to a class method.');
+    return {
+        ...descriptor,
+        value: function(...args) {
+            return withDebug(key, () => value.apply(this, args), this);
         }
     };
 }
