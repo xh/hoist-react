@@ -5,8 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {FieldFilter, parseFieldValue} from '@xh/hoist/data';
-
+import {FieldFilter, parseFieldValue, isEmptyCheck} from '@xh/hoist/data';
 
 // ---------------------------------------------------------
 // Generate Options for FilterChooserModel query responses.
@@ -37,7 +36,7 @@ export function fieldFilterOption({filter, fieldSpec, isExact = false}) {
         displayOp,
         displayValue;
 
-    if (filter.isEmptyCheck()) {
+    if (isEmptyCheck(filter)) {
         const {EMPTY_STR} = FieldFilter;
         displayOp = 'is';
         displayValue = (filter.op === '!=' ? 'not ' + EMPTY_STR : EMPTY_STR);

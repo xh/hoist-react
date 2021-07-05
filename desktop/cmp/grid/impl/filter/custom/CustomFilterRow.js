@@ -5,29 +5,34 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {hbox} from '@xh/hoist/cmp/layout';
+import {hbox, div} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {dateInput, numberInput, select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
+import classNames from 'classnames';
 
 import {CustomFilterRowModel} from './CustomFilterRowModel';
 
 export const customFilterRow = hoistCmp.factory({
     model: uses(CustomFilterRowModel),
     render({model}) {
-        const options = model.fieldSpec.ops;
+        const {options, hideInput} = model;
         return hbox({
-            className: 'xh-custom-filter-tab__row',
+            className: classNames(
+                'xh-custom-filter-tab__row',
+                hideInput ? 'xh-custom-filter-tab__row--no-input' : null
+            ),
             items: [
                 select({
                     bind: 'op',
                     enableFilter: false,
                     hideDropdownIndicator: true,
                     hideSelectedOptionCheck: true,
-                    options: options.map(value => ({label: operatorDisplay({op: value}), value})),
-                    optionRenderer: (opt) => operatorDisplay({op: opt.value})
+                    menuWidth: 110,
+                    options,
+                    optionRenderer: (opt) => operatorRenderer({opt})
                 }),
-                inputField(),
+                inputField({omit: hideInput}),
                 button({
                     icon: Icon.delete(),
                     intent: 'danger',
@@ -41,33 +46,6 @@ export const customFilterRow = hoistCmp.factory({
 //-------------------
 // Implementation
 //-------------------
-const operatorDisplay = hoistCmp.factory(
-    ({op}) => {
-        let item = op;
-        switch (op) {
-            case '=':
-                item = Icon.equals();
-                break;
-            case '!=':
-                item = Icon.notEquals();
-                break;
-            case '>':
-                item = Icon.greaterThan();
-                break;
-            case '>=':
-                item = Icon.greaterThanEqual();
-                break;
-            case '<':
-                item = Icon.lessThan();
-                break;
-            case '<=':
-                item = Icon.lessThanEqual();
-                break;
-        }
-        return hbox({className: 'xh-custom-filter-tab__operator-display', item});
-    }
-);
-
 const inputField = hoistCmp.factory(
     ({model}) => {
         const {fieldType} = model.fieldSpec,
@@ -93,5 +71,14 @@ const inputField = hoistCmp.factory(
                 ret = textInput(props);
         }
         return ret;
+    }
+);
+
+const operatorRenderer = hoistCmp.factory(
+    ({opt}) => {
+        return div({
+            className: 'xh-custom-filter-tab__operator-renderer',
+            item: opt.label
+        });
     }
 );

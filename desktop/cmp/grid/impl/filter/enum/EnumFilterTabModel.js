@@ -6,10 +6,10 @@
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {FieldFilter, parseFilter} from '@xh/hoist/data';
+import {FieldFilter, parseFilter, isEmptyCheck} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
-import {castArray, compact, clone, isEmpty, isEqual, uniq} from 'lodash';
+import {castArray, compact, clone, isEmpty, isEqual, isNil, uniq} from 'lodash';
 
 export class EnumFilterTabModel extends HoistModel {
     /** @member {ColumnHeaderFilterModel} */
@@ -135,10 +135,10 @@ export class EnumFilterTabModel extends HoistModel {
     //-------------------
     @action
     doReset() {
-        const {field, currentFilter, valueSource, parentModel} = this,
+        const {currentFilter, valueSource} = this,
             sourceStore = valueSource.isView ? valueSource.cube.store : valueSource,
             allRecords = sourceStore.allRecords.filter(rec => isEmpty(rec.allChildren)),
-            allValues = uniq(allRecords.map(rec => parentModel.handleEmptyString(rec.data[field]))),
+            allValues = uniq(allRecords.map(rec => this.valueFromRecord(rec))),
             pendingValue = {};
 
         // Initialize values to all true (default)
@@ -155,22 +155,30 @@ export class EnumFilterTabModel extends HoistModel {
             filteredRecords = allRecords.filter(it => testFn(it));
         }
 
-        this.availableValues = uniq(filteredRecords.map(rec => parentModel.handleEmptyString(rec.data[field])));
+        this.availableValues = uniq(filteredRecords.map(rec => this.valueFromRecord(rec)));
         this.hasHiddenValues = this.availableValues.length < allValues.length;
         this.filterText = null;
     }
 
     @action
     doSyncWithFilter() {
-        const {allValues, columnFilters, parentModel} = this,
+        const {allValues, columnFilters} = this,
+            {EMPTY_STR} = FieldFilter,
             pendingValue = {};
 
         if (!isEmpty(columnFilters)) {
             const values = [];
 
             columnFilters.forEach(filter => {
-                if (filter.op === '=') {
-                    const newValues = castArray(filter.value).map(it => parentModel.handleEmptyString(it));
+                const {op} = filter;
+                if (op !== '=') return;
+
+                if (isEmptyCheck(filter)) {
+                    values.push(EMPTY_STR);
+                } else {
+                    const newValues = castArray(filter.value).map(value => {
+                        return isEmptyCheck({value, op}) ? EMPTY_STR : value;
+                    });
                     values.push(...newValues);
                 }
             });
@@ -183,6 +191,11 @@ export class EnumFilterTabModel extends HoistModel {
         }
 
         this.pendingValue = pendingValue;
+    }
+
+    valueFromRecord(record) {
+        const ret = record.get(this.field);
+        return isNil(ret) ? FieldFilter.EMPTY_STR : ret;
     }
 
     syncGrid() {
@@ -274,11 +287,12 @@ export class EnumFilterTabModel extends HoistModel {
 
     getValueList() {
         const {allValues, pendingValue} = this,
+            {EMPTY_STR, EMPTY_VALUE} = FieldFilter,
             ret = [];
 
         allValues.forEach(value => {
             const include = pendingValue[value] ?? true;
-            if (include) ret.push(this.parentModel.parseValue(value, '='));
+            if (include) ret.push(value === EMPTY_STR ? EMPTY_VALUE : value);
         });
 
         return ret;

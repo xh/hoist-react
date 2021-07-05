@@ -6,7 +6,7 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {combineValueFilters} from '@xh/hoist/data';
+import {combineValueFilters, isEmptyCheck} from '@xh/hoist/data';
 import {castArray, compact, isEmpty, every} from 'lodash';
 
 import {CustomFilterRowModel} from './CustomFilterRowModel';
@@ -89,7 +89,10 @@ export class CustomFilterTabModel extends HoistModel {
         // Create rows based on filter.
         columnFilters.forEach(filter => {
             const {op, value} = filter;
-            if (op === '=' || op === 'like') {
+            if (isEmptyCheck(filter)) {
+                const emptyCheckOp = op === '!=' ? 'notEmpty' : 'isEmpty';
+                rowModels.push(new CustomFilterRowModel({parentModel: this, op: emptyCheckOp}));
+            } else if (op === '=' || op === 'like') {
                 castArray(value).forEach(it => {
                     rowModels.push(new CustomFilterRowModel({parentModel: this, op, value: it}));
                 });

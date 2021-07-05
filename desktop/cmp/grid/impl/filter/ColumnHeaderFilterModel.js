@@ -6,10 +6,10 @@
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {observable, action, computed, makeObservable} from '@xh/hoist/mobx';
-import {FieldFilter, flattenFilter} from '@xh/hoist/data';
+import {flattenFilter} from '@xh/hoist/data';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {wait} from '@xh/hoist/promise';
-import {isEmpty, isEqual, isNil} from 'lodash';
+import {isEmpty} from 'lodash';
 
 import {customFilterTab} from './custom/CustomFilterTab';
 import {CustomFilterTabModel} from './custom/CustomFilterTabModel';
@@ -136,13 +136,14 @@ export class ColumnHeaderFilterModel extends HoistModel {
     //-------------------
     @action
     syncWithFilter() {
-        const {columnFilters, isCustomFilter, fieldSpec} = this;
+        const {columnFilters, isCustomFilter, fieldSpec} = this,
+            useCustomFilterTab = isCustomFilter || !fieldSpec.enableEnumFilter;
 
         this.enumFilterTabModel.reset();
         this.customFilterTabModel.reset();
 
         if (!isEmpty(columnFilters)) {
-            if (isCustomFilter) {
+            if (useCustomFilterTab) {
                 // There are column filters that can only be represented on the custom filter tab
                 this.customFilterTabModel.syncWithFilter();
             } else {
@@ -151,30 +152,11 @@ export class ColumnHeaderFilterModel extends HoistModel {
             }
         }
 
-        const tab = isCustomFilter || !fieldSpec.enableEnumFilter ? 'customFilter' : 'enumFilter';
+        const tab = useCustomFilterTab ? 'customFilter' : 'enumFilter';
         this.tabContainerModel.activateTab(tab);
     }
 
     setColumnFilter(filter) {
         this.filterModel.setColumnFilter(this.field, filter);
-    }
-
-    handleEmptyString(value) {
-        const {EMPTY_STR, EMPTY_VALUE} = FieldFilter;
-        if (value === EMPTY_STR) {
-            return EMPTY_VALUE;
-        }
-        if (isNil(value) || isEqual(value, EMPTY_VALUE) || isEqual(value, EMPTY_VALUE.slice().reverse())) {
-            return EMPTY_STR;
-        }
-        return value;
-    }
-
-    parseValue(value, op) {
-        return this.fieldSpec.parseValue(this.handleEmptyString(value), op);
-    }
-
-    renderValue(value, op) {
-        return this.fieldSpec.renderValue(this.handleEmptyString(value), op);
     }
 }

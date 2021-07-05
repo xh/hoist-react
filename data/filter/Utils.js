@@ -6,7 +6,7 @@
  */
 
 import {CompoundFilter, FieldFilter, FunctionFilter} from '@xh/hoist/data';
-import {flatMap, groupBy, isArray, isFunction} from 'lodash';
+import {flatMap, groupBy, isArray, isEqual, isFunction} from 'lodash';
 
 /**
  * Parse a filter from an object or array representation.
@@ -81,4 +81,19 @@ export function combineValueFilters(filters = []) {
             {...filters[0], value: filters.map(it => it.value)} :
             filters;
     });
+}
+
+/**
+ * Is the provided filter an 'is empty' || 'is not empty' FieldFilter?
+ *
+ * @returns {Filter[]}
+ */
+export function isEmptyCheck(filter) {
+    const {value, op} = filter,
+        {EMPTY_VALUE} = FieldFilter;
+
+    return (
+        isEqual(value, EMPTY_VALUE) || isEqual(value, EMPTY_VALUE.slice().reverse()) &&
+        (op === '!=' || op === '=')
+    );
 }

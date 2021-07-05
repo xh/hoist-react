@@ -18,7 +18,7 @@
       }
 
       .xh-select__value-container {
-        justify-content: center;
+        padding-left: 12px;
       }
 
       .xh-select__single-value {
@@ -30,12 +30,20 @@
       width: 100%;
     }
 
+    &--no-input .xh-select {
+      width: 190px !important;
+
+      .xh-select__value-container {
+        padding-left: 15px;
+      }
+    }
+
     &:not(:last-of-type) {
       margin-bottom: var(--xh-pad-half-px);
     }
   }
 
-  &__operator-display {
+  &__operator-renderer .xh-icon {
     font-weight: 500;
   }
 

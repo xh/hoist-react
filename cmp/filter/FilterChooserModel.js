@@ -4,12 +4,8 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-
-import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
-import {QueryEngine} from './impl/QueryEngine';
-import {fieldFilterOption, compoundFilterOption} from './impl/Option';
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
-import {FieldFilter, parseFilter, combineValueFilters} from '@xh/hoist/data';
+import {FieldFilter, parseFilter, combineValueFilters, isEmptyCheck} from '@xh/hoist/data';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, apiRemoved} from '@xh/hoist/utils/js';
@@ -28,6 +24,10 @@ import {
     isFunction,
     uniq
 } from 'lodash';
+
+import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
+import {QueryEngine} from './impl/QueryEngine';
+import {fieldFilterOption, compoundFilterOption} from './impl/Option';
 
 export class FilterChooserModel extends HoistModel {
 
@@ -259,7 +259,7 @@ export class FilterChooserModel extends HoistModel {
         // 3) Finally unroll non-empty check multi-value filters to one value per filter.
         // The multiple values for 'like' and '=' will later be restored to 'OR' semantics
         return flatMap(ret, (f) => {
-            return isArray(f.value) && !f.isEmptyCheck() ?
+            return isArray(f.value) && !isEmptyCheck(f) ?
                 f.value.map(value => new FieldFilter({...f, value})) :
                 f;
         });
