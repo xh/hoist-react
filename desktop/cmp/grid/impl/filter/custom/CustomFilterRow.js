@@ -48,13 +48,14 @@ export const customFilterRow = hoistCmp.factory({
 //-------------------
 const inputField = hoistCmp.factory(
     ({model}) => {
-        const {fieldType} = model.fieldSpec,
+        const {fieldType, inputProps} = model.fieldSpec,
             props = {
                 bind: 'inputVal',
                 commitOnChange: true,
                 enableClear: true,
                 flex: 1,
-                width: null
+                width: null,
+                ...inputProps
             };
 
         let ret;
