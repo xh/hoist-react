@@ -5,6 +5,8 @@
 ### 🐞 Bug Fixes
 
 * Fixed an issue preventing export of very large (>100k rows) grids.
+* Improved `GridModel` async selection methods to ensure they do not wait forever if grid does not
+  mount.
 
 ### 🎁 New Features
 
