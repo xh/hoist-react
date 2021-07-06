@@ -26,7 +26,6 @@ export class AppSpec {
      *      As with `clientAppCode` above, this will default to the global `appName` specified by
      *      the project's Webpack config, but can be set here to a more specific value (e.g.
      *      'MyApp Mobile').
-     * @param {boolean} c.isMobileApp - true if the app should use the Hoist mobile toolkit.
      * @param {Class} c.modelClass - root Model class for the application. Note this is a reference
      *      to the class itself, not an instance, and must extend {@see HoistAppModel}.
      * @param {Class} c.componentClass - root HoistComponent for the application. Despite the name,
@@ -34,6 +33,7 @@ export class AppSpec {
      * @param {Class} c.containerClass - Container component to be used to host this application.
      *      This class determines the platform used by Hoist. The value should be imported from
      *      either `@xh/hoist/desktop/AppContainer` or `@xh/hoist/mobile/AppContainer`.
+     * @param {boolean} c.isMobileApp - true if the app should use the Hoist mobile toolkit.
      * @param {boolean} c.isSSO - true if SSO auth is enabled, as opposed to a login prompt.
      * @param {(string|CheckAccessCb)} c.checkAccess - If a string, will be interpreted as the role
      *      required for basic UI access. Otherwise, function to determine if the passed user should
@@ -42,15 +42,19 @@ export class AppSpec {
      *      app has loaded and fully initialized, including elapsed time of asset loading and init.
      * @param {boolean} [c.webSocketsEnabled] - true to enable Hoist websocket connectivity,
      *      establish a connection and initiate a heartbeat..
-     * @param {(Class|function)} [c.idlePanel] - Optional custom Component to display when App has
+     * @param {(Class|function)} [c.idlePanel] - optional custom Component to display when App has
      *      been suspended.  The component will receive a single prop -- onReactivate -- a callback
      *      called when the user has acknowledged the suspension and wishes to reload the app and
      *      continue working.  Specify as a React Component or an element factory.
-     * @param {?string} [c.loginMessage] - Optional message to show on login form (for non-SSO apps).
-     * @param {?string} [c.lockoutMessage] - Optional message to show users when denied access to app.
-     * @param {boolean} [c.showBrowserContextMenu] - True to show the built-in browser context menu
+     * @param {?string} [c.loginMessage] - optional message to show on login form (for non-SSO apps).
+     * @param {?string} [c.lockoutMessage] - optional message to show users when denied access to app.
+     * @param {boolean} [c.showBrowserContextMenu] - true to show the built-in browser context menu
      *      when no app-specific menu would be shown (e.g. from a Grid). False (the default)
      *      prevents the browser menu from being shown anywhere upon right-click.
+     * @param {boolean} [c.disableXssProtection] - true to disable Field-level XSS protection by
+     *      default across all Stores/Fields in the app. For use with secure, internal apps that do
+     *      not display arbitrary/external user input and have tight performance tolerances and/or
+     *      load very large recordsets. {@see FieldConfig.disableXssProtection}
      */
     constructor({
         clientAppCode = XH.appCode,
@@ -63,10 +67,11 @@ export class AppSpec {
         checkAccess,
         trackAppLoad = true,
         webSocketsEnabled = false,
-        showBrowserContextMenu = false,
         idlePanel = null,
         loginMessage = null,
         lockoutMessage = null,
+        showBrowserContextMenu = false,
+        disableXssProtection = false,
         ...rest
     }) {
         throwIf(!modelClass, 'A Hoist App must define a modelClass.');
@@ -100,6 +105,7 @@ export class AppSpec {
         this.loginMessage = loginMessage;
         this.lockoutMessage = lockoutMessage;
         this.showBrowserContextMenu = showBrowserContextMenu;
+        this.disableXssProtection = disableXssProtection;
 
         Object.freeze(this);
     }

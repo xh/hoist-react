@@ -280,12 +280,15 @@ class GridLocalModel extends HoistModel {
             column = isNil(colId) ? null : model.getColumn(colId),
             {selection} = model;
 
-        // Adjust selection to target record -- and sync to grid immediately.
-        if (record && !(selection.includes(record)) && !agOptions.suppressRowClickSelection) {
-            selModel.select(record);
-        }
 
-        if (!record) selModel.clear();
+        if (!agOptions.suppressRowClickSelection) {
+            // Adjust selection to target record -- and sync to grid immediately.
+            if (record && !selection.includes(record)) {
+                selModel.select(record);
+            }
+
+            if (!record) selModel.clear();
+        }
 
         return this.buildMenuItems(menu.items, record, selModel.records, column, params);
     };
