@@ -130,9 +130,12 @@ export class FetchService extends HoistService {
         const timeout = withDefault(opts.timeout, this.defaultTimeout);
         return promise
             .timeout(timeout)
-            .catchWhen('Timeout Exception', e => {
-                throw Exception.fetchTimeout(opts, e, timeout?.message);
-            });
+            .catchWhen(
+                e => e.isTimeout,
+                e => {
+                    throw Exception.fetchTimeout(opts, e, timeout?.message);
+                }
+            );
     }
 
     async fetchInternalAsync(opts) {
@@ -266,7 +269,7 @@ export class FetchService extends HoistService {
  * @property {Object} [headers] - headers to send with this request. A Content-Type header will
  *      be set if not provided by the caller directly or via one of the xxxJson convenience methods.
  * @property {(number|Object)} [timeout] - ms to wait for response before rejecting with a timeout
- *      exception.  Defaults to 30 seconds, but may be specified as null to specify no timeout.
+ *      exception. Defaults to 30 seconds, but may be specified as null to specify no timeout.
  *      May also be specified as an object to customise the exception. See Promise.timeout().
  * @property {LoadSpec} [loadSpec] - optional metadata about the underlying request. Passed through
  *      for downstream processing by utils such as {@see ExceptionHandler}.

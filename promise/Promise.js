@@ -177,20 +177,19 @@ const enhancePromise = (promisePrototype) => {
          * @param {(Object|number)} [config] - object as per below, or interval in ms (if number).
          *      If null, no timeout enforced.
          * @param {number} [config.interval] - interval value in ms.
-         * @param {string} [config.message] - message for Exception thrown on timeout.
+         * @param {string} [config.message] - custom message for Exception thrown on timeout.
          */
         timeout(config) {
             if (config == null) return this;
             if (isNumber(config)) config = {interval: config};
-            const interval = config.interval,
-                message = config.message ?? `Operation timed out after ${interval}ms.`;
+            const interval = config.interval;
 
             let completed = false;
             const promise = this.finally(() => completed = true);
 
             const deadline = wait(interval).then(() => {
                 if (!completed) {
-                    throw Exception.create({name: 'Timeout Exception', message, interval});
+                    throw Exception.timeout(config);
                 }
             });
 
