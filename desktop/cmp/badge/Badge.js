@@ -20,16 +20,20 @@ export const [Badge, badge] = hoistCmp.withFactory({
 
     className: 'xh-badge',
 
-    render({intent, className, ...props}) {
+    render({intent, tab, className, ...props}) {
         return div({
             className: classNames(
                 className,
-                `${className}${intent ? `--intent-${intent}` : ''}`
+                `${className}${intent ? `--intent-${intent}` : ''}`,
+                `${className}${tab ? `--tab` : ''}`
             ),
             ...props
         });
     }
 });
 Badge.propTypes = {
+    /** True adds className to place badge in upper right corner of tab container (defaults to false). */
+    tab: PT.bool,
+
     intent: PT.oneOf(['primary', 'success', 'warning', 'danger'])
 };
