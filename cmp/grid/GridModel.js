@@ -443,7 +443,7 @@ export class GridModel extends HoistModel {
     /**
      * Select records in the grid.
      *
-     * @param {(Object[]|Object)} records - single record/ID or array of records/IDs to select.
+     * @param {(RecordOrId|RecordOrId[])} records - single record/ID or array of records/IDs to select.
      * @param {Object} [options]
      * @param {boolean} [options.ensureVisible] - true to make selection visible if it is within a
      *      collapsed node or outside of the visible scroll window. Default true.
@@ -568,7 +568,7 @@ export class GridModel extends HoistModel {
     get selectedRecord() {return this.selModel.singleRecord}
 
     /**
-     * @return {?(string|number)} - ID of selected record, or null if multiple/no records selected.
+     * @return {?RecordId} - ID of selected record, or null if multiple/no records selected.
      *
      * Note that this getter will *not* change if just the data of selected record is changed
      * due to store loading or editing.  Applications also interested in the contents of the

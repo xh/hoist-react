@@ -6,11 +6,10 @@
  */
 
 import {HoistBase} from '@xh/hoist/core';
+import {ValidationState} from '@xh/hoist/data';
 import {computed, makeObservable} from '@xh/hoist/mobx';
-import {sumBy, map, some, find} from 'lodash';
-
+import {find, map, some, sumBy} from 'lodash';
 import {RecordFieldValidator} from './RecordFieldValidator';
-import {ValidationState} from '../validation/ValidationState';
 
 /**
  * Computes validation state for a Record
@@ -21,7 +20,7 @@ export class RecordValidator extends HoistBase {
     /** @member {Record} */
     record;
 
-    /** @member {(string|number)} */
+    /** @member {RecordId} */
     get id() {
         return this.record.id;
     }
@@ -44,7 +43,7 @@ export class RecordValidator extends HoistBase {
         return this.getValidationState();
     }
 
-    /** @return {Object} - Map of field names to list of errors. */
+    /** @return {RecordErrorMap} - map of field names -> field-level errors. */
     @computed.struct
     get errors() {
         return this.getErrorMap();
@@ -96,7 +95,7 @@ export class RecordValidator extends HoistBase {
         return VS.Valid;
     }
 
-    /** @return {Object} - Map of field names to list of errors. */
+    /** @return {RecordErrorMap} - map of field names -> field-level errors. */
     getErrorMap() {
         const ret = {};
         this._validators.forEach(v => ret[v.id] = v.errors);
@@ -104,10 +103,14 @@ export class RecordValidator extends HoistBase {
     }
 
     /**
-     * @param {string} id - Id of RecordFieldValidator (should match field.name)
+     * @param {string} id - ID of RecordFieldValidator (should match field.name)
      * @return {RecordFieldValidator}
      */
     findFieldValidator(id) {
         return find(this._validators, {id});
     }
 }
+
+/**
+ * @typedef {Object.<string, string[]>} RecordErrorMap - map of Field names -> Field-level error lists.
+ */
