@@ -278,15 +278,17 @@ class GridLocalModel extends HoistModel {
             colId = params.column?.colId,
             record = isNil(recId) ? null : store.getById(recId, true),
             column = isNil(colId) ? null : model.getColumn(colId),
-            {selection} = model,
-            {suppressRowClickSelection} = agOptions;
+            {selection} = model;
 
-        // Adjust selection to target record -- and sync to grid immediately.
-        if (record && !(selection.includes(record)) && !suppressRowClickSelection) {
-            selModel.select(record);
+
+        if (!agOptions.suppressRowClickSelection) {
+            // Adjust selection to target record -- and sync to grid immediately.
+            if (record && !(selection.includes(record))) {
+                selModel.select(record);
+            }
+
+            if (!record) selModel.clear();
         }
-
-        if (!record && !suppressRowClickSelection) selModel.clear();
 
         return this.buildMenuItems(menu.items, record, selModel.records, column, params);
     };
