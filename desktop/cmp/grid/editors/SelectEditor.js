@@ -17,22 +17,26 @@ export const [SelectEditor, selectEditor] = hoistCmp.withFactory({
     memo: false,
     observer: false,
     render(props, ref) {
-        props.inputProps = {
-            hideDropdownIndicator: true,
-            hideSelectedOptionCheck: true,
-            selectOnFocus: false,
-            rsOptions: {
-                styles: {
-                    menu: styles => ({
-                        ...styles,
-                        whiteSpace: 'nowrap',
-                        width: 'auto',
-                        minWidth: '100%'
-                    })
-                }
-            },
-            ...props.inputProps
+        props = {
+            ...props,
+            inputProps: {
+                hideDropdownIndicator: true,
+                hideSelectedOptionCheck: true,
+                selectOnFocus: false,
+                rsOptions: {
+                    styles: {
+                        menu: styles => ({
+                            ...styles,
+                            whiteSpace: 'nowrap',
+                            width: 'auto',
+                            minWidth: '100%'
+                        })
+                    }
+                },
+                ...props.inputProps
+            }
         };
+
         return useInlineEditorModel(select, props, ref);
     }
 });

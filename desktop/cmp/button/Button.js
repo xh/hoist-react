@@ -36,6 +36,7 @@ export const [Button, button] = hoistCmp.withFactory({
             minimal = true,
             onClick,
             outlined,
+            rightIcon,
             style,
             text,
             title,
@@ -75,6 +76,7 @@ export const [Button, button] = hoistCmp.withFactory({
             minimal,
             onClick,
             outlined,
+            rightIcon,
             style: {
                 ...style,
                 ...layoutProps
@@ -96,6 +98,7 @@ Button.propTypes = {
     minimal: PT.bool,
     onClick: PT.func,
     outlined: PT.bool,
+    rightIcon: PT.element,
     style: PT.object,
     text: PT.node,
     title: PT.string,

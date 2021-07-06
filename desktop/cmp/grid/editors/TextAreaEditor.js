@@ -11,11 +11,13 @@ export const [TextAreaEditor, textAreaEditor] = hoistCmp.withFactory({
     memo: false,
     observer: false,
     render(props, ref) {
-        props.inputProps = {
-            ...props.inputProps,
-            style: {
-                resize: 'vertical',
-                ...props.inputProps?.style
+        props = {
+            ...props,
+            inputProps: {
+                style: {
+                    resize: 'vertical'
+                },
+                ...props.inputProps
             }
         };
         return useInlineEditorModel(textArea, props, ref, true);

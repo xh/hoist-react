@@ -8,11 +8,15 @@ import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hois
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
+import {button} from '@xh/hoist/mobile/cmp/button';
 import {reactSelect, reactCreatableSelect} from '@xh/hoist/kit/react-select';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, createObservableRef} from '@xh/hoist/utils/react';
 import {assign, isEmpty, isPlainObject} from 'lodash';
+import {Children} from 'react';
+import ReactDom from 'react-dom';
 import PT from 'prop-types';
 import './Select.scss';
 
@@ -33,6 +37,7 @@ export const [Select, select] = hoistCmp.withFactory({
         return useHoistInputModel(cmp, props, ref, Model);
     }
 });
+
 Select.propTypes = {
     ...HoistInputPropTypes,
     /**
@@ -42,17 +47,24 @@ Select.propTypes = {
     createMessageFn: PT.func,
 
     /**
-     *  True to accept and commit input values not present in options or returned by a query.
-     *  Should be used with caution, as mobile keyboard can cause undesirable results.
-     * */
+     * True to accept and commit input values not present in options or returned by a query.
+     * Usually used with enableFullscreen, to ensure access to the mobile device keyboard.
+     */
     enableCreate: PT.bool,
 
     /**
      * True to enable type-to-search keyboard input. Defaults to false to disable keyboard input,
-     * showing the dropdown menu on click. Should be used with caution, as mobile keyboard can
-     * cause undesirable results.
+     * showing the dropdown menu on click. Usually used with enableFullscreen, to ensure access
+     * to the mobile device keyboard.
      */
     enableFilter: PT.bool,
+
+    /**
+     * True to render the select control in a full-screen modal dialog when focused.
+     * Recommended for use with enableCreate|enableFilter, as we can guarantee the control
+     * will be rendered in the top half of the viewport, above the mobile keyboard.
+     */
+    enableFullscreen: PT.bool,
 
     /**
      * Function called to filter available options for a given query string input.
@@ -105,6 +117,9 @@ Select.propTypes = {
     /** Text to display when control is empty. */
     placeholder: PT.string,
 
+    /** Text to display in header when in fullscreen mode. */
+    title: PT.string,
+
     /**
      * Escape-hatch props passed directly to react-select. Use with care - not all props
      * in the react-select API are guaranteed to be supported by this Hoist component,
@@ -116,6 +131,7 @@ Select.propTypes = {
     valueField: PT.string
 };
 Select.MENU_PORTAL_ID = 'xh-select-input-portal';
+Select.FULLSCREEN_PORTAL_ID = 'xh-select-input-fullscreen-portal';
 Select.hasLayoutSupport = true;
 
 //-----------------------
@@ -125,9 +141,11 @@ class Model extends HoistInputModel {
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     @bindable.ref internalOptions = [];
+    @bindable fullscreen = false;
 
     get creatableMode() {return !!this.props.enableCreate}
     get filterMode() {return !!this.props.enableFilter}
+    get fullscreenMode() {return !!this.props.enableFullscreen}
 
     reactSelectRef = createObservableRef();
     get reactSelect() {return this.reactSelectRef.current}
@@ -150,6 +168,7 @@ class Model extends HoistInputModel {
     constructor(props) {
         super(props);
         makeObservable(this);
+
         this.addReaction({
             track: () => this.props.options,
             run: (opts) => {
@@ -158,6 +177,10 @@ class Model extends HoistInputModel {
             },
             fireImmediately: true
         });
+
+        if (this.fullscreenMode) {
+            this.addReaction(this.fullscreenReaction());
+        }
     }
 
     //-------------------------
@@ -179,6 +202,7 @@ class Model extends HoistInputModel {
 
     onSelectChange = (opt) => {
         this.noteValueChange(opt);
+        this.setFullscreen(false);
     };
 
     // Convert external value into option object(s). Options created if missing - this takes the
@@ -189,7 +213,6 @@ class Model extends HoistInputModel {
     }
 
     findOption(value, createIfNotFound, options = this.internalOptions) {
-
         // Do a depth-first search of options
         for (const option of options) {
             if (option.options) {
@@ -283,6 +306,34 @@ class Model extends HoistInputModel {
     }
 
     //------------------------
+    // Fullscreen mode
+    //------------------------
+    fullscreenReaction() {
+        return {
+            track: () => this.fullscreen,
+            run: (fullscreen) => {
+                if (fullscreen) this.focus();
+            },
+            delay: 1 // Wait for render within fullscreen portal
+        };
+    }
+
+    noteFocused() {
+        if (this.fullscreenMode) this.setFullscreen(true);
+        super.noteFocused();
+    }
+
+    getOrCreateFullscreenPortalDiv() {
+        let portal = document.getElementById(Select.FULLSCREEN_PORTAL_ID);
+        if (!portal) {
+            portal = document.createElement('div');
+            portal.id = Select.FULLSCREEN_PORTAL_ID;
+            document.body.appendChild(portal);
+        }
+        return portal;
+    }
+
+    //------------------------
     // Other Implementation
     //------------------------
     getThemeConfig() {
@@ -302,13 +353,12 @@ class Model extends HoistInputModel {
     };
 
     getOrCreatePortalDiv() {
-        let portal = document.getElementById('xh-select-input-portal');
+        let portal = document.getElementById(Select.MENU_PORTAL_ID);
         if (!portal) {
             portal = document.createElement('div');
             portal.id = Select.MENU_PORTAL_ID;
             document.body.appendChild(portal);
         }
-
         return portal;
     }
 
@@ -345,6 +395,7 @@ const cmp = hoistCmp.factory(
                 isDisabled: props.disabled,
                 menuPlacement: withDefault(props.menuPlacement, 'auto'),
                 noOptionsMessage: model.noOptionsMessageFn,
+                openMenuOnFocus: model.fullscreen,
                 placeholder: withDefault(props.placeholder, 'Select...'),
                 tabIndex: props.tabIndex,
                 menuShouldBlockScroll: XH.isMobileApp,
@@ -385,14 +436,51 @@ const cmp = hoistCmp.factory(
             rsProps.formatCreateLabel = model.createMessageFn;
         }
 
-        const factory = model.creatableMode ? reactCreatableSelect : reactSelect;
+        const factory = model.creatableMode ? reactCreatableSelect : reactSelect,
+            control = factory(rsProps);
 
-        return box({
-            item: factory(rsProps),
-            className,
-            ...layoutProps,
-            width: withDefault(width, null),
-            ref
+        if (model.fullscreen) {
+            return ReactDom.createPortal(
+                fullscreenWrapper({
+                    model,
+                    title: props.title,
+                    item: box({
+                        item: control,
+                        className,
+                        ref
+                    })
+                }),
+                model.getOrCreateFullscreenPortalDiv()
+            );
+        } else {
+            return box({
+                item: control,
+                className,
+                ...layoutProps,
+                width: withDefault(width, null),
+                ref
+            });
+        }
+    }
+);
+
+const fullscreenWrapper = hoistCmp.factory(
+    ({model, title, children}) => {
+        return div({
+            className: 'xh-select__fullscreen-wrapper',
+            items: [
+                toolbar({
+                    className: 'xh-select__fullscreen-toolbar',
+                    items: [
+                        button({
+                            icon: Icon.chevronLeft(),
+                            onClick: () => model.setFullscreen(false)
+                        }),
+                        span(title)
+                    ]
+                }),
+                Children.only(children)
+            ]
         });
     }
 );
