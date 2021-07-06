@@ -4,17 +4,16 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed an issue preventing export of very large (>100k rows) grids
+* Fixed an issue preventing export of very large (>100k rows) grids.
 
 ### 🎁 New Features
 
-* New `@logWithDebug` annotation to support simple execution tracking of methods via `withDebug`.
+* New `@logWithDebug` annotation provides easy timed logging of method execution (via `withDebug`).
 
 ### 💥 Breaking Changes
-* The `withShortDebug` method has been removed.  Use `withDebug` instead, which will provide
-identical behavior.  This API simplification mirrors a similar change made recently on the
-server-side in  `hoist-core`.
 
+* Removed `withShortDebug` utility method. Use `withDebug` instead, which now always logs a single
+  line upon completion. This API simplification mirrors a recent change to `hoist-core`.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.0.0...develop)
 
