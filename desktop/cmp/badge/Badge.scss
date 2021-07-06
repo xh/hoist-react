@@ -14,6 +14,10 @@
   background-color: var(--xh-blue-gray);
   color: white;
 
+  &--intent-none {
+    background-color: var(--xh-blue-gray);
+  }
+
   &--intent-primary {
     background-color: var(--xh-intent-primary);
   }
@@ -30,8 +34,13 @@
     background-color: var(--xh-intent-danger);
   }
 
-  &--tab {
+  &--position-top {
     align-self: flex-start;
     margin: 5px 0 0 2px;
+  }
+
+  &--position-bottom {
+    align-self: flex-end;
+    margin: 0 2px 5px 2px
   }
 }
