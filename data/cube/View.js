@@ -10,8 +10,9 @@ import {Cube, FieldFilter, Query} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {PendingTaskModel, forEachAsync} from '@xh/hoist/utils/async';
 import {wait} from '@xh/hoist/promise';
-import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, forEach, groupBy, isEmpty, isNil, map} from 'lodash';
+import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
+import {shallowEqualArrays} from '@xh/hoist/utils/impl';
+import {castArray, forEach, groupBy, isEmpty, isNil, map, isEqual, keys} from 'lodash';
 
 import {AggregateRow} from './row/AggregateRow';
 import {BucketRow} from './row/BucketRow';
@@ -48,6 +49,7 @@ export class View extends HoistBase {
 
     // Implementation
     _rows = null;
+    _rowCache = null;
     _leafMap = null;
 
     /**
@@ -73,6 +75,7 @@ export class View extends HoistBase {
 
         this.query = query;
         this.loadModel = loadModel ?? this.markManaged(new PendingTaskModel());
+        this._rowCache = new Map();
         this.setStores(stores);
 
         if (connect) {
@@ -118,6 +121,12 @@ export class View extends HoistBase {
         throwIf(overrides.cube, 'Cannot redirect view to a different cube in updateQuery().');
         const newQuery = this.query.clone(overrides);
         if (this.query.equals(newQuery)) return;
+
+        // If anything other than just filter changing, blow away row cache
+        if (!isEqual(keys(overrides), ['filter'])) {
+            this._rowCache.clear();
+        }
+
         this.query = newQuery;
         this.fullUpdateAsync().linkTo(this.loadModel);
     }
@@ -173,6 +182,7 @@ export class View extends HoistBase {
         const simpleUpdates = this.getSimpleUpdates(changeLog);
 
         if (!simpleUpdates) {
+            this._rowCache.clear();
             this.fullUpdateAsync().linkTo(this.loadModel);
         } else if (!isEmpty(simpleUpdates)) {
             this.dataOnlyUpdateAsync(simpleUpdates).linkTo(this.loadModel);
@@ -188,7 +198,7 @@ export class View extends HoistBase {
         // Todo: Why do we need this (and with such a large interval) in order for the mask to show?
         await wait(100);
 
-        this.generateRows();
+        withShortDebug('Recomputing View', () => this.generateRows(), this);
 
         // Skip degenerate root in stores/grids, but preserve in object api.
         const {_leafMap, _rows} = this,
@@ -233,7 +243,7 @@ export class View extends HoistBase {
     generateRows() {
         const {query} = this,
             {dimensions, includeRoot, cube} = query,
-            rootId = query.filtersAsString();
+            rootId = '';
 
         const leafMap = this.generateLeaves(cube.store.records),
             leafArray = Array.from(leafMap.values());
@@ -242,7 +252,11 @@ export class View extends HoistBase {
         newRows = this.bucketRows(newRows, rootId, {});
 
         if (includeRoot) {
-            newRows = [new AggregateRow(this, rootId, newRows, null, 'Total', {})];
+            newRows = [
+                this.cachedRow(rootId, newRows, () => (
+                    new AggregateRow(this, rootId, newRows, null, 'Total', {})
+                ))
+            ];
         } else if (!query.includeLeaves && newRows[0]?.isLeaf) {
             newRows = []; // degenerate case, no visible rows
         }
@@ -272,7 +286,9 @@ export class View extends HoistBase {
             let children = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
             children = this.bucketRows(children, id, appliedDimensions);
 
-            return new AggregateRow(this, id, children, dim, val, appliedDimensions);
+            return this.cachedRow(id, children, () => (
+                new AggregateRow(this, id, children, dim, val, appliedDimensions)
+            ));
         });
     }
 
@@ -302,7 +318,10 @@ export class View extends HoistBase {
         // Create new rows for each bucket and add to the result
         forEach(buckets, (rows, bucketVal) => {
             const id = parentId + Cube.RECORD_ID_DELIMITER + `${bucketName}=[${bucketVal}]`;
-            ret.push(new BucketRow(this, id, rows, bucketVal, bucketSpec, appliedDimensions));
+            const bucket = this.cachedRow(id, rows, () => (
+                new BucketRow(this, id, rows, bucketVal, bucketSpec, appliedDimensions)
+            ));
+            ret.push(bucket);
         });
 
         return ret;
@@ -359,9 +378,20 @@ export class View extends HoistBase {
         const ret = new Map();
         records.forEach(rec => {
             if (this.query.test(rec)) {
-                ret.set(rec.id, new LeafRow(this, rec));
+                const leaf = this.cachedRow(rec.id, undefined, () => new LeafRow(this, rec));
+                ret.set(rec.id, leaf);
             }
         });
+        return ret;
+    }
+
+    cachedRow(id, children, fn) {
+        let ret = this._rowCache.get(id);
+        if (ret && (ret.isLeaf || shallowEqualArrays(ret.children, children))) {
+            return ret;
+        }
+        ret = fn();
+        this._rowCache.set(id, ret);
         return ret;
     }
 
