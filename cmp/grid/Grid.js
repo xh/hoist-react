@@ -283,7 +283,7 @@ class GridLocalModel extends HoistModel {
 
         if (!agOptions.suppressRowClickSelection) {
             // Adjust selection to target record -- and sync to grid immediately.
-            if (record && !(selection.includes(record))) {
+            if (record && !selection.includes(record)) {
                 selModel.select(record);
             }
 
