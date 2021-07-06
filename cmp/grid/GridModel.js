@@ -471,7 +471,7 @@ export class GridModel extends HoistModel {
      */
     async selectFirstAsync({ensureVisible = true} = {}) {
         const {selModel} = this,
-            isReady = await this.getIsReadyAsync();
+            isReady = await this.whenReadyAsync();
 
         // No-op if grid failed to enter ready state.
         if (!isReady) return;
@@ -513,7 +513,7 @@ export class GridModel extends HoistModel {
      * render all pending data changes.
      */
     async ensureSelectionVisibleAsync() {
-        const isReady = await this.getIsReadyAsync();
+        const isReady = await this.whenReadyAsync();
 
         // No-op if grid failed to enter ready state.
         if (!isReady) return;
@@ -1026,7 +1026,7 @@ export class GridModel extends HoistModel {
      * @param {number} [timeout] - timeout in ms
      * @return {Promise<boolean>} - latest ready state of grid
      */
-    async getIsReadyAsync(timeout = 3 * SECONDS) {
+    async whenReadyAsync(timeout = 3 * SECONDS) {
         try {
             await when(() => this.isReady, {timeout});
         } catch (ignored) {
