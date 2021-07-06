@@ -10,10 +10,9 @@ import {Cube, FieldFilter, Query} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {PendingTaskModel, forEachAsync} from '@xh/hoist/utils/async';
 import {wait} from '@xh/hoist/promise';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
+import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import {castArray, forEach, groupBy, isEmpty, isNil, map, isEqual, keys} from 'lodash';
-import {shallowEqualArrays} from '../../utils/impl';
-import {withShortDebug} from '../../utils/js';
 
 import {AggregateRow} from './row/AggregateRow';
 import {BucketRow} from './row/BucketRow';
