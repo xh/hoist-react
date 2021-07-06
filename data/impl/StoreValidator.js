@@ -39,7 +39,7 @@ export class StoreValidator extends HoistBase {
         return this.getValidationState();
     }
 
-    /** @return {Object} - Map of record ids to field errors. */
+    /** @return {StoreErrorMap} - Map of Record IDs to Record-level error maps. */
     @computed.struct
     get errors() {
         return this.getErrorMap();
@@ -94,7 +94,7 @@ export class StoreValidator extends HoistBase {
         return VS.Valid;
     }
 
-    /** @return {Object} - Map of record ids to field errors. */
+    /** @return {StoreErrorMap} - map of Record IDs -> Record-level error maps. */
     getErrorMap() {
         const ret = {};
         this._validators.forEach(v => ret[v.id] = v.errors);
@@ -102,7 +102,7 @@ export class StoreValidator extends HoistBase {
     }
 
     /**
-     * @param {(string|number)} id - Id of RecordValidator (should match record.id)
+     * @param {RecordId} id - ID of RecordValidator (should match record.id)
      * @return {RecordValidator}
      */
     findRecordValidator(id) {
@@ -122,3 +122,7 @@ export class StoreValidator extends HoistBase {
         return this.validateAsync();
     }
 }
+
+/**
+ * @typedef {Object.<RecordId, RecordErrorMap>} StoreErrorMap - map of Record IDs -> Record-level error maps.
+ */

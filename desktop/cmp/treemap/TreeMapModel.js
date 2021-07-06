@@ -411,7 +411,7 @@ export class TreeMapModel extends HoistModel {
 
 /**
  * @typedef {Object} TreeMapRecord
- * @property {(string|number)} id - Record id
+ * @property {RecordId} id - Record ID
  * @property {Record} record - Store record from which TreeMapRecord was created.
  * @property {string} name - Used by Highcharts to determine the node label.
  * @property {number} value - Used by Highcharts to determine the node size.
