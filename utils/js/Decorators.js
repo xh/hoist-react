@@ -17,7 +17,7 @@ import {withDebug} from './WithDebug';
 export function debounced(duration) {
     return function(target, key, descriptor) {
         const baseFn = descriptor.value;
-        throwIf(!isFunction(baseFn), 'Debounced should be applied to a function');
+        throwIf(!isFunction(baseFn), '@debounced must be applied to a class method.');
         return {
             ...descriptor,
             value: function() {
@@ -31,13 +31,12 @@ export function debounced(duration) {
 
 /**
  * Modify a method or getter so that it will compute once lazily, and then cache the results.
- *
- * Not appropriate for methods that take arguments.  Typically useful on immutable objects.
+ * Not appropriate for methods that take arguments. Typically useful on immutable objects.
  */
 export function computeOnce(target, key, descriptor) {
     const {value, get} = descriptor;
     throwIf(!isFunction(value) && !isFunction(get),
-        'computeOnce should be applied to a zero-argument method or a getter.'
+        '@computeOnce must be applied to a zero-argument class method or getter.'
     );
 
     const isMethod = isFunction(value),
@@ -53,12 +52,11 @@ export function computeOnce(target, key, descriptor) {
 
 /**
  * Modify a method so that it execution is tracked and timed with a debug message
- *
  * @see {withDebug}
  */
 export function logWithDebug(target, key, descriptor) {
     const {value} = descriptor;
-    throwIf(!isFunction(value), 'debug should be applied to a class method.');
+    throwIf(!isFunction(value), '@logWithDebug must be applied to a class method.');
     return {
         ...descriptor,
         value: function(...args) {
