@@ -10,7 +10,7 @@ import {Cube, FieldFilter, Query} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {PendingTaskModel, forEachAsync} from '@xh/hoist/utils/async';
 import {wait} from '@xh/hoist/promise';
-import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
+import {throwIf, withDebug} from '@xh/hoist/utils/js';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import {castArray, forEach, groupBy, isEmpty, isNil, map, isEqual, keys} from 'lodash';
 
@@ -198,7 +198,7 @@ export class View extends HoistBase {
         // Todo: Why do we need this (and with such a large interval) in order for the mask to show?
         await wait(100);
 
-        withShortDebug('Recomputing View', () => this.generateRows(), this);
+        withDebug('Recomputing View', () => this.generateRows(), this);
 
         // Skip degenerate root in stores/grids, but preserve in object api.
         const {_leafMap, _rows} = this,
