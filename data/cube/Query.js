@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {parseFilter} from '@xh/hoist/data';
 import {apiRemoved} from '@xh/hoist/utils/js';
-import {isEqual, castArray, find} from 'lodash';
+import {isEqual, find} from 'lodash';
 
 /**
  *  Specification used to define the shape of the data returned by a Cube.
@@ -78,20 +78,6 @@ export class Query {
         };
 
         return new Query(conf);
-    }
-
-    /** @return {string} */
-    static filterAsString(filter) {
-        const {field, op, value} = filter;
-        return `${field}${op}[${castArray(value).join('||')}]`;
-    }
-
-    /** @returns {string} */
-    filtersAsString() {
-        const {filter} = this;
-        let ret = 'root';
-        if (filter) ret += '>>' + Query.filterAsString(filter);
-        return ret;
     }
 
     /**

@@ -6,7 +6,7 @@
  */
 
 import {HoistBase} from '@xh/hoist/core';
-import {Cube, FieldFilter, Query} from '@xh/hoist/data';
+import {Cube} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {PendingTaskModel, forEachAsync} from '@xh/hoist/utils/async';
 import {wait} from '@xh/hoist/promise';
@@ -243,7 +243,7 @@ export class View extends HoistBase {
     generateRows() {
         const {query} = this,
             {dimensions, includeRoot, cube} = query,
-            rootId = '';
+            rootId = 'root';
 
         const leafMap = this.generateLeaves(cube.store.records),
             leafArray = Array.from(leafMap.values());
@@ -280,8 +280,7 @@ export class View extends HoistBase {
         appliedDimensions = {...appliedDimensions};
         return map(groups, (groupLeaves, val) => {
             appliedDimensions[dimName] = val;
-            const filter = new FieldFilter({field: dimName, op: '=', value: val}),
-                id = parentId + Cube.RECORD_ID_DELIMITER + Query.filterAsString(filter);
+            const id = parentId + Cube.RECORD_ID_DELIMITER + `${dimName}=[${val}]`;
 
             let children = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
             children = this.bucketRows(children, id, appliedDimensions);
