@@ -9,6 +9,8 @@
 ### 🎁 New Features
 
 * New `@logWithDebug` annotation provides easy timed logging of method execution (via `withDebug`).
+* New `AppSpec.disableXssProtection` config allows default disabling of Field-level XSS protection
+  across the app. Intended for secure, internal apps with tight performance tolerances.
 
 ### 💥 Breaking Changes
 
