@@ -120,7 +120,7 @@ export class LoadSupport extends HoistBase {
                 if (target.isRefreshContextModel) return;
 
                 const elapsed = this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime(),
-                    msg = `[${target.constructor.name}] | ${loadSpec.typeDisplay} | ${exception ? 'failed' : 'completed'} | ${elapsed}ms`;
+                    msg = `[${target.constructor.name}] | ${loadSpec.typeDisplay} | ${exception ? 'failed | ' : ''}${elapsed}ms`;
 
                 if (exception) {
                     if (exception.isRoutine) {

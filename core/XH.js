@@ -26,7 +26,7 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {checkMinVersion, getClientDeviceInfo, throwIf, withShortDebug} from '@xh/hoist/utils/js';
+import {checkMinVersion, getClientDeviceInfo, throwIf, withDebug} from '@xh/hoist/utils/js';
 import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
 import parser from 'ua-parser-js';
@@ -780,7 +780,7 @@ class XHClass extends HoistBase {
 
     async initServicesInternalAsync(svcs) {
         const promises = svcs.map(it => {
-            return withShortDebug(`Initializing ${it.constructor.name}`, () => {
+            return withDebug(`Initializing ${it.constructor.name}`, () => {
                 return it.initAsync();
             }, 'XH');
         });

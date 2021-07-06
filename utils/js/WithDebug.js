@@ -7,22 +7,6 @@
 import {castArray, isString} from 'lodash';
 
 /**
- * Track a function execution, logging the provided message(s) on debug once before running the
- * function and then again with timing information after the tracked function returns.
- *
- * If the function passed to this util returns a Promise, it will wait until the Promise resolves
- * or completes to finish its logging. The actual object returned by the tracked function will
- * always be returned directly to the caller.
- *
- * @param {(string[]|string)} msgs
- * @param {function} fn
- * @param {(Object|string)} [source] - class, function or string to label the source of the message
- */
-export function withDebug(msgs, fn, source) {
-    return loggedDo(msgs, fn, source, false);
-}
-
-/**
  * Track a function execution, logging the provided message(s) on debug with timing information in
  * a single message after the tracked function returns.
  *
@@ -34,8 +18,8 @@ export function withDebug(msgs, fn, source) {
  * @param {function} fn
  * @param {(Object|string)} [source] - class, function or string to label the source of the message
  */
-export function withShortDebug(msgs, fn, source) {
-    return loggedDo(msgs, fn, source, true);
+export function withDebug(msgs, fn, source) {
+    return loggedDo(msgs, fn, source);
 }
 
 /**
@@ -51,7 +35,7 @@ export function logDebug(msgs, source) {
 //----------------------------------
 // Implementation
 //----------------------------------
-function loggedDo(msgs, fn, source, short) {
+function loggedDo(msgs, fn, source) {
 
     source = parseSource(source);
     msgs = castArray(msgs);
@@ -64,8 +48,6 @@ function loggedDo(msgs, fn, source, short) {
     }
 
     // ..otherwise a wrapped call..
-    if (!short) writeLog(`${msg} | started`, source);
-
     const start = Date.now();
     let ret;
     try {
@@ -100,7 +82,7 @@ function writeLog(msg, source) {
 
 function logCompletion(start, msg, source) {
     const elapsed = Date.now() - start;
-    writeLog(`${msg} | completed | ${elapsed}ms`, source);
+    writeLog(`${msg} | ${elapsed}ms`, source);
 }
 
 function logException(start, msg, source, e)  {

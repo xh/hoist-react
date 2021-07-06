@@ -24,7 +24,7 @@ import {
     throwIf,
     warnIf,
     withDefault,
-    withShortDebug
+    logWithDebug
 } from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
@@ -966,6 +966,7 @@ export class GridModel extends HoistModel {
      * This method will ignore hidden columns, columns with a flex value, and columns with
      * autosizable = false.
      */
+    @logWithDebug
     async autosizeAsync(options = {}) {
         options = {...this.autosizeOptions, ...options};
 
@@ -1007,9 +1008,7 @@ export class GridModel extends HoistModel {
             await wait(100);
         }
 
-        withShortDebug('Autosizing Grid', async () => {
-            await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
-        }, this);
+        await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
 
         if (showMask) {
             await wait(100);
