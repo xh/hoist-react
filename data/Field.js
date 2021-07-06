@@ -40,14 +40,14 @@ export class Field {
         displayName,
         defaultValue = null,
         rules = [],
-        disableXssProtection
+        disableXssProtection = XH.appSpec.disableXssProtection
     }) {
         this.name = name;
         this.type = type;
         this.displayName = withDefault(displayName, genDisplayName(name));
         this.defaultValue = defaultValue;
         this.rules = this.processRuleSpecs(rules);
-        this.disableXssProtection = withDefault(disableXssProtection, XH.appSpec.disableXssProtection);
+        this.disableXssProtection = disableXssProtection;
     }
 
     parseVal(val) {
@@ -80,11 +80,10 @@ export class Field {
  *      {@see FieldConfig} docs for additional details.
  * @return {*} resulting value, potentially parsed or cast as per type.
  */
-export function parseFieldValue(val, type, defaultValue = null, disableXssProtection) {
+export function parseFieldValue(val, type, defaultValue = null, disableXssProtection = XH.appSpec.disableXssProtection) {
     if (val === undefined || val === null) val = defaultValue;
     if (val === null) return val;
 
-    disableXssProtection = withDefault(disableXssProtection, XH.appSpec.disableXssProtection);
     if (!disableXssProtection && isString(val)) val = DOMPurify.sanitize(val);
 
     const FT = FieldType;
