@@ -49,8 +49,9 @@ const MIN_HOIST_CORE_VERSION = '8.6.1';
  */
 class XHClass extends HoistBase {
 
-    _initCalled = false;
-    _lastActivityMs = Date.now();
+    #initCalled = false;
+    #lastActivityMs = Date.now();
+    #uaParser = null;
 
     constructor() {
         super();
@@ -191,7 +192,7 @@ class XHClass extends HoistBase {
     @observable appState = AppState.PRE_AUTH;
 
     /** @member {number} - milliseconds since user activity / interaction was last detected. */
-    get lastActivityMs() {return this._lastActivityMs}
+    get lastActivityMs() {return this.#lastActivityMs}
 
     /** @member {boolean} - true if application initialized and running (observable). */
     get appIsRunning() {return this.appState === AppState.RUNNING}
@@ -604,8 +605,8 @@ class XHClass extends HoistBase {
      */
     async initAsync() {
         // Avoid multiple calls, which can occur if AppContainer remounted.
-        if (this._initCalled) return;
-        this._initCalled = true;
+        if (this.#initCalled) return;
+        this.#initCalled = true;
 
         const S = AppState,
             {appSpec, isMobileApp, isPhone, isTablet, isDesktop, baseUrl} = this;
@@ -844,14 +845,14 @@ class XHClass extends HoistBase {
     createActivityListeners() {
         ['keydown', 'mousemove', 'mousedown', 'scroll', 'touchmove', 'touchstart'].forEach(name => {
             window.addEventListener(name, () => {
-                this._lastActivityMs = Date.now();
+                this.#lastActivityMs = Date.now();
             });
         });
     }
 
     get uaParser() {
-        if (!this._uaParser) this._uaParser = new parser();
-        return this._uaParser;
+        if (!this.#uaParser) this.#uaParser = new parser();
+        return this.#uaParser;
     }
 }
 
