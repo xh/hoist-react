@@ -47,14 +47,13 @@ export class GridExportService extends HoistService {
             records = gridModel.store.rootRecords,
             meta = this.getColumnMetadata(exportColumns);
 
-
         if (records.length === 0) {
             XH.toast({message: 'No data found to export', intent: 'danger', icon: Icon.warning()});
             return;
         }
 
         // If the grid includes a summary row, add it to the export payload as a root-level node
-        const rows = gridModel.showSummary && summaryRecord ?
+        let rows = gridModel.showSummary && summaryRecord ?
             [
                 this.getHeaderRow(exportColumns, type, gridModel),
                 this.getRecordRow(gridModel, summaryRecord, exportColumns, 0),
@@ -65,12 +64,24 @@ export class GridExportService extends HoistService {
                 ...this.getRecordRowsRecursive(gridModel, records, exportColumns, 0)
             ];
 
+
+        // Downgrade tree to show only leaf rows to prevent strain on server resources to produce
+        // large, hierarchical data sets.
+        const cellCount = rows.length * exportColumns.length,
+            downgradeTree = gridModel.treeMode && cellCount > withDefault(config.treeFormatCellThreshold, 150000);
+        if (downgradeTree) {
+            rows = rows.filter(it => it.isLeaf || it.isHeader)
+                .map(it => {
+                    it.depth = 0;
+                    return it;
+                });
+        }
+
         // Show separate 'started' and 'complete' toasts for larger (i.e. slower) exports.
         // We use cell count as a heuristic for speed - this may need to be tweaked.
-        const cellCount = rows.length * exportColumns.length;
-        if (cellCount > withDefault(config.streamingCellThreshold, 100000)) {
+        if (downgradeTree) {
             XH.toast({
-                message: 'Your export is being prepared. Due to its size, formatting will be removed.',
+                message: 'Your export is being prepared. Due to its size, only leaf rows will be exported.',
                 intent: 'warning',
                 icon: Icon.download()
             });
@@ -98,7 +109,8 @@ export class GridExportService extends HoistService {
             // See https://stanko.github.io/uploading-files-using-fetch-multipart-form-data/ for further explanation.
             headers: {
                 'Content-Type': null
-            }
+            },
+            timeout: 300 // Aligns with xh-proxy timeouts for larger grid exports
         });
 
         const blob = response.status === 204 ? null : await response.blob(),
@@ -128,7 +140,7 @@ export class GridExportService extends HoistService {
 
         return sortBy(gridModel.getLeafColumns(), ({colId}) => {
             const match = gridModel.columnState.find(it => it.colId === colId);
-            return withDefault(match?._sortOrder, 0);
+            return withDefault(match?._sortOrder, toExport.findIndex(it => it === colId));
         }).filter(col => {
             const {colId, excludeFromExport} = col;
             return (
@@ -180,7 +192,7 @@ export class GridExportService extends HoistService {
         if (type === 'excelTable' && uniq(headers.map(it => it.toLowerCase())).length !== headers.length) {
             console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers.');
         }
-        return {data: headers, depth: 0};
+        return {data: headers, depth: 0, isHeader: true};
     }
 
     getRecordRowsRecursive(gridModel, records, columns, depth) {
@@ -224,8 +236,12 @@ export class GridExportService extends HoistService {
         if (gridModel.treeMode && record.children.length) {
             aggData = gridModel.agApi.getRowNode(record.id).aggData;
         }
-        const data = columns.map(it => this.getCellData(gridModel, record, it, aggData));
-        return {data, depth};
+        const data = columns.map(it => this.getCellData(gridModel, record, it, aggData)),
+            ret = {data, depth};
+
+        if (gridModel.treeMode) ret.isLeaf = !record.children.length;
+
+        return ret;
     }
 
     getCellData(gridModel, record, column, aggData) {

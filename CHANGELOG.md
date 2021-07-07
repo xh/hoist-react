@@ -7,12 +7,17 @@
 * Fixed an issue preventing export of very large (>100k rows) grids.
 * Improved `GridModel` async selection methods to ensure they do not wait forever if grid does not
   mount.
+* Order of columns in grid export respects specified colIds order in `exportOptions.columns` list.
 
 ### 🎁 New Features
 
 * New `@logWithDebug` annotation provides easy timed logging of method execution (via `withDebug`).
 * New `AppSpec.disableXssProtection` config allows default disabling of Field-level XSS protection
   across the app. Intended for secure, internal apps with tight performance tolerances.
+* Remove use of `xhExportConfig.streamingCellThreshold` config to alert user of downgraded Excel
+    exports when 'excelTable'-type exports could not be supported.
+    + New `xhExportConfig.treeFormatCellThreshold` config can be used to limit exports of large tree
+      data that may strain server resources. This will flatten the dataset to export only leaf rows.
 
 ### 💥 Breaking Changes
 
