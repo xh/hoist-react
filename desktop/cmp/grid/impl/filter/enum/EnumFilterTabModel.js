@@ -132,22 +132,18 @@ export class EnumFilterTabModel extends HoistModel {
             included = [];
 
         allValues.forEach(value => {
-            const include = pendingValue[value] ?? true;
-            if (include) {
-                included.push(value === EMPTY ? null : value);
-            } else {
-                excluded.push(value === EMPTY ? null : value);
-            }
+            const include = pendingValue[value] ?? true,
+                arr = include ? included : excluded;
+            arr.push(value === EMPTY ? null : value);
         });
 
-        if (included.length === allValues.length || excluded.length === allValues.length) return null;
-
-        // Prefer '!=' filters if included values more than double excluded values
-        if (included.length > (excluded.length * 2)) {
-            return excluded.map(value => ({field, op: '!=', value}));
-        } else {
+        if (included.length === allValues.length || excluded.length === allValues.length) {
+            return null;
+        } else if (included.length <= 20 || included.length < (excluded.length * 2)) {
             const value = included.length === 1 ? included[0] : included;
             return {field, op: '=', value};
+        } else {
+            return excluded.map(value => ({field, op: '!=', value}));
         }
     }
 
