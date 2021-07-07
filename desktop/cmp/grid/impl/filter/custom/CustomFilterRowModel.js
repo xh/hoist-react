@@ -6,7 +6,6 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
-import {FieldFilter} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {isNil} from 'lodash';
 
@@ -25,21 +24,21 @@ export class CustomFilterRowModel extends HoistModel {
      */
     @computed.struct
     get value() {
-        const {EMPTY_VALUE} = FieldFilter,
-            {field} = this.fieldSpec;
+        const {field} = this.fieldSpec;
 
         let op = this.op,
             value = this.inputVal;
 
-        if (op === 'isEmpty') {
+        if (op === 'empty') {
             op = '=';
-            value = EMPTY_VALUE;
-        } else if (op === 'notEmpty') {
+            value = null;
+        } else if (op === '!empty') {
             op = '!=';
-            value = EMPTY_VALUE;
+            value = null;
+        } else if (isNil(value)) {
+            return null;
         }
 
-        if (isNil(value)) return null;
         return {field, op, value};
     }
 
@@ -48,19 +47,18 @@ export class CustomFilterRowModel extends HoistModel {
     }
 
     get options() {
-        const {EMPTY_STR} = FieldFilter;
         return [
             ...this.fieldSpec.ops.map(value => {
                 const label = this.getOperatorIcon(value);
                 return {label, value};
             }),
-            {label: 'is ' + EMPTY_STR, value: 'isEmpty'},
-            {label: 'is not ' + EMPTY_STR, value: 'notEmpty'}
+            {label: 'is empty', value: 'empty'},
+            {label: 'is not empty', value: '!empty'}
         ];
     }
 
     get hideInput() {
-        return ['isEmpty', 'notEmpty'].includes(this.op);
+        return ['empty', '!empty'].includes(this.op);
     }
 
     constructor({
@@ -70,6 +68,11 @@ export class CustomFilterRowModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
+
+        if (isNil(value)) {
+            if (op === '=') op = 'empty';
+            if (op === '!=') op = '!empty';
+        }
 
         this.parentModel = parentModel;
         this.colFilterModel = parentModel.parentModel;

@@ -61,7 +61,7 @@ export class ColumnHeaderFilterModel extends HoistModel {
     get isCustomFilter() {
         const {columnFilters} = this;
         if (isEmpty(columnFilters)) return false;
-        return columnFilters.length > 1 || columnFilters[0].op !== '=';
+        return columnFilters.some(it => !['=', '!='].includes(it.op));
     }
 
     constructor({filterModel, column}) {
@@ -104,14 +104,14 @@ export class ColumnHeaderFilterModel extends HoistModel {
         // Show a mask to provide feedback to user.
         this.showMask = true;
         wait(1).then(() => {
-            this.setColumnFilter(filter);
+            this.setColumnFilters(filter);
             this.closeMenu();
         });
     }
 
     @action
     clear(close = true) {
-        this.setColumnFilter(null);
+        this.setColumnFilters(null);
         if (close) {
             this.closeMenu();
         } else {
@@ -156,7 +156,7 @@ export class ColumnHeaderFilterModel extends HoistModel {
         this.tabContainerModel.activateTab(tab);
     }
 
-    setColumnFilter(filter) {
-        this.filterModel.setColumnFilter(this.field, filter);
+    setColumnFilters(filters) {
+        this.filterModel.setColumnFilters(this.field, filters);
     }
 }

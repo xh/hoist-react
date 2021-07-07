@@ -35,10 +35,6 @@ export class FieldFilter extends Filter {
     static OPERATORS = ['=', '!=', '>', '>=', '<', '<=', 'like'];
     static ARRAY_OPERATORS = ['=', '!=', 'like'];
 
-    // Value that represents an empty check filter (i.e. 'field is empty')
-    static EMPTY_VALUE = [null, ''];
-    static EMPTY_STR = '[empty]';
-
     /**
      * Constructor - not typically called by apps - create from config via `parseFilter()` instead.
      *
@@ -94,9 +90,17 @@ export class FieldFilter extends Filter {
 
         switch (op) {
             case '=':
-                return r => value.includes(getVal(r));
+                return r => {
+                    let v = getVal(r);
+                    if (isNil(v) || (isString(v) && !v.trim().length)) v = null;
+                    return value.includes(v);
+                };
             case '!=':
-                return r => !value.includes(getVal(r));
+                return r => {
+                    let v = getVal(r);
+                    if (isNil(v) || (isString(v) && !v.trim().length)) v = null;
+                    return !value.includes(v);
+                };
             case '>':
                 return r => {
                     const v = getVal(r);

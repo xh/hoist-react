@@ -8,7 +8,7 @@
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, find, isEmpty, isFunction, isString} from 'lodash';
+import {isNil, find, isEmpty, isFunction, isString, castArray} from 'lodash';
 
 import {GridFilterFieldSpec} from './GridFilterFieldSpec';
 
@@ -95,10 +95,10 @@ export class GridFilterModel extends HoistModel {
     /**
      * Set / replace the filters for a given field on the target
      * @param {string} field - field to identify this filter
-     * @param {(Filter|Object)} filter - Filter, or config to create. If null, the filter will be removed
+     * @param {(Filter|Object|[])} filter - Filter(s), or config to create. If null, the filter will be removed
      */
     @action
-    setColumnFilter(field, filter) {
+    setColumnFilters(field, filter) {
         const currFilter = this.filter,
             currFilters = currFilter?.isCompoundFilter ? currFilter.filters : [currFilter],
             newFilters = [];
@@ -112,7 +112,7 @@ export class GridFilterModel extends HoistModel {
         });
 
         // Add in new filter
-        if (filter) newFilters.push(filter);
+        if (filter) newFilters.push(...castArray(filter));
 
         // Create compound filter if necessary
         let newFilter = null;
