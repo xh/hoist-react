@@ -354,8 +354,8 @@ export class Store extends HoistBase {
      * @param {(Object[]|Object)} data - source data for new Record(s). Note that this data will
      *      *not* be processed by this Store's `processRawData` or `idSpec` functions, but will be
      *      parsed and potentially transformed according to this Store's Field definitions.
-     * @param {(string|number)} [parentId] - ID of the pre-existing parent Record under which this
-     *      new Record should be added, if any.
+     * @param {RecordId} [parentId] - ID of the pre-existing parent Record under which this new
+     *      Record should be added, if any.
      */
     @action
     addRecords(data, parentId) {
@@ -610,7 +610,7 @@ export class Store extends HoistBase {
 
     /**
      *
-     * @param {(Record|string|number)} recOrId
+     * @param {RecordOrId} recOrId
      * @return {boolean} - true if the Record is in the store, but currently excluded by a filter.
      *      False if the record is either not in the Store at all, or not filtered out.
      */
@@ -660,7 +660,7 @@ export class Store extends HoistBase {
     /**
      * Get a record by ID, or null if no matching record found.
      *
-     * @param {(string|number)} id
+     * @param {RecordId} id
      * @param {boolean} [respectFilter] - false (default) to return a Record with the given
      *      ID even if an active filter is excluding it from the primary `records` collection.
      *      True to restrict matches to this Store's post-filter Record collection only.
@@ -680,7 +680,7 @@ export class Store extends HoistBase {
      * See also the 'children' and 'allChildren' properties on Record - those getters will likely
      * be more convenient for most app-level callers.
      *
-     * @param {(string|number)} id - id of record to be queried.
+     * @param {RecordId} id - ID of Record to be queried.
      * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
@@ -696,7 +696,7 @@ export class Store extends HoistBase {
      * See also the 'descendants' and 'allDescendants' properties on Record - those getters will
      * likely be more convenient for most app-level callers.
      *
-     * @param {(string|number)} id - id of record to be queried.
+     * @param {RecordId} id - ID of Record to be queried.
      * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
@@ -712,7 +712,7 @@ export class Store extends HoistBase {
      * See also the 'ancestors' and 'allAncestors' properties on Record - those getters will likely
      * be more convenient for most app-level callers.
      *
-     * @param {(string|number)} id - id of record to be queried.
+     * @param {RecordId} id - ID of Record to be queried.
      * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
@@ -929,7 +929,7 @@ function forIn(obj, fn) {
  *      a pointer to the intended parent if the record is not to be added to the root. The rawData
  *      *can* include a children property that will be processed into new child records.
  *      (Meaning: adds can be used to add new branches to the tree.)
- * @property {(string[]|number[])} [remove] - list of ids representing records to be removed.
+ * @property {RecordId[]} [remove] - list of ids representing records to be removed.
  *      Any descendents of these records will also be removed.
  * @property {Object} [rawSummaryData] - update to the dedicated summary row for this store.
  *      If the store has its `loadRootAsSummary` flag set to true, the summary record should
