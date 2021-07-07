@@ -12,18 +12,20 @@ import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
-import {action, observable, makeObservable, when} from '@xh/hoist/mobx';
+import {action, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
     apiDeprecated,
     apiRemoved,
     debounced,
     deepFreeze,
     ensureUnique,
+    logWithDebug,
     throwIf,
     warnIf,
-    withDefault,
-    logWithDebug
+    withDebug,
+    withDefault
 } from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
@@ -441,7 +443,7 @@ export class GridModel extends HoistModel {
     /**
      * Select records in the grid.
      *
-     * @param {(Object[]|Object)} records - single record/ID or array of records/IDs to select.
+     * @param {(RecordOrId|RecordOrId[])} records - single record/ID or array of records/IDs to select.
      * @param {Object} [options]
      * @param {boolean} [options.ensureVisible] - true to make selection visible if it is within a
      *      collapsed node or outside of the visible scroll window. Default true.
@@ -468,10 +470,11 @@ export class GridModel extends HoistModel {
      *      collapsed node or outside of the visible scroll window. Default true.
      */
     async selectFirstAsync({ensureVisible = true} = {}) {
-        const {selModel} = this;
+        const {selModel} = this,
+            isReady = await this.whenReadyAsync();
 
-        // await always async, allowing grid to render changes pending at time of call
-        await when(() => this.isReady);
+        // No-op if grid failed to enter ready state.
+        if (!isReady) return;
 
         // Get first displayed row with data - i.e. backed by a record, not a full-width group row.
         const id = this.agGridModel.getFirstSelectableRowNodeId();
@@ -510,11 +513,13 @@ export class GridModel extends HoistModel {
      * render all pending data changes.
      */
     async ensureSelectionVisibleAsync() {
-        // await always async, allowing grid to render changes pending at time of call
-        await when(() => this.isReady);
+        const isReady = await this.whenReadyAsync();
 
-        const {records} = this.selModel,
-            {agApi} = this,
+        // No-op if grid failed to enter ready state.
+        if (!isReady) return;
+
+        const {agApi, selModel} = this,
+            {records} = selModel,
             indices = [];
 
         // 1) Expand any selected nodes that are collapsed
@@ -563,7 +568,7 @@ export class GridModel extends HoistModel {
     get selectedRecord() {return this.selModel.singleRecord}
 
     /**
-     * @return {?(string|number)} - ID of selected record, or null if multiple/no records selected.
+     * @return {?RecordId} - ID of selected record, or null if multiple/no records selected.
      *
      * Note that this getter will *not* change if just the data of selected record is changed
      * due to store loading or editing.  Applications also interested in the contents of the
@@ -1012,6 +1017,23 @@ export class GridModel extends HoistModel {
                 agApi.hideOverlay();
             }
         }
+    }
+
+    /**
+     * Returns true as soon as the underlying agGridModel is ready, waiting a limited period
+     * of time if needed to allow the component to initialize. Returns false if grid not ready
+     * by end of timeout to ensure caller does not wait forever (if e.g. grid is not mounted).
+     * @param {number} [timeout] - timeout in ms
+     * @return {Promise<boolean>} - latest ready state of grid
+     */
+    async whenReadyAsync(timeout = 3 * SECONDS) {
+        try {
+            await when(() => this.isReady, {timeout});
+        } catch (ignored) {
+            withDebug(`Grid failed to enter ready state after waiting ${timeout}ms`, null, this);
+        }
+
+        return this.isReady;
     }
 
     /** @deprecated */

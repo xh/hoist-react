@@ -41,7 +41,7 @@ export class StoreSelectionModel extends HoistModel {
         return compact(this._ids.map(it => this.store.getById(it, true)));
     }
 
-    /** @return {(string[]|number[])} - IDs of currently selected records. */
+    /** @return {RecordId[]} - IDs of currently selected records. */
     @computed.struct
     get ids() {
         return map(this.records, 'id');
@@ -60,7 +60,7 @@ export class StoreSelectionModel extends HoistModel {
     }
 
     /**
-     * @return {?(string|number)} - ID of selected record, or null if multiple/no records selected.
+     * @return {?RecordId} - ID of selected record, or null if multiple/no records selected.
      *
      * Note that this getter will *not* change if just the data of selected record is changed
      * due to store loading or editing.  Applications also interested in the contents of the
@@ -84,7 +84,7 @@ export class StoreSelectionModel extends HoistModel {
 
     /**
      * Set the selection.
-     * @param {(Object[]|Object)} records - single record/ID or array of records/IDs to select.
+     * @param {(RecordOrId|RecordOrId[])} records - single record/ID or array of records/IDs to select.
      * @param {boolean} [clearSelection] - true to clear previous selection (rather than add to it).
      */
     @action

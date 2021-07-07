@@ -5,15 +5,24 @@
 ### 🐞 Bug Fixes
 
 * Fixed an issue preventing export of very large (>100k rows) grids.
+* Improved `GridModel` async selection methods to ensure they do not wait forever if grid does not
+  mount.
 
 ### 🎁 New Features
 
 * New `@logWithDebug` annotation provides easy timed logging of method execution (via `withDebug`).
+* New `AppSpec.disableXssProtection` config allows default disabling of Field-level XSS protection
+  across the app. Intended for secure, internal apps with tight performance tolerances.
 
 ### 💥 Breaking Changes
 
 * Removed `withShortDebug` utility method. Use `withDebug` instead, which now always logs a single
   line upon completion. This API simplification mirrors a recent change to `hoist-core`.
+
+### ⚙️ Technical
+
+* New `Exception.timeout()` util to throw exceptions explicitly marked as timeouts, used by
+  `Promise.timeout` extension.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.0.0...develop)
 
