@@ -32,8 +32,8 @@ export const [Badge, badge] = hoistCmp.withFactory({
     }
 });
 Badge.propTypes = {
-    /** Place the badge in the upper or lower corner of the parent element. */
+    /** Place badge in upper or lower corner of parent element. If no position given, badge is centered. */
     position: PT.oneOf(['top', 'bottom']),
 
-    intent: PT.oneOf(['primary', 'success', 'warning', 'danger', 'none'])
+    intent: PT.oneOf(['primary', 'success', 'warning', 'danger'])
 };
