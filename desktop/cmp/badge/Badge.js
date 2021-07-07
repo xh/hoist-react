@@ -11,8 +11,8 @@ import {div} from '@xh/hoist/cmp/layout';
 import './Badge.scss';
 
 /**
- * Badge indicator displayed inline with text/title - usually in a tab - showing a count or other
- * small indicator that something is new or has content.
+ * Badge indicator, generally displayed inline with text/title, showing a count or other small
+ * indicator that something is new or has content.
  */
 export const [Badge, badge] = hoistCmp.withFactory({
     displayName: 'Badge',
@@ -20,20 +20,26 @@ export const [Badge, badge] = hoistCmp.withFactory({
 
     className: 'xh-badge',
 
-    render({intent, position, className, ...props}) {
+    render({className, intent, position = 'center', ...props}) {
+        const classes = [];
+
+        if (intent) {
+            classes.push(`xh-badge--intent-${intent}`);
+        }
+
+        if (position === 'top' || position === 'bottom') {
+            classes.push(`xh-badge--position-${position}`);
+        }
+
         return div({
-            className: classNames(
-                className,
-                `${className}${intent ? `--intent-${intent}` : ''}`,
-                `${className}${position ? `--position-${position}` : ''}`
-            ),
+            className: classNames(className, classes),
             ...props
         });
     }
 });
 Badge.propTypes = {
-    /** Place badge in upper or lower corner of parent element. If no position given, badge is centered. */
-    position: PT.oneOf(['top', 'bottom']),
+    /** Placement of badge (default center). */
+    position: PT.oneOf(['center', 'top', 'bottom']),
 
     intent: PT.oneOf(['primary', 'success', 'warning', 'danger'])
 };
