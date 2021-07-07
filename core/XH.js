@@ -855,7 +855,12 @@ class XHClass extends HoistBase {
     }
 }
 
-export const XH = window.XH = new XHClass();
+/** @type {XHClass} - app-wide singleton instance. */
+export const XH = new XHClass();
+
+// Install reference to XH singleton on window (this is the one global Hoist adds directly).
+// Note that app code should still `import {XH} from '@xh/hoist/core'` to access this instance.
+window['XH'] = XH;
 
 /**
  * @typedef {Object} MessageConfig - configuration object for a modal alert, confirm, or prompt.
