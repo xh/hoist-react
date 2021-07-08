@@ -218,9 +218,9 @@ export class RecordSet {
     //------------------------
     // Implementation
     //------------------------
-    areRecordsEqual(rec1, rec2) {
-        return equal(rec1.data, rec2.data) &&
-            (this.store.idEncodesTreePath || equal(rec1.treePath, rec2.treePath));
+    areRecordsEqual(r1, r2) {
+        return r1 === r2 ||
+            (equal(r1.data, r2.data) && (this.store.idEncodesTreePath || equal(r1.treePath, r2.treePath)));
     }
 
     computeChildrenMap(recordMap) {

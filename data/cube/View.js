@@ -10,7 +10,7 @@ import {Cube} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {PendingTaskModel, forEachAsync} from '@xh/hoist/utils/async';
 import {wait} from '@xh/hoist/promise';
-import {throwIf, withDebug} from '@xh/hoist/utils/js';
+import {throwIf, logWithDebug} from '@xh/hoist/utils/js';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import {castArray, forEach, groupBy, isEmpty, isNil, map, isEqual, keys} from 'lodash';
 
@@ -50,7 +50,7 @@ export class View extends HoistBase {
     // Implementation
     _rows = null;
     _rowCache = null;
-    _leafMap = null;
+    _leafMap = null; // Leaves, by source record id.
 
     /**
      * @private - applications should use `Cube.createView()`.
@@ -194,11 +194,11 @@ export class View extends HoistBase {
     //------------------------
     // Implementation
     //------------------------
+    @logWithDebug
     async fullUpdateAsync() {
-        // Todo: Why do we need this (and with such a large interval) in order for the mask to show?
-        await wait(100);
+        await wait(1);
 
-        withDebug('Recomputing View', () => this.generateRows(), this);
+        this.generateRows();
 
         // Skip degenerate root in stores/grids, but preserve in object api.
         const {_leafMap, _rows} = this,
@@ -212,7 +212,7 @@ export class View extends HoistBase {
     }
 
     async dataOnlyUpdateAsync(updates) {
-        await wait(100);
+        await wait(1);
 
         const {_leafMap} = this,
             updatedRows = new Set();
@@ -241,21 +241,21 @@ export class View extends HoistBase {
 
     // Generate a new full data representation
     generateRows() {
-        const {query} = this,
-            {dimensions, includeRoot, cube} = query,
+        const {query, cube} = this,
+            {dimensions, includeRoot} = query,
             rootId = 'root';
 
-        const leafMap = this.generateLeaves(cube.store.records),
-            leafArray = Array.from(leafMap.values());
+        const records = cube.store.records.filter(rec => query.test(rec));
 
-        let newRows = this.groupAndInsertLeaves(leafArray, dimensions, rootId, {});
+        const leafMap = new Map();
+        let newRows = this.groupAndInsertRecords(records, dimensions, rootId, {}, leafMap);
         newRows = this.bucketRows(newRows, rootId, {});
 
         if (includeRoot) {
             newRows = [
-                this.cachedRow(rootId, newRows, () => (
-                    new AggregateRow(this, rootId, newRows, null, 'Total', {})
-                ))
+                this.cachedRow(rootId, newRows,
+                    () => new AggregateRow(this, rootId, newRows, null, 'Total', {})
+                )
             ];
         } else if (!query.includeLeaves && newRows[0]?.isLeaf) {
             newRows = []; // degenerate case, no visible rows
@@ -270,24 +270,35 @@ export class View extends HoistBase {
         this._rows = newRows.map(it => it.data);
     }
 
-    groupAndInsertLeaves(leaves, dimensions, parentId, appliedDimensions) {
-        if (isEmpty(dimensions) || isEmpty(leaves)) return leaves;
+    groupAndInsertRecords(records, dimensions, parentId, appliedDimensions, leafMap) {
+        if (isEmpty(records)) return records;
+
+        const rootId = parentId + Cube.RECORD_ID_DELIMITER;
+
+        if (isEmpty(dimensions)) {
+            return map(records, (r) => {
+                const id = rootId + r.id,
+                    leaf = this.cachedRow(id, null, () => new LeafRow(this, id, r));
+                leafMap.set(r.id, leaf);
+                return leaf;
+            });
+        }
 
         const dim = dimensions[0],
             dimName = dim.name,
-            groups = groupBy(leaves, (it) => it.data[dimName]);
+            groups = groupBy(records, (it) => it.data[dimName]);
 
         appliedDimensions = {...appliedDimensions};
-        return map(groups, (groupLeaves, val) => {
+        return map(groups, (groupRecords, val) => {
             appliedDimensions[dimName] = val;
-            const id = parentId + Cube.RECORD_ID_DELIMITER + `${dimName}=[${val}]`;
+            const id = rootId + `${dimName}=[${val}]`;
 
-            let children = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
+            let children = this.groupAndInsertRecords(groupRecords, dimensions.slice(1), id, appliedDimensions, leafMap);
             children = this.bucketRows(children, id, appliedDimensions);
 
-            return this.cachedRow(id, children, () => (
-                new AggregateRow(this, id, children, dim, val, appliedDimensions)
-            ));
+            return this.cachedRow(id, children,
+                () => new AggregateRow(this, id, children, dim, val, appliedDimensions)
+            );
         });
     }
 
@@ -317,9 +328,9 @@ export class View extends HoistBase {
         // Create new rows for each bucket and add to the result
         forEach(buckets, (rows, bucketVal) => {
             const id = parentId + Cube.RECORD_ID_DELIMITER + `${bucketName}=[${bucketVal}]`;
-            const bucket = this.cachedRow(id, rows, () => (
-                new BucketRow(this, id, rows, bucketVal, bucketSpec, appliedDimensions)
-            ));
+            const bucket = this.cachedRow(id, rows,
+                () => new BucketRow(this, id, rows, bucketVal, bucketSpec, appliedDimensions)
+            );
             ret.push(bucket);
         });
 
@@ -371,17 +382,6 @@ export class View extends HoistBase {
         }
 
         return false;
-    }
-
-    generateLeaves(records) {
-        const ret = new Map();
-        records.forEach(rec => {
-            if (this.query.test(rec)) {
-                const leaf = this.cachedRow(rec.id, undefined, () => new LeafRow(this, rec));
-                ret.set(rec.id, leaf);
-            }
-        });
-        return ret;
     }
 
     cachedRow(id, children, fn) {
