@@ -8,6 +8,7 @@ import {ExportFormat} from '@xh/hoist/cmp/grid';
 import {HoistService, XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
+import {MINUTES} from '@xh/hoist/utils/datetime';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
 import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq, compact} from 'lodash';
@@ -110,7 +111,7 @@ export class GridExportService extends HoistService {
             headers: {
                 'Content-Type': null
             },
-            timeout: 300 // Aligns with xh-proxy timeouts for larger grid exports
+            timeout: 2 * MINUTES
         });
 
         const blob = response.status === 204 ? null : await response.blob(),
