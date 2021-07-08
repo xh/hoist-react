@@ -47,6 +47,9 @@ export class FilterChooserModel extends HoistModel {
     @managed fieldSpecs = [];
 
     /** @member {number} */
+    maxTags;
+
+    /** @member {number} */
     maxResults;
 
     /** @member {PersistenceProvider} */
@@ -58,6 +61,7 @@ export class FilterChooserModel extends HoistModel {
     @observable.ref selectOptions;
     @observable.ref selectValue;
     @observable favoritesIsOpen = false;
+    @observable unsupportedFilter = false;
     inputRef = createObservableRef();
 
     @managed queryEngine;
@@ -84,8 +88,10 @@ export class FilterChooserModel extends HoistModel {
      *      FieldFilters, to be 'AND'ed together.
      * @param {(Filter[]|function)} [c.initialFavorites] - initial favorites as an array of filter
      *      configurations, or a function to produce such an array.
+     * @param {number} [c.maxTags] - maximum number of filter tags to render before disabling the
+     *      control. Limits the performance impact of rendering large filters.
      * @param {number} [c.maxResults] - maximum number of dropdown options to show before
-     *     truncating.
+     *      truncating.
      * @param {FilterChooserPersistOptions} [c.persistWith] - options governing persistence.
      */
     constructor({
@@ -95,6 +101,7 @@ export class FilterChooserModel extends HoistModel {
         target = null,
         initialValue = null,
         initialFavorites = [],
+        maxTags = 100,
         maxResults = 50,
         persistWith,
         ...rest
@@ -108,6 +115,7 @@ export class FilterChooserModel extends HoistModel {
         this.valueSource = valueSource;
         this.target = target;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
+        this.maxTags = maxTags;
         this.maxResults = maxResults;
         this.queryEngine = new QueryEngine(this);
 
@@ -183,17 +191,23 @@ export class FilterChooserModel extends HoistModel {
                 value = this.value ?? null;
             }
 
-            const displayFilters = this.toDisplayFilters(value),
-                options = displayFilters.map(f => this.createFilterOption(f)),
-                selectOptions = !isEmpty(options) ? options : null,
-                selectValue = sortBy(displayFilters.map(f => JSON.stringify(f)), f => {
-                    const idx = this.selectValue?.indexOf(f);
-                    return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
-                });
+            const displayFilters = this.toDisplayFilters(value);
+            this.unsupportedFilter = this.maxTags && displayFilters.length > this.maxTags;
 
-            // Set value after options, to ensure it is able to be rendered correctly
-            this.selectOptions = selectOptions;
-            wait(0).thenAction(() => this.selectValue = selectValue);
+            if (this.unsupportedFilter) {
+                this.selectOptions = null;
+                this.selectValue = null;
+            } else {
+                const options = displayFilters.map(f => this.createFilterOption(f)),
+                    selectValue = sortBy(displayFilters.map(f => JSON.stringify(f)), f => {
+                        const idx = this.selectValue?.indexOf(f);
+                        return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
+                    });
+
+                // Set select value after options, to ensure it is able to be rendered correctly
+                this.selectOptions = !isEmpty(options) ? options : null;
+                wait(0).thenAction(() => this.selectValue = selectValue);
+            }
 
             if (!this.value?.equals(value)) {
                 console.debug('Setting FilterChooser value:', value);
