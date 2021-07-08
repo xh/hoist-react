@@ -97,7 +97,7 @@ export class QueryEngine {
         if (!spec) return msgOption(`No matching field found for '${q.field}'`);
 
         const ret = [];
-        ['empty', 'not empty'].forEach(value => {
+        ['blank', 'not blank'].forEach(value => {
             if (caselessStartsWith(value, q.value)) {
                 const op = value.startsWith('not') ? '!=' : '=';
                 value = null;
@@ -111,7 +111,7 @@ export class QueryEngine {
             }
         });
         return isEmpty(ret) ?
-            msgOption(`The 'is' operator supports 'empty' or 'not empty'`) :
+            msgOption(`The 'is' operator supports 'blank' or 'not blank'`) :
             ret;
     }
 

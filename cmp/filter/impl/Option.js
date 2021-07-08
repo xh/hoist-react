@@ -39,7 +39,7 @@ export function fieldFilterOption({filter, fieldSpec, isExact = false}) {
 
     if (isNil(filter.value) && (filter.op === '!=' || filter.op === '=')) {
         displayOp = 'is';
-        displayValue = (filter.op === '!=' ? 'not empty' : 'empty');
+        displayValue = (filter.op === '!=' ? 'not blank' : 'blank');
     } else {
         displayOp = filter.op;
         displayValue = fieldSpec.renderValue(parseFieldValue(filter.value, fieldType, null));

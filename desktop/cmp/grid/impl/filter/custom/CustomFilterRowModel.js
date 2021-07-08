@@ -29,10 +29,10 @@ export class CustomFilterRowModel extends HoistModel {
         let op = this.op,
             value = this.inputVal;
 
-        if (op === 'empty') {
+        if (op === 'blank') {
             op = '=';
             value = null;
-        } else if (op === '!empty') {
+        } else if (op === '!blank') {
             op = '!=';
             value = null;
         } else if (isNil(value)) {
@@ -52,13 +52,13 @@ export class CustomFilterRowModel extends HoistModel {
                 const label = this.getOperatorIcon(value);
                 return {label, value};
             }),
-            {label: 'is empty', value: 'empty'},
-            {label: 'is not empty', value: '!empty'}
+            {label: 'is blank', value: 'blank'},
+            {label: 'is not blank', value: '!blank'}
         ];
     }
 
     get hideInput() {
-        return ['empty', '!empty'].includes(this.op);
+        return ['blank', '!blank'].includes(this.op);
     }
 
     constructor({
@@ -70,8 +70,8 @@ export class CustomFilterRowModel extends HoistModel {
         makeObservable(this);
 
         if (isNil(value)) {
-            if (op === '=') op = 'empty';
-            if (op === '!=') op = '!empty';
+            if (op === '=') op = 'blank';
+            if (op === '!=') op = '!blank';
         }
 
         this.parentModel = parentModel;

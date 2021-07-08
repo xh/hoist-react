@@ -39,7 +39,7 @@ export class EnumFilterTabModel extends HoistModel {
     @bindable filterText = null; // Bound search term for `StoreFilterField`
     @observable hasHiddenValues = false; // Are values hidden due to filters on other columns?
 
-    EMPTY = '[empty]';
+    BLANK_STR = '[blank]';
 
     /**
      * @member {Object} - FieldFilter config output by this model
@@ -127,14 +127,14 @@ export class EnumFilterTabModel extends HoistModel {
     // Implementation
     //-------------------
     getFilters() {
-        const {allValues, pendingValue, field, EMPTY} = this,
+        const {allValues, pendingValue, field, BLANK_STR} = this,
             excluded = [],
             included = [];
 
         allValues.forEach(value => {
             const include = pendingValue[value] ?? true,
                 arr = include ? included : excluded;
-            arr.push(value === EMPTY ? null : value);
+            arr.push(value === BLANK_STR ? null : value);
         });
 
         if (included.length === allValues.length || excluded.length === allValues.length) {
@@ -176,7 +176,7 @@ export class EnumFilterTabModel extends HoistModel {
 
     @action
     doSyncWithFilter() {
-        const {allValues, columnFilters, EMPTY} = this,
+        const {allValues, columnFilters, BLANK_STR} = this,
             pendingValue = {};
 
         if (!isEmpty(columnFilters)) {
@@ -187,7 +187,7 @@ export class EnumFilterTabModel extends HoistModel {
                 values = [];
 
             arr.forEach(filter => {
-                const newValues = castArray(filter.value).map(value => value ?? EMPTY);
+                const newValues = castArray(filter.value).map(value => value ?? BLANK_STR);
                 values.push(...newValues);
             });
 
@@ -204,7 +204,7 @@ export class EnumFilterTabModel extends HoistModel {
 
     valueFromRecord(record) {
         const ret = record.get(this.field);
-        return isNil(ret) ? this.EMPTY : ret;
+        return isNil(ret) ? this.BLANK_STR : ret;
     }
 
     syncGrid() {
@@ -234,8 +234,8 @@ export class EnumFilterTabModel extends HoistModel {
     }
 
     createGridModel() {
-        const {field, EMPTY} = this,
-            {renderer, rendererIsComplex, align, headerAlign, headerName} = this.parentModel.column; // Render values as they are in `gridModel`
+        const {field, BLANK_STR} = this,
+            {renderer, rendererIsComplex, align, headerAlign, displayName} = this.parentModel.column; // Render values as they are in `gridModel`
 
         return new GridModel({
             store: {
@@ -277,15 +277,15 @@ export class EnumFilterTabModel extends HoistModel {
                 {
                     field,
                     flex: 1,
-                    headerName,
+                    displayName,
                     align,
                     headerAlign,
                     renderer, // TODO - handle cases like bool check col where rendered values look null
                     rendererIsComplex,
                     comparator: (v1, v2, sortDir, abs, {defaultComparator}) => {
                         const mul = sortDir === 'desc' ? -1 : 1;
-                        if (v1 === EMPTY) return 1 * mul;
-                        if (v2 === EMPTY) return -1 * mul;
+                        if (v1 === BLANK_STR) return 1 * mul;
+                        if (v2 === BLANK_STR) return -1 * mul;
                         return defaultComparator(v1, v2);
                     }
                 }

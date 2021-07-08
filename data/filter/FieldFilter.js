@@ -92,13 +92,13 @@ export class FieldFilter extends Filter {
             case '=':
                 return r => {
                     let v = getVal(r);
-                    if (isNil(v) || (isString(v) && !v.trim().length)) v = null;
+                    if (isNil(v) || v === '') v = null;
                     return value.includes(v);
                 };
             case '!=':
                 return r => {
                     let v = getVal(r);
-                    if (isNil(v) || (isString(v) && !v.trim().length)) v = null;
+                    if (isNil(v) || v === '') v = null;
                     return !value.includes(v);
                 };
             case '>':
