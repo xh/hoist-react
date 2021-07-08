@@ -13,6 +13,8 @@
 * New `@logWithDebug` annotation provides easy timed logging of method execution (via `withDebug`).
 * New `AppSpec.disableXssProtection` config allows default disabling of Field-level XSS protection
   across the app. Intended for secure, internal apps with tight performance tolerances.
+* New `badge` component allows a styled badge to be placed inline with text/title, such as in a tab.
+  It can receive intent and position as additional props.
 
 ### 💥 Breaking Changes
 
