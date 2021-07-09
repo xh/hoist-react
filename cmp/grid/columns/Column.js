@@ -573,7 +573,7 @@ export class Column {
                 const recordA = agNodeA?.data,
                     recordB = agNodeB?.data;
 
-                valueA = this.getSortValue(valueA, recordA),
+                valueA = this.getSortValue(valueA, recordA);
                 valueB = this.getSortValue(valueB, recordB);
 
                 return this.defaultComparator(valueA, valueB);
