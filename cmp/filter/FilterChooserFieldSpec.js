@@ -42,7 +42,7 @@ export class FilterChooserFieldSpec extends BaseFieldSpec {
      * @param {*[]} [c.values] - explicit list of available values for this field.
      * @param {(boolean|SuggestValuesCb)} [c.suggestValues] - true to provide
      *      auto-complete options with enumerated matches when user specifies '=', or'!='.
-     *      Defaults to true for fieldTypes of 'string' or 'auto', otherwise false.  May be also
+     *      Defaults to true for enumerable fieldTypes, otherwise false.  May be also
      *      specified as the function to be used for the matching. (If true a default "word start"
      *      matching against the formatted value will be used.)
      * @param {boolean} [c.forceSelection] - true to require value entered to be an available value
@@ -66,7 +66,7 @@ export class FilterChooserFieldSpec extends BaseFieldSpec {
     }) {
         super(rest);
 
-        this.suggestValues = suggestValues ?? this.isValueType;
+        this.suggestValues = suggestValues ?? this.isEnumerable;
         this.forceSelection = forceSelection ?? false;
         this.valueRenderer = valueRenderer;
         this.valueParser = valueParser;

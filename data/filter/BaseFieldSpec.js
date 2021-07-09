@@ -104,6 +104,21 @@ export class BaseFieldSpec extends HoistBase {
     }
 
     /**
+     * @return {boolean} - determines whether values should be enumerated in UI affordances.
+     */
+    get isEnumerable() {
+        const FT = FieldType;
+        switch (this.fieldType) {
+            case FT.INT:
+            case FT.NUMBER:
+            case FT.DATE:
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    /**
      * @param {string} op
      * @return {boolean}
      */

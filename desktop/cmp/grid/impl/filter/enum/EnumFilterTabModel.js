@@ -152,7 +152,6 @@ export class EnumFilterTabModel extends HoistModel {
         const {currentFilter, valueSource} = this,
             sourceStore = valueSource.isView ? valueSource.cube.store : valueSource,
             allRecords = sourceStore.allRecords.filter(rec => isEmpty(rec.allChildren)),
-            allValues = uniq(allRecords.map(rec => this.valueFromRecord(rec))),
             pendingValue = {};
 
         // Apply external filters *not* pertaining to this field to the sourceStore
@@ -165,7 +164,7 @@ export class EnumFilterTabModel extends HoistModel {
         }
 
         this.values = uniq(filteredRecords.map(rec => this.valueFromRecord(rec)));
-        this.allValues = allValues;
+        this.allValues = uniq(allRecords.map(rec => this.valueFromRecord(rec)));
         this.hasHiddenValues = this.values.length < this.allValues.length;
 
         // Initialize pending value to all true (default)

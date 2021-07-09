@@ -48,30 +48,23 @@ export const customFilterRow = hoistCmp.factory({
 //-------------------
 const inputField = hoistCmp.factory(
     ({model}) => {
-        const {fieldType, inputProps} = model.fieldSpec,
+        const {fieldSpec} = model,
             props = {
                 bind: 'inputVal',
                 commitOnChange: true,
                 enableClear: true,
                 flex: 1,
                 width: null,
-                ...inputProps
+                ...fieldSpec.inputProps
             };
 
-        let ret;
-        switch (fieldType) {
-            case 'number':
-            case 'int':
-                ret = numberInput({...props, enableShorthandUnits: true});
-                break;
-            case 'localDate':
-            case 'date':
-                ret = dateInput({...props, valueType: fieldType});
-                break;
-            default:
-                ret = textInput(props);
+        if (fieldSpec.isNumericFieldType) {
+            return numberInput({...props, enableShorthandUnits: true});
+        } else if (fieldSpec.isDateBasedFieldType) {
+            return dateInput({...props, valueType: fieldSpec.fieldType});
         }
-        return ret;
+
+        return textInput(props);
     }
 );
 
