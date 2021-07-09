@@ -7,6 +7,8 @@
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {menuButton} from '@xh/hoist/mobile/cmp/menu';
 import {Button} from '@xh/hoist/mobile/cmp/button';
+import {hbox} from '@xh/hoist/cmp/layout';
+import {badge} from '@xh/hoist/cmp/badge';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
@@ -96,7 +98,14 @@ function buildMenuItems({
             omit: hideThemeItem,
             actionFn: () => XH.toggleTheme(),
             prepareFn: (item) => {
-                item.text = XH.darkTheme ? 'Light Theme' : 'Dark Theme';
+                item.text = hbox({
+                    items: [
+                        XH.darkTheme ? 'Light Theme' : 'Dark Theme',
+                        badge({
+                            item: 'Try Me',
+                            intent: 'primary'
+                        })
+                    ]});
                 item.icon = XH.darkTheme ? Icon.sun() : Icon.moon();
             }
         },
