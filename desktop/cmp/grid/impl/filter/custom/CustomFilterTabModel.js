@@ -6,8 +6,8 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {combineValueFilters} from '@xh/hoist/data';
-import {castArray, compact, isEmpty, every} from 'lodash';
+import {FieldFilter, combineValueFilters} from '@xh/hoist/data';
+import {castArray, compact, every, forOwn, isEmpty, isNil} from 'lodash';
 
 import {CustomFilterRowModel} from './CustomFilterRowModel';
 
@@ -32,19 +32,24 @@ export class CustomFilterTabModel extends HoistModel {
 
     @computed
     get implicitJoinMessage() {
-        let equalsCount = 0, notEqualsCount = 0, likeCount = 0;
+        const joinOp = this.op === 'AND' ? 'OR' : 'AND', // Opposite of current compound operator
+            counts = joinOp === 'AND' ?
+                {'!=': 0, 'not like': 0} :
+                {'=': 0, 'like': 0, 'begins with': 0, 'ends with': 0};
+
         this.rowModels.forEach(it => {
-            if (it.op === '=') equalsCount++;
-            if (it.op === '!=') notEqualsCount++;
-            if (it.op === 'like') likeCount++;
+            if (!isNil(counts[it.op])) {
+                counts[it.op]++;
+            }
         });
 
-        if (this.op === 'AND' && (equalsCount > 1 || likeCount > 1)) {
-            return 'Multiple `=` and `like` filters will be joined using OR.';
-        } else if (this.op === 'OR' && notEqualsCount > 1) {
-            return 'Multiple `!=` filters will be joined using AND.';
-        }
-        return null;
+        const operators = [];
+        forOwn(counts, (count, op) => {
+            if (count > 1) operators.push("'" + op + "'");
+        });
+
+        if (isEmpty(operators)) return null;
+        return `Multiple ${operators.join(', ')} filters will be joined using ${joinOp}.`;
     }
 
     get fieldSpec() {
@@ -97,7 +102,7 @@ export class CustomFilterTabModel extends HoistModel {
         // Create rows based on filter.
         columnFilters.forEach(filter => {
             const {op, value} = filter;
-            if (op === '=' || op === 'like') {
+            if (FieldFilter.ARRAY_OPERATORS.includes(op)) {
                 castArray(value).forEach(it => {
                     rowModels.push(new CustomFilterRowModel({parentModel: this, op, value: it}));
                 });

@@ -18,7 +18,8 @@ import {
     flatMap,
     find,
     castArray,
-    isFunction
+    isFunction,
+    without
 } from 'lodash';
 
 
@@ -222,9 +223,12 @@ export class QueryEngine {
         if (isEmpty(raw)) return null;
 
         // 'is' is a pseudo operator, both is and like need word boundaries
-        const ops = FieldFilter.OPERATORS.filter(it => it != 'like');
+        const ops = without(FieldFilter.OPERATORS, 'like', 'not like', 'begins with', 'ends with');
         const operatorRegs = sortBy(ops, o => -o.length).map(escapeRegExp);
         operatorRegs.push('\\blike\\b');
+        operatorRegs.push('\\bnot like\\b');
+        operatorRegs.push('\\bbegins with\\b');
+        operatorRegs.push('\\bends with\\b');
         operatorRegs.push('\\bis\\b');
 
         let [field = '', op = '', value = ''] = raw
@@ -233,8 +237,7 @@ export class QueryEngine {
 
         // Catch special case where some partial operator bits being interpreted as field
         if (!op && field) {
-
-            // catch partial 'like/is/!' at the end of an actual field -- move to operator
+            // catch partial operator at the end of an actual field -- move to operator
             const catchOpSuffix = (suffix, operator) => {
                 const reg = new RegExp(suffix, 'i');
                 if (field.match(reg)) {
@@ -247,6 +250,9 @@ export class QueryEngine {
             };
 
             if (!op) catchOpSuffix('( l| li| lik)$', 'like');
+            if (!op) catchOpSuffix('( n| no| not| not | not l| not li| not lik)$', 'not like');
+            if (!op) catchOpSuffix('( b| be| beg| begi| begin| begins| begins | begins w| begins wi| begins wit)$', 'begins with');
+            if (!op) catchOpSuffix('( e| en| end| ends| ends | ends w| ends wi| ends wit)$', 'ends with');
             if (!op) catchOpSuffix(' i$', 'is');
             if (!op) catchOpSuffix('!$', '!=');
 
@@ -256,7 +262,6 @@ export class QueryEngine {
                 field = '';
             }
         }
-
 
         if (!field && !op) return null;
 

@@ -32,7 +32,7 @@ export class CustomFilterRowModel extends HoistModel {
         if (op === 'blank') {
             op = '=';
             value = null;
-        } else if (op === '!blank') {
+        } else if (op === 'not blank') {
             op = '!=';
             value = null;
         } else if (isNil(value)) {
@@ -49,16 +49,16 @@ export class CustomFilterRowModel extends HoistModel {
     get options() {
         return [
             ...this.fieldSpec.ops.map(value => {
-                const label = this.getOperatorIcon(value);
+                const label = this.getOperatorLabel(value);
                 return {label, value};
             }),
             {label: 'is blank', value: 'blank'},
-            {label: 'is not blank', value: '!blank'}
+            {label: 'is not blank', value: 'not blank'}
         ];
     }
 
     get hideInput() {
-        return ['blank', '!blank'].includes(this.op);
+        return ['blank', 'not blank'].includes(this.op);
     }
 
     constructor({
@@ -71,7 +71,7 @@ export class CustomFilterRowModel extends HoistModel {
 
         if (isNil(value)) {
             if (op === '=') op = 'blank';
-            if (op === '!=') op = '!blank';
+            if (op === '!=') op = 'not blank';
         }
 
         this.parentModel = parentModel;
@@ -84,7 +84,7 @@ export class CustomFilterRowModel extends HoistModel {
         this.parentModel.removeRow(this);
     }
 
-    getOperatorIcon(op) {
+    getOperatorLabel(op) {
         switch (op) {
             case '=':
                 return Icon.equals();
@@ -98,6 +98,10 @@ export class CustomFilterRowModel extends HoistModel {
                 return Icon.lessThan();
             case '<=':
                 return Icon.lessThanEqual();
+            case 'begins with':
+                return 'begins';
+            case 'ends with':
+                return 'ends';
         }
         return op;
     }

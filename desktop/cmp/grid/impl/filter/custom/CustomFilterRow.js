@@ -9,19 +9,16 @@ import {hbox, div} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {dateInput, numberInput, select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import classNames from 'classnames';
+import {kebabCase} from 'lodash';
 
 import {CustomFilterRowModel} from './CustomFilterRowModel';
 
 export const customFilterRow = hoistCmp.factory({
     model: uses(CustomFilterRowModel),
     render({model}) {
-        const {options, hideInput} = model;
+        const {options, op, hideInput} = model;
         return hbox({
-            className: classNames(
-                'xh-custom-filter-tab__row',
-                hideInput ? 'xh-custom-filter-tab__row--no-input' : null
-            ),
+            className: `xh-custom-filter-tab__row xh-custom-filter-tab__row--${kebabCase(op)}`,
             items: [
                 select({
                     bind: 'op',

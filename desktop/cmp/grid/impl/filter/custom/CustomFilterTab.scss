@@ -30,16 +30,29 @@
       width: 100%;
     }
 
-    &--no-input .xh-select {
-      width: 190px !important;
+    &:not(:last-of-type) {
+      margin-bottom: var(--xh-pad-half-px);
+    }
 
-      .xh-select__value-container {
-        padding-left: 15px;
+    // Operator specific styling
+    &--like,
+    &--not-like,
+    &--begins-with,
+    &--ends-with {
+      .xh-select {
+        width: 65px !important;
       }
     }
 
-    &:not(:last-of-type) {
-      margin-bottom: var(--xh-pad-half-px);
+    &--blank,
+    &--not-blank {
+      .xh-select {
+        width: 190px !important;
+
+        .xh-select__value-container {
+          padding-left: 15px;
+        }
+      }
     }
   }
 

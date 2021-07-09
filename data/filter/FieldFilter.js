@@ -32,8 +32,8 @@ export class FieldFilter extends Filter {
     /** @member {*} */
     value;
 
-    static OPERATORS = ['=', '!=', '>', '>=', '<', '<=', 'like'];
-    static ARRAY_OPERATORS = ['=', '!=', 'like'];
+    static OPERATORS = ['=', '!=', '>', '>=', '<', '<=', 'like', 'not like', 'begins with', 'ends with'];
+    static ARRAY_OPERATORS = ['=', '!=', 'like', 'not like', 'begins with', 'ends with'];
 
     /**
      * Constructor - not typically called by apps - create from config via `parseFilter()` instead.
@@ -41,9 +41,10 @@ export class FieldFilter extends Filter {
      * @param {Object} c - FieldFilter config.
      * @param {(string|Field)} c.field - name of Field to filter or Field instance.
      * @param {string} c.op - one of the supported Filter.OPERATORS to use for comparison.
-     * @param {(*|[])} c.value - value(s) to use with operator in filter. When used with the '=',
-     *      '!=', or 'like' operators, value may be specified as an array. In these cases, the
-     *      filter will implement an implicit 'OR' for '='/'like' and an implicit 'AND' for '!='.
+     * @param {(*|[])} c.value - value(s) to use with operator in filter. When used with operators
+     *      in the ARRAY_OPERATORS collection, value may be specified as an array. In these cases,
+     *      the filter will implement an implicit 'OR' for '='/'like'/'begins with'/'ends with',
+     *      and an implicit 'AND' for '!='/'not like'.
      */
     constructor({field, op, value}) {
         super();
@@ -123,6 +124,15 @@ export class FieldFilter extends Filter {
                 };
             case 'like':
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
+                return r => regExps.some(re => re.test(getVal(r)));
+            case 'not like':
+                regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
+                return r => regExps.some(re => !re.test(getVal(r)));
+            case 'begins with':
+                regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
+                return r => regExps.some(re => re.test(getVal(r)));
+            case 'ends with':
+                regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
                 return r => regExps.some(re => re.test(getVal(r)));
             default:
                 throw XH.exception(`Unknown operator: ${op}`);
