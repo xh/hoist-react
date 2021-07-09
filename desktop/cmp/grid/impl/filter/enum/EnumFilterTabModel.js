@@ -236,7 +236,7 @@ export class EnumFilterTabModel extends HoistModel {
 
     createGridModel() {
         const {field, BLANK_STR} = this,
-            {renderer, rendererIsComplex, align, headerAlign, displayName} = this.parentModel.column; // Render values as they are in `gridModel`
+            {renderer, align, headerAlign, displayName} = this.parentModel.column; // Render values as they are in `gridModel`
 
         return new GridModel({
             store: {
@@ -281,13 +281,15 @@ export class EnumFilterTabModel extends HoistModel {
                     displayName,
                     align,
                     headerAlign,
-                    renderer, // TODO - handle cases like bool check col where rendered values look null
-                    rendererIsComplex,
                     comparator: (v1, v2, sortDir, abs, {defaultComparator}) => {
                         const mul = sortDir === 'desc' ? -1 : 1;
                         if (v1 === BLANK_STR) return 1 * mul;
                         if (v2 === BLANK_STR) return -1 * mul;
                         return defaultComparator(v1, v2);
+                    },
+                    renderer: (value, context) => {
+                        if (value === BLANK_STR) return value;
+                        return renderer ? renderer(value, context) : value;
                     }
                 }
             ]
