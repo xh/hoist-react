@@ -9,7 +9,7 @@ import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/
 import {parseFilter} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
-import {castArray, compact, clone, forOwn, isEmpty, isNil, uniq, partition} from 'lodash';
+import {castArray, compact, difference, isEmpty, isNil, uniq, partition} from 'lodash';
 
 export class EnumFilterTabModel extends HoistModel {
     /** @member {ColumnHeaderFilterModel} */
@@ -21,20 +21,19 @@ export class EnumFilterTabModel extends HoistModel {
     @managed @observable.ref gridModel;
 
     /**
-     * @member {String[]} List of all available (i.e. excluding hidden) values to display in the grid
+     * @member {*[]} List of all available (i.e. excluding hidden) values to display in the grid
      */
     @observable.ref values = [];
 
     /**
-     * @member {String[]} List of all (i.e. including hidden) values in the dataset
+     * @member {*[]} List of all (i.e. including hidden) values in the dataset
      */
     @observable.ref allValues = [];
 
     /**
-     * @member {Object} Key-value pairs of enumerated value to boolean, indicating whether value is
-     * checked/unchecked.
+     * @member {*[]} List of currently checked values in the list
      */
-    @observable.ref pendingValue = {};
+    @observable.ref pendingValues = [];
 
     @bindable filterText = null; // Bound search term for `StoreFilterField`
     @observable hasHiddenValues = false; // Are values hidden due to filters on other columns?
@@ -91,7 +90,7 @@ export class EnumFilterTabModel extends HoistModel {
         this.gridModel = this.createGridModel();
 
         this.addReaction({
-            track: () => [this.values, this.pendingValue],
+            track: () => [this.values, this.pendingValues],
             run: () => this.syncGrid()
         });
     }
@@ -107,34 +106,25 @@ export class EnumFilterTabModel extends HoistModel {
 
     @action
     toggleNode(isChecked, value) {
-        this.pendingValue = {
-            ...this.pendingValue,
-            [value]: isChecked
-        };
+        if (isChecked) {
+            this.pendingValues = [...this.pendingValues, value];
+        } else {
+            this.pendingValues = this.pendingValues.filter(it => it !== value);
+        }
     }
 
     @action
     toggleBulk(isChecked) {
-        const {records} = this.gridModel.store,
-            newValue = clone(this.pendingValue);
-        for (let rec of records) {
-            newValue[rec.id] = isChecked;
-        }
-        this.pendingValue = newValue;
+        this.pendingValues = isChecked ? this.values : [];
     }
 
     //-------------------
     // Implementation
     //-------------------
     getFilter() {
-        const {pendingValue, allValues, field, BLANK_STR} = this,
-            excluded = [],
-            included = [];
-
-        forOwn(pendingValue, (checked, value) => {
-            const arr = checked ? included : excluded;
-            arr.push(value === BLANK_STR ? null : value);
-        });
+        const {pendingValues, values, allValues, field, BLANK_STR} = this,
+            included = pendingValues.map(it => it === BLANK_STR ? null : it),
+            excluded = difference(values, pendingValues).map(it => it === BLANK_STR ? null : it);
 
         if (included.length === allValues.length || excluded.length === allValues.length) {
             return null;
@@ -151,8 +141,7 @@ export class EnumFilterTabModel extends HoistModel {
     doReset() {
         const {currentFilter, valueSource} = this,
             sourceStore = valueSource.isView ? valueSource.cube.store : valueSource,
-            allRecords = sourceStore.allRecords.filter(rec => isEmpty(rec.allChildren)),
-            pendingValue = {};
+            allRecords = sourceStore.allRecords.filter(rec => isEmpty(rec.allChildren));
 
         // Apply external filters *not* pertaining to this field to the sourceStore
         // to get the filtered set of available values to offer as options.
@@ -163,43 +152,36 @@ export class EnumFilterTabModel extends HoistModel {
             filteredRecords = allRecords.filter(it => testFn(it));
         }
 
-        this.values = uniq(filteredRecords.map(rec => this.valueFromRecord(rec)));
+        this.values = this.pendingValues = uniq(filteredRecords.map(rec => this.valueFromRecord(rec)));
         this.allValues = uniq(allRecords.map(rec => this.valueFromRecord(rec)));
         this.hasHiddenValues = this.values.length < this.allValues.length;
-
-        // Initialize pending value to all true (default)
-        this.values.forEach(key => pendingValue[key] = true);
-        this.pendingValue = pendingValue;
-
         this.filterText = null;
     }
 
     @action
     doSyncWithFilter() {
-        const {values, columnFilters, BLANK_STR} = this,
-            pendingValue = {};
+        const {values, columnFilters, BLANK_STR} = this;
 
-        if (!isEmpty(columnFilters)) {
-            // We are only interested '!=' filters if we have no '=' filters.
-            const [equalsFilters, notEqualsFilters] = partition(columnFilters, f => f.op === '='),
-                useNotEquals = isEmpty(equalsFilters),
-                arr = useNotEquals ? notEqualsFilters : equalsFilters,
-                filterValues = [];
+        if (isEmpty(columnFilters)) return;
 
-            arr.forEach(filter => {
-                const newValues = castArray(filter.value).map(value => value ?? BLANK_STR);
-                filterValues.push(...newValues);
-            });
+        // We are only interested '!=' filters if we have no '=' filters.
+        const [equalsFilters, notEqualsFilters] = partition(columnFilters, f => f.op === '='),
+            useNotEquals = isEmpty(equalsFilters),
+            arr = useNotEquals ? notEqualsFilters : equalsFilters,
+            filterValues = [];
 
-            if (filterValues.length) {
-                values.forEach(value => {
-                    const pending = filterValues.includes(value);
-                    pendingValue[value] = useNotEquals ? !pending : pending;
-                });
-            }
+        arr.forEach(filter => {
+            const newValues = castArray(filter.value).map(value => value ?? BLANK_STR);
+            filterValues.push(...newValues);
+        });
+
+        if (!filterValues.length) return;
+
+        if (useNotEquals) {
+            this.pendingValues = difference(values, filterValues);
+        } else {
+            this.pendingValues = filterValues;
         }
-
-        this.pendingValue = pendingValue;
     }
 
     valueFromRecord(record) {
@@ -208,9 +190,9 @@ export class EnumFilterTabModel extends HoistModel {
     }
 
     syncGrid() {
-        const {values, pendingValue, field} = this;
+        const {values, pendingValues, field} = this;
         const data = values.map(value => {
-            const isChecked = pendingValue[value];
+            const isChecked = pendingValues.includes(value);
             return {[field]: value, isChecked};
         });
         this.gridModel.loadData(data);
@@ -270,7 +252,7 @@ export class EnumFilterTabModel extends HoistModel {
                         return checkbox({
                             displayUnsetState: true,
                             value: record.data.isChecked,
-                            onChange: () => this.toggleNode(!v, record.id)
+                            onChange: () => this.toggleNode(!v, record.raw[field])
                         });
                     }
                 },
