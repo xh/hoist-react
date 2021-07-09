@@ -494,12 +494,14 @@ class GridLocalModel extends HoistModel {
 
         return {
             track: () => [model.isReady, store.validator.errors],
-            run: ([isReady]) => {
+            run: () => {
+                const {isReady, columns, agApi} = model;
                 if (!isReady) return;
-                const refreshCols = model.columns.filter(c => c.editor || c.rendererIsComplex);
+
+                const refreshCols = columns.filter(c => c.editor || c.rendererIsComplex);
                 if (!isEmpty(refreshCols)) {
-                    const columns = refreshCols.map(c => c.colId);
-                    model.agApi.refreshCells({columns, force: true});
+                    const colIds = refreshCols.map(c => c.colId);
+                    agApi.refreshCells({columns: colIds, force: true});
                 }
             },
             debounce: 1
