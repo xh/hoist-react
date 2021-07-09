@@ -46,7 +46,7 @@ export class EnumFilterTabModel extends HoistModel {
      */
     @computed.struct
     get filter() {
-        return this.getFilters();
+        return this.getFilter();
     }
 
     @computed
@@ -126,7 +126,7 @@ export class EnumFilterTabModel extends HoistModel {
     //-------------------
     // Implementation
     //-------------------
-    getFilters() {
+    getFilter() {
         const {allValues, pendingValue, field, BLANK_STR} = this,
             excluded = [],
             included = [];
@@ -139,12 +139,13 @@ export class EnumFilterTabModel extends HoistModel {
 
         if (included.length === allValues.length || excluded.length === allValues.length) {
             return null;
-        } else if (included.length <= 20 || included.length < (excluded.length * 2)) {
-            const value = included.length === 1 ? included[0] : included;
-            return {field, op: '=', value};
-        } else {
-            return excluded.map(value => ({field, op: '!=', value}));
         }
+
+        const op = allValues.length <= 20 || included.length > excluded.length ? '!=' : '=',
+            arr = op === '=' ? included : excluded,
+            value = arr.length === 1 ? arr[0] : arr;
+
+        return {field, op, value};
     }
 
     @action

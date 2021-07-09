@@ -69,15 +69,15 @@ export function flattenFilter(spec) {
 }
 
 /**
- * Recombine FieldFilters on '=' and 'like' on same field into single FieldFilter.
- * Filters other than '=' and 'like' FieldFilters will be returned unmodified.
+ * Recombine FieldFilters with array support on same field into single FieldFilter.
+ * Filters other than array-based FieldFilters will be returned unmodified.
  *
  * @returns {Filter[]}
  */
 export function combineValueFilters(filters = []) {
     const groupMap = groupBy(filters, ({op, field}) => [op, field].join('|'));
-    return flatMap(groupMap, (filters, key) => {
-        return (filters.length > 1 && (key.startsWith('=') || key.startsWith('like'))) ?
+    return flatMap(groupMap, filters => {
+        return (filters.length > 1 && FieldFilter.ARRAY_OPERATORS.includes(filters[0].op)) ?
             {...filters[0], value: filters.map(it => it.value)} :
             filters;
     });

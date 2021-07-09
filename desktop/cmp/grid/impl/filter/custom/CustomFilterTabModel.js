@@ -31,13 +31,20 @@ export class CustomFilterTabModel extends HoistModel {
     }
 
     @computed
-    get hasImplicitOr() {
-        let equalsCount = 0, likeCount = 0;
+    get implicitJoinMessage() {
+        let equalsCount = 0, notEqualsCount = 0, likeCount = 0;
         this.rowModels.forEach(it => {
             if (it.op === '=') equalsCount++;
+            if (it.op === '!=') notEqualsCount++;
             if (it.op === 'like') likeCount++;
         });
-        return equalsCount > 1 || likeCount > 1;
+
+        if (this.op === 'AND' && (equalsCount > 1 || likeCount > 1)) {
+            return 'Multiple `=` and `like` filters will be joined using OR.';
+        } else if (this.op === 'OR' && notEqualsCount > 1) {
+            return 'Multiple `!=` filters will be joined using AND.';
+        }
+        return null;
     }
 
     get fieldSpec() {

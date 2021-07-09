@@ -240,7 +240,7 @@ export class FilterChooserModel extends HoistModel {
     }
 
     // Transfer the value filter to the canonical set of individual filters for display.
-    // Implicit 'ORs' on '=' and 'like' will be split.
+    // Filters with arrays values will be split.
     toDisplayFilters(filter) {
         if (!filter) return [];
 
@@ -261,17 +261,17 @@ export class FilterChooserModel extends HoistModel {
             }
         });
 
-        // 2) Recognize unsupported ANDing of '=' and 'like' for a given Field.
-        // FilterChooser treats multiple values for these operators as 'OR' -- see (3) below.
+        // 2) Recognize unsupported multiple filters for array-based filters.
         const groupMap = groupBy(ret, ({op, field}) => [op, field].join('|'));
-        forEach(groupMap, (filters, key) => {
-            if (filters.length > 1 && (key.startsWith('=') || key.startsWith('like'))) {
-                unsupported('Multiple filters cannot be provided with "like" or "=" operator');
+        forEach(groupMap, filters => {
+            const {op} = filters[0];
+            if (filters.length > 1 && FieldFilter.ARRAY_OPERATORS.includes(op)) {
+                unsupported(`Multiple filters cannot be provided with ${op} operator`);
             }
         });
 
         // 3) Finally unroll multi-value filters to one value per filter.
-        // The multiple values for 'like' and '=' will later be restored to 'OR' semantics
+        // The multiple values for will later be restored.
         return flatMap(ret, (f) => {
             return isArray(f.value) ?
                 f.value.map(value => new FieldFilter({...f, value})) :

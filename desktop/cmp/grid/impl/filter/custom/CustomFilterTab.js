@@ -31,7 +31,7 @@ export const customFilterTab = hoistCmp.factory({
                         })
                     })
                 ),
-                implicitOrMessage()
+                implicitJoinMessage()
             ]
         });
     }
@@ -62,15 +62,13 @@ const tbar = hoistCmp.factory(
     }
 );
 
-const implicitOrMessage = hoistCmp.factory(
+const implicitJoinMessage = hoistCmp.factory(
     ({model}) => {
+        const msg = model.implicitJoinMessage;
         return div({
-            omit: !model.hasImplicitOr,
-            className: 'xh-custom-filter-tab__implicit_or_message',
-            items: [
-                Icon.info(),
-                div('Multiple `=` and `like` filters will be joined using OR')
-            ]
+            omit: !msg,
+            className: 'xh-custom-filter-tab__implicit_join_message',
+            items: [Icon.info(), div(msg)]
         });
     }
 );
