@@ -26,6 +26,11 @@
 * New `Exception.timeout()` util to throw exceptions explicitly marked as timeouts, used by
   `Promise.timeout` extension.
 
+### ✨ Style
+
+* If the first child of a `Placeholder` component is a Hoist icon, it will not automatically be
+  styled to 4x size with reduced opacity. (See new Toolbox example under the "Other" tab.)
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.0.0...develop)
 
 ## v41.0.0 - 2021-07-01
