@@ -7,6 +7,8 @@
 * Fixed an issue preventing export of very large (>100k rows) grids.
 * Improved `GridModel` async selection methods to ensure they do not wait forever if grid does not
   mount.
+* Fixed an issue preventing a minimal button in `panel.headerItems` to take an intent that overrides
+  the panel's title text color.
 
 ### 🎁 New Features
 
