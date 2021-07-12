@@ -15,6 +15,7 @@ import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/Co
 import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/ColChooserModel';
 import {columnHeaderFilter} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilter';
 import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
+import {gridFilterDialog} from '@xh/hoist/desktop/cmp/grid/impl/filter/GridFilterDialog';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
@@ -44,6 +45,7 @@ installDesktopImpls({
     pinPadImpl,
     colChooser,
     columnHeaderFilter,
+    gridFilterDialog,
     ColChooserModel,
     ColumnHeaderFilterModel,
     StoreContextMenu

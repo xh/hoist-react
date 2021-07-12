@@ -151,6 +151,8 @@ export class GridModel extends HoistModel {
         'exportExcel',
         'exportCsv',
         '-',
+        'gridFilter',
+        '-',
         'restoreDefaults',
         '-',
         'colChooser',
@@ -414,6 +416,7 @@ export class GridModel extends HoistModel {
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
 
+        this.filterModel?.clear();
         this.persistenceModel?.clear();
         return true;
     }

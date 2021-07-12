@@ -143,6 +143,13 @@ export class StoreContextMenu {
                     icon: Icon.reset(),
                     actionFn: () => gridModel.restoreDefaultsAsync()
                 });
+            case 'gridFilter':
+                return new RecordAction({
+                    text: 'View Filters',
+                    icon: Icon.code(),
+                    hidden: !gridModel || !gridModel.filterModel,
+                    actionFn: () => gridModel.filterModel.openDialog()
+                });
             default:
                 return token;
         }

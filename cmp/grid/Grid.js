@@ -8,7 +8,7 @@ import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {fragment, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
-import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
+import {colChooser as desktopColChooser, gridFilterDialog, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {div} from '@xh/hoist/cmp/layout';
@@ -86,7 +86,8 @@ export const [Grid, grid] = hoistCmp.withFactory({
                 onKeyDown: impl.onKeyDown,
                 ref: composeRefs(impl.viewRef, ref)
             }),
-            (model.colChooserModel ? platformColChooser({model: model.colChooserModel}) : null)
+            (model.colChooserModel ? platformColChooser({model: model.colChooserModel}) : null),
+            (model.filterModel ? gridFilterDialog({model: model.filterModel}) : null)
         );
     }
 });

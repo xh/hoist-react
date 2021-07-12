@@ -36,6 +36,9 @@ export class GridFilterModel extends HoistModel {
         return !isNil(this.target);
     }
 
+    // Open state for filter dialog
+    @observable dialogOpen = false;
+
     // Private filter state, used when `target` is not defined
     @observable.ref _filter;
 
@@ -121,6 +124,24 @@ export class GridFilterModel extends HoistModel {
         }
 
         this.setFilter(newFilter);
+    }
+
+    /**
+     * Clear the filter on the target
+     */
+    @action
+    clear() {
+        this.setFilter(null);
+    }
+
+    @action
+    openDialog() {
+        this.dialogOpen = true;
+    }
+
+    @action
+    closeDialog() {
+        this.dialogOpen = false;
     }
 
     getFieldSpec(field) {
