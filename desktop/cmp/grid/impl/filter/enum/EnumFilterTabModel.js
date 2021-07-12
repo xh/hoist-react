@@ -139,7 +139,7 @@ export class EnumFilterTabModel extends HoistModel {
 
     @action
     doReset() {
-        const {currentFilter, valueSource} = this,
+        const {currentFilter, valueSource, BLANK_STR} = this,
             sourceStore = valueSource.isView ? valueSource.cube.store : valueSource,
             allRecords = sourceStore.allRecords.filter(rec => isEmpty(rec.allChildren));
 
@@ -152,9 +152,13 @@ export class EnumFilterTabModel extends HoistModel {
             filteredRecords = allRecords.filter(it => testFn(it));
         }
 
-        this.values = this.pendingValues = uniq(filteredRecords.map(rec => this.valueFromRecord(rec)));
-        this.allValues = uniq(allRecords.map(rec => this.valueFromRecord(rec)));
-        this.hasHiddenValues = this.values.length < this.allValues.length;
+        // Extract unique values from record sets. [blank] is always included.
+        const values = uniq([...filteredRecords.map(rec => this.valueFromRecord(rec)), BLANK_STR]),
+            allValues = uniq([...allRecords.map(rec => this.valueFromRecord(rec)), BLANK_STR]);
+
+        this.values = this.pendingValues = values;
+        this.allValues = allValues;
+        this.hasHiddenValues = values.length < allValues.length;
         this.filterText = null;
     }
 
