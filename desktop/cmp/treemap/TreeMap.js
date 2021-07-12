@@ -242,7 +242,7 @@ class LocalModel extends HoistModel {
     //----------------------
     getMergedConfig() {
         const defaultConf = this.getDefaultConfig(),
-            colorConf = this.getThemeConfig(),
+            colorConf = this.getColorConfig(),
             modelConf = this.getModelConfig();
 
         return merge(defaultConf, colorConf, modelConf);
@@ -259,7 +259,7 @@ class LocalModel extends HoistModel {
         };
     }
 
-    getThemeConfig() {
+    getColorConfig() {
         return {
             colors: ['#79c9fb'], // Color to use when colorMode is 'none'
             colorAxis: {
