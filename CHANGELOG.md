@@ -40,6 +40,8 @@
 * Fixed an issue preventing export of very large (>100k rows) grids.
 * Improved `GridModel` async selection methods to ensure they do not wait forever if grid does not
   mount.
+* Fixed an issue preventing a minimal button in `panel.headerItems` to take an intent that overrides
+  the panel's title text color.
 
 ### 🎁 New Features
 
@@ -56,6 +58,11 @@
 
 * New `Exception.timeout()` util to throw exceptions explicitly marked as timeouts, used by
   `Promise.timeout` extension.
+
+### ✨ Style
+
+* If the first child of a `Placeholder` component is a Hoist icon, it will not automatically be
+  styled to 4x size with reduced opacity. (See new Toolbox example under the "Other" tab.)
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.0.0...develop)
 
