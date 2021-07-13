@@ -145,7 +145,7 @@ export class StoreContextMenu {
                 });
             case 'filter': {
                 const filterDisplayFn = () => ({record, column, gridModel}) => {
-                    if (!record) return {hidden: true};
+                    if (!record || !column?.filterable) return {hidden: true};
                     const value = record.get(column.field),
                         text = value && column.renderer ?
                             column.renderer(value, {record, column, gridModel}) :
