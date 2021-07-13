@@ -143,7 +143,22 @@ export class StoreContextMenu {
                     icon: Icon.reset(),
                     actionFn: () => gridModel.restoreDefaultsAsync()
                 });
-            case 'filter':
+            case 'filter': {
+                const filterDisplayFn = () => ({record, column, gridModel}) => {
+                    if (!record) return {hidden: true};
+                    const value = record.get(column.field),
+                        text = value && column.renderer ?
+                            column.renderer(value, {record, column, gridModel}) :
+                            value ?? '[blank]';
+                    return {text};
+                };
+
+                const filterActionFn = (op) => ({record, column}) => {
+                    const {field} = column,
+                        value = record.get(field);
+                    gridModel.filterModel.setColumnFilters(field, {field, op, value});
+                };
+
                 return new RecordAction({
                     text: 'Filter',
                     icon: Icon.filter(),
@@ -152,26 +167,14 @@ export class StoreContextMenu {
                         {
                             icon: Icon.equals(),
                             recordsRequired: 1,
-                            displayFn: ({record, column}) => {
-                                return record ? {text: record.get(column.field)} : {hidden: true};
-                            },
-                            actionFn: ({record, column}) => {
-                                const {field} = column,
-                                    value = record.get(field);
-                                gridModel.filterModel.setColumnFilters(field, {op: '=', field, value});
-                            }
+                            displayFn: filterDisplayFn(),
+                            actionFn: filterActionFn('=')
                         },
                         {
                             icon: Icon.notEquals(),
                             recordsRequired: 1,
-                            displayFn: ({record, column}) => {
-                                return record ? {text: record.get(column.field)} : {hidden: true};
-                            },
-                            actionFn: ({record, column}) => {
-                                const {field} = column,
-                                    value = record.get(field);
-                                gridModel.filterModel.setColumnFilters(field, {op: '!=', field, value});
-                            }
+                            displayFn: filterDisplayFn(),
+                            actionFn: filterActionFn('!=')
                         },
                         '-',
                         {
@@ -181,6 +184,7 @@ export class StoreContextMenu {
                         }
                     ]
                 });
+            }
             default:
                 return token;
         }
