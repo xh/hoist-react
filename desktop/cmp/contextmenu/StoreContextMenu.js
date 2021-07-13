@@ -8,7 +8,7 @@ import {XH} from '@xh/hoist/core';
 import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import copy from 'clipboard-copy';
-import {flatten, isEmpty, isString} from 'lodash';
+import {flatten, isEmpty, isString, uniq} from 'lodash';
 
 /**
  * Model for ContextMenus interacting with data provided by Hoist data stores, typically via a Grid.
@@ -144,18 +144,21 @@ export class StoreContextMenu {
                     actionFn: () => gridModel.restoreDefaultsAsync()
                 });
             case 'filter': {
-                const filterDisplayFn = () => ({record, column, gridModel}) => {
-                    if (!record || !column?.filterable) return {hidden: true};
-                    const value = record.get(column.field),
-                        text = value && column.renderer ?
-                            column.renderer(value, {record, column, gridModel}) :
-                            value ?? '[blank]';
+                const filterDisplayFn = () => ({selectedRecords, record, column, gridModel}) => {
+                    if (isEmpty(selectedRecords) || !column?.filterable) return {hidden: true};
+
+                    const values = uniq(selectedRecords.map(rec => rec.get(column.field)));
+                    if (values.length > 1) return {text: `${values.length} values`};
+
+                    const text = column.renderer ?
+                        column.renderer(values[0], {record, column, gridModel}) :
+                        values[0] ?? '[blank]';
                     return {text};
                 };
 
-                const filterActionFn = (op) => ({record, column}) => {
+                const filterActionFn = (op) => ({selectedRecords, column}) => {
                     const {field} = column,
-                        value = record.get(field);
+                        value = uniq(selectedRecords.map(rec => rec.get(field)));
                     gridModel.filterModel.setColumnFilters(field, {field, op, value});
                 };
 
@@ -166,13 +169,13 @@ export class StoreContextMenu {
                     items: [
                         {
                             icon: Icon.equals(),
-                            recordsRequired: 1,
+                            recordsRequired: true,
                             displayFn: filterDisplayFn(),
                             actionFn: filterActionFn('=')
                         },
                         {
                             icon: Icon.notEquals(),
-                            recordsRequired: 1,
+                            recordsRequired: true,
                             displayFn: filterDisplayFn(),
                             actionFn: filterActionFn('!=')
                         },
