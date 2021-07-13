@@ -130,7 +130,7 @@ export class EnumFilterTabModel extends HoistModel {
             return null;
         }
 
-        const op = allValues.length <= 20 || included.length > excluded.length ? '!=' : '=',
+        const op = included.length > excluded.length ? '!=' : '=',
             arr = op === '=' ? included : excluded,
             value = arr.length === 1 ? arr[0] : arr;
 
