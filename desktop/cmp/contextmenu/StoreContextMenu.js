@@ -143,12 +143,43 @@ export class StoreContextMenu {
                     icon: Icon.reset(),
                     actionFn: () => gridModel.restoreDefaultsAsync()
                 });
-            case 'gridFilter':
+            case 'filter':
                 return new RecordAction({
-                    text: 'View Filters',
-                    icon: Icon.code(),
+                    text: 'Filter',
+                    icon: Icon.filter(),
                     hidden: !gridModel || !gridModel.filterModel,
-                    actionFn: () => gridModel.filterModel.openDialog()
+                    items: [
+                        {
+                            icon: Icon.equals(),
+                            recordsRequired: 1,
+                            displayFn: ({record, column}) => {
+                                return record ? {text: record.get(column.field)} : {hidden: true};
+                            },
+                            actionFn: ({record, column}) => {
+                                const {field} = column,
+                                    value = record.get(field);
+                                gridModel.filterModel.setColumnFilters(field, {op: '=', field, value});
+                            }
+                        },
+                        {
+                            icon: Icon.notEquals(),
+                            recordsRequired: 1,
+                            displayFn: ({record, column}) => {
+                                return record ? {text: record.get(column.field)} : {hidden: true};
+                            },
+                            actionFn: ({record, column}) => {
+                                const {field} = column,
+                                    value = record.get(field);
+                                gridModel.filterModel.setColumnFilters(field, {op: '!=', field, value});
+                            }
+                        },
+                        '-',
+                        {
+                            text: 'View Grid Filters',
+                            icon: Icon.code(),
+                            actionFn: () => gridModel.filterModel.openDialog()
+                        }
+                    ]
                 });
             default:
                 return token;
