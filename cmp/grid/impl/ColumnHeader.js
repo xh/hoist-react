@@ -45,6 +45,16 @@ export const columnHeader = hoistCmp.factory({
             return div({className: 'xh-grid-header-sort-icon', item: icon});
         };
 
+        const expandCollapseIcon = () => {
+            const {isTreeColumn, expandFromHeader} = props.column.colDef.headerComponentParams.xhColumn;
+            if (!isTreeColumn || !expandFromHeader) return null;
+
+            return div({
+                item: Icon.angleRight(),
+                onClick: () => impl.gridModel.expandAll()
+            });
+        };
+
         const menuIcon = () => {
             if (!props.enableMenu) return null;
             return div({
@@ -101,6 +111,7 @@ export const columnHeader = hoistCmp.factory({
             items: [
                 span({onMouseEnter, item: headerElem}),
                 sortIcon(),
+                expandCollapseIcon(),
                 menuIcon()
             ]
         });

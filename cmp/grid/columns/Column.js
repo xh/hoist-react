@@ -56,6 +56,8 @@ export class Column {
      * @param {boolean} [c.isTreeColumn] - true if this column will host the expand/collapse arrow
      *      controls for a hierarchical Tree Grid. For when `GridModel.treeMode` is enabled, one
      *      column in that grid should have this flag enabled.
+     * @param {boolean} [c.expandFromHeader] - true if this column header will host an expand/collapse
+     *      all arrow. `Column.isTreeColumn` must be enabled.
      * @param {string} [c.displayName] - primary user-facing name for this Column. Sourced from
      *      the corresponding data `Field.displayName` from the parent `GridModel.store` config, if
      *      available, or defaulted via transform of `field` string config. Used as default value
@@ -174,6 +176,7 @@ export class Column {
         field,
         colId,
         isTreeColumn,
+        expandFromHeader,
         displayName,
         headerName,
         headerTooltip,
@@ -238,6 +241,7 @@ export class Column {
         throwIf(!this.colId, 'Must specify colId or field for a Column.');
 
         this.isTreeColumn = withDefault(isTreeColumn, false);
+        this.expandFromHeader = withDefault(expandFromHeader, false);
 
         // Note that parent GridModel might have already defaulted displayName from an associated
         // `Store.field` when pre-processing Column configs - prior to calling this ctor. If that
