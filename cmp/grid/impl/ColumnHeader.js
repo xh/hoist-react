@@ -42,17 +42,8 @@ export const columnHeader = hoistCmp.factory({
             } else if (sort === 'desc') {
                 icon = abs ? Icon.arrowToBottom({size: 'sm'}) : Icon.arrowDown({size: 'sm'});
             }
+
             return div({className: 'xh-grid-header-sort-icon', item: icon});
-        };
-
-        const expandCollapseIcon = () => {
-            const {isTreeColumn, expandFromHeader} = props.column.colDef.headerComponentParams.xhColumn;
-            if (!isTreeColumn || !expandFromHeader) return null;
-
-            return div({
-                item: Icon.angleRight(),
-                onClick: () => impl.gridModel.expandAll()
-            });
         };
 
         const menuIcon = () => {
@@ -64,6 +55,34 @@ export const columnHeader = hoistCmp.factory({
                 onClick: (e) => {
                     e.stopPropagation();
                     props.showColumnMenu(impl.menuButtonRef.current);
+                }
+            });
+        };
+
+        const expandCollapseIcon = () => {
+            const {isTreeColumn, expandFromHeader} = props.column.colDef.headerComponentParams.xhColumn,
+                {isExpanded, gridModel} = impl;
+
+            if (!isTreeColumn || !expandFromHeader) return null;
+
+            let icon;
+            if (isExpanded) {
+                icon = Icon.angleDown({prefix: 'fal', size: 'lg'});
+            } else {
+                icon = Icon.angleRight({prefix: 'fal', size: 'lg'});
+            }
+
+            return div({
+                className: 'xh-grid-header-expand-collapse-icon',
+                item: icon,
+                onClick: (e) => {
+                    e.stopPropagation();
+                    if (isExpanded) {
+                        gridModel.collapseAll();
+                    } else {
+                        gridModel.expandAll();
+                    }
+                    impl.setIsExpanded(!isExpanded);
                 }
             });
         };
@@ -126,6 +145,7 @@ class LocalModel extends HoistModel {
     colId;
     menuButtonRef = createObservableRef();
     @bindable isFiltered = false;
+    @bindable isExpanded = false;
     enableSorting;
     availableSorts;
 
