@@ -30,7 +30,8 @@ export const columnHeader = hoistCmp.factory({
     model: false,
 
     render(props) {
-        const impl = useLocalModel(() => new LocalModel(props));
+        const impl = useLocalModel(() => new LocalModel(props)),
+            {xhColumn} = impl;
 
         const sortIcon = () => {
             const {abs, sort} = impl.activeGridSorter ?? {};
@@ -60,30 +61,18 @@ export const columnHeader = hoistCmp.factory({
         };
 
         const expandCollapseIcon = () => {
-            const {isTreeColumn, expandFromHeader} = props.column.colDef.headerComponentParams.xhColumn,
-                {isExpanded, gridModel} = impl;
+            const {isTreeColumn, headerHasExpandCollapse} = xhColumn;
 
-            if (!isTreeColumn || !expandFromHeader) return null;
+            if (!isTreeColumn || !headerHasExpandCollapse) return null;
 
-            let icon;
-            if (isExpanded) {
-                icon = Icon.angleDown({prefix: 'fal', size: 'lg'});
-            } else {
-                icon = Icon.angleRight({prefix: 'fal', size: 'lg'});
-            }
+            const icon = impl.isExpanded ?
+                Icon.angleDown({prefix: 'fal', size: 'lg'}) :
+                Icon.angleRight({prefix: 'fal', size: 'lg'});
 
             return div({
                 className: 'xh-grid-header-expand-collapse-icon',
                 item: icon,
-                onClick: (e) => {
-                    e.stopPropagation();
-                    if (isExpanded) {
-                        gridModel.collapseAll();
-                    } else {
-                        gridModel.expandAll();
-                    }
-                    impl.setIsExpanded(!isExpanded);
-                }
+                onClick: (e) => impl.expandOrCollapseAll(e)
             });
         };
 
@@ -93,7 +82,7 @@ export const columnHeader = hoistCmp.factory({
             impl.hasNonPrimarySort ? 'xh-grid-header-multisort' : null
         ];
 
-        const {xhColumn, gridModel} = impl,
+        const {gridModel} = impl,
             {isDesktop} = XH;
 
         // `props.displayName` is the output of the Column `headerValueGetter` and should always be a string
@@ -128,9 +117,9 @@ export const columnHeader = hoistCmp.factory({
             onTouchEnd:     !isDesktop ? impl.onTouchEnd : null,
 
             items: [
+                expandCollapseIcon(),
                 span({onMouseEnter, item: headerElem}),
                 sortIcon(),
-                expandCollapseIcon(),
                 menuIcon()
             ]
         });
@@ -145,7 +134,6 @@ class LocalModel extends HoistModel {
     colId;
     menuButtonRef = createObservableRef();
     @bindable isFiltered = false;
-    @bindable isExpanded = false;
     enableSorting;
     availableSorts;
 
@@ -186,8 +174,13 @@ class LocalModel extends HoistModel {
         return activeGridSorter ? this.gridModel.sortBy.indexOf(activeGridSorter) > 0 : false;
     }
 
+    @computed
+    get isExpanded() {
+        return !isEmpty(this.gridModel.expandState);
+    }
+
     // Desktop click handling
-    onMouseDown = (e) => {
+    onMouseDown = () => {
         this._lastMouseDown = Date.now();
     };
 
@@ -203,7 +196,7 @@ class LocalModel extends HoistModel {
     };
 
     // Mobile touch handling
-    onTouchStart = (e) => {
+    onTouchStart = () => {
         this._lastTouchStart = Date.now();
     };
 
@@ -262,7 +255,6 @@ class LocalModel extends HoistModel {
             if (isFinite(currIdx)) idx = (currIdx + 1) % availableSorts.length;
         }
 
-
         return availableSorts[idx];
     }
 
@@ -285,5 +277,16 @@ class LocalModel extends HoistModel {
             return new GridSorter({...spec, colId});
         });
         return absSort ? ret : ret.filter(it => !it.abs);
+    }
+
+    expandOrCollapseAll(e) {
+        const {gridModel, isExpanded} = this;
+
+        e.stopPropagation();
+        if (isExpanded) {
+            gridModel.collapseAll();
+        } else {
+            gridModel.expandAll();
+        }
     }
 }

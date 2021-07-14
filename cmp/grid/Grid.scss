@@ -67,6 +67,12 @@
     .xh-grid-header-menu-icon {
       cursor: pointer;
     }
+
+    .xh-grid-header-expand-collapse-icon {
+      display: flex;
+      margin-left: -9.3px;
+      margin-right: 1px;
+    }
   }
 
   .xh-column-header-align-right {

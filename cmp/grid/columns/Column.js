@@ -56,8 +56,6 @@ export class Column {
      * @param {boolean} [c.isTreeColumn] - true if this column will host the expand/collapse arrow
      *      controls for a hierarchical Tree Grid. For when `GridModel.treeMode` is enabled, one
      *      column in that grid should have this flag enabled.
-     * @param {boolean} [c.expandFromHeader] - true if this column header will host an expand/collapse
-     *      all arrow. `Column.isTreeColumn` must be enabled.
      * @param {string} [c.displayName] - primary user-facing name for this Column. Sourced from
      *      the corresponding data `Field.displayName` from the parent `GridModel.store` config, if
      *      available, or defaulted via transform of `field` string config. Used as default value
@@ -66,6 +64,10 @@ export class Column {
      * @param {(Column~headerNameFn|element)} [c.headerName] - user-facing text/element displayed
      *      in the Column header, or a function to produce the same. Defaulted from `displayName`.
      * @param {string} [c.headerTooltip] - tooltip text for grid header.
+     * @param {boolean} [c.headerHasExpandCollapse] - true if this column header will host an
+     *      expand/collapse all arrow. `Column.isTreeColumn` must be enabled.
+     * @param {string} [c.headerAlign] - horizontal alignment of header contents. Defaults to same
+     *      as cell alignment.
      * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - CSS classes to add to the
      *      header. Supports both string values or a function to generate strings.
      * @param {(Column~cellClassFn|string|string[])} [c.cellClass] - additional css classes to add
@@ -74,8 +76,6 @@ export class Column {
      * @param {boolean} [c.hidden] - true to suppress default display of the column.
      * @param {string} [c.align] - horizontal alignment of cell contents.
      *      Valid values are:  'left' (default), 'right' or 'center'.
-     * @param {string} [c.headerAlign] - horizontal alignment of header contents. Defaults to same
-     *      as cell alignment.
      * @param {number} [c.width] - default width in pixels.
      * @param {number} [c.minWidth] - minimum width in pixels - grid will block user-driven as well
      *      as auto-flex resizing below this value. (Note this is *not* a substitute for width.)
@@ -176,15 +176,15 @@ export class Column {
         field,
         colId,
         isTreeColumn,
-        expandFromHeader,
         displayName,
         headerName,
         headerTooltip,
+        headerHasExpandCollapse,
+        headerAlign,
         headerClass,
         cellClass,
         hidden,
         align,
-        headerAlign,
         width,
         minWidth,
         maxWidth,
@@ -241,7 +241,6 @@ export class Column {
         throwIf(!this.colId, 'Must specify colId or field for a Column.');
 
         this.isTreeColumn = withDefault(isTreeColumn, false);
-        this.expandFromHeader = withDefault(expandFromHeader, false);
 
         // Note that parent GridModel might have already defaulted displayName from an associated
         // `Store.field` when pre-processing Column configs - prior to calling this ctor. If that
@@ -252,10 +251,11 @@ export class Column {
         this.headerName = withDefault(headerName, this.displayName);
 
         this.headerTooltip = headerTooltip;
+        this.headerHasExpandCollapse = withDefault(headerHasExpandCollapse, false);
         this.headerClass = headerClass;
+        this.headerAlign = headerAlign || align;
         this.cellClass = cellClass;
         this.align = align;
-        this.headerAlign = headerAlign || align;
 
         this.hidden = withDefault(hidden, false);
         warnIf(rest.hide, `Column ${this.colId} configured with {hide: true} - use "hidden" instead.`);
