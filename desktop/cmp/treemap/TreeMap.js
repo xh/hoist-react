@@ -19,8 +19,6 @@ import PT from 'prop-types';
 
 import './TreeMap.scss';
 import {TreeMapModel} from './TreeMapModel';
-import {DarkTheme} from './theme/Dark';
-import {LightTheme} from './theme/Light';
 
 /**
  * Component for rendering a TreeMap.
@@ -244,10 +242,10 @@ class LocalModel extends HoistModel {
     //----------------------
     getMergedConfig() {
         const defaultConf = this.getDefaultConfig(),
-            themeConf = this.getThemeConfig(),
+            colorConf = this.getColorConfig(),
             modelConf = this.getModelConfig();
 
-        return merge(defaultConf, themeConf, modelConf);
+        return merge(defaultConf, colorConf, modelConf);
     }
 
     getDefaultConfig() {
@@ -261,8 +259,20 @@ class LocalModel extends HoistModel {
         };
     }
 
-    getThemeConfig() {
-        return XH.darkTheme ? cloneDeep(DarkTheme) : cloneDeep(LightTheme);
+    getColorConfig() {
+        return {
+            colorAxis: {
+                min: 0,
+                max: 1,
+                stops: [
+                    [0, '#640000'], // Max negative
+                    [0.4, '#f7f2f2'], // Min negative
+                    [0.5, '#BBBBBB'], // Zero / None
+                    [0.6, '#f0f6f0'], // Min positive
+                    [1, '#006400'] // Max positive
+                ]
+            }
+        };
     }
 
     getModelConfig() {
