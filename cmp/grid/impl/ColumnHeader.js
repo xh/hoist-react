@@ -12,7 +12,7 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
 import classNames from 'classnames';
-import {filter, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString} from 'lodash';
+import {filter, size, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString} from 'lodash';
 import {GridSorter} from './GridSorter';
 import {Column} from '@xh/hoist/cmp/grid/columns/Column';
 
@@ -65,7 +65,7 @@ export const columnHeader = hoistCmp.factory({
 
             if (!isTreeColumn || !headerHasExpandCollapse) return null;
 
-            const icon = impl.isExpanded ?
+            const icon = impl.majorityIsExpanded ?
                 Icon.angleDown({prefix: 'fal', size: 'lg'}) :
                 Icon.angleRight({prefix: 'fal', size: 'lg'});
 
@@ -175,8 +175,14 @@ class LocalModel extends HoistModel {
     }
 
     @computed
-    get isExpanded() {
-        return !isEmpty(this.gridModel.expandState);
+    get majorityIsExpanded() {
+        const {expandState, store} = this.gridModel;
+
+        if (isEmpty(expandState)) {
+            return false;
+        }
+
+        return size(expandState) >= store.rootCount/2;
     }
 
     // Desktop click handling
@@ -280,10 +286,10 @@ class LocalModel extends HoistModel {
     }
 
     expandOrCollapseAll(e) {
-        const {gridModel, isExpanded} = this;
+        const {gridModel, majorityIsExpanded} = this;
 
         e.stopPropagation();
-        if (isExpanded) {
+        if (majorityIsExpanded) {
             gridModel.collapseAll();
         } else {
             gridModel.expandAll();
