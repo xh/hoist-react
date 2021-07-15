@@ -67,12 +67,6 @@
     .xh-grid-header-menu-icon {
       cursor: pointer;
     }
-
-    .xh-grid-header-expand-collapse-icon {
-      display: flex;
-      margin-left: -9.3px;
-      margin-right: 1px;
-    }
   }
 
   .xh-column-header-align-right {
@@ -86,6 +80,25 @@
     .xh-grid-header,
     .xh-grid-group-header {
       text-align: center;
+    }
+  }
+
+  // Positioning for column header expand collapse affordance
+  .xh-ag-grid {
+    &--large .xh-grid-header-expand-collapse-icon {
+      margin: 0 2px 0 -11px;
+    }
+
+    &--standard .xh-grid-header-expand-collapse-icon {
+      margin: 0 1px 0 -10px;
+    }
+
+    &--compact .xh-grid-header-expand-collapse-icon {
+      margin: 0 1px 0 -6px;
+    }
+
+    &--tiny .xh-grid-header-expand-collapse-icon {
+      margin: 0 1px 0 -4px;
     }
   }
 

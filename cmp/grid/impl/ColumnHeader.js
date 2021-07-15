@@ -62,7 +62,6 @@ export const columnHeader = hoistCmp.factory({
 
         const expandCollapseIcon = () => {
             const {isTreeColumn, headerHasExpandCollapse} = xhColumn;
-
             if (!isTreeColumn || !headerHasExpandCollapse) return null;
 
             const icon = impl.majorityIsExpanded ?
