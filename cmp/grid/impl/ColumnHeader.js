@@ -71,7 +71,7 @@ export const columnHeader = hoistCmp.factory({
             return div({
                 className: 'xh-grid-header-expand-collapse-icon',
                 item: icon,
-                omit: isEmpty(filter(gridModel.store.rootRecords, it => !isEmpty(it.children))),
+                omit: isEmpty(impl.recordsWithChildren),
                 onClick: (e) => impl.expandOrCollapseAll(e)
             });
         };
@@ -174,15 +174,19 @@ class LocalModel extends HoistModel {
     }
 
     @computed
+    get recordsWithChildren() {
+        return filter(this.gridModel.store.rootRecords, it => !isEmpty(it.children));
+    }
+
+    @computed
     get majorityIsExpanded() {
-        const {expandState, store} = this.gridModel;
+        const {expandState} = this.gridModel;
 
         if (isEmpty(expandState)) {
             return false;
         }
 
-        const recordsWithChildren = filter(store.rootRecords, it => !isEmpty(it.children));
-        return size(expandState) >= size(recordsWithChildren)/2;
+        return size(expandState) >= size(this.recordsWithChildren)/2;
     }
 
     // Desktop click handling
