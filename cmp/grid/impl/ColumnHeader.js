@@ -31,7 +31,7 @@ export const columnHeader = hoistCmp.factory({
 
     render(props) {
         const impl = useLocalModel(() => new LocalModel(props)),
-            {xhColumn} = impl;
+            {gridModel, xhColumn} = impl;
 
         const sortIcon = () => {
             const {abs, sort} = impl.activeGridSorter ?? {};
@@ -71,6 +71,7 @@ export const columnHeader = hoistCmp.factory({
             return div({
                 className: 'xh-grid-header-expand-collapse-icon',
                 item: icon,
+                omit: isEmpty(filter(gridModel.store.rootRecords, it => !isEmpty(it.children))),
                 onClick: (e) => impl.expandOrCollapseAll(e)
             });
         };
@@ -81,8 +82,7 @@ export const columnHeader = hoistCmp.factory({
             impl.hasNonPrimarySort ? 'xh-grid-header-multisort' : null
         ];
 
-        const {gridModel} = impl,
-            {isDesktop} = XH;
+        const {isDesktop} = XH;
 
         // `props.displayName` is the output of the Column `headerValueGetter` and should always be a string
         // If `xhColumn` is present, it can consulted for a richer `headerName`
@@ -181,7 +181,8 @@ class LocalModel extends HoistModel {
             return false;
         }
 
-        return size(expandState) >= store.rootCount/2;
+        const recordsWithChildren = filter(store.rootRecords, it => !isEmpty(it.children));
+        return size(expandState) >= size(recordsWithChildren)/2;
     }
 
     // Desktop click handling
