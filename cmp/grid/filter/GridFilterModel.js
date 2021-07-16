@@ -7,8 +7,9 @@
 
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {FieldFilter, flattenFilter} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, find, isEmpty, isFunction, isString, castArray} from 'lodash';
+import {isNil, find, isEmpty, isFunction, isString, castArray, uniq} from 'lodash';
 
 import {GridFilterFieldSpec} from './GridFilterFieldSpec';
 
@@ -124,6 +125,28 @@ export class GridFilterModel extends HoistModel {
         }
 
         this.setFilter(newFilter);
+    }
+
+    /**
+     * Merge the value of a new filter into the existing filter on the same field and operator.
+     * If such no filter exists, one will be created. Only applicable for filters with multi-value operators.
+     * @param {string} field - field to identify this filter
+     * @param {(Filter|Object)} filter - Filter, or config to create. If null, the filter will be removed
+     */
+    @action
+    mergeColumnFilters(field, filter) {
+        if (FieldFilter.ARRAY_OPERATORS.includes(filter.op)) {
+            const currFilters = flattenFilter(this.filter),
+                match = currFilters.find(it => it.field === field && it.op === filter.op);
+
+            if (match) {
+                filter.value = uniq([
+                    ...castArray(filter.value),
+                    ...castArray(match.value)
+                ]);
+            }
+        }
+        this.setColumnFilters(field, filter);
     }
 
     /**

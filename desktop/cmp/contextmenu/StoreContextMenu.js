@@ -144,22 +144,20 @@ export class StoreContextMenu {
                     actionFn: () => gridModel.restoreDefaultsAsync()
                 });
             case 'filter': {
+                const getValues = (records, field) => {
+                    return uniq(records.map(rec => rec.get(field)));
+                };
+
                 const filterDisplayFn = () => ({selectedRecords, record, column, gridModel}) => {
                     if (isEmpty(selectedRecords) || !column?.filterable) return {hidden: true};
 
-                    const values = uniq(selectedRecords.map(rec => rec.get(column.field)));
+                    const values = getValues(selectedRecords, column.field);
                     if (values.length > 1) return {text: `${values.length} values`};
 
                     const text = column.renderer ?
                         column.renderer(values[0], {record, column, gridModel}) :
                         values[0] ?? '[blank]';
                     return {text};
-                };
-
-                const filterActionFn = (op) => ({selectedRecords, column}) => {
-                    const {field} = column,
-                        value = uniq(selectedRecords.map(rec => rec.get(field)));
-                    gridModel.filterModel.setColumnFilters(field, {field, op, value});
                 };
 
                 return new RecordAction({
@@ -171,13 +169,21 @@ export class StoreContextMenu {
                             icon: Icon.equals(),
                             recordsRequired: true,
                             displayFn: filterDisplayFn(),
-                            actionFn: filterActionFn('=')
+                            actionFn: ({selectedRecords, column}) => {
+                                const {field} = column,
+                                    value = getValues(selectedRecords, field);
+                                gridModel.filterModel.setColumnFilters(field, {field, op: '=', value});
+                            }
                         },
                         {
                             icon: Icon.notEquals(),
                             recordsRequired: true,
                             displayFn: filterDisplayFn(),
-                            actionFn: filterActionFn('!=')
+                            actionFn: ({selectedRecords, column}) => {
+                                const {field} = column,
+                                    value = getValues(selectedRecords, field);
+                                gridModel.filterModel.mergeColumnFilters(field, {field, op: '!=', value});
+                            }
                         },
                         '-',
                         {
