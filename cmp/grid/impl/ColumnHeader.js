@@ -43,7 +43,6 @@ export const columnHeader = hoistCmp.factory({
             } else if (sort === 'desc') {
                 icon = abs ? Icon.arrowToBottom({size: 'sm'}) : Icon.arrowDown({size: 'sm'});
             }
-
             return div({className: 'xh-grid-header-sort-icon', item: icon});
         };
 
@@ -62,7 +61,7 @@ export const columnHeader = hoistCmp.factory({
 
         const expandCollapseIcon = () => {
             const {isTreeColumn, headerHasExpandCollapse} = xhColumn;
-            if (!isTreeColumn || !headerHasExpandCollapse) return null;
+            if (!isTreeColumn || !headerHasExpandCollapse || !impl.rootsWithChildren) return null;
 
             const icon = impl.majorityIsExpanded ?
                 Icon.angleDown({prefix: 'fal', size: 'lg'}) :
@@ -71,8 +70,7 @@ export const columnHeader = hoistCmp.factory({
             return div({
                 className: 'xh-grid-header-expand-collapse-icon',
                 item: icon,
-                omit: isEmpty(impl.recordsWithChildren),
-                onClick: (e) => impl.expandOrCollapseAll(e)
+                onClick: impl.onExpandOrCollapse
             });
         };
 
@@ -174,24 +172,30 @@ class LocalModel extends HoistModel {
     }
 
     @computed
-    get recordsWithChildren() {
-        return filter(this.gridModel.store.rootRecords, it => !isEmpty(it.children));
+    get rootsWithChildren() {
+        return filter(this.gridModel.store.rootRecords, it => !isEmpty(it.children)).length;
     }
 
     @computed
     get majorityIsExpanded() {
         const {expandState} = this.gridModel;
-
-        if (isEmpty(expandState)) {
-            return false;
-        }
-
-        return size(expandState) >= size(this.recordsWithChildren)/2;
+        return !isEmpty(expandState) && size(expandState) > this.rootsWithChildren/2;
     }
 
     // Desktop click handling
     onMouseDown = () => {
         this._lastMouseDown = Date.now();
+    };
+
+    onExpandOrCollapse = (e) => {
+        const {gridModel, majorityIsExpanded} = this;
+
+        e.stopPropagation();
+        if (majorityIsExpanded) {
+            gridModel.collapseAll();
+        } else {
+            gridModel.expandAll();
+        }
     };
 
     onClick = (e) => {
@@ -287,16 +291,5 @@ class LocalModel extends HoistModel {
             return new GridSorter({...spec, colId});
         });
         return absSort ? ret : ret.filter(it => !it.abs);
-    }
-
-    expandOrCollapseAll(e) {
-        const {gridModel, majorityIsExpanded} = this;
-
-        e.stopPropagation();
-        if (majorityIsExpanded) {
-            gridModel.collapseAll();
-        } else {
-            gridModel.expandAll();
-        }
     }
 }
