@@ -17,6 +17,8 @@
   across the app. Intended for secure, internal apps with tight performance tolerances.
 * New `Badge` component allows a styled badge to be placed inline with text/title, such as in a tab.
   It can receive intent and position as additional props.
+* New `Column.headerHasExpandCollapse` property gives tree grids the option to show expand/collapse
+  all icon in the header.
 
 ### 💥 Breaking Changes
 
