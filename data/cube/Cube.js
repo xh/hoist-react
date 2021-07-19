@@ -6,7 +6,7 @@
  */
 
 import {HoistBase, managed} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable, when} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {CubeField} from './CubeField';
 import {Query} from './Query';
@@ -108,11 +108,12 @@ export class Cube extends HoistBase {
      * @param {Object} query - Config for query defining the shape of the view.
      * @returns {Object[]} - data containing the results of the query as a hierarchical set of rows.
      */
-    executeQuery(query) {
+    async executeQueryAsync(query) {
         query = new Query({...query, cube: this});
-        const view = new View({query}),
-            rows = view.result.rows;
+        const view = new View({query});
+        await when(() => view.result);
 
+        const rows = view.result.rows;
         view.destroy();
         return rows;
     }
@@ -120,7 +121,7 @@ export class Cube extends HoistBase {
     /**
      * Create a View on this data.
      *
-     * Similar to executeQuery(), but data will be returned as a View which can be
+     * Similar to executeQueryAsync(), but data will be returned as a View which can be
      * refreshed as the underlying facts in the cube are updated.  Useful for binding
      * to grids and efficiently displaying changing results in the cube.
      *

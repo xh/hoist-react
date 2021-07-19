@@ -34,6 +34,7 @@
   `FilterChooserModel.valueSource` and `FilterChooserModel.target` respectively. Furthermore, both
   configs now support either a `Store` or a cube `View`. This is to provide a common API with
   the new `GridFilterModel` filtering described above.
++ `Cube.executeQuery()` has been renamed `Cube.executeQueryAsync()`, and is now asynchronous.
 
 ### 🐞 Bug Fixes
 
