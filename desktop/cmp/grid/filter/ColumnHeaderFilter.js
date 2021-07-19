@@ -18,7 +18,11 @@ import {FieldType} from '@xh/hoist/data';
 import './ColumnHeaderFilter.scss';
 import {ColumnHeaderFilterModel} from './ColumnHeaderFilterModel';
 
-/** @private */
+/**
+ * Applications should not create this component - it is created automatically for Grids with
+ * a GridFilterModel
+ * @private
+ */
 export const columnHeaderFilter = hoistCmp.factory({
     model: uses(ColumnHeaderFilterModel),
     render({model}) {
