@@ -66,7 +66,7 @@ export function compoundFilterOption({filter, fieldNames}) {
     return {
         type: 'filter',
         value: JSON.stringify(filter),
-        label: `[${filter.op} Filter on ${fieldNames.join()}]`,
+        label: `[${filter.op} Filter on ${fieldNames.join(', ')}]`,
         isExact: false
     };
 }
