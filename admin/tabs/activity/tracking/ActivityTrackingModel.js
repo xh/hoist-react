@@ -98,6 +98,7 @@ export class ActivityTrackingModel extends HoistModel {
         this.filterChooserModel = new FilterChooserModel({
             initialValue: this._defaultFilter,
             valueSource: this.cube.store,
+            target: this.cube.store,
             fieldSpecs: [
                 'category',
                 'month',
@@ -187,7 +188,6 @@ export class ActivityTrackingModel extends HoistModel {
                 {field: 'entryCount', headerName: 'Entries', width: 70, align: 'right'}
             ]
         });
-
 
         this.activityDetailModel = new ActivityDetailModel({parentModel: this});
         this.chartsModel = new ChartsModel({parentModel: this});

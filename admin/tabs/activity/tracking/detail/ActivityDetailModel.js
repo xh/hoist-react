@@ -26,6 +26,10 @@ export class ActivityDetailModel extends HoistModel {
             sortBy: 'dateCreated|desc',
             colChooserModel: true,
             enableExport: true,
+            filterModel: {
+                valueSource: parentModel.cube.store,
+                target: parentModel.cube.store
+            },
             exportOptions: {
                 columns: 'ALL',
                 filename: `${XH.appCode}-activity-detail`
@@ -51,26 +55,27 @@ export class ActivityDetailModel extends HoistModel {
                     }
                 },
                 {field: 'id', headerName: 'Entry ID', width: 100, align: 'right', hidden: true},
-                {field: 'username', ...usernameCol},
+                {field: 'username', filterable: true, ...usernameCol},
                 {field: 'impersonating', width: 140, hidden: true},
-                {field: 'category', width: 120},
-                {field: 'msg', headerName: 'Message', flex: true, minWidth: 120, autosizeMaxWidth: 400},
+                {field: 'category', width: 120, filterable: true},
+                {field: 'msg', headerName: 'Message', flex: true, minWidth: 120, autosizeMaxWidth: 400, filterable: true},
                 {field: 'data', flex: true, minWidth: 120, autosizeMaxWidth: 400, hidden: true},
-                {field: 'device', width: 100},
-                {field: 'browser', width: 100},
-                {field: 'userAgent', width: 100, hidden: true},
+                {field: 'device', width: 100, filterable: true},
+                {field: 'browser', width: 100, filterable: true},
+                {field: 'userAgent', width: 100, hidden: true, filterable: true},
                 {
                     field: 'elapsed',
                     headerName: 'Elapsed',
                     width: 120,
                     align: 'right',
+                    filterable: true,
                     renderer: numberRenderer({
                         label: 'ms',
                         nullDisplay: '-',
                         formatConfig: {thousandSeparated: false, mantissa: 0}
                     })
                 },
-                {field: 'dateCreated', headerName: 'Timestamp', ...dateTimeCol}
+                {field: 'dateCreated', headerName: 'Timestamp', filterable: true, ...dateTimeCol}
             ]
         });
 
