@@ -1,0 +1,44 @@
+.xh-badge {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-self: center;
+  font-size: 0.5em;
+  font-weight: bold;
+  border-radius: 4px;
+  margin-left: 5px;
+  padding: 0 5px;
+  height: 1.8em;
+  width: fit-content;
+  min-width: 15px;
+  background-color: var(--xh-blue-gray);
+  color: white;
+
+  &--intent-primary {
+    background-color: var(--xh-intent-primary);
+  }
+
+  &--intent-success {
+    background-color: var(--xh-intent-success);
+  }
+
+  &--intent-warning {
+    background-color: var(--xh-intent-warning);
+  }
+
+  &--intent-danger {
+    background-color: var(--xh-intent-danger);
+  }
+
+  &--position-top {
+    position: relative;
+    top: -6px;
+    margin-left: 2px;
+  }
+
+  &--position-bottom {
+    position: relative;
+    bottom: -6px;
+    margin-left: 2px;
+  }
+}

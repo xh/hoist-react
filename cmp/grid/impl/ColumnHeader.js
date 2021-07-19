@@ -13,7 +13,7 @@ import {columnHeaderFilter, ColumnHeaderFilterModel} from '@xh/hoist/dynamics/de
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
-import {filter, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString} from 'lodash';
+import {filter, size, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString} from 'lodash';
 import classNames from 'classnames';
 
 import {GridSorter} from './GridSorter';
@@ -32,7 +32,8 @@ export const columnHeader = hoistCmp.factory({
     model: false,
 
     render(props) {
-        const impl = useLocalModel(() => new LocalModel(props));
+        const impl = useLocalModel(() => new LocalModel(props)),
+            {gridModel, xhColumn} = impl;
 
         const sortIcon = () => {
             const {abs, sort} = impl.activeGridSorter ?? {};
@@ -60,14 +61,28 @@ export const columnHeader = hoistCmp.factory({
             });
         };
 
+        const expandCollapseIcon = () => {
+            const {isTreeColumn, headerHasExpandCollapse} = xhColumn;
+            if (!isTreeColumn || !headerHasExpandCollapse || !impl.rootsWithChildren) return null;
+
+            const icon = impl.majorityIsExpanded ?
+                Icon.angleDown({prefix: 'fal', size: 'lg'}) :
+                Icon.angleRight({prefix: 'fal', size: 'lg'});
+
+            return div({
+                className: 'xh-grid-header-expand-collapse-icon',
+                item: icon,
+                onClick: impl.onExpandOrCollapse
+            });
+        };
+
         const extraClasses = [
             impl.isFiltered ? 'xh-grid-header-filtered' : null,
             impl.activeGridSorter ? 'xh-grid-header-sorted' : null,
             impl.hasNonPrimarySort ? 'xh-grid-header-multisort' : null
         ];
 
-        const {xhColumn, gridModel} = impl,
-            {isDesktop} = XH;
+        const {isDesktop} = XH;
 
         // `props.displayName` is the output of the Column `headerValueGetter` and should always be a string
         // If `xhColumn` is present, it can consulted for a richer `headerName`
@@ -100,6 +115,7 @@ export const columnHeader = hoistCmp.factory({
             onTouchEnd:     !isDesktop ? impl.onTouchEnd : null,
 
             items: [
+                expandCollapseIcon(),
                 span({onMouseEnter, item: headerElem}),
                 sortIcon(),
                 impl.enableFilter ? columnHeaderFilter({model: impl.columnHeaderFilterModel}) : menuIcon()
@@ -180,9 +196,31 @@ class LocalModel extends HoistModel {
         this.setIsAgFiltered(this.agColumn.isFilterActive());
     }
 
+    @computed
+    get rootsWithChildren() {
+        return filter(this.gridModel.store.rootRecords, it => !isEmpty(it.children)).length;
+    }
+
+    @computed
+    get majorityIsExpanded() {
+        const {expandState} = this.gridModel;
+        return !isEmpty(expandState) && size(expandState) > this.rootsWithChildren/2;
+    }
+
     // Desktop click handling
-    onMouseDown = (e) => {
+    onMouseDown = () => {
         this._lastMouseDown = Date.now();
+    };
+
+    onExpandOrCollapse = (e) => {
+        const {gridModel, majorityIsExpanded} = this;
+
+        e.stopPropagation();
+        if (majorityIsExpanded) {
+            gridModel.collapseAll();
+        } else {
+            gridModel.expandAll();
+        }
     };
 
     onClick = (e) => {
@@ -197,7 +235,7 @@ class LocalModel extends HoistModel {
     };
 
     // Mobile touch handling
-    onTouchStart = (e) => {
+    onTouchStart = () => {
         this._lastTouchStart = Date.now();
     };
 
