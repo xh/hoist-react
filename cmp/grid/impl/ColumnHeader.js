@@ -160,7 +160,7 @@ class LocalModel extends HoistModel {
         this.enableSorting = sortable;
         this.availableSorts = this.parseAvailableSorts();
 
-        if (!XH.isMobileApp && filterable && filterModel) {
+        if (!XH.isMobileApp && filterable && filterModel?.getFieldSpec(xhColumn.field)) {
             this.columnHeaderFilterModel = new ColumnHeaderFilterModel({filterModel, column: xhColumn});
             this.enableFilter = true;
         } else {

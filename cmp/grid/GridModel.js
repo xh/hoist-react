@@ -70,7 +70,7 @@ export class GridModel extends HoistModel {
 
     static DEFAULT_RESTORE_DEFAULTS_WARNING =
         fragment(
-            'This action will clear any customizations you have made to this grid, including column selection, ordering, and sizing.', br(), br(),
+            'This action will clear any customizations you have made to this grid, including filters, column selection, ordering, and sizing.', br(), br(),
             'OK to proceed?'
         );
 
@@ -1279,14 +1279,14 @@ export class GridModel extends HoistModel {
     parseFilterModel(filterModel) {
         if (XH.isMobileApp) return null;
 
+        const {store} = this;
         if (isPlainObject(filterModel)) {
-            const config = defaults(filterModel, {gridModel: this});
+            const config = defaults(filterModel, {gridModel: this, valueSource: store, target: store});
             return this.markManaged(new GridFilterModel(config));
         }
 
         if (filterModel) {
-            const {store} = this,
-                config = {gridModel: this, valueSource: store, target: store};
+            const config = {gridModel: this, valueSource: store, target: store};
             return this.markManaged(new GridFilterModel(config));
         }
 

@@ -15,6 +15,9 @@ export class GridFilterFieldSpec extends BaseFieldSpec {
     /** @member {boolean} */
     enableEnumFilter;
 
+    /** @member {Column~rendererFn} */
+    renderer;
+
     /** @member {object} */
     inputProps;
 
@@ -22,18 +25,22 @@ export class GridFilterFieldSpec extends BaseFieldSpec {
      * @param {Object} c - GridFilterFieldSpec configuration.
      * @param {boolean} [c.enableEnumFilter] - true to provide the enumerated filter control
      *      within the filter affordance. Defaults to true for enumerable fieldTypes.
+     * @param {Column~rendererFn} [c.renderer] - function returning a formatted string for each
+     *      value in this enum filter display. If not provided, the Column's renderer will be used.
      * @param {object} [c.inputProps] - Props to pass through to the HoistInput components used on
      *      the custom filter tab. Note that the HoistInput component used is decided by fieldType.
      * @param {*} [c...rest] - arguments for BaseFieldSpec.
      */
     constructor({
         enableEnumFilter,
+        renderer,
         inputProps,
         ...rest
     }) {
         super(rest);
 
         this.enableEnumFilter = enableEnumFilter ?? this.isEnumerable;
+        this.renderer = renderer;
         this.inputProps = inputProps;
     }
 }

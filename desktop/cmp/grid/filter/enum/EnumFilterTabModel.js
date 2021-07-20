@@ -222,7 +222,8 @@ export class EnumFilterTabModel extends HoistModel {
 
     createGridModel() {
         const {field, BLANK_STR} = this,
-            {renderer, align, headerAlign, displayName} = this.parentModel.column; // Render values as they are in `gridModel`
+            {align, headerAlign, displayName} = this.parentModel.column,
+            renderer = this.fieldSpec.renderer ?? this.parentModel.column.renderer;
 
         return new GridModel({
             store: {

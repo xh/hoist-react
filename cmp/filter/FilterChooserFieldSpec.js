@@ -47,9 +47,9 @@ export class FilterChooserFieldSpec extends BaseFieldSpec {
      *      matching against the formatted value will be used.)
      * @param {boolean} [c.forceSelection] - true to require value entered to be an available value
      *      for '=' and '!=' operators. Defaults to false.
-     * @param {FieldSpecValueRendererCb} [c.valueRenderer] - function to produce a suitably
+     * @param {FilterChooserValueRendererCb} [c.valueRenderer] - function to produce a suitably
      *      formatted string for display to the user for any given field value.
-     * @param {FieldSpecValueParserCb} [c.valueParser] - function to parse user's input from a
+     * @param {FilterChooserFieldSpec} [c.valueParser] - function to parse user's input from a
      *      filter chooser control into a typed data value for use in filtering comparisons.
      * @param {string} [c.example] - sample / representative value displayed by `FilterChooser`
      *      components to aid usability
@@ -184,14 +184,14 @@ export class FilterChooserFieldSpec extends BaseFieldSpec {
  */
 
 /**
- * @callback FieldSpecValueRendererCb
+ * @callback FilterChooserValueRendererCb
  * @param {*} value
  * @param {string} op
  * @return {string} - formatted value suitable for display to the user.
  */
 
 /**
- * @callback FieldSpecValueParserCb
+ * @callback FilterChooserValueParserCb
  * @param {string} input
  * @param {string} op
  * @return {*} - the parsed value.
