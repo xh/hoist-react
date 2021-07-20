@@ -26,8 +26,8 @@
     }
   },
   "dependencies": {
-    "@blueprintjs/core": "~3.46.0",
-    "@blueprintjs/datetime": "~3.23.5",
+    "@blueprintjs/core": "~3.47.0",
+    "@blueprintjs/datetime": "~3.23.6",
     "@fortawesome/fontawesome-pro": "~5.15.2",
     "@fortawesome/fontawesome-svg-core": "~1.2.34",
     "@fortawesome/pro-light-svg-icons": "~5.15.2",
@@ -42,7 +42,7 @@
     "codemirror": "~5.62.0",
     "core-js": "~3.15.2",
     "debounce-promise": "~3.1.0",
-    "dompurify": "~2.2.9",
+    "dompurify": "~2.3.0",
     "downloadjs": "~1.4.7",
     "fast-deep-equal": "~3.1.1",
     "filesize": "~6.4.0",
@@ -64,7 +64,7 @@
     "react-popper": "~2.2.5",
     "react-select": "~4.3.1",
     "react-transition-group": "~4.4.2",
-    "react-windowed-select": "~3.1.1",
+    "react-windowed-select": "~3.1.2",
     "regenerator-runtime": "~0.13.7",
     "resize-observer-polyfill": "~1.5.1",
     "router5": "~7.0.2",
