@@ -66,7 +66,7 @@ export class BaseFieldModel extends HoistModel {
     //----------------------
     @observable _disabled;
     @observable _readonly;
-    
+
     /** @member {FormModel} */
     _formModel;
     _origInitialValue;
@@ -345,8 +345,8 @@ export class BaseFieldModel extends HoistModel {
     async evaluateRuleAsync(rule) {
         if (this.ruleIsActive(rule)) {
             const promises = rule.check.map(async (constraint) => {
-                const {value, displayName} = this,
-                    fieldState = {value, displayName};
+                const {value, name, displayName} = this,
+                    fieldState = {value, name, displayName};
 
                 return await constraint(fieldState, this.formModel.values);
             });

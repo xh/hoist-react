@@ -7,12 +7,18 @@
 * Fixed an issue preventing export of very large (>100k rows) grids.
 * Improved `GridModel` async selection methods to ensure they do not wait forever if grid does not
   mount.
+* Fixed an issue preventing a minimal button in `panel.headerItems` to take an intent that overrides
+  the panel's title text color.
 
 ### 🎁 New Features
 
 * New `@logWithDebug` annotation provides easy timed logging of method execution (via `withDebug`).
 * New `AppSpec.disableXssProtection` config allows default disabling of Field-level XSS protection
   across the app. Intended for secure, internal apps with tight performance tolerances.
+* New `Badge` component allows a styled badge to be placed inline with text/title, such as in a tab.
+  It can receive intent and position as additional props.
+* New `Column.headerHasExpandCollapse` property gives tree grids the option to show expand/collapse
+  all icon in the header.
 
 ### 💥 Breaking Changes
 
@@ -23,6 +29,11 @@
 
 * New `Exception.timeout()` util to throw exceptions explicitly marked as timeouts, used by
   `Promise.timeout` extension.
+
+### ✨ Style
+
+* If the first child of a `Placeholder` component is a Hoist icon, it will not automatically be
+  styled to 4x size with reduced opacity. (See new Toolbox example under the "Other" tab.)
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.0.0...develop)
 
