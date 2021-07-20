@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, escapeRegExp, isArray, isEqual, isNil, isString} from 'lodash';
+import {castArray, escapeRegExp, isArray, isEqual, isNil, isUndefined, isString} from 'lodash';
 
 import {Filter} from './Filter';
 
@@ -50,6 +50,7 @@ export class FieldFilter extends Filter {
         super();
 
         throwIf(!field, 'FieldFilter requires a field');
+        throwIf(isUndefined(value), 'FieldFilter requires a value');
         throwIf(!FieldFilter.OPERATORS.includes(op),
             `FieldFilter requires valid "op" value. Operator "${op}" not recognized.`
         );

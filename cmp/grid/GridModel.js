@@ -142,6 +142,8 @@ export class GridModel extends HoistModel {
     @observable treeStyle;
 
     static defaultContextMenu = [
+        'filter',
+        '-',
         'copy',
         'copyWithHeaders',
         'copyCell',
@@ -150,8 +152,6 @@ export class GridModel extends HoistModel {
         '-',
         'exportExcel',
         'exportCsv',
-        '-',
-        'filter',
         '-',
         'restoreDefaults',
         '-',

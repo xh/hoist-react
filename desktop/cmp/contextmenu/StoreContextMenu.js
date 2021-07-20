@@ -69,6 +69,74 @@ export class StoreContextMenu {
         }
 
         switch (token) {
+            case 'filter': {
+                const getValues = (records, field) => {
+                    return uniq(records.map(rec => rec.get(field)));
+                };
+
+                const filterDisplayFn = (op) => ({selectedRecords, record, column}) => {
+                    if (isEmpty(selectedRecords) || !column?.filterable) return {hidden: true};
+
+                    const {field} = column,
+                        fieldSpec = gridModel.filterModel.getFieldSpec(field);
+
+                    if (!fieldSpec.supportsOperator(op)) return {hidden: true};
+
+                    const values = getValues(selectedRecords, field);
+                    if (values.length > 1) return {text: `${values.length} values`};
+
+                    const renderer = fieldSpec.renderer ?? column.renderer,
+                        text = renderer ?
+                            renderer(values[0], {record, column, gridModel}) :
+                            values[0] ?? '[blank]';
+                    return {text};
+                };
+
+                return new RecordAction({
+                    text: 'Filter',
+                    icon: Icon.filter(),
+                    hidden: !gridModel || !gridModel.filterModel,
+                    items: [
+                        {
+                            icon: Icon.equals(),
+                            recordsRequired: true,
+                            displayFn: filterDisplayFn('='),
+                            actionFn: ({selectedRecords, column}) => {
+                                const {field} = column,
+                                    value = getValues(selectedRecords, field);
+                                gridModel.filterModel.setColumnFilters(field, {field, op: '=', value});
+                            }
+                        },
+                        {
+                            icon: Icon.notEquals(),
+                            recordsRequired: true,
+                            displayFn: filterDisplayFn('!='),
+                            actionFn: ({selectedRecords, column}) => {
+                                const {field} = column,
+                                    value = getValues(selectedRecords, field);
+                                gridModel.filterModel.mergeColumnFilters(field, {field, op: '!=', value});
+                            }
+                        },
+                        '-',
+                        {
+                            text: 'Clear',
+                            icon: Icon.undo(),
+                            displayFn: ({column}) => {
+                                const filters = gridModel.filterModel.getColumnFilters(column.field);
+                                return {disabled: isEmpty(filters)};
+                            },
+                            actionFn: ({column}) => {
+                                gridModel.filterModel.setColumnFilters(column.field, null);
+                            }
+                        },
+                        {
+                            text: 'View Grid Filters',
+                            icon: Icon.code(),
+                            actionFn: () => gridModel.filterModel.openDialog()
+                        }
+                    ]
+                });
+            }
             case 'copyCell':
                 return new RecordAction({
                     text: 'Copy Cell',
@@ -143,57 +211,6 @@ export class StoreContextMenu {
                     icon: Icon.reset(),
                     actionFn: () => gridModel.restoreDefaultsAsync()
                 });
-            case 'filter': {
-                const getValues = (records, field) => {
-                    return uniq(records.map(rec => rec.get(field)));
-                };
-
-                const filterDisplayFn = () => ({selectedRecords, record, column, gridModel}) => {
-                    if (isEmpty(selectedRecords) || !column?.filterable) return {hidden: true};
-
-                    const values = getValues(selectedRecords, column.field);
-                    if (values.length > 1) return {text: `${values.length} values`};
-
-                    const text = column.renderer ?
-                        column.renderer(values[0], {record, column, gridModel}) :
-                        values[0] ?? '[blank]';
-                    return {text};
-                };
-
-                return new RecordAction({
-                    text: 'Filter',
-                    icon: Icon.filter(),
-                    hidden: !gridModel || !gridModel.filterModel,
-                    items: [
-                        {
-                            icon: Icon.equals(),
-                            recordsRequired: true,
-                            displayFn: filterDisplayFn(),
-                            actionFn: ({selectedRecords, column}) => {
-                                const {field} = column,
-                                    value = getValues(selectedRecords, field);
-                                gridModel.filterModel.setColumnFilters(field, {field, op: '=', value});
-                            }
-                        },
-                        {
-                            icon: Icon.notEquals(),
-                            recordsRequired: true,
-                            displayFn: filterDisplayFn(),
-                            actionFn: ({selectedRecords, column}) => {
-                                const {field} = column,
-                                    value = getValues(selectedRecords, field);
-                                gridModel.filterModel.mergeColumnFilters(field, {field, op: '!=', value});
-                            }
-                        },
-                        '-',
-                        {
-                            text: 'View Grid Filters',
-                            icon: Icon.code(),
-                            actionFn: () => gridModel.filterModel.openDialog()
-                        }
-                    ]
-                });
-            }
             default:
                 return token;
         }

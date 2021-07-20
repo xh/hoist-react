@@ -16,6 +16,7 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {every} from 'lodash';
 
 import './GridFilterDialog.scss';
 
@@ -101,8 +102,13 @@ class LocalModel extends HoistModel {
                     required,
                     ({value}) => {
                         try {
-                            const filter = parseFilter(JSON.parse(value));
-                            if (!filter) return 'Filter spec is invalid';
+                            const filter = JSON.parse(value);
+                            try {
+                                const valid = this.validateFilter(filter);
+                                if (!valid) return 'Filter spec is invalid';
+                            } catch (e) {
+                                return e.message;
+                            }
                         } catch {
                             return 'Filter spec is not valid JSON';
                         }
@@ -145,5 +151,10 @@ class LocalModel extends HoistModel {
     loadForm() {
         const filter = JSON.stringify(this.model.filter?.toJSON() ?? null, undefined, 2);
         this.formModel.init({filter});
+    }
+
+    validateFilter(filter) {
+        if (filter?.filters) return every(filter.filters, it => this.validateFilter(it));
+        return !!parseFilter(filter);
     }
 }

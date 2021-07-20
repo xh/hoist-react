@@ -157,6 +157,17 @@ export class GridFilterModel extends HoistModel {
         this.setFilter(null);
     }
 
+    /**
+     * Get all FieldFilters for specified field
+     */
+    getColumnFilters(field) {
+        return flattenFilter(this.filter).filter(it => it.field === field);
+    }
+
+    getFieldSpec(field) {
+        return this.fieldSpecs.find(it => it.field === field);
+    }
+
     @action
     openDialog() {
         this.dialogOpen = true;
@@ -165,10 +176,6 @@ export class GridFilterModel extends HoistModel {
     @action
     closeDialog() {
         this.dialogOpen = false;
-    }
-
-    getFieldSpec(field) {
-        return this.fieldSpecs.find(it => it.field === field);
     }
 
     //--------------------------------
