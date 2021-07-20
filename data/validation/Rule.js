@@ -46,4 +46,6 @@ export class Rule {
  * @property {*} value - current value of the field
  * @property {string} name - name of the field
  * @property {string} displayName - display name of the field
+ * @property {Record} [record] - record being validated, if validating Store data.
+ * @property {Record} [fieldModel] - FieldModel being validated, if validating Form data.
  */
