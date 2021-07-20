@@ -69,6 +69,11 @@
 * If the first child of a `Placeholder` component is a Hoist icon, it will not automatically be
   styled to 4x size with reduced opacity. (See new Toolbox example under the "Other" tab.)
 
+### 📚 Libraries
+
+* @blueprintjs/core `3.46 -> 3.47`
+* dompurify `2.2 -> 2.3`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.0.0...develop)
 
 ## v41.0.0 - 2021-07-01
