@@ -353,8 +353,8 @@ class GridLocalModel extends HoistModel {
             {store} = model;
         return {
             track: () => [model.isReady, store._filtered, model.showSummary],
-            run: ([isReady]) => {
-                if (isReady) this.syncData();
+            run: () => {
+                if (model.isReady) this.syncData();
             }
         };
     }
@@ -363,8 +363,8 @@ class GridLocalModel extends HoistModel {
         const {model} = this;
         return {
             track: () => [model.isReady, model.selection],
-            run: ([isReady]) => {
-                if (isReady) this.syncSelection();
+            run: () => {
+                if (model.isReady) this.syncSelection();
             }
         };
     }
