@@ -959,10 +959,10 @@
     "@babel/helper-validator-identifier" "^7.14.5"
     to-fast-properties "^2.0.0"
 
-"@blueprintjs/core@^3.46.0", "@blueprintjs/core@~3.46.0":
-  version "3.46.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.46.0.tgz#fde92406ed97d48c949d5fe5578e7880efdf7577"
-  integrity sha512-kcYrisJMz7jPIuTc9AwFAbHMmmP/BxM2CC3e8vLaLk5h+xtXVzRipx19GA6ysSdguYXOnCPETwM6421QLehCCw==
+"@blueprintjs/core@^3.47.0", "@blueprintjs/core@~3.47.0":
+  version "3.47.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.47.0.tgz#bf33155d224b742ba51c6e1cf5be4523290337a7"
+  integrity sha512-u+bfmCyPXwKZMnwY4+e/iWjO2vDUvr8hA8ydmV0afyvcEe7Sh85UPEorIgQ/CBuRIbVMNm8FpLsFzDxgkfrCNA==
   dependencies:
     "@blueprintjs/icons" "^3.27.0"
     "@types/dom4" "^2.0.1"
@@ -976,12 +976,12 @@
     resize-observer-polyfill "^1.5.1"
     tslib "~1.13.0"
 
-"@blueprintjs/datetime@~3.23.5":
-  version "3.23.5"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-3.23.5.tgz#720c6e3718278ea24a57e94a080db4ec8710f317"
-  integrity sha512-akSG8xzF3rk4tuLav5woqMK7hwmINiwRCCzG9hZfUtLLBhhcKXHRPKIore2a83YJSNyjNG4DmRtTgy8W5XnUuQ==
+"@blueprintjs/datetime@~3.23.6":
+  version "3.23.6"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-3.23.6.tgz#5d9588ae4537e87a6d14d765db722b9a2f449d95"
+  integrity sha512-OACqjo7HQQnEvILj9L/4w0jbM34+aAP8g78eqcOl8E/R+W4U/V9ePBrlcY2eknkgalyueOkx5/0Ee852v5FL/w==
   dependencies:
-    "@blueprintjs/core" "^3.46.0"
+    "@blueprintjs/core" "^3.47.0"
     classnames "^2.2"
     react-day-picker "7.4.9"
     react-lifecycles-compat "^3.0.4"
@@ -3648,10 +3648,10 @@ domhandler@^4.0.0, domhandler@^4.2.0:
   dependencies:
     domelementtype "^2.2.0"
 
-dompurify@~2.2.9:
-  version "2.2.9"
-  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.2.9.tgz#4b42e244238032d9286a0d2c87b51313581d9624"
-  integrity sha512-+9MqacuigMIZ+1+EwoEltogyWGFTJZWU3258Rupxs+2CGs4H914G9er6pZbsme/bvb5L67o2rade9n21e4RW/w==
+dompurify@~2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.3.0.tgz#07bb39515e491588e5756b1d3e8375b5964814e2"
+  integrity sha512-VV5C6Kr53YVHGOBKO/F86OYX6/iLTw2yVSI721gKetxpHCK/V5TaLEf9ODjRgl1KLSWRMY6cUhAbv/c+IUnwQw==
 
 domutils@^1.5.1:
   version "1.7.0"
@@ -7786,10 +7786,10 @@ react-window@^1.8.6:
     "@babel/runtime" "^7.0.0"
     memoize-one ">=3.1.1 <6"
 
-react-windowed-select@~3.1.1:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/react-windowed-select/-/react-windowed-select-3.1.1.tgz#c0c280d0da261e3f2fd0b74b3c3ab63b140c463f"
-  integrity sha512-1ixNot4XSxT957/MPmK207uzTej1wYtzmRmOh8HacCyD5+IWp3tUbZqjHgutXVLAnCc1/bJ1GI48pfYMBYQ0qg==
+react-windowed-select@~3.1.2:
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/react-windowed-select/-/react-windowed-select-3.1.2.tgz#632447a3dae4d7e22fcaefafef8b7043045e7d1d"
+  integrity sha512-XY+ds5y3+Pitz8p/kU2MXArKyMkUGJETE0TTTp9g1fi3F4qfd+rq/zWF5Rtq+6YcuysvXenFGetSmgLixOO2xQ==
   dependencies:
     "@types/react" "^17.0.3"
     "@types/react-dom" "^17.0.3"
