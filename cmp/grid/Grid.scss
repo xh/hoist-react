@@ -67,6 +67,10 @@
     .xh-grid-header-menu-icon {
       cursor: pointer;
     }
+
+    .xh-grid-header-expand-collapse-icon:hover {
+      color: var(--gray-dark, #{mc('grey', '800')});
+    }
   }
 
   .xh-column-header-align-right {

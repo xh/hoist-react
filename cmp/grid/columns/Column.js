@@ -65,7 +65,7 @@ export class Column {
      *      in the Column header, or a function to produce the same. Defaulted from `displayName`.
      * @param {string} [c.headerTooltip] - tooltip text for grid header.
      * @param {boolean} [c.headerHasExpandCollapse] - true if this column header will host an
-     *      expand/collapse all icon. `Column.isTreeColumn` must be enabled. Defaults to false.
+     *      expand/collapse all icon. `Column.isTreeColumn` must be enabled. Defaults to true.
      * @param {string} [c.headerAlign] - horizontal alignment of header contents. Defaults to same
      *      as cell alignment.
      * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - CSS classes to add to the
@@ -251,7 +251,7 @@ export class Column {
         this.headerName = withDefault(headerName, this.displayName);
 
         this.headerTooltip = headerTooltip;
-        this.headerHasExpandCollapse = withDefault(headerHasExpandCollapse, false);
+        this.headerHasExpandCollapse = withDefault(headerHasExpandCollapse, true);
         this.headerClass = headerClass;
         this.headerAlign = headerAlign || align;
         this.cellClass = cellClass;
