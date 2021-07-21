@@ -23,6 +23,7 @@
   padding-bottom: 0;
   border-radius: var(--xh-border-radius-px);
   border: var(--xh-popup-border-width-px) solid var(--xh-popup-border-color);
+  pointer-events: auto;
 
   .bp3-dialog-header {
     color: var(--xh-popup-title-text-color);
