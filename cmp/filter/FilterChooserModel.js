@@ -188,7 +188,7 @@ export class FilterChooserModel extends HoistModel {
             value = parseFilter(value);
 
             if (!this.validateFilter(value)) {
-                value = this.value ?? null;
+                value = null;
             }
 
             const displayFilters = this.toDisplayFilters(value);

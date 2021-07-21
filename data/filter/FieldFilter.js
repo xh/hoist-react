@@ -79,7 +79,10 @@ export class FieldFilter extends Filter {
             regExps;
 
         if (store) {
-            const fieldType = store.getField(field).type;
+            const storeField = store.getField(field);
+            if (!storeField) return () => true; // Ignore if field not in store
+
+            const fieldType = storeField.type;
             value = isArray(value) ?
                 value.map(v => parseFieldValue(v, fieldType)) :
                 parseFieldValue(value, fieldType);
@@ -141,6 +144,9 @@ export class FieldFilter extends Filter {
     }
 
     equals(other) {
-        return other?.isFieldFilter && other.op === this.op && isEqual(other.value, this.value);
+        return other?.isFieldFilter &&
+            other.field === this.field &&
+            other.op === this.op &&
+            isEqual(other.value, this.value);
     }
 }
