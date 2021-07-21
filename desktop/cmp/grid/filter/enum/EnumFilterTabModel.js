@@ -132,15 +132,17 @@ export class EnumFilterTabModel extends HoistModel {
 
         const weight = allValues.length <= 10 ? 2.5 : 1, // Prefer '=' for short lists
             op = included.length > (excluded.length * weight) ? '!=' : '=',
-            arr = op === '=' ? included : excluded,
-            value = arr.length === 1 ? arr[0] : arr;
+            arr = op === '=' ? included : excluded;
 
+        if (isEmpty(arr)) return null;
+
+        const value = arr.length === 1 ? arr[0] : arr;
         return {field, op, value};
     }
 
     @action
     doReset() {
-        const {currentFilter, valueSource, BLANK_STR} = this,
+        const {currentFilter, columnFilters, valueSource, BLANK_STR} = this,
             sourceStore = valueSource.isView ? valueSource.cube.store : valueSource,
             allRecords = sourceStore.allRecords.filter(rec => isEmpty(rec.allChildren));
 
@@ -153,9 +155,24 @@ export class EnumFilterTabModel extends HoistModel {
             filteredRecords = allRecords.filter(it => testFn(it));
         }
 
-        // Extract unique values from record sets. [blank] is always included.
-        const values = uniq([...filteredRecords.map(rec => this.valueFromRecord(rec)), BLANK_STR]),
-            allValues = uniq([...allRecords.map(rec => this.valueFromRecord(rec)), BLANK_STR]);
+        // Get values from current column filter
+        const filterValues = [];
+        columnFilters.forEach(filter => {
+            const newValues = castArray(filter.value).map(value => value ?? BLANK_STR);
+            filterValues.push(...newValues);
+        });
+
+        // Combine unique values from record sets and column filters. [blank] is always included.
+        const values = uniq([
+            ...filteredRecords.map(rec => this.valueFromRecord(rec)),
+            ...filterValues,
+            BLANK_STR
+        ]);
+        const allValues = uniq([
+            ...allRecords.map(rec => this.valueFromRecord(rec)),
+            ...filterValues,
+            BLANK_STR
+        ]);
 
         this.values = this.pendingValues = values;
         this.allValues = allValues;
