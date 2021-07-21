@@ -9,6 +9,7 @@
   mount.
 * Fixed an issue preventing a minimal button in `panel.headerItems` to take an intent that overrides
   the panel's title text color.
+* Fixed an issue preventing dragging the chart navigator range in a dialog.
 
 ### 🎁 New Features
 
