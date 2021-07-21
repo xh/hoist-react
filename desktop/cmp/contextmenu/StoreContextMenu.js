@@ -122,7 +122,7 @@ export class StoreContextMenu {
                             text: 'Clear',
                             icon: Icon.undo(),
                             displayFn: ({column}) => {
-                                const filters = gridModel.filterModel.getColumnFilters(column.field);
+                                const filters = gridModel.filterModel.getColumnFilters(column?.field);
                                 return {disabled: isEmpty(filters)};
                             },
                             actionFn: ({column}) => {
