@@ -132,7 +132,7 @@ export class RecordFieldValidator extends HoistBase {
             const promises = rule.check.map(async (constraint) => {
                 const {name, displayName} = field,
                     value = record.get(name),
-                    fieldState = {value, name, displayName};
+                    fieldState = {value, name, displayName, record};
 
                 return await constraint(fieldState, record.getValues());
             });
