@@ -35,7 +35,7 @@ export class CustomFilterTabModel extends HoistModel {
         const joinOp = this.op === 'AND' ? 'OR' : 'AND', // Opposite of current compound operator
             counts = joinOp === 'AND' ?
                 {'!=': 0, 'not like': 0} :
-                {'=': 0, 'like': 0, 'begins with': 0, 'ends with': 0};
+                {'=': 0, 'like': 0, 'begins': 0, 'ends': 0};
 
         this.rowModels.forEach(it => {
             if (!isNil(counts[it.op])) {

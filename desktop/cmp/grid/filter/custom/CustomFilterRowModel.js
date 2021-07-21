@@ -98,10 +98,6 @@ export class CustomFilterRowModel extends HoistModel {
                 return Icon.lessThan();
             case '<=':
                 return Icon.lessThanEqual();
-            case 'begins with':
-                return 'begins';
-            case 'ends with':
-                return 'ends';
         }
         return op;
     }

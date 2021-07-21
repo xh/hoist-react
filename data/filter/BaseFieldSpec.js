@@ -71,7 +71,7 @@ export class BaseFieldSpec extends HoistBase {
      * @return {string} - 'range' or 'value' - determines operations supported by this field.
      *      Type 'range' indicates the field should use mathematical / logical operations
      *      ('>', '>=', '<', '<=', '=', '!='). Type 'value' indicates the field should use equality
-     *      operators ('=', '!=', 'like', 'not like', 'begins with', 'ends with') against a suggested
+     *      operators ('=', '!=', 'like', 'not like', 'begins', 'ends') against a suggested
      *      exact value or user-provided input.
      */
     get filterType() {
@@ -138,7 +138,7 @@ export class BaseFieldSpec extends HoistBase {
     getDefaultOperators() {
         if (this.isBoolFieldType) return ['='];
         return this.isValueType ?
-            ['=', '!=', 'like', 'not like', 'begins with', 'ends with'] :
+            ['=', '!=', 'like', 'not like', 'begins', 'ends'] :
             ['>', '>=', '<', '<=', '=', '!='];
     }
 }

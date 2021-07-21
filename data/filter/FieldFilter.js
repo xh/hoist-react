@@ -32,8 +32,8 @@ export class FieldFilter extends Filter {
     /** @member {*} */
     value;
 
-    static OPERATORS = ['=', '!=', '>', '>=', '<', '<=', 'like', 'not like', 'begins with', 'ends with'];
-    static ARRAY_OPERATORS = ['=', '!=', 'like', 'not like', 'begins with', 'ends with'];
+    static OPERATORS = ['=', '!=', '>', '>=', '<', '<=', 'like', 'not like', 'begins', 'ends'];
+    static ARRAY_OPERATORS = ['=', '!=', 'like', 'not like', 'begins', 'ends'];
 
     /**
      * Constructor - not typically called by apps - create from config via `parseFilter()` instead.
@@ -43,7 +43,7 @@ export class FieldFilter extends Filter {
      * @param {string} c.op - one of the supported Filter.OPERATORS to use for comparison.
      * @param {(*|[])} c.value - value(s) to use with operator in filter. When used with operators
      *      in the ARRAY_OPERATORS collection, value may be specified as an array. In these cases,
-     *      the filter will implement an implicit 'OR' for '='/'like'/'begins with'/'ends with',
+     *      the filter will implement an implicit 'OR' for '='/'like'/'begins'/'ends',
      *      and an implicit 'AND' for '!='/'not like'.
      */
     constructor({field, op, value}) {
@@ -129,10 +129,10 @@ export class FieldFilter extends Filter {
             case 'not like':
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
                 return r => regExps.some(re => !re.test(getVal(r)));
-            case 'begins with':
+            case 'begins':
                 regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
                 return r => regExps.some(re => re.test(getVal(r)));
-            case 'ends with':
+            case 'ends':
                 regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
                 return r => regExps.some(re => re.test(getVal(r)));
             default:

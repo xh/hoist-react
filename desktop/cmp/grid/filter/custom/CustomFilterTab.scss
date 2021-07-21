@@ -37,8 +37,8 @@
     // Operator specific styling
     &--like,
     &--not-like,
-    &--begins-with,
-    &--ends-with {
+    &--begins,
+    &--ends {
       .xh-select {
         width: 65px !important;
       }
