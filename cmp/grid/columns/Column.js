@@ -104,8 +104,8 @@ export class Column {
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
      * @param {boolean} [c.sortable] - false to prevent user from sorting on this column.
      * @param {boolean} [c.filterable] - true to enable an Excel-like column header filter menu.
-     *      Menu includes an enumerated, checkbox set filter and a custom input filter dependent on
-     *      for building complex queries.
+     *      Menu option defaults vary based on the underlying Field.type, but include a
+     *      checkbox-list "values filter" and a custom input filter for more complex queries.
      * @param {(boolean|string)} [c.pinned] - set to true/'left' or 'right' to pin (aka "lock") the
      *      column to the side of the grid, ensuring it's visible while horizontally scrolling.
      * @param {Column~rendererFn} [c.renderer] - function returning a formatted string for each

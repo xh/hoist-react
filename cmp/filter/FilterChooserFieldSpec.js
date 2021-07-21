@@ -12,7 +12,8 @@ import {stripTags, throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isString, isNil} from 'lodash';
 
 /**
- * In addition to the BaseFieldSpec, includes configuration for data values available for suggestion.
+ * Filter field specification class for the typeahead `FilterChooser` component. Manages additional
+ * configuration related to data values available for suggestion.
  *
  * Apps should NOT instantiate this class directly. Instead {@see FilterChooserModel.fieldSpecs}
  * for the relevant config to set these options.
