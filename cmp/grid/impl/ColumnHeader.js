@@ -31,7 +31,8 @@ export const columnHeader = hoistCmp.factory({
 
     render(props) {
         const impl = useLocalModel(() => new LocalModel(props)),
-            {gridModel, xhColumn} = impl;
+            {gridModel, xhColumn} = impl,
+            {isDesktop} = XH;
 
         const sortIcon = () => {
             const {abs, sort} = impl.activeGridSorter ?? {};
@@ -70,7 +71,8 @@ export const columnHeader = hoistCmp.factory({
             return div({
                 className: 'xh-grid-header-expand-collapse-icon',
                 item: icon,
-                onClick: impl.onExpandOrCollapse
+                onClick: isDesktop ? impl.onExpandOrCollapse : null,
+                onTouchStart: !isDesktop ? impl.onExpandOrCollapse : null
             });
         };
 
@@ -79,8 +81,6 @@ export const columnHeader = hoistCmp.factory({
             impl.activeGridSorter ? 'xh-grid-header-sorted' : null,
             impl.hasNonPrimarySort ? 'xh-grid-header-multisort' : null
         ];
-
-        const {isDesktop} = XH;
 
         // `props.displayName` is the output of the Column `headerValueGetter` and should always be a string
         // If `xhColumn` is present, it can consulted for a richer `headerName`

@@ -68,8 +68,11 @@
       cursor: pointer;
     }
 
-    .xh-grid-header-expand-collapse-icon:hover {
-      color: var(--xh-gray-dark);
+    // Prevent sticky hover effects on touch screens
+    @media (hover: hover) {
+      .xh-grid-header-expand-collapse-icon:hover {
+        color: var(--xh-text-color-highlight);
+      }
     }
   }
 
