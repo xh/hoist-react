@@ -1281,12 +1281,12 @@ export class GridModel extends HoistModel {
 
         const {store} = this;
         if (isPlainObject(filterModel)) {
-            const config = defaults(filterModel, {gridModel: this, valueSource: store, target: store});
+            const config = defaults(filterModel, {gridModel: this, bind: store, valueSource: store});
             return this.markManaged(new GridFilterModel(config));
         }
 
         if (filterModel) {
-            const config = {gridModel: this, valueSource: store, target: store};
+            const config = {gridModel: this, bind: store, valueSource: store};
             return this.markManaged(new GridFilterModel(config));
         }
 
@@ -1321,12 +1321,12 @@ export class GridModel extends HoistModel {
 /**
  * @typedef {Object} GridFilterModelConfig
  * @property {GridModel} c.gridModel - GridModel instance which owns this model.
- * @property {(Store|View)} c.valueSource - Store or cube View to be used to provide suggested
- *      data values in column filters (if configured).
- * @property {(Store|View)} c.target - Store or cube View that should actually be filtered
+ * @property {(Store|View)} c.bind - Store or cube View that should actually be filtered
  *      as column filters are applied. May be the same as `valueSource`. Provide 'null' if you
  *      wish to combine this model's filter with other filters, send it to the server, or otherwise
  *      observe and handle filter changes manually.
+ * @property {(Store|View)} c.valueSource - Store or cube View to be used to provide suggested
+ *      data values in column filters (if configured).
  * @property {(Filter|* |[]|function)} [c.initialFilter] - Configuration for a filter appropriate
  *      to be rendered and managed by GridFilterModel, or a function to produce the same.
  */

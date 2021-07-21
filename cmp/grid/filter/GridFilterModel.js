@@ -21,26 +21,26 @@ export class GridFilterModel extends HoistModel {
     /** @member {GridModel} */
     gridModel;
     /** @member {(Store|View)} */
-    valueSource;
+    bind;
     /** @member {(Store|View)} */
-    target;
+    valueSource;
     /** @member {GridFilterFieldSpec[]} */
     @managed fieldSpecs = [];
 
     /** @return {Filter} */
     get filter() {
-        return this.hasTarget ? this.target.filter : this._filter;
+        return this.isBound ? this.bind.filter : this._filter;
     }
 
     /** @return {boolean} */
-    get hasTarget() {
-        return !isNil(this.target);
+    get isBound() {
+        return !isNil(this.bind);
     }
 
     // Open state for filter dialog
     @observable dialogOpen = false;
 
-    // Private filter state, used when `target` is not defined
+    // Private filter state, used when not bound
     @observable.ref _filter;
 
     /**
@@ -52,12 +52,12 @@ export class GridFilterModel extends HoistModel {
      *      indicating that all fields should be filter-enabled.
      * @param {Object} [c.fieldSpecDefaults] - default properties to be assigned to all
      *      GridFilterFieldSpecs created by this model.
-     * @param {(Store|View)} [c.valueSource] - Store or cube View to be used to provide suggested
-     *      data values in column filters (if configured).
-     * @param {(Store|View)} [c.target] - Store or cube View that should actually be filtered
+     * @param {(Store|View)} [c.bind] - Store or cube View that should actually be filtered
      *      as column filters are applied. May be the same as `valueSource`. Provide 'null' if you
      *      wish to combine this model's filter with other filters, send it to the server, or otherwise
      *      observe and handle filter changes manually.
+     * @param {(Store|View)} [c.valueSource] - Store or cube View to be used to provide suggested
+     *      data values in column filters (if configured).
      * @param {(Filter|* |[]|function)} [c.initialFilter] - Configuration for a filter appropriate
      *      to be rendered and managed by GridFilterModel, or a function to produce the same.
      */
@@ -65,8 +65,8 @@ export class GridFilterModel extends HoistModel {
         gridModel,
         fieldSpecs,
         fieldSpecDefaults,
+        bind,
         valueSource,
-        target,
         initialFilter = null
     }) {
         super();
@@ -75,8 +75,8 @@ export class GridFilterModel extends HoistModel {
         throwIf(!gridModel, 'GridFilterModel requires a GridModel');
 
         this.gridModel = gridModel;
+        this.bind = bind;
         this.valueSource = valueSource;
-        this.target = target;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
 
         const filter = isFunction(initialFilter) ? initialFilter() : initialFilter;
@@ -84,20 +84,19 @@ export class GridFilterModel extends HoistModel {
     }
 
     /**
-     * Set the filter on the target
      * @param {(Filter|Object)} filter - Filter, or config to create. If null, the filter will be removed
      */
     @action
     setFilter(filter) {
-        if (this.hasTarget) {
-            this.target.setFilter(filter);
+        if (this.isBound) {
+            this.bind.setFilter(filter);
         } else {
             this._filter = filter;
         }
     }
 
     /**
-     * Set / replace the filters for a given field on the target
+     * Set / replace the filters for a given field.
      * @param {string} field - field to identify this filter
      * @param {(Filter|Object|[])} filter - Filter(s), or config to create. If null, the filter will be removed
      */
@@ -149,9 +148,6 @@ export class GridFilterModel extends HoistModel {
         this.setColumnFilters(field, filter);
     }
 
-    /**
-     * Clear the filter on the target
-     */
     @action
     clear() {
         this.setFilter(null);

@@ -38,10 +38,10 @@ export class FilterChooserModel extends HoistModel {
     @observable.ref favorites = [];
 
     /** @member {(Store|View)} */
-    valueSource;
+    bind;
 
     /** @member {(Store|View)} */
-    target;
+    valueSource;
 
     /** @member {FilterChooserFieldSpec[]} */
     @managed fieldSpecs = [];
@@ -75,13 +75,13 @@ export class FilterChooserModel extends HoistModel {
      *      indicating that all fields should be filter-enabled.
      * @param {Object} [c.fieldSpecDefaults] - default properties to be assigned to all
      *      FilterChooserFieldSpecs created by this model.
-     * @param {(Store|View)} [c.valueSource] - Store or cube View to be used to lookup matching
-     *      Field-level defaults for `fieldSpecs` and to provide suggested data values (if configured)
-     *      from user input.
-     * @param {(Store|View)} [c.target] - Store or cube View that should actually be filtered
+     * @param {(Store|View)} [c.bind] - Store or cube View that should actually be filtered
      *      as this model's value changes. May be the same as `valueSource`. Leave undefined if you
      *      wish to combine this model's values with other filters, send it to the server,
      *      or otherwise observe and handle value changes manually.
+     * @param {(Store|View)} [c.valueSource] - Store or cube View to be used to lookup matching
+     *      Field-level defaults for `fieldSpecs` and to provide suggested data values (if configured)
+     *      from user input.
      * @param {(Filter|* |[]|function)} [c.initialValue] - Configuration for a filter appropriate
      *      to be rendered and managed by FilterChooser, or a function to produce the same.
      *      Note that FilterChooser currently can only edit and create a flat collection of
@@ -97,8 +97,8 @@ export class FilterChooserModel extends HoistModel {
     constructor({
         fieldSpecs,
         fieldSpecDefaults,
+        bind = null,
         valueSource = null,
-        target = null,
         initialValue = null,
         initialFavorites = [],
         maxTags = 100,
@@ -109,11 +109,11 @@ export class FilterChooserModel extends HoistModel {
         super();
         makeObservable(this);
 
+        apiRemoved(rest.targetStore, 'targetStore', "Use 'bind' instead");
         apiRemoved(rest.sourceStore, 'sourceStore', "Use 'valueSource' instead");
-        apiRemoved(rest.targetStore, 'targetStore', "Use 'target' instead");
 
+        this.bind = bind;
         this.valueSource = valueSource;
-        this.target = target;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
         this.maxTags = maxTags;
         this.maxResults = maxResults;
@@ -151,15 +151,15 @@ export class FilterChooserModel extends HoistModel {
         this.setValue(value);
         this.setFavorites(favorites);
 
-        if (target) {
+        if (bind) {
             this.addReaction({
                 track: () => this.value,
-                run: (filter) => target.setFilter(filter),
+                run: (filter) => bind.setFilter(filter),
                 fireImmediately: true
             });
 
             this.addReaction({
-                track: () => target.filter,
+                track: () => bind.filter,
                 run: (filter) => this.setValue(filter)
             });
         }

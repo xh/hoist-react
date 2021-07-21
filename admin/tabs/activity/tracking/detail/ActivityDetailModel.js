@@ -27,8 +27,8 @@ export class ActivityDetailModel extends HoistModel {
             colChooserModel: true,
             enableExport: true,
             filterModel: {
-                valueSource: parentModel.cube.store,
-                target: parentModel.cube.store
+                bind: parentModel.cube.store,
+                valueSource: parentModel.cube.store
             },
             exportOptions: {
                 columns: 'ALL',
