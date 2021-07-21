@@ -28,10 +28,10 @@ export class FilterChooserFieldSpec extends BaseFieldSpec {
     /** @member {boolean} */
     forceSelection;
 
-    /** @member {FieldSpecValueRendererCb} */
+    /** @member {FilterChooserValueRendererCb} */
     valueRenderer;
 
-    /** @member {FieldSpecValueParserCb} */
+    /** @member {FilterChooserValueParserCb} */
     valueParser;
 
     /** @member {string} */
@@ -49,7 +49,7 @@ export class FilterChooserFieldSpec extends BaseFieldSpec {
      *      for '=' and '!=' operators. Defaults to false.
      * @param {FilterChooserValueRendererCb} [c.valueRenderer] - function to produce a suitably
      *      formatted string for display to the user for any given field value.
-     * @param {FilterChooserFieldSpec} [c.valueParser] - function to parse user's input from a
+     * @param {FilterChooserValueParserCb} [c.valueParser] - function to parse user's input from a
      *      filter chooser control into a typed data value for use in filtering comparisons.
      * @param {string} [c.example] - sample / representative value displayed by `FilterChooser`
      *      components to aid usability

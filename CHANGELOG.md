@@ -26,7 +26,7 @@
     "Values" tab for enumerative, value-based filter, and a "Custom" tab to build complex filtering
     queries with multiple clauses.
 + Cube `View` now accepts a `loadModel` property - pass to `Cube.createView()` to link view
-  updates to a `PendingTaskMask`. If `loadModel` is not provided, the `View` will create one.
+  updates to a `PendingTaskModel`. If `loadModel` is not provided, the `View` will create one.
 
 ### 💥 Breaking Changes
 
