@@ -346,7 +346,7 @@ export class BaseFieldModel extends HoistModel {
         if (this.ruleIsActive(rule)) {
             const promises = rule.check.map(async (constraint) => {
                 const {value, name, displayName} = this,
-                    fieldState = {value, name, displayName};
+                    fieldState = {value, name, displayName, fieldModel: this};
 
                 return await constraint(fieldState, this.formModel.values);
             });
