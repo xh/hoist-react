@@ -59,13 +59,9 @@ export function parseFilter(spec) {
  */
 export function flattenFilter(spec) {
     if (!spec) return [];
-
     const {filters} = spec;
     if (!filters) return [spec];
-
-    const ret = [];
-    filters.forEach(it => ret.push(...flattenFilter(it)));
-    return ret;
+    return flatMap(filters, flattenFilter);
 }
 
 /**
@@ -75,7 +71,7 @@ export function flattenFilter(spec) {
  * @returns {Filter[]}
  */
 export function combineValueFilters(filters = []) {
-    const groupMap = groupBy(filters, ({op, field}) => [op, field].join('|'));
+    const groupMap = groupBy(filters, ({op, field}) => `${op}|${field}`);
     return flatMap(groupMap, filters => {
         return (filters.length > 1 && FieldFilter.ARRAY_OPERATORS.includes(filters[0].op)) ?
             {...filters[0], value: filters.map(it => it.value)} :

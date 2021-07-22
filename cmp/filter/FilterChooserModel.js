@@ -262,7 +262,7 @@ export class FilterChooserModel extends HoistModel {
         });
 
         // 2) Recognize unsupported multiple filters for array-based filters.
-        const groupMap = groupBy(ret, ({op, field}) => [op, field].join('|'));
+        const groupMap = groupBy(ret, ({op, field}) => `${op}|${field}`);
         forEach(groupMap, filters => {
             const {op} = filters[0];
             if (filters.length > 1 && FieldFilter.ARRAY_OPERATORS.includes(op)) {
