@@ -5,6 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {castArray, isString} from 'lodash';
+import {apiDeprecated} from './LangUtils';
 
 /**
  * Track a function execution, logging the provided message(s) on debug with timing information in
@@ -20,6 +21,18 @@ import {castArray, isString} from 'lodash';
  */
 export function withDebug(msgs, fn, source) {
     return loggedDo(msgs, fn, source);
+}
+
+
+/**
+ * Track a function execution, logging the provided message(s) on debug with timing information in
+ * a single message after the tracked function returns.
+ *
+ * @deprecated use withDebug instead.
+ */
+export function withShortDebug(msgs, fn, source) {
+    apiDeprecated(true, 'withShortDebug', 'Use withDebug() instead');
+    return withDebug(msgs, fn, source);
 }
 
 /**
