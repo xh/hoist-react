@@ -9,7 +9,7 @@ import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/
 import {parseFilter} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
-import {castArray, compact, difference, isEmpty, isNil, uniq, partition} from 'lodash';
+import {castArray, compact, difference, isEmpty, isNil, uniq, partition, without} from 'lodash';
 
 export class ValuesFilterTabModel extends HoistModel {
     /** @member {ColumnHeaderFilterModel} */
@@ -21,7 +21,7 @@ export class ValuesFilterTabModel extends HoistModel {
     @managed @observable.ref gridModel;
 
     /**
-     * @member {*[]} List of all available (i.e. excluding hidden) values to display in the grid
+     * @member {*[]} List of available (i.e. excluding hidden) values to display in the grid
      */
     @observable.ref values = [];
 
@@ -109,7 +109,7 @@ export class ValuesFilterTabModel extends HoistModel {
         if (isChecked) {
             this.pendingValues = [...this.pendingValues, value];
         } else {
-            this.pendingValues = this.pendingValues.filter(it => it !== value);
+            this.pendingValues = without(this.pendingValues, value);
         }
     }
 
@@ -144,7 +144,7 @@ export class ValuesFilterTabModel extends HoistModel {
     doReset() {
         const {currentFilter, columnFilters, valueSource, BLANK_STR} = this,
             sourceStore = valueSource.isView ? valueSource.cube.store : valueSource,
-            allRecords = sourceStore.allRecords.filter(rec => isEmpty(rec.allChildren));
+            allRecords = sourceStore.allRecords;
 
         // Apply external filters *not* pertaining to this field to the sourceStore
         // to get the filtered set of available values to offer as options.
@@ -152,30 +152,35 @@ export class ValuesFilterTabModel extends HoistModel {
         let filteredRecords = allRecords;
         if (cleanedFilter) {
             const testFn = parseFilter(cleanedFilter).getTestFn(sourceStore);
-            filteredRecords = allRecords.filter(it => testFn(it));
+            filteredRecords = allRecords.filter(testFn);
         }
 
         // Get values from current column filter
         const filterValues = [];
         columnFilters.forEach(filter => {
-            const newValues = castArray(filter.value).map(value => value ?? BLANK_STR);
+            const newValues = castArray(filter.value).map(value => isNil(value) ? BLANK_STR : value);
             filterValues.push(...newValues);
         });
 
         // Combine unique values from record sets and column filters. [blank] is always included.
-        const values = uniq([
-            ...filteredRecords.map(rec => this.valueFromRecord(rec)),
-            ...filterValues,
-            BLANK_STR
-        ]);
         const allValues = uniq([
             ...allRecords.map(rec => this.valueFromRecord(rec)),
             ...filterValues,
             BLANK_STR
         ]);
+        let values;
+        if (cleanedFilter) {
+            values = uniq([
+                ...filteredRecords.map(rec => this.valueFromRecord(rec)),
+                ...filterValues,
+                BLANK_STR
+            ]);
+        } else {
+            values = allValues;
+        }
 
-        this.values = this.pendingValues = values;
         this.allValues = allValues;
+        this.values = this.pendingValues = values;
         this.hasHiddenValues = values.length < allValues.length;
         this.filterText = null;
     }
@@ -193,8 +198,8 @@ export class ValuesFilterTabModel extends HoistModel {
             filterValues = [];
 
         arr.forEach(filter => {
-            const newValues = castArray(filter.value).map(value => value ?? BLANK_STR);
-            filterValues.push(...newValues);
+            const newValues = castArray(filter.value).map(value => isNil(value) ? BLANK_STR : value);
+            filterValues.push(...newValues); // Todo: Is this safe?
         });
 
         if (!filterValues.length) return;

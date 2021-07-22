@@ -86,7 +86,7 @@ export class GridModel extends HoistModel {
     /** @member {ColChooserModel} */
     colChooserModel;
     /** @member {GridFilterModel} */
-    filterModel;
+    @managed filterModel;
     /** @member {function} */
     rowClassFn;
     /** @member {(Array|function)} */
@@ -1277,20 +1277,13 @@ export class GridModel extends HoistModel {
     }
 
     parseFilterModel(filterModel) {
-        if (XH.isMobileApp) return null;
-
-        const {store} = this;
-        if (isPlainObject(filterModel)) {
-            const config = defaults(filterModel, {gridModel: this, bind: store});
-            return this.markManaged(new GridFilterModel(config));
-        }
-
-        if (filterModel) {
-            const config = {gridModel: this, bind: store};
-            return this.markManaged(new GridFilterModel(config));
-        }
-
-        return null;
+        if (XH.isMobileApp || !filterModel) return null;
+        filterModel = isPlainObject(filterModel) ? filterModel : {};
+        return new GridFilterModel({
+            bind: this.store,
+            ...filterModel,
+            gridModel: this
+        });
     }
 
     parseExperimental(experimental) {

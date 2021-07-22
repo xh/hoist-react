@@ -339,22 +339,7 @@ export class Column {
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
-        if (filterable && XH.isMobileApp) {
-            console.warn(`'filterable' is not supported on mobile and will be ignored.`);
-            filterable = false;
-        }
-
-        if (filterable && this.colId !== this.field) {
-            console.warn(`Column '${this.colId}' is not a Store field. 'filterable' will be ignored.`);
-            filterable = false;
-        }
-
-        if (filterable && this.field === 'cubeLabel') {
-            console.warn(`Column '${this.colId}' is a cube label column. 'filterable' will be ignored.`);
-            filterable = false;
-        }
-
-        this.filterable = withDefault(filterable, false);
+        this.filterable = this.parseFilterable(filterable);
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -663,6 +648,27 @@ export class Column {
         if (pinned === true) return 'left';
         if (pinned === 'left' || pinned === 'right') return pinned;
         return null;
+    }
+
+    parseFilterable(filterable) {
+        if (!filterable) return false;
+
+        if (XH.isMobileApp) {
+            console.warn(`'filterable' is not supported on mobile and will be ignored.`);
+            return false;
+        }
+
+        if (!this.field) {
+            console.warn(`Column '${this.colId}' is not a Store field. 'filterable' will be ignored.`);
+            return false;
+        }
+
+        if (this.field === 'cubeLabel') {
+            console.warn(`Column '${this.colId}' is a cube label column. 'filterable' will be ignored.`);
+            return false;
+        }
+
+        return true;
     }
 
     getSortValue(v, record) {

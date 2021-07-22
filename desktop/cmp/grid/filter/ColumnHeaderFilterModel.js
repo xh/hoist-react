@@ -6,7 +6,6 @@
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {observable, action, computed, makeObservable} from '@xh/hoist/mobx';
-import {flattenFilter} from '@xh/hoist/data';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {wait} from '@xh/hoist/promise';
 import {isEmpty} from 'lodash';
@@ -17,7 +16,7 @@ import {valuesFilterTab} from './values/ValuesFilterTab';
 import {ValuesFilterTabModel} from './values/ValuesFilterTabModel';
 
 export class ColumnHeaderFilterModel extends HoistModel {
-    filterModel;
+    filterModel; // Todo: Rename gridFilterModel
     column;
     fieldSpec;
 
@@ -33,12 +32,13 @@ export class ColumnHeaderFilterModel extends HoistModel {
         return this.fieldSpec.field;
     }
 
+    // Todo: rename currentGridFilter
     get currentFilter() {
         return this.filterModel.filter;
     }
 
     get columnFilters() {
-        return flattenFilter(this.currentFilter).filter(it => it.field === this.field);
+        return this.filterModel.getColumnFilters(this.field);
     }
 
     get valueSource() {

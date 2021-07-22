@@ -50,6 +50,7 @@ export const columnHeader = hoistCmp.factory({
         };
 
         const menuIcon = () => {
+            if (impl.enableFilter) return columnHeaderFilter({model: impl.columnHeaderFilterModel});
             if (!props.enableMenu) return null;
             return div({
                 className: 'xh-grid-header-menu-icon',
@@ -118,7 +119,7 @@ export const columnHeader = hoistCmp.factory({
                 expandCollapseIcon(),
                 span({onMouseEnter, item: headerElem}),
                 sortIcon(),
-                impl.enableFilter ? columnHeaderFilter({model: impl.columnHeaderFilterModel}) : menuIcon()
+                menuIcon()
             ]
         });
     }

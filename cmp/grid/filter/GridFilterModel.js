@@ -7,9 +7,9 @@
 
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {FieldFilter, flattenFilter} from '@xh/hoist/data';
+import {FieldFilter, parseFilter, flattenFilter} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, find, isEmpty, isFunction, isString, castArray, uniq} from 'lodash';
+import {isNil, find, isFunction, isString, castArray, uniq} from 'lodash';
 
 import {GridFilterFieldSpec} from './GridFilterFieldSpec';
 
@@ -72,8 +72,6 @@ export class GridFilterModel extends HoistModel {
         super();
         makeObservable(this);
 
-        throwIf(!gridModel, 'GridFilterModel requires a GridModel');
-
         this.gridModel = gridModel;
         this.bind = bind;
         this.valueSource = valueSource;
@@ -88,6 +86,7 @@ export class GridFilterModel extends HoistModel {
      */
     @action
     setFilter(filter) {
+        filter = parseFilter(filter);
         if (this.isBound) {
             this.bind.setFilter(filter);
         } else {
@@ -103,40 +102,33 @@ export class GridFilterModel extends HoistModel {
     @action
     setColumnFilters(field, filter) {
         const currFilter = this.filter,
-            currFilters = currFilter?.isCompoundFilter ? currFilter.filters : [currFilter],
-            newFilters = [];
+            currFilters = currFilter?.isCompoundFilter ? currFilter.filters : [currFilter];
 
         // Strip out any existing filters for this field
-        currFilters.forEach(filter => {
-            if (!filter) return;
-            if (filter.isFieldFilter && filter.field === field) return;
-            if (filter.isCompoundFilter && find(filter.filters, it => it.field === field)) return;
-            newFilters.push(filter);
+        const newFilters = currFilters.filter(filter => {
+            if (!filter) return false;
+            if (filter.isFieldFilter && filter.field === field) return false;
+            if (filter.isCompoundFilter && find(filter.filters, it => it.field === field)) return false;
+            return true;
         });
 
         // Add in new filter
-        if (filter) newFilters.push(...castArray(filter));
-
-        // Create compound filter if necessary
-        let newFilter = null;
-        if (!isEmpty(newFilters)) {
-            newFilter = newFilters.length > 1 ? {filters: newFilters, op: 'AND'} : newFilters[0];
-        }
-
-        this.setFilter(newFilter);
+        newFilters.push(...castArray(filter));
+        this.setFilter(newFilters);
     }
 
     /**
-     * Merge the value of a new filter into the existing filter on the same field and operator.
+     * Appends the value of a new filter into the existing filter on the same field and operator.
      * If such no filter exists, one will be created. Only applicable for filters with multi-value operators.
      * @param {string} field - field to identify this filter
      * @param {(Filter|Object)} filter - Filter, or config to create. If null, the filter will be removed
      */
     @action
     mergeColumnFilters(field, filter) {
-        if (FieldFilter.ARRAY_OPERATORS.includes(filter.op)) {
+        const {op} = filter;
+        if (FieldFilter.ARRAY_OPERATORS.includes(op)) {
             const currFilters = flattenFilter(this.filter),
-                match = currFilters.find(it => it.field === field && it.op === filter.op);
+                match = find(currFilters, {field, op});
 
             if (match) {
                 filter.value = uniq([
