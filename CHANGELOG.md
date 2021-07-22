@@ -30,6 +30,8 @@
   mount.
 * Fixed an issue preventing a minimal button in `panel.headerItems` to take an intent that overrides
   the panel's title text color.
+* Fixed an issue where updating summary data in a Store without also updating other data would not
+  update the data in the associated grid
 
 ### 🎁 New Features
 
