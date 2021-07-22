@@ -18,12 +18,14 @@ export class RowKeyNavSupport {
 
     navigateToNextCell(agParams) {
         const {nextCellPosition, previousCellPosition, event, key} = agParams,
-            {agApi} = this.agGridModel,
+            {agApi, showCellFocus} = this.agGridModel,
             shiftKey = event.shiftKey,
-            prevIndex = previousCellPosition ? previousCellPosition.rowIndex : null,
-            nextIndex = nextCellPosition ? nextCellPosition.rowIndex : null,
+            nextIndex = nextCellPosition?.rowIndex ?? null,
+            prevIndex =  previousCellPosition?.rowIndex ?? null,
+            prevIsTreeCol = previousCellPosition?.column.colDef.xhColumn.isTreeColumn,
             prevNode = prevIndex != null ? agApi.getDisplayedRowAtIndex(prevIndex) : null,
             prevNodeIsParent = prevNode && prevNode.allChildrenCount,
+            canExpandCollapse = prevNodeIsParent && (!showCellFocus || prevIsTreeCol),
             KEY_UP = 38, KEY_DOWN = 40, KEY_LEFT = 37, KEY_RIGHT = 39;
 
         switch (key) {
@@ -56,10 +58,16 @@ export class RowKeyNavSupport {
                 }
                 return nextCellPosition;
             case KEY_LEFT:
-                if (prevNodeIsParent && prevNode.expanded) prevNode.setExpanded(false);
+                if (canExpandCollapse && prevNode.expanded) {
+                    prevNode.setExpanded(false);
+                    return;
+                }
                 return nextCellPosition;
             case KEY_RIGHT:
-                if (prevNodeIsParent && !prevNode.expanded) prevNode.setExpanded(true);
+                if (canExpandCollapse && !prevNode.expanded) {
+                    prevNode.setExpanded(true);
+                    return;
+                }
                 return nextCellPosition;
             default:
         }
