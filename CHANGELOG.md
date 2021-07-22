@@ -24,6 +24,8 @@
 * Intent styles now properly applied to minimal buttons within `Panel.headerItems`.
 * Improved `GridModel` async selection methods to ensure they do not wait forever if grid does not
   mount.
+* Fixed an issue preventing dragging the chart navigator range in a dialog.
+
 
 ### ⚙️ Technical
 
