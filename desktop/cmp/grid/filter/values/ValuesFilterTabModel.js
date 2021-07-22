@@ -11,7 +11,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {castArray, compact, difference, isEmpty, isNil, uniq, partition} from 'lodash';
 
-export class EnumFilterTabModel extends HoistModel {
+export class ValuesFilterTabModel extends HoistModel {
     /** @member {ColumnHeaderFilterModel} */
     parentModel;
 

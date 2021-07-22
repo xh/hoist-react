@@ -13,8 +13,8 @@ import {isEmpty} from 'lodash';
 
 import {customFilterTab} from './custom/CustomFilterTab';
 import {CustomFilterTabModel} from './custom/CustomFilterTabModel';
-import {enumFilterTab} from './enum/EnumFilterTab';
-import {EnumFilterTabModel} from './enum/EnumFilterTabModel';
+import {valuesFilterTab} from './values/ValuesFilterTab';
+import {ValuesFilterTabModel} from './values/ValuesFilterTabModel';
 
 export class ColumnHeaderFilterModel extends HoistModel {
     filterModel;
@@ -26,7 +26,7 @@ export class ColumnHeaderFilterModel extends HoistModel {
     @observable showMask = false;
 
     @managed tabContainerModel;
-    @managed enumFilterTabModel;
+    @managed valuesFilterTabModel;
     @managed customFilterTabModel;
 
     get field() {
@@ -50,8 +50,8 @@ export class ColumnHeaderFilterModel extends HoistModel {
     }
 
     get hasPendingFilter() {
-        if (this.tabContainerModel.activeTabId === 'enumFilter') {
-            return !!this.enumFilterTabModel.filter;
+        if (this.tabContainerModel.activeTabId === 'valuesFilter') {
+            return !!this.valuesFilterTabModel.filter;
         } else {
             return !!this.customFilterTabModel.filter;
         }
@@ -72,15 +72,15 @@ export class ColumnHeaderFilterModel extends HoistModel {
         this.column = column;
         this.fieldSpec = filterModel.getFieldSpec(column.field);
 
-        this.enumFilterTabModel = new EnumFilterTabModel(this);
+        this.valuesFilterTabModel = new ValuesFilterTabModel(this);
         this.customFilterTabModel = new CustomFilterTabModel(this);
         this.tabContainerModel = new TabContainerModel({
             switcher: false,
             tabs: [
                 {
-                    id: 'enumFilter',
+                    id: 'valuesFilter',
                     title: 'Values',
-                    content: enumFilterTab
+                    content: valuesFilterTab
                 },
                 {
                     id: 'customFilter',
@@ -94,8 +94,8 @@ export class ColumnHeaderFilterModel extends HoistModel {
     @action
     commit() {
         let filter;
-        if (this.tabContainerModel.activeTabId === 'enumFilter') {
-            filter = this.enumFilterTabModel.filter;
+        if (this.tabContainerModel.activeTabId === 'valuesFilter') {
+            filter = this.valuesFilterTabModel.filter;
         } else {
             filter = this.customFilterTabModel.filter;
         }
@@ -137,9 +137,9 @@ export class ColumnHeaderFilterModel extends HoistModel {
     @action
     syncWithFilter() {
         const {columnFilters, isCustomFilter, fieldSpec} = this,
-            useCustomFilterTab = isCustomFilter || !fieldSpec.enableEnumFilter;
+            useCustomFilterTab = isCustomFilter || !fieldSpec.enableValues;
 
-        this.enumFilterTabModel.reset();
+        this.valuesFilterTabModel.reset();
         this.customFilterTabModel.reset();
 
         if (!isEmpty(columnFilters)) {
@@ -147,12 +147,12 @@ export class ColumnHeaderFilterModel extends HoistModel {
                 // There are column filters that can only be represented on the custom filter tab
                 this.customFilterTabModel.syncWithFilter();
             } else {
-                // There is a column filter that can be represented on the enum filter tab
-                this.enumFilterTabModel.syncWithFilter();
+                // There is a column filter that can be represented on the values filter tab
+                this.valuesFilterTabModel.syncWithFilter();
             }
         }
 
-        const tab = useCustomFilterTab ? 'customFilter' : 'enumFilter';
+        const tab = useCustomFilterTab ? 'customFilter' : 'valuesFilter';
         this.tabContainerModel.activateTab(tab);
     }
 

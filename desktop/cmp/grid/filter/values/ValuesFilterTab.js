@@ -13,14 +13,14 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 
-import './EnumFilterTab.scss';
-import {EnumFilterTabModel} from './EnumFilterTabModel';
+import './ValuesFilterTab.scss';
+import {ValuesFilterTabModel} from './ValuesFilterTabModel';
 
-export const enumFilterTab = hoistCmp.factory({
-    model: uses(EnumFilterTabModel),
+export const valuesFilterTab = hoistCmp.factory({
+    model: uses(ValuesFilterTabModel),
     render() {
         return panel({
-            className: 'xh-enum-filter-tab',
+            className: 'xh-values-filter-tab',
             tbar: tbar(),
             item: body()
         });
@@ -56,7 +56,7 @@ const customFilterPlaceholder = hoistCmp.factory(
     ({model}) => {
         return placeholder(
             div({
-                className: 'xh-enum-filter-tab__custom-filter-message',
+                className: 'xh-values-filter-tab__custom-filter-message',
                 items: [
                     'Custom filter active',
                     button({
@@ -75,7 +75,7 @@ const hiddenValuesMessage = hoistCmp.factory(
     ({model}) => {
         return div({
             omit: !model.hasHiddenValues,
-            className: 'xh-enum-filter-tab__hidden-values-message',
+            className: 'xh-values-filter-tab__hidden-values-message',
             items: [
                 Icon.info(),
                 div('Some values are hidden due to filters on other columns')
