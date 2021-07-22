@@ -1281,12 +1281,12 @@ export class GridModel extends HoistModel {
 
         const {store} = this;
         if (isPlainObject(filterModel)) {
-            const config = defaults(filterModel, {gridModel: this, bind: store, valueSource: store});
+            const config = defaults(filterModel, {gridModel: this, bind: store});
             return this.markManaged(new GridFilterModel(config));
         }
 
         if (filterModel) {
-            const config = {gridModel: this, bind: store, valueSource: store};
+            const config = {gridModel: this, bind: store};
             return this.markManaged(new GridFilterModel(config));
         }
 

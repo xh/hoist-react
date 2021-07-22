@@ -26,10 +26,7 @@ export class ActivityDetailModel extends HoistModel {
             sortBy: 'dateCreated|desc',
             colChooserModel: true,
             enableExport: true,
-            filterModel: {
-                bind: parentModel.cube.store,
-                valueSource: parentModel.cube.store
-            },
+            filterModel: {bind: parentModel.cube.store},
             exportOptions: {
                 columns: 'ALL',
                 filename: `${XH.appCode}-activity-detail`

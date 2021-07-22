@@ -81,7 +81,7 @@ export class FilterChooserModel extends HoistModel {
      *      or otherwise observe and handle value changes manually.
      * @param {(Store|View)} [c.valueSource] - Store or cube View to be used to lookup matching
      *      Field-level defaults for `fieldSpecs` and to provide suggested data values (if configured)
-     *      from user input.
+     *      from user input. Defaults to `bind` if provided.
      * @param {(Filter|* |[]|function)} [c.initialValue] - Configuration for a filter appropriate
      *      to be rendered and managed by FilterChooser, or a function to produce the same.
      *      Note that FilterChooser currently can only edit and create a flat collection of
@@ -98,7 +98,7 @@ export class FilterChooserModel extends HoistModel {
         fieldSpecs,
         fieldSpecDefaults,
         bind = null,
-        valueSource = null,
+        valueSource = bind,
         initialValue = null,
         initialFavorites = [],
         maxTags = 100,

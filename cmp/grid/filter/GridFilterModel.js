@@ -57,7 +57,7 @@ export class GridFilterModel extends HoistModel {
      *      wish to combine this model's filter with other filters, send it to the server, or otherwise
      *      observe and handle filter changes manually.
      * @param {(Store|View)} [c.valueSource] - Store or cube View to be used to provide suggested
-     *      data values in column filters (if configured).
+     *      data values in column filters (if configured). Defaults to `bind` if provided.
      * @param {(Filter|* |[]|function)} [c.initialFilter] - Configuration for a filter appropriate
      *      to be rendered and managed by GridFilterModel, or a function to produce the same.
      */
@@ -66,7 +66,7 @@ export class GridFilterModel extends HoistModel {
         fieldSpecs,
         fieldSpecDefaults,
         bind,
-        valueSource,
+        valueSource = bind,
         initialFilter = null
     }) {
         super();
