@@ -352,7 +352,7 @@ class GridLocalModel extends HoistModel {
         const {model} = this,
             {store} = model;
         return {
-            track: () => [model.isReady, store._filtered, model.showSummary],
+            track: () => [model.isReady, store._filtered, model.showSummary, store.summaryRecord],
             run: () => {
                 if (model.isReady) this.syncData();
             }
