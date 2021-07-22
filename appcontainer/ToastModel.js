@@ -5,7 +5,6 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 
@@ -28,9 +27,9 @@ export class ToastModel extends HoistModel {
 
     constructor({
         message,
-        icon = Icon.check(),
+        icon,
         timeout = 3 * SECONDS,
-        intent = 'success',
+        intent = 'primary',
         position = null,
         containerRef = null
     }) {

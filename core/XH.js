@@ -7,6 +7,7 @@
 import {p} from '@xh/hoist/cmp/layout';
 import {AppSpec, AppState, elem, HoistBase} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
+import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {MINUTES} from '@xh/hoist/utils/datetime';
@@ -414,7 +415,7 @@ class XHClass extends HoistBase {
     /**
      * Show a non-modal "toast" notification that appears and then automatically dismisses.
      *
-     * @param {Object} config - options for toast instance.
+     * @param {(Object|string)} config - options for toast instance, or string message.
      * @param {(ReactNode|string)} config.message - the message to show in the toast.
      * @param {Element} [config.icon] - icon to be displayed
      * @param {number} [config.timeout] - time in milliseconds to display the toast.
@@ -425,7 +426,22 @@ class XHClass extends HoistBase {
      *      If null, the Toast will appear at the edges of the document (desktop only).
      */
     toast(config) {
-        return this.acm.toastSourceModel.show(config);
+        this.acm.toastSourceModel.show(config);
+    }
+
+    successToast(config) {
+        if (isString(config)) config = {message: config};
+        this.toast({intent: 'success', icon: Icon.success(), ...config});
+    }
+
+    warningToast(config) {
+        if (isString(config)) config = {message: config};
+        this.toast({intent: 'warning', icon: Icon.warning(), ...config});
+    }
+
+    dangerToast(config) {
+        if (isString(config)) config = {message: config};
+        this.toast({intent: 'danger', icon: Icon.danger(), ...config});
     }
 
     /**

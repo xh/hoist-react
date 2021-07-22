@@ -6,11 +6,11 @@
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {isString} from 'lodash';
 import {ToastModel} from './ToastModel';
 
 /**
- *  Supports displaying pop-up Toast.
- *
+ *  Supports displaying a pop-up Toast.
  *  @private
  */
 export class ToastSourceModel extends HoistModel {
@@ -25,6 +25,7 @@ export class ToastSourceModel extends HoistModel {
     }
 
     show(config) {
+        if (isString(config)) config = {message: config};
         const ret = new ToastModel(config);
         this.addModel(ret);
         return ret;
