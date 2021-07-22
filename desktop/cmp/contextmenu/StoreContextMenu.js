@@ -119,11 +119,11 @@ export class StoreContextMenu {
                         },
                         '-',
                         {
-                            text: 'Clear',
-                            icon: Icon.undo(),
+                            icon: Icon.delete(),
                             displayFn: ({column}) => {
-                                const filters = gridModel.filterModel.getColumnFilters(column?.field);
-                                return {disabled: isEmpty(filters)};
+                                const filters = gridModel.filterModel.getColumnFilters(column?.field),
+                                    text = column ? `Clear ${column.displayName} Filters` : `Clear Column Filters`;
+                                return {text, disabled: isEmpty(filters)};
                             },
                             actionFn: ({column}) => {
                                 gridModel.filterModel.setColumnFilters(column.field, null);

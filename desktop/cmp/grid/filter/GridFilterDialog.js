@@ -66,7 +66,7 @@ const bbar = hoistCmp.factory(
         const {isValid, isDirty} = impl.formModel;
         return toolbar(
             button({
-                icon: Icon.reset(),
+                icon: Icon.delete(),
                 intent: 'danger',
                 text: 'Clear Filter',
                 onClick: () => impl.clear()

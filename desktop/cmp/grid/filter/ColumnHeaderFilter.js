@@ -76,7 +76,7 @@ const bbar = hoistCmp.factory({
             compact: true,
             items: [
                 button({
-                    icon: Icon.undo(),
+                    icon: Icon.delete(),
                     text: 'Clear',
                     intent: 'danger',
                     disabled: !model.hasFilter,
