@@ -210,6 +210,7 @@
   // Tree grid styling modes
   //------------------------
   &.xh-grid--tree-style-highlights {
+    .ag-row-level-0,
     div[class*=" ag-row-group"],
     div[class^="ag-row-group"] {
       &:not(.ag-row-selected),
