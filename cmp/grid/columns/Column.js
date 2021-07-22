@@ -370,6 +370,7 @@ export class Column {
     getAgSpec() {
         const {gridModel, field, headerName, displayName, agOptions} = this,
             ret = {
+                xhColumn: this,
                 field,
                 colId: this.colId,
                 // headerValueGetter should always return a string
