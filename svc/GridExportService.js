@@ -8,7 +8,7 @@ import {ExportFormat} from '@xh/hoist/cmp/grid';
 import {HoistService, XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {MINUTES} from '@xh/hoist/utils/datetime';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
 import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq, compact} from 'lodash';
@@ -28,7 +28,8 @@ export class GridExportService extends HoistService {
     async exportAsync(gridModel, {
         filename = 'export',
         type = 'excelTable',
-        columns = 'VISIBLE'
+        columns = 'VISIBLE',
+        timeout = 30 * SECONDS
     } = {}) {
         throwIf(!gridModel,
             'GridModel required for export');
@@ -54,7 +55,7 @@ export class GridExportService extends HoistService {
         }
 
         // If the grid includes a summary row, add it to the export payload as a root-level node
-        let rows = gridModel.showSummary && summaryRecord ?
+        const rows = gridModel.showSummary && summaryRecord ?
             [
                 this.getHeaderRow(exportColumns, type, gridModel),
                 this.getRecordRow(gridModel, summaryRecord, exportColumns, 0),
@@ -65,24 +66,12 @@ export class GridExportService extends HoistService {
                 ...this.getRecordRowsRecursive(gridModel, records, exportColumns, 0)
             ];
 
-
-        // Downgrade tree to show only leaf rows to prevent strain on server resources to produce
-        // large, hierarchical data sets.
-        const cellCount = rows.length * exportColumns.length,
-            downgradeTree = gridModel.treeMode && cellCount > withDefault(config.treeFormatCellThreshold, 150000);
-        if (downgradeTree) {
-            rows = rows.filter(it => it.isLeaf || it.isHeader)
-                .map(it => {
-                    it.depth = 0;
-                    return it;
-                });
-        }
-
         // Show separate 'started' and 'complete' toasts for larger (i.e. slower) exports.
         // We use cell count as a heuristic for speed - this may need to be tweaked.
-        if (downgradeTree) {
+        const cellCount = rows.length * exportColumns.length;
+        if (cellCount > withDefault(config.streamingCellThreshold, 100000)) {
             XH.toast({
-                message: 'Your export is being prepared. Due to its size, only leaf rows will be exported.',
+                message: 'Your export is being prepared. Due to its size, formatting will be removed.',
                 intent: 'warning',
                 icon: Icon.download()
             });
@@ -111,7 +100,7 @@ export class GridExportService extends HoistService {
             headers: {
                 'Content-Type': null
             },
-            timeout: 2 * MINUTES
+            timeout
         });
 
         const blob = response.status === 204 ? null : await response.blob(),
@@ -193,7 +182,7 @@ export class GridExportService extends HoistService {
         if (type === 'excelTable' && uniq(headers.map(it => it.toLowerCase())).length !== headers.length) {
             console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers.');
         }
-        return {data: headers, depth: 0, isHeader: true};
+        return {data: headers, depth: 0};
     }
 
     getRecordRowsRecursive(gridModel, records, columns, depth) {
@@ -237,12 +226,8 @@ export class GridExportService extends HoistService {
         if (gridModel.treeMode && record.children.length) {
             aggData = gridModel.agApi.getRowNode(record.id).aggData;
         }
-        const data = columns.map(it => this.getCellData(gridModel, record, it, aggData)),
-            ret = {data, depth};
-
-        if (gridModel.treeMode) ret.isLeaf = !record.children.length;
-
-        return ret;
+        const data = columns.map(it => this.getCellData(gridModel, record, it, aggData));
+        return {data, depth};
     }
 
     getCellData(gridModel, record, column, aggData) {
@@ -310,4 +295,5 @@ export class GridExportService extends HoistService {
  *      column IDs to include (can be used in conjunction with VISIBLE to export all visible and
  *      enumerated columns). Also supports a function taking the GridModel, and returning an array
  *      of column IDs to include.
+ * @property {number} [options.timeout] - timeout (in ms) for export request - defaults to 30 seconds
  */

@@ -15,7 +15,7 @@
   counter or status indicator within a tab title or menu item.
 * Updated `TreeMap` color scheme, with a dedicated set of colors for dark mode.
 * Order of columns in grid export respects specified colIds order in `exportOptions.columns` list.
-* Timeouts are now configurable on grid exports
+* Timeouts are now configurable on grid exports via property `exportOptions.timeout`.
 
 ### 💥 Breaking Changes
 
