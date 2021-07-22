@@ -74,9 +74,10 @@ export class View extends HoistBase {
         makeObservable(this);
 
         this.query = query;
+        this.stores = castArray(stores);
         this.loadModel = loadModel ?? this.markManaged(new PendingTaskModel());
         this._rowCache = new Map();
-        this.setStores(stores);
+        this.fullUpdateAsync().linkTo(this.loadModel);
 
         if (connect) {
             this.cube._connectedViews.add(this);
@@ -160,7 +161,7 @@ export class View extends HoistBase {
      */
     setStores(stores) {
         this.stores = castArray(stores);
-        this.fullUpdateAsync().linkTo(this.loadModel);
+        this.loadStoresAsync().linkTo(this.loadModel);
     }
 
     /**
@@ -197,18 +198,20 @@ export class View extends HoistBase {
     @logWithDebug
     async fullUpdateAsync() {
         await wait(1);
-
         this.generateRows();
+        await this.loadStoresAsync();
+        this.updateResults();
+    }
+
+    async loadStoresAsync() {
+        const {_leafMap, _rows} = this;
+        if (!_leafMap || !_rows) return;
 
         // Skip degenerate root in stores/grids, but preserve in object api.
-        const {_leafMap, _rows} = this,
-            storeRows = _leafMap.size !== 0 ? _rows : [];
-
-        await forEachAsync(this.stores, store => {
+        const storeRows = _leafMap.size !== 0 ? _rows : [];
+        return forEachAsync(this.stores, store => {
             store.loadData(storeRows);
         });
-
-        this.updateResults();
     }
 
     async dataOnlyUpdateAsync(updates) {

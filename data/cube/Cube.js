@@ -106,7 +106,7 @@ export class Cube extends HoistBase {
      * each contain a 'cubeLabel' and a 'cubeDimension' property.
      *
      * @param {Object} query - Config for query defining the shape of the view.
-     * @returns {Object[]} - data containing the results of the query as a hierarchical set of rows.
+     * @returns {Promise<Object[]>} - data containing the results of the query as a hierarchical set of rows.
      */
     async executeQueryAsync(query) {
         query = new Query({...query, cube: this});
