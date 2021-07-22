@@ -62,6 +62,7 @@ export class CompoundFilter extends Filter {
     }
 
     equals(other) {
+        if (other === this) return true;
         return other?.isCompoundFilter &&
             other.op === this.op &&
             isEqualWith(

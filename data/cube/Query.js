@@ -92,6 +92,7 @@ export class Query {
      * @returns {boolean} - true if the provided other Query is equivalent to this instance.
      */
     equals(other) {
+        if (other === this) return true;
         return (
             isEqual(this.cube, other.cube) &&
             isEqual(this.fields, other.fields) &&

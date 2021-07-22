@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, escapeRegExp, isArray, isEqual, isNil, isUndefined, isString} from 'lodash';
+import {castArray, difference, escapeRegExp, isArray, isNil, isUndefined, isString} from 'lodash';
 
 import {Filter} from './Filter';
 
@@ -131,7 +131,7 @@ export class FieldFilter extends Filter {
                 return r => regExps.some(re => re.test(getVal(r)));
             case 'not like':
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
-                return r => regExps.some(re => !re.test(getVal(r)));
+                return r => regExps.every(re => !re.test(getVal(r)));
             case 'begins':
                 regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
                 return r => regExps.some(re => re.test(getVal(r)));
@@ -144,9 +144,16 @@ export class FieldFilter extends Filter {
     }
 
     equals(other) {
-        return other?.isFieldFilter &&
+        if (other === this) return true;
+        return (
+            other?.isFieldFilter &&
             other.field === this.field &&
             other.op === this.op &&
-            isEqual(other.value, this.value);
+            (
+                isArray(other.value) && isArray(this.value) ?
+                    other.value.length === this.value.length && difference(other.value, this.value).length === 0 :
+                    other.value === this.value
+            )
+        );
     }
 }

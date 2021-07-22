@@ -45,6 +45,7 @@ export class FunctionFilter extends Filter {
     }
 
     equals(other) {
+        if (other === this) return true;
         return other?.isFunctionFilter && this.testFn === other.testFn;
     }
 }
