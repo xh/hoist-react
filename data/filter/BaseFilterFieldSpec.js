@@ -13,8 +13,10 @@ import {FieldFilter, FieldType, genDisplayName} from '@xh/hoist/data';
  *
  * @see FilterChooserFieldSpec
  * @see GridFilterFieldSpec
+ *
+ * @abstract
  */
-export class BaseFieldSpec extends HoistBase {
+export class BaseFilterFieldSpec extends HoistBase {
 
     /** @member {string} */
     field;
@@ -32,7 +34,7 @@ export class BaseFieldSpec extends HoistBase {
     source;
 
     /**
-     * @param {Object} c - BaseFieldSpec configuration.
+     * @param {Object} c - BaseFilterFieldSpec configuration.
      * @param {string} c.field - identifying field name to filter on.
      * @param {Object} [c.fieldType] - type of field, will default from related field on source
      *      if provided, or 'auto'.
@@ -105,21 +107,6 @@ export class BaseFieldSpec extends HoistBase {
     }
 
     /**
-     * @return {boolean} - determines whether values should be enumerated in UI affordances.
-     */
-    get isEnumerable() {
-        const FT = FieldType;
-        switch (this.fieldType) {
-            case FT.INT:
-            case FT.NUMBER:
-            case FT.DATE:
-                return false;
-            default:
-                return true;
-        }
-    }
-
-    /**
      * @param {string} op
      * @return {boolean}
      */
@@ -140,5 +127,17 @@ export class BaseFieldSpec extends HoistBase {
         return this.isValueType ?
             ['=', '!=', 'like', 'not like', 'begins', 'ends'] :
             ['>', '>=', '<', '<=', '=', '!='];
+    }
+
+    get isEnumerableByDefault() {
+        const FT = FieldType;
+        switch (this.fieldType) {
+            case FT.INT:
+            case FT.NUMBER:
+            case FT.DATE:
+                return false;
+            default:
+                return true;
+        }
     }
 }

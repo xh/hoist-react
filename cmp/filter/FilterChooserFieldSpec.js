@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {BaseFieldSpec} from '@xh/hoist/data/filter/BaseFieldSpec';
+import {BaseFilterFieldSpec} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
 import {FieldType, parseFieldValue} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {LocalDate} from '@xh/hoist/utils/datetime';
@@ -18,7 +18,7 @@ import {isFunction, isString, isNil} from 'lodash';
  * Apps should NOT instantiate this class directly. Instead {@see FilterChooserModel.fieldSpecs}
  * for the relevant config to set these options.
  */
-export class FilterChooserFieldSpec extends BaseFieldSpec {
+export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
 
     /** @member {?Array} - data values available for suggestion. */
     values;
@@ -54,7 +54,7 @@ export class FilterChooserFieldSpec extends BaseFieldSpec {
      *      filter chooser control into a typed data value for use in filtering comparisons.
      * @param {string} [c.example] - sample / representative value displayed by `FilterChooser`
      *      components to aid usability
-     * @param {*} [c...rest] - arguments for BaseFieldSpec.
+     * @param {*} [c...rest] - arguments for BaseFilterFieldSpec.
      */
     constructor({
         values,
@@ -67,7 +67,7 @@ export class FilterChooserFieldSpec extends BaseFieldSpec {
     }) {
         super(rest);
 
-        this.suggestValues = suggestValues ?? this.isEnumerable;
+        this.suggestValues = suggestValues ?? this.isEnumerableByDefault;
         this.forceSelection = forceSelection ?? false;
         this.valueRenderer = valueRenderer;
         this.valueParser = valueParser;
