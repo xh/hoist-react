@@ -1,35 +1,52 @@
 # Changelog
 
-## v42.0.0-SNAPSHOT - unreleased
-
-### 🐞 Bug Fixes
-
-* Fixed an issue preventing export of very large (>100k rows) grids.
-* Improved `GridModel` async selection methods to ensure they do not wait forever if grid does not
-  mount.
-* Order of columns in grid export respects specified colIds order in `exportOptions.columns` list.
+## v41.1.0 - 2021-07-22
 
 ### 🎁 New Features
 
+* Button to expand / collapse all rows within a tree grid now added by default to the primary tree
+  column header. (New `Column.headerHasExpandCollapse` property provided to disable.)
 * New `@logWithDebug` annotation provides easy timed logging of method execution (via `withDebug`).
 * New `AppSpec.disableXssProtection` config allows default disabling of Field-level XSS protection
   across the app. Intended for secure, internal apps with tight performance tolerances.
-* Remove use of `xhExportConfig.streamingCellThreshold` config to alert user of downgraded Excel
-    exports when 'excelTable'-type exports could not be supported.
-    + New `xhExportConfig.treeFormatCellThreshold` config can be used to limit exports of large tree
-      data that may strain server resources. This will flatten the dataset to export only leaf rows.
+* `Constraint` callbacks are now provided with a `record` property when validating Store data and a
+  `fieldModel` property when validating Form data.
+* New `Badge` component allows a styled badge to be placed inline with text/title, e.g. to show a
+  counter or status indicator within a tab title or menu item.
+* Updated `TreeMap` color scheme, with a dedicated set of colors for dark mode.
+* Order of columns in grid export respects specified colIds order in `exportOptions.columns` list.
+* Timeouts are now configurable on grid exports
 
 ### 💥 Breaking Changes
 
 * Removed `withShortDebug` utility method. Use `withDebug` instead, which now always logs a single
   line upon completion. This API simplification mirrors a recent change to `hoist-core`.
 
+### 🐞 Bug Fixes
+
+* Fixed an issue preventing export of very large (>100k rows) grids.
+* Fixed an issue where updating summary data in a Store without also updating other data would not
+  update the bound grid.
+* Intent styles now properly applied to minimal buttons within `Panel.headerItems`.
+* Improved `GridModel` async selection methods to ensure they do not wait forever if grid does not
+  mount.
+
 ### ⚙️ Technical
 
 * New `Exception.timeout()` util to throw exceptions explicitly marked as timeouts, used by
   `Promise.timeout` extension.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v41.0.0...develop)
+### ✨ Style
+
+* If the first child of a `Placeholder` component is a Hoist icon, it will not automatically be
+  styled to 4x size with reduced opacity. (See new Toolbox example under the "Other" tab.)
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.46 -> 3.47`
+* dompurify `2.2 -> 2.3`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v41.0.0...v41.1.0)
 
 ## v41.0.0 - 2021-07-01
 
@@ -37,9 +54,9 @@
 
 * Inline editing of Grid/Record data is now officially supported:
   + New `Column.editor` config accepts an editor component to enable managed editing of the cells in
-    that column. New `CheckboxEditor`, `DateEditor`, `NumberEditor`, `SelectEditor`, `TextAreaEditor`
-    and `TextEditor` components wrap their corresponding HoistInputs with the required hook-based
-    API and can be passed to this new config directly.
+    that column. New `CheckboxEditor`, `DateEditor`, `NumberEditor`, `SelectEditor`,
+    `TextAreaEditor` and `TextEditor` components wrap their corresponding HoistInputs with the
+    required hook-based API and can be passed to this new config directly.
   + `Store` now contains built-in support for validation of its uncommitted records. To enable,
     specify the new `rules` property on the `Field`s in your `Store`. Note that these rules and
     constraints use the same API as the forms package, and rules and constraints may be shared
@@ -3169,9 +3186,9 @@ list. Note, this component is being replaced in Hoist v16 by the react-select li
 
 ## v13.0.0
 
-🍀Lucky v13 brings with it a number of enhancements for forms and validation, grouped column
-support in the core Grid API, a fully wrapped MultiSelect component, decorator syntax adjustments,
-and a number of other fixes and enhancements.
+🍀Lucky v13 brings with it a number of enhancements for forms and validation, grouped column support
+in the core Grid API, a fully wrapped MultiSelect component, decorator syntax adjustments, and a
+number of other fixes and enhancements.
 
 It also includes contributions from new ExHI team members Arjun and Brendan. 🎉
 
