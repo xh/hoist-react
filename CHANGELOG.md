@@ -15,10 +15,6 @@
   counter or status indicator within a tab title or menu item.
 * Updated `TreeMap` color scheme, with a dedicated set of colors for dark mode.
 
-### 💥 Breaking Changes
-
-* Removed `withShortDebug` utility method. Use `withDebug` instead, which now always logs a single
-  line upon completion. This API simplification mirrors a recent change to `hoist-core`.
 
 ### 🐞 Bug Fixes
 
@@ -35,6 +31,8 @@
 
 * New `Exception.timeout()` util to throw exceptions explicitly marked as timeouts, used by
   `Promise.timeout` extension.
+* `withShortDebug` has been deprecated. Use `withDebug` instead, which has the identical
+ behavior.  This API simplification mirrors a recent change to `hoist-core`.
 
 ### ✨ Style
 
