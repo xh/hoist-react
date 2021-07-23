@@ -105,17 +105,11 @@ export class ValuesFilterTabModel extends HoistModel {
     }
 
     @action
-    toggleNode(isChecked, value) {
-        if (isChecked) {
-            this.pendingValues = [...this.pendingValues, value];
-        } else {
-            this.pendingValues = without(this.pendingValues, value);
-        }
-    }
-
-    @action
-    toggleBulk(isChecked) {
-        this.pendingValues = isChecked ? this.values : [];
+    setRecsChecked(isChecked, values) {
+        values = castArray(values);
+        this.pendingValues = isChecked ?
+            [...this.pendingValues, ...values] :
+            without(this.pendingValues, ...values);
     }
 
     //-------------------
@@ -266,12 +260,13 @@ export class ValuesFilterTabModel extends HoistModel {
                 {
                     field: 'isChecked',
                     headerName: ({gridModel}) => {
-                        const {store} = gridModel;
+                        const {store} = gridModel,
+                            values = store.records.map(it => it.raw[field]);
                         return checkbox({
                             disabled: store.empty,
                             displayUnsetState: true,
                             value: this.allVisibleRecsChecked,
-                            onChange: () => this.toggleBulk(!this.allVisibleRecsChecked)
+                            onChange: () => this.setRecsChecked(!this.allVisibleRecsChecked, values)
                         });
                     },
                     width: 30,
@@ -280,7 +275,7 @@ export class ValuesFilterTabModel extends HoistModel {
                         return checkbox({
                             displayUnsetState: true,
                             value: record.data.isChecked,
-                            onChange: () => this.toggleNode(!v, record.raw[field])
+                            onChange: () => this.setRecsChecked(!v, record.raw[field])
                         });
                     }
                 },
