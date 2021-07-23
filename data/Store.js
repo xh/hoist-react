@@ -7,7 +7,7 @@
 
 import {HoistBase, managed, XH} from '@xh/hoist/core';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {throwIf, warnIf, apiRemoved, withShortDebug} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, apiRemoved, logWithDebug} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -181,28 +181,27 @@ export class Store extends HoistBase {
      *      a custom aggregation to show as a "grand total" for the dataset, if desired.
      */
     @action
+    @logWithDebug
     loadData(rawData, rawSummaryData) {
-        withShortDebug('loadData', () => {
-            // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary
-            if (rawData.length !== 0 && this.loadRootAsSummary) {
-                throwIf(
-                    rawData.length !== 1 || rawSummaryData,
-                    'Incorrect call to loadData with loadRootAsSummary=true. Summary data should be in a single root node with top-level row data as its children.'
-                );
-                rawSummaryData = rawData[0];
-                rawData = rawData[0].children ?? [];
-            }
+        // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary
+        if (rawData.length !== 0 && this.loadRootAsSummary) {
+            throwIf(
+                rawData.length !== 1 || rawSummaryData,
+                'Incorrect call to loadData with loadRootAsSummary=true. Summary data should be in a single root node with top-level row data as its children.'
+            );
+            rawSummaryData = rawData[0];
+            rawData = rawData[0].children ?? [];
+        }
 
-            const records = this.createRecords(rawData, null);
-            this._committed = this._current = this._committed.withNewRecords(records);
-            this.rebuildFiltered();
+        const records = this.createRecords(rawData, null);
+        this._committed = this._current = this._committed.withNewRecords(records);
+        this.rebuildFiltered();
 
-            this.summaryRecord = rawSummaryData ?
-                this.createRecord(rawSummaryData, null, true) :
-                null;
+        this.summaryRecord = rawSummaryData ?
+            this.createRecord(rawSummaryData, null, true) :
+            null;
 
-            this.lastLoaded = this.lastUpdated = Date.now();
-        }, this);
+        this.lastLoaded = this.lastUpdated = Date.now();
     }
 
     /**
@@ -229,109 +228,107 @@ export class Store extends HoistBase {
      * @returns {Object} - changes applied, or null if no record changes were made.
      */
     @action
+    @logWithDebug
     updateData(rawData) {
-        return withShortDebug('updateData', () => {
+        if (isEmpty(rawData)) return null;
 
-            if (isEmpty(rawData)) return null;
+        const changeLog = {};
 
-            const changeLog = {};
-
-            // Build a transaction object out of a flat list of adds and updates
-            let rawTransaction = null;
-            if (isArray(rawData)) {
-                const update = [], add = [];
-                rawData.forEach(it => {
-                    const recId = this.idSpec(it);
-                    if (this.getById(recId)) {
-                        update.push(it);
-                    } else {
-                        add.push(it);
-                    }
-                });
-
-                rawTransaction = {update, add};
-            } else {
-                rawTransaction = rawData;
-            }
-
-            const {update, add, remove, rawSummaryData, ...other} = rawTransaction;
-            throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
-
-            // 1) Pre-process updates and adds into Records
-            let updateRecs, addRecs;
-            if (update) {
-                updateRecs = update.map(it => {
-                    const recId = this.idSpec(it),
-                        rec = this.getOrThrow(
-                            recId,
-                            'In order to update grid data, records must have stable ids. Note: XH.genId() will not provide such ids.'
-                        ),
-                        parent = rec.parent,
-                        isSummary = recId === this.summaryRecord?.id;
-                    return this.createRecord(it, parent, isSummary);
-                });
-            }
-            if (add) {
-                addRecs = new Map();
-                add.forEach(it => {
-                    if (it.hasOwnProperty('rawData') && it.hasOwnProperty('parentId')) {
-                        const parent = this.getOrThrow(it.parentId);
-                        this.createRecords([it.rawData], parent, addRecs);
-                    } else {
-                        this.createRecords([it], null, addRecs);
-                    }
-                });
-            }
-
-            // 2) Pre-process summary record, peeling it out of updates if needed
-            const {summaryRecord} = this;
-            let summaryUpdateRec;
-            if (summaryRecord) {
-                [summaryUpdateRec] = lodashRemove(updateRecs, {id: summaryRecord.id});
-            }
-
-            if (!summaryUpdateRec && rawSummaryData) {
-                summaryUpdateRec = this.createRecord(rawSummaryData, null, true);
-            }
-
-            if (summaryUpdateRec) {
-                this.summaryRecord = summaryUpdateRec;
-                changeLog.summaryRecord = this.summaryRecord;
-            }
-
-            // 3) Apply changes
-            let rsTransaction = {};
-            if (!isEmpty(updateRecs)) rsTransaction.update = updateRecs;
-            if (!isEmpty(addRecs)) rsTransaction.add = Array.from(addRecs.values());
-            if (!isEmpty(remove)) rsTransaction.remove = remove;
-
-            if (!isEmpty(rsTransaction)) {
-
-                // Apply updates to the committed RecordSet - these changes are considered to be
-                // sourced from the server / source of record and are coming in as committed.
-                this._committed = this._committed.withTransaction(rsTransaction);
-
-                if (this.isModified) {
-                    // If this store had pre-existing local modifications, apply the updates over that
-                    // local state. This might (or might not) effectively overwrite those local changes,
-                    // so we normalize against the newly updated committed state to verify if any local
-                    // modifications remain.
-                    this._current = this._current.withTransaction(rsTransaction).normalize(this._committed);
+        // Build a transaction object out of a flat list of adds and updates
+        let rawTransaction = null;
+        if (isArray(rawData)) {
+            const update = [], add = [];
+            rawData.forEach(it => {
+                const recId = this.idSpec(it);
+                if (this.getById(recId)) {
+                    update.push(it);
                 } else {
-                    // Otherwise, the updated RecordSet is both current and committed.
-                    this._current = this._committed;
+                    add.push(it);
                 }
+            });
 
-                this.rebuildFiltered();
-                Object.assign(changeLog, rsTransaction);
+            rawTransaction = {update, add};
+        } else {
+            rawTransaction = rawData;
+        }
+
+        const {update, add, remove, rawSummaryData, ...other} = rawTransaction;
+        throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
+
+        // 1) Pre-process updates and adds into Records
+        let updateRecs, addRecs;
+        if (update) {
+            updateRecs = update.map(it => {
+                const recId = this.idSpec(it),
+                    rec = this.getOrThrow(
+                        recId,
+                        'In order to update grid data, records must have stable ids. Note: XH.genId() will not provide such ids.'
+                    ),
+                    parent = rec.parent,
+                    isSummary = recId === this.summaryRecord?.id;
+                return this.createRecord(it, parent, isSummary);
+            });
+        }
+        if (add) {
+            addRecs = new Map();
+            add.forEach(it => {
+                if (it.hasOwnProperty('rawData') && it.hasOwnProperty('parentId')) {
+                    const parent = this.getOrThrow(it.parentId);
+                    this.createRecords([it.rawData], parent, addRecs);
+                } else {
+                    this.createRecords([it], null, addRecs);
+                }
+            });
+        }
+
+        // 2) Pre-process summary record, peeling it out of updates if needed
+        const {summaryRecord} = this;
+        let summaryUpdateRec;
+        if (summaryRecord) {
+            [summaryUpdateRec] = lodashRemove(updateRecs, {id: summaryRecord.id});
+        }
+
+        if (!summaryUpdateRec && rawSummaryData) {
+            summaryUpdateRec = this.createRecord(rawSummaryData, null, true);
+        }
+
+        if (summaryUpdateRec) {
+            this.summaryRecord = summaryUpdateRec;
+            changeLog.summaryRecord = this.summaryRecord;
+        }
+
+        // 3) Apply changes
+        let rsTransaction = {};
+        if (!isEmpty(updateRecs)) rsTransaction.update = updateRecs;
+        if (!isEmpty(addRecs)) rsTransaction.add = Array.from(addRecs.values());
+        if (!isEmpty(remove)) rsTransaction.remove = remove;
+
+        if (!isEmpty(rsTransaction)) {
+
+            // Apply updates to the committed RecordSet - these changes are considered to be
+            // sourced from the server / source of record and are coming in as committed.
+            this._committed = this._committed.withTransaction(rsTransaction);
+
+            if (this.isModified) {
+                // If this store had pre-existing local modifications, apply the updates over that
+                // local state. This might (or might not) effectively overwrite those local changes,
+                // so we normalize against the newly updated committed state to verify if any local
+                // modifications remain.
+                this._current = this._current.withTransaction(rsTransaction).normalize(this._committed);
+            } else {
+                // Otherwise, the updated RecordSet is both current and committed.
+                this._current = this._committed;
             }
 
-            if (!isEmpty(changeLog)) {
-                this.lastUpdated = Date.now();
-            }
+            this.rebuildFiltered();
+            Object.assign(changeLog, rsTransaction);
+        }
 
-            return !isEmpty(changeLog) ? changeLog : null;
-        }, this);
+        if (!isEmpty(changeLog)) {
+            this.lastUpdated = Date.now();
+        }
+
+        return !isEmpty(changeLog) ? changeLog : null;
     }
 
     /**
@@ -355,8 +352,8 @@ export class Store extends HoistBase {
      * @param {(Object[]|Object)} data - source data for new Record(s). Note that this data will
      *      *not* be processed by this Store's `processRawData` or `idSpec` functions, but will be
      *      parsed and potentially transformed according to this Store's Field definitions.
-     * @param {(string|number)} [parentId] - ID of the pre-existing parent Record under which this
-     *      new Record should be added, if any.
+     * @param {RecordId} [parentId] - ID of the pre-existing parent Record under which this new
+     *      Record should be added, if any.
      */
     @action
     addRecords(data, parentId) {
@@ -611,7 +608,7 @@ export class Store extends HoistBase {
 
     /**
      *
-     * @param {(Record|string|number)} recOrId
+     * @param {RecordOrId} recOrId
      * @return {boolean} - true if the Record is in the store, but currently excluded by a filter.
      *      False if the record is either not in the Store at all, or not filtered out.
      */
@@ -661,7 +658,7 @@ export class Store extends HoistBase {
     /**
      * Get a record by ID, or null if no matching record found.
      *
-     * @param {(string|number)} id
+     * @param {RecordId} id
      * @param {boolean} [respectFilter] - false (default) to return a Record with the given
      *      ID even if an active filter is excluding it from the primary `records` collection.
      *      True to restrict matches to this Store's post-filter Record collection only.
@@ -681,7 +678,7 @@ export class Store extends HoistBase {
      * See also the 'children' and 'allChildren' properties on Record - those getters will likely
      * be more convenient for most app-level callers.
      *
-     * @param {(string|number)} id - id of record to be queried.
+     * @param {RecordId} id - ID of Record to be queried.
      * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
@@ -697,7 +694,7 @@ export class Store extends HoistBase {
      * See also the 'descendants' and 'allDescendants' properties on Record - those getters will
      * likely be more convenient for most app-level callers.
      *
-     * @param {(string|number)} id - id of record to be queried.
+     * @param {RecordId} id - ID of Record to be queried.
      * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
@@ -713,7 +710,7 @@ export class Store extends HoistBase {
      * See also the 'ancestors' and 'allAncestors' properties on Record - those getters will likely
      * be more convenient for most app-level callers.
      *
-     * @param {(string|number)} id - id of record to be queried.
+     * @param {RecordId} id - ID of Record to be queried.
      * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
@@ -930,7 +927,7 @@ function forIn(obj, fn) {
  *      a pointer to the intended parent if the record is not to be added to the root. The rawData
  *      *can* include a children property that will be processed into new child records.
  *      (Meaning: adds can be used to add new branches to the tree.)
- * @property {(string[]|number[])} [remove] - list of ids representing records to be removed.
+ * @property {RecordId[]} [remove] - list of ids representing records to be removed.
  *      Any descendents of these records will also be removed.
  * @property {Object} [rawSummaryData] - update to the dedicated summary row for this store.
  *      If the store has its `loadRootAsSummary` flag set to true, the summary record should

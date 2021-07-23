@@ -7,6 +7,7 @@
 import {p} from '@xh/hoist/cmp/layout';
 import {AppSpec, AppState, elem, HoistBase} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
+import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {MINUTES} from '@xh/hoist/utils/datetime';
@@ -26,7 +27,7 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {checkMinVersion, getClientDeviceInfo, throwIf, withShortDebug} from '@xh/hoist/utils/js';
+import {checkMinVersion, getClientDeviceInfo, throwIf, withDebug} from '@xh/hoist/utils/js';
 import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
 import parser from 'ua-parser-js';
@@ -414,7 +415,7 @@ class XHClass extends HoistBase {
     /**
      * Show a non-modal "toast" notification that appears and then automatically dismisses.
      *
-     * @param {Object} config - options for toast instance.
+     * @param {(Object|string)} config - options for toast instance, or string message.
      * @param {(ReactNode|string)} config.message - the message to show in the toast.
      * @param {Element} [config.icon] - icon to be displayed
      * @param {number} [config.timeout] - time in milliseconds to display the toast.
@@ -425,7 +426,22 @@ class XHClass extends HoistBase {
      *      If null, the Toast will appear at the edges of the document (desktop only).
      */
     toast(config) {
-        return this.acm.toastSourceModel.show(config);
+        this.acm.toastSourceModel.show(config);
+    }
+
+    successToast(config) {
+        if (isString(config)) config = {message: config};
+        this.toast({intent: 'success', icon: Icon.success(), ...config});
+    }
+
+    warningToast(config) {
+        if (isString(config)) config = {message: config};
+        this.toast({intent: 'warning', icon: Icon.warning(), ...config});
+    }
+
+    dangerToast(config) {
+        if (isString(config)) config = {message: config};
+        this.toast({intent: 'danger', icon: Icon.danger(), ...config});
     }
 
     /**
@@ -780,7 +796,7 @@ class XHClass extends HoistBase {
 
     async initServicesInternalAsync(svcs) {
         const promises = svcs.map(it => {
-            return withShortDebug(`Initializing ${it.constructor.name}`, () => {
+            return withDebug(`Initializing ${it.constructor.name}`, () => {
                 return it.initAsync();
             }, 'XH');
         });
@@ -855,7 +871,12 @@ class XHClass extends HoistBase {
     }
 }
 
-export const XH = window.XH = new XHClass();
+/** @type {XHClass} - app-wide singleton instance. */
+export const XH = new XHClass();
+
+// Install reference to XH singleton on window (this is the one global Hoist adds directly).
+// Note that app code should still `import {XH} from '@xh/hoist/core'` to access this instance.
+window['XH'] = XH;
 
 /**
  * @typedef {Object} MessageConfig - configuration object for a modal alert, confirm, or prompt.

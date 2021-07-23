@@ -13,7 +13,7 @@ import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {div} from '@xh/hoist/cmp/layout';
 import {computed, observer} from '@xh/hoist/mobx';
-import {isDisplayed, withShortDebug, logDebug, apiRemoved} from '@xh/hoist/utils/js';
+import {isDisplayed, logWithDebug, logDebug, apiRemoved} from '@xh/hoist/utils/js';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
@@ -68,7 +68,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
         apiRemoved(props.onCellClicked, 'onCellClicked', 'Specify onCellClicked on the GridModel instead.');
         apiRemoved(props.onCellDoubleClicked, 'onCellDoubleClicked', 'Specify onCellDoubleClicked on the GridModel instead.');
 
-        const impl = useLocalModel(() => new LocalModel(model, props)),
+        const impl = useLocalModel(() => new GridLocalModel(model, props)),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser;
 
         // Don't render the agGridReact element with data or columns. Instead rely on API methods
@@ -118,7 +118,7 @@ Grid.propTypes = {
 //------------------------
 // Implementation
 //------------------------
-class LocalModel extends HoistModel {
+class GridLocalModel extends HoistModel {
 
     model;
     agOptions;
@@ -280,12 +280,15 @@ class LocalModel extends HoistModel {
             column = isNil(colId) ? null : model.getColumn(colId),
             {selection} = model;
 
-        // Adjust selection to target record -- and sync to grid immediately.
-        if (record && !(selection.includes(record)) && !agOptions.suppressRowClickSelection) {
-            selModel.select(record);
-        }
 
-        if (!record) selModel.clear();
+        if (!agOptions.suppressRowClickSelection) {
+            // Adjust selection to target record -- and sync to grid immediately.
+            if (record && !selection.includes(record)) {
+                selModel.select(record);
+            }
+
+            if (!record) selModel.clear();
+        }
 
         return this.buildMenuItems(menu.items, record, selModel.records, column, params);
     };
@@ -347,62 +350,11 @@ class LocalModel extends HoistModel {
     //------------------------
     dataReaction() {
         const {model} = this,
-            {agGridModel, store} = model;
-
+            {store} = model;
         return {
-            track: () => [model.isReady, store._filtered, model.showSummary],
-            run: ([isReady, newRs]) => {
-                if (!isReady) return;
-
-                const {agApi} = model,
-                    prevRs = this._prevRs,
-                    prevCount = prevRs ? prevRs.count : 0;
-
-                withShortDebug(`Updating ag-Grid from Store`, () => {
-                    let transaction = null;
-                    if (prevCount !== 0) {
-                        transaction = this.genTransaction(newRs, prevRs);
-                        logDebug(this.transactionLogStr(transaction), Grid);
-
-                        if (!this.transactionIsEmpty(transaction)) {
-                            agApi.applyTransaction(transaction);
-                        }
-
-                    } else {
-                        agApi.setRowData(newRs.list);
-                    }
-
-                    if (model.externalSort) {
-                        agGridModel.applySortBy(model.sortBy);
-                    }
-
-                    this.updatePinnedSummaryRowData();
-
-                    if (transaction?.update) {
-                        const visibleCols = model.getVisibleLeafColumns();
-
-                        // Refresh cells in columns with complex renderers
-                        const refreshCols = visibleCols.filter(c => c.rendererIsComplex);
-                        if (!isEmpty(refreshCols)) {
-                            const rowNodes = compact(transaction.update.map(r => agApi.getRowNode(r.id))),
-                                columns = refreshCols.map(c => c.colId);
-                            agApi.refreshCells({rowNodes, columns, force: true});
-                        }
-
-                        // Refresh row heights if autoHeight is enabled
-                        if (visibleCols.some(c => c.autoHeight)) {
-                            agApi.resetRowHeights();
-                        }
-                    }
-
-                    if (!transaction || transaction.add || transaction.remove) {
-                        wait(0).then(() => this.syncSelection());
-                    }
-
-                    model.noteAgExpandStateChange();
-                }, Grid);
-
-                this._prevRs = newRs;
+            track: () => [model.isReady, store._filtered, model.showSummary, store.summaryRecord],
+            run: () => {
+                if (model.isReady) this.syncData();
             }
         };
     }
@@ -411,8 +363,8 @@ class LocalModel extends HoistModel {
         const {model} = this;
         return {
             track: () => [model.isReady, model.selection],
-            run: ([isReady]) => {
-                if (isReady) this.syncSelection();
+            run: () => {
+                if (model.isReady) this.syncSelection();
             }
         };
     }
@@ -542,12 +494,14 @@ class LocalModel extends HoistModel {
 
         return {
             track: () => [model.isReady, store.validator.errors],
-            run: ([isReady]) => {
+            run: () => {
+                const {isReady, columns, agApi} = model;
                 if (!isReady) return;
-                const refreshCols = model.columns.filter(c => c.editor || c.rendererIsComplex);
+
+                const refreshCols = columns.filter(c => c.editor || c.rendererIsComplex);
                 if (!isEmpty(refreshCols)) {
-                    const columns = refreshCols.map(c => c.colId);
-                    model.agApi.refreshCells({columns, force: true});
+                    const colIds = refreshCols.map(c => c.colId);
+                    agApi.refreshCells({columns: colIds, force: true});
                 }
             },
             debounce: 1
@@ -574,35 +528,86 @@ class LocalModel extends HoistModel {
         agApi.setPinnedBottomRowData(pinnedBottomRowData);
     }
 
+    @logWithDebug
     genTransaction(newRs, prevRs) {
-        return withShortDebug('Generating Transaction', () => {
-            if (!prevRs) return {add: newRs.list};
+        if (!prevRs) return {add: newRs.list};
 
-            const newList = newRs.list,
-                prevList = prevRs.list;
+        const newList = newRs.list,
+            prevList = prevRs.list;
 
-            let add = [], update = [], remove = [];
-            newList.forEach(rec => {
-                const existing = prevRs.getById(rec.id);
-                if (!existing) {
-                    add.push(rec);
-                } else if (existing !== rec) {
-                    update.push(rec);
-                }
-            });
+        let add = [], update = [], remove = [];
+        newList.forEach(rec => {
+            const existing = prevRs.getById(rec.id);
+            if (!existing) {
+                add.push(rec);
+            } else if (existing !== rec) {
+                update.push(rec);
+            }
+        });
 
-            if (newList.length !== (prevList.length + add.length)) {
-                remove = prevList.filter(rec => !newRs.getById(rec.id));
+        if (newList.length !== (prevList.length + add.length)) {
+            remove = prevList.filter(rec => !newRs.getById(rec.id));
+        }
+
+        // Only include lists in transaction if non-empty (ag-grid is not internally optimized)
+        const ret = {};
+        if (!isEmpty(add)) ret.add = add;
+        if (!isEmpty(update)) ret.update = update;
+        if (!isEmpty(remove)) ret.remove = remove;
+        return ret;
+    }
+
+    @logWithDebug
+    syncData() {
+        const {model} = this,
+            {agGridModel, store, agApi} = model,
+            newRs = store._filtered,
+            prevRs = this._prevRs,
+            prevCount = prevRs ? prevRs.count : 0;
+
+        let transaction = null;
+        if (prevCount !== 0) {
+            transaction = this.genTransaction(newRs, prevRs);
+            logDebug(this.transactionLogStr(transaction), this);
+
+            if (!this.transactionIsEmpty(transaction)) {
+                agApi.applyTransaction(transaction);
             }
 
-            // Only include lists in transaction if non-empty (ag-grid is not internally optimized)
-            const ret = {};
-            if (!isEmpty(add)) ret.add = add;
-            if (!isEmpty(update)) ret.update = update;
-            if (!isEmpty(remove)) ret.remove = remove;
-            return ret;
+        } else {
+            agApi.setRowData(newRs.list);
+        }
 
-        }, Grid);
+        if (model.externalSort) {
+            agGridModel.applySortBy(model.sortBy);
+        }
+
+        this.updatePinnedSummaryRowData();
+
+        if (transaction?.update) {
+            const visibleCols = model.getVisibleLeafColumns();
+
+            // Refresh cells in columns with complex renderers
+            const refreshCols = visibleCols.filter(c => c.rendererIsComplex);
+            if (!isEmpty(refreshCols)) {
+                const rowNodes = compact(transaction.update.map(r => agApi.getRowNode(r.id))),
+                    columns = refreshCols.map(c => c.colId);
+                agApi.refreshCells({rowNodes, columns, force: true});
+            }
+
+            // Refresh row heights if autoHeight is enabled
+            if (visibleCols.some(c => c.autoHeight)) {
+                agApi.resetRowHeights();
+            }
+        }
+
+        if (!transaction || transaction.add || transaction.remove) {
+            wait(0).then(() => this.syncSelection());
+        }
+
+        model.noteAgExpandStateChange();
+
+        this._prevRs = newRs;
     }
 
     syncSelection() {

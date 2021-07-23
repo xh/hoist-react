@@ -40,7 +40,7 @@ export class Field {
         displayName,
         defaultValue = null,
         rules = [],
-        disableXssProtection = false
+        disableXssProtection = XH.appSpec.disableXssProtection
     }) {
         this.name = name;
         this.type = type;
@@ -80,7 +80,7 @@ export class Field {
  *      {@see FieldConfig} docs for additional details.
  * @return {*} resulting value, potentially parsed or cast as per type.
  */
-export function parseFieldValue(val, type, defaultValue = null, disableXssProtection = false) {
+export function parseFieldValue(val, type, defaultValue = null, disableXssProtection = XH.appSpec.disableXssProtection) {
     if (val === undefined || val === null) val = defaultValue;
     if (val === null) return val;
 

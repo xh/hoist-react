@@ -1,3 +1,8 @@
+// Allows inside of chart navigator mask to be draggable.
+.bp3-dialog .xh-chart {
+  pointer-events: auto;
+}
+
 // Convenience class for optional use when specifying custom chart tooltips.
 // See Toolbox for example usage.
 .xh-chart-tooltip {
@@ -28,3 +33,4 @@
     padding: 0;
   }
 }
+

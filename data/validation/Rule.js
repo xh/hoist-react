@@ -28,21 +28,24 @@ export class Rule {
 
 /**
  * @callback ConstraintCb
- * @param {FieldState} FieldState
- * @param {Object} map of values for all fields in form
+ * @param {FieldState} fieldState
+ * @param {Object} map  - current values for all fields in form, keyed by field name.
  * @returns {(string|string[])} - String or array of strings describing errors,
  *      or null or undefined if rule passes successfully.
  */
 
 /**
  * @callback WhenCb
- * @param {FieldState} FieldState
- * @param {Object} map of values for all fields in form
+ * @param {FieldState} fieldState
+ * @param {Object} map - current values for all fields in form, keyed by field name.
  * @returns {boolean} - true if this rule is currently active.
  */
 
 /**
  * @typedef {Object} FieldState
  * @property {*} value - current value of the field
- * @property {string} displayName - Display name of the Field
+ * @property {string} name - name of the field
+ * @property {string} displayName - display name of the field
+ * @property {Record} [record] - record being validated, if validating Store data.
+ * @property {Record} [fieldModel] - FieldModel being validated, if validating Form data.
  */
