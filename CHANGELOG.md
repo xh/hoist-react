@@ -38,7 +38,10 @@
 * New `Badge` component allows a styled badge to be placed inline with text/title, e.g. to show a
   counter or status indicator within a tab title or menu item.
 * Updated `TreeMap` color scheme, with a dedicated set of colors for dark mode.
-
+* New XH convenience methods `successToast()`, `warningToast()`, and `dangerToast()` show toast
+  alerts with matching intents and appropriate icons.
+  * ⚠ Note that the default `XH.toast()` call now shows a toast with the primary (blue) intent and
+    no icon. Previously toasts displayed by default with a success (green) intent and checkmark.
 
 ### 🐞 Bug Fixes
 
