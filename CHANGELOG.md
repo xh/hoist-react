@@ -23,8 +23,9 @@
   the new `GridFilterModel` filtering described above.
 + `Cube.executeQuery()` has been renamed `Cube.executeQueryAsync()`, and is now asynchronous.
 
+[Commit Log](https://github.com/xh/hoist-react/compare/v41.1.0...develop)
 
-## v41.1.0 - 2021-07-22
+## v41.1.0 - 2021-07-23
 
 ### 🎁 New Features
 
