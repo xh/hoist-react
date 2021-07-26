@@ -175,6 +175,7 @@ export class View extends HoistBase {
     // Entry point for cube
     //-----------------------
     noteCubeLoaded() {
+        this._rowCache.clear();
         this.fullUpdateAsync().linkTo(this.loadModel);
     }
 
