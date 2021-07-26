@@ -41,7 +41,7 @@ body {
   --xh-gray: var(--gray, #{mc('grey', '500')});
   --xh-gray-dark: var(--gray-dark, #{mc('grey', '800')});
   --xh-gray-light: var(--gray-light, #{mc('grey', '100')});
-  --xh-green: var(--green, #{mc('green', '700')});
+  --xh-green: var(--green, #{mc('green', '900')});
   --xh-green-muted: var(--green-muted, #{mc-muted('green', '700')});
   --xh-orange: var(--orange, #{mc('orange', '800')});
   --xh-orange-muted: var(--orange-muted, #{mc-muted('orange', '800')});
@@ -54,9 +54,9 @@ body {
   &.xh-dark {
     --xh-black: var(--black, hsl(202, 17%, 9%));
     --xh-gray-dark: var(--gray-dark, #{mc('grey', '900')});
-    --xh-green: var(--green, hsl(124, 100%, 31%)); // could not find a MC green that works, especially in grids....
+    --xh-green: var(--green, hsl(120, 100%, 40%));
     --xh-green-muted: var(--green-muted, #{mc-muted('green', '800', 20%, 5%)});
-    --xh-red: var(--red, #{mc('red', 'a700')});
+    --xh-red: var(--red, hsl(357, 100%, 65%));
   }
 
   &.xh-mobile {
@@ -64,6 +64,12 @@ body {
     --xh-list-select-color: var(--list-select-color, var(--xh-blue-light));
   }
 
+  //-------------------------------
+  // Positive/Negative Value Colors
+  //-------------------------------
+  --xh-pos-val-color: var(--pos-val-color, var(--xh-green));
+  --xh-neg-val-color: var(--neg-val-color, var(--xh-red));
+  --xh-neutral-val-color: var(--neutral-val-color, var(--xh-gray));
 
   //--------------------------------------------------------
   // Intent Colors - HSL supports varying lightness w/o hue
@@ -342,7 +348,6 @@ body {
   //------------------------
   // Grids
   //------------------------
-  --xh-grid-bg-highlight: var(--grid-bg-highlight, var(--xh-bg-highlight));
   --xh-grid-bg-hover: var(--grid-bg-hover, hsl(205, 85%, 90%));
   --xh-grid-bg-odd: var(--grid-bg-odd, #{mc('grey', '100')});
   --xh-grid-bg: var(--grid-bg, var(--xh-bg));
@@ -359,7 +364,7 @@ body {
   --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '200')});
   --xh-grid-group-text-color: var(--grid-group-text-color, white);
   --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(205, 85%, 95%));
-  --xh-grid-tree-group-border-color: var(--grid-tree-group-border-color, var(--xh-grid-bg-highlight));
+  --xh-grid-tree-group-border-color: var(--grid-tree-group-border-color, var(--xh-grid-selected-row-bg));
   --xh-grid-total-row-bg: var(--grid-total-row-bg, var(--xh-grid-tree-group-bg));
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-blue-gray-light));
   --xh-grid-header-border-color: var(--grid-header-border-color, var(--xh-grid-border-color));
@@ -370,6 +375,8 @@ body {
   --xh-grid-header-font-weight: var(--grid-header-font-weight, 600);
   --xh-grid-header-text-color: var(--grid-header-text-color, var(--xh-text-color));
   --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '300')});
+  --xh-grid-selected-row-bg: var(--grid-selected-row-bg, var(--xh-bg-highlight));
+  --xh-grid-selected-row-text-color: var(--grid-selected-row-text-color, var(--xh-grid-text-color));
   --xh-grid-summary-row-border-color: var(--grid-summary-row-border-color, var(--xh-grid-border-color));
   --xh-grid-text-color: var(--grid-text-color, var(--xh-text-color));
   --xh-grid-tree-indent: var(--grid-tree-indent, 1.2em);
@@ -415,7 +422,6 @@ body {
 
   // Dark Grid
   &.xh-dark {
-    --xh-grid-bg-highlight: var(--grid-bg-highlight, var(--xh-bg-highlight));
     --xh-grid-bg-hover: var(--grid-bg-hover, hsl(200, 50%, 17%));
     --xh-grid-bg-odd: var(--grid-bg-odd, hsl(200, 26%, 11%));
     --xh-grid-border-color: var(--grid-border-color, hsl(186, 11%, 18%));
