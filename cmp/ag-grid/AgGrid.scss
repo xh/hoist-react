@@ -67,8 +67,12 @@
     background-color: var(--xh-grid-bg);
     color: var(--xh-grid-text-color);
 
+    // Selected row styling.
     &.ag-row-selected {
-      background-color: var(--xh-grid-bg-highlight);
+      background-color: var(--xh-grid-selected-row-bg);
+      .ag-cell {
+        color: var(--xh-grid-selected-row-text-color);
+      }
     }
 
     &.ag-row-group.ag-full-width-row {

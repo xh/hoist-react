@@ -19,7 +19,7 @@ const UP_TICK = '▴',
     DOWN_TICK = '▾',
     LEDGER_ALIGN_PLACEHOLDER = '<span style="visibility:hidden">)</span>',
     LEDGER_ALIGN_PLACEHOLDER_EL = span({style: {visibility: 'hidden'}, item: ')'}),
-    DEFAULT_COLOR_SPEC = {pos: 'xh-green', neg: 'xh-red', neutral: 'xh-gray'};
+    DEFAULT_COLOR_SPEC = {pos: 'xh-pos-val', neg: 'xh-neg-val', neutral: 'xh-neutral-val'};
 
 /**
  * Standard number formatting for Hoist
