@@ -4,6 +4,17 @@
 
 ### 🎁 New Features
 
+### ✨ Style
+
+* The red and green color values applied in dark mode have been lightened for improved legibility.
+* The default `colorSpec` config for number formatters has changed to use new dedicated CSS classes
+  and variables.
+* New/renamed CSS vars `--xh-grid-selected-row-bg` and `--xh-grid-selected-row-text-color` now used
+  to style selected grid rows.
+  * ⚠ Note the `--xh-grid-bg-highlight` CSS var has been removed.
+
+
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.1.0...develop)
 
 ## v41.1.0 - 2021-07-23
