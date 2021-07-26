@@ -230,8 +230,7 @@
   }
 
   &.xh-grid--tree-style-borders {
-    .ag-row-level-0[class*=" ag-row-group"],
-    .ag-row-level-0[class^="ag-row-group"], {
+    .ag-row-level-0 {
       &:not(.ag-row-first) {
         border-top: 1px solid var(--xh-grid-tree-group-border-color);
       }
