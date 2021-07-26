@@ -49,7 +49,7 @@
 
       // Default selection highlight supported by DV.
       &.ag-row-selected {
-        background-color: var(--xh-grid-bg-highlight);
+        background-color: var(--xh-grid-selected-row-bg);
       }
 
       // Carry over grouped header styles from grid. DVs can optionally specify a custom
