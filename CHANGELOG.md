@@ -4,6 +4,10 @@
 
 ### 🎁 New Features
 
+### 🐞 Bug Fixes
+* Fixed an issue preventing upper level nodes without children to take on same styling as siblings
+  that do have children.
+
 ### ✨ Style
 
 * The red and green color values applied in dark mode have been lightened for improved legibility.
