@@ -5,8 +5,8 @@
 ### 🎁 New Features
 
 ### 🐞 Bug Fixes
-* Fixed an issue preventing upper level nodes without children to take on same styling as siblings
-  that do have children.
+* Fixed an issue preventing upper level nodes without children in tree grids from taking on same
+  styling as siblings with children.
 
 ### ✨ Style
 
