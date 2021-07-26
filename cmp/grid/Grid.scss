@@ -209,21 +209,21 @@
   //------------------------
   // Tree grid styling modes
   //------------------------
-  &.xh-grid--tree-style-highlights {
-    .ag-row-level-0, // extends rule to top level rows without children
-    div[class*=" ag-row-group"],
-    div[class^="ag-row-group"] {
-      &:not(.ag-row-selected),
-      &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-        background-color: var(--xh-grid-tree-group-bg);
+  @for $i from 0 to 20 {
+    &.xh-grid--tree-style-highlights-level-#{$i} {
+      .ag-row:not(.ag-row-level-#{$i}) {
+        &:not(.ag-row-selected),
+        &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+          background-color: var(--xh-grid-tree-group-bg);
+        }
       }
-    }
 
-    .xh-ag-grid--show-hover {
-      div[class*=" ag-row-group"],
-      div[class^="ag-row-group"] {
-        &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected) {
-          background-color: var(--xh-grid-bg-hover);
+      .xh-ag-grid--show-hover {
+        div[class*=" ag-row-group"],
+        div[class^="ag-row-group"] {
+          &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected) {
+            background-color: var(--xh-grid-bg-hover);
+          }
         }
       }
     }
