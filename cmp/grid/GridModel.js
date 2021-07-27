@@ -45,7 +45,7 @@ import {
     isUndefined,
     map,
     max,
-    min,
+    min, omit,
     pull,
     sortBy
 } from 'lodash';
@@ -728,10 +728,39 @@ export class GridModel extends HoistModel {
             .map(({colId, width, hidden, pinned}) => ({colId, width, hidden, pinned}));
     }
 
+    // /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     setColumnState(colState) {
-        colState = this.persistenceModel.cleanColumnState(colState);
+        colState = this.cleanColumnState(colState);
         this.applyColumnStateChanges(colState);
     }
+
+    // /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
+    cleanColumnState(columnState) {
+        const gridCols = this.getLeafColumns();
+
+        // REMOVE any state columns that are no longer found in the grid. These were likely saved
+        // under a prior release of the app and have since been removed from the code.
+        let ret = columnState.filter(({colId}) => this.findColumn(gridCols, colId));
+
+        // ADD any grid columns that are not found in state. These are newly added to the code.
+        // Insert these columns in position based on the index at which they are defined.
+        gridCols.forEach(({colId}, idx) => {
+            if (!find(ret, {colId})) {
+                ret.splice(idx, 0, {colId});
+            }
+        });
+
+        // Remove the width from any non-resizable column - we don't want to track those widths as
+        // they are set programmatically (e.g. fixed / action columns), and saved state should not
+        // conflict with any code-level updates to their widths.
+        ret = ret.map(state => {
+            const col = this.findColumn(gridCols, state.colId);
+            return col.resizable ? state : omit(state, 'width');
+        });
+
+        return ret;
+    }
+
 
     showColChooser() {
         if (this.colChooserModel) {
