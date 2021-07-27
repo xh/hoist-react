@@ -598,17 +598,14 @@ export class Column {
 
         if (editor) {
             ret.cellEditorFramework = forwardRef((agParams, ref) => {
-                const {data} = agParams;
-                return elementFromContent(
-                    editor,
-                    {
-                        record: data,
-                        gridModel,
-                        column: this,
-                        agParams,
-                        ref
-                    }
-                );
+                const props = {
+                    record: agParams.data,
+                    gridModel,
+                    column: this,
+                    agParams,
+                    ref
+                };
+                return isFunction(editor) ? editor(props) : elementFromContent(editor, props);
             });
             ret.cellClassRules = {
                 'xh-invalid-cell': ({data: record}) => record && !isEmpty(record.errors[field])
