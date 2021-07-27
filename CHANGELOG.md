@@ -6,6 +6,12 @@
 
 * `GridModel` accepts a new config `clicksToEdit`, which can be used to set how many clicks are needed to open an editable cell for edting. 2 (default), 1, or <= 0 to disable "click to edit".
 
+### ⚙️ Technical
+
+* `FetchService` will now actively `abort()` fetch requests that it is abandoning due to its
+own `timeout` option.  This allows the browser to release the associated resources associated with
+these requests.
+
 ### ✨ Style
 
 * The red and green color values applied in dark mode have been lightened for improved legibility.
