@@ -172,6 +172,8 @@ export class GridModel extends HoistModel {
 
     /**
      * @param {Object} c - GridModel configuration.
+     * @param {int} [c.clicksToEdit] -  Set how many clicks are needed to open an editable cell for edting. 
+     *      2 (default), 1, or =< 0 to disable "click to edit".
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
      * @param {Object} [c.colDefaults] - Column configs to be set on all columns.  Merges deeply.
      * @param {(Store|Object)} [c.store] - a Store instance, or a config with which to create a
@@ -258,6 +260,7 @@ export class GridModel extends HoistModel {
      */
     constructor({
         store,
+        clicksToEdit = 2,
         columns,
         colDefaults = {},
         treeMode = false,
@@ -379,6 +382,7 @@ export class GridModel extends HoistModel {
         this.onRowDoubleClicked = onRowDoubleClicked;
         this.onCellClicked = onCellClicked;
         this.onCellDoubleClicked = onCellDoubleClicked;
+        this.clicksToEdit = clicksToEdit;
     }
 
     /**
