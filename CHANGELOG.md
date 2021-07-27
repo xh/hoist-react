@@ -13,6 +13,9 @@
   to style selected grid rows.
   * ⚠ Note the `--xh-grid-bg-highlight` CSS var has been removed.
 
+### 🐞 Bug Fixes
+
+* Inline grid editing supports passing of JSX editor components.
 
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.1.0...develop)
