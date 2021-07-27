@@ -7,6 +7,7 @@
 import {div, ul, li} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
+import {elementFromContent} from '@xh/hoist/utils/react';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
@@ -604,13 +605,16 @@ export class Column {
         if (editor) {
             ret.cellEditorFramework = forwardRef((agParams, ref) => {
                 const {data} = agParams;
-                return editor({
-                    record: data,
-                    gridModel,
-                    column: this,
-                    agParams,
-                    ref
-                });
+                return elementFromContent(
+                    editor,
+                    {
+                        record: data,
+                        gridModel,
+                        column: this,
+                        agParams,
+                        ref
+                    }
+                );
             });
             ret.cellClassRules = {
                 'xh-invalid-cell': ({data: record}) => record && !isEmpty(record.errors[field])

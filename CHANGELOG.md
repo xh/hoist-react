@@ -5,24 +5,29 @@
 ### 🎁 New Features
 
 * Column-level filtering is now official supported for desktop grids:
-    + `GridModel` now has a `filterModel` config, which accepts a config for the new `GridFilterModel`
-      or a boolean `true` to create the default `GridFilterModel`. `GridFilterModel` is designed to be
-      analogous to `FilterChooserModel`.
-    + New `Column.filterable` to enable a column-level filter affordance in the column header.
-      Note the that the `GridModel` must have a `filterModel`. The filter control offers two tabs - a
-      "Values" tab for enumerative, value-based filter, and a "Custom" tab to build complex filtering
-      queries with multiple clauses.
-+ Cube `View` now accepts a `loadModel` property - pass to `Cube.createView()` to link view
-  updates to a `PendingTaskModel`. If `loadModel` is not provided, the `View` will create one.
+  + `GridModel` now has a `filterModel` config, which accepts a config for the new `GridFilterModel`
+    or a boolean `true` to create the default `GridFilterModel`. `GridFilterModel` is designed to be
+    analogous to `FilterChooserModel`.
+  + New `Column.filterable` to enable a column-level filter affordance in the column header. Note
+    the that the `GridModel` must have a `filterModel`. The filter control offers two tabs - a
+    "Values" tab for enumerative, value-based filter, and a "Custom" tab to build complex filtering
+    queries with multiple clauses.
++ Cube `View` now accepts a `loadModel` property - pass to `Cube.createView()` to link view updates
+  to a `PendingTaskModel`. If `loadModel` is not provided, the `View` will create one.
 
 ### 💥 Breaking Changes
 
 * `FilterChooserModel.sourceStore` and `FilterChooserModel.targetStore` have been renamed
   `FilterChooserModel.valueSource` and `FilterChooserModel.bind` respectively. Furthermore, both
-  configs now support either a `Store` or a cube `View`. This is to provide a common API with
-  the new `GridFilterModel` filtering described above.
+  configs now support either a `Store` or a cube `View`. This is to provide a common API with the
+  new `GridFilterModel` filtering described above.
 + `Cube.executeQuery()` has been renamed `Cube.executeQueryAsync()`, and is now asynchronous.
 
+### ⚙️ Technical
+
+* `FetchService` will now actively `abort()` fetch requests that it is abandoning due to its own
+  `timeout` option. This allows the browser to release the associated resources associated with
+  these requests.
 
 ### ✨ Style
 
@@ -32,6 +37,10 @@
 * New/renamed CSS vars `--xh-grid-selected-row-bg` and `--xh-grid-selected-row-text-color` now used
   to style selected grid rows.
   * ⚠ Note the `--xh-grid-bg-highlight` CSS var has been removed.
+
+### 🐞 Bug Fixes
+
+* Inline grid editing supports passing of JSX editor components.
 
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.1.0...develop)
@@ -70,8 +79,8 @@
 
 * New `Exception.timeout()` util to throw exceptions explicitly marked as timeouts, used by
   `Promise.timeout` extension.
-* `withShortDebug` has been deprecated. Use `withDebug` instead, which has the identical
- behavior.  This API simplification mirrors a recent change to `hoist-core`.
+* `withShortDebug` has been deprecated. Use `withDebug` instead, which has the identical behavior.
+  This API simplification mirrors a recent change to `hoist-core`.
 
 ### ✨ Style
 
