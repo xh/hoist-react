@@ -41,13 +41,10 @@ class LocalModel extends HoistModel {
         });
     }
 
-    //------------------------
-    // Implementation
-    //------------------------
+    /** @param {ToastModel[]} models */
     displayPendingToasts(models) {
         models.forEach(model => {
             let {bpId, isOpen, icon, position, containerRef, ...rest} = model;
-            position = position || Position.BOTTOM_RIGHT;
 
             // 1) If toast is visible and sent to bp, or already obsolete -- nothing to do
             if ((!!bpId) === isOpen) return;
@@ -86,8 +83,6 @@ class LocalModel extends HoistModel {
         const toasterMap = this._toasterMap,
             container = containerRef ? containerRef : document.body,
             className = `xh-toast-container ${containerRef ? 'xh-toast-container--anchored' : ''}`;
-
-        position = withDefault(position, 'top');
 
         // We want to just memoize this by two args (one object)?  Is there a library for this?
         const toasters = toasterMap.get(container) || {};

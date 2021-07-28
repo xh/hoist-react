@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isString, partition} from 'lodash';
 import {ToastModel} from './ToastModel';
 
@@ -15,6 +15,7 @@ import {ToastModel} from './ToastModel';
  */
 export class ToastSourceModel extends HoistModel {
 
+    /** @member {ToastModel[]} */
     @managed
     @observable.ref
     toastModels = [];
