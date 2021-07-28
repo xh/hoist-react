@@ -4,7 +4,8 @@
 
 ### 🎁 New Features
 
-* `GridModel` accepts a new config `clicksToEdit`, which can be used to set how many clicks are needed to open an editable cell for edting. 2 (default), 1, or <= 0 to disable "click to edit".
+* `GridModel` supports a new `clicksToEdit` config, which can be used to set how many clicks are
+needed to enter editing mode on a cell.
 
 ### ⚙️ Technical
 

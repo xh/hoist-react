@@ -172,8 +172,6 @@ export class GridModel extends HoistModel {
 
     /**
      * @param {Object} c - GridModel configuration.
-     * @param {int} [c.clicksToEdit] -  Set how many clicks are needed to open an editable cell for edting. 
-     *      2 (default), 1, or <= 0 to disable "click to edit".
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
      * @param {Object} [c.colDefaults] - Column configs to be set on all columns.  Merges deeply.
      * @param {(Store|Object)} [c.store] - a Store instance, or a config with which to create a
@@ -247,6 +245,9 @@ export class GridModel extends HoistModel {
      *      ability of the grid to autosize offscreen columns effectively. Default false.
      * @param {GridAutosizeOptions} [c.autosizeOptions] - default autosize options.
      * @param {boolean} [c.fullRowEditing] - true to enable full row editing. Default false.
+     * @param {number} [c.clicksToEdit] -  Set how many clicks are needed to enter edit mode on a
+     *      cell. May be 2 (default) or 1.  Any other number disables clicking as a way to enter
+     *      edit mode.
      * @param {boolean} [c.externalSort] - Set to true to if application will be
      *      reloading data when the sortBy property changes on this model (either programmatically,
      *      or via user-click.)  Useful for applications with large data sets that are performing
