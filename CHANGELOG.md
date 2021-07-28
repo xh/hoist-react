@@ -6,6 +6,7 @@
 
 * New `GridModel.clicksToEdit` config controls the number of clicks required to begin inline-editing
   a grid cell (default remains 2).
+* `Panel` now has an `error` property to specify display in the event of an error.
 
 ### 🐞 Bug Fixes
 
