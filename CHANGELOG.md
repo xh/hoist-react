@@ -29,6 +29,9 @@
 * New/renamed CSS vars `--xh-grid-selected-row-bg` and `--xh-grid-selected-row-text-color` now used
   to style selected grid rows.
   * ⚠ Note the `--xh-grid-bg-highlight` CSS var has been removed.
+* New `.xh-cell--editable` CSS class applied to cells with inline editing enabled.
+  * ⚠ Grid CSS class `.xh-invalid-cell` has been renamed to `.xh-cell--invalid` for consistency -
+    any app style overrides should update to this new classname.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.1.0...develop)
 
