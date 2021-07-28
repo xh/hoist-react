@@ -15,6 +15,7 @@ import {
 } from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
@@ -63,6 +64,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
             compactHeader,
             headerItems,
             mask: maskProp,
+            error,
             loadingIndicator: loadingIndicatorProp,
             contextMenu,
             hotkeys,
@@ -81,6 +83,8 @@ export const [Panel, panel] = hoistCmp.withFactory({
         }
 
         // 2) Prepare 'core' contents according to collapsed state
+        // For panels with an error property, substitute an appropriate error display for the
+        // non-toolbar elements of the panel upon error.
         const {
             resizable,
             collapsible,
@@ -96,7 +100,21 @@ export const [Panel, panel] = hoistCmp.withFactory({
             delete layoutProps[vertical ? 'height' : 'width'];
         }
 
-        let coreContents = null;
+        let innerContents = null,
+            coreContents = null;
+
+        if (contextModel.lastLoadException) {
+            if (isValidElement(error)) {
+                innerContents = error;
+            } else if (error === 'lastLoadException') {
+                innerContents = errorMessage({error: contextModel.lastLoadException});
+            } else {
+                innerContents = Children.toArray(children);
+            }
+        } else {
+            innerContents = Children.toArray(children);
+        }
+
         if (!collapsed || renderMode === RenderMode.ALWAYS || (renderMode === RenderMode.LAZY && wasDisplayed.current)) {
             const parseToolbar = (barSpec) => {
                 return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
@@ -106,7 +124,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
                 style: {display: collapsed ? 'none' : 'flex'},
                 items: [
                     parseToolbar(tbar),
-                    ...Children.toArray(children),
+                    innerContents,
                     parseToolbar(bbar)
                 ]
             });
@@ -178,6 +196,14 @@ Panel.propTypes = {
      *  @see useContextMenu() for more information on accepted values for this prop.
      */
     contextMenu: PT.oneOfType([PT.func, PT.array, PT.node]),
+
+    /**
+     * Error behavior customizer. When unset, the panel will load using local state, even upon error.
+     * To replace panel contents in an error state, set to:
+     *   + a ReactElement for custom error display,
+     *   + the string 'lastLoadException' for a default errorMesssage bound to the contextModel.
+     */
+    error: PT.oneOfType([PT.string, PT.element]),
 
     /**
      * Specification of hotkeys as prescribed by blueprint.
