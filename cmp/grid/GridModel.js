@@ -245,9 +245,8 @@ export class GridModel extends HoistModel {
      *      ability of the grid to autosize offscreen columns effectively. Default false.
      * @param {GridAutosizeOptions} [c.autosizeOptions] - default autosize options.
      * @param {boolean} [c.fullRowEditing] - true to enable full row editing. Default false.
-     * @param {number} [c.clicksToEdit] -  Set how many clicks are needed to enter edit mode on a
-     *      cell. May be 2 (default) or 1.  Any other number disables clicking as a way to enter
-     *      edit mode.
+     * @param {number} [c.clicksToEdit] - number of clicks required to begin inline-editing a cell.
+     *      May be 2 (default) or 1 - any other value prevents user clicks from starting an edit.
      * @param {boolean} [c.externalSort] - Set to true to if application will be
      *      reloading data when the sortBy property changes on this model (either programmatically,
      *      or via user-click.)  Useful for applications with large data sets that are performing
@@ -261,7 +260,6 @@ export class GridModel extends HoistModel {
      */
     constructor({
         store,
-        clicksToEdit = 2,
         columns,
         colDefaults = {},
         treeMode = false,
@@ -309,6 +307,7 @@ export class GridModel extends HoistModel {
         autosizeOptions = {},
         restoreDefaultsWarning = GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
         fullRowEditing = false,
+        clicksToEdit = 2,
         experimental,
         ...rest
     }) {
@@ -339,6 +338,7 @@ export class GridModel extends HoistModel {
         });
         this.restoreDefaultsWarning = restoreDefaultsWarning;
         this.fullRowEditing = fullRowEditing;
+        this.clicksToEdit = clicksToEdit;
 
         apiRemoved(rest.contextMenuFn, 'contextMenuFn', 'Use contextMenu instead');
         apiRemoved(rest.enableColChooser, 'enableColChooser', "Use 'colChooserModel' instead");
@@ -383,7 +383,6 @@ export class GridModel extends HoistModel {
         this.onRowDoubleClicked = onRowDoubleClicked;
         this.onCellClicked = onCellClicked;
         this.onCellDoubleClicked = onCellDoubleClicked;
-        this.clicksToEdit = clicksToEdit;
     }
 
     /**
