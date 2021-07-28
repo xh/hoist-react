@@ -7,11 +7,10 @@
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
-import {Position, Toaster} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
+import {Toaster} from '@xh/hoist/kit/blueprint';
 import {isElement, map} from 'lodash';
-import './Toast.scss';
 import {wait} from '../../promise';
+import './Toast.scss';
 
 /**
  *  Support for showing Toasts in a application. This component does not render any content
