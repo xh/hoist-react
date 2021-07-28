@@ -7,7 +7,6 @@
 import {div, ul, li} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
-import {elementFromContent} from '@xh/hoist/utils/react';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
@@ -22,7 +21,7 @@ import {
     isNumber,
     isString
 } from 'lodash';
-import {forwardRef, useImperativeHandle, useState} from 'react';
+import {forwardRef, useImperativeHandle, useState, createElement} from 'react';
 import classNames from 'classnames';
 import {GridSorter} from '../impl/GridSorter';
 import {ExportFormat} from './ExportFormat';
@@ -605,7 +604,10 @@ export class Column {
                     agParams,
                     ref
                 };
-                return isFunction(editor) ? editor(props) : elementFromContent(editor, props);
+                // Can be a component or elem factory/ ad-hoc render function.
+                if (editor.isHoistComponent) return createElement(editor, props);
+                if (isFunction(editor)) return editor(props);
+                throw XH.exception('Column editor must be a HoistComponent or a render function');
             });
             ret.cellClassRules = {
                 'xh-invalid-cell': ({data: record}) => record && !isEmpty(record.errors[field])
