@@ -329,6 +329,7 @@ export class GridModel extends HoistModel {
         this.externalSort = externalSort;
         this.autosizeOptions = defaults(autosizeOptions, {
             mode: GridAutosizeMode.ON_DEMAND,
+            includeCollapsedChildren: false,
             showMask: true,
             bufferPx: 5,
             fillMode: 'none'
@@ -1345,6 +1346,8 @@ export class GridModel extends HoistModel {
  *      absolute minimum.  May be used to adjust the spacing in the grid.  Default is 5.
  * @property {boolean} [showMask] - true to show mask over the grid during the autosize operation.
  *      Default is true.
+ * @property {boolean} [includeCollapsedChildren] - true to autosize all rows, even when parent is
+ *      collapsed. Default is false.
  * @property {function|string|string[]} [columns] - columns ids to autosize, or a function for
  *      testing if the given column should be autosized.  Typically used when calling
  *      autosizeAsync() manually.  To generally exclude a column from autosizing, see the

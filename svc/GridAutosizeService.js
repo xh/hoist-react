@@ -76,23 +76,28 @@ export class GridAutosizeService extends HoistService {
      */
     calcRequiredWidths(gridModel, colIds, options) {
         const {store, agApi} = gridModel,
+            {includeCollapsedChildren} = options,
+            records = [],
             ret = [];
 
-        // Get filtered set of records
-        let records = [];
-        if (agApi?.isAnyFilterPresent()) {
+        // Gather records to be included in column width calculation
+        if (!includeCollapsedChildren) {
+            for (let idx = 0; idx < agApi.getDisplayedRowCount(); idx++) {
+                const node = agApi.getDisplayedRowAtIndex(idx),
+                    record = store.getById(node.data?.id);
+                if (record) records.push(record);
+            }
+        } else {
             agApi.forEachNodeAfterFilter(node => {
                 const record = store.getById(node.data?.id);
                 if (record) records.push(record);
             });
-        } else {
-            records = [...store.records];
         }
-
         if (gridModel.showSummary && store.summaryRecord) {
             records.push(store.summaryRecord);
         }
 
+        // Compute column widths
         for (const colId of colIds) {
             const width = this._columnWidthCalculator.calcWidth(gridModel, records, colId, options);
             if (isFinite(width)) ret.push({colId, width});
@@ -100,7 +105,6 @@ export class GridAutosizeService extends HoistService {
 
         return ret;
     }
-
 
     /**
      * Calculate the increased size of columns to fill any remaining space. Returns an array of the

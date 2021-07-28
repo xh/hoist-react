@@ -3,6 +3,8 @@
 ## v42.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
+* New `GridAutosizeOptions.includeCollapsedChildren` config (default `false`) allows `autosizeAsync()`
+  to calculate a tree grid's column widths based on all records, including collapsed children.
 
 ### ⚙️ Technical
 
