@@ -11,6 +11,9 @@ import {Icon} from '@xh/hoist/icon';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
 import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq, compact} from 'lodash';
+import {span, a} from '../cmp/layout';
+import {wait} from '../promise';
+import {SECONDS} from '../utils/datetime';
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
@@ -65,22 +68,29 @@ export class GridExportService extends HoistService {
                 ...this.getRecordRowsRecursive(gridModel, records, exportColumns, 0)
             ];
 
-        // Show separate 'started' and 'complete' toasts for larger (i.e. slower) exports.
-        // We use cell count as a heuristic for speed - this may need to be tweaked.
-        const cellCount = rows.length * exportColumns.length;
+        // Show separate 'started' toasts for larger (i.e. slower) exports.
+        // Commit to showing for at least a couple of seconds to avoid annoying flash
+        let startToast = null,
+            cellCount = rows.length * exportColumns.length;
         if (cellCount > withDefault(config.streamingCellThreshold, 100000)) {
-            XH.toast({
+            startToast = XH.toast({
                 message: 'Your export is being prepared. Due to its size, formatting will be removed.',
                 intent: 'warning',
+                timeout: null,
                 icon: Icon.download()
             });
         } else if (cellCount > withDefault(config.toastCellThreshold, 3000)) {
-            XH.toast({
+            startToast = XH.toast({
                 message: 'Your export is being prepared and will download when complete...',
                 intent: 'primary',
+                timeout: null,
                 icon: Icon.download()
             });
         }
+        const dismissStartToast = startToast ?
+            this.minWait(2 * SECONDS, () => startToast.dismiss()) :
+            () => null;
+
 
         // POST the data as a file (using multipart/form-data) to work around size limits when using application/x-www-form-urlencoded.
         // This allows the data to be split into multiple parts and streamed, allowing for larger excel exports.
@@ -90,31 +100,58 @@ export class GridExportService extends HoistService {
             params = {filename, type, meta, rows};
 
         formData.append('params', JSON.stringify(params));
-        const response = await XH.fetch({
-            url: 'xh/export',
-            method: 'POST',
-            body: formData,
-            // Note: We must explicitly unset Content-Type headers to allow the browser to set it's own multipart/form-data boundary.
-            // See https://stanko.github.io/uploading-files-using-fetch-multipart-form-data/ for further explanation.
-            headers: {
-                'Content-Type': null
-            }
-        });
 
-        const blob = response.status === 204 ? null : await response.blob(),
-            fileExt = this.getFileExtension(type),
-            contentType = this.getContentType(type);
+        try {
+            const response = await XH.fetch({
+                url: 'xh/export',
+                method: 'POST',
+                body: formData,
+                // Note: We must explicitly unset Content-Type headers to allow the browser to set it's own multipart/form-data boundary.
+                // See https://stanko.github.io/uploading-files-using-fetch-multipart-form-data/ for further explanation.
+                headers: {
+                    'Content-Type': null
+                }
+            });
 
-        download(blob, `${filename}${fileExt}`, contentType);
-        XH.toast({
-            message: 'Export complete',
-            intent: 'success'
-        });
+            const blob = response.status === 204 ? null : await response.blob(),
+                fileExt = this.getFileExtension(type),
+                contentType = this.getContentType(type);
+
+            download(blob, `${filename}${fileExt}`, contentType);
+            await dismissStartToast();
+            XH.toast({
+                message: 'Export complete',
+                intent: 'success',
+                icon: Icon.check()
+            });
+        } catch (e) {
+            XH.exceptionHandler.handleException(e, {showAlert: false});
+            await dismissStartToast();
+            this.showFailToast(e);
+        }
     }
 
     //-----------------------
     // Implementation
     //-----------------------
+    showFailToast(e) {
+        const failToast = XH.toast({
+            message: span(
+                'Export failed ',
+                a({
+                    item: '(show details...)',
+                    onClick: () => {
+                        failToast?.dismiss();
+                        XH.exceptionHandler.showException(e);
+                    }
+                })
+            ),
+            intent: 'danger',
+            icon: Icon.error(),
+            timeout: null
+        });
+    }
+
     getExportableColumns(gridModel, columns) {
         if (isFunction(columns)) {
             return compact(
@@ -280,6 +317,15 @@ export class GridExportService extends HoistService {
             case 'csv':
                 return '.csv';
         }
+    }
+
+    // Return an async function that will block until a minimum time has passed.
+    minWait(time, fn) {
+        const minDelay = wait(time);
+        return async () => {
+            await minDelay;
+            fn();
+        };
     }
 }
 

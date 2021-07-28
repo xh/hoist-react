@@ -9,9 +9,14 @@ import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 
 /**
- * Model for a single instance of a Toast.
+ * Model for a single instance of a displayed Toast.
  *
- * @private
+ * This model is returned by XH.toast() and its variants (e.g. XH.successToast()).
+ *
+ * This object is primarily useful for its dismiss() method, which can be called at any time to
+ * programmatically dismiss a toast. The properties on this object should be considered immutable
+ * and will not effect the displayed toast.
+ *
  */
 export class ToastModel extends HoistModel {
 

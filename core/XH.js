@@ -424,24 +424,37 @@ class XHClass extends HoistBase {
      *     Position enum (desktop only).
      * @param {Component} [config.containerRef] - Component that should contain (locate) the Toast.
      *      If null, the Toast will appear at the edges of the document (desktop only).
+     * @returns {ToastModel} - model representing the toast.  May be used for programmatic dismissal.
      */
     toast(config) {
-        this.acm.toastSourceModel.show(config);
+        return this.acm.toastSourceModel.show(config);
     }
 
+    /**
+     * Show a toast with default intent and icon indicating success.
+     * @see toast
+     */
     successToast(config) {
         if (isString(config)) config = {message: config};
-        this.toast({intent: 'success', icon: Icon.success(), ...config});
+        return this.toast({intent: 'success', icon: Icon.success(), ...config});
     }
 
+    /**
+     * Show a toast with default intent and icon indicating a warning.
+     * @see toast
+     */
     warningToast(config) {
         if (isString(config)) config = {message: config};
-        this.toast({intent: 'warning', icon: Icon.warning(), ...config});
+        return this.toast({intent: 'warning', icon: Icon.warning(), ...config});
     }
 
+    /**
+     * Show a toast with intent and icon indicating a serious issue.
+     * @see toast
+     */
     dangerToast(config) {
         if (isString(config)) config = {message: config};
-        this.toast({intent: 'danger', icon: Icon.danger(), ...config});
+        return this.toast({intent: 'danger', icon: Icon.danger(), ...config});
     }
 
     /**

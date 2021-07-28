@@ -4,9 +4,9 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {isString} from 'lodash';
+import {isString, partition} from 'lodash';
 import {ToastModel} from './ToastModel';
 
 /**
@@ -37,16 +37,10 @@ export class ToastSourceModel extends HoistModel {
     @action
     addModel(model) {
         this.toastModels.push(model);
-        this.cull();
-    }
 
-    @action
-    cull() {
-        const models = this.toastModels,
-            keepModels = models.filter(it => it.isOpen),
-            cullModels = models.filter(it => !it.isOpen);
-
-        this.toastModels = keepModels;
-        cullModels.forEach(it => it.destroy());
+        // Cull and install new reference.
+        const [keep, cull] = partition(this.toastModels, 'isOpen');
+        this.toastModels = keep;
+        XH.safeDestroy(cull);
     }
 }

@@ -4,6 +4,15 @@
 
 ### 🎁 New Features
 
+* Toasts may now be dismissed programmatically.  Use the new `ToastModel` returned by `XH.toast()`,
+ `XH.successToast()`, `XH.warningToast()`, and `XH.dangerToast()`.
+
+### ⚙️ Technical
+
+* `FetchService` will now actively `abort()` fetch requests that it is abandoning due to its
+own `timeout` option.  This allows the browser to release the associated resources associated with
+these requests.
+
 ### ✨ Style
 
 * The red and green color values applied in dark mode have been lightened for improved legibility.
