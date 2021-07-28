@@ -6,10 +6,14 @@
 
 * New `GridModel.clicksToEdit` config controls the number of clicks required to begin inline-editing
   a grid cell (default remains 2).
+* Toasts may now be dismissed programmatically - use the new `ToastModel` returned by the
+  `XH.toast()` API and its variants.
 
 ### 🐞 Bug Fixes
 
 * Inline grid editing supports passing of JSX editor components.
+* `GridExportService` catches any exceptions thrown during export preparation and warns the user
+  that something went wrong.
 
 ### ⚙️ Technical
 
