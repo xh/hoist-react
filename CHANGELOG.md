@@ -46,7 +46,8 @@
   alerts with matching intents and appropriate icons.
   * ⚠ Note that the default `XH.toast()` call now shows a toast with the primary (blue) intent and
     no icon. Previously toasts displayed by default with a success (green) intent and checkmark.
-
+* GridModel provides a public API method `setColumnState` for taking a previously saved copy of
+  gridModel.columnState and applying it back to a GridModel in one call.
 ### 🐞 Bug Fixes
 
 * Fixed an issue preventing export of very large (>100k rows) grids.

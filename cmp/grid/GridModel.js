@@ -45,7 +45,7 @@ import {
     isUndefined,
     map,
     max,
-    min,
+    min, omit,
     pull,
     sortBy
 } from 'lodash';
@@ -732,6 +732,13 @@ export class GridModel extends HoistModel {
             .map(({colId, width, hidden, pinned}) => ({colId, width, hidden, pinned}));
     }
 
+    /** @param {ColumnState[]} */
+    setColumnState(colState) {
+        colState = this.cleanColumnState(colState);
+        colState = this.removeTransientWidths(colState);
+        this.applyColumnStateChanges(colState);
+    }
+
     showColChooser() {
         if (this.colChooserModel) {
             this.colChooserModel.open();
@@ -1183,6 +1190,37 @@ export class GridModel extends HoistModel {
             'Grids in treeMode should include exactly one column with isTreeColumn:true.'
         );
     }
+
+    cleanColumnState(columnState) {
+        const gridCols = this.getLeafColumns();
+
+        // REMOVE any state columns that are no longer found in the grid. These were likely saved
+        // under a prior release of the app and have since been removed from the code.
+        let ret = columnState.filter(({colId}) => this.findColumn(gridCols, colId));
+
+        // ADD any grid columns that are not found in state. These are newly added to the code.
+        // Insert these columns in position based on the index at which they are defined.
+        gridCols.forEach(({colId}, idx) => {
+            if (!find(ret, {colId})) {
+                ret.splice(idx, 0, {colId});
+            }
+        });
+
+        return ret;
+    }
+
+    // Remove the width from any non-resizable column - we don't want to track those widths as
+    // they are set programmatically (e.g. fixed / action columns), and saved state should not
+    // conflict with any code-level updates to their widths.
+    removeTransientWidths(columnState) {
+        const gridCols = this.getLeafColumns();
+
+        return columnState.map(state => {
+            const col = this.findColumn(gridCols, state.colId);
+            return col.resizable ? state : omit(state, 'width');
+        });
+    }
+
 
     // Selectively enhance raw column configs with field-level metadata from this model's Store
     // Fields. Takes store as an optional explicit argument to support calling from
