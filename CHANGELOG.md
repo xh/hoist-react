@@ -3,6 +3,11 @@
 ## v42.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
+* New `GridAutosizeOptions.includeCollapsedChildren` config to govern whether to consult
+    non-expanded rows when computing grid columns sizes.  The default value for this option
+    of `false` provides greatly improved performance for large tree grids and is considered
+    appropriate for most used cases.  To maintain the previous behavior of sizing all
+    non-filtered rows, set this option to `true`.
 
 * New `GridModel.clicksToEdit` config controls the number of clicks required to begin inline-editing
   a grid cell (default remains 2).
