@@ -728,13 +728,13 @@ export class GridModel extends HoistModel {
             .map(({colId, width, hidden, pinned}) => ({colId, width, hidden, pinned}));
     }
 
-    // /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
+    /** @param {Object[]} colConfigs - {@link Column} configs. */
     setColumnState(colState) {
         colState = this.cleanColumnState(colState);
         this.applyColumnStateChanges(colState);
     }
 
-    // /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
+    /** @param {Object[]} colConfigs - {@link Column} configs. */
     cleanColumnState(columnState) {
         const gridCols = this.getLeafColumns();
 
