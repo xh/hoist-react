@@ -85,7 +85,7 @@ export class GridPersistenceModel extends HoistModel {
         return {
             track: () => this.gridModel.columnState,
             run: (columnState) => {
-                this.patchState({columns: this.gridModel.cleanColumnState(columnState)});
+                this.patchState({columns: this.cleanColumnState(columnState)});
             }
         };
     }
@@ -94,8 +94,7 @@ export class GridPersistenceModel extends HoistModel {
         const {gridModel, state} = this;
         if (!state.columns) return;
 
-        const colState = gridModel.cleanColumnState(state.columns);
-        gridModel.applyColumnStateChanges(colState);
+        gridModel.setColumnState(state.columns);
     }
 
     //--------------------------
