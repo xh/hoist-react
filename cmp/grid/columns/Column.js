@@ -21,7 +21,7 @@ import {
     isNumber,
     isString
 } from 'lodash';
-import {forwardRef, useImperativeHandle, useState} from 'react';
+import {forwardRef, useImperativeHandle, useState, createElement} from 'react';
 import classNames from 'classnames';
 import {GridSorter} from '../impl/GridSorter';
 import {ExportFormat} from './ExportFormat';
@@ -597,14 +597,17 @@ export class Column {
 
         if (editor) {
             ret.cellEditorFramework = forwardRef((agParams, ref) => {
-                const {data} = agParams;
-                return editor({
-                    record: data,
+                const props = {
+                    record: agParams.data,
                     gridModel,
                     column: this,
                     agParams,
                     ref
-                });
+                };
+                // Can be a component or elem factory/ ad-hoc render function.
+                if (editor.isHoistComponent) return createElement(editor, props);
+                if (isFunction(editor)) return editor(props);
+                throw XH.exception('Column editor must be a HoistComponent or a render function');
             });
             ret.cellClassRules = {
                 'xh-invalid-cell': ({data: record}) => record && !isEmpty(record.errors[field])
