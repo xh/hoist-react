@@ -4,14 +4,20 @@
 
 ### 🎁 New Features
 
-* Toasts may now be dismissed programmatically.  Use the new `ToastModel` returned by `XH.toast()`,
- `XH.successToast()`, `XH.warningToast()`, and `XH.dangerToast()`.
+* New `GridModel.clicksToEdit` config controls the number of clicks required to begin inline-editing
+  a grid cell (default remains 2).
+* Toasts may now be dismissed programmatically - use the new `ToastModel` returned by the
+  `XH.toast()` API and its variants.
+
+### 🐞 Bug Fixes
+
+* Inline grid editing supports passing of JSX editor components.
 
 ### ⚙️ Technical
 
-* `FetchService` will now actively `abort()` fetch requests that it is abandoning due to its
-own `timeout` option.  This allows the browser to release the associated resources associated with
-these requests.
+* `FetchService` will now actively `abort()` fetch requests that it is abandoning due to its own
+  `timeout` option. This allows the browser to release the associated resources associated with
+  these requests.
 
 ### ✨ Style
 
@@ -21,11 +27,6 @@ these requests.
 * New/renamed CSS vars `--xh-grid-selected-row-bg` and `--xh-grid-selected-row-text-color` now used
   to style selected grid rows.
   * ⚠ Note the `--xh-grid-bg-highlight` CSS var has been removed.
-
-### 🐞 Bug Fixes
-
-* Inline grid editing supports passing of JSX editor components.
-
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.1.0...develop)
 
@@ -63,8 +64,8 @@ these requests.
 
 * New `Exception.timeout()` util to throw exceptions explicitly marked as timeouts, used by
   `Promise.timeout` extension.
-* `withShortDebug` has been deprecated. Use `withDebug` instead, which has the identical
- behavior.  This API simplification mirrors a recent change to `hoist-core`.
+* `withShortDebug` has been deprecated. Use `withDebug` instead, which has the identical behavior.
+  This API simplification mirrors a recent change to `hoist-core`.
 
 ### ✨ Style
 
