@@ -531,7 +531,7 @@ export class GridModel extends HoistModel {
             }
         });
 
-        await wait(0);
+        await wait();
 
         // 2) Scroll to all selected nodes
         records.forEach(({id}) => {

@@ -72,7 +72,7 @@ export class ChartsModel extends HoistModel {
 
         // Hack to get primary, non-dialog chart to re-render once dialog is dismissed.
         // Sharing chart models between chart component instances appears to be risky...
-        await wait(1);
+        await wait();
         this.chartModel.setHighchartsConfig({...this.chartModel.highchartsConfig});
     }
 
