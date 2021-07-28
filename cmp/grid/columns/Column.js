@@ -438,7 +438,7 @@ export class Column {
         }
 
         // Tooltip Handling
-        const {tooltip, tooltipElement, editor} = this,
+        const {tooltip, tooltipElement, editable, editor} = this,
             tooltipSpec = tooltipElement ?? tooltip;
 
         if (tooltipSpec || editor) {
@@ -610,7 +610,16 @@ export class Column {
                 throw XH.exception('Column editor must be a HoistComponent or a render function');
             });
             ret.cellClassRules = {
-                'xh-invalid-cell': ({data: record}) => record && !isEmpty(record.errors[field])
+                'xh-cell--invalid': (agParams) => {
+                    const record = agParams.data;
+                    return record && !isEmpty(record.errors[field]);
+                },
+                'xh-cell--editable': (agParams) => {
+                    const record = agParams.data;
+                    return isFunction(editable) ?
+                        editable({record, store: record.store, gridModel, column: this, agParams}) :
+                        editable;
+                }
             };
         }
 
