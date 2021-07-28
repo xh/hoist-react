@@ -3,14 +3,13 @@
 ## v42.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-* New `GridAutosizeOptions.includeCollapsedChildren` config to govern whether to consult
-    non-expanded rows when computing grid columns sizes.  The default value for this option
-    of `false` provides greatly improved performance for large tree grids and is considered
-    appropriate for most used cases.  To maintain the previous behavior of sizing all
-    non-filtered rows, set this option to `true`.
 
-* New `GridModel.clicksToEdit` config controls the number of clicks required to begin inline-editing
-  a grid cell (default remains 2).
+* New `GridAutosizeOptions.includeCollapsedChildren` config controls whether values from collapsed
+  (i.e. hidden) child records should be measured when computing column sizes. Default of `false`
+  improves autosize performance for large tree grids and should generally match user expectations
+  around WYSIWYG autosizing.
+* New `GridModel.clicksToEdit` config controls the number of clicks required to trigger
+  inline-editing of a grid cell. Default remains 2 (double click).
 * Toasts may now be dismissed programmatically - use the new `ToastModel` returned by the
   `XH.toast()` API and its variants.
 
@@ -25,8 +24,9 @@
 * `FetchService` will now actively `abort()` fetch requests that it is abandoning due to its own
   `timeout` option. This allows the browser to release the associated resources associated with
   these requests.
-
-* The `start` function in `@xh/hoist/promise` has been deprecated.  Use the `wait` function instead.
+* The `start()` function in `@xh/hoist/promise` has been deprecated. Use `wait()` instead, which can
+  now be called without any args to establish a Promise chain and/or introduce a minimal amount of
+  asynchronousity.
 
 ### ✨ Style
 
@@ -62,6 +62,7 @@
     no icon. Previously toasts displayed by default with a success (green) intent and checkmark.
 * GridModel provides a public API method `setColumnState` for taking a previously saved copy of
   gridModel.columnState and applying it back to a GridModel in one call.
+
 ### 🐞 Bug Fixes
 
 * Fixed an issue preventing export of very large (>100k rows) grids.
@@ -71,7 +72,6 @@
 * Improved `GridModel` async selection methods to ensure they do not wait forever if grid does not
   mount.
 * Fixed an issue preventing dragging the chart navigator range in a dialog.
-
 
 ### ⚙️ Technical
 
