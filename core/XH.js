@@ -418,7 +418,8 @@ class XHClass extends HoistBase {
      * @param {(Object|string)} config - options for toast instance, or string message.
      * @param {(ReactNode|string)} config.message - message to display within the Toast.
      * @param {Element} [config.icon] - optional icon.
-     * @param {number} [config.timeout] - time (in ms) to show before dismissing (default 3000).
+     * @param {?number} [config.timeout] - time in ms (default 3000) to show before auto-dismissing
+     *      the toast, or null to keep toast visible until manually dismissed.
      * @param {string} [config.intent] - one of [primary|success|warning|danger].
      * @param {Object} [config.position] - Relative position at which to display toast, e.g.
      *      "bottom-right" (default) or "top". (Desktop only.)

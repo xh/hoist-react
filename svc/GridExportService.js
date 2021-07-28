@@ -10,6 +10,7 @@ import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
+import {StatusCodes} from 'http-status-codes';
 import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq, compact} from 'lodash';
 import {span, a} from '../cmp/layout';
 import {wait} from '../promise';
@@ -52,11 +53,11 @@ export class GridExportService extends HoistService {
 
 
         if (records.length === 0) {
-            XH.toast({message: 'No data found to export', intent: 'danger', icon: Icon.warning()});
+            XH.warningToast('No data found to export.');
             return;
         }
 
-        // If the grid includes a summary row, add it to the export payload as a root-level node
+        // If the grid includes a summary row, add it to the export payload as a root-level node.
         const rows = gridModel.showSummary && summaryRecord ?
             [
                 this.getHeaderRow(exportColumns, type, gridModel),
@@ -69,28 +70,29 @@ export class GridExportService extends HoistService {
             ];
 
         // Show separate 'started' toasts for larger (i.e. slower) exports.
-        // Commit to showing for at least a couple of seconds to avoid annoying flash
         let startToast = null,
             cellCount = rows.length * exportColumns.length;
+
         if (cellCount > withDefault(config.streamingCellThreshold, 100000)) {
             startToast = XH.toast({
                 message: 'Your export is being prepared. Due to its size, formatting will be removed.',
+                icon: Icon.download(),
                 intent: 'warning',
-                timeout: null,
-                icon: Icon.download()
+                timeout: null
             });
         } else if (cellCount > withDefault(config.toastCellThreshold, 3000)) {
             startToast = XH.toast({
                 message: 'Your export is being prepared and will download when complete...',
-                intent: 'primary',
-                timeout: null,
-                icon: Icon.download()
+                icon: Icon.download(),
+                timeout: null
             });
         }
+
+        // Toast will be dismissed when export completes, but commit to showing for at least 2s to
+        // avoid an annoying flash if download is ready immediately.
         const dismissStartToast = startToast ?
             this.minWait(2 * SECONDS, () => startToast.dismiss()) :
             () => null;
-
 
         // POST the data as a file (using multipart/form-data) to work around size limits when using application/x-www-form-urlencoded.
         // This allows the data to be split into multiple parts and streamed, allowing for larger excel exports.
@@ -106,24 +108,20 @@ export class GridExportService extends HoistService {
                 url: 'xh/export',
                 method: 'POST',
                 body: formData,
-                // Note: We must explicitly unset Content-Type headers to allow the browser to set it's own multipart/form-data boundary.
+                // Note: We must explicitly unset Content-Type headers to allow the browser to set its own multipart/form-data boundary.
                 // See https://stanko.github.io/uploading-files-using-fetch-multipart-form-data/ for further explanation.
                 headers: {
                     'Content-Type': null
                 }
             });
 
-            const blob = response.status === 204 ? null : await response.blob(),
+            const blob = response.status === StatusCodes.NO_CONTENT ? null : await response.blob(),
                 fileExt = this.getFileExtension(type),
                 contentType = this.getContentType(type);
 
             download(blob, `${filename}${fileExt}`, contentType);
             await dismissStartToast();
-            XH.toast({
-                message: 'Export complete',
-                intent: 'success',
-                icon: Icon.check()
-            });
+            XH.successToast('Export complete.');
         } catch (e) {
             XH.exceptionHandler.handleException(e, {showAlert: false});
             await dismissStartToast();
@@ -135,7 +133,7 @@ export class GridExportService extends HoistService {
     // Implementation
     //-----------------------
     showFailToast(e) {
-        const failToast = XH.toast({
+        const failToast = XH.dangerToast({
             message: span(
                 'Export failed ',
                 a({
@@ -146,8 +144,6 @@ export class GridExportService extends HoistService {
                     }
                 })
             ),
-            intent: 'danger',
-            icon: Icon.error(),
             timeout: null
         });
     }
