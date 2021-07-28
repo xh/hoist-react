@@ -45,7 +45,7 @@ import {
     isUndefined,
     map,
     max,
-    min, omit,
+    min,
     pull,
     sortBy
 } from 'lodash';
