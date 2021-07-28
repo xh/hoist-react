@@ -181,7 +181,7 @@ class Model extends HoistInputModel {
         // Deferred to allow any value conversion to complete and flush into input.
         if (this.props.selectOnFocus) {
             const target = ev.target;
-            wait(1).then(() => target.select());
+            wait().then(() => target.select());
         }
     }
 }

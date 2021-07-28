@@ -604,7 +604,7 @@ class GridLocalModel extends HoistModel {
         }
 
         if (!transaction || transaction.add || transaction.remove) {
-            wait(0).then(() => this.syncSelection());
+            wait().then(() => this.syncSelection());
         }
 
         model.noteAgExpandStateChange();

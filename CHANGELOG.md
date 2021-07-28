@@ -26,6 +26,8 @@
   `timeout` option. This allows the browser to release the associated resources associated with
   these requests.
 
+* The `start` function in `@xh/hoist/promise` has been deprecated.  Use the `wait` function instead.
+
 ### ✨ Style
 
 * The red and green color values applied in dark mode have been lightened for improved legibility.
