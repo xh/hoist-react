@@ -6,7 +6,7 @@
  */
 import {HoistModel, XH, managed, PersistenceProvider} from '@xh/hoist/core';
 import {observable, action, makeObservable} from '@xh/hoist/mobx';
-import {find, isUndefined, omit} from 'lodash';
+import {isUndefined} from 'lodash';
 
 /**
  * Model to manage persisting state from GridModel.
