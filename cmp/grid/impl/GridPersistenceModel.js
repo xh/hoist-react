@@ -6,7 +6,7 @@
  */
 import {HoistModel, XH, managed, PersistenceProvider} from '@xh/hoist/core';
 import {observable, action, makeObservable} from '@xh/hoist/mobx';
-import {isUndefined, omit} from 'lodash';
+import {isUndefined} from 'lodash';
 
 
 /**
@@ -83,10 +83,11 @@ export class GridPersistenceModel extends HoistModel {
     // Columns
     //--------------------------
     columnReaction() {
+        const {gridModel} = this;
         return {
-            track: () => this.gridModel.columnState,
+            track: () => gridModel.columnState,
             run: (columnState) => {
-                this.patchState({columns: this.removeWidths(columnState)});
+                this.patchState({columns: gridModel.removeTransientWidths(columnState)});
             }
         };
     }
@@ -162,19 +163,5 @@ export class GridPersistenceModel extends HoistModel {
             }
         }
         return null;
-    }
-
-    // Remove the width from any non-resizable column - we don't want to track those widths as
-    // they are set programmatically (e.g. fixed / action columns), and saved state should not
-    // conflict with any code-level updates to their widths.
-    removeWidths(columnState) {
-        const {gridModel} = this,
-            gridCols = gridModel.getLeafColumns();
-
-        return columnState.map(state => {
-            const col = gridModel.findColumn(gridCols, state.colId);
-            return col.resizable ? state : omit(state, 'width');
-        });
-
     }
 }

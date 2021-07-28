@@ -45,7 +45,7 @@ import {
     isUndefined,
     map,
     max,
-    min,
+    min, omit,
     pull,
     sortBy
 } from 'lodash';
@@ -731,6 +731,7 @@ export class GridModel extends HoistModel {
     /** @param {ColumnState[]} */
     setColumnState(colState) {
         colState = this.cleanColumnState(colState);
+        colState = this.removeTransientWidths(colState);
         this.applyColumnStateChanges(colState);
     }
 
@@ -1203,6 +1204,19 @@ export class GridModel extends HoistModel {
 
         return ret;
     }
+
+    // Remove the width from any non-resizable column - we don't want to track those widths as
+    // they are set programmatically (e.g. fixed / action columns), and saved state should not
+    // conflict with any code-level updates to their widths.
+    removeTransientWidths(columnState) {
+        const gridCols = this.getLeafColumns();
+
+        return columnState.map(state => {
+            const col = this.findColumn(gridCols, state.colId);
+            return col.resizable ? state : omit(state, 'width');
+        });
+    }
+
 
     // Selectively enhance raw column configs with field-level metadata from this model's Store
     // Fields. Takes store as an optional explicit argument to support calling from
