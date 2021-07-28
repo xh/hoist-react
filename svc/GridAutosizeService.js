@@ -75,29 +75,9 @@ export class GridAutosizeService extends HoistService {
      * @param {GridAutosizeOptions} options - options to use for this autosize.
      */
     calcRequiredWidths(gridModel, colIds, options) {
-        const {store, agApi} = gridModel,
-            {includeCollapsedChildren} = options,
-            records = [],
+        const records = this.gatherRecordsToBeSized(gridModel, colIds, options),
             ret = [];
 
-        // Gather records to be included in column width calculation
-        if (!includeCollapsedChildren) {
-            for (let idx = 0; idx < agApi.getDisplayedRowCount(); idx++) {
-                const node = agApi.getDisplayedRowAtIndex(idx),
-                    record = store.getById(node.data?.id);
-                if (record) records.push(record);
-            }
-        } else {
-            agApi.forEachNodeAfterFilter(node => {
-                const record = store.getById(node.data?.id);
-                if (record) records.push(record);
-            });
-        }
-        if (gridModel.showSummary && store.summaryRecord) {
-            records.push(store.summaryRecord);
-        }
-
-        // Compute column widths
         for (const colId of colIds) {
             const width = this._columnWidthCalculator.calcWidth(gridModel, records, colId, options);
             if (isFinite(width)) ret.push({colId, width});
@@ -105,6 +85,41 @@ export class GridAutosizeService extends HoistService {
 
         return ret;
     }
+
+
+    /**
+     * Finds the records that need to be sized based on filter and expand/collapse state.
+     *
+     * @param {GridModel} gridModel - GridModel to autosize.
+     * @param {string[]} colIds - array of columns in model to compute sizing for.
+     * @param {GridAutosizeOptions} options - options to use for this autosize.
+     */
+    gatherRecordsToBeSized(gridModel, colIds, options) {
+        let {store, agApi, treeMode, groupBy} = gridModel,
+            {includeCollapsedChildren} = options,
+            ret = [];
+
+        if (!includeCollapsedChildren && (treeMode || groupBy)) {
+            for (let idx = 0; idx < agApi.getDisplayedRowCount(); idx++) {
+                const node = agApi.getDisplayedRowAtIndex(idx),
+                    record = store.getById(node.data?.id);
+                if (record) ret.push(record);
+            }
+        } else if (agApi?.isAnyFilterPresent()) {
+            agApi.forEachNodeAfterFilter(node => {
+                const record = store.getById(node.data?.id);
+                if (record) ret.push(record);
+            });
+        } else {
+            ret = [...store.records];
+        }
+
+        if (gridModel.showSummary && store.summaryRecord) {
+            ret.push(store.summaryRecord);
+        }
+        return ret;
+    }
+
 
     /**
      * Calculate the increased size of columns to fill any remaining space. Returns an array of the
