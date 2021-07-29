@@ -1112,11 +1112,15 @@ export class GridModel extends HoistModel {
 
     /** @package */
     @action
-    onCellEditingStarted() {this.isEditing = true}
+    onCellEditingStarted = () => {
+        this.isEditing = true;
+    }
 
     /** @package */
     @action
-    onCellEditingStopped() {this.isEditing = false}
+    onCellEditingStopped = () => {
+        this.isEditing = false;
+    }
 
     /**
      * Returns true as soon as the underlying agGridModel is ready, waiting a limited period
