@@ -12,7 +12,7 @@ import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
-import {action, makeObservable, observable, runInAction, when} from '@xh/hoist/mobx';
+import {action, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
@@ -45,7 +45,8 @@ import {
     isUndefined,
     map,
     max,
-    min, omit,
+    min,
+    omit,
     pull,
     sortBy
 } from 'lodash';
