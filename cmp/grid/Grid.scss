@@ -210,7 +210,7 @@
   // Tree grid styling modes
   //------------------------
   @for $i from 0 to 20 {
-    &.xh-grid--tree-style-highlights-level-#{$i} {
+    &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
       .ag-row:not(.ag-row-level-#{$i}) {
         &:not(.ag-row-selected),
         &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
@@ -218,10 +218,9 @@
         }
       }
 
-      // Does not apply to lowest-level rows, which are styled by AgGrid stylesheet.
       .xh-ag-grid--show-hover {
         .ag-row:not(.ag-row-level-#{$i}) {
-          &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected) {
+          &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected):not(.ag-row-pinned) {
             background-color: var(--xh-grid-bg-hover);
           }
         }

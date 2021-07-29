@@ -24,14 +24,14 @@ export const TreeStyle = Object.freeze({
 });
 
 
-export function getTreeStyleClasses(treeStyle, maxDepth) {
+export function getTreeStyleClasses(treeStyle) {
     switch (treeStyle) {
         case TreeStyle.HIGHLIGHTS:
-            return `xh-grid--tree-style-highlights-level-${maxDepth}`;
+            return `xh-grid--tree-style-highlights`;
         case TreeStyle.BORDERS:
             return 'xh-grid--tree-style-borders';
         case TreeStyle.HIGHLIGHTS_AND_BORDERS:
-            return `xh-grid--tree-style-highlights-level-${maxDepth} xh-grid--tree-style-borders`;
+            return `xh-grid--tree-style-highlights xh-grid--tree-style-borders`;
         case TreeStyle.NONE:
             return null;
         default:

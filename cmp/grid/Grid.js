@@ -76,8 +76,8 @@ export const [Grid, grid] = hoistCmp.withFactory({
             frame({
                 className: classNames(
                     className,
-                    impl.isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat',
-                    model.treeMode ? getTreeStyleClasses(model.treeStyle, model.store.maxDepth) : null
+                    impl.isHierarchical ? `xh-grid--hierarchical xh-grid--max-depth-${model.store.maxDepth}` : 'xh-grid--flat',
+                    model.treeMode ? getTreeStyleClasses(model.treeStyle) : null
                 ),
                 item: agGrid({
                     ...getLayoutProps(props),
