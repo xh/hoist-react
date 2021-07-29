@@ -77,7 +77,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
                 className: classNames(
                     className,
                     impl.isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat',
-                    model.treeMode ? getTreeStyleClasses(model.treeStyle, impl.depthOfLowestLeaf) : null
+                    model.treeMode ? getTreeStyleClasses(model.treeStyle, model.store.maxDepth) : null
                 ),
                 item: agGrid({
                     ...getLayoutProps(props),
@@ -141,16 +141,6 @@ class GridLocalModel extends HoistModel {
     get isHierarchical() {
         const {model} = this;
         return model.treeMode && model.store.allRootCount !== model.store.allCount;
-    }
-
-    @computed
-    get depthOfLowestLeaf() {
-        let maxDepth = 0;
-        if (this.isHierarchical) {
-            const {records} = this.model.store;
-            records.forEach(record => maxDepth = Math.max(record.treePath.length - 1, maxDepth));
-        }
-        return maxDepth;
     }
 
     @computed
