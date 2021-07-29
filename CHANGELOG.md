@@ -12,6 +12,7 @@
   inline-editing of a grid cell. Default remains 2 (double click).
 * Toasts may now be dismissed programmatically - use the new `ToastModel` returned by the
   `XH.toast()` API and its variants.
+* Timeouts are now configurable on grid exports via property `exportOptions.timeout`.
 
 ### 🐞 Bug Fixes
 
