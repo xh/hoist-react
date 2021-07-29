@@ -130,7 +130,7 @@
   }
 
   // Render badge on invalid cells
-  .ag-cell.xh-invalid-cell {
+  .ag-cell.xh-cell--invalid {
     &::before {
       content: '';
       position: absolute;
@@ -152,25 +152,25 @@
 
   .xh-ag-grid {
     &--tiny {
-      .ag-cell.xh-invalid-cell::before {
+      .ag-cell.xh-cell--invalid::before {
         border-width: 3px;
       }
     }
 
     &--compact {
-      .ag-cell.xh-invalid-cell::before {
+      .ag-cell.xh-cell--invalid::before {
         border-width: 4px;
       }
     }
 
     &--standard {
-      .ag-cell.xh-invalid-cell::before {
+      .ag-cell.xh-cell--invalid::before {
         border-width: 5px;
       }
     }
 
     &--large {
-      .ag-cell.xh-invalid-cell::before {
+      .ag-cell.xh-cell--invalid::before {
         border-width: 6px;
       }
     }

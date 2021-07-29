@@ -7,7 +7,6 @@
 import {div, ul, li} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
-import {elementFromContent} from '@xh/hoist/utils/react';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
@@ -22,7 +21,7 @@ import {
     isNumber,
     isString
 } from 'lodash';
-import {forwardRef, useImperativeHandle, useState} from 'react';
+import {forwardRef, useImperativeHandle, useState, createElement} from 'react';
 import classNames from 'classnames';
 import {GridSorter} from '../impl/GridSorter';
 import {ExportFormat} from './ExportFormat';
@@ -445,7 +444,7 @@ export class Column {
         }
 
         // Tooltip Handling
-        const {tooltip, tooltipElement, editor} = this,
+        const {tooltip, tooltipElement, editable, editor} = this,
             tooltipSpec = tooltipElement ?? tooltip;
 
         if (tooltipSpec || editor) {
@@ -604,20 +603,29 @@ export class Column {
 
         if (editor) {
             ret.cellEditorFramework = forwardRef((agParams, ref) => {
-                const {data} = agParams;
-                return elementFromContent(
-                    editor,
-                    {
-                        record: data,
-                        gridModel,
-                        column: this,
-                        agParams,
-                        ref
-                    }
-                );
+                const props = {
+                    record: agParams.data,
+                    gridModel,
+                    column: this,
+                    agParams,
+                    ref
+                };
+                // Can be a component or elem factory/ ad-hoc render function.
+                if (editor.isHoistComponent) return createElement(editor, props);
+                if (isFunction(editor)) return editor(props);
+                throw XH.exception('Column editor must be a HoistComponent or a render function');
             });
             ret.cellClassRules = {
-                'xh-invalid-cell': ({data: record}) => record && !isEmpty(record.errors[field])
+                'xh-cell--invalid': (agParams) => {
+                    const record = agParams.data;
+                    return record && !isEmpty(record.errors[field]);
+                },
+                'xh-cell--editable': (agParams) => {
+                    const record = agParams.data;
+                    return isFunction(editable) ?
+                        editable({record, store: record.store, gridModel, column: this, agParams}) :
+                        editable;
+                }
             };
         }
 

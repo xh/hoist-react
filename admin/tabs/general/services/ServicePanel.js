@@ -24,7 +24,7 @@ export const servicePanel = hoistCmp.factory({
                     icon: Icon.reset(),
                     text: 'Clear Selected',
                     intent: 'danger',
-                    onClick: () => model.clearCaches(),
+                    onClick: () => model.clearCachesAsync(),
                     disabled: model.gridModel.selModel.isEmpty
                 }),
                 filler(),

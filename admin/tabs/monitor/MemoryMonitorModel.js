@@ -3,7 +3,6 @@ import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, XH} from '@xh/hoist/core';
 import {FieldType} from '@xh/hoist/data';
 import {fmtTime, numberRenderer} from '@xh/hoist/format';
-import {Icon} from '@xh/hoist/icon';
 import {checkMinVersion} from '@xh/hoist/utils/js';
 import {forOwn, sortBy} from 'lodash';
 
@@ -140,12 +139,9 @@ export class MemoryMonitorModel extends HoistModel {
 
     async takeSnapshotAsync() {
         try {
-            await XH.fetchJson({
-                url: 'memoryMonitorAdmin/takeSnapshot'
-            }).linkTo(this.loadModel);
-
+            await XH.fetchJson({url: 'memoryMonitorAdmin/takeSnapshot'}).linkTo(this.loadModel);
             await this.loadAsync();
-            XH.toast({message: 'Updated snapshot loaded', icon: Icon.camera()});
+            XH.successToast('Updated snapshot loaded');
         } catch (e) {
             XH.handleException(e);
         }
@@ -153,12 +149,9 @@ export class MemoryMonitorModel extends HoistModel {
 
     async requestGcAsync() {
         try {
-            await XH.fetchJson({
-                url: 'memoryMonitorAdmin/requestGc'
-            }).linkTo(this.loadModel);
-
+            await XH.fetchJson({url: 'memoryMonitorAdmin/requestGc'}).linkTo(this.loadModel);
             await this.loadAsync();
-            XH.toast({message: 'GC run complete', icon: Icon.trash()});
+            XH.successToast('GC run complete');
         } catch (e) {
             XH.handleException(e);
         }

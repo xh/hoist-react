@@ -308,7 +308,7 @@ export class DifferModel extends HoistModel {
     }
 
     showNoDiffToast() {
-        XH.toast({message: 'Good news - all records match remote host.'});
+        XH.successToast('Good news - all records match remote host.');
     }
 
     fieldRenderer(v, {record, column}) {

@@ -31,7 +31,11 @@ export function getReactElementName(obj) {
  */
 export function elementFromContent(content, addProps) {
     if (isNil(content)) return null;
-    
+
+    if (content.isElemFactory) {
+        return content(addProps);
+    }
+
     // Note: Would be more general to look for a *react* component.
     if (content.isHoistComponent) {
         return createElement(content, addProps);

@@ -298,7 +298,7 @@ export class FilterChooserModel extends HoistModel {
             inputValue = newVal.length > currentVal.length ? newVal : currentVal;
 
         rsSelectCmp.select.setState({inputValue, menuIsOpen: true});
-        wait(0).then(() => {
+        wait().then(() => {
             rsSelectCmp.focus();
             rsSelectCmp.handleInputChange(inputValue);
         });
