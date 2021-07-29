@@ -27,7 +27,7 @@ export const clientErrorDetail = hoistCmp.factory(
                 defaultSize: 370
             },
             item: form({
-                fieldDefaults: {inline: true},
+                fieldDefaults: {inline: true, readonlyRenderer: valOrNa},
                 item: hframe(
                     div({
                         className: 'xh-admin-activity-detail__form',
@@ -36,8 +36,7 @@ export const clientErrorDetail = hoistCmp.factory(
                             h3(Icon.info(), 'Error Info'),
                             formField({
                                 field: 'username',
-                                item: textInput(),
-                                readonlyRenderer: valOrNa
+                                item: textInput()
                             }),
                             formField({
                                 field: 'dateCreated',
@@ -46,8 +45,7 @@ export const clientErrorDetail = hoistCmp.factory(
                             }),
                             formField({
                                 field: 'appVersion',
-                                item: textInput(),
-                                readonlyRenderer: valOrNa
+                                item: textInput()
                             }),
                             formField({
                                 field: 'userAlerted',
@@ -56,24 +54,20 @@ export const clientErrorDetail = hoistCmp.factory(
                             }),
                             formField({
                                 field: 'id',
-                                item: textInput(),
-                                readonlyRenderer: valOrNa
+                                item: textInput()
                             }),
                             h3(Icon.desktop(), 'Device / Browser'),
                             formField({
                                 field: 'device',
-                                item: textInput(),
-                                readonlyRenderer: valOrNa
+                                item: textInput()
                             }),
                             formField({
                                 field: 'browser',
-                                item: textInput(),
-                                readonlyRenderer: valOrNa
+                                item: textInput()
                             }),
                             formField({
                                 field: 'userAgent',
-                                item: textInput(),
-                                readonlyRenderer: valOrNa
+                                item: textInput()
                             })
                         ]
                     }),

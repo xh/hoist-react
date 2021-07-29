@@ -13,6 +13,7 @@
 * Toasts may now be dismissed programmatically - use the new `ToastModel` returned by the
   `XH.toast()` API and its variants.
 * Timeouts are now configurable on grid exports via property `exportOptions.timeout`.
+* `Form` supports setting readonlyRenderer in `fieldDefaults` prop.
 
 ### 🐞 Bug Fixes
 
