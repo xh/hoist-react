@@ -48,7 +48,7 @@ export class Column {
         {sort: 'desc', abs: false}
     ];
 
-    /** @member {Column~editableFn} */
+    /** @member {(boolean|Column~editableFn)} */
     editable;
 
     /**
@@ -333,7 +333,7 @@ export class Column {
             `Column specified with both tooltip && tooltipElement. Tooltip will be ignored. [colId=${this.colId}]`
         );
 
-        this.editable = this.parseEditable(editable);
+        this.editable = editable || false;
         this.editor = editor;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
@@ -348,12 +348,14 @@ export class Column {
 
     /**
      * @param {Record} record
-     * @param {Object} [agParams] - raw params from agGrid event, if available.
      * @return {boolean} - true if this column supports editing its field for the given Record.
      */
-    isEditableForRecord(record, agParams) {
+    isEditableForRecord(record) {
         const {editable, gridModel} = this;
-        return record ? editable({record, store: record.store, gridModel, column: this, agParams}) : false;
+        if (!record) return false;
+        return isFunction(editable) ?
+            editable({record, store: record.store, gridModel, column: this}) :
+            editable;
     }
 
     /** Produce a Column definition appropriate for AG-Grid. */
@@ -385,10 +387,7 @@ export class Column {
                 suppressColumnsToolPanel: this.excludeFromChooser,
                 suppressFiltersToolPanel: this.excludeFromChooser,
                 enableCellChangeFlash: this.highlightOnChange,
-                editable: (agParams) => {
-                    const record = agParams.node.data;
-                    return this.isEditableForRecord(record, agParams);
-                },
+                editable: (agParams) => this.isEditableForRecord(agParams.node.data),
                 valueSetter: (agParams) => {
                     const record = agParams.data;
                     this.setValueFn({
@@ -622,8 +621,7 @@ export class Column {
                     return record && !isEmpty(record.errors[field]);
                 },
                 'xh-cell--editable': (agParams) => {
-                    const record = agParams.data;
-                    return this.isEditableForRecord(record, agParams);
+                    return this.isEditableForRecord(agParams.data);
                 }
             };
         }
@@ -659,11 +657,6 @@ export class Column {
         if (pinned === true) return 'left';
         if (pinned === 'left' || pinned === 'right') return pinned;
         return null;
-    }
-
-    // Normalize provided function or a boolean into a function form.
-    parseEditable(editable) {
-        return isFunction(editable) ? editable : () => !!editable;
     }
 
     getSortValue(v, record) {
@@ -826,7 +819,6 @@ export function getAgHeaderClassFn(column) {
  * @param {Store} params.store - Store containing the grid data.
  * @param {Column} params.column - column for the cell being edited.
  * @param {GridModel} params.gridModel - gridModel for the grid.
- * @param {IsColumnFuncParams} [params.agParams] - the ag-grid column function params, if available.
  * @return {boolean} - true if cell is editable
  */
 
