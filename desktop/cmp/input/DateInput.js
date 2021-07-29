@@ -231,7 +231,7 @@ class Model extends HoistInputModel {
 
     noteBlurred() {
         super.noteBlurred();
-        wait(1).then(() => {
+        wait().then(() => {
             if (!this.hasFocus) {
                 this.setPopoverOpen(false);
             }

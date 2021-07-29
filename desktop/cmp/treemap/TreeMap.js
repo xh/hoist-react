@@ -215,7 +215,7 @@ class LocalModel extends HoistModel {
         if (width > 0 && height > 0) {
             chart.setSize(width, height, false);
         }
-        await wait(0);
+        await wait();
 
         model.setIsMasking(false);
         this.updateLabelVisibility();

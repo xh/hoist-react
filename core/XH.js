@@ -122,13 +122,13 @@ class XHClass extends HoistBase {
     //----------------------------------------------------------------------------------------------
     /**
      * @param {FetchOptions} opts
-     * @return {Promise<Response>}
+     * @returns {Promise<Response>}
      */
     fetch(opts)                 {return this.fetchService.fetch(opts)}
 
     /**
      * @param {FetchOptions} opts
-     * @return {Promise}
+     * @returns {Promise}
      */
     fetchJson(opts)             {return this.fetchService.fetchJson(opts)}
 
@@ -136,7 +136,7 @@ class XHClass extends HoistBase {
      * Primary convenience alias for reading soft configuration values.
      * @param {string} key - identifier of the config to return.
      * @param {*} [defaultVal] - value to return if there is no client-side config with this key.
-     * @return {*} - the soft-configured value.
+     * @returns {*} - the soft-configured value.
      */
     getConf(key, defaultVal)    {return this.configService.get(key, defaultVal)}
 
@@ -144,7 +144,7 @@ class XHClass extends HoistBase {
      * Primary convenience alias for reading user preference values.
      * @param {string} key - identifier of the pref to return.
      * @param {*} [defaultVal] - value to return if there is no pref with this key.
-     * @return {*} - the user's preference, or the data-driven default if pref not yet set by user.
+     * @returns {*} - the user's preference, or the data-driven default if pref not yet set by user.
      */
     getPref(key, defaultVal)    {return this.prefService.get(key, defaultVal)}
 
@@ -159,16 +159,16 @@ class XHClass extends HoistBase {
     track(opts)                 {return this.trackService?.track(opts)}
     getEnv(key)                 {return this.environmentService?.get(key) ?? null}
 
-    /** @return {?HoistUser} */
+    /** @returns {?HoistUser} */
     getUser()                   {return this.identityService?.getUser() ?? null}
-    /** @return {?string} */
+    /** @returns {?string} */
     getUsername()               {return this.identityService?.getUsername() ?? null}
 
-    /** @return {boolean} */
+    /** @returns {boolean} */
     get isMobileApp()           {return this.appSpec.isMobileApp}
-    /** @return {string} */
+    /** @returns {string} */
     get clientAppCode()         {return this.appSpec.clientAppCode}
-    /** @return {string} */
+    /** @returns {string} */
     get clientAppName()         {return this.appSpec.clientAppName}
 
     get isPhone()               {return this.uaParser.getDevice().type === 'mobile'}
@@ -416,32 +416,46 @@ class XHClass extends HoistBase {
      * Show a non-modal "toast" notification that appears and then automatically dismisses.
      *
      * @param {(Object|string)} config - options for toast instance, or string message.
-     * @param {(ReactNode|string)} config.message - the message to show in the toast.
-     * @param {Element} [config.icon] - icon to be displayed
-     * @param {number} [config.timeout] - time in milliseconds to display the toast.
-     * @param {string} [config.intent] - the Blueprint intent.
-     * @param {Object} [config.position] - Position in viewport to display toast. See Blueprint
-     *     Position enum (desktop only).
-     * @param {Component} [config.containerRef] - Component that should contain (locate) the Toast.
-     *      If null, the Toast will appear at the edges of the document (desktop only).
+     * @param {(ReactNode|string)} config.message - message to display within the Toast.
+     * @param {Element} [config.icon] - optional icon.
+     * @param {?number} [config.timeout] - time in ms (default 3000) to show before auto-dismissing
+     *      the toast, or null to keep toast visible until manually dismissed.
+     * @param {string} [config.intent] - one of [primary|success|warning|danger].
+     * @param {Object} [config.position] - Relative position at which to display toast, e.g.
+     *      "bottom-right" (default) or "top". (Desktop only.)
+     * @param {HTMLElement} [config.containerRef] - DOM element relative to which the toast should
+     *      be positioned. If null, Toast will show along edge of overall document. (Desktop only.)
+     * @returns {ToastModel} - model representing the toast. May be used for programmatic dismissal.
      */
     toast(config) {
-        this.acm.toastSourceModel.show(config);
+        return this.acm.toastSourceModel.show(config);
     }
 
+    /**
+     * Show a toast with default intent and icon indicating success.
+     * @returns {ToastModel}
+     */
     successToast(config) {
         if (isString(config)) config = {message: config};
-        this.toast({intent: 'success', icon: Icon.success(), ...config});
+        return this.toast({intent: 'success', icon: Icon.success(), ...config});
     }
 
+    /**
+     * Show a toast with default intent and icon indicating a warning.
+     * @returns {ToastModel}
+     */
     warningToast(config) {
         if (isString(config)) config = {message: config};
-        this.toast({intent: 'warning', icon: Icon.warning(), ...config});
+        return this.toast({intent: 'warning', icon: Icon.warning(), ...config});
     }
 
+    /**
+     * Show a toast with intent and icon indicating a serious issue.
+     * @returns {ToastModel}
+     */
     dangerToast(config) {
         if (isString(config)) config = {message: config};
-        this.toast({intent: 'danger', icon: Icon.danger(), ...config});
+        return this.toast({intent: 'danger', icon: Icon.danger(), ...config});
     }
 
     /**
@@ -462,6 +476,7 @@ class XHClass extends HoistBase {
      *      which triggers this function.
      * @param {Object} [config.actionButtonProps] - Set the properties of the action button
      * @param {...*} [config.rest] - additional properties to pass to the banner component
+     * @returns {BannerModel}
      */
     showBanner(config) {
         if (isString(config)) config = {message: config};

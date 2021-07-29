@@ -70,9 +70,11 @@ export function elem(type, config = {}) {
  * @return {function}
  */
 export function elemFactory(type) {
-    return function(...args) {
+    const ret = function(...args) {
         return elem(type, normalizeArgs(args));
     };
+    ret.isElemFactory = true;
+    return ret;
 }
 
 

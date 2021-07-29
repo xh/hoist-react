@@ -7,9 +7,9 @@
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
-import {Position, Toaster} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
-import {isElement} from 'lodash';
+import {Toaster} from '@xh/hoist/kit/blueprint';
+import {isElement, map} from 'lodash';
+import {wait} from '../../promise';
 import './Toast.scss';
 
 /**
@@ -35,28 +35,31 @@ class LocalModel extends HoistModel {
     constructor(toastSourceModel) {
         super();
         this.addReaction({
-            track: () => toastSourceModel.toastModels,
-            run: this.displayPendingToasts
+            track: () => [toastSourceModel.toastModels, map(toastSourceModel.toastModels, 'isOpen')],
+            run: ([models]) => this.displayPendingToasts(models)
         });
     }
 
-    //------------------------
-    // Implementation
-    //------------------------
+    /** @param {ToastModel[]} models */
     displayPendingToasts(models) {
         models.forEach(model => {
-            let {wasShown, isOpen, icon, position, containerRef, ...rest} = model;
-            if (wasShown || !isOpen) return;
+            let {bpId, isOpen, icon, position, containerRef, ...rest} = model;
 
-            position = position || Position.BOTTOM_RIGHT;
-            this.getToaster(position, containerRef).show({
-                className: 'xh-toast',
-                icon: div({className: 'xh-toast__icon', item: icon}),
-                onDismiss: () => model.dismiss(),
-                ...rest
-            });
+            // 1) If toast is visible and sent to bp, or already obsolete -- nothing to do
+            if ((!!bpId) === isOpen) return;
 
-            model.wasShown = true;
+            // 2) ...otherwise this toast needs to be shown or hidden with bp api
+            let toaster = this.getToaster(position, containerRef);
+            if (!bpId) {
+                model.bpId = toaster.show({
+                    className: 'xh-toast',
+                    icon: div({className: 'xh-toast__icon', item: icon}),
+                    onDismiss: () => wait(0).then(() => model.dismiss()),
+                    ...rest
+                });
+            } else {
+                toaster.dismiss(bpId);
+            }
         });
     }
 
@@ -79,8 +82,6 @@ class LocalModel extends HoistModel {
         const toasterMap = this._toasterMap,
             container = containerRef ? containerRef : document.body,
             className = `xh-toast-container ${containerRef ? 'xh-toast-container--anchored' : ''}`;
-
-        position = withDefault(position, 'top');
 
         // We want to just memoize this by two args (one object)?  Is there a library for this?
         const toasters = toasterMap.get(container) || {};

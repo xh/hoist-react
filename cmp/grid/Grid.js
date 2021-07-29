@@ -77,7 +77,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
                 className: classNames(
                     className,
                     impl.isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat',
-                    model.treeMode ? getTreeStyleClasses(model.treeStyle, impl.depthOfLowestLeaf) : null
+                    model.treeMode ? getTreeStyleClasses(model.treeStyle, model.store.maxDepth) : null
                 ),
                 item: agGrid({
                     ...getLayoutProps(props),
@@ -141,16 +141,6 @@ class GridLocalModel extends HoistModel {
     get isHierarchical() {
         const {model} = this;
         return model.treeMode && model.store.allRootCount !== model.store.allCount;
-    }
-
-    @computed
-    get depthOfLowestLeaf() {
-        let maxDepth = 0;
-        if (this.isHierarchical) {
-            const {records} = this.model.store;
-            records.forEach(record => maxDepth = Math.max(record.treePath.length - 1, maxDepth));
-        }
-        return maxDepth;
     }
 
     @computed
@@ -232,7 +222,9 @@ class GridLocalModel extends HoistModel {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
             },
             autoSizePadding: 3, // tighten up cells for ag-Grid native autosizing.  Remove when Hoist autosizing no longer experimental,
-            editType: model.fullRowEditing ? 'fullRow' : undefined
+            editType: model.fullRowEditing ? 'fullRow' : undefined,
+            singleClickEdit: model.clicksToEdit === 1,
+            suppressClickEdit: model.clicksToEdit !== 1 && model.clicksToEdit !== 2
         };
 
         // Platform specific defaults
@@ -612,7 +604,7 @@ class GridLocalModel extends HoistModel {
         }
 
         if (!transaction || transaction.add || transaction.remove) {
-            wait(0).then(() => this.syncSelection());
+            wait().then(() => this.syncSelection());
         }
 
         model.noteAgExpandStateChange();
