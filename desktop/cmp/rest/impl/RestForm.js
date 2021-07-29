@@ -23,7 +23,7 @@ export const restForm = hoistCmp.factory({
     className: 'xh-rest-form',
 
     render({model, className}) {
-        const {isAdd, readonly, isOpen} = model;
+        const {isAdd, readonly, isOpen, dialogRef} = model;
         if (!isOpen) return null;
 
         return dialog({
@@ -35,6 +35,7 @@ export const restForm = hoistCmp.factory({
             item: panel({
                 item: formDisplay(),
                 bbar: tbar(),
+                ref: dialogRef,
                 mask: 'onLoad'
             })
         });

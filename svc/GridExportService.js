@@ -8,9 +8,13 @@ import {ExportFormat} from '@xh/hoist/cmp/grid';
 import {HoistService, XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
-import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq, compact} from 'lodash';
+import {StatusCodes} from 'http-status-codes';
+import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq, compact, find} from 'lodash';
+import {span, a} from '@xh/hoist/cmp/layout';
+import {wait} from '@xh/hoist/promise';
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
@@ -27,7 +31,8 @@ export class GridExportService extends HoistService {
     async exportAsync(gridModel, {
         filename = 'export',
         type = 'excelTable',
-        columns = 'VISIBLE'
+        columns = 'VISIBLE',
+        timeout = 30 * SECONDS
     } = {}) {
         throwIf(!gridModel,
             'GridModel required for export');
@@ -49,11 +54,11 @@ export class GridExportService extends HoistService {
 
 
         if (records.length === 0) {
-            XH.toast({message: 'No data found to export', intent: 'danger', icon: Icon.warning()});
+            XH.warningToast('No data found to export.');
             return;
         }
 
-        // If the grid includes a summary row, add it to the export payload as a root-level node
+        // If the grid includes a summary row, add it to the export payload as a root-level node.
         const rows = gridModel.showSummary && summaryRecord ?
             [
                 this.getHeaderRow(exportColumns, type, gridModel),
@@ -65,22 +70,30 @@ export class GridExportService extends HoistService {
                 ...this.getRecordRowsRecursive(gridModel, records, exportColumns, 0)
             ];
 
-        // Show separate 'started' and 'complete' toasts for larger (i.e. slower) exports.
-        // We use cell count as a heuristic for speed - this may need to be tweaked.
-        const cellCount = rows.length * exportColumns.length;
+        // Show separate 'started' toasts for larger (i.e. slower) exports.
+        let startToast = null,
+            cellCount = rows.length * exportColumns.length;
+
         if (cellCount > withDefault(config.streamingCellThreshold, 100000)) {
-            XH.toast({
+            startToast = XH.toast({
                 message: 'Your export is being prepared. Due to its size, formatting will be removed.',
+                icon: Icon.download(),
                 intent: 'warning',
-                icon: Icon.download()
+                timeout: null
             });
         } else if (cellCount > withDefault(config.toastCellThreshold, 3000)) {
-            XH.toast({
+            startToast = XH.toast({
                 message: 'Your export is being prepared and will download when complete...',
-                intent: 'primary',
-                icon: Icon.download()
+                icon: Icon.download(),
+                timeout: null
             });
         }
+
+        // Toast will be dismissed when export completes, but commit to showing for at least 2s to
+        // avoid an annoying flash if download is ready immediately.
+        const dismissStartToast = startToast ?
+            this.minWait(2 * SECONDS, () => startToast.dismiss()) :
+            () => null;
 
         // POST the data as a file (using multipart/form-data) to work around size limits when using application/x-www-form-urlencoded.
         // This allows the data to be split into multiple parts and streamed, allowing for larger excel exports.
@@ -90,31 +103,53 @@ export class GridExportService extends HoistService {
             params = {filename, type, meta, rows};
 
         formData.append('params', JSON.stringify(params));
-        const response = await XH.fetch({
-            url: 'xh/export',
-            method: 'POST',
-            body: formData,
-            // Note: We must explicitly unset Content-Type headers to allow the browser to set it's own multipart/form-data boundary.
-            // See https://stanko.github.io/uploading-files-using-fetch-multipart-form-data/ for further explanation.
-            headers: {
-                'Content-Type': null
-            }
-        });
 
-        const blob = response.status === 204 ? null : await response.blob(),
-            fileExt = this.getFileExtension(type),
-            contentType = this.getContentType(type);
+        try {
+            const response = await XH.fetch({
+                url: 'xh/export',
+                method: 'POST',
+                body: formData,
+                // Note: We must explicitly unset Content-Type headers to allow the browser to set its own multipart/form-data boundary.
+                // See https://stanko.github.io/uploading-files-using-fetch-multipart-form-data/ for further explanation.
+                headers: {
+                    'Content-Type': null
+                },
+                timeout
+            });
 
-        download(blob, `${filename}${fileExt}`, contentType);
-        XH.toast({
-            message: 'Export complete',
-            intent: 'success'
-        });
+            const blob = response.status === StatusCodes.NO_CONTENT ? null : await response.blob(),
+                fileExt = this.getFileExtension(type),
+                contentType = this.getContentType(type);
+
+            download(blob, `${filename}${fileExt}`, contentType);
+            await dismissStartToast();
+            XH.successToast('Export complete.');
+        } catch (e) {
+            XH.exceptionHandler.handleException(e, {showAlert: false});
+            await dismissStartToast();
+            this.showFailToast(e);
+        }
     }
 
     //-----------------------
     // Implementation
     //-----------------------
+    showFailToast(e) {
+        const failToast = XH.dangerToast({
+            message: span(
+                'Export failed ',
+                a({
+                    item: '(show details...)',
+                    onClick: () => {
+                        failToast?.dismiss();
+                        XH.exceptionHandler.showException(e);
+                    }
+                })
+            ),
+            timeout: null
+        });
+    }
+
     getExportableColumns(gridModel, columns) {
         if (isFunction(columns)) {
             return compact(
@@ -127,8 +162,8 @@ export class GridExportService extends HoistService {
             includeViz = toExport.includes('VISIBLE');
 
         return sortBy(gridModel.getLeafColumns(), ({colId}) => {
-            const match = gridModel.columnState.find(it => it.colId === colId);
-            return withDefault(match?._sortOrder, 0);
+            const match = find(gridModel.columnState, {colId});
+            return withDefault(match?._sortOrder, toExport.indexOf(colId));
         }).filter(col => {
             const {colId, excludeFromExport} = col;
             return (
@@ -281,6 +316,15 @@ export class GridExportService extends HoistService {
                 return '.csv';
         }
     }
+
+    // Return an async function that will block until a minimum time has passed.
+    minWait(time, fn) {
+        const minDelay = wait(time);
+        return async () => {
+            await minDelay;
+            fn();
+        };
+    }
 }
 
 /**
@@ -293,4 +337,5 @@ export class GridExportService extends HoistService {
  *      column IDs to include (can be used in conjunction with VISIBLE to export all visible and
  *      enumerated columns). Also supports a function taking the GridModel, and returning an array
  *      of column IDs to include.
+ * @property {number} [options.timeout] - timeout (in ms) for export request - defaults to 30 seconds
  */

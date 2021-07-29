@@ -14,7 +14,6 @@ import {Icon} from '@xh/hoist/icon';
 import {EhCacheModel} from './EhCacheModel';
 
 export const ehCachePanel = hoistCmp.factory({
-
     model: creates(EhCacheModel),
 
     render({model}) {
@@ -25,7 +24,7 @@ export const ehCachePanel = hoistCmp.factory({
                     icon: Icon.reset(),
                     text: 'Clear All',
                     intent: 'danger',
-                    onClick: () => model.clearAll()
+                    onClick: () => model.clearAllAsync()
                 }),
                 filler(),
                 gridCountLabel({unit: 'cache'}),

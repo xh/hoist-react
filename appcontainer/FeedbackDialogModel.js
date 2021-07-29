@@ -55,18 +55,20 @@ export class FeedbackDialogModel extends HoistModel {
     async submitAsync() {
         if (!this.message) this.hide();
 
-        return XH.fetchJson({
-            url: 'xh/submitFeedback',
-            params: {
-                msg: this.message,
-                appVersion: XH.getEnv('appVersion'),
-                clientUsername: XH.getUsername()
-            }
-        }).then(() => {
-            XH.toast({message: 'Your feedback was submitted'});
+        try {
+            await XH.fetchJson({
+                url: 'xh/submitFeedback',
+                params: {
+                    msg: this.message,
+                    appVersion: XH.getEnv('appVersion'),
+                    clientUsername: XH.getUsername()
+                }
+            }).linkTo(XH.appLoadModel);
+
+            XH.successToast('Thank you - your feedback has been sent.');
             this.hide();
-        }).linkTo(
-            XH.appLoadModel
-        ).catchDefault();
+        } catch (e) {
+            XH.handleException(e);
+        }
     }
 }

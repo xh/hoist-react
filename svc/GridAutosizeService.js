@@ -11,18 +11,18 @@ import {runInAction} from '@xh/hoist/mobx';
 import {ColumnWidthCalculator} from '../cmp/grid/impl/ColumnWidthCalculator';
 
 /**
- * Sets appropriate column widths for a grid based on its contents.  Generally
- * seeks to make columns at least as wide as all of their contents, including headers.
+ * Sets appropriate column widths for a grid based on its contents. Generally seeks to make columns
+ * at least as wide as all of their contents, including headers.
  *
- * Unlike the native ag-Grid autosizing, this service will compute a size based on all
- * data in the grid, including off-screen rows and columns, and collapsed rows.
+ * Unlike the native ag-Grid autosizing, this service will compute a size based on all data in the
+ * grid, including off-screen rows and columns and (if requested) collapsed rows.
  *
  * In order to do this efficiently, this service uses heuristics and generally assumes each
- * column consists of similarly formatted strings.  In particular, it cannot make the computation
- * when a react based elementRenderer has been specified for a column. In this case, no width will
- * be computed, and the column will be ignored by this service.
+ * column consists of similarly formatted strings. Note that it cannot size columns that specify an
+ * `elementRenderer` (component) for their display. In this case, no width will be computed, and
+ * the column will be ignored by this service.
  *
- * @see Column.autosizeOptions for options to control this behaviour
+ * {@see GridModel.autosizeOptions} for configurable options.
  */
 export class GridAutosizeService extends HoistService {
 
@@ -67,31 +67,14 @@ export class GridAutosizeService extends HoistService {
     // Implementation
     //------------------
     /**
-     * Calculates the required column widths for a GridModel. Returns an array of the
-     * form [{colId, width}] suitable for consumption by GridModel.applyColumnStateChanges().
-     *
-     * @param {GridModel} gridModel - GridModel to autosize.
-     * @param {string[]} colIds - array of columns in model to compute sizing for.
-     * @param {GridAutosizeOptions} options - options to use for this autosize.
+     * @param {GridModel} gridModel
+     * @param {string[]} colIds
+     * @param {GridAutosizeOptions} options
+     * @return {Object[]} - {colId, width} objects to pass to GridModel.applyColumnStateChanges()
      */
     calcRequiredWidths(gridModel, colIds, options) {
-        const {store, agApi} = gridModel,
+        const records = this.gatherRecordsToBeSized(gridModel, options),
             ret = [];
-
-        // Get filtered set of records
-        let records = [];
-        if (agApi?.isAnyFilterPresent()) {
-            agApi.forEachNodeAfterFilter(node => {
-                const record = store.getById(node.data?.id);
-                if (record) records.push(record);
-            });
-        } else {
-            records = [...store.records];
-        }
-
-        if (gridModel.showSummary && store.summaryRecord) {
-            records.push(store.summaryRecord);
-        }
 
         for (const colId of colIds) {
             const width = this._columnWidthCalculator.calcWidth(gridModel, records, colId, options);
@@ -103,12 +86,45 @@ export class GridAutosizeService extends HoistService {
 
 
     /**
-     * Calculate the increased size of columns to fill any remaining space. Returns an array of the
-     * form [{colId, width}] suitable for consumption by GridModel.applyColumnStateChanges().
-     *
-     * @param {GridModel} gridModel - GridModel to autosize.
-     * @param {string[]} colIds - array of columns in model to compute sizing for.
+     * @param {GridModel} gridModel
+     * @param {GridAutosizeOptions} options
+     */
+    gatherRecordsToBeSized(gridModel, options) {
+        let {store, agApi, treeMode, groupBy} = gridModel,
+            {includeCollapsedChildren} = options,
+            ret = [];
+
+        if (agApi && !includeCollapsedChildren && (treeMode || groupBy)) {
+            // In tree/grouped grids, included expanded rows only by default.
+            for (let idx = 0; idx < agApi.getDisplayedRowCount(); idx++) {
+                const node = agApi.getDisplayedRowAtIndex(idx),
+                    record = store.getById(node.data?.id);
+                if (record) ret.push(record);
+            }
+        } else if (agApi?.isAnyFilterPresent()) {
+            // Respect "native" ag-Grid filtering, if in use.
+            agApi.forEachNodeAfterFilter(node => {
+                const record = store.getById(node.data?.id);
+                if (record) ret.push(record);
+            });
+        } else {
+            // Otherwise include all records in the store (at all levels).
+            ret = [...store.records];
+        }
+
+        if (gridModel.showSummary && store.summaryRecord) {
+            ret.push(store.summaryRecord);
+        }
+        return ret;
+    }
+
+
+    /**
+     * Calculate the increased size of columns to fill any remaining space.
+     * @param {GridModel} gridModel
+     * @param {string[]} colIds
      * @param {string} fillMode
+     * @return {Object[]} - {colId, width} objects to pass to GridModel.applyColumnStateChanges()
      */
     calcFillWidths(gridModel, colIds, fillMode) {
         if (gridModel.getVisibleLeafColumns().some(it => it.flex)) {

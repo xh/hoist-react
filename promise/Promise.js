@@ -8,9 +8,12 @@ import {XH} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {Exception} from '@xh/hoist/exception';
 import {castArray, isFunction, isNumber, isPlainObject} from 'lodash';
+import {apiDeprecated} from '../utils/js';
 
 /**
  * Start a new promise chain.
+ *
+ * @deprecated  Use `wait()` instead.
  *
  * This method serves as a lightweight way to start a promise chain for any code.
  * It is useful for combining promise based calls with non-promise based calls, especially when
@@ -25,6 +28,7 @@ import {castArray, isFunction, isNumber, isPlainObject} from 'lodash';
  * @returns {Promise}
  */
 export async function start(fn) {
+    apiDeprecated(true, 'start', 'Use wait() instead.');
     const promise = new Promise(resolve => setTimeout(resolve, 1));
     return fn ? promise.then(fn) : start;
 }
@@ -32,10 +36,13 @@ export async function start(fn) {
 /**
  * Return a promise that will resolve after the specified amount of time.
  *
- * @param {number} interval - milliseconds to delay.
+ * This method serves as a lightweight way to start a promise chain for any code.
+ *
+ * @param {number} [interval] - milliseconds to delay. Defaults to 0.  Note that the actual
+ *      delay will be subject to the minimum delay for setTimeout() in the browser.
  * @return {Promise}
  */
-export async function wait(interval) {
+export async function wait(interval = 0) {
     return new Promise(resolve => setTimeout(resolve, interval));
 }
 
