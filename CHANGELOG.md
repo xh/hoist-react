@@ -8,6 +8,7 @@
   (i.e. hidden) child records should be measured when computing column sizes. Default of `false`
   improves autosize performance for large tree grids and should generally match user expectations
   around WYSIWYG autosizing.
+* New `GridModel.beginEditAsync()` and `endEditAsync()` APIs added to start/stop inline editing.
 * New `GridModel.clicksToEdit` config controls the number of clicks required to trigger
   inline-editing of a grid cell. Default remains 2 (double click).
 * Toasts may now be dismissed programmatically - use the new `ToastModel` returned by the
