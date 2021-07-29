@@ -218,9 +218,9 @@
         }
       }
 
+      // Does not apply to lowest-level rows, which are styled by AgGrid stylesheet.
       .xh-ag-grid--show-hover {
-        div[class*=" ag-row-group"],
-        div[class^="ag-row-group"] {
+        .ag-row:not(.ag-row-level-#{$i}) {
           &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected) {
             background-color: var(--xh-grid-bg-hover);
           }
