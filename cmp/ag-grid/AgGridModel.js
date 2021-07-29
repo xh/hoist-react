@@ -5,8 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, bindable, observable, makeObservable, computed} from '@xh/hoist/mobx';
-import {throwIf, apiDeprecated} from '@xh/hoist/utils/js';
+import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {throwIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
     concat,
@@ -14,11 +14,11 @@ import {
     has,
     isArray,
     isEmpty,
+    isEqual,
     isNil,
     partition,
     set,
-    startCase,
-    isEqual
+    startCase
 } from 'lodash';
 
 /**
@@ -72,13 +72,10 @@ export class AgGridModel extends HoistModel {
         cellBorders = false,
         stripeRows = true,
         showCellFocus = false,
-        hideHeaders = false,
-        compact
+        hideHeaders = false
     } = {}) {
         super();
         makeObservable(this);
-        apiDeprecated(compact, 'compact', "Use 'sizingMode' instead");
-        if (compact) sizingMode = 'compact';
 
         this.sizingMode = sizingMode;
         this.showHover = showHover;

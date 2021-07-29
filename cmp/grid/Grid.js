@@ -67,6 +67,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
         apiRemoved(props.onRowDoubleClicked, 'onRowDoubleClicked', 'Specify onRowDoubleClicked on the GridModel instead.');
         apiRemoved(props.onCellClicked, 'onCellClicked', 'Specify onCellClicked on the GridModel instead.');
         apiRemoved(props.onCellDoubleClicked, 'onCellDoubleClicked', 'Specify onCellDoubleClicked on the GridModel instead.');
+        apiRemoved(props.agOptions?.rowClassRules, 'agOptions.rowClassRules', 'Specify rowClassRules on the GridModel instead.');
 
         const impl = useLocalModel(() => new GridLocalModel(model, props)),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser;
@@ -197,6 +198,7 @@ class GridLocalModel extends HoistModel {
             tooltipShowDelay: 0,
             getRowHeight: ({node}) => this.getRowHeight(node),
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
+            rowClassRules: model.rowClassRules,
             noRowsOverlayComponentFramework: observer(() => div(this.emptyText)),
             onCellClicked: model.onCellClicked,
             onCellDoubleClicked: model.onCellDoubleClicked,

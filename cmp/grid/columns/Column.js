@@ -7,7 +7,7 @@
 import {div, ul, li} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
-import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {apiRemoved, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
     clone,
@@ -73,9 +73,13 @@ export class Column {
      *      as cell alignment.
      * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - CSS classes to add to the
      *      header. Supports both string values or a function to generate strings.
-     * @param {(Column~cellClassFn|string|string[])} [c.cellClass] - additional css classes to add
-     *      to each cell in the column. Supports both string values or function to generate
-     *     strings.
+     * @param {(Column~cellClassFn|string|string[])} [c.cellClass] - additional CSS classes to add
+     *      to each cell in the column. Supports both string values or function to generate.
+     *      NOTE that, once added, classes will *not* be removed if the data changes.
+     *      Use `cellClassRules` instead if Record data can change across refreshes.
+     * @param {Object.<string, Column~cellClassRuleFn>} [c.cellClassRules] - object keying CSS
+     *      class names to functions determining if they should be added or removed from the cell.
+     *      See Ag-Grid docs on "cell styles" for details.
      * @param {boolean} [c.hidden] - true to suppress default display of the column.
      * @param {string} [c.align] - horizontal alignment of cell contents.
      *      Valid values are:  'left' (default), 'right' or 'center'.
@@ -186,6 +190,7 @@ export class Column {
         headerAlign,
         headerClass,
         cellClass,
+        cellClassRules,
         hidden,
         align,
         width,
@@ -257,7 +262,11 @@ export class Column {
         this.headerHasExpandCollapse = withDefault(headerHasExpandCollapse, true);
         this.headerClass = headerClass;
         this.headerAlign = headerAlign || align;
+
         this.cellClass = cellClass;
+        this.cellClassRules = cellClassRules || {};
+        apiRemoved(agOptions?.cellClassRules, 'agOptions.cellClassRules', 'Specify cellClassRules as a top-level Column config instead.');
+
         this.align = align;
 
         this.hidden = withDefault(hidden, false);
@@ -387,6 +396,7 @@ export class Column {
                 suppressColumnsToolPanel: this.excludeFromChooser,
                 suppressFiltersToolPanel: this.excludeFromChooser,
                 enableCellChangeFlash: this.highlightOnChange,
+                cellClassRules: this.cellClassRules,
                 editable: (agParams) => this.isEditableForRecord(agParams.node.data),
                 valueSetter: (agParams) => {
                     const record = agParams.data;
@@ -494,17 +504,17 @@ export class Column {
 
         // Generate CSS classes for cells.
         // Default alignment classes are mixed in with any provided custom classes.
-        const {align} = this;
+        const {cellClass, isTreeColumn, align} = this;
         ret.cellClass = (agParams) => {
             let r = [];
-            if (this.cellClass) {
+            if (cellClass) {
                 r = castArray(
-                    isFunction(this.cellClass) ?
-                        this.cellClass(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
-                        this.cellClass
+                    isFunction(cellClass) ?
+                        cellClass(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
+                        cellClass
                 );
             }
-            if (this.isTreeColumn) {
+            if (isTreeColumn) {
                 r.push('xh-tree-column');
             }
             if (align === 'center' || align === 'right') {
@@ -622,7 +632,8 @@ export class Column {
                 },
                 'xh-cell--editable': (agParams) => {
                     return this.isEditableForRecord(agParams.data);
-                }
+                },
+                ...ret.cellClassRules
             };
         }
 
@@ -750,6 +761,16 @@ export function getAgHeaderClassFn(column) {
  * @param {*} value - cell data value (column + row).
  * @param {CellContext} context - additional data about the column, row and GridModel.
  * @return {(string|string[])} - CSS class(es) to use.
+ */
+
+/**
+ * @callback Column~cellClassRuleFn - function to determine if a particular CSS class should be
+ *      added/removed from a cell, via cellClassRules config.
+ * @param {CellClassParams} agParams - as provided by Ag-Grid.
+ * @param {*} agParams.value - the current cell value.
+ * @param {?Record} agParams.data - the backing Hoist record for the row, if any.
+ * @return {boolean} - true if the class to which this function is keyed should be added, false if
+ *      it should be removed.
  */
 
 /**
