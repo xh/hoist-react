@@ -14,10 +14,10 @@ import {XH} from './XH';
  */
 export class ExceptionHandler {
 
-    _isUnloading = false;
+    #isUnloading = false;
 
     constructor() {
-        window.addEventListener('unload', () => this._isUnloading = true);
+        window.addEventListener('unload', () => this.#isUnloading = true);
     }
 
     /**
@@ -56,7 +56,7 @@ export class ExceptionHandler {
      *      the exception log and alert.
      */
     handleException(exception, options) {
-        if (this._isUnloading) return;
+        if (this.#isUnloading) return;
 
         ({exception, options} = this.parseArgs(exception, options));
 
@@ -87,7 +87,7 @@ export class ExceptionHandler {
      *      the exception alert.
      */
     showException(exception, options) {
-        if (this._isUnloading) return;
+        if (this.#isUnloading) return;
         ({exception, options} = this.parseArgs(exception, options));
         XH.appContainerModel.exceptionDialogModel.show(exception, options);
     }
