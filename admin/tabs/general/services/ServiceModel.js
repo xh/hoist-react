@@ -30,22 +30,20 @@ export class ServiceModel extends HoistModel {
         ]
     });
 
-    clearCaches() {
+    async clearCachesAsync() {
         const {selection} = this.gridModel;
         if (!selection.length) return;
 
-        const names = selection.map(it => it.data.name);
-        XH.fetchJson({
-            url: 'serviceAdmin/clearCaches',
-            params: {names}
-        }).then(
-            this.onClearCacheSuccess()
-        ).catchDefault();
-    }
-
-    onClearCacheSuccess = () => {
-        this.loadAsync();
-        XH.toast({message: 'Caches Cleared'});
+        try {
+            await XH.fetchJson({
+                url: 'serviceAdmin/clearCaches',
+                params: {names: selection.map(it => it.data.name)}
+            });
+            await this.refreshAsync();
+            XH.successToast('Service caches cleared.');
+        } catch (e) {
+            XH.handleException(e);
+        }
     }
 
     async doLoadAsync(loadSpec) {
