@@ -308,7 +308,7 @@ class Model extends HoistInputModel {
             this.inputValue = renderValue ? renderValue.label : null;
         }
         if (this.selectOnFocus) {
-            wait(1).then(() => {
+            wait().then(() => {
                 // Delay to allow re-render. For safety, only select if still focused!
                 this.selectText();
             });

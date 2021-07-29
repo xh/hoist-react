@@ -4,17 +4,18 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {isString, partition} from 'lodash';
 import {ToastModel} from './ToastModel';
 
 /**
- *  Supports displaying pop-up Toast.
- *
+ *  Supports displaying a pop-up Toast.
  *  @private
  */
 export class ToastSourceModel extends HoistModel {
 
+    /** @member {ToastModel[]} */
     @managed
     @observable.ref
     toastModels = [];
@@ -25,6 +26,7 @@ export class ToastSourceModel extends HoistModel {
     }
 
     show(config) {
+        if (isString(config)) config = {message: config};
         const ret = new ToastModel(config);
         this.addModel(ret);
         return ret;
@@ -36,16 +38,10 @@ export class ToastSourceModel extends HoistModel {
     @action
     addModel(model) {
         this.toastModels.push(model);
-        this.cull();
-    }
 
-    @action
-    cull() {
-        const models = this.toastModels,
-            keepModels = models.filter(it => it.isOpen),
-            cullModels = models.filter(it => !it.isOpen);
-
-        this.toastModels = keepModels;
-        cullModels.forEach(it => it.destroy());
+        // Cull and install new reference.
+        const [keep, cull] = partition(this.toastModels, 'isOpen');
+        this.toastModels = keep;
+        XH.safeDestroy(cull);
     }
 }

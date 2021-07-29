@@ -7,7 +7,7 @@
 import {PersistenceProvider} from '@xh/hoist/core';
 
 import {cloneDeep, isUndefined} from 'lodash';
-import {start} from '@xh/hoist/promise';
+import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -79,7 +79,7 @@ function createPersistDescriptor(target, property, descriptor, options) {
             const persistWith = {path: property, ...this.persistWith, ...options},
                 provider = this.markManaged(PersistenceProvider.create(persistWith));
             providerState = cloneDeep(provider.read());
-            start(() => {
+            wait().then(() => {
                 this.addReaction({
                     track: () => this[property],
                     run: (data) => provider.write(data)

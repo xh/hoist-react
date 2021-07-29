@@ -4,13 +4,14 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {FormModel} from '@xh/hoist/cmp/form';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil, merge} from 'lodash';
+import {createRef} from 'react';
 
 export class RestFormModel extends HoistModel {
 
@@ -29,6 +30,8 @@ export class RestFormModel extends HoistModel {
     formModel;
 
     @observable types = {};
+
+    dialogRef = createRef();
 
     get actionWarning()     {return this.parent.actionWarning}
     get actions()           {return this.parent.formActions}
@@ -96,7 +99,11 @@ export class RestFormModel extends HoistModel {
 
         const valid = await this.formModel.validateAsync();
         if (!valid) {
-            XH.toast({message: 'Form not valid. Please correct errors.'});
+            XH.dangerToast({
+                message: 'One or more validation errors found - please correct and retry.',
+                containerRef: this.dialogRef.current,
+                position: 'bottom'
+            });
             return;
         }
 

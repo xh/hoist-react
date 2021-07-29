@@ -69,13 +69,13 @@ export class MonitorResultsModel extends HoistModel {
         this.getLastRun();
     }
 
-    async forceRunAllMonitors() {
-        return XH
-            .fetchJson({url: 'monitorAdmin/forceRunAllMonitors'})
-            .then(() => {
-                XH.toast({message: 'Request received. Results will be generated shortly.'});
-            })
-            .catchDefault();
+    async forceRunAllMonitorsAsync() {
+        try {
+            await XH.fetchJson({url: 'monitorAdmin/forceRunAllMonitors'});
+            XH.toast('Request received - results will be generated shortly.');
+        } catch (e) {
+            XH.handleException(e);
+        }
     }
 
     @action

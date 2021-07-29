@@ -15,7 +15,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {start} from '@xh/hoist/promise';
+import {wait} from '@xh/hoist/promise';
 import {apiRemoved} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 import {createRef} from 'react';
@@ -256,6 +256,6 @@ export class PanelModel extends HoistModel {
 
     dispatchResize() {
         // Forces other components to redraw if required.
-        start(() => window.dispatchEvent(new Event('resize')));
+        wait().then(() => window.dispatchEvent(new Event('resize')));
     }
 }

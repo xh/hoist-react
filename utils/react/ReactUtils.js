@@ -6,7 +6,7 @@
  */
 import {cloneElement, createElement, isValidElement} from 'react';
 import {throwIf} from '../js';
-import {isFunction} from 'lodash';
+import {isFunction, isNil} from 'lodash';
 
 /**
  * Return the display name for either a class-based or functional Component.
@@ -30,6 +30,12 @@ export function getReactElementName(obj) {
  *      These will override any existing props placed on the element, and should be used with care.
  */
 export function elementFromContent(content, addProps) {
+    if (isNil(content)) return null;
+
+    if (content.isElemFactory) {
+        return content(addProps);
+    }
+
     // Note: Would be more general to look for a *react* component.
     if (content.isHoistComponent) {
         return createElement(content, addProps);

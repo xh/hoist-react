@@ -79,10 +79,17 @@ body.xh-app {
   .xh-transparent { color: transparent; }
   .xh-yellow { color: var(--xh-yellow); }
   .xh-yellow-light { color: var(--xh-yellow-light); }
+
+  // Colors - intents
   .xh-intent-primary { color: var(--xh-intent-primary); }
   .xh-intent-danger { color: var(--xh-intent-danger); }
   .xh-intent-success { color: var(--xh-intent-success); }
   .xh-intent-warning { color: var(--xh-intent-warning); }
+
+  // Colors - pos/neg (red/green) vals
+  .xh-pos-val { color: var(--xh-pos-val-color); }
+  .xh-neg-val { color: var(--xh-neg-val-color); }
+  .xh-neutral-val { color: var(--xh-neutral-val-color); }
 
   // File Icons
   .xh-file-icon-excel { color: #0e7b41; }

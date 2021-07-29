@@ -7,7 +7,7 @@
 import {HoistService, XH} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
-import {throwIf, apiDeprecated, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, apiDeprecated} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, omitBy} from 'lodash';
 import {stringify} from 'qs';
@@ -30,7 +30,9 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
  */
 export class FetchService extends HoistService {
 
-    abortControllers = {};
+    NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
+
+    autoAborters = {};
     defaultHeaders = {};
     defaultTimeout = 30 * SECONDS;
 
@@ -60,7 +62,10 @@ export class FetchService extends HoistService {
      * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
      */
     async fetch(opts) {
-        return this.withTimeoutAsync(this.fetchInternalAsync(opts), opts);
+        return this.managedFetchAsync(
+            opts,
+            (aborter) => this.fetchInternalAsync(opts, aborter)
+        );
     }
 
     /**
@@ -69,12 +74,15 @@ export class FetchService extends HoistService {
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async fetchJson(opts) {
-        return this.withTimeoutAsync(
-            this.fetchInternalAsync({
-                ...opts,
-                headers: {'Accept': 'application/json', ...opts.headers}
-            }).then(r => [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT].includes(r.status) ? null : r.json()),
-            opts
+        return this.managedFetchAsync(
+            opts,
+            async (aborter) => {
+                const r = await this.fetchInternalAsync({
+                    ...opts,
+                    headers: {'Accept': 'application/json', ...opts.headers}
+                }, aborter);
+                return this.NO_JSON_RESPONSES.includes(r.status) ? null : r.json();
+            }
         );
     }
 
@@ -126,21 +134,46 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
-    async withTimeoutAsync(promise, opts) {
-        const timeout = withDefault(opts.timeout, this.defaultTimeout);
-        return promise
-            .timeout(timeout)
-            .catchWhen(
-                e => e.isTimeout,
-                e => {
-                    throw Exception.fetchTimeout(opts, e, timeout?.message);
-                }
-            );
+
+    /**
+     * Call fetch with support for aborting via AbortController API.
+     *
+     * The fetch may be aborted due to timeout, or a repeated call with the same `autoAbortKey`.
+     *
+     * @private
+     * @param {FetchOptions} opts
+     * @param fn - function receiving an abort controller, and returning a Promise<FetchResponse>
+     */
+    async managedFetchAsync(opts, fn) {
+        const {autoAborters, defaultTimeout} = this,
+            {autoAbortKey, timeout = defaultTimeout} = opts,
+            aborter = new AbortController();
+
+        // autoAbortKey handling.  Abort anything running under this key, and mark this run
+        if (autoAbortKey) {
+            autoAborters[autoAbortKey]?.abort();
+            autoAborters[autoAbortKey] = aborter;
+        }
+
+        try {
+            return await fn(aborter).timeout(timeout);
+        } catch (e) {
+            if (e.isTimeout) {
+                aborter.abort();
+                throw Exception.fetchTimeout(opts, e, timeout?.message);
+            }
+            throw e;
+        } finally {
+            if (autoAborters[autoAbortKey] === aborter) {
+                delete autoAborters[autoAbortKey];
+            }
+        }
     }
 
-    async fetchInternalAsync(opts) {
-        const {defaultHeaders, abortControllers} = this;
-        let {url, method, headers, body, params, autoAbortKey} = opts;
+
+    async fetchInternalAsync(opts, aborter) {
+        const {defaultHeaders} = this;
+        let {url, method, headers, body, params} = opts;
         throwIf(!url, 'No url specified in call to fetchService.');
         throwIf(headers instanceof Headers, 'headers must be a plain object in calls to fetchService.');
         apiDeprecated(opts.contentType, 'contentType', 'Please pass a "Content-Type" header instead.');
@@ -166,6 +199,7 @@ export class FetchService extends HoistService {
 
         // 3) Prepare merged options
         const fetchOpts = {
+            signal: aborter.signal,
             credentials: 'include',
             redirect: 'follow',
             method,
@@ -192,25 +226,12 @@ export class FetchService extends HoistService {
             }
         }
 
-        // 4) Cancel prior request, and add new AbortController if autoAbortKey used
-        let abortCtrl;
-        if (autoAbortKey) {
-            this.abort(autoAbortKey);
-            abortCtrl = new AbortController();
-            fetchOpts.signal = abortCtrl.signal;
-            abortControllers[autoAbortKey] = abortCtrl;
-        }
-
         let ret;
         try {
             ret = await fetch(url, fetchOpts);
         } catch (e) {
-            if (e.name === 'AbortError') throw Exception.fetchAborted(opts, e);
-            throw Exception.serverUnavailable(opts, e);
-        } finally {
-            if (abortCtrl && abortControllers[autoAbortKey] === abortCtrl) {
-                delete abortControllers[autoAbortKey];
-            }
+            // Just two cases where we expect this to throw -- Typically we get a failed response)
+            throw (e.name === 'AbortError') ? Exception.fetchAborted(opts, e) : Exception.serverUnavailable(opts, e);
         }
 
         if (!ret.ok) {
@@ -230,14 +251,6 @@ export class FetchService extends HoistService {
                 ...opts.headers
             }
         });
-    }
-
-    abort(key) {
-        const ctrl = this.abortControllers[key];
-        if (ctrl) {
-            delete this.abortControllers[key];
-            ctrl.abort();
-        }
     }
 
     async safeResponseTextAsync(response) {

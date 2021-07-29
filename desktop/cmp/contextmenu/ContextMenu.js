@@ -6,7 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
-import {start} from '@xh/hoist/promise';
+import {wait} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import PT from 'prop-types';
 import {isValidElement} from 'react';
@@ -71,7 +71,7 @@ function parseMenuItems(items) {
             return menuItem({
                 text: item.text,
                 icon: item.icon,
-                onClick: item.actionFn ? () => start(item.actionFn) : null,    // do async to allow menu to close
+                onClick: item.actionFn ? () => wait().then(item.actionFn) : null,    // do async to allow menu to close
                 disabled: item.disabled,
                 items
             });
