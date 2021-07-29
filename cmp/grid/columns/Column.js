@@ -616,8 +616,8 @@ export class Column {
                 },
                 'xh-cell--editable': (agParams) => {
                     const record = agParams.data;
-                    if (isNil(record)) return;
-                    
+                    if (isNil(record)) return false;
+
                     return isFunction(editable) ?
                         editable({record, store: record.store, gridModel, column: this, agParams}) :
                         editable;
