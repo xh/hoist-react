@@ -73,14 +73,11 @@ export class RowKeyNavSupport {
         }
     }
 
-    // Skip non-selectable AND grouping rows.  This makes toggling through them with
-    // keyboard difficult, but improves selection stability when keyboarding through
-    // master/detail assembly. This is the model used by MS Outlook/Sencha
     findNextSelectable(index, isUp, agApi) {
         const count = agApi.getDisplayedRowCount();
         while (index >= 0 && index < count) {
             const node = agApi.getDisplayedRowAtIndex(index);
-            if (node && node.selectable && node.data) return node;
+            if (node?.selectable) return node;
             index = index + (isUp ? -1 : 1);
         }
         return null;
