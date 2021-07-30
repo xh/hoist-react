@@ -38,13 +38,14 @@ export class EhCacheModel extends HoistModel {
         ]
     });
 
-    clearAll() {
-        XH.fetchJson({
-            url: 'ehCacheAdmin/clearAllCaches'
-        }).then(() => {
-            this.loadAsync();
-            XH.toast({message: 'Caches Cleared'});
-        }).catchDefault();
+    async clearAllAsync() {
+        try {
+            await XH.fetchJson({url: 'ehCacheAdmin/clearAllCaches'});
+            await this.refreshAsync();
+            XH.successToast('Hibernate caches cleared.');
+        } catch (e) {
+            XH.handleException(e);
+        }
     }
 
     async doLoadAsync(loadSpec) {

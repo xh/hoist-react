@@ -9,7 +9,7 @@ import classNames from 'classnames';
 import {isNil} from 'lodash';
 import {HoistModel, useLocalModel} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {start} from '@xh/hoist/promise';
+import {wait} from '@xh/hoist/promise';
 import {createObservableRef} from '@xh/hoist/utils/react';
 
 /**
@@ -111,7 +111,7 @@ class InlineEditorModel extends HoistModel {
     focusOnRenderReaction() {
         return {
             when: () => this.inputEl,
-            run: () => start(() => this.focus()) // wait 1 tick before we can focus
+            run: () => wait().then(() => this.focus())
         };
     }
 

@@ -48,6 +48,9 @@ export class Column {
         {sort: 'desc', abs: false}
     ];
 
+    /** @member {(boolean|Column~editableFn)} */
+    editable;
+
     /**
      * @param {Object} c - Column configuration.
      * @param {string} [c.field] - name of data store field to display within the column.
@@ -153,8 +156,8 @@ export class Column {
      *      may have performance implications. Default false.
      * @param {boolean} highlightOnChange - set to true to call attention to cell changes by
      *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
-     * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column
-     *     editable.
+     * @param {(boolean|Column~editableFn)} [c.editable] - true to make cells in this column
+     *     editable, or a function to determine on a record-by-record basis.
      * @param {Column~editorFn} [c.editor] - Cell editor Component or a function to create one.
      *      Adding an editor will also install a cellClassRule and tooltip to display the
      *      validation state of the cell in question.
@@ -330,7 +333,7 @@ export class Column {
             `Column specified with both tooltip && tooltipElement. Tooltip will be ignored. [colId=${this.colId}]`
         );
 
-        this.editable = editable;
+        this.editable = editable || false;
         this.editor = editor;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
@@ -344,8 +347,18 @@ export class Column {
     }
 
     /**
-     * Produce a Column definition appropriate for AG Grid.
+     * @param {Record} record
+     * @return {boolean} - true if this column supports editing its field for the given Record.
      */
+    isEditableForRecord(record) {
+        const {editable, gridModel} = this;
+        if (!record) return false;
+        return isFunction(editable) ?
+            editable({record, store: record.store, gridModel, column: this}) :
+            editable;
+    }
+
+    /** Produce a Column definition appropriate for AG-Grid. */
     getAgSpec() {
         const {gridModel, field, headerName, displayName, agOptions} = this,
             ret = {
@@ -374,14 +387,7 @@ export class Column {
                 suppressColumnsToolPanel: this.excludeFromChooser,
                 suppressFiltersToolPanel: this.excludeFromChooser,
                 enableCellChangeFlash: this.highlightOnChange,
-                editable: (agParams) => {
-                    const {editable} = this;
-                    if (isFunction(editable)) {
-                        const record = agParams.node.data;
-                        return editable({record, store: record.store, gridModel, column: this, agParams});
-                    }
-                    return editable;
-                },
+                editable: (agParams) => this.isEditableForRecord(agParams.node.data),
                 valueSetter: (agParams) => {
                     const record = agParams.data;
                     this.setValueFn({
@@ -610,7 +616,13 @@ export class Column {
                 throw XH.exception('Column editor must be a HoistComponent or a render function');
             });
             ret.cellClassRules = {
-                'xh-invalid-cell': ({data: record}) => record && !isEmpty(record.errors[field])
+                'xh-cell--invalid': (agParams) => {
+                    const record = agParams.data;
+                    return record && !isEmpty(record.errors[field]);
+                },
+                'xh-cell--editable': (agParams) => {
+                    return this.isEditableForRecord(agParams.data);
+                }
             };
         }
 
@@ -807,10 +819,8 @@ export function getAgHeaderClassFn(column) {
  * @param {Store} params.store - Store containing the grid data.
  * @param {Column} params.column - column for the cell being edited.
  * @param {GridModel} params.gridModel - gridModel for the grid.
- * @param {IsColumnFuncParams} params.agParams - the ag-grid column function params.
  * @return {boolean} - true if cell is editable
  */
-
 
 /**
  * @callback Column~editorFn - grid cell editor component, or function to return one.

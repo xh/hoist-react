@@ -4,9 +4,9 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {isUndefined, filter} from 'lodash';
+import {isUndefined, partition, filter} from 'lodash';
 import {MessageModel} from './MessageModel';
 
 /**
@@ -77,17 +77,8 @@ export class MessageSourceModel extends HoistModel {
             filter(msgModels, {messageKey}).forEach(m => m.close());
         }
         msgModels.push(model);
-        this.cull();
+        const [keep, cull] = partition(msgModels, 'isOpen');
+        this.msgModels = keep;
+        XH.destroy(cull);
     }
-
-    @action
-    cull() {
-        const models = this.msgModels,
-            keepModels = models.filter(it => it.isOpen),
-            cullModels = models.filter(it => !it.isOpen);
-
-        this.msgModels = keepModels;
-        cullModels.forEach(it => it.destroy());
-    }
-
 }
