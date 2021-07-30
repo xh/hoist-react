@@ -27,6 +27,12 @@
 * Tree grids now style "parent" rows consistently with highlights/borders if requested, even for
   mixed-depth trees where some rows have children at a given level and others do not.
 
+### 💥 Breaking Changes
+* The raw `AgGrid` component no longer enhances the native keyboard handling provided by ag-Grid.
+All Hoist key handling customizations are now limited to `Grid`.  If you wish to provide custom
+handling in a raw `AgGrid` component, see the example here:
+     https://www.ag-grid.com/javascript-grid/row-selection/#example-selection-with-keyboard-arrow-keys
+
 ### ⚙️ Technical
 
 * `FetchService` will now actively `abort()` fetch requests that it is abandoning due to its own

@@ -10,13 +10,12 @@ import {splitLayoutProps, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isNil, max} from 'lodash';
 import './AgGrid.scss';
-import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 import {AgGridModel} from './AgGridModel';
 import {AgGridReact} from '@xh/hoist/kit/ag-grid';
 
 /**
  * Minimal wrapper for AgGridReact, supporting direct use of the ag-Grid component with limited
- * enhancements for consistent Hoist themes/styling, layout support, keyboard navigation, and a
+ * enhancements for consistent Hoist themes/styling, layout support, and a
  * backing model for convenient access to the ag-Grid APIs and other utility methods.
  *
  * All {@link https://www.ag-grid.com/javascript-grid-properties/ ag-Grid Grid Properties}
@@ -75,7 +74,6 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
             item: elem(AgGridReact, {
                 // Default some ag-grid props, but allow overriding.
                 getRowHeight: impl.getRowHeight,
-                navigateToNextCell: impl.navigateToNextCell,
                 onColumnResized: impl.onColumnChange,
                 onColumnVisible: impl.onColumnChange,
                 // Pass others on directly.
@@ -117,7 +115,6 @@ class LocalModel extends HoistModel {
     constructor(model, agGridProps) {
         super();
         this.model = model;
-        this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(model) : null;
 
         // manage header height if was not explicitly provided to component
         if (isNil(agGridProps.headerHeight)) {
@@ -132,12 +129,6 @@ class LocalModel extends HoistModel {
         this.model.handleGridReady(agParams);
         if (this.onGridReady) {
             this.onGridReady(agParams);
-        }
-    };
-
-    navigateToNextCell = (agParams) => {
-        if (this.rowKeyNavSupport) {
-            return this.rowKeyNavSupport.navigateToNextCell(agParams);
         }
     };
 

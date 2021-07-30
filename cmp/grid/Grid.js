@@ -37,6 +37,7 @@ import './Grid.scss';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
 import {columnHeader} from './impl/ColumnHeader';
+import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -163,6 +164,7 @@ class GridLocalModel extends HoistModel {
     constructor(model, props) {
         super();
         this.model = model;
+        this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(model) : null;
         this.addReaction(this.selectionReaction());
         this.addReaction(this.sortReaction());
         this.addReaction(this.columnsReaction());
@@ -177,9 +179,7 @@ class GridLocalModel extends HoistModel {
 
     createDefaultAgOptions() {
         const {model} = this,
-            {clicksToEdit, selModel} = model,
-            selMode = selModel.mode,
-            selectionDisabled = selMode === 'disabled';
+            {clicksToEdit, selModel} = model;
 
         // 'immutableData' and 'rowDataChangeDetectionStrategy' props both deal with a *new* sets of rowData.
         // We use transactions instead, but our data fully immutable so seems safest to set these as well.
@@ -206,9 +206,9 @@ class GridLocalModel extends HoistModel {
                 agColumnHeader: (props) => columnHeader({gridModel: model, ...props}),
                 agColumnGroupHeader: (props) => columnGroupHeader(props)
             },
-            rowSelection: selMode,
-            suppressRowClickSelection: selectionDisabled,
-            isRowSelectable: () => !selectionDisabled,
+            rowSelection: selModel.mode,
+            suppressRowClickSelection: !selModel.isEnabled,
+            isRowSelectable: () => selModel.isEnabled,
             tooltipShowDelay: 0,
             getRowHeight: ({node}) => this.getRowHeight(node),
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
@@ -226,6 +226,7 @@ class GridLocalModel extends HoistModel {
             onColumnVisible: this.onColumnVisible,
             onCellEditingStarted: model.onCellEditingStarted,
             onCellEditingStopped: model.onCellEditingStopped,
+            navigateToNextCell: this.navigateToNextCell,
             processCellForClipboard: this.processCellForClipboard,
             defaultGroupSortComparator: model.groupSortFn ? this.groupSortComparator : undefined,
             groupDefaultExpanded: 1,
@@ -725,6 +726,10 @@ class GridLocalModel extends HoistModel {
     processCellForClipboard({value, node, column}) {
         return column.isTreeColumn ? node.data[column.field] : value;
     }
+
+    navigateToNextCell = (agParams) => {
+        return this.rowKeyNavSupport?.navigateToNextCell(agParams);
+    };
 
     onKeyDown = (evt) => {
         const {model} = this,

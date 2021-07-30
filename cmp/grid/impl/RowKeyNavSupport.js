@@ -6,19 +6,21 @@
  */
 
 /**
- * Add support for row based navigation to ag-Grid.
+ * Add support for row based navigation to GridModel.
  */
 export class RowKeyNavSupport {
 
-    agGridModel;
+    gridModel;
 
-    constructor(agGridModel) {
-        this.agGridModel = agGridModel;
+    constructor(gridModel) {
+        this.gridModel = gridModel;
     }
 
     navigateToNextCell(agParams) {
-        const {nextCellPosition, previousCellPosition, event, key} = agParams,
-            {agApi, showCellFocus} = this.agGridModel,
+        const {gridModel} = this,
+            {selModel, agGridModel} = gridModel,
+            {agApi, showCellFocus} = agGridModel,
+            {nextCellPosition, previousCellPosition, event, key} = agParams,
             shiftKey = event.shiftKey,
             nextIndex = nextCellPosition?.rowIndex ?? null,
             prevIndex =  previousCellPosition?.rowIndex ?? null,
@@ -38,24 +40,27 @@ export class RowKeyNavSupport {
                     // agGrid can weirdly wrap focus when bottom summary present - prevent that
                     if (isUp !== (nextIndex < prevIndex)) return previousCellPosition;
 
-                    // Otherwise scan for a selectable node -- agGrid does not take this in to account
-                    const nextNode = this.findNextSelectable(nextIndex, isUp, agApi);
-                    if (!nextNode) return previousCellPosition;
+                    // If selection is enabled, want to sync up-down movement with that
+                    if (selModel.isEnabled) {
+                        const nextNode = this.findNextSelectable(nextIndex, isUp, agApi);
+                        if (!nextNode) return previousCellPosition;
 
-                    nextCellPosition.rowIndex = nextNode.rowIndex;
+                        nextCellPosition.rowIndex = nextNode.rowIndex;
 
-                    if (!shiftKey || !prevNode.isSelected()) {
-                        // 0) Simple move of selection
-                        nextNode.setSelected(true, true);
-                    } else {
-                        // 1) Extend or shrink multi-selection.
-                        if (!nextNode.isSelected()) {
-                            nextNode.setSelected(true, false);
+                        if (!shiftKey || !prevNode.isSelected()) {
+                            // 0) Simple move of selection
+                            nextNode.setSelected(true, true);
                         } else {
-                            prevNode.setSelected(false, false);
+                            // 1) Extend or shrink multi-selection.
+                            if (!nextNode.isSelected()) {
+                                nextNode.setSelected(true, false);
+                            } else {
+                                prevNode.setSelected(false, false);
+                            }
                         }
                     }
                 }
+
                 return nextCellPosition;
             case KEY_LEFT:
                 if (canExpandCollapse && prevNode.expanded) {
