@@ -18,7 +18,6 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
     apiDeprecated,
     apiRemoved,
-    debounced,
     deepFreeze,
     ensureUnique,
     logWithDebug,
@@ -786,14 +785,10 @@ export class GridModel extends HoistModel {
         }
     }
 
-    // We debounce this method because the implementation of `AgGridModel.setSelectedRowNodeIds()`
-    // selects nodes one-by-one, and ag-Grid will fire a selection changed event for each iteration.
-    // This avoids a storm of events looping through the reaction when selecting in bulk.
-    @debounced(0)
     noteAgSelectionStateChanged() {
         const {selModel, agGridModel, isReady} = this;
 
-        // Check required as due to debounce we may be receiving stale message after unmounting
+        // Check required as we may be receiving stale message after unmounting
         if (isReady) {
             selModel.select(agGridModel.getSelectedRowNodeIds());
         }

@@ -29,6 +29,7 @@
 * Inline grid editing supports passing of JSX editor components.
 * `GridExportService` catches any exceptions thrown during export preparation and warns the user
   that something went wrong.
+* GridModel with 'disabled' selection no longer shows "ghost" selection when using keyboard.
 * Tree grids now style "parent" rows consistently with highlights/borders if requested, even for
   mixed-depth trees where some rows have children at a given level and others do not.
 
@@ -40,6 +41,11 @@
 * The `start()` function in `@xh/hoist/promise` has been deprecated. Use `wait()` instead, which can
   now be called without any args to establish a Promise chain and/or introduce a minimal amount of
   asynchronousity.
+* ⚠ Note that the raw `AgGrid` component no longer enhances the native keyboard handling provided by ag-Grid.
+All Hoist key handling customizations are now limited to `Grid`.  If you wish to provide custom
+handling in a raw `AgGrid` component, see the example here:
+     https://www.ag-grid.com/javascript-grid/row-selection/#example-selection-with-keyboard-arrow-keys
+
 
 ### ✨ Style
 

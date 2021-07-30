@@ -22,6 +22,10 @@ export class StoreSelectionModel extends HoistModel {
 
     @observable.ref _ids = [];
 
+    get isEnabled() {
+        return this.mode !== 'disabled';
+    }
+
     /**
      * @param {Object} c - StoreSelectionModel configuration.
      * @param {Store} c.store - Store containing the data.
