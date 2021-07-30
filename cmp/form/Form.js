@@ -9,7 +9,7 @@ import equal from 'fast-deep-equal';
 import PT from 'prop-types';
 import {createContext, useContext} from 'react';
 import {apiRemoved} from '@xh/hoist/utils/js';
-import {useCachedVal} from '@xh/hoist/utils/react';
+import {useCached} from '@xh/hoist/utils/react';
 import {FormModel} from './FormModel';
 
 export const FormContext = createContext({});
@@ -41,7 +41,7 @@ export const [Form, form] = hoistCmp.withFactory({
         if (parentDefaults) fieldDefaults = {...parentDefaults, ...fieldDefaults};
 
         // ...and deliver as a cached context to avoid spurious re-renders
-        const formContext = useCachedVal(
+        const formContext = useCached(
             {model, fieldDefaults},
             (a, b) => a.model === b.model && equal(a.fieldDefaults, b.fieldDefaults)
         );
