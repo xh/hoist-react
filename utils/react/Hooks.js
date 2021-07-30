@@ -81,17 +81,22 @@ export function useOnScroll(fn) {
 }
 
 /**
- * Hook to return a cached version of an object.
+ * Hook to return a cached version of a value.
  *
- * This hook is similar useCallback() and useMemo() and
- * useful for providing stable object references across renders.
+ * This hook is similar useCallback() and useMemo() and useful for providing stable object
+ * references across renders.
  *
- * @param {*} val - to be cached and potentially returned in this and subsequent calls.
- * @param {function} [equalsFn] - If evaluates to true, any cached value will be returned rather
- *      that the presented val.  If null, any cached value will always be returned.
+ * @param {*} value - value to be cached and potentially returned in this and subsequent calls.
+ *      Typically an object.
+ * @param {function} [equalsFn] - A function taking the previously cached value, and the currently
+ *      presented value.  If evaluates to true, the cached value will be returned rather
+ *      than the presented value.  If null, any cached value will always be returned.
  */
-export function useCachedVal(val, equalsFn) {
-    const cache = useRef(val);
-    if (equalsFn && !equalsFn(cache.current, val)) cache.current = val;
+export function useCached(value, equalsFn) {
+    const cache = useRef(value),
+        cachedVal = cache.current;
+    if (cachedVal !== value && equalsFn && !equalsFn(cachedVal, value)) {
+        cache.current = value;
+    }
     return cache.current;
 }
