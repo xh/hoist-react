@@ -46,7 +46,8 @@ import {
     isUndefined,
     map,
     max,
-    min, omit,
+    min,
+    omit,
     pull,
     sortBy
 } from 'lodash';
@@ -140,6 +141,8 @@ export class GridModel extends HoistModel {
     @observable emptyText;
     /** @member {TreeStyle} */
     @observable treeStyle;
+    /** @member {boolean} */
+    @observable isEditing = false;
 
     static defaultContextMenu = [
         'filter',
@@ -458,7 +461,7 @@ export class GridModel extends HoistModel {
     /**
      * Select records in the grid.
      *
-     * @param {(RecordOrId|RecordOrId[])} records - single record/ID or array of records/IDs to select.
+     * @param {(RecordOrId|RecordOrId[])} records - one or more record(s) / ID(s) to select.
      * @param {Object} [options]
      * @param {boolean} [options.ensureVisible] - true to make selection visible if it is within a
      *      collapsed node or outside of the visible scroll window. Default true.
@@ -498,7 +501,6 @@ export class GridModel extends HoistModel {
             if (ensureVisible) await this.ensureSelectionVisibleAsync();
         }
     }
-
 
     /**
      * Select the first row in the grid, if no other selection present.
@@ -742,7 +744,7 @@ export class GridModel extends HoistModel {
             .map(({colId, width, hidden, pinned}) => ({colId, width, hidden, pinned}));
     }
 
-    /** @param {ColumnState[]} */
+    /** @param {ColumnState[]} colState */
     setColumnState(colState) {
         colState = this.cleanColumnState(colState);
         colState = this.removeTransientWidths(colState);
@@ -1038,6 +1040,95 @@ export class GridModel extends HoistModel {
                 agApi.hideOverlay();
             }
         }
+    }
+
+    /**
+     * Begin an inline editing session.
+     * @param {RecordOrId} [recOrId] - Record/ID to edit. If unspecified, the first selected Record
+     *      will be used, if any, or the first overall Record in the grid.
+     * @param {string} [colId] - ID of column on which to start editing. If unspecified, the first
+     *      editable column will be used.
+     * @return {Promise<void>}
+     */
+    async beginEditAsync({record, colId} = {}) {
+        const isReady = await this.whenReadyAsync();
+        if (!isReady) return;
+
+        const {store, agGridModel, agApi, selection} = this;
+
+        let recToEdit;
+        if (record) {
+            // Normalize specified record, if any.
+            recToEdit = record.isRecord ? record : store.getById(record);
+        } else {
+            if (!isEmpty(selection)) {
+                // Or use first selected record, if any.
+                recToEdit = selection[0];
+            } else {
+                // Or use the first record overall.
+                const firstRowId = agGridModel.getFirstSelectableRowNodeId();
+                recToEdit = store.getById(firstRowId);
+            }
+        }
+
+        const rowIndex = agApi.getRowNode(recToEdit?.id)?.rowIndex;
+        if (isNil(rowIndex) || rowIndex < 0) {
+            console.warn(
+                'Unable to start editing - ' +
+                record ? 'specified record not found' : 'no records found'
+            );
+            return;
+        }
+
+        let colToEdit;
+        if (colId) {
+            // Ensure specified column is editable for recToEdit.
+            const col = this.getColumn(colId);
+            colToEdit = col?.isEditableForRecord(recToEdit) ? col : null;
+        } else {
+            // Or find the first editable col in the grid.
+            colToEdit = this.getVisibleLeafColumns().find(column => {
+                return column.isEditableForRecord(recToEdit);
+            });
+        }
+
+        if (!colToEdit) {
+            console.warn(
+                'Unable to start editing - ' +
+                (colId ? `column with colId ${colId} not found, or not editable` : 'no editable columns found')
+            );
+            return;
+        }
+
+        agApi.startEditingCell({
+            rowIndex,
+            colKey: colToEdit.colId
+        });
+    }
+
+    /**
+     * Stop an inline editing session, if one is in-progress.
+     * @param {boolean} dropPendingChanges - true to cancel current edit without saving pending
+     *      changes in the active editor(s) to the backing Record.
+     * @return {Promise<void>}
+     */
+    async endEditAsync(dropPendingChanges = false) {
+        const isReady = await this.whenReadyAsync();
+        if (!isReady) return;
+
+        this.agApi.stopEditing(dropPendingChanges);
+    }
+
+    /** @package */
+    @action
+    onCellEditingStarted = () => {
+        this.isEditing = true;
+    }
+
+    /** @package */
+    @action
+    onCellEditingStopped = () => {
+        this.isEditing = false;
     }
 
     /**

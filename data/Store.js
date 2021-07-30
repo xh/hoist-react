@@ -657,6 +657,11 @@ export class Store extends HoistBase {
         return this._current.empty;
     }
 
+    /** @returns {number} */
+    get maxDepth() {
+        return this._current.maxDepth;  // maxDepth should not be effected by filtering.
+    }
+
     /**
      * Get a record by ID, or null if no matching record found.
      *

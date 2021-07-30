@@ -6,8 +6,8 @@
  */
 
 import equal from 'fast-deep-equal';
-import {throwIf} from '@xh/hoist/utils/js';
-import {logDebug} from '../../utils/js';
+import {throwIf, logDebug} from '@xh/hoist/utils/js';
+import {maxBy, isNil} from 'lodash';
 
 /**
  * Internal container for Record management within a Store.
@@ -23,9 +23,10 @@ export class RecordSet {
     count;
     rootCount;
 
-    _childrenMap;   // Lazy map of children by parentId
-    _list;          // Lazy list of all records.
-    _rootList;      // Lazy list of root records.
+    _childrenMap;       // lazy map of children by parentId
+    _list;              // lazy list of all records.
+    _rootList;          // lazy list of root records.
+    _maxDepth ;         // lazy depth
 
     constructor(store, recordMap = new Map()) {
         this.store = store;
@@ -91,6 +92,15 @@ export class RecordSet {
         }
         return this._rootList;
     }
+
+    get maxDepth() {
+        if (isNil(this._maxDepth)) {
+            const {list, count, rootCount} = this;
+            this._maxDepth = (count === rootCount ? 0 :  maxBy(list, 'depth').depth);
+        }
+        return this._maxDepth;
+    }
+
 
     //----------------------------------------------
     // Editing operations that spawn new RecordSets.

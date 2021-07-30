@@ -8,13 +8,13 @@ import {ExportFormat} from '@xh/hoist/cmp/grid';
 import {HoistService, XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
 import {StatusCodes} from 'http-status-codes';
-import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq, compact} from 'lodash';
-import {span, a} from '../cmp/layout';
-import {wait} from '../promise';
-import {SECONDS} from '../utils/datetime';
+import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq, compact, find} from 'lodash';
+import {span, a} from '@xh/hoist/cmp/layout';
+import {wait} from '@xh/hoist/promise';
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
@@ -31,7 +31,8 @@ export class GridExportService extends HoistService {
     async exportAsync(gridModel, {
         filename = 'export',
         type = 'excelTable',
-        columns = 'VISIBLE'
+        columns = 'VISIBLE',
+        timeout = 30 * SECONDS
     } = {}) {
         throwIf(!gridModel,
             'GridModel required for export');
@@ -112,7 +113,8 @@ export class GridExportService extends HoistService {
                 // See https://stanko.github.io/uploading-files-using-fetch-multipart-form-data/ for further explanation.
                 headers: {
                     'Content-Type': null
-                }
+                },
+                timeout
             });
 
             const blob = response.status === StatusCodes.NO_CONTENT ? null : await response.blob(),
@@ -160,8 +162,8 @@ export class GridExportService extends HoistService {
             includeViz = toExport.includes('VISIBLE');
 
         return sortBy(gridModel.getLeafColumns(), ({colId}) => {
-            const match = gridModel.columnState.find(it => it.colId === colId);
-            return withDefault(match?._sortOrder, 0);
+            const match = find(gridModel.columnState, {colId});
+            return withDefault(match?._sortOrder, toExport.indexOf(colId));
         }).filter(col => {
             const {colId, excludeFromExport} = col;
             return (
@@ -335,4 +337,5 @@ export class GridExportService extends HoistService {
  *      column IDs to include (can be used in conjunction with VISIBLE to export all visible and
  *      enumerated columns). Also supports a function taking the GridModel, and returning an array
  *      of column IDs to include.
+ * @property {number} [options.timeout] - timeout (in ms) for export request - defaults to 30 seconds
  */
