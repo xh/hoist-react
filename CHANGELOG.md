@@ -24,7 +24,8 @@
 * `GridExportService` catches any exceptions thrown during export preparation and warns the user
   that something went wrong.
 * GridModel with 'disabled' selection no longer shows "ghost" selection when using keyboard.
-
+* Tree grids now style "parent" rows consistently with highlights/borders if requested, even for
+  mixed-depth trees where some rows have children at a given level and others do not.
 
 ### ⚙️ Technical
 
@@ -46,6 +47,10 @@
 * New `.xh-cell--editable` CSS class applied to cells with inline editing enabled.
   * ⚠ Grid CSS class `.xh-invalid-cell` has been renamed to `.xh-cell--invalid` for consistency -
     any app style overrides should update to this new classname.
+
+### 📚 Libraries
+
+* core-js `3.15 -> 3.16`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.1.0...develop)
 
