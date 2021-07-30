@@ -6,19 +6,17 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
-import {fragment, frame} from '@xh/hoist/cmp/layout';
+import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
+import {div, fragment, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
-import {div} from '@xh/hoist/cmp/layout';
 import {computed, observer} from '@xh/hoist/mobx';
-import {isDisplayed, logWithDebug, logDebug, apiRemoved} from '@xh/hoist/utils/js';
-import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
-import {getLayoutProps} from '@xh/hoist/utils/react';
-import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {wait} from '@xh/hoist/promise';
-
+import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import {apiRemoved, isDisplayed, logDebug, logWithDebug} from '@xh/hoist/utils/js';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {
     compact,
@@ -28,9 +26,9 @@ import {
     isFunction,
     isNil,
     isString,
-    merge,
     max,
-    maxBy
+    maxBy,
+    merge
 } from 'lodash';
 import PT from 'prop-types';
 import {createRef, isValidElement} from 'react';
@@ -60,6 +58,12 @@ export const [Grid, grid] = hoistCmp.withFactory({
     model: uses(GridModel),
     className: 'xh-grid',
 
+    /**
+     * @param {GridModel} model
+     * @param {string} className
+     * @param props
+     * @param ref
+     */
     render({model, className, ...props}, ref) {
         apiRemoved(props.hideHeaders, 'hideHeaders', 'Specify hideHeaders on the GridModel instead.');
         apiRemoved(props.onKeyDown, 'onKeyDown', 'Specify onKeyDown on the GridModel instead.');
@@ -68,28 +72,29 @@ export const [Grid, grid] = hoistCmp.withFactory({
         apiRemoved(props.onCellClicked, 'onCellClicked', 'Specify onCellClicked on the GridModel instead.');
         apiRemoved(props.onCellDoubleClicked, 'onCellDoubleClicked', 'Specify onCellDoubleClicked on the GridModel instead.');
 
-        const impl = useLocalModel(() => new GridLocalModel(model, props)),
-            platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser;
+        const {store, treeMode, treeStyle, colChooserModel} = model,
+            impl = useLocalModel(() => new GridLocalModel(model, props)),
+            platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
+            maxDepth = impl.isHierarchical ? store.maxDepth : null;
 
-        // Don't render the agGridReact element with data or columns. Instead rely on API methods
+        className = classNames(
+            className,
+            impl.isHierarchical ? `xh-grid--hierarchical xh-grid--max-depth-${maxDepth}` : 'xh-grid--flat',
+            treeMode ? getTreeStyleClasses(treeStyle) : null
+        );
+
         return fragment(
             frame({
-                className: classNames(
-                    className,
-                    impl.isHierarchical ? `xh-grid--hierarchical xh-grid--max-depth-${model.store.maxDepth}` : 'xh-grid--flat',
-                    model.treeMode ? getTreeStyleClasses(model.treeStyle) : null
-                ),
-                item: agGrid({
-                    ...getLayoutProps(props),
-                    ...impl.agOptions
-                }),
+                className,
+                item: agGrid({...getLayoutProps(props), ...impl.agOptions}),
                 onKeyDown: impl.onKeyDown,
                 ref: composeRefs(impl.viewRef, ref)
             }),
-            (model.colChooserModel ? platformColChooser({model: model.colChooserModel}) : null)
+            (colChooserModel ? platformColChooser({model: colChooserModel}) : null)
         );
     }
 });
+
 Grid.MULTIFIELD_ROW_HEIGHT = 38;
 
 Grid.propTypes = {
@@ -97,7 +102,7 @@ Grid.propTypes = {
      * Options for ag-Grid's API.
      *
      * This constitutes an 'escape hatch' for applications that need to get to the underlying
-     * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or
+     * ag-Grid API. It should be used with care. Settings made here might be overwritten and/or
      * interfere with the implementation of this component and its use of the ag-Grid API.
      *
      * Note that changes to these options after the component's initial render will be ignored.
@@ -120,9 +125,13 @@ Grid.propTypes = {
 //------------------------
 class GridLocalModel extends HoistModel {
 
+    /** @member {GridModel} */
     model;
+    /** @member {Object} */
     agOptions;
+    /** @member {RefObject} */
     viewRef = createRef();
+    /** @member {number} */
     fixedRowHeight;
 
     getRowHeight(node) {
@@ -136,7 +145,7 @@ class GridLocalModel extends HoistModel {
         ]);
     }
 
-    // Do any root level records have children?
+    /** @returns {boolean} - true if any root-level records have children */
     @computed
     get isHierarchical() {
         const {model} = this;
@@ -162,10 +171,10 @@ class GridLocalModel extends HoistModel {
         this.addReaction(this.rowHeightReaction());
         this.addReaction(this.validationDisplayReaction());
 
-        this.agOptions = merge(this.createDefaultAgOptions(props), props.agOptions || {});
+        this.agOptions = merge(this.createDefaultAgOptions(), props.agOptions || {});
     }
 
-    createDefaultAgOptions(props) {
+    createDefaultAgOptions() {
         const {model} = this;
 
         // 'immutableData' and 'rowDataChangeDetectionStrategy' props both deal with a *new* sets of rowData.
@@ -373,7 +382,6 @@ class GridLocalModel extends HoistModel {
 
     sortReaction() {
         const {model} = this;
-
         return {
             track: () => [model.agColumnApi, model.sortBy],
             run: ([colApi, sortBy]) => {
