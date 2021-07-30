@@ -30,7 +30,8 @@ import {
     isString,
     merge,
     max,
-    maxBy
+    maxBy,
+    debounce
 } from 'lodash';
 import PT from 'prop-types';
 import {createRef, isValidElement} from 'react';
@@ -166,7 +167,10 @@ class GridLocalModel extends HoistModel {
     }
 
     createDefaultAgOptions(props) {
-        const {model} = this;
+        const {model} = this,
+            {clicksToEdit, selModel} = model,
+            selMode = selModel.mode,
+            selectionDisabled = selMode === 'disabled';
 
         // 'immutableData' and 'rowDataChangeDetectionStrategy' props both deal with a *new* sets of rowData.
         // We use transactions instead, but our data fully immutable so seems safest to set these as well.
@@ -193,7 +197,9 @@ class GridLocalModel extends HoistModel {
                 agColumnHeader: (props) => columnHeader({gridModel: model, ...props}),
                 agColumnGroupHeader: (props) => columnGroupHeader(props)
             },
-            rowSelection: model.selModel.mode,
+            rowSelection: selMode,
+            suppressRowClickSelection: selectionDisabled,
+            isRowSelectable: () => !selectionDisabled,
             tooltipShowDelay: 0,
             getRowHeight: ({node}) => this.getRowHeight(node),
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
@@ -225,8 +231,8 @@ class GridLocalModel extends HoistModel {
             },
             autoSizePadding: 3, // tighten up cells for ag-Grid native autosizing.  Remove when Hoist autosizing no longer experimental,
             editType: model.fullRowEditing ? 'fullRow' : undefined,
-            singleClickEdit: model.clicksToEdit === 1,
-            suppressClickEdit: model.clicksToEdit !== 1 && model.clicksToEdit !== 2
+            singleClickEdit: clicksToEdit === 1,
+            suppressClickEdit: clicksToEdit !== 1 && clicksToEdit !== 2
         };
 
         // Platform specific defaults
@@ -637,9 +643,13 @@ class GridLocalModel extends HoistModel {
         return data.treePath;
     };
 
-    onSelectionChanged = () => {
+    // We debounce this handler because the implementation of `AgGridModel.setSelectedRowNodeIds()`
+    // selects nodes one-by-one, and ag-Grid will fire a selection changed event for each iteration.
+    // This avoids a storm of events looping through the reaction when selecting in bulk.
+    onSelectionChanged = debounce(() => {
         this.model.noteAgSelectionStateChanged();
-    };
+        this.syncSelection();
+    }, 0);
 
     // Catches column re-ordering, resizing AND pinning via user drag-and-drop interaction.
     onDragStopped = (ev) => {

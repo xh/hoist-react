@@ -23,6 +23,8 @@
 * Inline grid editing supports passing of JSX editor components.
 * `GridExportService` catches any exceptions thrown during export preparation and warns the user
   that something went wrong.
+* GridModel with 'disabled' selection no longer shows "ghost" selection when using keyboard.
+
 
 ### ⚙️ Technical
 

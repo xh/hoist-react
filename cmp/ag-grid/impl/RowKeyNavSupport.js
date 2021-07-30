@@ -36,7 +36,7 @@ export class RowKeyNavSupport {
                     const isUp = (key === KEY_UP);
 
                     // agGrid can weirdly wrap focus when bottom summary present - prevent that
-                    if (isUp != (nextIndex < prevIndex)) return previousCellPosition;
+                    if (isUp !== (nextIndex < prevIndex)) return previousCellPosition;
 
                     // Otherwise scan for a selectable node -- agGrid does not take this in to account
                     const nextNode = this.findNextSelectable(nextIndex, isUp, agApi);
@@ -73,11 +73,14 @@ export class RowKeyNavSupport {
         }
     }
 
+    // Skip non-selectable AND grouping rows.  This makes toggling through them with
+    // keyboard difficult, but improves selection stability when keyboarding through
+    // master/detail assembly. This is the model used by MS Outlook/Sencha
     findNextSelectable(index, isUp, agApi) {
         const count = agApi.getDisplayedRowCount();
         while (index >= 0 && index < count) {
             const node = agApi.getDisplayedRowAtIndex(index);
-            if (node?.selectable) return node;
+            if (node && node.selectable && node.data) return node;
             index = index + (isUp ? -1 : 1);
         }
         return null;
