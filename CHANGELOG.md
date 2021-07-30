@@ -4,6 +4,12 @@
 
 ### 🎁 New Features
 
+* New `GridModel.rowClassRules` and `Column.cellClassRules` configs added. Previously apps needed to
+  use `agOptions` to dynamically apply and remove CSS classes using either of these options - now
+  they are fully supported by Hoist.
+  * ⚠ Note that, to avoid conflicts with internal usages of these configs, Hoist will check and
+    throw if either is passed via `agOptions`. Apps only need to move their configs to the new
+    location - the shape of the rules object does *not* need to change.
 * New `GridAutosizeOptions.includeCollapsedChildren` config controls whether values from collapsed
   (i.e. hidden) child records should be measured when computing column sizes. Default of `false`
   improves autosize performance for large tree grids and should generally match user expectations
