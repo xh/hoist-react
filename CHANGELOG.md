@@ -1,6 +1,6 @@
 # Changelog
 
-## v42.0.0-SNAPSHOT - unreleased
+## v41.2.0 - 2021-07-30
 
 ### 🎁 New Features
 
@@ -43,10 +43,10 @@
 * The `start()` function in `@xh/hoist/promise` has been deprecated. Use `wait()` instead, which can
   now be called without any args to establish a Promise chain and/or introduce a minimal amount of
   asynchronousity.
-* ⚠ Note that the raw `AgGrid` component no longer enhances the native keyboard handling provided by ag-Grid.
-All Hoist key handling customizations are now limited to `Grid`.  If you wish to provide custom
-handling in a raw `AgGrid` component, see the example here:
-     https://www.ag-grid.com/javascript-grid/row-selection/#example-selection-with-keyboard-arrow-keys
+* ⚠ Note that the raw `AgGrid` component no longer enhances the native keyboard handling provided
+  by ag-Grid. All Hoist key handling customizations are now limited to `Grid`.  If you wish to
+  provide custom handling in a raw `AgGrid` component, see the example here:
+  https://www.ag-grid.com/javascript-grid/row-selection/#example-selection-with-keyboard-arrow-keys
 
 
 ### ✨ Style
