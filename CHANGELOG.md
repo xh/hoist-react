@@ -47,6 +47,10 @@
   * ⚠ Grid CSS class `.xh-invalid-cell` has been renamed to `.xh-cell--invalid` for consistency -
     any app style overrides should update to this new classname.
 
+### 📚 Libraries
+
+* core-js `3.15 -> 3.16`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.1.0...develop)
 
 ## v41.1.0 - 2021-07-23
