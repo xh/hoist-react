@@ -1,5 +1,9 @@
 # Changelog
 
+## v42.0.0-SNAPSHOT - unreleased
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v41.2.0...develop)
+
 ## v41.2.0 - 2021-07-30
 
 ### 🎁 New Features
