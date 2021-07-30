@@ -18,6 +18,7 @@
 * Toasts may now be dismissed programmatically - use the new `ToastModel` returned by the
   `XH.toast()` API and its variants.
 * `Form` supports setting readonlyRenderer in `fieldDefaults` prop.
+* new utility hook `useCachedValue`
 
 ### 🐞 Bug Fixes
 
