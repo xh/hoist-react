@@ -76,6 +76,11 @@ export class Record {
         return this.parentId != null ? this.store.getById(this.parentId) : null;
     }
 
+    /** @returns {number} */
+    get depth() {
+        return this.treePath.length - 1;
+    }
+
     /** @returns {Field[]} */
     get fields() {
         return this.store.fields;

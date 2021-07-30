@@ -23,6 +23,8 @@
 * Inline grid editing supports passing of JSX editor components.
 * `GridExportService` catches any exceptions thrown during export preparation and warns the user
   that something went wrong.
+* Tree grids now style "parent" rows consistently with highlights/borders if requested, even for
+  mixed-depth trees where some rows have children at a given level and others do not.
 
 ### ⚙️ Technical
 
