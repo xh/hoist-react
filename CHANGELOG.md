@@ -65,7 +65,7 @@
 
 * core-js `3.15 -> 3.16`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v41.1.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v41.1.0...v41.2.0)
 
 ## v41.1.0 - 2021-07-23
 
