@@ -108,5 +108,5 @@ export const clientErrorDetail = hoistCmp.factory(
     }
 );
 
-const valOrNa = v => v != null ? v : naSpan();
+const valOrNa = v => v != null ? v.toString() : naSpan();
 const naSpan = () => span({item: 'N/A', className: 'xh-text-color-muted'});

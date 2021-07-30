@@ -91,7 +91,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
             commitOnChange = defaultProp('commitOnChange', props, formContext, undefined),
             tooltipPosition = defaultProp('tooltipPosition', props, formContext, 'right'),
             tooltipBoundary = defaultProp('tooltipBoundary', props, formContext, 'viewport'),
-            readonlyRenderer = defaultProp('readOnlyRenderer', props, formContext, defaultReadonlyRenderer);
+            readonlyRenderer = defaultProp('readonlyRenderer', props, formContext, defaultReadonlyRenderer);
 
         // Styles
         const classes = [childCssName];
