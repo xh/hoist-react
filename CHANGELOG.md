@@ -8,8 +8,13 @@
   (i.e. hidden) child records should be measured when computing column sizes. Default of `false`
   improves autosize performance for large tree grids and should generally match user expectations
   around WYSIWYG autosizing.
+* New `GridModel.beginEditAsync()` and `endEditAsync()` APIs added to start/stop inline editing.
+  * ⚠ Note that - in a minor breaking change - the function form of the `Column.editable` config is
+    no longer passed an `agParams` argument, as editing might now begin and need to be evaluated
+    outside the context of an AG-Grid event.
 * New `GridModel.clicksToEdit` config controls the number of clicks required to trigger
-  inline-editing of a grid cell. Default remains 2 (double click).
+  inline-editing of a grid cell. Default remains 2 (double click ).
+* Timeouts are now configurable on grid exports via a new `exportOptions.timeout` config.
 * Toasts may now be dismissed programmatically - use the new `ToastModel` returned by the
   `XH.toast()` API and its variants.
 * Timeouts are now configurable on grid exports via property `exportOptions.timeout`.
@@ -20,6 +25,8 @@
 * Inline grid editing supports passing of JSX editor components.
 * `GridExportService` catches any exceptions thrown during export preparation and warns the user
   that something went wrong.
+* Tree grids now style "parent" rows consistently with highlights/borders if requested, even for
+  mixed-depth trees where some rows have children at a given level and others do not.
 
 ### ⚙️ Technical
 
