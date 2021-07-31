@@ -76,7 +76,8 @@ export const [FormField, formField] = hoistCmp.withFactory({
         const layoutProps =  getLayoutProps(props),
             minimal = defaultProp('minimal', props, formContext, false),
             label = defaultProp('label', props, formContext, model?.displayName),
-            commitOnChange = defaultProp('commitOnChange', props, formContext, undefined);
+            commitOnChange = defaultProp('commitOnChange', props, formContext, undefined),
+            readonlyRenderer = defaultProp('readonlyRenderer', props, formContext, defaultReadonlyRenderer);
 
         // Styles
         const classes = [];
@@ -87,7 +88,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
         let childEl = readonly ?
-            readonlyChild({model, readonlyRenderer: props.readonlyRenderer}) :
+            readonlyChild({model, readonlyRenderer}) :
             editableChild({
                 model,
                 child,
@@ -165,8 +166,8 @@ FormField.propTypes = {
     minimal: PT.bool,
 
     /**
-     * Optional function for use in readonly mode. Called with the Field's current value
-     * and should return an element suitable for presentation to the end-user.
+     * Optional function for use in readonly mode. Called with the Field's current value and should
+     * return an element suitable for presentation to the end-user. Defaulted from containing Form.
      */
     readonlyRenderer: PT.func,
 
@@ -179,9 +180,8 @@ const readonlyChild = hoistCmp.factory({
     model: false,
 
     render({model, readonlyRenderer}) {
-        const value = model ? model['value'] : null,
-            renderer = withDefault(readonlyRenderer, defaultReadonlyRenderer);
-        return div({className: 'xh-form-field-readonly-display', item: renderer(value)});
+        const value = model ? model['value'] : null;
+        return div({className: 'xh-form-field-readonly-display', item: readonlyRenderer(value)});
     }
 });
 
