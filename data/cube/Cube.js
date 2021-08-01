@@ -121,9 +121,8 @@ export class Cube extends HoistBase {
     /**
      * Create a View on this data.
      *
-     * Similar to executeQueryAsync(), but data will be returned as a View which can be
-     * refreshed as the underlying facts in the cube are updated.  Useful for binding
-     * to grids and efficiently displaying changing results in the cube.
+     * Creates a dynamic View of the cube data, based on a query.  Useful for binding to grids a
+     * and efficiently displaying changing results in the cube.
      *
      * Note: Applications should call the disconnect() or destroy() method on the View
      * returned when appropriate to avoid unnecessary processing.
@@ -131,7 +130,7 @@ export class Cube extends HoistBase {
      * @param {Object} c - config object.
      * @param {Query} c.query - query to be used to construct this view.
      * @param {(Store[]|Store)} [c.stores] - Stores to be loaded/reloaded with data from this view.
-     *      To receive data only, use the 'results' property of the returned object instead.
+     *      To receive data only, use the 'results' property of the returned View instead.
      * @param {boolean} [c.connect] - true to update View automatically when data in
      *      the underlying cube is changed. Default false.
      * @param {PendingTaskModel} [c.loadModel] - PendingTaskModel to link the View to during
