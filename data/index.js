@@ -21,6 +21,8 @@ export * from './filter/Utils';
 export * from './cube/aggregate/Aggregator';
 export * from './cube/aggregate/AverageAggregator';
 export * from './cube/aggregate/AverageStrictAggregator';
+export * from './cube/aggregate/ChildCountAggregator';
+export * from './cube/aggregate/LeafCountAggregator';
 export * from './cube/aggregate/MaxAggregator';
 export * from './cube/aggregate/MinAggregator';
 export * from './cube/aggregate/NullAggregator';
