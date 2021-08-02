@@ -6,7 +6,7 @@
  */
 
 import {HoistBase, managed} from '@xh/hoist/core';
-import {action, observable, makeObservable, when} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {CubeField} from './CubeField';
 import {Query} from './Query';
@@ -106,14 +106,13 @@ export class Cube extends HoistBase {
      * each contain a 'cubeLabel' and a 'cubeDimension' property.
      *
      * @param {Object} query - Config for query defining the shape of the view.
-     * @returns {Promise<Object[]>} - data containing the results of the query as a hierarchical set of rows.
+     * @returns {Object[]} - data containing the results of the query as a hierarchical set of rows.
      */
-    async executeQueryAsync(query) {
+    executeQuery(query) {
         query = new Query({...query, cube: this});
-        const view = new View({query});
-        await when(() => view.result);
+        const view = new View({query}),
+            rows = view.result.rows;
 
-        const rows = view.result.rows;
         view.destroy();
         return rows;
     }
@@ -133,13 +132,11 @@ export class Cube extends HoistBase {
      *      To receive data only, use the 'results' property of the returned View instead.
      * @param {boolean} [c.connect] - true to update View automatically when data in
      *      the underlying cube is changed. Default false.
-     * @param {PendingTaskModel} [c.loadModel] - PendingTaskModel to link the View to during
-     *      potentially expensive operations. If not provided, one will be created.
      * @returns {View}
      */
-    createView({query, stores, connect = false, loadModel}) {
+    createView({query, stores, connect = false}) {
         query = new Query({...query, cube: this});
-        return new View({query, stores, connect, loadModel});
+        return new View({query, stores, connect});
     }
 
     /**

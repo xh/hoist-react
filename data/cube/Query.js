@@ -31,7 +31,7 @@ export class Query {
 
     /**
      * @param {Object} c - Query configuration.
-     * @param {Cube} c.cube - associated Cube. Required, but note that `Cube.executeQueryAsync()`
+     * @param {Cube} c.cube - associated Cube. Required, but note that `Cube.executeQuery()`
      *      will install a reference to itself on the query config automatically.
      * @param {string[]} [c.fields] - field names. If unspecified will include all available fields
      *      from the source Cube, otherwise supply a subset to optimize aggregation performance.

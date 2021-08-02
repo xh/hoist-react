@@ -8,11 +8,9 @@
 import {HoistBase} from '@xh/hoist/core';
 import {Cube} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {PendingTaskModel, forEachAsync} from '@xh/hoist/utils/async';
-import {wait} from '@xh/hoist/promise';
 import {throwIf, logWithDebug} from '@xh/hoist/utils/js';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
-import {castArray, forEach, groupBy, isEmpty, isNil, map, isEqual, keys} from 'lodash';
+import {castArray, forEach, groupBy, isEmpty, isNil, map, isEqual, keys, find} from 'lodash';
 
 import {AggregateRow} from './row/AggregateRow';
 import {BucketRow} from './row/BucketRow';
@@ -38,9 +36,6 @@ export class View extends HoistBase {
     /** @member {Store[]} - Stores to which results of this view should be (re)loaded. */
     stores = null;
 
-    /** @member {PendingTaskModel} - PendingTaskModel linked to during operations */
-    loadModel = null;
-
     /** @member {Object} - observable Cube info associated with this View when last updated. */
     @observable.ref info = null;
 
@@ -61,23 +56,15 @@ export class View extends HoistBase {
      *      Optional - to receive data only, observe/read this class's `result` property instead.
      * @param {boolean} [c.connect] - true to reactively update this class's `result` and connected
      *      store(s) (if any) when data in the underlying Cube is changed.
-     * @param {PendingTaskModel} [c.loadModel] - PendingTaskModel to link to during potentially
-     *      expensive operations. If not provided, one will be created.
      */
-    constructor({
-        query,
-        stores = [],
-        connect = false,
-        loadModel
-    }) {
+    constructor({query, stores = [], connect = false}) {
         super();
         makeObservable(this);
 
         this.query = query;
         this.stores = castArray(stores);
-        this.loadModel = loadModel ?? this.markManaged(new PendingTaskModel());
         this._rowCache = new Map();
-        this.fullUpdateAsync().linkTo(this.loadModel);
+        this.fullUpdate();
 
         if (connect) {
             this.cube._connectedViews.add(this);
@@ -94,7 +81,7 @@ export class View extends HoistBase {
     get fields() {return this.query.fields}
 
     /** @return {string[]} */
-    get fieldNames() {return this.fields.map(it => it.name)}
+    get fieldNames() {return map(this.fields, 'name')}
 
     /** @return {Filter} */
     get filter() {return this.query.filter}
@@ -129,7 +116,7 @@ export class View extends HoistBase {
         }
 
         this.query = newQuery;
-        this.fullUpdateAsync().linkTo(this.loadModel);
+        this.fullUpdate();
     }
 
     /**
@@ -153,7 +140,7 @@ export class View extends HoistBase {
      * @return {CubeField}
      */
     getField(name) {
-        return this.fields.find(it => it.name === name);
+        return find(this.fields, {name});
     }
 
     /**
@@ -161,7 +148,7 @@ export class View extends HoistBase {
      */
     setStores(stores) {
         this.stores = castArray(stores);
-        this.loadStoresAsync().linkTo(this.loadModel);
+        this.loadStores();
     }
 
     /**
@@ -174,9 +161,10 @@ export class View extends HoistBase {
     //-----------------------
     // Entry point for cube
     //-----------------------
+    @action
     noteCubeLoaded() {
         this._rowCache.clear();
-        this.fullUpdateAsync().linkTo(this.loadModel);
+        this.fullUpdate();
     }
 
     @action
@@ -185,9 +173,9 @@ export class View extends HoistBase {
 
         if (!simpleUpdates) {
             this._rowCache.clear();
-            this.fullUpdateAsync().linkTo(this.loadModel);
+            this.fullUpdate();
         } else if (!isEmpty(simpleUpdates)) {
-            this.dataOnlyUpdateAsync(simpleUpdates).linkTo(this.loadModel);
+            this.dataOnlyUpdate(simpleUpdates);
         } else {
             this.info = this.cube.info;
         }
@@ -197,27 +185,22 @@ export class View extends HoistBase {
     // Implementation
     //------------------------
     @logWithDebug
-    async fullUpdateAsync() {
-        await wait(1);
+    fullUpdate() {
         this.generateRows();
-        await this.loadStoresAsync();
+        this.loadStores();
         this.updateResults();
     }
 
-    async loadStoresAsync() {
+    loadStores() {
         const {_leafMap, _rows} = this;
         if (!_leafMap || !_rows) return;
 
         // Skip degenerate root in stores/grids, but preserve in object api.
         const storeRows = _leafMap.size !== 0 ? _rows : [];
-        return forEachAsync(this.stores, store => {
-            store.loadData(storeRows);
-        });
+        this.stores.forEach(s => s.loadData(storeRows));
     }
 
-    async dataOnlyUpdateAsync(updates) {
-        await wait(1);
-
+    dataOnlyUpdate(updates) {
         const {_leafMap} = this,
             updatedRows = new Set();
 
@@ -226,16 +209,16 @@ export class View extends HoistBase {
             leaf?.applyDataUpdate(rec, updatedRows);
         });
 
-        await forEachAsync(this.stores, store => {
+        this.stores.forEach(store => {
             const recordUpdates = [];
             updatedRows.forEach(row => {
                 if (store.getById(row.id)) recordUpdates.push(row);
             });
             store.updateData({update: recordUpdates});
         });
+        this.updateResults();
     }
 
-    @action
     updateResults() {
         const {_leafMap, _rows} = this;
         this.result = {rows: _rows, leafMap: _leafMap};
