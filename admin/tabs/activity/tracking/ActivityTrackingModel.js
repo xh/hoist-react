@@ -230,7 +230,7 @@ export class ActivityTrackingModel extends HoistModel {
 
     async loadGridAndChartAsync() {
         const {cube, gridModel, chartsModel, dimensions} = this,
-            data = await cube.executeQueryAsync({
+            data = cube.executeQuery({
                 dimensions,
                 filter: this.filterChooserModel.value,
                 includeLeaves: true
@@ -239,6 +239,7 @@ export class ActivityTrackingModel extends HoistModel {
         data.forEach(node => this.separateLeafRows(node));
         gridModel.loadData(data);
         await gridModel.preSelectFirstAsync();
+
 
         chartsModel.setDataAndDims({data, dimensions});
     }
