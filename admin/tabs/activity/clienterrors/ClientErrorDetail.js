@@ -10,8 +10,9 @@ import {hoistCmp} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {jsonInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {dateTimeRenderer} from '@xh/hoist/format';
+import {fmtDateTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
+import {isNil} from 'lodash';
 
 export const clientErrorDetail = hoistCmp.factory(
     ({model}) => {
@@ -27,7 +28,7 @@ export const clientErrorDetail = hoistCmp.factory(
                 defaultSize: 370
             },
             item: form({
-                fieldDefaults: {inline: true},
+                fieldDefaults: {inline: true, readonlyRenderer: valOrNa},
                 item: hframe(
                     div({
                         className: 'xh-admin-activity-detail__form',
@@ -36,18 +37,16 @@ export const clientErrorDetail = hoistCmp.factory(
                             h3(Icon.info(), 'Error Info'),
                             formField({
                                 field: 'username',
-                                item: textInput(),
-                                readonlyRenderer: valOrNa
+                                item: textInput()
                             }),
                             formField({
                                 field: 'dateCreated',
                                 item: textInput(),
-                                readonlyRenderer: dateTimeRenderer({})
+                                readonlyRenderer: fmtDateTime
                             }),
                             formField({
                                 field: 'appVersion',
-                                item: textInput(),
-                                readonlyRenderer: valOrNa
+                                item: textInput()
                             }),
                             formField({
                                 field: 'userAlerted',
@@ -56,24 +55,20 @@ export const clientErrorDetail = hoistCmp.factory(
                             }),
                             formField({
                                 field: 'id',
-                                item: textInput(),
-                                readonlyRenderer: valOrNa
+                                item: textInput()
                             }),
                             h3(Icon.desktop(), 'Device / Browser'),
                             formField({
                                 field: 'device',
-                                item: textInput(),
-                                readonlyRenderer: valOrNa
+                                item: textInput()
                             }),
                             formField({
                                 field: 'browser',
-                                item: textInput(),
-                                readonlyRenderer: valOrNa
+                                item: textInput()
                             }),
                             formField({
                                 field: 'userAgent',
-                                item: textInput(),
-                                readonlyRenderer: valOrNa
+                                item: textInput()
                             })
                         ]
                     }),
@@ -114,5 +109,5 @@ export const clientErrorDetail = hoistCmp.factory(
     }
 );
 
-const valOrNa = v => v != null ? v : naSpan();
+const valOrNa = v => !isNil(v) ? v.toString() : naSpan();
 const naSpan = () => span({item: 'N/A', className: 'xh-text-color-muted'});

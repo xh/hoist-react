@@ -3,20 +3,58 @@
 ## v42.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-
-* New `GridModel.clicksToEdit` config controls the number of clicks required to begin inline-editing
-  a grid cell (default remains 2).
 * `Panel` now has an `error` property to specify display in the event of an error.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v41.2.0...develop)
+
+## v41.2.0 - 2021-07-30
+
+### 🎁 New Features
+
+* New `GridModel.rowClassRules` and `Column.cellClassRules` configs added. Previously apps needed to
+  use `agOptions` to dynamically apply and remove CSS classes using either of these options - now
+  they are fully supported by Hoist.
+  * ⚠ Note that, to avoid conflicts with internal usages of these configs, Hoist will check and
+    throw if either is passed via `agOptions`. Apps only need to move their configs to the new
+    location - the shape of the rules object does *not* need to change.
+* New `GridAutosizeOptions.includeCollapsedChildren` config controls whether values from collapsed
+  (i.e. hidden) child records should be measured when computing column sizes. Default of `false`
+  improves autosize performance for large tree grids and should generally match user expectations
+  around WYSIWYG autosizing.
+* New `GridModel.beginEditAsync()` and `endEditAsync()` APIs added to start/stop inline editing.
+  * ⚠ Note that - in a minor breaking change - the function form of the `Column.editable` config is
+    no longer passed an `agParams` argument, as editing might now begin and need to be evaluated
+    outside the context of an AG-Grid event.
+* New `GridModel.clicksToEdit` config controls the number of clicks required to trigger
+  inline-editing of a grid cell. Default remains 2 (double click ).
+* Timeouts are now configurable on grid exports via a new `exportOptions.timeout` config.
+* Toasts may now be dismissed programmatically - use the new `ToastModel` returned by the
+  `XH.toast()` API and its variants.
+* `Form` supports setting readonlyRenderer in `fieldDefaults` prop.
+* New utility hook `useCached` provides a more flexible variant of `React.useCallback`.
 
 ### 🐞 Bug Fixes
 
 * Inline grid editing supports passing of JSX editor components.
+* `GridExportService` catches any exceptions thrown during export preparation and warns the user
+  that something went wrong.
+* GridModel with 'disabled' selection no longer shows "ghost" selection when using keyboard.
+* Tree grids now style "parent" rows consistently with highlights/borders if requested, even for
+  mixed-depth trees where some rows have children at a given level and others do not.
 
 ### ⚙️ Technical
 
 * `FetchService` will now actively `abort()` fetch requests that it is abandoning due to its own
   `timeout` option. This allows the browser to release the associated resources associated with
   these requests.
+* The `start()` function in `@xh/hoist/promise` has been deprecated. Use `wait()` instead, which can
+  now be called without any args to establish a Promise chain and/or introduce a minimal amount of
+  asynchronousity.
+* ⚠ Note that the raw `AgGrid` component no longer enhances the native keyboard handling provided
+  by ag-Grid. All Hoist key handling customizations are now limited to `Grid`.  If you wish to
+  provide custom handling in a raw `AgGrid` component, see the example here:
+  https://www.ag-grid.com/javascript-grid/row-selection/#example-selection-with-keyboard-arrow-keys
+
 
 ### ✨ Style
 
@@ -26,8 +64,15 @@
 * New/renamed CSS vars `--xh-grid-selected-row-bg` and `--xh-grid-selected-row-text-color` now used
   to style selected grid rows.
   * ⚠ Note the `--xh-grid-bg-highlight` CSS var has been removed.
+* New `.xh-cell--editable` CSS class applied to cells with inline editing enabled.
+  * ⚠ Grid CSS class `.xh-invalid-cell` has been renamed to `.xh-cell--invalid` for consistency -
+    any app style overrides should update to this new classname.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v41.1.0...develop)
+### 📚 Libraries
+
+* core-js `3.15 -> 3.16`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v41.1.0...v41.2.0)
 
 ## v41.1.0 - 2021-07-23
 
@@ -47,6 +92,8 @@
   alerts with matching intents and appropriate icons.
   * ⚠ Note that the default `XH.toast()` call now shows a toast with the primary (blue) intent and
     no icon. Previously toasts displayed by default with a success (green) intent and checkmark.
+* GridModel provides a public API method `setColumnState` for taking a previously saved copy of
+  gridModel.columnState and applying it back to a GridModel in one call.
 
 ### 🐞 Bug Fixes
 
@@ -57,7 +104,6 @@
 * Improved `GridModel` async selection methods to ensure they do not wait forever if grid does not
   mount.
 * Fixed an issue preventing dragging the chart navigator range in a dialog.
-
 
 ### ⚙️ Technical
 

@@ -54,7 +54,7 @@ const detailRecForm = hoistCmp.factory(
                 defaultSize: 370
             },
             item: form({
-                fieldDefaults: {inline: true},
+                fieldDefaults: {inline: true, readonlyRenderer: valOrNa},
                 item: hframe(
                     div({
                         className: 'xh-admin-activity-detail__form',
@@ -73,13 +73,11 @@ const detailRecForm = hoistCmp.factory(
                             }),
                             formField({
                                 field: 'category',
-                                item: textInput(),
-                                readonlyRenderer: valOrNa
+                                item: textInput()
                             }),
                             formField({
                                 field: 'msg',
-                                item: textArea(),
-                                readonlyRenderer: valOrNa
+                                item: textArea()
                             }),
                             formField({
                                 field: 'dateCreated',
@@ -98,24 +96,20 @@ const detailRecForm = hoistCmp.factory(
                             }),
                             formField({
                                 field: 'id',
-                                item: textInput(),
-                                readonlyRenderer: valOrNa
+                                item: textInput()
                             }),
                             h3(Icon.desktop(), 'Device / Browser'),
                             formField({
                                 field: 'device',
-                                item: textInput(),
-                                readonlyRenderer: valOrNa
+                                item: textInput()
                             }),
                             formField({
                                 field: 'browser',
-                                item: textInput(),
-                                readonlyRenderer: valOrNa
+                                item: textInput()
                             }),
                             formField({
                                 field: 'userAgent',
-                                item: textInput(),
-                                readonlyRenderer: valOrNa
+                                item: textInput()
                             })
                         ]
                     }),

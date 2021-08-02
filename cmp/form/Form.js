@@ -5,9 +5,11 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {elemFactory, hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
+import equal from 'fast-deep-equal';
 import PT from 'prop-types';
-import {createContext, useContext, useMemo} from 'react';
+import {createContext, useContext} from 'react';
 import {apiRemoved} from '@xh/hoist/utils/js';
+import {useCached} from '@xh/hoist/utils/react';
 import {FormModel} from './FormModel';
 
 export const FormContext = createContext({});
@@ -27,8 +29,6 @@ const formContextProvider = elemFactory(FormContext.Provider);
  * @see FormField - field-level wrapper component, which labels and displays info for a...
  * @see HoistInput - superclass for the data entry components themselves.
  */
-/* eslint-disable react-hooks/exhaustive-deps */
-
 export const [Form, form] = hoistCmp.withFactory({
     displayName: 'Form',
     model: uses(FormModel, {publishMode: ModelPublishMode.NONE}),
@@ -36,19 +36,16 @@ export const [Form, form] = hoistCmp.withFactory({
     render({model, fieldDefaults, children}) {
         apiRemoved(fieldDefaults?.labelAlign, 'labelAlign', 'Use labelTextAlign instead.');
 
-        const parentContext = useContext(FormContext);
+        // gather own and inherited field defaults...
+        const parentDefaults = useContext(FormContext).fieldDefaults;
+        if (parentDefaults) fieldDefaults = {...parentDefaults, ...fieldDefaults};
 
-        fieldDefaults = {...parentContext.fieldDefaults, ...fieldDefaults};
-
-        const cachedContext = useMemo(
-            () => ({model, fieldDefaults}),
-            [model, JSON.stringify(fieldDefaults)]
+        // ...and deliver as a cached context to avoid spurious re-renders
+        const formContext = useCached(
+            {model, fieldDefaults},
+            (a, b) => a.model === b.model && equal(a.fieldDefaults, b.fieldDefaults)
         );
-
-        return formContextProvider({
-            value: cachedContext,
-            items: children
-        });
+        return formContextProvider({value: formContext, items: children});
     }
 });
 

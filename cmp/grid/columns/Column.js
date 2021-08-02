@@ -7,7 +7,7 @@
 import {div, ul, li} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
-import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {apiRemoved, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
     clone,
@@ -48,6 +48,9 @@ export class Column {
         {sort: 'desc', abs: false}
     ];
 
+    /** @member {(boolean|Column~editableFn)} */
+    editable;
+
     /**
      * @param {Object} c - Column configuration.
      * @param {string} [c.field] - name of data store field to display within the column.
@@ -70,9 +73,13 @@ export class Column {
      *      as cell alignment.
      * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - CSS classes to add to the
      *      header. Supports both string values or a function to generate strings.
-     * @param {(Column~cellClassFn|string|string[])} [c.cellClass] - additional css classes to add
-     *      to each cell in the column. Supports both string values or function to generate
-     *     strings.
+     * @param {(Column~cellClassFn|string|string[])} [c.cellClass] - additional CSS classes to add
+     *      to each cell in the column. Supports both string values or function to generate.
+     *      NOTE that, once added, classes will *not* be removed if the data changes.
+     *      Use `cellClassRules` instead if Record data can change across refreshes.
+     * @param {Object.<string, Column~cellClassRuleFn>} [c.cellClassRules] - object keying CSS
+     *      class names to functions determining if they should be added or removed from the cell.
+     *      See Ag-Grid docs on "cell styles" for details.
      * @param {boolean} [c.hidden] - true to suppress default display of the column.
      * @param {string} [c.align] - horizontal alignment of cell contents.
      *      Valid values are:  'left' (default), 'right' or 'center'.
@@ -153,8 +160,8 @@ export class Column {
      *      may have performance implications. Default false.
      * @param {boolean} highlightOnChange - set to true to call attention to cell changes by
      *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
-     * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column
-     *     editable.
+     * @param {(boolean|Column~editableFn)} [c.editable] - true to make cells in this column
+     *     editable, or a function to determine on a record-by-record basis.
      * @param {Column~editorFn} [c.editor] - Cell editor Component or a function to create one.
      *      Adding an editor will also install a cellClassRule and tooltip to display the
      *      validation state of the cell in question.
@@ -183,6 +190,7 @@ export class Column {
         headerAlign,
         headerClass,
         cellClass,
+        cellClassRules,
         hidden,
         align,
         width,
@@ -254,7 +262,11 @@ export class Column {
         this.headerHasExpandCollapse = withDefault(headerHasExpandCollapse, true);
         this.headerClass = headerClass;
         this.headerAlign = headerAlign || align;
+
         this.cellClass = cellClass;
+        this.cellClassRules = cellClassRules || {};
+        apiRemoved(agOptions?.cellClassRules, 'agOptions.cellClassRules', 'Specify cellClassRules as a top-level Column config instead.');
+
         this.align = align;
 
         this.hidden = withDefault(hidden, false);
@@ -330,7 +342,7 @@ export class Column {
             `Column specified with both tooltip && tooltipElement. Tooltip will be ignored. [colId=${this.colId}]`
         );
 
-        this.editable = editable;
+        this.editable = editable || false;
         this.editor = editor;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
@@ -344,8 +356,18 @@ export class Column {
     }
 
     /**
-     * Produce a Column definition appropriate for AG Grid.
+     * @param {Record} record
+     * @return {boolean} - true if this column supports editing its field for the given Record.
      */
+    isEditableForRecord(record) {
+        const {editable, gridModel} = this;
+        if (!record) return false;
+        return isFunction(editable) ?
+            editable({record, store: record.store, gridModel, column: this}) :
+            editable;
+    }
+
+    /** Produce a Column definition appropriate for AG-Grid. */
     getAgSpec() {
         const {gridModel, field, headerName, displayName, agOptions} = this,
             ret = {
@@ -374,14 +396,8 @@ export class Column {
                 suppressColumnsToolPanel: this.excludeFromChooser,
                 suppressFiltersToolPanel: this.excludeFromChooser,
                 enableCellChangeFlash: this.highlightOnChange,
-                editable: (agParams) => {
-                    const {editable} = this;
-                    if (isFunction(editable)) {
-                        const record = agParams.node.data;
-                        return editable({record, store: record.store, gridModel, column: this, agParams});
-                    }
-                    return editable;
-                },
+                cellClassRules: this.cellClassRules,
+                editable: (agParams) => this.isEditableForRecord(agParams.node.data),
                 valueSetter: (agParams) => {
                     const record = agParams.data;
                     this.setValueFn({
@@ -488,17 +504,17 @@ export class Column {
 
         // Generate CSS classes for cells.
         // Default alignment classes are mixed in with any provided custom classes.
-        const {align} = this;
+        const {cellClass, isTreeColumn, align} = this;
         ret.cellClass = (agParams) => {
             let r = [];
-            if (this.cellClass) {
+            if (cellClass) {
                 r = castArray(
-                    isFunction(this.cellClass) ?
-                        this.cellClass(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
-                        this.cellClass
+                    isFunction(cellClass) ?
+                        cellClass(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
+                        cellClass
                 );
             }
-            if (this.isTreeColumn) {
+            if (isTreeColumn) {
                 r.push('xh-tree-column');
             }
             if (align === 'center' || align === 'right') {
@@ -610,7 +626,14 @@ export class Column {
                 throw XH.exception('Column editor must be a HoistComponent or a render function');
             });
             ret.cellClassRules = {
-                'xh-invalid-cell': ({data: record}) => record && !isEmpty(record.errors[field])
+                'xh-cell--invalid': (agParams) => {
+                    const record = agParams.data;
+                    return record && !isEmpty(record.errors[field]);
+                },
+                'xh-cell--editable': (agParams) => {
+                    return this.isEditableForRecord(agParams.data);
+                },
+                ...ret.cellClassRules
             };
         }
 
@@ -741,6 +764,16 @@ export function getAgHeaderClassFn(column) {
  */
 
 /**
+ * @callback Column~cellClassRuleFn - function to determine if a particular CSS class should be
+ *      added/removed from a cell, via cellClassRules config.
+ * @param {CellClassParams} agParams - as provided by Ag-Grid.
+ * @param {*} agParams.value - the current cell value.
+ * @param {?Record} agParams.data - the backing Hoist record for the row, if any.
+ * @return {boolean} - true if the class to which this function is keyed should be added, false if
+ *      it should be removed.
+ */
+
+/**
  * @callback Column~headerClassFn - function to generate header CSS classes.
  * @param {HeaderContext} context - contains data about the column and GridModel.
  * @return {(string|string[])} - CSS class(es) to use.
@@ -807,10 +840,8 @@ export function getAgHeaderClassFn(column) {
  * @param {Store} params.store - Store containing the grid data.
  * @param {Column} params.column - column for the cell being edited.
  * @param {GridModel} params.gridModel - gridModel for the grid.
- * @param {IsColumnFuncParams} params.agParams - the ag-grid column function params.
  * @return {boolean} - true if cell is editable
  */
-
 
 /**
  * @callback Column~editorFn - grid cell editor component, or function to return one.

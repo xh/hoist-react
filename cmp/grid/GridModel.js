@@ -18,7 +18,6 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
     apiDeprecated,
     apiRemoved,
-    debounced,
     deepFreeze,
     ensureUnique,
     logWithDebug,
@@ -46,6 +45,7 @@ import {
     map,
     max,
     min,
+    omit,
     pull,
     sortBy
 } from 'lodash';
@@ -86,6 +86,8 @@ export class GridModel extends HoistModel {
     colChooserModel;
     /** @member {function} */
     rowClassFn;
+    /** @member {Object.<string, RowClassRuleFn>} */
+    rowClassRules;
     /** @member {(Array|function)} */
     contextMenu;
     /** @member {number} */
@@ -137,6 +139,8 @@ export class GridModel extends HoistModel {
     @observable emptyText;
     /** @member {TreeStyle} */
     @observable treeStyle;
+    /** @member {boolean} */
+    @observable isEditing = false;
 
     static defaultContextMenu = [
         'copy',
@@ -212,6 +216,11 @@ export class GridModel extends HoistModel {
      *      install default context menu items.
      * @param {ExportOptions} [c.exportOptions] - default export options.
      * @param {RowClassFn} [c.rowClassFn] - closure to generate CSS class names for a row.
+     *      NOTE that, once added, classes will *not* be removed if the data changes.
+     *      Use `rowClassRules` instead if Record data can change across refreshes.
+     * @param {Object.<string, RowClassRuleFn>} [c.rowClassRules] - object keying CSS
+     *      class names to functions determining if they should be added or removed from the row.
+     *      See Ag-Grid docs on "row styles" for details.
      * @param {number} [c.groupRowHeight] - Height (in px) of a group row. Note that this will
      *      override `sizingMode` for group rows.
      * @param {Grid~groupRowRendererFn} [c.groupRowRenderer] - function returning a string used to
@@ -278,18 +287,18 @@ export class GridModel extends HoistModel {
         sizingMode = 'standard',
         showHover = false,
         rowBorders = false,
+        rowClassFn = null,
+        rowClassRules = {},
         cellBorders = false,
         treeStyle = TreeStyle.HIGHLIGHTS,
         stripeRows = (!treeMode || treeStyle === TreeStyle.NONE),
         showCellFocus = false,
         hideHeaders = false,
-        compact,
 
         lockColumnGroups = true,
         enableColumnPinning = true,
         enableExport = false,
         exportOptions = {},
-        rowClassFn = null,
 
         groupRowHeight,
         groupRowRenderer,
@@ -322,6 +331,7 @@ export class GridModel extends HoistModel {
         this.emptyText = emptyText;
         this.hideEmptyTextBeforeLoad = hideEmptyTextBeforeLoad;
         this.rowClassFn = rowClassFn;
+        this.rowClassRules = rowClassRules;
         this.groupRowHeight = groupRowHeight;
         this.groupRowRenderer = groupRowRenderer;
         this.groupRowElementRenderer = groupRowElementRenderer;
@@ -332,6 +342,7 @@ export class GridModel extends HoistModel {
         this.externalSort = externalSort;
         this.autosizeOptions = defaults(autosizeOptions, {
             mode: GridAutosizeMode.ON_DEMAND,
+            includeCollapsedChildren: false,
             showMask: true,
             bufferPx: 5,
             fillMode: 'none'
@@ -365,7 +376,6 @@ export class GridModel extends HoistModel {
 
         this.agGridModel = new AgGridModel({
             sizingMode,
-            compact,
             showHover,
             rowBorders,
             stripeRows,
@@ -447,7 +457,7 @@ export class GridModel extends HoistModel {
     /**
      * Select records in the grid.
      *
-     * @param {(RecordOrId|RecordOrId[])} records - single record/ID or array of records/IDs to select.
+     * @param {(RecordOrId|RecordOrId[])} records - one or more record(s) / ID(s) to select.
      * @param {Object} [options]
      * @param {boolean} [options.ensureVisible] - true to make selection visible if it is within a
      *      collapsed node or outside of the visible scroll window. Default true.
@@ -487,7 +497,6 @@ export class GridModel extends HoistModel {
             if (ensureVisible) await this.ensureSelectionVisibleAsync();
         }
     }
-
 
     /**
      * Select the first row in the grid, if no other selection present.
@@ -535,7 +544,7 @@ export class GridModel extends HoistModel {
             }
         });
 
-        await wait(0);
+        await wait();
 
         // 2) Scroll to all selected nodes
         records.forEach(({id}) => {
@@ -732,6 +741,13 @@ export class GridModel extends HoistModel {
             .map(({colId, width, hidden, pinned}) => ({colId, width, hidden, pinned}));
     }
 
+    /** @param {ColumnState[]} colState */
+    setColumnState(colState) {
+        colState = this.cleanColumnState(colState);
+        colState = this.removeTransientWidths(colState);
+        this.applyColumnStateChanges(colState);
+    }
+
     showColChooser() {
         if (this.colChooserModel) {
             this.colChooserModel.open();
@@ -769,14 +785,10 @@ export class GridModel extends HoistModel {
         }
     }
 
-    // We debounce this method because the implementation of `AgGridModel.setSelectedRowNodeIds()`
-    // selects nodes one-by-one, and ag-Grid will fire a selection changed event for each iteration.
-    // This avoids a storm of events looping through the reaction when selecting in bulk.
-    @debounced(0)
     noteAgSelectionStateChanged() {
         const {selModel, agGridModel, isReady} = this;
 
-        // Check required as due to debounce we may be receiving stale message after unmounting
+        // Check required as we may be receiving stale message after unmounting
         if (isReady) {
             selModel.select(agGridModel.getSelectedRowNodeIds());
         }
@@ -1024,6 +1036,95 @@ export class GridModel extends HoistModel {
     }
 
     /**
+     * Begin an inline editing session.
+     * @param {RecordOrId} [recOrId] - Record/ID to edit. If unspecified, the first selected Record
+     *      will be used, if any, or the first overall Record in the grid.
+     * @param {string} [colId] - ID of column on which to start editing. If unspecified, the first
+     *      editable column will be used.
+     * @return {Promise<void>}
+     */
+    async beginEditAsync({record, colId} = {}) {
+        const isReady = await this.whenReadyAsync();
+        if (!isReady) return;
+
+        const {store, agGridModel, agApi, selection} = this;
+
+        let recToEdit;
+        if (record) {
+            // Normalize specified record, if any.
+            recToEdit = record.isRecord ? record : store.getById(record);
+        } else {
+            if (!isEmpty(selection)) {
+                // Or use first selected record, if any.
+                recToEdit = selection[0];
+            } else {
+                // Or use the first record overall.
+                const firstRowId = agGridModel.getFirstSelectableRowNodeId();
+                recToEdit = store.getById(firstRowId);
+            }
+        }
+
+        const rowIndex = agApi.getRowNode(recToEdit?.id)?.rowIndex;
+        if (isNil(rowIndex) || rowIndex < 0) {
+            console.warn(
+                'Unable to start editing - ' +
+                record ? 'specified record not found' : 'no records found'
+            );
+            return;
+        }
+
+        let colToEdit;
+        if (colId) {
+            // Ensure specified column is editable for recToEdit.
+            const col = this.getColumn(colId);
+            colToEdit = col?.isEditableForRecord(recToEdit) ? col : null;
+        } else {
+            // Or find the first editable col in the grid.
+            colToEdit = this.getVisibleLeafColumns().find(column => {
+                return column.isEditableForRecord(recToEdit);
+            });
+        }
+
+        if (!colToEdit) {
+            console.warn(
+                'Unable to start editing - ' +
+                (colId ? `column with colId ${colId} not found, or not editable` : 'no editable columns found')
+            );
+            return;
+        }
+
+        agApi.startEditingCell({
+            rowIndex,
+            colKey: colToEdit.colId
+        });
+    }
+
+    /**
+     * Stop an inline editing session, if one is in-progress.
+     * @param {boolean} dropPendingChanges - true to cancel current edit without saving pending
+     *      changes in the active editor(s) to the backing Record.
+     * @return {Promise<void>}
+     */
+    async endEditAsync(dropPendingChanges = false) {
+        const isReady = await this.whenReadyAsync();
+        if (!isReady) return;
+
+        this.agApi.stopEditing(dropPendingChanges);
+    }
+
+    /** @package */
+    @action
+    onCellEditingStarted = () => {
+        this.isEditing = true;
+    }
+
+    /** @package */
+    @action
+    onCellEditingStopped = () => {
+        this.isEditing = false;
+    }
+
+    /**
      * Returns true as soon as the underlying agGridModel is ready, waiting a limited period
      * of time if needed to allow the component to initialize. Returns false if grid not ready
      * by end of timeout to ensure caller does not wait forever (if e.g. grid is not mounted).
@@ -1184,6 +1285,37 @@ export class GridModel extends HoistModel {
         );
     }
 
+    cleanColumnState(columnState) {
+        const gridCols = this.getLeafColumns();
+
+        // REMOVE any state columns that are no longer found in the grid. These were likely saved
+        // under a prior release of the app and have since been removed from the code.
+        let ret = columnState.filter(({colId}) => this.findColumn(gridCols, colId));
+
+        // ADD any grid columns that are not found in state. These are newly added to the code.
+        // Insert these columns in position based on the index at which they are defined.
+        gridCols.forEach(({colId}, idx) => {
+            if (!find(ret, {colId})) {
+                ret.splice(idx, 0, {colId});
+            }
+        });
+
+        return ret;
+    }
+
+    // Remove the width from any non-resizable column - we don't want to track those widths as
+    // they are set programmatically (e.g. fixed / action columns), and saved state should not
+    // conflict with any code-level updates to their widths.
+    removeTransientWidths(columnState) {
+        const gridCols = this.getLeafColumns();
+
+        return columnState.map(state => {
+            const col = this.findColumn(gridCols, state.colId);
+            return col.resizable ? state : omit(state, 'width');
+        });
+    }
+
+
     // Selectively enhance raw column configs with field-level metadata from this model's Store
     // Fields. Takes store as an optional explicit argument to support calling from
     // parseAndSetColumnsAndStore() with a raw store config, prior to actual store construction.
@@ -1343,12 +1475,24 @@ export class GridModel extends HoistModel {
  */
 
 /**
+ * @callback RowClassRuleFn - function to determine if a particular CSS class should be
+ *      added/removed from a row, via rowClassRules config.
+ * @param {RowClassParams} agParams - as provided by AG-Grid.
+ * @param {?Record} agParams.data - the backing Hoist record, if any.
+ * @return {boolean} - true if the class to which this function is keyed should be added, false if
+ *      it should be removed.
+ */
+
+/**
  * @typedef {Object} GridAutosizeOptions
  * @property {GridAutosizeMode} [mode] - defaults to GridAutosizeMode.ON_DEMAND.
  * @property {number} [bufferPx] -  additional pixels to add to the size of each column beyond its
  *      absolute minimum.  May be used to adjust the spacing in the grid.  Default is 5.
  * @property {boolean} [showMask] - true to show mask over the grid during the autosize operation.
  *      Default is true.
+ * @property {boolean} [includeCollapsedChildren] - true to autosize all rows, even when hidden due
+ *      to a collapsed ancestor row.  Default is false.  Note that setting this to true can
+ *      have performance impacts for large tree grids with many cells.
  * @property {function|string|string[]} [columns] - columns ids to autosize, or a function for
  *      testing if the given column should be autosized.  Typically used when calling
  *      autosizeAsync() manually.  To generally exclude a column from autosizing, see the
