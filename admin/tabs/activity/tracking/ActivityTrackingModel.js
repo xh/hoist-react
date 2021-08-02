@@ -5,6 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {usernameCol} from '@xh/hoist/admin/columns';
+import {RangeAggregator} from '@xh/hoist/admin/tabs/activity/aggregators/RangeAggregator';
 import {ActivityDetailModel} from '@xh/hoist/admin/tabs/activity/tracking/detail/ActivityDetailModel';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
@@ -17,7 +18,6 @@ import {action, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isFinite} from 'lodash';
 import moment from 'moment';
-import {ChildCountAggregator, LeafCountAggregator, RangeAggregator} from '../aggregators';
 import {ChartsModel} from './charts/ChartsModel';
 
 export const PERSIST_ACTIVITY = {localStorageKey: 'xhAdminActivityState'};
@@ -84,8 +84,8 @@ export class ActivityTrackingModel extends HoistModel {
                 {name: 'impersonating', type: 'string'},
                 {name: 'dateCreated', displayName: 'Timestamp', type: 'date'},
                 {name: 'data', type: 'json'},
-                {name: 'count', type: 'int', aggregator: new ChildCountAggregator()},
-                {name: 'entryCount', type: 'int', aggregator: new LeafCountAggregator()}
+                {name: 'count', type: 'int', aggregator: 'CHILD_COUNT'},
+                {name: 'entryCount', type: 'int', aggregator: 'LEAF_COUNT'}
             ]
         });
 
@@ -187,7 +187,6 @@ export class ActivityTrackingModel extends HoistModel {
                 {field: 'entryCount', headerName: 'Entries', width: 70, align: 'right'}
             ]
         });
-
 
         this.activityDetailModel = new ActivityDetailModel({parentModel: this});
         this.chartsModel = new ChartsModel({parentModel: this});
