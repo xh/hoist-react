@@ -20,7 +20,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {omitBy} from 'lodash';
+import {omitBy, isString} from 'lodash';
 import PT from 'prop-types';
 import {isValidElement, useRef, Children} from 'react';
 import {panelHeader} from './impl/PanelHeader';
@@ -83,8 +83,6 @@ export const [Panel, panel] = hoistCmp.withFactory({
         }
 
         // 2) Prepare 'core' contents according to collapsed state
-        // For panels with an error property, substitute an appropriate error display for the
-        // non-toolbar elements of the panel upon error.
         const {
             resizable,
             collapsible,
@@ -100,21 +98,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
             delete layoutProps[vertical ? 'height' : 'width'];
         }
 
-        let innerContents = null,
-            coreContents = null;
-
-        if (error === 'lastLoadException') {
-            innerContents = contextModel.lastLoadException ?
-                errorMessage({error: contextModel.lastLoadException}) :
-                Children.toArray(children);
-        } else if (typeof error === 'string') {
-            innerContents = errorMessage({error});
-        } else if (isValidElement(error)) {
-            innerContents = error;
-        } else {
-            innerContents = Children.toArray(children);
-        }
-
+        let coreContents = null;
         if (!collapsed || renderMode === RenderMode.ALWAYS || (renderMode === RenderMode.LAZY && wasDisplayed.current)) {
             const parseToolbar = (barSpec) => {
                 return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
@@ -124,7 +108,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
                 style: {display: collapsed ? 'none' : 'flex'},
                 items: [
                     parseToolbar(tbar),
-                    innerContents,
+                    parseError(error, contextModel) ?? Children.toArray(children),
                     parseToolbar(bbar)
                 ]
             });
@@ -165,6 +149,16 @@ export const [Panel, panel] = hoistCmp.withFactory({
 
 });
 
+function parseError(error, contextModel) {
+    if (error === 'lastLoadException') {
+        const {lastLoadException} = contextModel;
+        return lastLoadException ? errorMessage({error: lastLoadException}) : null;
+    }
+    if (isString(error))        return errorMessage({error});
+    if (isValidElement(error))  return error;
+    return null;
+}
+
 function parseLoadDecorator(prop, name, contextModel) {
     const cmp = (name === 'mask' ? mask : loadingIndicator);
     if (prop === true)                      return cmp({isDisplayed: true});
@@ -197,12 +191,12 @@ Panel.propTypes = {
      */
     contextMenu: PT.oneOfType([PT.func, PT.array, PT.node]),
 
+
     /**
-     * Error behavior customizer. When unset, the panel will load using local state, even upon error.
-     * To replace panel contents in an error state, set to:
+     * Alternative content to display to indicate an error. Set to:
      *   + a ReactElement for custom error display,
-     *   + a string, to be displayed as an errorMessage,
-     *   + the string 'lastLoadException' for a default errorMesssage bound to the contextModel.
+     *   + a string, to be displayed within an ErrorMessage component.,
+     *   + the string 'lastLoadException' to show any error on the context model for this panel.
      */
     error: PT.oneOfType([PT.string, PT.element]),
 
