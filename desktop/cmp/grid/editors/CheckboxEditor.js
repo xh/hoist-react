@@ -21,6 +21,7 @@ export const [CheckboxEditor, checkboxEditor] = hoistCmp.withFactory({
     render({
         commitOnChange = true,
         instantEdit = true,
+        inputProps = {},
         ...props
     }, 
     ref) {
@@ -30,12 +31,19 @@ export const [CheckboxEditor, checkboxEditor] = hoistCmp.withFactory({
             commitOnChange = instantEdit ? true : commitOnChange;
         }
 
+        const {onChange} = inputProps;
+
         props = {
             instantEdit,
             ...props,
             inputProps: {
-                onChange: commitOnChange ? () => setTimeout(props.agParams.stopEditing, 0) : null,
-                ...props.inputProps
+                ...inputProps,
+                onChange: commitOnChange ? 
+                    (newVal, oldVal) => {
+                        setTimeout(props.agParams.stopEditing, 0);
+                        if (onChange) onChange(newVal, oldVal);
+                    } : 
+                    onChange
             }
         };
         return useInlineEditorModel(checkbox, props, ref);
