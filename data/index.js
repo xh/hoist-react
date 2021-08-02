@@ -26,7 +26,6 @@ export * from './cube/aggregate/LeafCountAggregator';
 export * from './cube/aggregate/MaxAggregator';
 export * from './cube/aggregate/MinAggregator';
 export * from './cube/aggregate/NullAggregator';
-export * from './cube/aggregate/RangeAggregator';
 export * from './cube/aggregate/SingleAggregator';
 export * from './cube/aggregate/SumAggregator';
 export * from './cube/aggregate/SumStrictAggregator';

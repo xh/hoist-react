@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {Aggregator} from './Aggregator';
+import {Aggregator} from '@xh/hoist/data';
 import {min, max} from 'lodash';
 
 export class RangeAggregator extends Aggregator {
