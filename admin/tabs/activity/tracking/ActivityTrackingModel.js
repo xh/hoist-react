@@ -11,13 +11,12 @@ import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {Cube} from '@xh/hoist/data';
+import {Cube, ChildCountAggregator, LeafCountAggregator, RangeAggregator} from '@xh/hoist/data';
 import {fmtDate, fmtNumber, numberRenderer} from '@xh/hoist/format';
 import {action, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isFinite} from 'lodash';
 import moment from 'moment';
-import {ChildCountAggregator, LeafCountAggregator, RangeAggregator} from '../aggregators';
 import {ChartsModel} from './charts/ChartsModel';
 
 export const PERSIST_ACTIVITY = {localStorageKey: 'xhAdminActivityState'};

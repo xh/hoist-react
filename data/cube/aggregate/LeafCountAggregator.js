@@ -5,12 +5,16 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
+import {Aggregator} from './Aggregator';
 
-export class ChildCountAggregator extends Aggregator {
+export class LeafCountAggregator extends Aggregator {
 
     aggregate(rows, fieldName) {
-        return rows.length;
+        let count = 0;
+        for (const row of rows) {
+            count += row.isLeaf ? 1 : row.data[fieldName];
+        }
+        return count;
     }
 
     replace(rows, currAgg, update) {
