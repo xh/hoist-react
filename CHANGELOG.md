@@ -2,8 +2,18 @@
 
 ## v42.0.0-SNAPSHOT - unreleased
 
+[Commit Log](https://github.com/xh/hoist-react/compare/v41.2.0...develop)
+
+## v41.2.0 - 2021-07-30
+
 ### 🎁 New Features
 
+* New `GridModel.rowClassRules` and `Column.cellClassRules` configs added. Previously apps needed to
+  use `agOptions` to dynamically apply and remove CSS classes using either of these options - now
+  they are fully supported by Hoist.
+  * ⚠ Note that, to avoid conflicts with internal usages of these configs, Hoist will check and
+    throw if either is passed via `agOptions`. Apps only need to move their configs to the new
+    location - the shape of the rules object does *not* need to change.
 * New `GridAutosizeOptions.includeCollapsedChildren` config controls whether values from collapsed
   (i.e. hidden) child records should be measured when computing column sizes. Default of `false`
   improves autosize performance for large tree grids and should generally match user expectations
@@ -17,12 +27,15 @@
 * Timeouts are now configurable on grid exports via a new `exportOptions.timeout` config.
 * Toasts may now be dismissed programmatically - use the new `ToastModel` returned by the
   `XH.toast()` API and its variants.
+* `Form` supports setting readonlyRenderer in `fieldDefaults` prop.
+* New utility hook `useCached` provides a more flexible variant of `React.useCallback`.
 
 ### 🐞 Bug Fixes
 
 * Inline grid editing supports passing of JSX editor components.
 * `GridExportService` catches any exceptions thrown during export preparation and warns the user
   that something went wrong.
+* GridModel with 'disabled' selection no longer shows "ghost" selection when using keyboard.
 * Tree grids now style "parent" rows consistently with highlights/borders if requested, even for
   mixed-depth trees where some rows have children at a given level and others do not.
 
@@ -34,6 +47,11 @@
 * The `start()` function in `@xh/hoist/promise` has been deprecated. Use `wait()` instead, which can
   now be called without any args to establish a Promise chain and/or introduce a minimal amount of
   asynchronousity.
+* ⚠ Note that the raw `AgGrid` component no longer enhances the native keyboard handling provided
+  by ag-Grid. All Hoist key handling customizations are now limited to `Grid`.  If you wish to
+  provide custom handling in a raw `AgGrid` component, see the example here:
+  https://www.ag-grid.com/javascript-grid/row-selection/#example-selection-with-keyboard-arrow-keys
+
 
 ### ✨ Style
 
@@ -51,7 +69,7 @@
 
 * core-js `3.15 -> 3.16`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v41.1.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v41.1.0...v41.2.0)
 
 ## v41.1.0 - 2021-07-23
 

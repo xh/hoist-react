@@ -18,7 +18,6 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
     apiDeprecated,
     apiRemoved,
-    debounced,
     deepFreeze,
     ensureUnique,
     logWithDebug,
@@ -87,6 +86,8 @@ export class GridModel extends HoistModel {
     colChooserModel;
     /** @member {function} */
     rowClassFn;
+    /** @member {Object.<string, RowClassRuleFn>} */
+    rowClassRules;
     /** @member {(Array|function)} */
     contextMenu;
     /** @member {number} */
@@ -215,6 +216,11 @@ export class GridModel extends HoistModel {
      *      install default context menu items.
      * @param {ExportOptions} [c.exportOptions] - default export options.
      * @param {RowClassFn} [c.rowClassFn] - closure to generate CSS class names for a row.
+     *      NOTE that, once added, classes will *not* be removed if the data changes.
+     *      Use `rowClassRules` instead if Record data can change across refreshes.
+     * @param {Object.<string, RowClassRuleFn>} [c.rowClassRules] - object keying CSS
+     *      class names to functions determining if they should be added or removed from the row.
+     *      See Ag-Grid docs on "row styles" for details.
      * @param {number} [c.groupRowHeight] - Height (in px) of a group row. Note that this will
      *      override `sizingMode` for group rows.
      * @param {Grid~groupRowRendererFn} [c.groupRowRenderer] - function returning a string used to
@@ -281,18 +287,18 @@ export class GridModel extends HoistModel {
         sizingMode = 'standard',
         showHover = false,
         rowBorders = false,
+        rowClassFn = null,
+        rowClassRules = {},
         cellBorders = false,
         treeStyle = TreeStyle.HIGHLIGHTS,
         stripeRows = (!treeMode || treeStyle === TreeStyle.NONE),
         showCellFocus = false,
         hideHeaders = false,
-        compact,
 
         lockColumnGroups = true,
         enableColumnPinning = true,
         enableExport = false,
         exportOptions = {},
-        rowClassFn = null,
 
         groupRowHeight,
         groupRowRenderer,
@@ -325,6 +331,7 @@ export class GridModel extends HoistModel {
         this.emptyText = emptyText;
         this.hideEmptyTextBeforeLoad = hideEmptyTextBeforeLoad;
         this.rowClassFn = rowClassFn;
+        this.rowClassRules = rowClassRules;
         this.groupRowHeight = groupRowHeight;
         this.groupRowRenderer = groupRowRenderer;
         this.groupRowElementRenderer = groupRowElementRenderer;
@@ -369,7 +376,6 @@ export class GridModel extends HoistModel {
 
         this.agGridModel = new AgGridModel({
             sizingMode,
-            compact,
             showHover,
             rowBorders,
             stripeRows,
@@ -779,14 +785,10 @@ export class GridModel extends HoistModel {
         }
     }
 
-    // We debounce this method because the implementation of `AgGridModel.setSelectedRowNodeIds()`
-    // selects nodes one-by-one, and ag-Grid will fire a selection changed event for each iteration.
-    // This avoids a storm of events looping through the reaction when selecting in bulk.
-    @debounced(0)
     noteAgSelectionStateChanged() {
         const {selModel, agGridModel, isReady} = this;
 
-        // Check required as due to debounce we may be receiving stale message after unmounting
+        // Check required as we may be receiving stale message after unmounting
         if (isReady) {
             selModel.select(agGridModel.getSelectedRowNodeIds());
         }
@@ -1470,6 +1472,15 @@ export class GridModel extends HoistModel {
  * @callback RowClassFn - closure to generate CSS class names for a row.
  * @param {Object} data - the inner data object from the Record associated with the rendered row.
  * @returns {(String|String[])} - CSS class(es) to apply to the row level.
+ */
+
+/**
+ * @callback RowClassRuleFn - function to determine if a particular CSS class should be
+ *      added/removed from a row, via rowClassRules config.
+ * @param {RowClassParams} agParams - as provided by AG-Grid.
+ * @param {?Record} agParams.data - the backing Hoist record, if any.
+ * @return {boolean} - true if the class to which this function is keyed should be added, false if
+ *      it should be removed.
  */
 
 /**
