@@ -32,6 +32,7 @@
   `XH.toast()` API and its variants.
 * `Form` supports setting readonlyRenderer in `fieldDefaults` prop.
 * New utility hook `useCached` provides a more flexible variant of `React.useCallback`.
+* Client error reports now include the full URL for additional troubleshooting context.
 
 ### 🐞 Bug Fixes
 
