@@ -135,6 +135,10 @@ export class ClientErrorsModel extends HoistModel {
                     suggestValues: false
                 },
                 {
+                    field: 'url',
+                    suggestValues: false
+                },
+                {
                     field: 'dateCreated',
                     example: 'YYYY-MM-DD',
                     valueParser: (v, op) => {
