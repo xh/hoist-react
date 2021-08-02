@@ -105,6 +105,15 @@ Panel.propTypes = {
     icon: PT.element,
 
     /**
+     * Error behavior customizer. When unset, the panel will load using local state, even upon error.
+     * To replace panel contents in an error state, set to:
+     *   + a ReactElement for custom error display,
+     *   + a string, to be displayed as an errorMessage,
+     *   + the string 'lastLoadException' for a default errorMesssage bound to the contextModel.
+     */
+    error: PT.oneOfType([PT.string, PT.element]),
+
+    /**
      * Mask to render on this panel. Set to:
      *   + a ReactElement specifying a Mask instance,
      *   + true for a default mask,
