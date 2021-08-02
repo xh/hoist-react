@@ -13,7 +13,7 @@ import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {omitBy} from 'lodash';
+import {isString, omitBy} from 'lodash';
 import PT from 'prop-types';
 import {isValidElement} from 'react';
 import {panelHeader} from './impl/PanelHeader';
@@ -58,22 +58,12 @@ export const [Panel, panel] = hoistCmp.withFactory({
             layoutProps.flex = 'auto';
         }
 
-        // 2) Set coreContents element based on scrollable. If panel has an error prop, adjust coreContents
-        // in the event of an error.
-        let coreItems = children;
-
-        if (error === 'lastLoadException' && contextModel.lastLoadException) {
-            coreItems = errorMessage({error: contextModel.lastLoadException});
-        } else if (typeof error === 'string' && error !== 'lastLoadException') {
-            coreItems = errorMessage({error});
-        } else if (isValidElement(error)) {
-            coreItems = error;
-        }
+        // 2) Set coreContents element based on scrollable.
 
         const coreContentsEl = scrollable ? div : vbox,
             coreContents = coreContentsEl({
                 className: 'xh-panel__content',
-                items: coreItems
+                items: parseError(error, contextModel) ?? children
             });
 
         // 3) Prepare combined layout.
@@ -105,11 +95,10 @@ Panel.propTypes = {
     icon: PT.element,
 
     /**
-     * Error behavior customizer. When unset, the panel will load using local state, even upon error.
-     * To replace panel contents in an error state, set to:
+     * Alternative content to display to indicate an error. Set to:
      *   + a ReactElement for custom error display,
-     *   + a string, to be displayed as an errorMessage,
-     *   + the string 'lastLoadException' for a default errorMesssage bound to the contextModel.
+     *   + a string, to be displayed within an ErrorMessage component.,
+     *   + the string 'lastLoadException' to show any error on the context model for this panel.
      */
     error: PT.oneOfType([PT.string, PT.element]),
 
@@ -144,6 +133,16 @@ Panel.propTypes = {
 //------------------------
 // Implementation
 //------------------------
+function parseError(error, contextModel) {
+    if (error === 'lastLoadException') {
+        const {lastLoadException} = contextModel;
+        return lastLoadException ? errorMessage({error: lastLoadException}) : null;
+    }
+    if (isString(error))        return errorMessage({error});
+    if (isValidElement(error))  return error;
+    return null;
+}
+
 function parseLoadDecorator(prop, name, contextModel) {
     const cmp = (name === 'mask' ? mask : loadingIndicator);
     if (prop === true)                      return cmp({isDisplayed: true});
