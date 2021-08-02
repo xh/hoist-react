@@ -103,14 +103,14 @@ export const [Panel, panel] = hoistCmp.withFactory({
         let innerContents = null,
             coreContents = null;
 
-        if (contextModel.lastLoadException) {
-            if (isValidElement(error)) {
-                innerContents = error;
-            } else if (error === 'lastLoadException') {
-                innerContents = errorMessage({error: contextModel.lastLoadException});
-            } else {
-                innerContents = Children.toArray(children);
-            }
+        if (error === 'lastLoadException') {
+            innerContents = contextModel.lastLoadException ?
+                errorMessage({error: contextModel.lastLoadException}) :
+                Children.toArray(children);
+        } else if (typeof error === 'string') {
+            innerContents = errorMessage({error});
+        } else if (isValidElement(error)) {
+            innerContents = error;
         } else {
             innerContents = Children.toArray(children);
         }
@@ -201,6 +201,7 @@ Panel.propTypes = {
      * Error behavior customizer. When unset, the panel will load using local state, even upon error.
      * To replace panel contents in an error state, set to:
      *   + a ReactElement for custom error display,
+     *   + a string, to be displayed as an errorMessage,
      *   + the string 'lastLoadException' for a default errorMesssage bound to the contextModel.
      */
     error: PT.oneOfType([PT.string, PT.element]),
