@@ -2,6 +2,10 @@
 
 ## v42.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* Promoted `Cube` aggregators `ChildCountAggregator`, `LeafCountAggregator`, and `RangeAggregator`
+  to the `data` package from `admin/tabs/activity`.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.2.0...develop)
 
 ## v41.2.0 - 2021-07-30
