@@ -5,6 +5,16 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
+@import '~sass-material-colors/sass/sass-material-colors';
+
+// Functions to fetch Google material design colors (https://material.io/color/)
+// While not strictly following any material design conventions within Hoist, using these color
+// helps to keep things more consistent and harmonious (vs. choosing "arbitrary" color vals).
+//noinspection CssInvalidFunction
+@function mc($color-name, $color-variant) {
+  @return material-color($color-name, $color-variant);
+}
+
 .xh-grid:not(.xh-data-view) {
   //------------------------
   // Core Header Classes
@@ -215,12 +225,23 @@
   // identified as groups by AG-Grid row classes, but this keeps the styling consistent for all
   // rows at the same level.
   @for $i from 0 to 20 {
+    $level: 0;
     &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
-      .ag-row:not(.ag-row-level-#{$i}) {
-        &:not(.ag-row-selected),
-        &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-          background-color: var(--xh-grid-tree-group-bg);
+      @while $level <= $i {
+        .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
+          &:not(.ag-row-selected),
+          &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+            background-color: #{mix(white, var(--xh-grid-tree-group-bg), percentage(($level / ($i + 1))))};
+          }
         }
+
+        //.ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
+        //  &:not(.ag-row-selected),
+        //  &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+        //    background-color: #{mix(white, hsl(200, 95%, 90%), percentage(($level / ($i + 1))))};
+        //  }
+        //}
+        $level: $level + 1
       }
 
       .xh-ag-grid--show-hover {
