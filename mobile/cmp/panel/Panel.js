@@ -6,6 +6,7 @@
  */
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
+import {errorMessage} from '@xh/hoist/mobile/cmp/error';
 import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
@@ -40,6 +41,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
             icon,
             headerItems,
             mask: maskProp,
+            error,
             loadingIndicator: loadingIndicatorProp,
             scrollable,
             children,
@@ -56,11 +58,22 @@ export const [Panel, panel] = hoistCmp.withFactory({
             layoutProps.flex = 'auto';
         }
 
-        // 2) Set coreContents element based on scrollable.
+        // 2) Set coreContents element based on scrollable. If panel has an error prop, adjust coreContents
+        // in the event of an error.
+        let coreItems = children;
+
+        if (error === 'lastLoadException' && contextModel.lastLoadException) {
+            coreItems = errorMessage({error: contextModel.lastLoadException});
+        } else if (typeof error === 'string' && error !== 'lastLoadException') {
+            coreItems = errorMessage({error});
+        } else if (isValidElement(error)) {
+            coreItems = error;
+        }
+
         const coreContentsEl = scrollable ? div : vbox,
             coreContents = coreContentsEl({
                 className: 'xh-panel__content',
-                items: children
+                items: coreItems
             });
 
         // 3) Prepare combined layout.
