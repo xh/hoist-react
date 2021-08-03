@@ -4,9 +4,9 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, ManagedRefreshContextModel, RenderMode} from '@xh/hoist/core';
+import {HoistModel, managed, ManagedRefreshContextModel} from '@xh/hoist/core';
 import {computed, makeObservable} from '@xh/hoist/mobx';
-import {warnIf, withDefault} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
 
 /**
@@ -57,7 +57,7 @@ export class PageModel extends HoistModel {
      * @param {(ReactElement|Object|function)} content - Hoist Component (class or functional) to be
      *      rendered by this page; or function returning react element to be rendered by this page.
      * @param {Object} [props] - props to be passed to page upon creation.
-     * @param {RefreshMode} [renderMode] - strategy for rendering this Page. If null, will
+     * @param {RenderMode} [renderMode] - strategy for rendering this Page. If null, will
      *      default to its Navigator's mode. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing this Page. If null, will
      *      default to its Navigator's mode. See enum for description of supported modes.
@@ -77,7 +77,6 @@ export class PageModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
-        warnIf(renderMode === RenderMode.ALWAYS, 'RenderMode.ALWAYS is not supported in PageModel. Pages are always can\'t exist before being mounted.');
 
         this.id = id;
         this.navigatorModel = navigatorModel;

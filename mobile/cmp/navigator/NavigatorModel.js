@@ -6,7 +6,7 @@
  */
 import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
-import {ensureNotEmpty, ensureUniqueBy, throwIf, warnIf} from '@xh/hoist/utils/js';
+import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {find, isEqual, keys, merge} from 'lodash';
 import {page} from './impl/Page';
 import {PageModel} from './PageModel';
@@ -28,6 +28,9 @@ export class NavigatorModel extends HoistModel {
     /** @member {boolean} */
     track;
 
+    /** @member {boolean} */
+    swipeable;
+
     /** @member {RenderMode} */
     renderMode;
 
@@ -36,6 +39,7 @@ export class NavigatorModel extends HoistModel {
 
     _navigator = null;
     _callback = null;
+    _userHasSwiped = false;
 
     /** @type String */
     get activePageId() {
@@ -53,6 +57,9 @@ export class NavigatorModel extends HoistModel {
      *      pages within this Navigator/App.
      * @param {boolean} [track] - True to enable activity tracking of page views (default false).
      *      Viewing of each page will be tracked with the `oncePerSession` flag, to avoid duplication.
+     * @param {boolean} [swipeable] - True to enable 'swipe to go back' functionality.
+     *      Note that unrendered pages will appear blank during the transition. Consider setting
+     *      `renderMode` to ALWAYS for an improved experience.
      * @param {RenderMode} [renderMode] - strategy for rendering pages. Can be set per-page
      *      via `PageModel.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing pages. Can be set per-page
@@ -61,18 +68,19 @@ export class NavigatorModel extends HoistModel {
     constructor({
         pages,
         track = false,
+        swipeable = false,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY
     }) {
         super();
         makeObservable(this);
-        warnIf(renderMode === RenderMode.ALWAYS, 'RenderMode.ALWAYS is not supported in Navigator. Pages are always can\'t exist before being mounted.');
 
         ensureNotEmpty(pages, 'NavigatorModel needs at least one page.');
         ensureUniqueBy(pages, 'id', 'Multiple NavigatorModel PageModels have the same id.');
 
         this.pages = pages;
         this.track = track;
+        this.swipeable = swipeable;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
 
@@ -192,13 +200,19 @@ export class NavigatorModel extends HoistModel {
             backOnePage = isEqual(keyStack, prevKeyStack.slice(0, -1)),
             forwardOnePage = isEqual(keyStack.slice(0, -1), prevKeyStack);
 
+        this._prevKeyStack = keyStack;
+
+        // Always reset the page stack after a user swipe
+        if (this._userHasSwiped) {
+            this._userHasSwiped = false;
+            return this._navigator.resetPageStack(stack);
+        }
+
         // Skip transition animation if the active page is going to be unmounted
         let options;
         if (this.activePage?.renderMode === RenderMode.UNMOUNT_ON_HIDE) {
-            options = {animation: 'none'};
+            options = {animationOptions: {duration: 0}};
         }
-
-        this._prevKeyStack = keyStack;
 
         if (backOnePage) {
             // If we have gone back one page in the same stack, we can safely pop() the page
@@ -208,7 +222,7 @@ export class NavigatorModel extends HoistModel {
             return this._navigator.pushPage(stack[stack.length - 1], options);
         } else {
             // Otherwise, we should reset the page stack
-            return this._navigator.resetPageStack(stack, {animation: 'none'});
+            return this._navigator.resetPageStack(stack, {animationOptions: {duration: 0}});
         }
     }
 
@@ -251,11 +265,18 @@ export class NavigatorModel extends HoistModel {
     onPageChange() {
         this.disableAppRefreshButton = this.activePage?.disableAppRefreshButton;
         this.doCallback();
+        // After a swipe has completed, we must sync the route to match.
+        if (this._userHasSwiped) XH.popRoute();
     }
 
     doCallback() {
         if (this._callback) this._callback();
         this._callback = null;
+    }
+
+    onSwipePop(e) {
+        this._userHasSwiped = true;
+        return this._navigator.popPage(e);
     }
 
 }
