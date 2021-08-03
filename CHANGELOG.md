@@ -33,6 +33,7 @@
 * `Form` supports setting readonlyRenderer in `fieldDefaults` prop.
 * New utility hook `useCached` provides a more flexible variant of `React.useCallback`.
 * Client error reports now include the full URL for additional troubleshooting context.
+  * Note apps must update their server-side to `hoist-core v9.3` or greater to persist URLs with error reports (although this is _not_ a general or hard requirement for taking this version of hoist-react).
 
 ### 🐞 Bug Fixes
 
