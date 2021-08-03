@@ -11,10 +11,14 @@ import {dateInput, numberInput, select, textInput} from '@xh/hoist/desktop/cmp/i
 import {Icon} from '@xh/hoist/icon';
 import {kebabCase} from 'lodash';
 
-import {CustomFilterRowModel} from './CustomFilterRowModel';
+import {CustomRowModel} from './CustomRowModel';
 
-export const customFilterRow = hoistCmp.factory({
-    model: uses(CustomFilterRowModel),
+/**
+ * Row with operator and value combination for CustomTab.
+ * @private
+ */
+export const customRow = hoistCmp.factory({
+    model: uses(CustomRowModel),
     render({model}) {
         const {options, op, hideInput} = model;
         return hbox({

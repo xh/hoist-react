@@ -13,11 +13,15 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 
-import './ValuesFilterTab.scss';
-import {ValuesFilterTabModel} from './ValuesFilterTabModel';
+import './ValuesTab.scss';
+import {ValuesTabModel} from './ValuesTabModel';
 
-export const valuesFilterTab = hoistCmp.factory({
-    model: uses(ValuesFilterTabModel),
+/**
+ * Tab for managing value based filters for Column.
+ * @private
+ */
+export const valuesTab = hoistCmp.factory({
+    model: uses(ValuesTabModel),
     render() {
         return panel({
             className: 'xh-values-filter-tab',

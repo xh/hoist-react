@@ -12,12 +12,16 @@ import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
-import './CustomFilterTab.scss';
-import {CustomFilterTabModel} from './CustomFilterTabModel';
-import {customFilterRow} from './CustomFilterRow';
+import './CustomTab.scss';
+import {CustomTabModel} from './CustomTabModel';
+import {customRow} from './CustomRow';
 
-export const customFilterTab = hoistCmp.factory({
-    model: uses(CustomFilterTabModel),
+/**
+ * Tab for managing value based filters for Column.
+ * @private
+ */
+export const customTab = hoistCmp.factory({
+    model: uses(CustomTabModel),
     render({model}) {
         return panel({
             className: 'xh-custom-filter-tab',
@@ -26,9 +30,7 @@ export const customFilterTab = hoistCmp.factory({
                 frame(
                     div({
                         className: 'xh-custom-filter-tab__list',
-                        items: model.rowModels.map(it => {
-                            return customFilterRow({model: it, key: it.xhId});
-                        })
+                        items: model.rowModels.map(it => customRow({model: it, key: it.xhId}))
                     })
                 ),
                 implicitJoinMessage()

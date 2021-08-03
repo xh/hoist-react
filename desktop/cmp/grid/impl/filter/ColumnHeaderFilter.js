@@ -19,8 +19,11 @@ import './ColumnHeaderFilter.scss';
 import {ColumnHeaderFilterModel} from './ColumnHeaderFilterModel';
 
 /**
- * Applications should not create this component - it is created automatically for Grids with
- * a GridFilterModel
+ * Component to manage column filters from header.
+ *
+ * Will appear as a "filter" icon if filters are present and
+ * provide an appropriate editor for managing the filters.
+ *
  * @private
  */
 export const columnHeaderFilter = hoistCmp.factory({

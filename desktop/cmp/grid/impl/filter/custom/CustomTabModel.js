@@ -9,9 +9,9 @@ import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/
 import {FieldFilter, combineValueFilters} from '@xh/hoist/data';
 import {castArray, compact, every, forOwn, isEmpty, isNil} from 'lodash';
 
-import {CustomFilterRowModel} from './CustomFilterRowModel';
+import {CustomRowModel} from './CustomRowModel';
 
-export class CustomFilterTabModel extends HoistModel {
+export class CustomTabModel extends HoistModel {
     /** @member {ColumnHeaderFilterModel} */
     parentModel;
 
@@ -56,8 +56,8 @@ export class CustomFilterTabModel extends HoistModel {
         return this.parentModel.fieldSpec;
     }
 
-    get currentFilter() {
-        return this.parentModel.currentFilter;
+    get currentGridFilter() {
+        return this.parentModel.currentGridFilter;
     }
 
     get columnFilters() {
@@ -77,12 +77,12 @@ export class CustomFilterTabModel extends HoistModel {
     @action
     reset() {
         XH.safeDestroy(this.rowModels);
-        this.rowModels = [new CustomFilterRowModel({parentModel: this})];
+        this.rowModels = [new CustomRowModel({parentModel: this})];
     }
 
     @action
     addEmptyRow() {
-        this.rowModels = [...this.rowModels, new CustomFilterRowModel({parentModel: this})];
+        this.rowModels = [...this.rowModels, new CustomRowModel({parentModel: this})];
     }
 
     @action
@@ -96,7 +96,7 @@ export class CustomFilterTabModel extends HoistModel {
     //-------------------
     @action
     doSyncWithFilter() {
-        const {columnFilters, currentFilter} = this,
+        const {columnFilters, currentGridFilter} = this,
             rowModels = [];
 
         // Create rows based on filter.
@@ -104,22 +104,22 @@ export class CustomFilterTabModel extends HoistModel {
             const {op, value} = filter;
             if (FieldFilter.ARRAY_OPERATORS.includes(op)) {
                 castArray(value).forEach(it => {
-                    rowModels.push(new CustomFilterRowModel({parentModel: this, op, value: it}));
+                    rowModels.push(new CustomRowModel({parentModel: this, op, value: it}));
                 });
             } else {
-                rowModels.push(new CustomFilterRowModel({parentModel: this, op, value}));
+                rowModels.push(new CustomRowModel({parentModel: this, op, value}));
             }
         });
 
         // Rehydrate operator from CompoundFilter
         if (columnFilters.length > 1) {
-            const compoundFilter = this.getOuterCompoundFilter(currentFilter);
+            const compoundFilter = this.getOuterCompoundFilter(currentGridFilter);
             if (compoundFilter) this.op = compoundFilter.op;
         }
 
         // Add an empty pending row
         if (isEmpty(rowModels)) {
-            rowModels.push(new CustomFilterRowModel({parentModel: this}));
+            rowModels.push(new CustomRowModel({parentModel: this}));
         }
 
         this.rowModels = rowModels;

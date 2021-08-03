@@ -9,8 +9,11 @@ import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {Icon} from '@xh/hoist/icon';
 import {isNil} from 'lodash';
 
-export class CustomFilterRowModel extends HoistModel {
-    /** @member {CustomFilterTabModel} */
+/**
+ * @private
+ */
+export class CustomRowModel extends HoistModel {
+    /** @member {CustomTabModel} */
     parentModel;
 
     /** @member {ColumnHeaderFilterModel} */

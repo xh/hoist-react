@@ -11,7 +11,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {castArray, compact, difference, isEmpty, isNil, uniq, partition, without} from 'lodash';
 
-export class ValuesFilterTabModel extends HoistModel {
+export class ValuesTabModel extends HoistModel {
     /** @member {ColumnHeaderFilterModel} */
     parentModel;
 
@@ -70,8 +70,8 @@ export class ValuesFilterTabModel extends HoistModel {
         return this.parentModel.fieldSpec;
     }
 
-    get currentFilter() {
-        return this.parentModel.currentFilter;
+    get currentGridFilter() {
+        return this.parentModel.currentGridFilter;
     }
 
     get columnFilters() {
@@ -136,13 +136,13 @@ export class ValuesFilterTabModel extends HoistModel {
 
     @action
     doReset() {
-        const {currentFilter, columnFilters, valueSource, BLANK_STR} = this,
+        const {currentGridFilter, columnFilters, valueSource, BLANK_STR} = this,
             sourceStore = valueSource.isView ? valueSource.cube.store : valueSource,
             allRecords = sourceStore.allRecords;
 
         // Apply external filters *not* pertaining to this field to the sourceStore
         // to get the filtered set of available values to offer as options.
-        const cleanedFilter = this.cleanFilter(currentFilter);
+        const cleanedFilter = this.cleanFilter(currentGridFilter);
         let filteredRecords = allRecords;
         if (cleanedFilter) {
             const testFn = parseFilter(cleanedFilter).getTestFn(sourceStore);
