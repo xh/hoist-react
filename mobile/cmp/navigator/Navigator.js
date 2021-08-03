@@ -25,7 +25,7 @@ export const [Navigator, navigator] = hoistCmp.withFactory({
             className,
             initialRoute: {init: true},
             animation,
-            swipeable,
+            swipeable: swipeable ? 'force' : false,
             animationOptions: {duration: 0.2, delay: 0, timing: 'ease-in'},
             renderPage: (pageModel, navigator) => model.renderPage(pageModel, navigator),
             onPostPush: () => model.onPageChange(),
