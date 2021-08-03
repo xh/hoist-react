@@ -281,7 +281,7 @@ export class NavigatorModel extends HoistModel {
         // These are heuristically determined to be drags that cover a
         // sufficient distance within a short time frame.
         const {deltaX, deltaTime} = e.gesture,
-            swipeDistance = window.screen.width * 0.75,
+            swipeDistance = 200,
             swipeTime = 400;
 
         if (deltaX >= swipeDistance && deltaTime <= swipeTime) {
