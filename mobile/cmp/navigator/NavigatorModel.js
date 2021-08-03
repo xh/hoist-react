@@ -36,6 +36,7 @@ export class NavigatorModel extends HoistModel {
 
     _navigator = null;
     _callback = null;
+    _canSwipe = null;
 
     /** @type String */
     get activePageId() {
@@ -258,4 +259,33 @@ export class NavigatorModel extends HoistModel {
         this._callback = null;
     }
 
+    onDragStart(e) {
+        // Determine if this gesture could be a potential navigation swipe.
+        let canSwipe = this.stack.length > 1;
+
+        // Ensure any left-scrolling element in the target path takes priority over swipe navigation.
+        // We must check this at the start of the gesture, as scroll position changes throughout.
+        for (let el = e.target; canSwipe && el && el !== document.body; el = el.parentNode) {
+            if (el.scrollWidth > el.offsetWidth && el.scrollLeft > 0) {
+                canSwipe = false;
+            }
+        }
+
+        this._canSwipe = canSwipe;
+    }
+
+    onDrag(e) {
+        if (!this._canSwipe) return;
+
+        // Detect fast horizontal "swipes" to the right.
+        // These are heuristically determined to be drags that cover a
+        // sufficient distance within a short time frame.
+        const {deltaX, deltaTime} = e.gesture,
+            swipeDistance = window.screen.width * 0.75,
+            swipeTime = 250;
+
+        if (deltaX >= swipeDistance && deltaTime <= swipeTime) {
+            XH.popRoute();
+        }
+    }
 }
