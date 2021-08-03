@@ -169,6 +169,9 @@ class LocalModel extends HoistModel {
     onResize = (size) => {
         if (!this.chart) return;
         const {width, height} = this.getChartDims(size);
+        
+        if (this.chart.fullscreen.isOpen) return;
+
         this.chart.setSize(width, height, false);
     };
 
