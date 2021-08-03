@@ -6,7 +6,6 @@
  */
 import {Exception, stringifyErrorSafely} from '@xh/hoist/exception';
 import {stripTags} from '@xh/hoist/utils/js';
-import {join, slice} from 'lodash';
 import {XH} from './XH';
 
 /**
@@ -125,7 +124,7 @@ export class ExceptionHandler {
                     error,
                     msg: userMessage ? stripTags(userMessage) : '',
                     appVersion: XH.getEnv('clientVersion'),
-                    url: this.getUrl(),
+                    url: window.location.href,
                     userAlerted,
                     clientUsername: username
                 }
@@ -224,12 +223,5 @@ export class ExceptionHandler {
         // statuses of 0, 4XX, 5XX are server errors, so the javascript stack
         // is irrelevant and potentially misleading
         if (/^[045]/.test(exception.httpStatus)) delete exception.stack;
-    }
-
-    // URL should not exceed 500 characters
-    getUrl() {
-        return window.location.href.length <= 500 ?
-            window.location.href :
-            join(slice(window.location.href, 0, 500), '');
     }
 }
