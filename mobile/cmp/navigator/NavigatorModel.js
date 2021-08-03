@@ -282,7 +282,7 @@ export class NavigatorModel extends HoistModel {
         // sufficient distance within a short time frame.
         const {deltaX, deltaTime} = e.gesture,
             swipeDistance = window.screen.width * 0.75,
-            swipeTime = 250;
+            swipeTime = 400;
 
         if (deltaX >= swipeDistance && deltaTime <= swipeTime) {
             XH.popRoute();
