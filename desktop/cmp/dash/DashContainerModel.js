@@ -4,13 +4,12 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, RefreshMode, RenderMode, XH, PersistenceProvider} from '@xh/hoist/core';
+import {HoistModel, managed, RefreshMode, RenderMode, XH, PersistenceProvider, PromiseTaskObserver} from '@xh/hoist/core';
 import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {action, observable, bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {AsyncTask} from '@xh/hoist/utils/async';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {cloneDeep, defaultsDeep, find, isFinite, reject} from 'lodash';
@@ -115,7 +114,7 @@ export class DashContainerModel extends HoistModel {
     //------------------------
     // Implementation properties
     //------------------------
-    @managed loadingStateTask = new AsyncTask();
+    @managed loadingStateTask = new PromiseTaskObserver();
     containerRef = createObservableRef();
     modelLookupContext;
 

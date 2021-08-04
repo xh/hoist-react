@@ -205,13 +205,13 @@ const enhancePromise = (promisePrototype) => {
 
 
         /**
-         * Link this promise to an instance of a {@see PendingTaskModel}. See that class for details
-         * on what PendingTaskModels provide and how they can be used to coordinate masking and
+         * Link this promise to an instance of a {@see PromiseTaskObserver}. See that class for details
+         * on what PromiseTaskObserver provides and how it can be used to coordinate masking and
          * progress messages on one or more async operations.
          *
          * @memberOf Promise.prototype
-         * @param {Object|PendingTaskModel} cfg -- Configuration object, or PendingTaskModel
-         * @param {PendingTaskModel} cfg.model - PendingTaskModel to link to.
+         * @param {Object|PromiseTaskObserverl} cfg -- Configuration object, or PendingTaskModel
+         * @param {PromiseTaskObserver} cfg.model - PendingTaskModel to link to.
          * @param {string} [cfg.message] - Optional custom message for use by PendingTaskModel.
          * @param {boolean} [cfg.omit] - optional flag to indicate linkage should be skipped
          *      If true, this method is no-op.  Provided as convenience for conditional masking.

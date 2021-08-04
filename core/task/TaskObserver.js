@@ -6,31 +6,32 @@
  */
 
 /**
- * Tracks the execution state of a job.
+ * Tracks the execution state of some asynchronous tasks.
  *
- * An instance of this class can be used as a model for masks or other UI elements that
+ * An instance of this class can be used to control masks or other UI elements that
  * track the progression of asynchronous tasks. It can be passed directly to a Panel
  * component via its `mask` property, providing a common and convenient
  * method for masking a section of a user interface while an operation is pending.
  *
- * @see concrete classes {@link Task} and {@link CompoundTask}
+ * @see concrete classes {@link PromiseTaskObserver} and {@link CompoundTaskObserver}
  */
-export class Task {
+export class TaskObserver {
 
-    get isTask() {return true}
+    get isTaskObserver() {return true}
 
     /**
      * Is the task currently executing/pending?
-     *
      * This observable property is the main public entry point for this object.
-     * Its behavior depends on the 'type' property.
      *
      * @returns {boolean}
      */
     get isPending() {return null}
 
     /**
-     * * @returns {?string}  description of the pending task - for end-user display.
+     * Description of the pending task - for end-user display.
+     * Observable property.
+     *
+     * @returns {?string}
      */
     get message() {return null}
 }

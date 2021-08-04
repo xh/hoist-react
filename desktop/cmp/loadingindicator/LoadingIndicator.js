@@ -7,8 +7,7 @@
 import {hbox} from '@xh/hoist/cmp/layout';
 import {div} from '@xh/hoist/cmp/layout/Tags';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
-import {hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
-import {Task, CompoundTask} from '@xh/hoist/utils/async';
+import {hoistCmp, useLocalModel, HoistModel, TaskObserver, CompoundTaskObserver} from '@xh/hoist/core';
 import classNames from 'classnames';
 import {truncate} from 'lodash';
 import PT from 'prop-types';
@@ -18,7 +17,7 @@ import {withDefault, apiRemoved} from '@xh/hoist/utils/js';
 /**
  * A minimal / unobtrusive LoadingIndicator displaying an optional spinner and/or message to signal
  * that a longer-running operation is in progress, without using a modal Mask. Can be explicitly
- * shown or bound to a PendingTaskModel.
+ * shown or bound to one or more TaskObservers
  *
  * Note that the Panel component's `loadingIndicator` prop provides a common and convenient way to
  * add an indicator to a Panel without needing to manually create or manage this component.
@@ -71,8 +70,8 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory({
 
 LoadingIndicator.propTypes = {
 
-    /** Task(s) that should be monitored to determine if the Indicator should be displayed. */
-    bind: PT.oneOfType([PT.instanceOf(Task), PT.arrayOf(Task)]),
+    /** TaskObserver(s) that should be monitored to determine if the Indicator should be displayed. */
+    bind: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(TaskObserver)]),
 
     /** Position of the indicator relative to its containing component. */
     corner: PT.oneOf(['tl', 'tr', 'bl', 'br']),
@@ -83,7 +82,7 @@ LoadingIndicator.propTypes = {
     /**  Max characters allowed in message, after which it will be elided. Default 30. */
     maxMessageLength: PT.number,
 
-    /** Optional text to be displayed - can also be sourced from bound PendingTaskModel. */
+    /** Optional text to be displayed - can also be sourced from bound TaskObserver. */
     message: PT.string,
 
     /** True (default) to display with an animated spinner. */
@@ -96,9 +95,9 @@ class LocalMaskModel extends HoistModel {
     constructor(bind) {
         super();
         if (bind) {
-            this.task = bind instanceof Task ?
+            this.task = bind instanceof TaskObserver ?
                 bind :
-                this.markManaged(new CompoundTask({tasks: bind}));
+                this.markManaged(new CompoundTaskObserver({tasks: bind}));
         }
     }
 }

@@ -6,16 +6,15 @@
  */
 import {box, div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
-import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, TaskObserver, CompoundTaskObserver} from '@xh/hoist/core';
 import {withDefault, apiRemoved} from '@xh/hoist/utils/js';
-import {CompoundTask, Task} from '@xh/hoist/utils/async';
 import PT from 'prop-types';
 import './Mask.scss';
 
 /**
  * Mask with optional spinner and text.
  *
- * The mask can be explicitly controlled via props or bound to a Task.
+ * The mask can be explicitly controlled via props or bound to a TaskObserver.
  *
  * Note that the Panel component's `mask` prop provides a common and convenient method for masking
  * sections of the UI without needing to manually create or manage this component.
@@ -61,7 +60,7 @@ export const [Mask, mask] = hoistCmp.withFactory({
 Mask.propTypes = {
 
     /** Task(s) that should be monitored to determine if the mask should be displayed. */
-    bind: PT.oneOfType([PT.instanceOf(Task), PT.arrayOf(Task)]),
+    bind: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(TaskObserver)]),
 
     /** True to display the mask. */
     isDisplayed: PT.bool,
@@ -81,9 +80,9 @@ class LocalMaskModel extends HoistModel {
     constructor(bind) {
         super();
         if (bind) {
-            this.task = bind instanceof Task ?
+            this.task = bind instanceof TaskObserver ?
                 bind :
-                this.markManaged(new CompoundTask({tasks: bind}));
+                this.markManaged(new CompoundTaskObserver({tasks: bind}));
         }
     }
 }

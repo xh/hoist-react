@@ -6,22 +6,18 @@
  */
 
 import {observable, computed, makeObservable} from '@xh/hoist/mobx';
-import {Task} from './Task';
+import {TaskObserver} from './TaskObserver';
 
 /**
  * Tracks the combined execution state of a collection of subtasks.
  */
-export class CompoundTask extends Task {
+export class CompoundTaskObserver extends TaskObserver {
 
-    get isCompoundTask() {
-        return true;
-    }
-
-    @observable.ref tasks = null;
+    @observable.ref tasks;
 
     /**
      * @param {Object} [c] - configuration
-     * @param {Task[]} [c.tasks] - subtasks
+     * @param {TaskObserver[]} [c.tasks] - subtasks
      */
     constructor({tasks = []} = {}) {
         super();
@@ -32,7 +28,7 @@ export class CompoundTask extends Task {
     /**
      * Add a subtask.
      *
-     * @param {Task} subTask
+     * @param {TaskObserver} subTask
      */
     add(subTask) {
         this.tasks = [...this.tasks, subTask];

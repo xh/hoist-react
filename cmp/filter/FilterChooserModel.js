@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
+import {HoistModel, managed, PersistenceProvider, XH, PromiseTaskObserver} from '@xh/hoist/core';
 import {FieldFilter, parseFilter, combineValueFilters} from '@xh/hoist/data';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -24,7 +24,6 @@ import {
     isFunction,
     uniq
 } from 'lodash';
-import {AsyncTask} from '@xh/hoist/utils/async';
 
 import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
 import {QueryEngine} from './impl/QueryEngine';
@@ -58,7 +57,7 @@ export class FilterChooserModel extends HoistModel {
     persistValue = false;
     persistFavorites = false;
 
-    /** @package {PendingTaskModel} - Task model to track filters set on bound object.*/
+    /** @package {TaskObserver} - Task model to track filters set on bound object.*/
     filterTask;
 
     // Implementation fields for Control
@@ -122,7 +121,7 @@ export class FilterChooserModel extends HoistModel {
         this.maxTags = maxTags;
         this.maxResults = maxResults;
         this.queryEngine = new QueryEngine(this);
-        this.filterTask = new AsyncTask();
+        this.filterTask = new PromiseTaskObserver();
 
         let value = isFunction(initialValue) ? initialValue() : initialValue,
             favorites = isFunction(initialFavorites) ? initialFavorites() : initialFavorites;

@@ -12,8 +12,7 @@ import {withDefault, apiRemoved} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import PT from 'prop-types';
 import './Mask.scss';
-import {HoistModel, useLocalModel} from '@xh/hoist/core';
-import {Task, CompoundTask} from '@xh/hoist/utils/async';
+import {HoistModel, useLocalModel, TaskObserver, CompoundTaskObserver} from '@xh/hoist/core';
 
 /**
  * Mask with optional spinner and text.
@@ -66,7 +65,7 @@ export const [Mask, mask] = hoistCmp.withFactory({
 Mask.propTypes = {
 
     /** Task(s) that should be monitored to determine if the mask should be displayed. */
-    bind: PT.oneOfType([PT.instanceOf(Task), PT.arrayOf(Task)]),
+    bind: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(TaskObserver)]),
 
     /** True to display mask. */
     isDisplayed: PT.bool,
@@ -89,9 +88,9 @@ class LocalMaskModel extends HoistModel {
     constructor(bind) {
         super();
         if (bind) {
-            this.task = bind instanceof Task ?
+            this.task = bind instanceof TaskObserver ?
                 bind :
-                this.markManaged(new CompoundTask({tasks: bind}));
+                this.markManaged(new CompoundTaskObserver({tasks: bind}));
         }
     }
 }

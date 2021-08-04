@@ -7,7 +7,7 @@
 
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
-import {Task} from './Task';
+import {TaskObserver} from './TaskObserver';
 
 /**
  * Tracks the resolution state of a stream of promise invocations.
@@ -19,9 +19,7 @@ import {Task} from './Task';
  *
  * @see Promise#linkTo
  */
-export class AsyncTask extends Task {
-
-    get isAsyncTask() {return true}
+export class PromiseTaskObserver extends TaskObserver {
 
     mode = null;
 
@@ -88,9 +86,3 @@ export class AsyncTask extends Task {
     }
 }
 
-
-/**
- * @deprecated
- * Use AsyncTask instead.
- */
-export const PendingTaskModel = AsyncTask;

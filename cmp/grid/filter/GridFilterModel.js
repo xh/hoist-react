@@ -5,13 +5,12 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, managed} from '@xh/hoist/core';
+import {HoistModel, managed, PromiseTaskObserver} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {FieldFilter, parseFilter, flattenFilter} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil, find, isFunction, isString, castArray, uniq} from 'lodash';
 import {wait} from '../../../promise';
-import {AsyncTask} from '../../../utils/async';
 
 import {GridFilterFieldSpec} from './GridFilterFieldSpec';
 
@@ -77,7 +76,7 @@ export class GridFilterModel extends HoistModel {
         super();
         makeObservable(this);
 
-        this.filterTask = new AsyncTask();
+        this.filterTask = new PromiseTaskObserver();
         this.gridModel = gridModel;
         this.bind = bind;
         this.valueSource = valueSource;

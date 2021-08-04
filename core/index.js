@@ -25,7 +25,9 @@ export * from './HoistComponent';
 export * from './HoistModel';
 export * from './HoistService';
 
-export * from '../utils/async';
+export * from './task/TaskObserver';
+export * from './task/PromiseTaskObserver';
+export * from './task/CompoundTaskObserver';
 
 export * from './refresh/LoadSupport';
 export * from './refresh/RefreshContextModel';

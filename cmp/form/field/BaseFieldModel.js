@@ -4,14 +4,13 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {managed, HoistModel} from '@xh/hoist/core';
+import {managed, HoistModel, PromiseTaskObserver} from '@xh/hoist/core';
 import {Rule, ValidationState, genDisplayName, required} from '@xh/hoist/data';
 import {action, computed, observable, runInAction, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {withDefault, executeIfFunction} from '@xh/hoist/utils/js';
 import {compact, flatten, isEmpty, isFunction, isNil} from 'lodash';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 /**
  * Abstract Base class for FieldModels.
@@ -79,7 +78,7 @@ export class BaseFieldModel extends HoistModel {
     @observable _errors;
 
     @managed
-    _validationTask = new PendingTaskModel();
+    _validationTask = new PromiseTaskObserver();
     _validationRunId = 0;
 
     /**

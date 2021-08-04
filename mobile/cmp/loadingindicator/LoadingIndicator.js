@@ -6,9 +6,8 @@
  */
 import {hbox} from '@xh/hoist/cmp/layout';
 import {div} from '@xh/hoist/cmp/layout/Tags';
-import {hoistCmp, useLocalModel, HoistModel, CompoundTask} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, HoistModel, CompoundTaskObserver, TaskObserver} from '@xh/hoist/core';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
-import {Task} from '@xh/hoist/utils/async';
 import {withDefault, apiRemoved} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {truncate} from 'lodash';
@@ -81,11 +80,11 @@ LoadingIndicator.propTypes = {
     /**  Max characters allowed in message, after which it will be elided. Default 30. */
     maxMessageLength: PT.number,
 
-    /** Optional text to be displayed - can also be sourced from bound PendingTaskModel. */
+    /** Optional text to be displayed - can also be sourced from bound TaskObserver. */
     message: PT.string,
 
     /** Optional model for reactively showing the indicator while tasks are pending. */
-    bind: PT.oneOf([PT.instanceOf(Task), PT.arrayOf(Task)]),
+    bind: PT.oneOf([PT.instanceOf(TaskObserver), PT.arrayOf(TaskObserver)]),
 
     /** True (default) to display with an animated spinner. */
     spinner: PT.bool
@@ -96,9 +95,9 @@ class LocalMaskModel extends HoistModel {
     constructor(bind) {
         super();
         if (bind) {
-            this.task = bind instanceof Task ?
+            this.task = bind instanceof TaskObserver ?
                 bind :
-                this.markManaged(new CompoundTask({tasks: bind}));
+                this.markManaged(new CompoundTaskObserver({tasks: bind}));
         }
     }
 }

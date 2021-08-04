@@ -5,11 +5,10 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {div, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, useContextModel} from '@xh/hoist/core';
+import {hoistCmp, useContextModel, TaskObserver} from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
-import {Task} from '@xh/hoist/utils/async';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {omitBy} from 'lodash';
@@ -95,19 +94,19 @@ Panel.propTypes = {
      * Mask to render on this panel. Set to:
      *   + a ReactElement specifying a Mask instance,
      *   + true for a default mask,
-     *   + one or more Tasks for a default load mask bound to the tasks
+     *   + one or more TaskObservers for a default load mask bound to the tasks
      *   + the string 'onLoad' for a default load mask bound to the loading of the current model.
      */
-    mask: PT.oneOfType([PT.element, PT.instanceOf(Task), PT.arrayOf(Task), PT.bool, PT.string]),
+    mask: PT.oneOfType([PT.element, PT.instanceOf(TaskObserver), PT.arrayOf(TaskObserver), PT.bool, PT.string]),
 
     /**
      * LoadingIndicator to render on this panel. Set to:
      *   + a ReactElement specifying a LoadingIndicator,
      *   + true for a default LoadingIndicator,
-     *   + one or more Tasks for a default LoadingIndicator bound to the tasks
+     *   + one or more TaskObservers for a default LoadingIndicator bound to the tasks
      *   + the string 'onLoad' for a default LoadingIndicator bound to the loading of the current model.
      */
-    loadingIndicator: PT.oneOfType([PT.element, PT.instanceOf(Task), PT.arrayOf(Task), PT.bool, PT.string]),
+    loadingIndicator: PT.oneOfType([PT.element, PT.instanceOf(TaskObserver), PT.arrayOf(TaskObserver), PT.bool, PT.string]),
 
     /** Allow the panel to scroll vertically */
     scrollable: PT.bool,

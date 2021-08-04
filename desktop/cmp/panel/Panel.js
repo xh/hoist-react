@@ -11,13 +11,13 @@ import {
     refreshContextView,
     RenderMode,
     useContextModel,
-    uses
+    uses,
+    TaskObserver
 } from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
-import {Task} from '@xh/hoist/utils/async';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {omitBy} from 'lodash';
 import PT from 'prop-types';
@@ -192,7 +192,7 @@ Panel.propTypes = {
      *   + one or more tasks for a default LoadingIndicator bound to the tasks
      *   + the string 'onLoad' for a default LoadingIndicator bound to the loading of the current model.
      */
-    loadingIndicator: PT.oneOfType([PT.instanceOf(Task), PT.arrayOf(Task), PT.element, PT.bool, PT.string]),
+    loadingIndicator: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(TaskObserver), PT.element, PT.bool, PT.string]),
 
     /**
      * Mask to render on this panel. Set to:
@@ -201,7 +201,7 @@ Panel.propTypes = {
      *   + one or more tasks for a default load mask bound to the tasks
      *   + the string 'onLoad' for a default load mask bound to the loading of the current model.
      */
-    mask: PT.oneOfType([PT.instanceOf(Task), PT.arrayOf(Task), PT.element, PT.bool, PT.string]),
+    mask: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(TaskObserver), PT.element, PT.bool, PT.string]),
 
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(PanelModel), PT.object]),
