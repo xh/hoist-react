@@ -245,7 +245,13 @@ class LocalModel extends HoistModel {
             },
             buttons: {
                 contextButton: {
-                    menuItems: ['downloadPNG', 'downloadSVG', 'separator', 'downloadCSV']
+                    menuItems: [                            
+                        'viewFullscreen',
+                        'separator', 
+                        'downloadPNG', 
+                        'downloadSVG', 
+                        'separator', 
+                        'downloadCSV']
                 }
             }
         };
