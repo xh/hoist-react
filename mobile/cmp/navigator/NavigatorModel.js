@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {find, isEqual, keys, merge} from 'lodash';
 import {page} from './impl/Page';
@@ -37,9 +37,14 @@ export class NavigatorModel extends HoistModel {
     /** @member {RefreshMode} */
     refreshMode;
 
+    /** @member {boolean} */
+    @observable swipeStarted = false;
+
+    /** @member {number} */
+    @observable swipeProgress = 0;
+
     _navigator = null;
     _callback = null;
-    _canSwipe = null;
 
     /** @type String */
     get activePageId() {
@@ -50,6 +55,12 @@ export class NavigatorModel extends HoistModel {
     get activePage() {
         const {stack} = this;
         return stack[stack.length - 1];
+    }
+
+    /** @type boolean */
+    @computed
+    get swipeComplete() {
+        return this.swipeProgress === 1;
     }
 
     /**
@@ -265,34 +276,38 @@ export class NavigatorModel extends HoistModel {
         this._callback = null;
     }
 
+    @action
     onDragStart(e) {
         // Determine if this gesture could be a potential navigation swipe.
-        let canSwipe = this.enableSwipe && this.stack.length > 1;
+        let swipeStarted = this.enableSwipe && this.stack.length > 1;
 
-        // Ensure any left-scrolling element in the target path takes priority over swipe navigation.
-        // We must check this at the start of the gesture, as scroll position changes throughout.
-        for (let el = e.target; canSwipe && el && el !== document.body; el = el.parentNode) {
+        // Loop through the touch targets to ensure it is safe to swipe
+        for (let el = e.target; swipeStarted && el && el !== document.body; el = el.parentNode) {
+            // Don't conflict with grid header reordering.
+            if (el.classList.contains('xh-grid-header')) {
+                swipeStarted = false;
+            }
+            // Ensure any left-scrolling element in the target path takes priority over swipe navigation.
+            // We must check this at the start of the gesture, as scroll position changes throughout.
             if (el.scrollWidth > el.offsetWidth && el.scrollLeft > 0) {
-                canSwipe = false;
+                swipeStarted = false;
             }
         }
 
-        this._canSwipe = canSwipe;
+        this.swipeStarted = swipeStarted;
+        this.swipeProgress = 0;
     }
 
-    onDragEnd(e) {
-        if (!this._canSwipe) return;
+    @action
+    onDrag(e) {
+        if (!this.swipeStarted) return;
+        this.swipeProgress = Math.clamp(e.gesture.deltaX / 150, 0, 1);
+    }
 
-        // Detect fast horizontal "swipes" to the right.
-        // These are heuristically determined to be drags that cover a
-        // sufficient distance within a short time frame.
-        const {deltaX, deltaTime} = e.nativeEvent.gesture,
-            speed = deltaX / deltaTime,
-            minDistance = 200,
-            minSpeed = 0.5;
-
-        if (deltaX >= minDistance && speed >= minSpeed) {
-            XH.popRoute();
-        }
+    @action
+    onDragEnd() {
+        if (this.swipeComplete) XH.popRoute();
+        this.swipeStarted = false;
+        this.swipeProgress = 0;
     }
 }

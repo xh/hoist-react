@@ -5,10 +5,12 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {frame} from '@xh/hoist/cmp/layout';
+import {frame, div} from '@xh/hoist/cmp/layout';
 import {gestureDetector, navigator as onsenNavigator} from '@xh/hoist/kit/onsen';
+import {Icon} from '@xh/hoist/icon';
 import PT from 'prop-types';
-
+import classNames from 'classnames';
+import './Navigator.scss';
 import {NavigatorModel} from './NavigatorModel';
 
 /**
@@ -23,18 +25,22 @@ export const [Navigator, navigator] = hoistCmp.withFactory({
     render({model, className, animation = 'slide'}) {
         return frame({
             className,
-            item: gestureDetector({
-                onDragStart: e => model.onDragStart(e),
-                onDragEnd: e => model.onDragEnd(e),
-                item: onsenNavigator({
-                    initialRoute: {init: true},
-                    animation,
-                    animationOptions: {duration: 0.2, delay: 0, timing: 'ease-in'},
-                    renderPage: (pageModel, navigator) => model.renderPage(pageModel, navigator),
-                    onPostPush: () => model.onPageChange(),
-                    onPostPop: () => model.onPageChange()
+            items: [
+                swipeIndicator(),
+                gestureDetector({
+                    onDragStart: e => model.onDragStart(e),
+                    onDrag: e => model.onDrag(e),
+                    onDragEnd: () => model.onDragEnd(),
+                    item: onsenNavigator({
+                        initialRoute: {init: true},
+                        animation,
+                        animationOptions: {duration: 0.2, delay: 0, timing: 'ease-in'},
+                        renderPage: (pageModel, navigator) => model.renderPage(pageModel, navigator),
+                        onPostPush: () => model.onPageChange(),
+                        onPostPop: () => model.onPageChange()
+                    })
                 })
-            })
+            ]
         });
     }
 });
@@ -46,3 +52,22 @@ Navigator.propTypes = {
     /** Set animation style or turn off, default 'slide' */
     animation: PT.oneOf(['slide', 'lift', 'fade', 'none'])
 };
+
+const swipeIndicator = hoistCmp.factory(
+    ({model}) => {
+        const {swipeStarted, swipeProgress, swipeComplete} = model,
+            shown = swipeStarted && swipeProgress > 0,
+            left = -40 + (swipeProgress * 60),
+            className = classNames(
+                'xh-navigator__swipe-indicator',
+                shown ? 'xh-navigator__swipe-indicator--shown' : null,
+                swipeComplete ? 'xh-navigator__swipe-indicator--complete' : null
+            );
+
+        return div({
+            className,
+            style: {left},
+            item: Icon.chevronLeft()
+        });
+    }
+);
