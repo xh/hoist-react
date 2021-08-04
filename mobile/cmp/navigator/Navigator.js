@@ -25,7 +25,7 @@ export const [Navigator, navigator] = hoistCmp.withFactory({
             className,
             item: gestureDetector({
                 onDragStart: e => model.onDragStart(e),
-                onDrag: e => model.onDrag(e),
+                onDragEnd: e => model.onDragEnd(e),
                 item: onsenNavigator({
                     initialRoute: {init: true},
                     animation,

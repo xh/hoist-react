@@ -28,6 +28,9 @@ export class NavigatorModel extends HoistModel {
     /** @member {boolean} */
     track;
 
+    /** @member {boolean} */
+    enableSwipe;
+
     /** @member {RenderMode} */
     renderMode;
 
@@ -54,6 +57,7 @@ export class NavigatorModel extends HoistModel {
      *      pages within this Navigator/App.
      * @param {boolean} [track] - True to enable activity tracking of page views (default false).
      *      Viewing of each page will be tracked with the `oncePerSession` flag, to avoid duplication.
+     * @param {boolean} [enableSwipe] - True to enable 'swipe to go back' functionality.
      * @param {RenderMode} [renderMode] - strategy for rendering pages. Can be set per-page
      *      via `PageModel.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing pages. Can be set per-page
@@ -62,6 +66,7 @@ export class NavigatorModel extends HoistModel {
     constructor({
         pages,
         track = false,
+        enableSwipe = false,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY
     }) {
@@ -74,6 +79,7 @@ export class NavigatorModel extends HoistModel {
 
         this.pages = pages;
         this.track = track;
+        this.enableSwipe = enableSwipe;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
 
@@ -261,7 +267,7 @@ export class NavigatorModel extends HoistModel {
 
     onDragStart(e) {
         // Determine if this gesture could be a potential navigation swipe.
-        let canSwipe = this.stack.length > 1;
+        let canSwipe = this.enableSwipe && this.stack.length > 1;
 
         // Ensure any left-scrolling element in the target path takes priority over swipe navigation.
         // We must check this at the start of the gesture, as scroll position changes throughout.
@@ -274,17 +280,18 @@ export class NavigatorModel extends HoistModel {
         this._canSwipe = canSwipe;
     }
 
-    onDrag(e) {
+    onDragEnd(e) {
         if (!this._canSwipe) return;
 
         // Detect fast horizontal "swipes" to the right.
         // These are heuristically determined to be drags that cover a
         // sufficient distance within a short time frame.
-        const {deltaX, deltaTime} = e.gesture,
-            swipeDistance = 200,
-            swipeTime = 400;
+        const {deltaX, deltaTime} = e.nativeEvent.gesture,
+            speed = deltaX / deltaTime,
+            minDistance = 200,
+            minSpeed = 0.5;
 
-        if (deltaX >= swipeDistance && deltaTime <= swipeTime) {
+        if (deltaX >= minDistance && speed >= minSpeed) {
             XH.popRoute();
         }
     }
