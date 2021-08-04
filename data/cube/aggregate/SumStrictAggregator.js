@@ -24,5 +24,4 @@ export class SumStrictAggregator extends Aggregator {
         if (currAgg == null) return super.replace(rows, currAgg, update);
         return currAgg - oldValue + newValue;
     }
-
 }

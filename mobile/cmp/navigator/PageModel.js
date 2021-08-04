@@ -57,7 +57,7 @@ export class PageModel extends HoistModel {
      * @param {(ReactElement|Object|function)} content - Hoist Component (class or functional) to be
      *      rendered by this page; or function returning react element to be rendered by this page.
      * @param {Object} [props] - props to be passed to page upon creation.
-     * @param {RefreshMode} [renderMode] - strategy for rendering this Page. If null, will
+     * @param {RenderMode} [renderMode] - strategy for rendering this Page. If null, will
      *      default to its Navigator's mode. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing this Page. If null, will
      *      default to its Navigator's mode. See enum for description of supported modes.

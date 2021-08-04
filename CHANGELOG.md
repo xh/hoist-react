@@ -12,6 +12,7 @@
       to support more complex queries with multiple clauses.
 * New `Task` classes replaces existing `PendingTaskModel`, providing improved support for joining
   and masking multiple asynchronous tasks.
+* New `Cube` aggregators `ChildCountAggregator` and `LeafCountAggregator`.
 
 ### 💥 Breaking Changes
 
