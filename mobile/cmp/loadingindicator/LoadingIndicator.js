@@ -26,6 +26,7 @@ import './LoadingIndicator.scss';
 export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory({
     displayName: 'LoadingIndicator',
     className: 'xh-loading-indicator',
+    model: false,
 
     render({
         bind,

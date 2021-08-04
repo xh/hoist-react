@@ -23,6 +23,7 @@ import './Mask.scss';
 export const [Mask, mask] = hoistCmp.withFactory({
     displayName: 'Mask',
     className: 'xh-mask',
+    model: false,
 
     render({
         bind,

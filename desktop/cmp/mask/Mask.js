@@ -26,6 +26,7 @@ import {Task, CompoundTask} from '@xh/hoist/utils/async';
 export const [Mask, mask] = hoistCmp.withFactory({
     displayName: 'Mask',
     className: 'xh-mask',
+    model: false,
 
     render({
         bind,
