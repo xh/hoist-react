@@ -29,7 +29,7 @@ export class NavigatorModel extends HoistModel {
     track;
 
     /** @member {boolean} */
-    swipeable;
+    enableSwipe;
 
     /** @member {RenderMode} */
     renderMode;
@@ -57,7 +57,7 @@ export class NavigatorModel extends HoistModel {
      *      pages within this Navigator/App.
      * @param {boolean} [track] - True to enable activity tracking of page views (default false).
      *      Viewing of each page will be tracked with the `oncePerSession` flag, to avoid duplication.
-     * @param {boolean} [swipeable] - True to enable 'swipe to go back' functionality.
+     * @param {boolean} [enableSwipe] - True to enable 'swipe to go back' functionality.
      *      Note that unrendered pages will appear blank during the transition. Consider setting
      *      `renderMode` to ALWAYS for an improved experience.
      * @param {RenderMode} [renderMode] - strategy for rendering pages. Can be set per-page
@@ -68,7 +68,7 @@ export class NavigatorModel extends HoistModel {
     constructor({
         pages,
         track = false,
-        swipeable = false,
+        enableSwipe = false,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY
     }) {
@@ -80,7 +80,7 @@ export class NavigatorModel extends HoistModel {
 
         this.pages = pages;
         this.track = track;
-        this.swipeable = swipeable;
+        this.enableSwipe = enableSwipe;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
 
