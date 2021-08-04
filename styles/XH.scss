@@ -16,11 +16,6 @@ body.xh-app {
   font-size: var(--xh-font-size-px);
   box-sizing: border-box;
 
-  // Disable browser scroll to navigate in mobile. This is owned by the Navigator.
-  &.xh-mobile {
-    overscroll-behavior-x: none;
-  }
-
   *,
   *::before,
   *::after {

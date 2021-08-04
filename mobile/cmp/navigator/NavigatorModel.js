@@ -7,6 +7,7 @@
 import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
+import {wait} from '@xh/hoist/promise';
 import {find, isEqual, keys, merge} from 'lodash';
 import {page} from './impl/Page';
 import {PageModel} from './PageModel';
@@ -266,7 +267,9 @@ export class NavigatorModel extends HoistModel {
         this.disableAppRefreshButton = this.activePage?.disableAppRefreshButton;
         this.doCallback();
         // After a swipe has completed, we must sync the route to match.
-        if (this._userHasSwiped) XH.popRoute();
+        if (this._userHasSwiped) {
+            wait().then(() => XH.popRoute());
+        }
     }
 
     doCallback() {
