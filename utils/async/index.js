@@ -7,4 +7,6 @@
 
 export * from './AsyncUtils';
 export * from './Timer';
-export * from './PendingTaskModel';
+export * from './task/Task';
+export * from './task/AsyncTask';
+export * from './task/CompoundTask';

@@ -10,6 +10,8 @@ import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {FieldFilter, parseFilter, flattenFilter} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil, find, isFunction, isString, castArray, uniq} from 'lodash';
+import {wait} from '../../../promise';
+import {AsyncTask} from '../../../utils/async';
 
 import {GridFilterFieldSpec} from './GridFilterFieldSpec';
 
@@ -26,6 +28,9 @@ export class GridFilterModel extends HoistModel {
     valueSource;
     /** @member {GridFilterFieldSpec[]} */
     @managed fieldSpecs = [];
+
+    /** @package {Task} - Task to track filters set on bound object.*/
+    filterTask;
 
     /** @return {Filter} */
     get filter() {
@@ -72,13 +77,12 @@ export class GridFilterModel extends HoistModel {
         super();
         makeObservable(this);
 
+        this.filterTask = new AsyncTask();
         this.gridModel = gridModel;
         this.bind = bind;
         this.valueSource = valueSource;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
-
-        const filter = isFunction(initialFilter) ? initialFilter() : initialFilter;
-        this.setFilter(filter);
+        this._filter = isFunction(initialFilter) ? initialFilter() : initialFilter;
     }
 
     /**
@@ -88,7 +92,9 @@ export class GridFilterModel extends HoistModel {
     setFilter(filter) {
         filter = parseFilter(filter);
         if (this.isBound) {
-            this.bind.setFilter(filter);
+            wait()
+                .then(() => this.bind.setFilter(filter))
+                .linkTo(this.filterTask);
         } else {
             this._filter = filter;
         }

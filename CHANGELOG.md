@@ -10,6 +10,8 @@
     * New `Column.filterable` config enables a customized header menu with filtering options. The new
       control offers two tabs - a "Values" tab for an enumerated "set-type" filter and a "Custom" tab
       to support more complex queries with multiple clauses.
+* New `Task` classes replaces existing `PendingTaskModel`, providing improved support for joining
+  and masking multiple asynchronous tasks.
 
 ### 💥 Breaking Changes
 
@@ -17,6 +19,10 @@
   `FilterChooserModel.valueSource` and `FilterChooserModel.bind` respectively. Furthermore, both
   configs now support either a `Store` or a cube `View`. This is to provide a common API with the
   new `GridFilterModel` filtering described above.
+* `PendingTaskModel` has been renamed `AsyncTask` and moved to the `@xh/hoist/core` package.
+* The `model` prop on `LoadingIndicator` and `Mask` has been replaced with `bind`.  Provide one or
+  `Task`s to this prop.
+
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.2.0...develop)
 

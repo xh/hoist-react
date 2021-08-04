@@ -9,7 +9,6 @@ import {div, filler} from '@xh/hoist/cmp/layout';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {tabContainer} from '@xh/hoist/cmp/tab';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {buttonGroup, button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -61,13 +60,7 @@ const content = hoistCmp.factory({
             compactHeader: true,
             onClick: (e) => e.stopPropagation(),
             headerItems: [switcher()],
-            items: [
-                tabContainer(),
-                mask({
-                    isDisplayed: model.showMask,
-                    spinner: true
-                })
-            ],
+            item: tabContainer(),
             bbar: bbar()
         });
     }

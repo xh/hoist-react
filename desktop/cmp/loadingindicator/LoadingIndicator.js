@@ -6,14 +6,14 @@
  */
 import {hbox} from '@xh/hoist/cmp/layout';
 import {div} from '@xh/hoist/cmp/layout/Tags';
-import {spinner} from '@xh/hoist/cmp/spinner';
-import {hoistCmp} from '@xh/hoist/core';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
-import {withDefault} from '@xh/hoist/utils/js';
+import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
+import {hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
+import {Task, CompoundTask} from '@xh/hoist/utils/async';
 import classNames from 'classnames';
 import {truncate} from 'lodash';
 import PT from 'prop-types';
 import './LoadingIndicator.scss';
+import {withDefault, apiRemoved} from '@xh/hoist/utils/js';
 
 /**
  * A minimal / unobtrusive LoadingIndicator displaying an optional spinner and/or message to signal
@@ -27,38 +27,51 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory({
     displayName: 'LoadingIndicator',
     className: 'xh-loading-indicator',
 
-    render(props) {
-        const {model} = props,
-            isDisplayed = withDefault(props.isDisplayed, model?.isPending, false),
-            maxMessageLength = withDefault(props.maxMessageLength, 30),
-            message = truncate(withDefault(props.message, model?.message), {length: maxMessageLength}),
-            showSpinner = withDefault(props.spinner, true),
-            corner = withDefault(props.corner, 'br');
+    render({
+        bind,
+        isDisplayed,
+        message,
+        maxMessageLength = 30,
+        spinner = true,
+        corner = 'br',
+        className,
+        model
+    }) {
+        apiRemoved(model, 'model', "Use 'bind' instead.");
 
-        if (!isDisplayed || (!showSpinner && !message)) return null;
+        const impl = useLocalModel(() => new LocalMaskModel(bind));
+
+        isDisplayed = withDefault(isDisplayed, impl.task?.isPending);
+        message = withDefault(message,  impl.task?.message);
+        message = truncate(message, {length: maxMessageLength});
+
+        if (!isDisplayed || (!spinner && !message)) return null;
 
         const hasMessageCls = message ? 'xh-loading-indicator--has-message' : null,
-            hasSpinnerCls = showSpinner ? 'xh-loading-indicator--has-spinner' : null,
+            hasSpinnerCls = spinner ? 'xh-loading-indicator--has-spinner' : null,
             cornerCls = `xh-loading-indicator--${corner}`;
 
         const innerItems = () => {
-            let spinnerEl = spinner({compact: true});
+            let spinnerEl = spinnerCmp({compact: true});
 
             if (!message) return [spinnerEl];
 
             const msgBox = div({className: `xh-loading-indicator__message`, item: message});
-            if (!showSpinner) spinnerEl = null;
+            if (!spinner) spinnerEl = null;
             return corner === 'tl' || corner === 'bl' ? [spinnerEl, msgBox] : [msgBox, spinnerEl];
         };
 
         return div({
-            className: classNames(props.className, hasMessageCls, hasSpinnerCls, cornerCls),
+            className: classNames(className, hasMessageCls, hasSpinnerCls, cornerCls),
             item: hbox(innerItems())
         });
     }
 });
 
 LoadingIndicator.propTypes = {
+
+    /** Task(s) that should be monitored to determine if the Indicator should be displayed. */
+    bind: PT.oneOfType([PT.instanceOf(Task), PT.arrayOf(Task)]),
 
     /** Position of the indicator relative to its containing component. */
     corner: PT.oneOf(['tl', 'tr', 'bl', 'br']),
@@ -72,9 +85,19 @@ LoadingIndicator.propTypes = {
     /** Optional text to be displayed - can also be sourced from bound PendingTaskModel. */
     message: PT.string,
 
-    /** Optional model for reactively showing the indicator while tasks are pending. */
-    model: PT.instanceOf(PendingTaskModel),
-
     /** True (default) to display with an animated spinner. */
     spinner: PT.bool
 };
+
+
+class LocalMaskModel extends HoistModel {
+    task;
+    constructor(bind) {
+        super();
+        if (bind) {
+            this.task = bind instanceof Task ?
+                bind :
+                this.markManaged(new CompoundTask({tasks: bind}));
+        }
+    }
+}

@@ -6,9 +6,10 @@
  */
 import {hbox} from '@xh/hoist/cmp/layout';
 import {div} from '@xh/hoist/cmp/layout/Tags';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, HoistModel, CompoundTask} from '@xh/hoist/core';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {Task} from '@xh/hoist/utils/async';
+import {withDefault, apiRemoved} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {truncate} from 'lodash';
 import PT from 'prop-types';
@@ -17,7 +18,7 @@ import './LoadingIndicator.scss';
 /**
  * A minimal / unobtrusive LoadingIndicator displaying an optional spinner and/or message to signal
  * that a longer-running operation is in progress, without using a modal Mask. Can be explicitly
- * shown or bound to a PendingTaskModel.
+ * shown or bound to one or more tasks.
  *
  * Note that the Panel component's `loadingIndicator` prop provides a common and convenient way to
  * add an indicator to a Panel without needing to manually create or manage this component.
@@ -27,16 +28,23 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory({
     className: 'xh-loading-indicator',
 
     render({
-        model,
-        message = model?.message || null,
+        bind,
+        isDisplayed,
+        message,
         spinner = true,
         corner = 'br',
         maxMessageLength = 30,
-        isDisplayed = model?.isPending || false,
-        className
+        className,
+        model
     }, ref) {
+        apiRemoved(model, 'model', "Use 'bind' instead.");
 
+        const impl = useLocalModel(() => new LocalMaskModel(bind));
+
+        isDisplayed = withDefault(isDisplayed, impl.task?.isPending);
+        message = withDefault(message, impl.task?.message);
         message = truncate(message, {length: maxMessageLength});
+
         if (!isDisplayed || (!spinner && !message)) return null;
 
         const innerItems = () =>  {
@@ -76,8 +84,20 @@ LoadingIndicator.propTypes = {
     message: PT.string,
 
     /** Optional model for reactively showing the indicator while tasks are pending. */
-    model: PT.instanceOf(PendingTaskModel),
+    bind: PT.oneOf([PT.instanceOf(Task), PT.arrayOf(Task)]),
 
     /** True (default) to display with an animated spinner. */
     spinner: PT.bool
 };
+
+class LocalMaskModel extends HoistModel {
+    task;
+    constructor(bind) {
+        super();
+        if (bind) {
+            this.task = bind instanceof Task ?
+                bind :
+                this.markManaged(new CompoundTask({tasks: bind}));
+        }
+    }
+}

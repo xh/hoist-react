@@ -5,8 +5,9 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
+import {Task} from './Task';
 
 /**
  * Tracks the resolution state of a stream of promise invocations.
@@ -17,44 +18,32 @@ import {isUndefined} from 'lodash';
  * method for masking a section of a user interface while an operation is pending.
  *
  * @see Promise#linkTo
- * @see Panel.mask
  */
-export class PendingTaskModel {
+export class AsyncTask extends Task {
 
-    get isPendingTaskModel() {return true}
-
-    @bindable message = null;
+    get isAsyncTask() {return true}
 
     mode = null;
 
+    @observable _message = null;
     @observable _pendingCount = 0;
     @observable.ref _lastCall = null;
 
     /**
-     * @param {Object} [c] - PendingTaskModel configuration.
+     * @param {Object} [c] - configuration.
      * @param {string} [c.mode] - behavior with respect to multiple linked promises.
      *      'all' to track all linked promises, 'last' to track the last linked promise only.
      * @param {?string} [c.message] - description of the pending task - for end-user display.
      */
     constructor({mode = 'last', message = null} = {}) {
+        super();
         makeObservable(this);
         this.mode = mode;
-        this.message = message;
+        this._message = message;
     }
 
     /**
-     * Are the bound promise/promises still pending?
-     *
-     * This observable property is the main public entry point for this object.
-     * Its behavior depends on the 'type' property.
-     */
-    @computed
-    get isPending() {
-        return this.mode === 'all' ? this.anyPending : this.lastPending;
-    }
-
-    /**
-     * Link this model to a promise.
+     * Link this object to a promise.
      * Not typically called directly by applications - call Promise.linkTo() instead.
      *
      * @param {Promise} promise
@@ -66,6 +55,19 @@ export class PendingTaskModel {
         this._lastCall = promise;
         promise.finally(() => this.onComplete(promise));
         if (!isUndefined(message)) this.message = message;
+    }
+
+    get isPending() {
+        return this.mode === 'all' ? this.anyPending : this.lastPending;
+    }
+
+    get message() {
+        return this._message;
+    }
+
+    @action
+    setMessage(msg) {
+        this._message = msg;
     }
 
     //-----------------------------
@@ -85,4 +87,10 @@ export class PendingTaskModel {
         if (promise === this._lastCall)  this._lastCall = null;
     }
 }
-PendingTaskModel.isPendingTaskModel = true;
+
+
+/**
+ * @deprecated
+ * Use AsyncTask instead.
+ */
+export const PendingTaskModel = AsyncTask;

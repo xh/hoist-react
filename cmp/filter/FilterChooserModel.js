@@ -24,6 +24,7 @@ import {
     isFunction,
     uniq
 } from 'lodash';
+import {AsyncTask} from '@xh/hoist/utils/async';
 
 import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
 import {QueryEngine} from './impl/QueryEngine';
@@ -56,6 +57,9 @@ export class FilterChooserModel extends HoistModel {
     @managed provider;
     persistValue = false;
     persistFavorites = false;
+
+    /** @package {PendingTaskModel} - Task model to track filters set on bound object.*/
+    filterTask;
 
     // Implementation fields for Control
     @observable.ref selectOptions;
@@ -118,6 +122,7 @@ export class FilterChooserModel extends HoistModel {
         this.maxTags = maxTags;
         this.maxResults = maxResults;
         this.queryEngine = new QueryEngine(this);
+        this.filterTask = new AsyncTask();
 
         let value = isFunction(initialValue) ? initialValue() : initialValue,
             favorites = isFunction(initialFavorites) ? initialFavorites() : initialFavorites;
@@ -154,7 +159,11 @@ export class FilterChooserModel extends HoistModel {
         if (bind) {
             this.addReaction({
                 track: () => this.value,
-                run: (filter) => bind.setFilter(filter),
+                run: (filter) => {
+                    wait()
+                        .then(() => bind.setFilter(filter))
+                        .linkTo(this.filterTask);
+                },
                 fireImmediately: true
             });
 

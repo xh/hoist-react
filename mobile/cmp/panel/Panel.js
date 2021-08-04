@@ -9,7 +9,7 @@ import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {Task} from '@xh/hoist/utils/async';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {omitBy} from 'lodash';
@@ -95,19 +95,19 @@ Panel.propTypes = {
      * Mask to render on this panel. Set to:
      *   + a ReactElement specifying a Mask instance,
      *   + true for a default mask,
-     *   + a PendingTaskModel for a default load mask bound to a pending task,
+     *   + one or more Tasks for a default load mask bound to the tasks
      *   + the string 'onLoad' for a default load mask bound to the loading of the current model.
      */
-    mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool, PT.string]),
+    mask: PT.oneOfType([PT.element, PT.instanceOf(Task), PT.arrayOf(Task), PT.bool, PT.string]),
 
     /**
      * LoadingIndicator to render on this panel. Set to:
      *   + a ReactElement specifying a LoadingIndicator,
      *   + true for a default LoadingIndicator,
-     *   + a PendingTaskModel for a default LoadingIndicator bound to a pending task,
+     *   + one or more Tasks for a default LoadingIndicator bound to the tasks
      *   + the string 'onLoad' for a default LoadingIndicator bound to the loading of the current model.
      */
-    loadingIndicator: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool, PT.string]),
+    loadingIndicator: PT.oneOfType([PT.element, PT.instanceOf(Task), PT.arrayOf(Task), PT.bool, PT.string]),
 
     /** Allow the panel to scroll vertically */
     scrollable: PT.bool,
@@ -124,18 +124,18 @@ Panel.propTypes = {
 //------------------------
 function parseLoadDecorator(prop, name, contextModel) {
     const cmp = (name === 'mask' ? mask : loadingIndicator);
-    if (prop === true)                      return cmp({isDisplayed: true});
-    if (prop instanceof PendingTaskModel)   return cmp({model: prop, spinner: true});
-    if (isValidElement(prop))               return prop;
+    if (!prop)                                  return null;
+    if (prop === true)                          return cmp({isDisplayed: true});
+    if (isValidElement(prop))                   return prop;
     if (prop === 'onLoad') {
         const loadModel = contextModel?.loadModel;
         if (!loadModel) {
             console.warn(`Cannot use 'onLoad' for '${name}'.  Context model does not implement loading.`);
             return null;
         }
-        return cmp({model: loadModel, spinner: true});
+        return cmp({bind: loadModel, spinner: true});
     }
-    return null;
+    return cmp({bind: prop, spinner: true});
 }
 
 function parseToolbar(barSpec) {
