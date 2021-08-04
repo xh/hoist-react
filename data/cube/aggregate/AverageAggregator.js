@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
+import {Aggregator} from './Aggregator';
 
 export class AverageAggregator extends Aggregator {
 

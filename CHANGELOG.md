@@ -10,6 +10,7 @@
     * New `Column.filterable` config enables a customized header menu with filtering options. The new
       control offers two tabs - a "Values" tab for an enumerated "set-type" filter and a "Custom" tab
       to support more complex queries with multiple clauses.
+* New `Cube` aggregators `ChildCountAggregator` and `LeafCountAggregator`.
 
 ### 💥 Breaking Changes
 
