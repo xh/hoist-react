@@ -251,7 +251,8 @@ class LocalModel extends HoistModel {
                         'downloadPNG', 
                         'downloadSVG', 
                         'separator', 
-                        'downloadCSV']
+                        'downloadCSV'
+                    ]
                 }
             }
         };
