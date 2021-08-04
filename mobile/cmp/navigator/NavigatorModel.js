@@ -301,7 +301,17 @@ export class NavigatorModel extends HoistModel {
     @action
     onDrag(e) {
         if (!this.swipeStarted) return;
-        this.swipeProgress = Math.clamp(e.gesture.deltaX / 150, 0, 1);
+        const {direction, deltaX} = e.gesture;
+
+        // If the direction ever deviates, cancel the gesture
+        if (direction !== 'right') {
+            this.swipeStarted = false;
+            this.swipeProgress = 0;
+            return;
+        }
+
+        // Set normalised progress based on distance dragged
+        this.swipeProgress = Math.clamp(deltaX / 150, 0, 1);
     }
 
     @action
