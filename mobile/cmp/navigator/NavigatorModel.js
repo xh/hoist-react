@@ -29,7 +29,7 @@ export class NavigatorModel extends HoistModel {
     track;
 
     /** @member {boolean} */
-    enableSwipe;
+    swipeToGoBack;
 
     /** @member {RenderMode} */
     renderMode;
@@ -37,10 +37,10 @@ export class NavigatorModel extends HoistModel {
     /** @member {RefreshMode} */
     refreshMode;
 
-    /** @member {boolean} */
+    /** @package {boolean} */
     @observable swipeStarted = false;
 
-    /** @member {number} */
+    /** @package {number} */
     @observable swipeProgress = 0;
 
     _navigator = null;
@@ -68,7 +68,7 @@ export class NavigatorModel extends HoistModel {
      *      pages within this Navigator/App.
      * @param {boolean} [track] - True to enable activity tracking of page views (default false).
      *      Viewing of each page will be tracked with the `oncePerSession` flag, to avoid duplication.
-     * @param {boolean} [enableSwipe] - True to enable 'swipe to go back' functionality.
+     * @param {boolean} [swipeToGoBack] - True to enable 'swipe to go back' functionality.
      * @param {RenderMode} [renderMode] - strategy for rendering pages. Can be set per-page
      *      via `PageModel.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing pages. Can be set per-page
@@ -77,7 +77,7 @@ export class NavigatorModel extends HoistModel {
     constructor({
         pages,
         track = false,
-        enableSwipe = false,
+        swipeToGoBack = true,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY
     }) {
@@ -90,7 +90,7 @@ export class NavigatorModel extends HoistModel {
 
         this.pages = pages;
         this.track = track;
-        this.enableSwipe = enableSwipe;
+        this.swipeToGoBack = swipeToGoBack;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
 
@@ -230,7 +230,7 @@ export class NavigatorModel extends HoistModel {
         }
     }
 
-    renderPage(model, navigator) {
+    renderPage = (model, navigator) => {
         const {init, key} = model;
 
         // Note: We use the special 'init' object to obtain a reference to the
@@ -266,7 +266,7 @@ export class NavigatorModel extends HoistModel {
     }
 
     @action
-    onPageChange() {
+    onPageChange = () => {
         this.disableAppRefreshButton = this.activePage?.disableAppRefreshButton;
         this.doCallback();
     }
@@ -277,9 +277,9 @@ export class NavigatorModel extends HoistModel {
     }
 
     @action
-    onDragStart(e) {
+    onDragStart = (e) => {
         // Determine if this gesture could be a potential navigation swipe.
-        let swipeStarted = this.enableSwipe && this.stack.length > 1;
+        let swipeStarted = this.swipeToGoBack && this.stack.length > 1;
 
         // Loop through the touch targets to ensure it is safe to swipe
         for (let el = e.target; swipeStarted && el && el !== document.body; el = el.parentNode) {
@@ -295,11 +295,14 @@ export class NavigatorModel extends HoistModel {
         }
 
         this.swipeStarted = swipeStarted;
-        this.swipeProgress = 0;
+        if (swipeStarted) {
+            this.swipeProgress = 0;
+            this.consumeEvent(e);
+        }
     }
 
     @action
-    onDrag(e) {
+    onDrag = (e) => {
         if (!this.swipeStarted) return;
         const {direction, deltaX} = e.gesture;
 
@@ -312,12 +315,19 @@ export class NavigatorModel extends HoistModel {
 
         // Set normalised progress based on distance dragged
         this.swipeProgress = Math.clamp(deltaX / 150, 0, 1);
+        this.consumeEvent(e);
     }
 
     @action
-    onDragEnd() {
+    onDragEnd = (e) => {
         if (this.swipeComplete) XH.popRoute();
         this.swipeStarted = false;
         this.swipeProgress = 0;
+        this.consumeEvent(e);
+    }
+
+    consumeEvent(e) {
+        e.preventDefault();
+        e.stopPropagation();
     }
 }

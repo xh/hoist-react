@@ -28,16 +28,16 @@ export const [Navigator, navigator] = hoistCmp.withFactory({
             items: [
                 swipeIndicator(),
                 gestureDetector({
-                    onDragStart: e => model.onDragStart(e),
-                    onDrag: e => model.onDrag(e),
-                    onDragEnd: () => model.onDragEnd(),
+                    onDragStart: model.onDragStart,
+                    onDrag: model.onDrag,
+                    onDragEnd: model.onDragEnd,
                     item: onsenNavigator({
                         initialRoute: {init: true},
                         animation,
                         animationOptions: {duration: 0.2, delay: 0, timing: 'ease-in'},
-                        renderPage: (pageModel, navigator) => model.renderPage(pageModel, navigator),
-                        onPostPush: () => model.onPageChange(),
-                        onPostPop: () => model.onPageChange()
+                        renderPage: model.renderPage,
+                        onPostPush: model.onPageChange,
+                        onPostPop: model.onPageChange
                     })
                 })
             ]
