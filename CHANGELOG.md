@@ -4,6 +4,10 @@
 
 ### 🎁 New Features
 * New `Cube` aggregators `ChildCountAggregator` and `LeafCountAggregator`.
+* `RecordAction` now supports a `className` config.
+
+### ✨ Style
+* Higher contrast on grid context menus for improved legibility.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.2.0...develop)
 
