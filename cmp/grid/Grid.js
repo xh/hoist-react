@@ -353,10 +353,15 @@ class GridLocalModel extends HoistModel {
                 icon = convertIconToHtml(icon);
             }
 
+            const cssClasses = ['xh-grid-menu-option'];
+            if (displaySpec.intent) cssClasses.push(`xh-grid-menu-option--intent-${displaySpec.intent}`);
+            if (displaySpec.className) cssClasses.push(displaySpec.className);
+
             items.push({
                 name: displaySpec.text,
                 shortcut: displaySpec.secondaryText,
                 icon,
+                cssClasses,
                 subMenu: childItems,
                 tooltip: displaySpec.tooltip,
                 disabled: displaySpec.disabled,
