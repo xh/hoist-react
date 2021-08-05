@@ -84,7 +84,7 @@ LoadingIndicator.propTypes = {
     message: PT.string,
 
     /** Optional model for reactively showing the indicator while tasks are pending. */
-    bind: PT.oneOf([PT.instanceOf(TaskObserver), PT.arrayOf(TaskObserver)]),
+    bind: PT.oneOf([PT.instanceOf(TaskObserver), PT.arrayOf(PT.instanceOf(TaskObserver))]),
 
     /** True (default) to display with an animated spinner. */
     spinner: PT.bool

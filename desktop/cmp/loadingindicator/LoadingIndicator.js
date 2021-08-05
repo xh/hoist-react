@@ -71,7 +71,7 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory({
 LoadingIndicator.propTypes = {
 
     /** TaskObserver(s) that should be monitored to determine if the Indicator should be displayed. */
-    bind: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(TaskObserver)]),
+    bind: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(PT.instanceOf(TaskObserver))]),
 
     /** Position of the indicator relative to its containing component. */
     corner: PT.oneOf(['tl', 'tr', 'bl', 'br']),

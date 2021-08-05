@@ -60,7 +60,7 @@ export const [Mask, mask] = hoistCmp.withFactory({
 Mask.propTypes = {
 
     /** Task(s) that should be monitored to determine if the mask should be displayed. */
-    bind: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(TaskObserver)]),
+    bind: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(PT.instanceOf(TaskObserver))]),
 
     /** True to display the mask. */
     isDisplayed: PT.bool,

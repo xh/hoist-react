@@ -192,7 +192,7 @@ Panel.propTypes = {
      *   + one or more tasks for a default LoadingIndicator bound to the tasks
      *   + the string 'onLoad' for a default LoadingIndicator bound to the loading of the current model.
      */
-    loadingIndicator: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(TaskObserver), PT.element, PT.bool, PT.string]),
+    loadingIndicator: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(PT.instanceOf(TaskObserver)), PT.element, PT.bool, PT.string]),
 
     /**
      * Mask to render on this panel. Set to:
@@ -201,7 +201,7 @@ Panel.propTypes = {
      *   + one or more tasks for a default load mask bound to the tasks
      *   + the string 'onLoad' for a default load mask bound to the loading of the current model.
      */
-    mask: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(TaskObserver), PT.element, PT.bool, PT.string]),
+    mask: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(PT.instanceOf(TaskObserver)), PT.element, PT.bool, PT.string]),
 
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(PanelModel), PT.object]),
