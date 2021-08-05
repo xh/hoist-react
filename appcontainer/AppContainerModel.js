@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, RootRefreshContextModel, XH, PromiseTaskObserver} from '@xh/hoist/core';
+import {HoistModel, managed, RootRefreshContextModel, TaskObserver, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {AboutDialogModel} from './AboutDialogModel';
 import {BannerSourceModel} from './BannerSourceModel';
@@ -26,7 +26,7 @@ export class AppContainerModel extends HoistModel {
     // Sub-models
     //------------
     /** Link any async operations that should mask the entire application to this model. */
-    @managed appLoadModel = new PromiseTaskObserver({mode: 'all'});
+    @managed appLoadModel = TaskObserver.forLoadTracking();
 
     @managed aboutDialogModel = new AboutDialogModel();
     @managed changelogDialogModel = new ChangelogDialogModel();

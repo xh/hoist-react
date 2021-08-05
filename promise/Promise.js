@@ -4,10 +4,10 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
-import {action} from '@xh/hoist/mobx';
+import {TaskObserver, XH} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {castArray, isFunction, isNumber, isPlainObject} from 'lodash';
+import {action} from '@xh/hoist/mobx';
+import {castArray, isFunction, isNumber} from 'lodash';
 import {apiDeprecated} from '../utils/js';
 
 /**
@@ -205,23 +205,30 @@ const enhancePromise = (promisePrototype) => {
 
 
         /**
-         * Link this promise to an instance of a {@see PromiseTaskObserver}. See that class for details
-         * on what PromiseTaskObserver provides and how it can be used to coordinate masking and
-         * progress messages on one or more async operations.
+         * Link this promise to an instance of a {@see TaskObserver}. See that class for details
+         * on what it provides and how it can be used to coordinate masking and progress messages
+         * on one or more async operations.
          *
          * @memberOf Promise.prototype
-         * @param {Object|PromiseTaskObserverl} cfg -- Configuration object, or PendingTaskModel
-         * @param {PromiseTaskObserver} cfg.model - PendingTaskModel to link to.
-         * @param {string} [cfg.message] - Optional custom message for use by PendingTaskModel.
+         * @param {Object|TaskObserver} cfg - TaskObserver to use to track execution of this
+         *      Promise, or a config with observer + additional options.
+         * @param {TaskObserver} cfg.observer
+         * @param {string} [cfg.message] - optional message to display while pending.
          * @param {boolean} [cfg.omit] - optional flag to indicate linkage should be skipped
          *      If true, this method is no-op.  Provided as convenience for conditional masking.
          */
         linkTo(cfg) {
-            if (!isPlainObject(cfg)) {
-                cfg = {model: cfg};
+            if (cfg.isTaskObserver) {
+                cfg = {observer: cfg};
             }
-            if (cfg.model && !cfg.omit) {
-                cfg.model.link(this, cfg.message);
+
+            if (cfg.model && !cfg.observer) {
+                console.warn('Use of `model` is deprecated - provide `observer` instead');
+                cfg = {...cfg, observer: cfg.model};
+            }
+
+            if (cfg.observer && !cfg.omit) {
+                cfg.observer.linkTo(TaskObserver.forPromise(this, cfg.message));
             }
             return this;
         },

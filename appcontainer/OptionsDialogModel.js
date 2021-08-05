@@ -5,8 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {FormModel} from '@xh/hoist/cmp/form';
-import {HoistModel, managed, XH, PromiseTaskObserver} from '@xh/hoist/core';
-import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
+import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {assign} from 'lodash';
 import {AppOption} from './AppOption';
 
@@ -20,7 +20,7 @@ export class OptionsDialogModel extends HoistModel {
     @observable.ref options = [];
 
     @managed
-    loadModel = new PromiseTaskObserver();
+    loadModel = TaskObserver.forLoadTracking();
 
     @managed
     formModel = null;
