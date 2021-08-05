@@ -27,14 +27,14 @@ export const [RecordActionButton, recordActionButton] = hoistCmp.withFactory({
 
         let selectedRecords = record ? [record] : null;
         if (selModel) {
-            selectedRecords = selModel.records;
+            selectedRecords = selModel.selectedRecords;
 
             // Try to get the record from the selModel if not explicitly provided to the button
             if (!record) {
                 if (selectedRecords.length === 1) {
-                    record = selModel.singleRecord;
+                    record = selModel.selectedRecord;
                 } else {
-                    record = first(selModel.records);
+                    record = first(selModel.selectedRecords);
                 }
             }
         }

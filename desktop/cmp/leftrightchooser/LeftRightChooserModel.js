@@ -214,13 +214,13 @@ export class LeftRightChooserModel extends HoistModel {
             rightSel = this.rightModel.selModel;
 
         return {
-            track: () => [leftSel.singleRecord, rightSel.singleRecord],
+            track: () => [leftSel.selectedRecord, rightSel.selectedRecord],
             run: () => {
                 const lastSelectedSide = this._lastSelectedSide;
-                if (leftSel.singleRecord && lastSelectedSide !== 'left') {
+                if (leftSel.selectedRecord && lastSelectedSide !== 'left') {
                     this._lastSelectedSide = 'left';
                     rightSel.clear();
-                } else if (rightSel.singleRecord && lastSelectedSide !== 'right') {
+                } else if (rightSel.selectedRecord && lastSelectedSide !== 'right') {
                     this._lastSelectedSide = 'right';
                     leftSel.clear();
                 }

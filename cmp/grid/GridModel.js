@@ -355,6 +355,8 @@ export class GridModel extends HoistModel {
         apiRemoved(rest.enableColChooser, 'enableColChooser', "Use 'colChooserModel' instead");
         apiRemoved(rest.stateModel, 'stateModel', "Use 'persistWith' instead.");
         apiRemoved(exportOptions.includeHiddenCols, 'includeHiddenCols', "Replace with {columns: 'ALL'}.");
+        apiRemoved(this.selectedRecordId, 'selectedRecordId', 'Use selectedId instead.');
+        apiRemoved(this.selection, 'selection', 'Use selectedRecords instead.');
 
         throwIf(
             autosizeOptions.fillMode && !['all', 'left', 'right', 'none'].includes(autosizeOptions.fillMode),
@@ -532,11 +534,11 @@ export class GridModel extends HoistModel {
         if (!isReady) return;
 
         const {agApi, selModel} = this,
-            {records} = selModel,
+            {selectedRecords} = selModel,
             indices = [];
 
         // 1) Expand any selected nodes that are collapsed
-        records.forEach(({id}) => {
+        selectedRecords.forEach(({id}) => {
             for (let row = agApi.getRowNode(id)?.parent; row; row = row.parent) {
                 if (!row.expanded) {
                     agApi.setRowNodeExpanded(row, true);
@@ -547,13 +549,13 @@ export class GridModel extends HoistModel {
         await wait();
 
         // 2) Scroll to all selected nodes
-        records.forEach(({id}) => {
+        selectedRecords.forEach(({id}) => {
             const rowIndex = agApi.getRowNode(id)?.rowIndex;
             if (!isNil(rowIndex)) indices.push(rowIndex);
         });
 
         const indexCount = indices.length;
-        if (indexCount !== records.length) {
+        if (indexCount !== selectedRecords.length) {
             console.warn('Grid row nodes not found for all selected records.');
         }
 
@@ -569,16 +571,16 @@ export class GridModel extends HoistModel {
     get hasSelection() {return !this.selModel.isEmpty}
 
     /** @return {Record[]} - currently selected Records. */
-    get selection() {return this.selModel.records}
+    get selectedRecords() {return this.selModel.selectedRecords}
 
     /**
      * @return {?Record} - single selected record, or null if multiple/no records selected.
      *
      * Note that this getter will also change if just the data of selected record is changed
      * due to store loading or editing.  Applications only interested in the identity
-     * of the selection should use {@see selectedRecordId} instead.
+     * of the selection should use {@see selectedId} instead.
      */
-    get selectedRecord() {return this.selModel.singleRecord}
+    get selectedRecord() {return this.selModel.selectedRecord}
 
     /**
      * @return {?RecordId} - ID of selected record, or null if multiple/no records selected.
@@ -587,7 +589,7 @@ export class GridModel extends HoistModel {
      * due to store loading or editing.  Applications also interested in the contents of the
      * of the selection should use the {@see selectedRecord} getter instead.
      */
-    get selectedRecordId() {return this.selModel.selectedRecordId}
+    get selectedId() {return this.selModel.selectedId}
 
     /** @return {boolean} - true if this grid has no records to show in its store. */
     get empty() {return this.store.empty}
@@ -1047,16 +1049,16 @@ export class GridModel extends HoistModel {
         const isReady = await this.whenReadyAsync();
         if (!isReady) return;
 
-        const {store, agGridModel, agApi, selection} = this;
+        const {store, agGridModel, agApi, selectedRecords} = this;
 
         let recToEdit;
         if (record) {
             // Normalize specified record, if any.
             recToEdit = record.isRecord ? record : store.getById(record);
         } else {
-            if (!isEmpty(selection)) {
+            if (!isEmpty(selectedRecords)) {
                 // Or use first selected record, if any.
-                recToEdit = selection[0];
+                recToEdit = selectedRecords[0];
             } else {
                 // Or use the first record overall.
                 const firstRowId = agGridModel.getFirstSelectableRowNodeId();

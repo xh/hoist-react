@@ -8,6 +8,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {castArray, compact, remove, isEqual, union, map} from 'lodash';
+import {apiRemoved} from '../utils/js';
 
 /**
  * Model for managing store selections.
@@ -37,18 +38,22 @@ export class StoreSelectionModel extends HoistModel {
         this.store = store;
         this.mode = mode;
         this.addReaction(this.cullSelectionReaction());
+
+        apiRemoved(this.singleRecord, 'singleRecord', 'Use selectedRecord instead.');
+        apiRemoved(this.selectedRecordId, 'selectedRecordId', 'Use selectedId instead.');
+        apiRemoved(this.records, 'records', 'Use selectedRecords instead.');
     }
 
     /** @return {Record[]} - currently selected records. */
     @computed.struct
-    get records() {
+    get selectedRecords() {
         return compact(this._ids.map(it => this.store.getById(it, true)));
     }
 
     /** @return {RecordId[]} - IDs of currently selected records. */
     @computed.struct
     get ids() {
-        return map(this.records, 'id');
+        return map(this.selectedRecords, 'id');
     }
 
     /**
@@ -56,11 +61,11 @@ export class StoreSelectionModel extends HoistModel {
      *
      * Note that this getter will also change if just the data of selected record is changed
      * due to store loading or editing.  Applications only interested in the identity
-     * of the selection should use {@see selectedRecordId} instead.
+     * of the selection should use {@see selectedId} instead.
      */
-    get singleRecord() {
-        const {records} = this;
-        return records.length === 1 ? records[0] : null;
+    get selectedRecord() {
+        const {selectedRecords} = this;
+        return selectedRecords.length === 1 ? selectedRecords[0] : null;
     }
 
     /**
@@ -68,9 +73,9 @@ export class StoreSelectionModel extends HoistModel {
      *
      * Note that this getter will *not* change if just the data of selected record is changed
      * due to store loading or editing.  Applications also interested in the contents of the
-     * of the selection should use the {@see singleRecord} getter instead.
+     * of the selection should use the {@see selectedRecord} getter instead.
      */
-    get selectedRecordId() {
+    get selectedId() {
         const {ids} = this;
         return ids.length === 1 ? ids[0] : null;
     }
@@ -83,7 +88,7 @@ export class StoreSelectionModel extends HoistModel {
     /** @return {number} - count of currently selected records. */
     @computed
     get count() {
-        return this.records.length;
+        return this.selectedRecords.length;
     }
 
     /**

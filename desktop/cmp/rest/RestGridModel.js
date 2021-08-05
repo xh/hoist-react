@@ -98,7 +98,7 @@ export class RestGridModel extends HoistModel {
     /** @return {StoreSelectionModel} */
     get selModel() {return this.gridModel.selModel}
     /** @return {Record[]} */
-    get selection() {return this.gridModel.selection}
+    get selection() {return this.gridModel.selectedRecords}
     /** @return {Record} */
     get selectedRecord() {return this.gridModel.selectedRecord}
 
