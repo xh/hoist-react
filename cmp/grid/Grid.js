@@ -312,7 +312,7 @@ class GridLocalModel extends HoistModel {
             if (!record) selModel.clear();
         }
 
-        return this.buildMenuItems(menu.items, record, selModel.records, column, params);
+        return this.buildMenuItems(menu.items, record, selModel.selectedRecords, column, params);
     };
 
     buildMenuItems(recordActions, record, selectedRecords, column, agParams) {
