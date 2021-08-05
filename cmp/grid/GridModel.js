@@ -7,7 +7,7 @@
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Column, ColumnGroup, GridAutosizeMode, TreeStyle} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH, PromiseTaskObserver} from '@xh/hoist/core';
 import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
@@ -178,6 +178,13 @@ export class GridModel extends HoistModel {
     get autosizeEnabled() {
         return this.autosizeOptions.mode !== GridAutosizeMode.DISABLED;
     }
+
+    /** @member {TaskObserver} - tracks execution of filtering operations.*/
+    @managed filterTask = new PromiseTaskObserver();
+
+
+    /** @member {TaskObserver} - tracks execution of autosize operations. */
+    @managed autosizeTask = new PromiseTaskObserver();
 
     /**
      * @param {Object} c - GridModel configuration.
@@ -1018,31 +1025,11 @@ export class GridModel extends HoistModel {
 
         if (isEmpty(colIds)) return;
 
-        // 2) Undocumented escape Hatch.  Consider removing, or formalizing
-        if (options.useNative) {
-            this.agColumnApi?.autoSizeColumns(colIds);
-            return;
-        }
-
-        // 3) Let service perform sizing, masking as appropriate.
-        const {agApi, empty} = this;
-        const showMask = options.showMask && agApi;
-        if (showMask) {
-            agApi.showLoadingOverlay();
-            await wait(100);
-        }
-
-        await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
-
-        if (showMask) {
-            await wait(100);
-            if (empty) {
-                agApi.showNoRowsOverlay();
-            } else {
-                agApi.hideOverlay();
-            }
-        }
+        await this
+            .autosizeColsInternalAsync(colIds, options)
+            .linkTo(this.autosizeTask);
     }
+
 
     /**
      * Begin an inline editing session.
@@ -1183,6 +1170,28 @@ export class GridModel extends HoistModel {
     //-----------------------
     // Implementation
     //-----------------------
+    async autosizeColsInternalAsync(colIds, options) {
+        const {agApi, empty} = this;
+        const showMask = options.showMask && agApi;
+
+        if (showMask) {
+            agApi.showLoadingOverlay();
+            await wait();
+        }
+        try {
+            await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
+        } finally {
+            if (showMask) {
+                await wait();
+                if (empty) {
+                    agApi.showNoRowsOverlay();
+                } else {
+                    agApi.hideOverlay();
+                }
+            }
+        }
+    }
+
     getAutoRowHeight(node) {
         return this.agGridModel.getAutoRowHeight(node);
     }

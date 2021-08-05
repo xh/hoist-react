@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, managed, PromiseTaskObserver} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {FieldFilter, parseFilter, flattenFilter} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -27,9 +27,6 @@ export class GridFilterModel extends HoistModel {
     valueSource;
     /** @member {GridFilterFieldSpec[]} */
     @managed fieldSpecs = [];
-
-    /** @package {Task} - Task to track filters set on bound object.*/
-    filterTask;
 
     /** @return {Filter} */
     get filter() {
@@ -75,8 +72,6 @@ export class GridFilterModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
-
-        this.filterTask = new PromiseTaskObserver();
         this.gridModel = gridModel;
         this.bind = bind;
         this.valueSource = valueSource;
@@ -93,7 +88,7 @@ export class GridFilterModel extends HoistModel {
         if (this.isBound) {
             wait()
                 .then(() => this.bind.setFilter(filter))
-                .linkTo(this.filterTask);
+                .linkTo(this.gridModel.filterTask);
         } else {
             this._filter = filter;
         }

@@ -57,8 +57,8 @@ export class FilterChooserModel extends HoistModel {
     persistValue = false;
     persistFavorites = false;
 
-    /** @package {TaskObserver} - Task model to track filters set on bound object.*/
-    filterTask;
+    /** @member {TaskObserver} - tracks execution of filtering operation on bound object.*/
+    @managed filterTask = new PromiseTaskObserver();
 
     // Implementation fields for Control
     @observable.ref selectOptions;
@@ -121,7 +121,6 @@ export class FilterChooserModel extends HoistModel {
         this.maxTags = maxTags;
         this.maxResults = maxResults;
         this.queryEngine = new QueryEngine(this);
-        this.filterTask = new PromiseTaskObserver();
 
         let value = isFunction(initialValue) ? initialValue() : initialValue,
             favorites = isFunction(initialFavorites) ? initialFavorites() : initialFavorites;
