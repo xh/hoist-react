@@ -4,6 +4,8 @@
 
 ### 🎁 New Features
 * New `Cube` aggregators `ChildCountAggregator` and `LeafCountAggregator`.
+* Mobile `NavigatorModel` provides a new "swipe" gesture to go back in the page stack.
+This is enabled by default, but may be turned off via the new `swipeToGoBack` prop.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.2.0...develop)
 
