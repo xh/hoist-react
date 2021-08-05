@@ -633,9 +633,9 @@ class GridLocalModel extends HoistModel {
 
     syncSelection() {
         const {agGridModel, selModel, isReady} = this.model,
-            {ids} = selModel;
-        if (isReady && !isEqual(ids, agGridModel.getSelectedRowNodeIds())) {
-            agGridModel.setSelectedRowNodeIds(ids);
+            {selectedIds} = selModel;
+        if (isReady && !isEqual(selectedIds, agGridModel.getSelectedRowNodeIds())) {
+            agGridModel.setSelectedRowNodeIds(selectedIds);
         }
     }
 

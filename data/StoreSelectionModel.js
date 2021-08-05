@@ -8,7 +8,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {castArray, compact, remove, isEqual, union, map} from 'lodash';
-import {apiRemoved} from '../utils/js';
+import {apiRemoved} from '@xh/hoist/utils/js';
 
 /**
  * Model for managing store selections.
@@ -42,6 +42,7 @@ export class StoreSelectionModel extends HoistModel {
         apiRemoved(this.singleRecord, 'singleRecord', 'Use selectedRecord instead.');
         apiRemoved(this.selectedRecordId, 'selectedRecordId', 'Use selectedId instead.');
         apiRemoved(this.records, 'records', 'Use selectedRecords instead.');
+        apiRemoved(this.ids, 'ids', 'Use selectedIds instead.');
     }
 
     /** @return {Record[]} - currently selected records. */
@@ -52,7 +53,7 @@ export class StoreSelectionModel extends HoistModel {
 
     /** @return {RecordId[]} - IDs of currently selected records. */
     @computed.struct
-    get ids() {
+    get selectedIds() {
         return map(this.selectedRecords, 'id');
     }
 
@@ -76,8 +77,8 @@ export class StoreSelectionModel extends HoistModel {
      * of the selection should use the {@see selectedRecord} getter instead.
      */
     get selectedId() {
-        const {ids} = this;
-        return ids.length === 1 ? ids[0] : null;
+        const {selectedIds} = this;
+        return selectedIds.length === 1 ? selectedIds[0] : null;
     }
 
     /** @return {boolean} - true if selection is empty. */
