@@ -6,6 +6,17 @@
 * New `Cube` aggregators `ChildCountAggregator` and `LeafCountAggregator`.
 * Mobile `NavigatorModel` provides a new "swipe" gesture to go back in the page stack.
 This is enabled by default, but may be turned off via the new `swipeToGoBack` prop.
+* New `GridModel.selectedIds` API added to get the IDs of currently selected records.
+
+### 💥 Breaking Changes
+* Renamed similar getters for consistency in several models:
+    + `selectedRecordId` has been renamed to `selectedId` in `GridModel`, `StoreSelectionModel`, and
+      `DataViewModel`
+    + `selection` has been renamed to `selectedRecords` in `GridModel`, `DataViewModel`, and
+      `RestGridModel`
+    + `singleRecord`, `records`, and `ids` have been renamed to `selectedRecord`, `selectedRecords`,
+      and `selectedIds`, respectively, in `StoreSelectionModel`
+
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.2.0...develop)
 
