@@ -9,8 +9,8 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {FieldFilter, parseFilter, flattenFilter} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
+import {wait} from '@xh/hoist/promise';
 import {isNil, find, isFunction, isString, castArray, uniq} from 'lodash';
-import {wait} from '../../../promise';
 
 import {GridFilterFieldSpec} from './GridFilterFieldSpec';
 

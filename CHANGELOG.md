@@ -22,7 +22,7 @@
   new `GridFilterModel` filtering described above.
 * `PendingTaskModel` has been renamed `PromiseTaskObserver` and moved to the `@xh/hoist/core` package.
 * The `model` prop on `LoadingIndicator` and `Mask` has been replaced with `bind`.  Provide one or
-  `TaskObserver`s to this prop.
+  more `TaskObserver`s to this prop.
 
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.2.0...develop)
