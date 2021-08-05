@@ -124,6 +124,7 @@ export class ExceptionHandler {
                     error,
                     msg: userMessage ? stripTags(userMessage) : '',
                     appVersion: XH.getEnv('clientVersion'),
+                    url: window.location.href,
                     userAlerted,
                     clientUsername: username
                 }

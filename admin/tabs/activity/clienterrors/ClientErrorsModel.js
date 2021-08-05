@@ -56,6 +56,7 @@ export class ClientErrorsModel extends HoistModel {
                     {name: 'appEnvironment', displayName: 'Environment', type: 'string'},
                     {name: 'msg', displayName: 'User Message', type: 'string'},
                     {name: 'error', displayName: 'Error Details', type: 'string'},
+                    {name: 'url', displayName: 'URL', type: 'string'},
                     {name: 'dateCreated', displayName: 'Timestamp', type: 'date'},
                     {name: 'day', displayName: 'App Day', type: 'localDate'},
                     {name: 'userAlerted', type: 'bool'}
@@ -105,6 +106,7 @@ export class ClientErrorsModel extends HoistModel {
                     minWidth: 150,
                     renderer: (e) => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
                 },
+                {field: 'url', width: 250},
                 {field: 'dateCreated', ...dateTimeCol},
                 {field: 'day',  ...localDateCol}
             ]
@@ -129,6 +131,10 @@ export class ClientErrorsModel extends HoistModel {
                 },
                 {
                     field: 'error',
+                    suggestValues: false
+                },
+                {
+                    field: 'url',
                     suggestValues: false
                 },
                 {
