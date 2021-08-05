@@ -6,13 +6,12 @@
  */
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, TaskObserver, useLocalModel} from '@xh/hoist/core';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
-import {withDefault, apiRemoved} from '@xh/hoist/utils/js';
+import {apiRemoved, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import PT from 'prop-types';
 import './Mask.scss';
-import {HoistModel, useLocalModel, TaskObserver, CompoundTaskObserver} from '@xh/hoist/core';
 
 /**
  * Mask with optional spinner and text.
