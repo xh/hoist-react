@@ -27,7 +27,7 @@ $half-size: 18px;
       color 200ms ease,
       background-color 200ms ease;
 
-    &:not(&--shown) {
+    &:not(&--started) {
       transition: left 200ms ease;
     }
 

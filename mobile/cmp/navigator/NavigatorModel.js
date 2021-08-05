@@ -7,7 +7,7 @@
 import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf, warnIf} from '@xh/hoist/utils/js';
-import {find, isEqual, keys, merge} from 'lodash';
+import {isFinite, find, isEqual, keys, merge} from 'lodash';
 import {page} from './impl/Page';
 import {PageModel} from './PageModel';
 
@@ -37,11 +37,8 @@ export class NavigatorModel extends HoistModel {
     /** @member {RefreshMode} */
     refreshMode;
 
-    /** @package {boolean} */
-    @observable swipeStarted = false;
-
     /** @package {number} */
-    @observable swipeProgress = 0;
+    @observable swipeProgress = null;
 
     _navigator = null;
     _callback = null;
@@ -55,6 +52,12 @@ export class NavigatorModel extends HoistModel {
     get activePage() {
         const {stack} = this;
         return stack[stack.length - 1];
+    }
+
+    /** @type boolean */
+    @computed
+    get swipeStarted() {
+        return isFinite(this.swipeProgress);
     }
 
     /** @type boolean */
@@ -278,27 +281,30 @@ export class NavigatorModel extends HoistModel {
 
     @action
     onDragStart = (e) => {
+        this.swipeProgress = null;
+
         // Determine if this gesture could be a potential navigation swipe.
-        let swipeStarted = this.swipeToGoBack && this.stack.length > 1;
+        if (!this.swipeToGoBack || this.stack.length < 2) return;
+
+        // Prevent swipes from the left edge of the screen, to not conflict
+        // with the native browser back gesture.
+        if (e.nativeEvent.gesture.startEvent.center.pageX < 20) return;
 
         // Loop through the touch targets to ensure it is safe to swipe
-        for (let el = e.target; swipeStarted && el && el !== document.body; el = el.parentNode) {
+        for (let el = e.target; el && el !== document.body; el = el.parentNode) {
             // Don't conflict with grid header reordering.
             if (el.classList.contains('xh-grid-header')) {
-                swipeStarted = false;
+                return;
             }
             // Ensure any left-scrolling element in the target path takes priority over swipe navigation.
             // We must check this at the start of the gesture, as scroll position changes throughout.
             if (el.scrollWidth > el.offsetWidth && el.scrollLeft > 0) {
-                swipeStarted = false;
+                return;
             }
         }
 
-        this.swipeStarted = swipeStarted;
-        if (swipeStarted) {
-            this.swipeProgress = 0;
-            this.consumeEvent(e);
-        }
+        this.swipeProgress = 0;
+        this.consumeEvent(e);
     }
 
     @action
@@ -308,8 +314,7 @@ export class NavigatorModel extends HoistModel {
 
         // If the direction ever deviates, cancel the gesture
         if (direction !== 'right') {
-            this.swipeStarted = false;
-            this.swipeProgress = 0;
+            this.swipeProgress = null;
             return;
         }
 
@@ -320,9 +325,9 @@ export class NavigatorModel extends HoistModel {
 
     @action
     onDragEnd = (e) => {
+        if (!this.swipeStarted) return;
         if (this.swipeComplete) XH.popRoute();
-        this.swipeStarted = false;
-        this.swipeProgress = 0;
+        this.swipeProgress = null;
         this.consumeEvent(e);
     }
 

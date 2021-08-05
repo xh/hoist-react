@@ -55,12 +55,11 @@ Navigator.propTypes = {
 
 const swipeIndicator = hoistCmp.factory(
     ({model}) => {
-        const {swipeStarted, swipeProgress, swipeComplete} = model,
-            shown = swipeStarted && swipeProgress > 0,
+        const {swipeProgress, swipeStarted, swipeComplete} = model,
             left = -40 + (swipeProgress * 60),
             className = classNames(
                 'xh-navigator__swipe-indicator',
-                shown ? 'xh-navigator__swipe-indicator--shown' : null,
+                swipeStarted ? 'xh-navigator__swipe-indicator--started' : null,
                 swipeComplete ? 'xh-navigator__swipe-indicator--complete' : null
             );
 
