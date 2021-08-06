@@ -8,6 +8,7 @@ import {useEffect} from 'react';
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
+import {useContextMenu} from '@xh/hoist/desktop/hooks';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {bindable, runInAction, makeObservable} from '@xh/hoist/mobx';
 import {
@@ -22,6 +23,7 @@ import {ChartModel} from './ChartModel';
 import {installZoomoutGesture} from './impl/zoomout';
 import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
+import {ChartContextMenu} from '../../desktop/cmp/contextmenu/ChartContextMenu';
 import './Chart.scss';
 
 installZoomoutGesture(Highcharts);
@@ -36,7 +38,12 @@ export const [Chart, chart] = hoistCmp.withFactory({
     model: uses(ChartModel),
     className: 'xh-chart',
 
-    render({model, className, aspectRatio, ...props}, ref) {
+    render({
+        model, 
+        className, 
+        aspectRatio, 
+        ...props
+    }, ref) {
 
         if (!Highcharts) {
             console.error(
@@ -66,7 +73,7 @@ export const [Chart, chart] = hoistCmp.withFactory({
         }
 
         // Inner div required to be the ref for the chart element
-        return box({
+        const coreContents = box({
             ...layoutProps,
             className,
             ref,
@@ -75,8 +82,11 @@ export const [Chart, chart] = hoistCmp.withFactory({
                 ref: impl.chartRef
             })
         });
+
+        return useContextMenu(coreContents, impl.contextMenu.items);
     }
 });
+
 Chart.propTypes = {
     /**
      * Ratio of width-to-height of displayed chart.  If defined and greater than 0, the chart will
@@ -86,13 +96,20 @@ Chart.propTypes = {
     aspectRatio: PT.number,
 
     /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object])
+    model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object]),
+
+    /**
+     * Specification of a context menu.
+     *  @see useContextMenu() for more information on accepted values for this prop.
+     */
+    contextMenu: PT.oneOfType([PT.func, PT.array, PT.node])
 };
 
 class LocalModel extends HoistModel {
     @bindable aspectRatio;
     chartRef = createObservableRef();
     model;
+    contextMenu;
     prevSeriesConfig;
 
     constructor(model, aspectRatio) {
@@ -100,6 +117,11 @@ class LocalModel extends HoistModel {
         makeObservable(this);
         this.model = model;
         this.aspectRatio = aspectRatio;
+        this.contextMenu = new ChartContextMenu({
+            items: model.contextMenu, 
+            chartModel: model
+        });
+
         this.addReaction({
             track: () => [
                 this.aspectRatio,

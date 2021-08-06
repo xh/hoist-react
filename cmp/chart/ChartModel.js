@@ -7,7 +7,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, cloneDeep, merge} from 'lodash';
+import {castArray, cloneDeep, isEmpty, isFunction, isUndefined, merge} from 'lodash';
 
 /**
  * Model to hold and maintain the configuration and data series for a Highcharts chart.
@@ -16,6 +16,18 @@ export class ChartModel extends HoistModel {
 
     @observable.ref highchartsConfig = {};
     @observable.ref series = [];
+
+    /** @member {(Array|function|boolean)} */
+    contextMenu;
+
+    static defaultContextMenu = [
+        'viewFullscreen',
+        '-', 
+        'downloadPNG', 
+        'downloadSVG', 
+        '-', 
+        'downloadCSV'
+    ];
 
     /**
      * The HighCharts instance currently being displayed. This may be used for reading
@@ -28,13 +40,28 @@ export class ChartModel extends HoistModel {
      * @param {Object} c - ChartModel configuration.
      * @param {Object} c.highchartsConfig - The initial highchartsConfig for this chart.
      * @param {(Object|Object[])} c.series - The initial data series to be displayed.
+     * @param {(array|function)} [c.contextMenu] - array of ContextMenuItems, ContextMenuItem configs or
+     *      token strings with which to create chart context menu items.  May also be specified as a
+     *      function returning an array of ContextMenuItem. Desktop only.
      */
-    constructor({highchartsConfig, series = [], config} = {}) {
+    constructor({
+        highchartsConfig, 
+        series = [], 
+        contextMenu,
+        config
+    } = {}
+    ) {
         super();
         makeObservable(this);
         throwIf(config, 'ChartModel "config" has been removed. Please use "highchartsConfig" instead.');
         this.highchartsConfig = highchartsConfig;
         this.series = castArray(series);
+
+        this.contextMenu = isUndefined(contextMenu) || contextMenu === true ?
+            ChartModel.defaultContextMenu : 
+            isFunction(contextMenu) ? contextMenu(this) :
+                isEmpty(contextMenu) ? [] :
+                    contextMenu;
     }
 
     /**
