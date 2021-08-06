@@ -568,7 +568,7 @@ export class GridModel extends HoistModel {
     /** @return {boolean} - true if any records are selected. */
     get hasSelection() {return !this.selModel.isEmpty}
 
-    /** @return {Record[]} - currently selected Records. */
+    /** @return {Record[]} - currently selected records. */
     get selectedRecords() {return this.selModel.selectedRecords}
 
     /** @return {RecordId[]} - IDs of currently selected records. */
