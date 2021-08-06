@@ -32,6 +32,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
     /** @type {Store} */
     store;
 
+    filterKey;
     filterBuffer;
     onFilterChange;
     includeFields;
@@ -47,6 +48,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
         bind,
         gridModel,
         store,
+        filterKey,
         filterBuffer = 200,
         onFilterChange,
         includeFields,
@@ -60,6 +62,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
         this.bind = bind;
         this.gridModel = gridModel;
         this.store = store;
+        this.filterKey = filterKey ?? this.xhId;
         this.filterBuffer = filterBuffer;
         this.onFilterChange = onFilterChange;
         this.includeFields = includeFields;
@@ -120,7 +123,17 @@ export class StoreFilterFieldImplModel extends HoistModel {
     // Implementation
     //------------------------
     applyFilter() {
-        this.store?.setFilter(this.filter);
+        const key = this.filterKey,
+            testFn = this.filter;
+
+        if (testFn) {
+            const filter = {key, testFn},
+                ret = this.store?.filter?.withFilter(filter) ?? filter;
+            this.store?.setFilter(ret);
+        } else {
+            const ret = this.store?.filter?.withoutFiltersByKey(key);
+            this.store?.setFilter(ret);
+        }
     }
 
     regenerateFilter() {

@@ -98,14 +98,18 @@ export class ColumnHeaderFilterModel extends HoistModel {
         // Show a mask to provide feedback to user.
         this.showMask = true;
         wait(1).then(() => {
-            this.setColumnFilters(filter);
+            if (filter) {
+                this.setColumnFilters(filter);
+            } else {
+                this.clearColumnFilters();
+            }
             this.closeMenu();
         });
     }
 
     @action
     clear(close = true) {
-        this.setColumnFilters(null);
+        this.clearColumnFilters();
         if (close) {
             this.closeMenu();
         } else {
@@ -151,6 +155,10 @@ export class ColumnHeaderFilterModel extends HoistModel {
     }
 
     setColumnFilters(filters) {
-        this.gridFilterModel.setColumnFilters(this.field, filters);
+        this.gridFilterModel.setColumnFilters(filters);
+    }
+
+    clearColumnFilters() {
+        this.gridFilterModel.clearColumnFilters(this.field);
     }
 }

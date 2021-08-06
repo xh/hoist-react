@@ -104,7 +104,7 @@ export class StoreContextMenu {
                             actionFn: ({selectedRecords, column}) => {
                                 const {field} = column,
                                     value = getValues(selectedRecords, field);
-                                gridModel.filterModel.setColumnFilters(field, {field, op: '=', value});
+                                gridModel.filterModel.setColumnFilters({field, op: '=', value});
                             }
                         },
                         {
@@ -114,7 +114,7 @@ export class StoreContextMenu {
                             actionFn: ({selectedRecords, column}) => {
                                 const {field} = column,
                                     value = getValues(selectedRecords, field);
-                                gridModel.filterModel.mergeColumnFilters(field, {field, op: '!=', value});
+                                gridModel.filterModel.mergeColumnFilters({field, op: '!=', value});
                             }
                         },
                         '-',
@@ -126,7 +126,7 @@ export class StoreContextMenu {
                                 return {text, disabled: isEmpty(filters)};
                             },
                             actionFn: ({column}) => {
-                                gridModel.filterModel.setColumnFilters(column.field, null);
+                                gridModel.filterModel.clearColumnFilters(column.field);
                             }
                         },
                         {
