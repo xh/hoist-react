@@ -123,16 +123,19 @@ export class StoreFilterFieldImplModel extends HoistModel {
     // Implementation
     //------------------------
     applyFilter() {
+        const {store} = this;
+        if (!store) return;
+
         const key = this.filterKey,
             testFn = this.filter;
 
         if (testFn) {
             const filter = {key, testFn},
-                ret = this.store?.filter?.withFilter(filter) ?? filter;
-            this.store?.setFilter(ret);
+                ret = store.filter?.withFilter(filter) ?? filter;
+            store.setFilter(ret);
         } else {
-            const ret = this.store?.filter?.withoutFiltersByKey(key);
-            this.store?.setFilter(ret);
+            const ret = store.filter?.withoutFiltersByKey(key);
+            store.setFilter(ret);
         }
     }
 
