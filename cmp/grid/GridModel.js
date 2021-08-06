@@ -355,8 +355,6 @@ export class GridModel extends HoistModel {
         apiRemoved(rest.enableColChooser, 'enableColChooser', "Use 'colChooserModel' instead");
         apiRemoved(rest.stateModel, 'stateModel', "Use 'persistWith' instead.");
         apiRemoved(exportOptions.includeHiddenCols, 'includeHiddenCols', "Replace with {columns: 'ALL'}.");
-        apiRemoved(this.selectedRecordId, 'selectedRecordId', 'Use selectedId instead.');
-        apiRemoved(this.selection, 'selection', 'Use selectedRecords instead.');
 
         throwIf(
             autosizeOptions.fillMode && !['all', 'left', 'right', 'none'].includes(autosizeOptions.fillMode),

@@ -91,8 +91,6 @@ export class DataViewModel extends HoistModel {
 
         apiRemoved(restArgs.rowCls, 'rowCls', 'Use \'rowClassFn\' instead.');
         apiRemoved(restArgs.itemRenderer, 'itemRenderer', 'Use \'elementRenderer\' instead.');
-        apiRemoved(this.selectedRecordId, 'selectedRecordId', 'Use \'selectedId\' instead.');
-        apiRemoved(this.selection, 'selection', 'Use \'selectedRecords\' instead.');
 
         this.itemHeight = itemHeight;
         this.groupRowHeight = groupRowHeight;

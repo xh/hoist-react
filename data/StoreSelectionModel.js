@@ -8,7 +8,6 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {castArray, compact, remove, isEqual, union, map} from 'lodash';
-import {apiRemoved} from '@xh/hoist/utils/js';
 
 /**
  * Model for managing store selections.
@@ -38,11 +37,6 @@ export class StoreSelectionModel extends HoistModel {
         this.store = store;
         this.mode = mode;
         this.addReaction(this.cullSelectionReaction());
-
-        apiRemoved(this.singleRecord, 'singleRecord', 'Use selectedRecord instead.');
-        apiRemoved(this.selectedRecordId, 'selectedRecordId', 'Use selectedId instead.');
-        apiRemoved(this.records, 'records', 'Use selectedRecords instead.');
-        apiRemoved(this.ids, 'ids', 'Use selectedIds instead.');
     }
 
     /** @return {Record[]} - currently selected records. */
