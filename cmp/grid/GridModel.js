@@ -7,7 +7,7 @@
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Column, ColumnGroup, GridAutosizeMode, TreeStyle} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistModel, managed, XH, PromiseTaskObserver} from '@xh/hoist/core';
+import {HoistModel, managed, XH, TaskObserver} from '@xh/hoist/core';
 import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
@@ -180,11 +180,11 @@ export class GridModel extends HoistModel {
     }
 
     /** @member {TaskObserver} - tracks execution of filtering operations.*/
-    @managed filterTask = new PromiseTaskObserver();
+    @managed filterTask = TaskObserver.trackAll();
 
 
     /** @member {TaskObserver} - tracks execution of autosize operations. */
-    @managed autosizeTask = new PromiseTaskObserver();
+    @managed autosizeTask = TaskObserver.trackAll();
 
     /**
      * @param {Object} c - GridModel configuration.

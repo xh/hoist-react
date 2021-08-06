@@ -227,8 +227,9 @@ const enhancePromise = (promisePrototype) => {
                 cfg = {...cfg, observer: cfg.model};
             }
 
+
             if (cfg.observer && !cfg.omit) {
-                cfg.observer.linkTo(TaskObserver.forPromise(this, cfg.message));
+                cfg.observer.linkTo(TaskObserver.forPromise({promise: this, message: cfg.message}));
             }
             return this;
         },

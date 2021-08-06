@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, RefreshMode, RenderMode, XH, PersistenceProvider, PromiseTaskObserver} from '@xh/hoist/core';
+import {HoistModel, managed, RefreshMode, RenderMode, XH, PersistenceProvider, TaskObserver} from '@xh/hoist/core';
 import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
@@ -114,7 +114,7 @@ export class DashContainerModel extends HoistModel {
     //------------------------
     // Implementation properties
     //------------------------
-    @managed loadingStateTask = new PromiseTaskObserver();
+    @managed loadingStateTask = TaskObserver.forLoadTracking();
     containerRef = createObservableRef();
     modelLookupContext;
 

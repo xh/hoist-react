@@ -7,7 +7,7 @@
 import {hbox} from '@xh/hoist/cmp/layout';
 import {div} from '@xh/hoist/cmp/layout/Tags';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
-import {hoistCmp, useLocalModel, HoistModel, TaskObserver, CompoundTaskObserver} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, HoistModel, TaskObserver} from '@xh/hoist/core';
 import classNames from 'classnames';
 import {truncate} from 'lodash';
 import PT from 'prop-types';
@@ -97,7 +97,7 @@ class LocalMaskModel extends HoistModel {
         if (bind) {
             this.task = bind instanceof TaskObserver ?
                 bind :
-                this.markManaged(new CompoundTaskObserver({tasks: bind}));
+                this.markManaged(new TaskObserver.trackAll({tasks: bind}));
         }
     }
 }

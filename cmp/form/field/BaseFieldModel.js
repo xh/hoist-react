@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {managed, HoistModel, PromiseTaskObserver} from '@xh/hoist/core';
+import {managed, HoistModel, TaskObserver} from '@xh/hoist/core';
 import {Rule, ValidationState, genDisplayName, required} from '@xh/hoist/data';
 import {action, computed, observable, runInAction, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -78,7 +78,7 @@ export class BaseFieldModel extends HoistModel {
     @observable _errors;
 
     @managed
-    _validationTask = new PromiseTaskObserver();
+    _validationTask = TaskObserver.trackLast();
     _validationRunId = 0;
 
     /**

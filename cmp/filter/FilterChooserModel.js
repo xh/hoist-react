@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, PersistenceProvider, XH, PromiseTaskObserver} from '@xh/hoist/core';
+import {HoistModel, managed, PersistenceProvider, XH, TaskObserver} from '@xh/hoist/core';
 import {FieldFilter, parseFilter, combineValueFilters} from '@xh/hoist/data';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -58,7 +58,7 @@ export class FilterChooserModel extends HoistModel {
     persistFavorites = false;
 
     /** @member {TaskObserver} - tracks execution of filtering operation on bound object.*/
-    @managed filterTask = new PromiseTaskObserver();
+    @managed filterTask = TaskObserver.trackAll();
 
     // Implementation fields for Control
     @observable.ref selectOptions;
