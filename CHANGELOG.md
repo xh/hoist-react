@@ -6,7 +6,7 @@
 * New `Cube` aggregators `ChildCountAggregator` and `LeafCountAggregator`.
 * Mobile `NavigatorModel` provides a new "swipe" gesture to go back in the page stack.
 This is enabled by default, but may be turned off via the new `swipeToGoBack` prop.
-* New `GridModel.selectedIds` API added to get the IDs of currently selected records.
+* New `selectedIds` getter on `GridModel` to get the IDs of currently selected records.
 
 ### 💥 Breaking Changes
 * Renamed similar getters for consistency in several models:
