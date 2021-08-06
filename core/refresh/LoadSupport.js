@@ -29,7 +29,7 @@ export class LoadSupport extends HoistBase {
      *      Note that this model will *not* track auto-refreshes.
      */
     @managed
-    loadModel = TaskObserver.forLoadTracking();
+    loadModel = TaskObserver.trackLast();
 
     /** @member {Date} - date when last load was initiated (observable) */
     @observable.ref lastLoadRequested = null;

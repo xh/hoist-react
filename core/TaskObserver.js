@@ -37,22 +37,15 @@ export class TaskObserver {
      * Create a new TaskObserver that will be pending if its *last* linked
      * subtask is still pending.
      *
+     * Useful for tracking repeated invocations of the same operation, such as
+     * serially reloading of data from the server.
+     *
      * @param {?String} [message]
      * @returns {TaskObserver}
      *
      */
     static trackLast({message} = {}) {
         return new CompoundObserver('last', [], message);
-    }
-
-    /**
-     * Create a new TaskObserver for loading data.
-     *
-     * @param {?String} [message]
-     * @returns {TaskObserver}
-     */
-    static forLoadTracking({message = 'Loading....'} = {}) {
-        return this.trackLast({message});
     }
 
     /**

@@ -114,7 +114,7 @@ export class DashContainerModel extends HoistModel {
     //------------------------
     // Implementation properties
     //------------------------
-    @managed loadingStateTask = TaskObserver.forLoadTracking();
+    @managed loadingStateTask = TaskObserver.trackLast();
     containerRef = createObservableRef();
     modelLookupContext;
 

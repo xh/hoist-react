@@ -20,7 +20,7 @@ export class OptionsDialogModel extends HoistModel {
     @observable.ref options = [];
 
     @managed
-    loadModel = TaskObserver.forLoadTracking();
+    loadModel = TaskObserver.trackLast();
 
     @managed
     formModel = null;

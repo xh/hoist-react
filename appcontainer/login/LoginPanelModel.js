@@ -19,7 +19,7 @@ export class LoginPanelModel extends HoistModel {
     @bindable warning = '';
     @bindable loginInProgress = false;
 
-    @managed loadModel = TaskObserver.forLoadTracking();
+    @managed loadModel = TaskObserver.trackLast();
 
     @computed
     get isValid() {

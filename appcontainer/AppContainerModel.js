@@ -26,7 +26,7 @@ export class AppContainerModel extends HoistModel {
     // Sub-models
     //------------
     /** Link any async operations that should mask the entire application to this model. */
-    @managed appLoadModel = TaskObserver.forLoadTracking();
+    @managed appLoadModel = TaskObserver.trackAll();
 
     @managed aboutDialogModel = new AboutDialogModel();
     @managed changelogDialogModel = new ChangelogDialogModel();
