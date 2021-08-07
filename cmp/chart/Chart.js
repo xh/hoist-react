@@ -25,8 +25,10 @@ import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
 import {ChartContextMenu} from '../../desktop/cmp/contextmenu/ChartContextMenu';
 import './Chart.scss';
+import {installCopyToClipboard} from './impl/copyToClipboard';
 
 installZoomoutGesture(Highcharts);
+installCopyToClipboard(Highcharts);
 
 /**
  * Wrapper Component for a Highcharts chart. Provides basic rendering / lifecycle management
@@ -270,6 +272,7 @@ class LocalModel extends HoistModel {
                     menuItems: [                            
                         'viewFullscreen',
                         'separator', 
+                        'printChart',
                         'downloadPNG', 
                         'downloadSVG', 
                         'separator', 

@@ -23,6 +23,9 @@ export class ChartModel extends HoistModel {
     static defaultContextMenu = [
         'viewFullscreen',
         '-', 
+        'copyToClipboard',
+        '-', 
+        'printChart',
         'downloadPNG', 
         'downloadSVG', 
         '-', 

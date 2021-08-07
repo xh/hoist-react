@@ -81,6 +81,24 @@ export class ChartContextMenu {
                     hidden: !chartModel,
                     actionFn: () => chartModel.highchart.fullscreen.toggle()
                 });
+            case 'copyToClipboard':
+                return new ContextMenuItem({
+                    text: 'Copy to clipboard',
+                    icon: Icon.copy(),
+                    hidden: !chartModel,
+                    actionFn: () => {
+                        const chart = chartModel.highchart;
+                        chart.copyToClipboard();
+               
+                    }
+                });
+            case 'printChart':
+                return new ContextMenuItem({
+                    text: 'Print chart',
+                    icon: Icon.print(),
+                    hidden: !chartModel,
+                    actionFn: () => chartModel.highchart.print()
+                });
             case 'downloadPNG':
                 return new ContextMenuItem({
                     text: 'Download PNG image',
