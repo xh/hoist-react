@@ -27,15 +27,16 @@ export function installCopyToClipboard(Highcharts) {
                 window.navigator.clipboard.write([
                     new window.ClipboardItem({
                         'image/png': new Promise((resolve, reject) => {
-                            fetch('https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png')
-                                .then(response => response.blob())
-                                .then(resolve);
+                            convertChartToPngAsync(this, exportingOptions, chartOptions)
+                                .then(pngBlob => {
+                                    resolve(pngBlob);
+                                });
                         })
                     })
                 ]);
             } else {
-                const blobPng = await convertChartToPngAsync(this, exportingOptions, chartOptions),
-                    clipboardItemInput = new window.ClipboardItem({'image/png': blobPng}),
+                const pngBlob = await convertChartToPngAsync(this, exportingOptions, chartOptions),
+                    clipboardItemInput = new window.ClipboardItem({'image/png': pngBlob}),
                     error = await window.navigator.clipboard.write([clipboardItemInput]);
            
                 if (!error) {
