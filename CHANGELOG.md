@@ -2,6 +2,8 @@
 
 ## v42.0.0-SNAPSHOT - unreleased
 
+## v41.3.0 - 2021-08-09
+
 ### 🎁 New Features
 * New `Cube` aggregators `ChildCountAggregator` and `LeafCountAggregator`.
 * Mobile `NavigatorModel` provides a new "swipe" gesture to go back in the page stack.
