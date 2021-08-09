@@ -9,6 +9,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {FieldFilter, parseFilter, flattenFilter} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
+import {wait} from '@xh/hoist/promise';
 import {isNil, find, isFunction, isString, castArray, uniq} from 'lodash';
 
 import {GridFilterFieldSpec} from './GridFilterFieldSpec';
@@ -71,14 +72,11 @@ export class GridFilterModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
-
         this.gridModel = gridModel;
         this.bind = bind;
         this.valueSource = valueSource;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
-
-        const filter = isFunction(initialFilter) ? initialFilter() : initialFilter;
-        this.setFilter(filter);
+        this._filter = isFunction(initialFilter) ? initialFilter() : initialFilter;
     }
 
     /**
@@ -88,7 +86,9 @@ export class GridFilterModel extends HoistModel {
     setFilter(filter) {
         filter = parseFilter(filter);
         if (this.isBound) {
-            this.bind.setFilter(filter);
+            wait()
+                .then(() => this.bind.setFilter(filter))
+                .linkTo(this.gridModel.filterTask);
         } else {
             this._filter = filter;
         }

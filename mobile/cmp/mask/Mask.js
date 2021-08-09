@@ -6,29 +6,41 @@
  */
 import {box, div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, TaskObserver} from '@xh/hoist/core';
+import {withDefault, apiRemoved} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 import './Mask.scss';
 
 /**
  * Mask with optional spinner and text.
  *
- * The mask can be explicitly shown or reactively bound to a PendingTaskModel.
+ * The mask can be explicitly controlled via props or bound to a TaskObserver.
+ *
+ * Note that the Panel component's `mask` prop provides a common and convenient method for masking
+ * sections of the UI without needing to manually create or manage this component.
  */
 export const [Mask, mask] = hoistCmp.withFactory({
     displayName: 'Mask',
     className: 'xh-mask',
+    model: false,
 
     render({
-        model,
-        className,
-        message = model?.message,
-        isDisplayed = model?.isPending || false,
+        bind,
+        isDisplayed,
+        message,
         spinner = false,
-        onClick
+        onClick,
+        className,
+        model
     }, ref) {
-        if (!isDisplayed) return null;
+        apiRemoved(model, 'model', "Use 'bind' instead.");
 
+        const impl = useLocalModel(() => new LocalMaskModel(bind));
+
+        isDisplayed = isDisplayed ?? impl.task?.isPending;
+        message = withDefault(message, impl.task?.message);
+
+        if (!isDisplayed) return null;
         return div({
             ref,
             onClick,
@@ -46,6 +58,10 @@ export const [Mask, mask] = hoistCmp.withFactory({
 });
 
 Mask.propTypes = {
+
+    /** Task(s) that should be monitored to determine if the mask should be displayed. */
+    bind: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(PT.instanceOf(TaskObserver))]),
+
     /** True to display the mask. */
     isDisplayed: PT.bool,
 
@@ -58,3 +74,15 @@ Mask.propTypes = {
     /** True (default) to display a spinning image. */
     spinner: PT.bool
 };
+
+class LocalMaskModel extends HoistModel {
+    task;
+    constructor(bind) {
+        super();
+        if (bind) {
+            this.task = bind instanceof TaskObserver ?
+                bind :
+                this.markManaged(TaskObserver.trackAll({tasks: bind}));
+        }
+    }
+}
