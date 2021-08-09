@@ -19,55 +19,53 @@ export function installCopyToClipboard(Highcharts) {
         copyToClipboard: async function(exportingOptions, chartOptions) {
 
             if (!Highcharts.isWebKit) {
-                XH.dangerToast('Copying charts to cliboard is not supported on this browser');
+                XH.dangerToast('Copying charts to the cliboard is not supported on this browser');
                 return;
             }
 
+            let clipboardItemInput;
             if (Highcharts.isSafari) {
-                window.navigator.clipboard.write([
-                    new window.ClipboardItem({
-                        'image/png': new Promise((resolve, reject) => {
-                            convertChartToPngAsync(this, exportingOptions, chartOptions)
-                                .then(pngBlob => {
-                                    resolve(pngBlob);
-                                });
-                        })
+                clipboardItemInput = new window.ClipboardItem({
+                    'image/png': new Promise((resolve, reject) => {
+                        convertChartToPngAsync(this, exportingOptions, chartOptions)
+                            .then(pngBlob => {
+                                resolve(pngBlob);
+                            });
                     })
-                ]);
+                });
             } else {
-                const pngBlob = await convertChartToPngAsync(this, exportingOptions, chartOptions),
-                    clipboardItemInput = new window.ClipboardItem({'image/png': pngBlob}),
-                    error = await window.navigator.clipboard.write([clipboardItemInput]);
-           
-                if (!error) {
-                    XH.successToast('Chart copied to clipboard');
-                } else {
-                    XH.handleException(error);
-                }
+                const pngBlob = await convertChartToPngAsync(this, exportingOptions, chartOptions);
+                clipboardItemInput = new window.ClipboardItem({'image/png': pngBlob});
             }
 
+            const error = await window.navigator.clipboard.write([clipboardItemInput]);
+            if (!error) {
+                XH.successToast('Chart copied to clipboard');
+            } else {
+                XH.handleException(error);
+            }
+            
         } // end copyToClipboard
     }); // end extend 
-
-    async function convertChartToPngAsync(chart, exportingOptions, chartOptions) {
-        const svg = await new Promise(
-                (resolve, reject)  => chart.getSVGForLocalExport(
-                    merge(chart.options.exporting, exportingOptions),
-                    chartOptions || {},
-                    () => reject('cannot fallback to export server'),
-                    (svg) => resolve(svg)
-                )
-            ),
-            svgUrl = svgToDataUrl(svg, Highcharts),
-            pngDataUrl = await imageToDataUrlAsync(svgUrl, exportingOptions?.scale),
-            ret = await loadBlob(pngDataUrl);
-
-        memoryCleanup(svgUrl);
-        return ret;
-    }
-
 } // end export
 
+
+async function convertChartToPngAsync(chart, exportingOptions, chartOptions) {
+    const svg = await new Promise(
+            (resolve, reject)  => chart.getSVGForLocalExport(
+                merge(chart.options.exporting, exportingOptions),
+                chartOptions || {},
+                () => reject('cannot fallback to export server'),
+                (svg) => resolve(svg)
+            )
+        ),
+        svgUrl = svgToDataUrl(svg),
+        pngDataUrl = await imageToDataUrlAsync(svgUrl, exportingOptions?.scale),
+        ret = await loadBlob(pngDataUrl);
+
+    memoryCleanup(svgUrl);
+    return ret;
+}
 
 const domurl = window.URL || window.webkitURL || window;
 function memoryCleanup(svgUrl) {
@@ -91,7 +89,7 @@ async function loadBlob(dataUrl) {
  * @param {string} svg
  * @return {string}
  */
-function svgToDataUrl(svg, H) {
+function svgToDataUrl(svg) {
     // Webkit and not chrome
     const userAgent = window.navigator.userAgent;
     const isWebKitButNotChrome = (
@@ -101,10 +99,9 @@ function svgToDataUrl(svg, H) {
 
     try {
         // Safari requires data URI since it doesn't allow navigation to blob
-        // URLs. Firefox has an issue with Blobs and internal references,
-        // leading to gradients not working using Blobs (#4550).
-        // foreignObjects also dont work well in Blobs in Chrome (#14780).
-        if (!isWebKitButNotChrome && !H.isFirefox && svg.indexOf('<foreignObject') === -1) {
+        // URLs.
+        // foreignObjects dont work well in Blobs in Chrome (#14780).
+        if (!isWebKitButNotChrome && svg.indexOf('<foreignObject') === -1) {
             return domurl.createObjectURL(new window.Blob([svg], {
                 type: 'image/svg+xml;charset-utf-16'
             }));
