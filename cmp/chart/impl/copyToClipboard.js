@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-
+import {XH} from '@xh/hoist/core';
 import {merge} from 'lodash';
 
 /**
@@ -16,12 +16,17 @@ export function installCopyToClipboard(Highcharts) {
     const  {Chart, extend} = Highcharts;
 
     extend(Chart.prototype, /** @lends Highcharts.Chart.prototype */ {
-        copyToClipboard: function(exportingOptions, chartOptions) {
+        copyToClipboard: async function(exportingOptions, chartOptions) {
+
+            if (!Highcharts.isWebKit) {
+                XH.dangerToast('Copying charts to cliboard is not supported on this browser');
+                return;
+            }
 
             if (Highcharts.isSafari) {
                 window.navigator.clipboard.write([
                     new window.ClipboardItem({
-                        'image/png': new Promise(resolve => {
+                        'image/png': new Promise((resolve, reject) => {
                             fetch('https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png')
                                 .then(response => response.blob())
                                 .then(resolve);
@@ -29,158 +34,66 @@ export function installCopyToClipboard(Highcharts) {
                     })
                 ]);
             } else {
-                this.getSVGForLocalExport(
-                    merge(this.options.exporting, exportingOptions),
-                    chartOptions || {},
-                    () => console.log('cannot fallback to export server'),
-                    (svg) => getPNG(
-                        svg, 
-                        {}, 
-                        () => console.log('failed'),
-                        () => console.log('succeeded'),
-                        Highcharts
-                    )
-                );  
+                const blobPng = await convertChartToPngAsync(this, exportingOptions, chartOptions),
+                    clipboardItemInput = new window.ClipboardItem({'image/png': blobPng}),
+                    error = await window.navigator.clipboard.write([clipboardItemInput]);
+           
+                if (!error) {
+                    XH.successToast('Chart copied to clipboard');
+                } else {
+                    XH.handleException(error);
+                }
             }
-
 
         } // end copyToClipboard
     }); // end extend 
+
+    async function convertChartToPngAsync(chart, exportingOptions, chartOptions) {
+        const svg = await new Promise(
+                (resolve, reject)  => chart.getSVGForLocalExport(
+                    merge(chart.options.exporting, exportingOptions),
+                    chartOptions || {},
+                    () => reject('cannot fallback to export server'),
+                    (svg) => resolve(svg)
+                )
+            ),
+            svgUrl = svgToDataUrl(svg, Highcharts),
+            pngDataUrl = await imageToDataUrlAsync(svgUrl, exportingOptions?.scale),
+            ret = await loadBlob(pngDataUrl);
+
+        memoryCleanup(svgUrl);
+        return ret;
+    }
+
 } // end export
 
 
 const domurl = window.URL || window.webkitURL || window;
-
-
-function getPNG( // was downloadSVGLocal
-    svg, // : string,
-    options, // : ExportingOptions,
-    failCallback, // : Function,
-    successCallback, // ?: Function
-    Highcharts
-) {
-    let svgurl, // : string,
-        // blob,
-        objectURLRevoke = true,
-        finallyHandler, // : Function,
-        // libURL = (
-        //     options.libURL || (getOptions().exporting).libURL
-        // ),
-        // dummySVGContainer = window.document.createElement('div'),
-        imageType = 'image/png',
-        // filename = (
-        //     (options.filename || 'chart') +
-        //     '.' +
-        //     (imageType === 'image/svg+xml' ? 'svg' : imageType.split('/')[1])
-        // ),
-        scale = options.scale || 1;
-
-    // Allow libURL to end with or without fordward slash
-    // libURL = libURL.slice(-1) !== '/' ? libURL + '/' : libURL;
-
-    // PNG/JPEG download - create bitmap from SVG
-
-    svgurl = svgToDataUrl(svg, Highcharts);
-    finallyHandler = function() {
-        try {
-            domurl.revokeObjectURL(svgurl);
-        } catch (e) {
-            // Ignore
-        }
-    };
-    // First, try to get PNG by rendering on canvas
-    imageToDataUrl(
-        svgurl,
-        imageType,
-        {},
-        scale,
-        // this doesn't work on safari:
-        // see https://bugs.webkit.org/show_bug.cgi?id=222262 for discussion 
-        // and link to safari workaround
-        async function(imageURL) {
-            async function loadBlob(fileName) {
-                const fetched = await fetch(fileName);
-                return await fetched.blob();
-            }
-              
-            const blobInput = await loadBlob(imageURL);
-            const clipboardItemInput = new window.ClipboardItem({'image/png': blobInput});
-            await window.navigator.clipboard.write([clipboardItemInput]);
-        
-        }, 
-        function() {
-            console.log('failed due to tainted canvas');
-            // Failed due to tainted canvas
-            // Create new and untainted canvas
-            // const canvas = window.document.createElement('canvas'),
-            //     ctx = canvas.getContext('2d'), // CanvasRenderingContext2D
-            //     imageWidth = (svg.match(
-            //         /^<svg[^>]*width\s*=\s*\"?(\d+)\"?[^>]*>/
-            //     ))[1] * scale,
-            //     imageHeight = (svg.match(
-            //         /^<svg[^>]*height\s*=\s*\"?(\d+)\"?[^>]*>/
-            //     ))[1] * scale,
-            //     downloadWithCanVG = function() {
-            //         const v = window.canvg.Canvg.fromString(ctx, svg);
-            //         v.start();
-            //         try {
-            //             downloadURL(
-            //                 window.navigator.msSaveOrOpenBlob ?
-            //                     canvas.msToBlob() :
-            //                     canvas.toDataURL(imageType),
-            //                 filename
-            //             );
-            //             if (successCallback) {
-            //                 successCallback();
-            //             }
-            //         } catch (e) {
-            //             failCallback(e);
-            //         } finally {
-            //             finallyHandler();
-            //         }
-            //     };
-
-            // canvas.width = imageWidth;
-            // canvas.height = imageHeight;
-            // if (window.canvg) {
-            //     // Use preloaded canvg
-            //     downloadWithCanVG();
-            // } else {
-            //     // Must load canVG first. // Don't destroy the object URL
-            //     // yet since we are doing things asynchronously. A cleaner
-            //     // solution would be nice, but this will do for now.
-            //     objectURLRevoke = true;
-            //     getScript(libURL + 'canvg.js', function() {
-            //         downloadWithCanVG();
-            //     });
-            // }
-        },
-        // No canvas support
-        failCallback,
-        // Failed to load image
-        failCallback,
-        // Finally
-        function() {
-            if (objectURLRevoke) {
-                finallyHandler();
-            }
-        }
-    );
+function memoryCleanup(svgUrl) {
+    try {
+        domurl.revokeObjectURL(svgUrl);
+    } catch (e) {
+        // Ignore
+    }
 }
 
+async function loadBlob(dataUrl) {
+    const fetched = await fetch(dataUrl);
+    return await fetched.blob();
+}
 
 /**
- * Get blob URL from SVG code. Falls back to normal data URI.
+ * Get blob URL from SVG code. Falls back to normal data URI for Safari
  *
  * @private
- * @function Highcharts.svgToDataURL
+ * @function svgToDataURL
  * @param {string} svg
  * @return {string}
  */
 function svgToDataUrl(svg, H) {
     // Webkit and not chrome
     const userAgent = window.navigator.userAgent;
-    const webKit = (
+    const isWebKitButNotChrome = (
         userAgent.indexOf('WebKit') > -1 &&
         userAgent.indexOf('Chrome') < 0
     );
@@ -190,7 +103,7 @@ function svgToDataUrl(svg, H) {
         // URLs. Firefox has an issue with Blobs and internal references,
         // leading to gradients not working using Blobs (#4550).
         // foreignObjects also dont work well in Blobs in Chrome (#14780).
-        if (!webKit && !H.isFirefox && svg.indexOf('<foreignObject') === -1) {
+        if (!isWebKitButNotChrome && !H.isFirefox && svg.indexOf('<foreignObject') === -1) {
             return domurl.createObjectURL(new window.Blob([svg], {
                 type: 'image/svg+xml;charset-utf-16'
             }));
@@ -198,6 +111,8 @@ function svgToDataUrl(svg, H) {
     } catch (e) {
         // Ignore
     }
+
+    // safari, firefox, or svgs with foreignObect returns this
     return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
 }
 
@@ -206,115 +121,32 @@ function svgToDataUrl(svg, H) {
  * Get data:URL from image URL. Pass in callbacks to handle results.
  *
  * @private
- * @function Highcharts.imageToDataUrl
- *
+ * @function imageToDataUrl
  * @param {string} imageURL
- *
- * @param {string} imageType
- *
- * @param {*} callbackArgs
- *        callbackArgs is used only by callbacks.
- *
  * @param {number} scale
- *
- * @param {Function} successCallback
- *        Receives four arguments: imageURL, imageType, callbackArgs, and scale.
- *
- * @param {Function} taintedCallback
- *        Receives four arguments: imageURL, imageType, callbackArgs, and scale.
- *
- * @param {Function} noCanvasSupportCallback
- *        Receives four arguments: imageURL, imageType, callbackArgs, and scale.
- *
- * @param {Function} failedLoadCallback
- *        Receives four arguments: imageURL, imageType, callbackArgs, and scale.
- *
- * @param {Function} [finallyCallback]
- *        finallyCallback is always called at the end of the process. All
- *        callbacks receive four arguments: imageURL, imageType, callbackArgs,
- *        and scale.
  */
-function imageToDataUrl(
-    imageURL, // string,
-    imageType, // string,
-    callbackArgs, // unknown,
-    scale, // number,
-    successCallback, // Function,
-    taintedCallback, // Function,
-    noCanvasSupportCallback, // Function,
-    failedLoadCallback, // Function,
-    finallyCallback // ?: Function
-) {
-    let img = new window.Image(),
-        taintedHandler, // Function,
-        loadHandler = function() {
-            let canvas = window.document.createElement('canvas'),
-                ctx = canvas.getContext && canvas.getContext('2d'),
-                dataURL;
+async function imageToDataUrlAsync(imageURL, scale = 1) {
+    const img = new window.Image(),
+        loadHandler = function(resolve, reject) {
+            const canvas = window.document.createElement('canvas'),
+                ctx = canvas.getContext && canvas.getContext('2d');
 
+            canvas.height = img.height * scale;
+            canvas.width = img.width * scale;
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            // Now we try to get the contents of the canvas.
             try {
-                if (!ctx) {
-                    noCanvasSupportCallback(
-                        imageURL,
-                        imageType,
-                        callbackArgs,
-                        scale
-                    );
-                } else {
-                    canvas.height = img.height * scale;
-                    canvas.width = img.width * scale;
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                    // Now we try to get the contents of the canvas.
-                    try {
-                        dataURL = canvas.toDataURL(imageType);
-                        successCallback(
-                            dataURL,
-                            imageType,
-                            callbackArgs,
-                            scale
-                        );
-                    } catch (e) {
-                        taintedHandler(
-                            imageURL,
-                            imageType,
-                            callbackArgs,
-                            scale
-                        );
-                    }
-                }
-            } finally {
-                if (finallyCallback) {
-                    finallyCallback(
-                        imageURL,
-                        imageType,
-                        callbackArgs,
-                        scale
-                    );
-                }
-            }
-        },
-        // Image load failed (e.g. invalid URL)
-        errorHandler = function() {
-            failedLoadCallback(imageURL, imageType, callbackArgs, scale);
-            if (finallyCallback) {
-                finallyCallback(imageURL, imageType, callbackArgs, scale);
+                const dataURL = canvas.toDataURL('image/png');
+                resolve(dataURL);
+            } catch (e) {
+                reject(e);
             }
         };
 
-    // This is called on load if the image drawing to canvas failed with a
-    // security error. We retry the drawing with crossOrigin set to Anonymous.
-    taintedHandler = function() {
-        img = new window.Image();
-        taintedHandler = taintedCallback;
-        // Must be set prior to loading image source
-        img.crossOrigin = 'Anonymous';
-        img.onload = loadHandler;
-        img.onerror = errorHandler;
+    return new Promise((resolve, reject) => {
+        img.onload = () => loadHandler(resolve, reject);
+        img.onerror = reject;
         img.src = imageURL;
-    };
-
-    img.onload = loadHandler;
-    img.onerror = errorHandler;
-    img.src = imageURL;
+    });
 }
