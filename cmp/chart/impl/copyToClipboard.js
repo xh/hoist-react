@@ -26,10 +26,7 @@ export function installCopyToClipboard(Highcharts) {
             let clipboardItemInput;
             if (Highcharts.isSafari) {
                 clipboardItemInput = new window.ClipboardItem({
-                    'image/png': new Promise((resolve, reject) => {
-                        convertChartToPngAsync(this, exportingOptions, chartOptions)
-                            .then(resolve);
-                    })
+                    'image/png': convertChartToPngAsync(this, exportingOptions, chartOptions)
                 });
             } else {
                 const pngBlob = await convertChartToPngAsync(this, exportingOptions, chartOptions);
