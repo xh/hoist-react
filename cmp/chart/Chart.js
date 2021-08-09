@@ -278,8 +278,12 @@ class LocalModel extends HoistModel {
                     menuItems: [                            
                         'viewFullscreen',
                         'separator',
-                        'copyToClipboard',
-                        'separator', 
+                        ...Highcharts.isWebKit ? 
+                            [
+                                'copyToClipboard',
+                                'separator'
+                            ] : 
+                            [],
                         'printChart',
                         'downloadPNG', 
                         'downloadSVG', 
@@ -295,6 +299,10 @@ class LocalModel extends HoistModel {
             credits: false,
             exporting
         };
+    }
+
+    getDefaultMenuItems() {
+
     }
 
     mergeAxisConfigs(theme, conf) {
