@@ -7,7 +7,6 @@
 import {HoistModel, managed} from '@xh/hoist/core';
 import {observable, action, computed, makeObservable} from '@xh/hoist/mobx';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {wait} from '@xh/hoist/promise';
 import {isEmpty} from 'lodash';
 
 import {customTab} from './custom/CustomTab';
@@ -22,7 +21,6 @@ export class ColumnHeaderFilterModel extends HoistModel {
 
     @observable.ref filter = null;
     @observable isOpen = false;
-    @observable showMask = false;
 
     @managed tabContainerModel;
     @managed valuesTabModel;
@@ -94,17 +92,12 @@ export class ColumnHeaderFilterModel extends HoistModel {
         const {activeTabId} = this.tabContainerModel,
             {filter} = activeTabId === 'valuesFilter' ? this.valuesTabModel : this.customTabModel;
 
-        // Applying filter can take time for large datasets.
-        // Show a mask to provide feedback to user.
-        this.showMask = true;
-        wait(1).then(() => {
-            if (filter) {
-                this.setColumnFilters(filter);
-            } else {
-                this.clearColumnFilters();
-            }
-            this.closeMenu();
-        });
+        if (filter) {
+            this.setColumnFilters(filter);
+        } else {
+            this.clearColumnFilters();
+        }
+        this.closeMenu();
     }
 
     @action
@@ -120,7 +113,6 @@ export class ColumnHeaderFilterModel extends HoistModel {
     @action
     openMenu() {
         this.isOpen = true;
-        this.showMask = false;
         this.syncWithFilter();
     }
 
