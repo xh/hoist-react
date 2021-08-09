@@ -8,8 +8,8 @@ import {XH} from '@xh/hoist/core';
 import {merge} from 'lodash';
 
 /**
- * Transform the "select right-to-left" gesture into "zoom out" for charts with x-axis zooming.
- * Gesture can be used in place of the default "reset zoom" button.
+ * Copy the chart in it's current state to the clipboard.
+ * Works only on webkit based browsers.
  */
 export function installCopyToClipboard(Highcharts) {
     if (!Highcharts) return;
@@ -17,34 +17,38 @@ export function installCopyToClipboard(Highcharts) {
 
     extend(Chart.prototype, /** @lends Highcharts.Chart.prototype */ {
         copyToClipboard: async function(exportingOptions, chartOptions) {
-
             if (!Highcharts.isWebKit) {
-                XH.dangerToast('Copying charts to the cliboard is not supported on this browser');
+                XH.dangerToast('Copying charts to the clipboard is not supported on this browser');
                 return;
             }
 
-            let clipboardItemInput;
-            if (Highcharts.isSafari) {
-                clipboardItemInput = new window.ClipboardItem({
-                    'image/png': convertChartToPngAsync(this, exportingOptions, chartOptions)
-                });
-            } else {
-                const pngBlob = await convertChartToPngAsync(this, exportingOptions, chartOptions);
-                clipboardItemInput = new window.ClipboardItem({'image/png': pngBlob});
-            }
-
-            const error = await window.navigator.clipboard.write([clipboardItemInput]);
-            if (!error) {
+            try {
+                const blobPromise = convertChartToPngAsync(this, exportingOptions, chartOptions),
+                    clipboardItemInput = new window.ClipboardItem({
+                        // Safari requires an unresolved promise.  See https://bugs.webkit.org/show_bug.cgi?id=222262 for discussion 
+                        'image/png': Highcharts.isSafari ? blobPromise : await blobPromise
+                    });
+                await window.navigator.clipboard.write([clipboardItemInput]);
                 XH.successToast('Chart copied to clipboard');
-            } else {
-                XH.handleException(error);
+            } catch (e) {
+                XH.handleException(e, {showAlert: false, logOnServer: true});
+                XH.dangerToast('Error: Chart could not be copied.  This error has been logged.');            
             }
+        } 
+    });  
+}
 
-        } // end copyToClipboard
-    }); // end extend 
-} // end export
 
-
+/**
+ * This is the main function
+ *
+ * @private
+ * @function convertChartToPngAsync
+ * @param {Highcharts.Chart} chart
+ * @param {Highcharts.Exporting.ExportingOptions} exportingOptions
+ * @param {Highcharts.Options} chartOptions
+ * @return {blob}
+ */
 async function convertChartToPngAsync(chart, exportingOptions, chartOptions) {
     const svg = await new Promise(
             (resolve, reject)  => chart.getSVGForLocalExport(
@@ -55,7 +59,7 @@ async function convertChartToPngAsync(chart, exportingOptions, chartOptions) {
             )
         ),
         svgUrl = svgToDataUrl(svg),
-        pngDataUrl = await imageToDataUrlAsync(svgUrl, exportingOptions?.scale),
+        pngDataUrl = await svgUrlToPngDataUrlAsync(svgUrl, exportingOptions?.scale),
         ret = await loadBlob(pngDataUrl);
 
     memoryCleanup(svgUrl);
@@ -71,6 +75,14 @@ function memoryCleanup(svgUrl) {
     }
 }
 
+/**
+ * Convert dataUri converted to blob
+ *
+ * @private
+ * @function loadBlob
+ * @param {string} svg
+ * @return {blob}
+ */
 async function loadBlob(dataUrl) {
     const fetched = await fetch(dataUrl);
     return await fetched.blob();
@@ -111,14 +123,15 @@ function svgToDataUrl(svg) {
 
 
 /**
- * Get data:URL from image URL. Pass in callbacks to handle results.
+ * Get PNG data:URL from image URL. Pass in callbacks to handle results.
  *
  * @private
- * @function imageToDataUrl
+ * @function svgUrlToPngDataUrlAsync
  * @param {string} imageURL
  * @param {number} scale
+ * @return {Promise<string>}
  */
-async function imageToDataUrlAsync(imageURL, scale = 1) {
+async function svgUrlToPngDataUrlAsync(imageURL, scale = 1) {
     const img = new window.Image(),
         loadHandler = function(resolve, reject) {
             const canvas = window.document.createElement('canvas'),
@@ -130,8 +143,8 @@ async function imageToDataUrlAsync(imageURL, scale = 1) {
 
             // Now we try to get the contents of the canvas.
             try {
-                const dataURL = canvas.toDataURL('image/png');
-                resolve(dataURL);
+                const ret = canvas.toDataURL('image/png');
+                resolve(ret);
             } catch (e) {
                 reject(e);
             }
