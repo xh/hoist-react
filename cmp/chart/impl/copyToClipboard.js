@@ -17,18 +17,31 @@ export function installCopyToClipboard(Highcharts) {
 
     extend(Chart.prototype, /** @lends Highcharts.Chart.prototype */ {
         copyToClipboard: function(exportingOptions, chartOptions) {
-            this.getSVGForLocalExport(
-                merge(this.options.exporting, exportingOptions),
-                chartOptions || {},
-                () => console.log('cannot fallback to export server'),
-                (svg) => getPNG(
-                    svg, 
-                    {}, 
-                    () => console.log('failed'),
-                    () => console.log('succeeded'),
-                    Highcharts
-                )
-            );  
+
+            if (Highcharts.isSafari) {
+                window.navigator.clipboard.write([
+                    new window.ClipboardItem({
+                        'image/png': new Promise(resolve => {
+                            fetch('https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png')
+                                .then(response => response.blob())
+                                .then(resolve);
+                        })
+                    })
+                ]);
+            } else {
+                this.getSVGForLocalExport(
+                    merge(this.options.exporting, exportingOptions),
+                    chartOptions || {},
+                    () => console.log('cannot fallback to export server'),
+                    (svg) => getPNG(
+                        svg, 
+                        {}, 
+                        () => console.log('failed'),
+                        () => console.log('succeeded'),
+                        Highcharts
+                    )
+                );  
+            }
 
 
         } // end copyToClipboard
@@ -81,6 +94,9 @@ function getPNG( // was downloadSVGLocal
         imageType,
         {},
         scale,
+        // this doesn't work on safari:
+        // see https://bugs.webkit.org/show_bug.cgi?id=222262 for discussion 
+        // and link to safari workaround
         async function(imageURL) {
             async function loadBlob(fileName) {
                 const fetched = await fetch(fileName);
