@@ -37,11 +37,12 @@ export class ChartContextMenu {
      *           `downloadSVG`
      *           `downloadXLS`
      *
-     *      Hoist tokens, all of which require a ChartModel:
-     *          `copyChart` - copy chart as PNG img to clipboard.
+     *      Hoist token, which require a ChartModel:
+     *          `copyToClipboard` - copy chart as PNG img to clipboard.
      *          
      * @param {ChartModel} [c.chartModel] - ChartModel to bind to this contextMenu, used to enable
      *      implementation of menu items / tokens above.
+     * 
      * @link https://api.highcharts.com/highcharts/exporting.buttons.contextButton.menuItems
      */
     constructor({items, chartModel}) {
@@ -100,20 +101,38 @@ export class ChartContextMenu {
                     hidden: !chartModel,
                     actionFn: () => chartModel.highchart.print()
                 });
+            case 'downloadJPEG':
+                return new ContextMenuItem({
+                    text: 'Download JPEG image',
+                    icon: Icon.fileImage(),
+                    hidden: !chartModel,
+                    actionFn: () => chartModel.highchart.exportChartLocal({
+                        type: 'image/jpeg'
+                    })
+                });
             case 'downloadPNG':
                 return new ContextMenuItem({
                     text: 'Download PNG image',
                     icon: Icon.fileImage(),
                     hidden: !chartModel,
-                    actionFn: () => chartModel.highchart.exportChart()
+                    actionFn: () => chartModel.highchart.exportChartLocal()
                 });
             case 'downloadSVG':
                 return new ContextMenuItem({
                     text: 'Download SVG vector image',
                     icon: Icon.fileImage(),
                     hidden: !chartModel,
-                    actionFn: () => chartModel.highchart.exportChart({
+                    actionFn: () => chartModel.highchart.exportChartLocal({
                         type: 'image/svg+xml'
+                    })
+                });
+            case 'downloadPDF':
+                return new ContextMenuItem({
+                    text: 'Download PDF',
+                    icon: Icon.fileImage(),
+                    hidden: !chartModel,
+                    actionFn: () => chartModel.highchart.exportChartLocal({
+                        type: 'application/pdf'
                     })
                 });
             case 'downloadCSV':
@@ -122,6 +141,13 @@ export class ChartContextMenu {
                     icon: Icon.fileCsv(),
                     hidden: !chartModel,
                     actionFn: () => chartModel.highchart.downloadCSV()
+                });
+            case 'downloadXLS':
+                return new ContextMenuItem({
+                    text: 'Download Excel',
+                    icon: Icon.fileExcel(),
+                    hidden: !chartModel,
+                    actionFn: () => chartModel.highchart.downloadXLS()
                 });
             default:
                 return token;
