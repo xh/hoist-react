@@ -97,7 +97,7 @@ class LocalMaskModel extends HoistModel {
         if (bind) {
             this.task = bind instanceof TaskObserver ?
                 bind :
-                this.markManaged(new TaskObserver.trackAll({tasks: bind}));
+                this.markManaged(TaskObserver.trackAll({tasks: bind}));
         }
     }
 }

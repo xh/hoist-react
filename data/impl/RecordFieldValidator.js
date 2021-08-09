@@ -72,7 +72,7 @@ export class RecordFieldValidator extends HoistBase {
     // completed will contain null
     @observable _errors;
 
-    @managed _validationTask = new TaskObserver.trackLast();
+    @managed _validationTask = TaskObserver.trackLast();
     _validationRunId = 0;
 
     /**
