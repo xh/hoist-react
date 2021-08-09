@@ -26,7 +26,7 @@ export class ChartContextMenu {
      * @param {(ContextMenuItem[]|Object[]|string[])} c.items - ContextMenuItems/configs or string
      *     tokens.
      *      If a String, value can be '-' for a separator, 
-     *      a Hoist token (below),
+     *      a Hoist token (`copyToClipboard`),
      *      or a token supported by HighCharts for its native menu items:
      *           `viewFullscreen`
      *           `printChart`
@@ -36,9 +36,6 @@ export class ChartContextMenu {
      *           `downloadPNG`
      *           `downloadSVG`
      *           `downloadXLS`
-     *
-     *      Hoist token, which require a ChartModel:
-     *          `copyToClipboard` - copy chart as PNG img to clipboard.
      *          
      * @param {ChartModel} [c.chartModel] - ChartModel to bind to this contextMenu, used to enable
      *      implementation of menu items / tokens above.
