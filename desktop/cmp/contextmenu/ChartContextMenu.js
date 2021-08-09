@@ -6,6 +6,7 @@
  */
 import {XH} from '@xh/hoist/core';
 import {ContextMenuItem} from '@xh/hoist/desktop/cmp/contextmenu';
+import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {Icon} from '@xh/hoist/icon';
 import {flatten, isEmpty, isString} from 'lodash';
 
@@ -85,7 +86,7 @@ export class ChartContextMenu {
                 return new ContextMenuItem({
                     text: 'Copy to clipboard',
                     icon: Icon.copy(),
-                    hidden: !chartModel,
+                    hidden: !chartModel || !Highcharts.isWebKit,
                     actionFn: () => {
                         const chart = chartModel.highchart;
                         chart.copyToClipboard();
