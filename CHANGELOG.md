@@ -13,6 +13,8 @@
 * New `TaskObserver` replaces existing `PendingTaskModel`, providing improved support for joining
   and masking multiple asynchronous tasks.
 * New `Cube` aggregators `ChildCountAggregator` and `LeafCountAggregator`.
+* Mobile `NavigatorModel` provides a new "swipe" gesture to go back in the page stack.
+This is enabled by default, but may be turned off via the new `swipeToGoBack` prop.
 
 ### 💥 Breaking Changes
 
