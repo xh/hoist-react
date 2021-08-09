@@ -15,7 +15,7 @@ export function installCopyToClipboard(Highcharts) {
     if (!Highcharts) return;
     const  {Chart, extend} = Highcharts;
 
-    extend(Chart.prototype, /** @lends Highcharts.Chart.prototype */ {
+    extend(Chart.prototype, {
         copyToClipboard: async function(exportingOptions, chartOptions) {
             if (!Highcharts.isWebKit) {
                 XH.dangerToast('Copying charts to the clipboard is not supported on this browser');
