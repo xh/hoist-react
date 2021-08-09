@@ -28,9 +28,7 @@ export function installCopyToClipboard(Highcharts) {
                 clipboardItemInput = new window.ClipboardItem({
                     'image/png': new Promise((resolve, reject) => {
                         convertChartToPngAsync(this, exportingOptions, chartOptions)
-                            .then(pngBlob => {
-                                resolve(pngBlob);
-                            });
+                            .then(resolve);
                     })
                 });
             } else {
@@ -44,7 +42,7 @@ export function installCopyToClipboard(Highcharts) {
             } else {
                 XH.handleException(error);
             }
-            
+
         } // end copyToClipboard
     }); // end extend 
 } // end export
