@@ -2,6 +2,11 @@
 
 ## v42.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Chart contextMenu enabled by default with several options for exporting or copying a chart.
+* Chart operation 'Copy to Clipboard' added to default Chart export menu button and to context menu. 
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.3.0...develop)
 
 ## v41.3.0 - 2021-08-09
