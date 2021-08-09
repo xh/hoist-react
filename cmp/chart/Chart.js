@@ -267,10 +267,18 @@ class LocalModel extends HoistModel {
             chartOptions: {
                 scrollbar: {enabled: false}
             },
+            menuItemDefinitions: {
+                copyToClipboard: {
+                    onclick: function() {this.copyToClipboard()},
+                    text: 'Copy to clipboard'
+                }
+            },
             buttons: {
                 contextButton: {
                     menuItems: [                            
                         'viewFullscreen',
+                        'separator',
+                        'copyToClipboard',
                         'separator', 
                         'printChart',
                         'downloadPNG', 
