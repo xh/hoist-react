@@ -45,8 +45,9 @@ export class LeftRightChooserModel extends HoistModel {
      * @param {function} fn - predicate function for filtering.
      */
     setDisplayFilter(fn) {
-        this.leftModel.store.setFilter(fn);
-        this.rightModel.store.setFilter(fn);
+        const filter = fn ? {key: this.xhId, testFn: fn} : null;
+        this.leftModel.store.setFilter(filter);
+        this.rightModel.store.setFilter(filter);
     }
 
     /** Currently 'selected' values on the right hand side. */
