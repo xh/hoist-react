@@ -7,7 +7,7 @@
 
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {FieldFilter, parseFilter, flattenFilter} from '@xh/hoist/data';
+import {FieldFilter, flattenFilter, withFilterByField, withFilterByTypes} from '@xh/hoist/data';
 import {wait} from '@xh/hoist/promise';
 import {find, isString, castArray, uniq} from 'lodash';
 
@@ -60,37 +60,14 @@ export class GridFilterModel extends HoistModel {
     }
 
     /**
-     * @param {(Filter|Object)} filter - Filter, or config to create. If null, the filter will be removed
-     */
-    @action
-    setFilter(filter) {
-        filter = parseFilter(filter);
-        wait()
-            .then(() => this.bind.setFilter(filter))
-            .linkTo(this.gridModel.filterTask);
-    }
-
-    /**
      * Set / replace the filters for a given field.
      * @param {string} field - field to identify this filter
      * @param {(Filter|Object|[])} filter - Filter(s), or config to create. If null, the filter will be removed
      */
     @action
     setColumnFilters(field, filter) {
-        const currFilter = this.filter,
-            currFilters = currFilter?.isCompoundFilter ? currFilter.filters : [currFilter];
-
-        // Strip out any existing filters for this field
-        const newFilters = currFilters.filter(filter => {
-            if (!filter) return false;
-            if (filter.isFieldFilter && filter.field === field) return false;
-            if (filter.isCompoundFilter && find(filter.filters, it => it.field === field)) return false;
-            return true;
-        });
-
-        // Add in new filter
-        newFilters.push(...castArray(filter));
-        this.setFilter(newFilters);
+        const ret = withFilterByField(this.filter, filter, field);
+        this.setFilter(ret);
     }
 
     /**
@@ -118,7 +95,8 @@ export class GridFilterModel extends HoistModel {
 
     @action
     clear() {
-        this.setFilter(null);
+        const ret = withFilterByTypes(this.filter, null, ['FieldFilter', 'CompoundFilter']);
+        this.setFilter(ret);
     }
 
     /**
@@ -132,11 +110,13 @@ export class GridFilterModel extends HoistModel {
         return this.fieldSpecs.find(it => it.field === field);
     }
 
+    /** @package */
     @action
     openDialog() {
         this.dialogOpen = true;
     }
 
+    /** @package */
     @action
     closeDialog() {
         this.dialogOpen = false;
@@ -145,6 +125,12 @@ export class GridFilterModel extends HoistModel {
     //--------------------------------
     // Implementation
     //--------------------------------
+    setFilter(filter) {
+        wait()
+            .then(() => this.bind.setFilter(filter))
+            .linkTo(this.gridModel.filterTask);
+    }
+
     parseFieldSpecs(specs, fieldSpecDefaults) {
         const {bind} = this;
 

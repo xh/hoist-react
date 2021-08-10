@@ -6,7 +6,7 @@
  */
 import {hoistCmp, uses, HoistModel, useLocalModel, managed} from '@xh/hoist/core';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
-import {required, parseFilter} from '@xh/hoist/data';
+import {required, parseFilter, withFilterByTypes} from '@xh/hoist/data';
 import {filler} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
@@ -134,7 +134,9 @@ class LocalModel extends HoistModel {
         const valid = await this.formModel.validateAsync();
         if (!valid) return;
 
-        const filter = JSON.parse(this.formModel.values.filter);
+        const newFilter = JSON.parse(this.formModel.values.filter),
+            filter = withFilterByTypes(this.model.filter, newFilter, ['FieldFilter', 'CompoundFilter']);
+
         this.model.setFilter(filter);
         this.close();
     }
@@ -149,8 +151,10 @@ class LocalModel extends HoistModel {
     }
 
     loadForm() {
-        const filter = JSON.stringify(this.model.filter?.toJSON() ?? null, undefined, 2);
-        this.formModel.init({filter});
+        const filter = withFilterByTypes(this.model.filter, null, 'FunctionFilter');
+        this.formModel.init({
+            filter: JSON.stringify(filter?.toJSON() ?? null, undefined, 2)
+        });
     }
 
     validateFilter(filter) {

@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, PersistenceProvider, XH, TaskObserver} from '@xh/hoist/core';
-import {FieldFilter, parseFilter, combineValueFilters} from '@xh/hoist/data';
+import {FieldFilter, parseFilter, combineValueFilters, withFilterByTypes} from '@xh/hoist/data';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, apiRemoved} from '@xh/hoist/utils/js';
@@ -157,7 +157,8 @@ export class FilterChooserModel extends HoistModel {
         if (bind) {
             this.addReaction({
                 track: () => this.value,
-                run: (filter) => {
+                run: (value) => {
+                    const filter = withFilterByTypes(bind.filter, value, ['FieldFilter', 'CompoundFilter']);
                     wait()
                         .then(() => bind.setFilter(filter))
                         .linkTo(this.filterTask);
@@ -167,7 +168,10 @@ export class FilterChooserModel extends HoistModel {
 
             this.addReaction({
                 track: () => bind.filter,
-                run: (filter) => this.setValue(filter)
+                run: (filter) => {
+                    const value = withFilterByTypes(filter, null, 'FunctionFilter');
+                    this.setValue(value);
+                }
             });
         }
     }

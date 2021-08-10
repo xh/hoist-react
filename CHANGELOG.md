@@ -24,6 +24,7 @@
   new `GridFilterModel` filtering described above.
 * `GridModel.setFilter()` and `DataViewModel.setFilter()` have been removed. Either configure your
   grid with a `GridFilterModel`, or set the filter on the underlying `Store` instead.
+* `FunctionFilter` now requires a `key` property.
 * `PendingTaskModel` has been replaced by the new `TaskObserver` in `@xh/hoist/core`.
 * The `model` prop on `LoadingIndicator` and `Mask` has been replaced with `bind`.  Provide one or
   more `TaskObserver`s to this prop.

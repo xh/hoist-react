@@ -26,12 +26,26 @@ export class ActivityDetailModel extends HoistModel {
             sortBy: 'dateCreated|desc',
             colChooserModel: true,
             enableExport: true,
-            filterModel: {bind: parentModel.cube.store},
+            filterModel: true,
             exportOptions: {
                 columns: 'ALL',
                 filename: `${XH.appCode}-activity-detail`
             },
             emptyText: 'Select a group on the left to see detailed tracking logs.',
+            store: {
+                fields: [
+                    {name: 'username', displayName: 'User', type: 'string'},
+                    {name: 'impersonating', type: 'bool'},
+                    {name: 'category', type: 'string'},
+                    {name: 'msg', displayName: 'Message', type: 'string'},
+                    {name: 'data', type: 'json'},
+                    {name: 'device', type: 'string'},
+                    {name: 'browser', type: 'string'},
+                    {name: 'userAgent', type: 'string'},
+                    {name: 'elapsed', type: 'int'},
+                    {name: 'dateCreated', displayName: 'Timestamp', type: 'date'}
+                ]
+            },
             columns: [
                 {
                     field: 'impersonatingFlag',

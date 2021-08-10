@@ -6,7 +6,7 @@
  */
 
 import {CompoundFilter, FieldFilter, FunctionFilter} from '@xh/hoist/data';
-import {flatMap, groupBy, isArray, isFunction} from 'lodash';
+import {castArray, flatMap, groupBy, isArray} from 'lodash';
 
 /**
  * Parse a filter from an object or array representation.
@@ -29,14 +29,13 @@ export function parseFilter(spec) {
     if (!spec || spec.isFilter) return spec;
 
     // Normalize special forms
-    if (isFunction(spec)) spec = {testFn: spec};
     if (isArray(spec)) spec = {filters: spec};
 
     // Branch on properties
     if (spec.field) {
         return new FieldFilter(spec);
     }
-    if (spec.testFn) {
+    if (spec.key) {
         return new FunctionFilter(spec);
     }
     if (spec.filters) {
@@ -50,6 +49,59 @@ export function parseFilter(spec) {
 
     console.error('Unable to identify filter type:', spec);
     return null;
+}
+
+/**
+ * Replace filters in `filter` with `newFilter` by field.
+ * @param {Filter} filter - Existing Filter to modify.
+ * @param {(Filter|Object|[])} newFilter - New filter(s) to add, or config to create.
+ * @param {string} field - Record Field name used to identify filters for replacement
+ * @return {Filter} - the new Filter
+ */
+export function withFilterByField(filter, newFilter, field) {
+    const currFilters = filter?.isCompoundFilter ? filter.filters : [filter],
+        ret = currFilters.filter(it => it && it.field !== field);
+
+    ret.push(...castArray(newFilter));
+    return parseFilter(ret);
+}
+
+/**
+ * Replace filters in `filter` with `newFilter` by key.
+ * @param {Filter} filter - Existing Filter to modify.
+ * @param {(Filter|Object|[])} newFilter - New filter(s) to add, or config to create.
+ * @param {string} key - FunctionFilter key used to identify filters for replacement
+ * @return {Filter} - the new Filter
+ */
+export function withFilterByKey(filter, newFilter, key) {
+    const currFilters = filter?.isCompoundFilter ? filter.filters : [filter],
+        ret = currFilters.filter(it => it && it.key !== key);
+
+    ret.push(...castArray(newFilter));
+    return parseFilter(ret);
+}
+
+/**
+ * Replace filters in `filter` with `newFilter` by filter types.
+ * @param {Filter} filter - Existing Filter to modify.
+ * @param {(Filter|Object|[])} newFilter - New filter(s) to add, or config to create.
+ * @param {string|string[]} types - Filter type(s) used to identify filters for replacement
+ * @return {Filter} - the new Filter
+ */
+export function withFilterByTypes(filter, newFilter, types) {
+    const currFilters = filter?.isCompoundFilter ? filter.filters : [filter];
+
+    const ret = currFilters.filter(it => {
+        for (const type of castArray(types)) {
+            if (type === 'CompoundFilter' && it?.isCompoundFilter) return false;
+            if (type === 'FieldFilter' && it?.isFieldFilter) return false;
+            if (type === 'FunctionFilter' && it?.isFunctionFilter) return false;
+        }
+        return true;
+    });
+
+    ret.push(...castArray(newFilter));
+    return parseFilter(ret);
 }
 
 /**
@@ -74,7 +126,7 @@ export function combineValueFilters(filters = []) {
     const groupMap = groupBy(filters, ({op, field}) => `${op}|${field}`);
     return flatMap(groupMap, filters => {
         return (filters.length > 1 && FieldFilter.ARRAY_OPERATORS.includes(filters[0].op)) ?
-            {...filters[0], value: filters.map(it => it.value)} :
+            {...filters[0], value: flatMap(filters, it => it.value)} :
             filters;
     });
 }
