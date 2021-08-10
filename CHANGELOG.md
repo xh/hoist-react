@@ -2,6 +2,10 @@
 
 ## v42.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* Mobile `NavigatorModel` provides a new 'pull down' gesture to refresh the app.
+  This gesture is enabled by default, but can be disabled via the
+  `pullDownToRefresh` flag.
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.3.0...develop)
 
 ## v41.3.0 - 2021-08-09
