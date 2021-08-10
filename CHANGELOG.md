@@ -8,15 +8,17 @@
   `pullDownToRefresh` flag.
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.3.0...develop)
 
-
 ## v41.3.0 - 2021-08-09
 
 ### 🎁 New Features
 
 * New `Cube` aggregators `ChildCountAggregator` and `LeafCountAggregator`.
-* Mobile `NavigatorModel` provides a new "swipe" gesture to go back in the page stack and to
-  to refresh the app. These are enabled by default, but may be turned off via the new `swipeToGoBack`
-  and `pullDownToRefresh` props.
+* Mobile `NavigatorModel` provides a new "swipe" gesture to go back in the page stack. This is
+  enabled by default, but may be turned off via the new `swipeToGoBack` prop.
+* Client error reports now include the full URL for additional troubleshooting context.
+  * Note apps must update their server-side to `hoist-core v9.3` or greater to persist URLs with
+    error reports (although this is _not_ a general or hard requirement for taking this version of
+    hoist-react).
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.2.0...v41.3.0)
 
@@ -45,10 +47,6 @@
   `XH.toast()` API and its variants.
 * `Form` supports setting readonlyRenderer in `fieldDefaults` prop.
 * New utility hook `useCached` provides a more flexible variant of `React.useCallback`.
-* Client error reports now include the full URL for additional troubleshooting context.
-  * Note apps must update their server-side to `hoist-core v9.3` or greater to persist URLs with
-    error reports (although this is _not_ a general or hard requirement for taking this version of
-    hoist-react).
 
 ### 🐞 Bug Fixes
 
@@ -67,9 +65,9 @@
 * The `start()` function in `@xh/hoist/promise` has been deprecated. Use `wait()` instead, which can
   now be called without any args to establish a Promise chain and/or introduce a minimal amount of
   asynchronousity.
-* ⚠ Note that the raw `AgGrid` component no longer enhances the native keyboard handling provided
-  by ag-Grid. All Hoist key handling customizations are now limited to `Grid`.  If you wish to
-  provide custom handling in a raw `AgGrid` component, see the example here:
+* ⚠ Note that the raw `AgGrid` component no longer enhances the native keyboard handling provided by
+  ag-Grid. All Hoist key handling customizations are now limited to `Grid`. If you wish to provide
+  custom handling in a raw `AgGrid` component, see the example here:
   https://www.ag-grid.com/javascript-grid/row-selection/#example-selection-with-keyboard-arrow-keys
 
 
