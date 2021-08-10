@@ -138,7 +138,7 @@ export function errorIf(condition, message) {
  * Document and prevent usage of a removed parameter.
  *
  * @param {string} name - the name of the removed parameter
- * @param {c} config
+ * @param {Object} c
  * @param {string} [c.v] - version when this exception should be removed.
  * @param {string} [c.msg] - an additional message.  Can contain suggestions for alternatives.
  * @param {*} [c.when] -  If undefined, this method will be a no-op. Useful for testing if a
@@ -153,7 +153,7 @@ export function apiRemoved(name, {v, msg, when = true}) {
  * Document and warn on usage of a deprecated API
  *
  * @param {string} name - the name of the removed parameter
- * @param {c} config
+ * @param {Object} c
  * @param {string} [c.v] - version when this support will be removed.
  * @param {string} [c.msg] - an additional message.  Can contain suggestions for alternatives.
  * @param {*} [c.when] -  If undefined, this method will be a no-op. Useful for testing if a
@@ -163,7 +163,7 @@ const _seenWarnings  = {};
 export function apiDeprecated(name, {v, msg, when = true}) {
     v = v ?? 'a future release.';
     msg = msg ? ` ${msg}.`: '';
-    const warn = `The use of '${name}' has been deprecated and will be removed in ${v}. ${msg}`;
+    const warn = `The use of '${name}' has been deprecated and will be removed in ${v}.${msg}`;
     if (when !== undefined && !_seenWarnings[warn]) {
         console.warn(warn);
         _seenWarnings[warn] = this;
