@@ -27,7 +27,6 @@ import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
 import {messageSource} from './MessageSource';
 import {optionsDialog} from './OptionsDialog';
-import {refreshSwiper} from './RefreshSwiper';
 import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
 
@@ -106,9 +105,7 @@ const appContainerView = hoistCmp.factory({
                 bannerList(),
                 refreshContextView({
                     model: model.refreshContextModel,
-                    item: refreshSwiper(
-                        frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
-                    )
+                    item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
                 }),
                 versionBar()
             ),

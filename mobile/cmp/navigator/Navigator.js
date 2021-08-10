@@ -7,7 +7,7 @@
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {navigator as onsenNavigator} from '@xh/hoist/kit/onsen';
 import PT from 'prop-types';
-import {backSwiper} from './impl/BackSwiper';
+import {swiper} from './impl/swipe/Swiper';
 import {NavigatorModel} from './NavigatorModel';
 
 /**
@@ -20,7 +20,7 @@ export const [Navigator, navigator] = hoistCmp.withFactory({
     className: 'xh-navigator',
 
     render({model, className, animation = 'slide'}) {
-        return backSwiper(
+        return swiper(
             onsenNavigator({
                 className,
                 initialRoute: {init: true},
