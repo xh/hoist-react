@@ -11,13 +11,13 @@ import {
     refreshContextView,
     RenderMode,
     useContextModel,
-    uses
+    uses,
+    TaskObserver
 } from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {omitBy} from 'lodash';
 import PT from 'prop-types';
@@ -149,18 +149,18 @@ export const [Panel, panel] = hoistCmp.withFactory({
 
 function parseLoadDecorator(prop, name, contextModel) {
     const cmp = (name === 'mask' ? mask : loadingIndicator);
-    if (prop === true)                      return cmp({isDisplayed: true});
-    if (prop instanceof PendingTaskModel)   return cmp({model: prop, spinner: true});
-    if (isValidElement(prop))               return prop;
+    if (!prop)                                  return null;
+    if (isValidElement(prop))                   return prop;
+    if (prop === true)                          return cmp({isDisplayed: true});
     if (prop === 'onLoad') {
         const loadModel = contextModel?.loadModel;
         if (!loadModel) {
             console.warn(`Cannot use 'onLoad' for '${name}' - the linked context model must enable LoadSupport to support this feature.`);
             return null;
         }
-        return cmp({model: loadModel, spinner: true});
+        return cmp({bind: loadModel, spinner: true});
     }
-    return null;
+    return cmp({bind: prop, spinner: true});
 }
 
 Panel.propTypes = {
@@ -189,19 +189,19 @@ Panel.propTypes = {
      * LoadingIndicator to render on this panel. Set to:
      *   + a ReactElement specifying a LoadingIndicator,
      *   + true for a default LoadingIndicator,
-     *   + a PendingTaskModel for a default LoadingIndicator bound to a pending task,
+     *   + one or more tasks for a default LoadingIndicator bound to the tasks
      *   + the string 'onLoad' for a default LoadingIndicator bound to the loading of the current model.
      */
-    loadingIndicator: PT.oneOfType([PT.instanceOf(PendingTaskModel), PT.element, PT.bool, PT.string]),
+    loadingIndicator: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(PT.instanceOf(TaskObserver)), PT.element, PT.bool, PT.string]),
 
     /**
      * Mask to render on this panel. Set to:
      *   + a ReactElement specifying a Mask instance,
      *   + true for a default mask,
-     *   + a PendingTaskModel for a default load mask bound to a pending task,
+     *   + one or more tasks for a default load mask bound to the tasks
      *   + the string 'onLoad' for a default load mask bound to the loading of the current model.
      */
-    mask: PT.oneOfType([PT.instanceOf(PendingTaskModel), PT.element, PT.bool, PT.string]),
+    mask: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(PT.instanceOf(TaskObserver)), PT.element, PT.bool, PT.string]),
 
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(PanelModel), PT.object]),

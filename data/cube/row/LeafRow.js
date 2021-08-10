@@ -15,8 +15,8 @@ import {RowUpdate} from './RowUpdate';
 export class LeafRow extends BaseRow {
     get isLeaf() {return true}
 
-    constructor(view, rawRecord) {
-        super(view, rawRecord.id);
+    constructor(view, id, rawRecord) {
+        super(view, id);
         this.view = view;
 
         this.data.cubeLabel = rawRecord.id;

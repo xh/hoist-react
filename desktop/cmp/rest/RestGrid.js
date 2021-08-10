@@ -79,7 +79,7 @@ RestGrid.propTypes = {
 
 function getMaskFromProp(model, mask) {
     if (isValidElement(mask)) {
-        mask = cloneElement(mask, {model: model.loadModel});
+        mask = cloneElement(mask, {bind: model.loadModel});
     } else if (mask === true) {
         mask = model.loadModel;
     }

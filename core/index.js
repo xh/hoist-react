@@ -25,7 +25,7 @@ export * from './HoistComponent';
 export * from './HoistModel';
 export * from './HoistService';
 
-export * from '../utils/async/PendingTaskModel';
+export * from './TaskObserver';
 
 export * from './refresh/LoadSupport';
 export * from './refresh/RefreshContextModel';

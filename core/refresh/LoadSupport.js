@@ -4,11 +4,9 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {managed} from '@xh/hoist/core';
+import {HoistBase, managed, TaskObserver} from '@xh/hoist/core';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {throwIf} from '@xh/hoist/utils/js';
-import {HoistBase} from '../HoistBase';
 import {LoadSpec} from './LoadSpec';
 
 /**
@@ -27,11 +25,11 @@ export class LoadSupport extends HoistBase {
     _lastSucceeded = null;
 
     /**
-     * @member {PendingTaskModel} - model tracking the loading of this object.
+     * @member {TaskObserver} - for tracking the loading of this object.
      *      Note that this model will *not* track auto-refreshes.
      */
     @managed
-    loadModel = new PendingTaskModel();
+    loadModel = TaskObserver.trackLast();
 
     /** @member {Date} - date when last load was initiated (observable) */
     @observable.ref lastLoadRequested = null;

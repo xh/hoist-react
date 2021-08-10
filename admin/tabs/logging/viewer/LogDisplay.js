@@ -48,7 +48,7 @@ export const logDisplay = hoistCmp.factory({
                 items: tableRows()
             }),
             loadingIndicator: loadingIndicator({
-                model: model.loadModel,
+                bind: model.loadModel,
                 message: 'Loading...',
                 spinner: false
             })
