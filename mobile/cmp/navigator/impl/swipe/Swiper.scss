@@ -8,10 +8,10 @@ $size: 36px;
 $half-size: 18px;
 
 .xh-navigator {
-  &__swipe-indicator {
+
+  &__indicator {
     margin: -$half-size 0 0;
     position: absolute;
-    top: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -27,13 +27,15 @@ $half-size: 18px;
       color 200ms ease,
       background-color 200ms ease;
 
-    &:not(&--started) {
-      transition: left 200ms ease;
-    }
-
     &--complete {
       color: white;
       background-color: var(--xh-accent-color);
+    }
+
+    &:not(&--started) {
+      transition:
+        top 200ms ease,
+        left 200ms ease;
     }
   }
 }
