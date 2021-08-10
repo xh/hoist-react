@@ -70,6 +70,8 @@ export class StoreContextMenu {
 
         switch (token) {
             case 'filter': {
+                const filterModel = gridModel?.filterModel;
+
                 const getValues = (records, field) => {
                     return uniq(records.map(rec => rec.get(field)));
                 };
@@ -78,7 +80,7 @@ export class StoreContextMenu {
                     if (isEmpty(selectedRecords) || !column?.filterable) return {hidden: true};
 
                     const {field} = column,
-                        fieldSpec = gridModel.filterModel.getFieldSpec(field);
+                        fieldSpec = filterModel.getFieldSpec(field);
 
                     if (!fieldSpec.supportsOperator(op)) return {hidden: true};
 
@@ -95,7 +97,9 @@ export class StoreContextMenu {
                 return new RecordAction({
                     text: 'Filter',
                     icon: Icon.filter(),
-                    hidden: !gridModel || !gridModel.filterModel,
+                    displayFn: ({column}) => {
+                        return {hidden: !filterModel || !filterModel.bind.isStore || !column?.filterable};
+                    },
                     items: [
                         {
                             icon: Icon.equals(),
@@ -104,7 +108,7 @@ export class StoreContextMenu {
                             actionFn: ({selectedRecords, column}) => {
                                 const {field} = column,
                                     value = getValues(selectedRecords, field);
-                                gridModel.filterModel.setColumnFilters(field, {field, op: '=', value});
+                                filterModel.setColumnFilters(field, {field, op: '=', value});
                             }
                         },
                         {
@@ -114,25 +118,25 @@ export class StoreContextMenu {
                             actionFn: ({selectedRecords, column}) => {
                                 const {field} = column,
                                     value = getValues(selectedRecords, field);
-                                gridModel.filterModel.mergeColumnFilters(field, {field, op: '!=', value});
+                                filterModel.mergeColumnFilters(field, {field, op: '!=', value});
                             }
                         },
                         '-',
                         {
                             icon: Icon.delete(),
                             displayFn: ({column}) => {
-                                const filters = gridModel.filterModel.getColumnFilters(column?.field),
-                                    text = column ? `Clear ${column.displayName} Filters` : `Clear Column Filters`;
+                                const filters = filterModel.getColumnFilters(column.field),
+                                    text = `Clear ${column.displayName} Filters`;
                                 return {text, disabled: isEmpty(filters)};
                             },
                             actionFn: ({column}) => {
-                                gridModel.filterModel.setColumnFilters(column.field, null);
+                                filterModel.setColumnFilters(column.field, null);
                             }
                         },
                         {
                             text: 'View Grid Filters',
                             icon: Icon.code(),
-                            actionFn: () => gridModel.filterModel.openDialog()
+                            actionFn: () => filterModel.openDialog()
                         }
                     ]
                 });
