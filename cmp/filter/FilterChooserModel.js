@@ -4,15 +4,11 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-
-import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
-import {QueryEngine} from './impl/QueryEngine';
-import {filterOption} from './impl/Option';
-import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
-import {FieldFilter, parseFilter} from '@xh/hoist/data';
+import {HoistModel, managed, PersistenceProvider, XH, TaskObserver} from '@xh/hoist/core';
+import {FieldFilter, parseFilter, combineValueFilters, withFilterByTypes} from '@xh/hoist/data';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, apiRemoved} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     compact,
@@ -25,8 +21,13 @@ import {
     flatMap,
     forEach,
     isArray,
-    isFunction
+    isFunction,
+    uniq
 } from 'lodash';
+
+import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
+import {QueryEngine} from './impl/QueryEngine';
+import {fieldFilterOption, compoundFilterOption} from './impl/Option';
 
 export class FilterChooserModel extends HoistModel {
 
@@ -36,14 +37,17 @@ export class FilterChooserModel extends HoistModel {
     /** @member {Filter[]} */
     @observable.ref favorites = [];
 
-    /** @member {Store} */
-    sourceStore;
+    /** @member {(Store|View)} */
+    bind;
 
-    /** @member {Store} */
-    targetStore;
+    /** @member {(Store|View)} */
+    valueSource;
 
     /** @member {FilterChooserFieldSpec[]} */
     @managed fieldSpecs = [];
+
+    /** @member {number} */
+    maxTags;
 
     /** @member {number} */
     maxResults;
@@ -53,10 +57,14 @@ export class FilterChooserModel extends HoistModel {
     persistValue = false;
     persistFavorites = false;
 
+    /** @member {TaskObserver} - tracks execution of filtering operation on bound object.*/
+    @managed filterTask = TaskObserver.trackAll();
+
     // Implementation fields for Control
     @observable.ref selectOptions;
     @observable.ref selectValue;
     @observable favoritesIsOpen = false;
+    @observable unsupportedFilter = false;
     inputRef = createObservableRef();
 
     @managed queryEngine;
@@ -65,42 +73,52 @@ export class FilterChooserModel extends HoistModel {
      * @param c - FilterChooserModel configuration.
      * @param {(string[]|Object[]} [c.fieldSpecs] - specifies the fields this model
      *      supports for filtering and customizes how their available values will be parsed and
-     *      displayed. Should be configs for a `FilterChooserFieldSpec`. If a
-     *      `sourceStore` is provided, these may be specified as field names in that Store
-     *      or omitted entirely, indicating that all Store fields should be filter-enabled.
-     * @param {Object} [c.fieldSpecDefaults] - default properties to be
-     *      assigned to all FilterChooserFieldSpecs created by this object.
-     * @param {Store} [c.sourceStore] - Store to be used to lookup matching Field-level defaults
-     *      for `fieldSpecs` and to provide suggested data values (if configured) from user input.
-     * @param {Store} [c.targetStore] - Store that should actually be filtered as this model's
-     *      value changes. May be the same as `sourceStore`. Leave undefined if you wish to combine
-     *      this model's values with other filters, send it to the server, or otherwise observe
-     *      and handle value changes manually.
+     *      displayed. Should be configs for a `FilterChooserFieldSpec`. If a `valueSource`
+     *      is provided, these may be specified as field names in that source or omitted entirely,
+     *      indicating that all fields should be filter-enabled.
+     * @param {Object} [c.fieldSpecDefaults] - default properties to be assigned to all
+     *      FilterChooserFieldSpecs created by this model.
+     * @param {(Store|View)} [c.bind] - Store or cube View that should actually be filtered
+     *      as this model's value changes. May be the same as `valueSource`. Leave undefined if you
+     *      wish to combine this model's values with other filters, send it to the server,
+     *      or otherwise observe and handle value changes manually.
+     * @param {(Store|View)} [c.valueSource] - Store or cube View to be used to lookup matching
+     *      Field-level defaults for `fieldSpecs` and to provide suggested data values (if configured)
+     *      from user input. Defaults to `bind` if provided.
      * @param {(Filter|* |[]|function)} [c.initialValue] - Configuration for a filter appropriate
      *      to be rendered and managed by FilterChooser, or a function to produce the same.
      *      Note that FilterChooser currently can only edit and create a flat collection of
      *      FieldFilters, to be 'AND'ed together.
      * @param {(Filter[]|function)} [c.initialFavorites] - initial favorites as an array of filter
      *      configurations, or a function to produce such an array.
+     * @param {number} [c.maxTags] - maximum number of filter tags to render before disabling the
+     *      control. Limits the performance impact of rendering large filters.
      * @param {number} [c.maxResults] - maximum number of dropdown options to show before
-     *     truncating.
+     *      truncating.
      * @param {FilterChooserPersistOptions} [c.persistWith] - options governing persistence.
      */
     constructor({
         fieldSpecs,
         fieldSpecDefaults,
-        sourceStore = null,
-        targetStore = null,
+        bind = null,
+        valueSource = bind,
         initialValue = null,
         initialFavorites = [],
+        maxTags = 100,
         maxResults = 50,
-        persistWith
-    }) {
+        persistWith,
+        ...rest
+    } = {}) {
         super();
         makeObservable(this);
-        this.sourceStore = sourceStore;
-        this.targetStore = targetStore;
+
+        apiRemoved(rest.targetStore, 'targetStore', "Use 'bind' instead");
+        apiRemoved(rest.sourceStore, 'sourceStore', "Use 'valueSource' instead");
+
+        this.bind = bind;
+        this.valueSource = valueSource;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
+        this.maxTags = maxTags;
         this.maxResults = maxResults;
         this.queryEngine = new QueryEngine(this);
 
@@ -136,11 +154,24 @@ export class FilterChooserModel extends HoistModel {
         this.setValue(value);
         this.setFavorites(favorites);
 
-        if (targetStore) {
+        if (bind) {
             this.addReaction({
                 track: () => this.value,
-                run: (v) => targetStore.setFilter(v),
+                run: (value) => {
+                    const filter = withFilterByTypes(bind.filter, value, ['FieldFilter', 'CompoundFilter']);
+                    wait()
+                        .then(() => bind.setFilter(filter))
+                        .linkTo(this.filterTask);
+                },
                 fireImmediately: true
+            });
+
+            this.addReaction({
+                track: () => bind.filter,
+                run: (filter) => {
+                    const value = withFilterByTypes(filter, null, 'FunctionFilter');
+                    this.setValue(value);
+                }
             });
         }
     }
@@ -151,29 +182,44 @@ export class FilterChooserModel extends HoistModel {
      * @param {(Filter|* |[])} value -  Configuration for a filter appropriate to be
      *      shown in this field.
      *
-     * Currently this control only supports a flat collection of FilterFields, to
-     * be 'AND'ed together. Filters that cannot be parsed or are not supported
-     * will cause the control to be cleared.
+     * Supports one or more FieldFilters to be 'AND'ed together, or
+     * an 'AND' CompoundFilter containing such a collection of FieldFilters.
+     *
+     * 'OR' CompoundFilters or nested CompoundFilters are partially supported -
+     * they will be displayed as tags and can be removed, but not created using
+     * the control.
+     *
+     * Any other Filter is not supported and will cause the control to be cleared.
      */
     @action
     setValue(value) {
-
         // Always round trip the new value to internal state, but avoid
         // spurious change to the external value.
         try {
             value = parseFilter(value);
 
             if (!this.validateFilter(value)) {
-                value = this.value ?? null;
+                value = null;
             }
 
-            const fieldFilters = this.toFieldFilters(value),
-                options = fieldFilters.map(f => this.createFilterOption(f));
-            this.selectOptions = !isEmpty(options) ? options : null;
-            this.selectValue = sortBy(fieldFilters.map(f => JSON.stringify(f)), f => {
-                const idx = this.selectValue?.indexOf(f);
-                return isFinite(idx) && idx > -1 ? idx : fieldFilters.length;
-            });
+            const displayFilters = this.toDisplayFilters(value);
+            this.unsupportedFilter = this.maxTags && displayFilters.length > this.maxTags;
+
+            if (this.unsupportedFilter) {
+                this.selectOptions = null;
+                this.selectValue = null;
+            } else {
+                const options = displayFilters.map(f => this.createFilterOption(f)),
+                    selectValue = sortBy(displayFilters.map(f => JSON.stringify(f)), f => {
+                        const idx = this.selectValue?.indexOf(f);
+                        return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
+                    });
+
+                // Set select value after options, to ensure it is able to be rendered correctly
+                this.selectOptions = !isEmpty(options) ? options : null;
+                wait(0).thenAction(() => this.selectValue = selectValue);
+            }
+
             if (!this.value?.equals(value)) {
                 console.debug('Setting FilterChooser value:', value);
                 this.value = value;
@@ -198,15 +244,15 @@ export class FilterChooserModel extends HoistModel {
         const [filters, suggestions] = partition(selectValue, 'op');
 
         // Round-trip actual filters through main value setter above.
-        this.setValue(this.recombineOrFilters(filters.map(f => new FieldFilter(f))));
+        this.setValue(combineValueFilters(filters));
 
         // And then programmatically re-enter any suggestion
         if (suggestions.length === 1) this.autoComplete(suggestions[0]);
     }
 
-    // Transfer the value filter to the canonical set of individual field filters for display.
-    // Implicit 'ORs' on '=' and 'like' will be split.
-    toFieldFilters(filter) {
+    // Transfer the value filter to the canonical set of individual filters for display.
+    // Filters with arrays values will be split.
+    toDisplayFilters(filter) {
         if (!filter) return [];
 
         let ret;
@@ -214,42 +260,33 @@ export class FilterChooserModel extends HoistModel {
             throw XH.exception(`Unsupported Filter in FilterChooserModel: ${s}`);
         };
 
-        // 1) Flatten to FieldFilters.
-        if (filter.isCompoundFilter) {
-            if (filter.operator === 'OR') unsupported('OR not supported.');
+        // 1) Flatten AND CompoundFilters to FieldFilters.
+        if (filter.isCompoundFilter && filter.op === 'AND') {
             ret = filter.filters;
         } else  {
             ret = [filter];
         }
         ret.forEach(f => {
-            if (!f.isFieldFilter) unsupported('Filters must be FieldFilters.');
-        });
-
-        // 2) Recognize unsupported ANDing of '=' and 'like' for a given Field.
-        // FilterChooser treats multiple values for these operators as 'OR' -- see (3) below.
-        const groupMap = groupBy(ret, ({op, field}) => [op, field].join('|'));
-        forEach(groupMap, (filters, key) => {
-            if (filters.length > 1 && (key.startsWith('=') || key.startsWith('like'))) {
-                unsupported('Multiple filters cannot be provided with "like" or "=" operator');
+            if (!f.isFieldFilter && !f.isCompoundFilter) {
+                unsupported('Filters must be FieldFilters or CompoundFilters.');
             }
         });
 
-        // 3) Finally unroll non-empty check multi-value filters to one value per filter.
-        // The multiple values for 'like' and '=' will later be restored to 'OR' semantics
+        // 2) Recognize unsupported multiple filters for array-based filters.
+        const groupMap = groupBy(ret, ({op, field}) => `${op}|${field}`);
+        forEach(groupMap, filters => {
+            const {op} = filters[0];
+            if (filters.length > 1 && FieldFilter.ARRAY_OPERATORS.includes(op)) {
+                unsupported(`Multiple filters cannot be provided with ${op} operator`);
+            }
+        });
+
+        // 3) Finally unroll multi-value filters to one value per filter.
+        // The multiple values for will later be restored.
         return flatMap(ret, (f) => {
-            return isArray(f.value) && !f.isEmptyCheck() ?
+            return isArray(f.value) ?
                 f.value.map(value => new FieldFilter({...f, value})) :
                 f;
-        });
-    }
-
-    // Recombine value filters on '=' and 'like' on same field into single FieldFilter
-    recombineOrFilters(filters) {
-        const groupMap = groupBy(filters, ({op, field}) => [op, field].join('|'));
-        return flatMap(groupMap, (filters, key) => {
-            return (filters.length > 1 && (key.startsWith('=') || key.startsWith('like'))) ?
-                new FieldFilter({...filters[0], value: filters.map(it => it.value)}) :
-                filters;
         });
     }
 
@@ -282,7 +319,12 @@ export class FilterChooserModel extends HoistModel {
     // Options
     //---------------------------------
     createFilterOption(filter) {
-        return filterOption({filter, fieldSpec: this.getFieldSpec(filter.field)});
+        if (filter.isFieldFilter) {
+            return fieldFilterOption({filter, fieldSpec: this.getFieldSpec(filter.field)});
+        } else if (filter.isCompoundFilter) {
+            const fieldNames = uniq(filter.filters.map(it => this.getFieldSpec(it.field)?.displayName));
+            return compoundFilterOption({filter, fieldNames});
+        }
     }
 
     //--------------------
@@ -291,7 +333,7 @@ export class FilterChooserModel extends HoistModel {
     get favoritesOptions() {
         return this.favorites.map(value => ({
             value,
-            filterOptions: this.toFieldFilters(value).map(f => this.createFilterOption(f))
+            filterOptions: this.toDisplayFilters(value).map(f => this.createFilterOption(f))
         }));
     }
 
@@ -339,20 +381,20 @@ export class FilterChooserModel extends HoistModel {
     // FilterChooserFieldSpec handling
     //--------------------------------
     parseFieldSpecs(specs, fieldSpecDefaults) {
-        const {sourceStore} = this;
+        const {valueSource} = this;
 
         throwIf(
-            !sourceStore && (!specs || specs.some(isString)),
-            'Must provide a sourceStore if fieldSpecs are not provided, or provided as strings.'
+            !valueSource && (!specs || specs.some(isString)),
+            'Must provide a valueSource if fieldSpecs are not provided, or provided as strings.'
         );
 
-        // If no specs provided, include all store fields.
-        if (!specs) specs = sourceStore.fieldNames;
+        // If no specs provided, include all source fields.
+        if (!specs) specs = valueSource.fieldNames;
 
         return specs.map(spec => {
             if (isString(spec)) spec = {field: spec};
             return new FilterChooserFieldSpec({
-                store: sourceStore,
+                source: valueSource,
                 ...fieldSpecDefaults,
                 ...spec
             });
@@ -374,14 +416,6 @@ export class FilterChooserModel extends HoistModel {
         }
 
         if (f.isCompoundFilter) {
-            if (f.op != 'AND') {
-                console.error('Invalid "OR" filter for FilterChooser', f);
-                return false;
-            }
-            if (f.filters.some(it => !it.isFieldFilter)) {
-                console.error('Invalid complex filter for FilterChooser', f);
-                return false;
-            }
             return f.filters.every(it => this.validateFilter(it));
         }
 

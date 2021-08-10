@@ -31,6 +31,8 @@ import {Record} from './Record';
  */
 export class Store extends HoistBase {
 
+    get isStore() {return true}
+
     /** @member {Field[]} */
     fields = null;
 
@@ -814,6 +816,12 @@ export class Store extends HoistBase {
 
         // Note idSpec run against raw data here.
         const id = this.idSpec(raw);
+
+        // Re-use existing record if raw data and tree path identical
+        const cached = this._committed?.recordMap.get(id);
+        if (cached && cached.raw === raw && equal(cached.parent?.treePath, parent?.treePath)) {
+            return cached;
+        }
 
         data = this.parseRaw(data);
         const ret = new Record({id, data, raw, parent, store: this, isSummary});

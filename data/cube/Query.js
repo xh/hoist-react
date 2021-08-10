@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {parseFilter} from '@xh/hoist/data';
 import {apiRemoved} from '@xh/hoist/utils/js';
-import {castArray, find} from 'lodash';
+import {isEqual, find} from 'lodash';
 
 /**
  *  Specification used to define the shape of the data returned by a Cube.
@@ -31,8 +31,8 @@ export class Query {
 
     /**
      * @param {Object} c - Query configuration.
-     * @param {Cube} c.cube - associated Cube. Required, but note that `Cube.executeQuery()` will
-     *      install a reference to itself on the query config automatically.
+     * @param {Cube} c.cube - associated Cube. Required, but note that `Cube.executeQuery()`
+     *      will install a reference to itself on the query config automatically.
      * @param {string[]} [c.fields] - field names. If unspecified will include all available fields
      *      from the source Cube, otherwise supply a subset to optimize aggregation performance.
      * @param {string[]} [c.dimensions] - field names to group on. Any fields provided must also be
@@ -80,26 +80,27 @@ export class Query {
         return new Query(conf);
     }
 
-    /** @return {string} */
-    static filterAsString(filter) {
-        const {field, op, value} = filter;
-        return `${field}${op}[${castArray(value).join('||')}]`;
-    }
-
-    /** @returns {string} */
-    filtersAsString() {
-        const {filter} = this;
-        let ret = 'root';
-        if (filter) ret += '>>' + Query.filterAsString(filter);
-        return ret;
-    }
-
     /**
      * @param {Record} record
      * @returns {boolean}
      */
     test(record) {
         return this._testFn ? this._testFn(record) : true;
+    }
+
+    /**
+     * @returns {boolean} - true if the provided other Query is equivalent to this instance.
+     */
+    equals(other) {
+        if (other === this) return true;
+        return (
+            isEqual(this.cube, other.cube) &&
+            isEqual(this.fields, other.fields) &&
+            isEqual(this.dimensions, other.dimensions) &&
+            ((!this.filter && !other.filter) || this.filter?.equals(other.filter)) &&
+            this.includeRoot === other.includeRoot &&
+            this.includeLeaves === other.includeLeaves
+        );
     }
 
     //------------------------

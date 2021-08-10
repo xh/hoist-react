@@ -7,8 +7,9 @@
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Column, ColumnGroup, GridAutosizeMode, TreeStyle} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH, TaskObserver} from '@xh/hoist/core';
 import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
+import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
@@ -69,7 +70,7 @@ export class GridModel extends HoistModel {
 
     static DEFAULT_RESTORE_DEFAULTS_WARNING =
         fragment(
-            'This action will clear any customizations you have made to this grid, including column selection, ordering, and sizing.', br(), br(),
+            'This action will clear any customizations you have made to this grid, including filters, column selection, ordering, and sizing.', br(), br(),
             'OK to proceed?'
         );
 
@@ -84,6 +85,8 @@ export class GridModel extends HoistModel {
     treeMode;
     /** @member {ColChooserModel} */
     colChooserModel;
+    /** @member {GridFilterModel} */
+    @managed filterModel;
     /** @member {function} */
     rowClassFn;
     /** @member {Object.<string, RowClassRuleFn>} */
@@ -143,6 +146,8 @@ export class GridModel extends HoistModel {
     @observable isEditing = false;
 
     static defaultContextMenu = [
+        'filter',
+        '-',
         'copy',
         'copyWithHeaders',
         'copyCell',
@@ -174,6 +179,13 @@ export class GridModel extends HoistModel {
         return this.autosizeOptions.mode !== GridAutosizeMode.DISABLED;
     }
 
+    /** @member {TaskObserver} - tracks execution of filtering operations.*/
+    @managed filterTask = TaskObserver.trackAll();
+
+
+    /** @member {TaskObserver} - tracks execution of autosize operations. */
+    @managed autosizeTask = TaskObserver.trackAll();
+
     /**
      * @param {Object} c - GridModel configuration.
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
@@ -185,6 +197,8 @@ export class GridModel extends HoistModel {
      *      `store.SummaryRecord` to be populated. Valid values are true/'top', 'bottom', or false.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
+     * @param {(GridFilterModelConfig|boolean)} [c.filterModel] - config with which to create a
+     *      GridFilterModel, or boolean `true` to enable default. Desktop only.
      * @param {(ColChooserModelConfig|boolean)} [c.colChooserModel] - config with which to create a
      *      ColChooserModel, or boolean `true` to enable default.
      * @param {?ReactNode} [c.restoreDefaultsWarning] - Confirmation warning to be presented to
@@ -274,6 +288,7 @@ export class GridModel extends HoistModel {
         treeMode = false,
         showSummary = false,
         selModel,
+        filterModel,
         colChooserModel,
         emptyText = null,
         hideEmptyTextBeforeLoad = true,
@@ -386,6 +401,7 @@ export class GridModel extends HoistModel {
 
         this.colChooserModel = this.parseChooserModel(colChooserModel);
         this.selModel = this.parseSelModel(selModel);
+        this.filterModel = this.parseFilterModel(filterModel);
         this.persistenceModel = persistWith ? new GridPersistenceModel(this, persistWith) : null;
         this.experimental = this.parseExperimental(experimental);
         this.onKeyDown = onKeyDown;
@@ -421,6 +437,7 @@ export class GridModel extends HoistModel {
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
 
+        this.filterModel?.clear();
         this.persistenceModel?.clear();
         return true;
     }
@@ -721,12 +738,6 @@ export class GridModel extends HoistModel {
         this.store.clear();
     }
 
-    /** Filter the underlying store.*/
-    setFilter(filter) {
-        this.store.setFilter(filter);
-    }
-
-
     /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action
     setColumns(colConfigs) {
@@ -1009,31 +1020,11 @@ export class GridModel extends HoistModel {
 
         if (isEmpty(colIds)) return;
 
-        // 2) Undocumented escape Hatch.  Consider removing, or formalizing
-        if (options.useNative) {
-            this.agColumnApi?.autoSizeColumns(colIds);
-            return;
-        }
-
-        // 3) Let service perform sizing, masking as appropriate.
-        const {agApi, empty} = this;
-        const showMask = options.showMask && agApi;
-        if (showMask) {
-            agApi.showLoadingOverlay();
-            await wait(100);
-        }
-
-        await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
-
-        if (showMask) {
-            await wait(100);
-            if (empty) {
-                agApi.showNoRowsOverlay();
-            } else {
-                agApi.hideOverlay();
-            }
-        }
+        await this
+            .autosizeColsInternalAsync(colIds, options)
+            .linkTo(this.autosizeTask);
     }
+
 
     /**
      * Begin an inline editing session.
@@ -1174,6 +1165,28 @@ export class GridModel extends HoistModel {
     //-----------------------
     // Implementation
     //-----------------------
+    async autosizeColsInternalAsync(colIds, options) {
+        const {agApi, empty} = this;
+        const showMask = options.showMask && agApi;
+
+        if (showMask) {
+            agApi.showLoadingOverlay();
+            await wait();
+        }
+        try {
+            await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
+        } finally {
+            if (showMask) {
+                await wait();
+                if (empty) {
+                    agApi.showNoRowsOverlay();
+                } else {
+                    agApi.hideOverlay();
+                }
+            }
+        }
+    }
+
     getAutoRowHeight(node) {
         return this.agGridModel.getAutoRowHeight(node);
     }
@@ -1403,6 +1416,16 @@ export class GridModel extends HoistModel {
         return this.markManaged(new StoreSelectionModel({mode, store: this.store}));
     }
 
+    parseFilterModel(filterModel) {
+        if (XH.isMobileApp || !filterModel) return null;
+        filterModel = isPlainObject(filterModel) ? filterModel : {};
+        return new GridFilterModel({
+            bind: this.store,
+            ...filterModel,
+            gridModel: this
+        });
+    }
+
     parseExperimental(experimental) {
         apiRemoved(experimental?.suppressUpdateExpandStateOnDataLoad, 'suppressUpdateExpandStateOnDataLoad');
         apiRemoved(experimental?.externalSort, 'externalSort', 'Use GridModel.externalSort instead');
@@ -1427,6 +1450,19 @@ export class GridModel extends HoistModel {
         return a < b ? -1 : (a > b ? 1 : 0);
     };
 }
+
+/**
+ * @typedef {Object} GridFilterModelConfig
+ * @property {GridModel} c.gridModel - GridModel instance which owns this model.
+ * @property {(Store|View)} c.bind - Store or cube View that should actually be filtered
+ *      as column filters are applied. May be the same as `valueSource`. Provide 'null' if you
+ *      wish to combine this model's filter with other filters, send it to the server, or otherwise
+ *      observe and handle filter changes manually.
+ * @property {(Store|View)} c.valueSource - Store or cube View to be used to provide suggested
+ *      data values in column filters (if configured).
+ * @property {(Filter|* |[]|function)} [c.initialFilter] - Configuration for a filter appropriate
+ *      to be rendered and managed by GridFilterModel, or a function to produce the same.
+ */
 
 /**
  * @typedef {Object} ColChooserModelConfig

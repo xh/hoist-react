@@ -4,9 +4,8 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {debounced} from '@xh/hoist/utils/js';
 
 /**
@@ -20,7 +19,7 @@ export class LoginPanelModel extends HoistModel {
     @bindable warning = '';
     @bindable loginInProgress = false;
 
-    @managed loadModel = new PendingTaskModel();
+    @managed loadModel = TaskObserver.trackLast();
 
     @computed
     get isValid() {

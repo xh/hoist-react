@@ -3,9 +3,32 @@
 ## v42.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
+
+* Column-level filtering is now officially supported for desktop grids!
+    * New `GridModel.filterModel` config accepts a config object to customize filtering options, or
+      `true` to enable grid-based filtering with defaults.
+    * New `Column.filterable` config enables a customized header menu with filtering options. The new
+      control offers two tabs - a "Values" tab for an enumerated "set-type" filter and a "Custom" tab
+      to support more complex queries with multiple clauses.
+* New `TaskObserver` replaces existing `PendingTaskModel`, providing improved support for joining
+  and masking multiple asynchronous tasks.
 * Mobile `NavigatorModel` provides a new 'pull down' gesture to refresh the app.
-  This gesture is enabled by default, but can be disabled via the
-  `pullDownToRefresh` flag.
+  This gesture is enabled by default, but can be disabled via the `pullDownToRefresh` flag.
+
+### 💥 Breaking Changes
+
+* `FilterChooserModel.sourceStore` and `FilterChooserModel.targetStore` have been renamed
+  `FilterChooserModel.valueSource` and `FilterChooserModel.bind` respectively. Furthermore, both
+  configs now support either a `Store` or a cube `View`. This is to provide a common API with the
+  new `GridFilterModel` filtering described above.
+* `GridModel.setFilter()` and `DataViewModel.setFilter()` have been removed. Either configure your
+  grid with a `GridFilterModel`, or set the filter on the underlying `Store` instead.
+* `FunctionFilter` now requires a `key` property.
+* `PendingTaskModel` has been replaced by the new `TaskObserver` in `@xh/hoist/core`.
+* The `model` prop on `LoadingIndicator` and `Mask` has been replaced with `bind`.  Provide one or
+  more `TaskObserver`s to this prop.
+
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.3.0...develop)
 
 ## v41.3.0 - 2021-08-09

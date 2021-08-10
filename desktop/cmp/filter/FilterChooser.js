@@ -28,7 +28,12 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
     className: 'xh-filter-chooser',
     render({model, className, ...props}, ref) {
         const [layoutProps, chooserProps] = splitLayoutProps(props),
-            {inputRef, selectOptions, favoritesIsOpen} = model;
+            {inputRef, selectOptions, unsupportedFilter, favoritesIsOpen} = model,
+            {autoFocus, enableClear, leftIcon, maxMenuHeight, menuPlacement} = chooserProps,
+            disabled = unsupportedFilter || chooserProps.disabled,
+            placeholder = unsupportedFilter ?
+                'Unsupported filter' : // Todo: How to message this better?
+                withDefault(chooserProps.placeholder, 'Filter...');
 
         return box({
             ref,
@@ -41,12 +46,12 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                     bind: 'selectValue',
                     ref: inputRef,
 
-                    autoFocus: chooserProps.autoFocus,
-                    disabled: chooserProps.disabled,
-                    menuPlacement: chooserProps.menuPlacement,
-                    placeholder: withDefault(chooserProps.placeholder, 'Filter...'),
-                    leftIcon: withDefault(chooserProps.leftIcon, Icon.filter()),
-                    enableClear: withDefault(chooserProps.enableClear, true),
+                    autoFocus,
+                    disabled,
+                    menuPlacement,
+                    placeholder,
+                    leftIcon: withDefault(leftIcon, Icon.filter()),
+                    enableClear: withDefault(enableClear, true),
 
                     enableMulti: true,
                     queryFn: (q) => model.queryAsync(q),
@@ -62,7 +67,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                         styles: {
                             menuList: (base) => ({
                                 ...base,
-                                maxHeight: withDefault(chooserProps.maxMenuHeight, '50vh')
+                                maxHeight: withDefault(maxMenuHeight, '50vh')
                             })
                         },
                         components: {

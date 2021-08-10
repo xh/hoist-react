@@ -151,7 +151,6 @@ export class DataViewModel extends HoistModel {
     clear()                         {return this.gridModel.clear()}
     setGroupBy(colIds)              {return this.gridModel.setGroupBy(colIds)}
     setSortBy(sorters)              {return this.gridModel.setSortBy(sorters)}
-    setFilter(filter)               {return this.gridModel.setFilter(filter)}
 
     /** @deprecated */
     selectFirst()                   {return this.gridModel.selectFirst()}

@@ -9,7 +9,11 @@ import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {div, fragment, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
-import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
+import {
+    colChooser as desktopColChooser,
+    gridFilterDialog,
+    StoreContextMenu
+} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {computed, observer} from '@xh/hoist/mobx';
@@ -75,7 +79,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
         apiRemoved(props.onCellDoubleClicked, 'onCellDoubleClicked', 'Specify onCellDoubleClicked on the GridModel instead.');
         apiRemoved(props.agOptions?.rowClassRules, 'agOptions.rowClassRules', 'Specify rowClassRules on the GridModel instead.');
 
-        const {store, treeMode, treeStyle, colChooserModel} = model,
+        const {store, treeMode, treeStyle, colChooserModel, filterModel} = model,
             impl = useLocalModel(() => new GridLocalModel(model, props)),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
             maxDepth = impl.isHierarchical ? store.maxDepth : null;
@@ -93,7 +97,8 @@ export const [Grid, grid] = hoistCmp.withFactory({
                 onKeyDown: impl.onKeyDown,
                 ref: composeRefs(impl.viewRef, ref)
             }),
-            (colChooserModel ? platformColChooser({model: colChooserModel}) : null)
+            (colChooserModel ? platformColChooser({model: colChooserModel}) : null),
+            (filterModel ? gridFilterDialog({model: filterModel}) : null)
         );
     }
 });
