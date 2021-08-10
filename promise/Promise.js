@@ -218,6 +218,8 @@ const enhancePromise = (promisePrototype) => {
          *      If true, this method is no-op.  Provided as convenience for conditional masking.
          */
         linkTo(cfg) {
+            if (!cfg) return this;
+
             if (cfg.isTaskObserver) {
                 cfg = {observer: cfg};
             }
@@ -226,7 +228,6 @@ const enhancePromise = (promisePrototype) => {
                 console.warn('Use of `model` is deprecated - provide `observer` instead');
                 cfg = {...cfg, observer: cfg.model};
             }
-
 
             if (cfg.observer && !cfg.omit) {
                 cfg.observer.linkTo(TaskObserver.forPromise({promise: this, message: cfg.message}));
