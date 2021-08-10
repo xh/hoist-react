@@ -16,8 +16,6 @@ import {action, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
-    apiDeprecated,
-    apiRemoved,
     deepFreeze,
     ensureUnique,
     logWithDebug,
@@ -350,11 +348,6 @@ export class GridModel extends HoistModel {
         this.restoreDefaultsWarning = restoreDefaultsWarning;
         this.fullRowEditing = fullRowEditing;
         this.clicksToEdit = clicksToEdit;
-
-        apiRemoved(rest.contextMenuFn, 'contextMenuFn', 'Use contextMenu instead');
-        apiRemoved(rest.enableColChooser, 'enableColChooser', "Use 'colChooserModel' instead");
-        apiRemoved(rest.stateModel, 'stateModel', "Use 'persistWith' instead.");
-        apiRemoved(exportOptions.includeHiddenCols, 'includeHiddenCols', "Replace with {columns: 'ALL'}.");
 
         throwIf(
             autosizeOptions.fillMode && !['all', 'left', 'right', 'none'].includes(autosizeOptions.fillMode),
@@ -1141,36 +1134,6 @@ export class GridModel extends HoistModel {
         return this.isReady;
     }
 
-    /** @deprecated */
-    autoSizeColumns(colIds) {
-        apiDeprecated(true, 'autoSizeColumns', 'Use autosizeAsync() instead.');
-        this.autosizeAsync({columns: colIds});
-    }
-
-    /** @deprecated */
-    restoreDefaults() {
-        apiDeprecated(true, 'restoreDefaults', 'Use restoreDefaultsAsync() instead.');
-        this.restoreDefaultsAsync();
-    }
-
-    /** @deprecated */
-    select(records, clearSelection) {
-        apiDeprecated(true, 'select', 'Use selectAsync() instead.');
-        this.selectAsync(records, {clearSelection, ensureVisible: false});
-    }
-
-    /** @deprecated */
-    selectFirst() {
-        apiDeprecated(true, 'selectFirst', 'Use selectFirstAsync() or preSelectFirstAsync() instead.');
-        this.selectFirstAsync({ensureVisible: false});
-    }
-
-    /** @deprecated */
-    ensureSelectionVisible() {
-        apiDeprecated(true, 'ensureSelectionVisible', 'Use ensureSelectionVisibleAsync() instead.');
-        this.ensureSelectionVisibleAsync();
-    }
-
     //-----------------------
     // Implementation
     //-----------------------
@@ -1404,9 +1367,6 @@ export class GridModel extends HoistModel {
     }
 
     parseExperimental(experimental) {
-        apiRemoved(experimental?.suppressUpdateExpandStateOnDataLoad, 'suppressUpdateExpandStateOnDataLoad');
-        apiRemoved(experimental?.externalSort, 'externalSort', 'Use GridModel.externalSort instead');
-
         return {
             ...XH.getConf('xhGridExperimental', {}),
             ...experimental

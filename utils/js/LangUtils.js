@@ -137,23 +137,37 @@ export function errorIf(condition, message) {
 /**
  * Document and prevent usage of a removed parameter.
  *
- * @param {*} paramValue - value of the removed parameter.  If defined, this method will throw.
- * @param {string} paramName - the name of the removed parameter
- * @param {string} [message] - an additional message.  Can contain suggestions for alternatives.
+ * @param {string} name - the name of the removed parameter
+ * @param {c} config
+ * @param {string} [c.v] - version when this exception should be removed.
+ * @param {string} [c.msg] - an additional message.  Can contain suggestions for alternatives.
+ * @param {*} [c.when] -  If undefined, this method will be a no-op. Useful for testing if a
+ *      parameter is provided. Default true.
  */
-export function apiRemoved(paramValue, paramName, message = '') {
-    throwIf(paramValue !== undefined, `The use of '${paramName}' is no longer supported. ${message}`);
+export function apiRemoved(name, {v, msg, when = true}) {
+    msg = msg ? ` ${msg}.`: '';
+    throwIf(when !== undefined, `The use of '${name}' is no longer supported.${msg}`);
 }
 
 /**
- * Document and warn on usage of a deprecated parameter.
+ * Document and warn on usage of a deprecated API
  *
- * @param {*} paramValue - value of the deprecated parameter.  If defined, this method will warn.
- * @param {string} paramName - the name of the deprecated parameter
- * @param {string} [message] - an additional message.  Can contain suggestions for alternatives.
+ * @param {string} name - the name of the removed parameter
+ * @param {c} config
+ * @param {string} [c.v] - version when this support will be removed.
+ * @param {string} [c.msg] - an additional message.  Can contain suggestions for alternatives.
+ * @param {*} [c.when] -  If undefined, this method will be a no-op. Useful for testing if a
+ *      parameter is provided. Default true
  */
-export function apiDeprecated(paramValue, paramName, message = '') {
-    warnIf(paramValue !== undefined, `The use of '${paramName}' has been deprecated. ${message}`);
+const _seenWarnings  = {};
+export function apiDeprecated(name, {v, msg, when = true}) {
+    v = v ?? 'a future release.';
+    msg = msg ? ` ${msg}.`: '';
+    const warn = `The use of '${name}' has been deprecated and will be removed in ${v}. ${msg}`;
+    if (when !== undefined && !_seenWarnings[warn]) {
+        console.warn(warn);
+        _seenWarnings[warn] = this;
+    }
 }
 
 /**

@@ -7,7 +7,6 @@
 import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil, isString} from 'lodash';
-import {apiRemoved} from '../utils/js';
 
 /**
  * Object used to hold the specification for a client-side Hoist application.
@@ -82,7 +81,6 @@ export class AppSpec {
             `Please import and provide containerClass from "@xh/hoist/${isMobileApp ? 'mobile' : 'desktop'}/AppContainer".`
         );
         throwIf(isNil(isSSO), 'A Hoist App must define isSSO');
-        apiRemoved(rest.idleDetectionEnabled, 'idleDetectionEnabled', 'Set "xhIdleConfig" in configuration instead.');
 
         throwIf(
             !isString(checkAccess) && !isFunction(checkAccess),

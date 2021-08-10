@@ -34,7 +34,7 @@ export const [Form, form] = hoistCmp.withFactory({
     model: uses(FormModel, {publishMode: ModelPublishMode.NONE}),
 
     render({model, fieldDefaults, children}) {
-        apiRemoved(fieldDefaults?.labelAlign, 'labelAlign', 'Use labelTextAlign instead.');
+        apiRemoved('labelAlign', {when: fieldDefaults?.labelAlign, msg: 'Use labelTextAlign instead', v: 'v43'});
 
         // gather own and inherited field defaults...
         const parentDefaults = useContext(FormContext).fieldDefaults;

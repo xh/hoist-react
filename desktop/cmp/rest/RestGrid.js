@@ -31,7 +31,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
         ...props
     }, ref) {
 
-        apiRemoved(props.onRowDoubleClicked, 'onRowDoubleClicked', 'Specify onRowDoubleClicked on the RestGridModel instead.');
+        apiRemoved('onRowDoubleClicked', {when: props.onRowDoubleClicked, msg: 'Specify onRowDoubleClicked on the RestGridModel instead.', v: 'v43'});
 
         const {formModel, gridModel} = model;
 

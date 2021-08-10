@@ -7,7 +7,6 @@
 
 import {XH} from '@xh/hoist/core';
 import {parseFilter} from '@xh/hoist/data';
-import {apiRemoved} from '@xh/hoist/utils/js';
 import {castArray, find} from 'lodash';
 
 /**
@@ -54,8 +53,6 @@ export class Query {
         includeRoot = false,
         includeLeaves = false
     }) {
-        apiRemoved(this.filters, 'filters', 'Use filter instead.');
-
         this.cube = cube;
         this.fields = this.parseFields(fields);
         this.dimensions = this.parseDimensions(dimensions);
