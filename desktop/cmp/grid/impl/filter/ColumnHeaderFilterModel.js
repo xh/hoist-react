@@ -38,10 +38,6 @@ export class ColumnHeaderFilterModel extends HoistModel {
         return this.gridFilterModel.getColumnFilters(this.field);
     }
 
-    get valueSource() {
-        return this.gridFilterModel.valueSource;
-    }
-
     get hasFilter() {
         return !isEmpty(this.columnFilters);
     }

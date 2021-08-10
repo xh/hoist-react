@@ -79,7 +79,7 @@ export class ValuesTabModel extends HoistModel {
     }
 
     get valueSource() {
-        return this.parentModel.valueSource;
+        return this.parentModel.gridFilterModel.bind;
     }
 
     constructor(parentModel) {

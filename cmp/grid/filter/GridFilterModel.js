@@ -8,9 +8,8 @@
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {FieldFilter, parseFilter, flattenFilter} from '@xh/hoist/data';
-import {throwIf} from '@xh/hoist/utils/js';
 import {wait} from '@xh/hoist/promise';
-import {isNil, find, isFunction, isString, castArray, uniq} from 'lodash';
+import {find, isString, castArray, uniq} from 'lodash';
 
 import {GridFilterFieldSpec} from './GridFilterFieldSpec';
 
@@ -23,60 +22,41 @@ export class GridFilterModel extends HoistModel {
     gridModel;
     /** @member {(Store|View)} */
     bind;
-    /** @member {(Store|View)} */
-    valueSource;
     /** @member {GridFilterFieldSpec[]} */
     @managed fieldSpecs = [];
 
     /** @return {Filter} */
     get filter() {
-        return this.isBound ? this.bind.filter : this._filter;
-    }
-
-    /** @return {boolean} */
-    get isBound() {
-        return !isNil(this.bind);
+        return this.bind.filter;
     }
 
     // Open state for filter dialog
     @observable dialogOpen = false;
 
-    // Private filter state, used when not bound
-    @observable.ref _filter;
-
     /**
      * @param {Object} c - GridFilterModel configuration.
      * @param {GridModel} c.gridModel - GridModel instance which owns this model.
+     * @param {(Store|View)} c.bind - Store or cube View that should actually be filtered
+     *      as column filters are applied, and used to provide suggested data values in
+     *      column filters (if configured).
      * @param {(string[]|Object[]} [c.fieldSpecs] - specifies the fields this model supports
-     *      for filtering. Should be configs for a `GridFilterFieldSpec`. If a `valueSource`
-     *      is provided, these may be specified as field names in that source or omitted entirely,
-     *      indicating that all fields should be filter-enabled.
+     *      for filtering. Should be configs for a `GridFilterFieldSpec`. These may be specified
+     *      as field names in bound Store/View or omitted entirely, indicating that all fields
+     *      should be filter-enabled.
      * @param {Object} [c.fieldSpecDefaults] - default properties to be assigned to all
      *      GridFilterFieldSpecs created by this model.
-     * @param {(Store|View)} [c.bind] - Store or cube View that should actually be filtered
-     *      as column filters are applied. May be the same as `valueSource`. Provide 'null' if you
-     *      wish to combine this model's filter with other filters, send it to the server, or otherwise
-     *      observe and handle filter changes manually.
-     * @param {(Store|View)} [c.valueSource] - Store or cube View to be used to provide suggested
-     *      data values in column filters (if configured). Defaults to `bind` if provided.
-     * @param {(Filter|* |[]|function)} [c.initialFilter] - Configuration for a filter appropriate
-     *      to be rendered and managed by GridFilterModel, or a function to produce the same.
      */
     constructor({
         gridModel,
-        fieldSpecs,
-        fieldSpecDefaults,
         bind,
-        valueSource = bind,
-        initialFilter = null
+        fieldSpecs,
+        fieldSpecDefaults
     }) {
         super();
         makeObservable(this);
         this.gridModel = gridModel;
         this.bind = bind;
-        this.valueSource = valueSource;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
-        this._filter = isFunction(initialFilter) ? initialFilter() : initialFilter;
     }
 
     /**
@@ -85,13 +65,9 @@ export class GridFilterModel extends HoistModel {
     @action
     setFilter(filter) {
         filter = parseFilter(filter);
-        if (this.isBound) {
-            wait()
-                .then(() => this.bind.setFilter(filter))
-                .linkTo(this.gridModel.filterTask);
-        } else {
-            this._filter = filter;
-        }
+        wait()
+            .then(() => this.bind.setFilter(filter))
+            .linkTo(this.gridModel.filterTask);
     }
 
     /**
@@ -170,20 +146,15 @@ export class GridFilterModel extends HoistModel {
     // Implementation
     //--------------------------------
     parseFieldSpecs(specs, fieldSpecDefaults) {
-        const {valueSource} = this;
-
-        throwIf(
-            !valueSource && (!specs || specs.some(isString)),
-            'Must provide a valueSource if fieldSpecs are not provided, or provided as strings.'
-        );
+        const {bind} = this;
 
         // If no specs provided, include all source fields.
-        if (!specs) specs = valueSource.fieldNames;
+        if (!specs) specs = bind.fieldNames;
 
         return specs.map(spec => {
             if (isString(spec)) spec = {field: spec};
             return new GridFilterFieldSpec({
-                source: valueSource,
+                source: bind,
                 ...fieldSpecDefaults,
                 ...spec
             });
