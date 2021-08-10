@@ -125,11 +125,8 @@ class LocalModel extends HoistModel {
 
         // Refresh
         if (this.refreshStarted) {
-            if (this.refreshCompleted) {
-                XH.refreshAppAsync().finally(() => this.refreshEnd());
-            } else {
-                this.refreshEnd();
-            }
+            if (this.refreshCompleted) XH.refreshAppAsync();
+            this.refreshEnd();
             this.consumeEvent(e);
         }
     }
