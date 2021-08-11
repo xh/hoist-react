@@ -14,6 +14,7 @@
   and masking multiple asynchronous tasks.
 * Mobile `NavigatorModel` provides a new 'pull down' gesture to refresh the app.
   This gesture is enabled by default, but can be disabled via the `pullDownToRefresh` flag.
+* `RecordAction` now supports a `className` config.
 
 ### 💥 Breaking Changes
 
@@ -27,6 +28,9 @@
 * `PendingTaskModel` has been replaced by the new `TaskObserver` in `@xh/hoist/core`.
 * The `model` prop on `LoadingIndicator` and `Mask` has been replaced with `bind`.  Provide one or
   more `TaskObserver`s to this prop.
+
+### ✨ Style
+* Higher contrast on grid context menus for improved legibility.
 
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.3.0...develop)

@@ -8,6 +8,7 @@ import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {Record, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import classNames from 'classnames';
 import {first} from 'lodash';
 import PT from 'prop-types';
 
@@ -23,7 +24,7 @@ export const [RecordActionButton, recordActionButton] = hoistCmp.withFactory({
     className: 'xh-record-action-button',
 
     render(props) {
-        let {action, minimal, gridModel, selModel, column, record, ...rest} = props;
+        let {action, minimal, gridModel, selModel, column, record, className, ...rest} = props;
 
         let selectedRecords = record ? [record] : null;
         if (selModel) {
@@ -41,11 +42,12 @@ export const [RecordActionButton, recordActionButton] = hoistCmp.withFactory({
 
         const params = {record, selectedRecords, gridModel, column},
             displaySpec = action.getDisplaySpec(params),
-            {text, icon, intent, disabled, tooltip: title, hidden} = displaySpec;
+            {text, icon, intent, className: actionClassName, disabled, tooltip: title, hidden} = displaySpec;
 
         if (hidden) return null;
 
         return button({
+            className: classNames(className, actionClassName),
             minimal,
             text: minimal ? null : text,
             icon,
