@@ -81,6 +81,14 @@ export class TaskObserver {
     }
 
     /**
+     * The number of pending tasks. Observable.
+     * @returns {number}
+     */
+    get pendingTaskCount() {
+        return 0;
+    }
+
+    /**
      * The message describing the executing task. Observable.
      * @returns {?string}
      */
@@ -125,6 +133,11 @@ class CompoundObserver extends TaskObserver {
     }
 
     @computed
+    get pendingTaskCount() {
+        return this._subtasks.filter(it => it.isPending).length;
+    }
+
+    @computed
     get message() {
         const msg = this._message;
         if (!isUndefined(msg)) return msg;
@@ -159,6 +172,7 @@ class PromiseObserver extends TaskObserver {
 
     get isPromiseObserver()     {return true}
     get isPending()             {return this._isPending}
+    get pendingTaskCount()      {return this._isPending ? 1 : 0}
     get message()               {return this._message}
 
     constructor(promise, message) {
