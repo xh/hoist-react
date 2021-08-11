@@ -12,9 +12,9 @@ export const backIndicator = hoistCmp.factory(
         const {backStarted, backProgress, backCompleted}  = model,
             left = -40 + (backProgress * 60),
             className = classNames(
-                'xh-navigator__indicator',
-                backCompleted ? 'xh-navigator__indicator--complete' : null,
-                backStarted ? 'xh-navigator__indicator--started' : null
+                'xh-swiper-indicator',
+                backCompleted ? 'xh-swiper-indicator--complete' : null,
+                backStarted ? 'xh-swiper-indicator--started' : null
             );
         return div({
             className,
