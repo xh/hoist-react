@@ -16,7 +16,6 @@ import {
 } from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {apiRemoved} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 import {createRef} from 'react';
 
@@ -117,8 +116,6 @@ export class PanelModel extends HoistModel {
             collapsible = false;
             resizable = false;
         }
-
-        apiRemoved(rest.prefName, 'prefName', 'Specify "persistWith" instead.');
 
         if (!isNil(maxSize) && (maxSize < minSize || maxSize < defaultSize)) {
             console.error("'maxSize' must be greater than 'minSize' and 'defaultSize'. No 'maxSize' will be set.");

@@ -31,6 +31,7 @@ export class RecordAction {
     secondaryText;
     icon;
     intent;
+    className;
     tooltip;
     actionFn;
     items;
@@ -45,6 +46,7 @@ export class RecordAction {
      * @param {string} [c.secondaryText] - additional label to be displayed, usually in a minimal fashion.
      * @param {Element} [c.icon] - icon to be displayed.
      * @param {string} [c.intent] - intent to be used for rendering the action.
+     * @param {string} [c.className] - css class name to be added when rendering the action.
      * @param {string} [c.tooltip] - tooltip to display when hovering over the action.
      * @param {Object[]} [c.items] - child actions.
      * @param {ActionCb} [c.actionFn] - called on store action activation.
@@ -63,6 +65,7 @@ export class RecordAction {
         secondaryText,
         icon = null,
         intent,
+        className,
         tooltip,
         actionFn = null,
         items = null,
@@ -75,6 +78,7 @@ export class RecordAction {
         this.secondaryText = secondaryText;
         this.icon = icon;
         this.intent = intent;
+        this.className = className,
         this.tooltip = tooltip;
         this.actionFn = actionFn;
         this.items = items;
@@ -105,6 +109,7 @@ export class RecordAction {
             text: this.text,
             secondaryText: this.secondaryText,
             intent: this.intent,
+            className: this.className,
             tooltip: this.tooltip,
             items: this.items,
             hidden: this.hidden,

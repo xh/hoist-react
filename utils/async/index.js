@@ -7,4 +7,3 @@
 
 export * from './AsyncUtils';
 export * from './Timer';
-export * from './PendingTaskModel';

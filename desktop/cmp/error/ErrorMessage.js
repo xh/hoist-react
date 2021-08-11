@@ -7,7 +7,6 @@
 import {hoistCmp} from '@xh/hoist/core';
 import {frame, div, p} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {apiDeprecated} from '@xh/hoist/utils/js';
 import {isString, isEmpty, isNil} from 'lodash';
 import {isValidElement} from 'react';
 import PT from 'prop-types';
@@ -29,8 +28,6 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory({
         actionButtonProps
     }, ref) {
 
-        // TODO - remove in v42+
-        apiDeprecated(actionFn, 'actionFn', "Use 'actionButtonProps' instead");
         if (actionFn) {
             actionButtonProps = {...actionButtonProps, onClick: actionFn};
         }

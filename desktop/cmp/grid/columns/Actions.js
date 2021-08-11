@@ -60,7 +60,7 @@ export const actionCol = {
         actions.forEach(action => {
             action = new RecordAction(action);
 
-            const {icon, intent, disabled, tooltip, hidden} = action.getDisplaySpec({record, selectedRecords: [record], gridModel, column});
+            const {icon, intent, className, disabled, tooltip, hidden} = action.getDisplaySpec({record, selectedRecords: [record], gridModel, column});
             throwIf(!icon, 'An icon is required for any RecordAction rendered within a grid action column.');
 
             if (hidden) return;
@@ -81,6 +81,8 @@ export const actionCol = {
             } else {
                 buttonEl.classList.add('xh-button--intent-none');
             }
+
+            if (className) buttonEl.classList.add(className);
 
             buttonEl.innerHTML = convertIconToHtml(icon);
             buttonEl.addEventListener('click', (ev) => {

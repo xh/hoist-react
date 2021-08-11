@@ -8,7 +8,7 @@ import {XH} from '@xh/hoist/core';
 import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import copy from 'clipboard-copy';
-import {flatten, isEmpty, isString} from 'lodash';
+import {flatten, isEmpty, isString, uniq} from 'lodash';
 
 /**
  * Model for ContextMenus interacting with data provided by Hoist data stores, typically via a Grid.
@@ -69,6 +69,78 @@ export class StoreContextMenu {
         }
 
         switch (token) {
+            case 'filter': {
+                const filterModel = gridModel?.filterModel;
+
+                const getValues = (records, field) => {
+                    return uniq(records.map(rec => rec.get(field)));
+                };
+
+                const filterDisplayFn = (op) => ({selectedRecords, record, column}) => {
+                    if (isEmpty(selectedRecords) || !column?.filterable) return {hidden: true};
+
+                    const {field} = column,
+                        fieldSpec = filterModel.getFieldSpec(field);
+
+                    if (!fieldSpec.supportsOperator(op)) return {hidden: true};
+
+                    const values = getValues(selectedRecords, field);
+                    if (values.length > 1) return {text: `${values.length} values`};
+
+                    const renderer = fieldSpec.renderer ?? column.renderer,
+                        text = renderer ?
+                            renderer(values[0], {record, column, gridModel}) :
+                            values[0] ?? '[blank]';
+                    return {text};
+                };
+
+                return new RecordAction({
+                    text: 'Filter',
+                    icon: Icon.filter(),
+                    displayFn: ({column}) => {
+                        return {hidden: !filterModel || !filterModel.bind.isStore || !column?.filterable};
+                    },
+                    items: [
+                        {
+                            icon: Icon.equals(),
+                            recordsRequired: true,
+                            displayFn: filterDisplayFn('='),
+                            actionFn: ({selectedRecords, column}) => {
+                                const {field} = column,
+                                    value = getValues(selectedRecords, field);
+                                filterModel.setColumnFilters(field, {field, op: '=', value});
+                            }
+                        },
+                        {
+                            icon: Icon.notEquals(),
+                            recordsRequired: true,
+                            displayFn: filterDisplayFn('!='),
+                            actionFn: ({selectedRecords, column}) => {
+                                const {field} = column,
+                                    value = getValues(selectedRecords, field);
+                                filterModel.mergeColumnFilters(field, {field, op: '!=', value});
+                            }
+                        },
+                        '-',
+                        {
+                            icon: Icon.delete(),
+                            displayFn: ({column}) => {
+                                const filters = filterModel.getColumnFilters(column.field),
+                                    text = `Clear ${column.displayName} Filters`;
+                                return {text, disabled: isEmpty(filters)};
+                            },
+                            actionFn: ({column}) => {
+                                filterModel.setColumnFilters(column.field, null);
+                            }
+                        },
+                        {
+                            text: 'View Grid Filters',
+                            icon: Icon.code(),
+                            actionFn: () => filterModel.openDialog()
+                        }
+                    ]
+                });
+            }
             case 'copyCell':
                 return new RecordAction({
                     text: 'Copy Cell',
