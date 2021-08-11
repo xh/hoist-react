@@ -138,35 +138,40 @@ export function errorIf(condition, message) {
  * Document and prevent usage of a removed parameter.
  *
  * @param {string} name - the name of the removed parameter
- * @param {Object} c
- * @param {string} [c.v] - version when this exception should be removed.
- * @param {string} [c.msg] - an additional message.  Can contain suggestions for alternatives.
- * @param {*} [c.when] -  If undefined, this method will be a no-op. Useful for testing if a
- *      parameter is provided. Default true.
+ * @param {Object} opts
+ * @param {*} [opts.test] -  If provided and undefined, this method will be a no-op.
+ *      Useful for testing if a parameter has been provided in caller.
+ * @param {string} [opts.v] - version when this exception should be removed.
+ * @param {string} [opts.msg] - an additional message.  Can contain suggestions for alternatives.
  */
-export function apiRemoved(name, {v, msg, when = true}) {
-    msg = msg ? ` ${msg}.`: '';
-    throwIf(when !== undefined, `The use of '${name}' is no longer supported.${msg}`);
+export function apiRemoved(name, opts) {
+    if ('test' in opts && isUndefined(opts.test)) return;
+
+    const msg = opts.msg ? ` ${opts.msg}.`: '';
+    throw Exception.create(`The use of '${name}' is no longer supported.${msg}`);
 }
 
 /**
  * Document and warn on usage of a deprecated API
  *
  * @param {string} name - the name of the removed parameter
- * @param {Object} c
- * @param {string} [c.v] - version when this support will be removed.
- * @param {string} [c.msg] - an additional message.  Can contain suggestions for alternatives.
- * @param {*} [c.when] -  If undefined, this method will be a no-op. Useful for testing if a
- *      parameter is provided. Default true
+ * @param {Object} opts
+ * @param {*} [opts.test] -  If provided and undefined, this method will be a no-op.
+ *      Useful for testing if a parameter has been provided in caller.
+ * @param {string} [opts.v] - version when this support will be removed.
+ * @param {string} [opts.msg] - an additional message.  Can contain suggestions for alternatives.
+ *      Useful for testing if a parameter is provided.
  */
 const _seenWarnings  = {};
-export function apiDeprecated(name, {v, msg, when = true}) {
-    v = v ?? 'a future release.';
-    msg = msg ? ` ${msg}.`: '';
-    const warn = `The use of '${name}' has been deprecated and will be removed in ${v}.${msg}`;
-    if (when !== undefined && !_seenWarnings[warn]) {
+export function apiDeprecated(name, opts) {
+    if ('test' in opts && isUndefined(opts.test)) return;
+
+    const v = opts.v ?? 'a future release',
+        msg = opts.msg ? ` ${opts.msg}.`: '',
+        warn = `The use of '${name}' has been deprecated and will be removed in ${v}.${msg}`;
+    if (!_seenWarnings[warn]) {
         console.warn(warn);
-        _seenWarnings[warn] = this;
+        _seenWarnings[warn] = true;
     }
 }
 

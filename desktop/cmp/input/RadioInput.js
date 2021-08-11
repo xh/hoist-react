@@ -20,7 +20,7 @@ export const [RadioInput, radioInput] = hoistCmp.withFactory({
     displayName: 'RadioInput',
     className: 'xh-radio-input',
     render(props, ref) {
-        apiRemoved('labelAlign', {when: props.labelAlign, msg: 'Use labelSide instead.', v: 'v43'});
+        apiRemoved('labelAlign', {test: props.labelAlign, msg: 'Use labelSide instead.', v: 'v43'});
 
         return useHoistInputModel(cmp, props, ref, Model);
     }
