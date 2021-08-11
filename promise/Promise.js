@@ -28,7 +28,7 @@ import {apiDeprecated} from '../utils/js';
  * @returns {Promise}
  */
 export async function start(fn) {
-    apiDeprecated(true, 'start', 'Use wait() instead.');
+    apiDeprecated('start', {msg: 'Use wait() instead', v: 'v44'});
     const promise = new Promise(resolve => setTimeout(resolve, 1));
     return fn ? promise.then(fn) : start;
 }

@@ -10,7 +10,7 @@ import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {apiRemoved, withDefault} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 import moment from 'moment';
 import PT from 'prop-types';
 
@@ -104,9 +104,6 @@ class LocalModel extends HoistModel {
  * @param {(Date|int)} [options.relativeTo] - time to which the input timestamp is compared
  */
 export function getRelativeTimestamp(timestamp, options = {}) {
-    apiRemoved(options.nowEpsilon, 'nowEpsilon', "Use 'epsilon' instead.");
-    apiRemoved(options.nowString, 'nowString', "Use 'equalString' instead.");
-
     const relTo = options.relativeTo,
         relFmt = relTo ? fmtCompactDate(relTo) : null,
         relFmtIsTime = relFmt?.includes(':');

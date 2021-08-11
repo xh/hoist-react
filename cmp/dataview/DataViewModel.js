@@ -7,7 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {apiRemoved, throwIf} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNumber} from 'lodash';
 
 /**
@@ -89,9 +89,6 @@ export class DataViewModel extends HoistModel {
             'Must specify DataViewModel.itemHeight as a number or a function to set a pixel height for each item.'
         );
 
-        apiRemoved(restArgs.rowCls, 'rowCls', 'Use \'rowClassFn\' instead.');
-        apiRemoved(restArgs.itemRenderer, 'itemRenderer', 'Use \'elementRenderer\' instead.');
-
         this.itemHeight = itemHeight;
         this.groupRowHeight = groupRowHeight;
 
@@ -151,9 +148,4 @@ export class DataViewModel extends HoistModel {
     clear()                         {return this.gridModel.clear()}
     setGroupBy(colIds)              {return this.gridModel.setGroupBy(colIds)}
     setSortBy(sorters)              {return this.gridModel.setSortBy(sorters)}
-
-    /** @deprecated */
-    selectFirst()                   {return this.gridModel.selectFirst()}
-    /** @deprecated */
-    ensureSelectionVisible()        {return this.gridModel.ensureSelectionVisible()}
 }

@@ -71,13 +71,12 @@ export const [Grid, grid] = hoistCmp.withFactory({
      * @param ref
      */
     render({model, className, ...props}, ref) {
-        apiRemoved(props.hideHeaders, 'hideHeaders', 'Specify hideHeaders on the GridModel instead.');
-        apiRemoved(props.onKeyDown, 'onKeyDown', 'Specify onKeyDown on the GridModel instead.');
-        apiRemoved(props.onRowClicked, 'onRowClicked', 'Specify onRowClicked on the GridModel instead.');
-        apiRemoved(props.onRowDoubleClicked, 'onRowDoubleClicked', 'Specify onRowDoubleClicked on the GridModel instead.');
-        apiRemoved(props.onCellClicked, 'onCellClicked', 'Specify onCellClicked on the GridModel instead.');
-        apiRemoved(props.onCellDoubleClicked, 'onCellDoubleClicked', 'Specify onCellDoubleClicked on the GridModel instead.');
-        apiRemoved(props.agOptions?.rowClassRules, 'agOptions.rowClassRules', 'Specify rowClassRules on the GridModel instead.');
+        apiRemoved('onKeyDown', {test: props.onKeyDown, msg: 'Specify onKeyDown on the GridModel instead.', v: 'v43'});
+        apiRemoved('onRowClicked', {test: props.onRowClicked, msg: 'Specify onRowClicked on the GridModel instead.', v: 'v43'});
+        apiRemoved('onRowDoubleClicked', {test: props.onRowDoubleClicked, msg: 'Specify onRowDoubleClicked on the GridModel instead.', v: 'v43'});
+        apiRemoved('onCellClicked', {test: props.onCellClicked, msg: 'Specify onCellClicked on the GridModel instead.', v: 'v43'});
+        apiRemoved('onCellDoubleClicked', {test: props.onCellDoubleClicked, msg: 'Specify onCellDoubleClicked on the GridModel instead.', v: 'v43'});
+        apiRemoved('agOptions.rowClassRules', {test: props.agOptions?.rowClassRules, msg: 'Specify rowClassRules on the GridModel instead.', v: 'v43'});
 
         const {store, treeMode, treeStyle, colChooserModel, filterModel} = model,
             impl = useLocalModel(() => new GridLocalModel(model, props)),

@@ -7,7 +7,6 @@
 import {hoistCmp, ModelPublishMode, uses, XH} from '@xh/hoist/core';
 import {tabContainerImpl as desktopTabContainerImpl} from '@xh/hoist/dynamics/desktop';
 import {tabContainerImpl as mobileTabContainerImpl} from '@xh/hoist/dynamics/mobile';
-import {apiRemoved} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 import {TabContainerModel} from './TabContainerModel';
 
@@ -33,7 +32,6 @@ export const [TabContainer, tabContainer] = hoistCmp.withFactory({
     className: 'xh-tab-container',
 
     render(props, ref) {
-        apiRemoved(props.switcherPosition, 'switcherPosition', 'Please specify TabContainerModel.switcher instead.');
         return XH.isMobileApp ? mobileTabContainerImpl(props, ref) : desktopTabContainerImpl(props, ref);
     }
 });

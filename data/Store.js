@@ -7,7 +7,7 @@
 
 import {HoistBase, managed, XH} from '@xh/hoist/core';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {throwIf, warnIf, apiRemoved, logWithDebug} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, logWithDebug} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -907,7 +907,6 @@ export class Store extends HoistBase {
     }
 
     parseExperimental(experimental) {
-        apiRemoved(experimental?.shareDefaults, 'shareDefaults');
         return {
             ...XH.getConf('xhStoreExperimental', {}),
             ...experimental
