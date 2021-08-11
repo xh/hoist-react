@@ -15,7 +15,6 @@
 * Mobile `NavigatorModel` provides a new 'pull down' gesture to refresh the app.
   This gesture is enabled by default, but can be disabled via the `pullDownToRefresh` flag.
 * `RecordAction` now supports a `className` config.
-* New `selectedIds` getter on `GridModel` to get the IDs of currently selected records.
 
 ### 💥 Breaking Changes
 
@@ -29,13 +28,15 @@
 * `PendingTaskModel` has been replaced by the new `TaskObserver` in `@xh/hoist/core`.
 * The `model` prop on `LoadingIndicator` and `Mask` has been replaced with `bind`.  Provide one or
   more `TaskObserver`s to this prop.
-* Renamed similar getters for consistency in several models:
-    + `selectedRecordId` has been renamed to `selectedId` in `GridModel`, `StoreSelectionModel`, and
+
+### ⚙️ Technical
+* `GridModel` has a new `selectedIds` getter to get the IDs of currently selected records. To provide
+  consistency across models, the following getters have been deprecated and renamed:
+    + `selectedRecordId` renamed `selectedId` in `GridModel`, `StoreSelectionModel`, and
       `DataViewModel`
-    + `selection` has been renamed to `selectedRecords` in `GridModel`, `DataViewModel`, and
-      `RestGridModel`
-    + `singleRecord`, `records`, and `ids` have been renamed to `selectedRecord`, `selectedRecords`,
-      and `selectedIds`, respectively, in `StoreSelectionModel`
+    + `selection` renamed `selectedRecords` in `GridModel`, `DataViewModel`, and `RestGridModel`
+    + `singleRecord`, `records`, and `ids` renamed `selectedRecord`, `selectedRecords`, and
+      `selectedIds`, respectively, in `StoreSelectionModel`
 
 ### ✨ Style
 * Higher contrast on grid context menus for improved legibility.

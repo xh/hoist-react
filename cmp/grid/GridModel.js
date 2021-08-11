@@ -48,6 +48,7 @@ import {
     pull,
     sortBy
 } from 'lodash';
+import {apiDeprecated} from '../../utils/js';
 import {GridPersistenceModel} from './impl/GridPersistenceModel';
 import {GridSorter} from './impl/GridSorter';
 
@@ -1126,6 +1127,18 @@ export class GridModel extends HoistModel {
         }
 
         return this.isReady;
+    }
+
+    /** @deprecated */
+    get selection() {
+        apiDeprecated('selection', {msg: 'Use selectedRecords instead', v: 'v44'});
+        return this.selectedRecords;
+    }
+
+    /** @deprecated */
+    get selectedRecordId() {
+        apiDeprecated('selectedRecordId', {msg: 'Use selectedId instead', v: 'v44'});
+        return this.selectedId;
     }
 
     //-----------------------

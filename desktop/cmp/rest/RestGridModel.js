@@ -8,7 +8,7 @@ import {isFunction, isPlainObject} from 'lodash';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {pluralize, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {pluralize, throwIf, withDefault, apiDeprecated} from '@xh/hoist/utils/js';
 import {RestStore} from './data/RestStore';
 import {RestFormModel} from './impl/RestFormModel';
 
@@ -176,6 +176,12 @@ export class RestGridModel extends HoistModel {
     /** Load the underlying store. */
     loadData(...args) {
         return this.store.loadData(...args);
+    }
+
+    /** @deprecated */
+    get selection() {
+        apiDeprecated('selection', {msg: 'Use selectedRecords instead', v: 'v44'});
+        return this.selectedRecords;
     }
 
     //-----------------
