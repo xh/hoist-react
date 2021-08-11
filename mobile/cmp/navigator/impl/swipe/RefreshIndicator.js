@@ -10,7 +10,7 @@ import {div} from '@xh/hoist/cmp/layout';
 export const refreshIndicator = hoistCmp.factory(
     ({model}) => {
         const {refreshStarted, refreshProgress, refreshCompleted} = model,
-            top = -40 + (refreshProgress * 100),
+            top = -40 + (refreshProgress * 85),
             degrees = Math.floor(refreshProgress * 360),
             className = classNames(
                 'xh-swiper-indicator',

@@ -1,8 +1,7 @@
 import {hoistCmp, HoistModel, uses, useLocalModel, XH} from '@xh/hoist/core';
 import {computed, observable, action, makeObservable} from '@xh/hoist/mobx';
-import {frame, fragment} from '@xh/hoist/cmp/layout';
+import {frame} from '@xh/hoist/cmp/layout';
 import {gestureDetector} from '@xh/hoist/kit/onsen';
-import ReactDom from 'react-dom';
 import {isFinite} from 'lodash';
 
 import './Swiper.scss';
@@ -20,13 +19,8 @@ export const swiper = hoistCmp.factory({
     render({model, children}) {
         const impl = useLocalModel(() => new LocalModel(model));
         return frame(
-            ReactDom.createPortal(
-                fragment(
-                    refreshIndicator({model: impl}),
-                    backIndicator({model: impl})
-                ),
-                impl.getOrCreatePortalDiv()
-            ),
+            refreshIndicator({model: impl}),
+            backIndicator({model: impl}),
             gestureDetector({
                 onDragStart: impl.onDragStart,
                 onDrag: impl.onDrag,
@@ -158,16 +152,5 @@ class LocalModel extends HoistModel {
             }
         }
         return false;
-    }
-
-    getOrCreatePortalDiv() {
-        const id = 'xh-swiper-portal';
-        let portal = document.getElementById(id);
-        if (!portal) {
-            portal = document.createElement('div');
-            portal.id = id;
-            document.body.appendChild(portal);
-        }
-        return portal;
     }
 }
