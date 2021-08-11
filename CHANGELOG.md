@@ -3,15 +3,51 @@
 ## v42.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-* New `Cube` aggregators `ChildCountAggregator` and `LeafCountAggregator`.
-* Mobile `NavigatorModel` provides a new "swipe" gesture to go back in the page stack.
-This is enabled by default, but may be turned off via the new `swipeToGoBack` prop.
+
+* Column-level filtering is now officially supported for desktop grids!
+    * New `GridModel.filterModel` config accepts a config object to customize filtering options, or
+      `true` to enable grid-based filtering with defaults.
+    * New `Column.filterable` config enables a customized header menu with filtering options. The new
+      control offers two tabs - a "Values" tab for an enumerated "set-type" filter and a "Custom" tab
+      to support more complex queries with multiple clauses.
+* New `TaskObserver` replaces existing `PendingTaskModel`, providing improved support for joining
+  and masking multiple asynchronous tasks.
+* Mobile `NavigatorModel` provides a new 'pull down' gesture to refresh the app.
+  This gesture is enabled by default, but can be disabled via the `pullDownToRefresh` flag.
 * `RecordAction` now supports a `className` config.
+
+### 💥 Breaking Changes
+
+* `FilterChooserModel.sourceStore` and `FilterChooserModel.targetStore` have been renamed
+  `FilterChooserModel.valueSource` and `FilterChooserModel.bind` respectively. Furthermore, both
+  configs now support either a `Store` or a cube `View`. This is to provide a common API with the
+  new `GridFilterModel` filtering described above.
+* `GridModel.setFilter()` and `DataViewModel.setFilter()` have been removed. Either configure your
+  grid with a `GridFilterModel`, or set the filter on the underlying `Store` instead.
+* `FunctionFilter` now requires a `key` property.
+* `PendingTaskModel` has been replaced by the new `TaskObserver` in `@xh/hoist/core`.
+* The `model` prop on `LoadingIndicator` and `Mask` has been replaced with `bind`.  Provide one or
+  more `TaskObserver`s to this prop.
 
 ### ✨ Style
 * Higher contrast on grid context menus for improved legibility.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v41.2.0...develop)
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v41.3.0...develop)
+
+## v41.3.0 - 2021-08-09
+
+### 🎁 New Features
+
+* New `Cube` aggregators `ChildCountAggregator` and `LeafCountAggregator`.
+* Mobile `NavigatorModel` provides a new "swipe" gesture to go back in the page stack. This is
+  enabled by default, but may be turned off via the new `swipeToGoBack` prop.
+* Client error reports now include the full URL for additional troubleshooting context.
+  * Note apps must update their server-side to `hoist-core v9.3` or greater to persist URLs with
+    error reports (although this is _not_ a general or hard requirement for taking this version of
+    hoist-react).
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v41.2.0...v41.3.0)
 
 ## v41.2.0 - 2021-07-30
 
@@ -38,10 +74,6 @@ This is enabled by default, but may be turned off via the new `swipeToGoBack` pr
   `XH.toast()` API and its variants.
 * `Form` supports setting readonlyRenderer in `fieldDefaults` prop.
 * New utility hook `useCached` provides a more flexible variant of `React.useCallback`.
-* Client error reports now include the full URL for additional troubleshooting context.
-  * Note apps must update their server-side to `hoist-core v9.3` or greater to persist URLs with
-    error reports (although this is _not_ a general or hard requirement for taking this version of
-    hoist-react).
 
 ### 🐞 Bug Fixes
 
@@ -60,9 +92,9 @@ This is enabled by default, but may be turned off via the new `swipeToGoBack` pr
 * The `start()` function in `@xh/hoist/promise` has been deprecated. Use `wait()` instead, which can
   now be called without any args to establish a Promise chain and/or introduce a minimal amount of
   asynchronousity.
-* ⚠ Note that the raw `AgGrid` component no longer enhances the native keyboard handling provided
-  by ag-Grid. All Hoist key handling customizations are now limited to `Grid`.  If you wish to
-  provide custom handling in a raw `AgGrid` component, see the example here:
+* ⚠ Note that the raw `AgGrid` component no longer enhances the native keyboard handling provided by
+  ag-Grid. All Hoist key handling customizations are now limited to `Grid`. If you wish to provide
+  custom handling in a raw `AgGrid` component, see the example here:
   https://www.ag-grid.com/javascript-grid/row-selection/#example-selection-with-keyboard-arrow-keys
 
 

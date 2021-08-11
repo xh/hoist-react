@@ -5,10 +5,9 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {HoistBase, managed} from '@xh/hoist/core';
+import {HoistBase, managed, TaskObserver} from '@xh/hoist/core';
 import {ValidationState} from '@xh/hoist/data';
 import {computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {compact, flatten, isEmpty, isNil} from 'lodash';
 
 /**
@@ -73,7 +72,7 @@ export class RecordFieldValidator extends HoistBase {
     // completed will contain null
     @observable _errors;
 
-    @managed _validationTask = new PendingTaskModel();
+    @managed _validationTask = TaskObserver.trackLast();
     _validationRunId = 0;
 
     /**

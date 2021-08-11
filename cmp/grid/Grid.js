@@ -9,7 +9,11 @@ import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {div, fragment, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
-import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
+import {
+    colChooser as desktopColChooser,
+    gridFilterDialog,
+    StoreContextMenu
+} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {computed, observer} from '@xh/hoist/mobx';
@@ -67,15 +71,14 @@ export const [Grid, grid] = hoistCmp.withFactory({
      * @param ref
      */
     render({model, className, ...props}, ref) {
-        apiRemoved(props.hideHeaders, 'hideHeaders', 'Specify hideHeaders on the GridModel instead.');
-        apiRemoved(props.onKeyDown, 'onKeyDown', 'Specify onKeyDown on the GridModel instead.');
-        apiRemoved(props.onRowClicked, 'onRowClicked', 'Specify onRowClicked on the GridModel instead.');
-        apiRemoved(props.onRowDoubleClicked, 'onRowDoubleClicked', 'Specify onRowDoubleClicked on the GridModel instead.');
-        apiRemoved(props.onCellClicked, 'onCellClicked', 'Specify onCellClicked on the GridModel instead.');
-        apiRemoved(props.onCellDoubleClicked, 'onCellDoubleClicked', 'Specify onCellDoubleClicked on the GridModel instead.');
-        apiRemoved(props.agOptions?.rowClassRules, 'agOptions.rowClassRules', 'Specify rowClassRules on the GridModel instead.');
+        apiRemoved('onKeyDown', {test: props.onKeyDown, msg: 'Specify onKeyDown on the GridModel instead.', v: 'v43'});
+        apiRemoved('onRowClicked', {test: props.onRowClicked, msg: 'Specify onRowClicked on the GridModel instead.', v: 'v43'});
+        apiRemoved('onRowDoubleClicked', {test: props.onRowDoubleClicked, msg: 'Specify onRowDoubleClicked on the GridModel instead.', v: 'v43'});
+        apiRemoved('onCellClicked', {test: props.onCellClicked, msg: 'Specify onCellClicked on the GridModel instead.', v: 'v43'});
+        apiRemoved('onCellDoubleClicked', {test: props.onCellDoubleClicked, msg: 'Specify onCellDoubleClicked on the GridModel instead.', v: 'v43'});
+        apiRemoved('agOptions.rowClassRules', {test: props.agOptions?.rowClassRules, msg: 'Specify rowClassRules on the GridModel instead.', v: 'v43'});
 
-        const {store, treeMode, treeStyle, colChooserModel} = model,
+        const {store, treeMode, treeStyle, colChooserModel, filterModel} = model,
             impl = useLocalModel(() => new GridLocalModel(model, props)),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
             maxDepth = impl.isHierarchical ? store.maxDepth : null;
@@ -93,7 +96,8 @@ export const [Grid, grid] = hoistCmp.withFactory({
                 onKeyDown: impl.onKeyDown,
                 ref: composeRefs(impl.viewRef, ref)
             }),
-            (colChooserModel ? platformColChooser({model: colChooserModel}) : null)
+            (colChooserModel ? platformColChooser({model: colChooserModel}) : null),
+            (filterModel ? gridFilterDialog({model: filterModel}) : null)
         );
     }
 });

@@ -125,11 +125,11 @@ export class ColumnWidthCalculator {
     //------------------
     // Autosize header cell
     //------------------
-    getHeaderWidth(gridModel, column, includeHeaderSortIcon, bufferPx) {
-        const {colId, headerName, agOptions} = column,
+    getHeaderWidth(gridModel, column, includeHeaderIcons, bufferPx) {
+        const {colId, headerName, agOptions, sortable, filterable} = column,
             headerHtml = isFunction(headerName) ? headerName({column, gridModel}) : headerName,
-            showSort = column.sortable && (includeHeaderSortIcon || gridModel.sortBy.find(sorter => sorter.colId === colId)),
-            showMenu = agOptions?.suppressMenu === false;
+            showSort = sortable && (includeHeaderIcons || gridModel.sortBy.find(sorter => sorter.colId === colId)),
+            showMenu = (agOptions?.suppressMenu === false || filterable) && includeHeaderIcons;
 
         // Render to a hidden header cell to calculate the max displayed width
         const headerEl = this.getHeaderEl();

@@ -20,6 +20,8 @@ export class FunctionFilter extends Filter {
 
     get isFunctionFilter() {return true}
 
+    /** @member {string} */
+    key;
     /** @member {function} */
     testFn;
 
@@ -27,12 +29,18 @@ export class FunctionFilter extends Filter {
      * Constructor - not typically called by apps - create from config via `parseFilter()` instead.
      *
      * @param {Object} c - FunctionFilter config.
+     * @param {string} c.key - key used to identify this FunctionFilter.
      * @param {FilterTestFn} c.testFn - function taking a Record or Object and returning a boolean.
      */
-    constructor({testFn}) {
+    constructor({key, testFn}) {
         super();
+
+        throwIf(!key, 'FunctionFilter requires a `key`');
         throwIf(!isFunction(testFn), 'FunctionFilter requires a `testFn`');
+
+        this.key = key;
         this.testFn = testFn;
+
         Object.freeze(this);
     }
 
@@ -45,6 +53,7 @@ export class FunctionFilter extends Filter {
     }
 
     equals(other) {
+        if (other === this) return true;
         return other?.isFunctionFilter && this.testFn === other.testFn;
     }
 }

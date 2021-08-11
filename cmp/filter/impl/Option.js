@@ -5,9 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-
 import {parseFieldValue} from '@xh/hoist/data';
-
+import {isNil} from 'lodash';
 
 // ---------------------------------------------------------
 // Generate Options for FilterChooserModel query responses.
@@ -30,19 +29,19 @@ export function fieldOption({fieldSpec, isExact = false}) {
 }
 
 /**
- * Create an option representing an existing or suggested filter.
+ * Create an option representing an existing or suggested FieldFilter.
  * @return {FilterChooserOption}
  */
-export function filterOption({filter, fieldSpec, isExact = false}) {
+export function fieldFilterOption({filter, fieldSpec, isExact = false}) {
     let {fieldType, displayName} = fieldSpec,
         displayOp,
         displayValue;
 
-    if (filter.isEmptyCheck()) {
+    if (isNil(filter.value) && (filter.op === '!=' || filter.op === '=')) {
         displayOp = 'is';
-        displayValue = (filter.op == '!=' ? 'not empty' : 'empty');
+        displayValue = (filter.op === '!=' ? 'not blank' : 'blank');
     } else {
-        displayOp = filter.op,
+        displayOp = filter.op;
         displayValue = fieldSpec.renderValue(parseFieldValue(filter.value, fieldType, null));
     }
 
@@ -56,6 +55,19 @@ export function filterOption({filter, fieldSpec, isExact = false}) {
         displayValue,
         filter,
         fieldSpec
+    };
+}
+
+/**
+ * Create an option representing a compound filter. For display purposes only.
+ * @return {FilterChooserOption}
+ */
+export function compoundFilterOption({filter, fieldNames}) {
+    return {
+        type: 'filter',
+        value: JSON.stringify(filter),
+        label: `[${filter.op} Filter on ${fieldNames.join(', ')}]`,
+        isExact: false
     };
 }
 
