@@ -6,7 +6,7 @@
  */
 
 import {CompoundFilter, FieldFilter, FunctionFilter} from '@xh/hoist/data';
-import {castArray, flatMap, groupBy, isArray} from 'lodash';
+import {castArray, flatMap, groupBy, isArray, isFunction} from 'lodash';
 
 /**
  * Parse a filter from an object or array representation.
@@ -15,7 +15,7 @@ import {castArray, flatMap, groupBy, isArray} from 'lodash';
  *      * An existing Filter instance will be returned directly as-is.
  *      * A null value will also be returned as-is. A null filter represents no filter at all,
  *        or the equivalent of a filter that always passes every record.
- *      * A raw Function will be converted to a `FunctionFilter`.
+ *      * A raw Function will be converted to a `FunctionFilter` with key 'default'.
  *      * Arrays will be converted to a `CompoundFilter` with a default 'AND' operator.
  *      * Config objects will be returned as an appropriate concrete `Filter` subclass based on
  *        their properties.
@@ -29,6 +29,7 @@ export function parseFilter(spec) {
     if (!spec || spec.isFilter) return spec;
 
     // Normalize special forms
+    if (isFunction(spec)) spec = {key: 'default', testFn: spec};
     if (isArray(spec)) spec = {filters: spec};
 
     // Branch on properties
