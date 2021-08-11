@@ -10,12 +10,12 @@ import {div} from '@xh/hoist/cmp/layout';
 export const refreshIndicator = hoistCmp.factory(
     ({model}) => {
         const {refreshStarted, refreshProgress, refreshCompleted} = model,
-            top = -40 + (refreshProgress * 60),
+            top = -40 + (refreshProgress * 85),
             degrees = Math.floor(refreshProgress * 360),
             className = classNames(
-                'xh-navigator__indicator',
-                refreshCompleted ? 'xh-navigator__indicator--complete' : null,
-                refreshStarted ? 'xh-navigator__indicator--started' : null
+                'xh-swiper-indicator',
+                refreshCompleted ? 'xh-swiper-indicator--complete' : null,
+                refreshStarted ? 'xh-swiper-indicator--started' : null
             );
 
         return div({

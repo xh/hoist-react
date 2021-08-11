@@ -1,13 +1,13 @@
 import {hoistCmp, HoistModel, uses, useLocalModel, XH} from '@xh/hoist/core';
-import {frame} from '@xh/hoist/cmp/layout';
-import {isFinite} from 'lodash';
 import {computed, observable, action, makeObservable} from '@xh/hoist/mobx';
+import {frame} from '@xh/hoist/cmp/layout';
 import {gestureDetector} from '@xh/hoist/kit/onsen';
-import {NavigatorModel} from '../../NavigatorModel';
-import './Swiper.scss';
-import {backIndicator} from './BackIndicator';
-import {refreshIndicator} from './RefreshIndicator';
+import {isFinite} from 'lodash';
 
+import './Swiper.scss';
+import {NavigatorModel} from '../../NavigatorModel';
+import {refreshIndicator} from './RefreshIndicator';
+import {backIndicator} from './BackIndicator';
 
 /**
  * Wrap the Onsen Navigator with drag gesture handling.
@@ -62,8 +62,9 @@ class LocalModel extends HoistModel {
         this.backEnd();
 
         // Back
-        // Check we have a page to nav to and avoid conflict with browser back,
-        if (direction === 'right' &&
+        // Check we have a page to nav to and avoid conflict with browser back
+        if (
+            direction === 'right' &&
             navigatorModel.swipeToGoBack &&
             navigatorModel.stack.length >= 2 &&
             e.nativeEvent.gesture.startEvent.center.pageX > 20 &&
@@ -75,7 +76,8 @@ class LocalModel extends HoistModel {
         }
 
         // Refresh
-        if (direction === 'down' &&
+        if (
+            direction === 'down' &&
             navigatorModel.pullDownToRefresh &&
             !this.isDraggingChild(e, 'down')
         ) {
