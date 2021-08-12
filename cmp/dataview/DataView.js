@@ -25,8 +25,8 @@ export const [DataView, dataView] = hoistCmp.withFactory({
     className: 'xh-data-view',
 
     render({model, className, ...props}, ref) {
-        apiRemoved('onRowClicked', {test: props.onRowClicked, msg: 'Specify onRowClicked on the DataViewModel instead', v: 'v43'});
-        apiRemoved('onRowDoubleClicked', {test: props.onRowDoubleClicked, msg: 'Specify onRowDoubleClicked on the DataViewModel instead', v: 'v43'});
+        apiRemoved('DataView.onRowClicked', {test: props.onRowClicked, msg: 'Specify onRowClicked on the DataViewModel instead', v: 'v43'});
+        apiRemoved('DataView.onRowDoubleClicked', {test: props.onRowDoubleClicked, msg: 'Specify onRowDoubleClicked on the DataViewModel instead', v: 'v43'});
 
         const [layoutProps] = splitLayoutProps(props);
         const localModel = useLocalModel(() => new LocalModel(model));

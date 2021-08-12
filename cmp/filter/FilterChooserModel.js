@@ -112,8 +112,8 @@ export class FilterChooserModel extends HoistModel {
         super();
         makeObservable(this);
 
-        apiRemoved('targetStore', {test: rest.targetStore, msg: "Use 'bind' instead", v: 'v44'});
-        apiRemoved('sourceStore', {test: rest.sourceStore, msg: "Use 'valueSource' instead", v: 'v44'});
+        apiRemoved('FilterChooserModel.targetStore', {test: rest.targetStore, msg: "Use 'bind' instead", v: 'v44'});
+        apiRemoved('FilterChooserModel.sourceStore', {test: rest.sourceStore, msg: "Use 'valueSource' instead", v: 'v44'});
 
         this.bind = bind;
         this.valueSource = valueSource;

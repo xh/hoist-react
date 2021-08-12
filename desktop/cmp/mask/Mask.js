@@ -35,7 +35,7 @@ export const [Mask, mask] = hoistCmp.withFactory({
         className,
         model
     }) {
-        apiRemoved('model', {test: model, msg: "Use 'bind' instead", v: 'v44'});
+        apiRemoved('Mask.model', {test: model, msg: "Use 'bind' instead", v: 'v44'});
 
         const impl = useLocalModel(() => new LocalMaskModel(bind));
 

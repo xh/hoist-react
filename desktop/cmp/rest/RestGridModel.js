@@ -180,7 +180,7 @@ export class RestGridModel extends HoistModel {
 
     /** @deprecated */
     get selection() {
-        apiDeprecated('selection', {msg: 'Use selectedRecords instead', v: 'v44'});
+        apiDeprecated('RestGridModel.selection', {msg: 'Use selectedRecords instead', v: 'v44'});
         return this.selectedRecords;
     }
 
