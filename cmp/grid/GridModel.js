@@ -23,7 +23,8 @@ import {
     throwIf,
     warnIf,
     withDebug,
-    withDefault
+    withDefault,
+    apiDeprecated
 } from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
@@ -48,7 +49,6 @@ import {
     pull,
     sortBy
 } from 'lodash';
-import {apiDeprecated} from '../../utils/js';
 import {GridPersistenceModel} from './impl/GridPersistenceModel';
 import {GridSorter} from './impl/GridSorter';
 

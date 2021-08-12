@@ -8,7 +8,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {castArray, compact, remove, isEqual, union, map} from 'lodash';
-import {apiDeprecated} from '../utils/js';
+import {apiDeprecated} from '@xh/hoist/utils/js';
 
 /**
  * Model for managing store selections.
