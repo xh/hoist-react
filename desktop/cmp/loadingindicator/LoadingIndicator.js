@@ -37,7 +37,7 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory({
         className,
         model
     }) {
-        apiRemoved('model', {test: model, msg: "Use 'bind' instead", v: 'v44'});
+        apiRemoved('LoadingIndicator.model', {test: model, msg: "Use 'bind' instead", v: 'v44'});
 
         const impl = useLocalModel(() => new LocalMaskModel(bind));
 

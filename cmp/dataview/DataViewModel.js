@@ -151,13 +151,13 @@ export class DataViewModel extends HoistModel {
 
     /** @deprecated */
     get selection() {
-        apiDeprecated('selection', {msg: 'Use selectedRecords instead', v: 'v44'});
+        apiDeprecated('DataViewModel.selection', {msg: 'Use selectedRecords instead', v: 'v44'});
         return this.selectedRecords;
     }
 
     /** @deprecated */
     get selectedRecordId() {
-        apiDeprecated('selectedRecordId', {msg: 'Use selectedId instead', v: 'v44'});
+        apiDeprecated('DataViewModel.selectedRecordId', {msg: 'Use selectedId instead', v: 'v44'});
         return this.selectedId;
     }
 }
