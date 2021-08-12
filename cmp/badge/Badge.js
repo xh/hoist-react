@@ -20,7 +20,7 @@ export const [Badge, badge] = hoistCmp.withFactory({
 
     className: 'xh-badge',
 
-    render({className, intent, position = 'center', ...props}) {
+    render({className, intent, position = 'center', compact = false, ...props}) {
         const classes = [];
 
         if (intent) {
@@ -29,6 +29,10 @@ export const [Badge, badge] = hoistCmp.withFactory({
 
         if (position === 'top' || position === 'bottom') {
             classes.push(`xh-badge--position-${position}`);
+        }
+
+        if (compact) {
+            classes.push('xh-badge--compact');
         }
 
         return div({
@@ -41,5 +45,8 @@ Badge.propTypes = {
     /** Placement of badge (default center). */
     position: PT.oneOf(['center', 'top', 'bottom']),
 
-    intent: PT.oneOf(['primary', 'success', 'warning', 'danger'])
+    intent: PT.oneOf(['primary', 'success', 'warning', 'danger']),
+
+    /** Sets fontsize to half that of parent element (default false). */
+    compact: PT.bool
 };
