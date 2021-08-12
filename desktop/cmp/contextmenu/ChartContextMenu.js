@@ -8,7 +8,7 @@ import {XH} from '@xh/hoist/core';
 import {ContextMenuItem} from '@xh/hoist/desktop/cmp/contextmenu';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {Icon} from '@xh/hoist/icon';
-import {flatten, isEmpty, isString} from 'lodash';
+
 
 /**
  * Model for ContextMenus interacting with data used by Highcharts charts.
@@ -23,19 +23,15 @@ export class ChartContextMenu {
 
     /**
      * @param {Object} c - ChartContextMenu configuration.
-     * @param {(ContextMenuItem[]|Object[]|string[])} c.items - ContextMenuItems/configs or string
-     *     tokens.
-     *      If a String, value can be '-' for a separator, 
+     * @param {string[]} c.items -  string tokens.
+     *      String value can be '-' for a separator, 
      *      a Hoist token (`copyToClipboard`),
-     *      or a token supported by HighCharts for its native menu items:
+     *      or a token from this subset supported by HighCharts for its native menu items:
      *           `viewFullscreen`
      *           `printChart`
      *           `downloadCSV`
-     *           `downloadJPEG`
-     *           `downloadPDF`
      *           `downloadPNG`
      *           `downloadSVG`
-     *           `downloadXLS`
      *          
      * @param {ChartModel} [c.chartModel] - ChartModel to bind to this contextMenu, used to enable
      *      implementation of menu items / tokens above.
@@ -44,26 +40,7 @@ export class ChartContextMenu {
      */
     constructor({items, chartModel}) {
         this.chartModel = chartModel;
-        this.items = flatten(items.map(it => this.buildMenuItem(it)));
-    }
-
-    buildMenuItem(item) {
-        if (isString(item)) return this.parseToken(item);
-
-        if (item.actionFn) {
-            // dereference by destructuring
-            // to prevent stack overflow recursion
-            const {actionFn: fn} = item;
-            item.actionFn = () => fn(this.chartModel);
-        }
-        const ret = (item instanceof ContextMenuItem) ? item : new ContextMenuItem(item);
-
-        // build nested menu items
-        if (!isEmpty(ret.items)) {
-            ret.items = ret.items.map(it => this.buildMenuItem(it));
-        }
-
-        return ret;
+        this.items = items.map(it => this.parseToken(it));
     }
 
     parseToken(token) {
@@ -98,15 +75,6 @@ export class ChartContextMenu {
                     hidden: !chartModel,
                     actionFn: () => chartModel.highchart.print()
                 });
-            case 'downloadJPEG':
-                return new ContextMenuItem({
-                    text: 'Download JPEG image',
-                    icon: Icon.fileImage(),
-                    hidden: !chartModel,
-                    actionFn: () => chartModel.highchart.exportChartLocal({
-                        type: 'image/jpeg'
-                    })
-                });
             case 'downloadPNG':
                 return new ContextMenuItem({
                     text: 'Download PNG image',
@@ -123,28 +91,12 @@ export class ChartContextMenu {
                         type: 'image/svg+xml'
                     })
                 });
-            case 'downloadPDF':
-                return new ContextMenuItem({
-                    text: 'Download PDF',
-                    icon: Icon.fileImage(),
-                    hidden: !chartModel,
-                    actionFn: () => chartModel.highchart.exportChartLocal({
-                        type: 'application/pdf'
-                    })
-                });
             case 'downloadCSV':
                 return new ContextMenuItem({
                     text: 'Download CSV',
                     icon: Icon.fileCsv(),
                     hidden: !chartModel,
                     actionFn: () => chartModel.highchart.downloadCSV()
-                });
-            case 'downloadXLS':
-                return new ContextMenuItem({
-                    text: 'Download Excel',
-                    icon: Icon.fileExcel(),
-                    hidden: !chartModel,
-                    actionFn: () => chartModel.highchart.downloadXLS()
                 });
             default:
                 return token;

@@ -16,26 +16,37 @@ export function installCopyToClipboard(Highcharts) {
     const  {Chart, extend} = Highcharts;
 
     extend(Chart.prototype, {
-        copyToClipboardAsync: async function(exportingOptions, chartOptions) {
-            if (!Highcharts.isWebKit) {
-                XH.dangerToast('Copying charts to the clipboard is not supported on this browser');
-                return;
-            }
-
-            try {
-                const blobPromise = convertChartToPngAsync(this, exportingOptions, chartOptions),
-                    clipboardItemInput = new window.ClipboardItem({
-                        // Safari requires an unresolved promise.  See https://bugs.webkit.org/show_bug.cgi?id=222262 for discussion 
-                        'image/png': Highcharts.isSafari ? blobPromise : await blobPromise
-                    });
-                await window.navigator.clipboard.write([clipboardItemInput]);
-                XH.successToast('Chart copied to clipboard');
-            } catch (e) {
-                XH.handleException(e, {showAlert: false, logOnServer: true});
-                XH.dangerToast('Error: Chart could not be copied.  This error has been logged.');            
-            }
-        } 
+        copyToClipboardAsync: copyToClipboardAsyncFactory(Highcharts)
     });  
+}
+
+
+/**
+ * @private
+ * @function copyToClipboardAsyncFactory
+ * @param {Highcharts} Highcharts
+ * @return {function}
+ */
+function copyToClipboardAsyncFactory(Highcharts) {
+    return async function copyToClipboardAsync(exportingOptions, chartOptions) {
+        if (!Highcharts.isWebKit) {
+            XH.dangerToast('Copying charts to the clipboard is not supported on this browser');
+            return;
+        }
+    
+        try {
+            const blobPromise = convertChartToPngAsync(this, exportingOptions, chartOptions),
+                clipboardItemInput = new window.ClipboardItem({
+                    // Safari requires an unresolved promise.  See https://bugs.webkit.org/show_bug.cgi?id=222262 for discussion 
+                    'image/png': Highcharts.isSafari ? blobPromise : await blobPromise
+                });
+            await window.navigator.clipboard.write([clipboardItemInput]);
+            XH.successToast('Chart copied to clipboard');
+        } catch (e) {
+            XH.handleException(e, {showAlert: false, logOnServer: true});
+            XH.dangerToast('Error: Chart could not be copied.  This error has been logged.');            
+        }
+    };
 }
 
 
@@ -53,8 +64,8 @@ async function convertChartToPngAsync(chart, exportingOptions, chartOptions) {
     const svg = await new Promise(
             (resolve, reject)  => chart.getSVGForLocalExport(
                 merge(chart.options.exporting, exportingOptions),
-                chartOptions || {},
-                () => reject('cannot fallback to export server'),
+                chartOptions ?? {},
+                () => reject('Cannot fallback to export server'),
                 (svg) => resolve(svg)
             )
         ),

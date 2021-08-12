@@ -114,7 +114,7 @@ class LocalModel extends HoistModel {
         this.model = model;
         this.aspectRatio = aspectRatio;
         this.contextMenu = new ChartContextMenu({
-            items: model.contextMenu, 
+            items: model.showContextMenu ? ChartModel.defaultContextMenu : [],
             chartModel: model
         });
 
