@@ -87,7 +87,7 @@ export class ChartContextMenu {
                     hidden: !chartModel || !Highcharts.isWebKit,
                     actionFn: () => {
                         const chart = chartModel.highchart;
-                        chart.copyToClipboard();
+                        chart.copyToClipboardAsync();
                
                     }
                 });

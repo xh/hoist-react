@@ -24,11 +24,10 @@ export class ChartModel extends HoistModel {
         'viewFullscreen',
         '-', 
         'copyToClipboard',
-        '-', 
         'printChart',
+        '-',
         'downloadPNG', 
         'downloadSVG', 
-        '-', 
         'downloadCSV'
     ];
 
@@ -44,7 +43,7 @@ export class ChartModel extends HoistModel {
      * @param {Object} c.highchartsConfig - The initial highchartsConfig for this chart.
      * @param {(Object|Object[])} c.series - The initial data series to be displayed.
      * @param {(array|function)} [c.contextMenu] - array of ContextMenuItems, ContextMenuItem configs or
-     *      token strings with which to create chart context menu items.  May also be specified as a
+     *      Highcharts token strings with which to create chart context menu items.  May also be specified as a
      *      function returning an array of ContextMenuItem. Desktop only.
      */
     constructor({

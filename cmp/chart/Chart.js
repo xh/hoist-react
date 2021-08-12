@@ -21,11 +21,11 @@ import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
 import PT from 'prop-types';
 import {ChartModel} from './ChartModel';
 import {installZoomoutGesture} from './impl/zoomout';
+import {installCopyToClipboard} from './impl/copyToClipboard';
 import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
 import {ChartContextMenu} from '../../desktop/cmp/contextmenu/ChartContextMenu';
 import './Chart.scss';
-import {installCopyToClipboard} from './impl/copyToClipboard';
 
 installZoomoutGesture(Highcharts);
 installCopyToClipboard(Highcharts);
@@ -98,13 +98,7 @@ Chart.propTypes = {
     aspectRatio: PT.number,
 
     /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object]),
-
-    /**
-     * Specification of a context menu.
-     *  @see useContextMenu() for more information on accepted values for this prop.
-     */
-    contextMenu: PT.oneOfType([PT.func, PT.array, PT.node])
+    model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object])
 };
 
 class LocalModel extends HoistModel {
@@ -269,7 +263,7 @@ class LocalModel extends HoistModel {
             },
             menuItemDefinitions: {
                 copyToClipboard: {
-                    onclick: function() {this.copyToClipboard()},
+                    onclick: function() {this.copyToClipboardAsync()},
                     text: 'Copy to clipboard'
                 }
             },
@@ -278,16 +272,11 @@ class LocalModel extends HoistModel {
                     menuItems: [                            
                         'viewFullscreen',
                         'separator',
-                        ...Highcharts.isWebKit ? 
-                            [
-                                'copyToClipboard',
-                                'separator'
-                            ] : 
-                            [],
+                        ...Highcharts.isWebKit ? ['copyToClipboard'] : [],
                         'printChart',
+                        'separator',
                         'downloadPNG', 
-                        'downloadSVG', 
-                        'separator', 
+                        'downloadSVG',
                         'downloadCSV'
                     ]
                 }
@@ -299,10 +288,6 @@ class LocalModel extends HoistModel {
             credits: false,
             exporting
         };
-    }
-
-    getDefaultMenuItems() {
-
     }
 
     mergeAxisConfigs(theme, conf) {
