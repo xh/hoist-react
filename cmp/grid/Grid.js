@@ -304,19 +304,19 @@ class GridLocalModel extends HoistModel {
             colId = params.column?.colId,
             record = isNil(recId) ? null : store.getById(recId, true),
             column = isNil(colId) ? null : model.getColumn(colId),
-            {selection} = model;
+            {selectedRecords} = model;
 
 
         if (!agOptions.suppressRowClickSelection) {
             // Adjust selection to target record -- and sync to grid immediately.
-            if (record && !selection.includes(record)) {
+            if (record && !selectedRecords.includes(record)) {
                 selModel.select(record);
             }
 
             if (!record) selModel.clear();
         }
 
-        return this.buildMenuItems(menu.items, record, selModel.records, column, params);
+        return this.buildMenuItems(menu.items, record, selModel.selectedRecords, column, params);
     };
 
     buildMenuItems(recordActions, record, selectedRecords, column, agParams) {
@@ -393,7 +393,7 @@ class GridLocalModel extends HoistModel {
     selectionReaction() {
         const {model} = this;
         return {
-            track: () => [model.isReady, model.selection],
+            track: () => [model.isReady, model.selectedRecords],
             run: () => {
                 if (model.isReady) this.syncSelection();
             }
@@ -642,9 +642,9 @@ class GridLocalModel extends HoistModel {
 
     syncSelection() {
         const {agGridModel, selModel, isReady} = this.model,
-            {ids} = selModel;
-        if (isReady && !isEqual(ids, agGridModel.getSelectedRowNodeIds())) {
-            agGridModel.setSelectedRowNodeIds(ids);
+            {selectedIds} = selModel;
+        if (isReady && !isEqual(selectedIds, agGridModel.getSelectedRowNodeIds())) {
+            agGridModel.setSelectedRowNodeIds(selectedIds);
         }
     }
 

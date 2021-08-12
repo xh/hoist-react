@@ -8,7 +8,7 @@ import {isFunction, isPlainObject} from 'lodash';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {pluralize, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {pluralize, throwIf, withDefault, apiDeprecated} from '@xh/hoist/utils/js';
 import {RestStore} from './data/RestStore';
 import {RestFormModel} from './impl/RestFormModel';
 
@@ -98,7 +98,7 @@ export class RestGridModel extends HoistModel {
     /** @return {StoreSelectionModel} */
     get selModel() {return this.gridModel.selModel}
     /** @return {Record[]} */
-    get selection() {return this.gridModel.selection}
+    get selectedRecords() {return this.gridModel.selectedRecords}
     /** @return {Record} */
     get selectedRecord() {return this.gridModel.selectedRecord}
 
@@ -178,6 +178,12 @@ export class RestGridModel extends HoistModel {
         return this.store.loadData(...args);
     }
 
+    /** @deprecated */
+    get selection() {
+        apiDeprecated('selection', {msg: 'Use selectedRecords instead', v: 'v44'});
+        return this.selectedRecords;
+    }
+
     //-----------------
     // Actions
     //------------------
@@ -221,7 +227,7 @@ export class RestGridModel extends HoistModel {
     }
 
     confirmDeleteRecords() {
-        const records = this.selection,
+        const records = this.selectedRecords,
             warning = this.actionWarning.del,
             delFn = () => records.length > 1 ? this.bulkDeleteRecordsAsync(records) : this.deleteRecordAsync(records[0]);
 

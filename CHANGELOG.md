@@ -29,6 +29,16 @@
 * The `model` prop on `LoadingIndicator` and `Mask` has been replaced with `bind`.  Provide one or
   more `TaskObserver`s to this prop.
 
+### ⚙️ Technical
+* `GridModel` has a new `selectedIds` getter to get the IDs of currently selected records. To
+  provide consistency across models, the following getters have been deprecated and renamed:
+    + `selectedRecordId` has been renamed `selectedId` in `GridModel`, `StoreSelectionModel`, and
+      `DataViewModel`
+    + `selection` has been renamed `selectedRecords` in `GridModel`, `DataViewModel`, and
+      `RestGridModel`
+    + `singleRecord`, `records`, and `ids` have been renamed `selectedRecord`, `selectedRecords`,
+      and `selectedIds`, respectively, in `StoreSelectionModel`
+
 ### ✨ Style
 * Higher contrast on grid context menus for improved legibility.
 

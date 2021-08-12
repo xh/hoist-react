@@ -7,7 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, apiDeprecated} from '@xh/hoist/utils/js';
 import {isFunction, isNumber} from 'lodash';
 
 /**
@@ -132,9 +132,9 @@ export class DataViewModel extends HoistModel {
     get empty()                 {return this.gridModel.empty}
     get selModel()              {return this.gridModel.selModel}
     get hasSelection()          {return this.gridModel.hasSelection}
-    get selection()             {return this.gridModel.selection}
+    get selectedRecords()       {return this.gridModel.selectedRecords}
     get selectedRecord()        {return this.gridModel.selectedRecord}
-    get selectedRecordId()      {return this.gridModel.selectedRecordId}
+    get selectedId()            {return this.gridModel.selectedId}
     get groupBy()               {return this.gridModel.groupBy}
     get sortBy()                {return this.gridModel.sortBy}
 
@@ -148,4 +148,16 @@ export class DataViewModel extends HoistModel {
     clear()                         {return this.gridModel.clear()}
     setGroupBy(colIds)              {return this.gridModel.setGroupBy(colIds)}
     setSortBy(sorters)              {return this.gridModel.setSortBy(sorters)}
+
+    /** @deprecated */
+    get selection() {
+        apiDeprecated('selection', {msg: 'Use selectedRecords instead', v: 'v44'});
+        return this.selectedRecords;
+    }
+
+    /** @deprecated */
+    get selectedRecordId() {
+        apiDeprecated('selectedRecordId', {msg: 'Use selectedId instead', v: 'v44'});
+        return this.selectedId;
+    }
 }
