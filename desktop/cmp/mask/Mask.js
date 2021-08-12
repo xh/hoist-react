@@ -5,16 +5,18 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {spinner} from '@xh/hoist/cmp/spinner';
-import {hoistCmp} from '@xh/hoist/core';
+import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
+import {hoistCmp, HoistModel, TaskObserver, useLocalModel} from '@xh/hoist/core';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
+import {apiRemoved, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import PT from 'prop-types';
 import './Mask.scss';
 
 /**
- * Mask with optional spinner and text - can be explicitly shown or bound to a PendingTaskModel.
+ * Mask with optional spinner and text.
+ *
+ * The mask can be explicitly controlled via props or bound to a Task.
  *
  * Note that the Panel component's `mask` prop provides a common and convenient method for masking
  * sections of the UI without needing to manually create or manage this component.
@@ -22,16 +24,25 @@ import './Mask.scss';
 export const [Mask, mask] = hoistCmp.withFactory({
     displayName: 'Mask',
     className: 'xh-mask',
+    model: false,
 
-    render({model, className, ...props}) {
-        const isDisplayed = withDefault(props.isDisplayed, model?.isPending, false);
+    render({
+        bind,
+        isDisplayed,
+        message,
+        inline = true,
+        spinner = false,
+        className,
+        model
+    }) {
+        apiRemoved('model', {test: model, msg: "Use 'bind' instead", v: 'v44'});
+
+        const impl = useLocalModel(() => new LocalMaskModel(bind));
+
+        isDisplayed = withDefault(isDisplayed, impl.task?.isPending);
+        message = withDefault(message, impl.task?.message);
 
         if (!isDisplayed) return null;
-
-        const message = withDefault(props.message, model?.message),
-            inline = withDefault(props.inline, true),
-            showSpinner = withDefault(props.spinner, false);
-
         return overlay({
             className: classNames(className, Classes.OVERLAY_SCROLL_CONTAINER),
             autoFocus: false,
@@ -42,8 +53,8 @@ export const [Mask, mask] = hoistCmp.withFactory({
             item: vbox({
                 className: 'xh-mask-body',
                 items: [
-                    showSpinner ? spinner() : null,
-                    showSpinner ? vspacer(10) : null,
+                    spinner ? spinnerCmp() : null,
+                    spinner ? vspacer(10) : null,
                     message ? box({className: 'xh-mask-text', item: message}) : null
                 ]
             })
@@ -52,6 +63,9 @@ export const [Mask, mask] = hoistCmp.withFactory({
 });
 
 Mask.propTypes = {
+
+    /** Task(s) that should be monitored to determine if the mask should be displayed. */
+    bind: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(PT.instanceOf(TaskObserver))]),
 
     /** True to display mask. */
     isDisplayed: PT.bool,
@@ -68,3 +82,15 @@ Mask.propTypes = {
     /** Click handler **/
     onClick: PT.func
 };
+
+class LocalMaskModel extends HoistModel {
+    task;
+    constructor(bind) {
+        super();
+        if (bind) {
+            this.task = bind instanceof TaskObserver ?
+                bind :
+                this.markManaged(TaskObserver.trackAll({tasks: bind}));
+        }
+    }
+}

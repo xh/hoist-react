@@ -277,7 +277,7 @@ class XHClass extends HoistBase {
      **/
     @action
     reloadApp() {
-        this.appLoadModel.link(never());
+        never().linkTo(this.appLoadModel);
         window.location.reload(true);
     }
 

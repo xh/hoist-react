@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, escapeRegExp, isArray, isEqual, isNil, isString} from 'lodash';
+import {castArray, difference, escapeRegExp, isArray, isNil, isUndefined, isString} from 'lodash';
 
 import {Filter} from './Filter';
 
@@ -32,8 +32,8 @@ export class FieldFilter extends Filter {
     /** @member {*} */
     value;
 
-    static OPERATORS = ['=', '!=', '>', '>=', '<', '<=', 'like'];
-    static ARRAY_OPERATORS = ['=', '!=', 'like'];
+    static OPERATORS = ['=', '!=', '>', '>=', '<', '<=', 'like', 'not like', 'begins', 'ends'];
+    static ARRAY_OPERATORS = ['=', '!=', 'like', 'not like', 'begins', 'ends'];
 
     /**
      * Constructor - not typically called by apps - create from config via `parseFilter()` instead.
@@ -41,14 +41,16 @@ export class FieldFilter extends Filter {
      * @param {Object} c - FieldFilter config.
      * @param {(string|Field)} c.field - name of Field to filter or Field instance.
      * @param {string} c.op - one of the supported Filter.OPERATORS to use for comparison.
-     * @param {(*|[])} c.value - value(s) to use with operator in filter. When used with the '=',
-     *      '!=', or 'like' operators, value may be specified as an array. In these cases, the
-     *      filter will implement an implicit 'OR' for '='/'like' and an implicit 'AND' for '!='.
+     * @param {(*|[])} c.value - value(s) to use with operator in filter. When used with operators
+     *      in the ARRAY_OPERATORS collection, value may be specified as an array. In these cases,
+     *      the filter will implement an implicit 'OR' for '='/'like'/'begins'/'ends',
+     *      and an implicit 'AND' for '!='/'not like'.
      */
     constructor({field, op, value}) {
         super();
 
         throwIf(!field, 'FieldFilter requires a field');
+        throwIf(isUndefined(value), 'FieldFilter requires a value');
         throwIf(!FieldFilter.OPERATORS.includes(op),
             `FieldFilter requires valid "op" value. Operator "${op}" not recognized.`
         );
@@ -77,7 +79,10 @@ export class FieldFilter extends Filter {
             regExps;
 
         if (store) {
-            const fieldType = store.getField(field).type;
+            const storeField = store.getField(field);
+            if (!storeField) return () => true; // Ignore if field not in store
+
+            const fieldType = storeField.type;
             value = isArray(value) ?
                 value.map(v => parseFieldValue(v, fieldType)) :
                 parseFieldValue(value, fieldType);
@@ -90,9 +95,17 @@ export class FieldFilter extends Filter {
 
         switch (op) {
             case '=':
-                return r => value.includes(getVal(r));
+                return r => {
+                    let v = getVal(r);
+                    if (isNil(v) || v === '') v = null;
+                    return value.includes(v);
+                };
             case '!=':
-                return r => !value.includes(getVal(r));
+                return r => {
+                    let v = getVal(r);
+                    if (isNil(v) || v === '') v = null;
+                    return !value.includes(v);
+                };
             case '>':
                 return r => {
                     const v = getVal(r);
@@ -116,20 +129,31 @@ export class FieldFilter extends Filter {
             case 'like':
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
                 return r => regExps.some(re => re.test(getVal(r)));
+            case 'not like':
+                regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
+                return r => regExps.every(re => !re.test(getVal(r)));
+            case 'begins':
+                regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
+                return r => regExps.some(re => re.test(getVal(r)));
+            case 'ends':
+                regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
+                return r => regExps.some(re => re.test(getVal(r)));
             default:
                 throw XH.exception(`Unknown operator: ${op}`);
         }
     }
 
-    isEmptyCheck() {
-        const {value, op} = this;
-        return (
-            isEqual(value, [null, '']) || isEqual(value, ['', null]) &&
-            (op === '!=' || op === '=')
-        );
-    }
-
     equals(other) {
-        return other?.isFieldFilter && other.op === this.op && isEqual(other.value, this.value);
+        if (other === this) return true;
+        return (
+            other?.isFieldFilter &&
+            other.field === this.field &&
+            other.op === this.op &&
+            (
+                isArray(other.value) && isArray(this.value) ?
+                    other.value.length === this.value.length && difference(other.value, this.value).length === 0 :
+                    other.value === this.value
+            )
+        );
     }
 }

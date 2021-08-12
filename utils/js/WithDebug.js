@@ -31,7 +31,7 @@ export function withDebug(msgs, fn, source) {
  * @deprecated use withDebug instead.
  */
 export function withShortDebug(msgs, fn, source) {
-    apiDeprecated(true, 'withShortDebug', 'Use withDebug() instead');
+    apiDeprecated('withShortDebug', {msg: 'Use withDebug() instead', v: 'v44'});
     return withDebug(msgs, fn, source);
 }
 

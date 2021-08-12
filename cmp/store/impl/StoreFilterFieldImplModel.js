@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {FieldType} from '@xh/hoist/data';
+import {FieldType, withFilterByKey} from '@xh/hoist/data';
 import {action, makeObservable} from '@xh/hoist/mobx';
 import {stripTags, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {
@@ -120,7 +120,15 @@ export class StoreFilterFieldImplModel extends HoistModel {
     // Implementation
     //------------------------
     applyFilter() {
-        this.store?.setFilter(this.filter);
+        const {store} = this;
+        if (!store) return;
+
+        const key = this.xhId,
+            testFn = this.filter,
+            filter = testFn ? {key, testFn} : null;
+
+        const ret = withFilterByKey(store.filter, filter, key);
+        store.setFilter(ret);
     }
 
     regenerateFilter() {

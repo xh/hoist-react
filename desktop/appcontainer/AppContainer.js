@@ -11,8 +11,11 @@ import {errorBoundary} from '@xh/hoist/core/impl/ErrorBoundary';
 import {changelogDialog} from '@xh/hoist/desktop/appcontainer/ChangelogDialog';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
-import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/ColChooserDialog';
-import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/ColChooserModel';
+import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserDialog';
+import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserModel';
+import {columnHeaderFilter} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilter';
+import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
+import {gridFilterDialog} from '@xh/hoist/desktop/cmp/grid/impl/filter/GridFilterDialog';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
@@ -41,7 +44,10 @@ installDesktopImpls({
     storeFilterFieldImpl,
     pinPadImpl,
     colChooser,
+    columnHeaderFilter,
+    gridFilterDialog,
     ColChooserModel,
+    ColumnHeaderFilterModel,
     StoreContextMenu
 });
 /**
@@ -115,7 +121,7 @@ const appContainerView = hoistCmp.factory({
                 }),
                 versionBar()
             ),
-            mask({model: model.appLoadModel, spinner: true}),
+            mask({bind: model.appLoadModel, spinner: true}),
             aboutDialog(),
             changelogDialog(),
             feedbackDialog(),

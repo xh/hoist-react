@@ -6,7 +6,7 @@
  */
 import {HoistModel, managed, PersistenceProvider, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {ensureUniqueBy, apiRemoved, throwIf} from '@xh/hoist/utils/js';
+import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {find, isString, isUndefined, without, difference} from 'lodash';
 import {TabModel} from './TabModel';
 
@@ -84,7 +84,6 @@ export class TabContainerModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
-        apiRemoved(switcherPosition, 'switcherPosition', 'Please specify `switcher` instead.');
 
         // Create default switcher props
         if (switcher === true) {

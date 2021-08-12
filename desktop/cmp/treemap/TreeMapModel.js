@@ -202,7 +202,7 @@ export class TreeMapModel extends HoistModel {
     }
 
     get selectedIds() {
-        return this.gridModel?.selModel.ids ?? [];
+        return this.gridModel?.selModel.selectedIds ?? [];
     }
 
     @computed

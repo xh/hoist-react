@@ -9,7 +9,11 @@ import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {div, fragment, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
-import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
+import {
+    colChooser as desktopColChooser,
+    gridFilterDialog,
+    StoreContextMenu
+} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {computed, observer} from '@xh/hoist/mobx';
@@ -67,15 +71,14 @@ export const [Grid, grid] = hoistCmp.withFactory({
      * @param ref
      */
     render({model, className, ...props}, ref) {
-        apiRemoved(props.hideHeaders, 'hideHeaders', 'Specify hideHeaders on the GridModel instead.');
-        apiRemoved(props.onKeyDown, 'onKeyDown', 'Specify onKeyDown on the GridModel instead.');
-        apiRemoved(props.onRowClicked, 'onRowClicked', 'Specify onRowClicked on the GridModel instead.');
-        apiRemoved(props.onRowDoubleClicked, 'onRowDoubleClicked', 'Specify onRowDoubleClicked on the GridModel instead.');
-        apiRemoved(props.onCellClicked, 'onCellClicked', 'Specify onCellClicked on the GridModel instead.');
-        apiRemoved(props.onCellDoubleClicked, 'onCellDoubleClicked', 'Specify onCellDoubleClicked on the GridModel instead.');
-        apiRemoved(props.agOptions?.rowClassRules, 'agOptions.rowClassRules', 'Specify rowClassRules on the GridModel instead.');
+        apiRemoved('onKeyDown', {test: props.onKeyDown, msg: 'Specify onKeyDown on the GridModel instead.', v: 'v43'});
+        apiRemoved('onRowClicked', {test: props.onRowClicked, msg: 'Specify onRowClicked on the GridModel instead.', v: 'v43'});
+        apiRemoved('onRowDoubleClicked', {test: props.onRowDoubleClicked, msg: 'Specify onRowDoubleClicked on the GridModel instead.', v: 'v43'});
+        apiRemoved('onCellClicked', {test: props.onCellClicked, msg: 'Specify onCellClicked on the GridModel instead.', v: 'v43'});
+        apiRemoved('onCellDoubleClicked', {test: props.onCellDoubleClicked, msg: 'Specify onCellDoubleClicked on the GridModel instead.', v: 'v43'});
+        apiRemoved('agOptions.rowClassRules', {test: props.agOptions?.rowClassRules, msg: 'Specify rowClassRules on the GridModel instead.', v: 'v43'});
 
-        const {store, treeMode, treeStyle, colChooserModel} = model,
+        const {store, treeMode, treeStyle, colChooserModel, filterModel} = model,
             impl = useLocalModel(() => new GridLocalModel(model, props)),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
             maxDepth = impl.isHierarchical ? store.maxDepth : null;
@@ -93,7 +96,8 @@ export const [Grid, grid] = hoistCmp.withFactory({
                 onKeyDown: impl.onKeyDown,
                 ref: composeRefs(impl.viewRef, ref)
             }),
-            (colChooserModel ? platformColChooser({model: colChooserModel}) : null)
+            (colChooserModel ? platformColChooser({model: colChooserModel}) : null),
+            (filterModel ? gridFilterDialog({model: filterModel}) : null)
         );
     }
 });
@@ -300,19 +304,19 @@ class GridLocalModel extends HoistModel {
             colId = params.column?.colId,
             record = isNil(recId) ? null : store.getById(recId, true),
             column = isNil(colId) ? null : model.getColumn(colId),
-            {selection} = model;
+            {selectedRecords} = model;
 
 
         if (!agOptions.suppressRowClickSelection) {
             // Adjust selection to target record -- and sync to grid immediately.
-            if (record && !selection.includes(record)) {
+            if (record && !selectedRecords.includes(record)) {
                 selModel.select(record);
             }
 
             if (!record) selModel.clear();
         }
 
-        return this.buildMenuItems(menu.items, record, selModel.records, column, params);
+        return this.buildMenuItems(menu.items, record, selModel.selectedRecords, column, params);
     };
 
     buildMenuItems(recordActions, record, selectedRecords, column, agParams) {
@@ -353,10 +357,15 @@ class GridLocalModel extends HoistModel {
                 icon = convertIconToHtml(icon);
             }
 
+            const cssClasses = ['xh-grid-menu-option'];
+            if (displaySpec.intent) cssClasses.push(`xh-grid-menu-option--intent-${displaySpec.intent}`);
+            if (displaySpec.className) cssClasses.push(displaySpec.className);
+
             items.push({
                 name: displaySpec.text,
                 shortcut: displaySpec.secondaryText,
                 icon,
+                cssClasses,
                 subMenu: childItems,
                 tooltip: displaySpec.tooltip,
                 disabled: displaySpec.disabled,
@@ -384,7 +393,7 @@ class GridLocalModel extends HoistModel {
     selectionReaction() {
         const {model} = this;
         return {
-            track: () => [model.isReady, model.selection],
+            track: () => [model.isReady, model.selectedRecords],
             run: () => {
                 if (model.isReady) this.syncSelection();
             }
@@ -633,9 +642,9 @@ class GridLocalModel extends HoistModel {
 
     syncSelection() {
         const {agGridModel, selModel, isReady} = this.model,
-            {ids} = selModel;
-        if (isReady && !isEqual(ids, agGridModel.getSelectedRowNodeIds())) {
-            agGridModel.setSelectedRowNodeIds(ids);
+            {selectedIds} = selModel;
+        if (isReady && !isEqual(selectedIds, agGridModel.getSelectedRowNodeIds())) {
+            agGridModel.setSelectedRowNodeIds(selectedIds);
         }
     }
 
