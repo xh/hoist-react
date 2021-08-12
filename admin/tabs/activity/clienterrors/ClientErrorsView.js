@@ -6,13 +6,12 @@
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {creates, hoistCmp} from '@xh/hoist/core';
-import {button, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
+import {button, buttonGroup, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {dateInput} from '@xh/hoist/desktop/cmp/input';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {buttonGroup} from '@xh/hoist/kit/blueprint';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {clientErrorDetail} from './ClientErrorDetail';
 import {ClientErrorsModel} from './ClientErrorsModel';
