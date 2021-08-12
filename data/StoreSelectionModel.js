@@ -128,25 +128,25 @@ export class StoreSelectionModel extends HoistModel {
 
     /** @deprecated */
     get records() {
-        apiDeprecated('records', {msg: 'Use selectedRecords instead', v: 'v44'});
+        apiDeprecated('StoreSelectionModel.records', {msg: 'Use selectedRecords instead', v: 'v44'});
         return this.selectedRecords;
     }
 
     /** @deprecated */
     get ids() {
-        apiDeprecated('ids', {msg: 'Use selectedIds instead', v: 'v44'});
+        apiDeprecated('StoreSelectionModel.ids', {msg: 'Use selectedIds instead', v: 'v44'});
         return this.selectedIds;
     }
 
     /** @deprecated */
     get singleRecord() {
-        apiDeprecated('singleRecord', {msg: 'Use selectedRecord instead', v: 'v44'});
+        apiDeprecated('StoreSelectionModel.singleRecord', {msg: 'Use selectedRecord instead', v: 'v44'});
         return this.selectedRecord;
     }
 
     /** @deprecated */
     get selectedRecordId() {
-        apiDeprecated('selectedRecordId', {msg: 'Use selectedId instead', v: 'v44'});
+        apiDeprecated('StoreSelectionModel.selectedRecordId', {msg: 'Use selectedId instead', v: 'v44'});
         return this.selectedId;
     }
 

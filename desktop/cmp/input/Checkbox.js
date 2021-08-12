@@ -19,7 +19,7 @@ export const [Checkbox, checkbox] = hoistCmp.withFactory({
     displayName: 'Checkbox',
     className: 'xh-check-box',
     render(props, ref) {
-        apiRemoved('labelAlign', {test: props.labelAlign, msg: 'Use labelSide instead.', v: 'v43'});
+        apiRemoved('Checkbox.labelAlign', {test: props.labelAlign, msg: 'Use labelSide instead.', v: 'v43'});
 
         return useHoistInputModel(cmp, props, ref);
     }

@@ -269,7 +269,7 @@ export class Column {
 
         this.cellClass = cellClass;
         this.cellClassRules = cellClassRules || {};
-        apiRemoved('agOptions.cellClassRules', {test: agOptions?.cellClassRules, msg: 'Specify cellClassRules as a top-level Column config instead.', v: 'v44'});
+        apiRemoved('Column.agOptions.cellClassRules', {test: agOptions?.cellClassRules, msg: 'Specify cellClassRules as a top-level Column config instead.', v: 'v44'});
 
         this.align = align;
 
