@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {isUndefined} from 'lodash';
+import {isUndefined, sumBy} from 'lodash';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 
 /**
@@ -81,6 +81,14 @@ export class TaskObserver {
     }
 
     /**
+     * The number of pending tasks. Observable.
+     * @returns {number}
+     */
+    get pendingCount() {
+        return 0;
+    }
+
+    /**
      * The message describing the executing task. Observable.
      * @returns {?string}
      */
@@ -125,6 +133,11 @@ class CompoundObserver extends TaskObserver {
     }
 
     @computed
+    get pendingCount() {
+        return sumBy(this._subtasks, 'pendingCount');
+    }
+
+    @computed
     get message() {
         const msg = this._message;
         if (!isUndefined(msg)) return msg;
@@ -159,6 +172,7 @@ class PromiseObserver extends TaskObserver {
 
     get isPromiseObserver()     {return true}
     get isPending()             {return this._isPending}
+    get pendingCount()          {return this._isPending ? 1 : 0}
     get message()               {return this._message}
 
     constructor(promise, message) {

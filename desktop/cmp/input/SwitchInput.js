@@ -18,7 +18,7 @@ export const [SwitchInput, switchInput] = hoistCmp.withFactory({
     displayName: 'SwitchInput',
     className: 'xh-switch-input',
     render(props, ref) {
-        apiRemoved('labelAlign', {test: props.labelAlign, msg: 'Use labelSide instead.', v: 'v43'});
+        apiRemoved('SwitchInput.labelAlign', {test: props.labelAlign, msg: 'Use labelSide instead.', v: 'v43'});
 
         return useHoistInputModel(cmp, props, ref);
     }
