@@ -13,6 +13,10 @@
   background-color: var(--xh-blue-gray);
   color: white;
 
+  &--compact {
+    font-size: 0.5em;
+  }
+
   &--intent-primary {
     background-color: var(--xh-intent-primary);
   }
@@ -27,21 +31,5 @@
 
   &--intent-danger {
     background-color: var(--xh-intent-danger);
-  }
-
-  &--position-top {
-    position: relative;
-    top: -6px;
-    margin-left: 2px;
-  }
-
-  &--position-bottom {
-    position: relative;
-    bottom: -6px;
-    margin-left: 2px;
-  }
-
-  &--compact {
-    font-size: 0.5em;
   }
 }
