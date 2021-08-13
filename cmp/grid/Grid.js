@@ -177,6 +177,7 @@ class GridLocalModel extends HoistModel {
         this.addReaction(this.dataReaction());
         this.addReaction(this.groupReaction());
         this.addReaction(this.rowHeightReaction());
+        this.addReaction(this.sizingModeReaction());
         this.addReaction(this.validationDisplayReaction());
 
         this.agOptions = merge(this.createDefaultAgOptions(), props.agOptions || {});
@@ -514,6 +515,17 @@ class GridLocalModel extends HoistModel {
                 this.doWithPreservedState({expansion: false}, () => {
                     colApi.applyColumnState({state: colState, applyOrder: true});
                 });
+            }
+        };
+    }
+
+    sizingModeReaction() {
+        const {model} = this;
+        return {
+            track: () => [model.autosizeEnabled, model.sizingMode],
+            run: ([enabled]) => {
+                if (!enabled) return;
+                model.autosizeAsync();
             }
         };
     }

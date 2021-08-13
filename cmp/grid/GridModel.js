@@ -118,6 +118,8 @@ export class GridModel extends HoistModel {
     fullRowEditing;
     /** @member {boolean} */
     hideEmptyTextBeforeLoad;
+    /** @member {boolean} */
+    autosizeOnSizingModeChange;
 
     /** @member {AgGridModel} */
     @managed agGridModel;
@@ -212,7 +214,10 @@ export class GridModel extends HoistModel {
      * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
      * @param {boolean} [c.showGroupRowCounts] - true (default) to show a count of group member
      *      rows within each full-width group row.
-     * @param {string} [c.sizingMode] - one of large, standard, compact, tiny
+     * @param {string} [c.sizingMode] - one of large, standard, compact, tiny. If undefined, will
+     *      default and bind to `XH.sizingMode`.
+     * @param {boolean} [c.autosizeOnSizingModeChange] - trigger autosize whenever the sizing mode
+     *      changes. Default true.
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
      * @param {string} [c.treeStyle] - enable treeMode-specific styles (row background highlights
@@ -298,7 +303,8 @@ export class GridModel extends HoistModel {
 
         persistWith,
 
-        sizingMode = 'standard',
+        sizingMode,
+        autosizeOnSizingModeChange = true,
         showHover = false,
         rowBorders = false,
         rowClassFn = null,
@@ -382,6 +388,9 @@ export class GridModel extends HoistModel {
 
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
+
+        sizingMode = this.parseSizingMode(sizingMode);
+        this.autosizeOnSizingModeChange = autosizeOnSizingModeChange;
 
         this.agGridModel = new AgGridModel({
             sizingMode,
@@ -1371,6 +1380,21 @@ export class GridModel extends HoistModel {
         });
 
         return Array.from(ret);
+    }
+
+    parseSizingMode(sizingMode) {
+        const useGlobalSizingMode = !sizingMode;
+        sizingMode = useGlobalSizingMode ? XH.sizingMode : sizingMode;
+
+        // Bind this model's sizing mode with the global sizing mode
+        if (useGlobalSizingMode) {
+            this.addReaction({
+                track: () => XH.sizingMode,
+                run: (mode) => this.setSizingMode(mode)
+            });
+        }
+
+        return sizingMode;
     }
 
     parseSelModel(selModel) {

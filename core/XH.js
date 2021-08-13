@@ -327,6 +327,19 @@ class XHClass extends HoistBase {
         return this.acm.themeModel.darkTheme;
     }
 
+    //------------------------
+    // Sizing Mode Support
+    //------------------------
+    /** Set the global sizing mode. */
+    setSizingMode(sizingMode) {
+        return this.acm.sizingModeModel.setSizingMode(sizingMode);
+    }
+
+    /** Get the global sizing mode. */
+    get sizingMode() {
+        return this.acm.sizingModeModel.sizingMode;
+    }
+
     //-------------------------
     // Routing support
     //-------------------------
