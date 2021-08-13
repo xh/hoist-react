@@ -1,9 +1,8 @@
 # Changelog
 
-## v42.0.0-SNAPSHOT - unreleased
+## v42.0.0 - 2021-08-13
 
 ### 🎁 New Features
-
 * Column-level filtering is now officially supported for desktop grids!
     * New `GridModel.filterModel` config accepts a config object to customize filtering options, or
       `true` to enable grid-based filtering with defaults.
@@ -15,6 +14,8 @@
 * Mobile `NavigatorModel` provides a new 'pull down' gesture to refresh the app.
   This gesture is enabled by default, but can be disabled via the `pullDownToRefresh` flag.
 * `RecordAction` now supports a `className` config.
+* `Chart` supports 'Copy to Clipboard' in its standard menu button actions (copy, full-screen, export, etc.)
+* `Chart` provides a default context menu with its standard menu button actions.
 
 ### 💥 Breaking Changes
 
@@ -43,7 +44,7 @@
 * Higher contrast on grid context menus for improved legibility.
 
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v41.3.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v41.3.0...v42.0.0)
 
 ## v41.3.0 - 2021-08-09
 
