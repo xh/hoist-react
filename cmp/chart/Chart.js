@@ -18,13 +18,13 @@ import {
     useOnVisibleChange
 } from '@xh/hoist/utils/react';
 import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
+import {Icon} from '@xh/hoist/icon';
 import PT from 'prop-types';
 import {ChartModel} from './ChartModel';
 import {installZoomoutGesture} from './impl/zoomout';
 import {installCopyToClipboard} from './impl/copyToClipboard';
 import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
-import {ChartContextMenu} from '../../desktop/cmp/contextmenu/ChartContextMenu';
 import './Chart.scss';
 
 installZoomoutGesture(Highcharts);
@@ -40,12 +40,7 @@ export const [Chart, chart] = hoistCmp.withFactory({
     model: uses(ChartModel),
     className: 'xh-chart',
 
-    render({
-        model, 
-        className, 
-        aspectRatio, 
-        ...props
-    }, ref) {
+    render({model, className, aspectRatio, ...props}, ref) {
 
         if (!Highcharts) {
             console.error(
@@ -85,7 +80,7 @@ export const [Chart, chart] = hoistCmp.withFactory({
             })
         });
 
-        return useContextMenu(coreContents, impl.contextMenu.items);
+        return useContextMenu(coreContents, impl.contextMenu);
     }
 });
 
@@ -113,10 +108,7 @@ class LocalModel extends HoistModel {
         makeObservable(this);
         this.model = model;
         this.aspectRatio = aspectRatio;
-        this.contextMenu = new ChartContextMenu({
-            items: model.showContextMenu ? ChartModel.defaultContextMenu : [],
-            chartModel: model
-        });
+        this.contextMenu = this.getContextMenu();
 
         this.addReaction({
             track: () => [
@@ -187,7 +179,7 @@ class LocalModel extends HoistModel {
     onResize = (size) => {
         if (!this.chart) return;
         const {width, height} = this.getChartDims(size);
-        
+
         if (this.chart.fullscreen.isOpen) return;
 
         this.chart.setSize(width, height, false);
@@ -269,13 +261,13 @@ class LocalModel extends HoistModel {
             },
             buttons: {
                 contextButton: {
-                    menuItems: [                            
+                    menuItems: [
                         'viewFullscreen',
                         'separator',
                         ...Highcharts.isWebKit ? ['copyToClipboard'] : [],
                         'printChart',
                         'separator',
-                        'downloadPNG', 
+                        'downloadPNG',
                         'downloadSVG',
                         'downloadCSV'
                     ]
@@ -342,5 +334,44 @@ class LocalModel extends HoistModel {
     //---------------------------
     onSetExtremes = () => {
 
+    }
+
+    getContextMenu() {
+        if (!this.model.showContextMenu || !XH.isDesktop) return null;
+        return [
+            {
+                text: 'View in full screen',
+                icon: Icon.expand(),
+                actionFn: () => this.chart.fullscreen.toggle()
+            },
+            '-',
+            {
+                text: 'Copy to clipboard',
+                icon: Icon.copy(),
+                hidden: !Highcharts.isWebKit,
+                actionFn: () => this.chart.copyToClipboardAsync()
+            },
+            {
+                text: 'Print chart',
+                icon: Icon.print(),
+                actionFn: () => this.chart.print()
+            },
+            '-',
+            {
+                text: 'Download PNG image',
+                icon: Icon.fileImage(),
+                actionFn: () => this.chart.exportChartLocal()
+            },
+            {
+                text: 'Download SVG vector image',
+                icon: Icon.fileImage(),
+                actionFn: () => this.chart.exportChartLocal({type: 'image/svg+xml'})
+            },
+            {
+                text: 'Download CSV',
+                icon: Icon.fileCsv(),
+                actionFn: () => this.chart.downloadCSV()
+            }
+        ];
     }
 }

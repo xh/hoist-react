@@ -6,7 +6,6 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, cloneDeep, merge} from 'lodash';
 
 /**
@@ -19,17 +18,6 @@ export class ChartModel extends HoistModel {
 
     /** @member {boolean} */
     showContextMenu;
-
-    static defaultContextMenu = [
-        'viewFullscreen',
-        '-', 
-        'copyToClipboard',
-        'printChart',
-        '-',
-        'downloadPNG', 
-        'downloadSVG', 
-        'downloadCSV'
-    ];
 
     /**
      * The HighCharts instance currently being displayed. This may be used for reading
@@ -44,16 +32,9 @@ export class ChartModel extends HoistModel {
      * @param {(Object|Object[])} c.series - The initial data series to be displayed.
      * @param {Boolean} [c.showContextMenu] - true to showContextMenu.  Defaults to true.  Desktop only.
      */
-    constructor({
-        highchartsConfig, 
-        series = [], 
-        showContextMenu = true,
-        config
-    } = {}
-    ) {
+    constructor({highchartsConfig, series = [], showContextMenu = true} = {}) {
         super();
         makeObservable(this);
-        throwIf(config, 'ChartModel "config" has been removed. Please use "highchartsConfig" instead.');
         this.highchartsConfig = highchartsConfig;
         this.series = castArray(series);
         this.showContextMenu = showContextMenu;

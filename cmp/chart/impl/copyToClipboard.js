@@ -9,68 +9,50 @@ import {merge} from 'lodash';
 
 /**
  * Copy the chart in it's current state to the clipboard.
- * Works only on webkit based browsers.
+ *  Works only on webkit based browsers.
+ * @private
  */
 export function installCopyToClipboard(Highcharts) {
     if (!Highcharts) return;
-    const  {Chart, extend} = Highcharts;
+    const {Chart, extend} = Highcharts;
 
     extend(Chart.prototype, {
-        copyToClipboardAsync: copyToClipboardAsyncFactory(Highcharts)
-    });  
+        copyToClipboardAsync: async function() {
+            if (!Highcharts.isWebKit) {
+                XH.dangerToast('Copying charts to the clipboard is not supported on this browser');
+                return;
+            }
+
+            try {
+                const blobPromise = convertChartToPngAsync(this),
+                    clipboardItemInput = new window.ClipboardItem({
+                        // Safari requires an unresolved promise.  See https://bugs.webkit.org/show_bug.cgi?id=222262 for discussion
+                        'image/png': Highcharts.isSafari ? blobPromise : await blobPromise
+                    });
+                await window.navigator.clipboard.write([clipboardItemInput]);
+                XH.successToast('Chart copied to clipboard');
+            } catch (e) {
+                XH.handleException(e, {showAlert: false, logOnServer: true});
+                XH.dangerToast('Error: Chart could not be copied.  This error has been logged.');
+            }
+        }
+    });
 }
 
-
-/**
- * @private
- * @function copyToClipboardAsyncFactory
- * @param {Highcharts} Highcharts
- * @return {function}
- */
-function copyToClipboardAsyncFactory(Highcharts) {
-    return async function copyToClipboardAsync(exportingOptions, chartOptions) {
-        if (!Highcharts.isWebKit) {
-            XH.dangerToast('Copying charts to the clipboard is not supported on this browser');
-            return;
-        }
-    
-        try {
-            const blobPromise = convertChartToPngAsync(this, exportingOptions, chartOptions),
-                clipboardItemInput = new window.ClipboardItem({
-                    // Safari requires an unresolved promise.  See https://bugs.webkit.org/show_bug.cgi?id=222262 for discussion 
-                    'image/png': Highcharts.isSafari ? blobPromise : await blobPromise
-                });
-            await window.navigator.clipboard.write([clipboardItemInput]);
-            XH.successToast('Chart copied to clipboard');
-        } catch (e) {
-            XH.handleException(e, {showAlert: false, logOnServer: true});
-            XH.dangerToast('Error: Chart could not be copied.  This error has been logged.');            
-        }
-    };
-}
-
-
-/**
- * This is the main function
- *
- * @private
- * @function convertChartToPngAsync
- * @param {Highcharts.Chart} chart
- * @param {Highcharts.Exporting.ExportingOptions} exportingOptions
- * @param {Highcharts.Options} chartOptions
- * @return {blob}
- */
-async function convertChartToPngAsync(chart, exportingOptions, chartOptions) {
+//------------------
+// Implementation
+//------------------
+async function convertChartToPngAsync(chart) {
     const svg = await new Promise(
             (resolve, reject)  => chart.getSVGForLocalExport(
-                merge(chart.options.exporting, exportingOptions),
-                chartOptions ?? {},
+                merge(chart.options.exporting),
+                {},
                 () => reject('Cannot fallback to export server'),
                 (svg) => resolve(svg)
             )
         ),
         svgUrl = svgToDataUrl(svg),
-        pngDataUrl = await svgUrlToPngDataUrlAsync(svgUrl, exportingOptions?.scale),
+        pngDataUrl = await svgUrlToPngDataUrlAsync(svgUrl),
         ret = await loadBlob(pngDataUrl);
 
     memoryCleanup(svgUrl);
@@ -81,18 +63,11 @@ const domurl = window.URL || window.webkitURL || window;
 function memoryCleanup(svgUrl) {
     try {
         domurl.revokeObjectURL(svgUrl);
-    } catch (e) {
-        // Ignore
-    }
+    } catch (e) {}
 }
 
 /**
  * Convert dataUri converted to blob
- *
- * @private
- * @function loadBlob
- * @param {string} svg
- * @return {blob}
  */
 async function loadBlob(dataUrl) {
     const fetched = await fetch(dataUrl);
@@ -101,11 +76,6 @@ async function loadBlob(dataUrl) {
 
 /**
  * Get blob URL from SVG code. Falls back to normal data URI for Safari
- *
- * @private
- * @function svgToDataURL
- * @param {string} svg
- * @return {string}
  */
 function svgToDataUrl(svg) {
     // Webkit and not chrome
@@ -125,7 +95,6 @@ function svgToDataUrl(svg) {
             }));
         }
     } catch (e) {
-        // Ignore
     }
 
     // safari, firefox, or svgs with foreignObect returns this
@@ -135,12 +104,6 @@ function svgToDataUrl(svg) {
 
 /**
  * Get PNG data:URL from image URL. Pass in callbacks to handle results.
- *
- * @private
- * @function svgUrlToPngDataUrlAsync
- * @param {string} imageURL
- * @param {number} scale
- * @return {Promise<string>}
  */
 async function svgUrlToPngDataUrlAsync(imageURL, scale = 1) {
     const img = new window.Image(),
