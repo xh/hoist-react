@@ -1,6 +1,6 @@
 # Changelog
 
-## v42.0.0-SNAPSHOT - unreleased
+## v42.0.0 - 2021-08-13
 
 ### 🎁 New Features
 * Column-level filtering is now officially supported for desktop grids!
@@ -44,7 +44,7 @@
 * Higher contrast on grid context menus for improved legibility.
 
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v41.3.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v41.3.0...v42.0.0)
 
 ## v41.3.0 - 2021-08-09
 
