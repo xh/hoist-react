@@ -4,6 +4,8 @@
 
 ### 🎁 New Features
 
+* Chart contextMenu enabled by default with several options for exporting or copying a chart.
+* Chart operation 'Copy to Clipboard' added to default Chart export menu button and to context menu. 
 * Column-level filtering is now officially supported for desktop grids!
     * New `GridModel.filterModel` config accepts a config object to customize filtering options, or
       `true` to enable grid-based filtering with defaults.
