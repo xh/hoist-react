@@ -3,9 +3,6 @@
 ## v42.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-
-* Chart contextMenu enabled by default with several options for exporting or copying a chart.
-* Chart operation 'Copy to Clipboard' added to default Chart export menu button and to context menu. 
 * Column-level filtering is now officially supported for desktop grids!
     * New `GridModel.filterModel` config accepts a config object to customize filtering options, or
       `true` to enable grid-based filtering with defaults.
@@ -17,6 +14,8 @@
 * Mobile `NavigatorModel` provides a new 'pull down' gesture to refresh the app.
   This gesture is enabled by default, but can be disabled via the `pullDownToRefresh` flag.
 * `RecordAction` now supports a `className` config.
+* `Chart` supports 'Copy to Clipboard' in its standard menu button actions (copy, full-screen, export, etc.)
+* `Chart` provides a default context menu with its standard menu button actions.
 
 ### 💥 Breaking Changes
 

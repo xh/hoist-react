@@ -30,7 +30,7 @@ export class ChartModel extends HoistModel {
      * @param {Object} c - ChartModel configuration.
      * @param {Object} c.highchartsConfig - The initial highchartsConfig for this chart.
      * @param {(Object|Object[])} c.series - The initial data series to be displayed.
-     * @param {Boolean} [c.showContextMenu] - true to showContextMenu.  Defaults to true.  Desktop only.
+     * @param {boolean} [c.showContextMenu] - true to showContextMenu.  Defaults to true.  Desktop only.
      */
     constructor({highchartsConfig, series = [], showContextMenu = true} = {}) {
         super();
