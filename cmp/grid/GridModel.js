@@ -118,8 +118,6 @@ export class GridModel extends HoistModel {
     fullRowEditing;
     /** @member {boolean} */
     hideEmptyTextBeforeLoad;
-    /** @member {boolean} */
-    autosizeOnSizingModeChange;
 
     /** @member {AgGridModel} */
     @managed agGridModel;
@@ -216,8 +214,6 @@ export class GridModel extends HoistModel {
      *      rows within each full-width group row.
      * @param {string} [c.sizingMode] - one of large, standard, compact, tiny. If undefined, will
      *      default and bind to `XH.sizingMode`.
-     * @param {boolean} [c.autosizeOnSizingModeChange] - trigger autosize whenever the sizing mode
-     *      changes. Default true.
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
      * @param {string} [c.treeStyle] - enable treeMode-specific styles (row background highlights
@@ -304,7 +300,6 @@ export class GridModel extends HoistModel {
         persistWith,
 
         sizingMode,
-        autosizeOnSizingModeChange = true,
         showHover = false,
         rowBorders = false,
         rowClassFn = null,
@@ -361,7 +356,7 @@ export class GridModel extends HoistModel {
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
         this.autosizeOptions = defaults(autosizeOptions, {
-            mode: GridAutosizeMode.ON_DEMAND,
+            mode: GridAutosizeMode.ON_SIZING_MODE,
             includeCollapsedChildren: false,
             showMask: true,
             bufferPx: 5,
@@ -390,7 +385,6 @@ export class GridModel extends HoistModel {
         this.setSortBy(sortBy);
 
         sizingMode = this.parseSizingMode(sizingMode);
-        this.autosizeOnSizingModeChange = autosizeOnSizingModeChange;
 
         this.agGridModel = new AgGridModel({
             sizingMode,
@@ -1521,7 +1515,7 @@ export class GridModel extends HoistModel {
 
 /**
  * @typedef {Object} GridAutosizeOptions
- * @property {GridAutosizeMode} [mode] - defaults to GridAutosizeMode.ON_DEMAND.
+ * @property {GridAutosizeMode} [mode] - defaults to GridAutosizeMode.ON_SIZING_MODE.
  * @property {number} [bufferPx] -  additional pixels to add to the size of each column beyond its
  *      absolute minimum.  May be used to adjust the spacing in the grid.  Default is 5.
  * @property {boolean} [showMask] - true to show mask over the grid during the autosize operation.

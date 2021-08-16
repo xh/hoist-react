@@ -6,7 +6,7 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
-import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
+import {getTreeStyleClasses, GridAutosizeMode} from '@xh/hoist/cmp/grid';
 import {div, fragment, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {
@@ -522,9 +522,9 @@ class GridLocalModel extends HoistModel {
     sizingModeReaction() {
         const {model} = this;
         return {
-            track: () => [model.autosizeEnabled, model.sizingMode],
-            run: ([enabled]) => {
-                if (!enabled) return;
+            track: () => model.sizingMode,
+            run: () => {
+                if (model.autosizeOptions.mode !== GridAutosizeMode.ON_SIZING_MODE) return;
                 model.autosizeAsync();
             }
         };

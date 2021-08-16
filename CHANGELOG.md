@@ -2,6 +2,12 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* Added observable `XH.sizingMode` to govern app-wide `sizingMode`. `GridModel`s will bind to this
+  `sizingMode` by default.
+* Added `GridAutosizeMode.ON_SIZING_MODE`, which autosizes Grid columns whenever `GridModel.sizingMode`
+  changes, and made it the default `GridAutosizeOptions.mode`.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.0.0...develop)
 
 
