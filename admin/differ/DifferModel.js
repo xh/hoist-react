@@ -303,7 +303,7 @@ export class DifferModel extends HoistModel {
             this.parentGridModel.loadAsync();
             this.detailModel.close();
         }).linkTo(
-            this.pendingTaskModel
+            this.loadModel
         ).catchDefault();
     }
 
