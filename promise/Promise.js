@@ -225,7 +225,7 @@ const enhancePromise = (promisePrototype) => {
             }
 
             if (cfg.model && !cfg.observer) {
-                console.warn('Use of `model` is deprecated - provide `observer` instead');
+                apiDeprecated('model', {msg: `Provide 'observer' instead`, v: 'v44'});
                 cfg = {...cfg, observer: cfg.model};
             }
 
