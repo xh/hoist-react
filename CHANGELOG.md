@@ -3,8 +3,9 @@
 ## v43.0.0-SNAPSHOT - unreleased
 
 ### ✨ Style
-* New `compact` prop on `Badge` component sets size to half that of parent element, defaults to full
-  size. The `position` prop has been removed in favor of customizing placement of the component.
+* New `compact` prop on `Badge` component sets size to half that of parent element when true,
+  defaults to false. The `position` prop has been removed in favor of customizing placement of the
+  component.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.0.0...develop)
 
