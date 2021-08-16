@@ -129,3 +129,18 @@ export class PersistenceProvider {
     readRaw() {}
     clearRaw() {}
 }
+
+/**
+ * @typedef {Object} PersistOptions
+ * @property {string} path - Dot delimited path to store state.
+ * @property {(number|object)} [debounce] - Debounce interval in ms, or a lodash debounce config.
+ * @property {string} [type] - Type of PersistenceProvider to create. If not provided, defaulted based
+ *      on the presence of `prefKey`, `localStorageKey`, `dashViewModel`, `getData` and `setData`.
+ * @property {string} [prefKey] - Predefined Hoist application Preference key used to store state.
+ * @property {string} [localStorageKey] - Browser local storage key used to store state.
+ * @property {DashViewModel} [dashViewModel] - DashViewModel used to read / write view state.
+ * @property {function} [getData] - Function returning blob of data to be used for reading state.
+ *      Ignored if `prefKey`, `localStorageKey` or `dashViewModel` are provided.
+ * @property {function} [setData] - Function to be used to write blob of data representing state.
+ *      Ignored if `prefKey`, `localStorageKey` or `dashViewModel` are provided.
+ */
