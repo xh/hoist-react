@@ -8,19 +8,19 @@
 ## v42.0.0 - 2021-08-13
 
 ### 🎁 New Features
+
 * Column-level filtering is now officially supported for desktop grids!
-    * New `GridModel.filterModel` config accepts a config object to customize filtering options, or
-      `true` to enable grid-based filtering with defaults.
-    * New `Column.filterable` config enables a customized header menu with filtering options. The new
-      control offers two tabs - a "Values" tab for an enumerated "set-type" filter and a "Custom" tab
-      to support more complex queries with multiple clauses.
+  * New `GridModel.filterModel` config accepts a config object to customize filtering options, or
+    `true` to enable grid-based filtering with defaults.
+  * New `Column.filterable` config enables a customized header menu with filtering options. The new
+    control offers two tabs - a "Values" tab for an enumerated "set-type" filter and a "Custom" tab
+    to support more complex queries with multiple clauses.
 * New `TaskObserver` replaces existing `PendingTaskModel`, providing improved support for joining
   and masking multiple asynchronous tasks.
-* Mobile `NavigatorModel` provides a new 'pull down' gesture to refresh the app.
+* Mobile `NavigatorModel` provides a new 'pull down' gesture to trigger an app-wide data refresh.
   This gesture is enabled by default, but can be disabled via the `pullDownToRefresh` flag.
 * `RecordAction` now supports a `className` config.
-* `Chart` supports 'Copy to Clipboard' in its standard menu button actions (copy, full-screen, export, etc.)
-* `Chart` provides a default context menu with its standard menu button actions.
+* `Chart` provides a default context menu with its standard menu button actions, including a new 'Copy to Clipboard' action.
 
 ### 💥 Breaking Changes
 
@@ -32,20 +32,25 @@
   grid with a `GridFilterModel`, or set the filter on the underlying `Store` instead.
 * `FunctionFilter` now requires a `key` property.
 * `PendingTaskModel` has been replaced by the new `TaskObserver` in `@xh/hoist/core`.
-* The `model` prop on `LoadingIndicator` and `Mask` has been replaced with `bind`.  Provide one or
+  * ⚠ NOTE - `TaskObserver` instances should be created via the provided static factory methods and
+    _not_ directly via the `new` keyword. `TaskObserver.trackLast()` can be used as a drop-in
+    replacement for `new PendingTaskModel()`.
+* The `model` prop on `LoadingIndicator` and `Mask` has been replaced with `bind`. Provide one or
   more `TaskObserver`s to this prop.
 
 ### ⚙️ Technical
+
 * `GridModel` has a new `selectedIds` getter to get the IDs of currently selected records. To
   provide consistency across models, the following getters have been deprecated and renamed:
-    + `selectedRecordId` has been renamed `selectedId` in `GridModel`, `StoreSelectionModel`, and
-      `DataViewModel`
-    + `selection` has been renamed `selectedRecords` in `GridModel`, `DataViewModel`, and
-      `RestGridModel`
-    + `singleRecord`, `records`, and `ids` have been renamed `selectedRecord`, `selectedRecords`,
-      and `selectedIds`, respectively, in `StoreSelectionModel`
+  + `selectedRecordId` has been renamed `selectedId` in `GridModel`, `StoreSelectionModel`, and
+    `DataViewModel`
+  + `selection` has been renamed `selectedRecords` in `GridModel`, `DataViewModel`, and
+    `RestGridModel`
+  + `singleRecord`, `records`, and `ids` have been renamed `selectedRecord`, `selectedRecords`, and
+    `selectedIds`, respectively, in `StoreSelectionModel`
 
 ### ✨ Style
+
 * Higher contrast on grid context menus for improved legibility.
 
 
