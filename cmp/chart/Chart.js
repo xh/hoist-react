@@ -368,7 +368,7 @@ class LocalModel extends HoistModel {
                 actionFn: () => this.chart.exportChartLocal({type: 'image/svg+xml'})
             },
             {
-                text: 'Download CSV',
+                text: 'Export Data',
                 icon: Icon.fileCsv(),
                 actionFn: () => this.chart.downloadCSV()
             }
