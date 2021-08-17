@@ -7,7 +7,7 @@
 
 import {isUndefined, sumBy} from 'lodash';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {throwIf} from '../utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Tracks the execution state of one or more asynchronous tasks.
