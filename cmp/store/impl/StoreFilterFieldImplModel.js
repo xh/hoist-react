@@ -123,7 +123,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
         const {store} = this;
         if (!store) return;
 
-        const key = this.xhId,
+        const key = 'default',
             testFn = this.filter,
             filter = testFn ? {key, testFn} : null;
 
