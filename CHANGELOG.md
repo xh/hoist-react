@@ -4,6 +4,10 @@
 
 ### 🎁 New Features
 * `Icon` factories now support `intent`.
+*
+### 🐞 Bug Fixes
+
+* Fixed an issue preventing `FormField` labels from rendering if `fieldDefaults` was undefined.
 
 ### ✨ Style
 * New `compact` prop on `Badge` component sets size to half that of parent element when true,
