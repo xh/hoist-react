@@ -115,6 +115,7 @@ class LocalModel extends HoistModel {
             model.highchartsConfig,
             model.algorithm,
             model.data,
+            model.theme,
             XH.darkTheme
         ]);
 
@@ -260,17 +261,18 @@ class LocalModel extends HoistModel {
     }
 
     getColorConfig() {
-        const {darkTheme} = XH;
+        const {theme} = this.model,
+            darkTheme = theme ? theme === 'dark' : XH.darkTheme;
         return {
             colorAxis: {
                 min: 0,
                 max: 1,
                 stops: [
-                    [0,   darkTheme ? '#9C0000' : '#640000'], // Max negative
+                    [0,   darkTheme ? '#CC0000' : '#640000'], // Max negative
                     [0.4, darkTheme ? '#0E0909' : '#f7f2f2'], // Min negative
                     [0.5, darkTheme ? '#555555' : '#BBBBBB'], // Zero / None
                     [0.6, darkTheme ? '#090E09' : '#f2f7f2'], // Min positive
-                    [1,   darkTheme ? '#009C00' : '#006400'] // Max positive
+                    [1,   darkTheme ? '#00CC00' : '#006400'] // Max positive
                 ]
             }
         };
