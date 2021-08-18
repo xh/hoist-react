@@ -78,7 +78,7 @@ export class RecordAction {
         this.secondaryText = secondaryText;
         this.icon = icon;
         this.intent = intent;
-        this.className = className,
+        this.className = className;
         this.tooltip = tooltip;
         this.actionFn = actionFn;
         this.items = items;
