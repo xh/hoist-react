@@ -330,7 +330,7 @@ class XHClass extends HoistBase {
     //------------------------
     // Sizing Mode Support
     //------------------------
-    /** Set the global sizing mode. */
+    /** @param {string} sizingMode - new app-wide sizing mode to apply */
     setSizingMode(sizingMode) {
         return this.acm.sizingModeModel.setSizingMode(sizingMode);
     }
