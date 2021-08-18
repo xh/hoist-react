@@ -4,6 +4,8 @@
 
 ### 🎁 New Features
 * `Icon` factories now support `intent`.
+* `TreeMapModel` now supports a `theme` config, accepting the strings 'light' or 'dark'. Leave
+  it undefined to use the global theme.
 
 ### ✨ Style
 * New `compact` prop on `Badge` component sets size to half that of parent element when true,
