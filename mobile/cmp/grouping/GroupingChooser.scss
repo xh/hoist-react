@@ -33,6 +33,7 @@
 
     &__select {
       flex: 1;
+      border-bottom: var(--xh-border-solid);
 
       .xh-select {
         border: none;
