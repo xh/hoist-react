@@ -35,7 +35,7 @@ export class ActivityDetailModel extends HoistModel {
             store: {
                 fields: [
                     {name: 'username', displayName: 'User', type: 'string'},
-                    {name: 'impersonating', type: 'bool'},
+                    {name: 'impersonating', type: 'string'},
                     {name: 'category', type: 'string'},
                     {name: 'msg', displayName: 'Message', type: 'string'},
                     {name: 'data', type: 'json'},
@@ -56,8 +56,10 @@ export class ActivityDetailModel extends HoistModel {
                     align: 'center',
                     width: 50,
                     renderer: (v, {record}) => {
-                        const {impersonating} = record.data;
-                        return impersonating ?
+                        const {impersonating} = record.data,
+                            isImpersonating = impersonating !== null;
+
+                        return isImpersonating ?
                             Icon.impersonate({
                                 asHtml: true,
                                 className: 'xh-text-color-accent',
