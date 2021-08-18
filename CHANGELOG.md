@@ -2,6 +2,9 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* `Icon` factories now support `intent`.
+
 ### ✨ Style
 * New `compact` prop on `Badge` component sets size to half that of parent element when true,
   defaults to false. The `position` prop has been removed in favor of customizing placement of the

@@ -196,7 +196,7 @@ const favoritesMenu = hoistCmp.factory({
         items.push(
             menuDivider({omit: omitAdd}),
             menuItem({
-                icon: Icon.add({className: 'xh-intent-success'}),
+                icon: Icon.add({intent: 'success'}),
                 text: 'Add current',
                 omit: omitAdd,
                 onClick: () => model.addFavorite(model.value)
