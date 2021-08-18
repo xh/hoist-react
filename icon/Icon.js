@@ -39,6 +39,7 @@ export const Icon = {
      *      variant of each icon. Pass a value of either 'fas' for a heavier-weight/solid variant
      *      or 'fal' for a lighter-weight variant.
      * @param {string} [c.className] - additional css class(es) to apply.
+     * @param {string} [c.intent] - one of [primary|success|warning|danger].
      * @param {string} [c.title] - optional tooltip string
      * @param {string} [c.size] - size of the icon, as specified by FontAwesome API.
      *      One of: 'xs','sm', 'lg', '1x','2x','3x','4x','5x','6x','7x','8x','9x','10x'
@@ -53,11 +54,15 @@ export const Icon = {
         iconName,
         prefix = 'far',
         className,
+        intent,
         title,
         size,
         asHtml = false,
         ...rest
     } = {}) {
+        if (intent) {
+            className = classNames(className, `xh-intent-${intent}`);
+        }
         return asHtml ?
             iconHtml({iconName, prefix, className, title, size}) :
             iconCmp({iconName, prefix, className, title, size, ...rest});
