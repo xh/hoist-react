@@ -157,10 +157,9 @@ export function apiRemoved(name, opts) {
  * @param {string} name - the name of the removed parameter
  * @param {Object} opts
  * @param {*} [opts.test] -  If provided and undefined, this method will be a no-op.
- *      Useful for testing if a parameter has been provided in caller.
+ *      Useful for testing if a parameter has been provided to caller.
  * @param {string} [opts.v] - version when this support will be removed.
- * @param {string} [opts.msg] - an additional message.  Can contain suggestions for alternatives.
- *      Useful for testing if a parameter is provided.
+ * @param {string} [opts.msg] - an additional message, e.g. suggestions for alternatives.
  */
 const _seenWarnings  = {};
 export function apiDeprecated(name, opts) {

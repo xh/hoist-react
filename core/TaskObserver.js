@@ -7,6 +7,7 @@
 
 import {isUndefined, sumBy} from 'lodash';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Tracks the execution state of one or more asynchronous tasks.
@@ -15,6 +16,8 @@ import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
  * track the progression of asynchronous tasks. It can be passed directly to a Panel
  * component via its `mask` property, providing a common and convenient
  * method for masking a section of a user interface while an operation is pending.
+ *
+ *
  */
 export class TaskObserver {
 
@@ -108,6 +111,20 @@ export class TaskObserver {
      * @param {TaskObserver} task
      */
     linkTo(task) {}
+
+    /**
+     * This class is abstract and should not be instantiated directly. To get an instance of this
+     * class, use static methods trackFirst(), trackLast() or fromPromise().
+     *
+     * @package
+     */
+    constructor() {
+        throwIf(
+            this.constructor === TaskObserver,
+            'TaskObserver is abstract and should not be instantiated directly. To get an ' +
+            'instance of this class, use static methods trackFirst(), trackLast() or fromPromise().'
+        );
+    }
 }
 
 

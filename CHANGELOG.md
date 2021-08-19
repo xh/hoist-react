@@ -3,30 +3,43 @@
 ## v43.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
+
 * Added observable `XH.sizingMode` to govern app-wide `sizingMode`. `GridModel`s will bind to this
   `sizingMode` by default.
 * Added `GridAutosizeMode.ON_SIZING_MODE`, which autosizes Grid columns whenever `GridModel.sizingMode`
   changes, and made it the default `GridAutosizeOptions.mode`.
+* `Icon` factories now support `intent`.
+* `TreeMapModel` and `SplitTreeMapModel` now supports a `theme` config, accepting the strings
+  'light' or 'dark'. Leave it undefined to use the global theme.
+
+### 🐞 Bug Fixes
+
+* Fixed an issue preventing `FormField` labels from rendering if `fieldDefaults` was undefined.
+
+### ✨ Style
+
+* New `compact` prop on `Badge` component sets size to half that of parent element when true,
+  defaults to false. The `position` prop has been removed in favor of customizing placement of the
+  component.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.0.0...develop)
-
 
 ## v42.0.0 - 2021-08-13
 
 ### 🎁 New Features
+
 * Column-level filtering is now officially supported for desktop grids!
-    * New `GridModel.filterModel` config accepts a config object to customize filtering options, or
-      `true` to enable grid-based filtering with defaults.
-    * New `Column.filterable` config enables a customized header menu with filtering options. The new
-      control offers two tabs - a "Values" tab for an enumerated "set-type" filter and a "Custom" tab
-      to support more complex queries with multiple clauses.
+  * New `GridModel.filterModel` config accepts a config object to customize filtering options, or
+    `true` to enable grid-based filtering with defaults.
+  * New `Column.filterable` config enables a customized header menu with filtering options. The new
+    control offers two tabs - a "Values" tab for an enumerated "set-type" filter and a "Custom" tab
+    to support more complex queries with multiple clauses.
 * New `TaskObserver` replaces existing `PendingTaskModel`, providing improved support for joining
   and masking multiple asynchronous tasks.
-* Mobile `NavigatorModel` provides a new 'pull down' gesture to refresh the app.
+* Mobile `NavigatorModel` provides a new 'pull down' gesture to trigger an app-wide data refresh.
   This gesture is enabled by default, but can be disabled via the `pullDownToRefresh` flag.
 * `RecordAction` now supports a `className` config.
-* `Chart` supports 'Copy to Clipboard' in its standard menu button actions (copy, full-screen, export, etc.)
-* `Chart` provides a default context menu with its standard menu button actions.
+* `Chart` provides a default context menu with its standard menu button actions, including a new 'Copy to Clipboard' action.
 
 ### 💥 Breaking Changes
 
@@ -38,20 +51,25 @@
   grid with a `GridFilterModel`, or set the filter on the underlying `Store` instead.
 * `FunctionFilter` now requires a `key` property.
 * `PendingTaskModel` has been replaced by the new `TaskObserver` in `@xh/hoist/core`.
-* The `model` prop on `LoadingIndicator` and `Mask` has been replaced with `bind`.  Provide one or
+  * ⚠ NOTE - `TaskObserver` instances should be created via the provided static factory methods and
+    _not_ directly via the `new` keyword. `TaskObserver.trackLast()` can be used as a drop-in
+    replacement for `new PendingTaskModel()`.
+* The `model` prop on `LoadingIndicator` and `Mask` has been replaced with `bind`. Provide one or
   more `TaskObserver`s to this prop.
 
 ### ⚙️ Technical
+
 * `GridModel` has a new `selectedIds` getter to get the IDs of currently selected records. To
   provide consistency across models, the following getters have been deprecated and renamed:
-    + `selectedRecordId` has been renamed `selectedId` in `GridModel`, `StoreSelectionModel`, and
-      `DataViewModel`
-    + `selection` has been renamed `selectedRecords` in `GridModel`, `DataViewModel`, and
-      `RestGridModel`
-    + `singleRecord`, `records`, and `ids` have been renamed `selectedRecord`, `selectedRecords`,
-      and `selectedIds`, respectively, in `StoreSelectionModel`
+  + `selectedRecordId` has been renamed `selectedId` in `GridModel`, `StoreSelectionModel`, and
+    `DataViewModel`
+  + `selection` has been renamed `selectedRecords` in `GridModel`, `DataViewModel`, and
+    `RestGridModel`
+  + `singleRecord`, `records`, and `ids` have been renamed `selectedRecord`, `selectedRecords`, and
+    `selectedIds`, respectively, in `StoreSelectionModel`
 
 ### ✨ Style
+
 * Higher contrast on grid context menus for improved legibility.
 
 

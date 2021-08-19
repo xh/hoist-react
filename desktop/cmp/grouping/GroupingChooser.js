@@ -163,7 +163,6 @@ const dimensionList = hoistCmp.factory({
     }
 });
 
-
 const dimensionRow = hoistCmp.factory({
     render({model, dimension, idx}) {
         // The options for this select include its current value
@@ -218,7 +217,6 @@ const dimensionRow = hoistCmp.factory({
                                 flex: 1,
                                 width: null,
                                 hideDropdownIndicator: true,
-                                disabled: options.length <= 1,
                                 onChange: (newDim) => model.replacePendingDimAtIdx(newDim, idx)
                             })
                         }),
@@ -361,7 +359,7 @@ const favoritesMenu = hoistCmp.factory({
         items.push(
             menuDivider({omit: omitAdd}),
             menuItem({
-                icon: Icon.add({className: 'xh-intent-success'}),
+                icon: Icon.add({intent: 'success'}),
                 text: 'Add current',
                 omit: omitAdd,
                 onClick: () => model.addFavorite(model.value)
