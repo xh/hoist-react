@@ -18,7 +18,7 @@ export const sizingModeAppOption = (modes) => {
     return {
         name: 'sizingMode',
         formField: {
-            label: 'Default grid size',
+            label: 'Grid sizing',
             item: buttonGroupInput(
                 modes.map(mode => button({
                     value: mode,
