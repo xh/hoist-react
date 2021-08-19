@@ -35,7 +35,7 @@ export class ActivityDetailModel extends HoistModel {
             store: {
                 fields: [
                     {name: 'username', displayName: 'User', type: 'string'},
-                    {name: 'impersonating', type: 'bool'},
+                    {name: 'impersonating', type: 'string'},
                     {name: 'category', type: 'string'},
                     {name: 'msg', displayName: 'Message', type: 'string'},
                     {name: 'data', type: 'json'},
