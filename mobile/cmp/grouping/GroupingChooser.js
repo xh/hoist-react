@@ -83,7 +83,7 @@ GroupingChooser.propTypes = {
 //---------------------------
 const popoverCmp = hoistCmp.factory(
     ({model, popoverTitle, popoverWidth, popoverMinHeight, emptyText}) => {
-        const {editorIsOpen, favoritesIsOpen, value} = model,
+        const {editorIsOpen, favoritesIsOpen, isValid, value} = model,
             isOpen = editorIsOpen || favoritesIsOpen,
             addFavoriteDisabled = isEmpty(value) || !!model.isFavorite(value);
 
@@ -98,7 +98,7 @@ const popoverCmp = hoistCmp.factory(
                 minHeight: popoverMinHeight,
                 item: favoritesIsOpen ? favoritesMenu() : editor({emptyText})
             }),
-            onCancel: () => model.commitPendingValueAndClose(),
+            onCancel: () => model.closePopover(),
             buttons: favoritesIsOpen ?
                 [
                     button({
@@ -109,7 +109,20 @@ const popoverCmp = hoistCmp.factory(
                         onClick: () => model.addFavorite(model.value)
                     })
                 ] :
-                []
+                [
+                    filler(),
+                    button({
+                        text: 'Cancel',
+                        modifier: 'quiet',
+                        onClick: () => model.closePopover()
+                    }),
+                    button({
+                        icon: Icon.check(),
+                        text: 'Apply',
+                        disabled: !isValid,
+                        onClick: () => model.commitPendingValueAndClose()
+                    })
+                ]
         });
     }
 );
