@@ -29,7 +29,7 @@ export class TaskObserver {
      * subtasks is still pending.
      *
      * @param {TaskObserver[]} [tasks]
-     * @param {?String} [message]
+     * @param {string} [message]
      * @returns {TaskObserver}
      */
     static trackAll({tasks = [], message} = {}) {
@@ -43,7 +43,7 @@ export class TaskObserver {
      * Useful for tracking repeated invocations of the same operation, such as
      * serially reloading of data from the server.
      *
-     * @param {?String} [message]
+     * @param {string} [message]
      * @returns {TaskObserver}
      *
      */
@@ -54,13 +54,13 @@ export class TaskObserver {
     /**
      * @package
      *
-     * Create a TaskObserver bound to a single promise.
+     * Create a TaskObserver bound to a single Promise.
      *
-     * Not typically used directly by applications.  Instead see {@see Promise.linkTo}, which
+     * Not typically used directly by applications. Instead see {@see Promise.linkTo}, which
      * provides an efficient way to link an existing TaskObserver to a promise.
      *
      * @param {Promise} promise
-     * @param {?String} [message]
+     * @param {string} [message]
      *
      * @returns {TaskObserver}
      */
@@ -122,7 +122,7 @@ export class TaskObserver {
         throwIf(
             this.constructor === TaskObserver,
             'TaskObserver is abstract and should not be instantiated directly. To get an ' +
-            'instance of this class, use static methods trackFirst(), trackLast() or fromPromise().'
+            'instance of this class, use static methods trackFirst(), trackLast() or forPromise().'
         );
     }
 }
