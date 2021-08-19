@@ -75,6 +75,8 @@ export class TreeMapModel extends HoistModel {
     @bindable algorithm;
     /** @member {string} */
     @bindable colorMode;
+    /** @member {string} */
+    @bindable theme;
     /** @member {boolean} */
     @bindable isMasking;
 
@@ -102,6 +104,8 @@ export class TreeMapModel extends HoistModel {
      *     {@see https://www.highcharts.com/docs/chart-and-series-types/treemap} for examples.
      * @param {string} [c.colorMode] - Heat color distribution mode. Either 'linear', 'wash' or
      *     'none'. Defaults to 'linear'.
+     * @param {string} [c.theme] - Theme to use. Either 'light' or 'dark'. Leave undefined to use
+     *      the global theme.
      * @param {function} [c.onClick] - Callback to call when a node is clicked. Receives (record,
      *     e). If not provided, by default will select a record when using a GridModel.
      * @param {function} [c.onDoubleClick] - Callback to call when a node is double clicked.
@@ -126,6 +130,7 @@ export class TreeMapModel extends HoistModel {
         maxDepth,
         algorithm = 'squarified',
         colorMode = 'linear',
+        theme,
         onClick,
         onDoubleClick,
         tooltip = true,
@@ -153,6 +158,9 @@ export class TreeMapModel extends HoistModel {
 
         throwIf(!['linear', 'wash', 'none'].includes(colorMode), `Color mode "${colorMode}" not recognised.`);
         this.colorMode = colorMode;
+
+        throwIf(theme && !['light', 'dark'].includes(theme), `Theme "${theme}" not recognised.`);
+        this.theme = theme;
 
         this.onClick = withDefault(onClick, this.defaultOnClick);
         this.onDoubleClick = withDefault(onDoubleClick, this.defaultOnDoubleClick);
