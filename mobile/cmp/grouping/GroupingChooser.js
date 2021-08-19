@@ -37,8 +37,8 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
         popoverTitle = 'Group By',
         ...rest
     }, ref) {
-        const {value} = model,
-            label = isEmpty(value) ? emptyText : model.getValueLabel(value),
+        const {value, allowEmpty} = model,
+            label = isEmpty(value) && allowEmpty ? emptyText : model.getValueLabel(value),
             [layoutProps, buttonProps] = splitLayoutProps(rest);
 
         return box({
@@ -83,7 +83,7 @@ GroupingChooser.propTypes = {
 //---------------------------
 const popoverCmp = hoistCmp.factory(
     ({model, popoverTitle, popoverWidth, popoverMinHeight, emptyText}) => {
-        const {editorIsOpen, favoritesIsOpen, isAddMode, addDisabledMsg, isValid, value} = model,
+        const {editorIsOpen, favoritesIsOpen, value} = model,
             isOpen = editorIsOpen || favoritesIsOpen,
             addFavoriteDisabled = isEmpty(value) || !!model.isFavorite(value);
 
@@ -109,27 +109,7 @@ const popoverCmp = hoistCmp.factory(
                         onClick: () => model.addFavorite(model.value)
                     })
                 ] :
-                [
-                    button({
-                        icon: Icon.add(),
-                        text: 'Add',
-                        disabled: !!addDisabledMsg,
-                        omit: isAddMode,
-                        onClick: () => model.addLevel()
-                    }),
-                    filler(),
-                    button({
-                        icon: Icon.close(),
-                        modifier: 'quiet',
-                        onClick: () => model.closePopover()
-                    }),
-                    button({
-                        icon: Icon.check(),
-                        text: 'Apply',
-                        disabled: !isValid,
-                        onClick: () => model.commitPendingValueAndClose()
-                    })
-                ]
+                []
         });
     }
 );
@@ -138,21 +118,23 @@ const popoverCmp = hoistCmp.factory(
 // Editor
 //------------------
 const editor = hoistCmp.factory({
-    render({model, emptyText}) {
+    render({emptyText}) {
         return vbox(
             dimensionList({emptyText}),
-            addDimensionControl({omit: !model.addControlShown})
+            addDimensionControl()
         );
     }
 });
 
 const dimensionList = hoistCmp.factory({
     render({model, emptyText}) {
-        if (!model.addControlShown && isEmpty(model.pendingValue)) {
-            return hbox({
-                className: 'xh-grouping-chooser__row',
-                items: [filler(), emptyText, filler()]
-            });
+        if (isEmpty(model.pendingValue)) {
+            return model.allowEmpty ?
+                hbox({
+                    className: 'xh-grouping-chooser__row',
+                    items: [filler(), emptyText, filler()]
+                }) :
+                null;
         }
 
         return dragDropContext({
@@ -222,6 +204,7 @@ const dimensionRow = hoistCmp.factory({
 
 const addDimensionControl = hoistCmp.factory({
     render({model}) {
+        if (!model.isAddEnabled) return null;
         const options = getDimOptions(model.availableDims, model);
         return div({
             className: 'xh-grouping-chooser__add-control',
@@ -234,7 +217,6 @@ const addDimensionControl = hoistCmp.factory({
                     placeholder: 'Add...',
                     flex: 1,
                     width: null,
-                    autoFocus: true,
                     hideDropdownIndicator: true,
                     hideSelectedOptionCheck: true,
                     onChange: (newDim) => model.addPendingDim(newDim)
