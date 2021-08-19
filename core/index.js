@@ -7,6 +7,7 @@
 
 export * from './enums/RefreshMode';
 export * from './enums/RenderMode';
+export * from './enums/SizingMode';
 
 export * from './elem';
 

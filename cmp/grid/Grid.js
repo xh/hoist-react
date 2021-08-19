@@ -6,7 +6,7 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
-import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
+import {getTreeStyleClasses, GridAutosizeMode} from '@xh/hoist/cmp/grid';
 import {div, fragment, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {
@@ -177,6 +177,7 @@ class GridLocalModel extends HoistModel {
         this.addReaction(this.dataReaction());
         this.addReaction(this.groupReaction());
         this.addReaction(this.rowHeightReaction());
+        this.addReaction(this.sizingModeReaction());
         this.addReaction(this.validationDisplayReaction());
 
         this.agOptions = merge(this.createDefaultAgOptions(), props.agOptions || {});
@@ -514,6 +515,17 @@ class GridLocalModel extends HoistModel {
                 this.doWithPreservedState({expansion: false}, () => {
                     colApi.applyColumnState({state: colState, applyOrder: true});
                 });
+            }
+        };
+    }
+
+    sizingModeReaction() {
+        const {model} = this;
+        return {
+            track: () => model.sizingMode,
+            run: () => {
+                if (model.autosizeOptions.mode !== GridAutosizeMode.ON_SIZING_MODE_CHANGE) return;
+                model.autosizeAsync();
             }
         };
     }

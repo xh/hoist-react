@@ -3,13 +3,25 @@
 ## v43.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
+
+* Added observable `XH.sizingMode` to govern app-wide `sizingMode`. `GridModel`s will bind to this
+  `sizingMode` by default. Apps that have already implemented custom solutions around a centralized
+  `sizingMode` should endeavor to unwind in favor of this.
+* Added `GridAutosizeMode.ON_SIZING_MODE_CHANGE`, which autosizes Grid columns whenever
+  `GridModel.sizingMode` changes, and made it the default `GridAutosizeOptions.mode`.
+* Added a library of reusable `AppOption` control configs, including `ThemeAppOption`,
+  `SizingModeAppOption` and `AutoRefreshAppOptions`. Apps that have implemented custom `AppOption`
+  controls to manage these hoist-provided options should consider migrating to these defaults.
 * `Icon` factories now support `intent`.
 * `TreeMapModel` and `SplitTreeMapModel` now supports a `theme` config, accepting the strings
   'light' or 'dark'. Leave it undefined to use the global theme.
+
 ### 🐞 Bug Fixes
+
 * Fixed an issue preventing `FormField` labels from rendering if `fieldDefaults` was undefined.
 
 ### ✨ Style
+
 * New `compact` prop on `Badge` component sets size to half that of parent element when true,
   defaults to false. The `position` prop has been removed in favor of customizing placement of the
   component.

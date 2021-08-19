@@ -212,7 +212,8 @@ export class GridModel extends HoistModel {
      * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
      * @param {boolean} [c.showGroupRowCounts] - true (default) to show a count of group member
      *      rows within each full-width group row.
-     * @param {string} [c.sizingMode] - one of large, standard, compact, tiny
+     * @param {SizingMode} [c.sizingMode] - one of large, standard, compact, tiny. If undefined, will
+     *      default and bind to `XH.sizingMode`.
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
      * @param {string} [c.treeStyle] - enable treeMode-specific styles (row background highlights
@@ -298,7 +299,7 @@ export class GridModel extends HoistModel {
 
         persistWith,
 
-        sizingMode = 'standard',
+        sizingMode,
         showHover = false,
         rowBorders = false,
         rowClassFn = null,
@@ -355,7 +356,7 @@ export class GridModel extends HoistModel {
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
         this.autosizeOptions = defaults(autosizeOptions, {
-            mode: GridAutosizeMode.ON_DEMAND,
+            mode: GridAutosizeMode.ON_SIZING_MODE_CHANGE,
             includeCollapsedChildren: false,
             showMask: true,
             bufferPx: 5,
@@ -382,6 +383,8 @@ export class GridModel extends HoistModel {
 
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
+
+        sizingMode = this.parseSizingMode(sizingMode);
 
         this.agGridModel = new AgGridModel({
             sizingMode,
@@ -1373,6 +1376,21 @@ export class GridModel extends HoistModel {
         return Array.from(ret);
     }
 
+    parseSizingMode(sizingMode) {
+        const useGlobalSizingMode = !sizingMode;
+        sizingMode = useGlobalSizingMode ? XH.sizingMode : sizingMode;
+
+        // Bind this model's sizing mode with the global sizing mode
+        if (useGlobalSizingMode) {
+            this.addReaction({
+                track: () => XH.sizingMode,
+                run: (mode) => this.setSizingMode(mode)
+            });
+        }
+
+        return sizingMode;
+    }
+
     parseSelModel(selModel) {
         selModel = withDefault(selModel, XH.isMobileApp ? 'disabled' : 'single');
 
@@ -1497,7 +1515,7 @@ export class GridModel extends HoistModel {
 
 /**
  * @typedef {Object} GridAutosizeOptions
- * @property {GridAutosizeMode} [mode] - defaults to GridAutosizeMode.ON_DEMAND.
+ * @property {GridAutosizeMode} [mode] - defaults to GridAutosizeMode.ON_SIZING_MODE_CHANGE.
  * @property {number} [bufferPx] -  additional pixels to add to the size of each column beyond its
  *      absolute minimum.  May be used to adjust the spacing in the grid.  Default is 5.
  * @property {boolean} [showMask] - true to show mask over the grid during the autosize operation.
