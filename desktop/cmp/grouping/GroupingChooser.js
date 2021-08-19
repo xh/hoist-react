@@ -10,7 +10,6 @@ import {hoistCmp, uses} from '@xh/hoist/core';
 import {button, Button} from '@xh/hoist/desktop/cmp/button';
 import {select, Select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
@@ -34,15 +33,15 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
         className,
         emptyText = 'Ungrouped',
         popoverWidth = 250,
-        popoverMinHeight = 120,
+        popoverMinHeight,
         popoverTitle = 'Group By',
         popoverPosition = 'bottom',
         styleButtonAsInput = true,
         ...rest
     }, ref) {
-        const {editorIsOpen, favoritesIsOpen, persistFavorites, value} = model,
+        const {editorIsOpen, favoritesIsOpen, persistFavorites, value, allowEmpty} = model,
             isOpen = editorIsOpen || favoritesIsOpen,
-            label = isEmpty(value) ? emptyText : model.getValueLabel(value),
+            label = isEmpty(value) && allowEmpty ? emptyText : model.getValueLabel(value),
             [layoutProps, buttonProps] = splitLayoutProps(rest);
 
         return box({
@@ -59,6 +58,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
                     button({
                         text: label,
                         title: label,
+                        tabIndex: -1,
                         className: classNames(
                             'xh-grouping-chooser-button',
                             styleButtonAsInput ? 'xh-grouping-chooser-button--as-input' : null,
@@ -122,28 +122,29 @@ GroupingChooser.propTypes = {
 // Editor
 //------------------
 const editor = hoistCmp.factory({
-    render({model, popoverWidth, popoverMinHeight, popoverTitle, emptyText}) {
+    render({popoverWidth, popoverMinHeight, popoverTitle, emptyText}) {
         return panel({
             width: popoverWidth,
             minHeight: popoverMinHeight,
             items: [
                 div({className: 'xh-popup__title', item: popoverTitle}),
                 dimensionList({emptyText}),
-                addDimensionControl({omit: !model.addControlShown}),
+                addDimensionControl(),
                 filler()
-            ],
-            bbar: bbar()
+            ]
         });
     }
 });
 
 const dimensionList = hoistCmp.factory({
     render({model, emptyText}) {
-        if (!model.addControlShown && isEmpty(model.pendingValue)) {
-            return hbox({
-                className: 'xh-grouping-chooser__row',
-                items: [filler(), emptyText, filler()]
-            });
+        if (isEmpty(model.pendingValue)) {
+            return model.allowEmpty ?
+                hbox({
+                    className: 'xh-grouping-chooser__row',
+                    items: [filler(), emptyText, filler()]
+                }) :
+                null;
         }
 
         return dragDropContext({
@@ -207,7 +208,8 @@ const dimensionRow = hoistCmp.factory({
                         div({
                             className: 'xh-grouping-chooser__row__grabber',
                             item: Icon.grip({prefix: 'fal'}),
-                            ...dndProps.dragHandleProps
+                            ...dndProps.dragHandleProps,
+                            tabIndex: -1
                         }),
                         div({
                             className: 'xh-grouping-chooser__row__select',
@@ -223,6 +225,7 @@ const dimensionRow = hoistCmp.factory({
                         button({
                             icon: Icon.delete(),
                             intent: 'danger',
+                            tabIndex: -1,
                             className: 'xh-grouping-chooser__row__remove-btn',
                             onClick: () => model.removePendingDimAtIdx(idx)
                         })
@@ -241,6 +244,7 @@ const dimensionRow = hoistCmp.factory({
 
 const addDimensionControl = hoistCmp.factory({
     render({model}) {
+        if (!model.isAddEnabled) return null;
         const options = getDimOptions(model.availableDims, model);
         return div({
             className: 'xh-grouping-chooser__add-control',
@@ -257,47 +261,9 @@ const addDimensionControl = hoistCmp.factory({
                     placeholder: 'Add...',
                     flex: 1,
                     width: null,
-                    autoFocus: true,
-                    openMenuOnFocus: true,
                     hideDropdownIndicator: true,
                     hideSelectedOptionCheck: true,
                     onChange: (newDim) => model.addPendingDim(newDim)
-                })
-            ]
-        });
-    }
-});
-
-const bbar = hoistCmp.factory({
-    render({model}) {
-        const {isAddMode, addDisabledMsg, isValid} = model;
-
-        return toolbar({
-            className: 'xh-grouping-chooser__btn-row',
-            items: [
-                button({
-                    icon: Icon.add(),
-                    text: 'Add',
-                    intent: 'success',
-                    omit: isAddMode,
-                    disabled: !!addDisabledMsg,
-                    title: addDisabledMsg,
-                    onClick: () => model.addLevel()
-                }),
-                filler(),
-                button({
-                    icon: Icon.close(),
-                    title: 'Cancel',
-                    intent: 'danger',
-                    onClick: () => model.closePopover()
-                }),
-                toolbarSep(),
-                button({
-                    icon: Icon.check(),
-                    text: 'Apply',
-                    intent: 'success',
-                    disabled: !isValid,
-                    onClick: () => model.commitPendingValueAndClose()
                 })
             ]
         });

@@ -15,6 +15,7 @@
 * `Icon` factories now support `intent`.
 * `TreeMapModel` and `SplitTreeMapModel` now supports a `theme` config, accepting the strings
   'light' or 'dark'. Leave it undefined to use the global theme.
+* Various usability improvements and simplifications to `GroupingChooser`.
 
 ### 🐞 Bug Fixes
 
