@@ -33,10 +33,14 @@ export class SizingModeModel extends HoistModel {
         values(SizingMode).forEach(it => classList.toggle(`xh-${it}`, it === sizingMode));
 
         this.sizingMode = sizingMode;
-        XH.setPref('xhSizingMode', sizingMode);
+        if (XH.prefService.hasKey('xhSizingMode')) {
+            XH.setPref('xhSizingMode', sizingMode);
+        } else {
+            console.warn(`Missing required string pref 'xhSizingMode' - add via Admin Console.`);
+        }
     }
 
     init() {
-        this.setSizingMode(XH.getPref('xhSizingMode'));
+        this.setSizingMode(XH.getPref('xhSizingMode', 'standard'));
     }
 }
