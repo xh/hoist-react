@@ -4,36 +4,33 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
+import {XH, SizingMode} from '@xh/hoist/core';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/mobile/cmp/input';
-import {startCase} from 'lodash';
+import {values, startCase} from 'lodash';
 
 /**
  * Convenience configuration for a sizingMode AppOption.
+ * @param {SizingMode[]} [modes] - Supported SizingModes.
  */
-export const sizingModeAppOption = () => ({
-    name: 'sizingMode',
-    formField: {
-        label: 'Default grid size',
-        item: buttonGroupInput(
-            getGridSizeModeButton('large'),
-            getGridSizeModeButton('standard'),
-            getGridSizeModeButton('compact'),
-            getGridSizeModeButton('tiny')
-        )
-    },
-    valueGetter: () => XH.sizingMode,
-    valueSetter: (v) => XH.setSizingMode(v)
-});
-
-function getGridSizeModeButton(size) {
-    return button({
-        value: size,
-        text: startCase(size),
-        width: 80,
-        style: {
-            fontSize: `var(--xh-grid-${size}-font-size-px)`
-        }
-    });
-}
+export const sizingModeAppOption = (modes) => {
+    if (!modes) modes = values(SizingMode);
+    return {
+        name: 'sizingMode',
+        formField: {
+            label: 'Default grid size',
+            item: buttonGroupInput(
+                modes.map(mode => button({
+                    value: mode,
+                    text: startCase(mode),
+                    width: 80,
+                    style: {
+                        fontSize: `var(--xh-grid-${mode}-font-size-px)`
+                    }
+                }))
+            )
+        },
+        valueGetter: () => XH.sizingMode,
+        valueSetter: (v) => XH.setSizingMode(v)
+    };
+};
