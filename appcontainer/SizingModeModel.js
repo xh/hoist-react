@@ -28,6 +28,10 @@ export class SizingModeModel extends HoistModel {
     @action
     setSizingMode(sizingMode) {
         throwIf(!values(SizingMode).includes(sizingMode), `Sizing mode "${sizingMode}" not recognised.`);
+
+        const classList = document.body.classList;
+        values(SizingMode).forEach(it => classList.toggle(`xh-${it}`, it === sizingMode));
+
         this.sizingMode = sizingMode;
         XH.setPref('xhSizingMode', sizingMode);
     }
