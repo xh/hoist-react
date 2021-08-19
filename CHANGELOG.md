@@ -4,9 +4,9 @@
 
 ### 🎁 New Features
 * `Icon` factories now support `intent`.
-*
+* `TreeMapModel` and `SplitTreeMapModel` now supports a `theme` config, accepting the strings
+  'light' or 'dark'. Leave it undefined to use the global theme.
 ### 🐞 Bug Fixes
-
 * Fixed an issue preventing `FormField` labels from rendering if `fieldDefaults` was undefined.
 
 ### ✨ Style
