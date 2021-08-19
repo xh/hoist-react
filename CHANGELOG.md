@@ -9,6 +9,9 @@
   `sizingMode` should endeavor to unwind in favor of this.
 * Added `GridAutosizeMode.ON_SIZING_MODE_CHANGE`, which autosizes Grid columns whenever
   `GridModel.sizingMode` changes, and made it the default `GridAutosizeOptions.mode`.
+* Added a library of reusable `AppOption` control configs, including `ThemeAppOption`,
+  `SizingModeAppOption` and `AutoRefreshAppOptions`. Apps that have implemented custom `AppOption`
+  controls to manage these hoist-provided options should consider migrating to these defaults.
 * `Icon` factories now support `intent`.
 * `TreeMapModel` and `SplitTreeMapModel` now supports a `theme` config, accepting the strings
   'light' or 'dark'. Leave it undefined to use the global theme.
