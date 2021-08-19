@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed} from '@xh/hoist/core';
+import {HoistModel, managed, SizingMode} from '@xh/hoist/core';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {parseFilter} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
@@ -252,7 +252,7 @@ export class ValuesTabModel extends HoistModel {
             selModel: 'disabled',
             emptyText: 'No records found...',
             contextMenu: null,
-            sizingMode: 'compact',
+            sizingMode: SizingMode.COMPACT,
             stripeRows: false,
             sortBy: field,
             colDefaults: {sortable: false},

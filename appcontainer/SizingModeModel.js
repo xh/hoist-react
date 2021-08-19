@@ -4,9 +4,10 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, XH, SizingMode} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
+import {values} from 'lodash';
 
 /**
  * Manage Sizing Mode.
@@ -15,23 +16,18 @@ import {throwIf} from '@xh/hoist/utils/js';
  */
 export class SizingModeModel extends HoistModel {
 
+    /** @member {SizingMode} */
     @observable sizingMode = null;
-
-    modes = [
-        'large',
-        'standard',
-        'compact',
-        'tiny'
-    ];
 
     constructor() {
         super();
         makeObservable(this);
     }
 
+    /** @param {SizingMode} sizingMode */
     @action
     setSizingMode(sizingMode) {
-        throwIf(!this.modes.includes(sizingMode), `Sizing mode "${sizingMode}" not recognised.`);
+        throwIf(!values(SizingMode).includes(sizingMode), `Sizing mode "${sizingMode}" not recognised.`);
         this.sizingMode = sizingMode;
         XH.setPref('xhSizingMode', sizingMode);
     }
