@@ -1,17 +1,17 @@
 # Changelog
 
-## v43.0.0-SNAPSHOT - unreleased
+## v42.1.0 - 2021-08-19
 
 ### 🎁 New Features
 
 * Added observable `XH.sizingMode` to govern app-wide `sizingMode`. `GridModel`s will bind to this
   `sizingMode` by default. Apps that have already implemented custom solutions around a centralized
   `sizingMode` should endeavor to unwind in favor of this.
-* Added `GridAutosizeMode.ON_SIZING_MODE_CHANGE`, which autosizes Grid columns whenever
-  `GridModel.sizingMode` changes, and made it the default `GridAutosizeOptions.mode`.
+* Added `GridAutosizeMode.ON_SIZING_MODE_CHANGE` to autosize Grid columns whenever
+  `GridModel.sizingMode` changes - it is now the default `GridAutosizeOptions.mode`.
 * Added a library of reusable `AppOption` control configs, including `ThemeAppOption`,
   `SizingModeAppOption` and `AutoRefreshAppOptions`. Apps that have implemented custom `AppOption`
-  controls to manage these hoist-provided options should consider migrating to these defaults.
+  controls to manage these Hoist-provided options should consider migrating to these defaults.
 * `Icon` factories now support `intent`.
 * `TreeMapModel` and `SplitTreeMapModel` now supports a `theme` config, accepting the strings
   'light' or 'dark'. Leave it undefined to use the global theme.
@@ -23,11 +23,10 @@
 
 ### ✨ Style
 
-* New `compact` prop on `Badge` component sets size to half that of parent element when true,
-  defaults to false. The `position` prop has been removed in favor of customizing placement of the
-  component.
+* New `Badge.compact` prop sets size to half that of parent element when true (default false). The
+  `position` prop has been removed in favor of customizing placement of the component.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v42.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v42.0.0...v42.1.0)
 
 ## v42.0.0 - 2021-08-13
 
@@ -44,7 +43,8 @@
 * Mobile `NavigatorModel` provides a new 'pull down' gesture to trigger an app-wide data refresh.
   This gesture is enabled by default, but can be disabled via the `pullDownToRefresh` flag.
 * `RecordAction` now supports a `className` config.
-* `Chart` provides a default context menu with its standard menu button actions, including a new 'Copy to Clipboard' action.
+* `Chart` provides a default context menu with its standard menu button actions, including a new
+  'Copy to Clipboard' action.
 
 ### 💥 Breaking Changes
 
