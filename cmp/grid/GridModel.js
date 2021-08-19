@@ -356,7 +356,7 @@ export class GridModel extends HoistModel {
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
         this.autosizeOptions = defaults(autosizeOptions, {
-            mode: GridAutosizeMode.ON_SIZING_MODE,
+            mode: GridAutosizeMode.ON_SIZING_MODE_CHANGE,
             includeCollapsedChildren: false,
             showMask: true,
             bufferPx: 5,
@@ -1515,7 +1515,7 @@ export class GridModel extends HoistModel {
 
 /**
  * @typedef {Object} GridAutosizeOptions
- * @property {GridAutosizeMode} [mode] - defaults to GridAutosizeMode.ON_SIZING_MODE.
+ * @property {GridAutosizeMode} [mode] - defaults to GridAutosizeMode.ON_SIZING_MODE_CHANGE.
  * @property {number} [bufferPx] -  additional pixels to add to the size of each column beyond its
  *      absolute minimum.  May be used to adjust the spacing in the grid.  Default is 5.
  * @property {boolean} [showMask] - true to show mask over the grid during the autosize operation.

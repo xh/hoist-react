@@ -524,7 +524,7 @@ class GridLocalModel extends HoistModel {
         return {
             track: () => model.sizingMode,
             run: () => {
-                if (model.autosizeOptions.mode !== GridAutosizeMode.ON_SIZING_MODE) return;
+                if (model.autosizeOptions.mode !== GridAutosizeMode.ON_SIZING_MODE_CHANGE) return;
                 model.autosizeAsync();
             }
         };

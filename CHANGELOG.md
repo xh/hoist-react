@@ -5,9 +5,10 @@
 ### 🎁 New Features
 
 * Added observable `XH.sizingMode` to govern app-wide `sizingMode`. `GridModel`s will bind to this
-  `sizingMode` by default.
-* Added `GridAutosizeMode.ON_SIZING_MODE`, which autosizes Grid columns whenever `GridModel.sizingMode`
-  changes, and made it the default `GridAutosizeOptions.mode`.
+  `sizingMode` by default. Apps that have already implemented custom solutions around a centralized
+  `sizingMode` should endeavor to unwind in favor of this.
+* Added `GridAutosizeMode.ON_SIZING_MODE_CHANGE`, which autosizes Grid columns whenever
+  `GridModel.sizingMode` changes, and made it the default `GridAutosizeOptions.mode`.
 * `Icon` factories now support `intent`.
 * `TreeMapModel` and `SplitTreeMapModel` now supports a `theme` config, accepting the strings
   'light' or 'dark'. Leave it undefined to use the global theme.
