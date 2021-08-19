@@ -33,7 +33,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
         className,
         emptyText = 'Ungrouped',
         popoverWidth = 270,
-        popoverMinHeight = 120,
+        popoverMinHeight,
         popoverTitle = 'Group By',
         ...rest
     }, ref) {
