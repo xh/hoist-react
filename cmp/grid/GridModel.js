@@ -212,7 +212,7 @@ export class GridModel extends HoistModel {
      * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
      * @param {boolean} [c.showGroupRowCounts] - true (default) to show a count of group member
      *      rows within each full-width group row.
-     * @param {SizingMode} [c.sizingMode] - one of large, standard, compact, tiny. If undefined, will
+     * @param {SizingMode} [c.sizingMode] - one of tiny, compact, standard, large. If undefined, will
      *      default and bind to `XH.sizingMode`.
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.

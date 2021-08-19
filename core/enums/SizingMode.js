@@ -10,8 +10,8 @@
  * @enum {string}
  */
 export const SizingMode = Object.freeze({
-    LARGE: 'large',
-    STANDARD: 'standard',
+    TINY: 'tiny',
     COMPACT: 'compact',
-    TINY: 'tiny'
+    STANDARD: 'standard',
+    LARGE: 'large'
 });

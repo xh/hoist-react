@@ -57,7 +57,7 @@ export class AgGridModel extends HoistModel {
 
     /**
      * @param {Object} [c] - AgGridModel configuration.
-     * @param {SizingMode} [c.sizingMode] - one of large, standard, compact, tiny
+     * @param {SizingMode} [c.sizingMode] - one of tiny, compact, standard, large
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
      * @param {boolean} [c.cellBorders] - true to render cell borders.
