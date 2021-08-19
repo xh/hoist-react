@@ -8,7 +8,6 @@
 ### 🐞 Bug Fixes
 
 * Fixed an issue preventing `FormField` labels from rendering if `fieldDefaults` was undefined.
-* Admin activity tracker now displays username of user being impersonated, instead of true.
 
 ### ✨ Style
 * New `compact` prop on `Badge` component sets size to half that of parent element when true,

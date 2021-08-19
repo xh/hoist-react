@@ -56,10 +56,8 @@ export class ActivityDetailModel extends HoistModel {
                     align: 'center',
                     width: 50,
                     renderer: (v, {record}) => {
-                        const {impersonating} = record.data,
-                            isImpersonating = impersonating !== null;
-
-                        return isImpersonating ?
+                        const {impersonating} = record.data;
+                        return impersonating ?
                             Icon.impersonate({
                                 asHtml: true,
                                 className: 'xh-text-color-accent',
