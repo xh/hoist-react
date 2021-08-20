@@ -9,17 +9,27 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon/Icon';
 
+
 /**
- * Convenience configuration for a theme AppOption.
+ * Convenience configuration for the `theme` AppOption.
+ * @param {{}} [formFieldProps]
+ * @param {{}} [inputProps]
  */
-export const themeAppOption = () => ({
-    name: 'theme',
-    formField: {
-        item: buttonGroupInput(
-            button({value: false, text: 'Light', icon: Icon.sun()}),
-            button({value: true, text: 'Dark', icon: Icon.moon()})
-        )
-    },
-    valueGetter: () => XH.darkTheme,
-    valueSetter: (v) => XH.setDarkTheme(v)
-});
+export const themeAppOption = ({formFieldProps, inputProps} = {}) => {
+    return {
+        name: 'theme',
+        formField: {
+            label: 'Theme',
+            item: buttonGroupInput({
+                items: [
+                    button({value: false, text: 'Light', icon: Icon.sun(), width: '50%'}),
+                    button({value: true, text: 'Dark', icon: Icon.moon(), width: '50%'})
+                ],
+                ...inputProps
+            }),
+            ...formFieldProps
+        },
+        valueGetter: () => XH.darkTheme,
+        valueSetter: (v) => XH.setDarkTheme(v)
+    };
+};

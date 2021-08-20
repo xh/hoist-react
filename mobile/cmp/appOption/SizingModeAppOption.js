@@ -10,25 +10,30 @@ import {buttonGroupInput} from '@xh/hoist/mobile/cmp/input';
 import {values, startCase} from 'lodash';
 
 /**
- * Convenience configuration for a sizingMode AppOption.
- * @param {SizingMode[]} [modes] - Supported SizingModes.
+ * Convenience configuration for the `sizingMode` AppOption.
+ * @param {SizingMode[]} [modes] - Supported SizingModes
+ * @param {{}} [formFieldProps]
+ * @param {{}} [inputProps]
  */
-export const sizingModeAppOption = (modes) => {
+export const sizingModeAppOption = ({modes, formFieldProps, inputProps} = {}) => {
     if (!modes) modes = values(SizingMode);
     return {
         name: 'sizingMode',
         formField: {
-            label: 'Default grid size',
-            item: buttonGroupInput(
-                modes.map(mode => button({
+            label: 'Grid sizing',
+            item: buttonGroupInput({
+                items: modes.map(mode => button({
                     value: mode,
                     text: startCase(mode),
-                    width: 80,
+                    flex: 1,
                     style: {
                         fontSize: `var(--xh-grid-${mode}-font-size-px)`
                     }
-                }))
-            )
+                })),
+                width: '100%',
+                ...inputProps
+            }),
+            ...formFieldProps
         },
         valueGetter: () => XH.sizingMode,
         valueSetter: (v) => XH.setSizingMode(v)
