@@ -6,7 +6,7 @@
  */
 
 import {FieldFilter} from '@xh/hoist/data';
-import {fieldOption, filterOption, msgOption} from './Option';
+import {fieldOption, fieldFilterOption, msgOption} from './Option';
 import {fmtNumber} from '@xh/hoist/format';
 
 import {
@@ -18,7 +18,8 @@ import {
     flatMap,
     find,
     castArray,
-    isFunction
+    isFunction,
+    without
 } from 'lodash';
 
 
@@ -97,12 +98,12 @@ export class QueryEngine {
         if (!spec) return msgOption(`No matching field found for '${q.field}'`);
 
         const ret = [];
-        ['empty', 'not empty'].forEach(value => {
+        ['blank', 'not blank'].forEach(value => {
             if (caselessStartsWith(value, q.value)) {
                 const op = value.startsWith('not') ? '!=' : '=';
-                value = [null, ''];
+                value = null;
                 ret.push(
-                    filterOption({
+                    fieldFilterOption({
                         filter: new FieldFilter({field: spec.field, op, value}),
                         fieldSpec: spec,
                         isExact: true
@@ -111,7 +112,7 @@ export class QueryEngine {
             }
         });
         return isEmpty(ret) ?
-            msgOption(`The 'is' operator supports 'empty' or 'not empty'`) :
+            msgOption(`The 'is' operator supports 'blank' or 'not blank'`) :
             ret;
     }
 
@@ -144,7 +145,7 @@ export class QueryEngine {
             (!forceSelection || !supportsSuggestions) &&
             ret.every(it => it.filter?.value !== value)) {
             ret.push(
-                filterOption({
+                fieldFilterOption({
                     filter: new FieldFilter({field: spec.field, op: q.op, value}),
                     fieldSpec: spec
                 })
@@ -203,7 +204,7 @@ export class QueryEngine {
             const formattedValue = spec.renderValue(v);
             if (testFn(formattedValue, v)) {
                 ret.push(
-                    filterOption({
+                    fieldFilterOption({
                         filter: new FieldFilter({field: spec.field, op, value: v}),
                         fieldSpec: spec,
                         isExact: value === v || caselessEquals(formattedValue, queryStr)
@@ -222,9 +223,12 @@ export class QueryEngine {
         if (isEmpty(raw)) return null;
 
         // 'is' is a pseudo operator, both is and like need word boundaries
-        const ops = FieldFilter.OPERATORS.filter(it => it != 'like');
+        const ops = without(FieldFilter.OPERATORS, 'like', 'not like', 'begins', 'ends');
         const operatorRegs = sortBy(ops, o => -o.length).map(escapeRegExp);
         operatorRegs.push('\\blike\\b');
+        operatorRegs.push('\\bnot like\\b');
+        operatorRegs.push('\\bbegins\\b');
+        operatorRegs.push('\\bends\\b');
         operatorRegs.push('\\bis\\b');
 
         let [field = '', op = '', value = ''] = raw
@@ -233,8 +237,7 @@ export class QueryEngine {
 
         // Catch special case where some partial operator bits being interpreted as field
         if (!op && field) {
-
-            // catch partial 'like/is/!' at the end of an actual field -- move to operator
+            // catch partial operator at the end of an actual field -- move to operator
             const catchOpSuffix = (suffix, operator) => {
                 const reg = new RegExp(suffix, 'i');
                 if (field.match(reg)) {
@@ -247,6 +250,9 @@ export class QueryEngine {
             };
 
             if (!op) catchOpSuffix('( l| li| lik)$', 'like');
+            if (!op) catchOpSuffix('( n| no| not| not | not l| not li| not lik)$', 'not like');
+            if (!op) catchOpSuffix('( b| be| beg| begi| begin)$', 'begins');
+            if (!op) catchOpSuffix('( e| en| end)$', 'ends');
             if (!op) catchOpSuffix(' i$', 'is');
             if (!op) catchOpSuffix('!$', '!=');
 
@@ -256,7 +262,6 @@ export class QueryEngine {
                 field = '';
             }
         }
-
 
         if (!field && !op) return null;
 

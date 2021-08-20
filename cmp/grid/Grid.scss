@@ -420,3 +420,37 @@
     padding: 0 var(--xh-grid-tiny-header-lr-pad-px);
   }
 }
+
+.xh-grid-menu-option {
+  &--intent-success {
+    color: var(--xh-intent-success-darker);
+  }
+  &--intent-primary {
+    color: var(--xh-intent-primary-darker);
+  }
+  &--intent-warning {
+    color: var(--xh-intent-warning-darker);
+  }
+  &--intent-danger {
+    color: var(--xh-intent-danger-darker);
+  }
+
+  // Dark theme
+  .xh-dark & {
+    &--intent-success {
+      color: var(--xh-intent-success-lighter);
+    }
+
+    &--intent-primary {
+      color: var(--xh-intent-primary-lighter);
+    }
+
+    &--intent-warning {
+      color: var(--xh-intent-warning-lighter);
+    }
+
+    &--intent-danger {
+      color: var(--xh-intent-danger-lighter);
+    }
+  }
+}

@@ -103,6 +103,7 @@ export class SplitTreeMapModel extends HoistModel {
     get maxHeat()           {return this.primaryMapModel.maxHeat}
     get algorithm()         {return this.primaryMapModel.algorithm}
     get colorMode()         {return this.primaryMapModel.colorMode}
+    get theme()             {return this.primaryMapModel.theme}
 
     @action
     setHighchartsConfig(...args) {
@@ -144,6 +145,12 @@ export class SplitTreeMapModel extends HoistModel {
     setColorMode(...args) {
         this.primaryMapModel.setColorMode(...args);
         this.secondaryMapModel.setColorMode(...args);
+    }
+
+    @action
+    setTheme(...args) {
+        this.primaryMapModel.setTheme(...args);
+        this.secondaryMapModel.setTheme(...args);
     }
 
     //-------------------------

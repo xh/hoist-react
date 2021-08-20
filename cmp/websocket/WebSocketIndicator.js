@@ -26,11 +26,11 @@ export const [WebSocketIndicator, webSocketIndicator] = hoistCmp.withFactory({
             txt = 'Disabled';
             tooltip = 'WebSockets not enabled for this application';
         } else if (connected) {
-            icon = Icon.circle({prefix: 'fas', className: 'xh-intent-success'});
+            icon = Icon.circle({prefix: 'fas', intent: 'success'});
             txt = 'Connected';
             tooltip = `Last message: ${fmtTime(lastMessageTime)}`;
         } else {
-            icon = Icon.xCircle({className: 'xh-intent-danger'});
+            icon = Icon.xCircle({intent: 'danger'});
             txt = 'Disconnected';
             tooltip = 'WebSockets enabled but not connected (unexpected)';
         }

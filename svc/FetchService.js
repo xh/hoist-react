@@ -7,7 +7,7 @@
 import {HoistService, XH} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
-import {throwIf, apiDeprecated} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, omitBy} from 'lodash';
 import {stringify} from 'qs';
@@ -176,8 +176,6 @@ export class FetchService extends HoistService {
         let {url, method, headers, body, params} = opts;
         throwIf(!url, 'No url specified in call to fetchService.');
         throwIf(headers instanceof Headers, 'headers must be a plain object in calls to fetchService.');
-        apiDeprecated(opts.contentType, 'contentType', 'Please pass a "Content-Type" header instead.');
-        apiDeprecated(opts.acceptJson, 'acceptJson', 'Please pass an {"Accept": "application/json"} header instead.');
 
         // 1) Compute / install defaults
         if (!method) {

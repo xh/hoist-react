@@ -137,23 +137,41 @@ export function errorIf(condition, message) {
 /**
  * Document and prevent usage of a removed parameter.
  *
- * @param {*} paramValue - value of the removed parameter.  If defined, this method will throw.
- * @param {string} paramName - the name of the removed parameter
- * @param {string} [message] - an additional message.  Can contain suggestions for alternatives.
+ * @param {string} name - the name of the removed parameter
+ * @param {Object} opts
+ * @param {*} [opts.test] -  If provided and undefined, this method will be a no-op.
+ *      Useful for testing if a parameter has been provided in caller.
+ * @param {string} [opts.v] - version when this exception should be removed.
+ * @param {string} [opts.msg] - an additional message.  Can contain suggestions for alternatives.
  */
-export function apiRemoved(paramValue, paramName, message = '') {
-    throwIf(paramValue !== undefined, `The use of '${paramName}' is no longer supported. ${message}`);
+export function apiRemoved(name, opts) {
+    if ('test' in opts && isUndefined(opts.test)) return;
+
+    const msg = opts.msg ? ` ${opts.msg}.`: '';
+    throw Exception.create(`The use of '${name}' is no longer supported.${msg}`);
 }
 
 /**
- * Document and warn on usage of a deprecated parameter.
+ * Document and warn on usage of a deprecated API
  *
- * @param {*} paramValue - value of the deprecated parameter.  If defined, this method will warn.
- * @param {string} paramName - the name of the deprecated parameter
- * @param {string} [message] - an additional message.  Can contain suggestions for alternatives.
+ * @param {string} name - the name of the removed parameter
+ * @param {Object} opts
+ * @param {*} [opts.test] -  If provided and undefined, this method will be a no-op.
+ *      Useful for testing if a parameter has been provided to caller.
+ * @param {string} [opts.v] - version when this support will be removed.
+ * @param {string} [opts.msg] - an additional message, e.g. suggestions for alternatives.
  */
-export function apiDeprecated(paramValue, paramName, message = '') {
-    warnIf(paramValue !== undefined, `The use of '${paramName}' has been deprecated. ${message}`);
+const _seenWarnings  = {};
+export function apiDeprecated(name, opts) {
+    if ('test' in opts && isUndefined(opts.test)) return;
+
+    const v = opts.v ?? 'a future release',
+        msg = opts.msg ? ` ${opts.msg}.`: '',
+        warn = `The use of '${name}' has been deprecated and will be removed in ${v}.${msg}`;
+    if (!_seenWarnings[warn]) {
+        console.warn(warn);
+        _seenWarnings[warn] = true;
+    }
 }
 
 /**

@@ -41,6 +41,7 @@
   }
 
   &__list {
+    margin-bottom: var(--xh-pad-half-px);
     background-color: var(--xh-bg-alt);
   }
 
@@ -63,12 +64,17 @@
       flex: 1;
 
       .xh-select__control {
+        cursor: pointer;
         background: none;
         box-shadow: none;
       }
 
       .xh-select__single-value {
         color: var(--xh-input-text-color);
+      }
+
+      &:hover {
+        border-bottom: var(--xh-border-solid);
       }
     }
 

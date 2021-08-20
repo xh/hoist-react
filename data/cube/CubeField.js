@@ -5,20 +5,22 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {isString} from 'lodash';
 import {
     Aggregator,
+    AverageAggregator,
+    AverageStrictAggregator,
+    ChildCountAggregator,
     Field,
+    LeafCountAggregator,
     MaxAggregator,
     MinAggregator,
     NullAggregator,
     SingleAggregator,
     SumAggregator,
     SumStrictAggregator,
-    UniqueAggregator,
-    AverageAggregator,
-    AverageStrictAggregator
+    UniqueAggregator
 } from '@xh/hoist/data';
+import {isString} from 'lodash';
 
 /**
  * Metadata used to define a measure or dimension in Cube. For properties present on raw data source
@@ -40,6 +42,8 @@ export class CubeField extends Field {
 
     static averageAggregator = new AverageAggregator();
     static averageStrictAggregator = new AverageStrictAggregator();
+    static childCountAggregator = new ChildCountAggregator();
+    static leafCountAggregator = new LeafCountAggregator();
     static maxAggregator = new MaxAggregator();
     static minAggregator = new MinAggregator();
     static nullAggregator = new NullAggregator();
@@ -78,6 +82,8 @@ export class CubeField extends Field {
             switch (val) {
                 case 'AVG':             return CubeField.averageAggregator;
                 case 'AVG_STRICT':      return CubeField.averageStrictAggregator;
+                case 'CHILD_COUNT':     return CubeField.childCountAggregator;
+                case 'LEAF_COUNT':      return CubeField.leafCountAggregator;
                 case 'MAX':             return CubeField.maxAggregator;
                 case 'MIN':             return CubeField.minAggregator;
                 case 'NULL':            return CubeField.nullAggregator;

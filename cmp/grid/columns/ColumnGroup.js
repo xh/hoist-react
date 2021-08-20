@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {genDisplayName} from '@xh/hoist/data';
-import {apiRemoved, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {clone, isEmpty, isFunction, isString} from 'lodash';
 import {getAgHeaderClassFn} from './Column';
 
@@ -40,8 +40,6 @@ export class ColumnGroup {
         align,
         ...rest
     }, gridModel) {
-        apiRemoved(align, 'align', "Use 'headerAlign' instead.");
-
         throwIf(isEmpty(children), 'Must specify children for a ColumnGroup');
         throwIf(isEmpty(groupId) && !isString(headerName), 'Must specify groupId or a string headerName for a ColumnGroup');
 

@@ -8,6 +8,7 @@ import {useEffect} from 'react';
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
+import {useContextMenu} from '@xh/hoist/desktop/hooks';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {bindable, runInAction, makeObservable} from '@xh/hoist/mobx';
 import {
@@ -17,14 +18,17 @@ import {
     useOnVisibleChange
 } from '@xh/hoist/utils/react';
 import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
+import {Icon} from '@xh/hoist/icon';
 import PT from 'prop-types';
 import {ChartModel} from './ChartModel';
 import {installZoomoutGesture} from './impl/zoomout';
+import {installCopyToClipboard} from './impl/copyToClipboard';
 import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
 import './Chart.scss';
 
 installZoomoutGesture(Highcharts);
+installCopyToClipboard(Highcharts);
 
 /**
  * Wrapper Component for a Highcharts chart. Provides basic rendering / lifecycle management
@@ -66,7 +70,7 @@ export const [Chart, chart] = hoistCmp.withFactory({
         }
 
         // Inner div required to be the ref for the chart element
-        return box({
+        const coreContents = box({
             ...layoutProps,
             className,
             ref,
@@ -75,8 +79,11 @@ export const [Chart, chart] = hoistCmp.withFactory({
                 ref: impl.chartRef
             })
         });
+
+        return useContextMenu(coreContents, impl.contextMenu);
     }
 });
+
 Chart.propTypes = {
     /**
      * Ratio of width-to-height of displayed chart.  If defined and greater than 0, the chart will
@@ -93,6 +100,7 @@ class LocalModel extends HoistModel {
     @bindable aspectRatio;
     chartRef = createObservableRef();
     model;
+    contextMenu;
     prevSeriesConfig;
 
     constructor(model, aspectRatio) {
@@ -100,6 +108,8 @@ class LocalModel extends HoistModel {
         makeObservable(this);
         this.model = model;
         this.aspectRatio = aspectRatio;
+        this.contextMenu = this.getContextMenu();
+
         this.addReaction({
             track: () => [
                 this.aspectRatio,
@@ -169,6 +179,9 @@ class LocalModel extends HoistModel {
     onResize = (size) => {
         if (!this.chart) return;
         const {width, height} = this.getChartDims(size);
+
+        if (this.chart.fullscreen.isOpen) return;
+
         this.chart.setSize(width, height, false);
     };
 
@@ -240,9 +253,24 @@ class LocalModel extends HoistModel {
             chartOptions: {
                 scrollbar: {enabled: false}
             },
+            menuItemDefinitions: {
+                copyToClipboard: {
+                    onclick: function() {this.copyToClipboardAsync()},
+                    text: 'Copy to clipboard'
+                }
+            },
             buttons: {
                 contextButton: {
-                    menuItems: ['downloadPNG', 'downloadSVG', 'separator', 'downloadCSV']
+                    menuItems: [
+                        'viewFullscreen',
+                        'separator',
+                        ...Highcharts.isWebKit ? ['copyToClipboard'] : [],
+                        'printChart',
+                        'separator',
+                        'downloadPNG',
+                        'downloadSVG',
+                        'downloadCSV'
+                    ]
                 }
             }
         };
@@ -306,5 +334,44 @@ class LocalModel extends HoistModel {
     //---------------------------
     onSetExtremes = () => {
 
+    }
+
+    getContextMenu() {
+        if (!this.model.showContextMenu || !XH.isDesktop) return null;
+        return [
+            {
+                text: 'View in full screen',
+                icon: Icon.expand(),
+                actionFn: () => this.chart.fullscreen.toggle()
+            },
+            '-',
+            {
+                text: 'Copy to clipboard',
+                icon: Icon.copy(),
+                hidden: !Highcharts.isWebKit,
+                actionFn: () => this.chart.copyToClipboardAsync()
+            },
+            {
+                text: 'Print chart',
+                icon: Icon.print(),
+                actionFn: () => this.chart.print()
+            },
+            '-',
+            {
+                text: 'Download PNG image',
+                icon: Icon.fileImage(),
+                actionFn: () => this.chart.exportChartLocal()
+            },
+            {
+                text: 'Download SVG vector image',
+                icon: Icon.fileImage(),
+                actionFn: () => this.chart.exportChartLocal({type: 'image/svg+xml'})
+            },
+            {
+                text: 'Export Data',
+                icon: Icon.fileCsv(),
+                actionFn: () => this.chart.downloadCSV()
+            }
+        ];
     }
 }

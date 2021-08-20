@@ -7,7 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
-import {colChooser} from '@xh/hoist/desktop/cmp/grid/impl/ColChooser';
+import {colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooser';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
