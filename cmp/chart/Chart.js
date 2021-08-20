@@ -251,7 +251,11 @@ class LocalModel extends HoistModel {
             enabled: false,
             fallbackToExportServer: false,
             chartOptions: {
-                scrollbar: {enabled: false}
+                scrollbar: {enabled: false},
+                rangeSelector: {enabled: false},
+                navigator: {enabled: false},
+                xAxis: [{labels: {enabled: true}}],
+                yAxis: [{labels: {enabled: true}}]
             },
             menuItemDefinitions: {
                 copyToClipboard: {
@@ -276,7 +280,33 @@ class LocalModel extends HoistModel {
         };
 
         return {
-            chart: {},
+            title: {text: null},
+            chart: {
+                events: {
+                    beforePrint: function() {
+                        const config = this.options;
+                        this.xhScreenConfig = {
+                            exporting: {enabled: config.exporting.enabled},
+                            navigator: {enabled: config.navigator.enabled},
+                            rangeSelector: {enabled: config.rangeSelector.enabled},
+                            scrollbar: {enabled: config.scrollbar.enabled},
+                            xAxis: config.xAxis,
+                            yAxis: config.yAxis
+                        };
+                        this.update({
+                            exporting: {enabled: false},
+                            scrollbar: {enabled: false},
+                            rangeSelector: {enabled: false},
+                            navigator: {enabled: false},
+                            xAxis: [{labels: {enabled: true}}],
+                            yAxis: [{labels: {enabled: true}}]
+                        });
+                    },
+                    afterPrint: function() {
+                        this.update(this.xhScreenConfig);
+                    }
+                }
+            },
             credits: false,
             exporting
         };
