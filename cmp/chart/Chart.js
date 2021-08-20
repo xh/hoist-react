@@ -276,6 +276,7 @@ class LocalModel extends HoistModel {
         };
 
         return {
+            title: {text: null},
             chart: {},
             credits: false,
             exporting
