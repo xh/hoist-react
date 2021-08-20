@@ -3,6 +3,9 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
+### 📚 Libraries
+
+* @blueprintjs/core `3.47 -> 3.48`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.1.0...develop)
 
