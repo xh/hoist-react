@@ -8,15 +8,20 @@ import {XH} from '@xh/hoist/core';
 import {switchInput} from '@xh/hoist/mobile/cmp/input';
 
 /**
- * Convenience configuration for an auto refresh AppOption.
+ * Convenience configuration for the `autoRefresh` AppOption.
+ * @param {{}} [formFieldProps]
+ * @param {{}} [inputProps]
  */
-export const autoRefreshAppOption = () => ({
-    omit: XH.autoRefreshService.interval <= 0,
-    name: 'autoRefresh',
-    prefName: 'xhAutoRefreshEnabled',
-    formField: {
-        label: 'Auto-refresh',
-        info: `Enable to auto-refresh app data every ${XH.autoRefreshService.interval} seconds`,
-        item: switchInput()
-    }
-});
+export const autoRefreshAppOption = ({formFieldProps, inputProps} = {}) => {
+    return {
+        omit: XH.autoRefreshService.interval <= 0,
+        name: 'autoRefresh',
+        prefName: 'xhAutoRefreshEnabled',
+        formField: {
+            label: 'Auto-refresh',
+            info: `Enable to auto-refresh app data every ${XH.autoRefreshService.interval} seconds`,
+            item: switchInput({...inputProps}),
+            ...formFieldProps
+        }
+    };
+};
