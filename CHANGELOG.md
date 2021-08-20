@@ -17,7 +17,7 @@
   `sizingMode` by default. Apps that have already implemented custom solutions around a centralized
   `sizingMode` should endeavor to unwind in favor of this.
   * ⚠ NOTE - this change requires a new application preference be defined - `xhSizingMode`. This
-    should be a string pref, with a suggested default value of `standard`.
+    should be a JSON pref, with a suggested default value of `{}`.
 * Added `GridAutosizeMode.ON_SIZING_MODE_CHANGE` to autosize Grid columns whenever
   `GridModel.sizingMode` changes - it is now the default `GridAutosizeOptions.mode`.
 * Added a library of reusable `AppOption` control configs, including `ThemeAppOption`,
