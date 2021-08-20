@@ -1,13 +1,16 @@
 # Changelog
 
+## v42.1.1 - 2021-08-20
 
-## v43.0.0-SNAPSHOT - unreleased
+* Update new `XH.sizingMode` support to store distinct values for the selected sizing mode on
+  desktop, tablet, and mobile (phone) platforms.
+* Additional configuration supported for newly-introduced `AppOption` preset components.
 
 ### 📚 Libraries
 
 * @blueprintjs/core `3.47 -> 3.48`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v42.1.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v42.1.0...v42.1.1)
 
 ## v42.1.0 - 2021-08-19
 
@@ -20,7 +23,7 @@
     should be a JSON pref, with a suggested default value of `{}`.
 * Added `GridAutosizeMode.ON_SIZING_MODE_CHANGE` to autosize Grid columns whenever
   `GridModel.sizingMode` changes - it is now the default `GridAutosizeOptions.mode`.
-* Added a library of reusable `AppOption` control configs, including `ThemeAppOption`,
+* Added a library of reusable `AppOption` preset components, including `ThemeAppOption`,
   `SizingModeAppOption` and `AutoRefreshAppOptions`. Apps that have implemented custom `AppOption`
   controls to manage these Hoist-provided options should consider migrating to these defaults.
 * `Icon` factories now support `intent`.
