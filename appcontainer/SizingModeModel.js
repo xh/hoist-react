@@ -7,7 +7,7 @@
 import {HoistModel, XH, SizingMode} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {values} from 'lodash';
+import {values, isPlainObject} from 'lodash';
 
 /**
  * Manage Sizing Mode.
@@ -33,14 +33,40 @@ export class SizingModeModel extends HoistModel {
         values(SizingMode).forEach(it => classList.toggle(`xh-${it}`, it === sizingMode));
 
         this.sizingMode = sizingMode;
+
         if (XH.prefService.hasKey('xhSizingMode')) {
-            XH.setPref('xhSizingMode', sizingMode);
+            const pref = this.getPref(),
+                platform = this.getPlatform();
+
+            if (!isPlainObject(pref)) {
+                console.warn(`Required pref 'xhSizingMode' must be type JSON - update via Admin Console.`);
+                return;
+            }
+
+            XH.setPref('xhSizingMode', {...pref, [platform]: sizingMode});
         } else {
-            console.warn(`Missing required string pref 'xhSizingMode' - add via Admin Console.`);
+            console.warn(`Missing required JSON pref 'xhSizingMode' - add via Admin Console.`);
         }
     }
 
     init() {
-        this.setSizingMode(XH.getPref('xhSizingMode', 'standard'));
+        const pref = this.getPref(),
+            platform = this.getPlatform(),
+            sizingMode = isPlainObject(pref) ? pref[platform] : null;
+
+        this.setSizingMode(sizingMode ?? 'standard');
+    }
+
+    //---------------------
+    // Implementation
+    //---------------------
+    getPref() {
+        return XH.getPref('xhSizingMode', {});
+    }
+
+    getPlatform() {
+        if (XH.isMobileApp) return 'mobile';
+        if (XH.isTablet) return 'tablet';
+        return 'desktop';
     }
 }
