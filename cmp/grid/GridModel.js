@@ -103,6 +103,8 @@ export class GridModel extends HoistModel {
     /** @member {boolean} */
     showGroupRowCounts;
     /** @member {boolean} */
+    expandOnDoubleClick;
+    /** @member {boolean} */
     enableColumnPinning;
     /** @member {boolean} */
     enableExport;
@@ -214,6 +216,11 @@ export class GridModel extends HoistModel {
      *      rows within each full-width group row.
      * @param {SizingMode} [c.sizingMode] - one of tiny, compact, standard, large. If undefined, will
      *      default and bind to `XH.sizingMode`.
+     * @param {boolean} [c.expandOnDoubleClick] - true to expand / collapse tree rows on
+     *      double-click. Defaults to true if `treeMode=true`.
+     * @param {number} [c.doubleClickDelay] - Maximum time (in ms) between clicks to trigger a
+     *      double-click, i.e. `onRowDoubleClicked`|`onCellDoubleClicked`. Defaults to 300ms for
+     *      desktop, and 500ms for phone/tablet.
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
      * @param {string} [c.treeStyle] - enable treeMode-specific styles (row background highlights
@@ -300,6 +307,8 @@ export class GridModel extends HoistModel {
         persistWith,
 
         sizingMode,
+        expandOnDoubleClick = treeMode,
+        doubleClickDelay = XH.isMobileApp || XH.isTablet ? 500 : 300,
         showHover = false,
         rowBorders = false,
         rowClassFn = null,
@@ -353,6 +362,8 @@ export class GridModel extends HoistModel {
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.showGroupRowCounts = showGroupRowCounts;
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
+        this.expandOnDoubleClick = expandOnDoubleClick;
+        this.doubleClickDelay = doubleClickDelay;
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
         this.autosizeOptions = defaults(autosizeOptions, {

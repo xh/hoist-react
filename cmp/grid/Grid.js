@@ -220,10 +220,8 @@ class GridLocalModel extends HoistModel {
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             rowClassRules: model.rowClassRules,
             noRowsOverlayComponentFramework: observer(() => div(this.emptyText)),
-            onCellClicked: model.onCellClicked,
-            onCellDoubleClicked: model.onCellDoubleClicked,
+            onCellClicked: this.onCellClicked,
             onRowClicked: this.onRowClicked,
-            onRowDoubleClicked: model.onRowDoubleClicked,
             onRowGroupOpened: this.onRowGroupOpened,
             onSelectionChanged: this.onSelectionChanged,
             onDragStopped: this.onDragStopped,
@@ -757,6 +755,7 @@ class GridLocalModel extends HoistModel {
     onKeyDown = (evt) => {
         const {model} = this,
             {selModel} = model;
+
         if ((evt.ctrlKey || evt.metaKey) && evt.key === 'a' && selModel.mode === 'multiple') {
             selModel.selectAll();
             return;
@@ -767,12 +766,49 @@ class GridLocalModel extends HoistModel {
 
     onRowClicked = (evt) => {
         const {model} = this,
-            {selModel} = model;
+            {selModel, doubleClickDelay, onRowClicked, onRowDoubleClicked} = model;
+
         if (evt.rowPinned) {
             selModel.clear();
         }
 
-        if (model.onRowClicked) model.onRowClicked(evt);
+        const elapsed = Date.now() - (this._lastRowClick ?? 0);
+        if (elapsed < doubleClickDelay) {
+            clearTimeout(this._rowClickTimeout);
+            if (onRowDoubleClicked) onRowDoubleClicked({...evt, type: 'rowDoubleClicked'});
+        } else {
+            this._rowClickTimeout = setTimeout(() => {
+                if (onRowClicked) onRowClicked(evt);
+            }, doubleClickDelay);
+        }
+
+        this._lastRowClick = Date.now();
+    };
+
+    onCellClicked = (evt) => {
+        const {model} = this,
+            {doubleClickDelay, onCellClicked, onCellDoubleClicked} = model,
+            {node} = evt;
+
+        const elapsed = Date.now() - (this._lastCellClick ?? 0);
+        if (elapsed < doubleClickDelay) {
+            clearTimeout(this._cellClickTimeout);
+
+            // Expand / collapse tree row if `expandOnDoubleClick`.
+            // Note we use the `cellClicked` event, due to inconsistent support
+            // for `rowClicked` on mobile devices / browsers.
+            if (model.expandOnDoubleClick && node?.allChildrenCount) {
+                model.agApi.setRowNodeExpanded(node, !node.expanded);
+            }
+
+            if (onCellDoubleClicked) onCellDoubleClicked({...evt, type: 'cellDoubleClicked'});
+        } else {
+            this._cellClickTimeout = setTimeout(() => {
+                if (onCellClicked) onCellClicked(evt);
+            }, doubleClickDelay);
+        }
+
+        this._lastCellClick = Date.now();
     };
 }
 
