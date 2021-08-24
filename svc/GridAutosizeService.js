@@ -62,10 +62,6 @@ export class GridAutosizeService extends HoistService {
         });
     }
 
-
-    //------------------
-    // Implementation
-    //------------------
     /**
      * @param {GridModel} gridModel
      * @param {string[]} colIds
@@ -84,7 +80,9 @@ export class GridAutosizeService extends HoistService {
         return ret;
     }
 
-
+    //------------------
+    // Implementation
+    //------------------
     /**
      * @param {GridModel} gridModel
      * @param {GridAutosizeOptions} options
