@@ -17,7 +17,7 @@ import {
     useOnResize,
     useOnVisibleChange
 } from '@xh/hoist/utils/react';
-import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
+import {assign, castArray, clone, cloneDeep, forOwn, isEqual, merge, omit} from 'lodash';
 import {Icon} from '@xh/hoist/icon';
 import PT from 'prop-types';
 import {ChartModel} from './ChartModel';
@@ -284,26 +284,28 @@ class LocalModel extends HoistModel {
             chart: {
                 events: {
                     beforePrint: function() {
-                        const config = this.options;
-                        this.xhScreenConfig = {
-                            exporting: {enabled: config.exporting.enabled},
-                            navigator: {enabled: config.navigator.enabled},
-                            rangeSelector: {enabled: config.rangeSelector.enabled},
-                            scrollbar: {enabled: config.scrollbar.enabled},
-                            xAxis: config.xAxis,
-                            yAxis: config.yAxis
-                        };
-                        this.update({
-                            exporting: {enabled: false},
-                            scrollbar: {enabled: false},
-                            rangeSelector: {enabled: false},
-                            navigator: {enabled: false},
-                            xAxis: [{labels: {enabled: true}}],
-                            yAxis: [{labels: {enabled: true}}]
+                        // When we print, we use the same options provided for exporting, which
+                        // can be found at `exporting.chartOptions`
+                        const config = cloneDeep(this.options),
+                            printChartOptions = {
+                                ...config.exporting?.chartOptions,
+                                exporting: {enabled: false} // Hide the hamburger menu
+                            };
+
+                        // For each option we're going to change for printing, keep a copy of the
+                        // current settings so we can restore them later
+                        const screenChartOptions = {};
+                        forOwn(printChartOptions, (value, key) => {
+                            screenChartOptions[key] = config[key];
                         });
+                        this._screenChartOptions = screenChartOptions;
+
+                        // Update the chart with print options
+                        this.update(printChartOptions);
                     },
                     afterPrint: function() {
-                        this.update(this.xhScreenConfig);
+                        // Restore the original screen options
+                        this.update(this._screenChartOptions);
                     }
                 }
             },
