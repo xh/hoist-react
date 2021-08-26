@@ -17,7 +17,7 @@ import {
     useOnResize,
     useOnVisibleChange
 } from '@xh/hoist/utils/react';
-import {assign, castArray, clone, cloneDeep, forOwn, isEqual, merge, omit} from 'lodash';
+import {assign, castArray, clone, cloneDeep, forOwn, isEqual, isPlainObject, merge, omit} from 'lodash';
 import {Icon} from '@xh/hoist/icon';
 import PT from 'prop-types';
 import {ChartModel} from './ChartModel';
@@ -292,13 +292,20 @@ class LocalModel extends HoistModel {
                                 exporting: {enabled: false} // Hide the hamburger menu
                             };
 
-                        // For each option we're going to change for printing, keep a copy of the
-                        // current settings so we can restore them later
-                        const screenChartOptions = {};
-                        forOwn(printChartOptions, (value, key) => {
-                            screenChartOptions[key] = config[key];
-                        });
-                        this._screenChartOptions = screenChartOptions;
+                        // For each option we're going to change for printing, recursively copy the
+                        // current settings so we can restore them later.
+                        const copySettings = (src, ref) => {
+                            const ret = {};
+                            forOwn(ref, (v, key) => {
+                                if (isPlainObject(v)) {
+                                    ret[key] = copySettings(src[key], v);
+                                } else {
+                                    ret[key] = src[key];
+                                }
+                            });
+                            return ret;
+                        };
+                        this._screenChartOptions = copySettings(config, printChartOptions);
 
                         // Update the chart with print options
                         this.update(printChartOptions);
