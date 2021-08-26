@@ -23,9 +23,7 @@ export const impersonationBar = hoistCmp.factory({
     model: uses(ImpersonationBarModel),
 
     render({model}) {
-        const {isOpen, targets} = model,
-            {identityService} = XH;
-
+        const {isOpen, targets} = model;
         if (!isOpen) return null;
 
         const username = XH.getUsername(),
@@ -36,16 +34,17 @@ export const impersonationBar = hoistCmp.factory({
             items: [
                 Icon.impersonate({size: 'lg'}),
                 select({
+                    bind: 'pendingTarget',
                     value: username,
                     options: options,
                     commitOnChange: true,
                     enableCreate: true,
                     createMessageFn: (q) => `Impersonate ${q}`,
-                    onCommit: (target) => identityService.impersonateAsync(target)
+                    onCommit: model.onCommit
                 }),
                 button({
                     icon: Icon.close(),
-                    onClick: () => (identityService.isImpersonating ? identityService.endImpersonateAsync() : model.hide())
+                    onClick: model.onClose
                 })
             ]
         });

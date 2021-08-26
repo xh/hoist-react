@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable, bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -17,6 +17,7 @@ export class ImpersonationBarModel extends HoistModel {
 
     @observable showRequested = false;
     @observable.ref targets = [];
+    @bindable pendingTarget = null;
 
     constructor() {
         super();
@@ -52,6 +53,26 @@ export class ImpersonationBarModel extends HoistModel {
             this.show();
         }
     }
+
+
+    //---------------------
+    // Handlers
+    //---------------------
+    onCommit = async () => {
+        const {pendingTarget} = this;
+        if (!pendingTarget) return;
+        try {
+            await XH.identityService.impersonateAsync(pendingTarget);
+        } catch (e) {
+            this.setPendingTarget('');
+            XH.handleException(e, {logOnServer: false});  // likely to be an unknown user
+        }
+    }
+
+    onClose = () => {
+        XH.identityService.isImpersonating ? XH.identityService.endImpersonateAsync() : this.hide();
+    }
+
 
     //--------------------
     // Implementation
