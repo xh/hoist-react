@@ -17,7 +17,7 @@ import {
     useOnResize,
     useOnVisibleChange
 } from '@xh/hoist/utils/react';
-import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
+import {assign, castArray, clone, cloneDeep, forOwn, isEqual, isPlainObject, merge, omit} from 'lodash';
 import {Icon} from '@xh/hoist/icon';
 import PT from 'prop-types';
 import {ChartModel} from './ChartModel';
@@ -251,7 +251,11 @@ class LocalModel extends HoistModel {
             enabled: false,
             fallbackToExportServer: false,
             chartOptions: {
-                scrollbar: {enabled: false}
+                scrollbar: {enabled: false},
+                rangeSelector: {enabled: false},
+                navigator: {enabled: false},
+                xAxis: [{labels: {enabled: true}}],
+                yAxis: [{labels: {enabled: true}}]
             },
             menuItemDefinitions: {
                 copyToClipboard: {
@@ -277,7 +281,41 @@ class LocalModel extends HoistModel {
 
         return {
             title: {text: null},
-            chart: {},
+            chart: {
+                events: {
+                    beforePrint: function() {
+                        // When we print, we use the same options provided for exporting, which
+                        // can be found at `exporting.chartOptions`
+                        const config = cloneDeep(this.options),
+                            printChartOptions = {
+                                ...config.exporting?.chartOptions,
+                                exporting: {enabled: false} // Hide the hamburger menu
+                            };
+
+                        // For each option we're going to change for printing, recursively copy the
+                        // current settings so we can restore them later.
+                        const copySettings = (src, ref) => {
+                            const ret = {};
+                            forOwn(ref, (v, key) => {
+                                if (isPlainObject(v)) {
+                                    ret[key] = copySettings(src[key], v);
+                                } else {
+                                    ret[key] = src[key];
+                                }
+                            });
+                            return ret;
+                        };
+                        this._screenChartOptions = copySettings(config, printChartOptions);
+
+                        // Update the chart with print options
+                        this.update(printChartOptions);
+                    },
+                    afterPrint: function() {
+                        // Restore the original screen options
+                        this.update(this._screenChartOptions);
+                    }
+                }
+            },
             credits: false,
             exporting
         };

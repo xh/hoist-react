@@ -1,5 +1,12 @@
 # Changelog
 
+## v43.0.0-SNAPSHOT
+
+### 🎁 New Features
+
+* Charts now HIDE scrollbar, rangeSelector, navigator, and export button by default on print/image export.
+* Charts now SHOW the labels on the first X and Y axis by default on print/image export.
+
 ## v42.1.1 - 2021-08-20
 
 * Update new `XH.sizingMode` support to store distinct values for the selected sizing mode on
