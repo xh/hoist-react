@@ -297,11 +297,7 @@ class LocalModel extends HoistModel {
                         const copySettings = (src, ref) => {
                             const ret = {};
                             forOwn(ref, (v, key) => {
-                                if (isPlainObject(v)) {
-                                    ret[key] = copySettings(src[key], v);
-                                } else {
-                                    ret[key] = src[key];
-                                }
+                                ret[key] = isPlainObject(v) ? copySettings(src[key], v) : src[key];
                             });
                             return ret;
                         };
