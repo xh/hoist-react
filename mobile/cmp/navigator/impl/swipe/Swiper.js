@@ -3,6 +3,7 @@ import {computed, observable, action, makeObservable} from '@xh/hoist/mobx';
 import {frame} from '@xh/hoist/cmp/layout';
 import {gestureDetector} from '@xh/hoist/kit/onsen';
 import {isFinite} from 'lodash';
+import {consumeEvent} from '@xh/hoist/utils/js';
 
 import './Swiper.scss';
 import {NavigatorModel} from '../../NavigatorModel';
@@ -71,7 +72,7 @@ class LocalModel extends HoistModel {
             !this.isDraggingChild(e, 'right')
         ) {
             this.backStart();
-            this.consumeEvent(e);
+            consumeEvent(e);
             return;
         }
 
@@ -82,7 +83,7 @@ class LocalModel extends HoistModel {
             !this.isDraggingChild(e, 'down')
         ) {
             this.refreshStart();
-            this.consumeEvent(e);
+            consumeEvent(e);
             return;
         }
     }
@@ -100,7 +101,7 @@ class LocalModel extends HoistModel {
                 return;
             }
             this.backProgress = Math.clamp(deltaX / 150, 0, 1);
-            this.consumeEvent(e);
+            consumeEvent(e);
             return;
         }
 
@@ -111,7 +112,7 @@ class LocalModel extends HoistModel {
                 return;
             }
             this.refreshProgress = Math.clamp(deltaY / 150, 0, 1);
-            this.consumeEvent(e);
+            consumeEvent(e);
             return;
         }
     }
@@ -122,20 +123,15 @@ class LocalModel extends HoistModel {
         if (this.backStarted) {
             if (this.backCompleted) XH.popRoute();
             this.backEnd();
-            this.consumeEvent(e);
+            consumeEvent(e);
         }
 
         // Refresh
         if (this.refreshStarted) {
             if (this.refreshCompleted) XH.refreshAppAsync();
             this.refreshEnd();
-            this.consumeEvent(e);
+            consumeEvent(e);
         }
-    }
-
-    consumeEvent(e) {
-        e.preventDefault();
-        e.stopPropagation();
     }
 
     isDraggingChild(e, dir) {
