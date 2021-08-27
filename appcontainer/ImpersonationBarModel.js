@@ -26,7 +26,15 @@ export class ImpersonationBarModel extends HoistModel {
 
     init() {
         this.addAutorun(() => {
-            if (this.isOpen) this.ensureTargetsLoaded();
+            if (this.isOpen) {
+                this.ensureTargetsLoaded();
+
+                // We don't have an impersonation message on mobile, so instead we
+                // display the currently impersonated user in the dropdown.
+                if (XH.isMobileApp && XH.identityService.isImpersonating) {
+                    this.pendingTarget = XH.getUsername();
+                }
+            }
         });
     }
 

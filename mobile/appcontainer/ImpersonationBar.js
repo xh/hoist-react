@@ -6,7 +6,7 @@
  */
 import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarModel';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses, XH} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {select} from '@xh/hoist/mobile/cmp/input';
@@ -25,18 +25,13 @@ export const impersonationBar = hoistCmp.factory({
     render({model}) {
         const {isOpen, targets} = model;
         if (!isOpen) return null;
-
-        const username = XH.getUsername(),
-            options = [username, ...targets];
-
         return div({
             className: 'xh-impersonation-bar',
             items: [
                 Icon.impersonate({size: 'lg'}),
                 select({
                     bind: 'pendingTarget',
-                    value: username,
-                    options: options,
+                    options: targets,
                     commitOnChange: true,
                     enableCreate: true,
                     createMessageFn: (q) => `Impersonate ${q}`,
