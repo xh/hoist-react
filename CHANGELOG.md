@@ -1,11 +1,13 @@
 # Changelog
 
-## v43.0.0-SNAPSHOT
+## v42.2.0 - 2021-08-27
 
 ### 🎁 New Features
 
 * Charts now HIDE scrollbar, rangeSelector, navigator, and export button by default on print/image export.
 * Charts now SHOW the labels on the first X and Y axis by default on print/image export.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v42.1.1...v42.2.0)
 
 ## v42.1.1 - 2021-08-20
 
