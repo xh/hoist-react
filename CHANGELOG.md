@@ -4,6 +4,7 @@
 
 ### 🎁 New Features
 
+* Added support for `queryFn` to mobile Select input.
 * Charts now HIDE scrollbar, rangeSelector, navigator, and export button by default on print/image export.
 * Charts now SHOW the labels on the first X and Y axis by default on print/image export.
 
