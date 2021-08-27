@@ -13,6 +13,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {buttonGroup, button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {FieldType} from '@xh/hoist/data';
+import {stopPropagation} from '@xh/hoist/utils/js';
 
 import './ColumnHeaderFilter.scss';
 import {ColumnHeaderFilterModel} from './ColumnHeaderFilterModel';
@@ -53,12 +54,13 @@ export const columnHeaderFilter = hoistCmp.factory({
 });
 
 const content = hoistCmp.factory({
-    render({model}) {
+    render() {
         return panel({
             title: `Filter`,
             className: 'xh-column-header-filter',
             compactHeader: true,
-            onClick: (e) => e.stopPropagation(),
+            onClick: stopPropagation,
+            onDoubleClick: stopPropagation,
             headerItems: [switcher()],
             item: tabContainer(),
             bbar: bbar()
