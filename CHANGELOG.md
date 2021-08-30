@@ -2,13 +2,13 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
+* Added support for `queryFn` to mobile Select input.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.2.0...develop)
 
 ## v42.2.0 - 2021-08-27
 
 ### 🎁 New Features
-
-* Added support for `queryFn` to mobile Select input.
 * Charts now HIDE scrollbar, rangeSelector, navigator, and export button by default on print/image export.
 * Charts now SHOW the labels on the first X and Y axis by default on print/image export.
 
