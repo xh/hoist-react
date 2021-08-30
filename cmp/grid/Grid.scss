@@ -226,7 +226,7 @@
   // rows at the same level.
   @for $i from 0 to 20 {
     $level: 0;
-    &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
+    &.xh-grid--tree-style-color-gradient.xh-grid--max-depth-#{$i} {
       @while $level <= $i {
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
@@ -235,6 +235,23 @@
           }
         }
         $level: $level + 1
+      }
+
+      .xh-ag-grid--show-hover {
+        .ag-row:not(.ag-row-level-#{$i}) {
+          &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected):not(.ag-row-pinned) {
+            background-color: var(--xh-grid-bg-hover);
+          }
+        }
+      }
+    }
+
+    &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
+      .ag-row:not(.ag-row-level-#{$i}) {
+        &:not(.ag-row-selected),
+        &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+          background-color: var(--xh-grid-tree-group-bg);
+        }
       }
 
       .xh-ag-grid--show-hover {
@@ -275,7 +292,7 @@
 .xh-dark .xh-grid--hierarchical:not(.xh-data-view) {
   @for $i from 0 to 20 {
     $level: 0;
-    &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
+    &.xh-grid--tree-style-color-gradient.xh-grid--max-depth-#{$i} {
       @while $level <= $i {
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
@@ -296,7 +313,6 @@
     }
   }
 }
-
 
 //------------------------
 // Multi-field (mobile)
