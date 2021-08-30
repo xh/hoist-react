@@ -86,3 +86,23 @@ export function observeVisibleChange(fn, node) {
     ret.observe(node);
     return ret;
 }
+
+/**
+ * A convenience handler that will call 'stopPropagation'
+ * and 'preventDefault' on an event.
+ *
+ * @param {Event} e
+ */
+export function consumeEvent(e) {
+    e.stopPropagation();
+    e.preventDefault();
+}
+
+/**
+ * A convenience handler that will 'stopPropagation' on an event.
+ *
+ * @param {Event} e
+ */
+export function stopPropagation(e) {
+    e.stopPropagation();
+}

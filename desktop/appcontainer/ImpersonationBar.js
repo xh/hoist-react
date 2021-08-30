@@ -6,12 +6,11 @@
  */
 import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarModel';
 import {filler, hspacer, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
 import './ImpersonationBar.scss';
 
 /**
@@ -26,9 +25,6 @@ export const impersonationBar = hoistCmp.factory({
 
     render({model}) {
         const {isImpersonating, canAuthUserImpersonate, authUsername, username} = XH.identityService;
-
-        const impl = useLocalModel(LocalModel);
-        impl.model = model;
 
         if (!canAuthUserImpersonate || !model.isOpen) return null;
 
@@ -47,52 +43,19 @@ export const impersonationBar = hoistCmp.factory({
                 span(msg),
                 filler(),
                 select({
-                    model: impl,
                     bind: 'pendingTarget',
                     options: targets,
                     enableCreate: true,
                     placeholder: 'Select User...',
                     width: 250,
-                    onCommit: impl.onCommit
+                    onCommit: model.onCommit
                 }),
                 button({
                     text: isImpersonating ? 'Exit Impersonation' : 'Cancel',
                     style: {color: 'white'},
-                    onClick: impl.onExitClick
+                    onClick: model.onClose
                 })
             ]
         });
     }
 });
-
-
-class LocalModel extends HoistModel {
-
-    model;
-    @bindable pendingTarget = null;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
-
-    onCommit = () => {
-        if (this.pendingTarget) {
-            XH.identityService.impersonateAsync(
-                this.pendingTarget
-            ).catch(e => {
-                this.setPendingTarget('');
-                XH.handleException(e, {logOnServer: false});  // likely to be an unknown user
-            });
-        }
-    };
-
-    onExitClick = () => {
-        const {identityService} = XH;
-        if (identityService.isImpersonating) {
-            identityService.endImpersonateAsync();
-        } else {
-            this.model.hide();
-        }
-    };
-}

@@ -45,8 +45,9 @@ export class LeftRightChooserModel extends HoistModel {
      * @param {function} fn - predicate function for filtering.
      */
     setDisplayFilter(fn) {
-        this.leftModel.setFilter(fn);
-        this.rightModel.setFilter(fn);
+        const filter = fn ? {key: this.xhId, testFn: fn} : null;
+        this.leftModel.store.setFilter(filter);
+        this.rightModel.store.setFilter(filter);
     }
 
     /** Currently 'selected' values on the right hand side. */
@@ -214,13 +215,13 @@ export class LeftRightChooserModel extends HoistModel {
             rightSel = this.rightModel.selModel;
 
         return {
-            track: () => [leftSel.singleRecord, rightSel.singleRecord],
+            track: () => [leftSel.selectedRecord, rightSel.selectedRecord],
             run: () => {
                 const lastSelectedSide = this._lastSelectedSide;
-                if (leftSel.singleRecord && lastSelectedSide !== 'left') {
+                if (leftSel.selectedRecord && lastSelectedSide !== 'left') {
                     this._lastSelectedSide = 'left';
                     rightSel.clear();
-                } else if (rightSel.singleRecord && lastSelectedSide !== 'right') {
+                } else if (rightSel.selectedRecord && lastSelectedSide !== 'right') {
                     this._lastSelectedSide = 'right';
                     leftSel.clear();
                 }

@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
+import {HoistModel, SizingMode} from '@xh/hoist/core';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
@@ -35,7 +35,7 @@ export class AgGridModel extends HoistModel {
     //------------------------
     // Grid Style
     //------------------------
-    /** @member {string} */
+    /** @member {SizingMode} */
     @bindable sizingMode;
     /** @member {boolean} */
     @bindable rowBorders;
@@ -57,7 +57,7 @@ export class AgGridModel extends HoistModel {
 
     /**
      * @param {Object} [c] - AgGridModel configuration.
-     * @param {string} [c.sizingMode] - one of large, standard, compact, tiny
+     * @param {SizingMode} [c.sizingMode] - one of tiny, compact, standard, large
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
      * @param {boolean} [c.cellBorders] - true to render cell borders.
@@ -66,7 +66,7 @@ export class AgGridModel extends HoistModel {
      * @param {boolean} [c.hideHeaders] - true to suppress display of the grid's header row.
      */
     constructor({
-        sizingMode = 'standard',
+        sizingMode = SizingMode.STANDARD,
         showHover = false,
         rowBorders = false,
         cellBorders = false,

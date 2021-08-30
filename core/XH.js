@@ -277,7 +277,7 @@ class XHClass extends HoistBase {
      **/
     @action
     reloadApp() {
-        this.appLoadModel.link(never());
+        never().linkTo(this.appLoadModel);
         window.location.reload(true);
     }
 
@@ -325,6 +325,19 @@ class XHClass extends HoistBase {
     /** Is the app currently rendering in dark theme? */
     get darkTheme() {
         return this.acm.themeModel.darkTheme;
+    }
+
+    //------------------------
+    // Sizing Mode Support
+    //------------------------
+    /** @param {SizingMode} sizingMode - new app-wide sizing mode to apply */
+    setSizingMode(sizingMode) {
+        return this.acm.sizingModeModel.setSizingMode(sizingMode);
+    }
+
+    /** @return {SizingMode} - current app-wide sizing mode. */
+    get sizingMode() {
+        return this.acm.sizingModeModel.sizingMode;
     }
 
     //-------------------------

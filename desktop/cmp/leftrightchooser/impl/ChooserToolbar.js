@@ -24,12 +24,12 @@ export const chooserToolbar = hoistCmp.factory(
                 vspacer(10),
                 button({
                     icon: Icon.chevronRight(),
-                    onClick: () => model.moveRows(leftSel.records),
+                    onClick: () => model.moveRows(leftSel.selectedRecords),
                     disabled: leftSel.isEmpty
                 }),
                 button({
                     icon: Icon.chevronLeft(),
-                    onClick: () => model.moveRows(rightSel.records),
+                    onClick: () => model.moveRows(rightSel.selectedRecords),
                     disabled: rightSel.isEmpty
                 })
             ]

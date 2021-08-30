@@ -16,9 +16,15 @@ export const GridAutosizeMode = Object.freeze({
 
     /**
      * Grid will offer affordances such as context menus and gestures to allow users to manually
-     * trigger an autosize only.  Applications should trigger with autosizeAsync().
+     * trigger an autosize only. Applications should trigger with autosizeAsync().
      */
-    ON_DEMAND: 'onDemand'
+    ON_DEMAND: 'onDemand',
+
+    /**
+     * In addition to the affordances provided by ON_DEMAND, Grid will autosize columns when
+     * the GridModel's sizingMode changes.
+     */
+    ON_SIZING_MODE_CHANGE: 'onSizingModeChange'
 
     // COMING SOON
     // /**

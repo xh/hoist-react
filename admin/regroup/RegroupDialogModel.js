@@ -24,7 +24,7 @@ export class RegroupDialogModel extends HoistModel {
     };
 
     get options() {
-        return uniq(this._parent.gridModel.store.allRecords.map(it => it.data.groupName));
+        return uniq(this._parent.gridModel.store.allRecords.map(it => it.data.groupName)).sort();
     }
 
     constructor(parent) {
@@ -35,8 +35,8 @@ export class RegroupDialogModel extends HoistModel {
 
     async saveAsync() {
         const {_parent, groupName} = this,
-            {selection, store} = _parent.gridModel,
-            ids = selection.map(it => it.id),
+            {selectedRecords, store} = _parent.gridModel,
+            ids = selectedRecords.map(it => it.id),
             resp = await store.bulkUpdateRecordsAsync(ids, {groupName}),
             failuresPresent = resp.fail > 0,
             intent = failuresPresent ? 'warning' : 'success';

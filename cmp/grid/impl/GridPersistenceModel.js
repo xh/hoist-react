@@ -4,8 +4,8 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH, managed, PersistenceProvider} from '@xh/hoist/core';
-import {observable, action, makeObservable} from '@xh/hoist/mobx';
+import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
 
 
@@ -16,11 +16,15 @@ import {isUndefined} from 'lodash';
 export class GridPersistenceModel extends HoistModel {
 
     VERSION = 1;  // Increment to abandon state.
+
+    /** @member {GridModel} */
     gridModel;
 
+    /** @member {Object} */
     @observable.ref
     state;
 
+    /** @member {PersistenceProvider} */
     @managed
     provider;
 

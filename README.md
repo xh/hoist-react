@@ -134,9 +134,9 @@ Promise prototype, including:
   [activity tracking](https://github.com/xh/hoist-core#activity-tracking-and-client-error-reporting),
   timing the duration of a promise-based chain and reporting it back to the server tagged with a
   developer-supplied category, message, and optional extra data.
-+ `timeout` - to cut (overly) long running Promises short
-+ `linkTo` - for integration with a `PendingTaskModel` to track and report on state across one or
-  more async operations.
++ `timeout` - to cut (overly) long-running Promises short
++ `linkTo` - for integration with a `TaskObserver` to track and report on state across one or more
+  async operations.
 
 💡 Note that by convention all methods returning a Promise within Hoist React (and XH-developed
 applications) are suffixed with the qualifier `Async`, e.g. `loadUsersAsync` or

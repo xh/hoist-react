@@ -42,7 +42,7 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory({
         );
         return frame(
             frame({className, ref}),
-            mask({spinner: true, model: model.loadingStateTask}),
+            mask({spinner: true, bind: model.loadingStateTask}),
             emptyContainerOverlay()
         );
     }
