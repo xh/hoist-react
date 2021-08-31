@@ -38,15 +38,20 @@ export class ColumnHeaderFilterModel extends HoistModel {
         return this.gridFilterModel.getColumnFilters(this.field);
     }
 
+    @computed.struct
+    get pendingFilter() {
+        const {activeTabId} = this.tabContainerModel;
+        return activeTabId === 'valuesFilter' ?
+            this.valuesTabModel.filter :
+            this.customTabModel.filter;
+    }
+
     get hasFilter() {
         return !isEmpty(this.columnFilters);
     }
 
     get hasPendingFilter() {
-        const {activeTabId} = this.tabContainerModel;
-        return activeTabId === 'valuesFilter' ?
-            !!this.valuesTabModel.filter :
-            !!this.customTabModel.filter;
+        return !!this.pendingFilter;
     }
 
     @computed
@@ -54,6 +59,10 @@ export class ColumnHeaderFilterModel extends HoistModel {
         const {columnFilters} = this;
         if (isEmpty(columnFilters)) return false;
         return columnFilters.some(it => !['=', '!='].includes(it.op));
+    }
+
+    get autoApply() {
+        return this.gridFilterModel.autoApply;
     }
 
     constructor({filterModel, column}) {
@@ -81,15 +90,19 @@ export class ColumnHeaderFilterModel extends HoistModel {
                 }
             ]
         });
+
+        if (this.autoApply) {
+            this.addReaction(this.autoApplyReaction());
+        }
     }
 
     @action
-    commit() {
+    commit(close = true) {
         const {activeTabId} = this.tabContainerModel,
             {filter} = activeTabId === 'valuesFilter' ? this.valuesTabModel : this.customTabModel;
 
         this.setColumnFilters(filter);
-        this.closeMenu();
+        if (close) this.closeMenu();
     }
 
     @action
@@ -140,5 +153,13 @@ export class ColumnHeaderFilterModel extends HoistModel {
 
     setColumnFilters(filters) {
         this.gridFilterModel.setColumnFilters(this.field, filters);
+    }
+
+    autoApplyReaction() {
+        return {
+            track: () => this.pendingFilter,
+            run: () => this.commit(false),
+            debounce: 100
+        };
     }
 }

@@ -22,6 +22,8 @@ export class GridFilterModel extends HoistModel {
     gridModel;
     /** @member {(Store|View)} */
     bind;
+    /** @member {boolean} */
+    autoApply;
     /** @member {GridFilterFieldSpec[]} */
     @managed fieldSpecs = [];
 
@@ -39,6 +41,8 @@ export class GridFilterModel extends HoistModel {
      * @param {(Store|View)} c.bind - Store or cube View that should actually be filtered
      *      as column filters are applied, and used to provide suggested data values in
      *      column filters (if configured).
+     * @param {boolean} [c.autoApply] - true (default) to automatically apply filters to the
+     *      bound Store / View.
      * @param {(string[]|Object[]} [c.fieldSpecs] - specifies the fields this model supports
      *      for filtering. Should be configs for a `GridFilterFieldSpec`. These may be specified
      *      as field names in bound Store/View or omitted entirely, indicating that all fields
@@ -49,6 +53,7 @@ export class GridFilterModel extends HoistModel {
     constructor({
         gridModel,
         bind,
+        autoApply = true,
         fieldSpecs,
         fieldSpecDefaults
     }) {
@@ -56,6 +61,7 @@ export class GridFilterModel extends HoistModel {
         makeObservable(this);
         this.gridModel = gridModel;
         this.bind = bind;
+        this.autoApply = autoApply;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
     }
 
