@@ -3,8 +3,6 @@
 ## v43.0.0-SNAPSHOT - unreleased
 
 * Added support for `queryFn` to mobile Select input.
-* `Grid`: applyColumnStateChanges` only applies changes if a diff exists, 
-  so unnecessary mobx reactions are not triggered.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.2.0...develop)
 
