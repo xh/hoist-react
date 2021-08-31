@@ -46,6 +46,7 @@ const tbar = hoistCmp.factory(
             items: [
                 buttonGroupInput({
                     bind: 'op',
+                    disabled: !model.isCompoundFilter,
                     items: [
                         button({value: 'AND', text: 'AND'}),
                         button({value: 'OR', text: 'OR'})

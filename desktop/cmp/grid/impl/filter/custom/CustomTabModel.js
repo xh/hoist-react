@@ -26,12 +26,19 @@ export class CustomTabModel extends HoistModel {
         const {op, rowModels} = this,
             filters = combineValueFilters(compact(rowModels.map(it => it.value)));
         if (isEmpty(filters)) return null;
-        if (filters.length > 1 && op === 'OR') return {filters, op};
+        if (filters.length > 1) return {filters, op};
         return filters;
     }
 
     @computed
+    get isCompoundFilter() {
+        return this.filter?.filters?.length > 1;
+    }
+
+    @computed
     get implicitJoinMessage() {
+        if (!this.isCompoundFilter) return null;
+
         const joinOp = this.op === 'AND' ? 'OR' : 'AND', // Opposite of current compound operator
             counts = joinOp === 'AND' ?
                 {'!=': 0, 'not like': 0} :
@@ -68,6 +75,10 @@ export class CustomTabModel extends HoistModel {
         super();
         makeObservable(this);
         this.parentModel = parentModel;
+        this.addReaction({
+            track: () => this.filter,
+            run: () => this.syncOperatorWithFilter()
+        });
     }
 
     syncWithFilter() {
@@ -139,5 +150,16 @@ export class CustomTabModel extends HoistModel {
         // Otherwise, check any CompoundFilter children
         const results = compact(filter.filters.map(it => this.getOuterCompoundFilter(it)));
         return results.length === 1 ? results[0] : null;
+    }
+
+    @action
+    syncOperatorWithFilter() {
+        if (!this.filter || this.isCompoundFilter) return;
+        const {op} = this.filter[0];
+        if (['=', 'like', 'begins', 'ends'].includes(op)) {
+            this.op = 'OR';
+        } else if (['!=', 'not like'].includes(op)) {
+            this.op = 'AND';
+        }
     }
 }
