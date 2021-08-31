@@ -70,7 +70,7 @@ const content = hoistCmp.factory({
 
 const bbar = hoistCmp.factory({
     render({model}) {
-        const {autoApply} = model;
+        const {commitOnChange} = model;
         return toolbar({
             compact: true,
             items: [
@@ -83,11 +83,11 @@ const bbar = hoistCmp.factory({
                 }),
                 filler(),
                 button({
-                    text: autoApply ? 'Close' : 'Cancel',
+                    text: commitOnChange ? 'Close' : 'Cancel',
                     onClick: () => model.closeMenu()
                 }),
                 button({
-                    omit: autoApply,
+                    omit: commitOnChange,
                     icon: Icon.check(),
                     text: 'Apply',
                     intent: 'success',

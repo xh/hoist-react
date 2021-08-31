@@ -61,8 +61,8 @@ export class ColumnHeaderFilterModel extends HoistModel {
         return columnFilters.some(it => !['=', '!='].includes(it.op));
     }
 
-    get autoApply() {
-        return this.gridFilterModel.autoApply;
+    get commitOnChange() {
+        return this.gridFilterModel.commitOnChange;
     }
 
     constructor({filterModel, column}) {
@@ -91,8 +91,8 @@ export class ColumnHeaderFilterModel extends HoistModel {
             ]
         });
 
-        if (this.autoApply) {
-            this.addReaction(this.autoApplyReaction());
+        if (this.commitOnChange) {
+            this.addReaction(this.commitOnChangeReaction());
         }
     }
 
@@ -155,7 +155,7 @@ export class ColumnHeaderFilterModel extends HoistModel {
         this.gridFilterModel.setColumnFilters(this.field, filters);
     }
 
-    autoApplyReaction() {
+    commitOnChangeReaction() {
         return {
             track: () => this.pendingFilter,
             run: () => this.commit(false),

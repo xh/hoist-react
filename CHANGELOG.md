@@ -3,8 +3,8 @@
 ## v43.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-* `GridFilterModel` now supports an `autoApply` config, which will automatically apply the filter
-  from the popover. This is turned on by default, but can be turned off if filtering is intensive.
+* `GridFilterModel` now supports an `commitOnChange` config, which is `true` on by default, but
+  can be disabled if filtering is intensive.
 * Added support for `queryFn` to mobile Select input.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.2.0...develop)
