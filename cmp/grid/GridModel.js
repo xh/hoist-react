@@ -848,7 +848,9 @@ export class GridModel extends HoistModel {
             columnState = this.sortColumns(columnState);
         }
 
-        this.columnState = columnState;
+        if (!equal(this.columnState, columnState)) {
+            this.columnState = columnState;
+        }
     }
 
     /**
