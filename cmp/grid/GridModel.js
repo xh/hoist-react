@@ -806,8 +806,9 @@ export class GridModel extends HoistModel {
     }
 
     /**
-     * This method will update the current column definition. Throws an exception if any of the
-     * columns provided in colStateChanges are not present in the current column list.
+     * This method will update the current column definition if it has changed. 
+     * Throws an exception if any of the columns provided in colStateChanges are not 
+     * present in the current column list.
      *
      * Note: Column ordering is determined by the individual (leaf-level) columns in state.
      * This means that if a column has been redefined to a new column group, that entire group may
@@ -848,7 +849,9 @@ export class GridModel extends HoistModel {
             columnState = this.sortColumns(columnState);
         }
 
-        this.columnState = columnState;
+        if (!equal(this.columnState, columnState)) {
+            this.columnState = columnState;
+        }
     }
 
     /**
