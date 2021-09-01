@@ -6,6 +6,7 @@
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {observable, action, computed, makeObservable} from '@xh/hoist/mobx';
+import {wait} from '@xh/hoist/promise';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {isEmpty} from 'lodash';
 
@@ -38,20 +39,15 @@ export class ColumnHeaderFilterModel extends HoistModel {
         return this.gridFilterModel.getColumnFilters(this.field);
     }
 
-    @computed.struct
-    get pendingFilter() {
-        const {activeTabId} = this.tabContainerModel;
-        return activeTabId === 'valuesFilter' ?
-            this.valuesTabModel.filter :
-            this.customTabModel.filter;
-    }
-
     get hasFilter() {
         return !isEmpty(this.columnFilters);
     }
 
     get hasPendingFilter() {
-        return !!this.pendingFilter;
+        const {activeTabId} = this.tabContainerModel;
+        return activeTabId === 'valuesFilter' ?
+            !!this.valuesTabModel.filter :
+            !!this.customTabModel.filter;
     }
 
     @computed
@@ -92,17 +88,41 @@ export class ColumnHeaderFilterModel extends HoistModel {
         });
 
         if (this.commitOnChange) {
-            this.addReaction(this.commitOnChangeReaction());
+            this.addReaction({
+                track: () => this.valuesTabModel.filter,
+                run: () => {
+                    if (this.tabContainerModel.activeTabId !== 'valuesFilter') return;
+                    this.commit(false);
+                },
+                debounce: 100
+            });
+
+            this.addReaction({
+                track: () => this.customTabModel.filter,
+                run: () => {
+                    if (this.tabContainerModel.activeTabId !== 'customFilter') return;
+                    this.commit(false);
+                },
+                debounce: 100
+            });
         }
     }
 
     @action
     commit(close = true) {
         const {activeTabId} = this.tabContainerModel,
-            {filter} = activeTabId === 'valuesFilter' ? this.valuesTabModel : this.customTabModel;
+            activeTabModel = activeTabId === 'valuesFilter' ? this.valuesTabModel : this.customTabModel,
+            otherTabModel = activeTabId === 'valuesFilter' ? this.customTabModel : this.valuesTabModel;
 
-        this.setColumnFilters(filter);
-        if (close) this.closeMenu();
+        this.setColumnFilters(activeTabModel.filter);
+        if (close) {
+            this.closeMenu();
+        } else {
+            // We must wait before resetting as GridFilterModel.setFilter() is async
+            wait().then(() => {
+                otherTabModel.reset();
+            });
+        }
     }
 
     @action
@@ -111,7 +131,11 @@ export class ColumnHeaderFilterModel extends HoistModel {
         if (close) {
             this.closeMenu();
         } else {
-            this.syncWithFilter();
+            // We must wait before resetting as GridFilterModel.setFilter() is async
+            wait().then(() => {
+                this.valuesTabModel.reset();
+                this.customTabModel.reset();
+            });
         }
     }
 
@@ -153,13 +177,5 @@ export class ColumnHeaderFilterModel extends HoistModel {
 
     setColumnFilters(filters) {
         this.gridFilterModel.setColumnFilters(this.field, filters);
-    }
-
-    commitOnChangeReaction() {
-        return {
-            track: () => this.pendingFilter,
-            run: () => this.commit(false),
-            debounce: 100
-        };
     }
 }
