@@ -6,6 +6,7 @@
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {observable, action, computed, makeObservable} from '@xh/hoist/mobx';
+import {wait} from '@xh/hoist/promise';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {isEmpty} from 'lodash';
 
@@ -56,6 +57,10 @@ export class ColumnHeaderFilterModel extends HoistModel {
         return columnFilters.some(it => !['=', '!='].includes(it.op));
     }
 
+    get commitOnChange() {
+        return this.gridFilterModel.commitOnChange;
+    }
+
     constructor({filterModel, column}) {
         super();
         makeObservable(this);
@@ -81,15 +86,35 @@ export class ColumnHeaderFilterModel extends HoistModel {
                 }
             ]
         });
+
+        this.addReaction({
+            track: () => this.valuesTabModel.filter,
+            run: () => this.doCommitOnChange('valuesFilter'),
+            debounce: 100
+        });
+
+        this.addReaction({
+            track: () => this.customTabModel.filter,
+            run: () => this.doCommitOnChange('customFilter'),
+            debounce: 100
+        });
     }
 
     @action
-    commit() {
+    commit(close = true) {
         const {activeTabId} = this.tabContainerModel,
-            {filter} = activeTabId === 'valuesFilter' ? this.valuesTabModel : this.customTabModel;
+            activeTabModel = activeTabId === 'valuesFilter' ? this.valuesTabModel : this.customTabModel,
+            otherTabModel = activeTabId === 'valuesFilter' ? this.customTabModel : this.valuesTabModel;
 
-        this.setColumnFilters(filter);
-        this.closeMenu();
+        this.setColumnFilters(activeTabModel.filter);
+        if (close) {
+            this.closeMenu();
+        } else {
+            // We must wait before resetting as GridFilterModel.setFilter() is async
+            wait().then(() => {
+                otherTabModel.reset();
+            });
+        }
     }
 
     @action
@@ -98,7 +123,11 @@ export class ColumnHeaderFilterModel extends HoistModel {
         if (close) {
             this.closeMenu();
         } else {
-            this.syncWithFilter();
+            // We must wait before resetting as GridFilterModel.setFilter() is async
+            wait().then(() => {
+                this.valuesTabModel.reset();
+                this.customTabModel.reset();
+            });
         }
     }
 
@@ -140,5 +169,11 @@ export class ColumnHeaderFilterModel extends HoistModel {
 
     setColumnFilters(filters) {
         this.gridFilterModel.setColumnFilters(this.field, filters);
+    }
+
+    doCommitOnChange(tab) {
+        if (!this.commitOnChange) return;
+        if (this.tabContainerModel.activeTabId !== tab) return;
+        this.commit(false);
     }
 }
