@@ -3,21 +3,25 @@
 ## v43.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-* `GridFilterModel` now supports an `commitOnChange` config, which is `true` on by default, but
-  can be disabled if filtering is intensive.
-* Added support for `queryFn` to mobile Select input.
+
+* New `GridFilterModel.commitOnChange` config (default `true`) applies updated filters as soon as
+  they are changed within the pop-up menu. Set to `false` for large datasets or whenever filtering
+  is a more intensive operation.
+* Mobile `Select` input now supports async `queryFn` prop for parity with desktop.
 
 ### ⚙️ Technical
 
-* Disable swipe to refresh/go back gesture on mobile charts to avoid disrupting their dragging gestures.
+* Mobile pull-to-refresh/swipe-to-go-back gestures now disabled over charts to avoid disrupting
+  their own swipe-based zooming and panning features.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.2.0...develop)
 
 ## v42.2.0 - 2021-08-27
 
 ### 🎁 New Features
-* Charts now HIDE scrollbar, rangeSelector, navigator, and export button by default on print/image export.
-* Charts now SHOW the labels on the first X and Y axis by default on print/image export.
+
+* Charts now hide scrollbar, rangeSelector, navigator, and export buttons and show axis labels when
+  printing or exporting images.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.1.1...v42.2.0)
 
