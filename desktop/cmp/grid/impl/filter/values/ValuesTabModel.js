@@ -226,10 +226,10 @@ export class ValuesTabModel extends HoistModel {
     }
 
     syncGrid() {
-        const {values, pendingValues, field} = this;
+        const {values, pendingValues} = this;
         const data = values.map(value => {
             const isChecked = pendingValues.includes(value);
-            return {[field]: value, isChecked};
+            return {value, isChecked};
         });
         this.gridModel.loadData(data);
     }
@@ -252,15 +252,15 @@ export class ValuesTabModel extends HoistModel {
     }
 
     createGridModel() {
-        const {field, BLANK_STR} = this,
+        const {BLANK_STR} = this,
             {align, headerAlign, displayName} = this.parentModel.column,
             renderer = this.fieldSpec.renderer ?? this.parentModel.column.renderer;
 
         return new GridModel({
             store: {
-                idSpec: (raw) => raw[field].toString(),
+                idSpec: (raw) => raw.value.toString(),
                 fields: [
-                    field,
+                    {name: 'value'},
                     {name: 'isChecked', type: 'bool'}
                 ]
             },
@@ -269,17 +269,17 @@ export class ValuesTabModel extends HoistModel {
             contextMenu: null,
             sizingMode: SizingMode.COMPACT,
             stripeRows: false,
-            sortBy: field,
+            sortBy: 'value',
             colDefaults: {sortable: false},
             onRowClicked: ({data: record}) => {
-                this.setRecsChecked(!record.get('isChecked'), record.raw[field]);
+                this.setRecsChecked(!record.get('isChecked'), record.get('value'));
             },
             columns: [
                 {
                     field: 'isChecked',
                     headerName: ({gridModel}) => {
                         const {store} = gridModel,
-                            values = store.records.map(it => it.raw[field]);
+                            values = store.records.map(it => it.get('value'));
                         return checkbox({
                             disabled: store.empty,
                             displayUnsetState: true,
@@ -293,12 +293,12 @@ export class ValuesTabModel extends HoistModel {
                         return checkbox({
                             displayUnsetState: true,
                             value: record.data.isChecked,
-                            onChange: () => this.setRecsChecked(!v, record.raw[field])
+                            onChange: () => this.setRecsChecked(!v, record.get('value'))
                         });
                     }
                 },
                 {
-                    field,
+                    field: 'value',
                     flex: 1,
                     displayName,
                     align,
