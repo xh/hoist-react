@@ -9,14 +9,13 @@ import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/
 import {parseFilter} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
-import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {
     castArray,
     compact,
     difference,
     isEmpty,
     isNil,
-    uniq,
+    uniqBy,
     partition,
     without,
     isDate
@@ -168,18 +167,18 @@ export class ValuesTabModel extends HoistModel {
         });
 
         // Combine unique values from record sets and column filters. [blank] is always included.
-        const allValues = uniq([
+        const allValues = uniqBy([
             ...allRecords.map(rec => this.valueFromRecord(rec)),
             ...filterValues,
             BLANK_STR
-        ]);
+        ], this.getUniqueValue);
         let values;
         if (cleanedFilter) {
-            values = uniq([
+            values = uniqBy([
                 ...filteredRecords.map(rec => this.valueFromRecord(rec)),
                 ...filterValues,
                 BLANK_STR
-            ]);
+            ], this.getUniqueValue);
         } else {
             values = allValues;
         }
@@ -217,12 +216,13 @@ export class ValuesTabModel extends HoistModel {
     }
 
     valueFromRecord(record) {
-        // We must return primitives to facilitate uniqueness check
         const ret = record.get(this.field);
-        if (isNil(ret)) return this.BLANK_STR;
-        if (isDate(ret)) return ret.getTime();
-        if (isLocalDate(ret)) return ret.isoString;
-        return ret;
+        return isNil(ret) ? this.BLANK_STR : ret;
+    }
+
+    getUniqueValue(value) {
+        // Return ms timestamp for dates to facilitate uniqueness check
+        return isDate(value) ? value.getTime() : value;
     }
 
     syncGrid() {
