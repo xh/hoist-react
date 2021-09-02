@@ -7,6 +7,10 @@
   can be disabled if filtering is intensive.
 * Added support for `queryFn` to mobile Select input.
 
+### ⚙️ Technical
+
+* Disable swipe to refresh/go back gesture on mobile charts to avoid disrupting their dragging gestures.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.2.0...develop)
 
 ## v42.2.0 - 2021-08-27
