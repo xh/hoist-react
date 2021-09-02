@@ -15,10 +15,9 @@ import {castArray, isEmpty, isFunction} from 'lodash';
 import {RestGridModel} from '../RestGridModel';
 
 export const restGridToolbar = hoistCmp.factory({
-
     model: uses(RestGridModel, {publishMode: ModelPublishMode.LIMITED}),
 
-    render({model, extraToolbarItems, ...props}) {
+    render({model, extraToolbarItems}) {
         const {unit, toolbarActions: actions, gridModel} = model;
 
         let extraItems = extraToolbarItems;
@@ -26,13 +25,29 @@ export const restGridToolbar = hoistCmp.factory({
         extraItems = extraItems ? castArray(extraItems) : [];
 
         return toolbar(
-            recordActionBar({actions, gridModel, selModel: gridModel.selModel}),
-            toolbarSep({omit: isEmpty(extraItems)}),
+            recordActionBar({
+                actions,
+                gridModel,
+                selModel: gridModel.selModel
+            }),
+            toolbarSep({
+                omit: isEmpty(extraItems)
+            }),
             ...extraItems,
             filler(),
-            gridCountLabel({gridModel, unit}),
-            storeFilterField({gridModel, includeFields: model.filterFields}),
-            exportButton({gridModel, omit: !model.gridModel.enableExport})
+            gridCountLabel({
+                gridModel,
+                unit
+            }),
+            storeFilterField({
+                gridModel,
+                matchMode: 'any',
+                includeFields: model.filterFields
+            }),
+            exportButton({
+                gridModel,
+                omit: !model.gridModel.enableExport
+            })
         );
     }
 });

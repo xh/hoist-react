@@ -49,13 +49,13 @@ export const customRow = hoistCmp.factory({
 //-------------------
 const inputField = hoistCmp.factory(
     ({model}) => {
-        const {fieldSpec} = model,
+        const {fieldSpec, commitOnChange} = model,
             props = {
                 bind: 'inputVal',
-                commitOnChange: true,
                 enableClear: true,
                 flex: 1,
                 width: null,
+                commitOnChange,
                 ...fieldSpec.inputProps
             };
 
