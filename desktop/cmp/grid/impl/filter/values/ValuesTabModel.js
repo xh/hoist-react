@@ -9,7 +9,18 @@ import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/
 import {parseFilter} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
-import {castArray, compact, difference, isEmpty, isNil, uniq, partition, without} from 'lodash';
+import {isLocalDate} from '@xh/hoist/utils/datetime';
+import {
+    castArray,
+    compact,
+    difference,
+    isEmpty,
+    isNil,
+    uniq,
+    partition,
+    without,
+    isDate
+} from 'lodash';
 
 export class ValuesTabModel extends HoistModel {
     /** @member {ColumnHeaderFilterModel} */
@@ -206,8 +217,12 @@ export class ValuesTabModel extends HoistModel {
     }
 
     valueFromRecord(record) {
+        // We must return primitives to facilitate uniqueness check
         const ret = record.get(this.field);
-        return isNil(ret) ? this.BLANK_STR : ret;
+        if (isNil(ret)) return this.BLANK_STR;
+        if (isDate(ret)) return ret.getTime();
+        if (isLocalDate(ret)) return ret.isoString;
+        return ret;
     }
 
     syncGrid() {
