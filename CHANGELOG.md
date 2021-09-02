@@ -9,6 +9,13 @@
   is a more intensive operation.
 * Mobile `Select` input now supports async `queryFn` prop for parity with desktop.
 
+### ✨ Style
+
+* Hoist's default font is now [Inter](https://rsms.me/inter/), shipped and bundled via the
+  `inter-ui` npm package. Inter is a modern, open-source font that leverages optical sizing to
+  ensure maximum readability, even at very small sizes (e.g. `sizingMode: 'tiny'`). It's also a
+  "variable" font, meaning it supports any weights from 1-1000 with a single font file download.
+
 ### ⚙️ Technical
 
 * Mobile pull-to-refresh/swipe-to-go-back gestures now disabled over charts to avoid disrupting
