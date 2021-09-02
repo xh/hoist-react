@@ -2,6 +2,9 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* `GridFilterModel` now supports an `commitOnChange` config, which is `true` on by default, but
+  can be disabled if filtering is intensive.
 * Added support for `queryFn` to mobile Select input.
 
 ### ⚙️ Technical
