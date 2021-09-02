@@ -2,6 +2,8 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* `TreeMapModel` now supports new `maxLabels` property for improved performance.
 * Added support for `queryFn` to mobile Select input.
 
 ### ⚙️ Technical
