@@ -3,7 +3,7 @@
 ## v43.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-
+* `TreeMapModel` now supports new `maxLabels` property for improved performance.
 * New `GridFilterModel.commitOnChange` config (default `true`) applies updated filters as soon as
   they are changed within the pop-up menu. Set to `false` for large datasets or whenever filtering
   is a more intensive operation.
