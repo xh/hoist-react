@@ -15,6 +15,9 @@
   `inter-ui` npm package. Inter is a modern, open-source font that leverages optical sizing to
   ensure maximum readability, even at very small sizes (e.g. `sizingMode: 'tiny'`). It's also a
   "variable" font, meaning it supports any weights from 1-1000 with a single font file download.
+* Default Grid header heights have been reduced for a more compact display and greater
+  differentiation between header and data rows. As before, apps can customize the pixel heights used
+  by overwriting the `AgGrid.HEADER_HEIGHTS` static, typically within `Bootstrap.js`.
 
 ### ⚙️ Technical
 
