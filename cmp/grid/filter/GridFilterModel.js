@@ -6,7 +6,7 @@
  */
 
 import {HoistModel, managed} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {FieldFilter, flattenFilter, withFilterByField, withFilterByTypes} from '@xh/hoist/data';
 import {wait} from '@xh/hoist/promise';
 import {find, isString, castArray, uniq} from 'lodash';
@@ -23,7 +23,7 @@ export class GridFilterModel extends HoistModel {
     /** @member {(Store|View)} */
     bind;
     /** @member {boolean} */
-    commitOnChange;
+    @bindable commitOnChange;
     /** @member {GridFilterFieldSpec[]} */
     @managed fieldSpecs = [];
 

@@ -87,25 +87,17 @@ export class ColumnHeaderFilterModel extends HoistModel {
             ]
         });
 
-        if (this.commitOnChange) {
-            this.addReaction({
-                track: () => this.valuesTabModel.filter,
-                run: () => {
-                    if (this.tabContainerModel.activeTabId !== 'valuesFilter') return;
-                    this.commit(false);
-                },
-                debounce: 100
-            });
+        this.addReaction({
+            track: () => this.valuesTabModel.filter,
+            run: () => this.doCommitOnChange('valuesFilter'),
+            debounce: 100
+        });
 
-            this.addReaction({
-                track: () => this.customTabModel.filter,
-                run: () => {
-                    if (this.tabContainerModel.activeTabId !== 'customFilter') return;
-                    this.commit(false);
-                },
-                debounce: 100
-            });
-        }
+        this.addReaction({
+            track: () => this.customTabModel.filter,
+            run: () => this.doCommitOnChange('customFilter'),
+            debounce: 100
+        });
     }
 
     @action
@@ -177,5 +169,11 @@ export class ColumnHeaderFilterModel extends HoistModel {
 
     setColumnFilters(filters) {
         this.gridFilterModel.setColumnFilters(this.field, filters);
+    }
+
+    doCommitOnChange(tab) {
+        if (!this.commitOnChange) return;
+        if (this.tabContainerModel.activeTabId !== tab) return;
+        this.commit(false);
     }
 }
