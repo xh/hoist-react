@@ -13,6 +13,7 @@ import {wait} from '@xh/hoist/promise';
 import {logWithDebug, withDebug} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps, useOnResize, useOnVisibleChange} from '@xh/hoist/utils/react';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
+import classNames from 'classnames';
 import composeRefs from '@seznam/compose-react-refs';
 import equal from 'fast-deep-equal';
 import PT from 'prop-types';
@@ -80,7 +81,10 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
 
         return box({
             ...layoutProps,
-            className,
+            className: classNames(
+                className,
+                `xh-treemap--${impl.theme}`
+            ),
             ref,
             items
         });
@@ -101,6 +105,11 @@ class LocalModel extends HoistModel {
     chart = null;
     clickCount = 0;
 
+    get theme() {
+        if (this.model.theme) return this.model.theme;
+        return XH.darkTheme ? 'dark' : 'light';
+    }
+
     constructor(model) {
         super();
         this.model = model;
@@ -115,8 +124,7 @@ class LocalModel extends HoistModel {
             model.highchartsConfig,
             model.algorithm,
             model.data,
-            model.theme,
-            XH.darkTheme
+            this.theme
         ]);
 
         this.addReaction({
@@ -261,8 +269,7 @@ class LocalModel extends HoistModel {
     }
 
     getColorConfig() {
-        const {theme} = this.model,
-            darkTheme = theme ? theme === 'dark' : XH.darkTheme;
+        const darkTheme = this.theme === 'dark';
         return {
             colorAxis: {
                 min: 0,
