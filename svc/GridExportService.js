@@ -12,7 +12,7 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
 import {StatusCodes} from 'http-status-codes';
-import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq, compact, find} from 'lodash';
+import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq, compact, findIndex} from 'lodash';
 import {span, a} from '@xh/hoist/cmp/layout';
 import {wait} from '@xh/hoist/promise';
 
@@ -162,8 +162,8 @@ export class GridExportService extends HoistService {
             includeViz = toExport.includes('VISIBLE');
 
         return sortBy(gridModel.getLeafColumns(), ({colId}) => {
-            const match = find(gridModel.columnState, {colId});
-            return withDefault(match?._sortOrder, toExport.indexOf(colId));
+            const index = findIndex(gridModel.columnState, {colId});
+            return index !== -1 ? index : toExport.indexOf(colId);
         }).filter(col => {
             const {colId, excludeFromExport} = col;
             return (
