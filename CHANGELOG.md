@@ -2,15 +2,33 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
-* Added support for `queryFn` to mobile Select input.
+### 🎁 New Features
+* `TreeMapModel` now supports new `maxLabels` property for improved performance.
+* New `GridFilterModel.commitOnChange` config (default `true`) applies updated filters as soon as
+  they are changed within the pop-up menu. Set to `false` for large datasets or whenever filtering
+  is a more intensive operation.
+* Mobile `Select` input now supports async `queryFn` prop for parity with desktop.
+
+### ✨ Style
+
+* Hoist's default font is now [Inter](https://rsms.me/inter/), shipped and bundled via the
+  `inter-ui` npm package. Inter is a modern, open-source font that leverages optical sizing to
+  ensure maximum readability, even at very small sizes (e.g. `sizingMode: 'tiny'`). It's also a
+  "variable" font, meaning it supports any weights from 1-1000 with a single font file download.
+
+### ⚙️ Technical
+
+* Mobile pull-to-refresh/swipe-to-go-back gestures now disabled over charts to avoid disrupting
+  their own swipe-based zooming and panning features.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.2.0...develop)
 
 ## v42.2.0 - 2021-08-27
 
 ### 🎁 New Features
-* Charts now HIDE scrollbar, rangeSelector, navigator, and export button by default on print/image export.
-* Charts now SHOW the labels on the first X and Y axis by default on print/image export.
+
+* Charts now hide scrollbar, rangeSelector, navigator, and export buttons and show axis labels when
+  printing or exporting images.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.1.1...v42.2.0)
 

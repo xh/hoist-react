@@ -111,5 +111,5 @@ const mapTitle = hoistCmp.factory(
 );
 
 const errorPanel = hoistCmp.factory(
-    ({errors}) => errorMessage({error: fragment(errors.map(e => p(e)))})
+    ({errors}) => errorMessage({message: fragment(errors.map(e => p(e)))})
 );

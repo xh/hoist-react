@@ -138,8 +138,11 @@ class LocalModel extends HoistModel {
         // Loop through the touch targets to ensure it is safe to swipe
         for (let el = e.target; el && el !== document.body; el = el.parentNode) {
 
-            // Don't conflict with grid header reordering.
-            if (el.classList.contains('xh-grid-header')) return true;
+            // Don't conflict with grid header reordering or chart dragging.
+            if (el.classList.contains('xh-grid-header') ||
+                el.classList.contains('xh-chart')) {
+                return true;
+            }
 
             // Ensure any scrolling element in the target path takes priority over swipe navigation.
             if (dir === 'right' && el.scrollWidth > el.offsetWidth && el.scrollLeft > 0 ||

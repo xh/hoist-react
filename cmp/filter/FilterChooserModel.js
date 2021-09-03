@@ -22,7 +22,8 @@ import {
     forEach,
     isArray,
     isFunction,
-    uniq
+    uniq,
+    uniqBy
 } from 'lodash';
 
 import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
@@ -209,15 +210,21 @@ export class FilterChooserModel extends HoistModel {
                 this.selectOptions = null;
                 this.selectValue = null;
             } else {
-                const options = displayFilters.map(f => this.createFilterOption(f)),
-                    selectValue = sortBy(displayFilters.map(f => JSON.stringify(f)), f => {
-                        const idx = this.selectValue?.indexOf(f);
-                        return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
-                    });
+                // Build list of options, used for displaying tags. We combine the needed
+                // options for the current filter tags with any previous ones to ensure
+                // tags are rendered correctly throughout the transition.
+                const newOptions = displayFilters.map(f => this.createFilterOption(f)),
+                    previousOptions = this.selectOptions ?? [],
+                    options = uniqBy([...newOptions, ...previousOptions], 'value');
 
-                // Set select value after options, to ensure it is able to be rendered correctly
                 this.selectOptions = !isEmpty(options) ? options : null;
-                wait(0).thenAction(() => this.selectValue = selectValue);
+
+                // Set select value async after options, to ensure it is able to be rendered tags correctly
+                const selectValue = sortBy(displayFilters.map(f => JSON.stringify(f)), f => {
+                    const idx = this.selectValue?.indexOf(f);
+                    return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
+                });
+                wait().thenAction(() => this.selectValue = selectValue);
             }
 
             if (!this.value?.equals(value)) {
