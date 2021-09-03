@@ -1,5 +1,10 @@
 # Changelog
 
+## v43.0.0-SNAPSHOT - unreleased
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v42.4.0..develop)
+
+
 ## v42.4.0 - 2021-09-03
 
 ### 🎁 New Features
@@ -22,7 +27,7 @@
 * Mobile pull-to-refresh/swipe-to-go-back gestures now disabled over charts to avoid disrupting
   their own swipe-based zooming and panning features.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v42.2.0...v42.3.0)
+[Commit Log](https://github.com/xh/hoist-react/compare/v42.2.0...v42.4.0)
 
 ## v42.2.0 - 2021-08-27
 
