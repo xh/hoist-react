@@ -1,6 +1,7 @@
 # Changelog
 
 ## v43.0.0-SNAPSHOT - unreleased
+
 ### 🐞 Bug Fixes
 
 * Better coverage of Fetch abort error.
