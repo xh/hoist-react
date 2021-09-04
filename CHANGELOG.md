@@ -2,12 +2,22 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Better coverage of Fetch abort error.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v42.4.0..develop)
+
+
+## v42.4.0 - 2021-09-03
+
 ### 🎁 New Features
-* `TreeMapModel` now supports new `maxLabels` property for improved performance.
+
 * New `GridFilterModel.commitOnChange` config (default `true`) applies updated filters as soon as
   they are changed within the pop-up menu. Set to `false` for large datasets or whenever filtering
   is a more intensive operation.
 * Mobile `Select` input now supports async `queryFn` prop for parity with desktop.
+* `TreeMapModel` now supports new `maxLabels` property for improved performance.
 
 ### ✨ Style
 
@@ -24,7 +34,7 @@
 * Mobile pull-to-refresh/swipe-to-go-back gestures now disabled over charts to avoid disrupting
   their own swipe-based zooming and panning features.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v42.2.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v42.2.0...v42.4.0)
 
 ## v42.2.0 - 2021-08-27
 
