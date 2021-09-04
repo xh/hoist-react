@@ -18,6 +18,7 @@ import {dialog} from '@xh/hoist/kit/blueprint';
 import {identity, startCase} from 'lodash';
 import {differDetail} from './DifferDetail';
 import {DifferModel} from './DifferModel';
+import {storeFilterField} from '../../cmp/store';
 
 export const differ = hoistCmp.factory({
     model: uses(DifferModel),
@@ -98,6 +99,9 @@ const tbar = hoistCmp.factory(
 const bbar = hoistCmp.factory(
     ({model}) => {
         return toolbar(
+            storeFilterField({
+                matchMode: 'any'
+            }),
             filler(),
             recordActionBar({
                 actions: [model.applyRemoteAction],
