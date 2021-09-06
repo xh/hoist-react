@@ -24,7 +24,7 @@ export class RegroupDialogModel extends HoistModel {
     };
 
     get options() {
-        return uniq(this._parent.gridModel.store.allRecords.map(it => it.data.groupName));
+        return uniq(this._parent.gridModel.store.allRecords.map(it => it.data.groupName)).sort();
     }
 
     constructor(parent) {

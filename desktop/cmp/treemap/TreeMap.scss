@@ -40,6 +40,11 @@
     font-size: var(--xh-font-size-small-px) !important;
     font-weight: normal !important;
   }
+
+  // Use white borders in dark theme
+  &--dark rect.highcharts-point {
+    outline-color: rgba(255, 255, 255, 0.2);
+  }
 }
 
 .xh-treemap-tooltip {

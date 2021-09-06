@@ -46,8 +46,7 @@ import {
     max,
     min,
     omit,
-    pull,
-    sortBy
+    pull
 } from 'lodash';
 import {GridPersistenceModel} from './impl/GridPersistenceModel';
 import {GridSorter} from './impl/GridSorter';
@@ -817,8 +816,9 @@ export class GridModel extends HoistModel {
     }
 
     /**
-     * This method will update the current column definition. Throws an exception if any of the
-     * columns provided in colStateChanges are not present in the current column list.
+     * This method will update the current column definition if it has changed.
+     * Throws an exception if any of the columns provided in colStateChanges are not
+     * present in the current column list.
      *
      * Note: Column ordering is determined by the individual (leaf-level) columns in state.
      * This means that if a column has been redefined to a new column group, that entire group may
@@ -846,20 +846,13 @@ export class GridModel extends HoistModel {
         });
 
         // 2) If the changes provided is a full list of leaf columns, synchronize the sort order
-        const leafCols = this.getLeafColumns();
-        if (colStateChanges.length === leafCols.length) {
-            // 2.a) Mark (potentially changed) sort order
-            colStateChanges.forEach((change, index) => {
-                const col = this.findColumn(columnState, change.colId);
-                col._sortOrder = index;
-            });
-
-            // 2.b) Install implied group sort orders and sort
-            columnState.forEach(it => this.markGroupSortOrder(it));
-            columnState = this.sortColumns(columnState);
+        if (colStateChanges.length === this.getLeafColumns().length) {
+            columnState = colStateChanges.map(c => this.findColumn(columnState, c.colId));
         }
 
-        this.columnState = columnState;
+        if (!equal(this.columnState, columnState)) {
+            this.columnState = columnState;
+        }
     }
 
     /**
@@ -1191,23 +1184,6 @@ export class GridModel extends HoistModel {
         });
 
         return leaves;
-    }
-
-    markGroupSortOrder(col) {
-        if (col.groupId) {
-            col.children.forEach(child => this.markGroupSortOrder(child));
-            col._sortOrder = col.children[0]._sortOrder;
-        }
-    }
-
-    sortColumns(columns) {
-        columns.forEach(col => {
-            if (col.children) {
-                col.children = this.sortColumns(col.children);
-            }
-        });
-
-        return sortBy(columns, [it => it._sortOrder]);
     }
 
     collectIds(cols, ids = []) {

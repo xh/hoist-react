@@ -9,7 +9,17 @@ import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/
 import {parseFilter} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
-import {castArray, compact, difference, isEmpty, isNil, uniq, partition, without} from 'lodash';
+import {
+    castArray,
+    compact,
+    difference,
+    isEmpty,
+    isNil,
+    uniqBy,
+    partition,
+    without,
+    isDate
+} from 'lodash';
 
 export class ValuesTabModel extends HoistModel {
     /** @member {ColumnHeaderFilterModel} */
@@ -157,18 +167,18 @@ export class ValuesTabModel extends HoistModel {
         });
 
         // Combine unique values from record sets and column filters. [blank] is always included.
-        const allValues = uniq([
+        const allValues = uniqBy([
             ...allRecords.map(rec => this.valueFromRecord(rec)),
             ...filterValues,
             BLANK_STR
-        ]);
+        ], this.getUniqueValue);
         let values;
         if (cleanedFilter) {
-            values = uniq([
+            values = uniqBy([
                 ...filteredRecords.map(rec => this.valueFromRecord(rec)),
                 ...filterValues,
                 BLANK_STR
-            ]);
+            ], this.getUniqueValue);
         } else {
             values = allValues;
         }
@@ -210,11 +220,16 @@ export class ValuesTabModel extends HoistModel {
         return isNil(ret) ? this.BLANK_STR : ret;
     }
 
+    getUniqueValue(value) {
+        // Return ms timestamp for dates to facilitate uniqueness check
+        return isDate(value) ? value.getTime() : value;
+    }
+
     syncGrid() {
-        const {values, pendingValues, field} = this;
+        const {values, pendingValues} = this;
         const data = values.map(value => {
             const isChecked = pendingValues.includes(value);
-            return {[field]: value, isChecked};
+            return {value, isChecked};
         });
         this.gridModel.loadData(data);
     }
@@ -237,15 +252,15 @@ export class ValuesTabModel extends HoistModel {
     }
 
     createGridModel() {
-        const {field, BLANK_STR} = this,
+        const {BLANK_STR} = this,
             {align, headerAlign, displayName} = this.parentModel.column,
             renderer = this.fieldSpec.renderer ?? this.parentModel.column.renderer;
 
         return new GridModel({
             store: {
-                idSpec: (raw) => raw[field].toString(),
+                idSpec: (raw) => raw.value.toString(),
                 fields: [
-                    field,
+                    {name: 'value'},
                     {name: 'isChecked', type: 'bool'}
                 ]
             },
@@ -254,14 +269,17 @@ export class ValuesTabModel extends HoistModel {
             contextMenu: null,
             sizingMode: SizingMode.COMPACT,
             stripeRows: false,
-            sortBy: field,
+            sortBy: 'value',
             colDefaults: {sortable: false},
+            onRowClicked: ({data: record}) => {
+                this.setRecsChecked(!record.get('isChecked'), record.get('value'));
+            },
             columns: [
                 {
                     field: 'isChecked',
                     headerName: ({gridModel}) => {
                         const {store} = gridModel,
-                            values = store.records.map(it => it.raw[field]);
+                            values = store.records.map(it => it.get('value'));
                         return checkbox({
                             disabled: store.empty,
                             displayUnsetState: true,
@@ -275,12 +293,12 @@ export class ValuesTabModel extends HoistModel {
                         return checkbox({
                             displayUnsetState: true,
                             value: record.data.isChecked,
-                            onChange: () => this.setRecsChecked(!v, record.raw[field])
+                            onChange: () => this.setRecsChecked(!v, record.get('value'))
                         });
                     }
                 },
                 {
-                    field,
+                    field: 'value',
                     flex: 1,
                     displayName,
                     align,
