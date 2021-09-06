@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {filler, frame, div} from '@xh/hoist/cmp/layout';
+import {filler, div} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
@@ -26,15 +26,10 @@ export const customTab = hoistCmp.factory({
         return panel({
             className: 'xh-custom-filter-tab',
             tbar: tbar(),
-            items: [
-                frame(
-                    div({
-                        className: 'xh-custom-filter-tab__list',
-                        items: model.rowModels.map(it => customRow({model: it, key: it.xhId}))
-                    })
-                ),
-                implicitJoinMessage()
-            ]
+            item: div({
+                className: 'xh-custom-filter-tab__list',
+                items: model.rowModels.map(it => customRow({model: it, key: it.xhId}))
+            })
         });
     }
 });
@@ -57,20 +52,10 @@ const tbar = hoistCmp.factory(
                     text: 'Add',
                     intent: 'success',
                     title: 'Add condition',
+                    disabled: model.rowModels.length === model.availableOperators.length,
                     onClick: () => model.addEmptyRow()
                 })
             ]
-        });
-    }
-);
-
-const implicitJoinMessage = hoistCmp.factory(
-    ({model}) => {
-        const msg = model.implicitJoinMessage;
-        return div({
-            omit: !msg,
-            className: 'xh-custom-filter-tab__implicit_join_message',
-            items: [Icon.info(), div(msg)]
         });
     }
 );

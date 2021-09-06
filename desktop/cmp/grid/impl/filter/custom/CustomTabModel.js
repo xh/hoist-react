@@ -6,8 +6,8 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {FieldFilter, combineValueFilters} from '@xh/hoist/data';
-import {castArray, compact, every, forOwn, isEmpty, isNil} from 'lodash';
+import {combineValueFilters} from '@xh/hoist/data';
+import {compact, every, isEmpty} from 'lodash';
 
 import {CustomRowModel} from './CustomRowModel';
 
@@ -30,28 +30,6 @@ export class CustomTabModel extends HoistModel {
         return filters;
     }
 
-    @computed
-    get implicitJoinMessage() {
-        const joinOp = this.op === 'AND' ? 'OR' : 'AND', // Opposite of current compound operator
-            counts = joinOp === 'AND' ?
-                {'!=': 0, 'not like': 0} :
-                {'=': 0, 'like': 0, 'begins': 0, 'ends': 0};
-
-        this.rowModels.forEach(it => {
-            if (!isNil(counts[it.op])) {
-                counts[it.op]++;
-            }
-        });
-
-        const operators = [];
-        forOwn(counts, (count, op) => {
-            if (count > 1) operators.push("'" + op + "'");
-        });
-
-        if (isEmpty(operators)) return null;
-        return `Multiple ${operators.join(', ')} filters will be joined using ${joinOp}.`;
-    }
-
     get fieldSpec() {
         return this.parentModel.fieldSpec;
     }
@@ -62,6 +40,14 @@ export class CustomTabModel extends HoistModel {
 
     get columnFilters() {
         return this.parentModel.columnFilters;
+    }
+
+    get availableOperators() {
+        return [
+            ...this.fieldSpec.ops,
+            'blank',
+            'not blank'
+        ];
     }
 
     constructor(parentModel) {
@@ -102,13 +88,7 @@ export class CustomTabModel extends HoistModel {
         // Create rows based on filter.
         columnFilters.forEach(filter => {
             const {op, value} = filter;
-            if (FieldFilter.ARRAY_OPERATORS.includes(op)) {
-                castArray(value).forEach(it => {
-                    rowModels.push(new CustomRowModel({parentModel: this, op, value: it}));
-                });
-            } else {
-                rowModels.push(new CustomRowModel({parentModel: this, op, value}));
-            }
+            rowModels.push(new CustomRowModel({parentModel: this, op, value}));
         });
 
         // Rehydrate operator from CompoundFilter

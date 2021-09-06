@@ -50,14 +50,16 @@ export class CustomRowModel extends HoistModel {
     }
 
     get options() {
-        return [
-            ...this.fieldSpec.ops.map(value => {
-                const label = this.getOperatorLabel(value);
-                return {label, value};
-            }),
-            {label: 'is blank', value: 'blank'},
-            {label: 'is not blank', value: 'not blank'}
-        ];
+        const {availableOperators, rowModels} = this.parentModel,
+            usedOperators = rowModels.map(it => it.op);
+
+        return availableOperators.filter(it => {
+            if (it === this.op) return true;
+            return !usedOperators.includes(it);
+        }).map(value => {
+            const label = this.getOperatorLabel(value);
+            return {label, value};
+        });
     }
 
     get commitOnChange() {
