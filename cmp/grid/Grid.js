@@ -764,47 +764,46 @@ class GridLocalModel extends HoistModel {
         if (model.onKeyDown) model.onKeyDown(evt);
     };
 
-    onRowClicked = (evt) => {
+    onRowClicked = (agEvt) => {
         const {model} = this,
-            {selModel, doubleClickDelay, onRowClicked, onRowDoubleClicked} = model;
+            {node} = agEvt,
+            {selModel, agApi, doubleClickDelay, expandOnDoubleClick, onRowClicked, onRowDoubleClicked} = model;
 
-        if (evt.rowPinned) {
-            selModel.clear();
-        }
+        if (agEvt.rowPinned) selModel.clear();
 
         const elapsed = Date.now() - (this._lastRowClick ?? 0);
         if (elapsed < doubleClickDelay) {
+            // Cancel any pending onRowClicked and proceed with onRowDoubleClicked
             clearTimeout(this._rowClickTimeout);
-            if (onRowDoubleClicked) onRowDoubleClicked({...evt, type: 'rowDoubleClicked'});
+            onRowDoubleClicked?.({...agEvt, type: 'rowDoubleClicked'});
+
+            // Expand/collapse tree node if enabled
+            if (expandOnDoubleClick && !agEvt.event.isPropagationStopped && node?.allChildrenCount) {
+                agApi.setRowNodeExpanded(node, !node.expanded);
+            }
         } else {
+            // Delay onRowClicked to wait for potential double click
             this._rowClickTimeout = setTimeout(() => {
-                if (onRowClicked) onRowClicked(evt);
+                onRowClicked?.(agEvt);
             }, doubleClickDelay);
         }
 
         this._lastRowClick = Date.now();
     };
 
-    onCellClicked = (evt) => {
+    onCellClicked = (agEvt) => {
         const {model} = this,
-            {doubleClickDelay, onCellClicked, onCellDoubleClicked} = model,
-            {node} = evt;
+            {doubleClickDelay, onCellClicked, onCellDoubleClicked} = model;
 
         const elapsed = Date.now() - (this._lastCellClick ?? 0);
         if (elapsed < doubleClickDelay) {
+            // Cancel any pending onCellClicked and proceed with onCellDoubleClicked
             clearTimeout(this._cellClickTimeout);
-
-            // Expand / collapse tree row if `expandOnDoubleClick`.
-            // Note we use the `cellClicked` event, due to inconsistent support
-            // for `rowClicked` on mobile devices / browsers.
-            if (model.expandOnDoubleClick && node?.allChildrenCount) {
-                model.agApi.setRowNodeExpanded(node, !node.expanded);
-            }
-
-            if (onCellDoubleClicked) onCellDoubleClicked({...evt, type: 'cellDoubleClicked'});
+            onCellDoubleClicked?.({...agEvt, type: 'cellDoubleClicked'});
         } else {
+            // Delay onCellClicked to wait for potential double click
             this._cellClickTimeout = setTimeout(() => {
-                if (onCellClicked) onCellClicked(evt);
+                onCellClicked?.(agEvt);
             }, doubleClickDelay);
         }
 
