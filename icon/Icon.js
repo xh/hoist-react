@@ -39,6 +39,7 @@ export const Icon = {
      *      variant of each icon. Pass a value of either 'fas' for a heavier-weight/solid variant
      *      or 'fal' for a lighter-weight variant.
      * @param {string} [c.className] - additional css class(es) to apply.
+     * @param {string} [c.intent] - one of [primary|success|warning|danger].
      * @param {string} [c.title] - optional tooltip string
      * @param {string} [c.size] - size of the icon, as specified by FontAwesome API.
      *      One of: 'xs','sm', 'lg', '1x','2x','3x','4x','5x','6x','7x','8x','9x','10x'
@@ -53,11 +54,15 @@ export const Icon = {
         iconName,
         prefix = 'far',
         className,
+        intent,
         title,
         size,
         asHtml = false,
         ...rest
     } = {}) {
+        if (intent) {
+            className = classNames(className, `xh-intent-${intent}`);
+        }
         return asHtml ?
             iconHtml({iconName, prefix, className, title, size}) :
             iconCmp({iconName, prefix, className, title, size, ...rest});
@@ -131,6 +136,7 @@ export const Icon = {
     cross(p)            {return Icon.icon({...p,  iconName: 'times'})},
     crosshairs(p)       {return Icon.icon({...p,  iconName: 'crosshairs'})},
     cube(p)             {return Icon.icon({...p,  iconName: 'cube'})},
+    danger(p)           {return Icon.icon({...p,  iconName: 'times-circle'})},
     database(p)         {return Icon.icon({...p,  iconName: 'database'})},
     delete(p)           {return Icon.icon({...p,  iconName: 'minus-circle'})},
     desktop(p)          {return Icon.icon({...p,  iconName: 'desktop'})},
@@ -174,6 +180,8 @@ export const Icon = {
     gift(p)             {return Icon.icon({...p,  iconName: 'gift'})},
     globe(p)            {return Icon.icon({...p,  iconName: 'globe'})},
     globeAmericas(p)    {return Icon.icon({...p,  iconName: 'globe-americas'})},
+    greaterThan(p)      {return Icon.icon({...p,  iconName: 'greater-than'})},
+    greaterThanEqual(p) {return Icon.icon({...p,  iconName: 'greater-than-equal'})},
     grid(p)             {return Icon.icon({...p,  iconName: 'th'})},
     gridLarge(p)        {return Icon.icon({...p,  iconName: 'th-large'})},
     gridPanel(p)        {return Icon.icon({...p,  iconName: 'table'})},
@@ -191,6 +199,8 @@ export const Icon = {
     instrument(p)       {return Icon.icon({...p,  iconName: 'file-certificate'})},
     json(p)             {return Icon.icon({...p,  iconName: 'brackets-curly'})},
     learn(p)            {return Icon.icon({...p,  iconName: 'graduation-cap'})},
+    lessThan(p)         {return Icon.icon({...p,  iconName: 'less-than'})},
+    lessThanEqual(p)    {return Icon.icon({...p,  iconName: 'less-than-equal'})},
     link(p)             {return Icon.icon({...p,  iconName: 'link'})},
     list(p)             {return Icon.icon({...p,  iconName: 'align-justify'})},
     location(p)         {return Icon.icon({...p,  iconName: 'map-marker-alt'})},
@@ -205,6 +215,7 @@ export const Icon = {
     mobile(p)           {return Icon.icon({...p,  iconName: 'mobile-alt'})},
     moon(p)             {return Icon.icon({...p,  iconName: 'moon'})},
     news(p)             {return Icon.icon({...p,  iconName: 'newspaper'})},
+    notEquals(p)        {return Icon.icon({...p,  iconName: 'not-equal'})},
     office(p)           {return Icon.icon({...p,  iconName: 'building'})},
     openExternal(p)     {return Icon.icon({...p,  iconName: 'external-link'})},
     options(p)          {return Icon.icon({...p,  iconName: 'sliders-h-square'})},
@@ -240,6 +251,7 @@ export const Icon = {
     stop(p)             {return Icon.icon({...p,  iconName: 'stop'})},
     stopCircle(p)       {return Icon.icon({...p,  iconName: 'stop-circle'})},
     stopwatch(p)        {return Icon.icon({...p,  iconName: 'stopwatch'})},
+    success(p)          {return Icon.icon({...p,  iconName: 'check-circle'})},
     sun(p)              {return Icon.icon({...p,  iconName: 'sun'})},
     sync(p)             {return Icon.icon({...p,  iconName: 'sync'})},
     tab(p)              {return Icon.icon({...p,  iconName: 'folder'})},

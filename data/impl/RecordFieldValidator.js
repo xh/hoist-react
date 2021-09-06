@@ -5,12 +5,10 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {HoistBase, managed} from '@xh/hoist/core';
+import {HoistBase, managed, TaskObserver} from '@xh/hoist/core';
+import {ValidationState} from '@xh/hoist/data';
 import {computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {compact, flatten, isEmpty, isNil} from 'lodash';
-
-import {ValidationState} from '../validation/ValidationState';
 
 /**
  * Computes validation state for a Field on a Record instance
@@ -24,12 +22,12 @@ export class RecordFieldValidator extends HoistBase {
     /** @member {Field} */
     field;
 
-    /** @member {string} */
+    /** @return {string} */
     get id() {
         return this.field.name;
     }
 
-    /** @member {Rule[]} */
+    /** @return {Rule[]} */
     get rules() {
         return this.field.rules;
     }
@@ -74,7 +72,7 @@ export class RecordFieldValidator extends HoistBase {
     // completed will contain null
     @observable _errors;
 
-    @managed _validationTask = new PendingTaskModel();
+    @managed _validationTask = TaskObserver.trackLast();
     _validationRunId = 0;
 
     /**
@@ -133,7 +131,7 @@ export class RecordFieldValidator extends HoistBase {
             const promises = rule.check.map(async (constraint) => {
                 const {name, displayName} = field,
                     value = record.get(name),
-                    fieldState = {value, displayName};
+                    fieldState = {value, name, displayName, record};
 
                 return await constraint(fieldState, record.getValues());
             });

@@ -28,8 +28,8 @@
     outline-color: rgba(0, 0, 0, 0.15);
 
     &.highcharts-point-select {
-      outline-width: 3px;
-      outline-offset: -3px;
+      outline-width: 2px;
+      outline-offset: -2px;
       outline-color: var(--xh-blue-light);
     }
   }
@@ -39,6 +39,11 @@
     // Use of !important overrides default styles applied inline to the label elements by HC.
     font-size: var(--xh-font-size-small-px) !important;
     font-weight: normal !important;
+  }
+
+  // Use white borders in dark theme
+  &--dark rect.highcharts-point {
+    outline-color: rgba(255, 255, 255, 0.2);
   }
 }
 

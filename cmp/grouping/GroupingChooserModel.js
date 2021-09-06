@@ -36,7 +36,6 @@ export class GroupingChooserModel extends HoistModel {
     @observable.ref pendingValue = [];
     @observable editorIsOpen = false;
     @observable favoritesIsOpen = false;
-    @observable isAddMode = false;
 
     popoverRef = createObservableRef();
 
@@ -46,26 +45,16 @@ export class GroupingChooserModel extends HoistModel {
     }
 
     @computed
-    get atMaxDepth() {
-        const {pendingValue, maxDepth, dimensionNames} = this,
-            limit = maxDepth > 0 ? Math.min(maxDepth, dimensionNames.length) : dimensionNames.length;
-        return pendingValue.length === limit;
-    }
-
-    @computed
     get isValid() {
         return this.validateValue(this.pendingValue);
     }
 
     @computed
-    get addDisabledMsg() {
-        if (isEmpty(this.availableDims)) return 'All dimensions added';
-        if (this.atMaxDepth) return `Maximum ${this.maxDepth} dimensions added`;
-        return null;
-    }
-
-    get addControlShown() {
-        return this.isAddMode && !this.addDisabledMsg;
+    get isAddEnabled() {
+        const {pendingValue, maxDepth, dimensionNames, availableDims} = this,
+            limit = maxDepth > 0 ? Math.min(maxDepth, dimensionNames.length) : dimensionNames.length,
+            atMaxDepth = pendingValue.length === limit;
+        return !atMaxDepth && !isEmpty(availableDims);
     }
 
     /**
@@ -150,7 +139,6 @@ export class GroupingChooserModel extends HoistModel {
         this.pendingValue = this.value;
         this.editorIsOpen = true;
         this.favoritesIsOpen = false;
-        this.isAddMode = isEmpty(this.value) && !this.allowEmpty;
     }
 
     @action
@@ -165,15 +153,6 @@ export class GroupingChooserModel extends HoistModel {
         this.favoritesIsOpen = false;
     }
 
-    @action
-    addLevel() {
-        if (this.availableDims.length === 1) {
-            this.addPendingDim(this.availableDims[0]);
-        } else {
-            this.isAddMode = true;
-        }
-    }
-
     //-------------------------
     // Value handling
     //-------------------------
@@ -181,11 +160,11 @@ export class GroupingChooserModel extends HoistModel {
     addPendingDim(dimName) {
         if (!dimName) return;
         this.pendingValue = [...this.pendingValue, dimName];
-        this.isAddMode = false;
     }
 
     @action
     replacePendingDimAtIdx(dimName, idx) {
+        if (!dimName) return this.removePendingDimAtIdx(idx);
         const pendingValue = [...this.pendingValue];
         pendingValue[idx] = dimName;
         this.pendingValue = pendingValue;
@@ -196,10 +175,6 @@ export class GroupingChooserModel extends HoistModel {
         const pendingValue = [...this.pendingValue];
         pendingValue.splice(idx, 1);
         this.pendingValue = pendingValue;
-
-        if (isEmpty(pendingValue) && !this.allowEmpty) {
-            this.isAddMode = true;
-        }
     }
 
     @action

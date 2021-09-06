@@ -7,7 +7,7 @@
 import {div, ul, li} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
-import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {apiRemoved, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
     clone,
@@ -21,7 +21,7 @@ import {
     isNumber,
     isString
 } from 'lodash';
-import {forwardRef, useImperativeHandle, useState} from 'react';
+import {forwardRef, useImperativeHandle, useState, createElement} from 'react';
 import classNames from 'classnames';
 import {GridSorter} from '../impl/GridSorter';
 import {ExportFormat} from './ExportFormat';
@@ -48,6 +48,9 @@ export class Column {
         {sort: 'desc', abs: false}
     ];
 
+    /** @member {(boolean|Column~editableFn)} */
+    editable;
+
     /**
      * @param {Object} c - Column configuration.
      * @param {string} [c.field] - name of data store field to display within the column.
@@ -64,16 +67,22 @@ export class Column {
      * @param {(Column~headerNameFn|element)} [c.headerName] - user-facing text/element displayed
      *      in the Column header, or a function to produce the same. Defaulted from `displayName`.
      * @param {string} [c.headerTooltip] - tooltip text for grid header.
+     * @param {boolean} [c.headerHasExpandCollapse] - true if this column header will host an
+     *      expand/collapse all icon. `Column.isTreeColumn` must be enabled. Defaults to true.
+     * @param {string} [c.headerAlign] - horizontal alignment of header contents. Defaults to same
+     *      as cell alignment.
      * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - CSS classes to add to the
      *      header. Supports both string values or a function to generate strings.
-     * @param {(Column~cellClassFn|string|string[])} [c.cellClass] - additional css classes to add
-     *      to each cell in the column. Supports both string values or function to generate
-     *     strings.
+     * @param {(Column~cellClassFn|string|string[])} [c.cellClass] - additional CSS classes to add
+     *      to each cell in the column. Supports both string values or function to generate.
+     *      NOTE that, once added, classes will *not* be removed if the data changes.
+     *      Use `cellClassRules` instead if Record data can change across refreshes.
+     * @param {Object.<string, Column~cellClassRuleFn>} [c.cellClassRules] - object keying CSS
+     *      class names to functions determining if they should be added or removed from the cell.
+     *      See Ag-Grid docs on "cell styles" for details.
      * @param {boolean} [c.hidden] - true to suppress default display of the column.
      * @param {string} [c.align] - horizontal alignment of cell contents.
      *      Valid values are:  'left' (default), 'right' or 'center'.
-     * @param {string} [c.headerAlign] - horizontal alignment of header contents. Defaults to same
-     *      as cell alignment.
      * @param {number} [c.width] - default width in pixels.
      * @param {number} [c.minWidth] - minimum width in pixels - grid will block user-driven as well
      *      as auto-flex resizing below this value. (Note this is *not* a substitute for width.)
@@ -101,6 +110,9 @@ export class Column {
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
      * @param {boolean} [c.sortable] - false to prevent user from sorting on this column.
+     * @param {boolean} [c.filterable] - true to enable an Excel-like column header filter menu.
+     *      Menu option defaults vary based on the underlying Field.type, but include a
+     *      checkbox-list "values filter" and a custom input filter for more complex queries.
      * @param {(boolean|string)} [c.pinned] - set to true/'left' or 'right' to pin (aka "lock") the
      *      column to the side of the grid, ensuring it's visible while horizontally scrolling.
      * @param {Column~rendererFn} [c.renderer] - function returning a formatted string for each
@@ -151,8 +163,8 @@ export class Column {
      *      may have performance implications. Default false.
      * @param {boolean} highlightOnChange - set to true to call attention to cell changes by
      *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
-     * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column
-     *     editable.
+     * @param {(boolean|Column~editableFn)} [c.editable] - true to make cells in this column
+     *     editable, or a function to determine on a record-by-record basis.
      * @param {Column~editorFn} [c.editor] - Cell editor Component or a function to create one.
      *      Adding an editor will also install a cellClassRule and tooltip to display the
      *      validation state of the cell in question.
@@ -177,11 +189,13 @@ export class Column {
         displayName,
         headerName,
         headerTooltip,
+        headerHasExpandCollapse,
+        headerAlign,
         headerClass,
         cellClass,
+        cellClassRules,
         hidden,
         align,
-        headerAlign,
         width,
         minWidth,
         maxWidth,
@@ -194,6 +208,7 @@ export class Column {
         resizable,
         movable,
         sortable,
+        filterable,
         pinned,
         renderer,
         rendererIsComplex,
@@ -248,10 +263,15 @@ export class Column {
         this.headerName = withDefault(headerName, this.displayName);
 
         this.headerTooltip = headerTooltip;
+        this.headerHasExpandCollapse = withDefault(headerHasExpandCollapse, true);
         this.headerClass = headerClass;
-        this.cellClass = cellClass;
-        this.align = align;
         this.headerAlign = headerAlign || align;
+
+        this.cellClass = cellClass;
+        this.cellClassRules = cellClassRules || {};
+        apiRemoved('Column.agOptions.cellClassRules', {test: agOptions?.cellClassRules, msg: 'Specify cellClassRules as a top-level Column config instead.', v: 'v44'});
+
+        this.align = align;
 
         this.hidden = withDefault(hidden, false);
         warnIf(rest.hide, `Column ${this.colId} configured with {hide: true} - use "hidden" instead.`);
@@ -326,10 +346,12 @@ export class Column {
             `Column specified with both tooltip && tooltipElement. Tooltip will be ignored. [colId=${this.colId}]`
         );
 
-        this.editable = editable;
+        this.editable = editable || false;
         this.editor = editor;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
+
+        this.filterable = this.parseFilterable(filterable);
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -340,11 +362,22 @@ export class Column {
     }
 
     /**
-     * Produce a Column definition appropriate for AG Grid.
+     * @param {Record} record
+     * @return {boolean} - true if this column supports editing its field for the given Record.
      */
+    isEditableForRecord(record) {
+        const {editable, gridModel} = this;
+        if (!record) return false;
+        return isFunction(editable) ?
+            editable({record, store: record.store, gridModel, column: this}) :
+            editable;
+    }
+
+    /** Produce a Column definition appropriate for AG-Grid. */
     getAgSpec() {
         const {gridModel, field, headerName, displayName, agOptions} = this,
             ret = {
+                xhColumn: this,
                 field,
                 colId: this.colId,
                 // headerValueGetter should always return a string
@@ -369,14 +402,8 @@ export class Column {
                 suppressColumnsToolPanel: this.excludeFromChooser,
                 suppressFiltersToolPanel: this.excludeFromChooser,
                 enableCellChangeFlash: this.highlightOnChange,
-                editable: (agParams) => {
-                    const {editable} = this;
-                    if (isFunction(editable)) {
-                        const record = agParams.node.data;
-                        return editable({record, store: record.store, gridModel, column: this, agParams});
-                    }
-                    return editable;
-                },
+                cellClassRules: this.cellClassRules,
+                editable: (agParams) => this.isEditableForRecord(agParams.node.data),
                 valueSetter: (agParams) => {
                     const record = agParams.data;
                     this.setValueFn({
@@ -483,17 +510,17 @@ export class Column {
 
         // Generate CSS classes for cells.
         // Default alignment classes are mixed in with any provided custom classes.
-        const {align} = this;
+        const {cellClass, isTreeColumn, align} = this;
         ret.cellClass = (agParams) => {
             let r = [];
-            if (this.cellClass) {
+            if (cellClass) {
                 r = castArray(
-                    isFunction(this.cellClass) ?
-                        this.cellClass(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
-                        this.cellClass
+                    isFunction(cellClass) ?
+                        cellClass(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
+                        cellClass
                 );
             }
-            if (this.isTreeColumn) {
+            if (isTreeColumn) {
                 r.push('xh-tree-column');
             }
             if (align === 'center' || align === 'right') {
@@ -552,7 +579,7 @@ export class Column {
                 const recordA = agNodeA?.data,
                     recordB = agNodeB?.data;
 
-                valueA = this.getSortValue(valueA, recordA),
+                valueA = this.getSortValue(valueA, recordA);
                 valueB = this.getSortValue(valueB, recordB);
 
                 return this.defaultComparator(valueA, valueB);
@@ -592,17 +619,27 @@ export class Column {
 
         if (editor) {
             ret.cellEditorFramework = forwardRef((agParams, ref) => {
-                const {data} = agParams;
-                return editor({
-                    record: data,
+                const props = {
+                    record: agParams.data,
                     gridModel,
                     column: this,
                     agParams,
                     ref
-                });
+                };
+                // Can be a component or elem factory/ ad-hoc render function.
+                if (editor.isHoistComponent) return createElement(editor, props);
+                if (isFunction(editor)) return editor(props);
+                throw XH.exception('Column editor must be a HoistComponent or a render function');
             });
             ret.cellClassRules = {
-                'xh-invalid-cell': ({data: record}) => record && !isEmpty(record.errors[field])
+                'xh-cell--invalid': (agParams) => {
+                    const record = agParams.data;
+                    return record && !isEmpty(record.errors[field]);
+                },
+                'xh-cell--editable': (agParams) => {
+                    return this.isEditableForRecord(agParams.data);
+                },
+                ...ret.cellClassRules
             };
         }
 
@@ -637,6 +674,27 @@ export class Column {
         if (pinned === true) return 'left';
         if (pinned === 'left' || pinned === 'right') return pinned;
         return null;
+    }
+
+    parseFilterable(filterable) {
+        if (!filterable) return false;
+
+        if (XH.isMobileApp) {
+            console.warn(`'filterable' is not supported on mobile and will be ignored.`);
+            return false;
+        }
+
+        if (!this.field) {
+            console.warn(`Column '${this.colId}' is not a Store field. 'filterable' will be ignored.`);
+            return false;
+        }
+
+        if (this.field === 'cubeLabel') {
+            console.warn(`Column '${this.colId}' is a cube label column. 'filterable' will be ignored.`);
+            return false;
+        }
+
+        return true;
     }
 
     getSortValue(v, record) {
@@ -733,6 +791,16 @@ export function getAgHeaderClassFn(column) {
  */
 
 /**
+ * @callback Column~cellClassRuleFn - function to determine if a particular CSS class should be
+ *      added/removed from a cell, via cellClassRules config.
+ * @param {CellClassParams} agParams - as provided by Ag-Grid.
+ * @param {*} agParams.value - the current cell value.
+ * @param {?Record} agParams.data - the backing Hoist record for the row, if any.
+ * @return {boolean} - true if the class to which this function is keyed should be added, false if
+ *      it should be removed.
+ */
+
+/**
  * @callback Column~headerClassFn - function to generate header CSS classes.
  * @param {HeaderContext} context - contains data about the column and GridModel.
  * @return {(string|string[])} - CSS class(es) to use.
@@ -799,10 +867,8 @@ export function getAgHeaderClassFn(column) {
  * @param {Store} params.store - Store containing the grid data.
  * @param {Column} params.column - column for the cell being edited.
  * @param {GridModel} params.gridModel - gridModel for the grid.
- * @param {IsColumnFuncParams} params.agParams - the ag-grid column function params.
  * @return {boolean} - true if cell is editable
  */
-
 
 /**
  * @callback Column~editorFn - grid cell editor component, or function to return one.

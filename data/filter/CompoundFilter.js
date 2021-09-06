@@ -8,7 +8,7 @@
 import {throwIf} from '@xh/hoist/utils/js';
 import {parseFilter} from './Utils';
 import {Filter} from './Filter';
-import {compact, isEmpty, isEqualWith} from 'lodash';
+import {compact, every, isEmpty, isEqualWith} from 'lodash';
 
 /**
  * Combines multiple filters (including other nested CompoundFilters) via an AND or OR operator.
@@ -22,6 +22,13 @@ export class CompoundFilter extends Filter {
     filters;
     /** @member {string} */
     op;
+
+    get field() {
+        if (isEmpty(this.filters)) return null;
+        const {field} = this.filters[0];
+        if (field && every(this.filters, {field})) return field;
+        return null;
+    }
 
     /**
      * Constructor - not typically called by apps - create from config via `parseFilter()` instead.
@@ -62,6 +69,7 @@ export class CompoundFilter extends Filter {
     }
 
     equals(other) {
+        if (other === this) return true;
         return other?.isCompoundFilter &&
             other.op === this.op &&
             isEqualWith(

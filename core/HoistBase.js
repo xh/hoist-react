@@ -39,8 +39,8 @@ import {getOrCreate} from '../utils/js';
  */
 export class HoistBase {
 
-    _xhManagedInstances = [];
-    _xhDisposers = [];
+    #managedInstances = [];
+    #disposers = [];
 
     get isHoistBase() {return true}
 
@@ -93,7 +93,7 @@ export class HoistBase {
         run = bindAndDebounce(this, run, debounce);
 
         const disposer = track ? mobxReaction(track, run, opts) : mobxWhen(when, run, opts);
-        this._xhDisposers.push(disposer);
+        this.#disposers.push(disposer);
         return disposer;
     }
 
@@ -128,7 +128,7 @@ export class HoistBase {
         run = bindAndDebounce(this, run, debounce);
 
         const disposer = mobxAutorun(run, opts);
-        this._xhDisposers.push(disposer);
+        this.#disposers.push(disposer);
         return disposer;
     }
 
@@ -171,7 +171,7 @@ export class HoistBase {
      * @returns object passed.
      */
     markManaged(obj) {
-        this._xhManagedInstances.push(obj);
+        this.#managedInstances.push(obj);
         return obj;
     }
 
@@ -220,8 +220,8 @@ export class HoistBase {
      * Clean up resources associated with this object
      */
     destroy() {
-        this._xhDisposers?.forEach(f => f());
-        this._xhManagedInstances.forEach(i => XH.safeDestroy(i));
+        this.#disposers.forEach(f => f());
+        this.#managedInstances.forEach(i => XH.safeDestroy(i));
         this._xhManagedProperties?.forEach(p => XH.safeDestroy(this[p]));
     }
 }

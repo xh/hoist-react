@@ -67,8 +67,12 @@
     background-color: var(--xh-grid-bg);
     color: var(--xh-grid-text-color);
 
+    // Selected row styling.
     &.ag-row-selected {
-      background-color: var(--xh-grid-bg-highlight);
+      background-color: var(--xh-grid-selected-row-bg);
+      .ag-cell {
+        color: var(--xh-grid-selected-row-text-color);
+      }
     }
 
     &.ag-row-group.ag-full-width-row {
@@ -385,10 +389,12 @@
 .ag-theme-balham .ag-menu,
 .ag-theme-balham-dark .ag-menu {
   font-family: var(--xh-font-family);
-  background-color: var(--xh-bg-alt);
 
-  // Matching no border + box-shadow of Blueprint context menu popover
-  border: none;
+  // Minimal/high-contrast bg
+  background-color: var(--xh-bg);
+  border: var(--xh-border-solid);
+
+  // Matching box-shadow of Blueprint context menu popover
   box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.2), 0 2px 4px rgba(16, 22, 26, 0.4), 0 8px 24px rgba(16, 22, 26, 0.4);
 
   .ag-menu-option.ag-menu-option-active {
@@ -399,5 +405,15 @@
     text-align: center;
     padding-left: 8px;
     padding-right: 8px;
+  }
+
+  // Mute the shortcut text to keep focus on the actual option text
+  .ag-menu-option-shortcut {
+    color: var(--xh-text-color-muted);
+  }
+
+  // Keep the submenu caret in the standard text color
+  .ag-menu-option-popup-pointer {
+    color: var(--xh-text-color);
   }
 }

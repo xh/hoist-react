@@ -1,11 +1,17 @@
 .xh-placeholder {
   display: flex;
-  flex-direction: column;
   flex: auto;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: var(--xh-pad-px);
   color: var(--xh-text-color-muted);
+
+  > .xh-icon:first-child {
+    font-size: 4em;
+    margin-bottom: 0.5em;
+    opacity: 0.5;
+  }
 
   & > *:not(:last-child) {
     margin-bottom: var(--xh-pad-px);

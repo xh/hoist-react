@@ -149,7 +149,7 @@ export class JsonBlobModel extends HoistModel {
     differModel = new DifferModel({
         parentGridModel: this.gridModel,
         entityName: 'jsonBlob',
-        displayName: 'json blob',
+        displayName: 'JSON Blob',
         columnFields: ['name', 'owner', 'type', {field: 'archivedDate', ...dateTimeCol, renderer: this.archivedDateRenderer}],
         matchFields: ['name', 'owner', 'type', 'archivedDate']
     });

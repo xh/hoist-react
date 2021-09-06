@@ -7,6 +7,7 @@
 
 export * from './enums/RefreshMode';
 export * from './enums/RenderMode';
+export * from './enums/SizingMode';
 
 export * from './elem';
 
@@ -25,7 +26,7 @@ export * from './HoistComponent';
 export * from './HoistModel';
 export * from './HoistService';
 
-export * from '../utils/async/PendingTaskModel';
+export * from './TaskObserver';
 
 export * from './refresh/LoadSupport';
 export * from './refresh/RefreshContextModel';
@@ -39,4 +40,5 @@ export * from './persist/DashViewProvider';
 export * from './persist/PrefProvider';
 export * from './persist/CustomProvider';
 
-export * from './XH';
+// Explicitly exporting `XH` helps IntelliJ suggest the correct import from this core package.
+export {XH} from './XH';

@@ -53,7 +53,8 @@
     }
 
     .xh-grid-header-sort-icon,
-    .xh-grid-header-menu-icon {
+    .xh-grid-header-menu-icon,
+    .xh-grid-header-expand-collapse-icon {
       color: var(--xh-grid-header-icon-color);
       margin-left: var(--xh-pad-half-px);
       width: 1.5em;
@@ -65,6 +66,13 @@
 
     .xh-grid-header-menu-icon {
       cursor: pointer;
+    }
+
+    // Prevent sticky hover effects on touch screens
+    @media (hover: hover) {
+      .xh-grid-header-expand-collapse-icon:hover {
+        color: var(--xh-text-color-highlight);
+      }
     }
   }
 
@@ -79,6 +87,25 @@
     .xh-grid-header,
     .xh-grid-group-header {
       text-align: center;
+    }
+  }
+
+  // Positioning for column header expand collapse affordance
+  .xh-ag-grid {
+    &--large .xh-grid-header-expand-collapse-icon {
+      margin: 0 2px 0 -11px;
+    }
+
+    &--standard .xh-grid-header-expand-collapse-icon {
+      margin: 0 1px 0 -10px;
+    }
+
+    &--compact .xh-grid-header-expand-collapse-icon {
+      margin: 0 1px 0 -6px;
+    }
+
+    &--tiny .xh-grid-header-expand-collapse-icon {
+      margin: 0 1px 0 -4px;
     }
   }
 
@@ -103,7 +130,7 @@
   }
 
   // Render badge on invalid cells
-  .ag-cell.xh-invalid-cell {
+  .ag-cell.xh-cell--invalid {
     &::before {
       content: '';
       position: absolute;
@@ -125,25 +152,25 @@
 
   .xh-ag-grid {
     &--tiny {
-      .ag-cell.xh-invalid-cell::before {
+      .ag-cell.xh-cell--invalid::before {
         border-width: 3px;
       }
     }
 
     &--compact {
-      .ag-cell.xh-invalid-cell::before {
+      .ag-cell.xh-cell--invalid::before {
         border-width: 4px;
       }
     }
 
     &--standard {
-      .ag-cell.xh-invalid-cell::before {
+      .ag-cell.xh-cell--invalid::before {
         border-width: 5px;
       }
     }
 
     &--large {
-      .ag-cell.xh-invalid-cell::before {
+      .ag-cell.xh-cell--invalid::before {
         border-width: 6px;
       }
     }
@@ -182,28 +209,32 @@
   //------------------------
   // Tree grid styling modes
   //------------------------
-  &.xh-grid--tree-style-highlights {
-    div[class*=" ag-row-group"],
-    div[class^="ag-row-group"] {
-      &:not(.ag-row-selected),
-      &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-        background-color: var(--xh-grid-tree-group-bg);
+  // Generate a set of selectors targeting all expected max-depth levels, then style all rows
+  // *not* at that max depth with parent/group row highlighting. For trees with mixed-depth
+  // branches, some such "parent" rows might not actually have children and therefore won't be
+  // identified as groups by AG-Grid row classes, but this keeps the styling consistent for all
+  // rows at the same level.
+  @for $i from 0 to 20 {
+    &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
+      .ag-row:not(.ag-row-level-#{$i}) {
+        &:not(.ag-row-selected),
+        &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+          background-color: var(--xh-grid-tree-group-bg);
+        }
       }
-    }
 
-    .xh-ag-grid--show-hover {
-      div[class*=" ag-row-group"],
-      div[class^="ag-row-group"] {
-        &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected) {
-          background-color: var(--xh-grid-bg-hover);
+      .xh-ag-grid--show-hover {
+        .ag-row:not(.ag-row-level-#{$i}) {
+          &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected):not(.ag-row-pinned) {
+            background-color: var(--xh-grid-bg-hover);
+          }
         }
       }
     }
   }
 
   &.xh-grid--tree-style-borders {
-    .ag-row-level-0[class*=" ag-row-group"],
-    .ag-row-level-0[class^="ag-row-group"], {
+    .ag-row-level-0 {
       &:not(.ag-row-first) {
         border-top: 1px solid var(--xh-grid-tree-group-border-color);
       }
@@ -394,5 +425,39 @@
   &--tiny {
     font-size: var(--xh-grid-tiny-header-font-size-px);
     padding: 0 var(--xh-grid-tiny-header-lr-pad-px);
+  }
+}
+
+.xh-grid-menu-option {
+  &--intent-success {
+    color: var(--xh-intent-success-darker);
+  }
+  &--intent-primary {
+    color: var(--xh-intent-primary-darker);
+  }
+  &--intent-warning {
+    color: var(--xh-intent-warning-darker);
+  }
+  &--intent-danger {
+    color: var(--xh-intent-danger-darker);
+  }
+
+  // Dark theme
+  .xh-dark & {
+    &--intent-success {
+      color: var(--xh-intent-success-lighter);
+    }
+
+    &--intent-primary {
+      color: var(--xh-intent-primary-lighter);
+    }
+
+    &--intent-warning {
+      color: var(--xh-intent-warning-lighter);
+    }
+
+    &--intent-danger {
+      color: var(--xh-intent-danger-lighter);
+    }
   }
 }

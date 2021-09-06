@@ -4,13 +4,16 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
-import {action} from '@xh/hoist/mobx';
+import {TaskObserver, XH} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {castArray, isFunction, isNumber, isPlainObject} from 'lodash';
+import {action} from '@xh/hoist/mobx';
+import {castArray, isFunction, isNumber} from 'lodash';
+import {apiDeprecated} from '../utils/js';
 
 /**
  * Start a new promise chain.
+ *
+ * @deprecated  Use `wait()` instead.
  *
  * This method serves as a lightweight way to start a promise chain for any code.
  * It is useful for combining promise based calls with non-promise based calls, especially when
@@ -25,6 +28,7 @@ import {castArray, isFunction, isNumber, isPlainObject} from 'lodash';
  * @returns {Promise}
  */
 export async function start(fn) {
+    apiDeprecated('start', {msg: 'Use wait() instead', v: 'v44'});
     const promise = new Promise(resolve => setTimeout(resolve, 1));
     return fn ? promise.then(fn) : start;
 }
@@ -32,10 +36,13 @@ export async function start(fn) {
 /**
  * Return a promise that will resolve after the specified amount of time.
  *
- * @param {number} interval - milliseconds to delay.
+ * This method serves as a lightweight way to start a promise chain for any code.
+ *
+ * @param {number} [interval] - milliseconds to delay. Defaults to 0.  Note that the actual
+ *      delay will be subject to the minimum delay for setTimeout() in the browser.
  * @return {Promise}
  */
-export async function wait(interval) {
+export async function wait(interval = 0) {
     return new Promise(resolve => setTimeout(resolve, interval));
 }
 
@@ -177,20 +184,19 @@ const enhancePromise = (promisePrototype) => {
          * @param {(Object|number)} [config] - object as per below, or interval in ms (if number).
          *      If null, no timeout enforced.
          * @param {number} [config.interval] - interval value in ms.
-         * @param {string} [config.message] - message for Exception thrown on timeout.
+         * @param {string} [config.message] - custom message for Exception thrown on timeout.
          */
         timeout(config) {
             if (config == null) return this;
             if (isNumber(config)) config = {interval: config};
-            const interval = config.interval,
-                message = config.message ?? `Operation timed out after ${interval}ms.`;
+            const interval = config.interval;
 
             let completed = false;
             const promise = this.finally(() => completed = true);
 
             const deadline = wait(interval).then(() => {
                 if (!completed) {
-                    throw Exception.create({name: 'Timeout Exception', message, interval});
+                    throw Exception.timeout(config);
                 }
             });
 
@@ -199,23 +205,32 @@ const enhancePromise = (promisePrototype) => {
 
 
         /**
-         * Link this promise to an instance of a {@see PendingTaskModel}. See that class for details
-         * on what PendingTaskModels provide and how they can be used to coordinate masking and
-         * progress messages on one or more async operations.
+         * Link this promise to an instance of a {@see TaskObserver}. See that class for details
+         * on what it provides and how it can be used to coordinate masking and progress messages
+         * on one or more async operations.
          *
          * @memberOf Promise.prototype
-         * @param {Object|PendingTaskModel} cfg -- Configuration object, or PendingTaskModel
-         * @param {PendingTaskModel} cfg.model - PendingTaskModel to link to.
-         * @param {string} [cfg.message] - Optional custom message for use by PendingTaskModel.
+         * @param {Object|TaskObserver} cfg - TaskObserver to use to track execution of this
+         *      Promise, or a config with observer + additional options.
+         * @param {TaskObserver} cfg.observer
+         * @param {string} [cfg.message] - optional message to display while pending.
          * @param {boolean} [cfg.omit] - optional flag to indicate linkage should be skipped
          *      If true, this method is no-op.  Provided as convenience for conditional masking.
          */
         linkTo(cfg) {
-            if (!isPlainObject(cfg)) {
-                cfg = {model: cfg};
+            if (!cfg) return this;
+
+            if (cfg.isTaskObserver) {
+                cfg = {observer: cfg};
             }
-            if (cfg.model && !cfg.omit) {
-                cfg.model.link(this, cfg.message);
+
+            if (cfg.model && !cfg.observer) {
+                apiDeprecated('model', {msg: `Provide 'observer' instead`, v: 'v44'});
+                cfg = {...cfg, observer: cfg.model};
+            }
+
+            if (cfg.observer && !cfg.omit) {
+                cfg.observer.linkTo(TaskObserver.forPromise({promise: this, message: cfg.message}));
             }
             return this;
         },

@@ -15,8 +15,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {start} from '@xh/hoist/promise';
-import {apiRemoved} from '@xh/hoist/utils/js';
+import {wait} from '@xh/hoist/promise';
 import {isNil} from 'lodash';
 import {createRef} from 'react';
 
@@ -117,8 +116,6 @@ export class PanelModel extends HoistModel {
             collapsible = false;
             resizable = false;
         }
-
-        apiRemoved(rest.prefName, 'prefName', 'Specify "persistWith" instead.');
 
         if (!isNil(maxSize) && (maxSize < minSize || maxSize < defaultSize)) {
             console.error("'maxSize' must be greater than 'minSize' and 'defaultSize'. No 'maxSize' will be set.");
@@ -256,6 +253,6 @@ export class PanelModel extends HoistModel {
 
     dispatchResize() {
         // Forces other components to redraw if required.
-        start(() => window.dispatchEvent(new Event('resize')));
+        wait().then(() => window.dispatchEvent(new Event('resize')));
     }
 }

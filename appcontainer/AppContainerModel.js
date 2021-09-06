@@ -4,9 +4,8 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, RootRefreshContextModel, XH} from '@xh/hoist/core';
+import {HoistModel, managed, RootRefreshContextModel, TaskObserver, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {AboutDialogModel} from './AboutDialogModel';
 import {BannerSourceModel} from './BannerSourceModel';
 import {ChangelogDialogModel} from './ChangelogDialogModel';
@@ -15,6 +14,7 @@ import {FeedbackDialogModel} from './FeedbackDialogModel';
 import {ImpersonationBarModel} from './ImpersonationBarModel';
 import {MessageSourceModel} from './MessageSourceModel';
 import {OptionsDialogModel} from './OptionsDialogModel';
+import {SizingModeModel} from './SizingModeModel';
 import {ThemeModel} from './ThemeModel';
 import {ToastSourceModel} from './ToastSourceModel';
 
@@ -27,7 +27,7 @@ export class AppContainerModel extends HoistModel {
     // Sub-models
     //------------
     /** Link any async operations that should mask the entire application to this model. */
-    @managed appLoadModel = new PendingTaskModel({mode: 'all'});
+    @managed appLoadModel = TaskObserver.trackAll();
 
     @managed aboutDialogModel = new AboutDialogModel();
     @managed changelogDialogModel = new ChangelogDialogModel();
@@ -41,6 +41,7 @@ export class AppContainerModel extends HoistModel {
     @managed toastSourceModel = new ToastSourceModel();
 
     @managed refreshContextModel = new RootRefreshContextModel();
+    @managed sizingModeModel = new SizingModeModel();
     @managed themeModel = new ThemeModel();
 
     init() {
@@ -56,6 +57,7 @@ export class AppContainerModel extends HoistModel {
             this.messageSourceModel,
             this.toastSourceModel,
             this.refreshContextModel,
+            this.sizingModeModel,
             this.themeModel
         ];
         models.forEach(it => {

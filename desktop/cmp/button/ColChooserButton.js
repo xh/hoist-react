@@ -7,10 +7,10 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
-import {colChooser} from '@xh/hoist/desktop/cmp/grid/impl/ColChooser';
+import {colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooser';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
+import {withDefault, stopPropagation} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 import {button, Button} from './Button';
 
@@ -51,16 +51,14 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
                 ...rest
             }),
             disabled,
-            content: vbox(
-                div({
-                    ref,
-                    className: 'xh-popup__title',
-                    item: 'Choose Columns'
-                }),
-                colChooser({
-                    model: colChooserModel
-                })
-            ),
+            content: vbox({
+                onClick: stopPropagation,
+                onDoubleClick: stopPropagation,
+                items: [
+                    div({ref, className: 'xh-popup__title', item: 'Choose Columns'}),
+                    colChooser({model: colChooserModel})
+                ]
+            }),
             onInteraction: (willOpen) => {
                 if (willOpen) {
                     colChooserModel.openPopover();

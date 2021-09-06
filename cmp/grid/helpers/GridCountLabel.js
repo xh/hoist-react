@@ -35,7 +35,7 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory({
             return '';
         }
 
-        const {store, selection} = gridModel;
+        const {store, selectedRecords} = gridModel;
 
         const fmtCount = (count) => fmtNumber(count, {precision: 0}),
             recCountString = () => {
@@ -45,7 +45,7 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory({
                 return `${fmtCount(count)} ${unitLabel}`;
             },
             selCountString = () => {
-                const count = selection.length,
+                const count = selectedRecords.length,
                     countStr = count ? fmtCount(count) : 'none',
                     showCount = showSelectionCount === 'always' || (showSelectionCount === 'auto' && count > 1);
 

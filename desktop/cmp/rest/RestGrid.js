@@ -31,7 +31,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
         ...props
     }, ref) {
 
-        apiRemoved(props.onRowDoubleClicked, 'onRowDoubleClicked', 'Specify onRowDoubleClicked on the RestGridModel instead.');
+        apiRemoved('RestGrid.onRowDoubleClicked', {test: props.onRowDoubleClicked, msg: 'Specify onRowDoubleClicked on the RestGridModel instead.', v: 'v43'});
 
         const {formModel, gridModel} = model;
 
@@ -79,7 +79,7 @@ RestGrid.propTypes = {
 
 function getMaskFromProp(model, mask) {
     if (isValidElement(mask)) {
-        mask = cloneElement(mask, {model: model.loadModel});
+        mask = cloneElement(mask, {bind: model.loadModel});
     } else if (mask === true) {
         mask = model.loadModel;
     }

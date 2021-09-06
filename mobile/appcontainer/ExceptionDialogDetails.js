@@ -7,6 +7,7 @@
 import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 import {filler, fragment, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
+import {required} from '@xh/hoist/data';
 import {stringifyErrorSafely} from '@xh/hoist/exception';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -48,18 +49,30 @@ export const exceptionDialogDetails = hoistCmp.factory({
             onCancel: !requireReload ? () => model.close() : null,
             content: fragment(
                 header,
-                pre(errorStr),
-                textArea({
-                    placeholder: 'Add message here...',
-                    bind: 'userMessage'
-                })
+                pre(errorStr)
             ),
             buttons: [
                 button({
                     icon: Icon.envelope(),
-                    text: 'Send',
-                    disabled: !model.userMessage,
-                    onClick: () => model.sendReportAsync()
+                    text: 'Send Message',
+                    onClick: () => {
+                        XH.prompt({
+                            title: 'Send Message',
+                            input: {
+                                item: textArea({
+                                    placeholder: 'Add message here...',
+                                    commitOnChange: true
+                                }),
+                                rules: [required]
+                            },
+                            confirmProps: {icon: Icon.envelope(), text: 'Send'}
+                        }).then(userMessage => {
+                            model.setUserMessage(userMessage);
+                            if (model.userMessage) {
+                                model.sendReportAsync();
+                            }
+                        });
+                    }
                 }),
                 filler(),
                 dismissButton()

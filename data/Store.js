@@ -7,7 +7,7 @@
 
 import {HoistBase, managed, XH} from '@xh/hoist/core';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {throwIf, warnIf, apiRemoved, logWithDebug} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, logWithDebug} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -30,6 +30,8 @@ import {Record} from './Record';
  * A managed and observable set of local, in-memory Records.
  */
 export class Store extends HoistBase {
+
+    get isStore() {return true}
 
     /** @member {Field[]} */
     fields = null;
@@ -352,8 +354,8 @@ export class Store extends HoistBase {
      * @param {(Object[]|Object)} data - source data for new Record(s). Note that this data will
      *      *not* be processed by this Store's `processRawData` or `idSpec` functions, but will be
      *      parsed and potentially transformed according to this Store's Field definitions.
-     * @param {(string|number)} [parentId] - ID of the pre-existing parent Record under which this
-     *      new Record should be added, if any.
+     * @param {RecordId} [parentId] - ID of the pre-existing parent Record under which this new
+     *      Record should be added, if any.
      */
     @action
     addRecords(data, parentId) {
@@ -608,7 +610,7 @@ export class Store extends HoistBase {
 
     /**
      *
-     * @param {(Record|string|number)} recOrId
+     * @param {RecordOrId} recOrId
      * @return {boolean} - true if the Record is in the store, but currently excluded by a filter.
      *      False if the record is either not in the Store at all, or not filtered out.
      */
@@ -655,10 +657,15 @@ export class Store extends HoistBase {
         return this._current.empty;
     }
 
+    /** @returns {number} */
+    get maxDepth() {
+        return this._current.maxDepth;  // maxDepth should not be effected by filtering.
+    }
+
     /**
      * Get a record by ID, or null if no matching record found.
      *
-     * @param {(string|number)} id
+     * @param {RecordId} id
      * @param {boolean} [respectFilter] - false (default) to return a Record with the given
      *      ID even if an active filter is excluding it from the primary `records` collection.
      *      True to restrict matches to this Store's post-filter Record collection only.
@@ -678,7 +685,7 @@ export class Store extends HoistBase {
      * See also the 'children' and 'allChildren' properties on Record - those getters will likely
      * be more convenient for most app-level callers.
      *
-     * @param {(string|number)} id - id of record to be queried.
+     * @param {RecordId} id - ID of Record to be queried.
      * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
@@ -694,7 +701,7 @@ export class Store extends HoistBase {
      * See also the 'descendants' and 'allDescendants' properties on Record - those getters will
      * likely be more convenient for most app-level callers.
      *
-     * @param {(string|number)} id - id of record to be queried.
+     * @param {RecordId} id - ID of Record to be queried.
      * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
@@ -710,7 +717,7 @@ export class Store extends HoistBase {
      * See also the 'ancestors' and 'allAncestors' properties on Record - those getters will likely
      * be more convenient for most app-level callers.
      *
-     * @param {(string|number)} id - id of record to be queried.
+     * @param {RecordId} id - ID of Record to be queried.
      * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
@@ -810,6 +817,12 @@ export class Store extends HoistBase {
         // Note idSpec run against raw data here.
         const id = this.idSpec(raw);
 
+        // Re-use existing record if raw data and tree path identical
+        const cached = this._committed?.recordMap.get(id);
+        if (cached && cached.raw === raw && equal(cached.parent?.treePath, parent?.treePath)) {
+            return cached;
+        }
+
         data = this.parseRaw(data);
         const ret = new Record({id, data, raw, parent, store: this, isSummary});
 
@@ -894,7 +907,6 @@ export class Store extends HoistBase {
     }
 
     parseExperimental(experimental) {
-        apiRemoved(experimental?.shareDefaults, 'shareDefaults');
         return {
             ...XH.getConf('xhStoreExperimental', {}),
             ...experimental
@@ -927,7 +939,7 @@ function forIn(obj, fn) {
  *      a pointer to the intended parent if the record is not to be added to the root. The rawData
  *      *can* include a children property that will be processed into new child records.
  *      (Meaning: adds can be used to add new branches to the tree.)
- * @property {(string[]|number[])} [remove] - list of ids representing records to be removed.
+ * @property {RecordId[]} [remove] - list of ids representing records to be removed.
  *      Any descendents of these records will also be removed.
  * @property {Object} [rawSummaryData] - update to the dedicated summary row for this store.
  *      If the store has its `loadRootAsSummary` flag set to true, the summary record should

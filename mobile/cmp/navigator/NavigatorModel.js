@@ -28,6 +28,12 @@ export class NavigatorModel extends HoistModel {
     /** @member {boolean} */
     track;
 
+    /** @member {boolean} */
+    swipeToGoBack;
+
+    /** @member {boolean} */
+    pullDownToRefresh;
+
     /** @member {RenderMode} */
     renderMode;
 
@@ -53,6 +59,8 @@ export class NavigatorModel extends HoistModel {
      *      pages within this Navigator/App.
      * @param {boolean} [track] - True to enable activity tracking of page views (default false).
      *      Viewing of each page will be tracked with the `oncePerSession` flag, to avoid duplication.
+     * @param {boolean} [swipeToGoBack] - True to enable 'swipe to go back' functionality.
+     * @param {boolean} [pullDownToRefresh] - True to enable 'pull down to refresh' functionality.
      * @param {RenderMode} [renderMode] - strategy for rendering pages. Can be set per-page
      *      via `PageModel.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing pages. Can be set per-page
@@ -61,6 +69,8 @@ export class NavigatorModel extends HoistModel {
     constructor({
         pages,
         track = false,
+        swipeToGoBack = true,
+        pullDownToRefresh = true,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY
     }) {
@@ -73,6 +83,8 @@ export class NavigatorModel extends HoistModel {
 
         this.pages = pages;
         this.track = track;
+        this.swipeToGoBack = swipeToGoBack;
+        this.pullDownToRefresh = pullDownToRefresh;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
 
@@ -212,7 +224,7 @@ export class NavigatorModel extends HoistModel {
         }
     }
 
-    renderPage(model, navigator) {
+    renderPage = (model, navigator) => {
         const {init, key} = model;
 
         // Note: We use the special 'init' object to obtain a reference to the
@@ -248,7 +260,7 @@ export class NavigatorModel extends HoistModel {
     }
 
     @action
-    onPageChange() {
+    onPageChange = () => {
         this.disableAppRefreshButton = this.activePage?.disableAppRefreshButton;
         this.doCallback();
     }
@@ -257,5 +269,4 @@ export class NavigatorModel extends HoistModel {
         if (this._callback) this._callback();
         this._callback = null;
     }
-
 }

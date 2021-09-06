@@ -36,7 +36,7 @@ export const optionsDialog = hoistCmp.factory({
             isOpen: true,
             onCancel: () => model.hide(),
             content: [
-                mask({model: loadModel, spinner: true}),
+                mask({bind: loadModel, spinner: true}),
                 form({
                     item: vframe(
                         ...model.options.map(option => {

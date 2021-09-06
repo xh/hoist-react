@@ -5,33 +5,43 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
+import {Position} from '@xh/hoist/kit/blueprint';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 
 /**
- * Model for a single instance of a Toast.
+ * Model for a single instance of a pop-up Toast alert.
  *
- * @private
+ * An instance of this class is returned by the primary `XH.toast()` API and its variants.
+ * It is primarily useful for its `dismiss()` method, which can be called to programmatically
+ * dismiss a Toast at any time.
+ *
+ * All other properties on this object should be considered immutable - attempting to change them
+ * will have no effect.
  */
 export class ToastModel extends HoistModel {
 
-    // Immutable public properties
-    icon = null;
-    message = null;
-    timeout = null;
-    intent = null;
-    position = null;
-    containerRef = null;
+    /** @member {string} */
+    message;
+    /** @member {ReactElement} */
+    icon;
+    /** @member {number} */
+    timeout;
+    /** @member {string} */
+    intent;
+    /** @member {string} */
+    position;
+    /** @member {HTMLElement} */
+    containerRef;
 
     @observable isOpen = true;
 
     constructor({
         message,
-        icon = Icon.check(),
+        icon,
         timeout = 3 * SECONDS,
-        intent = 'success',
-        position = null,
+        intent = 'primary',
+        position = Position.BOTTOM_RIGHT,
         containerRef = null
     }) {
         super();
@@ -44,6 +54,7 @@ export class ToastModel extends HoistModel {
         this.containerRef = containerRef;
     }
 
+    /** Hide this Toast immediately, if displayed. */
     @action
     dismiss() {
         this.isOpen = false;

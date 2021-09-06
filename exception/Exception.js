@@ -17,9 +17,9 @@ import {isString} from 'lodash';
 export class Exception {
 
     /**
-     * Create and get back a Javascript Error object.
-     * @see XH.exception - an alias for this factory off of XH.
-     * @param {(Object|string)} cfg - Properties to add to the Error object.
+     * Create and return a Javascript Error object.
+     * @see {XH.exception} - an alias for this factory off of `XH`.
+     * @param {(Object|string)} cfg - additional properties to add to the returned Error.
      *      If a string, will become the 'message' value.
      * @returns {Error}
      */
@@ -31,7 +31,24 @@ export class Exception {
     }
 
     /**
-     * Create an Error for when fetch calls go bad...
+     * Create an Error for when an operation (e.g. a Promise) times out.
+     * @param {number} interval - time elapsed (in ms) before this timeout was thrown.
+     * @param {...*} [rest] - additional properties to add to the returned Error.
+     * @returns {Error}
+     */
+    static timeout({interval, ...rest}) {
+        return this.createInternal({
+            name: 'Timeout Exception',
+            message: `Operation timed out after ${interval}ms`,
+            isTimeout: true,
+            stack: null,
+            interval,
+            ...rest
+        });
+    }
+
+    /**
+     * Create an Error to throw when a fetch call returns a !ok response.
      * @param {Object} fetchOptions - original options provided to `FetchService.fetch()`.
      * @param {Response} response - return value of native fetch, with the addition of an optional
      *      `responseText` property containing the already-awaited output of `response.text()`. If
@@ -77,7 +94,7 @@ export class Exception {
     }
 
     /**
-     * Create an Error for when fetch calls are aborted
+     * Create an Error to throw when a fetch call is aborted.
      * @param {Object} fetchOptions - original options the app passed to FetchService.fetch
      * @param {Response} response - resolved value from native fetch
      * @returns {Error}
@@ -94,20 +111,21 @@ export class Exception {
     }
 
     /**
-     * Create an Error for when a fetch is timed out
+     * Create an Error to throw when a fetch call times out.
      * @param {Object} fetchOptions - original options the app passed to FetchService.fetch
-     * @param {Error} e - Error object for raw timeout
+     * @param {Error} e - exception thrown by timeout of underlying Promise.
      * @param {string} [message] - optional custom message
      * @returns {Error}
      */
     static fetchTimeout(fetchOptions, e, message) {
-        message = message ?? `Timed out loading '${fetchOptions.url}' - no response after ${e.interval}ms.`;
-
+        const {interval} = e;
         return this.createInternal({
             name: 'Fetch Timeout',
-            message,
+            isTimeout: true,
             isFetchTimeout: true,
+            message: message ?? `Timed out loading '${fetchOptions.url}' - no response after ${interval}ms.`,
             fetchOptions,
+            interval,
             stack: null
         });
     }

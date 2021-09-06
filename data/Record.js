@@ -23,15 +23,15 @@ import {ValidationState} from './validation/ValidationState';
  */
 export class Record {
 
-    /** @member {(string|number)} */
+    /** @member {RecordId} */
     id;
-    /** @member {(string|number)} */
+    /** @member {RecordId} */
     parentId;
     /** @member {Store} */
     store;
     /** @member {boolean} */
     isSummary;
-    /** @member {string[]|number[]} */
+    /** @member {RecordId[]} */
     treePath;
 
     /** @member {Object} - raw data loaded into via Store.loadData() or Store.updateData(). */
@@ -74,6 +74,11 @@ export class Record {
     /** @returns {Record} */
     get parent() {
         return this.parentId != null ? this.store.getById(this.parentId) : null;
+    }
+
+    /** @returns {number} */
+    get depth() {
+        return this.treePath.length - 1;
     }
 
     /** @returns {Field[]} */
@@ -175,7 +180,7 @@ export class Record {
      * primary implementation, which includes parsing based on `data/Field` types and definitions.
      *
      * @param {Object} c - Record configuration
-     * @param {(number|string)} c.id - Record ID
+     * @param {RecordId} c.id - Record ID
      * @param {Store} c.store - Store containing this Record.
      * @param {Object} c.data - data for this Record, pre-processed if applicable by
      *      `Store.processRawData()` and `Field.parseVal()`. Note: This must be a new object
@@ -256,3 +261,11 @@ export class Record {
         }
     }
 }
+
+/**
+ * @typedef {(number|string)} RecordId - unique identifier for a Record within a Store.
+ */
+
+/**
+ * @typedef {(Record|RecordId)} RecordOrId - a Hoist Record, or an ID for one.
+ */

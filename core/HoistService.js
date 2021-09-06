@@ -60,7 +60,7 @@ export class HoistService extends HoistBase {
     @managed
     loadSupport;
 
-    /** @member {PendingTaskModel} - {@see LoadSupport.loadModel} */
+    /** @member {TaskObserver} - {@see LoadSupport.loadModel} */
     get loadModel() {return this.loadSupport?.loadModel}
 
     /** @member {Date} - {@see LoadSupport.lastLoadRequested} */

@@ -4,17 +4,19 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {XH, hoistCmp, HoistModel, useLocalModel, managed} from '@xh/hoist/core';
 import {div, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
+import {Column} from '@xh/hoist/cmp/grid';
+import {Icon} from '@xh/hoist/icon';
+import {columnHeaderFilter, ColumnHeaderFilterModel} from '@xh/hoist/dynamics/desktop';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
+import {filter, size, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString} from 'lodash';
 import classNames from 'classnames';
-import {filter, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString} from 'lodash';
+
 import {GridSorter} from './GridSorter';
-import {Column} from '@xh/hoist/cmp/grid/columns/Column';
 
 /**
  * A custom ag-Grid header component.
@@ -30,7 +32,9 @@ export const columnHeader = hoistCmp.factory({
     model: false,
 
     render(props) {
-        const impl = useLocalModel(() => new LocalModel(props));
+        const impl = useLocalModel(() => new LocalModel(props)),
+            {gridModel, xhColumn} = impl,
+            {isDesktop} = XH;
 
         const sortIcon = () => {
             const {abs, sort} = impl.activeGridSorter ?? {};
@@ -46,15 +50,32 @@ export const columnHeader = hoistCmp.factory({
         };
 
         const menuIcon = () => {
+            if (impl.enableFilter) return columnHeaderFilter({model: impl.columnHeaderFilterModel});
             if (!props.enableMenu) return null;
             return div({
                 className: 'xh-grid-header-menu-icon',
-                item: impl.isFiltered ? Icon.filter() : Icon.bars(),
-                ref: impl.menuButtonRef,
+                item: impl.isAgFiltered ? Icon.filter() : Icon.bars(),
+                ref: impl.agFilterButtonRef,
                 onClick: (e) => {
                     e.stopPropagation();
-                    props.showColumnMenu(impl.menuButtonRef.current);
+                    props.showColumnMenu(impl.agFilterButtonRef.current);
                 }
+            });
+        };
+
+        const expandCollapseIcon = () => {
+            const {isTreeColumn, headerHasExpandCollapse} = xhColumn;
+            if (!isTreeColumn || !headerHasExpandCollapse || !impl.rootsWithChildren) return null;
+
+            const icon = impl.majorityIsExpanded ?
+                Icon.angleDown({prefix: 'fal', size: 'lg'}) :
+                Icon.angleRight({prefix: 'fal', size: 'lg'});
+
+            return div({
+                className: 'xh-grid-header-expand-collapse-icon',
+                item: icon,
+                onClick: isDesktop ? impl.onExpandOrCollapse : null,
+                onTouchStart: !isDesktop ? impl.onExpandOrCollapse : null
             });
         };
 
@@ -63,9 +84,6 @@ export const columnHeader = hoistCmp.factory({
             impl.activeGridSorter ? 'xh-grid-header-sorted' : null,
             impl.hasNonPrimarySort ? 'xh-grid-header-multisort' : null
         ];
-
-        const {xhColumn, gridModel} = impl,
-            {isDesktop} = XH;
 
         // `props.displayName` is the output of the Column `headerValueGetter` and should always be a string
         // If `xhColumn` is present, it can consulted for a richer `headerName`
@@ -90,8 +108,7 @@ export const columnHeader = hoistCmp.factory({
         }
 
         return div({
-            className: classNames(props.className, extraClasses),
-
+            className:      classNames(props.className, extraClasses),
             onClick:        isDesktop  ? impl.onClick : null,
             onDoubleClick:  isDesktop  ? impl.onDoubleClick : null,
             onMouseDown:    isDesktop  ? impl.onMouseDown : null,
@@ -99,6 +116,7 @@ export const columnHeader = hoistCmp.factory({
             onTouchEnd:     !isDesktop ? impl.onTouchEnd : null,
 
             items: [
+                expandCollapseIcon(),
                 span({onMouseEnter, item: headerElem}),
                 sortIcon(),
                 menuIcon()
@@ -113,10 +131,16 @@ class LocalModel extends HoistModel {
     xhColumn;
     agColumn;
     colId;
-    menuButtonRef = createObservableRef();
-    @bindable isFiltered = false;
     enableSorting;
     availableSorts;
+
+    // Hoist Filtering
+    enableFilter;
+    @managed columnHeaderFilterModel;
+
+    // AG Filtering
+    @bindable isAgFiltered = false;
+    agFilterButtonRef = createObservableRef();
 
     _doubleClick = false;
     _lastTouch = null;
@@ -126,15 +150,24 @@ class LocalModel extends HoistModel {
     constructor({gridModel, xhColumn, column: agColumn}) {
         super();
         makeObservable(this);
+
+        const {sortable, filterable} = xhColumn,
+            {filterModel} = gridModel;
+
         this.gridModel = gridModel;
         this.xhColumn = xhColumn;
         this.agColumn = agColumn;
         this.colId = agColumn.colId;
-        this.isFiltered = agColumn.isFilterActive();
-        this.enableSorting = xhColumn.sortable;
+        this.enableSorting = sortable;
         this.availableSorts = this.parseAvailableSorts();
 
-        agColumn.addEventListener('filterChanged', this.onFilterChanged);
+        if (!XH.isMobileApp && filterable && filterModel?.getFieldSpec(xhColumn.field)) {
+            this.columnHeaderFilterModel = new ColumnHeaderFilterModel({filterModel, column: xhColumn});
+            this.enableFilter = true;
+        } else {
+            this.isAgFiltered = agColumn.isFilterActive();
+            agColumn.addEventListener('filterChanged', this.onFilterChanged);
+        }
     }
 
     destroy() {
@@ -155,9 +188,40 @@ class LocalModel extends HoistModel {
         return activeGridSorter ? this.gridModel.sortBy.indexOf(activeGridSorter) > 0 : false;
     }
 
+    get isFiltered() {
+        return this.isAgFiltered || this.columnHeaderFilterModel?.isFiltered;
+    }
+
+    // Ag-Grid's filter callback
+    onFilterChanged = () => {
+        this.setIsAgFiltered(this.agColumn.isFilterActive());
+    }
+
+    @computed
+    get rootsWithChildren() {
+        return filter(this.gridModel.store.rootRecords, it => !isEmpty(it.children)).length;
+    }
+
+    @computed
+    get majorityIsExpanded() {
+        const {expandState} = this.gridModel;
+        return !isEmpty(expandState) && size(expandState) > this.rootsWithChildren/2;
+    }
+
     // Desktop click handling
-    onMouseDown = (e) => {
+    onMouseDown = () => {
         this._lastMouseDown = Date.now();
+    };
+
+    onExpandOrCollapse = (e) => {
+        const {gridModel, majorityIsExpanded} = this;
+
+        e.stopPropagation();
+        if (majorityIsExpanded) {
+            gridModel.collapseAll();
+        } else {
+            gridModel.expandAll();
+        }
     };
 
     onClick = (e) => {
@@ -172,7 +236,7 @@ class LocalModel extends HoistModel {
     };
 
     // Mobile touch handling
-    onTouchStart = (e) => {
+    onTouchStart = () => {
         this._lastTouchStart = Date.now();
     };
 
@@ -189,8 +253,6 @@ class LocalModel extends HoistModel {
 
         this._lastTouch = Date.now();
     };
-
-    onFilterChanged = () => this.setIsFiltered(this.agColumn.isFilterActive());
 
     //-------------------
     // Implementation
@@ -231,7 +293,6 @@ class LocalModel extends HoistModel {
             if (isFinite(currIdx)) idx = (currIdx + 1) % availableSorts.length;
         }
 
-
         return availableSorts[idx];
     }
 
@@ -253,6 +314,7 @@ class LocalModel extends HoistModel {
             if (isString(spec) || spec === null) spec = {sort: spec};
             return new GridSorter({...spec, colId});
         });
+
         return absSort ? ret : ret.filter(it => !it.abs);
     }
 }

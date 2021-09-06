@@ -13,14 +13,13 @@ import {wait} from '@xh/hoist/promise';
 import {logWithDebug, withDebug} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps, useOnResize, useOnVisibleChange} from '@xh/hoist/utils/react';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
+import classNames from 'classnames';
 import composeRefs from '@seznam/compose-react-refs';
 import equal from 'fast-deep-equal';
 import PT from 'prop-types';
 
 import './TreeMap.scss';
 import {TreeMapModel} from './TreeMapModel';
-import {DarkTheme} from './theme/Dark';
-import {LightTheme} from './theme/Light';
 
 /**
  * Component for rendering a TreeMap.
@@ -82,7 +81,10 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
 
         return box({
             ...layoutProps,
-            className,
+            className: classNames(
+                className,
+                `xh-treemap--${impl.theme}`
+            ),
             ref,
             items
         });
@@ -103,6 +105,11 @@ class LocalModel extends HoistModel {
     chart = null;
     clickCount = 0;
 
+    get theme() {
+        if (this.model.theme) return this.model.theme;
+        return XH.darkTheme ? 'dark' : 'light';
+    }
+
     constructor(model) {
         super();
         this.model = model;
@@ -117,7 +124,7 @@ class LocalModel extends HoistModel {
             model.highchartsConfig,
             model.algorithm,
             model.data,
-            XH.darkTheme
+            this.theme
         ]);
 
         this.addReaction({
@@ -217,7 +224,7 @@ class LocalModel extends HoistModel {
         if (width > 0 && height > 0) {
             chart.setSize(width, height, false);
         }
-        await wait(0);
+        await wait();
 
         model.setIsMasking(false);
         this.updateLabelVisibility();
@@ -244,10 +251,10 @@ class LocalModel extends HoistModel {
     //----------------------
     getMergedConfig() {
         const defaultConf = this.getDefaultConfig(),
-            themeConf = this.getThemeConfig(),
+            colorConf = this.getColorConfig(),
             modelConf = this.getModelConfig();
 
-        return merge(defaultConf, themeConf, modelConf);
+        return merge(defaultConf, colorConf, modelConf);
     }
 
     getDefaultConfig() {
@@ -261,8 +268,21 @@ class LocalModel extends HoistModel {
         };
     }
 
-    getThemeConfig() {
-        return XH.darkTheme ? cloneDeep(DarkTheme) : cloneDeep(LightTheme);
+    getColorConfig() {
+        const darkTheme = this.theme === 'dark';
+        return {
+            colorAxis: {
+                min: 0,
+                max: 1,
+                stops: [
+                    [0,   darkTheme ? '#CC0000' : '#640000'], // Max negative
+                    [0.4, darkTheme ? '#0E0909' : '#f7f2f2'], // Min negative
+                    [0.5, darkTheme ? '#555555' : '#BBBBBB'], // Zero / None
+                    [0.6, darkTheme ? '#090E09' : '#f2f7f2'], // Min positive
+                    [1,   darkTheme ? '#00CC00' : '#006400'] // Max positive
+                ]
+            }
+        };
     }
 
     getModelConfig() {

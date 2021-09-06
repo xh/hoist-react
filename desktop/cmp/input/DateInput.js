@@ -15,7 +15,7 @@ import {datePicker as bpDatePicker, popover} from '@xh/hoist/kit/blueprint';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
-import {warnIf, withDefault} from '@xh/hoist/utils/js';
+import {warnIf, withDefault, consumeEvent} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {assign, castArray, clone, trim} from 'lodash';
@@ -231,7 +231,7 @@ class Model extends HoistInputModel {
 
     noteBlurred() {
         super.noteBlurred();
-        wait(1).then(() => {
+        wait().then(() => {
             if (!this.hasFocus) {
                 this.setPopoverOpen(false);
             }
@@ -241,12 +241,12 @@ class Model extends HoistInputModel {
     onClearBtnClick = (ev) => {
         this.noteValueChange(null);
         this.doCommit();
-        this.consumeEvent(ev);
+        consumeEvent(ev);
     };
 
     onOpenPopoverClick = (ev) => {
         this.setPopoverOpen(!this.popoverOpen);
-        this.consumeEvent(ev);
+        consumeEvent(ev);
     };
 
     onKeyDown = (ev) => {
@@ -254,10 +254,10 @@ class Model extends HoistInputModel {
             this.doCommit();
         } else if (this.popoverOpen && ev.key === 'Escape') {
             this.setPopoverOpen(false);
-            this.consumeEvent(ev);
+            consumeEvent(ev);
         } else if (!this.popoverOpen && ['ArrowUp', 'ArrowDown'].includes(ev.key)) {
             this.setPopoverOpen(true);
-            this.consumeEvent(ev);
+            consumeEvent(ev);
         }
     };
 
@@ -358,11 +358,6 @@ class Model extends HoistInputModel {
     parseDate(dateString, strictInputParsing = this.strictInputParsing) {
         const parsedMoment = moment(dateString, this.getParseStrings(), strictInputParsing);
         return parsedMoment.isValid() ? parsedMoment.toDate() : null;
-    }
-
-    consumeEvent(e) {
-        e.preventDefault();
-        e.stopPropagation();
     }
 }
 

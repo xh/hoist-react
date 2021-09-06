@@ -55,6 +55,7 @@ export const [Select, select] = hoistCmp.withFactory({
         return useHoistInputModel(cmp, props, ref, Model);
     }
 });
+
 Select.propTypes = {
     ...HoistInputPropTypes,
 
@@ -308,7 +309,7 @@ class Model extends HoistInputModel {
             this.inputValue = renderValue ? renderValue.label : null;
         }
         if (this.selectOnFocus) {
-            wait(1).then(() => {
+            wait().then(() => {
                 // Delay to allow re-render. For safety, only select if still focused!
                 this.selectText();
             });
@@ -384,7 +385,6 @@ class Model extends HoistInputModel {
     }
 
     findOption(value, createIfNotFound, options = this.internalOptions) {
-
         // Do a depth-first search of options
         for (const option of options) {
             if (option.options) {
@@ -584,14 +584,12 @@ class Model extends HoistInputModel {
     };
 
     getOrCreatePortalDiv() {
-        let portal = document.getElementById('xh-select-input-portal');
-
+        let portal = document.getElementById(Select.MENU_PORTAL_ID);
         if (!portal) {
             portal = document.createElement('div');
             portal.id = Select.MENU_PORTAL_ID;
             document.body.appendChild(portal);
         }
-
         return portal;
     }
 }
@@ -667,8 +665,8 @@ const cmp = hoistCmp.factory(
         }
 
         const factory = model.getSelectFactory();
-
         merge(rsProps, props.rsOptions);
+
         return box({
             item: factory(rsProps),
             className: classNames(className, height ? 'xh-select--has-height' : null),

@@ -4,14 +4,13 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {managed, HoistModel} from '@xh/hoist/core';
+import {managed, HoistModel, TaskObserver} from '@xh/hoist/core';
 import {Rule, ValidationState, genDisplayName, required} from '@xh/hoist/data';
 import {action, computed, observable, runInAction, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {withDefault, executeIfFunction} from '@xh/hoist/utils/js';
 import {compact, flatten, isEmpty, isFunction, isNil} from 'lodash';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 /**
  * Abstract Base class for FieldModels.
@@ -66,7 +65,7 @@ export class BaseFieldModel extends HoistModel {
     //----------------------
     @observable _disabled;
     @observable _readonly;
-    
+
     /** @member {FormModel} */
     _formModel;
     _origInitialValue;
@@ -79,7 +78,7 @@ export class BaseFieldModel extends HoistModel {
     @observable _errors;
 
     @managed
-    _validationTask = new PendingTaskModel();
+    _validationTask = TaskObserver.trackLast();
     _validationRunId = 0;
 
     /**
@@ -198,7 +197,7 @@ export class BaseFieldModel extends HoistModel {
         // Force an immediate 'Unknown' state -- the async recompute leaves the old state in place until it completed.
         // (We want that for a value change, but not reset/init)  Force the recompute only if needed.
         this._errors.fill(null);
-        wait(0).then(() => {
+        wait().then(() => {
             if (!this.isValidationPending && this.validationState === ValidationState.Unknown) {
                 this.computeValidationAsync();
             }
@@ -345,8 +344,8 @@ export class BaseFieldModel extends HoistModel {
     async evaluateRuleAsync(rule) {
         if (this.ruleIsActive(rule)) {
             const promises = rule.check.map(async (constraint) => {
-                const {value, displayName} = this,
-                    fieldState = {value, displayName};
+                const {value, name, displayName} = this,
+                    fieldState = {value, name, displayName, fieldModel: this};
 
                 return await constraint(fieldState, this.formModel.values);
             });
