@@ -2,6 +2,10 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Better coverage of Fetch abort error.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.4.0..develop)
 
 
