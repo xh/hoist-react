@@ -125,13 +125,16 @@ export class ChangelogService extends HoistService {
                         }
                     });
 
-                    versions.push({
-                        version: v.version,
-                        title: v.title,
-                        isCurrentVersion: v.version === XH.appVersion,
-                        categories
-                    });
+                    if (!isEmpty(categories)) {
+                        versions.push({
+                            version: v.version,
+                            title: v.title,
+                            isCurrentVersion: v.version === XH.appVersion,
+                            categories
+                        });
+                    }
                 });
+
             return versions;
         } catch (e) {
             console.error('Error parsing changelog JSON into versions - changelog will not be available', e);
