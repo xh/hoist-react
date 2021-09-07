@@ -100,7 +100,12 @@ const bbar = hoistCmp.factory(
     ({model}) => {
         return toolbar(
             storeFilterField({
-                matchMode: 'any'
+                matchMode: 'any',
+                includeFields: [
+                    'filteredRemoteValue',
+                    'filteredLocalValue',
+                    ...model.columnFields.map(it => it.field ?? it)
+                ]
             }),
             filler(),
             recordActionBar({
