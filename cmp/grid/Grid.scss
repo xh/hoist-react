@@ -231,7 +231,7 @@
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
           &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-            background-color: #{mix(white, hsl(200, 95%, 90%), percentage(($level / ($i + 1))))};
+            background-color: #{mix(white, hsl(202, 90%, 95%), percentage(($level / ($i + 1))))};
           }
         }
         $level: $level + 1
@@ -297,7 +297,7 @@
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
           &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-            background-color: #{mix(gray, hsl(200, 50%, 12%), percentage(($level / ($i + 1))))};
+            background-color: #{mix(#324951, hsl(200, 50%, 12%), 100% - percentage(($level / ($i + 1))))};
           }
         }
         $level: $level + 1
