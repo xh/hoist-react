@@ -5,16 +5,6 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-@import '~sass-material-colors/sass/sass-material-colors';
-
-// Functions to fetch Google material design colors (https://material.io/color/)
-// While not strictly following any material design conventions within Hoist, using these color
-// helps to keep things more consistent and harmonious (vs. choosing "arbitrary" color vals).
-//noinspection CssInvalidFunction
-@function mc($color-name, $color-variant) {
-  @return material-color($color-name, $color-variant);
-}
-
 .xh-grid:not(.xh-data-view) {
   //------------------------
   // Core Header Classes
@@ -226,32 +216,20 @@
   // rows at the same level.
   @for $i from 0 to 20 {
     $level: 0;
-    &.xh-grid--tree-style-color-gradient.xh-grid--max-depth-#{$i} {
-      @while $level <= $i {
+
+    &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
+      @while $level < 6 {
+        $h: 205 - ($level * 1.5);
+        $s: 85 + ($level * 2);
+        $l: 95 + ($level * 0.75);
+
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
           &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-            background-color: #{mix(white, hsl(202, 90%, 95%), percentage(($level / ($i + 1))))};
+            background-color: hsl($h, $s * 1%, $l * 1%);
           }
         }
         $level: $level + 1
-      }
-
-      .xh-ag-grid--show-hover {
-        .ag-row:not(.ag-row-level-#{$i}) {
-          &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected):not(.ag-row-pinned) {
-            background-color: var(--xh-grid-bg-hover);
-          }
-        }
-      }
-    }
-
-    &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
-      .ag-row:not(.ag-row-level-#{$i}) {
-        &:not(.ag-row-selected),
-        &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-          background-color: var(--xh-grid-tree-group-bg);
-        }
       }
 
       .xh-ag-grid--show-hover {
@@ -292,12 +270,17 @@
 .xh-dark .xh-grid--hierarchical:not(.xh-data-view) {
   @for $i from 0 to 20 {
     $level: 0;
-    &.xh-grid--tree-style-color-gradient.xh-grid--max-depth-#{$i} {
-      @while $level <= $i {
+
+    &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
+      @while $level < 6 {
+        $h: 200 - ($level * 1.5);
+        $s: 40 - ($level * 5);
+        $l: 20 - ($level * 1.75);
+
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
           &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-            background-color: #{mix(#324951, hsl(200, 50%, 12%), 100% - percentage(($level / ($i + 1))))};
+            background-color: hsl($h, $s * 1%, $l * 1%);
           }
         }
         $level: $level + 1

@@ -422,7 +422,7 @@ body {
 
   // Dark Grid
   &.xh-dark {
-    --xh-grid-bg-hover: var(--grid-bg-hover, hsl(200, 50%, 17%));
+    --xh-grid-bg-hover: var(--grid-bg-hover, hsl(200, 50%, 24%));
     --xh-grid-bg-odd: var(--grid-bg-odd, hsl(200, 26%, 11%));
     --xh-grid-border-color: var(--grid-border-color, hsl(186, 11%, 18%));
     --xh-grid-cell-change-bg-highlight: var(--grid-cell-bg-highlight, #{mc-trans('orange', '800', 0.8)});
