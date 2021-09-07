@@ -5,6 +5,7 @@
 ### 🐞 Bug Fixes
 
 * Better coverage of Fetch abort error.
+* The in-app changelog will not create a new version if category-based filtering has left it empty.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.4.0..develop)
 
