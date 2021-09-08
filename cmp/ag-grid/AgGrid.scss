@@ -243,9 +243,15 @@
       font-size: var(--xh-grid-large-header-font-size-px);
     }
 
+    .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
+      height: var(--xh-grid-large-cell-height-px);
+    }
+
+    .ag-full-width-row .ag-cell-wrapper.ag-row-group,
     .ag-cell {
       padding-left: var(--xh-grid-large-cell-lr-pad-px);
       padding-right: var(--xh-grid-large-cell-lr-pad-px);
+      line-height: var(--xh-grid-large-cell-height-px);
     }
 
     .ag-header-cell,
@@ -265,9 +271,15 @@
       font-size: var(--xh-grid-compact-header-font-size-px);
     }
 
+    .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
+      height: var(--xh-grid-compact-cell-height-px);
+    }
+
+    .ag-full-width-row .ag-cell-wrapper.ag-row-group,
     .ag-cell {
       padding-left: var(--xh-grid-compact-cell-lr-pad-px);
       padding-right: var(--xh-grid-compact-cell-lr-pad-px);
+      line-height: var(--xh-grid-compact-cell-height-px);
     }
 
     .ag-header-cell,
@@ -287,9 +299,15 @@
       font-size: var(--xh-grid-tiny-header-font-size-px);
     }
 
+    .ag-cell-wrapper > *:not(.ag-cell-value):not(.ag-group-value) {
+      height: var(--xh-grid-tiny-cell-height-px);
+    }
+
+    .ag-full-width-row .ag-cell-wrapper.ag-row-group,
     .ag-cell {
       padding-left: var(--xh-grid-tiny-cell-lr-pad-px);
       padding-right: var(--xh-grid-tiny-cell-lr-pad-px);
+      line-height: var(--xh-grid-tiny-cell-height-px);
 
       .xh-check-box {
         padding-top: 1px;
