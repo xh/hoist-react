@@ -5,6 +5,7 @@
 ### 🐞 Bug Fixes
 
 * Better coverage of Fetch abort error.
+* Grid SizingMode styles fixed to support agGrid `groupUseEntireRow = false`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.4.0..develop)
 
