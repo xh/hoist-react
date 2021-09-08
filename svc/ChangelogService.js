@@ -125,14 +125,12 @@ export class ChangelogService extends HoistService {
                         }
                     });
 
-                    if (!isEmpty(categories)) {
-                        versions.push({
-                            version: v.version,
-                            title: v.title,
-                            isCurrentVersion: v.version === XH.appVersion,
-                            categories
-                        });
-                    }
+                    versions.push({
+                        version: v.version,
+                        title: v.title,
+                        isCurrentVersion: v.version === XH.appVersion,
+                        categories
+                    });
                 });
 
             return versions;
