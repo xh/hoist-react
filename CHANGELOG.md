@@ -6,8 +6,12 @@
 
 * Better coverage of Fetch abort error.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v42.4.0..develop)
+### 📚 Libraries
 
+* @blueprintjs/core `3.48 -> 3.49`
+* @popperjs/core `2.9 -> 2.10`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v42.4.0..develop)
 
 ## v42.4.0 - 2021-09-03
 
@@ -17,7 +21,7 @@
   they are changed within the pop-up menu. Set to `false` for large datasets or whenever filtering
   is a more intensive operation.
 * Mobile `Select` input now supports async `queryFn` prop for parity with desktop.
-* `TreeMapModel` now supports new `maxLabels` property for improved performance.
+* `TreeMapModel` now supports new `maxLabels` config for improved performance.
 
 ### ✨ Style
 
