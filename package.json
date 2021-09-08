@@ -26,8 +26,8 @@
     }
   },
   "dependencies": {
-    "@blueprintjs/core": "~3.48.0",
-    "@blueprintjs/datetime": "~3.23.7",
+    "@blueprintjs/core": "~3.49.1",
+    "@blueprintjs/datetime": "~3.23.9",
     "@fortawesome/fontawesome-pro": "~5.15.4",
     "@fortawesome/fontawesome-svg-core": "~1.2.36",
     "@fortawesome/pro-light-svg-icons": "~5.15.4",
@@ -35,7 +35,7 @@
     "@fortawesome/pro-solid-svg-icons": "~5.15.4",
     "@fortawesome/react-fontawesome": "~0.1.14",
     "@onsenui/fastclick": "~1.1.1",
-    "@popperjs/core": "~2.9.1",
+    "@popperjs/core": "~2.10.1",
     "@seznam/compose-react-refs": "~1.0.5",
     "classnames": "~2.3.0",
     "clipboard-copy": "~4.0.1",
