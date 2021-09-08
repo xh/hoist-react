@@ -2,9 +2,17 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Provide applications with the ability to override default logic for "restore defaults".
+This allows complex and device-specific sub-apps to perform more targeted and complete clearing of
+user state.  See new overridable method `HoistAppModel.restoreDefaultsAsync` for more information.
+
 ### 🐞 Bug Fixes
 
 * Better coverage of Fetch abort error.
+
+
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.4.0..develop)
 
