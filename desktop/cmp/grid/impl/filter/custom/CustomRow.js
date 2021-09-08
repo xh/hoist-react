@@ -61,7 +61,6 @@ const inputField = hoistCmp.factory(
         const {fieldSpec, commitOnChange} = model,
             props = {
                 bind: 'inputVal',
-                enableClear: true,
                 width: 210,
                 commitOnChange,
                 ...fieldSpec.inputProps
