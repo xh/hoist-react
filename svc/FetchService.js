@@ -163,13 +163,10 @@ export class FetchService extends HoistService {
                 throw Exception.fetchTimeout(opts, e, timeout?.message);
             }
 
-            // Aborts can happen after Fetch is done, but before resp.json().
-            // In these cases, resp.json() will also throw an AbortError
-            if (e.name === 'AbortError') {
-                throw Exception.fetchAborted(opts, e);
-            }
-
-            throw e;
+            if (e.isHoistException) throw e;
+            
+            // Just two other cases where we expect this to throw -- Typically we get a failed response)
+            throw (e.name === 'AbortError') ? Exception.fetchAborted(opts, e) : Exception.serverUnavailable(opts, e);
         } finally {
             if (autoAborters[autoAbortKey] === aborter) {
                 delete autoAborters[autoAbortKey];
@@ -231,13 +228,7 @@ export class FetchService extends HoistService {
             }
         }
 
-        let ret;
-        try {
-            ret = await fetch(url, fetchOpts);
-        } catch (e) {
-            // Just two cases where we expect this to throw -- Typically we get a failed response)
-            throw (e.name === 'AbortError') ? Exception.fetchAborted(opts, e) : Exception.serverUnavailable(opts, e);
-        }
+        const ret = await fetch(url, fetchOpts);
 
         if (!ret.ok) {
             ret.responseText = await this.safeResponseTextAsync(ret);
