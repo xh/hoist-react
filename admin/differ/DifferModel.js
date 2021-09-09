@@ -81,11 +81,7 @@ export class DifferModel extends HoistModel {
                     return this.matchFields.map(field => data[field]?.toString()).join('-');
                 },
                 filter: {field: 'status', op: '!=', value: 'Identical'},
-                fields: [
-                    'filteredRemoteValue',
-                    'filteredLocalValue',
-                    ...this.columnFields.map(it => it.field ?? it)
-                ]
+                fields: [...this.columnFields.map(it => it.field ?? it)]
             },
             emptyText: 'No records found.',
             selModel: 'multiple',
@@ -212,8 +208,6 @@ export class DifferModel extends HoistModel {
                 ...values,
                 localValue: local,
                 remoteValue: remote,
-                filteredRemoteValue: remote?.value,
-                filteredLocalValue: local?.value,
                 status: this.rawRecordsAreEqual(local, remote) ? 'Identical' : (remote ? 'Diff' : 'Local Only')
             });
 
