@@ -14,6 +14,11 @@ user state.  See new overridable method `HoistAppModel.restoreDefaultsAsync` for
 * The in-app changelog will not prompt the user with the "What's New" button if category-based
   filtering results in a version without any release notes.
 
+### ✨ Style
+
+* New CSS vars added to support easier customization of desktop Tab font/size/color. Tabs now
+  respect standard `--xh-font-size` by default.
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.48 -> 3.49`
