@@ -127,7 +127,14 @@ export class StoreFilterFieldImplModel extends HoistModel {
             testFn = this.filter,
             filter = testFn ? {key, testFn} : null;
 
-        const ret = withFilterByKey(store.filter, filter, key);
+        // If current Store filter is an 'OR' CompoundFilter, wrap it in an 'AND'
+        // CompoundFilter so this FunctionFilter gets 'ANDed' alongside it.
+        let currFilter = store.filter;
+        if (currFilter?.isCompoundFilter && currFilter.op === 'OR') {
+            currFilter = {filters: [currFilter], op: 'AND'};
+        }
+
+        const ret = withFilterByKey(currFilter, filter, key);
         store.setFilter(ret);
     }
 
