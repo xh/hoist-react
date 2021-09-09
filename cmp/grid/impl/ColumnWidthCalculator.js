@@ -6,7 +6,7 @@
  */
 
 import {stripTags} from '@xh/hoist/utils/js';
-import {groupBy, isFunction, isNil, map, max, min, reduce, sortBy} from 'lodash';
+import {groupBy, isFinite, isFunction, isNil, map, max, min, reduce, sortBy} from 'lodash';
 
 /**
  * Calculates the column width required to display column.  Used by GridAutoSizeService.
@@ -34,28 +34,32 @@ export class ColumnWidthCalculator {
      */
     calcWidth(gridModel, records, colId, options) {
         const column = gridModel.findColumn(gridModel.columns, colId),
-            {autosizeMinWidth, autosizeMaxWidth} = column;
+            {minWidth, maxWidth} = column.autosizeOptions;
 
         let result = max([
             this.calcHeaderWidth(gridModel, column, options),
             this.calcDataWidth(gridModel, records, column, options)
         ]);
 
-        result = max([result, autosizeMinWidth]);
-        result = min([result, autosizeMaxWidth]);
+        result = max([result, minWidth]);
+        result = min([result, maxWidth]);
         return result;
     }
 
     calcHeaderWidth(gridModel, column, options) {
-        const {autosizeIncludeHeader, autosizeIncludeHeaderIcons} = column,
-            {bufferPx} = options;
+        const {autosizeOptions} = column,
+            {includeHeader, includeHeaderIcons} = autosizeOptions;
 
-        if (!autosizeIncludeHeader) return null;
+        if (!includeHeader) return null;
+        let {bufferPx} = options;
+        if (isFinite(autosizeOptions.bufferPxOverride)) {
+            bufferPx = autosizeOptions.bufferPxOverride;
+        }
 
         try {
             this.setHeaderElActive(true);
             this.setHeaderElSizingMode(gridModel.sizingMode);
-            return this.getHeaderWidth(gridModel, column, autosizeIncludeHeaderIcons, bufferPx);
+            return this.getHeaderWidth(gridModel, column, includeHeaderIcons, bufferPx);
         } catch (e) {
             console.warn(`Error calculating max header width for column "${column.colId}".`, e);
         } finally {
@@ -92,8 +96,11 @@ export class ColumnWidthCalculator {
     }
 
     calcLevelWidth(gridModel, records, column, options, indentationPx = 0) {
-        const {field, getValueFn, renderer} = column,
-            {bufferPx} = options;
+        const {field, getValueFn, renderer, autosizeOptions} = column;
+        let {bufferPx} = options;
+        if (isFinite(autosizeOptions.bufferPxOverride)) {
+            bufferPx = autosizeOptions.bufferPxOverride;
+        }
 
         // 1) Get unique values
         const values = new Set();

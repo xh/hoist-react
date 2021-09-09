@@ -1492,16 +1492,17 @@ export class GridModel extends HoistModel {
 /**
  * @typedef {Object} GridAutosizeOptions
  * @property {GridAutosizeMode} [mode] - defaults to GridAutosizeMode.ON_SIZING_MODE_CHANGE.
- * @property {number} [bufferPx] -  additional pixels to add to the size of each column beyond its
- *      absolute minimum.  May be used to adjust the spacing in the grid.  Default is 5.
+ * @property {number} [bufferPx] - additional pixels to add to the size of each column beyond its
+ *      absolute minimum. May be used to adjust the spacing in the grid. Columns that wish to
+ *      override this value may specify `bufferPxOverride` {@see Column.autosizeOptions}. Default is 5.
  * @property {boolean} [showMask] - true to show mask over the grid during the autosize operation.
  *      Default is true.
  * @property {boolean} [includeCollapsedChildren] - true to autosize all rows, even when hidden due
- *      to a collapsed ancestor row.  Default is false.  Note that setting this to true can
+ *      to a collapsed ancestor row. Default is false. Note that setting this to true can
  *      have performance impacts for large tree grids with many cells.
  * @property {function|string|string[]} [columns] - columns ids to autosize, or a function for
- *      testing if the given column should be autosized.  Typically used when calling
- *      autosizeAsync() manually.  To generally exclude a column from autosizing, see the
+ *      testing if the given column should be autosized. Typically used when calling
+ *      autosizeAsync() manually. To generally exclude a column from autosizing, see the
  *      autosizable option on columns.
  * @property {string} [fillMode] - how to fill remaining space after the columns have been
  *      autosized. Valid options are ['all', 'left', 'right', 'none']. Default is 'none'. Note this

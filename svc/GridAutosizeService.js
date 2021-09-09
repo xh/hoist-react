@@ -223,7 +223,7 @@ export class GridAutosizeService extends HoistService {
         return {
             colId,
             width: colState.width,
-            maxWidth: column.autosizeMaxWidth
+            maxWidth: column.autosizeOptions.maxWidth
         };
     }
 

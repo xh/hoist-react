@@ -11,6 +11,7 @@ import {apiRemoved, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
     clone,
+    defaults,
     find,
     get,
     isArray,
@@ -148,12 +149,7 @@ export class Column {
      *     component to display as a tooltip. Will take precedence over `tooltip`.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
      * @param {boolean} [c.autosizable] - allow autosizing this column.
-     * @param {boolean} [c.autosizeIncludeHeader] - true to include the header width when
-     *     autosizing.
-     * @param {boolean} [c.autosizeIncludeHeaderIcons] - true to always include the width of the
-     *     sort icon when calculating the header width.
-     * @param {number} [c.autosizeMinWidth] - minimum width in pixels when autosizing.
-     * @param {number} [c.autosizeMaxWidth] - maximum width in pixels when autosizing.
+     * @param {ColumnAutosizeOptions} [c.autosizeOptions] - autosize options.
      * @param {boolean} [c.autoHeight] - true to dynamically grow the row height based on the
      *      content of this column's cell.  If true, text will also be set to wrap within cells.
      *      This property will be ignored if elementRenderer is set.
@@ -225,10 +221,7 @@ export class Column {
         exportWidth,
         excludeFromExport,
         autosizable,
-        autosizeIncludeHeader,
-        autosizeIncludeHeaderIcons,
-        autosizeMinWidth,
-        autosizeMaxWidth,
+        autosizeOptions = {},
         autoHeight,
         tooltip,
         tooltipElement,
@@ -330,10 +323,20 @@ export class Column {
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
         this.autosizable = withDefault(autosizable, this.resizable, true);
-        this.autosizeIncludeHeader = withDefault(autosizeIncludeHeader, true);
-        this.autosizeIncludeHeaderIcons = withDefault(autosizeIncludeHeaderIcons, true);
-        this.autosizeMinWidth = withDefault(autosizeMinWidth, this.minWidth);
-        this.autosizeMaxWidth = withDefault(autosizeMaxWidth, this.maxWidth);
+        apiRemoved('Column.autosizeIncludeHeader', {test: rest.autosizeIncludeHeader, msg: "Specify as 'includeHeader' in 'autosizeOptions' instead", v: 'v44'});
+        apiRemoved('Column.autosizeIncludeHeaderIcons', {test: rest.autosizeIncludeHeaderIcons, msg: "Specify as 'includeHeaderIcons' in 'autosizeOptions' instead", v: 'v44'});
+        apiRemoved('Column.autosizeMinWidth', {test: rest.autosizeMinWidth, msg: "Specify as 'minWidth' in 'autosizeOptions' instead", v: 'v44'});
+        apiRemoved('Column.autosizeMaxWidth', {test: rest.autosizeMaxWidth, msg: "Specify as 'maxWidth' in 'autosizeOptions' instead", v: 'v44'});
+        this.autosizeOptions = defaults(autosizeOptions, {
+            includeHeader: true,
+            includeHeaderIcons: true,
+            minWidth: this.minWidth,
+            maxWidth: this.maxWidth
+        });
+        warnIf(
+            autosizeOptions && !isFinite(autosizeOptions.bufferPxOverride),
+            `Column autosizeOptions bufferPxOverride not specified as a number. Default GridModel autosizeOptions bufferPx will be applied. [colId=${this.colId}]`
+        );
         this.autoHeight = withDefault(autoHeight, false);
         warnIf(
             autoHeight && elementRenderer,
@@ -908,3 +911,16 @@ export function getAgHeaderClassFn(column) {
  * @param {boolean} [abs] - true to sort by absolute value
  */
 
+
+/**
+ * @typedef {Object} ColumnAutosizeOptions
+ * @property {boolean} [includeHeader] - true to include the header width when
+ *     autosizing. Default is true.
+ * @property {boolean} [includeHeaderIcons] - true to always include the width of the
+ *     sort icon when calculating the header width. Default is true.
+ * @property {number} [minWidth] - minimum width in pixels when autosizing. Defaults to minWidth.
+ * @property {number} [maxWidth] - maximum width in pixels when autosizing. Defaults to maxWidth.
+ * @property {number} [bufferPxOverride] - additional pixels to add to the size of each column beyond its
+ *      absolute minimum. If specified, it will override the value of `GridAutosizeOptions.bufferPx`
+ *      which is applied to all columns.
+ */
