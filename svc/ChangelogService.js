@@ -55,7 +55,9 @@ export class ChangelogService extends HoistService {
     @observable currentVersionIsUnread;
 
     /** @return {boolean} */
-    get enabled() {return XH.isDesktop && this.config.enabled && !isEmpty(this.versions)}
+    get enabled() {
+        return XH.isDesktop && this.config.enabled && !isEmpty(this.versions);
+    }
 
     /** @return {?string} */
     get latestAvailableVersion() {
@@ -64,9 +66,9 @@ export class ChangelogService extends HoistService {
     }
 
     /** @return {?Object} */
-    get currentVersionEntry() {
+    get latestNonEmptyVersion() {
         if (!this.enabled) return null;
-        return this.versions.find(it => it.version === XH.appVersion) ?? null;
+        return this.versions.find(it => !isEmpty(it.categories))?.version;
     }
 
     constructor() {
@@ -76,7 +78,7 @@ export class ChangelogService extends HoistService {
 
     async initAsync() {
         this.changelog = !isEmpty(jsonFromMarkdown?.versions) ?
-            jsonFromMarkdown:
+            jsonFromMarkdown :
             {title: null, versions: []};
 
         this.versions = this.parseVersions(this.changelog);
@@ -84,14 +86,14 @@ export class ChangelogService extends HoistService {
     }
 
     markLatestAsRead() {
-        const {latestAvailableVersion} = this;
+        const {latestAvailableVersion, LAST_READ_PREF_KEY} = this;
 
-        if (!latestAvailableVersion || !this.lastReadPrefExists) {
+        if (!latestAvailableVersion || !XH.prefService.hasKey(LAST_READ_PREF_KEY)) {
             console.warn(`Unable to mark changelog as read - latest version or required pref not found.`);
             return;
         }
 
-        XH.setPref(this.LAST_READ_PREF_KEY, latestAvailableVersion);
+        XH.setPref(LAST_READ_PREF_KEY, latestAvailableVersion);
         this.updateUnreadStatus();
     }
 
@@ -105,14 +107,6 @@ export class ChangelogService extends HoistService {
             excludedVersions: [],
             excludedCategories: []
         });
-    }
-
-    get lastReadPrefExists() {
-        return XH.prefService.hasKey(this.LAST_READ_PREF_KEY);
-    }
-
-    get currentVersionIsEmpty() {
-        return isEmpty(this.currentVersionEntry?.categories);
     }
 
     parseVersions(changelog) {
@@ -155,15 +149,14 @@ export class ChangelogService extends HoistService {
 
     @action
     updateUnreadStatus() {
-        if (!this.enabled || !this.lastReadPrefExists || this.currentVersionIsEmpty) {
-            this.currentVersionIsUnread = false;
-        } else {
-            const lastReadVersion = XH.getPref(this.LAST_READ_PREF_KEY),
-                {currentVersionEntry} = this;
-            this.currentVersionIsUnread = (
-                currentVersionEntry && !checkMinVersion(lastReadVersion, currentVersionEntry.version)
-            );
-        }
+        const {enabled, latestNonEmptyVersion} = this,
+            lastReadVersion = XH.getPref(this.LAST_READ_PREF_KEY, null);
+        this.currentVersionIsUnread = (
+            enabled &&
+            latestNonEmptyVersion &&
+            lastReadVersion &&
+            !checkMinVersion(lastReadVersion, latestNonEmptyVersion)
+        );
     }
 }
 
