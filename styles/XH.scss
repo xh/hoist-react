@@ -194,3 +194,7 @@ body.xh-app {
     text-transform: uppercase;
   }
 }
+
+.xh-tablet * {
+  user-select: none !important;
+}
