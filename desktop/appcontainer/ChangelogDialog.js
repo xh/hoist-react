@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {ChangelogDialogModel} from '@xh/hoist/appcontainer/ChangelogDialogModel';
-import {div, filler, h2, h3, h4, li, ul} from '@xh/hoist/cmp/layout';
+import {div, filler, h2, h3, li, ul} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -75,7 +75,10 @@ const version = hoistCmp.factory(
                 ] :
                 [
                     h2(`v${version.version}`),
-                    h4('No release notes for this version.')
+                    div({
+                        className: 'xh-changelog__version__no-category',
+                        item: h3('No release notes for this version.')
+                    })
                 ]
         });
     }

@@ -111,6 +111,10 @@ export class ChangelogService extends HoistService {
         return XH.prefService.hasKey(this.LAST_READ_PREF_KEY);
     }
 
+    get currentVersionIsEmpty() {
+        return isEmpty(this.currentVersionEntry?.categories);
+    }
+
     parseVersions(changelog) {
         try {
             const versions = [];
@@ -151,7 +155,7 @@ export class ChangelogService extends HoistService {
 
     @action
     updateUnreadStatus() {
-        if (!this.enabled || !this.lastReadPrefExists) {
+        if (!this.enabled || !this.lastReadPrefExists || this.currentVersionIsEmpty) {
             this.currentVersionIsUnread = false;
         } else {
             const lastReadVersion = XH.getPref(this.LAST_READ_PREF_KEY),
