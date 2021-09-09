@@ -270,8 +270,8 @@ function lookupModel(spec, props, modelLookup, displayName) {
     }
 
     // 5) No model found
-    // Log on debug, we don't expect this to happen for most components/applications.
-    // Don't throw, so as to allow Components (e.g. FormField) more flexibility.
+    // Log on debug, as we don't expect this to happen for most components/applications.
+    // Don't throw, so as to allow Components flexibility to fail gently.
     if (displayName !== 'FormField') {
         console.debug(`No model found for component ${displayName}.`, spec);
     }
