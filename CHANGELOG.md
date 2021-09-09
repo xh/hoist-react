@@ -11,6 +11,8 @@ user state.  See new overridable method `HoistAppModel.restoreDefaultsAsync` for
 ### 🐞 Bug Fixes
 
 * Better coverage of Fetch abort error.
+* The in-app changelog will not prompt the user with the "What's New" button if category-based
+  filtering results in a version without any release notes.
 
 ### 📚 Libraries
 

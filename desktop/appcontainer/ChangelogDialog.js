@@ -11,7 +11,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {lowerCase} from 'lodash';
+import {lowerCase, isEmpty} from 'lodash';
 import './ChangelogDialog.scss';
 
 export const changelogDialog = hoistCmp.factory({
@@ -56,20 +56,30 @@ const changelogContents = hoistCmp.factory(
 const version = hoistCmp.factory(
     /** @param {ChangelogVersion} version */
     ({version}) => {
+
+        const categories = !isEmpty(version.categories) ?
+            version.categories.map(cat => {
+                const catClassName = categoryClassNames[lowerCase(cat.title)] ?? '';
+                return div({
+                    className: `xh-changelog__version__category ${catClassName ? 'xh-changelog__version__category--' + catClassName : ''}`,
+                    items: [
+                        h3(cat.title),
+                        ul(cat.items.map(item => li(item)))
+                    ]
+                });
+            }) :
+            [
+                div({
+                    className: 'xh-changelog__version__no-category',
+                    item: h3('No release notes for this version.')
+                })
+            ];
+
         return div({
             className: `xh-changelog__version ${version.isCurrentVersion ? 'xh-changelog__version--current' : ''}`,
-            items: [
+            items:  [
                 h2(version.title),
-                ...version.categories.map(cat => {
-                    const catClassName = categoryClassNames[lowerCase(cat.title)] ?? '';
-                    return div({
-                        className: `xh-changelog__version__category ${catClassName ? 'xh-changelog__version__category--' + catClassName : ''}`,
-                        items: [
-                            h3(cat.title),
-                            ul(...cat.items.map(item => li(item)))
-                        ]
-                    });
-                })
+                ...categories
             ]
         });
     }
