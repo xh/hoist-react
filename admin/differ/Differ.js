@@ -28,9 +28,9 @@ export const differ = hoistCmp.factory({
         return fragment(
             dialog({
                 title: `${startCase(model.displayName)} Differ`,
-                isOpen: model.isOpen,
+                isOpen: true,
                 canOutsideClickClose: false,
-                onClose: () => model.close(),
+                onClose: () => model.parentModel.closeDiffer(),
                 style: {height: 600, width: '80%'},
                 item: contents()
             }),
@@ -111,7 +111,7 @@ const bbar = hoistCmp.factory(
             toolbarSep(),
             button({
                 text: 'Close',
-                onClick: () => model.close()
+                onClick: () => model.parentModel.closeDiffer()
             })
         );
     }

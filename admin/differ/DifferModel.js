@@ -10,7 +10,7 @@ import {p} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {cloneDeep, isEqual, isString, isNil, remove, trimEnd} from 'lodash';
 import React from 'react';
@@ -22,7 +22,7 @@ import {DifferDetailModel} from './DifferDetailModel';
  */
 export class DifferModel extends HoistModel {
 
-    parentGridModel;
+    parentModel;
     entityName;
     displayName;
     columnFields;
@@ -37,9 +37,11 @@ export class DifferModel extends HoistModel {
     @managed
     gridModel;
 
-    @bindable remoteHost;
-    @bindable hasLoaded = false;
-    @observable isOpen = false;
+    @bindable
+    remoteHost = null;
+
+    @bindable
+    hasLoaded = false;
 
     applyRemoteAction = {
         text: 'Apply Remote',
@@ -57,7 +59,7 @@ export class DifferModel extends HoistModel {
     }
 
     constructor({
-        parentGridModel,
+        parentModel,
         entityName,
         displayName,
         columnFields = ['name'],
@@ -66,7 +68,7 @@ export class DifferModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
-        this.parentGridModel = parentGridModel;
+        this.parentModel = parentModel;
         this.entityName = entityName;
         this.displayName = displayName ?? entityName;
         this.columnFields = columnFields;
@@ -300,7 +302,7 @@ export class DifferModel extends HoistModel {
             params: {records: JSON.stringify(recsForPost)}
         }).finally(() => {
             this.loadAsync();
-            this.parentGridModel.loadAsync();
+            this.parentModel.gridModel.loadAsync();
             this.detailModel.close();
         }).linkTo(
             this.loadModel
@@ -346,19 +348,5 @@ export class DifferModel extends HoistModel {
         if (!this.clipboardContent?.data) {
             throw XH.exception('Clipboard did not contain remote data in the expected JSON format.');
         }
-    }
-
-    @action
-    open() {
-        this.hasLoaded = false;
-        this.remoteHost = null;
-        this.isOpen = true;
-    }
-
-    @action
-    close() {
-        this.hasLoaded = false;
-        this.remoteHost = null;
-        this.isOpen = false;
     }
 }
