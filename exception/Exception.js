@@ -162,6 +162,6 @@ export class Exception {
         if (isString(override)) {
             override = {message: override};
         }
-        return Object.assign(new Error(), defaults, override);
+        return Object.assign(new Error(), defaults, override, {isHoistException: true});
     }
 }
