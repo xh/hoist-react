@@ -39,6 +39,10 @@ export class ColumnHeaderFilterModel extends HoistModel {
         return this.gridFilterModel.getColumnFilters(this.field);
     }
 
+    get columnCompoundFilter() {
+        return this.gridFilterModel.getColumnCompoundFilter(this.field);
+    }
+
     get hasFilter() {
         return !isEmpty(this.columnFilters);
     }
@@ -52,7 +56,8 @@ export class ColumnHeaderFilterModel extends HoistModel {
 
     @computed
     get isCustomFilter() {
-        const {columnFilters} = this;
+        const {columnCompoundFilter, columnFilters} = this;
+        if (columnCompoundFilter) return true;
         if (isEmpty(columnFilters)) return false;
         return columnFilters.some(it => !['=', '!='].includes(it.op));
     }

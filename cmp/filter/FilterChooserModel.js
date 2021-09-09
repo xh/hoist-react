@@ -232,7 +232,7 @@ export class FilterChooserModel extends HoistModel {
                 this.value = value;
             }
         } catch (e) {
-            console.error('Failed to set value on FilterChoooserModel', e);
+            console.error('Failed to set value on FilterChooserModel', e);
             this.selectOptions = [];
             this.selectValue = [];
             this.value = null;
@@ -267,8 +267,8 @@ export class FilterChooserModel extends HoistModel {
             throw XH.exception(`Unsupported Filter in FilterChooserModel: ${s}`);
         };
 
-        // 1) Flatten AND CompoundFilters to FieldFilters.
-        if (filter.isCompoundFilter && filter.op === 'AND') {
+        // 1) Flatten CompoundFilters across disparate fields to FieldFilters.
+        if (filter.isCompoundFilter && !filter.field) {
             ret = filter.filters;
         } else  {
             ret = [filter];

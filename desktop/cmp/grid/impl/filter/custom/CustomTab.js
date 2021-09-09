@@ -52,7 +52,6 @@ const tbar = hoistCmp.factory(
                     text: 'Add',
                     intent: 'success',
                     title: 'Add condition',
-                    disabled: model.rowModels.length === model.availableOperators.length,
                     onClick: () => model.addEmptyRow()
                 })
             ]

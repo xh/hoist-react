@@ -6,8 +6,7 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {combineValueFilters} from '@xh/hoist/data';
-import {compact, every, isEmpty} from 'lodash';
+import {compact, isEmpty} from 'lodash';
 
 import {CustomRowModel} from './CustomRowModel';
 
@@ -24,9 +23,9 @@ export class CustomTabModel extends HoistModel {
     @computed.struct
     get filter() {
         const {op, rowModels} = this,
-            filters = combineValueFilters(compact(rowModels.map(it => it.value)));
+            filters = compact(rowModels.map(it => it.value));
         if (isEmpty(filters)) return null;
-        if (filters.length > 1 && op === 'OR') return {filters, op};
+        if (filters.length > 1) return {filters, op};
         return filters;
     }
 
@@ -82,7 +81,7 @@ export class CustomTabModel extends HoistModel {
     //-------------------
     @action
     doSyncWithFilter() {
-        const {columnFilters, currentGridFilter} = this,
+        const {columnFilters, columnCompoundFilter} = this,
             rowModels = [];
 
         // Create rows based on filter.
@@ -92,9 +91,8 @@ export class CustomTabModel extends HoistModel {
         });
 
         // Rehydrate operator from CompoundFilter
-        if (columnFilters.length > 1) {
-            const compoundFilter = this.getOuterCompoundFilter(currentGridFilter);
-            if (compoundFilter) this.op = compoundFilter.op;
+        if (columnCompoundFilter) {
+            this.op = columnCompoundFilter.op;
         }
 
         // Add an empty pending row
@@ -103,21 +101,5 @@ export class CustomTabModel extends HoistModel {
         }
 
         this.rowModels = rowModels;
-    }
-
-    // Find the CompoundFilter that wraps the filters for this column
-    getOuterCompoundFilter(filter) {
-        if (!filter.isCompoundFilter) return null;
-
-        // This is the outer compound filter if all its children
-        // are FieldFilters on this field.
-        const {field} = this.fieldSpec;
-        if (every(filter.filters, it => it.field === field)) {
-            return filter;
-        }
-
-        // Otherwise, check any CompoundFilter children
-        const results = compact(filter.filters.map(it => this.getOuterCompoundFilter(it)));
-        return results.length === 1 ? results[0] : null;
     }
 }
