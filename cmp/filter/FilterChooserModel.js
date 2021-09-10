@@ -183,49 +183,57 @@ export class FilterChooserModel extends HoistModel {
      */
     @action
     setValue(value) {
-        // Always round trip the new value to internal state, but avoid
-        // spurious change to the external value.
+        const {bind, maxTags} = this;
         try {
             value = parseFilter(value);
+            if (this.value?.equals(value)) return;
 
-            const validFilter = this.validateFilter(value);
-            if (!validFilter) value = null;
+            // 1) Ensure filter is able to be handled by the FilterChooser
+            const isValid = this.validateFilter(value),
+                displayFilters = isValid ? this.toDisplayFilters(value) : null;
 
-            const displayFilters = this.toDisplayFilters(value);
-            this.unsupportedFilter = !validFilter || (this.maxTags && displayFilters.length > this.maxTags);
-
-            if (!this.unsupportedFilter) {
-                // Build list of options, used for displaying tags. We combine the needed
-                // options for the current filter tags with any previous ones to ensure
-                // tags are rendered correctly throughout the transition.
-                const newOptions = displayFilters.map(f => this.createFilterOption(f)),
-                    previousOptions = this.selectOptions ?? [],
-                    options = uniqBy([...newOptions, ...previousOptions], 'value');
-
-                this.selectOptions = !isEmpty(options) ? options : null;
-
-                // Set select value async after options, to ensure it is able to be rendered tags correctly
-                const selectValue = sortBy(displayFilters.map(f => JSON.stringify(f)), f => {
-                    const idx = this.selectValue?.indexOf(f);
-                    return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
-                });
-                wait().thenAction(() => this.selectValue = selectValue);
+            this.unsupportedFilter = !isValid || (maxTags && displayFilters.length > maxTags);
+            if (this.unsupportedFilter) {
+                this.value = null;
+                this.selectOptions = null;
+                this.selectValue = null;
+                return;
             }
 
-            if (!this.value?.equals(value)) {
-                console.debug('Setting FilterChooser value:', value);
-                this.value = value;
-                this.commitValue();
+            // 2) Main path - set internal value.
+            console.debug('Setting FilterChooser value:', value);
+            this.value = value;
+
+            // 3) Set props on select input needed to display
+            // Build list of options, used for displaying tags. We combine the needed
+            // options for the current filter tags with any previous ones to ensure
+            // tags are rendered correctly throughout the transition.
+            const newOptions = displayFilters.map(f => this.createFilterOption(f)),
+                previousOptions = this.selectOptions ?? [],
+                options = uniqBy([...newOptions, ...previousOptions], 'value');
+
+            this.selectOptions = !isEmpty(options) ? options : null;
+
+            // Set select value async after options, to ensure it is able to render tags correctly
+            const selectValue = sortBy(displayFilters.map(f => JSON.stringify(f)), f => {
+                const idx = this.selectValue?.indexOf(f);
+                return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
+            });
+            wait().thenAction(() => this.selectValue = selectValue);
+
+            // 4) Round-trip value to bound filter
+            if (bind) {
+                wait().then(() => {
+                    const filter = withFilterByTypes(bind.filter, value, ['FieldFilter', 'CompoundFilter']);
+                    bind.setFilter(filter);
+                }).linkTo(this.filterTask);
             }
         } catch (e) {
             console.error('Failed to set value on FilterChooserModel', e);
             this.value = null;
+            this.selectOptions = null;
+            this.selectValue = null;
             this.unsupportedFilter = true;
-        } finally {
-            if (this.unsupportedFilter) {
-                this.selectOptions = null;
-                this.selectValue = null;
-            }
         }
     }
 
@@ -285,15 +293,6 @@ export class FilterChooserModel extends HoistModel {
                 f.value.map(value => new FieldFilter({...f, value})) :
                 f;
         });
-    }
-
-    commitValue() {
-        const {bind, value, filterTask} = this;
-        if (!bind) return;
-        const filter = withFilterByTypes(bind.filter, value, ['FieldFilter', 'CompoundFilter']);
-        wait()
-            .then(() => bind.setFilter(filter))
-            .linkTo(filterTask);
     }
 
     //-------------
