@@ -1,6 +1,6 @@
 # Changelog
 
-## v43.0.0-SNAPSHOT - unreleased
+## v42.5.0 - 2021-09-10
 
 ### 🎁 New Features
 
@@ -24,7 +24,7 @@ user state.  See new overridable method `HoistAppModel.restoreDefaultsAsync` for
 * @blueprintjs/core `3.48 -> 3.49`
 * @popperjs/core `2.9 -> 2.10`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v42.4.0..develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v42.4.0..v42.5.0)
 
 ## v42.4.0 - 2021-09-03
 
