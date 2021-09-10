@@ -593,6 +593,7 @@ body {
     --xh-scrollbar-thumb: var(--scrollbar-thumb, #{mc('blue-grey', '900')});
   }
 
+
   //------------------------
   // Banners
   //------------------------
@@ -603,8 +604,16 @@ body {
   //------------------------
   // Tabs
   //------------------------
+  --xh-tab-active-text-color: var(--tab-active-text-color, var(--xh-intent-primary));
   --xh-tab-border-width: var(--tab-border-width, var(--xh-border-width));
   --xh-tab-border-width-px: calc(var(--xh-tab-border-width) * 1px);
+  --xh-tab-font-family: var(--tab-font-family, var(--xh-font-family));
+  --xh-tab-font-size: var(--tab-font-size, var(--xh-font-size));
+  --xh-tab-font-size-px: calc(var(--xh-tab-font-size) * 1px);
+
+  &.xh-dark {
+    --xh-tab-active-text-color: var(--tab-active-text-color, var(--xh-intent-primary-lighter));
+  }
 
 
   //------------------------
