@@ -63,10 +63,13 @@
     }
   }
 
-  // Right align close button within tabs
   &__tab {
+    align-items: baseline;
+    font-family: var(--xh-tab-font-family);
+    font-size: var(--xh-tab-font-size-px);
+
     & > svg:first-child {
-      margin: 0.5em var(--xh-pad-half-px) 0 0;
+      margin: 0 0.4em 0 0;
       min-width: 0;
     }
 
@@ -104,4 +107,17 @@
       width: 100%;
     }
   }
+
+  // Active/hover color override
+  .bp3-tab[aria-selected="true"],
+  .bp3-tab:not([aria-disabled="true"]):hover {
+    .xh-tab-switcher__tab {
+      color: var(--xh-tab-active-text-color);
+    }
+  }
+
+  .bp3-tab[aria-selected="true"] {
+    box-shadow: inset 0 -3px 0 var(--xh-tab-active-text-color);
+  }
+
 }
