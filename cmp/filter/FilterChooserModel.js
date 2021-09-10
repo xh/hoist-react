@@ -157,17 +157,6 @@ export class FilterChooserModel extends HoistModel {
 
         if (bind) {
             this.addReaction({
-                track: () => this.value,
-                run: (value) => {
-                    const filter = withFilterByTypes(bind.filter, value, ['FieldFilter', 'CompoundFilter']);
-                    wait()
-                        .then(() => bind.setFilter(filter))
-                        .linkTo(this.filterTask);
-                },
-                fireImmediately: true
-            });
-
-            this.addReaction({
                 track: () => bind.filter,
                 run: (filter) => {
                     const value = withFilterByTypes(filter, null, 'FunctionFilter');
@@ -199,17 +188,13 @@ export class FilterChooserModel extends HoistModel {
         try {
             value = parseFilter(value);
 
-            if (!this.validateFilter(value)) {
-                value = null;
-            }
+            const validFilter = this.validateFilter(value);
+            if (!validFilter) value = null;
 
             const displayFilters = this.toDisplayFilters(value);
-            this.unsupportedFilter = this.maxTags && displayFilters.length > this.maxTags;
+            this.unsupportedFilter = !validFilter || (this.maxTags && displayFilters.length > this.maxTags);
 
-            if (this.unsupportedFilter) {
-                this.selectOptions = null;
-                this.selectValue = null;
-            } else {
+            if (!this.unsupportedFilter) {
                 // Build list of options, used for displaying tags. We combine the needed
                 // options for the current filter tags with any previous ones to ensure
                 // tags are rendered correctly throughout the transition.
@@ -230,12 +215,17 @@ export class FilterChooserModel extends HoistModel {
             if (!this.value?.equals(value)) {
                 console.debug('Setting FilterChooser value:', value);
                 this.value = value;
+                this.commitValue();
             }
         } catch (e) {
-            console.error('Failed to set value on FilterChoooserModel', e);
-            this.selectOptions = [];
-            this.selectValue = [];
+            console.error('Failed to set value on FilterChooserModel', e);
             this.value = null;
+            this.unsupportedFilter = true;
+        } finally {
+            if (this.unsupportedFilter) {
+                this.selectOptions = null;
+                this.selectValue = null;
+            }
         }
     }
 
@@ -277,6 +267,11 @@ export class FilterChooserModel extends HoistModel {
             if (!f.isFieldFilter && !f.isCompoundFilter) {
                 unsupported('Filters must be FieldFilters or CompoundFilters.');
             }
+
+            // Todo: Don't check in
+            if (f.field === 'city') {
+                unsupported('Test exception on city.');
+            }
         });
 
         // 2) Recognize unsupported multiple filters for array-based filters.
@@ -295,6 +290,15 @@ export class FilterChooserModel extends HoistModel {
                 f.value.map(value => new FieldFilter({...f, value})) :
                 f;
         });
+    }
+
+    commitValue() {
+        const {bind, value, filterTask} = this;
+        if (!bind) return;
+        const filter = withFilterByTypes(bind.filter, value, ['FieldFilter', 'CompoundFilter']);
+        wait()
+            .then(() => bind.setFilter(filter))
+            .linkTo(filterTask);
     }
 
     //-------------
