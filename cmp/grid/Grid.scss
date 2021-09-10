@@ -215,13 +215,16 @@
   // identified as groups by AG-Grid row classes, but this keeps the styling consistent for all
   // rows at the same level.
   @for $i from 0 to 20 {
-    $level: 0;
-
     &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
-      @while $level < 6 {
-        $h: 205 - ($level * 1.5);
-        $s: 85 + ($level * 2);
-        $l: 95 + ($level * 0.75);
+      .ag-floating-bottom,
+      .ag-floating-top {
+        background-color: var(--xh-grid-tree-group-total-row-bg);
+      }
+
+      @for $level from 0 to 6 {
+        $h: 205 - ($level * 2);
+        $s: 70 + ($level * 6);
+        $l: 92 + ($level * 1.4);
 
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
@@ -229,7 +232,6 @@
             background-color: hsl($h, $s * 1%, $l * 1%);
           }
         }
-        $level: $level + 1
       }
 
       .xh-ag-grid--show-hover {
@@ -269,10 +271,8 @@
 
 .xh-dark .xh-grid--hierarchical:not(.xh-data-view) {
   @for $i from 0 to 20 {
-    $level: 0;
-
     &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
-      @while $level < 6 {
+      @for $level from 0 to 6 {
         $h: 200 - ($level * 1.5);
         $s: 40 - ($level * 5);
         $l: 20 - ($level * 1.75);
@@ -283,7 +283,6 @@
             background-color: hsl($h, $s * 1%, $l * 1%);
           }
         }
-        $level: $level + 1
       }
 
       .xh-ag-grid--show-hover {
