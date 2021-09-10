@@ -267,11 +267,6 @@ export class FilterChooserModel extends HoistModel {
             if (!f.isFieldFilter && !f.isCompoundFilter) {
                 unsupported('Filters must be FieldFilters or CompoundFilters.');
             }
-
-            // Todo: Don't check in
-            if (f.field === 'city') {
-                unsupported('Test exception on city.');
-            }
         });
 
         // 2) Recognize unsupported multiple filters for array-based filters.
