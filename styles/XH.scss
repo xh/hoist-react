@@ -63,6 +63,10 @@ body.xh-app {
     cursor: pointer;
   }
 
+  &.xh-tablet * {
+    user-select: none !important;
+  }
+
   // Colors
   .xh-black { color: var(--xh-black); }
   .xh-blue { color: var(--xh-blue); }
@@ -193,8 +197,4 @@ body.xh-app {
     text-align: center;
     text-transform: uppercase;
   }
-}
-
-.xh-tablet * {
-  user-select: none !important;
 }
