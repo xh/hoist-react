@@ -18,6 +18,7 @@ import {dialog} from '@xh/hoist/kit/blueprint';
 import {identity, startCase} from 'lodash';
 import {differDetail} from './DifferDetail';
 import {DifferModel} from './DifferModel';
+import {storeFilterField} from '../../cmp/store';
 
 export const differ = hoistCmp.factory({
     model: uses(DifferModel),
@@ -27,9 +28,9 @@ export const differ = hoistCmp.factory({
         return fragment(
             dialog({
                 title: `${startCase(model.displayName)} Differ`,
-                isOpen: model.isOpen,
+                isOpen: true,
                 canOutsideClickClose: false,
-                onClose: () => model.close(),
+                onClose: () => model.parentModel.closeDiffer(),
                 style: {height: 600, width: '80%'},
                 item: contents()
             }),
@@ -98,6 +99,9 @@ const tbar = hoistCmp.factory(
 const bbar = hoistCmp.factory(
     ({model}) => {
         return toolbar(
+            storeFilterField({
+                matchMode: 'any'
+            }),
             filler(),
             recordActionBar({
                 actions: [model.applyRemoteAction],
@@ -107,7 +111,7 @@ const bbar = hoistCmp.factory(
             toolbarSep(),
             button({
                 text: 'Close',
-                onClick: () => model.close()
+                onClick: () => model.parentModel.closeDiffer()
             })
         );
     }

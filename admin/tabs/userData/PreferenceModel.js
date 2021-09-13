@@ -6,7 +6,8 @@
  */
 import {truncate} from 'lodash';
 import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {makeObservable, observable, action} from '@xh/hoist/mobx';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {
     addAction,
@@ -115,16 +116,34 @@ export class PreferenceModel extends HoistModel {
     });
 
     @managed
-    differModel = new DifferModel({
-        parentGridModel: this.gridModel,
-        entityName: 'preference',
-        columnFields: ['name', 'type'],
-        matchFields: ['name'],
-        valueRenderer: (v) => v?.defaultValue ?? ''
-    });
+    @observable.ref
+    differModel;
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();
+    }
+
+    @action
+    openDiffer() {
+        this.differModel = new DifferModel({
+            parentModel: this,
+            entityName: 'preference',
+            columnFields: ['name', 'type'],
+            matchFields: ['name'],
+            valueRenderer: (v) => v?.defaultValue ?? ''
+        });
+    }
+
+    @action
+    closeDiffer() {
+        const {differModel} = this;
+        this.differModel = null;
+        XH.safeDestroy(differModel);
     }
 }
 
