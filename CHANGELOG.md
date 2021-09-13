@@ -2,6 +2,9 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
+
+## v42.5.0 - 2021-09-10
+
 ### 🎁 New Features
 
 * Provide applications with the ability to override default logic for "restore defaults".
@@ -11,13 +14,20 @@ user state.  See new overridable method `HoistAppModel.restoreDefaultsAsync` for
 ### 🐞 Bug Fixes
 
 * Better coverage of Fetch abort error.
+* The in-app changelog will not prompt the user with the "What's New" button if category-based
+  filtering results in a version without any release notes.
+
+### ✨ Style
+
+* New CSS vars added to support easier customization of desktop Tab font/size/color. Tabs now
+  respect standard `--xh-font-size` by default.
 
 ### 📚 Libraries
 
 * @blueprintjs/core `3.48 -> 3.49`
 * @popperjs/core `2.9 -> 2.10`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v42.4.0..develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v42.4.0..v42.5.0)
 
 ## v42.4.0 - 2021-09-03
 
