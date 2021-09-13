@@ -605,8 +605,7 @@ class XHClass extends HoistBase {
      * Resets user preferences and any persistent local application state, then reloads the app.
      */
     async restoreDefaultsAsync() {
-        await this.prefService.clearAllAsync();
-        this.localStorageService.clear();
+        await this.appModel.restoreDefaultsAsync();
         this.reloadApp();
     }
 

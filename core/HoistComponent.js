@@ -269,10 +269,14 @@ function lookupModel(spec, props, modelLookup, displayName) {
         return {model, isOwned: true, fromContext: false};
     }
 
-    //  Component are encouraged to handle a missing model gently. Could also be error
+    // 5) No model found
+    // Log on debug, as we don't expect this to happen for most components/applications.
+    // Don't throw, so as to allow Components flexibility to fail gently.
+    if (displayName !== 'FormField') {
+        console.debug(`No model found for component ${displayName}.`, spec);
+    }
     return {model: null, isOwned: false, fromContext: false};
 }
-
 
 //--------------------------
 // Other helpers

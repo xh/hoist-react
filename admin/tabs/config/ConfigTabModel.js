@@ -5,8 +5,9 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
+import {makeObservable, observable, action} from '@xh/hoist/mobx';
 import {
     addAction,
     cloneAction,
@@ -127,16 +128,13 @@ export class ConfigTabModel extends HoistModel {
     });
 
     @managed
-    differModel = new DifferModel({
-        parentGridModel: this.gridModel,
-        entityName: 'config',
-        columnFields: ['name', {field: 'valueType', headerName: 'Type'}],
-        matchFields: ['name'],
-        valueRenderer: (v) => {
-            if (isNil(v)) return '';
-            return v.valueType === 'pwd' ? '*****' : v.value;
-        }
-    });
+    @observable.ref
+    differModel;
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();
@@ -151,5 +149,26 @@ export class ConfigTabModel extends HoistModel {
             default:
                 return value;
         }
+    }
+
+    @action
+    openDiffer() {
+        this.differModel = new DifferModel({
+            parentModel: this,
+            entityName: 'config',
+            columnFields: ['name', {field: 'valueType', headerName: 'Type'}],
+            matchFields: ['name'],
+            valueRenderer: (v) => {
+                if (isNil(v)) return '';
+                return v.valueType === 'pwd' ? '*****' : v.value;
+            }
+        });
+    }
+
+    @action
+    closeDiffer() {
+        const {differModel} = this;
+        this.differModel = null;
+        XH.safeDestroy(differModel);
     }
 }
