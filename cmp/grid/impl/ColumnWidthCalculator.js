@@ -48,13 +48,10 @@ export class ColumnWidthCalculator {
 
     calcHeaderWidth(gridModel, column, options) {
         const {autosizeOptions} = column,
-            {includeHeader, includeHeaderIcons} = autosizeOptions;
+            {bufferPxOverride, includeHeader, includeHeaderIcons} = autosizeOptions,
+            bufferPx = isFinite(bufferPxOverride) ? bufferPxOverride : options.bufferPx;
 
         if (!includeHeader) return null;
-        let {bufferPx} = options;
-        if (isFinite(autosizeOptions.bufferPxOverride)) {
-            bufferPx = autosizeOptions.bufferPxOverride;
-        }
 
         try {
             this.setHeaderElActive(true);
@@ -96,11 +93,9 @@ export class ColumnWidthCalculator {
     }
 
     calcLevelWidth(gridModel, records, column, options, indentationPx = 0) {
-        const {field, getValueFn, renderer, autosizeOptions} = column;
-        let {bufferPx} = options;
-        if (isFinite(autosizeOptions.bufferPxOverride)) {
-            bufferPx = autosizeOptions.bufferPxOverride;
-        }
+        const {field, getValueFn, renderer, autosizeOptions} = column,
+            {bufferPxOverride} = autosizeOptions,
+            bufferPx = isFinite(bufferPxOverride) ? bufferPxOverride : options.bufferPx;
 
         // 1) Get unique values
         const values = new Set();
