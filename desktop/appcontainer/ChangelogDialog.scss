@@ -66,5 +66,12 @@
         margin: 0;
       }
     }
+
+    &__no-category h3 {
+      padding: 0 var(--xh-pad-px);
+      font-weight: normal;
+      font-style: italic;
+      font-size: 1em;
+    }
   }
 }

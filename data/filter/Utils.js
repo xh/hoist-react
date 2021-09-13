@@ -60,11 +60,14 @@ export function parseFilter(spec) {
  * @return {Filter} - the new Filter
  */
 export function withFilterByField(filter, newFilter, field) {
-    const currFilters = filter?.isCompoundFilter ? filter.filters : [filter],
+    const isCompoundFilter = filter?.filters,
+        currFilters = isCompoundFilter ? filter.filters : [filter],
         ret = currFilters.filter(it => it && it.field !== field);
 
     ret.push(...castArray(newFilter));
-    return parseFilter(ret);
+    return isCompoundFilter ?
+        parseFilter({filters: ret, op: filter.op}) :
+        parseFilter(ret);
 }
 
 /**
@@ -75,11 +78,14 @@ export function withFilterByField(filter, newFilter, field) {
  * @return {Filter} - the new Filter
  */
 export function withFilterByKey(filter, newFilter, key) {
-    const currFilters = filter?.isCompoundFilter ? filter.filters : [filter],
+    const isCompoundFilter = filter?.isCompoundFilter,
+        currFilters = isCompoundFilter ? filter.filters : [filter],
         ret = currFilters.filter(it => it && it.key !== key);
 
     ret.push(...castArray(newFilter));
-    return parseFilter(ret);
+    return isCompoundFilter ?
+        parseFilter({filters: ret, op: filter.op}) :
+        parseFilter(ret);
 }
 
 /**
@@ -90,7 +96,8 @@ export function withFilterByKey(filter, newFilter, key) {
  * @return {Filter} - the new Filter
  */
 export function withFilterByTypes(filter, newFilter, types) {
-    const currFilters = filter?.isCompoundFilter ? filter.filters : [filter];
+    const isCompoundFilter = filter?.isCompoundFilter,
+        currFilters = isCompoundFilter ? filter.filters : [filter];
 
     const ret = currFilters.filter(it => {
         for (const type of castArray(types)) {
@@ -102,7 +109,9 @@ export function withFilterByTypes(filter, newFilter, types) {
     });
 
     ret.push(...castArray(newFilter));
-    return parseFilter(ret);
+    return isCompoundFilter ?
+        parseFilter({filters: ret, op: filter.op}) :
+        parseFilter(ret);
 }
 
 /**

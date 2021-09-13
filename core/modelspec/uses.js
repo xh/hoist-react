@@ -48,7 +48,7 @@ export function uses(
 
 
 /** @private */
-export class UsesSpec extends ModelSpec  {
+export class UsesSpec extends ModelSpec {
 
     selector;
     createFromConfig;

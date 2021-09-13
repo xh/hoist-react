@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {
     addAction,
     cloneAction,
@@ -13,6 +13,7 @@ import {
     RestGridModel
 } from '@xh/hoist/desktop/cmp/rest';
 import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
+import {makeObservable, observable, action} from '@xh/hoist/mobx';
 import {fmtDateTime} from '@xh/hoist/format';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {isDate, truncate} from 'lodash';
@@ -146,13 +147,13 @@ export class JsonBlobModel extends HoistModel {
     });
 
     @managed
-    differModel = new DifferModel({
-        parentGridModel: this.gridModel,
-        entityName: 'jsonBlob',
-        displayName: 'JSON Blob',
-        columnFields: ['name', 'owner', 'type', {field: 'archivedDate', ...dateTimeCol, renderer: this.archivedDateRenderer}],
-        matchFields: ['name', 'owner', 'type', 'archivedDate']
-    });
+    @observable.ref
+    differModel;
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();
@@ -166,4 +167,21 @@ export class JsonBlobModel extends HoistModel {
         return v > 0 ? fmtDateTime(v) : '-';
     }
 
+    @action
+    openDiffer() {
+        this.differModel = new DifferModel({
+            parentModel: this,
+            entityName: 'jsonBlob',
+            displayName: 'JSON Blob',
+            columnFields: ['name', 'owner', 'type', {field: 'archivedDate', ...dateTimeCol, renderer: this.archivedDateRenderer}],
+            matchFields: ['name', 'owner', 'type', 'archivedDate']
+        });
+    }
+
+    @action
+    closeDiffer() {
+        const {differModel} = this;
+        this.differModel = null;
+        XH.safeDestroy(differModel);
+    }
 }

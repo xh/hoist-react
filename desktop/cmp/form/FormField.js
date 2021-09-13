@@ -52,7 +52,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
             `and not an HTML Form ('@xh/hoist/cmp/layout/form').`
         );
         const formModel = formContext.model;
-        model = model || (formModel && field ? formModel.fields[field] : null);
+        model = model ?? (formModel && field ? formModel.fields[field] : null);
 
         if (!model) {
             console.warn(`Unable to bind FormField to field "${field}" on backing FormModel`);
