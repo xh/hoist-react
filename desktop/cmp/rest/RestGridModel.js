@@ -238,7 +238,7 @@ export class RestGridModel extends HoistModel {
             XH.confirm({
                 message,
                 title: 'Warning',
-                icon: Icon.warning({size: 'lg'}),
+                icon: Icon.warning(),
                 onConfirm: delFn
             });
         }
