@@ -387,8 +387,6 @@ body {
   --xh-grid-large-cell-lr-pad-px: calc(var(--xh-grid-large-cell-lr-pad) * 1px);
   --xh-grid-large-font-size: var(--grid-large-font-size, 14);
   --xh-grid-large-font-size-px: calc(var(--xh-grid-large-font-size) * 1px);
-  --xh-grid-large-cell-height: var(--grid-large-cell-height, 30);
-  --xh-grid-large-cell-height-px: calc(var(--xh-grid-large-cell-height) * 1px);
   --xh-grid-large-header-font-size: var(--grid-large-header-font-size, var(--xh-grid-large-font-size));
   --xh-grid-large-header-font-size-px: calc(var(--xh-grid-large-header-font-size) * 1px);
   --xh-grid-large-header-lr-pad: var(--grid-large-header-lr-pad, 12);
@@ -399,8 +397,6 @@ body {
   --xh-grid-compact-cell-lr-pad-px: calc(var(--xh-grid-compact-cell-lr-pad) * 1px);
   --xh-grid-compact-font-size: var(--grid-compact-font-size, 12);
   --xh-grid-compact-font-size-px: calc(var(--xh-grid-compact-font-size) * 1px);
-  --xh-grid-compact-cell-height: var(--grid-compact-cell-height, 21);
-  --xh-grid-compact-cell-height-px: calc(var(--xh-grid-compact-cell-height) * 1px);
   --xh-grid-compact-header-font-size: var(--grid-compact-header-font-size, var(--xh-grid-compact-font-size));
   --xh-grid-compact-header-font-size-px: calc(var(--xh-grid-compact-header-font-size) * 1px);
   --xh-grid-compact-header-lr-pad: var(--grid-compact-header-lr-pad, 6);
@@ -411,8 +407,6 @@ body {
   --xh-grid-tiny-cell-lr-pad-px: calc(var(--xh-grid-tiny-cell-lr-pad) * 1px);
   --xh-grid-tiny-font-size: var(--grid-tiny-font-size, 11);
   --xh-grid-tiny-font-size-px: calc(var(--xh-grid-tiny-font-size) * 1px);
-  --xh-grid-tiny-cell-height: var(--grid-tiny-cell-height, 16);
-  --xh-grid-tiny-cell-height-px: calc(var(--xh-grid-tiny-cell-height) * 1px);
   --xh-grid-tiny-header-font-size: var(--grid-tiny-header-font-size, var(--xh-grid-tiny-font-size));
   --xh-grid-tiny-header-font-size-px: calc(var(--xh-grid-tiny-header-font-size) * 1px);
   --xh-grid-tiny-header-lr-pad: var(--grid-tiny-header-lr-pad, 4);
