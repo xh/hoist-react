@@ -48,3 +48,7 @@
 .dialog {
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
 }
+
+.dialog-mask {
+  background-color: var(--xh-mask-bg);
+}
