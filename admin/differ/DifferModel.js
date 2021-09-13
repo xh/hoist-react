@@ -277,8 +277,12 @@ export class DifferModel extends HoistModel {
 
         XH.confirm({
             title: 'Please Confirm',
-            icon: Icon.warning({size: 'lg'}),
+            icon: Icon.warning(),
             message,
+            confirmProps: {
+                text: 'Yes, update local config',
+                intent: 'primary'
+            },
             onConfirm: () => this.doApplyRemote(filteredRecords)
         });
     }
