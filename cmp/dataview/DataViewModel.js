@@ -52,6 +52,11 @@ export class DataViewModel extends HoistModel {
      *      or token strings with which to create grid context menu items.  May also be specified
      *      as a function returning a StoreContextMenu. Desktop only.
      * @param {RowClassFn} [c.rowClassFn] - closure to generate CSS class names for a row.
+     *      NOTE that, once added, classes will *not* be removed if the data changes.
+     *      Use `rowClassRules` instead if Record data can change across refreshes.
+     * @param {Object.<string, RowClassRuleFn>} [c.rowClassRules] - object keying CSS
+     *      class names to functions determining if they should be added or removed from the row.
+     *      See Ag-Grid docs on "row styles" for details.
      * @param {function} [c.onRowClicked] - Callback when a row is clicked. Function will receive an
      *      event with a data node containing the row's data. (Note that this may be null - e.g. for
      *      clicks on group rows.)
@@ -77,6 +82,7 @@ export class DataViewModel extends HoistModel {
         stripeRows = false,
         contextMenu = null,
         rowClassFn,
+        rowClassRules,
         onRowClicked,
         onRowDoubleClicked,
         ...restArgs
@@ -119,6 +125,7 @@ export class DataViewModel extends HoistModel {
             groupRowRenderer,
             groupRowElementRenderer,
             rowClassFn,
+            rowClassRules,
             onRowClicked,
             onRowDoubleClicked,
             columns,
