@@ -6,7 +6,7 @@
  */
 
 import {stripTags} from '@xh/hoist/utils/js';
-import {forOwn, groupBy, isEmpty, isFunction, isNil, map, max, min, reduce, sortBy} from 'lodash';
+import {forOwn, groupBy, isEmpty, isFunction, isNil, map, max, min,  sortBy} from 'lodash';
 
 /**
  * Calculates the column width required to display column.  Used by GridAutoSizeService.
@@ -91,9 +91,8 @@ export class ColumnWidthCalculator {
             {store, sizingMode} = gridModel,
             bufferPx = column.autosizeBufferPx ?? options.bufferPx;
 
-        // 1) Get unique values, and the ids of records that contain them
-        const values = new Set(),
-            valueRecordMap = {};
+        // 1) Get Map of rendered values to List of records that contain them
+        const recsByValue = new Map();
 
         records.forEach(record => {
             if (!record) return;
@@ -101,16 +100,17 @@ export class ColumnWidthCalculator {
                 rawValue = getValueFn(ctx),
                 value = renderer ? renderer(rawValue, ctx) : rawValue;
 
-            values.add(value);
-
-            let recordIds = valueRecordMap[value];
-            if (!recordIds) recordIds = valueRecordMap[value] = new Set();
-            recordIds.add(record.id);
+            const recs = recsByValue.get(value);
+            if (!recs) {
+                recsByValue.set(value, [record]);
+            } else {
+                recs.push(record);
+            }
         });
 
         // 2) Use a canvas to estimate and sort by the pixel width of the string value.
         // Strip html tags but include parentheses / units etc. for renderers that may return html.
-        const sortedValues = sortBy(Array.from(values), value => {
+        const sortedValues = sortBy(Array.from(recsByValue.keys()), value => {
             const width = isNil(value) ? 0 : this.getStringWidth(stripTags(value.toString()));
             return width + indentationPx;
         });
@@ -118,37 +118,30 @@ export class ColumnWidthCalculator {
         // 3) Extract the sample set of longest values for rendering and sizing
         const longestValues = sortedValues.slice(Math.max(sortedValues.length - this.SAMPLE_COUNT, 0));
 
-        // 4) Collect all combinations of cell and row classes applied to this value.
-        const valueClassMap = {};
-        longestValues.forEach(value => {
-            valueRecordMap[value].forEach(recId => {
-                const record = store.getById(recId),
-                    rawValue = getValueFn({record, field, column, gridModel, store}),
+        // 4) Get longest values, with unique combinations of cell and row classes applied to them
+        const samples = longestValues.map(value => {
+            const classNames = new Set();
+            recsByValue.get(value).forEach(record => {
+                const rawValue = getValueFn({record, field, column, gridModel, store}),
                     rowClass = this.getRowClass(gridModel, record),
                     cellClass = this.getCellClass(gridModel, column, record, rawValue);
-
-                let classNames = valueClassMap[value];
-                if (!classNames) classNames = valueClassMap[value] = new Set();
-                classNames.add([rowClass, cellClass].join('|'));
+                classNames.add(rowClass + '|' + cellClass);
             });
+            return {value, classNames};
         });
 
         // 5) Render to a hidden cell to calculate the max displayed width. Loop through all
         // combinations of cell and row classes applied to this value, and return the largest.
-        return reduce(longestValues, (currMax, value) => {
-            const classNames = valueClassMap[value];
-
-            let ret = 0;
+        let ret = 0;
+        samples.forEach(({value, classNames}) => {
             classNames.forEach(it => {
                 const [rowClass, cellClass] = it.split('|');
                 this.setClassNames(sizingMode, rowClass, cellClass);
-
                 const width = this.getCellWidth(value, renderer) + indentationPx + bufferPx;
                 ret = Math.max(ret, width);
             });
-
-            return Math.max(currMax, ret);
-        }, 0);
+        });
+        return ret;
     }
 
     //------------------
