@@ -334,6 +334,10 @@ export class Column {
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
         this.autosizable = withDefault(autosizable, this.resizable, true);
+        this.autosizeIncludeHeader = withDefault(autosizeIncludeHeader, true);
+        this.autosizeIncludeHeaderIcons = withDefault(autosizeIncludeHeaderIcons, true);
+        this.autosizeMinWidth = withDefault(autosizeMinWidth, this.minWidth);
+        this.autosizeMaxWidth = withDefault(autosizeMaxWidth, this.maxWidth);
 
         warnIf(
             autosizeBufferPx && !isFinite(autosizeBufferPx),
