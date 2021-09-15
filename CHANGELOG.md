@@ -7,14 +7,8 @@
 * Provide applications with the ability to override default logic for "restore defaults".
 This allows complex and device-specific sub-apps to perform more targeted and complete clearing of
 user state.  See new overridable method `HoistAppModel.restoreDefaultsAsync` for more information.
-* New `ColumnAutosizeOptions` config bundles existing column-specific autosize properties along with
-additional `bufferPxOverride` property, which overrides `GridAutosizeOptions.bufferPx`
-
-### 💥 Breaking Changes
-
-* `Column.autosizeIncludeHeader`, `Column.autosizeIncludeHeaderIcons`,`Column.autosizeMinWidth`,
-and `Column.autosizeMaxWidth` have been removed in favor of a single `Column.autosizeOptions` config.
-See new `ColumnAutosizeOptions` config mentioned above.
+* New `Column.autosizeBufferPx` config applies column-specific autosize buffer and overrides
+`GridAutosizeOptions.bufferPx`.
 
 ### 🐞 Bug Fixes
 

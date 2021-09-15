@@ -37,6 +37,7 @@ import {
     find,
     isArray,
     isEmpty,
+    isFinite,
     isFunction,
     isNil,
     isPlainObject,
@@ -368,6 +369,11 @@ export class GridModel extends HoistModel {
         throwIf(
             autosizeOptions.fillMode && !['all', 'left', 'right', 'none'].includes(autosizeOptions.fillMode),
             `Unsupported value for fillMode.`
+        );
+
+        throwIf(
+            autosizeOptions.bufferPx && !isFinite(autosizeOptions.bufferPx),
+            'bufferPx not specified as a number.'
         );
 
         this.lockColumnGroups = lockColumnGroups;
@@ -1494,7 +1500,7 @@ export class GridModel extends HoistModel {
  * @property {GridAutosizeMode} [mode] - defaults to GridAutosizeMode.ON_SIZING_MODE_CHANGE.
  * @property {number} [bufferPx] - additional pixels to add to the size of each column beyond its
  *      absolute minimum. May be used to adjust the spacing in the grid. Columns that wish to
- *      override this value may specify `bufferPxOverride` {@see Column.autosizeOptions}. Default is 5.
+ *      override this value may specify `Column.autosizeBufferPx`. Default is 5.
  * @property {boolean} [showMask] - true to show mask over the grid during the autosize operation.
  *      Default is true.
  * @property {boolean} [includeCollapsedChildren] - true to autosize all rows, even when hidden due

@@ -34,29 +34,28 @@ export class ColumnWidthCalculator {
      */
     calcWidth(gridModel, records, colId, options) {
         const column = gridModel.findColumn(gridModel.columns, colId),
-            {minWidth, maxWidth} = column.autosizeOptions;
+            {autosizeMinWidth, autosizeMaxWidth} = column;
 
         let result = max([
             this.calcHeaderWidth(gridModel, column, options),
             this.calcDataWidth(gridModel, records, column, options)
         ]);
 
-        result = max([result, minWidth]);
-        result = min([result, maxWidth]);
+        result = max([result, autosizeMinWidth]);
+        result = min([result, autosizeMaxWidth]);
         return result;
     }
 
     calcHeaderWidth(gridModel, column, options) {
-        const {autosizeOptions} = column,
-            {bufferPxOverride, includeHeader, includeHeaderIcons} = autosizeOptions,
-            bufferPx = isFinite(bufferPxOverride) ? bufferPxOverride : options.bufferPx;
+        const {autosizeBufferPx, autosizeIncludeHeader, autosizeIncludeHeaderIcons} = column,
+            bufferPx = isFinite(autosizeBufferPx) ? autosizeBufferPx : options.bufferPx;
 
-        if (!includeHeader) return null;
+        if (!autosizeIncludeHeader) return null;
 
         try {
             this.setHeaderElActive(true);
             this.setHeaderElSizingMode(gridModel.sizingMode);
-            return this.getHeaderWidth(gridModel, column, includeHeaderIcons, bufferPx);
+            return this.getHeaderWidth(gridModel, column, autosizeIncludeHeaderIcons, bufferPx);
         } catch (e) {
             console.warn(`Error calculating max header width for column "${column.colId}".`, e);
         } finally {
@@ -93,9 +92,8 @@ export class ColumnWidthCalculator {
     }
 
     calcLevelWidth(gridModel, records, column, options, indentationPx = 0) {
-        const {field, getValueFn, renderer, autosizeOptions} = column,
-            {bufferPxOverride} = autosizeOptions,
-            bufferPx = isFinite(bufferPxOverride) ? bufferPxOverride : options.bufferPx;
+        const {field, getValueFn, renderer, autosizeBufferPx} = column,
+            bufferPx = isFinite(autosizeBufferPx) ? autosizeBufferPx : options.bufferPx;
 
         // 1) Get unique values
         const values = new Set();
