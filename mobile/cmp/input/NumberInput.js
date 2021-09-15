@@ -164,19 +164,18 @@ class Model extends HoistInputModel {
 }
 
 const cmp = hoistCmp.factory(
-    ({model, className, ...props}, ref) => {
+    ({model, className, enableShorthandUnits, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props),
             {hasFocus, renderValue} = model,
             displayValue = hasFocus ? model.displayValue(renderValue) : model.formatValue(renderValue),
-            // Note that we dynamically toggle the input type. We use 'number' when entering
-            // values to bring up the numerical keyboard on device, but otherwise use
-            // 'text' to facilitate displaying formatted values.
-            type = hasFocus && !props.enableShorthandUnits ? 'number' : 'text';
+            // use 'number' to edit values, but 'text' to displaying formatted values.
+            type = hasFocus && !enableShorthandUnits ? 'number' : 'text',
+            inputMode = !enableShorthandUnits ? 'decimal' : 'text';
 
         return input({
             type,
+            inputMode,
             className,
-
             value: displayValue,
             disabled: props.disabled,
             min: props.min,

@@ -24,11 +24,11 @@ export const jsonBlobPanel = hoistCmp.factory({
                     return button({
                         icon: Icon.diff(),
                         text: 'Compare w/ Remote',
-                        onClick: () => model.differModel.open()
+                        onClick: () => model.openDiffer()
                     });
                 }
             }),
-            differ()
+            differ({omit: !model.differModel})
         );
     }
 });

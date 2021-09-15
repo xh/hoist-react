@@ -37,7 +37,7 @@ export const exceptionDialog = hoistCmp.factory({
                 title: options.title,
                 isCloseButtonShown: !options.requireReload,
                 onClose,
-                icon: Icon.warning({size: 'lg'}),
+                icon: Icon.warning(),
                 items: [
                     dialogBody(options.message),
                     bbar()

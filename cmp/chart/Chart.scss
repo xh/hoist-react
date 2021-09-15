@@ -3,6 +3,11 @@
   pointer-events: auto;
 }
 
+// Ensure tooltips using the 'outside' flag render on top of other elements
+.highcharts-tooltip-container {
+  z-index: 9999 !important;
+}
+
 // Convenience class for optional use when specifying custom chart tooltips.
 // See Toolbox for example usage.
 .xh-chart-tooltip {

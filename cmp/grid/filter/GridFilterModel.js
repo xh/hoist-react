@@ -71,7 +71,14 @@ export class GridFilterModel extends HoistModel {
      */
     @action
     setColumnFilters(field, filter) {
-        const ret = withFilterByField(this.filter, filter, field);
+        // If current bound filter is an 'OR' CompoundFilter, wrap it in an 'AND'
+        // CompoundFilter so new columns get 'ANDed' alongside it.
+        let currFilter = this.filter;
+        if (currFilter?.isCompoundFilter && currFilter.op === 'OR') {
+            currFilter = {filters: [currFilter], op: 'AND'};
+        }
+
+        const ret = withFilterByField(currFilter, filter, field);
         this.setFilter(ret);
     }
 

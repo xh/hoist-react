@@ -7,6 +7,7 @@
 import {div, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, elem, XH} from '@xh/hoist/core';
 import {splitLayoutProps, useOnUnmount} from '@xh/hoist/utils/react';
+import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isNil, max} from 'lodash';
 import './AgGrid.scss';
@@ -115,6 +116,11 @@ class LocalModel extends HoistModel {
     constructor(model, agGridProps) {
         super();
         this.model = model;
+
+        throwIf(model.agApi,
+            'Attempted to mount a grid on a GridModel that is already in use. ' +
+            'Ensure that you are not binding your grid to the wrong model via context.'
+        );
 
         // manage header height if was not explicitly provided to component
         if (isNil(agGridProps.headerHeight)) {
