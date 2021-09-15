@@ -108,14 +108,10 @@ export class ColumnWidthCalculator {
             values.add(value);
 
             // 1b) Track combinations of cell and row classes applied to this value.
-            if (!valueClassMap[value]) {
-                valueClassMap[value] = {
-                    cellClasses: new Set(),
-                    rowClasses: new Set()
-                };
-            }
-            valueClassMap[value].cellClasses.add(cellClass);
-            valueClassMap[value].rowClasses.add(rowClass);
+            // Stringify the combination to test Set equality.
+            let classNames = valueClassMap[value];
+            if (!classNames) classNames = valueClassMap[value] = new Set();
+            classNames.add(JSON.stringify({cellClass, rowClass}));
         });
 
         // 2) Use a canvas to estimate and sort by the pixel width of the string value.
@@ -130,17 +126,16 @@ export class ColumnWidthCalculator {
 
         // 4) Render to a hidden cell to calculate the max displayed width
         return reduce(longestValues, (currMax, value) => {
-            const {cellClasses, rowClasses} = valueClassMap[value];
+            const classNames = valueClassMap[value];
 
             // 4b) Loop through all combinations of cell and row classes applied to this value,
             // and return the largest.
             let ret = 0;
-            rowClasses.forEach(rowClass => {
-                cellClasses.forEach(cellClass => {
-                    this.setClassNames(sizingMode, rowClass, cellClass);
-                    const width = this.getCellWidth(value, renderer) + indentationPx + bufferPx;
-                    ret = Math.max(ret, width);
-                });
+            classNames.forEach(it => {
+                const {rowClass, cellClass} = JSON.parse(it);
+                this.setClassNames(sizingMode, rowClass, cellClass);
+                const width = this.getCellWidth(value, renderer) + indentationPx + bufferPx;
+                ret = Math.max(ret, width);
             });
 
             return Math.max(currMax, ret);
