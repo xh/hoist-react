@@ -2,10 +2,20 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* "Local" Preference support in PreferenceService is no longer supported.  Application should use
+`LocalStorageService` instead. With v43, the `local` flag on any preferences will be ignored, and
+all preferences will be saved on the server instead.  Note that Hoist v43 will execute a one-time
+migration of any existing preferences from browser Local Storage to the server on app load.
+
 ### 🐞 Bug Fixes
 
 * Grid sizing mode styles no longer conflict with custom use of `groupUseEntireRow: false` within
   `agOptions`.
+
+### ⚙️ Technical
+* This version requires an update to hoist-core version 9.4.0 or greater.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.5.0...develop)
 
