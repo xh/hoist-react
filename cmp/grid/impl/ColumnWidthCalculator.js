@@ -88,28 +88,24 @@ export class ColumnWidthCalculator {
 
     calcLevelWidth(gridModel, records, column, options, indentationPx = 0) {
         const {field, getValueFn, renderer} = column,
-            {sizingMode} = gridModel,
+            {store, sizingMode} = gridModel,
             bufferPx = column.autosizeBufferPx ?? options.bufferPx;
 
-        // 1) Get unique values
+        // 1) Get unique values, and the ids of records that contain them
         const values = new Set(),
-            valueClassMap = {};
+            valueRecordMap = {};
 
         records.forEach(record => {
             if (!record) return;
-            const ctx = {record, field, column, gridModel, store: gridModel.store},
+            const ctx = {record, field, column, gridModel, store},
                 rawValue = getValueFn(ctx),
-                value = renderer ? renderer(rawValue, ctx) : rawValue,
-                cellClass = this.getCellClass(gridModel, column, record, rawValue),
-                rowClass = this.getRowClass(gridModel, record);
+                value = renderer ? renderer(rawValue, ctx) : rawValue;
 
             values.add(value);
 
-            // 1b) Track combinations of cell and row classes applied to this value.
-            // Stringify the combination to test Set equality.
-            let classNames = valueClassMap[value];
-            if (!classNames) classNames = valueClassMap[value] = new Set();
-            classNames.add(JSON.stringify({cellClass, rowClass}));
+            let recordIds = valueRecordMap[value];
+            if (!recordIds) recordIds = valueRecordMap[value] = new Set();
+            recordIds.add(record.id);
         });
 
         // 2) Use a canvas to estimate and sort by the pixel width of the string value.
@@ -122,16 +118,31 @@ export class ColumnWidthCalculator {
         // 3) Extract the sample set of longest values for rendering and sizing
         const longestValues = sortedValues.slice(Math.max(sortedValues.length - this.SAMPLE_COUNT, 0));
 
-        // 4) Render to a hidden cell to calculate the max displayed width
+        // 4) Collect all combinations of cell and row classes applied to this value.
+        const valueClassMap = {};
+        longestValues.forEach(value => {
+            valueRecordMap[value].forEach(recId => {
+                const record = store.getById(recId),
+                    rawValue = getValueFn({record, field, column, gridModel, store}),
+                    rowClass = this.getRowClass(gridModel, record),
+                    cellClass = this.getCellClass(gridModel, column, record, rawValue);
+
+                let classNames = valueClassMap[value];
+                if (!classNames) classNames = valueClassMap[value] = new Set();
+                classNames.add([rowClass, cellClass].join('|'));
+            });
+        });
+
+        // 5) Render to a hidden cell to calculate the max displayed width. Loop through all
+        // combinations of cell and row classes applied to this value, and return the largest.
         return reduce(longestValues, (currMax, value) => {
             const classNames = valueClassMap[value];
 
-            // 4b) Loop through all combinations of cell and row classes applied to this value,
-            // and return the largest.
             let ret = 0;
             classNames.forEach(it => {
-                const {rowClass, cellClass} = JSON.parse(it);
+                const [rowClass, cellClass] = it.split('|');
                 this.setClassNames(sizingMode, rowClass, cellClass);
+
                 const width = this.getCellWidth(value, renderer) + indentationPx + bufferPx;
                 ret = Math.max(ret, width);
             });
@@ -222,11 +233,13 @@ export class ColumnWidthCalculator {
 
     setClassNames(sizingMode, rowClass, cellClass) {
         this.resetClassNames();
-        this.getRowEl().classList.add(rowClass);
+        this.getRowEl().classList.add(
+            !isEmpty(rowClass) ? rowClass : null
+        );
         this.getCellEl().classList.add(
             'xh-grid-autosize-cell--active',
             `xh-grid-autosize-cell--${sizingMode}`,
-            cellClass
+            !isEmpty(cellClass) ? cellClass : null
         );
     }
 
