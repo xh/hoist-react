@@ -5,14 +5,20 @@
 ### 🎁 New Features
 
 * New `Column.autosizeBufferPx` config applies column-specific autosize buffer and overrides
-`GridAutosizeOptions.bufferPx`.
+  `GridAutosizeOptions.bufferPx`.
 
 ### 🐞 Bug Fixes
 
 * Grid sizing mode styles no longer conflict with custom use of `groupUseEntireRow: false` within
   `agOptions`.
-
 * Fixes an issue on iOS where `NumberInput` would incorrectly bring up a text keyboard.
+
+### ✨ Style
+
+* Reduced default Grid header heights to minimize their use of vertical space, especially at larger
+  sizing modes. As before, apps can override via the `AgGrid.HEADER_HEIGHTS` static.
+* Restyled Grid header rows with `--xh-grid-bg` and `--xh-text-color-muted` for a more minimal look
+  overall. As before, use the `--xh-grid-header-*` CSS vars to customize if needed.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.5.0...develop)
 

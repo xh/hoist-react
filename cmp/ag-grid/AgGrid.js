@@ -99,7 +99,7 @@ AgGrid.getRowHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.ROW_HEIGHT
 /**
  * Header heights (in pixels)
  */
-AgGrid.HEADER_HEIGHTS = {large: 28, standard: 24, compact: 20, tiny: 18};
+AgGrid.HEADER_HEIGHTS = {large: 28, standard: 24, compact: 22, tiny: 20};
 AgGrid.HEADER_HEIGHTS_MOBILE = {large: 42, standard: 38, compact: 34, tiny: 30};
 AgGrid.getHeaderHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS)[mode];
 
