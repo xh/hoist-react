@@ -2,6 +2,14 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+* "Local" Preference support in PreferenceService is no longer supported.  Application should use
+`LocalStorageService` instead. With v43, the `local` flag on any preferences will be ignored, and
+all preferences will be saved on the server instead.  Note that Hoist v43 will execute a one-time
+migration of any existing preferences from browser Local Storage to the server on app load.
+
+### ⚙️ Technical
+* This version requires an update to hoist-core version 9.4.0 or greater.
 
 ## v42.5.0 - 2021-09-10
 
