@@ -87,13 +87,12 @@ export class ColumnWidthCalculator {
     }
 
     calcLevelWidth(gridModel, records, column, options, indentationPx = 0) {
-        const {field, getValueFn, renderer} = column,
-            {store, sizingMode} = gridModel,
+        const {field, getValueFn, renderer, cellClassFn, cellClassRules} = column,
+            {store, sizingMode, rowClassFn, rowClassRules} = gridModel,
             bufferPx = column.autosizeBufferPx ?? options.bufferPx;
 
         // 1) Get Map of rendered values to List of records that contain them
         const recsByValue = new Map();
-
         records.forEach(record => {
             if (!record) return;
             const ctx = {record, field, column, gridModel, store},
@@ -118,8 +117,18 @@ export class ColumnWidthCalculator {
         // 3) Extract the sample set of longest values for rendering and sizing
         const longestValues = sortedValues.slice(Math.max(sortedValues.length - this.SAMPLE_COUNT, 0));
 
-        // 4) Get longest values, with unique combinations of cell and row classes applied to them
+        // 4) Get longest values, with unique combinations of row and cell classes applied to them
         const samples = longestValues.map(value => {
+            // Early out if we know there won't be row or cell classes.
+            if (
+                isNil(rowClassFn) &&
+                isNil(cellClassFn) &&
+                isEmpty(rowClassRules) &&
+                isEmpty(cellClassRules)
+            ) {
+                return {value, classNames: ['|']};
+            }
+
             const classNames = new Set();
             recsByValue.get(value).forEach(record => {
                 const rawValue = getValueFn({record, field, column, gridModel, store}),
