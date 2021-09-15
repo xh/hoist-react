@@ -339,10 +339,6 @@ export class Column {
         this.autosizeMinWidth = withDefault(autosizeMinWidth, this.minWidth);
         this.autosizeMaxWidth = withDefault(autosizeMaxWidth, this.maxWidth);
 
-        warnIf(
-            autosizeBufferPx && !isFinite(autosizeBufferPx),
-            `Column autosizeBufferPx not specified as a number. Default GridModel autosizeOptions bufferPx will be applied. [colId=${this.colId}]`
-        );
         this.autoHeight = withDefault(autoHeight, false);
         warnIf(
             autoHeight && elementRenderer,

@@ -37,7 +37,6 @@ import {
     find,
     isArray,
     isEmpty,
-    isFinite,
     isFunction,
     isNil,
     isPlainObject,
@@ -369,11 +368,6 @@ export class GridModel extends HoistModel {
         throwIf(
             autosizeOptions.fillMode && !['all', 'left', 'right', 'none'].includes(autosizeOptions.fillMode),
             `Unsupported value for fillMode.`
-        );
-
-        throwIf(
-            autosizeOptions.bufferPx && !isFinite(autosizeOptions.bufferPx),
-            'bufferPx not specified as a number.'
         );
 
         this.lockColumnGroups = lockColumnGroups;

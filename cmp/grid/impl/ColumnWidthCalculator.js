@@ -6,7 +6,7 @@
  */
 
 import {stripTags} from '@xh/hoist/utils/js';
-import {groupBy, isFinite, isFunction, isNil, map, max, min, reduce, sortBy} from 'lodash';
+import {groupBy, isFunction, isNil, map, max, min, reduce, sortBy} from 'lodash';
 
 /**
  * Calculates the column width required to display column.  Used by GridAutoSizeService.
@@ -47,8 +47,8 @@ export class ColumnWidthCalculator {
     }
 
     calcHeaderWidth(gridModel, column, options) {
-        const {autosizeBufferPx, autosizeIncludeHeader, autosizeIncludeHeaderIcons} = column,
-            bufferPx = isFinite(autosizeBufferPx) ? autosizeBufferPx : options.bufferPx;
+        const {autosizeIncludeHeader, autosizeIncludeHeaderIcons} = column,
+            bufferPx = column.autosizeBufferPx ?? options.bufferPx;
 
         if (!autosizeIncludeHeader) return null;
 
@@ -92,8 +92,8 @@ export class ColumnWidthCalculator {
     }
 
     calcLevelWidth(gridModel, records, column, options, indentationPx = 0) {
-        const {field, getValueFn, renderer, autosizeBufferPx} = column,
-            bufferPx = isFinite(autosizeBufferPx) ? autosizeBufferPx : options.bufferPx;
+        const {field, getValueFn, renderer} = column,
+            bufferPx = column.autosizeBufferPx ?? options.bufferPx;
 
         // 1) Get unique values
         const values = new Set();
