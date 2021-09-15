@@ -49,7 +49,7 @@ export class ColumnWidthCalculator {
 
     calcHeaderWidth(gridModel, column, options) {
         const {autosizeIncludeHeader, autosizeIncludeHeaderIcons} = column,
-            {bufferPx} = options;
+            bufferPx = column.autosizeBufferPx ?? options.bufferPx;
 
         if (!autosizeIncludeHeader) return null;
 
@@ -91,7 +91,7 @@ export class ColumnWidthCalculator {
     calcLevelWidth(gridModel, records, column, options, indentationPx = 0) {
         const {field, getValueFn, renderer} = column,
             {sizingMode} = gridModel,
-            {bufferPx} = options;
+            bufferPx = column.autosizeBufferPx ?? options.bufferPx;
 
         // 1) Get unique values
         const values = new Set(),

@@ -2,6 +2,11 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* New `Column.autosizeBufferPx` config applies column-specific autosize buffer and overrides
+`GridAutosizeOptions.bufferPx`.
+
 ### 🐞 Bug Fixes
 
 * Grid sizing mode styles no longer conflict with custom use of `groupUseEntireRow: false` within

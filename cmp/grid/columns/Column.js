@@ -154,6 +154,9 @@ export class Column {
      *     sort icon when calculating the header width.
      * @param {number} [c.autosizeMinWidth] - minimum width in pixels when autosizing.
      * @param {number} [c.autosizeMaxWidth] - maximum width in pixels when autosizing.
+     * @param {number} [c.autosizeBufferPx] - additional pixels to add to the size of each column
+     *      beyond its absolute minimum. If specified, it will override the value of
+     *      `GridAutosizeOptions.bufferPx` which is applied to all columns.
      * @param {boolean} [c.autoHeight] - true to dynamically grow the row height based on the
      *      content of this column's cell.  If true, text will also be set to wrap within cells.
      *      This property will be ignored if elementRenderer is set.
@@ -229,6 +232,7 @@ export class Column {
         autosizeIncludeHeaderIcons,
         autosizeMinWidth,
         autosizeMaxWidth,
+        autosizeBufferPx,
         autoHeight,
         tooltip,
         tooltipElement,
@@ -334,6 +338,7 @@ export class Column {
         this.autosizeIncludeHeaderIcons = withDefault(autosizeIncludeHeaderIcons, true);
         this.autosizeMinWidth = withDefault(autosizeMinWidth, this.minWidth);
         this.autosizeMaxWidth = withDefault(autosizeMaxWidth, this.maxWidth);
+
         this.autoHeight = withDefault(autoHeight, false);
         warnIf(
             autoHeight && elementRenderer,
