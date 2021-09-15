@@ -119,23 +119,17 @@ export class ColumnWidthCalculator {
 
         // 4) Get longest values, with unique combinations of row and cell classes applied to them
         const samples = longestValues.map(value => {
-            // Early out if we know there won't be row or cell classes.
-            if (
-                isNil(rowClassFn) &&
-                isNil(cellClassFn) &&
-                isEmpty(rowClassRules) &&
-                isEmpty(cellClassRules)
-            ) {
-                return {value, classNames: ['|']};
-            }
-
             const classNames = new Set();
-            recsByValue.get(value).forEach(record => {
-                const rawValue = getValueFn({record, field, column, gridModel, store}),
-                    rowClass = this.getRowClass(gridModel, record),
-                    cellClass = this.getCellClass(gridModel, column, record, rawValue);
-                classNames.add(rowClass + '|' + cellClass);
-            });
+            if (rowClassFn || cellClassFn || !isEmpty(rowClassRules) || !isEmpty(cellClassRules)) {
+                recsByValue.get(value).forEach(record => {
+                    const rawValue = getValueFn({record, field, column, gridModel, store}),
+                        rowClass = this.getRowClass(gridModel, record),
+                        cellClass = this.getCellClass(gridModel, column, record, rawValue);
+                    classNames.add(rowClass + '|' + cellClass);
+                });
+            } else {
+                classNames.add('|');
+            }
             return {value, classNames};
         });
 
@@ -272,7 +266,7 @@ export class ColumnWidthCalculator {
             });
         }
 
-        return !isEmpty(ret) ? ret.join(' ') : null;
+        return ret.join(' ');
     }
 
     //------------------
@@ -304,7 +298,7 @@ export class ColumnWidthCalculator {
             });
         }
 
-        return !isEmpty(ret) ? ret.join(' ') : null;
+        return ret.join(' ');
     }
 
     //-----------------
