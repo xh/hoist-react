@@ -19,7 +19,7 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmp.withFacto
     displayName: 'RestoreDefaultsButton',
     model: false,
     render({
-        warningTitle = 'Restore defaults?',
+        warningTitle = 'Please Confirm',
         warningMessage = 'All app options (including grid customizations) will be restored to their default settings, and the app will be reloaded.',
         ...buttonProps
     }, ref) {
@@ -27,7 +27,7 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmp.withFacto
             XH.confirm({
                 title: warningTitle,
                 message: warningMessage,
-                icon: Icon.warning({size: 'lg'}),
+                icon: Icon.warning(),
                 onConfirm: () => XH.restoreDefaultsAsync()
             });
         };
