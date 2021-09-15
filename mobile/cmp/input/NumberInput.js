@@ -169,7 +169,7 @@ const cmp = hoistCmp.factory(
             {hasFocus, renderValue} = model,
             displayValue = hasFocus ? model.displayValue(renderValue) : model.formatValue(renderValue),
             // use 'number' to edit values, but 'text' to displaying formatted values.
-            type = 'text',
+            type = hasFocus && !enableShorthandUnits ? 'number' : 'text',
             inputMode = !enableShorthandUnits ? 'decimal' : 'text';
 
         return input({

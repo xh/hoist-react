@@ -7,6 +7,8 @@
 * Grid sizing mode styles no longer conflict with custom use of `groupUseEntireRow: false` within
   `agOptions`.
 
+* Fixes an issue on iOS where `NumberInput` would incorrectly bring up a text keyboard.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.5.0...develop)
 
 ## v42.5.0 - 2021-09-10
