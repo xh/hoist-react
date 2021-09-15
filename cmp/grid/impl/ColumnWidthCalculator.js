@@ -54,13 +54,11 @@ export class ColumnWidthCalculator {
         if (!autosizeIncludeHeader) return null;
 
         try {
-            this.setHeaderElActive(true);
-            this.setHeaderElSizingMode(gridModel.sizingMode);
             return this.getHeaderWidth(gridModel, column, autosizeIncludeHeaderIcons, bufferPx);
         } catch (e) {
             console.warn(`Error calculating max header width for column "${column.colId}".`, e);
         } finally {
-            this.setHeaderElActive(false);
+            this.resetHeaderClassNames();
         }
     }
 
@@ -147,45 +145,32 @@ export class ColumnWidthCalculator {
     //------------------
     getHeaderWidth(gridModel, column, includeHeaderIcons, bufferPx) {
         const {colId, headerName, agOptions, sortable, filterable} = column,
+            {sizingMode} = gridModel,
             headerHtml = isFunction(headerName) ? headerName({column, gridModel}) : headerName,
             showSort = sortable && (includeHeaderIcons || gridModel.sortBy.find(sorter => sorter.colId === colId)),
             showMenu = (agOptions?.suppressMenu === false || filterable) && includeHeaderIcons;
 
         // Render to a hidden header cell to calculate the max displayed width
         const headerEl = this.getHeaderEl();
-        this.setHeaderElSortAndMenu(showSort, showMenu);
+        this.setHeaderClassNames(sizingMode, showSort, showMenu);
         headerEl.firstChild.innerHTML = headerHtml;
         return Math.ceil(headerEl.clientWidth) + bufferPx;
     }
 
-    setHeaderElActive(active) {
+    resetHeaderClassNames() {
         const headerEl = this.getHeaderEl();
-        if (active) {
-            headerEl.classList.add('xh-grid-autosize-header--active');
-        } else {
-            headerEl.classList.remove('xh-grid-autosize-header--active');
-        }
+        headerEl.classList.remove(...headerEl.classList);
+        headerEl.classList.add('xh-grid-autosize-header');
     }
 
-    setHeaderElSizingMode(sizingMode) {
-        const headerEl = this.getHeaderEl();
-        headerEl.classList.remove(
-            'xh-grid-autosize-header--large',
-            'xh-grid-autosize-header--standard',
-            'xh-grid-autosize-header--compact',
-            'xh-grid-autosize-header--tiny'
+    setHeaderClassNames(sizingMode, showSort, showMenu) {
+        this.resetHeaderClassNames();
+        this.getHeaderEl().classList.add(
+            'xh-grid-autosize-header--active',
+            `xh-grid-autosize-header--${sizingMode}`,
+            showSort ? 'xh-grid-autosize-header--sort' : null,
+            showMenu ? 'xh-grid-autosize-header--menu' : null
         );
-        headerEl.classList.add(`xh-grid-autosize-header--${sizingMode}`);
-    }
-
-    setHeaderElSortAndMenu(sort, menu) {
-        const headerEl = this.getHeaderEl();
-        headerEl.classList.remove(
-            'xh-grid-autosize-header--sort',
-            'xh-grid-autosize-header--menu'
-        );
-        if (sort) headerEl.classList.add('xh-grid-autosize-header--sort');
-        if (menu) headerEl.classList.add('xh-grid-autosize-header--menu');
     }
 
     getHeaderEl() {
