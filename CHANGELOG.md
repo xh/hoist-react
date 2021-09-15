@@ -19,6 +19,13 @@ See new `ColumnAutosizeOptions` config mentioned above.
 ### 🐞 Bug Fixes
 
 * Better coverage of Fetch abort error.
+* The in-app changelog will not prompt the user with the "What's New" button if category-based
+  filtering results in a version without any release notes.
+
+### ✨ Style
+
+* New CSS vars added to support easier customization of desktop Tab font/size/color. Tabs now
+  respect standard `--xh-font-size` by default.
 
 ### 📚 Libraries
 
