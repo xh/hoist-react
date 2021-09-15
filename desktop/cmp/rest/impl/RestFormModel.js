@@ -112,7 +112,7 @@ export class RestFormModel extends HoistModel {
                 confirmed = await XH.confirm({
                     message,
                     title: 'Warning',
-                    icon: Icon.warning({size: 'lg'})
+                    icon: Icon.warning()
                 });
 
             if (!confirmed) return;

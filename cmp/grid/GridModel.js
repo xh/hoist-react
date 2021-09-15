@@ -424,7 +424,7 @@ export class GridModel extends HoistModel {
         if (this.restoreDefaultsWarning) {
             const confirmed = await XH.confirm({
                 title: 'Please Confirm',
-                icon: Icon.warning({size: 'lg'}),
+                icon: Icon.warning(),
                 message: this.restoreDefaultsWarning,
                 confirmProps: {
                     text: 'Yes, restore defaults',

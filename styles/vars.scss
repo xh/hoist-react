@@ -476,7 +476,11 @@ body {
   }
 
   &.xh-mobile {
-    --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.2));
+    --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.4));
+
+    &.xh-dark {
+      --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.6));
+    }
   }
 
   //------------------------
