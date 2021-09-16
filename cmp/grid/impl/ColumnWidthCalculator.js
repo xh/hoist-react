@@ -6,12 +6,12 @@
  */
 
 import {stripTags} from '@xh/hoist/utils/js';
-import {groupBy, isFunction, isNil, map, max, min, reduce, sortBy} from 'lodash';
+import {forOwn, groupBy, isEmpty, isFunction, isNil, map, max, min,  sortBy} from 'lodash';
 
 /**
  * Calculates the column width required to display column.  Used by GridAutoSizeService.
  *
- * Uses Canvas, off-screen DOM , and heuristics to estimate the actual size requirement
+ * Uses Canvas, off-screen DOM, and heuristics to estimate the actual size requirement
  * for a set of records when rendered in a column.
  *
  * @private
@@ -23,6 +23,7 @@ export class ColumnWidthCalculator {
     _canvasContext;
     _headerEl;
     _cellEl;
+    _rowEl;
 
     /**
      *
@@ -48,18 +49,16 @@ export class ColumnWidthCalculator {
 
     calcHeaderWidth(gridModel, column, options) {
         const {autosizeIncludeHeader, autosizeIncludeHeaderIcons} = column,
-            {bufferPx} = options;
+            bufferPx = column.autosizeBufferPx ?? options.bufferPx;
 
         if (!autosizeIncludeHeader) return null;
 
         try {
-            this.setHeaderElActive(true);
-            this.setHeaderElSizingMode(gridModel.sizingMode);
             return this.getHeaderWidth(gridModel, column, autosizeIncludeHeaderIcons, bufferPx);
         } catch (e) {
             console.warn(`Error calculating max header width for column "${column.colId}".`, e);
         } finally {
-            this.setHeaderElActive(false);
+            this.resetHeaderClassNames();
         }
     }
 
@@ -67,11 +66,7 @@ export class ColumnWidthCalculator {
         try {
             if (column.elementRenderer) return null;
 
-            const {store, sizingMode, treeMode} = gridModel;
-
-            this.setCellElActive(true);
-            this.setCellElSizingMode(sizingMode);
-
+            const {store, treeMode} = gridModel;
             if (treeMode && column.isTreeColumn && store.allRootCount !== store.allCount) {
                 // For tree columns, we need to account for the indentation at the different depths.
                 // Here we group the records by tree depth and determine the max width at each depth.
@@ -87,27 +82,34 @@ export class ColumnWidthCalculator {
         } catch (e) {
             console.warn(`Error calculating max data width for column "${column.colId}".`, e);
         } finally {
-            this.setCellElActive(false);
+            this.resetClassNames();
         }
     }
 
     calcLevelWidth(gridModel, records, column, options, indentationPx = 0) {
-        const {field, getValueFn, renderer} = column,
-            {bufferPx} = options;
+        const {field, getValueFn, renderer, cellClassFn, cellClassRules} = column,
+            {store, sizingMode, rowClassFn, rowClassRules} = gridModel,
+            bufferPx = column.autosizeBufferPx ?? options.bufferPx;
 
-        // 1) Get unique values
-        const values = new Set();
+        // 1) Get Map of rendered values to List of records that contain them
+        const recsByValue = new Map();
         records.forEach(record => {
             if (!record) return;
-            const ctx = {record, field, column, gridModel, store: gridModel.store},
+            const ctx = {record, field, column, gridModel, store},
                 rawValue = getValueFn(ctx),
                 value = renderer ? renderer(rawValue, ctx) : rawValue;
-            values.add(value);
+
+            const recs = recsByValue.get(value);
+            if (!recs) {
+                recsByValue.set(value, [record]);
+            } else {
+                recs.push(record);
+            }
         });
 
         // 2) Use a canvas to estimate and sort by the pixel width of the string value.
-        // Strip html tags but include parentheses / units etc. for renderers that may return html,
-        const sortedValues = sortBy(Array.from(values), value => {
+        // Strip html tags but include parentheses / units etc. for renderers that may return html.
+        const sortedValues = sortBy(Array.from(recsByValue.keys()), value => {
             const width = isNil(value) ? 0 : this.getStringWidth(stripTags(value.toString()));
             return width + indentationPx;
         });
@@ -115,11 +117,34 @@ export class ColumnWidthCalculator {
         // 3) Extract the sample set of longest values for rendering and sizing
         const longestValues = sortedValues.slice(Math.max(sortedValues.length - this.SAMPLE_COUNT, 0));
 
-        // 4) Render to a hidden cell to calculate the max displayed width
-        return reduce(longestValues, (currMax, value) => {
-            const width = this.getCellWidth(value, renderer) + indentationPx + bufferPx;
-            return Math.max(currMax, width);
-        }, 0);
+        // 4) Get longest values, with unique combinations of row and cell classes applied to them
+        const samples = longestValues.map(value => {
+            const classNames = new Set();
+            if (rowClassFn || cellClassFn || !isEmpty(rowClassRules) || !isEmpty(cellClassRules)) {
+                recsByValue.get(value).forEach(record => {
+                    const rawValue = getValueFn({record, field, column, gridModel, store}),
+                        rowClass = this.getRowClass(gridModel, record),
+                        cellClass = this.getCellClass(gridModel, column, record, rawValue);
+                    classNames.add(rowClass + '|' + cellClass);
+                });
+            } else {
+                classNames.add('|');
+            }
+            return {value, classNames};
+        });
+
+        // 5) Render to a hidden cell to calculate the max displayed width. Loop through all
+        // combinations of cell and row classes applied to this value, and return the largest.
+        let ret = 0;
+        samples.forEach(({value, classNames}) => {
+            classNames.forEach(it => {
+                const [rowClass, cellClass] = it.split('|');
+                this.setClassNames(sizingMode, rowClass, cellClass);
+                const width = this.getCellWidth(value, renderer) + indentationPx + bufferPx;
+                ret = Math.max(ret, width);
+            });
+        });
+        return ret;
     }
 
     //------------------
@@ -127,45 +152,32 @@ export class ColumnWidthCalculator {
     //------------------
     getHeaderWidth(gridModel, column, includeHeaderIcons, bufferPx) {
         const {colId, headerName, agOptions, sortable, filterable} = column,
+            {sizingMode} = gridModel,
             headerHtml = isFunction(headerName) ? headerName({column, gridModel}) : headerName,
             showSort = sortable && (includeHeaderIcons || gridModel.sortBy.find(sorter => sorter.colId === colId)),
             showMenu = (agOptions?.suppressMenu === false || filterable) && includeHeaderIcons;
 
         // Render to a hidden header cell to calculate the max displayed width
         const headerEl = this.getHeaderEl();
-        this.setHeaderElSortAndMenu(showSort, showMenu);
+        this.setHeaderClassNames(sizingMode, showSort, showMenu);
         headerEl.firstChild.innerHTML = headerHtml;
         return Math.ceil(headerEl.clientWidth) + bufferPx;
     }
 
-    setHeaderElActive(active) {
+    resetHeaderClassNames() {
         const headerEl = this.getHeaderEl();
-        if (active) {
-            headerEl.classList.add('xh-grid-autosize-header--active');
-        } else {
-            headerEl.classList.remove('xh-grid-autosize-header--active');
-        }
+        headerEl.classList.remove(...headerEl.classList);
+        headerEl.classList.add('xh-grid-autosize-header');
     }
 
-    setHeaderElSizingMode(sizingMode) {
-        const headerEl = this.getHeaderEl();
-        headerEl.classList.remove(
-            'xh-grid-autosize-header--large',
-            'xh-grid-autosize-header--standard',
-            'xh-grid-autosize-header--compact',
-            'xh-grid-autosize-header--tiny'
+    setHeaderClassNames(sizingMode, showSort, showMenu) {
+        this.resetHeaderClassNames();
+        this.getHeaderEl().classList.add(
+            'xh-grid-autosize-header--active',
+            `xh-grid-autosize-header--${sizingMode}`,
+            showSort ? 'xh-grid-autosize-header--sort' : null,
+            showMenu ? 'xh-grid-autosize-header--menu' : null
         );
-        headerEl.classList.add(`xh-grid-autosize-header--${sizingMode}`);
-    }
-
-    setHeaderElSortAndMenu(sort, menu) {
-        const headerEl = this.getHeaderEl();
-        headerEl.classList.remove(
-            'xh-grid-autosize-header--sort',
-            'xh-grid-autosize-header--menu'
-        );
-        if (sort) headerEl.classList.add('xh-grid-autosize-header--sort');
-        if (menu) headerEl.classList.add('xh-grid-autosize-header--menu');
     }
 
     getHeaderEl() {
@@ -205,34 +217,88 @@ export class ColumnWidthCalculator {
         return Math.ceil(cellEl.clientWidth);
     }
 
-    setCellElActive(active) {
-        const cellEl = this.getCellEl();
-        if (active) {
-            cellEl.classList.add('xh-grid-autosize-cell--active');
-        } else {
-            cellEl.classList.remove('xh-grid-autosize-cell--active');
-        }
+    resetClassNames() {
+        const rowEl = this.getRowEl(),
+            cellEl = this.getCellEl();
+
+        rowEl.classList.remove(...rowEl.classList);
+        rowEl.classList.add('xh-grid-autosize-row');
+        cellEl.classList.remove(...cellEl.classList);
+        cellEl.classList.add('xh-grid-autosize-cell');
     }
 
-    setCellElSizingMode(sizingMode) {
-        const cellEl = this.getCellEl();
-        cellEl.classList.remove(
-            'xh-grid-autosize-cell--large',
-            'xh-grid-autosize-cell--standard',
-            'xh-grid-autosize-cell--compact',
-            'xh-grid-autosize-cell--tiny'
+    setClassNames(sizingMode, rowClass, cellClass) {
+        this.resetClassNames();
+        this.getRowEl().classList.add(
+            !isEmpty(rowClass) ? rowClass : null
         );
-        cellEl.classList.add(`xh-grid-autosize-cell--${sizingMode}`);
+        this.getCellEl().classList.add(
+            'xh-grid-autosize-cell--active',
+            `xh-grid-autosize-cell--${sizingMode}`,
+            !isEmpty(cellClass) ? cellClass : null
+        );
     }
 
     getCellEl() {
         if (!this._cellEl) {
-            const cellEl = document.createElement('div');
+            const rowEl = this.getRowEl(),
+                cellEl = document.createElement('div');
             cellEl.classList.add('xh-grid-autosize-cell');
-            document.body.appendChild(cellEl);
+            rowEl.appendChild(cellEl);
             this._cellEl = cellEl;
         }
         return this._cellEl;
+    }
+
+    getCellClass(gridModel, column, record, value) {
+        const {cellClassFn, cellClassRules} = column,
+            ret = [];
+
+        if (cellClassFn) {
+            ret.push(cellClassFn({record, column, gridModel}));
+        }
+
+        if (cellClassRules) {
+            forOwn(cellClassRules, (fn, className) => {
+                if (fn({value, data: record})) {
+                    ret.push(className);
+                }
+            });
+        }
+
+        return ret.join(' ');
+    }
+
+    //------------------
+    // Autosize row
+    //------------------
+    getRowEl() {
+        if (!this._rowEl) {
+            const rowEl = document.createElement('div');
+            rowEl.classList.add('xh-grid-autosize-row');
+            document.body.appendChild(rowEl);
+            this._rowEl = rowEl;
+        }
+        return this._rowEl;
+    }
+
+    getRowClass(gridModel, record) {
+        const {rowClassFn, rowClassRules} = gridModel,
+            ret = [];
+
+        if (rowClassFn) {
+            ret.push(rowClassFn(record));
+        }
+
+        if (rowClassRules) {
+            forOwn(rowClassRules, (fn, className) => {
+                if (fn({data: record})) {
+                    ret.push(className);
+                }
+            });
+        }
+
+        return ret.join(' ');
     }
 
     //-----------------
