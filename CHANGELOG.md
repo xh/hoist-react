@@ -5,14 +5,20 @@
 ### 🎁 New Features
 
 * New `Column.autosizeBufferPx` config applies column-specific autosize buffer and overrides
-`GridAutosizeOptions.bufferPx`.
+  `GridAutosizeOptions.bufferPx`.
 
 ### 🐞 Bug Fixes
 
 * Grid sizing mode styles no longer conflict with custom use of `groupUseEntireRow: false` within
   `agOptions`.
-
 * Fixes an issue on iOS where `NumberInput` would incorrectly bring up a text keyboard.
+
+### ✨ Style
+
+* Reduced default Grid header heights to minimize their use of vertical space, especially at larger
+  sizing modes. As before, apps can override via the `AgGrid.HEADER_HEIGHTS` static.
+* Restyled Grid header rows with `--xh-grid-bg` and `--xh-text-color-muted` for a more minimal look
+  overall. As before, use the `--xh-grid-header-*` CSS vars to customize if needed.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.5.0...develop)
 
@@ -58,6 +64,9 @@
   `inter-ui` npm package. Inter is a modern, open-source font that leverages optical sizing to
   ensure maximum readability, even at very small sizes (e.g. `sizingMode: 'tiny'`). It's also a
   "variable" font, meaning it supports any weights from 1-1000 with a single font file download.
+* Default Grid header heights have been reduced for a more compact display and greater
+  differentiation between header and data rows. As before, apps can customize the pixel heights used
+  by overwriting the `AgGrid.HEADER_HEIGHTS` static, typically within `Bootstrap.js`.
 
 ### ⚙️ Technical
 
