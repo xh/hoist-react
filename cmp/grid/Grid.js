@@ -142,14 +142,20 @@ class GridLocalModel extends HoistModel {
     fixedRowHeight;
 
     getRowHeight(node) {
-        const {model} = this;
-        if (node?.group) {
-            return model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode(model.sizingMode);
+        const {model, agOptions} = this,
+            {sizingMode, groupRowHeight} = model,
+            {groupUseEntireRow} = agOptions;
+
+        if (node?.group && groupUseEntireRow) {
+            return groupRowHeight ?? AgGrid.getGroupRowHeightForSizingMode(sizingMode);
+        } else if (node?.group) {
+            return groupRowHeight ?? AgGrid.getRowHeightForSizingMode(sizingMode);
+        } else {
+            return max([
+                this.fixedRowHeight,
+                model.agGridModel.getAutoRowHeight(node)
+            ]);
         }
-        return max([
-            this.fixedRowHeight,
-            model.agGridModel.getAutoRowHeight(node)
-        ]);
     }
 
     /** @returns {boolean} - true if any root-level records have children */

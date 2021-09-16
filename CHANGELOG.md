@@ -15,8 +15,10 @@
 
 ### ✨ Style
 
-* Reduced default Grid header heights to minimize their use of vertical space, especially at larger
-  sizing modes. As before, apps can override via the `AgGrid.HEADER_HEIGHTS` static.
+* Reduced default Grid header and group row heights to minimize their use of vertical space,
+  especially at larger sizing modes. As before, apps can override via the `AgGrid.HEADER_HEIGHTS`
+  and `AgGrid.GROUP_ROW_HEIGHTS` static properties. The reduction in height does not apply to group
+  rows that do not use the entire width of the row.
 * Restyled Grid header rows with `--xh-grid-bg` and `--xh-text-color-muted` for a more minimal look
   overall. As before, use the `--xh-grid-header-*` CSS vars to customize if needed.
 
