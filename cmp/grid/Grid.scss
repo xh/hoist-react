@@ -33,13 +33,11 @@
     }
 
     svg {
-      margin-left: var(--xh-pad-half-px);
       color: var(--xh-grid-header-icon-color);
     }
   }
 
   .xh-grid-header {
-    margin-top: 1px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -56,7 +54,6 @@
     .xh-grid-header-menu-icon,
     .xh-grid-header-expand-collapse-icon {
       color: var(--xh-grid-header-icon-color);
-      margin-left: var(--xh-pad-half-px);
       width: 1.5em;
     }
 
@@ -388,7 +385,6 @@
 
   .xh-grid-header-sort-icon,
   .xh-grid-header-menu-icon {
-    margin-left: var(--xh-pad-half-px);
     width: 1.5em;
     display: none;
   }
