@@ -146,16 +146,18 @@ class GridLocalModel extends HoistModel {
             {sizingMode, groupRowHeight} = model,
             {groupUseEntireRow} = agOptions;
 
-        if (node?.group && groupUseEntireRow) {
-            return groupRowHeight ?? AgGrid.getGroupRowHeightForSizingMode(sizingMode);
-        } else if (node?.group) {
-            return groupRowHeight ?? AgGrid.getRowHeightForSizingMode(sizingMode);
-        } else {
-            return max([
-                this.fixedRowHeight,
-                model.agGridModel.getAutoRowHeight(node)
-            ]);
+        if (node?.group) {
+            return (
+                groupRowHeight ??
+                groupUseEntireRow ?
+                    AgGrid.getGroupRowHeightForSizingMode(sizingMode) :
+                    AgGrid.getRowHeightForSizingMode(sizingMode)
+            );
         }
+        return max([
+            this.fixedRowHeight,
+            model.agGridModel.getAutoRowHeight(node)
+        ]);
     }
 
     /** @returns {boolean} - true if any root-level records have children */
