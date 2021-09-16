@@ -184,7 +184,7 @@
 .xh-grid--hierarchical:not(.xh-data-view) {
   // Generate indentations for tree grids with hierarchical data.
   .ag-ltr {
-    @for $i from 0 to 20 {
+    @for $i from 0 to 10 {
       .ag-row-group-indent-#{$i} {
         padding-left: calc(#{$i} * var(--xh-grid-tree-indent));
       }
@@ -214,22 +214,15 @@
   // branches, some such "parent" rows might not actually have children and therefore won't be
   // identified as groups by AG-Grid row classes, but this keeps the styling consistent for all
   // rows at the same level.
-  @for $i from 0 to 20 {
+  @for $i from 0 to 10 {
     &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
-      .ag-floating-bottom,
-      .ag-floating-top {
-        background-color: var(--xh-grid-tree-group-total-row-bg);
-      }
-
-      @for $level from 0 to 6 {
-        $h: 205 - ($level * 2);
-        $s: 70 + ($level * 6);
-        $l: 92 + ($level * 1.4);
+      @for $level from 0 to 9 {
+        $l: 94 + ($level / ($i + 1) * 6);
 
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
           &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-            background-color: hsl($h, $s * 1%, $l * 1%);
+            background-color: hsl(205, 70%, $l * 1%);
           }
         }
       }
@@ -238,6 +231,23 @@
         .ag-row:not(.ag-row-level-#{$i}) {
           &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected):not(.ag-row-pinned) {
             background-color: var(--xh-grid-bg-hover);
+          }
+        }
+      }
+    }
+
+    // With colors
+    &.xh-grid--tree-style-colors.xh-grid--max-depth-#{$i} {
+      .ag-floating-bottom,
+      .ag-floating-top {
+        background-color: var(--xh-grid-tree-group-color-level-0);
+      }
+
+      @for $level from 0 to 6 {
+        .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
+          &:not(.ag-row-selected),
+          &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+            background-color: var(--xh-grid-tree-group-color-level-#{$level});
           }
         }
       }
@@ -270,17 +280,15 @@
 }
 
 .xh-dark .xh-grid--hierarchical:not(.xh-data-view) {
-  @for $i from 0 to 20 {
+  @for $i from 0 to 10 {
     &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
-      @for $level from 0 to 6 {
-        $h: 200 - ($level * 1.5);
-        $s: 40 - ($level * 5);
-        $l: 20 - ($level * 1.75);
+      @for $level from 0 to 9 {
+        $l: 16 - ($level / ($i + 1) * 11);
 
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
           &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-            background-color: hsl($h, $s * 1%, $l * 1%);
+            background-color: hsl(200, 50%, $l * 1%);
           }
         }
       }
@@ -289,6 +297,23 @@
         .ag-row:not(.ag-row-level-#{$i}) {
           &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected):not(.ag-row-pinned) {
             background-color: var(--xh-grid-bg-hover);
+          }
+        }
+      }
+    }
+
+    // With colors
+    &.xh-grid--tree-style-colors.xh-grid--max-depth-#{$i} {
+      .ag-floating-bottom,
+      .ag-floating-top {
+        background-color: var(--xh-grid-tree-group-color-level-0);
+      }
+
+      @for $level from 0 to 6 {
+        .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
+          &:not(.ag-row-selected),
+          &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+            background-color: var(--xh-grid-tree-group-color-level-#{$level});
           }
         }
       }
