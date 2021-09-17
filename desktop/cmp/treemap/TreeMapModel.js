@@ -8,7 +8,7 @@ import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {numberRenderer} from '@xh/hoist/format';
-import {cloneDeep, get, isEmpty, isFinite, max, set, sortBy, sumBy, unset} from 'lodash';
+import {cloneDeep, get, isEmpty, isFinite, max, mean, set, sortBy, sumBy, unset} from 'lodash';
 
 /**
  * Core Model for a TreeMap.
@@ -55,6 +55,8 @@ export class TreeMapModel extends HoistModel {
     tooltip;
     /** @member {(Element|string)} */
     emptyText;
+    /** @member {string} */
+    minorBasketLabel;
 
     //------------------------
     // Observable API
@@ -81,6 +83,8 @@ export class TreeMapModel extends HoistModel {
     @bindable theme;
     /** @member {boolean} */
     @bindable isMasking;
+    /** @member {(Error|string)} */
+    @bindable error;
 
     _filter;
 
@@ -119,11 +123,13 @@ export class TreeMapModel extends HoistModel {
      *     renderer, or a custom tooltipFn which returns a string output of the node's value.
      * @param {(Element|string)} [c.emptyText] - Element/text to render if TreeMap has no records.
      *      Defaults to null, in which case no empty text will be shown.
+     * @param {string} [c.minorBasketLabel] - label used for generated node, if maxNodes exceeded.
+     *      Defaults to 'Minor Basket'.
      */
     constructor({
         store,
         gridModel,
-        maxNodes = 1000,
+        maxNodes = 300,
         maxLabels = 50,
         highchartsConfig,
         labelField = 'name',
@@ -140,6 +146,7 @@ export class TreeMapModel extends HoistModel {
         onDoubleClick,
         tooltip = true,
         emptyText,
+        minorBasketLabel = 'Minor Basket',
         filter
     } = {}) {
         super();
@@ -172,6 +179,7 @@ export class TreeMapModel extends HoistModel {
         this.onDoubleClick = withDefault(onDoubleClick, this.defaultOnDoubleClick);
         this.tooltip = tooltip;
         this.emptyText = emptyText;
+        this.minorBasketLabel = minorBasketLabel;
 
         this._filter = filter;
 
@@ -230,21 +238,16 @@ export class TreeMapModel extends HoistModel {
         return isEmpty(this.data);
     }
 
-    @computed
-    get error() {
-        return (this.data.length > this.maxNodes) ?
-            'Data node limit reached. Unable to render TreeMap.' :
-            null;
-    }
-
     //-------------------------
     // Data
     //-------------------------
     @action
     processAndSetData(sourceRecords) {
         let data = this.processRecordsRecursive(sourceRecords);
+        data = this.limitNodes(data);
         data = this.limitLabels(data);
-        this.data = this.normaliseColorValues(data);
+        data = this.normaliseColorValues(data);
+        this.data = data;
     }
 
     /**
@@ -258,9 +261,9 @@ export class TreeMapModel extends HoistModel {
 
         sourceRecords.forEach(record => {
             const {id, children, data, treePath} = record,
-                name = data[labelField],
+                label = data[labelField],
                 value = data[valueField],
-                heatValue = data[heatField];
+                heat = data[heatField];
 
             // Skip records without value
             if (!value) return;
@@ -269,9 +272,9 @@ export class TreeMapModel extends HoistModel {
             const treeRec = {
                 id,
                 record,
-                name,
-                heatValue,
-                value: Math.abs(value)
+                name: label,
+                value: Math.abs(value),
+                raw: {label, value, heat}
             };
 
             if (parentId) treeRec.parent = parentId;
@@ -299,7 +302,39 @@ export class TreeMapModel extends HoistModel {
     }
 
     /**
-     * Removes node labels if the number of nodes exceeds maxLabels.
+     * Collapses nodes to a 'minor basket' node if the count exceeds maxNodes.
+     */
+    limitNodes(data) {
+        const {maxNodes} = this;
+        if (data.length <= maxNodes + 1) return data; // +1 to avoid a minor basket of 1
+
+        // 1) Collect value and heat for minor basket from excess nodes
+        const ret = sortBy(data, it => -it.value);
+        let value = 0, heatValues = [];
+        for (let i = maxNodes; i < ret.length; i++) {
+            value += ret[i].raw.value;
+            heatValues.push(ret[i].raw.heat);
+        }
+
+        // 2) Strip excess nodes, and append minor basket node
+        const count = data.length - maxNodes,
+            label = `${this.minorBasketLabel} (${count})`,
+            heat = mean(heatValues);
+
+        return [
+            ...data.slice(0, maxNodes),
+            {
+                id: null,
+                record: null,
+                name: label,
+                value: Math.abs(value),
+                raw: {label, value, heat}
+            }
+        ];
+    }
+
+    /**
+     * Removes node labels if the count exceeds maxLabels.
      * This is a performance optimisation to mitigate slow SVG text rendering. Labels are prioritized
      * according to node size, from largest to smallest, on the basis that removed labels would
      * likely be hidden due to the size of the node.
@@ -316,7 +351,7 @@ export class TreeMapModel extends HoistModel {
     }
 
     /**
-     * Normalizes heatValues to colorValues between 0-1, where 0 is the maximum negative heat,
+     * Normalize heats to colorValues between 0-1, where 0 is the maximum negative heat,
      * 1 is the maximum positive heat, and 0.5 is no heat. This allows the colorValue to map to
      * the colorAxis provided to Highcharts.
      *
@@ -341,11 +376,11 @@ export class TreeMapModel extends HoistModel {
         //---------------------
         if (colorMode === 'wash') {
             data.forEach(it => {
-                const {heatValue} = it,
-                    isValid = this.valueIsValid(heatValue);
+                const {heat} = it.raw,
+                    isValid = this.valueIsValid(heat);
 
-                if (isValid && heatValue > 0) it.colorValue = 0.8;
-                if (isValid && heatValue < 0) it.colorValue = 0.2;
+                if (isValid && heat > 0) it.colorValue = 0.8;
+                if (isValid && heat < 0) it.colorValue = 0.2;
                 if (!it.colorValue) it.colorValue = 0.5;
             });
             return data;
@@ -361,22 +396,22 @@ export class TreeMapModel extends HoistModel {
             if (this.valueIsValid(val)) heatValues.push(Math.abs(val));
         });
 
-        // 2) Transform heatValue into a normalized colorValue, according to the colorMode.
+        // 2) Transform heat into a normalized colorValue, according to the colorMode.
         const maxHeat = isFinite(this.maxHeat) ? this.maxHeat : max(heatValues);
         data.forEach(it => {
-            const {heatValue} = it;
+            const {heat} = it.raw;
 
-            if (!this.valueIsValid(heatValue)) {
+            if (!this.valueIsValid(heat)) {
                 it.colorValue = 0.5; // Treat invalid values as zero
                 return;
             }
 
-            if (heatValue > 0) {
+            if (heat > 0) {
                 // Normalize positive values between 0.6-1
-                it.colorValue = this.normalizeToRange(heatValue, 0, maxHeat, 0.6, 1);
-            } else if (heatValue < 0) {
+                it.colorValue = this.normalizeToRange(heat, 0, maxHeat, 0.6, 1);
+            } else if (heat < 0) {
                 // Normalize negative values between 0-0.4
-                it.colorValue = this.normalizeToRange(Math.abs(heatValue), maxHeat, 0, 0, 0.4);
+                it.colorValue = this.normalizeToRange(Math.abs(heat), maxHeat, 0, 0, 0.4);
             } else {
                 it.colorValue = 0.5; // Exactly zero
             }
@@ -422,7 +457,7 @@ export class TreeMapModel extends HoistModel {
     //----------------------
     defaultOnClick = (record, e) => {
         const {gridModel} = this;
-        if (!gridModel) return;
+        if (!record || !gridModel) return;
 
         // Select nodes in grid
         const {selModel} = gridModel;
@@ -434,7 +469,8 @@ export class TreeMapModel extends HoistModel {
     };
 
     defaultOnDoubleClick = (record) => {
-        if (!this.gridModel?.treeMode || isEmpty(record.children)) return;
+        const {gridModel} = this;
+        if (!record || !gridModel?.treeMode || isEmpty(record.children)) return;
         this.toggleNodeExpanded(record.treePath);
     };
 
@@ -443,16 +479,17 @@ export class TreeMapModel extends HoistModel {
 /**
  * @typedef {Object} TreeMapRecord
  * @property {RecordId} id - Record ID
- * @property {Record} record - Store record from which TreeMapRecord was created.
+ * @property {?Record} record - Store record from which TreeMapRecord was created.
  * @property {string} name - Used by Highcharts to determine the node label.
  * @property {number} value - Used by Highcharts to determine the node size.
- * @property {number} heatValue - transient property used to determine the Highcharts colorValue.
  * @property {number} colorValue - Used by Highcharts to determine the color in a heat map.
+ * @property {Object} raw - Object containing raw `value`, `heat` and `label` used to calculate
+ *      the Highcharts values above.
  */
 
 /**
- * @callback TreeMapModel~tooltipFn - normalized renderer function to produce a tree map tooltip.
- * @param {*} value - raw node data value.
- * @param {Record} record - row-level data Record.
- * @return {string} - the formatted value for display.
+ * @callback TreeMapModel~tooltipFn - Normalized renderer function to produce a tree map tooltip.
+ * @param {?Record} record - Row-level data Record.
+ * @param {Object} TreeMapRecord.raw - Object containing raw `value`, `heat` and `label`.
+ * @return {string} - The formatted value for display.
  */

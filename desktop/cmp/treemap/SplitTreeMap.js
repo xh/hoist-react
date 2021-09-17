@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {placeholder, fragment, hframe, vframe, hbox, vbox, box, div, p} from '@xh/hoist/cmp/layout';
+import {placeholder, fragment, hframe, vframe, hbox, vbox, box, div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
@@ -33,7 +33,7 @@ export const [SplitTreeMap, splitTreeMap]  = hoistCmp.withFactory({
         return container({
             ref,
             className,
-            items: errors.length ? errorPanel({errors}) : childMaps(),
+            items: errors.length ? errorMessage({error: errors[0]}) : childMaps(),
             ...props
         });
     }
@@ -108,8 +108,4 @@ const mapTitle = hoistCmp.factory(
             })
         });
     }
-);
-
-const errorPanel = hoistCmp.factory(
-    ({errors}) => errorMessage({message: fragment(errors.map(e => p(e)))})
 );

@@ -286,7 +286,7 @@ class LocalModel extends HoistModel {
     }
 
     getModelConfig() {
-        const {data, algorithm, tooltip, maxNodes, highchartsConfig} = this.model,
+        const {data, algorithm, tooltip, highchartsConfig} = this.model,
             {defaultTooltip} = this;
 
         return merge({
@@ -299,14 +299,13 @@ class LocalModel extends HoistModel {
                 outside: true,
                 pointFormatter: function() {
                     if (!tooltip) return;
-                    const {record} = this;
-                    return isFunction(tooltip) ? tooltip(record) : defaultTooltip(record);
+                    const {record, raw} = this;
+                    return isFunction(tooltip) ? tooltip({record, raw}) : defaultTooltip({record, raw});
                 }
             },
             plotOptions: {
                 treemap: {
                     layoutAlgorithm: algorithm,
-                    turboThreshold: maxNodes,
                     animation: false,
                     borderWidth: 0,
                     events: {click: this.onClick},
@@ -409,13 +408,11 @@ class LocalModel extends HoistModel {
     //----------------------
     // Tooltip
     //----------------------
-    defaultTooltip = (record) => {
+    defaultTooltip = ({raw}) => {
         const {model} = this,
-            {labelField, valueField, heatField, valueFieldLabel, heatFieldLabel, valueRenderer, heatRenderer} = model,
-            name = record.get(labelField),
-            value = record.get(valueField),
-            heat = record.get(heatField),
-            labelDiv = `<div class='xh-treemap-tooltip__label'>${name}</div>`;
+            {label, value, heat} = raw,
+            {valueField, heatField, valueFieldLabel, heatFieldLabel, valueRenderer, heatRenderer} = model,
+            labelDiv = `<div class='xh-treemap-tooltip__label'>${label}</div>`;
 
         let valueDiv = '';
         if (model.valueIsValid(value)) {

@@ -106,6 +106,12 @@ export class SplitTreeMapModel extends HoistModel {
     get theme()             {return this.primaryMapModel.theme}
 
     @action
+    setError(...args) {
+        this.primaryMapModel.setHighchartsConfig(...args);
+        this.secondaryMapModel.setHighchartsConfig(...args);
+    }
+
+    @action
     setHighchartsConfig(...args) {
         this.primaryMapModel.setHighchartsConfig(...args);
         this.secondaryMapModel.setHighchartsConfig(...args);
