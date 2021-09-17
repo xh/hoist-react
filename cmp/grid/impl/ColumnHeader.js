@@ -64,7 +64,7 @@ export const columnHeader = hoistCmp.factory({
         };
 
         const expandCollapseIcon = () => {
-            if (!xhColumn?.isTreeColumn || !xhColumn?.headerHasExpandCollapse || !impl.rootsWithChildren) {
+            if (!xhColumn || !xhColumn.isTreeColumn || !xhColumn.headerHasExpandCollapse || !impl.rootsWithChildren) {
                 return null;
             }
 
@@ -161,7 +161,7 @@ class LocalModel extends HoistModel {
         this.enableSorting = xhColumn?.sortable;
         this.availableSorts = this.parseAvailableSorts();
 
-        if (!XH.isMobileApp && xhColumn?.filterable && filterModel?.getFieldSpec(xhColumn?.field)) {
+        if (!XH.isMobileApp && xhColumn && xhColumn.filterable && filterModel?.getFieldSpec(xhColumn.field)) {
             this.columnHeaderFilterModel = new ColumnHeaderFilterModel({filterModel, column: xhColumn});
             this.enableFilter = true;
         } else {
