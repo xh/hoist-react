@@ -129,6 +129,12 @@ Select.propTypes = {
     /** Function to return loading message during an async query. Passed current query input. */
     loadingMessageFn: PT.func,
 
+    /** Maximum height of the menu before scrolling. Defaults to 300px. */
+    maxMenuHeight: PT.number,
+
+    /** Minimum height of the menu before flipping. Defaults to 140px. */
+    minMenuHeight: PT.number,
+
     /** Placement of the dropdown menu relative to the input control. */
     menuPlacement: PT.oneOf(['auto', 'top', 'bottom']),
 
@@ -606,6 +612,8 @@ const cmp = hoistCmp.factory(
                 isMulti: props.enableMulti,
                 closeMenuOnSelect: props.closeMenuOnSelect,
                 hideSelectedOptions: model.hideSelectedOptions,
+                maxMenuHeight: props.maxMenuHeight,
+                minMenuHeight: props.minMenuHeight,
 
                 // Explicit false ensures consistent default for single and multi-value instances.
                 isClearable: withDefault(props.enableClear, false),
