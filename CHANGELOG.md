@@ -15,6 +15,7 @@
 
 * New `Column.autosizeBufferPx` config applies column-specific autosize buffer and overrides
   `GridAutosizeOptions.bufferPx`.
+* `Select` input now supports new `maxMenuHeight` prop.
 
 ### 🐞 Bug Fixes
 
