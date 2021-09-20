@@ -26,7 +26,7 @@
     }
   },
   "dependencies": {
-    "@blueprintjs/core": "~3.49.1",
+    "@blueprintjs/core": "~3.50.1",
     "@blueprintjs/datetime": "~3.23.9",
     "@fortawesome/fontawesome-pro": "~5.15.4",
     "@fortawesome/fontawesome-svg-core": "~1.2.36",
@@ -39,10 +39,10 @@
     "@seznam/compose-react-refs": "~1.0.5",
     "classnames": "~2.3.0",
     "clipboard-copy": "~4.0.1",
-    "codemirror": "~5.62.3",
-    "core-js": "^3.17.1",
+    "codemirror": "~5.63.0",
+    "core-js": "^3.0.0",
     "debounce-promise": "~3.1.0",
-    "dompurify": "~2.3.1",
+    "dompurify": "~2.3.3",
     "downloadjs": "~1.4.7",
     "fast-deep-equal": "~3.1.1",
     "filesize": "~6.4.0",
@@ -86,7 +86,7 @@
     "react-dom": "~17.0.1",
     "stylelint": "~13.13.1",
     "stylelint-config-standard": "~22.0.0",
-    "stylelint-scss": "~3.20.1"
+    "stylelint-scss": "~3.21.0"
   },
   "resolutions": {
     "jimp": "^0.16.1",
