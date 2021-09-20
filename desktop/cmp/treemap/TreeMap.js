@@ -286,7 +286,7 @@ class LocalModel extends HoistModel {
     }
 
     getModelConfig() {
-        const {data, algorithm, tooltip, maxNodes, highchartsConfig} = this.model,
+        const {data, algorithm, tooltip, highchartsConfig} = this.model,
             {defaultTooltip} = this;
 
         return merge({
@@ -306,7 +306,6 @@ class LocalModel extends HoistModel {
             plotOptions: {
                 treemap: {
                     layoutAlgorithm: algorithm,
-                    turboThreshold: maxNodes,
                     animation: false,
                     borderWidth: 0,
                     events: {click: this.onClick},
