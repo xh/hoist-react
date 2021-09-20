@@ -28,8 +28,8 @@ import {createObservableRef} from '@xh/hoist/utils/react';
  * @return {ReactElement} - React Element to be rendered
  */
 export function useInlineEditorModel(component, props, ref, isPopup = false) {
-    const {className, inputProps, agParams, instantEdit} = props,
-        impl = useLocalModel(() => new InlineEditorModel(agParams, instantEdit));
+    const {className, inputProps, agParams} = props,
+        impl = useLocalModel(() => new InlineEditorModel(agParams));
 
     useImperativeHandle(ref, () => ({
         getValue: () => impl.value,
@@ -66,20 +66,16 @@ class InlineEditorModel extends HoistModel {
     /** @member {ICellEditorParams} */
     agParams;
 
-    /** @member {boolean} */
-    instantEdit;
-
     get inputEl() {
         return this.ref.current?.inputEl;
     }
 
-    constructor(agParams, instantEdit) {
+    constructor(agParams) {
         super();
         makeObservable(this);
 
         this.agParams = agParams;
         this.value = agParams.value;
-        this.instantEdit = instantEdit;
 
         // Focus into the input once the component is rendered but only do so if this cell started
         // the editing process. If using full row editing the editor may be rendered but we do not
@@ -101,8 +97,6 @@ class InlineEditorModel extends HoistModel {
         } else {
             inputEl.value = charPress;
         }
-
-        this.handleInstantEdit();
     }
 
     //-----------------------
@@ -113,14 +107,5 @@ class InlineEditorModel extends HoistModel {
             when: () => this.inputEl,
             run: () => wait().then(() => this.focus())
         };
-    }
-
-    handleInstantEdit() {
-        const {inputEl, ref} = this;
-
-        if (this.instantEdit && !isNil(inputEl.checked)) {
-            inputEl.checked = !inputEl.checked;
-            ref.current.noteValueChange(inputEl.checked);
-        }
     }
 }
