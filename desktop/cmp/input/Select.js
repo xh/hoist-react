@@ -132,11 +132,6 @@ Select.propTypes = {
     /** Maximum height of the menu before scrolling. Defaults to 300px. */
     maxMenuHeight: PT.number,
 
-    /** Minimum height of the menu before flipping menu placement relative to the input control.
-     * Defaults to 140px.
-     */
-    minMenuHeight: PT.number,
-
     /** Placement of the dropdown menu relative to the input control. */
     menuPlacement: PT.oneOf(['auto', 'top', 'bottom']),
 
@@ -615,7 +610,6 @@ const cmp = hoistCmp.factory(
                 closeMenuOnSelect: props.closeMenuOnSelect,
                 hideSelectedOptions: model.hideSelectedOptions,
                 maxMenuHeight: props.maxMenuHeight,
-                minMenuHeight: props.minMenuHeight,
 
                 // Explicit false ensures consistent default for single and multi-value instances.
                 isClearable: withDefault(props.enableClear, false),
