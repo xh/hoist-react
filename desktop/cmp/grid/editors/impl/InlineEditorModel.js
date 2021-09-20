@@ -41,7 +41,7 @@ export function useInlineEditorModel(component, props, ref, isPopup = false) {
     }));
 
     return component({
-        className: classNames('xh-inline-editor', className),
+        className: classNames('xh-inline-editor', {'xh-instant-edit': instantEdit}, className),
         width: isPopup ? agParams.eGridCell.clientWidth : null,
         model: impl,
         bind: 'value',
