@@ -357,7 +357,7 @@ export class GridModel extends HoistModel {
         this.autosizeOptions = defaults(autosizeOptions, {
             mode: GridAutosizeMode.ON_SIZING_MODE_CHANGE,
             includeCollapsedChildren: false,
-            showMask: true,
+            showMask: false,
             bufferPx: 5,
             fillMode: 'none'
         });

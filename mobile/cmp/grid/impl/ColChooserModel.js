@@ -133,7 +133,7 @@ export class ColChooserModel extends HoistModel {
         });
 
         gridModel.applyColumnStateChanges(colChanges);
-        if (autosizeOnCommit) gridModel.autosizeAsync();
+        if (autosizeOnCommit) gridModel.autosizeAsync({showMask: true});
     }
 
     //------------------------

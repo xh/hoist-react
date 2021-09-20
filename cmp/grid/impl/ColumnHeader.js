@@ -299,7 +299,7 @@ class LocalModel extends HoistModel {
     autosize() {
         const {gridModel} = this;
         if (gridModel?.autosizeEnabled) {
-            gridModel.autosizeAsync({columns: this.colId, showMask: false});
+            gridModel.autosizeAsync({columns: this.colId, showMask: true});
         }
     }
 

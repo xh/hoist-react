@@ -207,7 +207,7 @@ export class StoreContextMenu {
                     text: 'Autosize Columns',
                     icon: Icon.arrowsLeftRight(),
                     hidden: !gridModel?.autosizeEnabled,
-                    actionFn: () => gridModel.autosizeAsync()
+                    actionFn: () => gridModel.autosizeAsync({showMask: true})
                 });
             case 'restoreDefaults':
                 return new RecordAction({
