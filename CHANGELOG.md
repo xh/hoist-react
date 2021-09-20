@@ -2,6 +2,10 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* New prop `instantEdit` on `CheckboxEditor` allows streamlined toggling of boolean values in
+  editable grids.
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.49 -> 3.50`
