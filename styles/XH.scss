@@ -5,14 +5,22 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-@import 'vars';
-@import 'helpers';
+@use 'vars';
+@use 'helpers';
+@use '~inter-ui/variable' with (
+  $inter-font-display: block,
+  $inter-font-path: '~inter-ui/Inter (web)'
+);
+
+@include variable.all;
 
 body.xh-app {
   background-color: var(--xh-bg);
   border-color: var(--xh-border-color);
   color: var(--xh-text-color);
   font-family: var(--xh-font-family);
+  // Important for default Inter font to ensure numbers are constant-width and line up properly.
+  font-variant-numeric: tabular-nums;
   font-size: var(--xh-font-size-px);
   box-sizing: border-box;
 
@@ -53,6 +61,10 @@ body.xh-app {
 
   .xh-title-tip {
     cursor: pointer;
+  }
+
+  &.xh-tablet * {
+    user-select: none !important;
   }
 
   // Colors
@@ -126,7 +138,7 @@ body.xh-app {
   .xh-border-solid { border: var(--xh-border-solid); }
   .xh-border-top { border-top: var(--xh-border-solid) !important; }
 
-  .xh-bold { font-weight: bold; }
+  .xh-bold { font-weight: 600; } // note this is technically demi-bold - 700 often too heavy
   .xh-font-family-headings { font-family: var(--xh-font-family-headings); }
   .xh-font-family-mono { font-family: var(--xh-font-family-mono); }
   .xh-font-size-large { font-size: var(--xh-font-size-large-em); }

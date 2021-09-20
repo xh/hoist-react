@@ -26,8 +26,8 @@
     }
   },
   "dependencies": {
-    "@blueprintjs/core": "~3.48.0",
-    "@blueprintjs/datetime": "~3.23.7",
+    "@blueprintjs/core": "~3.50.1",
+    "@blueprintjs/datetime": "~3.23.9",
     "@fortawesome/fontawesome-pro": "~5.15.4",
     "@fortawesome/fontawesome-svg-core": "~1.2.36",
     "@fortawesome/pro-light-svg-icons": "~5.15.4",
@@ -35,19 +35,20 @@
     "@fortawesome/pro-solid-svg-icons": "~5.15.4",
     "@fortawesome/react-fontawesome": "~0.1.14",
     "@onsenui/fastclick": "~1.1.1",
-    "@popperjs/core": "~2.9.1",
+    "@popperjs/core": "~2.10.1",
     "@seznam/compose-react-refs": "~1.0.5",
     "classnames": "~2.3.0",
     "clipboard-copy": "~4.0.1",
-    "codemirror": "~5.62.3",
-    "core-js": "~3.16.2",
+    "codemirror": "~5.63.0",
+    "core-js": "^3.0.0",
     "debounce-promise": "~3.1.0",
-    "dompurify": "~2.3.1",
+    "dompurify": "~2.3.3",
     "downloadjs": "~1.4.7",
     "fast-deep-equal": "~3.1.1",
     "filesize": "~6.4.0",
     "golden-layout": "~1.5.9",
     "http-status-codes": "~2.1.4",
+    "inter-ui": "~3.19.3",
     "lodash": "~4.17.21",
     "lodash-inflection": "~1.5.0",
     "mobx": "~6.3.2",
@@ -85,10 +86,11 @@
     "react-dom": "~17.0.1",
     "stylelint": "~13.13.1",
     "stylelint-config-standard": "~22.0.0",
-    "stylelint-scss": "~3.20.1"
+    "stylelint-scss": "~3.21.0"
   },
   "resolutions": {
     "jimp": "^0.16.1",
-    "resize-img": "^2.0.0"
+    "resize-img": "^2.0.0",
+    "core-js": "^3.0.0"
   }
 }

@@ -46,8 +46,7 @@ import {
     max,
     min,
     omit,
-    pull,
-    sortBy
+    pull
 } from 'lodash';
 import {GridPersistenceModel} from './impl/GridPersistenceModel';
 import {GridSorter} from './impl/GridSorter';
@@ -358,7 +357,7 @@ export class GridModel extends HoistModel {
         this.autosizeOptions = defaults(autosizeOptions, {
             mode: GridAutosizeMode.ON_SIZING_MODE_CHANGE,
             includeCollapsedChildren: false,
-            showMask: true,
+            showMask: false,
             bufferPx: 5,
             fillMode: 'none'
         });
@@ -419,7 +418,7 @@ export class GridModel extends HoistModel {
         if (this.restoreDefaultsWarning) {
             const confirmed = await XH.confirm({
                 title: 'Please Confirm',
-                icon: Icon.warning({size: 'lg'}),
+                icon: Icon.warning(),
                 message: this.restoreDefaultsWarning,
                 confirmProps: {
                     text: 'Yes, restore defaults',
@@ -806,8 +805,9 @@ export class GridModel extends HoistModel {
     }
 
     /**
-     * This method will update the current column definition. Throws an exception if any of the
-     * columns provided in colStateChanges are not present in the current column list.
+     * This method will update the current column definition if it has changed.
+     * Throws an exception if any of the columns provided in colStateChanges are not
+     * present in the current column list.
      *
      * Note: Column ordering is determined by the individual (leaf-level) columns in state.
      * This means that if a column has been redefined to a new column group, that entire group may
@@ -835,20 +835,13 @@ export class GridModel extends HoistModel {
         });
 
         // 2) If the changes provided is a full list of leaf columns, synchronize the sort order
-        const leafCols = this.getLeafColumns();
-        if (colStateChanges.length === leafCols.length) {
-            // 2.a) Mark (potentially changed) sort order
-            colStateChanges.forEach((change, index) => {
-                const col = this.findColumn(columnState, change.colId);
-                col._sortOrder = index;
-            });
-
-            // 2.b) Install implied group sort orders and sort
-            columnState.forEach(it => this.markGroupSortOrder(it));
-            columnState = this.sortColumns(columnState);
+        if (colStateChanges.length === this.getLeafColumns().length) {
+            columnState = colStateChanges.map(c => this.findColumn(columnState, c.colId));
         }
 
-        this.columnState = columnState;
+        if (!equal(this.columnState, columnState)) {
+            this.columnState = columnState;
+        }
     }
 
     /**
@@ -1182,23 +1175,6 @@ export class GridModel extends HoistModel {
         return leaves;
     }
 
-    markGroupSortOrder(col) {
-        if (col.groupId) {
-            col.children.forEach(child => this.markGroupSortOrder(child));
-            col._sortOrder = col.children[0]._sortOrder;
-        }
-    }
-
-    sortColumns(columns) {
-        columns.forEach(col => {
-            if (col.children) {
-                col.children = this.sortColumns(col.children);
-            }
-        });
-
-        return sortBy(columns, [it => it._sortOrder]);
-    }
-
     collectIds(cols, ids = []) {
         cols.forEach(col => {
             if (col.colId) ids.push(col.colId);
@@ -1516,16 +1492,17 @@ export class GridModel extends HoistModel {
 /**
  * @typedef {Object} GridAutosizeOptions
  * @property {GridAutosizeMode} [mode] - defaults to GridAutosizeMode.ON_SIZING_MODE_CHANGE.
- * @property {number} [bufferPx] -  additional pixels to add to the size of each column beyond its
- *      absolute minimum.  May be used to adjust the spacing in the grid.  Default is 5.
+ * @property {number} [bufferPx] - additional pixels to add to the size of each column beyond its
+ *      absolute minimum. May be used to adjust the spacing in the grid. Columns that wish to
+ *      override this value may specify `Column.autosizeBufferPx`. Default is 5.
  * @property {boolean} [showMask] - true to show mask over the grid during the autosize operation.
  *      Default is true.
  * @property {boolean} [includeCollapsedChildren] - true to autosize all rows, even when hidden due
- *      to a collapsed ancestor row.  Default is false.  Note that setting this to true can
+ *      to a collapsed ancestor row. Default is false. Note that setting this to true can
  *      have performance impacts for large tree grids with many cells.
  * @property {function|string|string[]} [columns] - columns ids to autosize, or a function for
- *      testing if the given column should be autosized.  Typically used when calling
- *      autosizeAsync() manually.  To generally exclude a column from autosizing, see the
+ *      testing if the given column should be autosized. Typically used when calling
+ *      autosizeAsync() manually. To generally exclude a column from autosizing, see the
  *      autosizable option on columns.
  * @property {string} [fillMode] - how to fill remaining space after the columns have been
  *      autosized. Valid options are ['all', 'left', 'right', 'none']. Default is 'none'. Note this

@@ -5,7 +5,6 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from './HoistModel';
-
 /**
  * Specialized base class for defining the central model for a Hoist app as specified by its
  * {@see AppSpec.modelClass} config. That config should reference a concrete implementation class
@@ -68,5 +67,20 @@ export class HoistAppModel extends HoistModel {
      */
     getAppOptions() {
         return [];
+    }
+
+    /**
+     * Resets user preferences and any persistent local application state.
+     *
+     * The default implementation for this method will clear *all* preferences and local storage.
+     *
+     * Applications may wish to override this method to do a more targeted clearing of state.
+     * This is important for complex applications with smaller sub-applications, and/or device
+     * specific applications. These applications will typically want to perform a custom clearing
+     * that is more targeted, and includes any additional app-specific state.
+     */
+    async restoreDefaultsAsync() {
+        await window.XH.prefService.clearAllAsync();
+        window.XH.localStorageService.clear();
     }
 }

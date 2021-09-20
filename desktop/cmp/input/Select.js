@@ -55,6 +55,7 @@ export const [Select, select] = hoistCmp.withFactory({
         return useHoistInputModel(cmp, props, ref, Model);
     }
 });
+
 Select.propTypes = {
     ...HoistInputPropTypes,
 
@@ -127,6 +128,9 @@ Select.propTypes = {
 
     /** Function to return loading message during an async query. Passed current query input. */
     loadingMessageFn: PT.func,
+
+    /** Maximum height of the menu before scrolling. Defaults to 300px. */
+    maxMenuHeight: PT.number,
 
     /** Placement of the dropdown menu relative to the input control. */
     menuPlacement: PT.oneOf(['auto', 'top', 'bottom']),
@@ -384,7 +388,6 @@ class Model extends HoistInputModel {
     }
 
     findOption(value, createIfNotFound, options = this.internalOptions) {
-
         // Do a depth-first search of options
         for (const option of options) {
             if (option.options) {
@@ -584,14 +587,12 @@ class Model extends HoistInputModel {
     };
 
     getOrCreatePortalDiv() {
-        let portal = document.getElementById('xh-select-input-portal');
-
+        let portal = document.getElementById(Select.MENU_PORTAL_ID);
         if (!portal) {
             portal = document.createElement('div');
             portal.id = Select.MENU_PORTAL_ID;
             document.body.appendChild(portal);
         }
-
         return portal;
     }
 }
@@ -608,6 +609,7 @@ const cmp = hoistCmp.factory(
                 isMulti: props.enableMulti,
                 closeMenuOnSelect: props.closeMenuOnSelect,
                 hideSelectedOptions: model.hideSelectedOptions,
+                maxMenuHeight: props.maxMenuHeight,
 
                 // Explicit false ensures consistent default for single and multi-value instances.
                 isClearable: withDefault(props.enableClear, false),
@@ -667,8 +669,8 @@ const cmp = hoistCmp.factory(
         }
 
         const factory = model.getSelectFactory();
-
         merge(rsProps, props.rsOptions);
+
         return box({
             item: factory(rsProps),
             className: classNames(className, height ? 'xh-select--has-height' : null),

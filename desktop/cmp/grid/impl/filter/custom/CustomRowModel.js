@@ -60,6 +60,14 @@ export class CustomRowModel extends HoistModel {
         ];
     }
 
+    get commitOnChange() {
+        // Commit on change for the **inputs** should be the opposite to the GridFilterModel.
+        // If the filter model commits on change, the inputs shouldn't as it would be too aggressive
+        // while typing in values. Conversely, if the filter model doesn't, we prefer commitOnChange
+        // for the inputs as it eagerly validates the "Apply" button.
+        return !this.parentModel.parentModel.commitOnChange;
+    }
+
     get hideInput() {
         return ['blank', 'not blank'].includes(this.op);
     }

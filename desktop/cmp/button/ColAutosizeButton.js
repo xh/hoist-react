@@ -23,7 +23,10 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory({
 
         errorIf(!gridModel, "No GridModel available to ColAutosizeButton. Provide via a 'gridModel' prop, or context.");
 
-        onClick = onClick ?? (() => gridModel.autosizeAsync(autosizeOptions));
+        onClick = onClick ?? (() => gridModel.autosizeAsync({
+            showMask: true,
+            ...autosizeOptions
+        }));
 
         errorIf(
             !gridModel?.autosizeEnabled,

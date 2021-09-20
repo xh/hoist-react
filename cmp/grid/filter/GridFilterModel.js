@@ -6,7 +6,7 @@
  */
 
 import {HoistModel, managed} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {FieldFilter, flattenFilter, withFilterByField, withFilterByTypes} from '@xh/hoist/data';
 import {wait} from '@xh/hoist/promise';
 import {find, isString, castArray, uniq} from 'lodash';
@@ -22,6 +22,8 @@ export class GridFilterModel extends HoistModel {
     gridModel;
     /** @member {(Store|View)} */
     bind;
+    /** @member {boolean} */
+    @bindable commitOnChange;
     /** @member {GridFilterFieldSpec[]} */
     @managed fieldSpecs = [];
 
@@ -39,6 +41,7 @@ export class GridFilterModel extends HoistModel {
      * @param {(Store|View)} c.bind - Store or cube View that should actually be filtered
      *      as column filters are applied, and used to provide suggested data values in
      *      column filters (if configured).
+     * @param {boolean} [c.commitOnChange] - true (default) to eagerly commit filters on each change.
      * @param {(string[]|Object[]} [c.fieldSpecs] - specifies the fields this model supports
      *      for filtering. Should be configs for a `GridFilterFieldSpec`. These may be specified
      *      as field names in bound Store/View or omitted entirely, indicating that all fields
@@ -49,6 +52,7 @@ export class GridFilterModel extends HoistModel {
     constructor({
         gridModel,
         bind,
+        commitOnChange = true,
         fieldSpecs,
         fieldSpecDefaults
     }) {
@@ -56,6 +60,7 @@ export class GridFilterModel extends HoistModel {
         makeObservable(this);
         this.gridModel = gridModel;
         this.bind = bind;
+        this.commitOnChange = commitOnChange;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
     }
 
@@ -66,7 +71,14 @@ export class GridFilterModel extends HoistModel {
      */
     @action
     setColumnFilters(field, filter) {
-        const ret = withFilterByField(this.filter, filter, field);
+        // If current bound filter is an 'OR' CompoundFilter, wrap it in an 'AND'
+        // CompoundFilter so new columns get 'ANDed' alongside it.
+        let currFilter = this.filter;
+        if (currFilter?.isCompoundFilter && currFilter.op === 'OR') {
+            currFilter = {filters: [currFilter], op: 'AND'};
+        }
+
+        const ret = withFilterByField(currFilter, filter, field);
         this.setFilter(ret);
     }
 

@@ -296,7 +296,7 @@ body {
   //------------------------
   // Fonts
   //------------------------
-  --xh-font-family: var(--font-family, #{(-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif)});
+  --xh-font-family: var(--font-family, #{("Inter Var", system-ui, sans-serif)});
   --xh-font-family-headings: var(--font-family-headings, var(--xh-font-family));
   --xh-font-family-mono: var(--font-family-mono, #{(Monaco, Consolas, monospace)});
 
@@ -366,14 +366,14 @@ body {
   --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(205, 85%, 95%));
   --xh-grid-tree-group-border-color: var(--grid-tree-group-border-color, var(--xh-grid-selected-row-bg));
   --xh-grid-total-row-bg: var(--grid-total-row-bg, var(--xh-grid-tree-group-bg));
-  --xh-grid-header-bg: var(--grid-header-bg, var(--xh-blue-gray-light));
+  --xh-grid-header-bg: var(--grid-header-bg, var(--xh-grid-bg));
   --xh-grid-header-border-color: var(--grid-header-border-color, var(--xh-grid-border-color));
   --xh-grid-header-icon-color: var(--grid-header-icon-color, var(--xh-text-color-muted));
   --xh-grid-header-font-family: var(--grid-header-font-family, var(--xh-grid-font-family));
   --xh-grid-header-font-size: var(--grid-header-font-size, var(--xh-grid-font-size));
   --xh-grid-header-font-size-px: calc(var(--xh-grid-header-font-size) * 1px);
   --xh-grid-header-font-weight: var(--grid-header-font-weight, 600);
-  --xh-grid-header-text-color: var(--grid-header-text-color, var(--xh-text-color));
+  --xh-grid-header-text-color: var(--grid-header-text-color, var(--xh-text-color-muted));
   --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '300')});
   --xh-grid-selected-row-bg: var(--grid-selected-row-bg, var(--xh-bg-highlight));
   --xh-grid-selected-row-text-color: var(--grid-selected-row-text-color, var(--xh-grid-text-color));
@@ -430,7 +430,6 @@ body {
     --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '700')});
     --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(200, 50%, 12%));
     --xh-grid-total-row-bg: var(--grid-total-row-bg, var(--xh-grid-tree-group-bg));
-    --xh-grid-header-bg: var(--grid-header-bg, var(--xh-black));
     --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '800')});
   }
 
@@ -476,7 +475,11 @@ body {
   }
 
   &.xh-mobile {
-    --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.2));
+    --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.4));
+
+    &.xh-dark {
+      --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.6));
+    }
   }
 
   //------------------------
@@ -587,6 +590,7 @@ body {
     --xh-scrollbar-thumb: var(--scrollbar-thumb, #{mc('blue-grey', '900')});
   }
 
+
   //------------------------
   // Banners
   //------------------------
@@ -597,8 +601,16 @@ body {
   //------------------------
   // Tabs
   //------------------------
+  --xh-tab-active-text-color: var(--tab-active-text-color, var(--xh-intent-primary));
   --xh-tab-border-width: var(--tab-border-width, var(--xh-border-width));
   --xh-tab-border-width-px: calc(var(--xh-tab-border-width) * 1px);
+  --xh-tab-font-family: var(--tab-font-family, var(--xh-font-family));
+  --xh-tab-font-size: var(--tab-font-size, var(--xh-font-size));
+  --xh-tab-font-size-px: calc(var(--xh-tab-font-size) * 1px);
+
+  &.xh-dark {
+    --xh-tab-active-text-color: var(--tab-active-text-color, var(--xh-intent-primary-lighter));
+  }
 
 
   //------------------------
