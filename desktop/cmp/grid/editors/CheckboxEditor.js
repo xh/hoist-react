@@ -13,7 +13,6 @@ import {useInlineEditorModel} from './impl/InlineEditorModel';
 import {EditorPropTypes} from './EditorPropTypes';
 import './Editors.scss';
 
-
 export const [CheckboxEditor, checkboxEditor] = hoistCmp.withFactory({
     displayName: 'CheckboxEditor',
     className: 'xh-checkbox-editor',
@@ -26,7 +25,7 @@ export const [CheckboxEditor, checkboxEditor] = hoistCmp.withFactory({
     },
     ref) {
         if (instantEdit && props.gridModel.fullRowEditing) {
-            console.warn("'instantEdit' not available for GridModel with 'fullRowEditing'.");
+            console.warn("'instantEdit' not available for GridModel with 'fullRowEditing'");
             instantEdit = false;
         }
 
@@ -39,10 +38,10 @@ CheckboxEditor.propTypes = {
     ...EditorPropTypes,
 
     /**
-     * True to change checked state immediately upon clicking, hitting return
-     * or otherwise activating editing. Defaulted to false.
+     * True to change underlying record state immediately upon user editing gesture (i.e. clicking,
+     * hitting return).  Defaulted to false.
      *
-     * Only applicable if the `fullRowEditing` prop on the containing GridModel is `false`.
+     * Only applicable if the `fullRowEditing` property on the containing GridModel is `false`.
      */
     instantEdit: PT.bool
 };
