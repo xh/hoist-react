@@ -6,7 +6,6 @@
  */
 
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {p} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
