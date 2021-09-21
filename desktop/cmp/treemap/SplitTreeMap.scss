@@ -9,8 +9,8 @@
     align-items: center;
     flex: none;
     user-select: none;
-    background-color: var(--xh-tbar-bg);
-    border-color: var(--xh-grid-header-border-color);
+    background-color: var(--xh-grid-header-bg);
+    border-bottom: 1px solid var(--xh-grid-header-border-color);
     font-family: var(--xh-grid-header-font-family);
     font-weight: var(--xh-grid-header-font-weight);
     color: var(--xh-grid-header-text-color);
