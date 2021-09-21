@@ -2,6 +2,11 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
+### 📚 Libraries
+
+* @blueprintjs/core `3.49 -> 3.50`
+* codemirror `5.62 -> 5.63`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.6.0...develop)
 
 ## v42.6.0 - 2021-09-17
@@ -10,6 +15,7 @@
 
 * New `Column.autosizeBufferPx` config applies column-specific autosize buffer and overrides
   `GridAutosizeOptions.bufferPx`.
+* `Select` input now supports new `maxMenuHeight` prop.
 
 ### 🐞 Bug Fixes
 
