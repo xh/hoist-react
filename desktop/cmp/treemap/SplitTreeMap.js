@@ -97,7 +97,7 @@ const childMaps = hoistCmp.factory(
 const mapTitle = hoistCmp.factory(
     ({model, isPrimary}) => {
         const {mapTitleFn, orientation} = model,
-            // Title orientation is orthogonal to overall orientation
+            // Title orientation is perpendicular to overall orientation
             titleOrientation = orientation === 'vertical' ? 'horizontal' : 'vertical',
             treeMapModel = isPrimary ? model.primaryMapModel : model.secondaryMapModel;
 
@@ -105,7 +105,7 @@ const mapTitle = hoistCmp.factory(
 
         const container = titleOrientation === 'horizontal' ? hbox : vbox,
             dim = titleOrientation === 'horizontal' ? 'height' : 'width',
-            size = AgGrid.HEADER_HEIGHTS[XH.sizingMode];
+            size = AgGrid.getHeaderHeightForSizingMode(XH.sizingMode);
 
         return container({
             style: {[dim]: `${size}px`},
