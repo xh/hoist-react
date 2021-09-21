@@ -25,11 +25,6 @@
   @return transparentize(material-color($color-name, $color-variant), $amount);
 }
 
-//noinspection CssInvalidFunction
-@function mc-light($color-name, $color-variant, $amount:0.9) {
-  @return lighten(material-color($color-name, $color-variant), $amount);
-}
-
 body {
 
   //------------------------
@@ -372,12 +367,12 @@ body {
   --xh-grid-tree-group-border-color: var(--grid-tree-group-border-color, var(--xh-grid-selected-row-bg));
   --xh-grid-total-row-bg: var(--grid-total-row-bg, var(--xh-grid-tree-group-bg));
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-grid-bg));
-  --xh-grid-tree-group-color-level-0: var(--grid-tree-group-color-level-0, #{mc-light('blue', '50')});
-  --xh-grid-tree-group-color-level-1: var(--grid-tree-group-color-level-1, #{mc-light('green', '50')});
-  --xh-grid-tree-group-color-level-2: var(--grid-tree-group-color-level-2, #{mc-light('yellow', '50')});
-  --xh-grid-tree-group-color-level-3: var(--grid-tree-group-color-level-3, #{mc-light('orange', '50')});
-  --xh-grid-tree-group-color-level-4: var(--grid-tree-group-color-level-4, #{mc-light('purple', '50')});
-  --xh-grid-tree-group-color-level-5: var(--grid-tree-group-color-level-5, #{mc-light('red', '50')});
+  --xh-grid-tree-group-color-level-0: var(--grid-tree-group-color-level-0, hsl(205, 80%, 95%));
+  --xh-grid-tree-group-color-level-1: var(--grid-tree-group-color-level-1, hsl(125, 80%, 95%));
+  --xh-grid-tree-group-color-level-2: var(--grid-tree-group-color-level-2, hsl(55, 80%, 95%));
+  --xh-grid-tree-group-color-level-3: var(--grid-tree-group-color-level-3, hsl(30, 80%, 95%));
+  --xh-grid-tree-group-color-level-4: var(--grid-tree-group-color-level-4, hsl(250, 50%, 95%));
+  --xh-grid-tree-group-color-level-5: var(--grid-tree-group-color-level-5, hsl(330, 50%, 95%));
   --xh-grid-header-border-color: var(--grid-header-border-color, var(--xh-grid-border-color));
   --xh-grid-header-icon-color: var(--grid-header-icon-color, var(--xh-text-color-muted));
   --xh-grid-header-font-family: var(--grid-header-font-family, var(--xh-grid-font-family));
@@ -439,7 +434,7 @@ body {
     --xh-grid-cell-change-bg-highlight: var(--grid-cell-bg-highlight, #{mc-trans('orange', '800', 0.8)});
     --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '800')});
     --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '700')});
-    --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(200, 50%, 16%));
+    --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(200, 50%, 18%));
     --xh-grid-total-row-bg: var(--grid-total-row-bg, var(--xh-grid-tree-group-bg));
     --xh-grid-tree-group-color-level-0: var(--grid-tree-group-color-level-0, hsl(205, 65%, 15%));
     --xh-grid-tree-group-color-level-1: var(--grid-tree-group-color-level-1, hsl(250, 65%, 15%));
