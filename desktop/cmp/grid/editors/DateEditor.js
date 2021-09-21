@@ -6,6 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {dateInput} from '@xh/hoist/desktop/cmp/input';
+import {warnIf} from '@xh/hoist/utils/js';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
 import {EditorPropTypes} from './EditorPropTypes';
 import './Editors.scss';
@@ -21,7 +22,8 @@ export const [DateEditor, dateEditor] = hoistCmp.withFactory({
         // `stopEditingWhenCellsLoseFocus` to work properly - otherwise the day picker becomes
         // unusable due to the grid losing focus and stopping the editing when clicking inside the
         // picker
-        const portalContainer = props.gridModel.agApi.gridBodyComp.eBodyViewport;
+        const portalContainer = props.gridModel.agApi.gridBodyComp?.eBodyViewport;
+        warnIf(!portalContainer, 'Could not find the grid body viewport for rendering DateEditor picker popover.');
 
         props = {
             ...props,
