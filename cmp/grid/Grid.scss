@@ -242,7 +242,7 @@
         background-color: var(--xh-grid-tree-group-color-level-0);
       }
 
-      @for $level from 0 to 6 {
+      @for $level from 0 to 9 {
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
           &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
@@ -308,7 +308,7 @@
         background-color: var(--xh-grid-tree-group-color-level-0);
       }
 
-      @for $level from 0 to 6 {
+      @for $level from 0 to 9 {
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
           &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
