@@ -257,7 +257,8 @@ class GridLocalModel extends HoistModel {
             autoSizePadding: 3, // tighten up cells for ag-Grid native autosizing.  Remove when Hoist autosizing no longer experimental,
             editType: model.fullRowEditing ? 'fullRow' : undefined,
             singleClickEdit: clicksToEdit === 1,
-            suppressClickEdit: clicksToEdit !== 1 && clicksToEdit !== 2
+            suppressClickEdit: clicksToEdit !== 1 && clicksToEdit !== 2,
+            stopEditingWhenCellsLoseFocus: true
         };
 
         // Platform specific defaults
