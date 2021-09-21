@@ -6,7 +6,6 @@
  */
 
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {p} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
@@ -277,8 +276,12 @@ export class DifferModel extends HoistModel {
 
         XH.confirm({
             title: 'Please Confirm',
-            icon: Icon.warning({size: 'lg'}),
+            icon: Icon.warning(),
             message,
+            confirmProps: {
+                text: 'Yes, update local config',
+                intent: 'primary'
+            },
             onConfirm: () => this.doApplyRemote(filteredRecords)
         });
     }

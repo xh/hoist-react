@@ -64,8 +64,9 @@ export const columnHeader = hoistCmp.factory({
         };
 
         const expandCollapseIcon = () => {
-            const {isTreeColumn, headerHasExpandCollapse} = xhColumn;
-            if (!isTreeColumn || !headerHasExpandCollapse || !impl.rootsWithChildren) return null;
+            if (!xhColumn || !xhColumn.isTreeColumn || !xhColumn.headerHasExpandCollapse || !impl.rootsWithChildren) {
+                return null;
+            }
 
             const icon = impl.majorityIsExpanded ?
                 Icon.angleDown({prefix: 'fal', size: 'lg'}) :
@@ -151,17 +152,16 @@ class LocalModel extends HoistModel {
         super();
         makeObservable(this);
 
-        const {sortable, filterable} = xhColumn,
-            {filterModel} = gridModel;
+        const {filterModel} = gridModel;
 
         this.gridModel = gridModel;
         this.xhColumn = xhColumn;
         this.agColumn = agColumn;
         this.colId = agColumn.colId;
-        this.enableSorting = sortable;
+        this.enableSorting = xhColumn?.sortable;
         this.availableSorts = this.parseAvailableSorts();
 
-        if (!XH.isMobileApp && filterable && filterModel?.getFieldSpec(xhColumn.field)) {
+        if (!XH.isMobileApp && xhColumn?.filterable && filterModel?.getFieldSpec(xhColumn.field)) {
             this.columnHeaderFilterModel = new ColumnHeaderFilterModel({filterModel, column: xhColumn});
             this.enableFilter = true;
         } else {
@@ -299,7 +299,7 @@ class LocalModel extends HoistModel {
     autosize() {
         const {gridModel} = this;
         if (gridModel?.autosizeEnabled) {
-            gridModel.autosizeAsync({columns: this.colId, showMask: false});
+            gridModel.autosizeAsync({columns: this.colId, showMask: true});
         }
     }
 

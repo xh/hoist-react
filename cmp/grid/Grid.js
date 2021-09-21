@@ -142,9 +142,17 @@ class GridLocalModel extends HoistModel {
     fixedRowHeight;
 
     getRowHeight(node) {
-        const {model} = this;
+        const {model, agOptions} = this,
+            {sizingMode, groupRowHeight} = model,
+            {groupUseEntireRow} = agOptions;
+
         if (node?.group) {
-            return model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode(model.sizingMode);
+            return (
+                groupRowHeight ??
+                groupUseEntireRow ?
+                    AgGrid.getGroupRowHeightForSizingMode(sizingMode) :
+                    AgGrid.getRowHeightForSizingMode(sizingMode)
+            );
         }
         return max([
             this.fixedRowHeight,
@@ -523,7 +531,7 @@ class GridLocalModel extends HoistModel {
             track: () => model.sizingMode,
             run: () => {
                 if (model.autosizeOptions.mode !== GridAutosizeMode.ON_SIZING_MODE_CHANGE) return;
-                model.autosizeAsync();
+                model.autosizeAsync({showMask: true});
             }
         };
     }
