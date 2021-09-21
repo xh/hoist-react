@@ -5,10 +5,12 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {placeholder, fragment, hframe, vframe, hbox, vbox, box, div, p} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
+import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {compact, uniq} from 'lodash';
+import classNames from 'classnames';
 import PT from 'prop-types';
 
 import './SplitTreeMap.scss';
@@ -95,13 +97,22 @@ const childMaps = hoistCmp.factory(
 const mapTitle = hoistCmp.factory(
     ({model, isPrimary}) => {
         const {mapTitleFn, orientation} = model,
+            // Title orientation is orthogonal to overall orientation
+            titleOrientation = orientation === 'vertical' ? 'horizontal' : 'vertical',
             treeMapModel = isPrimary ? model.primaryMapModel : model.secondaryMapModel;
 
         if (!mapTitleFn || !treeMapModel.total) return null;
 
-        const container = orientation === 'vertical' ? hbox : vbox;
+        const container = titleOrientation === 'horizontal' ? hbox : vbox,
+            dim = titleOrientation === 'horizontal' ? 'height' : 'width',
+            size = AgGrid.HEADER_HEIGHTS[XH.sizingMode];
+
         return container({
-            className: 'xh-split-treemap__header',
+            style: {[dim]: `${size}px`},
+            className: classNames(
+                'xh-split-treemap__header',
+                'xh-split-treemap__header--' + titleOrientation
+            ),
             item: div({
                 className: 'xh-split-treemap__header__title',
                 item: mapTitleFn(treeMapModel, isPrimary)
