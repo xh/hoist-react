@@ -2,6 +2,12 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* The ag-grid grid property `stopEditingWhenCellsLoseFocus` is now enabled by default to ensure
+  values are committed to the Store if the user clicks somewhere outside the grid while editing a
+  cell.
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.49 -> 3.50`
