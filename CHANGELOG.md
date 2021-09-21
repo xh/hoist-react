@@ -2,9 +2,10 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
-### 🎁 New Features
-* New prop `instantEdit` on `CheckboxEditor` allows streamlined toggling of boolean values in
-  editable grids.
+### 🎁 Breaking Changes
+* In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`.
+  This new component supports a `quickToggle` prop which allows for more streamlined
+  inline editing of boolean values.
 
 ### 📚 Libraries
 

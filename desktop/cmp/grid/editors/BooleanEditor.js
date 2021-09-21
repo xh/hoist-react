@@ -13,37 +13,41 @@ import {useInlineEditorModel} from './impl/InlineEditorModel';
 import {EditorPropTypes} from './EditorPropTypes';
 import './Editors.scss';
 
-export const [CheckboxEditor, checkboxEditor] = hoistCmp.withFactory({
-    displayName: 'CheckboxEditor',
-    className: 'xh-checkbox-editor',
+export const [BooleanEditor, booleanEditor] = hoistCmp.withFactory({
+    displayName: 'BooleanEditor',
+    className: 'xh-boolean-editor',
     model: false,
     memo: false,
     observer: false,
     render({
-        instantEdit = false,
+        quickToggle,
         ...props
     },
     ref) {
-        if (instantEdit && props.gridModel.fullRowEditing) {
-            console.warn("'instantEdit' not available for GridModel with 'fullRowEditing'");
-            instantEdit = false;
+        const {fullRowEditing} = props.gridModel;
+        quickToggle = quickToggle ?? !fullRowEditing;
+
+        if (quickToggle && fullRowEditing) {
+            console.warn("'quickToggle' prop ignored for GridModel with full row editing.");
+            quickToggle = false;
         }
 
-        return instantEdit ?
+        return quickToggle ?
             useInstantEditor(props, ref) :
             useInlineEditorModel(checkbox, props, ref);
     }
 });
-CheckboxEditor.propTypes = {
+BooleanEditor.propTypes = {
     ...EditorPropTypes,
 
     /**
      * True to change underlying record state immediately upon user editing gesture (i.e. clicking,
-     * hitting return).  Defaulted to false.
+     * hitting return). Defaults to true.
      *
-     * Only applicable if the `fullRowEditing` property on the containing GridModel is `false`.
+     * Note that this prop is only available if the `fullRowEditing` property on the containing
+     * GridModel is false.  It is ignored in `fullRowEditing' mode.
      */
-    instantEdit: PT.bool
+    quickToggle: PT.bool
 };
 
 
