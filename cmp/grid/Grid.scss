@@ -5,6 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
+@use "sass:math";
+
 .xh-grid:not(.xh-data-view) {
   //------------------------
   // Core Header Classes
@@ -214,7 +216,7 @@
   @for $i from 0 to 10 {
     &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
       @for $level from 0 to 9 {
-        $l: 94 + ($level / ($i + 1) * 6);
+        $l: 94 + (math.div($level, ($i + 1)) * 6);
 
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
@@ -280,7 +282,7 @@
   @for $i from 0 to 10 {
     &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
       @for $level from 0 to 9 {
-        $l: 16 - ($level / ($i + 1) * 11);
+        $l: 16 - (math.div($level, ($i + 1)) * 11);
 
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
