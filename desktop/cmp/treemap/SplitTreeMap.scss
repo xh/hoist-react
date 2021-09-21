@@ -9,7 +9,7 @@
     align-items: center;
     flex: none;
     user-select: none;
-    background-color: var(--xh-grid-header-bg);
+    background-color: var(--xh-tbar-bg);
     border-color: var(--xh-grid-header-border-color);
     font-family: var(--xh-grid-header-font-family);
     font-weight: var(--xh-grid-header-font-weight);
@@ -48,7 +48,7 @@
 }
 
 // Standard Sizing Mode
-.xh-large .xh-split-treemap__header {
+.xh-standard .xh-split-treemap__header {
   font-size: var(--xh-grid-header-font-size-px);
 
   &.xh-split-treemap__header--horizontal {
