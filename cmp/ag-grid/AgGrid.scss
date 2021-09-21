@@ -159,11 +159,15 @@
   //------------------------
   // Core Cell Classes
   //------------------------
-  .ag-cell,
-  .ag-header-cell,
-  .ag-header-group-cell {
+  .ag-cell {
     padding-left: var(--xh-grid-cell-lr-pad-px);
     padding-right: var(--xh-grid-cell-lr-pad-px);
+  }
+
+  .ag-header-cell,
+  .ag-header-group-cell {
+    padding-left: var(--xh-grid-header-lr-pad-px);
+    padding-right: var(--xh-grid-header-lr-pad-px);
 
     // Override ag-Grid defaults for the header separator to make it responsive to different header heights
     &::after {

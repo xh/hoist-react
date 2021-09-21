@@ -2,10 +2,23 @@
 
 ## v43.0.0-SNAPSHOT - unreleased
 
-### 🎁 Breaking Changes
+### 🎁 New Features
+
 * In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`.
   This new component supports a `quickToggle` prop which allows for more streamlined
   inline editing of boolean values.
+
+
+### 🐞 Bug Fixes
+
+* The ag-grid grid property `stopEditingWhenCellsLoseFocus` is now enabled by default to ensure
+  values are committed to the Store if the user clicks somewhere outside the grid while editing a
+  cell.
+
+### 🎁 Breaking Changes
+
+* In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`.
+
 
 ### 📚 Libraries
 
