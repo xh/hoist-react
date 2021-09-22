@@ -142,9 +142,17 @@ class GridLocalModel extends HoistModel {
     fixedRowHeight;
 
     getRowHeight(node) {
-        const {model} = this;
+        const {model, agOptions} = this,
+            {sizingMode, groupRowHeight} = model,
+            {groupUseEntireRow} = agOptions;
+
         if (node?.group) {
-            return model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode(model.sizingMode);
+            return (
+                groupRowHeight ??
+                groupUseEntireRow ?
+                    AgGrid.getGroupRowHeightForSizingMode(sizingMode) :
+                    AgGrid.getRowHeightForSizingMode(sizingMode)
+            );
         }
         return max([
             this.fixedRowHeight,
@@ -249,7 +257,8 @@ class GridLocalModel extends HoistModel {
             autoSizePadding: 3, // tighten up cells for ag-Grid native autosizing.  Remove when Hoist autosizing no longer experimental,
             editType: model.fullRowEditing ? 'fullRow' : undefined,
             singleClickEdit: clicksToEdit === 1,
-            suppressClickEdit: clicksToEdit !== 1 && clicksToEdit !== 2
+            suppressClickEdit: clicksToEdit !== 1 && clicksToEdit !== 2,
+            stopEditingWhenCellsLoseFocus: true
         };
 
         // Platform specific defaults
@@ -525,7 +534,7 @@ class GridLocalModel extends HoistModel {
             track: () => model.sizingMode,
             run: () => {
                 if (model.autosizeOptions.mode !== GridAutosizeMode.ON_SIZING_MODE_CHANGE) return;
-                model.autosizeAsync();
+                model.autosizeAsync({showMask: true});
             }
         };
     }

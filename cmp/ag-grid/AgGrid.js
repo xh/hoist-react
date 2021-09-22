@@ -97,9 +97,18 @@ AgGrid.ROW_HEIGHTS_MOBILE = {large: 38, standard: 34, compact: 30, tiny: 26};
 AgGrid.getRowHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS)[mode];
 
 /**
+ * Full-width group row heights (in pixels). To override for individual grids, use
+ * `GridModel.groupRowHeight`. Group rows that do not use the full width of the row will take the
+ * same height as the data rows.
+ */
+AgGrid.GROUP_ROW_HEIGHTS = {large: 28, standard: 24, compact: 22, tiny: 18};
+AgGrid.GROUP_ROW_HEIGHTS_MOBILE = {large: 38, standard: 34, compact: 30, tiny: 26};
+AgGrid.getGroupRowHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.GROUP_ROW_HEIGHTS_MOBILE : AgGrid.GROUP_ROW_HEIGHTS)[mode];
+
+/**
  * Header heights (in pixels)
  */
-AgGrid.HEADER_HEIGHTS = {large: 36, standard: 32, compact: 28, tiny: 22};
+AgGrid.HEADER_HEIGHTS = {large: 28, standard: 24, compact: 22, tiny: 20};
 AgGrid.HEADER_HEIGHTS_MOBILE = {large: 42, standard: 38, compact: 34, tiny: 30};
 AgGrid.getHeaderHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS)[mode];
 
