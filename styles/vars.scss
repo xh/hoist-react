@@ -373,6 +373,11 @@ body {
   --xh-grid-tree-group-color-level-3: var(--grid-tree-group-color-level-3, hsl(30, 80%, 95%));
   --xh-grid-tree-group-color-level-4: var(--grid-tree-group-color-level-4, hsl(250, 50%, 95%));
   --xh-grid-tree-group-color-level-5: var(--grid-tree-group-color-level-5, hsl(330, 50%, 95%));
+  --xh-grid-tree-group-color-level-6: var(--grid-tree-group-color-level-6, var(--xh-grid-tree-group-color-level-0));
+  --xh-grid-tree-group-color-level-7: var(--grid-tree-group-color-level-7, var(--xh-grid-tree-group-color-level-1));
+  --xh-grid-tree-group-color-level-8: var(--grid-tree-group-color-level-8, var(--xh-grid-tree-group-color-level-2));
+  --xh-grid-tree-group-color-level-9: var(--grid-tree-group-color-level-9, var(--xh-grid-tree-group-color-level-3));
+
   --xh-grid-header-border-color: var(--grid-header-border-color, var(--xh-grid-border-color));
   --xh-grid-header-icon-color: var(--grid-header-icon-color, var(--xh-text-color-muted));
   --xh-grid-header-lr-pad: var(--grid-header-cell-lr-pad, 11);
