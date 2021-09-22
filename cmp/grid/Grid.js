@@ -144,12 +144,12 @@ class GridLocalModel extends HoistModel {
     getRowHeight(node) {
         const {model, agOptions} = this,
             {sizingMode, groupRowHeight} = model,
-            {groupUseEntireRow} = agOptions;
+            {groupDisplayType} = agOptions;
 
         if (node?.group) {
             return (
                 groupRowHeight ??
-                groupUseEntireRow ?
+                groupDisplayType === 'groupRows' ?
                     AgGrid.getGroupRowHeightForSizingMode(sizingMode) :
                     AgGrid.getRowHeightForSizingMode(sizingMode)
             );
@@ -243,9 +243,9 @@ class GridLocalModel extends HoistModel {
             onCellEditingStopped: model.onCellEditingStopped,
             navigateToNextCell: this.navigateToNextCell,
             processCellForClipboard: this.processCellForClipboard,
-            defaultGroupSortComparator: model.groupSortFn ? this.groupSortComparator : undefined,
+            defaultGroupOrderComparator: model.groupSortFn ? this.groupSortComparator : undefined,
             groupDefaultExpanded: 1,
-            groupUseEntireRow: true,
+            groupDisplayType: 'groupRows',
             groupRowRendererFramework: model.groupRowElementRenderer,
             groupRowRendererParams: {
                 innerRenderer: model.groupRowRenderer,
@@ -281,7 +281,7 @@ class GridLocalModel extends HoistModel {
             ret = {
                 ...ret,
                 groupDefaultExpanded: 0,
-                groupSuppressAutoColumn: true,
+                groupDisplayType: 'custom',
                 treeData: true,
                 getDataPath: this.getDataPath
             };
@@ -499,7 +499,7 @@ class GridLocalModel extends HoistModel {
                     // We need to tell agGrid to refresh its flexed column sizes due to
                     // a regression introduced in 25.1.0.  See #2341
                     if (hasChanges) {
-                        colApi.columnController.refreshFlexedColumns({
+                        colApi?.columnController?.refreshFlexedColumns({
                             updateBodyWidths: true,
                             fireResizedEvent: true
                         });
