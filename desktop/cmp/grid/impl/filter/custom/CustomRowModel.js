@@ -7,7 +7,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {Icon} from '@xh/hoist/icon';
-import {isNil} from 'lodash';
+import {isNil, isArray} from 'lodash';
 
 /**
  * @private
@@ -42,6 +42,10 @@ export class CustomRowModel extends HoistModel {
             return null;
         }
 
+        if (isArray(value) && value.length === 1) {
+            value = value[0];
+        }
+
         return {field, op, value};
     }
 
@@ -50,14 +54,10 @@ export class CustomRowModel extends HoistModel {
     }
 
     get options() {
-        return [
-            ...this.fieldSpec.ops.map(value => {
-                const label = this.getOperatorLabel(value);
-                return {label, value};
-            }),
-            {label: 'is blank', value: 'blank'},
-            {label: 'is not blank', value: 'not blank'}
-        ];
+        return this.parentModel.availableOperators.map(value => {
+            const label = this.getOperatorLabel(value);
+            return {label, value};
+        });
     }
 
     get commitOnChange() {

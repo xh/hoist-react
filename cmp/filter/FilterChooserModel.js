@@ -265,8 +265,8 @@ export class FilterChooserModel extends HoistModel {
             throw XH.exception(`Unsupported Filter in FilterChooserModel: ${s}`);
         };
 
-        // 1) Flatten AND CompoundFilters to FieldFilters.
-        if (filter.isCompoundFilter && filter.op === 'AND') {
+        // 1) Flatten CompoundFilters across disparate fields to FieldFilters.
+        if (filter.isCompoundFilter && !filter.field) {
             ret = filter.filters;
         } else  {
             ret = [filter];
