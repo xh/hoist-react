@@ -78,7 +78,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
         apiRemoved('Grid.onCellDoubleClicked', {test: props.onCellDoubleClicked, msg: 'Specify onCellDoubleClicked on the GridModel instead.', v: 'v43'});
         apiRemoved('Grid.agOptions.rowClassRules', {test: props.agOptions?.rowClassRules, msg: 'Specify rowClassRules on the GridModel instead.', v: 'v43'});
 
-        const {store, treeMode, treeStyle, colChooserModel, filterModel} = model,
+        const {store, treeMode, treeStyle, highlightRowOnClick, colChooserModel, filterModel} = model,
             impl = useLocalModel(() => new GridLocalModel(model, props)),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
             maxDepth = impl.isHierarchical ? store.maxDepth : null;
@@ -86,7 +86,8 @@ export const [Grid, grid] = hoistCmp.withFactory({
         className = classNames(
             className,
             impl.isHierarchical ? `xh-grid--hierarchical xh-grid--max-depth-${maxDepth}` : 'xh-grid--flat',
-            treeMode ? getTreeStyleClasses(treeStyle) : null
+            treeMode ? getTreeStyleClasses(treeStyle) : null,
+            highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null
         );
 
         return fragment(
@@ -766,6 +767,7 @@ class GridLocalModel extends HoistModel {
     onKeyDown = (evt) => {
         const {model} = this,
             {selModel} = model;
+
         if ((evt.ctrlKey || evt.metaKey) && evt.key === 'a' && selModel.mode === 'multiple') {
             selModel.selectAll();
             return;
@@ -777,8 +779,17 @@ class GridLocalModel extends HoistModel {
     onRowClicked = (evt) => {
         const {model} = this,
             {selModel} = model;
+
         if (evt.rowPinned) {
             selModel.clear();
+        }
+
+        if (model.highlightRowOnClick) {
+            model.agApi.flashCells({
+                rowNodes: [evt.node],
+                flashDelay: 100,
+                fadeDelay: 100
+            });
         }
 
         if (model.onRowClicked) model.onRowClicked(evt);
