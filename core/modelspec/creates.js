@@ -21,7 +21,8 @@ import {ModelPublishMode, ModelSpec} from './ModelSpec';
  * component unmount.
  *
  * @param {(Class|function)} spec - HoistModel Class to construct, or a function returning a
- *      concrete HoistModel instance.
+ *      concrete HoistModel instance. If a function is provided, function will be passed the props
+ *      of the initial render of the receiving component.
  * @param {Object} [flags]
  * @param {ModelPublishMode} [flags.publishMode] - mode for publishing this model to context.
  * @returns {ModelSpec}

@@ -34,6 +34,8 @@ import {isFunction} from 'lodash';
  *      construct an instance on-demand. Selector must be a HoistModel Class.
  * @param {(boolean|function)} [flags.createDefault] - true to create a model if none provided.
  *      Selector must be a HoistModel Class, or a custom function may be provided for this argument.
+ *      If a function is provided, function will be passed the props of the initial render of the
+ *      component.
  * @returns {ModelSpec}
  */
 export function uses(
