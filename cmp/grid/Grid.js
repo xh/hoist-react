@@ -228,10 +228,8 @@ class GridLocalModel extends HoistModel {
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             rowClassRules: model.rowClassRules,
             noRowsOverlayComponentFramework: observer(() => div(this.emptyText)),
-            onCellClicked: model.onCellClicked,
-            onCellDoubleClicked: model.onCellDoubleClicked,
+            onCellClicked: this.onCellClicked,
             onRowClicked: this.onRowClicked,
-            onRowDoubleClicked: model.onRowDoubleClicked,
             onRowGroupOpened: this.onRowGroupOpened,
             onSelectionChanged: this.onSelectionChanged,
             onDragStopped: this.onDragStopped,
@@ -766,6 +764,7 @@ class GridLocalModel extends HoistModel {
     onKeyDown = (evt) => {
         const {model} = this,
             {selModel} = model;
+
         if ((evt.ctrlKey || evt.metaKey) && evt.key === 'a' && selModel.mode === 'multiple') {
             selModel.selectAll();
             return;
@@ -774,14 +773,50 @@ class GridLocalModel extends HoistModel {
         if (model.onKeyDown) model.onKeyDown(evt);
     };
 
-    onRowClicked = (evt) => {
+    onRowClicked = (agEvt) => {
         const {model} = this,
-            {selModel} = model;
-        if (evt.rowPinned) {
-            selModel.clear();
+            {node} = agEvt,
+            {selModel, agApi, doubleClickDelay, expandOnDoubleClick, onRowClicked, onRowDoubleClicked} = model;
+
+        if (agEvt.rowPinned) selModel.clear();
+
+        const elapsed = Date.now() - (this._lastRowClick ?? 0);
+        if (elapsed < doubleClickDelay) {
+            // Cancel any pending onRowClicked and proceed with onRowDoubleClicked
+            clearTimeout(this._rowClickTimeout);
+            onRowDoubleClicked?.({...agEvt, type: 'rowDoubleClicked'});
+
+            // Expand/collapse tree node if enabled
+            if (expandOnDoubleClick && !agEvt.event.isPropagationStopped && node?.allChildrenCount) {
+                agApi.setRowNodeExpanded(node, !node.expanded);
+            }
+        } else {
+            // Delay onRowClicked to wait for potential double click
+            this._rowClickTimeout = setTimeout(() => {
+                onRowClicked?.(agEvt);
+            }, doubleClickDelay);
         }
 
-        if (model.onRowClicked) model.onRowClicked(evt);
+        this._lastRowClick = Date.now();
+    };
+
+    onCellClicked = (agEvt) => {
+        const {model} = this,
+            {doubleClickDelay, onCellClicked, onCellDoubleClicked} = model;
+
+        const elapsed = Date.now() - (this._lastCellClick ?? 0);
+        if (elapsed < doubleClickDelay) {
+            // Cancel any pending onCellClicked and proceed with onCellDoubleClicked
+            clearTimeout(this._cellClickTimeout);
+            onCellDoubleClicked?.({...agEvt, type: 'cellDoubleClicked'});
+        } else {
+            // Delay onCellClicked to wait for potential double click
+            this._cellClickTimeout = setTimeout(() => {
+                onCellClicked?.(agEvt);
+            }, doubleClickDelay);
+        }
+
+        this._lastCellClick = Date.now();
     };
 }
 
