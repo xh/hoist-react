@@ -63,8 +63,10 @@ body.xh-app {
     cursor: pointer;
   }
 
+  &.xh-mobile *,
   &.xh-tablet * {
     user-select: none !important;
+    -webkit-touch-callout: none !important;
   }
 
   // Colors
