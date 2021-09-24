@@ -145,33 +145,37 @@ export class GridFindFieldModel extends HoistModel {
     // Implementation
     //------------------------
     @action
-    updateRecords() {
-        // Track records is displayed order
-        const {gridModel} = this,
-            {store, agApi, groupBy, groupSortFn} = gridModel;
+    updateResults(autoSelect) {
+        // Track ids of matching records
+        const {query, records, gridModel} = this,
+            activeFields = this.getActiveFields();
 
-        // 1) Sort records with GridModel's sortBy(s) using the Column's comparator
-        const records = this.sortRecordsRecursive([...store.rootRecords]);
+        if (!query || isEmpty(activeFields)) {
+            this.results = null;
+            return;
+        }
 
-        // 2) Sort records with GridModel's groupBy(s) using the GridModel's groupSortFn
-        [...groupBy].reverse().forEach(groupField => {
-            const column = gridModel.getColumn(groupField);
-            if (!column) return;
+        const regex = this.getRegex(query),
+            valGetters = flatMap(activeFields, (fieldPath) => this.getValGetters(fieldPath));
 
-            const {field, getValueFn} = column;
-            records.sort((a, b) => {
-                const valueA = getValueFn({record: a, field, column, gridModel}),
-                    valueB = getValueFn({record: b, field, column, gridModel}),
-                    nodeA = agApi?.getRowNode(a.id),
-                    nodeB = agApi?.getRowNode(b.id);
+        this.results = records.filter(rec => {
+            return valGetters.some(fn => regex.test(fn(rec)));
+        }).map(rec => rec.id);
 
-                return groupSortFn(valueA, valueB, field, {gridModel, nodeA, nodeB});
-            });
-        });
-
-        this.records = records;
+        // Auto-select first matching result
+        if (autoSelect && this.hasResults && !isFinite(this.selectedIdx)) {
+            gridModel.selectAsync(this.results[0]);
+        }
     }
 
+    @action
+    updateRecords() {
+        // Track records is displayed order
+        const records = this.sortRecordsRecursive([...this.gridModel.store.rootRecords]);
+        this.records = this.sortRecordsByGroupBy(records);
+    }
+
+    // Sort records with GridModel's sortBy(s) using the Column's comparator
     sortRecordsRecursive(records) {
         const {gridModel} = this,
             {sortBy, treeMode, agApi} = gridModel,
@@ -206,28 +210,27 @@ export class GridFindFieldModel extends HoistModel {
         return ret;
     }
 
-    @action
-    updateResults(autoSelect) {
-        // Track ids of matching records
-        const {query, records, gridModel} = this,
-            activeFields = this.getActiveFields();
+    // Sort records with GridModel's groupBy(s) using the GridModel's groupSortFn
+    sortRecordsByGroupBy(records) {
+        const {gridModel} = this,
+            {agApi, groupBy, groupSortFn} = gridModel;
 
-        if (!query || isEmpty(activeFields)) {
-            this.results = null;
-            return;
-        }
+        [...groupBy].reverse().forEach(groupField => {
+            const column = gridModel.getColumn(groupField);
+            if (!column) return;
 
-        const regex = this.getRegex(query),
-            valGetters = flatMap(activeFields, (fieldPath) => this.getValGetters(fieldPath));
+            const {field, getValueFn} = column;
+            records.sort((a, b) => {
+                const valueA = getValueFn({record: a, field, column, gridModel}),
+                    valueB = getValueFn({record: b, field, column, gridModel}),
+                    nodeA = agApi?.getRowNode(a.id),
+                    nodeB = agApi?.getRowNode(b.id);
 
-        this.results = records.filter(rec => {
-            return valGetters.some(fn => regex.test(fn(rec)));
-        }).map(rec => rec.id);
+                return groupSortFn(valueA, valueB, field, {gridModel, nodeA, nodeB});
+            });
+        });
 
-        // Auto-select first matching result
-        if (autoSelect && this.hasResults && !isFinite(this.selectedIdx)) {
-            gridModel.selectAsync(this.results[0]);
-        }
+        return records;
     }
 
     getRegex(searchTerm) {
