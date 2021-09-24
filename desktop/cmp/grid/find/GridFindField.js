@@ -64,7 +64,9 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory({
                     width: null,
                     flex: 1,
                     onKeyDown: (ev) => {
-                        if (ev.key === 'Enter') impl.selectNext();
+                        if (ev.key === 'Enter') {
+                            ev.shiftKey ? impl.selectPrev() : impl.selectNext();
+                        }
                     },
                     ...restProps
                 }),

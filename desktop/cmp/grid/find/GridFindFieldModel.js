@@ -6,7 +6,7 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {FieldType} from '@xh/hoist/data';
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
 import {
     escapeRegExp,
@@ -56,6 +56,12 @@ export class GridFindFieldModel extends HoistModel {
         return `${match}/${count}`;
     }
 
+    @computed
+    get hasQuery() {
+        return !isNil(this.query) && this.query.length > 0;
+    }
+
+    @computed
     get hasResults() {
         return !isNil(this.results) && !isEmpty(this.results);
     }
@@ -79,16 +85,24 @@ export class GridFindFieldModel extends HoistModel {
         throwIf(!gridModel, "Must specify 'gridModel' in GridFindField.");
 
         this.addReaction({
-            track: () => [gridModel.isReady, gridModel.store.records, gridModel.columns, gridModel.sortBy, gridModel.groupBy],
-            run: ([isReady]) => {
-                if (!isReady) return;
+            track: () => [
+                this.hasQuery,
+                gridModel.isReady,
+                gridModel.store.records,
+                gridModel.columns,
+                gridModel.sortBy,
+                gridModel.groupBy
+            ],
+            run: ([hasQuery, isReady]) => {
+                if (!hasQuery || !isReady) return;
                 this.updateRecords();
+                this.updateResults();
             }
         });
 
         this.addReaction({
-            track: () => [this.query, this.records],
-            run: () => this.updateResults(),
+            track: () => this.query,
+            run: () => this.updateResults(true),
             debounce: queryBuffer
         });
     }
@@ -130,25 +144,6 @@ export class GridFindFieldModel extends HoistModel {
     //------------------------
     // Implementation
     //------------------------
-    @action
-    updateResults() {
-        // Track ids of matching records
-        const {query, records} = this,
-            activeFields = this.getActiveFields();
-
-        if (!query || isEmpty(activeFields)) {
-            this.results = null;
-            return;
-        }
-
-        const regex = this.getRegex(query),
-            valGetters = flatMap(activeFields, (fieldPath) => this.getValGetters(fieldPath));
-
-        this.results = records.filter(rec => {
-            return valGetters.some(fn => regex.test(fn(rec)));
-        }).map(rec => rec.id);
-    }
-
     @action
     updateRecords() {
         // Track records is displayed order
@@ -192,6 +187,30 @@ export class GridFindFieldModel extends HoistModel {
         });
 
         this.records = records;
+    }
+
+    @action
+    updateResults(autoSelect) {
+        // Track ids of matching records
+        const {query, records, gridModel} = this,
+            activeFields = this.getActiveFields();
+
+        if (!query || isEmpty(activeFields)) {
+            this.results = null;
+            return;
+        }
+
+        const regex = this.getRegex(query),
+            valGetters = flatMap(activeFields, (fieldPath) => this.getValGetters(fieldPath));
+
+        this.results = records.filter(rec => {
+            return valGetters.some(fn => regex.test(fn(rec)));
+        }).map(rec => rec.id);
+
+        // Auto-select first matching result
+        if (autoSelect && this.hasResults && !isFinite(this.selectedIdx)) {
+            gridModel.selectAsync(this.results[0]);
+        }
     }
 
     getRegex(searchTerm) {

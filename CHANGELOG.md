@@ -5,7 +5,8 @@
 ### 🎁 New Features
 
 * New `GridFindField` component that enables users to search through a Grid and select rows that
-  match the entered search term.
+  match the entered search term, _without_ applying any filtering. Especially useful for grids with
+  aggregations or other logic that preclude client-side filtering of the data.
 * In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`.
   This new component supports a `quickToggle` prop which allows for more streamlined
   inline editing of boolean values.
