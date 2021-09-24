@@ -8,6 +8,7 @@
 .xh-log-display {
   color: var(--xh-blue-gray-dark);
   background-color: var(--xh-yellow-light);
+  height: 100%;
 
   &__row {
     font-family: var(--xh-font-family-mono);
@@ -29,7 +30,7 @@
 
     &-content {
       padding-left: var(--xh-pad-px);
-      white-space: pre;
+      white-space: pre
     }
   }
 }
