@@ -148,27 +148,10 @@ export class GridFindFieldModel extends HoistModel {
     updateRecords() {
         // Track records is displayed order
         const {gridModel} = this,
-            {agApi, store, sortBy, groupBy, groupSortFn} = gridModel;
+            {store, agApi, groupBy, groupSortFn} = gridModel;
 
         // 1) Sort records with GridModel's sortBy(s) using the Column's comparator
-        const records = [...store.records];
-        [...sortBy].reverse().forEach(it => {
-            const column = gridModel.getColumn(it.colId);
-            if (!column) return;
-
-            const {field, getValueFn} = column,
-                compFn = column.getAgSpec().comparator.bind(column),
-                direction = it.sort === 'desc' ? -1 : 1;
-
-            records.sort((a, b) => {
-                const valueA = getValueFn({record: a, field, column, gridModel}),
-                    valueB = getValueFn({record: b, field, column, gridModel}),
-                    nodeA = agApi?.getRowNode(a.id),
-                    nodeB = agApi?.getRowNode(b.id);
-
-                return compFn(valueA, valueB, nodeA, nodeB) * direction;
-            });
-        });
+        const records = this.sortRecordsRecursive([...store.rootRecords]);
 
         // 2) Sort records with GridModel's groupBy(s) using the GridModel's groupSortFn
         [...groupBy].reverse().forEach(groupField => {
@@ -187,6 +170,40 @@ export class GridFindFieldModel extends HoistModel {
         });
 
         this.records = records;
+    }
+
+    sortRecordsRecursive(records) {
+        const {gridModel} = this,
+            {sortBy, treeMode, agApi} = gridModel,
+            ret = [];
+
+        [...sortBy].reverse().forEach(it => {
+            const column = gridModel.getColumn(it.colId);
+            if (!column) return;
+
+            const {field, getValueFn} = column,
+                compFn = column.getAgSpec().comparator.bind(column),
+                direction = it.sort === 'desc' ? -1 : 1;
+
+            records.sort((a, b) => {
+                const valueA = getValueFn({record: a, field, column, gridModel}),
+                    valueB = getValueFn({record: b, field, column, gridModel}),
+                    nodeA = agApi?.getRowNode(a.id),
+                    nodeB = agApi?.getRowNode(b.id);
+
+                return compFn(valueA, valueB, nodeA, nodeB) * direction;
+            });
+        });
+
+        records.forEach(rec => {
+            ret.push(rec);
+            if (treeMode && !isEmpty(rec.children)) {
+                const children = this.sortRecordsRecursive(rec.children);
+                ret.push(...children);
+            }
+        });
+
+        return ret;
     }
 
     @action
