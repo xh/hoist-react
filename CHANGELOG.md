@@ -8,12 +8,18 @@
   This new component supports a `quickToggle` prop which allows for more streamlined
   inline editing of boolean values.
 
-
 ### 🐞 Bug Fixes
 
 * The ag-grid grid property `stopEditingWhenCellsLoseFocus` is now enabled by default to ensure
   values are committed to the Store if the user clicks somewhere outside the grid while editing a
   cell.
+
+### ✨ Style
+
+* New `TreeStyle.COLORS` and `TreeStyle.COLORS_AND_BORDERS` tree grid styles have been added. Use
+  the `--xh-grid-tree-group-color-level-*` CSS vars to customize colors as needed.
+* `TreeStyle.HIGHLIGHTS` and `TreeStyle.HIGHLIGHTS_AND_BORDERS` now highlight row nodes on a
+  gradient according to their depth.
 
 ### 🎁 Breaking Changes
 
