@@ -60,7 +60,7 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory({
                     commitOnChange: true,
                     leftIcon: Icon.search(),
                     enableClear: true,
-                    placeholder: 'Find...',
+                    placeholder: 'Find',
                     width: null,
                     flex: 1,
                     onKeyDown: (ev) => {
