@@ -576,6 +576,9 @@ body {
   --xh-popup-title-font-size-px: calc(var(--xh-popup-title-font-size) * 1px);
   --xh-popup-title-text-color: var(--popup-title-text-color, var(--xh-title-text-color));
 
+  &.xh-mobile {
+    --xh-popup-border-width: 2;
+  }
 
   //------------------------
   // Resizable splitters
@@ -669,14 +672,7 @@ body {
   --xh-title-compact-height-px: calc(var(--xh-title-compact-height) * 1px);
 
   &.xh-mobile {
-    --xh-title-bg: var(--title-bg, #{mc('blue-grey', '100')});
-    --xh-title-text-color: var(--title-text-color, #{mc('blue-grey', '800')});
     --xh-title-font-size: var(--title-font-size, var(--xh-font-size));
-
-    &.xh-dark {
-      --xh-title-bg: var(--title-bg, #{mc('blue-grey', '900')});
-      --xh-title-text-color: var(--title-text-color, #{mc('blue-grey', '50')});
-    }
   }
 
 
