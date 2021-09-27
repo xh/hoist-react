@@ -44,7 +44,6 @@ export const logDisplay = hoistCmp.factory({
             contextMenu,
             item: div({
                 className: 'xh-log-display',
-                overflow: 'scroll',
                 items: tableRows()
             }),
             loadingIndicator: loadingIndicator({
