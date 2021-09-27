@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {frame, table, tbody, td, tr} from '@xh/hoist/cmp/layout';
+import {table, tbody, td, tr, div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {clipboardMenuItem} from '@xh/hoist/desktop/cmp/clipboard';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
@@ -42,9 +42,8 @@ export const logDisplay = hoistCmp.factory({
 
         return panel({
             contextMenu,
-            item: frame({
+            item: div({
                 className: 'xh-log-display',
-                overflow: 'scroll',
                 items: tableRows()
             }),
             loadingIndicator: loadingIndicator({
