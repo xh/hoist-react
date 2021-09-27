@@ -9,6 +9,7 @@
   color: var(--xh-blue-gray-dark);
   background-color: var(--xh-yellow-light);
   height: 100%;
+  overflow-y: auto;
 
   &__row {
     font-family: var(--xh-font-family-mono);
