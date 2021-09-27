@@ -20,6 +20,8 @@
   the `--xh-grid-tree-group-color-level-*` CSS vars to customize colors as needed.
 * `TreeStyle.HIGHLIGHTS` and `TreeStyle.HIGHLIGHTS_AND_BORDERS` now highlight row nodes on a
   gradient according to their depth.
+* Default colors for masks and dialog backdrops have been adjusted, with less obtrusive colors used
+  for masks via `--xh-mask-bg` and a darker `--xh-backdrop-bg` var now used behind dialogs.
 * Mobile-specific styles and CSS vars for panel and dialog title background have been tweaked to use
   desktop defaults, and mobile dialogs now respect `--xh-popup-*` vars as expected.
 

@@ -1,6 +1,10 @@
 .xh-dialog {
   position: fixed;
 
+  & > .dialog-mask {
+    background-color: var(--xh-backdrop-bg);
+  }
+
   & > .dialog {
     max-width: calc(100% - var(--xh-pad-double-px));
 
