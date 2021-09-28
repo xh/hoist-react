@@ -200,6 +200,47 @@ body {
   --xh-intent-danger-trans2: hsla(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3), var(--xh-intent-a2));
 
 
+  //---------
+  // AppBar
+  //---------
+  --xh-appbar-bg: var(--appbar-bg, var(--xh-bg-alt));
+  --xh-appbar-border-color: var(--appbar-border-color, transparent);
+  --xh-appbar-color: var(--appbar-color, var(--xh-text-color));
+  --xh-appbar-height: var(--appbar-height, 42);
+  --xh-appbar-height-px: calc(var(--xh-appbar-height) * 1px);
+  --xh-appbar-title-color: var(--appbar-title-color, #{mc('blue-grey', '700')});
+  --xh-appbar-title-font-size: var(--appbar-title-font-size, calc(var(--xh-font-size) * 1.9));
+  --xh-appbar-title-font-size-px: calc(var(--xh-appbar-title-font-size) * 1px);
+
+  &.xh-dark {
+    --xh-appbar-border-color: var(--appbar-border-color, #{mc('blue-grey', '700')});
+    --xh-appbar-title-color: var(--appbar-title-color, #{mc('blue-grey', '50')});
+  }
+
+  &.xh-mobile {
+    --xh-appbar-bg: var(--appbar-bg, #{mc('blue-grey', '600')});
+    --xh-appbar-color: var(--appbar-color, #{mc('blue-grey', '50')});
+    --xh-appbar-title-color: var(--appbar-title-color, var(--xh-appbar-color));
+    --xh-appbar-title-font-size: var(--appbar-title-font-size, 19);
+
+    &.xh-dark {
+      --xh-appbar-bg: var(--appbar-bg, #{mc('blue-grey', '700')});
+    }
+  }
+
+
+  //---------------------------------------------------
+  // Backdrop mask - overlay shown behind modal dialogs
+  //---------------------------------------------------
+  // Light mode uses neutral gray + higher opacity for stronger masking relative to `--xh-mask-bg`.
+  --xh-backdrop-bg: var(--backdrop-bg, rgb(128, 128, 128, 0.6));
+
+  &.xh-dark {
+    // Dark mode applies higher opacity only.
+    --xh-backdrop-bg: var(--backdrop-bg, rgb(0, 0, 0, 0.6));
+  }
+
+
   //-----------------------------------------
   // Background (app / components in general)
   //-----------------------------------------
@@ -474,72 +515,35 @@ body {
     --xh-input-disabled-text-color: var(--form-field-disabled-text-color, rgba(191, 204, 214, 0.5));
   }
 
-
   //------------------------
   // Mask + LoadingIndicator
   //------------------------
-  --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '300', 0.3)});
-  --xh-mask-text-bg: var(--mask-text-bg, #{mc('blue-grey', '100')});
+  --xh-mask-bg: var(--mask-bg, rgba(255, 255, 255, 0.4));
+  --xh-mask-text-bg: var(--mask-text-bg, var(--xh-bg-alt));
+  --xh-mask-text-border: var(--mask-text-border, var(--xh-border-solid));
   --xh-mask-text-color: var(--mask-text-color, var(--xh-text-color));
   --xh-loading-indicator-bg: var(--loading-indicator-bg, #{mc('blue-grey', '100')});
   --xh-loading-indicator-border-color: var(--loading-indicator-border-color, var(--xh-border-color));
   --xh-loading-indicator-color: var(--loading-indicator-color, #{mc('blue-grey', '600')});
 
   &.xh-dark {
-    --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '900', 0.2)});
-    --xh-mask-text-bg: var(--mask-text-bg, #{mc-trans('grey', '900', 0.1)});
-    --xh-mask-text-color: var(--mask-text-color, var(--xh-text-color));
+    --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.4));
     --xh-loading-indicator-bg: var(--loading-indicator-bg, #{mc('blue-grey', '700')});
     --xh-loading-indicator-color: var(--loading-indicator-color, #{mc('blue-grey', '200')});
   }
 
+
+  //---------------------------------------
+  // Popovers - e.g. mobile app menu.
+  // Applicable to mobile only at this time
+  //---------------------------------------
   &.xh-mobile {
-    --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.4));
+    --xh-popover-backdrop-bg: var(--popover-backdrop, rgb(128, 128, 128, 0.2));
+    --xh-popover-box-shadow: var(--popover-shadow, #{0 0 20px rgba(0, 0, 0, 0.4)});
 
     &.xh-dark {
-      --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.6));
-    }
-  }
-
-  //------------------------
-  // Popovers
-  //------------------------
-  --xh-popover-box-shadow: var(--popover-shadow, #{0 0 20px rgba(0, 0, 0, 0.4)});
-  --xh-backdrop-bg: var(--backdrop-bg, #{mc-trans('blue-grey', '300', 0.2)});
-
-  &.xh-dark {
-    --xh-popover-box-shadow: var(--popover-shadow, #{0 0 20px rgba(0, 0, 0, 0.7)});
-  }
-
-  &.xh-mobile {
-    --xh-backdrop-bg: var(--backdrop-bg, rgba(0, 0, 0, 0.4));
-  }
-
-  //---------
-  // AppBar
-  //---------
-  --xh-appbar-bg: var(--appbar-bg, var(--xh-bg-alt));
-  --xh-appbar-border-color: var(--appbar-border-color, transparent);
-  --xh-appbar-color: var(--appbar-color, var(--xh-text-color));
-  --xh-appbar-height: var(--appbar-height, 42);
-  --xh-appbar-height-px: calc(var(--xh-appbar-height) * 1px);
-  --xh-appbar-title-color: var(--appbar-title-color, #{mc('blue-grey', '700')});
-  --xh-appbar-title-font-size: var(--appbar-title-font-size, calc(var(--xh-font-size) * 1.9));
-  --xh-appbar-title-font-size-px: calc(var(--xh-appbar-title-font-size) * 1px);
-
-  &.xh-dark {
-    --xh-appbar-border-color: var(--appbar-border-color, #{mc('blue-grey', '700')});
-    --xh-appbar-title-color: var(--appbar-title-color, #{mc('blue-grey', '50')});
-  }
-
-  &.xh-mobile {
-    --xh-appbar-bg: var(--appbar-bg, #{mc('blue-grey', '600')});
-    --xh-appbar-color: var(--appbar-color, #{mc('blue-grey', '50')});
-    --xh-appbar-title-color: var(--appbar-title-color, var(--xh-appbar-color));
-    --xh-appbar-title-font-size: var(--appbar-title-font-size, 19);
-
-    &.xh-dark {
-      --xh-appbar-bg: var(--appbar-bg, #{mc('blue-grey', '700')});
+      --xh-popover-backdrop-bg: var(--popover-backdrop, rgb(0, 0, 0, 0.2));
+      --xh-popover-box-shadow: var(--popover-shadow, #{0 0 20px rgba(0, 0, 0, 0.7)});
     }
   }
 
@@ -576,6 +580,9 @@ body {
   --xh-popup-title-font-size-px: calc(var(--xh-popup-title-font-size) * 1px);
   --xh-popup-title-text-color: var(--popup-title-text-color, var(--xh-title-text-color));
 
+  &.xh-mobile {
+    --xh-popup-border-width: 2;
+  }
 
   //------------------------
   // Resizable splitters
@@ -669,14 +676,7 @@ body {
   --xh-title-compact-height-px: calc(var(--xh-title-compact-height) * 1px);
 
   &.xh-mobile {
-    --xh-title-bg: var(--title-bg, #{mc('blue-grey', '100')});
-    --xh-title-text-color: var(--title-text-color, #{mc('blue-grey', '800')});
     --xh-title-font-size: var(--title-font-size, var(--xh-font-size));
-
-    &.xh-dark {
-      --xh-title-bg: var(--title-bg, #{mc('blue-grey', '900')});
-      --xh-title-text-color: var(--title-text-color, #{mc('blue-grey', '50')});
-    }
   }
 
 

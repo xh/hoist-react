@@ -17,6 +17,17 @@
       text-align: center;
     }
   }
+
+  &__max-rows-alert {
+    background-color: var(--xh-intent-warning);
+    color: white;
+    padding: var(--xh-pad-half-px);
+    text-align: center;
+
+    .xh-icon {
+      margin-right: var(--xh-pad-half-px);
+    }
+  }
 }
 
 .xh-admin-activity-detail {
