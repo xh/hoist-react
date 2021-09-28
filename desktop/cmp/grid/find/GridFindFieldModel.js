@@ -37,7 +37,6 @@ export class GridFindFieldModel extends HoistModel {
 
     @bindable query;
     @observable.ref results;
-    @observable.ref records;
 
     get count() {
         return this.results?.length;
@@ -85,25 +84,22 @@ export class GridFindFieldModel extends HoistModel {
         throwIf(!gridModel, "Must specify 'gridModel' in GridFindField.");
 
         this.addReaction({
+            track: () => this.query,
+            run: () => this.updateResults(true),
+            debounce: queryBuffer
+        });
+
+        this.addReaction({
             track: () => [
-                this.hasQuery,
-                gridModel.isReady,
                 gridModel.store.records,
                 gridModel.columns,
                 gridModel.sortBy,
                 gridModel.groupBy
             ],
-            run: ([hasQuery, isReady]) => {
-                if (!hasQuery || !isReady) return;
-                this.updateRecords();
-                this.updateResults();
+            run: () => {
+                this._records = null;
+                if (this.hasQuery) this.updateResults();
             }
-        });
-
-        this.addReaction({
-            track: () => this.query,
-            run: () => this.updateResults(true),
-            debounce: queryBuffer
         });
     }
 
@@ -147,7 +143,7 @@ export class GridFindFieldModel extends HoistModel {
     @action
     updateResults(autoSelect) {
         // Track ids of matching records
-        const {query, records, gridModel} = this,
+        const {query, gridModel} = this,
             activeFields = this.getActiveFields();
 
         if (!query || isEmpty(activeFields)) {
@@ -158,7 +154,7 @@ export class GridFindFieldModel extends HoistModel {
         const regex = this.getRegex(query),
             valGetters = flatMap(activeFields, (fieldPath) => this.getValGetters(fieldPath));
 
-        this.results = records.filter(rec => {
+        this.results = this.getRecords().filter(rec => {
             return valGetters.some(fn => regex.test(fn(rec)));
         }).map(rec => rec.id);
 
@@ -168,11 +164,12 @@ export class GridFindFieldModel extends HoistModel {
         }
     }
 
-    @action
-    updateRecords() {
-        // Track records is displayed order
-        const records = this.sortRecordsRecursive([...this.gridModel.store.rootRecords]);
-        this.records = this.sortRecordsByGroupBy(records);
+    getRecords() {
+        if (!this._records) {
+            const records = this.sortRecordsRecursive([...this.gridModel.store.rootRecords]);
+            this._records = this.sortRecordsByGroupBy(records);
+        }
+        return this._records;
     }
 
     // Sort records with GridModel's sortBy(s) using the Column's comparator
