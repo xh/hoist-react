@@ -284,34 +284,24 @@ export class GridFindFieldModel extends HoistModel {
 
     getValGetters(fieldName) {
         const {gridModel} = this,
+            {store} = gridModel,
+            field = store.getField(fieldName),
             {DATE, LOCAL_DATE} = FieldType;
 
-        // If a GridModel has been configured, the user is looking at rendered values in a grid and
-        // would reasonably expect the filter to work off what they see. Rendering can be expensive,
-        // so currently supported for Date-type fields only. (Dates *require* a rendered value to
-        // have any hope of matching.) This could be extended to other types if needed, perhaps
-        // with a flag to manage performance tradeoffs.
-        if (gridModel) {
-            const {store} = gridModel,
-                field = store.getField(fieldName);
+        // See corresponding method in StoreFilterFieldImplModel for notes on this implementation.
+        if (field?.type === DATE || field?.type === LOCAL_DATE) {
+            const cols = filter(gridModel.getVisibleLeafColumns(), {field: fieldName});
+            if (!cols) return [];
 
-            if (field?.type === DATE || field?.type === LOCAL_DATE) {
-                const cols = filter(gridModel.getVisibleLeafColumns(), {field: fieldName});
+            return cols.map(column => {
+                const {renderer, getValueFn} = column;
+                return (record) => {
+                    const ctx = {record, field, column, gridModel, store},
+                        ret = getValueFn(ctx);
 
-                // Empty return if no columns - even if this field has been force-included,
-                // we can't match it if we can't render it.
-                if (!cols) return [];
-
-                return cols.map(column => {
-                    const {renderer, getValueFn} = column;
-                    return (record) => {
-                        const ctx = {record, field, column, gridModel, store},
-                            ret = getValueFn(ctx);
-
-                        return renderer ? stripTags(renderer(ret, ctx)) : ret;
-                    };
-                });
-            }
+                    return renderer ? stripTags(renderer(ret, ctx)) : ret;
+                };
+            });
         }
 
         // Otherwise just match raw.
