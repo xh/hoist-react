@@ -566,7 +566,21 @@ body {
   --xh-panel-border-color: var(--panel-border-color, var(--xh-border-color));
   --xh-panel-border-width: var(--panel-border-width, 0);
   --xh-panel-border-width-px: calc(var(--xh-panel-border-width) * 1px);
+  --xh-panel-title-bg: var(--panel-title-bg, var(--xh-title-bg));
+  --xh-panel-title-font-family: var(--panel-title-font-family, var(--xh-title-font-family));
+  --xh-panel-title-font-size: var(--panel-title-font-size, var(--xh-title-font-size));
+  --xh-panel-title-font-size-px: calc(var(--xh-panel-title-font-size) * 1px);
+  --xh-panel-title-text-color: var(--panel-title-text-color, var(--xh-title-text-color));
 
+  &.xh-mobile {
+    --xh-panel-title-bg: var(--panel-title-bg, #{mc('blue-grey', '100')});
+    --xh-panel-title-text-color: var(--panel-title-text-color, #{mc('blue-grey', '800')});
+
+    &.xh-dark {
+      --xh-panel-title-bg: var(--panel-title-bg, #{mc('blue-grey', '900')});
+      --xh-panel-title-text-color: var(--panel-title-text-color, #{mc('blue-grey', '50')});
+    }
+  }
 
   //------------------------
   // Popups / dialogs

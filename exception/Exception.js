@@ -37,9 +37,10 @@ export class Exception {
      * @returns {Error}
      */
     static timeout({interval, ...rest}) {
+        const displayInterval = (interval % 1000) ? `${interval}ms` : `${interval/1000}s`;
         return this.createInternal({
             name: 'Timeout Exception',
-            message: `Operation timed out after ${interval}ms`,
+            message: `Operation timed out after ${displayInterval}`,
             isTimeout: true,
             stack: null,
             interval,
