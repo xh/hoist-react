@@ -259,10 +259,10 @@ export class GridModel extends HoistModel {
      *      will receive an event with a data node, cell value, and column.
      * @param {function} [c.onCellContextMenu] - Callback when the context menu is opened. Function
      *      will receive an event with a data node containing the row's data. Note that this event
-     *      can also be triggered via a long press on mobile devices.
-     * @param {number} [c.clicksToExpand] - number of clicks required to begin expand / collapse a
-     *      parent row in a tree grid. Defaults to 2 for desktop, 1 for mobile. Any other value
-     *      prevents user clicks from expanding / collapsing rows.
+     *      can also be triggered via a long press (aka tap and hold) on mobile devices.
+     * @param {number} [c.clicksToExpand] - number of clicks required to expand / collapse a parent
+     *      row in a tree grid. Defaults to 2 for desktop, 1 for mobile. Any other value prevents
+     *      clicks on row body from expanding / collapsing (they must click the tree col > control).
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or
      *      token strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu. Desktop only.

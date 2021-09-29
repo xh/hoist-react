@@ -667,7 +667,8 @@ class XHClass extends HoistBase {
 
         this.createActivityListeners();
 
-        // Disable browser context menu on long-press for mobile apps
+        // Disable browser context menu on long-press, used to show (app) context menus and as an
+        // alternate gesture for tree grid drilldown.
         if (isMobileApp) {
             window.addEventListener('contextmenu', e => e.preventDefault(), {capture: true});
         }
