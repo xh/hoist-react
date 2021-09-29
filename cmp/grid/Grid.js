@@ -233,7 +233,7 @@ class GridLocalModel extends HoistModel {
             onCellClicked: model.onCellClicked,
             onCellDoubleClicked: model.onCellDoubleClicked,
             onRowClicked: this.onRowClicked,
-            onRowDoubleClicked: model.onRowDoubleClicked,
+            onRowDoubleClicked: this.onRowDoubleClicked,
             onRowGroupOpened: this.onRowGroupOpened,
             onSelectionChanged: this.onSelectionChanged,
             onDragStopped: this.onDragStopped,
@@ -785,10 +785,15 @@ class GridLocalModel extends HoistModel {
 
     onRowClicked = (evt) => {
         const {model} = this,
-            {selModel} = model;
+            {node} = evt,
+            {selModel, treeMode, clicksToExpand, agApi} = model;
 
         if (evt.rowPinned) {
             selModel.clear();
+        }
+
+        if (treeMode && clicksToExpand === 1 && node?.allChildrenCount) {
+            agApi.setRowNodeExpanded(node, !node.expanded);
         }
 
         const elapsed = Date.now() - (this._clickStart ?? Date.now());
@@ -796,6 +801,20 @@ class GridLocalModel extends HoistModel {
             model.onRowLongClicked(evt);
         } else if (model.onRowClicked) {
             model.onRowClicked(evt);
+        }
+    };
+
+    onRowDoubleClicked = (evt) => {
+        const {model} = this,
+            {node} = evt,
+            {treeMode, clicksToExpand, agApi} = model;
+
+        if (treeMode && clicksToExpand === 2 && node?.allChildrenCount) {
+            agApi.setRowNodeExpanded(node, !node.expanded);
+        }
+
+        if (model.onRowDoubleClicked) {
+            model.onRowDoubleClicked(evt);
         }
     };
 }

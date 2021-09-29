@@ -260,6 +260,9 @@ export class GridModel extends HoistModel {
      *      an event with a data node, cell value, and column.
      * @param {function} [c.onCellDoubleClicked] - Callback when a cell is double clicked. Function
      *      will receive an event with a data node, cell value, and column.
+     * @param {number} [c.clicksToExpand] - number of clicks required to begin expand / collapse a
+     *      parent row in a tree grid. Defaults to 2 for desktop, 1 for mobile. Any other value
+     *      prevents user clicks from expanding / collapsing rows.
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or
      *      token strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu. Desktop only.
@@ -328,6 +331,7 @@ export class GridModel extends HoistModel {
         onRowLongClicked,
         onCellClicked,
         onCellDoubleClicked,
+        clicksToExpand = XH.isMobileApp ? 1 : 2,
 
         contextMenu,
         useVirtualColumns = false,
@@ -367,6 +371,7 @@ export class GridModel extends HoistModel {
         });
         this.restoreDefaultsWarning = restoreDefaultsWarning;
         this.fullRowEditing = fullRowEditing;
+        this.clicksToExpand = clicksToExpand;
         this.clicksToEdit = clicksToEdit;
 
         throwIf(
