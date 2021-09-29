@@ -229,14 +229,12 @@ export class ColumnWidthCalculator {
 
     setClassNames(sizingMode, rowClass, cellClass) {
         this.resetClassNames();
-        this.getRowEl().classList.add(
-            !isEmpty(rowClass) ? rowClass : null
-        );
         this.getCellEl().classList.add(
             'xh-grid-autosize-cell--active',
-            `xh-grid-autosize-cell--${sizingMode}`,
-            !isEmpty(cellClass) ? cellClass : null
+            `xh-grid-autosize-cell--${sizingMode}`
         );
+        if (!isEmpty(rowClass)) this.getRowEl().classList.add(...rowClass.split(' '));
+        if (!isEmpty(cellClass)) this.getCellEl().classList.add(...cellClass.split(' '));
     }
 
     getCellEl() {
