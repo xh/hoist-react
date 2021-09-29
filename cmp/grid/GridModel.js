@@ -407,7 +407,7 @@ export class GridModel extends HoistModel {
         this.onKeyDown = onKeyDown;
         this.onRowClicked = onRowClicked;
         this.onRowDoubleClicked = onRowDoubleClicked;
-        this.onRowLongClicked = onRowLongClicked;
+        this.onRowLongClicked = () => XH.toast({message: 'Long Click'});
         this.onCellClicked = onCellClicked;
         this.onCellDoubleClicked = onCellDoubleClicked;
     }

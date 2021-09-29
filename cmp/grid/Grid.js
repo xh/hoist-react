@@ -228,7 +228,7 @@ class GridLocalModel extends HoistModel {
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             rowClassRules: model.rowClassRules,
             noRowsOverlayComponentFramework: observer(() => div(this.emptyText)),
-            onCellMouseDown: () => this.onCellMouseDown,
+            onCellMouseDown: this.onCellMouseDown,
             onCellClicked: model.onCellClicked,
             onCellDoubleClicked: model.onCellDoubleClicked,
             onRowClicked: this.onRowClicked,
@@ -785,8 +785,8 @@ class GridLocalModel extends HoistModel {
         }
 
         const elapsed = Date.now() - this._clickStart;
-        if (model.onRowLongClick && elapsed > 500) {
-            model.onRowLongClick(evt);
+        if (model.onRowLongClicked && elapsed >= 400) {
+            model.onRowLongClicked(evt);
         } else if (model.onRowClicked) {
             model.onRowClicked(evt);
         }
