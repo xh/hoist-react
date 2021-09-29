@@ -253,13 +253,13 @@ export class GridModel extends HoistModel {
      * @param {function} [c.onRowDoubleClicked] - Callback when a row is double clicked. Function
      *      will receive an event with a data node containing the row's data. (Note that this may be
      *      null - e.g. for clicks on group rows.)
-     * @param {function} [c.onRowLongPress] - Callback when a row is pressed and held. Mobile only.
-     *      Function will receive an event with a data node containing the row's data.
-     *      (Note that this may be null - e.g. for group rows.)
      * @param {function} [c.onCellClicked] - Callback when a cell is clicked. Function will receive
      *      an event with a data node, cell value, and column.
      * @param {function} [c.onCellDoubleClicked] - Callback when a cell is double clicked. Function
      *      will receive an event with a data node, cell value, and column.
+     * @param {function} [c.onCellContextMenu] - Callback when the context menu is opened. Function
+     *      will receive an event with a data node containing the row's data. Note that this event
+     *      can also be triggered via a long press on mobile devices.
      * @param {number} [c.clicksToExpand] - number of clicks required to begin expand / collapse a
      *      parent row in a tree grid. Defaults to 2 for desktop, 1 for mobile. Any other value
      *      prevents user clicks from expanding / collapsing rows.
@@ -330,7 +330,7 @@ export class GridModel extends HoistModel {
         onRowDoubleClicked,
         onCellClicked,
         onCellDoubleClicked,
-        onRowLongPress,
+        onCellContextMenu,
         clicksToExpand = XH.isMobileApp ? 1 : 2,
 
         contextMenu,
@@ -414,7 +414,7 @@ export class GridModel extends HoistModel {
         this.onRowDoubleClicked = onRowDoubleClicked;
         this.onCellClicked = onCellClicked;
         this.onCellDoubleClicked = onCellDoubleClicked;
-        this.onRowLongPress = onRowLongPress;
+        this.onCellContextMenu = onCellContextMenu;
     }
 
     /**
