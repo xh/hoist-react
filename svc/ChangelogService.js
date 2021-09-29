@@ -61,7 +61,7 @@ export class ChangelogService extends HoistService {
 
     /** @return {?string} */
     get latestAvailableVersion() {
-        if (!this.enabled || includes(this.versions[0].version, 'SNAPSHOT')) return null;
+        if (!this.enabled) return null;
         return this.versions[0].version;
     }
 
@@ -88,8 +88,13 @@ export class ChangelogService extends HoistService {
     markLatestAsRead() {
         const {latestAvailableVersion, LAST_READ_PREF_KEY} = this;
 
+        if (includes(latestAvailableVersion, 'SNAPSHOT')) {
+            console.warn('Unable to mark changelog as read when latest version is SNAPSHOT.');
+            return;
+        }
+
         if (!latestAvailableVersion || !XH.prefService.hasKey(LAST_READ_PREF_KEY)) {
-            console.warn(`Unable to mark changelog as read - latest version or required pref not found.`);
+            console.warn('Unable to mark changelog as read - latest version or required pref not found.');
             return;
         }
 
