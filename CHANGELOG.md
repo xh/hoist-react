@@ -29,6 +29,10 @@
 
 * In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`.
 
+### ⚙️ Technical
+
+* The `xhLastReadChangelog` preference will not save SNAPSHOT versions to ensure the user continues
+  to see the 'What's New?' notification for non-SNAPSHOT releases.
 
 ### 📚 Libraries
 
