@@ -306,7 +306,7 @@ export class GridModel extends HoistModel {
 
         sizingMode,
         showHover = false,
-        rowBorders = false,
+        rowBorders = XH.isMobileApp,
         rowClassFn = null,
         rowClassRules = {},
         cellBorders = false,
