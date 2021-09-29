@@ -229,6 +229,7 @@ class GridLocalModel extends HoistModel {
             rowClassRules: model.rowClassRules,
             noRowsOverlayComponentFramework: observer(() => div(this.emptyText)),
             onCellMouseDown: this.onCellMouseDown,
+            onCellContextMenu: XH.isMobileApp ? model.onRowLongClicked : undefined,
             onCellClicked: model.onCellClicked,
             onCellDoubleClicked: model.onCellDoubleClicked,
             onRowClicked: this.onRowClicked,

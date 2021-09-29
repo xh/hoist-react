@@ -666,6 +666,9 @@ class XHClass extends HoistBase {
         ]));
 
         this.createActivityListeners();
+        if (isMobileApp) {
+            window.addEventListener('contextmenu', e => e.preventDefault(), true);
+        }
 
         try {
             await this.installServicesAsync(FetchService);
