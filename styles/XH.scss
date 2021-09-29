@@ -66,6 +66,7 @@ body.xh-app {
   &.xh-mobile *,
   &.xh-tablet * {
     user-select: none !important;
+    text-size-adjust: none !important;
     -webkit-touch-callout: none !important;
   }
 

@@ -666,8 +666,10 @@ class XHClass extends HoistBase {
         ]));
 
         this.createActivityListeners();
+
+        // Disable browser context menu on long-press for mobile apps
         if (isMobileApp) {
-            window.addEventListener('contextmenu', e => e.preventDefault(), true);
+            window.addEventListener('contextmenu', e => e.preventDefault(), {capture: true});
         }
 
         try {

@@ -777,6 +777,12 @@ class GridLocalModel extends HoistModel {
         if (model.onKeyDown) model.onKeyDown(evt);
     };
 
+    onCellMouseDown = () => {
+        // Track duration of click for desktop long click detection.
+        // Note that on mobile devices, long click is managed via the cellContextMenu event.
+        this._clickStart = Date.now();
+    };
+
     onRowClicked = (evt) => {
         const {model} = this,
             {selModel} = model;
@@ -785,17 +791,13 @@ class GridLocalModel extends HoistModel {
             selModel.clear();
         }
 
-        const elapsed = Date.now() - this._clickStart;
-        if (model.onRowLongClicked && elapsed >= 400) {
+        const elapsed = Date.now() - (this._clickStart ?? Date.now());
+        if (model.onRowLongClicked && elapsed >= 500) {
             model.onRowLongClicked(evt);
         } else if (model.onRowClicked) {
             model.onRowClicked(evt);
         }
     };
-
-    onCellMouseDown = () => {
-        this._clickStart = Date.now();
-    }
 }
 
 /**
