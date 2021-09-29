@@ -19,7 +19,7 @@ import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {computed, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
-import {apiRemoved, isDisplayed, logDebug, logWithDebug} from '@xh/hoist/utils/js';
+import {apiRemoved, isDisplayed, logDebug, logWithDebug, consumeEvent} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {
@@ -773,38 +773,36 @@ class GridLocalModel extends HoistModel {
             return;
         }
 
-        if (model.onKeyDown) model.onKeyDown(evt);
+        model.onKeyDown?.(evt);
     };
 
     onRowClicked = (evt) => {
         const {model} = this,
-            {node} = evt,
+            {node, event} = evt,
             {selModel, treeMode, clicksToExpand, agApi} = model;
 
         if (evt.rowPinned) {
             selModel.clear();
         }
 
-        if (treeMode && clicksToExpand === 1 && node?.allChildrenCount) {
-            agApi.setRowNodeExpanded(node, !node.expanded);
-        }
+        model.onRowClicked?.(evt);
 
-        if (model.onRowClicked) {
-            model.onRowClicked(evt);
+        if (!event.defaultPrevented && treeMode && clicksToExpand === 1 && node?.allChildrenCount) {
+            agApi.setRowNodeExpanded(node, !node.expanded);
+            consumeEvent(event);
         }
     };
 
     onRowDoubleClicked = (evt) => {
         const {model} = this,
-            {node} = evt,
+            {node, event} = evt,
             {treeMode, clicksToExpand, agApi} = model;
 
-        if (treeMode && clicksToExpand === 2 && node?.allChildrenCount) {
-            agApi.setRowNodeExpanded(node, !node.expanded);
-        }
+        model.onRowDoubleClicked?.(evt);
 
-        if (model.onRowDoubleClicked) {
-            model.onRowDoubleClicked(evt);
+        if (!event.defaultPrevented && treeMode && clicksToExpand === 2 && node?.allChildrenCount) {
+            agApi.setRowNodeExpanded(node, !node.expanded);
+            consumeEvent(event);
         }
     };
 }
