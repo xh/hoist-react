@@ -253,9 +253,9 @@ export class GridModel extends HoistModel {
      * @param {function} [c.onRowDoubleClicked] - Callback when a row is double clicked. Function
      *      will receive an event with a data node containing the row's data. (Note that this may be
      *      null - e.g. for clicks on group rows.)
-     * @param {function} [c.onRowLongClicked] - Callback when a row is clicked and held for more than
-     *      500ms. Function will receive an event with a data node containing the row's data.
-     *      (Note that this may be null - e.g. for clicks on group rows.)
+     * @param {function} [c.onRowLongPress] - Callback when a row is pressed and held. Mobile only.
+     *      Function will receive an event with a data node containing the row's data.
+     *      (Note that this may be null - e.g. for group rows.)
      * @param {function} [c.onCellClicked] - Callback when a cell is clicked. Function will receive
      *      an event with a data node, cell value, and column.
      * @param {function} [c.onCellDoubleClicked] - Callback when a cell is double clicked. Function
@@ -328,9 +328,9 @@ export class GridModel extends HoistModel {
         onKeyDown,
         onRowClicked,
         onRowDoubleClicked,
-        onRowLongClicked,
         onCellClicked,
         onCellDoubleClicked,
+        onRowLongPress,
         clicksToExpand = XH.isMobileApp ? 1 : 2,
 
         contextMenu,
@@ -412,9 +412,9 @@ export class GridModel extends HoistModel {
         this.onKeyDown = onKeyDown;
         this.onRowClicked = onRowClicked;
         this.onRowDoubleClicked = onRowDoubleClicked;
-        this.onRowLongClicked = onRowLongClicked;
         this.onCellClicked = onCellClicked;
         this.onCellDoubleClicked = onCellDoubleClicked;
+        this.onRowLongPress = onRowLongPress;
     }
 
     /**

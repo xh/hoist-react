@@ -7,7 +7,8 @@
 * Tree grid rows can be expanded / collapsed by clicking anywhere on the row. The new
   `GridModel.clicksToExpand` config can be used to control how many clicks will toggle the row.
   Defaults to double-click for desktop, and single tap for mobile - set to 0 to disable entirely.
-* Added `GridModel.onRowLongClicked` handler, which fires when the user clicks and holds a row.
+* Added mobile-only `GridModel.onRowLongPress` handler, which fires when the user presses and holds
+  a row on their device.
 * In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`. This
   new component supports a `quickToggle` prop which allows for more streamlined inline editing of
   boolean values.

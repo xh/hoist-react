@@ -228,8 +228,7 @@ class GridLocalModel extends HoistModel {
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             rowClassRules: model.rowClassRules,
             noRowsOverlayComponentFramework: observer(() => div(this.emptyText)),
-            onCellMouseDown: this.onCellMouseDown,
-            onCellContextMenu: XH.isMobileApp ? model.onRowLongClicked : undefined,
+            onCellContextMenu: XH.isMobileApp ? model.onRowLongPress : undefined,
             onCellClicked: model.onCellClicked,
             onCellDoubleClicked: model.onCellDoubleClicked,
             onRowClicked: this.onRowClicked,
@@ -777,12 +776,6 @@ class GridLocalModel extends HoistModel {
         if (model.onKeyDown) model.onKeyDown(evt);
     };
 
-    onCellMouseDown = () => {
-        // Track duration of click for desktop long click detection.
-        // Note that on mobile devices, long click is managed via the cellContextMenu event.
-        this._clickStart = Date.now();
-    };
-
     onRowClicked = (evt) => {
         const {model} = this,
             {node} = evt,
@@ -796,10 +789,7 @@ class GridLocalModel extends HoistModel {
             agApi.setRowNodeExpanded(node, !node.expanded);
         }
 
-        const elapsed = Date.now() - (this._clickStart ?? Date.now());
-        if (model.onRowLongClicked && elapsed >= 500) {
-            model.onRowLongClicked(evt);
-        } else if (model.onRowClicked) {
+        if (model.onRowClicked) {
             model.onRowClicked(evt);
         }
     };
