@@ -8,7 +8,7 @@ import {HoistService, XH} from '@xh/hoist/core';
 import jsonFromMarkdown from '@xh/app-changelog.json';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {checkMinVersion} from '@xh/hoist/utils/js';
-import {isEmpty, forOwn} from 'lodash';
+import {isEmpty, forOwn, includes} from 'lodash';
 
 /**
  * Service to display an application changelog (aka release notes) to end users, if so configured.
@@ -61,7 +61,7 @@ export class ChangelogService extends HoistService {
 
     /** @return {?string} */
     get latestAvailableVersion() {
-        if (!this.enabled) return null;
+        if (!this.enabled || includes(this.versions[0].version, 'SNAPSHOT')) return null;
         return this.versions[0].version;
     }
 
