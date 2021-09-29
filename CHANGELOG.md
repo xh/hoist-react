@@ -25,6 +25,11 @@
 * Mobile-specific styles and CSS vars for panel and dialog title background have been tweaked to use
   desktop defaults, and mobile dialogs now respect `--xh-popup-*` vars as expected.
 
+### ⚙️ Technical
+
+* The `xhLastReadChangelog` preference will not save SNAPSHOT versions to ensure the user continues
+  to see the 'What's New?' notification for non-SNAPSHOT releases.
+
 ### 🎁 Breaking Changes
 
 * In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`.
