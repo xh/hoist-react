@@ -17,6 +17,9 @@
 * In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`. This
   new component supports a `quickToggle` prop which allows for more streamlined inline editing of
   boolean values.
+* A spinner is now shown while the app downloads and parses its javascript - most noticeable when
+  loading a new (uncached) version, especially on a slower mobile connection. (Requires
+  `@xh/hoist-dev-utils` v5.11 or greater to enable.)
 
 ### 🐞 Bug Fixes
 

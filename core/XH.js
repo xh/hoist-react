@@ -224,10 +224,9 @@ class XHClass extends HoistBase {
      */
     renderApp(appSpec) {
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
-        const rootView = elem(appSpec.containerClass, {model: this.appContainerModel}),
-            preloadSpinner = document.getElementById('xh-preload-spinner');
+        const rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
 
-        if (preloadSpinner) preloadSpinner.style.display = 'none';
+        document.getElementById('xh-preload-spinner').style.display = 'none';
         ReactDOM.render(rootView, document.getElementById('xh-root'));
     }
 
