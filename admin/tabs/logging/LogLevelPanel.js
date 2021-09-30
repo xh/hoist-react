@@ -5,6 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
+import {dateTimeCol} from '@xh/hoist/cmp/grid';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 
 export const logLevelPanel = hoistCmp.factory(
@@ -38,6 +39,15 @@ const modelSpec = {
                 name: 'effectiveLevel',
                 displayName: 'Effective',
                 editable: false
+            },
+            {
+                name: 'lastUpdated',
+                type: 'date',
+                editable: false
+            },
+            {
+                name: 'lastUpdatedBy',
+                editable: false
             }
         ]
     },
@@ -47,11 +57,15 @@ const modelSpec = {
         {field: 'name', width: 400},
         {field: 'defaultLevel', width: 110},
         {field: 'level', width: 110},
-        {field: 'effectiveLevel', width: 110}
+        {field: 'effectiveLevel', width: 110},
+        {field: 'lastUpdated', ...dateTimeCol},
+        {field: 'lastUpdatedBy', width: 160}
     ],
     editors: [
         {field: 'name'},
-        {field: 'level'}
+        {field: 'level'},
+        {field: 'lastUpdated'},
+        {field: 'lastUpdatedBy'}
     ]
 };
 
