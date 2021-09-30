@@ -1308,7 +1308,8 @@ export class GridModel extends HoistModel {
 
         if (isEmpty(storeFields)) return colConfigs;
 
-        const numTypes = [FieldType.INT, FieldType.NUMBER];
+        const numTypes = [FieldType.INT, FieldType.NUMBER],
+            dateTypes = [FieldType.DATE, FieldType.LOCAL_DATE];
         return colConfigs.map(col => {
             // Recurse into children for column groups
             if (col.children) {
@@ -1324,7 +1325,7 @@ export class GridModel extends HoistModel {
 
             const {displayName, type} = field,
                 align = numTypes.includes(type) ? 'right' : undefined,
-                defaultSortDescFirst = numTypes.includes(type) || type == FieldType.DATE,
+                defaultSortDescFirst = numTypes.includes(type) || dateTypes.includes(type),
                 sortingOrder = defaultSortDescFirst && col.absSort ? Column.ABS_DESC_FIRST :
                     defaultSortDescFirst ? Column.DESC_FIRST : Column.ASC_FIRST;
 
