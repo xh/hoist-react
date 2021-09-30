@@ -36,10 +36,9 @@ export class Column {
     static FLEX_COL_MIN_WIDTH = 30;
 
     /**
-     * A convenience sort order. Default for numeric and date columns where absSort: true.
+     * A convenience sort order. Default for non-numeric, non-date columns.
      */
-    static ABS_DESC_FIRST = [
-        {sort: 'desc', abs: true},
+    static ASC_FIRST = [
         {sort: 'asc', abs: false},
         {sort: 'desc', abs: false}
     ];
@@ -53,9 +52,10 @@ export class Column {
     ];
 
     /**
-     * A convenience sort order. Default for non-numeric, non-date columns.
+     * A convenience sort order. Default for numeric and date columns where absSort: true.
      */
-    static ASC_FIRST = [
+    static ABS_DESC_FIRST = [
+        {sort: 'desc', abs: true},
         {sort: 'asc', abs: false},
         {sort: 'desc', abs: false}
     ];

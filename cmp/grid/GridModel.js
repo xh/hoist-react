@@ -1324,10 +1324,12 @@ export class GridModel extends HoistModel {
             if (!field) return col;
 
             const {displayName, type} = field,
-                align = numTypes.includes(type) ? 'right' : undefined,
-                defaultSortDescFirst = numTypes.includes(type) || dateTypes.includes(type),
-                sortingOrder = defaultSortDescFirst && col.absSort ? Column.ABS_DESC_FIRST :
-                    defaultSortDescFirst ? Column.DESC_FIRST : Column.ASC_FIRST;
+                isNum = numTypes.includes(type),
+                isDate = dateTypes.includes(type),
+                align = isNum ? 'right' : undefined,
+                sortingOrder = isNum || isDate ?
+                    col.absSort ? Column.ABS_DESC_FIRST : Column.DESC_FIRST :
+                    Column.ASC_FIRST;
 
             // TODO: Set the editor based on field type
             return {
