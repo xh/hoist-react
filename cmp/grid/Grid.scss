@@ -209,11 +209,12 @@
   // Tree grid styling modes
   //------------------------
   // Generate a set of selectors targeting all expected max-depth levels, then style all rows
-  // *not* at that max depth with parent/group row highlighting. For trees with mixed-depth
+  // *not* at that max depth with parent/group row highlights or colors. For trees with mixed-depth
   // branches, some such "parent" rows might not actually have children and therefore won't be
   // identified as groups by AG-Grid row classes, but this keeps the styling consistent for all
   // rows at the same level.
   @for $i from 0 to 10 {
+    // With highlights
     &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
       @for $level from 0 to 9 {
         $l: 94 + (math.div($level, ($i + 1)) * 6);
@@ -242,7 +243,7 @@
         background-color: var(--xh-grid-tree-group-color-level-0);
       }
 
-      @for $level from 0 to 6 {
+      @for $level from 0 to 9 {
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
           &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
@@ -280,6 +281,7 @@
 
 .xh-dark .xh-grid--hierarchical:not(.xh-data-view) {
   @for $i from 0 to 10 {
+    // With highlights
     &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
       @for $level from 0 to 9 {
         $l: 18 - (math.div($level, ($i + 1)) * 11);
@@ -308,7 +310,7 @@
         background-color: var(--xh-grid-tree-group-color-level-0);
       }
 
-      @for $level from 0 to 6 {
+      @for $level from 0 to 9 {
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
           &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
