@@ -8,6 +8,7 @@ import {HoistBase, managed, TaskObserver} from '@xh/hoist/core';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {LoadSpec} from './LoadSpec';
+import {isPlainObject} from 'lodash';
 
 /**
  * Provides support for objects that participate in Hoist's loading/refresh lifecycle.
@@ -48,37 +49,44 @@ export class LoadSupport extends HoistBase {
     }
 
     /**
-     * Load the target by calling its `doLoadAsync()` implementation
+     * Load the target.
      *
-     * @param {LoadSpec} [loadSpec] - optional metadata about the underlying request. Not created
-     *      directly by applications. Within app code, this parameter is typically used within
-     *      `doLoadAsync()` implementations when calling `loadAsync()` on *other* objects to
-     *      relay the `LoadSpec` that they were given.
+     * This method is the main public entry point for this interface and is responsible for
+     * calling the objects `doLoadAsync()` implementation.  See also `refreshAsync()` and
+     * `autoRefreshAsync()` for convenience variants of this method.
+     *
+     * @param {(Object|LoadSpec)} [loadSpec] - metadata about the underlying load request.
+     *      May include app specific meta data, a LoadSpec object, or a merging of the two.
+     *      (Note that implementation of `doLoadAsync()` that delegate to loadAsync() calls of
+     *      other objects should typically pass along the LoadSpec object they receive.)
      */
-    async loadAsync(loadSpec = null) {
+    async loadAsync(loadSpec) {
         throwIf(
-            loadSpec && !loadSpec.isLoadSpec,
-            'Unexpected param passed to loadAsync().  If triggered via a reaction, ensure call is wrapped in a closure.'
+            loadSpec && (!loadSpec.isLoadSpec || !isPlainObject(loadSpec)),
+            'Unexpected param passed to loadAsync().  If triggered via a reaction '  +
+            'ensure call is wrapped in a closure.'
         );
-        loadSpec = loadSpec ?
-            new LoadSpec({isRefresh: loadSpec.isRefresh, isAutoRefresh: loadSpec.isAutoRefresh, owner: this}) :
-            new LoadSpec({owner: this});
+        loadSpec = new LoadSpec({...loadSpec, owner: this});
 
         return this.internalLoadAsync(loadSpec);
     }
 
     /**
      * Refresh the target.
+     *
+     *  @param {Object} [meta] - optional metadata for the request.
      */
-    async refreshAsync() {
-        return this.internalLoadAsync(new LoadSpec({isRefresh: true, owner: this}));
+    async refreshAsync(meta) {
+        return this.loadAsync({...meta, isRefresh: true});
     }
 
     /**
      * Auto-refresh the target.
+     *
+     * @param {Object} [meta] - optional metadata for the request.
      */
-    async autoRefreshAsync() {
-        return this.internalLoadAsync(new LoadSpec({isAutoRefresh: true, owner: this}));
+    async autoRefreshAsync(meta) {
+        return this.loadAsync({...meta, isAutoRefresh: true});
     }
 
     //--------------------------
