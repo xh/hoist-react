@@ -62,7 +62,7 @@ export class LoadSupport extends HoistBase {
      */
     async loadAsync(loadSpec) {
         throwIf(
-            loadSpec && (!loadSpec.isLoadSpec || !isPlainObject(loadSpec)),
+            loadSpec && !(loadSpec.isLoadSpec || isPlainObject(loadSpec)),
             'Unexpected param passed to loadAsync().  If triggered via a reaction '  +
             'ensure call is wrapped in a closure.'
         );
