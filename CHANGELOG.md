@@ -17,6 +17,9 @@
 * In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`. This
   new component supports a `quickToggle` prop which allows for more streamlined inline editing of
   boolean values.
+* `loadAsync`, `refreshAsync`, and `autoRefreshAsync` now all support passing app-specific metadata.
+  Configuration passed to these methods will be integrated with the standard `LoadSpec` and
+  available to implementations of `doLoadAsync` and other methods in the `LoadSupport` API.
 * A spinner is now shown while the app downloads and parses its javascript - most noticeable when
   loading a new (uncached) version, especially on a slower mobile connection. (Requires
   `@xh/hoist-dev-utils` v5.11 or greater to enable.)
