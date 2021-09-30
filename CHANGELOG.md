@@ -21,6 +21,12 @@
   loading a new (uncached) version, especially on a slower mobile connection. (Requires
   `@xh/hoist-dev-utils` v5.11 or greater to enable.)
 
+### ⚙️ Technical
+
+* Removed `DEFAULT_SORTING_ORDER` static from `Column` class in favor of three new preset constants:
+  `ASC_FIRST`, `DESC_FIRST`, and `ABS_DESC_FIRST`. Hoist will now default sorting order on columns
+  based on field type. Sorting order can still be manually set via `Column.sortingOrder`.
+
 ### 🐞 Bug Fixes
 
 * The ag-grid grid property `stopEditingWhenCellsLoseFocus` is now enabled by default to ensure
