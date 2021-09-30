@@ -77,7 +77,7 @@ export class LoadSpec {
      * LoadSpecs are constructed by `LoadSupport` API wrappers.
      */
     constructor({isRefresh, isAutoRefresh, owner, ...rest}) {
-        assign(this, ...rest);
+        assign(this, rest);
         const last = owner._lastRequested;
         this.loadNumber = last ? last.loadNumber + 1 : 0;
         this.isRefresh = !!(isRefresh || isAutoRefresh);
