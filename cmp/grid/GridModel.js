@@ -1322,10 +1322,17 @@ export class GridModel extends HoistModel {
             const field = storeFields.find(f => f.name === col.field);
             if (!field) return col;
 
+            const {displayName, type} = field,
+                align = numTypes.includes(type) ? 'right' : undefined,
+                defaultSortDescFirst = numTypes.includes(type) || type == FieldType.DATE,
+                sortingOrder = defaultSortDescFirst && col.absSort ? Column.ABS_DESC_FIRST :
+                    defaultSortDescFirst ? Column.DESC_FIRST : Column.ASC_FIRST;
+
             // TODO: Set the editor based on field type
             return {
-                displayName: field.displayName,
-                align: numTypes.includes(field.type) ? 'right' : undefined,
+                displayName,
+                sortingOrder,
+                align,
                 ...col
             };
         });
