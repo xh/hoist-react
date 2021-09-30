@@ -18,6 +18,12 @@
   new component supports a `quickToggle` prop which allows for more streamlined inline editing of
   boolean values.
 
+### ⚙️ Technical
+
+* Remove DEFAULT_SORTING_ORDER static from Column class in favor of three new preset constants:
+  ABS_DESC_FIRST, DESC_FIRST, and ASC_FIRST. Use to default sorting order on columns based on the
+  field type and absSort flag.
+
 ### 🐞 Bug Fixes
 
 * The ag-grid grid property `stopEditingWhenCellsLoseFocus` is now enabled by default to ensure
