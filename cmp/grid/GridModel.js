@@ -1119,6 +1119,9 @@ export class GridModel extends HoistModel {
      * Returns true as soon as the underlying agGridModel is ready, waiting a limited period
      * of time if needed to allow the component to initialize. Returns false if grid not ready
      * by end of timeout to ensure caller does not wait forever (if e.g. grid is not mounted).
+     * TODO - see https://github.com/xh/hoist-react/issues/2551 and note that calls to this method
+     *   within this class re-check `isReady` directly. We have observed this method returning
+     *   to its caller as true when the ag-grid/API has in fact dismounted and is no longer ready.
      * @param {number} [timeout] - timeout in ms
      * @return {Promise<boolean>} - latest ready state of grid
      */
