@@ -1308,7 +1308,8 @@ export class GridModel extends HoistModel {
 
         if (isEmpty(storeFields)) return colConfigs;
 
-        const numTypes = [FieldType.INT, FieldType.NUMBER];
+        const numTypes = [FieldType.INT, FieldType.NUMBER],
+            dateTypes = [FieldType.DATE, FieldType.LOCAL_DATE];
         return colConfigs.map(col => {
             // Recurse into children for column groups
             if (col.children) {
@@ -1322,10 +1323,19 @@ export class GridModel extends HoistModel {
             const field = storeFields.find(f => f.name === col.field);
             if (!field) return col;
 
+            const {displayName, type} = field,
+                isNum = numTypes.includes(type),
+                isDate = dateTypes.includes(type),
+                align = isNum ? 'right' : undefined,
+                sortingOrder = isNum || isDate ?
+                    col.absSort ? Column.ABS_DESC_FIRST : Column.DESC_FIRST :
+                    Column.ASC_FIRST;
+
             // TODO: Set the editor based on field type
             return {
-                displayName: field.displayName,
-                align: numTypes.includes(field.type) ? 'right' : undefined,
+                displayName,
+                sortingOrder,
+                align,
                 ...col
             };
         });

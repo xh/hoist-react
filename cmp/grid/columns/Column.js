@@ -36,13 +36,25 @@ export class Column {
     static FLEX_COL_MIN_WIDTH = 30;
 
     /**
-     * The default sorting order to be used for columns with sorting enabled.
-     * Change here for global change, otherwise use sortingOrder prop on column.
-     *
-     * Note that values with abs: true will be ignored for columns that do not
-     * support absolute value sorting.  See Column.absSort.
+     * A convenience sort order. Default for non-numeric, non-date columns.
      */
-    static DEFAULT_SORTING_ORDER = [
+    static ASC_FIRST = [
+        {sort: 'asc', abs: false},
+        {sort: 'desc', abs: false}
+    ];
+
+    /**
+     * A convenience sort order. Default for numeric and date columns.
+     */
+    static DESC_FIRST = [
+        {sort: 'desc', abs: false},
+        {sort: 'asc', abs: false}
+    ];
+
+    /**
+     * A convenience sort order. Default for numeric and date columns where absSort: true.
+     */
+    static ABS_DESC_FIRST = [
         {sort: 'desc', abs: true},
         {sort: 'asc', abs: false},
         {sort: 'desc', abs: false}
@@ -299,7 +311,7 @@ export class Column {
         this.maxWidth = maxWidth;
 
         this.absSort = withDefault(absSort, false);
-        this.sortingOrder = withDefault(sortingOrder, Column.DEFAULT_SORTING_ORDER);
+        this.sortingOrder = sortingOrder;
         this.sortValue = sortValue;
         this.comparator = comparator;
 
