@@ -32,6 +32,8 @@
 * The ag-grid grid property `stopEditingWhenCellsLoseFocus` is now enabled by default to ensure
   values are committed to the Store if the user clicks somewhere outside the grid while editing a
   cell.
+* Triggering inline editing of text or select editor cells by typing characters will no longer lose
+  the first character pressed.
 
 ### ✨ Style
 
