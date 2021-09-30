@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {assign} from '../../../package-template/.yarn/releases/yarn-1.22.10';
+import {assign} from 'lodash';
 
 /**
  * Metadata describing a load/refresh request in Hoist.
