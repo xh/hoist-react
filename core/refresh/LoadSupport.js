@@ -57,7 +57,7 @@ export class LoadSupport extends HoistBase {
      *
      * @param {(Object|LoadSpec)} [loadSpec] - metadata about the underlying load request.
      *      May include app specific meta data, a LoadSpec object, or a merging of the two.
-     *      (Note that implementation of `doLoadAsync()` that delegate to loadAsync() calls of
+     *      (Note that implementations of `doLoadAsync()` that delegate to loadAsync() calls of
      *      other objects should typically pass along the LoadSpec object they receive.)
      */
     async loadAsync(loadSpec) {
