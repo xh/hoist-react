@@ -57,7 +57,7 @@ export class Column {
      */
     static ASC_FIRST = [
         {sort: 'asc', abs: false},
-        {sort: 'desc', abs: false},
+        {sort: 'desc', abs: false}
     ];
 
     /** @member {(boolean|Column~editableFn)} */
