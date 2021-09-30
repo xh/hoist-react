@@ -507,14 +507,13 @@ export class GridModel extends HoistModel {
      *      collapsed node or outside of the visible scroll window. Default true.
      */
     async selectFirstAsync({ensureVisible = true} = {}) {
-        const {selModel} = this,
-            isReady = await this.whenReadyAsync();
-
-        // No-op if grid failed to enter ready state.
-        if (!isReady) return;
+        await this.whenReadyAsync();
+        if (!this.isReady) return;
 
         // Get first displayed row with data - i.e. backed by a record, not a full-width group row.
-        const id = this.agGridModel.getFirstSelectableRowNodeId();
+        const {selModel} = this,
+            id = this.agGridModel.getFirstSelectableRowNodeId();
+
         if (id != null) {
             selModel.select(id);
             if (ensureVisible) await this.ensureSelectionVisibleAsync();
@@ -549,10 +548,8 @@ export class GridModel extends HoistModel {
      * render all pending data changes.
      */
     async ensureSelectionVisibleAsync() {
-        const isReady = await this.whenReadyAsync();
-
-        // No-op if grid failed to enter ready state.
-        if (!isReady) return;
+        await this.whenReadyAsync();
+        if (!this.isReady) return;
 
         const {agApi, selModel} = this,
             {selectedRecords} = selModel,
@@ -1038,8 +1035,8 @@ export class GridModel extends HoistModel {
      * @return {Promise<void>}
      */
     async beginEditAsync({record, colId} = {}) {
-        const isReady = await this.whenReadyAsync();
-        if (!isReady) return;
+        await this.whenReadyAsync();
+        if (!this.isReady) return;
 
         const {store, agGridModel, agApi, selectedRecords} = this;
 
@@ -1100,8 +1097,8 @@ export class GridModel extends HoistModel {
      * @return {Promise<void>}
      */
     async endEditAsync(dropPendingChanges = false) {
-        const isReady = await this.whenReadyAsync();
-        if (!isReady) return;
+        await this.whenReadyAsync();
+        if (!this.isReady) return;
 
         this.agApi.stopEditing(dropPendingChanges);
     }
@@ -1122,6 +1119,9 @@ export class GridModel extends HoistModel {
      * Returns true as soon as the underlying agGridModel is ready, waiting a limited period
      * of time if needed to allow the component to initialize. Returns false if grid not ready
      * by end of timeout to ensure caller does not wait forever (if e.g. grid is not mounted).
+     * TODO - see https://github.com/xh/hoist-react/issues/2551 and note that calls to this method
+     *   within this class re-check `isReady` directly. We have observed this method returning
+     *   to its caller as true when the ag-grid/API has in fact dismounted and is no longer ready.
      * @param {number} [timeout] - timeout in ms
      * @return {Promise<boolean>} - latest ready state of grid
      */
