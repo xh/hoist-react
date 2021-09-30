@@ -4,6 +4,16 @@
 
 ### 🎁 New Features
 
+* New `GridFindField` component that enables users to search through a Grid and select rows that
+  match the entered search term, _without_ applying any filtering. Especially useful for grids with
+  aggregations or other logic that preclude client-side filtering of the data.
+* Tree grid rows can be expanded / collapsed by clicking anywhere on the row. The new
+  `GridModel.clicksToExpand` config can be used to control how many clicks will toggle the row.
+  Defaults to double-click for desktop, and single tap for mobile - set to 0 to disable entirely.
+* Added `GridModel.onCellContextMenu` handler. Note that for mobile (phone) apps, this handler fires
+  on the "long press" (aka "tap and hold") gesture. This means it can be used as an alternate event
+  for actions like drilling into a record detail, especially for parent rows on tree grids, where
+  single tap will by default expand/collapse the node.
 * In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`. This
   new component supports a `quickToggle` prop which allows for more streamlined inline editing of
   boolean values.
@@ -29,6 +39,10 @@
 
 * In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`.
 
+### ⚙️ Technical
+
+* The `xhLastReadChangelog` preference will not save SNAPSHOT versions to ensure the user continues
+  to see the 'What's New?' notification for non-SNAPSHOT releases.
 
 ### 📚 Libraries
 

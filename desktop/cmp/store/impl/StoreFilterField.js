@@ -16,7 +16,7 @@ export function storeFilterFieldImpl(props) {
         commitOnChange: true,
         leftIcon: Icon.filter(),
         enableClear: true,
-        placeholder: 'Quick filter',
+        placeholder: 'Filter',
         width: 180,
         ...props
     });
