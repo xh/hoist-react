@@ -5,6 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
+@use "sass:math";
+
 .xh-grid:not(.xh-data-view) {
   //------------------------
   // Core Header Classes
@@ -181,7 +183,7 @@
 .xh-grid--hierarchical:not(.xh-data-view) {
   // Generate indentations for tree grids with hierarchical data.
   .ag-ltr {
-    @for $i from 0 to 20 {
+    @for $i from 0 to 10 {
       .ag-row-group-indent-#{$i} {
         padding-left: calc(#{$i} * var(--xh-grid-tree-indent));
       }
@@ -207,16 +209,21 @@
   // Tree grid styling modes
   //------------------------
   // Generate a set of selectors targeting all expected max-depth levels, then style all rows
-  // *not* at that max depth with parent/group row highlighting. For trees with mixed-depth
+  // *not* at that max depth with parent/group row highlights or colors. For trees with mixed-depth
   // branches, some such "parent" rows might not actually have children and therefore won't be
   // identified as groups by AG-Grid row classes, but this keeps the styling consistent for all
   // rows at the same level.
-  @for $i from 0 to 20 {
+  @for $i from 0 to 10 {
+    // With highlights
     &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
-      .ag-row:not(.ag-row-level-#{$i}) {
-        &:not(.ag-row-selected),
-        &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-          background-color: var(--xh-grid-tree-group-bg);
+      @for $level from 0 to 9 {
+        $l: 94 + (math.div($level, ($i + 1)) * 6);
+
+        .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
+          &:not(.ag-row-selected),
+          &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+            background-color: hsl(205, 70%, $l * 1%);
+          }
         }
       }
 
@@ -224,6 +231,23 @@
         .ag-row:not(.ag-row-level-#{$i}) {
           &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected):not(.ag-row-pinned) {
             background-color: var(--xh-grid-bg-hover);
+          }
+        }
+      }
+    }
+
+    // With colors
+    &.xh-grid--tree-style-colors.xh-grid--max-depth-#{$i} {
+      .ag-floating-bottom,
+      .ag-floating-top {
+        background-color: var(--xh-grid-tree-group-color-level-0);
+      }
+
+      @for $level from 0 to 9 {
+        .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
+          &:not(.ag-row-selected),
+          &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+            background-color: var(--xh-grid-tree-group-color-level-#{$level});
           }
         }
       }
@@ -252,6 +276,49 @@
 .xh-grid--flat:not(.xh-data-view) {
   .ag-ltr .ag-row-group-leaf-indent {
     margin-left: 0;
+  }
+}
+
+.xh-dark .xh-grid--hierarchical:not(.xh-data-view) {
+  @for $i from 0 to 10 {
+    // With highlights
+    &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
+      @for $level from 0 to 9 {
+        $l: 18 - (math.div($level, ($i + 1)) * 11);
+
+        .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
+          &:not(.ag-row-selected),
+          &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+            background-color: hsl(200, 50%, $l * 1%);
+          }
+        }
+      }
+
+      .xh-ag-grid--show-hover {
+        .ag-row:not(.ag-row-level-#{$i}) {
+          &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected):not(.ag-row-pinned) {
+            background-color: var(--xh-grid-bg-hover);
+          }
+        }
+      }
+    }
+
+    // With colors
+    &.xh-grid--tree-style-colors.xh-grid--max-depth-#{$i} {
+      .ag-floating-bottom,
+      .ag-floating-top {
+        background-color: var(--xh-grid-tree-group-color-level-0);
+      }
+
+      @for $level from 0 to 9 {
+        .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
+          &:not(.ag-row-selected),
+          &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+            background-color: var(--xh-grid-tree-group-color-level-#{$level});
+          }
+        }
+      }
+    }
   }
 }
 

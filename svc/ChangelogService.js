@@ -8,7 +8,7 @@ import {HoistService, XH} from '@xh/hoist/core';
 import jsonFromMarkdown from '@xh/app-changelog.json';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {checkMinVersion} from '@xh/hoist/utils/js';
-import {isEmpty, forOwn} from 'lodash';
+import {isEmpty, forOwn, includes} from 'lodash';
 
 /**
  * Service to display an application changelog (aka release notes) to end users, if so configured.
@@ -88,8 +88,13 @@ export class ChangelogService extends HoistService {
     markLatestAsRead() {
         const {latestAvailableVersion, LAST_READ_PREF_KEY} = this;
 
+        if (includes(latestAvailableVersion, 'SNAPSHOT')) {
+            console.warn('Unable to mark changelog as read when latest version is SNAPSHOT.');
+            return;
+        }
+
         if (!latestAvailableVersion || !XH.prefService.hasKey(LAST_READ_PREF_KEY)) {
-            console.warn(`Unable to mark changelog as read - latest version or required pref not found.`);
+            console.warn('Unable to mark changelog as read - latest version or required pref not found.');
             return;
         }
 

@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-export * from './CheckboxEditor';
+export * from './BooleanEditor';
 export * from './DateEditor';
 export * from './NumberEditor';
 export * from './SelectEditor';

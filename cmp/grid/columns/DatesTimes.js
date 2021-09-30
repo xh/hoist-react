@@ -27,7 +27,7 @@ export const dateTimeCol = {
     align: 'left',
     renderer: dateTimeRenderer(),
     exportFormat: ExportFormat.DATETIME_FMT,
-    width: 160
+    width: 180
 };
 
 export const compactDateCol = {

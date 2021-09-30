@@ -55,6 +55,11 @@ body.xh-app.xh-mobile {
     border-color: var(--xh-border-color);
   }
 
+  .bottom-bar > .button {
+    margin: 6px 4px;
+    line-height: 26px;
+  }
+
   // Grids
   .list {
     border-top: var(--xh-border-solid);
@@ -108,11 +113,6 @@ body.xh-app.xh-mobile {
   .button--quiet:active,
   .tabbar__button {
     color: var(--xh-text-color);
-  }
-
-  // Dialogs
-  .dialog-container {
-    border: var(--xh-border-solid);
   }
 
   // Accented
