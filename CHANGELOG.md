@@ -20,9 +20,9 @@
 
 ### ⚙️ Technical
 
-* Remove DEFAULT_SORTING_ORDER static from Column class in favor of three new preset constants:
-  ABS_DESC_FIRST, DESC_FIRST, and ASC_FIRST. Use to default sorting order on columns based on the
-  field type and absSort flag.
+* Remove `DEFAULT_SORTING_ORDER` static from `Column` class in favor of three new preset constants:
+  `ABS_DESC_FIRST`, `DESC_FIRST`, and `ASC_FIRST`. Use these to default sorting order on columns
+  based on field type and absSort flag.
 
 ### 🐞 Bug Fixes
 
