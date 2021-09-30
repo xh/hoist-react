@@ -1327,7 +1327,7 @@ export class GridModel extends HoistModel {
                 isNum = numTypes.includes(type),
                 isDate = dateTypes.includes(type),
                 align = isNum ? 'right' : undefined,
-                sortingOrder = col.isAbsSort ?
+                sortingOrder = col.absSort ?
                     Column.ABS_DESC_FIRST :
                     (isNum || isDate ? Column.DESC_FIRST : Column.ASC_FIRST);
 
