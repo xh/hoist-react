@@ -23,6 +23,9 @@
 * A spinner is now shown while the app downloads and parses its javascript - most noticeable when
   loading a new (uncached) version, especially on a slower mobile connection. (Requires
   `@xh/hoist-dev-utils` v5.11 or greater to enable.)
+* Log Viewer now supports downloading log files.
+  * Note apps must update their server-side to `hoist-core v10.0` or greater to download log files
+    (although this is _not_ a general or hard requirement for taking this version of hoist-react).
 
 ### ⚙️ Technical
 

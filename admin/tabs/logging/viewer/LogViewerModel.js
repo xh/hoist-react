@@ -7,12 +7,13 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable, observable, computed, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
+import {Icon} from '@xh/hoist/icon';
 import {createRef} from 'react';
-import {LogDisplayModel} from './LogDisplayModel';
+import download from 'downloadjs';import {LogDisplayModel} from './LogDisplayModel';
 
 /**
  * @private
@@ -57,6 +58,11 @@ export class LogViewerModel extends HoistModel {
         ]
     });
 
+    @computed
+    get enableDownload() {
+        return this.filesGridModel.selectedRecord;
+    }
+
     constructor() {
         super();
         makeObservable(this);
@@ -91,6 +97,23 @@ export class LogViewerModel extends HoistModel {
     //---------------------------------
     // Implementation
     //---------------------------------
+    async downloadSelectedAsync() {
+        if (!this.enableDownload) return;
+
+        const sel = this.filesGridModel.selectedRecord,
+            {filename} = sel.data,
+            response = await XH.fetch({
+                url: 'logViewerAdmin/download',
+                params: {filename}
+            }).catchDefault();
+        const blob = await response.blob();
+        download(blob, filename);
+        XH.toast({
+            icon: Icon.download(),
+            message: 'Download complete.'
+        });
+    }
+
     syncSelectionReaction() {
         return {
             track: () => this.filesGridModel.selectedRecord,
