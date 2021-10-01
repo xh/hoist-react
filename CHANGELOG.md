@@ -17,12 +17,26 @@
 * In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`. This
   new component supports a `quickToggle` prop which allows for more streamlined inline editing of
   boolean values.
+* `loadAsync`, `refreshAsync`, and `autoRefreshAsync` now all support passing app-specific metadata.
+  Configuration passed to these methods will be integrated with the standard `LoadSpec` and
+  available to implementations of `doLoadAsync` and other methods in the `LoadSupport` API.
+* A spinner is now shown while the app downloads and parses its javascript - most noticeable when
+  loading a new (uncached) version, especially on a slower mobile connection. (Requires
+  `@xh/hoist-dev-utils` v5.11 or greater to enable.)
+
+### ⚙️ Technical
+
+* Removed `DEFAULT_SORTING_ORDER` static from `Column` class in favor of three new preset constants:
+  `ASC_FIRST`, `DESC_FIRST`, and `ABS_DESC_FIRST`. Hoist will now default sorting order on columns
+  based on field type. Sorting order can still be manually set via `Column.sortingOrder`.
 
 ### 🐞 Bug Fixes
 
 * The ag-grid grid property `stopEditingWhenCellsLoseFocus` is now enabled by default to ensure
   values are committed to the Store if the user clicks somewhere outside the grid while editing a
   cell.
+* Triggering inline editing of text or select editor cells by typing characters will no longer lose
+  the first character pressed.
 
 ### ✨ Style
 
