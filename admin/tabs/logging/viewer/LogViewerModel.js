@@ -13,7 +13,8 @@ import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
 import {createRef} from 'react';
-import download from 'downloadjs';import {LogDisplayModel} from './LogDisplayModel';
+import download from 'downloadjs';
+import {LogDisplayModel} from './LogDisplayModel';
 
 /**
  * @private
@@ -106,6 +107,7 @@ export class LogViewerModel extends HoistModel {
                 url: 'logViewerAdmin/download',
                 params: {filename}
             }).catchDefault();
+
         const blob = await response.blob();
         download(blob, filename);
         XH.toast({
