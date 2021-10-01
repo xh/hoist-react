@@ -63,13 +63,15 @@ body.xh-app {
     cursor: pointer;
   }
 
-  // Avoid default select/magnify behaviors on long-press, used to show context menus and as an
-  // alternate gesture for tree grid drilldown.
-  &.xh-mobile *,
-  &.xh-tablet * {
-    user-select: none !important;
+  // Avoid default select / magnify behaviors on touch-screens
+  &.xh-mobile,
+  &.xh-tablet {
     text-size-adjust: none !important;
     -webkit-touch-callout: none !important;
+
+    & *:not(input):not(textarea) {
+      user-select: none !important;
+    }
   }
 
   // Colors
