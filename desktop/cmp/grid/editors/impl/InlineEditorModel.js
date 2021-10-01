@@ -105,7 +105,7 @@ class InlineEditorModel extends HoistModel {
     focusOnRenderReaction() {
         return {
             when: () => this.inputEl,
-            run: () => wait().then(() => this.focus())
+            run: () => wait(10).then(() => this.focus())
         };
     }
 }

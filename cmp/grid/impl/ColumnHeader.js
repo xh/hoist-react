@@ -306,7 +306,7 @@ class LocalModel extends HoistModel {
     parseAvailableSorts() {
         const {
             absSort = false,
-            sortingOrder = Column.DEFAULT_SORTING_ORDER,
+            sortingOrder = absSort ? Column.ABS_DESC_FIRST : Column.ASC_FIRST,
             colId = this.colId
         } = this.xhColumn ?? {}; // Note xhColumn may be null for ag-Grid dynamic columns
 

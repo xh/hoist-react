@@ -5,6 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
+import {assign} from 'lodash';
+
 /**
  * Metadata describing a load/refresh request in Hoist.
  *
@@ -62,27 +64,26 @@ export class LoadSpec {
     }
 
     /**
+     * @member {string} - display type of refresh for troubleshooting and logging.
+     */
+    get typeDisplay() {
+        if (this.isAutoRefresh) return 'Auto-Refresh';
+        if (this.isRefresh)     return 'Refresh';
+        return 'Load';
+    }
+
+    /**
      * @private - not for application use.
      * LoadSpecs are constructed by `LoadSupport` API wrappers.
      */
-    constructor({isRefresh, isAutoRefresh, owner}) {
+    constructor({isRefresh, isAutoRefresh, owner, ...rest}) {
+        assign(this, rest);
         const last = owner._lastRequested;
         this.loadNumber = last ? last.loadNumber + 1 : 0;
         this.isRefresh = !!(isRefresh || isAutoRefresh);
         this.isAutoRefresh = !!isAutoRefresh;
-        this.typeDisplay = this.getTypeDisplay();
         this.owner = owner;
         this.dateCreated = new Date();
         Object.freeze(this);
-    }
-
-
-    //--------------------
-    // Implementation
-    //--------------------
-    getTypeDisplay() {
-        if (this.isAutoRefresh) return 'Auto-Refresh';
-        if (this.isRefresh)     return 'Refresh';
-        return 'Load';
     }
 }
