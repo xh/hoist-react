@@ -157,7 +157,6 @@ export class ActivityTrackingModel extends HoistModel {
             exportOptions: {filename: `${XH.appCode}-activity-summary`},
             emptyText: 'No activity reported...',
             sortBy: ['cubeLabel'],
-            onRowDoubleClicked: (e) => this.toggleRowExpandCollapse(e),
             columns: [
                 {
                     field: 'cubeLabel',
@@ -302,11 +301,6 @@ export class ActivityTrackingModel extends HoistModel {
         this.formModel.setValues({
             startDay: this.endDay.subtract(value, unit).nextDay()
         });
-    }
-
-    toggleRowExpandCollapse(agParams) {
-        const {data, node} = agParams;
-        if (data?.children && node) node.setExpanded(!node.expanded);
     }
 
     dateRangeRenderer(range) {
