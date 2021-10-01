@@ -73,8 +73,7 @@ export class LoadSupport extends HoistBase {
 
     /**
      * Refresh the target.
-     *
-     *  @param {Object} [meta] - optional metadata for the request.
+     * @param {Object} [meta] - optional metadata for the request.
      */
     async refreshAsync(meta) {
         return this.loadAsync({...meta, isRefresh: true});
@@ -82,7 +81,6 @@ export class LoadSupport extends HoistBase {
 
     /**
      * Auto-refresh the target.
-     *
      * @param {Object} [meta] - optional metadata for the request.
      */
     async autoRefreshAsync(meta) {
