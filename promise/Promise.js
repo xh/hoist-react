@@ -7,7 +7,7 @@
 import {TaskObserver, XH} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {action} from '@xh/hoist/mobx';
-import {castArray, isFunction, isNumber} from 'lodash';
+import {castArray, isFunction, isNumber, isString} from 'lodash';
 import {apiDeprecated} from '../utils/js';
 
 /**
@@ -128,22 +128,23 @@ const enhancePromise = (promisePrototype) => {
          * Track a Promise (with timing) via Hoist activity tracking.
          *
          * @memberOf Promise.prototype
-         * @param {Object} [trackCfg] - valid options for {@see TrackService.track()}.
-         * @param {boolean} [trackCfg.omit] - set to true to disable tracking, useful when trackCfg
-         *      conditionally generated (e.g. to suppress tracking for auto-refreshes).
+         * @param {(Object|string)} options - valid options for {@see TrackService.track()}
+         * @param {string} [options.message]
+         * @param {string} [options.category]
+         * @param {(Object|Object[])} [options.data]
+         * @param {string} [options.severity]
+         * @param {boolean} [options.oncePerSession]
+         * @param {LoadSpec} [options.loadSpec]
+         * @param {boolean} [options.omit]
          */
-        track(trackCfg) {
-            if (!trackCfg || trackCfg.omit) return this;
-
-            if (typeof trackCfg === 'string') {
-                trackCfg = {message: trackCfg};
-            }
+        track(options) {
+            if (!options || options.omit) return this;
+            if (isString(options)) options = {message: options};
 
             const startTime = Date.now();
-
             return this.finally(() => {
-                trackCfg.elapsed = Date.now() - startTime;
-                XH.track(trackCfg);
+                options.elapsed = Date.now() - startTime;
+                XH.track(options);
             });
         },
 
