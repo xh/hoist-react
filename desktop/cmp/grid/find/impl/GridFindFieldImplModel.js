@@ -6,7 +6,7 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {FieldType} from '@xh/hoist/data';
-import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
 import {
     escapeRegExp,
@@ -22,7 +22,10 @@ import {
     without
 } from 'lodash';
 
-export class GridFindFieldModel extends HoistModel {
+/**
+ * @private
+ */
+export class GridFindFieldImplModel extends HoistModel {
 
     /** @member {GridModel} */
     gridModel;
@@ -35,7 +38,6 @@ export class GridFindFieldModel extends HoistModel {
     /** @member {string[]} */
     excludeFields;
 
-    @bindable query;
     @observable.ref results;
 
     get count() {
@@ -63,6 +65,24 @@ export class GridFindFieldModel extends HoistModel {
     @computed
     get hasResults() {
         return !isNil(this.results) && !isEmpty(this.results);
+    }
+
+    //------------------------------------------------------------------
+    // Trampoline value to bindable -- from bound model, or grid
+    //------------------------------------------------------------------
+    get query() {
+        const {bind, model, gridModel} = this;
+        return bind ? model[bind] : gridModel.xhFindQuery;
+    }
+
+    @action
+    setQuery(v) {
+        const {bind, model, gridModel} = this;
+        if (bind) {
+            model.setBindable(bind, v);
+        } else {
+            gridModel.setXhFindQuery(v);
+        }
     }
 
     constructor({

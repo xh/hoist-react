@@ -6,15 +6,15 @@
  */
 import {hoistCmp, useContextModel, useLocalModel} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {hbox, span} from '@xh/hoist/cmp/layout';
+import {hbox, vbox, span} from '@xh/hoist/cmp/layout';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {errorIf, withDefault} from '@xh/hoist/utils/js';
+import {errorIf, withDefault, consumeEvent} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 import './GridFindField.scss';
-import {GridFindFieldModel} from './GridFindFieldModel';
+import {GridFindFieldImplModel} from './impl/GridFindFieldImplModel';
 
 /**
  * A text input Component that enables users to search through a Grid and select rows that match
@@ -41,11 +41,11 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory({
 
         gridModel = withDefault(gridModel, useContextModel(GridModel));
         errorIf(
-            !gridModel || !gridModel.selModel?.isEnabled,
+            !gridModel?.selModel?.isEnabled,
             'GridFindField must be bound to GridModel with an enabled StoreSelectionModel.'
         );
 
-        const impl = useLocalModel(() => new GridFindFieldModel({gridModel, ...props}));
+        const impl = useLocalModel(() => new GridFindFieldImplModel({gridModel, ...props}));
         impl.updateProps(props);
 
         const {countLabel, hasResults} = impl;
@@ -61,33 +61,47 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory({
                     leftIcon: Icon.search(),
                     enableClear: true,
                     placeholder: 'Find',
+                    selectOnFocus: true,
                     width: null,
                     flex: 1,
-                    onKeyDown: (ev) => {
-                        if (ev.key === 'Enter') {
-                            ev.shiftKey ? impl.selectPrev() : impl.selectNext();
+                    onKeyDown: (e) => {
+                        switch (e.key) {
+                            case 'Enter':
+                                e.shiftKey ? impl.selectPrev() : impl.selectNext();
+                                consumeEvent(e);
+                                break;
+                            case 'ArrowUp':
+                                impl.selectPrev();
+                                consumeEvent(e);
+                                break;
+                            case 'ArrowDown':
+                                impl.selectNext();
+                                consumeEvent(e);
+                                break;
                         }
                     },
                     ...restProps
                 }),
                 hbox({
+                    omit: !countLabel,
                     className: 'xh-grid-find-field__controls',
                     items: [
                         span({
-                            omit: !countLabel,
                             className: 'xh-grid-find-field__count-label',
                             item: countLabel
                         }),
-                        button({
-                            disabled: !hasResults,
-                            icon: Icon.chevronUp(),
-                            onClick: () => impl.selectPrev()
-                        }),
-                        button({
-                            disabled: !hasResults,
-                            icon: Icon.chevronDown(),
-                            onClick: () => impl.selectNext()
-                        })
+                        vbox(
+                            button({
+                                disabled: !hasResults,
+                                icon: Icon.chevronUp(),
+                                onClick: () => impl.selectPrev()
+                            }),
+                            button({
+                                disabled: !hasResults,
+                                icon: Icon.chevronDown(),
+                                onClick: () => impl.selectNext()
+                            })
+                        )
                     ]
                 })
             ]
@@ -118,5 +132,16 @@ GridFindField.propTypes = {
     includeFields: PT.arrayOf(PT.string),
 
     /** Names of field(s) to exclude from search. Cannot be used with `includeFields`. */
-    excludeFields: PT.arrayOf(PT.string)
+    excludeFields: PT.arrayOf(PT.string),
+
+    /**
+     * Field on optional model to which this component should bind its raw (text) value to persist
+     * across renders. Specify this field to control the state of this component directly. These
+     * are both advanced use-cases - this prop is typically left unset.
+     */
+    bind: PT.string,
+
+    /** Optional model for raw value binding - see comments on the `bind` prop for details. */
+    model: PT.object
+
 };
