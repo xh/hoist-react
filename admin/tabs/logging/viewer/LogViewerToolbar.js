@@ -9,6 +9,8 @@ import {hoistCmp, XH} from '@xh/hoist/core';
 import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtTimeZone} from '@xh/hoist/utils/impl';
+import {Icon} from '@xh/hoist/icon/';
+import {button} from '@xh/hoist/desktop/cmp/button';
 
 export const logViewerToolbar = hoistCmp.factory(
     ({model}) => {
@@ -43,6 +45,13 @@ export const logViewerToolbar = hoistCmp.factory(
             switchInput({
                 bind: 'tail',
                 label: 'Tail mode'
+            }),
+            toolbarSep(),
+            button({
+                text: 'Download',
+                icon: Icon.download(),
+                disabled: !model.selectedRecord,
+                onClick: () => model.downloadSelectedAsync()
             }),
             filler(),
             span({
