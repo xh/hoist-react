@@ -81,7 +81,7 @@ export class LoadSpec {
     constructor({isRefresh, isAutoRefresh, meta, owner}) {
         this.isRefresh = !!(isRefresh || isAutoRefresh);
         this.isAutoRefresh = !!isAutoRefresh;
-        this.meta = meta;
+        this.meta = meta ?? {};
         this.owner = owner;
 
         const last = owner._lastRequested;
