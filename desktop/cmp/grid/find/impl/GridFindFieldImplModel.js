@@ -8,6 +8,7 @@ import {HoistModel, XH} from '@xh/hoist/core';
 import {FieldType} from '@xh/hoist/data';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     escapeRegExp,
     filter,
@@ -39,6 +40,7 @@ export class GridFindFieldImplModel extends HoistModel {
     excludeFields;
 
     @observable.ref results;
+    inputRef = createObservableRef();
 
     get count() {
         return this.results?.length;
@@ -55,6 +57,10 @@ export class GridFindFieldImplModel extends HoistModel {
         const {count, selectedIdx} = this,
             match = isFinite(selectedIdx) ? selectedIdx + 1 : 0;
         return `${match}/${count}`;
+    }
+
+    get hasFocus() {
+        return this.inputRef?.current?.hasFocus;
     }
 
     @computed
