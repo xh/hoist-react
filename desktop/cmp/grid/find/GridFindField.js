@@ -71,10 +71,12 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory({
                                 consumeEvent(e);
                                 break;
                             case 'ArrowUp':
+                                if (e.shiftKey) return;
                                 impl.selectPrev();
                                 consumeEvent(e);
                                 break;
                             case 'ArrowDown':
+                                if (e.shiftKey) return;
                                 impl.selectNext();
                                 consumeEvent(e);
                                 break;
