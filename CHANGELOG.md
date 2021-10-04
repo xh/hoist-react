@@ -1,5 +1,9 @@
 # Changelog
 
+## v44.0.0-SNAPSHOT - unreleased
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v43.0.1...develop)
+
 ## v43.0.1 - 2021-10-04
 
 ### 🎁 New Features
@@ -62,7 +66,7 @@
 * @blueprintjs/core `3.49 -> 3.50`
 * codemirror `5.62 -> 5.63`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v42.6.0...v43.0.0)
+[Commit Log](https://github.com/xh/hoist-react/compare/v42.6.0...v43.0.1)
 
 ## v42.6.0 - 2021-09-17
 
