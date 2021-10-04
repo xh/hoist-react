@@ -50,7 +50,7 @@ export const logViewerToolbar = hoistCmp.factory(
             button({
                 text: 'Download',
                 icon: Icon.download(),
-                disabled: !model.enableDownload,
+                disabled: !model.selectedRecord,
                 onClick: () => model.downloadSelectedAsync()
             }),
             filler(),

@@ -7,7 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {action, bindable, observable, computed, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
@@ -59,8 +59,7 @@ export class LogViewerModel extends HoistModel {
         ]
     });
 
-    @computed
-    get enableDownload() {
+    get selectedRecord() {
         return this.filesGridModel.selectedRecord;
     }
 
@@ -94,31 +93,36 @@ export class LogViewerModel extends HoistModel {
         }
     }
 
+    async downloadSelectedAsync() {
+        try {
+            const {selectedRecord} = this;
+            if (!selectedRecord) return;
+
+            const {filename} = selectedRecord.data,
+                response = await XH.fetch({
+                    url: 'logViewerAdmin/download',
+                    params: {filename}
+                });
+
+            const blob = await response.blob();
+            download(blob, filename);
+
+            XH.toast({
+                icon: Icon.download(),
+                message: 'Download complete.'
+            });
+
+        } catch (e) {
+            XH.handleException(e);
+        }
+    }
 
     //---------------------------------
     // Implementation
     //---------------------------------
-    async downloadSelectedAsync() {
-        if (!this.enableDownload) return;
-
-        const sel = this.filesGridModel.selectedRecord,
-            {filename} = sel.data,
-            response = await XH.fetch({
-                url: 'logViewerAdmin/download',
-                params: {filename}
-            }).catchDefault();
-
-        const blob = await response.blob();
-        download(blob, filename);
-        XH.toast({
-            icon: Icon.download(),
-            message: 'Download complete.'
-        });
-    }
-
     syncSelectionReaction() {
         return {
-            track: () => this.filesGridModel.selectedRecord,
+            track: () => this.selectedRecord,
             run: (rec) => {
                 this.file = rec?.data?.filename;
                 this.loadLog();
