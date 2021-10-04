@@ -17,6 +17,7 @@ export function storeFilterFieldImpl(props) {
         leftIcon: Icon.filter(),
         enableClear: true,
         placeholder: 'Filter',
+        selectOnFocus: true,
         width: 180,
         ...props
     });

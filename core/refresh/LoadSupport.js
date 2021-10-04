@@ -55,10 +55,12 @@ export class LoadSupport extends HoistBase {
      * calling the objects `doLoadAsync()` implementation.  See also `refreshAsync()` and
      * `autoRefreshAsync()` for convenience variants of this method.
      *
-     * @param {(Object|LoadSpec)} [loadSpec] - metadata about the underlying load request.
-     *      May include app specific meta data, a LoadSpec object, or a merging of the two.
-     *      (Note that implementations of `doLoadAsync()` that delegate to loadAsync() calls of
-     *      other objects should typically pass along the LoadSpec object they receive.)
+     * @param {(Object|LoadSpec)} [loadSpec] - LoadSpec, or a simple Object containing properties
+     *      to create one.
+     *
+     *      Note that implementations of `doLoadAsync()` that delegate to loadAsync() calls of
+     *      other objects should typically pass along the LoadSpec object the receive -- or an
+     *      enriched version of it -- to their delegates.
      */
     async loadAsync(loadSpec) {
         throwIf(
@@ -76,7 +78,7 @@ export class LoadSupport extends HoistBase {
      * @param {Object} [meta] - optional metadata for the request.
      */
     async refreshAsync(meta) {
-        return this.loadAsync({...meta, isRefresh: true});
+        return this.loadAsync({meta, isRefresh: true});
     }
 
     /**
@@ -84,7 +86,7 @@ export class LoadSupport extends HoistBase {
      * @param {Object} [meta] - optional metadata for the request.
      */
     async autoRefreshAsync(meta) {
-        return this.loadAsync({...meta, isAutoRefresh: true});
+        return this.loadAsync({meta, isAutoRefresh: true});
     }
 
     //--------------------------
