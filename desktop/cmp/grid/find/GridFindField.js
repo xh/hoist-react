@@ -48,15 +48,15 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory({
         const impl = useLocalModel(() => new GridFindFieldImplModel({gridModel, ...props}));
         impl.updateProps(props);
 
-        const {countLabel, hasResults} = impl;
         return hbox({
-            width: 220,
+            width: 180,
             className,
             ...layoutProps,
             items: [
                 textInput({
                     model: impl,
                     bind: 'query',
+                    ref: impl.inputRef,
                     commitOnChange: true,
                     leftIcon: Icon.search(),
                     enableClear: true,
@@ -84,32 +84,40 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory({
                     },
                     ...restProps
                 }),
-                hbox({
-                    omit: !countLabel,
-                    className: 'xh-grid-find-field__controls',
-                    items: [
-                        span({
-                            className: 'xh-grid-find-field__count-label',
-                            item: countLabel
-                        }),
-                        vbox(
-                            button({
-                                disabled: !hasResults,
-                                icon: Icon.chevronUp(),
-                                onClick: () => impl.selectPrev()
-                            }),
-                            button({
-                                disabled: !hasResults,
-                                icon: Icon.chevronDown(),
-                                onClick: () => impl.selectNext()
-                            })
-                        )
-                    ]
-                })
+                controls({impl})
             ]
         });
     }
 });
+
+const controls = hoistCmp.factory(
+    ({impl}) => {
+        const {hasFocus, hasQuery, hasResults, countLabel} = impl;
+        if (!hasFocus && !hasQuery) return null;
+        return hbox({
+            className: 'xh-grid-find-field__controls',
+            items: [
+                span({
+                    omit: !countLabel,
+                    className: 'xh-grid-find-field__count-label',
+                    item: countLabel
+                }),
+                vbox(
+                    button({
+                        disabled: !hasResults,
+                        icon: Icon.chevronUp(),
+                        onClick: () => impl.selectPrev()
+                    }),
+                    button({
+                        disabled: !hasResults,
+                        icon: Icon.chevronDown(),
+                        onClick: () => impl.selectNext()
+                    })
+                )
+            ]
+        });
+    }
+);
 
 GridFindField.propTypes = {
     /**
