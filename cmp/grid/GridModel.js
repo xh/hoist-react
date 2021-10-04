@@ -13,7 +13,7 @@ import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
-import {action, makeObservable, observable, when} from '@xh/hoist/mobx';
+import {action, makeObservable, bindable, observable, when} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
@@ -183,6 +183,9 @@ export class GridModel extends HoistModel {
 
     /** @member {TaskObserver} - tracks execution of autosize operations. */
     @managed autosizeTask = TaskObserver.trackAll();
+
+    /** @package - used internally by any GridFindField that is bound to this GridModel. */
+    @bindable xhFindQuery = null;
 
     /**
      * @param {Object} c - GridModel configuration.
