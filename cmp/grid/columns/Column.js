@@ -19,6 +19,7 @@ import {
     isFunction,
     isNil,
     isNumber,
+    isPlainObject,
     isString
 } from 'lodash';
 import {forwardRef, useImperativeHandle, useState, createElement} from 'react';
@@ -65,7 +66,9 @@ export class Column {
 
     /**
      * @param {Object} c - Column configuration.
-     * @param {string} [c.field] - name of data store field to display within the column.
+     * @param {(string|Object)} [c.field] - name of data store field to display within the column,
+     *      or object containing properties for store field.  If object form is used, the provided
+     *      properties will be used for auto-creating any fields needed on the Grid's store.
      * @param {string} [c.colId] - unique identifier for the Column within its grid.
      *      Defaults to field name - one of these two properties must be specified.
      * @param {boolean} [c.isTreeColumn] - true if this column will host the expand/collapse arrow
@@ -258,7 +261,7 @@ export class Column {
     }, gridModel) {
         Object.assign(this, rest);
 
-        this.field = field;
+        this.field = this.parseField(field);
         this.enableDotSeparatedFieldPath = withDefault(enableDotSeparatedFieldPath, true);
         if (field) {
             const splitFieldPath = this.enableDotSeparatedFieldPath && field.includes('.');
@@ -686,6 +689,14 @@ export class Column {
         if (isArray(fieldPath)) return get(record.data, fieldPath);
         return record.data[fieldPath];
     };
+
+    parseField(field) {
+        if (isPlainObject(field)) {
+            this.defaultFieldSpec = field;
+            return field.name;
+        }
+        return field;
+    }
 
     parsePinned(pinned) {
         if (pinned === true) return 'left';

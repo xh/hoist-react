@@ -157,6 +157,14 @@ export class ActivityTrackingModel extends HoistModel {
             exportOptions: {filename: `${XH.appCode}-activity-summary`},
             emptyText: 'No activity reported...',
             sortBy: ['cubeLabel'],
+            store: {
+                fieldDefaults: {type: 'string'},
+                fields: [
+                    {name: 'elapsed', type: 'int'},
+                    {name: 'day', type: 'json', displayName: 'App Day'},
+                    {name: 'entryCount', type: 'int'}
+                ]
+            },
             columns: [
                 {
                     field: 'cubeLabel',
@@ -185,7 +193,6 @@ export class ActivityTrackingModel extends HoistModel {
                     field: 'day',
                     width: 200,
                     align: 'right',
-                    headerName: 'App Day',
                     renderer: this.dateRangeRenderer,
                     exportValue: this.dateRangeRenderer,
                     comparator: this.dateRangeComparator.bind(this),

@@ -18,6 +18,7 @@ export class ServiceModel extends HoistModel {
         store: new UrlStore({
             url: 'serviceAdmin/listServices',
             processRawData: this.processRawData,
+            fieldDefaults: {type: 'string'},
             fields: ['provider', 'name', 'displayName'],
             idSpec: XH.genId
         }),

@@ -1,7 +1,6 @@
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, XH} from '@xh/hoist/core';
-import {FieldType} from '@xh/hoist/data';
 import {fmtTime, numberRenderer} from '@xh/hoist/format';
 import {checkMinVersion} from '@xh/hoist/utils/js';
 import {forOwn, sortBy} from 'lodash';
@@ -29,13 +28,14 @@ export class MemoryMonitorModel extends HoistModel {
             enableExport: true,
             store: {
                 idSpec: 'timestamp',
+                fieldDefaults: {type: 'number'},
                 fields: [
-                    {name: 'timestamp', type: FieldType.DATE},
-                    {name: 'totalHeapMb', displayName: 'Total (mb)', type: FieldType.NUMBER},
-                    {name: 'maxHeapMb', displayName: 'Max (mb)', type: FieldType.NUMBER},
-                    {name: 'freeHeapMb', displayName: 'Free (mb)', type: FieldType.NUMBER},
-                    {name: 'usedHeapMb', displayName: 'Used (mb)', type: FieldType.NUMBER},
-                    {name: 'usedPctTotal', displayName: 'Used (pct Total)', type: FieldType.NUMBER}
+                    {name: 'timestamp', type: 'date'},
+                    {name: 'totalHeapMb', displayName: 'Total (mb)'},
+                    {name: 'maxHeapMb', displayName: 'Max (mb)'},
+                    {name: 'freeHeapMb', displayName: 'Free (mb)'},
+                    {name: 'usedHeapMb', displayName: 'Used (mb)'},
+                    {name: 'usedPctTotal', displayName: 'Used (pct Total)'}
                 ]
             },
             columns: [

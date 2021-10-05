@@ -33,8 +33,8 @@ import {
     compact,
     defaults,
     defaultsDeep,
-    difference,
     find,
+    forEach,
     isArray,
     isEmpty,
     isFunction,
@@ -42,7 +42,6 @@ import {
     isPlainObject,
     isString,
     isUndefined,
-    map,
     max,
     min,
     omit,
@@ -1348,31 +1347,37 @@ export class GridModel extends HoistModel {
     // requires columns to have been constructed and set, and will only work with a raw store
     // config object, not an instance.
     enhanceStoreConfigFromColumns(storeConfig) {
-        const fields = storeConfig.fields || [],
-            storeFieldNames = map(fields, it => isString(it) ? it : it.name),
-            colFieldNames = this.calcFieldNamesFromColumns(),
-            missingFieldNames = difference(colFieldNames, storeFieldNames);
+        const fields = storeConfig.fields ?? [],
+            storeFieldNames = fields.map(it => it.name ?? it),
+            leafColsByFieldName = this.leafColsByFieldName();
 
-        // ID is always present on a Record, yet will never be listed within store.fields.
-        pull(missingFieldNames, 'id');
+        const newFields = [];
+        forEach(leafColsByFieldName, (col, name) => {
+            if (name !== 'id' && !storeFieldNames.includes(name)) {
+                newFields.push({name, ...col.defaultFieldSpec});
+            }
+        });
 
-        return isEmpty(missingFieldNames) ?
+        return isEmpty(newFields) ?
             storeConfig :
-            {...storeConfig, fields: [...fields, ...missingFieldNames]};
+            {...storeConfig, fields: [...fields, ...newFields]};
     }
 
-    calcFieldNamesFromColumns() {
-        const ret = new Set();
+    leafColsByFieldName() {
+        const ret = {};
         this.getLeafColumns().forEach(col => {
             let {fieldPath} = col;
             if (isNil(fieldPath)) return;
 
-            // Handle dot-separated column fields, including the root of their path in the returned
-            // list of field names. The resulting store field will hold the parent object.
-            ret.add(isArray(fieldPath) ? fieldPath[0] : fieldPath);
-        });
+            // Field name for dot-separated column fields should just be the root of the field path
+            const fieldName = isArray(fieldPath) ? fieldPath[0] : fieldPath;
 
-        return Array.from(ret);
+            // Take *first* column with this field name, for the purposes of defining field.
+            if (!ret[fieldName]) {
+                ret[fieldName] = col;
+            }
+        });
+        return ret;
     }
 
     parseSizingMode(sizingMode) {

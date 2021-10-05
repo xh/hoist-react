@@ -33,15 +33,12 @@ export class ActivityDetailModel extends HoistModel {
             },
             emptyText: 'Select a group on the left to see detailed tracking logs.',
             store: {
+                fieldDefaults: {type: 'string'},
                 fields: [
-                    {name: 'username', displayName: 'User', type: 'string'},
-                    {name: 'impersonating', type: 'string'},
-                    {name: 'category', type: 'string'},
-                    {name: 'msg', displayName: 'Message', type: 'string'},
+                    {name: 'username', displayName: 'User'},
+                    {name: 'impersonatingFlag', type: 'bool'},
+                    {name: 'msg', displayName: 'Message'},
                     {name: 'data', type: 'json'},
-                    {name: 'device', type: 'string'},
-                    {name: 'browser', type: 'string'},
-                    {name: 'userAgent', type: 'string'},
                     {name: 'elapsed', type: 'int'},
                     {name: 'dateCreated', displayName: 'Timestamp', type: 'date'}
                 ]
@@ -69,14 +66,13 @@ export class ActivityDetailModel extends HoistModel {
                 {field: 'username', filterable: true, ...usernameCol},
                 {field: 'impersonating', width: 140, hidden: true},
                 {field: 'category', width: 120, filterable: true},
-                {field: 'msg', headerName: 'Message', flex: true, minWidth: 120, autosizeMaxWidth: 400, filterable: true},
+                {field: 'msg', flex: true, minWidth: 120, autosizeMaxWidth: 400, filterable: true},
                 {field: 'data', flex: true, minWidth: 120, autosizeMaxWidth: 400, hidden: true},
                 {field: 'device', width: 100, filterable: true},
                 {field: 'browser', width: 100, filterable: true},
                 {field: 'userAgent', width: 100, hidden: true, filterable: true},
                 {
                     field: 'elapsed',
-                    headerName: 'Elapsed',
                     width: 120,
                     align: 'right',
                     filterable: true,
@@ -86,7 +82,7 @@ export class ActivityDetailModel extends HoistModel {
                         formatConfig: {thousandSeparated: false, mantissa: 0}
                     })
                 },
-                {field: 'dateCreated', headerName: 'Timestamp', filterable: true, ...dateTimeCol}
+                {field: 'dateCreated', filterable: true, ...dateTimeCol}
             ]
         });
 
