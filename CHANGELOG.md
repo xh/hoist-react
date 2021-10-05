@@ -1,5 +1,15 @@
 # Changelog
 
+## v43.0.2 - 2021-10-04
+
+### 🐞 Bug Fixes
+
+* Fix (important) to ensure static preload spinner loaded from the intended path.
+  * Please also update to latest `hoist-dev-utils >= 5.11.1` if possible.
+  * Avoids issue where loading an app on a nested route could trigger double-loading of app assets.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v43.0.1...v43.0.2)
+
 ## v43.0.1 - 2021-10-04
 
 ### 🎁 New Features
