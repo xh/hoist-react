@@ -223,6 +223,9 @@ class XHClass extends HoistBase {
      *      Should be an AppSpec, or a config for one.
      */
     renderApp(appSpec) {
+        const spinner = document.getElementById('xh-preload-spinner');
+        if (spinner) spinner.style.display = 'none';
+
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
         const rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
         ReactDOM.render(rootView, document.getElementById('xh-root'));
@@ -667,6 +670,12 @@ class XHClass extends HoistBase {
 
         this.createActivityListeners();
 
+        // Disable browser context menu on long-press, used to show (app) context menus and as an
+        // alternate gesture for tree grid drilldown.
+        if (isMobileApp) {
+            window.addEventListener('contextmenu', e => e.preventDefault(), {capture: true});
+        }
+
         try {
             await this.installServicesAsync(FetchService);
             await this.installServicesAsync(TrackService);
@@ -908,11 +917,11 @@ window['XH'] = XH;
 
 /**
  * @typedef {Object} MessageConfig - configuration object for a modal alert, confirm, or prompt.
- * @property {ReactNode} message - message to be displayed - a string or any valid React node.
+ * @property {(ReactNode|string)} message - message to be displayed.
  * @property {string} [title] - title of message box.
  * @property {Element} [icon] - icon to be displayed.
- * @property {string} [messageKey] - unique key identifying the message.  If subsequent messages
- *      are triggered with this key, they will replace this message.  Useful for usages that may
+ * @property {string} [messageKey] - unique key identifying the message. If subsequent messages
+ *      are triggered with this key, they will replace this message. Useful for usages that may
  *      be producing messages recursively, or via timers and wish to avoid generating a large stack
  *      of duplicates.
  * @property {MessageInput} [input] - config for input to be displayed (as a prompt).

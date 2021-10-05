@@ -6,13 +6,13 @@
  */
 import {form} from '@xh/hoist/cmp/form';
 import {grid} from '@xh/hoist/cmp/grid';
-import {hframe} from '@xh/hoist/cmp/layout';
+import {div, hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, buttonGroup, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {groupingChooser} from '@xh/hoist/desktop/cmp/grouping';
-import {dateInput} from '@xh/hoist/desktop/cmp/input';
+import {dateInput, select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -74,6 +74,22 @@ const tbar = hoistCmp.factory(
                         enableClear: true
                     }),
                     toolbarSep(),
+                    formField({
+                        field: 'maxRows',
+                        label: 'Max rows:',
+                        width: 140,
+                        item: select({
+                            enableFilter: false,
+                            hideDropdownIndicator: true,
+                            options: [
+                                {label: '5k', value: 5000},
+                                {label: '25k', value: 25000},
+                                {label: '50k', value: 50000},
+                                {label: '100k', value: 100000}
+                            ]
+                        })
+                    }),
+                    toolbarSep(),
                     button({
                         icon: Icon.reset(),
                         intent: 'danger',
@@ -107,6 +123,14 @@ const aggregateView = hoistCmp.factory(
                 grid({
                     flex: 1,
                     agOptions: {groupDefaultExpanded: 1}
+                }),
+                div({
+                    className: 'xh-admin-activity-panel__max-rows-alert',
+                    items: [
+                        Icon.warning(),
+                        `Entries truncated to most recent ${model.maxRows / 1000}k leaf rows.`
+                    ],
+                    omit: !model.maxRowsReached
                 }),
                 chartsPanel()
             ]

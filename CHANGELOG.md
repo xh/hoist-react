@@ -1,18 +1,61 @@
 # Changelog
 
-## v43.0.0-SNAPSHOT - unreleased
+## v44.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
 
-* In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`.
-  This new component supports a `quickToggle` prop which allows for more streamlined
-  inline editing of boolean values.
+* Log Viewer now supports downloading log files.
+  * Note apps must update their server-side to `hoist-core v10.0` or greater to download log files
+    (although this is _not_ a general or hard requirement for taking this version of hoist-react).
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v43.0.2...develop)
+
+## v43.0.2 - 2021-10-04
+
+### 🐞 Bug Fixes
+
+* Fix (important) to ensure static preload spinner loaded from the intended path.
+  * Please also update to latest `hoist-dev-utils >= 5.11.1` if possible.
+  * Avoids issue where loading an app on a nested route could trigger double-loading of app assets.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v43.0.1...v43.0.2)
+
+## v43.0.1 - 2021-10-04
+
+### 🎁 New Features
+
+* New `GridFindField` component that enables users to search through a Grid and select rows that
+  match the entered search term, _without_ applying any filtering. Especially useful for grids with
+  aggregations or other logic that preclude client-side filtering of the data.
+* Tree grid rows can be expanded / collapsed by clicking anywhere on the row. The new
+  `GridModel.clicksToExpand` config can be used to control how many clicks will toggle the row.
+  Defaults to double-click for desktop, and single tap for mobile - set to 0 to disable entirely.
+* Added `GridModel.onCellContextMenu` handler. Note that for mobile (phone) apps, this handler fires
+  on the "long press" (aka "tap and hold") gesture. This means it can be used as an alternate event
+  for actions like drilling into a record detail, especially for parent rows on tree grids, where
+  single tap will by default expand/collapse the node.
+* In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`. This
+  new component supports a `quickToggle` prop which allows for more streamlined inline editing of
+  boolean values.
+* `LoadSpec` now supports a new `meta` property.  Use this property to pass app-specific metadata
+   through the `LoadSupport` loading and refresh lifecycle.
+* A spinner is now shown while the app downloads and parses its javascript - most noticeable when
+  loading a new (uncached) version, especially on a slower mobile connection. (Requires
+  `@xh/hoist-dev-utils` v5.11 or greater to enable.)
+
+### ⚙️ Technical
+
+* Removed `DEFAULT_SORTING_ORDER` static from `Column` class in favor of three new preset constants:
+  `ASC_FIRST`, `DESC_FIRST`, and `ABS_DESC_FIRST`. Hoist will now default sorting order on columns
+  based on field type. Sorting order can still be manually set via `Column.sortingOrder`.
 
 ### 🐞 Bug Fixes
 
 * The ag-grid grid property `stopEditingWhenCellsLoseFocus` is now enabled by default to ensure
   values are committed to the Store if the user clicks somewhere outside the grid while editing a
   cell.
+* Triggering inline editing of text or select editor cells by typing characters will no longer lose
+  the first character pressed.
 
 ### ✨ Style
 
@@ -20,18 +63,26 @@
   the `--xh-grid-tree-group-color-level-*` CSS vars to customize colors as needed.
 * `TreeStyle.HIGHLIGHTS` and `TreeStyle.HIGHLIGHTS_AND_BORDERS` now highlight row nodes on a
   gradient according to their depth.
+* Default colors for masks and dialog backdrops have been adjusted, with less obtrusive colors used
+  for masks via `--xh-mask-bg` and a darker `--xh-backdrop-bg` var now used behind dialogs.
+* Mobile-specific styles and CSS vars for panel and dialog title background have been tweaked to use
+  desktop defaults, and mobile dialogs now respect `--xh-popup-*` vars as expected.
 
 ### 🎁 Breaking Changes
 
 * In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`.
 
+### ⚙️ Technical
+
+* The `xhLastReadChangelog` preference will not save SNAPSHOT versions to ensure the user continues
+  to see the 'What's New?' notification for non-SNAPSHOT releases.
 
 ### 📚 Libraries
 
 * @blueprintjs/core `3.49 -> 3.50`
 * codemirror `5.62 -> 5.63`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v42.6.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v42.6.0...v43.0.1)
 
 ## v42.6.0 - 2021-09-17
 

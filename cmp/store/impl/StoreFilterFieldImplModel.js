@@ -22,6 +22,9 @@ import {
     without
 } from 'lodash';
 
+/**
+ * @private
+ */
 export class StoreFilterFieldImplModel extends HoistModel {
 
     model;
@@ -231,6 +234,8 @@ export class StoreFilterFieldImplModel extends HoistModel {
         // so currently supported for Date-type fields only. (Dates *require* a rendered value to
         // have any hope of matching.) This could be extended to other types if needed, perhaps
         // with a flag to manage performance tradeoffs.
+        //
+        // Note corresponding impl. in GridFindFieldModel - review together if updating.
         if (gridModel) {
             const {store} = gridModel,
                 field = store.getField(fieldName);

@@ -13,7 +13,7 @@ import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
-import {action, makeObservable, observable, when} from '@xh/hoist/mobx';
+import {action, makeObservable, bindable, observable, when} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
@@ -184,6 +184,9 @@ export class GridModel extends HoistModel {
     /** @member {TaskObserver} - tracks execution of autosize operations. */
     @managed autosizeTask = TaskObserver.trackAll();
 
+    /** @package - used internally by any GridFindField that is bound to this GridModel. */
+    @bindable xhFindQuery = null;
+
     /**
      * @param {Object} c - GridModel configuration.
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
@@ -257,6 +260,12 @@ export class GridModel extends HoistModel {
      *      an event with a data node, cell value, and column.
      * @param {function} [c.onCellDoubleClicked] - Callback when a cell is double clicked. Function
      *      will receive an event with a data node, cell value, and column.
+     * @param {function} [c.onCellContextMenu] - Callback when the context menu is opened. Function
+     *      will receive an event with a data node containing the row's data. Note that this event
+     *      can also be triggered via a long press (aka tap and hold) on mobile devices.
+     * @param {number} [c.clicksToExpand] - number of clicks required to expand / collapse a parent
+     *      row in a tree grid. Defaults to 2 for desktop, 1 for mobile. Any other value prevents
+     *      clicks on row body from expanding / collapsing (they must click the tree col > control).
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or
      *      token strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu. Desktop only.
@@ -300,7 +309,7 @@ export class GridModel extends HoistModel {
 
         sizingMode,
         showHover = false,
-        rowBorders = false,
+        rowBorders = XH.isMobileApp,
         rowClassFn = null,
         rowClassRules = {},
         cellBorders = false,
@@ -324,6 +333,8 @@ export class GridModel extends HoistModel {
         onRowDoubleClicked,
         onCellClicked,
         onCellDoubleClicked,
+        onCellContextMenu,
+        clicksToExpand = XH.isMobileApp ? 1 : 2,
 
         contextMenu,
         useVirtualColumns = false,
@@ -363,6 +374,7 @@ export class GridModel extends HoistModel {
         });
         this.restoreDefaultsWarning = restoreDefaultsWarning;
         this.fullRowEditing = fullRowEditing;
+        this.clicksToExpand = clicksToExpand;
         this.clicksToEdit = clicksToEdit;
 
         throwIf(
@@ -405,6 +417,7 @@ export class GridModel extends HoistModel {
         this.onRowDoubleClicked = onRowDoubleClicked;
         this.onCellClicked = onCellClicked;
         this.onCellDoubleClicked = onCellDoubleClicked;
+        this.onCellContextMenu = onCellContextMenu;
     }
 
     /**
@@ -497,14 +510,13 @@ export class GridModel extends HoistModel {
      *      collapsed node or outside of the visible scroll window. Default true.
      */
     async selectFirstAsync({ensureVisible = true} = {}) {
-        const {selModel} = this,
-            isReady = await this.whenReadyAsync();
-
-        // No-op if grid failed to enter ready state.
-        if (!isReady) return;
+        await this.whenReadyAsync();
+        if (!this.isReady) return;
 
         // Get first displayed row with data - i.e. backed by a record, not a full-width group row.
-        const id = this.agGridModel.getFirstSelectableRowNodeId();
+        const {selModel} = this,
+            id = this.agGridModel.getFirstSelectableRowNodeId();
+
         if (id != null) {
             selModel.select(id);
             if (ensureVisible) await this.ensureSelectionVisibleAsync();
@@ -539,10 +551,8 @@ export class GridModel extends HoistModel {
      * render all pending data changes.
      */
     async ensureSelectionVisibleAsync() {
-        const isReady = await this.whenReadyAsync();
-
-        // No-op if grid failed to enter ready state.
-        if (!isReady) return;
+        await this.whenReadyAsync();
+        if (!this.isReady) return;
 
         const {agApi, selModel} = this,
             {selectedRecords} = selModel,
@@ -1028,8 +1038,8 @@ export class GridModel extends HoistModel {
      * @return {Promise<void>}
      */
     async beginEditAsync({record, colId} = {}) {
-        const isReady = await this.whenReadyAsync();
-        if (!isReady) return;
+        await this.whenReadyAsync();
+        if (!this.isReady) return;
 
         const {store, agGridModel, agApi, selectedRecords} = this;
 
@@ -1090,8 +1100,8 @@ export class GridModel extends HoistModel {
      * @return {Promise<void>}
      */
     async endEditAsync(dropPendingChanges = false) {
-        const isReady = await this.whenReadyAsync();
-        if (!isReady) return;
+        await this.whenReadyAsync();
+        if (!this.isReady) return;
 
         this.agApi.stopEditing(dropPendingChanges);
     }
@@ -1112,6 +1122,9 @@ export class GridModel extends HoistModel {
      * Returns true as soon as the underlying agGridModel is ready, waiting a limited period
      * of time if needed to allow the component to initialize. Returns false if grid not ready
      * by end of timeout to ensure caller does not wait forever (if e.g. grid is not mounted).
+     * TODO - see https://github.com/xh/hoist-react/issues/2551 and note that calls to this method
+     *   within this class re-check `isReady` directly. We have observed this method returning
+     *   to its caller as true when the ag-grid/API has in fact dismounted and is no longer ready.
      * @param {number} [timeout] - timeout in ms
      * @return {Promise<boolean>} - latest ready state of grid
      */
@@ -1298,7 +1311,8 @@ export class GridModel extends HoistModel {
 
         if (isEmpty(storeFields)) return colConfigs;
 
-        const numTypes = [FieldType.INT, FieldType.NUMBER];
+        const numTypes = [FieldType.INT, FieldType.NUMBER],
+            dateTypes = [FieldType.DATE, FieldType.LOCAL_DATE];
         return colConfigs.map(col => {
             // Recurse into children for column groups
             if (col.children) {
@@ -1312,10 +1326,19 @@ export class GridModel extends HoistModel {
             const field = storeFields.find(f => f.name === col.field);
             if (!field) return col;
 
+            const {displayName, type} = field,
+                isNum = numTypes.includes(type),
+                isDate = dateTypes.includes(type),
+                align = isNum ? 'right' : undefined,
+                sortingOrder = col.absSort ?
+                    Column.ABS_DESC_FIRST :
+                    (isNum || isDate ? Column.DESC_FIRST : Column.ASC_FIRST);
+
             // TODO: Set the editor based on field type
             return {
-                displayName: field.displayName,
-                align: numTypes.includes(field.type) ? 'right' : undefined,
+                displayName,
+                sortingOrder,
+                align,
                 ...col
             };
         });

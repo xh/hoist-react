@@ -11,7 +11,9 @@ import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
+import {Icon} from '@xh/hoist/icon';
 import {createRef} from 'react';
+import download from 'downloadjs';
 import {LogDisplayModel} from './LogDisplayModel';
 
 /**
@@ -57,6 +59,10 @@ export class LogViewerModel extends HoistModel {
         ]
     });
 
+    get selectedRecord() {
+        return this.filesGridModel.selectedRecord;
+    }
+
     constructor() {
         super();
         makeObservable(this);
@@ -87,13 +93,36 @@ export class LogViewerModel extends HoistModel {
         }
     }
 
+    async downloadSelectedAsync() {
+        try {
+            const {selectedRecord} = this;
+            if (!selectedRecord) return;
+
+            const {filename} = selectedRecord.data,
+                response = await XH.fetch({
+                    url: 'logViewerAdmin/download',
+                    params: {filename}
+                });
+
+            const blob = await response.blob();
+            download(blob, filename);
+
+            XH.toast({
+                icon: Icon.download(),
+                message: 'Download complete.'
+            });
+
+        } catch (e) {
+            XH.handleException(e);
+        }
+    }
 
     //---------------------------------
     // Implementation
     //---------------------------------
     syncSelectionReaction() {
         return {
-            track: () => this.filesGridModel.selectedRecord,
+            track: () => this.selectedRecord,
             run: (rec) => {
                 this.file = rec?.data?.filename;
                 this.loadLog();

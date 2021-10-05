@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "43.0.0-SNAPSHOT",
+  "version": "44.0.0-SNAPSHOT",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:xh/hoist-react",
   "homepage": "https://xh.io",
@@ -26,8 +26,8 @@
     }
   },
   "dependencies": {
-    "@blueprintjs/core": "~3.50.1",
-    "@blueprintjs/datetime": "~3.23.9",
+    "@blueprintjs/core": "~3.50.4",
+    "@blueprintjs/datetime": "~3.23.14",
     "@fortawesome/fontawesome-pro": "~5.15.4",
     "@fortawesome/fontawesome-svg-core": "~1.2.36",
     "@fortawesome/pro-light-svg-icons": "~5.15.4",
@@ -35,11 +35,11 @@
     "@fortawesome/pro-solid-svg-icons": "~5.15.4",
     "@fortawesome/react-fontawesome": "~0.1.14",
     "@onsenui/fastclick": "~1.1.1",
-    "@popperjs/core": "~2.10.1",
+    "@popperjs/core": "~2.10.2",
     "@seznam/compose-react-refs": "~1.0.5",
     "classnames": "~2.3.0",
     "clipboard-copy": "~4.0.1",
-    "codemirror": "~5.63.0",
+    "codemirror": "~5.63.1",
     "core-js": "^3.0.0",
     "debounce-promise": "~3.1.0",
     "dompurify": "~2.3.3",
@@ -61,7 +61,7 @@
     "react-beautiful-dnd": "~13.1.0",
     "react-dates": "~21.8.0",
     "react-dropzone": "~10.2.2",
-    "react-onsenui": "~1.11.3",
+    "react-onsenui": "~1.11.5",
     "react-popper": "~2.2.5",
     "react-select": "~4.3.1",
     "react-transition-group": "~4.4.2",
@@ -79,7 +79,7 @@
     "react-dom": "~17.0.1"
   },
   "devDependencies": {
-    "@xh/hoist-dev-utils": "^5.9.0",
+    "@xh/hoist-dev-utils": "^5.11.0",
     "husky": "~4.3.8",
     "lint-staged": "~10.5.3",
     "react": "~17.0.1",
