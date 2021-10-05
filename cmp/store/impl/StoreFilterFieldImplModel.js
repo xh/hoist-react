@@ -22,6 +22,9 @@ import {
     without
 } from 'lodash';
 
+/**
+ * @private
+ */
 export class StoreFilterFieldImplModel extends HoistModel {
 
     model;

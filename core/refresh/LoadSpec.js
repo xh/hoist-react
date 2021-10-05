@@ -5,10 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-import {assign} from 'lodash';
-
 /**
- * Metadata describing a load/refresh request in Hoist.
+ * Object describing a load/refresh request in Hoist.
  *
  * Instances of this class are created within the public API wrappers provided by the `LoadSupport`
  * base class and are passed to subclass (i.e. application code) implementations of `doLoadAsync()`.
@@ -48,6 +46,9 @@ export class LoadSpec {
     /** @member {LoadSupport} - owner of this object. */
     owner;
 
+    /** @member {Object} - application specific information about the load request */
+    meta;
+
     /**
      * @member {boolean} - true if a more recent request to load this object's owner has started.
      */
@@ -73,17 +74,20 @@ export class LoadSpec {
     }
 
     /**
-     * @private - not for application use.
-     * LoadSpecs are constructed by `LoadSupport` API wrappers.
+     * Construct this object.
+     *
+     * Not for direct application use -- LoadSpecs are constructed by Hoist internally.
      */
-    constructor({isRefresh, isAutoRefresh, owner, ...rest}) {
-        assign(this, rest);
-        const last = owner._lastRequested;
-        this.loadNumber = last ? last.loadNumber + 1 : 0;
+    constructor({isRefresh, isAutoRefresh, meta, owner}) {
         this.isRefresh = !!(isRefresh || isAutoRefresh);
         this.isAutoRefresh = !!isAutoRefresh;
+        this.meta = meta ?? {};
         this.owner = owner;
+
+        const last = owner._lastRequested;
+        this.loadNumber = last ? last.loadNumber + 1 : 0;
         this.dateCreated = new Date();
+
         Object.freeze(this);
     }
 }
