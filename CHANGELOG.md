@@ -2,7 +2,23 @@
 
 ## v44.0.0-SNAPSHOT - unreleased
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v43.0.1...develop)
+### 🎁 New Features
+
+* Log Viewer now supports downloading log files.
+  * Note apps must update their server-side to `hoist-core v10.0` or greater to download log files
+    (although this is _not_ a general or hard requirement for taking this version of hoist-react).
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v43.0.2...develop)
+
+## v43.0.2 - 2021-10-04
+
+### 🐞 Bug Fixes
+
+* Fix (important) to ensure static preload spinner loaded from the intended path.
+  * Please also update to latest `hoist-dev-utils >= 5.11.1` if possible.
+  * Avoids issue where loading an app on a nested route could trigger double-loading of app assets.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v43.0.1...v43.0.2)
 
 ## v43.0.1 - 2021-10-04
 
@@ -26,9 +42,6 @@
 * A spinner is now shown while the app downloads and parses its javascript - most noticeable when
   loading a new (uncached) version, especially on a slower mobile connection. (Requires
   `@xh/hoist-dev-utils` v5.11 or greater to enable.)
-* Log Viewer now supports downloading log files.
-  * Note apps must update their server-side to `hoist-core v10.0` or greater to download log files
-    (although this is _not_ a general or hard requirement for taking this version of hoist-react).
 
 ### ⚙️ Technical
 

@@ -11,9 +11,11 @@
       This application requires that JavaScript be enabled for this site in your browser.
   </noscript>
 
+  <% if (htmlWebpackPlugin.options.enablePreloadSpinner) { %>
   <div id="xh-preload-spinner" style="height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center;">
-      <object data="../public/spinner.png" type="image/png" style="width: 50px; height: 50px;"></object>
+      <img src="<%= webpackConfig.output.publicPath %>public/spinner.png" style="width: 50px; height: 50px;">
   </div>
+  <% } %>
 
   <div id="xh-root"></div>
 
