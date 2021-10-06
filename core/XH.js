@@ -12,6 +12,7 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {
+    AlertBannerService,
     AutoRefreshService,
     ChangelogService,
     ConfigService,
@@ -88,6 +89,8 @@ class XHClass extends HoistBase {
     // Hoist Core Services
     // Singleton instances of each service are created and installed within initAsync() below.
     //----------------------------------------------------------------------------------------------
+    /** @member {AlertBannerService} */
+    alertBannerService;
     /** @member {AutoRefreshService} */
     autoRefreshService;
     /** @member {ChangelogService} */
@@ -761,7 +764,7 @@ class XHClass extends HoistBase {
             }
 
             await this.installServicesAsync(
-                AutoRefreshService, ChangelogService, IdleService,
+                AlertBannerService, AutoRefreshService, ChangelogService, IdleService,
                 GridAutosizeService, GridExportService, WebSocketService
             );
             this.acm.init();
