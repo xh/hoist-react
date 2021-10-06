@@ -500,7 +500,7 @@ class GridLocalModel extends HoistModel {
                     // We need to tell agGrid to refresh its flexed column sizes due to
                     // a regression introduced in 25.1.0.  See #2341
                     if (hasChanges) {
-                        colApi?.columnController?.refreshFlexedColumns({
+                        colApi.columnController?.refreshFlexedColumns({
                             updateBodyWidths: true,
                             fireResizedEvent: true
                         });
