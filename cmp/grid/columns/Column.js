@@ -692,7 +692,7 @@ export class Column {
 
     parseField(field) {
         if (isPlainObject(field)) {
-            this.defaultFieldSpec = field;
+            this.fieldSpec = field;
             return field.name;
         }
         return field;

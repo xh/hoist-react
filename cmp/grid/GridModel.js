@@ -1354,7 +1354,7 @@ export class GridModel extends HoistModel {
         const newFields = [];
         forEach(leafColsByFieldName, (col, name) => {
             if (name !== 'id' && !storeFieldNames.includes(name)) {
-                newFields.push({name, ...col.defaultFieldSpec});
+                newFields.push({name, ...col.fieldSpec});
             }
         });
 
