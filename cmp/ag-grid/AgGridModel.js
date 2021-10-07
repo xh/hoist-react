@@ -546,9 +546,9 @@ export class AgGridModel extends HoistModel {
      */
     getAutoRowHeight(node) {
         if (!this.isReady) return null;
-        const {columnController, autoHeightCalculator} = this.agApi.gridOptionsWrapper;
-        if (!columnController?.isAutoRowHeightActive()) return null;
-        return autoHeightCalculator.getPreferredHeightForRow(node);
+        const {columnModel} = this.agApi.gridOptionsWrapper;
+        if (!columnModel.isAutoRowHeightActive()) return null;
+        // return this.agApi.gridOptionsWrapper.autoHeightCalculator.getPreferredHeightForRow(node); // autoHeightCalculator no longer supported?
     }
 
     //------------------------
