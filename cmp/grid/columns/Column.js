@@ -263,12 +263,12 @@ export class Column {
 
         this.field = this.parseField(field);
         this.enableDotSeparatedFieldPath = withDefault(enableDotSeparatedFieldPath, true);
-        if (field) {
-            const splitFieldPath = this.enableDotSeparatedFieldPath && field.includes('.');
-            this.fieldPath = splitFieldPath ? field.split('.') : field;
+        if (this.field) {
+            const splitFieldPath = this.enableDotSeparatedFieldPath && this.field.includes('.');
+            this.fieldPath = splitFieldPath ? this.field.split('.') : this.field;
         }
 
-        this.colId = colId || field;
+        this.colId = colId || this.field;
         throwIf(!this.colId, 'Must specify colId or field for a Column.');
 
         this.isTreeColumn = withDefault(isTreeColumn, false);
@@ -346,7 +346,7 @@ export class Column {
         this.exportValue = exportValue;
         this.exportFormat = withDefault(exportFormat, ExportFormat.DEFAULT);
         this.exportWidth = exportWidth || null;
-        this.excludeFromExport = withDefault(excludeFromExport, !field);
+        this.excludeFromExport = withDefault(excludeFromExport, !this.field);
 
         this.autosizable = withDefault(autosizable, this.resizable, true);
         this.autosizeIncludeHeader = withDefault(autosizeIncludeHeader, true);
