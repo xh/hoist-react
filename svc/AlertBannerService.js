@@ -22,32 +22,31 @@ export class AlertBannerService extends HoistService {
     timer;
 
     get interval() {
-        return XH.getConf('xhAlertBannerRefreshInterval', -1);
+        return XH.getConf('xhAlertBannerRefreshInterval', -1) * SECONDS;
     }
 
     async initAsync() {
-        if (this.interval <= 0) return;
         this.timer = Timer.create({
             runFn: () => this.checkForBannerAsync(),
-            interval: this.interval * SECONDS
+            interval: this.interval
         });
     }
 
-    //------------------------
-    // Implementation
-    //------------------------
     async checkForBannerAsync() {
         if (this.interval <= 0) return;
 
-        const results = await XH.jsonBlobService.listAsync({
-            type: 'xhAlertBanner',
-            includeValue: true
-        });
+        const category = 'xhAlertBanner',
+            results = await XH.jsonBlobService.listAsync({
+                type: 'xhAlertBanner',
+                includeValue: true
+            });
 
-        if (isEmpty(results)) return;
+        if (isEmpty(results)) {
+            XH.hideBanner(category);
+            return;
+        }
 
         const {active, message, intent, iconName, updated, expires} = results[0].value,
-            category = 'xhAlertBanner',
             icon = iconName ? Icon.icon({iconName, size: 'lg'}) : null;
 
         if (!active || !message || (expires && expires < Date.now())) {
