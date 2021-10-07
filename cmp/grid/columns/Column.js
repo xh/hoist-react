@@ -276,7 +276,7 @@ export class Column {
         // Note that parent GridModel might have already defaulted displayName from an associated
         // `Store.field` when pre-processing Column configs - prior to calling this ctor. If that
         // hasn't happened, displayName will still always be defaulted to a fallback based on colId.
-        this.displayName = displayName || genDisplayName(this.colId);
+        this.displayName = displayName ?? this.fieldSpec?.displayName ?? genDisplayName(this.colId);
 
         // In contrast, headerName supports a null or '' value when no header label is desired.
         this.headerName = withDefault(headerName, this.displayName);
