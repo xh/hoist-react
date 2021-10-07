@@ -74,6 +74,10 @@ const formPanel = hoistCmp.factory(
                                 })
                             }),
                             formField({
+                                field: 'enableClose',
+                                item: switchInput()
+                            }),
+                            formField({
                                 field: 'expires',
                                 item: dateInput({
                                     enableClear: true,

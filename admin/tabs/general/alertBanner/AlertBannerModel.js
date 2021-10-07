@@ -19,9 +19,7 @@ export class AlertBannerModel extends HoistModel {
     @managed
     formModel = new FormModel({
         fields: [
-            {
-                name: 'active'
-            },
+            {name: 'active'},
             {
                 name: 'message',
                 rules: [required, lengthIs({max: 200})]
@@ -32,12 +30,14 @@ export class AlertBannerModel extends HoistModel {
                 initialValue: 'primary',
                 rules: [required]
             },
-            {
-                name: 'iconName'
-            },
+            {name: 'iconName'},
             {
                 name: 'expires',
                 rules: [dateIs({min: 'now'})]
+            },
+            {
+                name: 'enableClose',
+                initialValue: true
             },
             {name: 'created', readonly: true},
             {name: 'updated', readonly: true},
@@ -77,7 +77,8 @@ export class AlertBannerModel extends HoistModel {
             track: () => [
                 this.formModel.values.message,
                 this.formModel.values.intent,
-                this.formModel.values.iconName
+                this.formModel.values.iconName,
+                this.formModel.values.enableClose
             ],
             run: () => this.syncPreview(),
             fireImmediately: true
@@ -108,7 +109,7 @@ export class AlertBannerModel extends HoistModel {
         await formModel.validateAsync();
         if (!formModel.isValid) return;
 
-        const {active, message, intent, iconName, expires, created} = formModel.getData(),
+        const {active, message, intent, iconName, enableClose, expires, created} = formModel.getData(),
             payload = {
                 type: 'xhAlertBanner',
                 name: 'xhAlertBanner',
@@ -118,6 +119,7 @@ export class AlertBannerModel extends HoistModel {
                     message,
                     intent,
                     iconName,
+                    enableClose,
                     expires: expires?.getTime(),
                     created: created ?? Date.now(),
                     updated: Date.now(),
@@ -136,7 +138,10 @@ export class AlertBannerModel extends HoistModel {
     }
 
     resetForm() {
-        this.formModel.init({intent: 'primary'});
+        this.formModel.init({
+            intent: 'primary',
+            enableClose: true
+        });
     }
 
     //----------------
@@ -144,9 +149,9 @@ export class AlertBannerModel extends HoistModel {
     //----------------
     @action
     syncPreview() {
-        const {message, intent, iconName} = this.formModel.getData(),
+        const {message, intent, iconName, enableClose} = this.formModel.getData(),
             icon = iconName ? Icon.icon({iconName, size: 'lg'}) : null;
 
-        this.bannerModel = new BannerModel({message, intent, icon});
+        this.bannerModel = new BannerModel({message, intent, icon, enableClose});
     }
 }
