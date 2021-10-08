@@ -22,13 +22,13 @@ const modelSpec = {
     store: {
         url: 'rest/feedbackAdmin',
         fields: [
-            {name: 'username', displayName: 'User'},
-            {name: 'msg', displayName: 'Message'},
-            {name: 'browser'},
-            {name: 'device'},
-            {name: 'appVersion', displayName: 'Version'},
-            {name: 'appEnvironment', displayName: 'Environment'},
-            {name: 'dateCreated', displayName: 'Date', type: 'date'}
+            {name: 'username', type: 'string', displayName: 'User'},
+            {name: 'msg', type: 'string', displayName: 'Message'},
+            {name: 'browser', type: 'string'},
+            {name: 'device', type: 'string'},
+            {name: 'appVersion', type: 'string', displayName: 'Version'},
+            {name: 'appEnvironment', type: 'string', displayName: 'Environment'},
+            {name: 'dateCreated', type: 'date', displayName: 'Date'}
         ]
     },
     toolbarActions: [deleteAction],

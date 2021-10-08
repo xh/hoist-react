@@ -47,14 +47,13 @@ export class ClientErrorsModel extends HoistModel {
             colChooserModel: true,
             enableExport: true,
             store: {
-                fieldDefaults: {type: 'string'},
                 fields: [
-                    {name: 'appEnvironment', displayName: 'Environment'},
-                    {name: 'msg', displayName: 'User Message'},
-                    {name: 'error', displayName: 'Error Details'},
-                    {name: 'url', displayName: 'URL'},
-                    {name: 'dateCreated', displayName: 'Timestamp', type: 'date'},
-                    {name: 'day', displayName: 'App Day', type: 'localDate'},
+                    {name: 'appEnvironment', type: 'string', displayName: 'Environment'},
+                    {name: 'msg', type: 'string', displayName: 'User Message'},
+                    {name: 'error', type: 'string', displayName: 'Error Details'},
+                    {name: 'url', type: 'string', displayName: 'URL'},
+                    {name: 'dateCreated', type: 'date', displayName: 'Timestamp'},
+                    {name: 'day', type: 'localDate', displayName: 'App Day'},
                     {name: 'userAlerted', type: 'bool'},
                     {name: 'userMessageFlag', type: 'bool'}
                 ]

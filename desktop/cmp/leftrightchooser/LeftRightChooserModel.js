@@ -108,13 +108,12 @@ export class LeftRightChooserModel extends HoistModel {
         this.rightGroupingExpanded = rightGroupingExpanded;
 
         const store = {
-            fieldDefaults: {type: 'string'},
             fields: [
-                'text',
-                'value',
-                'description',
-                'group',
-                'side',
+                {name: 'text', type: 'string'},
+                {name: 'value', type: 'string'},
+                {name: 'description', type: 'string'},
+                {name: 'group', type: 'string'},
+                {name: 'side', type: 'string'},
                 {name: 'locked', type: 'bool'},
                 {name: 'exclude', type: 'bool'}
             ]

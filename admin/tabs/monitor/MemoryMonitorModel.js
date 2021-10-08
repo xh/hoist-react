@@ -28,14 +28,13 @@ export class MemoryMonitorModel extends HoistModel {
             enableExport: true,
             store: {
                 idSpec: 'timestamp',
-                fieldDefaults: {type: 'number'},
                 fields: [
                     {name: 'timestamp', type: 'date'},
-                    {name: 'totalHeapMb', displayName: 'Total (mb)'},
-                    {name: 'maxHeapMb', displayName: 'Max (mb)'},
-                    {name: 'freeHeapMb', displayName: 'Free (mb)'},
-                    {name: 'usedHeapMb', displayName: 'Used (mb)'},
-                    {name: 'usedPctTotal', displayName: 'Used (pct Total)'}
+                    {name: 'totalHeapMb', type: 'number', displayName: 'Total (mb)'},
+                    {name: 'maxHeapMb', type: 'number', displayName: 'Max (mb)'},
+                    {name: 'freeHeapMb', type: 'number', displayName: 'Free (mb)'},
+                    {name: 'usedHeapMb', type: 'number', displayName: 'Used (mb)'},
+                    {name: 'usedPctTotal', type: 'number', displayName: 'Used (pct Total)'}
                 ]
             },
             columns: [

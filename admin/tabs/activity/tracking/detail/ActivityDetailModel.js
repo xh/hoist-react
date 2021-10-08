@@ -33,14 +33,18 @@ export class ActivityDetailModel extends HoistModel {
             },
             emptyText: 'Select a group on the left to see detailed tracking logs.',
             store: {
-                fieldDefaults: {type: 'string'},
                 fields: [
-                    {name: 'username', displayName: 'User'},
                     {name: 'impersonatingFlag', type: 'bool'},
-                    {name: 'msg', displayName: 'Message'},
+                    {name: 'username', type: 'string', displayName: 'User'},
+                    {name: 'impersonating', type: 'string'},
+                    {name: 'category', type: 'string'},
+                    {name: 'msg', type: 'string', displayName: 'Message'},
                     {name: 'data', type: 'json'},
+                    {name: 'device', type: 'string'},
+                    {name: 'browser', type: 'string'},
+                    {name: 'userAgent', type: 'string'},
                     {name: 'elapsed', type: 'int'},
-                    {name: 'dateCreated', displayName: 'Timestamp', type: 'date'}
+                    {name: 'dateCreated', type: 'date', displayName: 'Timestamp'}
                 ]
             },
             columns: [

@@ -40,16 +40,15 @@ export class WebSocketModel extends HoistModel {
                     user: impersonating ? `${authUser} (as ${apparentUser})` : authUser
                 };
             },
-            fieldDefaults: {type: 'string'},
             fields: [
-                'authUser',
-                'apparentUser',
                 {name: 'isOpen', type: 'bool'},
                 {name: 'createdTime', type: 'date', displayName: 'Created'},
                 {name: 'sentMessageCount', type: 'int', displayName: 'Sent'},
                 {name: 'lastSentTime', type: 'date', displayName: 'Last Sent'},
                 {name: 'receivedMessageCount', type: 'int', displayName: 'Received'},
-                {name: 'lastReceivedTime', type: 'date', displayName: 'Last Received'}
+                {name: 'lastReceivedTime', type: 'date', displayName: 'Last Received'},
+                {name: 'authUser', type: 'string'},
+                {name: 'apparentUser', type: 'string'}
             ]
         },
         sortBy: ['key'],

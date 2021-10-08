@@ -24,9 +24,12 @@ export class UserModel extends HoistModel {
         enableExport: true,
         store: {
             idSpec: 'username',
-            fieldDefaults: {type: 'string'},
             fields: [
-                {name: 'active', type: 'bool'}
+                {name: 'username', type: 'string'},
+                {name: 'email', type: 'string'},
+                {name: 'displayName', type: 'string'},
+                {name: 'active', type: 'bool'},
+                {name: 'roles', type: 'string'}
             ]
         },
         sortBy: 'username',
