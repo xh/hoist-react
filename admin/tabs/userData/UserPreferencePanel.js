@@ -26,6 +26,7 @@ const modelSpec = {
         fields: [
             {
                 name: 'name',
+                type: 'string',
                 displayName: 'Pref',
                 lookupName: 'names',
                 editable: 'onAdd',
@@ -33,16 +34,19 @@ const modelSpec = {
             },
             {
                 name: 'groupName',
+                type: 'string',
                 displayName: 'Group',
                 lookupName: 'groupNames',
                 editable: false
             },
             {
                 name: 'type',
+                type: 'string',
                 editable: false
             },
             {
                 name: 'username',
+                type: 'string',
                 displayName: 'User',
                 required: true
             },
@@ -58,6 +62,7 @@ const modelSpec = {
             },
             {
                 name: 'lastUpdatedBy',
+                type: 'string',
                 editable: false
             }
         ]

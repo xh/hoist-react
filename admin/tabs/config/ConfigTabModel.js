@@ -41,10 +41,12 @@ export class ConfigTabModel extends HoistModel {
             fields: [
                 {
                     name: 'name',
+                    type: 'string',
                     required: true
                 },
                 {
                     name: 'groupName',
+                    type: 'string',
                     displayName: 'Group',
                     lookupName: 'groupNames',
                     required: true,
@@ -52,6 +54,7 @@ export class ConfigTabModel extends HoistModel {
                 },
                 {
                     name: 'valueType',
+                    type: 'string',
                     displayName: 'Type',
                     lookupName: 'valueTypes',
                     editable: 'onAdd',
@@ -70,6 +73,7 @@ export class ConfigTabModel extends HoistModel {
                 },
                 {
                     name: 'note',
+                    type: 'string',
                     displayName: 'Notes'
                 },
                 {
@@ -79,6 +83,7 @@ export class ConfigTabModel extends HoistModel {
                 },
                 {
                     name: 'lastUpdatedBy',
+                    type: 'string',
                     editable: false
                 }
             ]

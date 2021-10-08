@@ -37,21 +37,26 @@ export class JsonBlobModel extends HoistModel {
             fields: [
                 {
                     name: 'token',
+                    type: 'string',
                     editable: false
                 },
                 {
-                    name: 'owner'
+                    name: 'owner',
+                    type: 'string'
                 },
                 {
                     name: 'acl',
+                    type: 'string',
                     displayName: 'ACL'
                 },
                 {
                     name: 'name',
+                    type: 'string',
                     required: true
                 },
                 {
                     name: 'type',
+                    type: 'string',
                     lookupName: 'types',
                     required: true,
                     enableCreate: true
@@ -66,7 +71,8 @@ export class JsonBlobModel extends HoistModel {
                     type: 'json'
                 },
                 {
-                    name: 'description'
+                    name: 'description',
+                    type: 'string'
                 },
                 {
                     name: 'archived',
@@ -91,6 +97,7 @@ export class JsonBlobModel extends HoistModel {
                 },
                 {
                     name: 'lastUpdatedBy',
+                    type: 'string',
                     editable: false
                 }
             ]

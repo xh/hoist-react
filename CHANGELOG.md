@@ -8,6 +8,10 @@
   * Note apps must update their server-side to `hoist-core v10.0` or greater to download log files
     (although this is _not_ a general or hard requirement for taking this version of hoist-react).
 
+* The `field` key in the constructor for `Column` will now accept an Object with field defaults,
+  as an alternative to the field name.  This form allows the auto-construction of fully-defined
+ `Field` objects from the column specification.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v43.0.2...develop)
 
 ## v43.0.2 - 2021-10-04
