@@ -107,7 +107,17 @@ export class LeftRightChooserModel extends HoistModel {
         this.leftGroupingExpanded = leftGroupingExpanded;
         this.rightGroupingExpanded = rightGroupingExpanded;
 
-        const fields = ['text', 'value', 'description', 'group', 'side', 'locked', 'exclude'];
+        const store = {
+            fields: [
+                {name: 'text', type: 'string'},
+                {name: 'value', type: 'string'},
+                {name: 'description', type: 'string'},
+                {name: 'group', type: 'string'},
+                {name: 'side', type: 'string'},
+                {name: 'locked', type: 'bool'},
+                {name: 'exclude', type: 'bool'}
+            ]
+        };
 
         const leftTextCol = {
                 field: 'text',
@@ -128,7 +138,7 @@ export class LeftRightChooserModel extends HoistModel {
             };
 
         this.leftModel = new GridModel({
-            store: {fields},
+            store,
             selModel: 'multiple',
             sortBy: leftSorted ? 'text' : null,
             emptyText: leftEmptyText,
@@ -137,7 +147,7 @@ export class LeftRightChooserModel extends HoistModel {
         });
 
         this.rightModel = new GridModel({
-            store: {fields},
+            store,
             selModel: 'multiple',
             sortBy: rightSorted ? 'text' : null,
             emptyText: rightEmptyText,

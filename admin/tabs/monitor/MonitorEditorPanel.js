@@ -23,19 +23,23 @@ const modelSpec = {
         fields: [
             {
                 name: 'code',
+                type: 'string',
                 required: true
             },
             {
                 name: 'name',
+                type: 'string',
                 required: true
             },
             {
                 name: 'metricType',
+                type: 'string',
                 lookupName: 'metricTypes',
                 required: true
             },
             {
-                name: 'metricUnit'
+                name: 'metricUnit',
+                type: 'string'
             },
             {
                 name: 'warnThreshold',
@@ -50,7 +54,8 @@ const modelSpec = {
                 type: 'json'
             },
             {
-                name: 'notes'
+                name: 'notes',
+                type: 'string'
             },
             {
                 name: 'active',
@@ -69,6 +74,7 @@ const modelSpec = {
             },
             {
                 name: 'lastUpdatedBy',
+                type: 'string',
                 editable: false
             }
         ]
