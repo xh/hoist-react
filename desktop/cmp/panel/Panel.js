@@ -19,7 +19,7 @@ import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {omitBy} from 'lodash';
+import {castArray, omitBy} from 'lodash';
 import PT from 'prop-types';
 import {isValidElement, useRef, Children} from 'react';
 import {panelHeader} from './impl/PanelHeader';
@@ -104,11 +104,11 @@ export const [Panel, panel] = hoistCmp.withFactory({
 
             coreContents = vframe({
                 style: {display: collapsed ? 'none' : 'flex'},
-                items: [
+                items: Children.toArray([
                     parseToolbar(tbar),
-                    ...Children.toArray(children),
+                    ...castArray(children),
                     parseToolbar(bbar)
-                ]
+                ])
             });
         }
         if (!collapsed) wasDisplayed.current = true;
