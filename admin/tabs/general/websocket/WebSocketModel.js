@@ -28,7 +28,6 @@ export class WebSocketModel extends HoistModel {
         enableExport: true,
         store: {
             idSpec: 'key',
-            fields: ['authUser', 'apparentUser'],
             processRawData: row => {
                 const authUser = row.authUser.username,
                     apparentUser = row.apparentUser.username,
@@ -40,7 +39,17 @@ export class WebSocketModel extends HoistModel {
                     apparentUser,
                     user: impersonating ? `${authUser} (as ${apparentUser})` : authUser
                 };
-            }
+            },
+            fields: [
+                {name: 'isOpen', type: 'bool'},
+                {name: 'createdTime', type: 'date', displayName: 'Created'},
+                {name: 'sentMessageCount', type: 'int', displayName: 'Sent'},
+                {name: 'lastSentTime', type: 'date', displayName: 'Last Sent'},
+                {name: 'receivedMessageCount', type: 'int', displayName: 'Received'},
+                {name: 'lastReceivedTime', type: 'date', displayName: 'Last Received'},
+                {name: 'authUser', type: 'string'},
+                {name: 'apparentUser', type: 'string'}
+            ]
         },
         sortBy: ['key'],
         columns: [
@@ -55,11 +64,11 @@ export class WebSocketModel extends HoistModel {
             },
             {field: 'key', width: 160},
             {field: 'user', width: 250},
-            {field: 'createdTime', headerName: 'Created', ...compactDateCol},
-            {field: 'sentMessageCount', headerName: 'Sent', ...numberCol, width: 90},
-            {field: 'lastSentTime', headerName: 'Last Sent', ...compactDateCol, width: 140},
-            {field: 'receivedMessageCount', headerName: 'Received', ...numberCol, width: 90},
-            {field: 'lastReceivedTime', headerName: 'Last Received', ...compactDateCol, width: 140}
+            {field: 'createdTime', ...compactDateCol},
+            {field: 'sentMessageCount', ...numberCol, width: 90},
+            {field: 'lastSentTime', ...compactDateCol, width: 140},
+            {field: 'receivedMessageCount', ...numberCol, width: 90},
+            {field: 'lastReceivedTime', ...compactDateCol, width: 140}
         ]
     })
 

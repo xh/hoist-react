@@ -22,7 +22,16 @@ export class UserModel extends HoistModel {
         persistWith: this.persistWith,
         colChooserModel: true,
         enableExport: true,
-        store: {idSpec: 'username'},
+        store: {
+            idSpec: 'username',
+            fields: [
+                {name: 'username', type: 'string'},
+                {name: 'email', type: 'string'},
+                {name: 'displayName', type: 'string'},
+                {name: 'active', type: 'bool'},
+                {name: 'roles', type: 'string'}
+            ]
+        },
         sortBy: 'username',
         columns: [
             {field: 'username', ...usernameCol},

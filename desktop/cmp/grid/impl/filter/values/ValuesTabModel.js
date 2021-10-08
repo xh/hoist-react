@@ -258,7 +258,7 @@ export class ValuesTabModel extends HoistModel {
             store: {
                 idSpec: (raw) => this.getUniqueValue(raw.value).toString(),
                 fields: [
-                    {name: 'value'},
+                    {name: 'value', type: 'auto'},
                     {name: 'isChecked', type: 'bool'}
                 ]
             },

@@ -82,7 +82,7 @@ export class StoreContextMenu {
                     const {field} = column,
                         fieldSpec = filterModel.getFieldSpec(field);
 
-                    if (!fieldSpec.supportsOperator(op)) return {hidden: true};
+                    if (!fieldSpec?.supportsOperator(op)) return {hidden: true};
 
                     const values = getValues(selectedRecords, field);
                     if (values.length > 1) return {text: `${values.length} values`};
@@ -98,7 +98,13 @@ export class StoreContextMenu {
                     text: 'Filter',
                     icon: Icon.filter(),
                     displayFn: ({column}) => {
-                        return {hidden: !filterModel || !filterModel.bind.isStore || !column?.filterable};
+                        return {
+                            hidden: (
+                                !filterModel?.bind.isStore ||
+                                !filterModel.getFieldSpec(column?.field) ||
+                                !column?.filterable
+                            )
+                        };
                     },
                     items: [
                         {

@@ -33,8 +33,8 @@ import {
     compact,
     defaults,
     defaultsDeep,
-    difference,
     find,
+    forEach,
     isArray,
     isEmpty,
     isFunction,
@@ -42,7 +42,6 @@ import {
     isPlainObject,
     isString,
     isUndefined,
-    map,
     max,
     min,
     omit,
@@ -211,11 +210,11 @@ export class GridModel extends HoistModel {
      *      after the Store has been loaded at least once.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
      *      colId and sort direction.
-     * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
+     * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width grouping.
      * @param {boolean} [c.showGroupRowCounts] - true (default) to show a count of group member
      *      rows within each full-width group row.
-     * @param {SizingMode} [c.sizingMode] - one of tiny, compact, standard, large. If undefined, will
-     *      default and bind to `XH.sizingMode`.
+     * @param {SizingMode} [c.sizingMode] - one of tiny, compact, standard, large. If undefined,
+     *     will default and bind to `XH.sizingMode`.
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
      * @param {string} [c.treeStyle] - enable treeMode-specific styles (row background highlights
@@ -248,14 +247,14 @@ export class GridModel extends HoistModel {
      *      Default is an ascending string sort. Set to `null` to prevent sorting of groups.
      * @param {function} [c.onKeyDown] - Callback when a key down event is detected on the
      *      grid. Function will receive an event with the standard 'target' element. Note that
-     *      the ag-Grid API provides limited ability to customize keyboard handling. This handler is
-     *      designed to allow applications to workaround this.
-     * @param {function} [c.onRowClicked] - Callback when a row is clicked. Function will receive an
-     *      event with a data node containing the row's data. (Note that this may be null - e.g. for
-     *      clicks on group rows.)
+     *      the ag-Grid API provides limited ability to customize keyboard handling. This handler
+     *      is designed to allow applications to workaround this.
+     * @param {function} [c.onRowClicked] - Callback when a row is clicked - will receive an event
+     *      with a data node containing the row's data. (Note that this may be null - e.g. for
+     *      clicks on full-width group rows.)
      * @param {function} [c.onRowDoubleClicked] - Callback when a row is double clicked. Function
-     *      will receive an event with a data node containing the row's data. (Note that this may be
-     *      null - e.g. for clicks on group rows.)
+     *      will receive an event with a data node containing the row's data. (Note that this may
+     *      be null - e.g. for clicks on full-width group rows.)
      * @param {function} [c.onCellClicked] - Callback when a cell is clicked. Function will receive
      *      an event with a data node, cell value, and column.
      * @param {function} [c.onCellDoubleClicked] - Callback when a cell is double clicked. Function
@@ -265,7 +264,7 @@ export class GridModel extends HoistModel {
      *      can also be triggered via a long press (aka tap and hold) on mobile devices.
      * @param {number} [c.clicksToExpand] - number of clicks required to expand / collapse a parent
      *      row in a tree grid. Defaults to 2 for desktop, 1 for mobile. Any other value prevents
-     *      clicks on row body from expanding / collapsing (they must click the tree col > control).
+     *      clicks on row body from expanding / collapsing (requires click on tree col > control).
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or
      *      token strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu. Desktop only.
@@ -365,13 +364,16 @@ export class GridModel extends HoistModel {
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
-        this.autosizeOptions = defaults(autosizeOptions, {
-            mode: GridAutosizeMode.ON_SIZING_MODE_CHANGE,
-            includeCollapsedChildren: false,
-            showMask: false,
-            bufferPx: 5,
-            fillMode: 'none'
-        });
+        this.autosizeOptions = defaults(
+            {...autosizeOptions},
+            {
+                mode: GridAutosizeMode.ON_SIZING_MODE_CHANGE,
+                includeCollapsedChildren: false,
+                showMask: false,
+                bufferPx: 5,
+                fillMode: 'none'
+            }
+        );
         this.restoreDefaultsWarning = restoreDefaultsWarning;
         this.fullRowEditing = fullRowEditing;
         this.clicksToExpand = clicksToExpand;
@@ -471,7 +473,13 @@ export class GridModel extends HoistModel {
     localExport(filename, type, params = {}) {
         const {agApi} = this.agGridModel;
         if (!agApi) return;
-        defaults(params, {fileName: filename, processCellCallback: this.formatValuesForExport});
+        params = defaults(
+            {...params},
+            {
+                fileName: filename,
+                processCellCallback: this.formatValuesForExport
+            }
+        );
 
         if (type === 'excel') {
             agApi.exportDataAsExcel(params);
@@ -1348,31 +1356,37 @@ export class GridModel extends HoistModel {
     // requires columns to have been constructed and set, and will only work with a raw store
     // config object, not an instance.
     enhanceStoreConfigFromColumns(storeConfig) {
-        const fields = storeConfig.fields || [],
-            storeFieldNames = map(fields, it => isString(it) ? it : it.name),
-            colFieldNames = this.calcFieldNamesFromColumns(),
-            missingFieldNames = difference(colFieldNames, storeFieldNames);
+        const fields = storeConfig.fields ?? [],
+            storeFieldNames = fields.map(it => it.name ?? it),
+            leafColsByFieldName = this.leafColsByFieldName();
 
-        // ID is always present on a Record, yet will never be listed within store.fields.
-        pull(missingFieldNames, 'id');
+        const newFields = [];
+        forEach(leafColsByFieldName, (col, name) => {
+            if (name !== 'id' && !storeFieldNames.includes(name)) {
+                newFields.push({name, ...col.fieldSpec});
+            }
+        });
 
-        return isEmpty(missingFieldNames) ?
+        return isEmpty(newFields) ?
             storeConfig :
-            {...storeConfig, fields: [...fields, ...missingFieldNames]};
+            {...storeConfig, fields: [...fields, ...newFields]};
     }
 
-    calcFieldNamesFromColumns() {
-        const ret = new Set();
+    leafColsByFieldName() {
+        const ret = {};
         this.getLeafColumns().forEach(col => {
             let {fieldPath} = col;
             if (isNil(fieldPath)) return;
 
-            // Handle dot-separated column fields, including the root of their path in the returned
-            // list of field names. The resulting store field will hold the parent object.
-            ret.add(isArray(fieldPath) ? fieldPath[0] : fieldPath);
-        });
+            // Field name for dot-separated column fields should just be the root of the field path
+            const fieldName = isArray(fieldPath) ? fieldPath[0] : fieldPath;
 
-        return Array.from(ret);
+            // Take *first* column with this field name, for the purposes of defining field.
+            if (!ret[fieldName]) {
+                ret[fieldName] = col;
+            }
+        });
+        return ret;
     }
 
     parseSizingMode(sizingMode) {
@@ -1391,6 +1405,7 @@ export class GridModel extends HoistModel {
     }
 
     parseSelModel(selModel) {
+        const {store} = this;
         selModel = withDefault(selModel, XH.isMobileApp ? 'disabled' : 'single');
 
         if (selModel instanceof StoreSelectionModel) {
@@ -1398,8 +1413,7 @@ export class GridModel extends HoistModel {
         }
 
         if (isPlainObject(selModel)) {
-            return this.markManaged(new StoreSelectionModel(defaults(selModel,
-                {store: this.store})));
+            return this.markManaged(new StoreSelectionModel({...selModel, store}));
         }
 
         // Assume its just the mode...
@@ -1409,7 +1423,7 @@ export class GridModel extends HoistModel {
         } else if (selModel === null) {
             mode = 'disabled';
         }
-        return this.markManaged(new StoreSelectionModel({mode, store: this.store}));
+        return this.markManaged(new StoreSelectionModel({mode, store}));
     }
 
     parseFilterModel(filterModel) {
@@ -1433,7 +1447,7 @@ export class GridModel extends HoistModel {
         const modelClass = XH.isMobileApp ? MobileColChooserModel : DesktopColChooserModel;
 
         if (isPlainObject(chooserModel)) {
-            return this.markManaged(new modelClass(defaults(chooserModel, {gridModel: this})));
+            return this.markManaged(new modelClass({...chooserModel, gridModel: this}));
         }
 
         return chooserModel ? this.markManaged(new modelClass({gridModel: this})) : null;

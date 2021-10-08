@@ -21,21 +21,25 @@ const modelSpec = {
         fields: [
             {
                 name: 'name',
+                type: 'string',
                 displayName: 'Log Name',
                 required: true
             },
             {
                 name: 'level',
+                type: 'string',
                 displayName: 'Override',
                 lookupName: 'levels'
             },
             {
                 name: 'defaultLevel',
+                type: 'string',
                 displayName: 'Initial',
                 editable: false
             },
             {
                 name: 'effectiveLevel',
+                type: 'string',
                 displayName: 'Effective',
                 editable: false
             }

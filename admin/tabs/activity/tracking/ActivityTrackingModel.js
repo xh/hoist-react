@@ -83,15 +83,15 @@ export class ActivityTrackingModel extends HoistModel {
             fields: [
                 {name: 'day', type: 'localDate', isDimension: true, aggregator: new RangeAggregator()},
                 {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'username', displayName: 'User', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'msg', displayName: 'Message', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
+                {name: 'username', type: 'string', displayName: 'User', isDimension: true, aggregator: 'UNIQUE'},
+                {name: 'msg', type: 'string', displayName: 'Message', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'category', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'device', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'browser', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'userAgent', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'elapsed', type: 'int', aggregator: 'AVG'},
                 {name: 'impersonating', type: 'string'},
-                {name: 'dateCreated', displayName: 'Timestamp', type: 'date'},
+                {name: 'dateCreated', type: 'date', displayName: 'Timestamp'},
                 {name: 'data', type: 'json'},
                 {name: 'count', type: 'int', aggregator: 'CHILD_COUNT'},
                 {name: 'entryCount', type: 'int', aggregator: 'LEAF_COUNT'}
@@ -157,6 +157,20 @@ export class ActivityTrackingModel extends HoistModel {
             exportOptions: {filename: `${XH.appCode}-activity-summary`},
             emptyText: 'No activity reported...',
             sortBy: ['cubeLabel'],
+            store: {
+                fields: [
+                    {name: 'cubeLabel', type: 'string'},
+                    {name: 'username', type: 'string'},
+                    {name: 'category', type: 'string'},
+                    {name: 'device', type: 'string'},
+                    {name: 'browser', type: 'string'},
+                    {name: 'userAgent', type: 'string'},
+                    {name: 'impersonating', type: 'string'},
+                    {name: 'elapsed', type: 'int'},
+                    {name: 'day', type: 'json', displayName: 'App Day'},
+                    {name: 'entryCount', type: 'int'}
+                ]
+            },
             columns: [
                 {
                     field: 'cubeLabel',
@@ -185,7 +199,6 @@ export class ActivityTrackingModel extends HoistModel {
                     field: 'day',
                     width: 200,
                     align: 'right',
-                    headerName: 'App Day',
                     renderer: this.dateRangeRenderer,
                     exportValue: this.dateRangeRenderer,
                     comparator: this.dateRangeComparator.bind(this),
