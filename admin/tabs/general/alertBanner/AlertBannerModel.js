@@ -4,12 +4,13 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {FormModel} from '@xh/hoist/cmp/form';
-import {dateIs, lengthIs, required} from '@xh/hoist/data';
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
+import {FormModel} from '@xh/hoist/cmp/form';
+import {fragment, p} from '@xh/hoist/cmp/layout';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {dateIs, lengthIs, required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isEmpty} from 'lodash';
 
 export class AlertBannerModel extends HoistModel {
@@ -22,17 +23,24 @@ export class AlertBannerModel extends HoistModel {
             {name: 'active'},
             {
                 name: 'message',
-                rules: [required, lengthIs({max: 200})]
+                initialValue: '',
+                rules: [
+                    lengthIs({max: 200}),
+                    {
+                        when: (fs, {active}) => active,
+                        check: required
+                    }
+                ]
             },
             {
                 name: 'intent',
                 displayName: 'Color',
-                initialValue: 'primary',
-                rules: [required]
+                initialValue: 'primary'
             },
-            {name: 'iconName'},
+            {name: 'iconName', displayName: 'Icon'},
             {
                 name: 'expires',
+                displayName: 'Auto-expire',
                 rules: [dateIs({min: 'now'})]
             },
             {
@@ -51,21 +59,21 @@ export class AlertBannerModel extends HoistModel {
 
     get intentOptions() {
         return [
-            {value: 'primary', label: 'Default (Blue)'},
-            {value: 'success', label: 'Success (Green)'},
-            {value: 'warning', label: 'Warning (Orange)'},
-            {value: 'danger', label: 'Danger (Red)'}
+            'primary',
+            'success',
+            'warning',
+            'danger'
         ];
     }
 
     get iconOptions() {
         return [
-            {value: 'bullhorn', label: 'Alert'},
-            {value: 'check-circle', label: 'Success'},
-            {value: 'exclamation-triangle', label: 'Warning'},
-            {value: 'times-circle', label: 'Cancel'},
-            {value: 'info-circle', label: 'Info'},
-            {value: 'question-circle', label: 'Question'}
+            'bullhorn',
+            'check-circle',
+            'exclamation-triangle',
+            'times-circle',
+            'info-circle',
+            'question-circle'
         ];
     }
 
@@ -85,7 +93,10 @@ export class AlertBannerModel extends HoistModel {
         });
     }
 
-    async doLoadAsync() {
+    async doLoadAsync(loadSpec) {
+        const {formModel} = this;
+        if (formModel.isDirty && loadSpec.isAutoRefresh) return;
+
         const results = await XH.jsonBlobService.listAsync({
             type: 'xhAlertBanner',
             includeValue: true
@@ -100,7 +111,7 @@ export class AlertBannerModel extends HoistModel {
             };
 
         this.token = token;
-        this.formModel.init(initialValues);
+        formModel.init(initialValues);
     }
 
     async saveAsync() {
@@ -127,6 +138,24 @@ export class AlertBannerModel extends HoistModel {
                 }
             };
 
+        // Force admin to confirm if actually activating a banner.
+        let confirmed = true;
+        if (XH.alertBannerService.enabled && active && formModel.fields.active.isDirty) {
+            confirmed = await XH.confirm({
+                message: fragment(
+                    p('This change will cause the previewed alert banner to be shown to ALL users of this application.'),
+                    p('Are you sure you wish to do this?')
+                ),
+                confirmProps: {
+                    text: 'Yes, show the banner',
+                    intent: 'primary',
+                    outlined: true
+                }
+            });
+        }
+
+        if (!confirmed) return;
+
         if (token) {
             await XH.jsonBlobService.updateAsync(token, payload);
         } else {
@@ -138,10 +167,8 @@ export class AlertBannerModel extends HoistModel {
     }
 
     resetForm() {
-        this.formModel.init({
-            intent: 'primary',
-            enableClose: true
-        });
+        this.formModel.reset();
+        this.refreshAsync();
     }
 
     //----------------

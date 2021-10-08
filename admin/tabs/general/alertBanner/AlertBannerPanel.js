@@ -4,22 +4,30 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {creates, hoistCmp} from '@xh/hoist/core';
-import {hframe, hbox, vbox, filler} from '@xh/hoist/cmp/layout';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {form} from '@xh/hoist/cmp/form';
-import {formField} from '@xh/hoist/desktop/cmp/form';
-import {dateInput, select, switchInput, textInput, textArea} from '@xh/hoist/desktop/cmp/input';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {code, div, filler, hframe, p, placeholder, vbox} from '@xh/hoist/cmp/layout';
+import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
+import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {banner} from '@xh/hoist/desktop/appcontainer/Banner';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {formField} from '@xh/hoist/desktop/cmp/form';
+import {
+    buttonGroupInput,
+    dateInput,
+    switchInput,
+    textArea,
+    textInput
+} from '@xh/hoist/desktop/cmp/input';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {dateTimeRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import './AlertBannerPanel.scss';
 import {AlertBannerModel} from './AlertBannerModel';
+import './AlertBannerPanel.scss';
 
 export const alertBannerPanel = hoistCmp.factory({
     model: creates(AlertBannerModel),
+
     render() {
         return panel({
             className: 'xh-alert-banner-panel',
@@ -34,7 +42,9 @@ export const alertBannerPanel = hoistCmp.factory({
 
 const formPanel = hoistCmp.factory(
     ({model}) => {
-        const {formModel, loadModel} = model;
+        const {formModel, loadModel} = model,
+            {isDirty, isValid} = formModel;
+
         return panel({
             title: 'Settings',
             icon: Icon.gear(),
@@ -43,11 +53,19 @@ const formPanel = hoistCmp.factory(
             item: form({
                 fieldDefaults: {
                     inline: true,
-                    minimal: true,
                     commitOnChange: true,
                     labelWidth: 100
                 },
                 items: [
+                    div({
+                        className: 'xh-alert-banner-panel__disabled-warning',
+                        items: [
+                            p('Feature currently disabled via ', code('xhAlertBannerConfig'), '.'),
+                            p('Banners can be configured and previewed here, but they will not be shown to any app users.'),
+                            p('To enable, update or create the config above. Note that users (including you!) will need to reload this app in their browser to pick up the config change. Contact support@xh.io for assistance.')
+                        ],
+                        omit: XH.alertBannerService.enabled
+                    }),
                     vbox({
                         className: 'xh-alert-banner-panel__form-panel__fields',
                         items: [
@@ -61,16 +79,24 @@ const formPanel = hoistCmp.factory(
                             }),
                             formField({
                                 field: 'intent',
-                                item: select({
-                                    options: model.intentOptions
+                                item: buttonGroupInput({
+                                    items: model.intentOptions.map(intent => button({
+                                        intent,
+                                        minimal: false,
+                                        icon: formModel.values.intent === intent ? Icon.check() : Icon.placeholder(),
+                                        value: intent
+                                    }))
                                 })
                             }),
                             formField({
                                 field: 'iconName',
-                                item: select({
+                                item: buttonGroupInput({
                                     enableClear: true,
-                                    options: model.iconOptions,
-                                    optionRenderer: (opt) => iconOption({opt})
+                                    outlined: true,
+                                    items: model.iconOptions.map(iconName => button({
+                                        icon: Icon.icon({iconName}),
+                                        value: iconName
+                                    }))
                                 })
                             }),
                             formField({
@@ -79,6 +105,10 @@ const formPanel = hoistCmp.factory(
                             }),
                             formField({
                                 field: 'expires',
+                                info: relativeTimestamp({
+                                    timestamp: formModel.values.expires,
+                                    options: {allowFuture: true}
+                                }),
                                 item: dateInput({
                                     enableClear: true,
                                     minDate: LocalDate.today().date,
@@ -104,13 +134,14 @@ const formPanel = hoistCmp.factory(
                 filler(),
                 button({
                     text: 'Reset',
+                    disabled: !isDirty,
                     onClick: () => model.resetForm()
                 }),
                 button({
                     text: 'Save',
                     icon: Icon.check(),
                     intent: 'success',
-                    disabled: !formModel.isValid,
+                    disabled: !isValid || !isDirty,
                     onClick: () => model.saveAsync().linkTo(loadModel)
                 })
             ]
@@ -125,21 +156,14 @@ const previewPanel = hoistCmp.factory(
             title: 'Preview',
             compactHeader: true,
             className: 'xh-alert-banner-panel__preview-panel xh-tiled-bg',
-            item: banner({
-                omit: !bannerModel,
-                key: bannerModel?.xhId,
-                model: bannerModel
-            })
+            items: [
+                banner({
+                    omit: !bannerModel,
+                    key: bannerModel?.xhId,
+                    model: bannerModel
+                }),
+                placeholder(`${XH.appName} App UI`)
+            ]
         });
     }
-);
-
-const iconOption = hoistCmp.factory(
-    ({opt}) => hbox(
-        Icon.icon({
-            iconName: opt.value,
-            style: {width: 30, marginRight: 5}
-        }),
-        opt.label
-    )
 );

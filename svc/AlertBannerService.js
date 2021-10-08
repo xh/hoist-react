@@ -11,10 +11,10 @@ import {Icon} from '@xh/hoist/icon';
 import {isEmpty} from 'lodash';
 
 /**
- * Service to display an app-wide alert banner that can be configured through the admin
+ * Service to display an app-wide alert banner, as configured via the Hoist Admin console.
  *
- * For this service to be active, a refresh interval for the client app must be specified via
- * the `xhAlertBannerRefreshIntervals` config.
+ * For this service to be active, a client-visible `xhAlertBannerConfig` config must be specified
+ * as `{enabled:true, interval: x}`, where `x` sets this service's polling frequency in seconds.
  */
 export class AlertBannerService extends HoistService {
 
@@ -22,7 +22,12 @@ export class AlertBannerService extends HoistService {
     timer;
 
     get interval() {
-        return XH.getConf('xhAlertBannerRefreshInterval', -1) * SECONDS;
+        const conf = XH.getConf('xhAlertBannerConfig', {});
+        return (conf.enabled && conf.interval) ? conf.interval * SECONDS : -1;
+    }
+
+    get enabled() {
+        return this.interval > 0;
     }
 
     get lastDismissed() {
@@ -37,7 +42,7 @@ export class AlertBannerService extends HoistService {
     }
 
     async checkForBannerAsync() {
-        if (this.interval <= 0) return;
+        if (!this.enabled) return;
 
         const category = 'xhAlertBanner',
             results = await XH.jsonBlobService.listAsync({

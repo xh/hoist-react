@@ -19,6 +19,16 @@
     }
   }
 
+  &__disabled-warning {
+    background-color: var(--xh-intent-warning);
+    color: white;
+    padding: var(--xh-pad-px);
+
+    p:first-child {
+      font-weight: 600;
+    }
+  }
+
   &__preview-panel {
     flex: 1;
 
@@ -29,5 +39,10 @@
     .xh-vframe {
       padding: var(--xh-pad-double-px);
     }
+
+    .xh-placeholder {
+      background-color: var(--xh-bg-alt);
+    }
+
   }
 }
