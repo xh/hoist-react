@@ -18,6 +18,11 @@
   across multiple GridModel instances (e.g. as a shared set of defaults) would wire those supporting
   models to the first grid that received them.
 
+### 📚 Libraries
+
+* @blueprintjs/core `3.50 -> 3.51`
+
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v43.0.2...develop)
 
 ## v43.0.2 - 2021-10-04
