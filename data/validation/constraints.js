@@ -28,7 +28,7 @@ export const required = ({value, displayName}) => {
 
 /**
  * Validate an email address.
- * From https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript/46181#46181.
+ * https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript/46181#46181.
  *
  * @type ConstraintCb
  */
@@ -119,8 +119,21 @@ export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
             maxMoment = moment(max);
         }
 
-        if (minMoment?.isAfter(value)) return `${displayName} must not be before ${minMoment.format(fmt)}.`;
-        if (maxMoment?.isBefore(value)) return `${displayName} must not be after ${maxMoment.format(fmt)}.`;
+        let error = null;
+        if (minMoment?.isAfter(value)) {
+            switch (min) {
+                case 'now': error = 'in the past.'; break;
+                case 'today': error = 'before today.'; break;
+                default: error = `before ${minMoment.format(fmt)}`;
+            }
+        } else if (maxMoment?.isBefore(value)) {
+            switch (max) {
+                case 'now': error = 'in the future.'; break;
+                case 'today': error = 'after today.'; break;
+                default: error = `after ${maxMoment.format(fmt)}`;
+            }
+        }
+        return error ? `${displayName} must not be ${error}` : null;
     };
 }
 
