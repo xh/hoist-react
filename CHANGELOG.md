@@ -1,12 +1,12 @@
 # Changelog
 
-## v44.0.0-SNAPSHOT - unreleased
+## v43.1.0 - 2021-10-04
 
 ### 🎁 New Features
 
-* Log Viewer now supports downloading log files.
-  * Note apps must update their server-side to `hoist-core v10.0` or greater to download log files
-    (although this is _not_ a general or hard requirement for taking this version of hoist-react).
+* The Admin Console log viewer now supports downloading log files.
+  * Note apps must update to `hoist-core >= v10.0` to enable this feature.
+  * Core upgrade is _not_ a general requirement of this Hoist React release.
 * The `field` key in the constructor for `Column` will now accept an Object with field defaults, as
   an alternative to the field name. This form allows the auto-construction of fully-defined `Field`
   objects from the column specification.
@@ -15,13 +15,12 @@
 
 * `GridModel` no longer mutates any `selModel` or `colChooser` config objects provided to its
   constructor, resolving an edge-case bug where re-using the same object for either of these configs
-  across multiple GridModel instances (e.g. as a shared set of defaults) would wire those supporting
-  models to the first grid that received them.
+  across multiple GridModel instances (e.g. as a shared set of defaults) would break.
+* Grid autosizing tweaked to improve size estimation for indented tree rows and on mobile.
 
 ### 📚 Libraries
 
 * @blueprintjs/core `3.50 -> 3.51`
-
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v43.0.2...develop)
 
