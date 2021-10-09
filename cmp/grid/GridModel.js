@@ -370,7 +370,9 @@ export class GridModel extends HoistModel {
                 mode: GridAutosizeMode.ON_SIZING_MODE_CHANGE,
                 includeCollapsedChildren: false,
                 showMask: false,
-                bufferPx: 5,
+                // Larger buffer on mobile (perhaps counterintuitively) to minimize clipping due to
+                // any autosize mis-calc. Manual col resizing on mobile is super annoying!
+                bufferPx: XH.isMobileApp ? 10 : 5,
                 fillMode: 'none'
             }
         );
