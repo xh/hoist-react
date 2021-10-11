@@ -1,9 +1,23 @@
-import {ChartModel} from '@xh/hoist/cmp/chart';
-import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2021 Extremely Heavy Industries Inc.
+ */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {fmtTime, numberRenderer} from '@xh/hoist/format';
+import {ChartModel} from '@xh/hoist/cmp/chart';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {fmtTime} from '@xh/hoist/format';
 import {checkMinVersion} from '@xh/hoist/utils/js';
 import {forOwn, sortBy} from 'lodash';
+import {
+    freeHeapMbCol,
+    maxHeapMbCol,
+    timestampCol,
+    totalHeapMbCol,
+    usedHeapMbCol,
+    usedPctTotalCol
+} from '@xh/hoist/admin/columns';
 
 export class MemoryMonitorModel extends HoistModel {
 
@@ -20,30 +34,18 @@ export class MemoryMonitorModel extends HoistModel {
 
     constructor() {
         super();
-        const mbCol = {width: 150, renderer: numberRenderer({precision: 2, useCommas: true})},
-            pctCol = {width: 150, renderer: numberRenderer({precision: 2, useCommas: true, label: '%'})};
 
         this.gridModel = new GridModel({
             sortBy: 'timestamp|desc',
             enableExport: true,
-            store: {
-                idSpec: 'timestamp',
-                fields: [
-                    {name: 'timestamp', type: 'date'},
-                    {name: 'totalHeapMb', type: 'number', displayName: 'Total (mb)'},
-                    {name: 'maxHeapMb', type: 'number', displayName: 'Max (mb)'},
-                    {name: 'freeHeapMb', type: 'number', displayName: 'Free (mb)'},
-                    {name: 'usedHeapMb', type: 'number', displayName: 'Used (mb)'},
-                    {name: 'usedPctTotal', type: 'number', displayName: 'Used (pct Total)'}
-                ]
-            },
+            store: {idSpec: 'timestamp'},
             columns: [
-                {field: 'timestamp', ...dateTimeCol},
-                {field: 'totalHeapMb', ...mbCol},
-                {field: 'maxHeapMb', ...mbCol},
-                {field: 'freeHeapMb', ...mbCol},
-                {field: 'usedHeapMb', ...mbCol},
-                {field: 'usedPctTotal', ...pctCol}
+                timestampCol,
+                totalHeapMbCol,
+                maxHeapMbCol,
+                freeHeapMbCol,
+                usedHeapMbCol,
+                usedPctTotalCol
             ]
         });
 
@@ -155,5 +157,4 @@ export class MemoryMonitorModel extends HoistModel {
             XH.handleException(e);
         }
     }
-
 }

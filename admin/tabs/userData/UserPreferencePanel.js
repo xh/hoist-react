@@ -4,11 +4,17 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {truncate} from 'lodash';
-import {usernameCol} from '@xh/hoist/admin/columns';
-import {dateTimeCol} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
+import {
+    groupNameCol,
+    lastUpdatedByCol,
+    lastUpdatedCol,
+    nameCol,
+    typeCol,
+    usernameCol,
+    userValueCol
+} from '@xh/hoist/admin/columns';
 
 export const userPreferencePanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
@@ -72,13 +78,13 @@ const modelSpec = {
     unit: 'preference',
     filterFields: ['name', 'username'],
     columns: [
-        {field: 'name', width: 200},
-        {field: 'type', width: 100},
-        {field: 'username', ...usernameCol},
-        {field: 'groupName', hidden: true},
-        {field: 'userValue', minWidth: 200, flex: true, renderer: truncateIfJson},
-        {field: 'lastUpdatedBy', width: 160, hidden: true},
-        {field: 'lastUpdated', ...dateTimeCol, hidden: true}
+        {...nameCol},
+        {...typeCol},
+        {...usernameCol},
+        {...groupNameCol, hidden: true},
+        {...userValueCol},
+        {...lastUpdatedByCol, hidden: true},
+        {...lastUpdatedCol, hidden: true}
     ],
     editors: [
         {field: 'name'},
@@ -88,7 +94,3 @@ const modelSpec = {
         {field: 'lastUpdatedBy'}
     ]
 };
-
-function truncateIfJson(userValue, {record}) {
-    return record.data.type === 'json' ? truncate(userValue, {length: 500}) : userValue;
-}

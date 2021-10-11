@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {compactDateCol, GridModel, numberCol} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
@@ -13,6 +13,26 @@ import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isDisplayed} from '@xh/hoist/utils/js';
+import {
+    apparentUserField,
+    authUserField,
+    createdTimeCol,
+    createdTimeField,
+    isOpenCol,
+    isOpenField,
+    keyCol,
+    keyField,
+    lastReceivedTimeCol,
+    lastReceivedTimeField,
+    lastSentTimeCol,
+    lastSentTimeField,
+    receivedMessageCountCol,
+    receivedMessageCountField,
+    sentMessageCountCol,
+    sentMessageCountField,
+    userCol,
+    userField
+} from '@xh/hoist/admin/columns';
 import {createRef} from 'react';
 
 export class WebSocketModel extends HoistModel {
@@ -41,34 +61,28 @@ export class WebSocketModel extends HoistModel {
                 };
             },
             fields: [
-                {name: 'isOpen', type: 'bool'},
-                {name: 'createdTime', type: 'date', displayName: 'Created'},
-                {name: 'sentMessageCount', type: 'int', displayName: 'Sent'},
-                {name: 'lastSentTime', type: 'date', displayName: 'Last Sent'},
-                {name: 'receivedMessageCount', type: 'int', displayName: 'Received'},
-                {name: 'lastReceivedTime', type: 'date', displayName: 'Last Received'},
-                {name: 'authUser', type: 'string'},
-                {name: 'apparentUser', type: 'string'}
+                isOpenField,
+                keyField,
+                createdTimeField,
+                sentMessageCountField,
+                lastSentTimeField,
+                receivedMessageCountField,
+                lastReceivedTimeField,
+                userField,
+                authUserField,
+                apparentUserField
             ]
         },
         sortBy: ['key'],
         columns: [
-            {
-                field: 'isOpen',
-                headerName: '',
-                align: 'center',
-                width: 40,
-                renderer: v => v ?
-                    Icon.circle({prefix: 'fas', className: 'xh-green', asHtml: true}) :
-                    Icon.circle({prefix: 'fal', className: 'xh-red', asHtml: true})
-            },
-            {field: 'key', width: 160},
-            {field: 'user', width: 250},
-            {field: 'createdTime', ...compactDateCol},
-            {field: 'sentMessageCount', ...numberCol, width: 90},
-            {field: 'lastSentTime', ...compactDateCol, width: 140},
-            {field: 'receivedMessageCount', ...numberCol, width: 90},
-            {field: 'lastReceivedTime', ...compactDateCol, width: 140}
+            isOpenCol,
+            keyCol,
+            userCol,
+            createdTimeCol,
+            sentMessageCountCol,
+            lastSentTimeCol,
+            receivedMessageCountCol,
+            lastReceivedTimeCol
         ]
     })
 

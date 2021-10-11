@@ -5,18 +5,39 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel, managed} from '@xh/hoist/core';
-import {
-    addAction,
-    cloneAction,
-    deleteAction,
-    editAction,
-    RestGridModel
-} from '@xh/hoist/desktop/cmp/rest';
-import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
+import {addAction, cloneAction, deleteAction, editAction, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {makeObservable, observable, action} from '@xh/hoist/mobx';
 import {fmtDateTime} from '@xh/hoist/format';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
-import {isDate, truncate} from 'lodash';
+import {
+    aclCol,
+    aclField,
+    archivedCol,
+    archivedDateCol,
+    archivedDateField,
+    archivedField,
+    dateCreatedCol,
+    dateCreatedField,
+    descriptionCol,
+    descriptionField,
+    lastUpdatedByCol,
+    lastUpdatedByField,
+    lastUpdatedCol,
+    lastUpdatedField,
+    metaCol,
+    metaField,
+    nameCol,
+    nameField,
+    ownerCol,
+    ownerField,
+    tokenCol,
+    tokenField,
+    typeCol,
+    typeField,
+    valueCol,
+    valueField
+} from '@xh/hoist/admin/columns';
+import {isDate} from 'lodash';
 
 import {DifferModel} from '../../differ/DifferModel';
 
@@ -35,71 +56,19 @@ export class JsonBlobModel extends HoistModel {
             reloadLookupsOnLoad: true,
             fieldDefaults: {disableXssProtection: true},
             fields: [
-                {
-                    name: 'token',
-                    type: 'string',
-                    editable: false
-                },
-                {
-                    name: 'owner',
-                    type: 'string'
-                },
-                {
-                    name: 'acl',
-                    type: 'string',
-                    displayName: 'ACL'
-                },
-                {
-                    name: 'name',
-                    type: 'string',
-                    required: true
-                },
-                {
-                    name: 'type',
-                    type: 'string',
-                    lookupName: 'types',
-                    required: true,
-                    enableCreate: true
-                },
-                {
-                    name: 'value',
-                    type: 'json',
-                    required: true
-                },
-                {
-                    name: 'meta',
-                    type: 'json'
-                },
-                {
-                    name: 'description',
-                    type: 'string'
-                },
-                {
-                    name: 'archived',
-                    type: 'bool',
-                    defaultValue: false,
-                    required: true
-                },
-                {
-                    name: 'archivedDate',
-                    type: 'date',
-                    editable: false
-                },
-                {
-                    name: 'dateCreated',
-                    type: 'date',
-                    editable: false
-                },
-                {
-                    name: 'lastUpdated',
-                    type: 'date',
-                    editable: false
-                },
-                {
-                    name: 'lastUpdatedBy',
-                    type: 'string',
-                    editable: false
-                }
+                {...tokenField, editable: false},
+                {...ownerField},
+                {...aclField},
+                {...nameField, required: true},
+                {...typeField, lookupName: 'types', required: true, enableCreate: true},
+                {...valueField, type: 'json', required: true},
+                {...metaField},
+                {...descriptionField},
+                {...archivedField, defaultValue: false, required: true},
+                {...archivedDateField, editable: false},
+                {...dateCreatedField, editable: false},
+                {...lastUpdatedField, editable: false},
+                {...lastUpdatedByField, editable: false}
             ]
         },
         toolbarActions: [
@@ -120,19 +89,19 @@ export class JsonBlobModel extends HoistModel {
         unit: 'blob',
         filterFields: ['name', 'owner', 'type', 'value', 'meta', 'description'],
         columns: [
-            {field: 'token', width: 100, hidden: true},
-            {field: 'archived', ...boolCheckCol, width: 100},
-            {field: 'owner', width: 200},
-            {field: 'acl', width: 80},
-            {field: 'name', width: 200},
-            {field: 'type', width: 200},
-            {field: 'description', width: 200},
-            {field: 'value', flex: 1, renderer: this.valueRenderer},
-            {field: 'meta', width: 200},
-            {field: 'archivedDate', ...dateTimeCol, renderer: this.archivedDateRenderer, hidden: true},
-            {field: 'dateCreated', ...dateTimeCol, hidden: true},
-            {field: 'lastUpdated', ...dateTimeCol, hidden: true},
-            {field: 'lastUpdatedBy', width: 160, hidden: true}
+            {...tokenCol, hidden: true},
+            {...archivedCol},
+            {...ownerCol},
+            {...aclCol},
+            {...nameCol},
+            {...typeCol, width: 200},
+            {...descriptionCol},
+            {...valueCol},
+            {...metaCol},
+            {...archivedDateCol, hidden: true},
+            {...dateCreatedCol, hidden: true},
+            {...lastUpdatedCol, hidden: true},
+            {...lastUpdatedByCol, hidden: true}
         ],
         editors: [
             {field: 'token'},
@@ -166,21 +135,13 @@ export class JsonBlobModel extends HoistModel {
         return this.gridModel.loadAsync(loadSpec).catchDefault();
     }
 
-    valueRenderer(v) {
-        return truncate(v, {length: 500});
-    }
-
-    archivedDateRenderer(v) {
-        return v > 0 ? fmtDateTime(v) : '-';
-    }
-
     @action
     openDiffer() {
         this.differModel = new DifferModel({
             parentModel: this,
             entityName: 'jsonBlob',
             displayName: 'JSON Blob',
-            columnFields: ['name', 'owner', 'type', {field: 'archivedDate', ...dateTimeCol, renderer: this.archivedDateRenderer}],
+            columnFields: ['name', 'owner', 'type', archivedDateCol],
             matchFields: ['name', 'owner', 'type', 'archivedDate']
         });
     }

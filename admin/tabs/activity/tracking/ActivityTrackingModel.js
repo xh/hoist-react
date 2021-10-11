@@ -4,8 +4,6 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {usernameCol} from '@xh/hoist/admin/columns';
-import {RangeAggregator} from '@xh/hoist/admin/tabs/activity/aggregators/RangeAggregator';
 import {ActivityDetailModel} from '@xh/hoist/admin/tabs/activity/tracking/detail/ActivityDetailModel';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
@@ -13,10 +11,35 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Cube} from '@xh/hoist/data';
-import {fmtDate, fmtNumber, numberRenderer} from '@xh/hoist/format';
+import {fmtDate, fmtNumber} from '@xh/hoist/format';
 import {action, computed, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {isEmpty, isFinite} from 'lodash';
+import {
+    browserCol,
+    browserField,
+    categoryCol,
+    categoryField,
+    countField,
+    dataField,
+    dateCreatedField,
+    dateRangeCol,
+    dayField,
+    deviceCol,
+    deviceField,
+    elapsedCol,
+    elapsedField,
+    entryCountCol,
+    entryCountField,
+    impersonatingCol,
+    impersonatingField,
+    monthField,
+    msgField,
+    userAgentCol,
+    userAgentField,
+    usernameCol,
+    usernameField
+} from '@xh/hoist/admin/columns';
+import {isEmpty} from 'lodash';
 import moment from 'moment';
 import {ChartsModel} from './charts/ChartsModel';
 
@@ -81,20 +104,20 @@ export class ActivityTrackingModel extends HoistModel {
 
         this.cube = new Cube({
             fields: [
-                {name: 'day', type: 'localDate', isDimension: true, aggregator: new RangeAggregator()},
-                {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'username', type: 'string', displayName: 'User', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'msg', type: 'string', displayName: 'Message', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'category', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'device', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'browser', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'userAgent', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'elapsed', type: 'int', aggregator: 'AVG'},
-                {name: 'impersonating', type: 'string'},
-                {name: 'dateCreated', type: 'date', displayName: 'Timestamp'},
-                {name: 'data', type: 'json'},
-                {name: 'count', type: 'int', aggregator: 'CHILD_COUNT'},
-                {name: 'entryCount', type: 'int', aggregator: 'LEAF_COUNT'}
+                {...dayField},
+                {...monthField},
+                {...usernameField},
+                {...msgField},
+                {...categoryField},
+                {...deviceField},
+                {...browserField},
+                {...userAgentField},
+                {...elapsedField},
+                {...impersonatingField},
+                {...dateCreatedField, displayName: 'Timestamp'},
+                {...dataField},
+                {...countField},
+                {...entryCountField}
             ]
         });
 
@@ -157,54 +180,28 @@ export class ActivityTrackingModel extends HoistModel {
             exportOptions: {filename: `${XH.appCode}-activity-summary`},
             emptyText: 'No activity reported...',
             sortBy: ['cubeLabel'],
-            store: {
-                fields: [
-                    {name: 'cubeLabel', type: 'string'},
-                    {name: 'username', type: 'string'},
-                    {name: 'category', type: 'string'},
-                    {name: 'device', type: 'string'},
-                    {name: 'browser', type: 'string'},
-                    {name: 'userAgent', type: 'string'},
-                    {name: 'impersonating', type: 'string'},
-                    {name: 'elapsed', type: 'int'},
-                    {name: 'day', type: 'json', displayName: 'App Day'},
-                    {name: 'entryCount', type: 'int'}
-                ]
-            },
             columns: [
                 {
-                    field: 'cubeLabel',
-                    headerName: 'Tracked Activity',
+                    field: {
+                        name: 'cubeLabel',
+                        type: 'string',
+                        displayName: 'Tracked Activity'
+                    },
                     flex: 1,
                     minWidth: 100,
                     isTreeColumn: true,
                     renderer: (v, params) => params.record.raw.cubeDimension === 'day' ? fmtDate(v) : v,
                     comparator: this.cubeLabelComparator.bind(this)
                 },
-                {field: 'username', ...usernameCol, hidden: true},
-                {field: 'category', width: 100, hidden: true},
-                {field: 'device', width: 100, hidden: true},
-                {field: 'browser', width: 100, hidden: true},
-                {field: 'userAgent', width: 100, hidden: true},
-                {field: 'impersonating', width: 140, hidden: true},
-                {
-                    field: 'elapsed',
-                    headerName: 'Elapsed (avg)',
-                    width: 130,
-                    align: 'right',
-                    renderer: numberRenderer({label: 'ms', nullDisplay: '-', formatConfig: {thousandSeparated: false, mantissa: 0}}),
-                    hidden: true
-                },
-                {
-                    field: 'day',
-                    width: 200,
-                    align: 'right',
-                    renderer: this.dateRangeRenderer,
-                    exportValue: this.dateRangeRenderer,
-                    comparator: this.dateRangeComparator.bind(this),
-                    hidden: true
-                },
-                {field: 'entryCount', headerName: 'Entries', width: 80, align: 'right'}
+                {...usernameCol, hidden: true},
+                {...categoryCol, hidden: true},
+                {...deviceCol, hidden: true},
+                {...browserCol, hidden: true},
+                {...userAgentCol, hidden: true},
+                {...impersonatingCol, hidden: true},
+                {...elapsedCol, headerName: 'Elapsed (avg)', hidden: true},
+                {...dateRangeCol, hidden: true},
+                {...entryCountCol}
             ]
         });
 
@@ -314,25 +311,6 @@ export class ActivityTrackingModel extends HoistModel {
         this.formModel.setValues({
             startDay: this.endDay.subtract(value, unit).nextDay()
         });
-    }
-
-    dateRangeRenderer(range) {
-        if (!range) return;
-        if (isFinite(range)) return fmtDate(range);
-
-        const {min, max} = range,
-            minStr = fmtDate(min),
-            maxStr = fmtDate(max);
-
-        if (minStr === maxStr) return minStr;
-        return `${minStr} → ${maxStr}`;
-    }
-
-    dateRangeComparator(rangeA, rangeB, sortDir, abs, {defaultComparator}) {
-        const maxA = rangeA?.max,
-            maxB = rangeB?.max;
-
-        return defaultComparator(maxA, maxB);
     }
 
     cubeLabelComparator(valA, valB, sortDir, abs, {recordA, recordB, defaultComparator}) {

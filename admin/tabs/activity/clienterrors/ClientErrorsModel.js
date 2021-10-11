@@ -4,15 +4,29 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {usernameCol} from '@xh/hoist/admin/columns';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
-import {dateTimeCol, localDateCol, GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {fmtDate, fmtSpan} from '@xh/hoist/format';
-import {Icon} from '@xh/hoist/icon';
+import {fmtDate} from '@xh/hoist/format';
 import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
+import {
+    appEnvironmentCol,
+    appVersionCol,
+    browserCol,
+    dateCreatedCol,
+    dayCol,
+    deviceCol,
+    entryIdCol,
+    errorCol,
+    msgCol,
+    urlCol,
+    userAgentCol,
+    userAlertedFlagCol,
+    userMessageFlagCol,
+    usernameCol
+} from '@xh/hoist/admin/columns';
 import moment from 'moment';
 
 export class ClientErrorsModel extends HoistModel {
@@ -46,18 +60,6 @@ export class ClientErrorsModel extends HoistModel {
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,
-            store: {
-                fields: [
-                    {name: 'appEnvironment', type: 'string', displayName: 'Environment'},
-                    {name: 'msg', type: 'string', displayName: 'User Message'},
-                    {name: 'error', type: 'string', displayName: 'Error Details'},
-                    {name: 'url', type: 'string', displayName: 'URL'},
-                    {name: 'dateCreated', type: 'date', displayName: 'Timestamp'},
-                    {name: 'day', type: 'localDate', displayName: 'App Day'},
-                    {name: 'userAlerted', type: 'bool'},
-                    {name: 'userMessageFlag', type: 'bool'}
-                ]
-            },
             exportOptions: {
                 filename: `${XH.appCode}-client-errors`,
                 columns: 'ALL'
@@ -65,46 +67,20 @@ export class ClientErrorsModel extends HoistModel {
             emptyText: 'No errors reported...',
             sortBy: 'dateCreated|desc',
             columns: [
-                {
-                    field: 'userMessageFlag',
-                    headerName: Icon.comment(),
-                    headerTooltip: 'Indicates if the user provided a message along with the automated error report.',
-                    excludeFromExport: true,
-                    resizable: false,
-                    align: 'center',
-                    width: 50,
-                    renderer: (v, {record}) => {
-                        const {msg} = record.data;
-                        return msg ? Icon.comment({asHtml: true}) : '';
-                    }
-                },
-                {
-                    field: 'userAlerted',
-                    headerName: Icon.window(),
-                    headerTooltip: 'Indicates if the user was shown an interactive alert when this error was triggered.',
-                    resizable: false,
-                    align: 'center',
-                    width: 50,
-                    exportName: 'User Alerted?',
-                    renderer: v => v ? Icon.window({asHtml: true}) : ''
-                },
-                {field: 'id', headerName: 'Entry ID', width: 100, align: 'right', hidden: true},
-                {field: 'username', ...usernameCol},
-                {field: 'browser', width: 100},
-                {field: 'device', width: 100},
-                {field: 'userAgent', width: 130, hidden: true},
-                {field: 'appVersion', width: 130},
-                {field: 'appEnvironment',  width: 130},
-                {field: 'msg', width: 130, hidden: true},
-                {
-                    field: 'error',
-                    flex: true,
-                    minWidth: 150,
-                    renderer: (e) => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
-                },
-                {field: 'url', width: 250},
-                {field: 'dateCreated', ...dateTimeCol},
-                {field: 'day',  ...localDateCol}
+                {...userMessageFlagCol},
+                {...userAlertedFlagCol},
+                {...entryIdCol, hidden: true},
+                {...usernameCol},
+                {...browserCol},
+                {...deviceCol},
+                {...userAgentCol, hidden: true},
+                {...appVersionCol},
+                {...appEnvironmentCol},
+                {...msgCol, displayName: 'User Message', hidden: true},
+                {...errorCol},
+                {...urlCol},
+                {...dateCreatedCol, displayName: 'Timestamp'},
+                {...dayCol}
             ]
         });
 

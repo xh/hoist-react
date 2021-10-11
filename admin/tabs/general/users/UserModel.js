@@ -4,10 +4,10 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {usernameCol} from '@xh/hoist/admin/columns';
-import {boolCheckCol, GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, bindable, makeObservable} from '@xh/hoist/mobx';
+import {activeCol, displayNameCol, emailCol, rolesCol, usernameCol} from '@xh/hoist/admin/columns';
 import {keyBy, keys} from 'lodash';
 
 export class UserModel extends HoistModel {
@@ -22,23 +22,14 @@ export class UserModel extends HoistModel {
         persistWith: this.persistWith,
         colChooserModel: true,
         enableExport: true,
-        store: {
-            idSpec: 'username',
-            fields: [
-                {name: 'username', type: 'string'},
-                {name: 'email', type: 'string'},
-                {name: 'displayName', type: 'string'},
-                {name: 'active', type: 'bool'},
-                {name: 'roles', type: 'string'}
-            ]
-        },
+        store: {idSpec: 'username'},
         sortBy: 'username',
         columns: [
-            {field: 'username', ...usernameCol},
-            {field: 'email', width: 200},
-            {field: 'displayName', width: 200},
-            {field: 'active', ...boolCheckCol, width: 75},
-            {field: 'roles', minWidth: 130, flex: true, tooltip: true}
+            {...usernameCol},
+            {...emailCol},
+            {...displayNameCol},
+            {...activeCol},
+            {...rolesCol}
         ]
     });
 

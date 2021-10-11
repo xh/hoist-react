@@ -4,8 +4,6 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {truncate} from 'lodash';
-import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
 import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {makeObservable, observable, action} from '@xh/hoist/mobx';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
@@ -15,6 +13,17 @@ import {
     editAction,
     RestGridModel
 } from '@xh/hoist/desktop/cmp/rest';
+import {
+    defaultValueCol,
+    groupNameCol,
+    lastUpdatedByCol,
+    lastUpdatedCol,
+    localCol,
+    nameCol,
+    notesCol,
+    typeCol
+} from '@xh/hoist/admin/columns';
+
 import {DifferModel} from '../../differ/DifferModel';
 import {RegroupDialogModel} from '../../regroup/RegroupDialogModel';
 
@@ -99,14 +108,14 @@ export class PreferenceModel extends HoistModel {
             this.regroupDialogModel.regroupAction
         ],
         columns: [
-            {field: 'local', ...boolCheckCol, width: 70},
-            {field: 'name', width: 200},
-            {field: 'type', width: 100},
-            {field: 'defaultValue', width: 200, renderer: truncateIfJson},
-            {field: 'groupName', hidden: true},
-            {field: 'notes', minWidth: 200, flex: true},
-            {field: 'lastUpdatedBy', width: 160, hidden: true},
-            {field: 'lastUpdated', ...dateTimeCol, hidden: true}
+            {...localCol},
+            {...nameCol},
+            {...typeCol},
+            {...defaultValueCol},
+            {...groupNameCol, hidden: true},
+            {...notesCol},
+            {...lastUpdatedByCol, hidden: true},
+            {...lastUpdatedCol, hidden: true}
         ],
         editors: [
             {field: 'name'},
@@ -150,9 +159,4 @@ export class PreferenceModel extends HoistModel {
         this.differModel = null;
         XH.safeDestroy(differModel);
     }
-}
-
-
-function truncateIfJson(defaultValue, {record}) {
-    return record.data.type === 'json' ? truncate(defaultValue, {length: 500}) : defaultValue;
 }

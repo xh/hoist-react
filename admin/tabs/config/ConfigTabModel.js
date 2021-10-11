@@ -4,7 +4,6 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
 import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {makeObservable, observable, action} from '@xh/hoist/mobx';
@@ -16,6 +15,24 @@ import {
     RestGridModel,
     RestStore
 } from '@xh/hoist/desktop/cmp/rest';
+import {
+    clientVisibleCol,
+    clientVisibleField,
+    groupNameCol,
+    groupNameField,
+    lastUpdatedByCol,
+    lastUpdatedByField,
+    lastUpdatedCol,
+    lastUpdatedField,
+    nameCol,
+    nameField,
+    noteCol,
+    noteField,
+    valueCol,
+    valueField,
+    valueTypeCol,
+    valueTypeField
+} from '@xh/hoist/admin/columns';
 import {isNil, truncate} from 'lodash';
 
 import {DifferModel} from '../../differ/DifferModel';
@@ -39,53 +56,14 @@ export class ConfigTabModel extends HoistModel {
             reloadLookupsOnLoad: true,
             fieldDefaults: {disableXssProtection: true},
             fields: [
-                {
-                    name: 'name',
-                    type: 'string',
-                    required: true
-                },
-                {
-                    name: 'groupName',
-                    type: 'string',
-                    displayName: 'Group',
-                    lookupName: 'groupNames',
-                    required: true,
-                    enableCreate: true
-                },
-                {
-                    name: 'valueType',
-                    type: 'string',
-                    displayName: 'Type',
-                    lookupName: 'valueTypes',
-                    editable: 'onAdd',
-                    required: true
-                },
-                {
-                    name: 'value',
-                    typeField: 'valueType',
-                    required: true
-                },
-                {
-                    name: 'clientVisible',
-                    type: 'bool',
-                    defaultValue: false,
-                    required: true
-                },
-                {
-                    name: 'note',
-                    type: 'string',
-                    displayName: 'Notes'
-                },
-                {
-                    name: 'lastUpdated',
-                    type: 'date',
-                    editable: false
-                },
-                {
-                    name: 'lastUpdatedBy',
-                    type: 'string',
-                    editable: false
-                }
+                {...nameField, required: true},
+                {...groupNameField, lookupName: 'groupNames', required: true, enableCreate: true},
+                {...valueTypeField, lookupName: 'valueTypes', editable: 'onAdd', required: true},
+                {...valueField, typeField: 'valueType', required: true},
+                {...clientVisibleField, defaultValue: false, required: true},
+                {...noteField},
+                {...lastUpdatedField, editable: false},
+                {...lastUpdatedByField, editable: false}
             ]
         }),
         actionWarning: {
@@ -107,18 +85,17 @@ export class ConfigTabModel extends HoistModel {
         prepareCloneFn: ({clone}) => clone.name = `${clone.name}_CLONE`,
         unit: 'config',
         filterFields: ['name', 'value', 'groupName', 'note'],
-
         sortBy: 'name',
         groupBy: 'groupName',
         columns: [
-            {field: 'groupName', width: 100, hidden: true},
-            {field: 'name', width: 200},
-            {field: 'valueType', width: 80, align: 'center'},
-            {field: 'value', width: 200, renderer: this.configRenderer, tooltip: this.configRenderer},
-            {field: 'clientVisible', ...boolCheckCol, headerName: 'Client?', width: 75},
-            {field: 'note', minWidth: 60, flex: true, tooltip: true},
-            {field: 'lastUpdatedBy', width: 160, hidden: true},
-            {field: 'lastUpdated', ...dateTimeCol, hidden: true}
+            {...groupNameCol, hidden: true},
+            {...nameCol},
+            {...valueTypeCol},
+            {...valueCol, flex: null, width: 200, renderer: this.configRenderer, tooltip: this.configRenderer},
+            {...clientVisibleCol},
+            {...noteCol},
+            {...lastUpdatedByCol, hidden: true},
+            {...lastUpdatedCol, hidden: true}
         ],
         editors: [
             {field: 'name'},

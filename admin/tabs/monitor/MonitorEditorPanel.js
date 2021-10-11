@@ -4,10 +4,33 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {boolCheckCol, dateTimeCol, numberCol} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
+import {
+    activeCol,
+    activeField,
+    codeCol,
+    codeField,
+    failThresholdCol,
+    failThresholdField,
+    lastUpdatedByCol,
+    lastUpdatedByField,
+    lastUpdatedCol,
+    lastUpdatedField,
+    metricTypeField,
+    metricUnitCol,
+    metricUnitField,
+    nameCol,
+    nameField,
+    notesCol,
+    notesField,
+    paramsField,
+    sortOrderCol,
+    sortOrderField,
+    warnThresholdCol,
+    warnThresholdField
+} from '@xh/hoist/admin/columns';
 
 export const monitorEditorPanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
@@ -21,78 +44,34 @@ const modelSpec = {
         url: 'rest/monitorAdmin',
         fieldDefaults: {disableXssProtection: true},
         fields: [
-            {
-                name: 'code',
-                type: 'string',
-                required: true
-            },
-            {
-                name: 'name',
-                type: 'string',
-                required: true
-            },
-            {
-                name: 'metricType',
-                type: 'string',
-                lookupName: 'metricTypes',
-                required: true
-            },
-            {
-                name: 'metricUnit',
-                type: 'string'
-            },
-            {
-                name: 'warnThreshold',
-                type: 'int'
-            },
-            {
-                name: 'failThreshold',
-                type: 'int'
-            },
-            {
-                name: 'params',
-                type: 'json'
-            },
-            {
-                name: 'notes',
-                type: 'string'
-            },
-            {
-                name: 'active',
-                type: 'bool',
-                defaultValue: true,
-                required: true
-            },
-            {
-                name: 'sortOrder',
-                type: 'int'
-            },
-            {
-                name: 'lastUpdated',
-                type: 'date',
-                editable: false
-            },
-            {
-                name: 'lastUpdatedBy',
-                type: 'string',
-                editable: false
-            }
+            {...codeField, required: true},
+            {...nameField, required: true},
+            {...metricTypeField, lookupName: 'metricTypes', required: true},
+            {...metricUnitField},
+            {...warnThresholdField},
+            {...failThresholdField},
+            {...paramsField},
+            {...notesField},
+            {...activeField, defaultValue: true, required: true},
+            {...sortOrderField},
+            {...lastUpdatedField, editable: false},
+            {...lastUpdatedByField, editable: false}
         ]
     },
     unit: 'monitor',
     sortBy: 'sortOrder',
     filterFields: ['code', 'name'],
     columns: [
-        {field: 'active', ...boolCheckCol, width: 70},
-        {field: 'code', width: 150},
-        {field: 'name', width: 200},
-        {field: 'warnThreshold', ...numberCol, headerName: 'Warn', width: 130},
-        {field: 'failThreshold', ...numberCol, headerName: 'Fail', width: 130},
-        {field: 'metricUnit', headerName: 'Units', width: 100},
-        {field: 'notes', minWidth: 70, flex: true},
-        {field: 'lastUpdatedBy', width: 160, hidden: true},
-        {field: 'lastUpdated', ...dateTimeCol, hidden: true},
-        {field: 'sortOrder', ...numberCol, headerName: 'Sort', width: 100}
+        {...activeCol},
+        {...codeCol},
+        {...nameCol},
+        {...warnThresholdCol},
+        {...failThresholdCol},
+        {...metricUnitCol},
+        {...notesCol},
+        {...lastUpdatedByCol, hidden: true},
+        {...lastUpdatedCol, hidden: true},
+        {...sortOrderCol}
     ],
     editors: [
         {field: 'code'},
