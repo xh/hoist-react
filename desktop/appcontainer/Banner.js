@@ -6,7 +6,7 @@
  */
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {XH, uses, hoistCmp} from '@xh/hoist/core';
-import {div} from '@xh/hoist/cmp/layout';
+import {hframe, div} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -28,6 +28,7 @@ export const banner = hoistCmp.factory({
             icon,
             message,
             intent,
+            onClick,
             className,
             props
         } = model;
@@ -39,10 +40,19 @@ export const banner = hoistCmp.factory({
                 intent ? `xh-intent-${intent}` : `xh-intent-none`
             ),
             items: [
-                icon,
-                div({
-                    className: 'xh-banner__message',
-                    item: message
+                hframe({
+                    className: classNames(
+                        'xh-banner__click_target',
+                        onClick ? 'xh-banner__click_target--clickable' : null
+                    ),
+                    items: [
+                        icon,
+                        div({
+                            className: 'xh-banner__message',
+                            item: message,
+                            onClick
+                        })
+                    ]
                 }),
                 actionButton(),
                 dismissButton()
