@@ -70,18 +70,21 @@ export class AlertBannerService extends HoistService {
     /** Called from admin {@see AlertBannerModel} to support preview. */
     genBannerConfig({message, intent, iconName, enableClose}) {
         const icon = iconName ? Icon.icon({iconName, size: 'lg'}) : null,
-            msgLines = compact(map(message.split('\n'), trim));
+            msgLines = compact(map(message.split('\n'), trim)),
+            showFullAlert = () => XH.alert({
+                title: 'Alert',
+                icon,
+                message: div(msgLines.map(it => p(it)))
+            });
 
-        let actionButtonProps;
-        if (XH.isMobileApp || msgLines.length > 1) {
+        let actionButtonProps, onClick;
+        if (msgLines.length > 1) {
             actionButtonProps = {
                 text: XH.isMobileApp ? 'More' : 'Read more...',
-                onClick: () => XH.alert({
-                    title: 'Alert',
-                    icon,
-                    message: div(msgLines.map(it => p(it)))
-                })
+                onClick: showFullAlert
             };
+        } else if (XH.isMobileApp) {
+            onClick = showFullAlert;
         }
 
         return {
@@ -90,7 +93,8 @@ export class AlertBannerService extends HoistService {
             intent,
             icon,
             enableClose,
-            actionButtonProps
+            actionButtonProps,
+            onClick
         };
     }
 
