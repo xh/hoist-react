@@ -12,6 +12,7 @@
 
     &__fields {
       padding: var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-double-px);
+      overflow-y: auto;
 
       &--ro {
         color: var(--xh-text-color-muted);

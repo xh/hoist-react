@@ -74,7 +74,7 @@ const formPanel = hoistCmp.factory(
                         ],
                         omit: !XH.alertBannerService.enabled
                     }),
-                    vbox({
+                    div({
                         className: 'xh-alert-banner-panel__form-panel__fields',
                         items: [
                             formField({
