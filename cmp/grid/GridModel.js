@@ -1470,15 +1470,16 @@ export class GridModel extends HoistModel {
 
 /**
  * @typedef {Object} GridFilterModelConfig
- * @property {GridModel} c.gridModel - GridModel instance which owns this model.
- * @property {(Store|View)} c.bind - Store or cube View that should actually be filtered
- *      as column filters are applied. May be the same as `valueSource`. Provide 'null' if you
- *      wish to combine this model's filter with other filters, send it to the server, or otherwise
- *      observe and handle filter changes manually.
- * @property {(Store|View)} c.valueSource - Store or cube View to be used to provide suggested
- *      data values in column filters (if configured).
- * @property {(Filter|* |[]|function)} [c.initialFilter] - Configuration for a filter appropriate
- *      to be rendered and managed by GridFilterModel, or a function to produce the same.
+ * @property {(Store|View)} [c.bind] - Store / Cube View to be filtered as column filters are
+ *      applied. Defaulted to the gridModel's store.
+ * @property {boolean} [c.commitOnChange] - true (default) to update filters immediately after
+ *      each change made in the column-based filter UI.
+ * @property {(string[]|Object[])} [c.fieldSpecs] - specifies the fields this model supports
+ *      for filtering. Should be configs for {@see GridFilterFieldSpec}, string names to match with
+ *      Fields in bound Store/View, or omitted entirely to indicate that all fields should be
+ *      filter-enabled.
+ * @property {Object} [c.fieldSpecDefaults] - default properties to be assigned to all
+ *      `GridFilterFieldSpecs` created by this model.
  */
 
 /**
