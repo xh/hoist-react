@@ -1,5 +1,14 @@
 # Changelog
 
+## v44.0.0-SNAPSHOT - under development
+
+### 🐞 Bug Fixes
+
+* Always enforce a minimal `wait()` within `GridModel.autosizeAsync()` to ensure that the Grid has
+  reacted to any data changes and ag-Grid accurately reports on expanded rows to measure.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v43.1.0...develop)
+
 ## v43.1.0 - 2021-10-04
 
 ### 🎁 New Features
@@ -22,7 +31,7 @@
 
 * @blueprintjs/core `3.50 -> 3.51`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v43.0.2...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v43.0.2...v43.1.0)
 
 ## v43.0.2 - 2021-10-04
 
