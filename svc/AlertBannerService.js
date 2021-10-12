@@ -59,10 +59,17 @@ export class AlertBannerService extends HoistService {
             icon = iconName ? Icon.icon({iconName, size: 'lg'}) : null,
             {lastDismissed, onClose} = this;
 
+        // For mobile apps, open full message in an alert popup on tap. Not required for desktop
+        // as the character limit is sufficient to prevent overflow.
+        let onClick;
+        if (XH.isMobileApp) {
+            onClick = () => XH.alert({title: 'Alert', icon, message});
+        }
+
         if (!active || !message || (expires && expires < Date.now())) {
             XH.hideBanner(category);
         } else if (!lastDismissed || lastDismissed < updated) {
-            XH.showBanner({category, message, intent, icon, enableClose, onClose});
+            XH.showBanner({category, message, intent, icon, enableClose, onClick, onClose});
         }
     }
 
