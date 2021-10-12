@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {form} from '@xh/hoist/cmp/form';
-import {code, div, filler, hframe, p, placeholder, vbox} from '@xh/hoist/cmp/layout';
+import {code, div, filler, hframe, p, placeholder} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {banner} from '@xh/hoist/desktop/appcontainer/Banner';

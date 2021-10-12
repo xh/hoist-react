@@ -4,7 +4,9 @@
 
 ### 🎁 New Features
 
-* Admins can now configure and display an app-wide alert banner via the admin interface.
+* Admins can now configure an app-wide alert banner via a new tab in the Hoist Admin console.
+  Intended to alert users about planned maintenance / downtime, known problems with data or upstream
+  systems, and other similar use cases.
 
 ### 🐞 Bug Fixes
 
