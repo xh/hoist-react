@@ -2,6 +2,10 @@
 
 ## v44.0.0-SNAPSHOT - under development
 
+### 🎁 New Features
+
+* Admins can now configure and display an app-wide alert banner via the admin interface.
+
 ### 🐞 Bug Fixes
 
 * Always enforce a minimal `wait()` within `GridModel.autosizeAsync()` to ensure that the Grid has
