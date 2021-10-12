@@ -21,7 +21,7 @@ import {
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {dateTimeRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {LocalDate} from '@xh/hoist/utils/datetime';
+import {LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {AlertBannerModel} from './AlertBannerModel';
 import './AlertBannerPanel.scss';
 
@@ -70,7 +70,7 @@ const formPanel = hoistCmp.factory(
                         className: 'xh-alert-banner-panel__intro',
                         items: [
                             p(`Show an alert banner to all ${XH.appName} users.`),
-                            p(`Configure and preview below. Banner will appear to all users as soon as it is marked Active and saved.`)
+                            p(`Configure and preview below. Banner will appear to all users within ${XH.alertBannerService.interval/SECONDS}s once marked Active and saved.`)
                         ],
                         omit: !XH.alertBannerService.enabled
                     }),
