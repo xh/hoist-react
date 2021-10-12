@@ -90,8 +90,8 @@ export const timestampField = {
 //-----------------------
 // Columns
 //-----------------------
-const mbCol = {align: 'right', width: 150, renderer: numberRenderer({precision: 2, useCommas: true})},
-    pctCol = {align: 'right', width: 150, renderer: numberRenderer({precision: 2, useCommas: true, label: '%'})};
+const mbCol = {width: 150, renderer: numberRenderer({precision: 2, useCommas: true})},
+    pctCol = {width: 150, renderer: numberRenderer({precision: 2, useCommas: true, label: '%'})};
 
 export const metricUnitCol = {
     field: metricUnitField,

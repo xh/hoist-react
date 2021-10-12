@@ -4,12 +4,6 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
-import {ChartModel} from '@xh/hoist/cmp/chart';
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {fmtTime} from '@xh/hoist/format';
-import {checkMinVersion} from '@xh/hoist/utils/js';
-import {forOwn, sortBy} from 'lodash';
 import {
     freeHeapMbCol,
     maxHeapMbCol,
@@ -18,6 +12,12 @@ import {
     usedHeapMbCol,
     usedPctTotalCol
 } from '@xh/hoist/admin/columns';
+import {ChartModel} from '@xh/hoist/cmp/chart';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {HoistModel, XH} from '@xh/hoist/core';
+import {fmtTime} from '@xh/hoist/format';
+import {checkMinVersion} from '@xh/hoist/utils/js';
+import {forOwn, sortBy} from 'lodash';
 
 export class MemoryMonitorModel extends HoistModel {
 
@@ -38,7 +38,9 @@ export class MemoryMonitorModel extends HoistModel {
         this.gridModel = new GridModel({
             sortBy: 'timestamp|desc',
             enableExport: true,
+            filterModel: true,
             store: {idSpec: 'timestamp'},
+            colDefaults: {filterable: true},
             columns: [
                 timestampCol,
                 totalHeapMbCol,
