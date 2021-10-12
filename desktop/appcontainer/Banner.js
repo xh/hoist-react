@@ -23,6 +23,8 @@ import './Banner.scss';
 export const banner = hoistCmp.factory({
     displayName: 'Banner',
     model: uses(BannerModel),
+
+    /** @param {BannerModel} model */
     render({model}) {
         const {
             icon,
@@ -63,19 +65,21 @@ export const banner = hoistCmp.factory({
 });
 
 const actionButton = hoistCmp.factory(
+    /** @param {BannerModel} model */
     ({model}) => {
         const {actionButtonProps} = model;
         if (isEmpty(actionButtonProps)) return null;
 
         return button({
-            intent: 'primary',
-            minimal: false,
+            outlined: true,
+            className: 'xh-banner__action-button',
             ...actionButtonProps
         });
     }
 );
 
 const dismissButton = hoistCmp.factory(
+    /** @param {BannerModel} model */
     ({model}) => {
         const {enableClose, category, onClose} = model;
         if (!enableClose) return null;

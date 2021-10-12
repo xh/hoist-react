@@ -66,16 +66,25 @@ const formPanel = hoistCmp.factory(
                         ],
                         omit: XH.alertBannerService.enabled
                     }),
+                    div({
+                        className: 'xh-alert-banner-panel__intro',
+                        items: [
+                            p(`Show an alert banner to all ${XH.appName} users.`),
+                            p(`Configure and preview below. Banner will appear to all users as soon as it is marked Active and saved.`)
+                        ],
+                        omit: !XH.alertBannerService.enabled
+                    }),
                     vbox({
                         className: 'xh-alert-banner-panel__form-panel__fields',
                         items: [
                             formField({
-                                field: 'active',
-                                item: switchInput()
-                            }),
-                            formField({
                                 field: 'message',
-                                item: textArea({height: 100})
+                                item: textArea({
+                                    flex: 'none',
+                                    height: 150,
+                                    placeholder: 'Enter a brief message here.'
+                                }),
+                                info: 'First line shown in banner / any additional in pop-up.'
                             }),
                             formField({
                                 field: 'intent',
@@ -101,13 +110,17 @@ const formPanel = hoistCmp.factory(
                             }),
                             formField({
                                 field: 'enableClose',
+                                info: 'Allow users to close and hide this banner.',
                                 item: switchInput()
                             }),
                             formField({
                                 field: 'expires',
                                 info: relativeTimestamp({
                                     timestamp: formModel.values.expires,
-                                    options: {allowFuture: true}
+                                    options: {
+                                        allowFuture: true,
+                                        emptyResult: 'Set a date & time to automatically hide this banner.'
+                                    }
                                 }),
                                 item: dateInput({
                                     enableClear: true,
@@ -116,14 +129,21 @@ const formPanel = hoistCmp.factory(
                                 })
                             }),
                             formField({
+                                field: 'active',
+                                info: 'Enable and save to show this banner to all users.',
+                                item: switchInput()
+                            }),
+                            formField({
                                 omit: !formModel.values.updated,
                                 field: 'updated',
+                                className: 'xh-alert-banner-panel__form-panel__fields--ro',
                                 item: textInput(),
                                 readonlyRenderer: dateTimeRenderer({})
                             }),
                             formField({
                                 omit: !formModel.values.updatedBy,
                                 field: 'updatedBy',
+                                className: 'xh-alert-banner-panel__form-panel__fields--ro',
                                 item: textInput()
                             })
                         ]

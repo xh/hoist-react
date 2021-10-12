@@ -66,7 +66,11 @@ const actionButton = hoistCmp.factory(
         const {actionButtonProps} = model;
         if (isEmpty(actionButtonProps)) return null;
 
-        return button({...actionButtonProps});
+        return button({
+            className: 'xh-banner__action-button',
+            modifier: 'outline',
+            ...actionButtonProps
+        });
     }
 );
 

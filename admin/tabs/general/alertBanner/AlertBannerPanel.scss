@@ -12,11 +12,22 @@
 
     &__fields {
       padding: var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-double-px);
+
+      &--ro {
+        color: var(--xh-text-color-muted);
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
     }
 
     .xh-toolbar {
       background-color: transparent;
     }
+  }
+
+  &__intro {
+    padding: var(--xh-pad-px);
+    border-bottom: var(--xh-border-solid);
   }
 
   &__disabled-warning {

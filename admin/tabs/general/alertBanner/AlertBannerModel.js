@@ -8,8 +8,7 @@ import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {dateIs, lengthIs, required} from '@xh/hoist/data';
-import {Icon} from '@xh/hoist/icon';
+import {dateIs, required} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isEmpty} from 'lodash';
 
@@ -24,13 +23,7 @@ export class AlertBannerModel extends HoistModel {
             {
                 name: 'message',
                 initialValue: '',
-                rules: [
-                    lengthIs({max: 200}),
-                    {
-                        when: (fs, {active}) => active,
-                        check: required
-                    }
-                ]
+                rules: [{when: (fs, {active}) => active, check: required}]
             },
             {
                 name: 'intent',
@@ -40,7 +33,6 @@ export class AlertBannerModel extends HoistModel {
             {name: 'iconName', displayName: 'Icon'},
             {
                 name: 'expires',
-                displayName: 'Auto-expire',
                 rules: [dateIs({min: 'now'})]
             },
             {
@@ -176,9 +168,7 @@ export class AlertBannerModel extends HoistModel {
     //----------------
     @action
     syncPreview() {
-        const {message, intent, iconName, enableClose} = this.formModel.getData(),
-            icon = iconName ? Icon.icon({iconName, size: 'lg'}) : null;
-
-        this.bannerModel = new BannerModel({message, intent, icon, enableClose});
+        const conf = XH.alertBannerService.genBannerConfig(this.formModel.getData());
+        this.bannerModel = new BannerModel(conf);
     }
 }

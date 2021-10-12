@@ -4,11 +4,12 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {div, p} from '@xh/hoist/cmp/layout';
 import {HoistService, managed, XH} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {Icon} from '@xh/hoist/icon';
-import {isEmpty} from 'lodash';
+import {compact, isEmpty, map, trim} from 'lodash';
 
 /**
  * Service to display an app-wide alert banner, as configured via the Hoist Admin console.
@@ -56,21 +57,41 @@ export class AlertBannerService extends HoistService {
         }
 
         const {active, message, intent, iconName, enableClose, updated, expires} = results[0].value,
-            icon = iconName ? Icon.icon({iconName, size: 'lg'}) : null,
             {lastDismissed, onClose} = this;
-
-        // For mobile apps, open full message in an alert popup on tap. Not required for desktop
-        // as the character limit is sufficient to prevent overflow.
-        let onClick;
-        if (XH.isMobileApp) {
-            onClick = () => XH.alert({title: 'Alert', icon, message});
-        }
 
         if (!active || !message || (expires && expires < Date.now())) {
             XH.hideBanner(category);
         } else if (!lastDismissed || lastDismissed < updated) {
-            XH.showBanner({category, message, intent, icon, enableClose, onClick, onClose});
+            const conf = this.genBannerConfig({message, intent, iconName, enableClose});
+            XH.showBanner({...conf, onClose});
         }
+    }
+
+    /** Called from admin {@see AlertBannerModel} to support preview. */
+    genBannerConfig({message, intent, iconName, enableClose}) {
+        const icon = iconName ? Icon.icon({iconName, size: 'lg'}) : null,
+            msgLines = compact(map(message.split('\n'), trim));
+
+        let actionButtonProps;
+        if (XH.isMobileApp || msgLines.length > 1) {
+            actionButtonProps = {
+                text: XH.isMobileApp ? 'More' : 'Read more...',
+                onClick: () => XH.alert({
+                    title: 'Alert',
+                    icon,
+                    message: div(msgLines.map(it => p(it)))
+                })
+            };
+        }
+
+        return {
+            message: msgLines[0],
+            category: 'xhAlertBanner',
+            intent,
+            icon,
+            enableClose,
+            actionButtonProps
+        };
     }
 
     onClose = () => {

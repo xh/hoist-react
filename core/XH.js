@@ -492,9 +492,8 @@ class XHClass extends HoistBase {
      * @param {Banner-onCloseFn} [config.onClose] - Callback function triggered when the user
      *      clicks the close button. (Note, banners closed via `XH.hideBanner()` or when the max
      *      number of banners shown is exceed will NOT trigger this callback.)
-     * @param {function} [config.actionFn] - If provided, banner will render an action button
-     *      which triggers this function.
-     * @param {Object} [config.actionButtonProps] - Set the properties of the action button
+     * @param {Object} [config.actionButtonProps] - if provided, will render a button within the
+     *      banner to enable the user to take some specific action right from the banner.
      * @param {...*} [config.rest] - additional properties to pass to the banner component
      * @returns {BannerModel}
      */
