@@ -370,7 +370,9 @@ export class GridModel extends HoistModel {
                 mode: GridAutosizeMode.ON_SIZING_MODE_CHANGE,
                 includeCollapsedChildren: false,
                 showMask: false,
-                bufferPx: 5,
+                // Larger buffer on mobile (perhaps counterintuitively) to minimize clipping due to
+                // any autosize mis-calc. Manual col resizing on mobile is super annoying!
+                bufferPx: XH.isMobileApp ? 10 : 5,
                 fillMode: 'none'
             }
         );
@@ -1167,8 +1169,13 @@ export class GridModel extends HoistModel {
 
         if (showMask) {
             agApi.showLoadingOverlay();
-            await wait();
         }
+
+        // Always wait a tick to ensure `GridLocalModel.syncData()` reaction has run and ag-Grid
+        // has been asked to render the current recordset into visible rows for measuring. Also
+        // ensures that the mask overlay is rendered (if requested).
+        await wait();
+
         try {
             await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
         } finally {
