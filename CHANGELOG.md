@@ -7,6 +7,9 @@
 * Admins can now configure an app-wide alert banner via a new tab in the Hoist Admin console.
   Intended to alert users about planned maintenance / downtime, known problems with data or upstream
   systems, and other similar use cases.
+* Minor re-org of the Hoist Admin console tabs. Panels relating primarily to server-side features
+  (including logging) are now grouped under a top-level "Server" tab. Configs have moved under
+  "General" with the new Alert Banner feature.
 
 ### 🐞 Bug Fixes
 

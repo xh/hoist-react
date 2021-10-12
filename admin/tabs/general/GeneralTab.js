@@ -4,15 +4,14 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {configPanel} from '@xh/hoist/admin/tabs/general/config/ConfigPanel';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {aboutPanel} from './about/AboutPanel';
-import {ehCachePanel} from './ehcache/EhCachePanel';
-import {servicePanel} from './services/ServicePanel';
-import {userPanel} from './users/UserPanel';
-import {webSocketPanel} from './websocket/WebSocketPanel';
 import {alertBannerPanel} from './alertBanner/AlertBannerPanel';
+import {userPanel} from './users/UserPanel';
+
 
 export const generalTab = hoistCmp.factory(
     () => tabContainer({
@@ -21,10 +20,8 @@ export const generalTab = hoistCmp.factory(
             switcher: {orientation: 'left'},
             tabs: [
                 {id: 'about', icon: Icon.info(), content: aboutPanel},
-                {id: 'services', icon: Icon.gears(), content: servicePanel},
-                {id: 'ehCache', icon: Icon.database(), title: 'Caches', content: ehCachePanel},
+                {id: 'config', icon: Icon.settings(), content: configPanel},
                 {id: 'users', icon: Icon.users(), content: userPanel},
-                {id: 'webSockets', title: 'WebSockets', icon: Icon.bolt(), content: webSocketPanel},
                 {id: 'alertBanner', icon: Icon.bullhorn(), content: alertBannerPanel}
             ]
         }
