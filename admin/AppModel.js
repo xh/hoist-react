@@ -53,7 +53,8 @@ export class AppModel extends HoistAppModel {
                     {name: 'services', path: '/services'},
                     {name: 'ehCache', path: '/ehCache'},
                     {name: 'users', path: '/users'},
-                    {name: 'webSockets', path: '/webSockets'}
+                    {name: 'webSockets', path: '/webSockets'},
+                    {name: 'alertBanner', path: '/alertBanner'}
                 ]
             },
             {

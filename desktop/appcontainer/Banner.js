@@ -6,7 +6,7 @@
  */
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {XH, uses, hoistCmp} from '@xh/hoist/core';
-import {div} from '@xh/hoist/cmp/layout';
+import {hframe, div} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -23,11 +23,14 @@ import './Banner.scss';
 export const banner = hoistCmp.factory({
     displayName: 'Banner',
     model: uses(BannerModel),
+
+    /** @param {BannerModel} model */
     render({model}) {
         const {
             icon,
             message,
             intent,
+            onClick,
             className,
             props
         } = model;
@@ -39,10 +42,19 @@ export const banner = hoistCmp.factory({
                 intent ? `xh-intent-${intent}` : `xh-intent-none`
             ),
             items: [
-                icon,
-                div({
-                    className: 'xh-banner__message',
-                    item: message
+                hframe({
+                    className: classNames(
+                        'xh-banner__click_target',
+                        onClick ? 'xh-banner__click_target--clickable' : null
+                    ),
+                    items: [
+                        icon,
+                        div({
+                            className: 'xh-banner__message',
+                            item: message,
+                            onClick
+                        })
+                    ]
                 }),
                 actionButton(),
                 dismissButton()
@@ -53,19 +65,21 @@ export const banner = hoistCmp.factory({
 });
 
 const actionButton = hoistCmp.factory(
+    /** @param {BannerModel} model */
     ({model}) => {
         const {actionButtonProps} = model;
         if (isEmpty(actionButtonProps)) return null;
 
         return button({
-            intent: 'primary',
-            minimal: false,
+            outlined: true,
+            className: 'xh-banner__action-button',
             ...actionButtonProps
         });
     }
 );
 
 const dismissButton = hoistCmp.factory(
+    /** @param {BannerModel} model */
     ({model}) => {
         const {enableClose, category, onClose} = model;
         if (!enableClose) return null;

@@ -12,6 +12,7 @@ import {ehCachePanel} from './ehcache/EhCachePanel';
 import {servicePanel} from './services/ServicePanel';
 import {userPanel} from './users/UserPanel';
 import {webSocketPanel} from './websocket/WebSocketPanel';
+import {alertBannerPanel} from './alertBanner/AlertBannerPanel';
 
 export const generalTab = hoistCmp.factory(
     () => tabContainer({
@@ -23,7 +24,8 @@ export const generalTab = hoistCmp.factory(
                 {id: 'services', icon: Icon.gears(), content: servicePanel},
                 {id: 'ehCache', icon: Icon.database(), title: 'Caches', content: ehCachePanel},
                 {id: 'users', icon: Icon.users(), content: userPanel},
-                {id: 'webSockets', title: 'WebSockets', icon: Icon.bolt(), content: webSocketPanel}
+                {id: 'webSockets', title: 'WebSockets', icon: Icon.bolt(), content: webSocketPanel},
+                {id: 'alertBanner', icon: Icon.bullhorn(), content: alertBannerPanel}
             ]
         }
     })

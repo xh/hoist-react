@@ -2,6 +2,12 @@
 
 ## v44.0.0-SNAPSHOT - under development
 
+### 🎁 New Features
+
+* Admins can now configure an app-wide alert banner via a new tab in the Hoist Admin console.
+  Intended to alert users about planned maintenance / downtime, known problems with data or upstream
+  systems, and other similar use cases.
+
 ### 🐞 Bug Fixes
 
 * Always enforce a minimal `wait()` within `GridModel.autosizeAsync()` to ensure that the Grid has
