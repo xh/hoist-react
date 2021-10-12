@@ -17,7 +17,7 @@ export const aboutPanel = hoistCmp.factory(
     () => div({
         className: 'xh-admin-about-panel',
         items: [
-            h2(Icon.info(), 'About This Application'),
+            h2(Icon.info(), 'About this Application'),
             ...renderTables(),
             renderBlurb()
         ]
