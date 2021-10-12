@@ -6,25 +6,25 @@
  */
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Column, ColumnGroup, GridAutosizeMode, TreeStyle} from '@xh/hoist/cmp/grid';
-import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistModel, managed, XH, TaskObserver} from '@xh/hoist/core';
-import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
+import {br, fragment} from '@xh/hoist/cmp/layout';
+import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
+import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
-import {action, makeObservable, bindable, observable, when} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
+    apiDeprecated,
     deepFreeze,
     ensureUnique,
     logWithDebug,
     throwIf,
     warnIf,
     withDebug,
-    withDefault,
-    apiDeprecated
+    withDefault
 } from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
@@ -1233,7 +1233,7 @@ export class GridModel extends HoistModel {
     // in this case GridModel should work out the required Store fields from column definitions.
     parseAndSetColumnsAndStore(colConfigs, store = {}) {
 
-        // 1) validate configs.
+        // 1) Validate configs.
         this.validateStoreConfig(store);
         this.validateColConfigs(colConfigs);
 
@@ -1315,16 +1315,23 @@ export class GridModel extends HoistModel {
     }
 
 
-    // Selectively enhance raw column configs with field-level metadata from this model's Store
-    // Fields. Takes store as an optional explicit argument to support calling from
-    // parseAndSetColumnsAndStore() with a raw store config, prior to actual store construction.
+    // Selectively enhance raw column configs with field-level metadata from store.fields and/or
+    // field config partials provided by the column configs themselves.
     enhanceColConfigsFromStore(colConfigs, storeOrConfig) {
         const store = storeOrConfig || this.store,
-            // Nullsafe no-op for first setColumns() call from within parseAndSetColumnsAndStore(),
-            // where store has not yet been set (but columns have already been enhanced).
-            storeFields = store?.fields;
+            storeFields = store?.fields,
+            fieldsByName = {};
 
-        if (isEmpty(storeFields)) return colConfigs;
+        // Extract field definitions in all supported forms: pull Field instances/configs from
+        // storeFields first, then fill in with any col-level `field` config objects.
+        storeFields?.forEach(sf => fieldsByName[sf.name] = sf);
+        colConfigs.forEach(cc => {
+            if (isPlainObject(cc.field) && !fieldsByName[cc.field.name]) {
+                fieldsByName[cc.field.name] = cc.field;
+            }
+        });
+
+        if (isEmpty(fieldsByName)) return colConfigs;
 
         const numTypes = [FieldType.INT, FieldType.NUMBER],
             dateTypes = [FieldType.DATE, FieldType.LOCAL_DATE];
@@ -1337,8 +1344,9 @@ export class GridModel extends HoistModel {
                 };
             }
 
-            // Note this routine currently works with either Field instances or configs.
-            const field = storeFields.find(f => f.name === col.field);
+            const colFieldName = isPlainObject(col.field) ? col.field.name : col.field,
+                field = fieldsByName[colFieldName];
+
             if (!field) return col;
 
             const {displayName, type} = field,
@@ -1370,7 +1378,7 @@ export class GridModel extends HoistModel {
         const newFields = [];
         forEach(leafColsByFieldName, (col, name) => {
             if (name !== 'id' && !storeFieldNames.includes(name)) {
-                newFields.push({name, ...col.fieldSpec});
+                newFields.push({name, displayName: col.displayName, ...col.fieldSpec});
             }
         });
 
@@ -1467,15 +1475,16 @@ export class GridModel extends HoistModel {
 
 /**
  * @typedef {Object} GridFilterModelConfig
- * @property {GridModel} c.gridModel - GridModel instance which owns this model.
- * @property {(Store|View)} c.bind - Store or cube View that should actually be filtered
- *      as column filters are applied. May be the same as `valueSource`. Provide 'null' if you
- *      wish to combine this model's filter with other filters, send it to the server, or otherwise
- *      observe and handle filter changes manually.
- * @property {(Store|View)} c.valueSource - Store or cube View to be used to provide suggested
- *      data values in column filters (if configured).
- * @property {(Filter|* |[]|function)} [c.initialFilter] - Configuration for a filter appropriate
- *      to be rendered and managed by GridFilterModel, or a function to produce the same.
+ * @property {(Store|View)} [c.bind] - Store / Cube View to be filtered as column filters are
+ *      applied. Defaulted to the gridModel's store.
+ * @property {boolean} [c.commitOnChange] - true (default) to update filters immediately after
+ *      each change made in the column-based filter UI.
+ * @property {(string[]|Object[])} [c.fieldSpecs] - specifies the fields this model supports
+ *      for filtering. Should be configs for {@see GridFilterFieldSpec}, string names to match with
+ *      Fields in bound Store/View, or omitted entirely to indicate that all fields should be
+ *      filter-enabled.
+ * @property {Object} [c.fieldSpecDefaults] - default properties to be assigned to all
+ *      `GridFilterFieldSpecs` created by this model.
  */
 
 /**
