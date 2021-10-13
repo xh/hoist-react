@@ -31,8 +31,8 @@ export class AlertBannerService extends HoistService {
         return this.interval > 0;
     }
 
-    get lastDismissed() {
-        return XH.localStorageService.get('xhAlertBanner.lastDismissed');
+    get lastDismissedId() {
+        return XH.localStorageService.get('xhAlertBanner.lastDismissedId');
     }
 
     async initAsync() {
@@ -56,14 +56,14 @@ export class AlertBannerService extends HoistService {
             return;
         }
 
-        const {active, message, intent, iconName, enableClose, updated, expires} = results[0].value,
-            {lastDismissed, onClose} = this;
+        const {id, active, message, intent, iconName, enableClose, expires} = results[0].value,
+            {lastDismissedId} = this;
 
         if (!active || !message || (expires && expires < Date.now())) {
             XH.hideBanner(category);
-        } else if (!lastDismissed || lastDismissed < updated) {
+        } else if (!lastDismissedId || lastDismissedId < id) {
             const conf = this.genBannerConfig({message, intent, iconName, enableClose});
-            XH.showBanner({...conf, onClose});
+            XH.showBanner({...conf, onClose: () => this.onClose(id)});
         }
     }
 
@@ -98,7 +98,7 @@ export class AlertBannerService extends HoistService {
         };
     }
 
-    onClose = () => {
-        XH.localStorageService.set('xhAlertBanner.lastDismissed', Date.now());
+    onClose = (id) => {
+        XH.localStorageService.set('xhAlertBanner.lastDismissedId', id);
     }
 }

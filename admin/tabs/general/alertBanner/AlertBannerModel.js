@@ -15,6 +15,7 @@ import {isEmpty} from 'lodash';
 export class AlertBannerModel extends HoistModel {
 
     token;
+    savedValue;
 
     @managed
     formModel = new FormModel({
@@ -103,36 +104,20 @@ export class AlertBannerModel extends HoistModel {
             };
 
         this.token = token;
+        this.savedValue = value;
         formModel.init(initialValues);
     }
 
     async saveAsync() {
-        const {formModel, token} = this;
+        const {formModel, token, savedValue} = this,
+            {active, message, intent, iconName, enableClose, expires, created} = formModel.getData();
 
         await formModel.validateAsync();
         if (!formModel.isValid) return;
 
-        const {active, message, intent, iconName, enableClose, expires, created} = formModel.getData(),
-            payload = {
-                type: 'xhAlertBanner',
-                name: 'xhAlertBanner',
-                description: 'Configuration for system alert banner, managed through the admin console.',
-                value: {
-                    active,
-                    message,
-                    intent,
-                    iconName,
-                    enableClose,
-                    expires: expires?.getTime(),
-                    created: created ?? Date.now(),
-                    updated: Date.now(),
-                    updatedBy: XH.getUsername()
-                }
-            };
-
         // Force admin to confirm if actually activating a banner.
         let confirmed = true;
-        if (XH.alertBannerService.enabled && active && formModel.fields.active.isDirty) {
+        if (XH.alertBannerService.enabled && active && !savedValue?.active) {
             confirmed = await XH.confirm({
                 message: fragment(
                     p('This change will cause the previewed alert banner to be shown to ALL users of this application.'),
@@ -145,8 +130,44 @@ export class AlertBannerModel extends HoistModel {
                 }
             });
         }
-
         if (!confirmed) return;
+
+        // Ask admin if they want to reshow when modifying an already active banner
+        let id = savedValue?.id ?? 1;
+        if (savedValue?.active && savedValue?.enableClose) {
+            const incrementId = await XH.confirm({
+                message: p('Show banner again for users who have already closed?'),
+                cancelProps: {
+                    text: 'Save',
+                    outlined: true,
+                    autoFocus: false
+                },
+                confirmProps: {
+                    text: 'Save and show again',
+                    outlined: true,
+                    autoFocus: false
+                }
+            });
+            if (incrementId) id++;
+        }
+
+        const payload = {
+            type: 'xhAlertBanner',
+            name: 'xhAlertBanner',
+            description: 'Configuration for system alert banner, managed through the admin console.',
+            value: {
+                id,
+                active,
+                message,
+                intent,
+                iconName,
+                enableClose,
+                expires: expires?.getTime(),
+                created: created ?? Date.now(),
+                updated: Date.now(),
+                updatedBy: XH.getUsername()
+            }
+        };
 
         if (token) {
             await XH.jsonBlobService.updateAsync(token, payload);
