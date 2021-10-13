@@ -136,14 +136,19 @@ export class AlertBannerModel extends HoistModel {
         let id = savedValue?.id ?? 1;
         if (savedValue?.active && savedValue?.enableClose) {
             const incrementId = await XH.confirm({
-                message: p('Show banner again for users who have already closed?'),
+                message: fragment(
+                    p('You are updating an already-active banner. Some users might have already read and closed this alert.'),
+                    p('Choose below if you would like to show this banner again to all users, including those who have already closed it once.'),
+                    p('(Users who have not yet seen or closed this alert will be shown the new version either way.)')
+                ),
                 cancelProps: {
-                    text: 'Save',
+                    text: 'Update quietly',
                     outlined: true,
                     autoFocus: false
                 },
                 confirmProps: {
-                    text: 'Save and show again',
+                    text: 'Update and show again to all users',
+                    intent: 'primary',
                     outlined: true,
                     autoFocus: false
                 }
