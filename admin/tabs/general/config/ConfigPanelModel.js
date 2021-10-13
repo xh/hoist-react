@@ -5,9 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
-import {makeObservable, observable, action} from '@xh/hoist/mobx';
 import {
     addAction,
     cloneAction,
@@ -16,12 +15,13 @@ import {
     RestGridModel,
     RestStore
 } from '@xh/hoist/desktop/cmp/rest';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isNil, truncate} from 'lodash';
+import {DifferModel} from '../../../differ/DifferModel';
+import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
 
-import {DifferModel} from '../../differ/DifferModel';
-import {RegroupDialogModel} from '../../regroup/RegroupDialogModel';
 
-export class ConfigTabModel extends HoistModel {
+export class ConfigPanelModel extends HoistModel {
 
     persistWith = {localStorageKey: 'xhAdminConfigState'};
 

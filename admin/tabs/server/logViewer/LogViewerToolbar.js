@@ -9,6 +9,7 @@ import {hoistCmp, XH} from '@xh/hoist/core';
 import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtTimeZone} from '@xh/hoist/utils/impl';
+import {checkMinVersion} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon/';
 import {button} from '@xh/hoist/desktop/cmp/button';
 
@@ -16,7 +17,8 @@ export const logViewerToolbar = hoistCmp.factory(
     ({model}) => {
         const envSvc = XH.environmentService,
             zone = envSvc.get('serverTimeZone'),
-            offset = envSvc.get('serverTimeZoneOffset');
+            offset = envSvc.get('serverTimeZoneOffset'),
+            hasMinHoistCoreVersion = checkMinVersion(envSvc.get('hoistCoreVersion'), '9.4');
 
         return toolbar(
             label('Start line:'),
@@ -51,7 +53,8 @@ export const logViewerToolbar = hoistCmp.factory(
                 text: 'Download',
                 icon: Icon.download(),
                 disabled: !model.selectedRecord,
-                onClick: () => model.downloadSelectedAsync()
+                onClick: () => model.downloadSelectedAsync(),
+                omit: !hasMinHoistCoreVersion
             }),
             filler(),
             span({

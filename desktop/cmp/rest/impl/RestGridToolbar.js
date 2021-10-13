@@ -39,6 +39,7 @@ export const restGridToolbar = hoistCmp.factory({
                 gridModel,
                 unit
             }),
+            '-',
             storeFilterField({
                 gridModel,
                 matchMode: 'any',
