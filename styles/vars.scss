@@ -720,6 +720,9 @@ body {
   }
 
   &.xh-mobile {
+    --xh-tbar-min-size: var(--tbar-min-size, 40);
+    --xh-tbar-min-size-px: calc(var(--xh-tbar-min-size) * 1px);
+
     &.xh-dark {
       --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
     }

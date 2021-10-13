@@ -1,17 +1,20 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2021 Extremely Heavy Industries Inc.
+ */
 .xh-tab {
-  .xh-tab-icon {
-    height: 28px;
-    line-height: 26px;
-    font-size: 24px;
+  font-size: var(--xh-button-font-size-px);
+
+  // Icon with title
+  .xh-icon:not(:last-child) {
+    margin-right: var(--xh-pad-half-px);
   }
 
-  .xh-tab-label:first-child {
-    font-size: 16px;
-  }
-
-  .xh-tab-icon + .xh-tab-label {
-    font-size: 10px;
-    line-height: 1;
+  // Icon without title
+  .xh-icon:last-child {
+    font-size: 20px;
   }
 }
 
@@ -29,6 +32,23 @@
 
   &--bottom .tabbar {
     border-top: var(--xh-border-solid);
+  }
+
+  .tabbar {
+    height: var(--xh-tbar-min-size-px);
+    line-height: var(--xh-tbar-min-size-px);
+
+    &__button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: var(--xh-tbar-min-size-px);
+      line-height: var(--xh-tbar-min-size-px);
+    }
+
+    &__content {
+      bottom: var(--xh-tbar-min-size-px);
+    }
   }
 
   // Tab visibility is managed via TabContainerModel.renderMode, rather than Onsen's internal state.
