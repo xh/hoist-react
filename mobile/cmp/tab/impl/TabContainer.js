@@ -58,8 +58,8 @@ function renderTabModel(tabModel) {
             key: id,
             className: 'xh-tab',
             items: [
-                div({className: 'xh-tab-icon', item: icon, omit: !icon}),
-                div({className: 'xh-tab-label', item: title})
+                icon,
+                div({className: 'xh-tab__label', item: title, omit: !title})
             ]
         })
     };
