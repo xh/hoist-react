@@ -1,6 +1,6 @@
 # Changelog
 
-## v44.0.0-SNAPSHOT - under development
+## v43.2.0 - 2021-10-14
 
 ### 🎁 New Features
 
@@ -16,7 +16,8 @@
 * Always enforce a minimal `wait()` within `GridModel.autosizeAsync()` to ensure that the Grid has
   reacted to any data changes and ag-Grid accurately reports on expanded rows to measure.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v43.1.0...develop)
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v43.1.0...v43.2.0)
 
 ## v43.1.0 - 2021-10-04
 
