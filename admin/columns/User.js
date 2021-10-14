@@ -5,98 +5,51 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {FieldType} from '@xh/hoist/data';
+import {boolCheckCol} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 
 const {STRING, BOOL} = FieldType;
 
-//-----------------------
-// Fields
-//-----------------------
-export const userField = {
-    name: 'user',
-    type: STRING
-};
-
-export const usernameField = {
-    name: 'username',
-    type: STRING,
-    displayName: 'User',
-    isDimension: true,
-    aggregator: 'UNIQUE'
-};
-
-export const emailField = {
-    name: 'email',
-    type: STRING
-};
-
-export const displayNameField = {
-    name: 'displayName',
-    type: STRING
-};
-
-export const rolesField = {
-    name: 'roles',
-    type: STRING
-};
-
-export const impersonatingField = {
-    name: 'impersonating',
-    type: STRING
-};
-
-export const impersonatingFlagField = {
-    name: 'impersonatingFlag',
-    type: BOOL
-};
-
-export const authUserField = {
-    name: 'authUser',
-    type: STRING
-};
-
-export const apparentUserField = {
-    name: 'apparentUser',
-    type: STRING
-};
-
-//-----------------------
-// Columns
-//-----------------------
-export const userCol = {
-    field: userField,
+export const user = {
+    field: {name: 'user', type: STRING},
     width: 250
 };
 
-export const usernameCol = {
-    field: usernameField,
+export const username = {
+    field: {
+        name: 'username',
+        type: STRING,
+        displayName: 'User',
+        isDimension: true,
+        aggregator: 'UNIQUE'
+    },
     width: 160
 };
 
-export const emailCol = {
-    field: emailField,
+export const email = {
+    field: {name: 'email', type: STRING},
     width: 200
 };
 
-export const displayNameCol = {
-    field: displayNameField,
+export const displayName = {
+    field: {name: 'displayName', type: STRING},
     width: 200
 };
 
-export const rolesCol = {
-    field: rolesField,
+export const roles = {
+    field: {name: 'roles', type: STRING},
     minWidth: 130,
     flex: true,
     tooltip: true
 };
 
-export const impersonatingCol = {
-    field: impersonatingField,
+export const impersonating = {
+    field: {name: 'impersonating', type: STRING},
     width: 140
 };
 
-export const impersonatingFlagCol = {
-    field: impersonatingFlagField,
+export const impersonatingFlag = {
+    field: {name: 'impersonatingFlag', type: BOOL},
     headerName: Icon.impersonate(),
     headerTooltip: 'Indicates if the user was impersonating another user during tracked activity.',
     excludeFromExport: true,
@@ -114,12 +67,8 @@ export const impersonatingFlagCol = {
     }
 };
 
-export const authUserCol = {
-    field: authUserField,
-    width: 250
-};
-
-export const apparentUserCol = {
-    field: apparentUserField,
-    width: 250
+export const active = {
+    field: {name: 'active', type: BOOL},
+    ...boolCheckCol,
+    width: 70
 };

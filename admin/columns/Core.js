@@ -8,63 +8,35 @@ import {FieldType} from '@xh/hoist/data';
 
 const {STRING} = FieldType;
 
-//-----------------------
-// Fields
-//-----------------------
-export const nameField = {
-    name: 'name',
-    type: STRING
-};
-
-export const typeField = {
-    name: 'type',
-    type: STRING
-};
-
-export const noteField = {
-    name: 'note',
-    type: STRING,
-    displayName: 'Notes'
-};
-
-export const notesField = {
-    name: 'notes',
-    type: STRING
-};
-
-export const descriptionField = {
-    name: 'description',
-    type: STRING
-};
-
-//-----------------------
-// Columns
-//-----------------------
-export const nameCol = {
-    field: nameField,
+export const name = {
+    field: {name: 'name', type: STRING},
     width: 200
 };
 
-export const typeCol = {
-    field: typeField,
+export const type = {
+    field: {name: 'type', type: STRING},
     width: 100
 };
 
-export const noteCol = {
-    field: noteField,
-    minWidth: 60,
-    flex: true,
-    tooltip: true
-};
-
-export const notesCol = {
-    field: notesField,
-    minWidth: 60,
-    flex: true,
-    tooltip: true
-};
-
-export const descriptionCol = {
-    field: descriptionField,
+export const description = {
+    field: {name: 'description', type: STRING},
     width: 200
+};
+
+export const notes = {
+    field: {name: 'notes', type: STRING},
+    minWidth: 60,
+    flex: true,
+    tooltip: true
+};
+
+export const note = {
+    field: {
+        name: 'note',
+        type: STRING,
+        displayName: 'Notes'
+    },
+    minWidth: 60,
+    flex: true,
+    tooltip: true
 };

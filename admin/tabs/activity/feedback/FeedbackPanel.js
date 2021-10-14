@@ -7,22 +7,7 @@
 import {hoistCmp} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {deleteAction, restGrid} from '@xh/hoist/desktop/cmp/rest';
-import {
-    appEnvironmentCol,
-    appEnvironmentField,
-    appVersionCol,
-    appVersionField,
-    browserCol,
-    browserField,
-    dateCreatedCol,
-    dateCreatedField,
-    deviceCol,
-    deviceField,
-    msgCol,
-    msgField,
-    usernameCol,
-    usernameField
-} from '@xh/hoist/admin/columns';
+import * as Col from '@xh/hoist/admin/columns';
 
 export const feedbackPanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
@@ -36,13 +21,13 @@ const modelSpec = {
     store: {
         url: 'rest/feedbackAdmin',
         fields: [
-            {...usernameField},
-            {...msgField},
-            {...browserField},
-            {...deviceField},
-            {...appVersionField, displayName: 'Version'},
-            {...appEnvironmentField},
-            {...dateCreatedField, displayName: 'Date'}
+            {...Col.username.field},
+            {...Col.msg.field},
+            {...Col.browser.field},
+            {...Col.device.field},
+            {...Col.appVersion.field, displayName: 'Version'},
+            {...Col.appEnvironment.field},
+            {...Col.dateCreated.field, displayName: 'Date'}
         ]
     },
     toolbarActions: [deleteAction],
@@ -52,13 +37,13 @@ const modelSpec = {
     sortBy: 'dateCreated|desc',
     filterFields: ['username', 'msg'],
     columns: [
-        {...usernameCol},
-        {...browserCol},
-        {...deviceCol},
-        {...appVersionCol, displayName: 'Version'},
-        {...appEnvironmentCol},
-        {...msgCol},
-        {...dateCreatedCol, displayName: 'Date'}
+        {...Col.username},
+        {...Col.browser},
+        {...Col.device},
+        {...Col.appVersion, displayName: 'Version'},
+        {...Col.appEnvironment},
+        {...Col.msg},
+        {...Col.dateCreated, displayName: 'Date'}
     ],
     editors: [
         {field: 'username'},

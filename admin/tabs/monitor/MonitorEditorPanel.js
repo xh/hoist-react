@@ -7,30 +7,8 @@
 import {hoistCmp} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
-import {
-    activeCol,
-    activeField,
-    codeCol,
-    codeField,
-    failThresholdCol,
-    failThresholdField,
-    lastUpdatedByCol,
-    lastUpdatedByField,
-    lastUpdatedCol,
-    lastUpdatedField,
-    metricTypeField,
-    metricUnitCol,
-    metricUnitField,
-    nameCol,
-    nameField,
-    notesCol,
-    notesField,
-    paramsField,
-    sortOrderCol,
-    sortOrderField,
-    warnThresholdCol,
-    warnThresholdField
-} from '@xh/hoist/admin/columns';
+import * as Col from '@xh/hoist/admin/columns';
+import * as MonitorCol from './MonitorColumns';
 
 export const monitorEditorPanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
@@ -44,34 +22,36 @@ const modelSpec = {
         url: 'rest/monitorAdmin',
         fieldDefaults: {disableXssProtection: true},
         fields: [
-            {...codeField, required: true},
-            {...nameField, required: true},
-            {...metricTypeField, lookupName: 'metricTypes', required: true},
-            {...metricUnitField},
-            {...warnThresholdField},
-            {...failThresholdField},
-            {...paramsField},
-            {...notesField},
-            {...activeField, defaultValue: true, required: true},
-            {...sortOrderField},
-            {...lastUpdatedField, editable: false},
-            {...lastUpdatedByField, editable: false}
+            {...MonitorCol.code.field, required: true},
+            {...MonitorCol.metricUnit.field},
+            {...MonitorCol.warnThreshold.field},
+            {...MonitorCol.failThreshold.field},
+            {...MonitorCol.sortOrder.field},
+
+            {...Col.name.field, required: true},
+            {...Col.notes.field},
+            {...Col.active.field, defaultValue: true, required: true},
+            {...Col.lastUpdated.field, editable: false},
+            {...Col.lastUpdatedBy.field, editable: false},
+
+            {name: 'metricType', type: 'string', lookupName: 'metricTypes', required: true},
+            {name: 'params', type: 'json'}
         ]
     },
     unit: 'monitor',
     sortBy: 'sortOrder',
     filterFields: ['code', 'name'],
     columns: [
-        {...activeCol},
-        {...codeCol},
-        {...nameCol},
-        {...warnThresholdCol},
-        {...failThresholdCol},
-        {...metricUnitCol},
-        {...notesCol},
-        {...lastUpdatedByCol, hidden: true},
-        {...lastUpdatedCol, hidden: true},
-        {...sortOrderCol}
+        {...Col.active},
+        {...MonitorCol.code},
+        {...Col.name},
+        {...MonitorCol.warnThreshold},
+        {...MonitorCol.failThreshold},
+        {...MonitorCol.metricUnit},
+        {...Col.notes},
+        {...Col.lastUpdatedBy, hidden: true},
+        {...Col.lastUpdated, hidden: true},
+        {...MonitorCol.sortOrder}
     ],
     editors: [
         {field: 'code'},

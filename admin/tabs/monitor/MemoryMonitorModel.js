@@ -4,20 +4,13 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {
-    freeHeapMbCol,
-    maxHeapMbCol,
-    timestampCol,
-    totalHeapMbCol,
-    usedHeapMbCol,
-    usedPctTotalCol
-} from '@xh/hoist/admin/columns';
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, XH} from '@xh/hoist/core';
 import {fmtTime} from '@xh/hoist/format';
 import {checkMinVersion} from '@xh/hoist/utils/js';
 import {forOwn, sortBy} from 'lodash';
+import * as MonitorCol from './MonitorColumns';
 
 export class MemoryMonitorModel extends HoistModel {
 
@@ -42,12 +35,12 @@ export class MemoryMonitorModel extends HoistModel {
             store: {idSpec: 'timestamp'},
             colDefaults: {filterable: true},
             columns: [
-                timestampCol,
-                totalHeapMbCol,
-                maxHeapMbCol,
-                freeHeapMbCol,
-                usedHeapMbCol,
-                usedPctTotalCol
+                MonitorCol.timestamp,
+                MonitorCol.totalHeapMb,
+                MonitorCol.maxHeapMb,
+                MonitorCol.freeHeapMb,
+                MonitorCol.usedHeapMb,
+                MonitorCol.usedPctTotal
             ]
         });
 

@@ -13,171 +13,74 @@ import {isFinite} from 'lodash';
 
 const {BOOL, INT, JSON, LOCAL_DATE, STRING} = FieldType;
 
-//-----------------------
-// Fields
-//-----------------------
-export const appEnvironmentField = {
-    name: 'appEnvironment',
-    type: STRING,
-    displayName: 'Environment'
-};
-
-export const appVersionField = {
-    name: 'appVersion',
-    type: STRING
-};
-
-export const browserField = {
-    name: 'browser',
-    type: STRING,
-    isDimension: true,
-    aggregator: 'UNIQUE'
-};
-
-export const categoryField = {
-    name: 'category',
-    type: STRING,
-    isDimension: true,
-    aggregator: 'UNIQUE'
-};
-
-export const countField = {
-    name: 'count',
-    type: INT,
-    aggregator: 'CHILD_COUNT'
-};
-
-export const dataField = {
-    name: 'data',
-    type: JSON
-};
-
-export const dayField = {
-    name: 'day',
-    type: LOCAL_DATE,
-    isDimension: true,
-    aggregator: new RangeAggregator()
-};
-
-export const deviceField = {
-    name: 'device',
-    type: STRING,
-    isDimension: true,
-    aggregator: 'UNIQUE'
-};
-
-export const elapsedField = {
-    name: 'elapsed',
-    type: INT,
-    aggregator: 'AVG'
-};
-
-export const entryCountField = {
-    name: 'entryCount',
-    type: INT,
-    displayName: 'Entries',
-    aggregator: 'LEAF_COUNT'
-};
-
-export const entryIdField = {
-    name: 'id',
-    type: INT,
-    displayName: 'Entry ID'
-};
-
-export const errorField = {
-    name: 'error',
-    type: STRING,
-    displayName: 'Error Details'
-};
-
-export const monthField = {
-    name: 'month',
-    type: STRING,
-    isDimension: true,
-    aggregator: 'UNIQUE'
-};
-
-export const msgField = {
-    name: 'msg',
-    type: STRING,
-    displayName: 'Message',
-    isDimension: true,
-    aggregator: 'UNIQUE'
-};
-
-export const urlField = {
-    name: 'url',
-    type: STRING,
-    displayName: 'URL'
-};
-
-export const userAgentField = {
-    name: 'userAgent',
-    type: STRING,
-    isDimension: true,
-    aggregator: 'UNIQUE'
-};
-
-export const userAlertedFlagField = {
-    name: 'userAlerted',
-    type: BOOL
-};
-
-export const userMessageFlagField = {
-    name: 'userMessageFlag',
-    type: BOOL
-};
-
-export const dateRangeField = {
-    name: 'day',
-    type: JSON,
-    displayName: 'App Day'
-};
-
-//-----------------------
-// Columns
-//-----------------------
-export const appEnvironmentCol = {
-    field: appEnvironmentField,
+export const appEnvironment = {
+    field: {
+        name: 'appEnvironment',
+        type: STRING,
+        displayName: 'Environment'
+    },
     width: 130
 };
 
-export const appVersionCol = {
-    field: appVersionField,
+export const appVersion = {
+    field: {name: 'appVersion', type: STRING},
     width: 130
 };
 
-export const browserCol = {
-    field: browserField,
+export const browser = {
+    field: {
+        name: 'browser',
+        type: STRING,
+        isDimension: true,
+        aggregator: 'UNIQUE'
+    },
     width: 100
 };
 
-export const categoryCol = {
-    field: categoryField,
+export const category = {
+    field: {
+        name: 'category',
+        type: STRING,
+        isDimension: true,
+        aggregator: 'UNIQUE'
+    },
     width: 100
 };
 
-export const dataCol = {
-    field: dataField,
+export const data = {
+    field: {name: 'data', type: JSON},
     flex: true,
     minWidth: 120,
     autosizeMaxWidth: 400
 };
 
-export const dayCol = {
-    field: dayField,
+export const day = {
+    field: {
+        name: 'day',
+        type: LOCAL_DATE,
+        isDimension: true,
+        aggregator: new RangeAggregator()
+    },
     ...localDateCol,
     displayName: 'App Day'
 };
 
-export const deviceCol = {
-    field: deviceField,
+export const device = {
+    field: {
+        name: 'device',
+        type: STRING,
+        isDimension: true,
+        aggregator: 'UNIQUE'
+    },
     width: 100
 };
 
-export const elapsedCol = {
-    field: elapsedField,
+export const elapsed = {
+    field: {
+        name: 'elapsed',
+        type: INT,
+        aggregator: 'AVG'
+    },
     width: 130,
     align: 'right',
     renderer: numberRenderer({
@@ -187,44 +90,72 @@ export const elapsedCol = {
     })
 };
 
-export const entryCountCol = {
-    field: entryCountField,
+export const entryCount = {
+    field: {
+        name: 'entryCount',
+        type: INT,
+        displayName: 'Entries',
+        aggregator: 'LEAF_COUNT'
+    },
     width: 80,
     align: 'right'
 };
 
-export const entryIdCol = {
-    field: entryIdField,
+export const entryId = {
+    field: {
+        name: 'id',
+        type: INT,
+        displayName: 'Entry ID'
+    },
     width: 100,
     align: 'right'
 };
 
-export const errorCol = {
-    field: errorField,
+export const error = {
+    field: {
+        name: 'error',
+        type: STRING,
+        displayName: 'Error Details'
+    },
     flex: true,
     minWidth: 150,
     renderer: (e) => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
 };
 
-export const msgCol = {
-    field: msgField,
+export const msg = {
+    field: {
+        name: 'msg',
+        type: STRING,
+        displayName: 'Message',
+        isDimension: true,
+        aggregator: 'UNIQUE'
+    },
     minWidth: 120,
     autosizeMaxWidth: 400,
     flex: true
 };
 
-export const urlCol = {
-    field: urlField,
+export const url = {
+    field: {
+        name: 'url',
+        type: STRING,
+        displayName: 'URL'
+    },
     width: 250
 };
 
-export const userAgentCol = {
-    field: userAgentField,
+export const userAgent = {
+    field: {
+        name: 'userAgent',
+        type: STRING,
+        isDimension: true,
+        aggregator: 'UNIQUE'
+    },
     width: 130
 };
 
-export const userAlertedFlagCol = {
-    field: userAlertedFlagField,
+export const userAlertedFlag = {
+    field: {name: 'userAlerted', type: BOOL},
     headerName: Icon.window(),
     headerTooltip: 'Indicates if the user was shown an interactive alert when this error was triggered.',
     resizable: false,
@@ -234,8 +165,8 @@ export const userAlertedFlagCol = {
     renderer: v => v ? Icon.window({asHtml: true}) : ''
 };
 
-export const userMessageFlagCol = {
-    field: userMessageFlagField,
+export const userMessageFlag = {
+    field: {name: 'userMessageFlag', type: BOOL},
     headerName: Icon.comment(),
     headerTooltip: 'Indicates if the user provided a message along with the automated error report.',
     excludeFromExport: true,
@@ -248,8 +179,12 @@ export const userMessageFlagCol = {
     }
 };
 
-export const dateRangeCol = {
-    field: dateRangeField,
+export const dateRange = {
+    field: {
+        name: 'day',
+        type: JSON,
+        displayName: 'App Day'
+    },
     ...localDateCol,
     width: 200,
     renderer: dateRangeRenderer,
@@ -257,6 +192,9 @@ export const dateRangeCol = {
     comparator: dateRangeComparator
 };
 
+//-----------------------
+// Implementation
+//-----------------------
 function dateRangeRenderer(range) {
     if (!range) return;
     if (isFinite(range)) return fmtDate(range);

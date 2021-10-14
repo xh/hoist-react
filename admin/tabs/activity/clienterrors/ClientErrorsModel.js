@@ -11,22 +11,7 @@ import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {
-    appEnvironmentCol,
-    appVersionCol,
-    browserCol,
-    dateCreatedCol,
-    dayCol,
-    deviceCol,
-    entryIdCol,
-    errorCol,
-    msgCol,
-    urlCol,
-    userAgentCol,
-    userAlertedFlagCol,
-    userMessageFlagCol,
-    usernameCol
-} from '@xh/hoist/admin/columns';
+import * as Col from '@xh/hoist/admin/columns';
 import moment from 'moment';
 
 export class ClientErrorsModel extends HoistModel {
@@ -67,20 +52,20 @@ export class ClientErrorsModel extends HoistModel {
             emptyText: 'No errors reported...',
             sortBy: 'dateCreated|desc',
             columns: [
-                {...userMessageFlagCol},
-                {...userAlertedFlagCol},
-                {...entryIdCol, hidden: true},
-                {...usernameCol},
-                {...browserCol},
-                {...deviceCol},
-                {...userAgentCol, hidden: true},
-                {...appVersionCol},
-                {...appEnvironmentCol},
-                {...msgCol, displayName: 'User Message', hidden: true},
-                {...errorCol},
-                {...urlCol},
-                {...dateCreatedCol, displayName: 'Timestamp'},
-                {...dayCol}
+                {...Col.userMessageFlag},
+                {...Col.userAlertedFlag},
+                {...Col.entryId, hidden: true},
+                {...Col.username},
+                {...Col.browser},
+                {...Col.device},
+                {...Col.userAgent, hidden: true},
+                {...Col.appVersion},
+                {...Col.appEnvironment},
+                {...Col.msg, displayName: 'User Message', hidden: true},
+                {...Col.error},
+                {...Col.url},
+                {...Col.dateCreated, displayName: 'Timestamp'},
+                {...Col.day}
             ]
         });
 

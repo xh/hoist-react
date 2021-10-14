@@ -7,7 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, bindable, makeObservable} from '@xh/hoist/mobx';
-import {activeCol, displayNameCol, emailCol, rolesCol, usernameCol} from '@xh/hoist/admin/columns';
+import * as Col from '@xh/hoist/admin/columns';
 import {keyBy, keys} from 'lodash';
 
 export class UserModel extends HoistModel {
@@ -25,11 +25,11 @@ export class UserModel extends HoistModel {
         store: {idSpec: 'username'},
         sortBy: 'username',
         columns: [
-            {...usernameCol},
-            {...emailCol},
-            {...displayNameCol},
-            {...activeCol},
-            {...rolesCol}
+            {...Col.username},
+            {...Col.email},
+            {...Col.displayName},
+            {...Col.active},
+            {...Col.roles}
         ]
     });
 

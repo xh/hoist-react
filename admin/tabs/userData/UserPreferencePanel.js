@@ -6,15 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
-import {
-    groupNameCol,
-    lastUpdatedByCol,
-    lastUpdatedCol,
-    nameCol,
-    typeCol,
-    usernameCol,
-    userValueCol
-} from '@xh/hoist/admin/columns';
+import * as Col from '@xh/hoist/admin/columns';
 
 export const userPreferencePanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
@@ -30,47 +22,13 @@ const modelSpec = {
         reloadLookupsOnLoad: true,
         fieldDefaults: {disableXssProtection: true},
         fields: [
-            {
-                name: 'name',
-                type: 'string',
-                displayName: 'Pref',
-                lookupName: 'names',
-                editable: 'onAdd',
-                required: true
-            },
-            {
-                name: 'groupName',
-                type: 'string',
-                displayName: 'Group',
-                lookupName: 'groupNames',
-                editable: false
-            },
-            {
-                name: 'type',
-                type: 'string',
-                editable: false
-            },
-            {
-                name: 'username',
-                type: 'string',
-                displayName: 'User',
-                required: true
-            },
-            {
-                name: 'userValue',
-                typeField: 'type',
-                required: true
-            },
-            {
-                name: 'lastUpdated',
-                type: 'date',
-                editable: false
-            },
-            {
-                name: 'lastUpdatedBy',
-                type: 'string',
-                editable: false
-            }
+            {...Col.name.field, displayName: 'Pref', lookupName: 'names', editable: 'onAdd', required: true},
+            {...Col.groupName.field, lookupName: 'groupNames', editable: false},
+            {...Col.type.field, editable: false},
+            {...Col.username.field, required: true},
+            {...Col.userValue.field, typeField: 'type', required: true},
+            {...Col.lastUpdated.field, editable: false},
+            {...Col.lastUpdatedBy.field, editable: false}
         ]
     },
     sortBy: 'name',
@@ -78,13 +36,13 @@ const modelSpec = {
     unit: 'preference',
     filterFields: ['name', 'username'],
     columns: [
-        {...nameCol},
-        {...typeCol},
-        {...usernameCol},
-        {...groupNameCol, hidden: true},
-        {...userValueCol},
-        {...lastUpdatedByCol, hidden: true},
-        {...lastUpdatedCol, hidden: true}
+        {...Col.name},
+        {...Col.type},
+        {...Col.username},
+        {...Col.groupName, hidden: true},
+        {...Col.userValue},
+        {...Col.lastUpdatedBy, hidden: true},
+        {...Col.lastUpdated, hidden: true}
     ],
     editors: [
         {field: 'name'},

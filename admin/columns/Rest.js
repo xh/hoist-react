@@ -9,38 +9,17 @@ import {dateTimeCol} from '@xh/hoist/cmp/grid';
 
 const {DATE, STRING} = FieldType;
 
-//-----------------------
-// Fields
-//-----------------------
-export const dateCreatedField = {
-    name: 'dateCreated',
-    type: DATE
-};
-
-export const lastUpdatedField = {
-    name: 'lastUpdated',
-    type: DATE
-};
-
-export const lastUpdatedByField = {
-    name: 'lastUpdatedBy',
-    type: STRING
-};
-
-//-----------------------
-// Columns
-//-----------------------
-export const dateCreatedCol = {
-    field: dateCreatedField,
+export const dateCreated = {
+    field: {name: 'dateCreated', type: DATE},
     ...dateTimeCol
 };
 
-export const lastUpdatedCol = {
-    field: lastUpdatedField,
+export const lastUpdated = {
+    field: {name: 'lastUpdated', type: DATE},
     ...dateTimeCol
 };
 
-export const lastUpdatedByCol = {
-    field: lastUpdatedByField,
+export const lastUpdatedBy = {
+    field: {name: 'lastUpdatedBy', type: STRING},
     width: 160
 };

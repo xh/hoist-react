@@ -13,16 +13,7 @@ import {
     editAction,
     RestGridModel
 } from '@xh/hoist/desktop/cmp/rest';
-import {
-    defaultValueCol,
-    groupNameCol,
-    lastUpdatedByCol,
-    lastUpdatedCol,
-    localCol,
-    nameCol,
-    notesCol,
-    typeCol
-} from '@xh/hoist/admin/columns';
+import * as Col from '@xh/hoist/admin/columns';
 
 import {DifferModel} from '../../differ/DifferModel';
 import {RegroupDialogModel} from '../../regroup/RegroupDialogModel';
@@ -45,52 +36,14 @@ export class PreferenceModel extends HoistModel {
             reloadLookupsOnLoad: true,
             fieldDefaults: {disableXssProtection: true},
             fields: [
-                {
-                    name: 'name',
-                    type: 'string',
-                    required: true
-                },
-                {
-                    name: 'groupName',
-                    type: 'string',
-                    displayName: 'Group',
-                    lookupName: 'groupNames',
-                    required: true,
-                    enableCreate: true
-                },
-                {
-                    name: 'type',
-                    type: 'string',
-                    defaultValue: 'string',
-                    lookupName: 'types',
-                    editable: 'onAdd',
-                    required: true
-                },
-                {
-                    name: 'defaultValue',
-                    typeField: 'type',
-                    required: true
-                },
-                {
-                    name: 'notes',
-                    type: 'string'
-                },
-                {
-                    name: 'local',
-                    type: 'bool',
-                    defaultValue: false,
-                    required: true
-                },
-                {
-                    name: 'lastUpdated',
-                    type: 'date',
-                    editable: false
-                },
-                {
-                    name: 'lastUpdatedBy',
-                    type: 'string',
-                    editable: false
-                }
+                {...Col.name.field, required: true},
+                {...Col.groupName.field, lookupName: 'groupNames', required: true, enableCreate: true},
+                {...Col.type.field, lookupName: 'types', editable: 'onAdd', required: true},
+                {...Col.defaultValue.field, typeField: 'type', required: true},
+                {...Col.notes.field},
+                {...Col.local.field, defaultValue: false, required: true},
+                {...Col.lastUpdated.field, editable: false},
+                {...Col.lastUpdatedBy.field, editable: false}
             ]
         },
         sortBy: 'name',
@@ -108,14 +61,14 @@ export class PreferenceModel extends HoistModel {
             this.regroupDialogModel.regroupAction
         ],
         columns: [
-            {...localCol},
-            {...nameCol},
-            {...typeCol},
-            {...defaultValueCol},
-            {...groupNameCol, hidden: true},
-            {...notesCol},
-            {...lastUpdatedByCol, hidden: true},
-            {...lastUpdatedCol, hidden: true}
+            {...Col.local},
+            {...Col.name},
+            {...Col.type},
+            {...Col.defaultValue},
+            {...Col.groupName, hidden: true},
+            {...Col.notes},
+            {...Col.lastUpdatedBy, hidden: true},
+            {...Col.lastUpdated, hidden: true}
         ],
         editors: [
             {field: 'name'},

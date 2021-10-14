@@ -6,16 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
-import {
-    defaultLevelCol,
-    defaultLevelField,
-    effectiveLevelCol,
-    effectiveLevelField,
-    levelCol,
-    levelField,
-    logNameCol,
-    logNameField
-} from '@xh/hoist/admin/columns';
+import * as LogLevelCol from './LogLevelColumns';
 
 export const logLevelPanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
@@ -29,19 +20,19 @@ const modelSpec = {
         url: 'rest/logLevelAdmin',
         fieldDefaults: {disableXssProtection: true},
         fields: [
-            {...logNameField, required: true},
-            {...levelField, lookupName: 'levels'},
-            {...defaultLevelField, editable: false},
-            {...effectiveLevelField, editable: false}
+            {...LogLevelCol.logName.field, required: true},
+            {...LogLevelCol.level.field, lookupName: 'levels'},
+            {...LogLevelCol.defaultLevel.field, editable: false},
+            {...LogLevelCol.effectiveLevel.field, editable: false}
         ]
     },
     unit: 'log level',
     filterFields: ['name'],
     columns: [
-        logNameCol,
-        defaultLevelCol,
-        levelCol,
-        effectiveLevelCol
+        LogLevelCol.logName,
+        LogLevelCol.defaultLevel,
+        LogLevelCol.level,
+        LogLevelCol.effectiveLevel
     ],
     editors: [
         {field: 'name'},

@@ -14,31 +14,7 @@ import {Cube} from '@xh/hoist/data';
 import {fmtDate, fmtNumber} from '@xh/hoist/format';
 import {action, computed, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {
-    browserCol,
-    browserField,
-    categoryCol,
-    categoryField,
-    countField,
-    dataField,
-    dateCreatedField,
-    dateRangeCol,
-    dayField,
-    deviceCol,
-    deviceField,
-    elapsedCol,
-    elapsedField,
-    entryCountCol,
-    entryCountField,
-    impersonatingCol,
-    impersonatingField,
-    monthField,
-    msgField,
-    userAgentCol,
-    userAgentField,
-    usernameCol,
-    usernameField
-} from '@xh/hoist/admin/columns';
+import * as Col from '@xh/hoist/admin/columns';
 import {isEmpty} from 'lodash';
 import moment from 'moment';
 import {ChartsModel} from './charts/ChartsModel';
@@ -104,20 +80,21 @@ export class ActivityTrackingModel extends HoistModel {
 
         this.cube = new Cube({
             fields: [
-                {...dayField},
-                {...monthField},
-                {...usernameField},
-                {...msgField},
-                {...categoryField},
-                {...deviceField},
-                {...browserField},
-                {...userAgentField},
-                {...elapsedField},
-                {...impersonatingField},
-                {...dateCreatedField, displayName: 'Timestamp'},
-                {...dataField},
-                {...countField},
-                {...entryCountField}
+                {...Col.browser.field},
+                {...Col.category.field},
+                {...Col.data.field},
+                {...Col.dateCreated.field, displayName: 'Timestamp'},
+                {...Col.day.field},
+                {...Col.device.field},
+                {...Col.elapsed.field},
+                {...Col.entryCount.field},
+                {...Col.impersonating.field},
+                {...Col.msg.field},
+                {...Col.userAgent.field},
+                {...Col.username.field},
+
+                {name: 'count', type: 'int', aggregator: 'CHILD_COUNT'},
+                {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'}
             ]
         });
 
@@ -193,15 +170,15 @@ export class ActivityTrackingModel extends HoistModel {
                     renderer: (v, params) => params.record.raw.cubeDimension === 'day' ? fmtDate(v) : v,
                     comparator: this.cubeLabelComparator.bind(this)
                 },
-                {...usernameCol, hidden: true},
-                {...categoryCol, hidden: true},
-                {...deviceCol, hidden: true},
-                {...browserCol, hidden: true},
-                {...userAgentCol, hidden: true},
-                {...impersonatingCol, hidden: true},
-                {...elapsedCol, headerName: 'Elapsed (avg)', hidden: true},
-                {...dateRangeCol, hidden: true},
-                {...entryCountCol}
+                {...Col.username, hidden: true},
+                {...Col.category, hidden: true},
+                {...Col.device, hidden: true},
+                {...Col.browser, hidden: true},
+                {...Col.userAgent, hidden: true},
+                {...Col.impersonating, hidden: true},
+                {...Col.elapsed, headerName: 'Elapsed (avg)', hidden: true},
+                {...Col.dateRange, hidden: true},
+                {...Col.entryCount}
             ]
         });
 

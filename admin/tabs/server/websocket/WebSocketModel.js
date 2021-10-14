@@ -13,27 +13,9 @@ import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isDisplayed} from '@xh/hoist/utils/js';
-import {
-    apparentUserField,
-    authUserField,
-    createdTimeCol,
-    createdTimeField,
-    isOpenCol,
-    isOpenField,
-    keyCol,
-    keyField,
-    lastReceivedTimeCol,
-    lastReceivedTimeField,
-    lastSentTimeCol,
-    lastSentTimeField,
-    receivedMessageCountCol,
-    receivedMessageCountField,
-    sentMessageCountCol,
-    sentMessageCountField,
-    userCol,
-    userField
-} from '@xh/hoist/admin/columns';
+import * as Col from '@xh/hoist/admin/columns';
 import {createRef} from 'react';
+import * as WebSocketCol from './WebSocketColumns';
 
 export class WebSocketModel extends HoistModel {
 
@@ -61,28 +43,20 @@ export class WebSocketModel extends HoistModel {
                 };
             },
             fields: [
-                isOpenField,
-                keyField,
-                createdTimeField,
-                sentMessageCountField,
-                lastSentTimeField,
-                receivedMessageCountField,
-                lastReceivedTimeField,
-                userField,
-                authUserField,
-                apparentUserField
+                {name: 'authUser', type: 'string'},
+                {name: 'apparentUser', type: 'string'}
             ]
         },
         sortBy: ['key'],
         columns: [
-            isOpenCol,
-            keyCol,
-            userCol,
-            createdTimeCol,
-            sentMessageCountCol,
-            lastSentTimeCol,
-            receivedMessageCountCol,
-            lastReceivedTimeCol
+            WebSocketCol.isOpen,
+            WebSocketCol.key,
+            Col.user,
+            WebSocketCol.createdTime,
+            WebSocketCol.sentMessageCount,
+            WebSocketCol.lastSentTime,
+            WebSocketCol.receivedMessageCount,
+            WebSocketCol.lastReceivedTime
         ]
     })
 

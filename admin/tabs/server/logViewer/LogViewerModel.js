@@ -12,7 +12,6 @@ import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
-import {logFileCol, logFileField} from  '@xh/hoist/admin/columns';
 import {createRef} from 'react';
 import download from 'downloadjs';
 import {LogDisplayModel} from './LogDisplayModel';
@@ -53,10 +52,18 @@ export class LogViewerModel extends HoistModel {
             url: 'logViewerAdmin/listFiles',
             idSpec: 'filename',
             dataRoot: 'files',
-            fields: [logFileField]
+            fields: [{
+                name: 'filename',
+                type: 'string',
+                displayName: 'Log File'
+            }]
         }),
         sortBy: ['filename|desc'],
-        columns: [logFileCol]
+        columns: [{
+            field: 'filename',
+            minWidth: 160,
+            flex: true
+        }]
     });
 
     get selectedRecord() {

@@ -14,25 +14,8 @@ import {
     RestGridModel,
     RestStore
 } from '@xh/hoist/desktop/cmp/rest';
-import {
-    clientVisibleCol,
-    clientVisibleField,
-    groupNameCol,
-    groupNameField,
-    lastUpdatedByCol,
-    lastUpdatedByField,
-    lastUpdatedCol,
-    lastUpdatedField,
-    nameCol,
-    nameField,
-    noteCol,
-    noteField,
-    valueCol,
-    valueField,
-    valueTypeCol,
-    valueTypeField
-} from '@xh/hoist/admin/columns';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import * as Col from '@xh/hoist/admin/columns';
 import {isNil, truncate} from 'lodash';
 import {DifferModel} from '../../../differ/DifferModel';
 import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
@@ -56,14 +39,14 @@ export class ConfigPanelModel extends HoistModel {
             reloadLookupsOnLoad: true,
             fieldDefaults: {disableXssProtection: true},
             fields: [
-                {...nameField, required: true},
-                {...groupNameField, lookupName: 'groupNames', required: true, enableCreate: true},
-                {...valueTypeField, lookupName: 'valueTypes', editable: 'onAdd', required: true},
-                {...valueField, typeField: 'valueType', required: true},
-                {...clientVisibleField, defaultValue: false, required: true},
-                {...noteField},
-                {...lastUpdatedField, editable: false},
-                {...lastUpdatedByField, editable: false}
+                {...Col.name.field, required: true},
+                {...Col.groupName.field, lookupName: 'groupNames', required: true, enableCreate: true},
+                {...Col.valueType.field, lookupName: 'valueTypes', editable: 'onAdd', required: true},
+                {...Col.value.field, typeField: 'valueType', required: true},
+                {...Col.clientVisible.field, defaultValue: false, required: true},
+                {...Col.note.field},
+                {...Col.lastUpdated.field, editable: false},
+                {...Col.lastUpdatedBy.field, editable: false}
             ]
         }),
         actionWarning: {
@@ -88,14 +71,14 @@ export class ConfigPanelModel extends HoistModel {
         sortBy: 'name',
         groupBy: 'groupName',
         columns: [
-            {...groupNameCol, hidden: true},
-            {...nameCol},
-            {...valueTypeCol},
-            {...valueCol, flex: null, width: 200, renderer: this.configRenderer, tooltip: this.configRenderer},
-            {...clientVisibleCol},
-            {...noteCol},
-            {...lastUpdatedByCol, hidden: true},
-            {...lastUpdatedCol, hidden: true}
+            {...Col.groupName, hidden: true},
+            {...Col.name},
+            {...Col.valueType},
+            {...Col.value, flex: null, width: 200, renderer: this.configRenderer, tooltip: this.configRenderer},
+            {...Col.clientVisible},
+            {...Col.note},
+            {...Col.lastUpdatedBy, hidden: true},
+            {...Col.lastUpdated, hidden: true}
         ],
         editors: [
             {field: 'name'},

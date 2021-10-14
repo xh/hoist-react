@@ -2,20 +2,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {managed, HoistModel, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {
-    browserCol,
-    categoryCol,
-    dataCol,
-    dateCreatedCol,
-    deviceCol,
-    elapsedCol,
-    entryIdCol,
-    impersonatingCol,
-    impersonatingFlagCol,
-    msgCol,
-    usernameCol,
-    userAgentCol
-} from '@xh/hoist/admin/columns';
+import * as Col from '@xh/hoist/admin/columns';
 
 export class ActivityDetailModel extends HoistModel {
 
@@ -44,18 +31,18 @@ export class ActivityDetailModel extends HoistModel {
             },
             emptyText: 'Select a group on the left to see detailed tracking logs.',
             columns: [
-                {...impersonatingFlagCol},
-                {...entryIdCol, hidden: true},
-                {...usernameCol, filterable: true},
-                {...impersonatingCol, hidden: true},
-                {...categoryCol, filterable: true},
-                {...msgCol, filterable: true},
-                {...dataCol, hidden: true},
-                {...deviceCol, filterable: true},
-                {...browserCol, filterable: true},
-                {...userAgentCol, hidden: true, filterable: true},
-                {...elapsedCol, filterable: true},
-                {...dateCreatedCol, displayName: 'Timestamp', filterable: true}
+                {...Col.impersonatingFlag},
+                {...Col.entryId, hidden: true},
+                {...Col.username, filterable: true},
+                {...Col.impersonating, hidden: true},
+                {...Col.category, filterable: true},
+                {...Col.msg, filterable: true},
+                {...Col.data, hidden: true},
+                {...Col.device, filterable: true},
+                {...Col.browser, filterable: true},
+                {...Col.userAgent, hidden: true, filterable: true},
+                {...Col.elapsed, filterable: true},
+                {...Col.dateCreated, displayName: 'Timestamp', filterable: true}
             ]
         });
 
