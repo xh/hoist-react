@@ -10,7 +10,7 @@ import {HoistModel, XH} from '@xh/hoist/core';
 import {fmtTime} from '@xh/hoist/format';
 import {checkMinVersion} from '@xh/hoist/utils/js';
 import {forOwn, sortBy} from 'lodash';
-import * as MonitorCol from './MonitorColumns';
+import * as MCol from './MonitorColumns';
 
 export class MemoryMonitorModel extends HoistModel {
 
@@ -35,12 +35,12 @@ export class MemoryMonitorModel extends HoistModel {
             store: {idSpec: 'timestamp'},
             colDefaults: {filterable: true},
             columns: [
-                MonitorCol.timestamp,
-                MonitorCol.totalHeapMb,
-                MonitorCol.maxHeapMb,
-                MonitorCol.freeHeapMb,
-                MonitorCol.usedHeapMb,
-                MonitorCol.usedPctTotal
+                MCol.timestamp,
+                MCol.totalHeapMb,
+                MCol.maxHeapMb,
+                MCol.freeHeapMb,
+                MCol.usedHeapMb,
+                MCol.usedPctTotal
             ]
         });
 

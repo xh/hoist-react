@@ -8,7 +8,7 @@ import {hoistCmp} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
-import * as MonitorCol from './MonitorColumns';
+import * as MCol from './MonitorColumns';
 
 export const monitorEditorPanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
@@ -22,11 +22,11 @@ const modelSpec = {
         url: 'rest/monitorAdmin',
         fieldDefaults: {disableXssProtection: true},
         fields: [
-            {...MonitorCol.code.field, required: true},
-            {...MonitorCol.metricUnit.field},
-            {...MonitorCol.warnThreshold.field},
-            {...MonitorCol.failThreshold.field},
-            {...MonitorCol.sortOrder.field},
+            {...MCol.code.field, required: true},
+            {...MCol.metricUnit.field},
+            {...MCol.warnThreshold.field},
+            {...MCol.failThreshold.field},
+            {...MCol.sortOrder.field},
 
             {...Col.name.field, required: true},
             {...Col.notes.field},
@@ -43,15 +43,15 @@ const modelSpec = {
     filterFields: ['code', 'name'],
     columns: [
         {...Col.active},
-        {...MonitorCol.code},
+        {...MCol.code},
         {...Col.name},
-        {...MonitorCol.warnThreshold},
-        {...MonitorCol.failThreshold},
-        {...MonitorCol.metricUnit},
+        {...MCol.warnThreshold},
+        {...MCol.failThreshold},
+        {...MCol.metricUnit},
         {...Col.notes},
         {...Col.lastUpdatedBy, hidden: true},
         {...Col.lastUpdated, hidden: true},
-        {...MonitorCol.sortOrder}
+        {...MCol.sortOrder}
     ],
     editors: [
         {field: 'code'},

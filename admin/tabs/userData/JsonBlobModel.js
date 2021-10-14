@@ -11,7 +11,7 @@ import {fmtDateTime} from '@xh/hoist/format';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import * as Col from '@xh/hoist/admin/columns';
 import {isDate} from 'lodash';
-import * as JsonBlobCol from './JsonBlobColumns';
+import * as JBCol from './JsonBlobColumns';
 
 import {DifferModel} from '../../differ/DifferModel';
 
@@ -30,16 +30,16 @@ export class JsonBlobModel extends HoistModel {
             reloadLookupsOnLoad: true,
             fieldDefaults: {disableXssProtection: true},
             fields: [
-                {...JsonBlobCol.token.field, editable: false},
-                {...JsonBlobCol.owner.field},
-                {...JsonBlobCol.acl.field},
+                {...JBCol.token.field, editable: false},
+                {...JBCol.owner.field},
+                {...JBCol.acl.field},
                 {...Col.name.field, required: true},
                 {...Col.type.field, lookupName: 'types', required: true, enableCreate: true},
                 {...Col.value.field, type: 'json', required: true},
-                {...JsonBlobCol.meta.field},
+                {...JBCol.meta.field},
                 {...Col.description.field},
-                {...JsonBlobCol.archived.field, defaultValue: false, required: true},
-                {...JsonBlobCol.archivedDate.field, editable: false},
+                {...JBCol.archived.field, defaultValue: false, required: true},
+                {...JBCol.archivedDate.field, editable: false},
                 {...Col.dateCreated.field, editable: false},
                 {...Col.lastUpdated.field, editable: false},
                 {...Col.lastUpdatedBy.field, editable: false}
@@ -63,16 +63,16 @@ export class JsonBlobModel extends HoistModel {
         unit: 'blob',
         filterFields: ['name', 'owner', 'type', 'value', 'meta', 'description'],
         columns: [
-            {...JsonBlobCol.token, hidden: true},
-            {...JsonBlobCol.archived},
-            {...JsonBlobCol.owner},
-            {...JsonBlobCol.acl},
+            {...JBCol.token, hidden: true},
+            {...JBCol.archived},
+            {...JBCol.owner},
+            {...JBCol.acl},
             {...Col.name},
             {...Col.type, width: 200},
             {...Col.description},
             {...Col.value},
-            {...JsonBlobCol.meta},
-            {...JsonBlobCol.archivedDate, hidden: true},
+            {...JBCol.meta},
+            {...JBCol.archivedDate, hidden: true},
             {...Col.dateCreated, hidden: true},
             {...Col.lastUpdated, hidden: true},
             {...Col.lastUpdatedBy, hidden: true}
@@ -115,7 +115,7 @@ export class JsonBlobModel extends HoistModel {
             parentModel: this,
             entityName: 'jsonBlob',
             displayName: 'JSON Blob',
-            columnFields: ['name', 'owner', 'type', JsonBlobCol.archivedDate],
+            columnFields: ['name', 'owner', 'type', JBCol.archivedDate],
             matchFields: ['name', 'owner', 'type', 'archivedDate']
         });
     }

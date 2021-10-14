@@ -15,7 +15,7 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isDisplayed} from '@xh/hoist/utils/js';
 import * as Col from '@xh/hoist/admin/columns';
 import {createRef} from 'react';
-import * as WebSocketCol from './WebSocketColumns';
+import * as WSCol from './WebSocketColumns';
 
 export class WebSocketModel extends HoistModel {
 
@@ -49,14 +49,14 @@ export class WebSocketModel extends HoistModel {
         },
         sortBy: ['key'],
         columns: [
-            WebSocketCol.isOpen,
-            WebSocketCol.key,
+            WSCol.isOpen,
+            WSCol.key,
             Col.user,
-            WebSocketCol.createdTime,
-            WebSocketCol.sentMessageCount,
-            WebSocketCol.lastSentTime,
-            WebSocketCol.receivedMessageCount,
-            WebSocketCol.lastReceivedTime
+            WSCol.createdTime,
+            WSCol.sentMessageCount,
+            WSCol.lastSentTime,
+            WSCol.receivedMessageCount,
+            WSCol.lastReceivedTime
         ]
     })
 
