@@ -45,23 +45,22 @@ export class AlertBannerService extends HoistService {
     async checkForBannerAsync() {
         if (!this.enabled) return;
 
-        const category = 'xhAlertBanner',
-            results = await XH.jsonBlobService.listAsync({
-                type: 'xhAlertBanner',
-                includeValue: true
-            });
+        const results = await XH.jsonBlobService.listAsync({
+            type: 'xhAlertBanner',
+            includeValue: true
+        });
 
         if (isEmpty(results)) {
-            XH.hideBanner(category);
+            XH.hideBanner('xhAlertBanner');
             return;
         }
 
-        const {active, message, intent, iconName, enableClose, updated, expires} = results[0].value,
+        const {active, message, intent, iconName, enableClose, publishDate, expires} = results[0].value,
             {lastDismissed, onClose} = this;
 
         if (!active || !message || (expires && expires < Date.now())) {
-            XH.hideBanner(category);
-        } else if (!lastDismissed || lastDismissed < updated) {
+            XH.hideBanner('xhAlertBanner');
+        } else if (!lastDismissed || lastDismissed < publishDate) {
             const conf = this.genBannerConfig({message, intent, iconName, enableClose});
             XH.showBanner({...conf, onClose});
         }
@@ -74,7 +73,7 @@ export class AlertBannerService extends HoistService {
             showFullAlert = () => XH.alert({
                 title: 'Alert',
                 icon,
-                message: div(msgLines.map(it => p(it)))
+                message: div(msgLines.map(p))
             });
 
         let actionButtonProps, onClick;

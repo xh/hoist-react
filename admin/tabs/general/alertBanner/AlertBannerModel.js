@@ -15,6 +15,7 @@ import {isEmpty} from 'lodash';
 export class AlertBannerModel extends HoistModel {
 
     token;
+    savedValue;
 
     @managed
     formModel = new FormModel({
@@ -73,12 +74,13 @@ export class AlertBannerModel extends HoistModel {
         super();
         makeObservable(this);
 
+        const {formModel} = this;
         this.addReaction({
             track: () => [
-                this.formModel.values.message,
-                this.formModel.values.intent,
-                this.formModel.values.iconName,
-                this.formModel.values.enableClose
+                formModel.values.message,
+                formModel.values.intent,
+                formModel.values.iconName,
+                formModel.values.enableClose
             ],
             run: () => this.syncPreview(),
             fireImmediately: true
@@ -103,16 +105,61 @@ export class AlertBannerModel extends HoistModel {
             };
 
         this.token = token;
+        this.savedValue = value;
         formModel.init(initialValues);
     }
 
     async saveAsync() {
-        const {formModel, token} = this;
+        const {formModel, token, savedValue} = this,
+            {active, message, intent, iconName, enableClose, expires, created} = formModel.getData();
 
         await formModel.validateAsync();
         if (!formModel.isValid) return;
 
-        const {active, message, intent, iconName, enableClose, expires, created} = formModel.getData(),
+        let preservedPublishDate = null;
+
+        // Ask some questions if we are dealing with live stuff
+        if (XH.alertBannerService.enabled && active) {
+
+            // Question 1. Reshow when modifying an already active, closable banner?
+            if (savedValue?.active && savedValue?.enableClose && savedValue?.publishDate) {
+                const reshow = await XH.confirm({
+                    message: fragment(
+                        p('You are updating an already-active banner. Some users might have already read and closed this alert.'),
+                        p('Choose below if you would like to show this banner again to all users, including those who have already closed it once.'),
+                        p('(Users who have not yet seen or closed this alert will be shown the new version either way.)')
+                    ),
+                    cancelProps: {
+                        text: 'Update quietly',
+                        outlined: true,
+                        autoFocus: false
+                    },
+                    confirmProps: {
+                        text: 'Update and show again to all users',
+                        intent: 'primary',
+                        outlined: true,
+                        autoFocus: false
+                    }
+                });
+                if (!reshow) preservedPublishDate = savedValue.publishDate;
+            }
+
+            // Question 2.  Are you sure?
+            const finalConfirm = await XH.confirm({
+                message: fragment(
+                    p('This change will immediately show or modify a LIVE banner for ALL users of this application.'),
+                    p('Are you sure you wish to do this?')
+                ),
+                confirmProps: {
+                    text: 'Yes, show the banner',
+                    intent: 'primary',
+                    outlined: true
+                }
+            });
+            if (!finalConfirm) return;
+        }
+
+        const now = Date.now(),
             payload = {
                 type: 'xhAlertBanner',
                 name: 'xhAlertBanner',
@@ -124,29 +171,12 @@ export class AlertBannerModel extends HoistModel {
                     iconName,
                     enableClose,
                     expires: expires?.getTime(),
-                    created: created ?? Date.now(),
-                    updated: Date.now(),
+                    publishDate: preservedPublishDate ?? now,
+                    created: created ?? now,
+                    updated: now,
                     updatedBy: XH.getUsername()
                 }
             };
-
-        // Force admin to confirm if actually activating a banner.
-        let confirmed = true;
-        if (XH.alertBannerService.enabled && active && formModel.fields.active.isDirty) {
-            confirmed = await XH.confirm({
-                message: fragment(
-                    p('This change will cause the previewed alert banner to be shown to ALL users of this application.'),
-                    p('Are you sure you wish to do this?')
-                ),
-                confirmProps: {
-                    text: 'Yes, show the banner',
-                    intent: 'primary',
-                    outlined: true
-                }
-            });
-        }
-
-        if (!confirmed) return;
 
         if (token) {
             await XH.jsonBlobService.updateAsync(token, payload);
