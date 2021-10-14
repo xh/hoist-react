@@ -73,7 +73,7 @@ export class AlertBannerService extends HoistService {
             showFullAlert = () => XH.alert({
                 title: 'Alert',
                 icon,
-                message: div(msgLines.map(p))
+                message: div(msgLines.map(it => p(it)))
             });
 
         let actionButtonProps, onClick;
