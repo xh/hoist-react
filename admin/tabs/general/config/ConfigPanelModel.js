@@ -6,7 +6,6 @@
  */
 import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
-import {makeObservable, observable, action} from '@xh/hoist/mobx';
 import {
     addAction,
     cloneAction,
@@ -33,12 +32,13 @@ import {
     valueTypeCol,
     valueTypeField
 } from '@xh/hoist/admin/columns';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isNil, truncate} from 'lodash';
+import {DifferModel} from '../../../differ/DifferModel';
+import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
 
-import {DifferModel} from '../../differ/DifferModel';
-import {RegroupDialogModel} from '../../regroup/RegroupDialogModel';
 
-export class ConfigTabModel extends HoistModel {
+export class ConfigPanelModel extends HoistModel {
 
     persistWith = {localStorageKey: 'xhAdminConfigState'};
 

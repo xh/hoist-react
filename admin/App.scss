@@ -8,8 +8,16 @@
 .xh-admin-app-frame {
   .xh-tab-switcher--left,
   .xh-tab-switcher--right {
-    min-width: 130px;
-    background-color: var(--xh-bg-alt);
+    min-width: 160px;
+    background-color: var(--xh-grid-bg-odd);
     border-right: var(--xh-border-solid);
+
+    .bp3-tab {
+      border-radius: 0 !important;
+    }
+
+    .xh-tab-switcher__tab {
+      line-height: 40px;
+    }
   }
 }

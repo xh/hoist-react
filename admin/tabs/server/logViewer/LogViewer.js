@@ -9,6 +9,7 @@ import {hframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {Icon} from '@xh/hoist/icon';
 import {logDisplay} from './LogDisplay';
 import './LogViewer.scss';
 import {LogViewerModel} from './LogViewerModel';
@@ -23,10 +24,12 @@ export const logViewer = hoistCmp.factory({
             ref: model.viewRef,
             items: [
                 panel({
+                    title: 'Available Server Logs',
+                    icon: Icon.fileText(),
+                    compactHeader: true,
                     model: {
                         side: 'left',
-                        defaultSize: 250,
-                        showHeaderCollapseButton: false
+                        defaultSize: 250
                     },
                     item: grid(),
                     bbar: [

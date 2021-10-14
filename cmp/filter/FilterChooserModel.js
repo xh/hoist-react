@@ -12,6 +12,7 @@ import {throwIf, apiRemoved} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     compact,
+    cloneDeep,
     flatten,
     groupBy,
     isEmpty,
@@ -317,6 +318,12 @@ export class FilterChooserModel extends HoistModel {
         wait().then(() => {
             rsSelectCmp.focus();
             rsSelectCmp.handleInputChange(inputValue);
+        }).thenAction(() => {
+            // Setting the Select's `inputValue` state above has the side-effect of modifying
+            // it's internal `value`. Force synchronise its `value` to our bound `selectValue`
+            // to get it back inline. Note we're intentionally not using `setSelectValue()`,
+            // which returns early if the actual filter value hasn't changed.
+            this.selectValue = cloneDeep(this.selectValue);
         });
     }
 

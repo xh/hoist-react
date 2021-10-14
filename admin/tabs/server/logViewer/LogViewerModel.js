@@ -47,6 +47,7 @@ export class LogViewerModel extends HoistModel {
     @managed
     filesGridModel = new GridModel({
         enableExport: true,
+        hideHeaders: true,
         persistWith: this.persistWith,
         store: new UrlStore({
             url: 'logViewerAdmin/listFiles',
