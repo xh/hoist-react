@@ -120,7 +120,6 @@ export class AlertBannerModel extends HoistModel {
 
         // Ask some questions if we are dealing with live stuff
         if (XH.alertBannerService.enabled && active) {
-
             // Question 1. Reshow when modifying an already active, closable banner?
             if (savedValue?.active && savedValue?.enableClose && savedValue?.publishDate) {
                 const reshow = await XH.confirm({
@@ -183,6 +182,12 @@ export class AlertBannerModel extends HoistModel {
         } else {
             await XH.jsonBlobService.createAsync(payload);
         }
+
+        XH.track({
+            category: 'Banner',
+            message: 'Updated Alert Banner',
+            data: {active, message, intent, iconName, enableClose}
+        });
 
         await XH.alertBannerService.checkForBannerAsync();
         return this.refreshAsync();
