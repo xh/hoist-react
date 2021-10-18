@@ -25,13 +25,13 @@ export const activityDetailView = hoistCmp.factory({
                 grid({flex: 1}),
                 detailRecForm()
             ],
-            tbar: bbar(),
+            tbar: tbar(),
             ...props
         });
     }
 });
 
-const bbar = hoistCmp.factory(
+const tbar = hoistCmp.factory(
     ({model}) => {
         return toolbar(
             filler(),

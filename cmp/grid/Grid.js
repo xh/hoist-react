@@ -19,7 +19,7 @@ import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {computed, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
-import {apiRemoved, isDisplayed, logDebug, logWithDebug} from '@xh/hoist/utils/js';
+import {apiRemoved, isDisplayed, logDebug, logWithDebug, consumeEvent} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {
@@ -143,9 +143,17 @@ class GridLocalModel extends HoistModel {
     fixedRowHeight;
 
     getRowHeight(node) {
-        const {model} = this;
+        const {model, agOptions} = this,
+            {sizingMode, groupRowHeight} = model,
+            {groupUseEntireRow} = agOptions;
+
         if (node?.group) {
-            return model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode(model.sizingMode);
+            return (
+                groupRowHeight ??
+                groupUseEntireRow ?
+                    AgGrid.getGroupRowHeightForSizingMode(sizingMode) :
+                    AgGrid.getRowHeightForSizingMode(sizingMode)
+            );
         }
         return max([
             this.fixedRowHeight,
@@ -221,10 +229,11 @@ class GridLocalModel extends HoistModel {
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             rowClassRules: model.rowClassRules,
             noRowsOverlayComponentFramework: observer(() => div(this.emptyText)),
+            onCellContextMenu: model.onCellContextMenu,
             onCellClicked: model.onCellClicked,
             onCellDoubleClicked: model.onCellDoubleClicked,
             onRowClicked: this.onRowClicked,
-            onRowDoubleClicked: model.onRowDoubleClicked,
+            onRowDoubleClicked: this.onRowDoubleClicked,
             onRowGroupOpened: this.onRowGroupOpened,
             onSelectionChanged: this.onSelectionChanged,
             onDragStopped: this.onDragStopped,
@@ -250,7 +259,8 @@ class GridLocalModel extends HoistModel {
             autoSizePadding: 3, // tighten up cells for ag-Grid native autosizing.  Remove when Hoist autosizing no longer experimental,
             editType: model.fullRowEditing ? 'fullRow' : undefined,
             singleClickEdit: clicksToEdit === 1,
-            suppressClickEdit: clicksToEdit !== 1 && clicksToEdit !== 2
+            suppressClickEdit: clicksToEdit !== 1 && clicksToEdit !== 2,
+            stopEditingWhenCellsLoseFocus: true
         };
 
         // Platform specific defaults
@@ -526,7 +536,7 @@ class GridLocalModel extends HoistModel {
             track: () => model.sizingMode,
             run: () => {
                 if (model.autosizeOptions.mode !== GridAutosizeMode.ON_SIZING_MODE_CHANGE) return;
-                model.autosizeAsync();
+                model.autosizeAsync({showMask: true});
             }
         };
     }
@@ -764,12 +774,13 @@ class GridLocalModel extends HoistModel {
             return;
         }
 
-        if (model.onKeyDown) model.onKeyDown(evt);
+        model.onKeyDown?.(evt);
     };
 
     onRowClicked = (evt) => {
         const {model} = this,
-            {selModel} = model;
+            {node, event} = evt,
+            {selModel, treeMode, clicksToExpand, agApi} = model;
 
         if (evt.rowPinned) {
             selModel.clear();
@@ -783,7 +794,25 @@ class GridLocalModel extends HoistModel {
             });
         }
 
-        if (model.onRowClicked) model.onRowClicked(evt);
+        model.onRowClicked?.(evt);
+
+        if (!event.defaultPrevented && treeMode && clicksToExpand === 1 && node?.allChildrenCount) {
+            agApi.setRowNodeExpanded(node, !node.expanded);
+            consumeEvent(event);
+        }
+    };
+
+    onRowDoubleClicked = (evt) => {
+        const {model} = this,
+            {node, event} = evt,
+            {treeMode, clicksToExpand, agApi} = model;
+
+        model.onRowDoubleClicked?.(evt);
+
+        if (!event.defaultPrevented && treeMode && clicksToExpand === 2 && node?.allChildrenCount) {
+            agApi.setRowNodeExpanded(node, !node.expanded);
+            consumeEvent(event);
+        }
     };
 }
 

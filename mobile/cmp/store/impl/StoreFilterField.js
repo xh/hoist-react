@@ -13,7 +13,7 @@ import {textInput} from '@xh/hoist/mobile/cmp/input';
 export function storeFilterFieldImpl(props) {
     return textInput({
         commitOnChange: true,
-        placeholder: 'Quick filter',
+        placeholder: 'Filter',
         width: 180,
         ...props
     });

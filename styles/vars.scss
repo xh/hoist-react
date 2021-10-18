@@ -200,6 +200,47 @@ body {
   --xh-intent-danger-trans2: hsla(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3), var(--xh-intent-a2));
 
 
+  //---------
+  // AppBar
+  //---------
+  --xh-appbar-bg: var(--appbar-bg, var(--xh-bg-alt));
+  --xh-appbar-border-color: var(--appbar-border-color, transparent);
+  --xh-appbar-color: var(--appbar-color, var(--xh-text-color));
+  --xh-appbar-height: var(--appbar-height, 42);
+  --xh-appbar-height-px: calc(var(--xh-appbar-height) * 1px);
+  --xh-appbar-title-color: var(--appbar-title-color, #{mc('blue-grey', '700')});
+  --xh-appbar-title-font-size: var(--appbar-title-font-size, calc(var(--xh-font-size) * 1.9));
+  --xh-appbar-title-font-size-px: calc(var(--xh-appbar-title-font-size) * 1px);
+
+  &.xh-dark {
+    --xh-appbar-border-color: var(--appbar-border-color, #{mc('blue-grey', '700')});
+    --xh-appbar-title-color: var(--appbar-title-color, #{mc('blue-grey', '50')});
+  }
+
+  &.xh-mobile {
+    --xh-appbar-bg: var(--appbar-bg, #{mc('blue-grey', '600')});
+    --xh-appbar-color: var(--appbar-color, #{mc('blue-grey', '50')});
+    --xh-appbar-title-color: var(--appbar-title-color, var(--xh-appbar-color));
+    --xh-appbar-title-font-size: var(--appbar-title-font-size, 19);
+
+    &.xh-dark {
+      --xh-appbar-bg: var(--appbar-bg, #{mc('blue-grey', '700')});
+    }
+  }
+
+
+  //---------------------------------------------------
+  // Backdrop mask - overlay shown behind modal dialogs
+  //---------------------------------------------------
+  // Light mode uses neutral gray + higher opacity for stronger masking relative to `--xh-mask-bg`.
+  --xh-backdrop-bg: var(--backdrop-bg, rgb(128, 128, 128, 0.6));
+
+  &.xh-dark {
+    // Dark mode applies higher opacity only.
+    --xh-backdrop-bg: var(--backdrop-bg, rgb(0, 0, 0, 0.6));
+  }
+
+
   //-----------------------------------------
   // Background (app / components in general)
   //-----------------------------------------
@@ -363,17 +404,30 @@ body {
   --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '400')});
   --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '200')});
   --xh-grid-group-text-color: var(--grid-group-text-color, white);
-  --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(205, 85%, 95%));
+  --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(205, 85%, 94%));
   --xh-grid-tree-group-border-color: var(--grid-tree-group-border-color, var(--xh-grid-selected-row-bg));
   --xh-grid-total-row-bg: var(--grid-total-row-bg, var(--xh-grid-tree-group-bg));
-  --xh-grid-header-bg: var(--grid-header-bg, var(--xh-blue-gray-light));
+  --xh-grid-header-bg: var(--grid-header-bg, var(--xh-grid-bg));
+  --xh-grid-tree-group-color-level-0: var(--grid-tree-group-color-level-0, hsl(205, 80%, 95%));
+  --xh-grid-tree-group-color-level-1: var(--grid-tree-group-color-level-1, hsl(125, 80%, 95%));
+  --xh-grid-tree-group-color-level-2: var(--grid-tree-group-color-level-2, hsl(55, 80%, 95%));
+  --xh-grid-tree-group-color-level-3: var(--grid-tree-group-color-level-3, hsl(30, 80%, 95%));
+  --xh-grid-tree-group-color-level-4: var(--grid-tree-group-color-level-4, hsl(250, 50%, 95%));
+  --xh-grid-tree-group-color-level-5: var(--grid-tree-group-color-level-5, hsl(330, 50%, 95%));
+  --xh-grid-tree-group-color-level-6: var(--grid-tree-group-color-level-6, var(--xh-grid-tree-group-color-level-0));
+  --xh-grid-tree-group-color-level-7: var(--grid-tree-group-color-level-7, var(--xh-grid-tree-group-color-level-1));
+  --xh-grid-tree-group-color-level-8: var(--grid-tree-group-color-level-8, var(--xh-grid-tree-group-color-level-2));
+  --xh-grid-tree-group-color-level-9: var(--grid-tree-group-color-level-9, var(--xh-grid-tree-group-color-level-3));
+
   --xh-grid-header-border-color: var(--grid-header-border-color, var(--xh-grid-border-color));
   --xh-grid-header-icon-color: var(--grid-header-icon-color, var(--xh-text-color-muted));
+  --xh-grid-header-lr-pad: var(--grid-header-cell-lr-pad, 11);
+  --xh-grid-header-lr-pad-px: calc(var(--xh-grid-header-lr-pad) * 1px);
   --xh-grid-header-font-family: var(--grid-header-font-family, var(--xh-grid-font-family));
   --xh-grid-header-font-size: var(--grid-header-font-size, var(--xh-grid-font-size));
   --xh-grid-header-font-size-px: calc(var(--xh-grid-header-font-size) * 1px);
   --xh-grid-header-font-weight: var(--grid-header-font-weight, 600);
-  --xh-grid-header-text-color: var(--grid-header-text-color, var(--xh-text-color));
+  --xh-grid-header-text-color: var(--grid-header-text-color, var(--xh-text-color-muted));
   --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '300')});
   --xh-grid-selected-row-bg: var(--grid-selected-row-bg, var(--xh-bg-highlight));
   --xh-grid-selected-row-text-color: var(--grid-selected-row-text-color, var(--xh-grid-text-color));
@@ -422,15 +476,20 @@ body {
 
   // Dark Grid
   &.xh-dark {
-    --xh-grid-bg-hover: var(--grid-bg-hover, hsl(200, 50%, 17%));
+    --xh-grid-bg-hover: var(--grid-bg-hover, hsl(200, 50%, 22%));
     --xh-grid-bg-odd: var(--grid-bg-odd, hsl(200, 26%, 11%));
     --xh-grid-border-color: var(--grid-border-color, hsl(186, 11%, 18%));
     --xh-grid-cell-change-bg-highlight: var(--grid-cell-bg-highlight, #{mc-trans('orange', '800', 0.8)});
     --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '800')});
     --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '700')});
-    --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(200, 50%, 12%));
+    --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(200, 50%, 18%));
     --xh-grid-total-row-bg: var(--grid-total-row-bg, var(--xh-grid-tree-group-bg));
-    --xh-grid-header-bg: var(--grid-header-bg, var(--xh-black));
+    --xh-grid-tree-group-color-level-0: var(--grid-tree-group-color-level-0, hsl(205, 65%, 15%));
+    --xh-grid-tree-group-color-level-1: var(--grid-tree-group-color-level-1, hsl(250, 65%, 15%));
+    --xh-grid-tree-group-color-level-2: var(--grid-tree-group-color-level-2, hsl(295, 65%, 15%));
+    --xh-grid-tree-group-color-level-3: var(--grid-tree-group-color-level-3, hsl(340, 65%, 15%));
+    --xh-grid-tree-group-color-level-4: var(--grid-tree-group-color-level-4, hsl(385, 65%, 15%));
+    --xh-grid-tree-group-color-level-5: var(--grid-tree-group-color-level-5, hsl(60, 25%, 15%));
     --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '800')});
   }
 
@@ -456,68 +515,35 @@ body {
     --xh-input-disabled-text-color: var(--form-field-disabled-text-color, rgba(191, 204, 214, 0.5));
   }
 
-
   //------------------------
   // Mask + LoadingIndicator
   //------------------------
-  --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '300', 0.3)});
-  --xh-mask-text-bg: var(--mask-text-bg, #{mc('blue-grey', '100')});
+  --xh-mask-bg: var(--mask-bg, rgba(255, 255, 255, 0.4));
+  --xh-mask-text-bg: var(--mask-text-bg, var(--xh-bg-alt));
+  --xh-mask-text-border: var(--mask-text-border, var(--xh-border-solid));
   --xh-mask-text-color: var(--mask-text-color, var(--xh-text-color));
   --xh-loading-indicator-bg: var(--loading-indicator-bg, #{mc('blue-grey', '100')});
   --xh-loading-indicator-border-color: var(--loading-indicator-border-color, var(--xh-border-color));
   --xh-loading-indicator-color: var(--loading-indicator-color, #{mc('blue-grey', '600')});
 
   &.xh-dark {
-    --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '900', 0.2)});
-    --xh-mask-text-bg: var(--mask-text-bg, #{mc-trans('grey', '900', 0.1)});
-    --xh-mask-text-color: var(--mask-text-color, var(--xh-text-color));
+    --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.4));
     --xh-loading-indicator-bg: var(--loading-indicator-bg, #{mc('blue-grey', '700')});
     --xh-loading-indicator-color: var(--loading-indicator-color, #{mc('blue-grey', '200')});
   }
 
+
+  //---------------------------------------
+  // Popovers - e.g. mobile app menu.
+  // Applicable to mobile only at this time
+  //---------------------------------------
   &.xh-mobile {
-    --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.2));
-  }
-
-  //------------------------
-  // Popovers
-  //------------------------
-  --xh-popover-box-shadow: var(--popover-shadow, #{0 0 20px rgba(0, 0, 0, 0.4)});
-  --xh-backdrop-bg: var(--backdrop-bg, #{mc-trans('blue-grey', '300', 0.2)});
-
-  &.xh-dark {
-    --xh-popover-box-shadow: var(--popover-shadow, #{0 0 20px rgba(0, 0, 0, 0.7)});
-  }
-
-  &.xh-mobile {
-    --xh-backdrop-bg: var(--backdrop-bg, rgba(0, 0, 0, 0.4));
-  }
-
-  //---------
-  // AppBar
-  //---------
-  --xh-appbar-bg: var(--appbar-bg, var(--xh-bg-alt));
-  --xh-appbar-border-color: var(--appbar-border-color, transparent);
-  --xh-appbar-color: var(--appbar-color, var(--xh-text-color));
-  --xh-appbar-height: var(--appbar-height, 42);
-  --xh-appbar-height-px: calc(var(--xh-appbar-height) * 1px);
-  --xh-appbar-title-color: var(--appbar-title-color, #{mc('blue-grey', '700')});
-  --xh-appbar-title-font-size: var(--appbar-title-font-size, calc(var(--xh-font-size) * 1.9));
-  --xh-appbar-title-font-size-px: calc(var(--xh-appbar-title-font-size) * 1px);
-
-  &.xh-dark {
-    --xh-appbar-border-color: var(--appbar-border-color, #{mc('blue-grey', '700')});
-    --xh-appbar-title-color: var(--appbar-title-color, #{mc('blue-grey', '50')});
-  }
-
-  &.xh-mobile {
-    --xh-appbar-bg: var(--appbar-bg, #{mc('blue-grey', '600')});
-    --xh-appbar-color: var(--appbar-color, #{mc('blue-grey', '50')});
-    --xh-appbar-title-color: var(--appbar-title-color, var(--xh-appbar-color));
-    --xh-appbar-title-font-size: var(--appbar-title-font-size, 19);
+    --xh-popover-backdrop-bg: var(--popover-backdrop, rgb(128, 128, 128, 0.2));
+    --xh-popover-box-shadow: var(--popover-shadow, #{0 0 20px rgba(0, 0, 0, 0.4)});
 
     &.xh-dark {
-      --xh-appbar-bg: var(--appbar-bg, #{mc('blue-grey', '700')});
+      --xh-popover-backdrop-bg: var(--popover-backdrop, rgb(0, 0, 0, 0.2));
+      --xh-popover-box-shadow: var(--popover-shadow, #{0 0 20px rgba(0, 0, 0, 0.7)});
     }
   }
 
@@ -540,7 +566,21 @@ body {
   --xh-panel-border-color: var(--panel-border-color, var(--xh-border-color));
   --xh-panel-border-width: var(--panel-border-width, 0);
   --xh-panel-border-width-px: calc(var(--xh-panel-border-width) * 1px);
+  --xh-panel-title-bg: var(--panel-title-bg, var(--xh-title-bg));
+  --xh-panel-title-font-family: var(--panel-title-font-family, var(--xh-title-font-family));
+  --xh-panel-title-font-size: var(--panel-title-font-size, var(--xh-title-font-size));
+  --xh-panel-title-font-size-px: calc(var(--xh-panel-title-font-size) * 1px);
+  --xh-panel-title-text-color: var(--panel-title-text-color, var(--xh-title-text-color));
 
+  &.xh-mobile {
+    --xh-panel-title-bg: var(--panel-title-bg, #{mc('blue-grey', '100')});
+    --xh-panel-title-text-color: var(--panel-title-text-color, #{mc('blue-grey', '800')});
+
+    &.xh-dark {
+      --xh-panel-title-bg: var(--panel-title-bg, #{mc('blue-grey', '900')});
+      --xh-panel-title-text-color: var(--panel-title-text-color, #{mc('blue-grey', '50')});
+    }
+  }
 
   //------------------------
   // Popups / dialogs
@@ -554,6 +594,9 @@ body {
   --xh-popup-title-font-size-px: calc(var(--xh-popup-title-font-size) * 1px);
   --xh-popup-title-text-color: var(--popup-title-text-color, var(--xh-title-text-color));
 
+  &.xh-mobile {
+    --xh-popup-border-width: 2;
+  }
 
   //------------------------
   // Resizable splitters
@@ -647,14 +690,7 @@ body {
   --xh-title-compact-height-px: calc(var(--xh-title-compact-height) * 1px);
 
   &.xh-mobile {
-    --xh-title-bg: var(--title-bg, #{mc('blue-grey', '100')});
-    --xh-title-text-color: var(--title-text-color, #{mc('blue-grey', '800')});
     --xh-title-font-size: var(--title-font-size, var(--xh-font-size));
-
-    &.xh-dark {
-      --xh-title-bg: var(--title-bg, #{mc('blue-grey', '900')});
-      --xh-title-text-color: var(--title-text-color, #{mc('blue-grey', '50')});
-    }
   }
 
 
@@ -684,6 +720,9 @@ body {
   }
 
   &.xh-mobile {
+    --xh-tbar-min-size: var(--tbar-min-size, 40);
+    --xh-tbar-min-size-px: calc(var(--xh-tbar-min-size) * 1px);
+
     &.xh-dark {
       --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
     }

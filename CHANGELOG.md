@@ -1,20 +1,163 @@
 # Changelog
 
-## v43.0.0-SNAPSHOT - unreleased
+## v44.0.0-SNAPSHOT - unreleased
 
+
+## v43.2.0 - 2021-10-14
+
+### 🎁 New Features
+
+* Admins can now configure an app-wide alert banner via a new tab in the Hoist Admin console.
+  Intended to alert users about planned maintenance / downtime, known problems with data or upstream
+  systems, and other similar use cases.
+* Minor re-org of the Hoist Admin console tabs. Panels relating primarily to server-side features
+  (including logging) are now grouped under a top-level "Server" tab. Configs have moved under
+  "General" with the new Alert Banner feature.
+
+### 🐞 Bug Fixes
+
+* Always enforce a minimal `wait()` within `GridModel.autosizeAsync()` to ensure that the Grid has
+  reacted to any data changes and ag-Grid accurately reports on expanded rows to measure.
+
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v43.1.0...v43.2.0)
+
+## v43.1.0 - 2021-10-04
+
+### 🎁 New Features
+
+* The Admin Console log viewer now supports downloading log files.
+  * Note apps must update to `hoist-core >= v10.0` to enable this feature.
+  * Core upgrade is _not_ a general requirement of this Hoist React release.
+* The `field` key in the constructor for `Column` will now accept an Object with field defaults, as
+  an alternative to the field name. This form allows the auto-construction of fully-defined `Field`
+  objects from the column specification.
+
+### 🐞 Bug Fixes
+
+* `GridModel` no longer mutates any `selModel` or `colChooser` config objects provided to its
+  constructor, resolving an edge-case bug where re-using the same object for either of these configs
+  across multiple GridModel instances (e.g. as a shared set of defaults) would break.
+* Grid autosizing tweaked to improve size estimation for indented tree rows and on mobile.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.50 -> 3.51`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v43.0.2...v43.1.0)
+
+## v43.0.2 - 2021-10-04
+
+### 🐞 Bug Fixes
+
+* Fix (important) to ensure static preload spinner loaded from the intended path.
+  * Please also update to latest `hoist-dev-utils >= 5.11.1` if possible.
+  * Avoids issue where loading an app on a nested route could trigger double-loading of app assets.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v43.0.1...v43.0.2)
+
+## v43.0.1 - 2021-10-04
+
+### 🎁 New Features
+
+* New `GridFindField` component that enables users to search through a Grid and select rows that
+  match the entered search term, _without_ applying any filtering. Especially useful for grids with
+  aggregations or other logic that preclude client-side filtering of the data.
+* Tree grid rows can be expanded / collapsed by clicking anywhere on the row. The new
+  `GridModel.clicksToExpand` config can be used to control how many clicks will toggle the row.
+  Defaults to double-click for desktop, and single tap for mobile - set to 0 to disable entirely.
+* Added `GridModel.onCellContextMenu` handler. Note that for mobile (phone) apps, this handler fires
+  on the "long press" (aka "tap and hold") gesture. This means it can be used as an alternate event
+  for actions like drilling into a record detail, especially for parent rows on tree grids, where
+  single tap will by default expand/collapse the node.
+* In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`. This
+  new component supports a `quickToggle` prop which allows for more streamlined inline editing of
+  boolean values.
+* `LoadSpec` now supports a new `meta` property. Use this property to pass app-specific metadata
+  through the `LoadSupport` loading and refresh lifecycle.
+* A spinner is now shown while the app downloads and parses its javascript - most noticeable when
+  loading a new (uncached) version, especially on a slower mobile connection. (Requires
+  `@xh/hoist-dev-utils` v5.11 or greater to enable.)
+
+### ⚙️ Technical
+
+* Removed `DEFAULT_SORTING_ORDER` static from `Column` class in favor of three new preset constants:
+  `ASC_FIRST`, `DESC_FIRST`, and `ABS_DESC_FIRST`. Hoist will now default sorting order on columns
+  based on field type. Sorting order can still be manually set via `Column.sortingOrder`.
+
+### 🐞 Bug Fixes
+
+* The ag-grid grid property `stopEditingWhenCellsLoseFocus` is now enabled by default to ensure
+  values are committed to the Store if the user clicks somewhere outside the grid while editing a
+  cell.
+* Triggering inline editing of text or select editor cells by typing characters will no longer lose
+  the first character pressed.
+
+### ✨ Style
+
+* New `TreeStyle.COLORS` and `TreeStyle.COLORS_AND_BORDERS` tree grid styles have been added. Use
+  the `--xh-grid-tree-group-color-level-*` CSS vars to customize colors as needed.
+* `TreeStyle.HIGHLIGHTS` and `TreeStyle.HIGHLIGHTS_AND_BORDERS` now highlight row nodes on a
+  gradient according to their depth.
+* Default colors for masks and dialog backdrops have been adjusted, with less obtrusive colors used
+  for masks via `--xh-mask-bg` and a darker `--xh-backdrop-bg` var now used behind dialogs.
+* Mobile-specific styles and CSS vars for panel and dialog title background have been tweaked to use
+  desktop defaults, and mobile dialogs now respect `--xh-popup-*` vars as expected.
+
+### 🎁 Breaking Changes
+
+* In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`.
+
+### ⚙️ Technical
+
+* The `xhLastReadChangelog` preference will not save SNAPSHOT versions to ensure the user continues
+  to see the 'What's New?' notification for non-SNAPSHOT releases.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.49 -> 3.50`
+* codemirror `5.62 -> 5.63`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v42.6.0...v43.0.1)
+
+## v42.6.0 - 2021-09-17
+
+### 🎁 New Features
+
+* New `Column.autosizeBufferPx` config applies column-specific autosize buffer and overrides
+  `GridAutosizeOptions.bufferPx`.
+* `Select` input now supports new `maxMenuHeight` prop.
+
+### 🐞 Bug Fixes
+
+* Fixes issue with incorrect Grid auto-sizing for Grids with certain row and cell styles.
+* Grid sizing mode styles no longer conflict with custom use of `groupUseEntireRow: false` within
+  `agOptions`.
+* Fixes an issue on iOS where `NumberInput` would incorrectly bring up a text keyboard.
+
+### ✨ Style
+
+* Reduced default Grid header and group row heights to minimize their use of vertical space,
+  especially at larger sizing modes. As before, apps can override via the `AgGrid.HEADER_HEIGHTS`
+  and `AgGrid.GROUP_ROW_HEIGHTS` static properties. The reduction in height does not apply to group
+  rows that do not use the entire width of the row.
+* Restyled Grid header rows with `--xh-grid-bg` and `--xh-text-color-muted` for a more minimal look
+  overall. As before, use the `--xh-grid-header-*` CSS vars to customize if needed.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v42.5.0...v42.6.0)
 
 ## v42.5.0 - 2021-09-10
 
 ### 🎁 New Features
 
-* Provide applications with the ability to override default logic for "restore defaults".
-This allows complex and device-specific sub-apps to perform more targeted and complete clearing of
-user state.  See new overridable method `HoistAppModel.restoreDefaultsAsync` for more information.
+* Provide applications with the ability to override default logic for "restore defaults". This
+  allows complex and device-specific sub-apps to perform more targeted and complete clearing of user
+  state. See new overridable method `HoistAppModel.restoreDefaultsAsync` for more information.
 
 ### 🐞 Bug Fixes
 
-* Better coverage of Fetch abort error.
-* The in-app changelog will not prompt the user with the "What's New" button if category-based
+* Improved coverage of Fetch `abort` errors.
+* The in-app changelog will no longer prompt the user with the "What's New" button if category-based
   filtering results in a version without any release notes.
 
 ### ✨ Style
@@ -27,7 +170,7 @@ user state.  See new overridable method `HoistAppModel.restoreDefaultsAsync` for
 * @blueprintjs/core `3.48 -> 3.49`
 * @popperjs/core `2.9 -> 2.10`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v42.4.0..v42.5.0)
+[Commit Log](https://github.com/xh/hoist-react/compare/v42.4.0...v42.5.0)
 
 ## v42.4.0 - 2021-09-03
 
@@ -45,6 +188,9 @@ user state.  See new overridable method `HoistAppModel.restoreDefaultsAsync` for
   `inter-ui` npm package. Inter is a modern, open-source font that leverages optical sizing to
   ensure maximum readability, even at very small sizes (e.g. `sizingMode: 'tiny'`). It's also a
   "variable" font, meaning it supports any weights from 1-1000 with a single font file download.
+* Default Grid header heights have been reduced for a more compact display and greater
+  differentiation between header and data rows. As before, apps can customize the pixel heights used
+  by overwriting the `AgGrid.HEADER_HEIGHTS` static, typically within `Bootstrap.js`.
 
 ### ⚙️ Technical
 
@@ -293,9 +439,9 @@ user state.  See new overridable method `HoistAppModel.restoreDefaultsAsync` for
 
 * Inline editing of Grid/Record data is now officially supported:
   + New `Column.editor` config accepts an editor component to enable managed editing of the cells in
-    that column. New `CheckboxEditor`, `DateEditor`, `NumberEditor`, `SelectEditor`,
-    `TextAreaEditor` and `TextEditor` components wrap their corresponding HoistInputs with the
-    required hook-based API and can be passed to this new config directly.
+    that column. New `CheckboxEditor`, `DateEditor`, `NumberEditor`, `SelectEditor`, `TextAreaEditor`
+    and `TextEditor` components wrap their corresponding HoistInputs with the required hook-based
+    API and can be passed to this new config directly.
   + `Store` now contains built-in support for validation of its uncommitted records. To enable,
     specify the new `rules` property on the `Field`s in your `Store`. Note that these rules and
     constraints use the same API as the forms package, and rules and constraints may be shared
@@ -492,9 +638,9 @@ your dev-utils dependency for your project to build.
 
 #### Models + Configs
 
-* New property `selectedRecordId` on `StoreSelectionModel`, `GridModel`, and `DataViewModel`.
-  Observe this instead of `selectedRecord` when you wish to track only the `id` of the selected
-  record and not changes to its data.
+* New property `selectedRecordId` on `StoreSelectionModel`, `GridModel`, and `DataViewModel`. Observe
+  this instead of `selectedRecord` when you wish to track only the `id` of the selected record and
+  not changes to its data.
 * `TreeMapModel.colorMode` config supports new value `wash`, which retains the positive and negative
   color while ignoring the intensity of the heat value.
 * New method `ChartModel.updateHighchartsConfig()` provides a more convenient API for changing a
@@ -2947,10 +3093,9 @@ leverage the context for model support discussed above.
 * ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are
   using `agOptions` to set sorting, filtering or resizing properties, these may need to change:
 
-  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and
-  `agOptions.enableFilter` have been removed. You can replicate their effects by using
-  `agOptions.defaultColDef`. For `Columns`, `suppressFilter` has been removed, an should be replaced
-  with `filter: false`.
+  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and `agOptions.enableFilter`
+  have been removed. You can replicate their effects by using `agOptions.defaultColDef`. For
+  `Columns`, `suppressFilter` has been removed, an should be replaced with `filter: false`.
 
 * `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.
   Applications should use the new Refresh architecture described above instead.
@@ -3761,9 +3906,9 @@ and ag-Grid upgrade, and more. 🚀
   * `Panel` and `Resizable` components have moved to their own packages in
     `@xh/hoist/desktop/cmp/panel` and `@xh/hoist/desktop/cmp/resizable`.
 * **Multiple changes and improvements made to tab-related APIs and components.**
-  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes`
-    -> `route` (to specify a starting route as a string) and `switcherPosition` has moved from a
-    model config to a prop on the `TabContainer` component.
+  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes` ->
+    `route` (to specify a starting route as a string) and `switcherPosition` has moved from a model
+    config to a prop on the `TabContainer` component.
   * `TabPane` and `TabPaneModel` have been renamed `Tab` and `TabModel`, respectively, with several
     related renames.
 * **Application entry-point classes decorated with `@HoistApp` must implement the new getter method

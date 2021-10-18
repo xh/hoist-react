@@ -4,6 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {br, fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import PT from 'prop-types';
@@ -20,8 +21,11 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmp.withFacto
     model: false,
 
     render({
-        warningTitle = 'Are you sure you want to restore defaults?',
-        warningMessage = 'All app options (including grid customizations) will be restored to their default settings, and the app will be reloaded.',
+        warningTitle = 'Please Confirm',
+        warningMessage = fragment(
+            'All app options (including grid customizations) will be restored to their default settings, and the app will be reloaded.', br(), br(),
+            'OK to proceed?'
+        ),
         ...buttonProps
     }, ref) {
 
@@ -29,8 +33,12 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmp.withFacto
             XH.confirm({
                 title: warningTitle,
                 message: warningMessage,
-                icon: Icon.warning({size: 'lg'}),
-                onConfirm: () => XH.restoreDefaultsAsync()
+                icon: Icon.warning(),
+                onConfirm: () => XH.restoreDefaultsAsync(),
+                confirmProps: {
+                    text: 'Yes, restore defaults',
+                    intent: 'primary'
+                }
             });
         };
 
@@ -48,7 +56,7 @@ RestoreDefaultsButton.propTypes = {
     ...Button.propTypes,
 
     /** Message for confirm dialog shown prior to clearing user customizations. */
-    warningMessage: PT.string,
+    warningMessage: PT.node,
 
     /** Title for confirm dialog shown prior to clearing user customizations. */
     warningTitle: PT.string

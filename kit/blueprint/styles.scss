@@ -48,8 +48,10 @@
   }
 }
 
-.bp3-dialog-container {
-  background-color: var(--xh-mask-bg);
+// Customized here for backdrops behind dialogs.
+// Note that masks use their own CSS var, set in Mask.scss.
+.bp3-overlay-backdrop {
+  background-color: var(--xh-backdrop-bg);
 }
 
 // Squelch popover scale transition - unlike Dialog with its `transitionName` prop, Popover

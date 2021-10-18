@@ -14,9 +14,9 @@ import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Cube} from '@xh/hoist/data';
 import {fmtDate, fmtNumber, numberRenderer} from '@xh/hoist/format';
-import {action, makeObservable} from '@xh/hoist/mobx';
+import {action, computed, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {isFinite} from 'lodash';
+import {isEmpty, isFinite} from 'lodash';
 import moment from 'moment';
 import {ChartsModel} from './charts/ChartsModel';
 
@@ -56,9 +56,17 @@ export class ActivityTrackingModel extends HoistModel {
     /** @return {LocalDate} */
     get endDay() {return this.formModel.values.endDay}
 
+    /** @return {number} */
+    get maxRows() {return this.formModel.values.maxRows}
+
+    /** @return {boolean} - true if data loaded from the server has been topped by maxRows. */
+    @computed
+    get maxRowsReached() {
+        return this.maxRows === this.cube.store.allCount;
+    }
+
     _monthFormat = 'MMM YYYY';
     _defaultDims = ['day', 'username'];
-    _defaultFilter = [{field: 'category', op: '=', value: 'App'}]
 
     constructor() {
         super();
@@ -66,7 +74,8 @@ export class ActivityTrackingModel extends HoistModel {
         this.formModel = new FormModel({
             fields: [
                 {name: 'startDay', initialValue: () => this.getDefaultStartDay()},
-                {name: 'endDay', initialValue: () => this.getDefaultEndDay()}
+                {name: 'endDay', initialValue: () => this.getDefaultEndDay()},
+                {name: 'maxRows', initialValue: 25000}
             ]
         });
 
@@ -74,15 +83,15 @@ export class ActivityTrackingModel extends HoistModel {
             fields: [
                 {name: 'day', type: 'localDate', isDimension: true, aggregator: new RangeAggregator()},
                 {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'username', displayName: 'User', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'msg', displayName: 'Message', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
+                {name: 'username', type: 'string', displayName: 'User', isDimension: true, aggregator: 'UNIQUE'},
+                {name: 'msg', type: 'string', displayName: 'Message', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'category', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'device', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'browser', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'userAgent', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'elapsed', type: 'int', aggregator: 'AVG'},
                 {name: 'impersonating', type: 'string'},
-                {name: 'dateCreated', displayName: 'Timestamp', type: 'date'},
+                {name: 'dateCreated', type: 'date', displayName: 'Timestamp'},
                 {name: 'data', type: 'json'},
                 {name: 'count', type: 'int', aggregator: 'CHILD_COUNT'},
                 {name: 'entryCount', type: 'int', aggregator: 'LEAF_COUNT'}
@@ -96,7 +105,6 @@ export class ActivityTrackingModel extends HoistModel {
         });
 
         this.filterChooserModel = new FilterChooserModel({
-            initialValue: this._defaultFilter,
             bind: this.cube.store,
             fieldSpecs: [
                 'category',
@@ -149,7 +157,20 @@ export class ActivityTrackingModel extends HoistModel {
             exportOptions: {filename: `${XH.appCode}-activity-summary`},
             emptyText: 'No activity reported...',
             sortBy: ['cubeLabel'],
-            onRowDoubleClicked: (e) => this.toggleRowExpandCollapse(e),
+            store: {
+                fields: [
+                    {name: 'cubeLabel', type: 'string'},
+                    {name: 'username', type: 'string'},
+                    {name: 'category', type: 'string'},
+                    {name: 'device', type: 'string'},
+                    {name: 'browser', type: 'string'},
+                    {name: 'userAgent', type: 'string'},
+                    {name: 'impersonating', type: 'string'},
+                    {name: 'elapsed', type: 'int'},
+                    {name: 'day', type: 'json', displayName: 'App Day'},
+                    {name: 'entryCount', type: 'int'}
+                ]
+            },
             columns: [
                 {
                     field: 'cubeLabel',
@@ -178,13 +199,12 @@ export class ActivityTrackingModel extends HoistModel {
                     field: 'day',
                     width: 200,
                     align: 'right',
-                    headerName: 'App Day',
                     renderer: this.dateRangeRenderer,
                     exportValue: this.dateRangeRenderer,
                     comparator: this.dateRangeComparator.bind(this),
                     hidden: true
                 },
-                {field: 'entryCount', headerName: 'Entries', width: 70, align: 'right'}
+                {field: 'entryCount', headerName: 'Entries', width: 80, align: 'right'}
             ]
         });
 
@@ -194,7 +214,7 @@ export class ActivityTrackingModel extends HoistModel {
         this.addReaction({
             track: () => {
                 const vals = this.formModel.values;
-                return [vals.startDay, vals.endDay];
+                return [vals.startDay, vals.endDay, vals.maxRows];
             },
             run: () => this.loadAsync(),
             debounce: 100
@@ -233,6 +253,7 @@ export class ActivityTrackingModel extends HoistModel {
             data = cube.executeQuery({
                 dimensions,
                 filter: this.filterChooserModel.value,
+                includeRoot: true,
                 includeLeaves: true
             });
 
@@ -240,15 +261,15 @@ export class ActivityTrackingModel extends HoistModel {
         gridModel.loadData(data);
         await gridModel.preSelectFirstAsync();
 
-
-        chartsModel.setDataAndDims({data, dimensions});
+        // Pass children of root (total) node to chart to plot first-level grouping.
+        chartsModel.setDataAndDims({data: data[0].children, dimensions});
     }
 
     // Cube emits leaves in "children" collection - rename that collection to "leafRows" so we can
     // carry the leaves with the record, but deliberately not show them in the tree grid. We only
     // want the tree grid to show aggregate records.
     separateLeafRows(node) {
-        if (!node.children) return;
+        if (isEmpty(node.children)) return;
 
         const childrenAreLeaves = !node.children[0].children;
         if (childrenAreLeaves) {
@@ -261,9 +282,9 @@ export class ActivityTrackingModel extends HoistModel {
 
     @action
     resetQuery() {
-        const {formModel, filterChooserModel, groupingChooserModel, _defaultDims, _defaultFilter} = this;
+        const {formModel, filterChooserModel, groupingChooserModel, _defaultDims} = this;
         formModel.init();
-        filterChooserModel.setValue(_defaultFilter);
+        filterChooserModel.setValue(null);
         groupingChooserModel.setValue(_defaultDims);
     }
 
@@ -293,11 +314,6 @@ export class ActivityTrackingModel extends HoistModel {
         this.formModel.setValues({
             startDay: this.endDay.subtract(value, unit).nextDay()
         });
-    }
-
-    toggleRowExpandCollapse(agParams) {
-        const {data, node} = agParams;
-        if (data?.children && node) node.setExpanded(!node.expanded);
     }
 
     dateRangeRenderer(range) {
@@ -342,7 +358,7 @@ export class ActivityTrackingModel extends HoistModel {
         }
     }
 
-    getDefaultStartDay() {return LocalDate.currentAppDay().subtract(7, 'days')}
+    getDefaultStartDay() {return LocalDate.currentAppDay().subtract(6)}
     getDefaultEndDay() {return LocalDate.currentAppDay()}
 
 }

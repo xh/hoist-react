@@ -166,18 +166,16 @@ export class ValuesTabModel extends HoistModel {
             filterValues.push(...newValues);
         });
 
-        // Combine unique values from record sets and column filters. [blank] is always included.
+        // Combine unique values from record sets and column filters.
         const allValues = uniqBy([
             ...allRecords.map(rec => this.valueFromRecord(rec)),
-            ...filterValues,
-            BLANK_STR
+            ...filterValues
         ], this.getUniqueValue);
         let values;
         if (cleanedFilter) {
             values = uniqBy([
                 ...filteredRecords.map(rec => this.valueFromRecord(rec)),
-                ...filterValues,
-                BLANK_STR
+                ...filterValues
             ], this.getUniqueValue);
         } else {
             values = allValues;
@@ -217,7 +215,7 @@ export class ValuesTabModel extends HoistModel {
 
     valueFromRecord(record) {
         const ret = record.get(this.field);
-        return isNil(ret) ? this.BLANK_STR : ret;
+        return isNil(ret) || ret === '' ? this.BLANK_STR : ret;
     }
 
     getUniqueValue(value) {
@@ -258,9 +256,9 @@ export class ValuesTabModel extends HoistModel {
 
         return new GridModel({
             store: {
-                idSpec: (raw) => raw.value.toString(),
+                idSpec: (raw) => this.getUniqueValue(raw.value).toString(),
                 fields: [
-                    {name: 'value'},
+                    {name: 'value', type: 'auto'},
                     {name: 'isChecked', type: 'bool'}
                 ]
             },

@@ -89,7 +89,7 @@ const cmp = hoistCmp.factory(
         const buttons = Children.map(children, button => {
             if (!button) return null;
 
-            const {value} = button.props,
+            const {value, intent: btnIntent} = button.props,
                 btnDisabled = disabled || button.props.disabled;
 
             throwIf(button.type !== Button, 'ButtonGroupInput child must be a Button.');
@@ -98,7 +98,7 @@ const cmp = hoistCmp.factory(
             const active = (model.renderValue === value);
             return cloneElement(button, {
                 active,
-                intent,
+                intent: btnIntent ?? intent,
                 minimal: withDefault(minimal, false),
                 outlined: withDefault(outlined, false),
                 disabled: withDefault(btnDisabled, false),

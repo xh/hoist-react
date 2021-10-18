@@ -87,10 +87,10 @@ export class HoistModel extends HoistBase {
     async loadAsync(loadSpec) {return this.loadSupport?.loadAsync(loadSpec)}
 
     /** Refresh this object - {@see LoadSupport.refreshAsync} */
-    async refreshAsync() {return this.loadSupport?.refreshAsync()}
+    async refreshAsync(meta) {return this.loadSupport?.refreshAsync(meta)}
 
     /** Auto-refresh this object - {@see LoadSupport.autoRefreshAsync} */
-    async autoRefreshAsync() {return this.loadSupport?.autoRefreshAsync()}
+    async autoRefreshAsync(meta) {return this.loadSupport?.autoRefreshAsync(meta)}
 
     /**
      * Implement this method to load data or other state from external data sources or services.

@@ -90,9 +90,9 @@ const metricSwitcher = hoistCmp.factory(
             items: [
                 button({
                     text: model.getLabelForMetric('entryCount', multiline),
+                    value: 'entryCount',
                     outlined: true,
-                    flex: 1,
-                    value: 'entryCount'
+                    flex: 1
                 }),
                 button({
                     text: model.getLabelForMetric('count', multiline),
@@ -103,9 +103,9 @@ const metricSwitcher = hoistCmp.factory(
                 }),
                 button({
                     text: model.getLabelForMetric('elapsed', multiline),
+                    value: 'elapsed',
                     outlined: true,
-                    flex: 1,
-                    value: 'elapsed'
+                    flex: 1
                 })
             ]
         });

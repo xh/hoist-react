@@ -34,7 +34,7 @@ export class ColChooserModel extends HoistModel {
         commitOnChange = true,
         showRestoreDefaults = true,
         autosizeOnCommit = false,
-        width = 520,
+        width = !commitOnChange && showRestoreDefaults ? 600 : 520,
         height = 300
     }) {
         super();
@@ -93,7 +93,7 @@ export class ColChooserModel extends HoistModel {
         });
 
         gridModel.applyColumnStateChanges(colChanges);
-        if (autosizeOnCommit && colChanges.length) gridModel.autosizeAsync();
+        if (autosizeOnCommit && colChanges.length) gridModel.autosizeAsync({showMask: true});
     }
 
     async restoreDefaultsAsync() {

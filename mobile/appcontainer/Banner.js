@@ -6,7 +6,7 @@
  */
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {XH, uses, hoistCmp} from '@xh/hoist/core';
-import {div} from '@xh/hoist/cmp/layout';
+import {hframe, div} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {isEmpty, isFunction} from 'lodash';
@@ -27,6 +27,7 @@ export const banner = hoistCmp.factory({
             icon,
             message,
             intent,
+            onClick,
             className,
             props
         } = model;
@@ -38,10 +39,19 @@ export const banner = hoistCmp.factory({
                 intent ? `xh-intent-${intent}` : `xh-intent-none`
             ),
             items: [
-                icon,
-                div({
-                    className: 'xh-banner__message',
-                    item: message
+                hframe({
+                    className: classNames(
+                        'xh-banner__click_target',
+                        onClick ? 'xh-banner__click_target--clickable' : null
+                    ),
+                    items: [
+                        icon,
+                        div({
+                            className: 'xh-banner__message',
+                            item: message,
+                            onClick
+                        })
+                    ]
                 }),
                 actionButton(),
                 dismissButton()
@@ -56,7 +66,11 @@ const actionButton = hoistCmp.factory(
         const {actionButtonProps} = model;
         if (isEmpty(actionButtonProps)) return null;
 
-        return button({...actionButtonProps});
+        return button({
+            className: 'xh-banner__action-button',
+            modifier: 'outline',
+            ...actionButtonProps
+        });
     }
 );
 
