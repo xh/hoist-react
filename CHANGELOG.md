@@ -2,6 +2,10 @@
 
 ## v44.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* TileFrame now supports new `onLayoutChange` callback prop.
+
 
 ## v43.2.0 - 2021-10-14
 

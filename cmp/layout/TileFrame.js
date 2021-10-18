@@ -37,6 +37,7 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
         maxTileWidth,
         minTileHeight,
         maxTileHeight,
+        onLayoutChange,
         ...props
     }, ref) {
         const localModel = useLocalModel(() => new LocalModel()),
@@ -54,7 +55,8 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
             minTileWidth,
             maxTileWidth,
             minTileHeight,
-            maxTileHeight
+            maxTileHeight,
+            onLayoutChange
         });
 
         ref = composeRefs(
@@ -98,7 +100,13 @@ TileFrame.propTypes = {
     minTileHeight: PT.number,
 
     /** Max tile height (in px).*/
-    maxTileHeight: PT.number
+    maxTileHeight: PT.number,
+
+    /**
+     * Callback triggered when the layout configuration changes.
+     * Receives the layout object {rows, cols, tileWidth, tileHeight} as its sole argument.
+     */
+    onLayoutChange: PT.func
 };
 
 class LocalModel extends HoistModel {
@@ -109,7 +117,12 @@ class LocalModel extends HoistModel {
     setParams(params) {
         if (isEqual(params, this.params)) return;
         this.params = params;
-        this.layout = this.createLayout();
+
+        const layout = this.createLayout();
+        if (isEqual(layout, this.layout)) return;
+        this.layout = layout;
+
+        this.params.onLayoutChange?.(layout);
     }
 
     getTileStyle(idx) {
