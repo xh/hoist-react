@@ -19,6 +19,7 @@ import {
     isFunction,
     isNil,
     isNumber,
+    isPlainObject,
     isString
 } from 'lodash';
 import {forwardRef, useImperativeHandle, useState, createElement} from 'react';
@@ -65,7 +66,9 @@ export class Column {
 
     /**
      * @param {Object} c - Column configuration.
-     * @param {string} [c.field] - name of data store field to display within the column.
+     * @param {(string|Object)} [c.field] - name of data store field to display within the column,
+     *      or object containing properties for store field.  If object form is used, the provided
+     *      properties will be used for auto-creating any fields needed on the Grid's store.
      * @param {string} [c.colId] - unique identifier for the Column within its grid.
      *      Defaults to field name - one of these two properties must be specified.
      * @param {boolean} [c.isTreeColumn] - true if this column will host the expand/collapse arrow
@@ -258,14 +261,14 @@ export class Column {
     }, gridModel) {
         Object.assign(this, rest);
 
-        this.field = field;
+        this.field = this.parseField(field);
         this.enableDotSeparatedFieldPath = withDefault(enableDotSeparatedFieldPath, true);
-        if (field) {
-            const splitFieldPath = this.enableDotSeparatedFieldPath && field.includes('.');
-            this.fieldPath = splitFieldPath ? field.split('.') : field;
+        if (this.field) {
+            const splitFieldPath = this.enableDotSeparatedFieldPath && this.field.includes('.');
+            this.fieldPath = splitFieldPath ? this.field.split('.') : this.field;
         }
 
-        this.colId = colId || field;
+        this.colId = colId || this.field;
         throwIf(!this.colId, 'Must specify colId or field for a Column.');
 
         this.isTreeColumn = withDefault(isTreeColumn, false);
@@ -273,7 +276,7 @@ export class Column {
         // Note that parent GridModel might have already defaulted displayName from an associated
         // `Store.field` when pre-processing Column configs - prior to calling this ctor. If that
         // hasn't happened, displayName will still always be defaulted to a fallback based on colId.
-        this.displayName = displayName || genDisplayName(this.colId);
+        this.displayName = displayName ?? this.fieldSpec?.displayName ?? genDisplayName(this.colId);
 
         // In contrast, headerName supports a null or '' value when no header label is desired.
         this.headerName = withDefault(headerName, this.displayName);
@@ -343,7 +346,7 @@ export class Column {
         this.exportValue = exportValue;
         this.exportFormat = withDefault(exportFormat, ExportFormat.DEFAULT);
         this.exportWidth = exportWidth || null;
-        this.excludeFromExport = withDefault(excludeFromExport, !field);
+        this.excludeFromExport = withDefault(excludeFromExport, !this.field);
 
         this.autosizable = withDefault(autosizable, this.resizable, true);
         this.autosizeIncludeHeader = withDefault(autosizeIncludeHeader, true);
@@ -686,6 +689,14 @@ export class Column {
         if (isArray(fieldPath)) return get(record.data, fieldPath);
         return record.data[fieldPath];
     };
+
+    parseField(field) {
+        if (isPlainObject(field)) {
+            this.fieldSpec = field;
+            return field.name;
+        }
+        return field;
+    }
 
     parsePinned(pinned) {
         if (pinned === true) return 'left';

@@ -304,9 +304,9 @@ export class ColumnWidthCalculator {
     //-----------------
     getIndentation(depth) {
         const cellEl = this.getCellEl(),
-            indentation = parseInt(window.getComputedStyle(cellEl).getPropertyValue('left'));
+            indentation = parseFloat(window.getComputedStyle(cellEl).getPropertyValue('left'));
         depth = parseInt(depth) + 1; // Add 1 to account for expand / collapse arrow.
-        return indentation * depth;
+        return Math.ceil(indentation * depth);
     }
 
     //------------------

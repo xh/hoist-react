@@ -8,10 +8,9 @@ import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistAppModel, managed} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {activityTab} from './tabs/activity/ActivityTab';
-import {configTab} from './tabs/config/ConfigTab';
 import {generalTab} from './tabs/general/GeneralTab';
-import {loggingTab} from './tabs/logging/LoggingTab';
 import {monitorTab} from './tabs/monitor/MonitorTab';
+import {serverTab} from './tabs/server/ServerTab';
 import {userDataTab} from './tabs/userData/UserDataTab';
 
 export class AppModel extends HoistAppModel {
@@ -50,31 +49,9 @@ export class AppModel extends HoistAppModel {
                 path: '/general',
                 children: [
                     {name: 'about', path: '/about'},
-                    {name: 'services', path: '/services'},
-                    {name: 'ehCache', path: '/ehCache'},
-                    {name: 'users', path: '/users'},
-                    {name: 'webSockets', path: '/webSockets'}
-                ]
-            },
-            {
-                name: 'config',
-                path: '/config'
-            },
-            {
-                name: 'logging',
-                path: '/logging',
-                children: [
-                    {name: 'viewer', path: '/viewer'},
-                    {name: 'levels', path: '/levels'}
-                ]
-            },
-            {
-                name: 'monitor',
-                path: '/monitor',
-                children: [
-                    {name: 'status', path: '/status'},
                     {name: 'config', path: '/config'},
-                    {name: 'memory', path: '/memory'}
+                    {name: 'users', path: '/users'},
+                    {name: 'alertBanner', path: '/alertBanner'}
                 ]
             },
             {
@@ -84,6 +61,26 @@ export class AppModel extends HoistAppModel {
                     {name: 'tracking', path: '/tracking'},
                     {name: 'clientErrors', path: '/clientErrors'},
                     {name: 'feedback', path: '/feedback'}
+                ]
+            },
+            {
+                name: 'server',
+                path: '/server',
+                children: [
+                    {name: 'logViewer', path: '/logViewer'},
+                    {name: 'logLevels', path: '/logLevels'},
+                    {name: 'services', path: '/services'},
+                    {name: 'ehCache', path: '/ehCache'},
+                    {name: 'webSockets', path: '/webSockets'}
+                ]
+            },
+            {
+                name: 'monitor',
+                path: '/monitor',
+                children: [
+                    {name: 'status', path: '/status'},
+                    {name: 'config', path: '/config'},
+                    {name: 'memory', path: '/memory'}
                 ]
             },
             {
@@ -101,9 +98,8 @@ export class AppModel extends HoistAppModel {
     createTabs() {
         return [
             {id: 'general', icon: Icon.info(), content: generalTab},
-            {id: 'config', icon: Icon.settings(), content: configTab},
             {id: 'activity', icon: Icon.analytics(), content: activityTab},
-            {id: 'logging', icon: Icon.fileText(), content: loggingTab},
+            {id: 'server', icon: Icon.server(), content: serverTab},
             {id: 'monitor', icon: Icon.shieldCheck(), content: monitorTab},
             {id: 'userData', icon: Icon.users(), content: userDataTab}
         ];

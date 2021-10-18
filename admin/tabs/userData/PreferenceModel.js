@@ -38,10 +38,12 @@ export class PreferenceModel extends HoistModel {
             fields: [
                 {
                     name: 'name',
+                    type: 'string',
                     required: true
                 },
                 {
                     name: 'groupName',
+                    type: 'string',
                     displayName: 'Group',
                     lookupName: 'groupNames',
                     required: true,
@@ -49,6 +51,7 @@ export class PreferenceModel extends HoistModel {
                 },
                 {
                     name: 'type',
+                    type: 'string',
                     defaultValue: 'string',
                     lookupName: 'types',
                     editable: 'onAdd',
@@ -60,7 +63,8 @@ export class PreferenceModel extends HoistModel {
                     required: true
                 },
                 {
-                    name: 'notes'
+                    name: 'notes',
+                    type: 'string'
                 },
                 {
                     name: 'local',
@@ -75,6 +79,7 @@ export class PreferenceModel extends HoistModel {
                 },
                 {
                     name: 'lastUpdatedBy',
+                    type: 'string',
                     editable: false
                 }
             ]

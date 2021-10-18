@@ -20,7 +20,12 @@ export class EhCacheModel extends HoistModel {
         enableExport: true,
         store: new UrlStore({
             url: 'ehCacheAdmin/listCaches',
-            fields: ['name', 'heapSize', 'entries', 'status'],
+            fields: [
+                {name: 'name', type: 'string'},
+                {name: 'heapSize', type: 'int'},
+                {name: 'entries', type: 'int'},
+                {name: 'status', type: 'string'}
+            ],
             idSpec: 'name',
             processRawData: row => {
                 return {

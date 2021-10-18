@@ -46,16 +46,17 @@ export class LogViewerModel extends HoistModel {
     @managed
     filesGridModel = new GridModel({
         enableExport: true,
+        hideHeaders: true,
         persistWith: this.persistWith,
         store: new UrlStore({
             url: 'logViewerAdmin/listFiles',
             idSpec: 'filename',
             dataRoot: 'files',
-            fields: ['filename']
+            fields: [{name: 'filename', type: 'string', displayName: 'Log File'}]
         }),
         sortBy: [{colId: 'filename', sort: 'desc'}],
         columns: [
-            {headerName: 'Log File', field: 'filename', minWidth: 160, flex: true}
+            {field: 'filename', minWidth: 160, flex: true}
         ]
     });
 

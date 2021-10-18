@@ -21,18 +21,19 @@ import {ActivityTrackingModel, PERSIST_ACTIVITY} from './ActivityTrackingModel';
 import {chartsPanel} from './charts/ChartsPanel';
 import {activityDetailView} from './detail/ActivityDetailView';
 
-export const activityTrackingView = hoistCmp.factory({
+
+export const activityTrackingPanel = hoistCmp.factory({
     model: creates(ActivityTrackingModel),
 
     render() {
         return panel({
-            mask: 'onLoad',
             className: 'xh-admin-activity-panel',
             tbar: tbar(),
             item: hframe(
                 aggregateView(),
                 activityDetailView({flex: 1})
-            )
+            ),
+            mask: 'onLoad'
         });
     }
 });
