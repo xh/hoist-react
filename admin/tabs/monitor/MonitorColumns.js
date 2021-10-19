@@ -5,8 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {FieldType} from '@xh/hoist/data';
-import {dateTimeCol, numberCol} from '@xh/hoist/cmp/grid';
 import {numberRenderer} from '@xh/hoist/format';
+import * as Col from '@xh/hoist/cmp/grid/columns';
 
 const {DATE, INT, NUMBER, STRING} = FieldType;
 
@@ -21,21 +21,21 @@ export const metricUnit = {
 
 export const warnThreshold = {
     field: {name: 'warnThreshold', type: INT},
-    ...numberCol,
+    ...Col.number,
     headerName: 'Warn',
     width: 130
 };
 
 export const failThreshold = {
     field: {name: 'failThreshold', type: INT},
-    ...numberCol,
+    ...Col.number,
     headerName: 'Fail',
     width: 130
 };
 
 export const sortOrder = {
     field: {name: 'sortOrder', type: INT},
-    ...numberCol,
+    ...Col.number,
     headerName: 'Sort',
     width: 100
 };
@@ -47,7 +47,7 @@ export const code = {
 
 export const timestamp = {
     field: {name: 'timestamp', type: DATE},
-    ...dateTimeCol
+    ...Col.dateTime
 };
 
 export const totalHeapMb = {

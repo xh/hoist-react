@@ -5,8 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {FieldType} from '@xh/hoist/data';
-import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
 import {fmtDateTime} from '@xh/hoist/format';
+import * as Col from '@xh/hoist/cmp/grid/columns';
 
 const {BOOL, DATE, JSON, STRING} = FieldType;
 
@@ -36,13 +36,13 @@ export const acl = {
 
 export const archived = {
     field: {name: 'archived', type: BOOL},
-    ...boolCheckCol,
+    ...Col.boolCheck,
     width: 100
 };
 
 export const archivedDate = {
     field: {name: 'archivedDate', type: DATE},
-    ...dateTimeCol,
+    ...Col.dateTime,
     renderer: archivedDateRenderer
 };
 

@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {FieldType} from '@xh/hoist/data';
-import {boolCheckCol} from '@xh/hoist/cmp/grid';
+import * as Col from '@xh/hoist/cmp/grid/columns';
 import {truncate} from 'lodash';
 
 const {AUTO, BOOL, STRING} = FieldType;
@@ -50,14 +50,14 @@ export const groupName = {
 
 export const clientVisible = {
     field: {name: 'clientVisible', type: BOOL},
-    ...boolCheckCol,
+    ...Col.boolCheck,
     displayName: 'Client?',
     width: 75
 };
 
 export const local = {
     field: {name: 'local', type: BOOL},
-    ...boolCheckCol,
+    ...Col.boolCheck,
     width: 75
 };
 

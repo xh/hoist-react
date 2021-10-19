@@ -5,8 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {FieldType} from '@xh/hoist/data';
-import {compactDateCol, numberCol} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
+import * as Col from '@xh/hoist/cmp/grid/columns';
 
 const {BOOL, DATE, INT, STRING} = FieldType;
 
@@ -31,7 +31,7 @@ export const createdTime = {
         type: DATE,
         displayName: 'Created'
     },
-    ...compactDateCol
+    ...Col.compactDate
 };
 
 export const sentMessageCount = {
@@ -40,7 +40,7 @@ export const sentMessageCount = {
         type: INT,
         displayName: 'Sent'
     },
-    ...numberCol,
+    ...Col.number,
     width: 90
 };
 
@@ -50,7 +50,7 @@ export const lastSentTime = {
         type: DATE,
         displayName: 'Last Sent'
     },
-    ...compactDateCol,
+    ...Col.compactDate,
     width: 140
 };
 
@@ -60,7 +60,7 @@ export const receivedMessageCount = {
         type: INT,
         displayName: 'Received'
     },
-    ...numberCol,
+    ...Col.number,
     width: 90
 };
 
@@ -70,6 +70,6 @@ export const lastReceivedTime = {
         type: DATE,
         displayName: 'Last Received'
     },
-    ...compactDateCol,
+    ...Col.compactDate,
     width: 140
 };

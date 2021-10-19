@@ -5,10 +5,10 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {FieldType} from '@xh/hoist/data';
-import {localDateCol} from '@xh/hoist/cmp/grid';
 import {RangeAggregator} from '@xh/hoist/admin/tabs/activity/aggregators/RangeAggregator';
 import {Icon} from '@xh/hoist/icon';
 import {fmtDate, fmtSpan, numberRenderer} from '@xh/hoist/format';
+import * as Col from '@xh/hoist/cmp/grid/columns';
 import {isFinite} from 'lodash';
 
 const {BOOL, INT, JSON, LOCAL_DATE, STRING} = FieldType;
@@ -61,7 +61,7 @@ export const day = {
         isDimension: true,
         aggregator: new RangeAggregator()
     },
-    ...localDateCol,
+    ...Col.localDate,
     displayName: 'App Day'
 };
 
@@ -185,7 +185,7 @@ export const dateRange = {
         type: JSON,
         displayName: 'App Day'
     },
-    ...localDateCol,
+    ...Col.localDate,
     width: 200,
     renderer: dateRangeRenderer,
     exportValue: dateRangeRenderer,

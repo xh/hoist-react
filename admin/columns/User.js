@@ -5,8 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {FieldType} from '@xh/hoist/data';
-import {boolCheckCol} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
+import * as Col from '@xh/hoist/cmp/grid/columns';
 
 const {STRING, BOOL} = FieldType;
 
@@ -69,6 +69,6 @@ export const impersonatingFlag = {
 
 export const active = {
     field: {name: 'active', type: BOOL},
-    ...boolCheckCol,
+    ...Col.boolCheck,
     width: 70
 };

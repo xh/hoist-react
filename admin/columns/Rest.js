@@ -5,18 +5,18 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {FieldType} from '@xh/hoist/data';
-import {dateTimeCol} from '@xh/hoist/cmp/grid';
+import * as Col from '@xh/hoist/cmp/grid/columns';
 
 const {DATE, STRING} = FieldType;
 
 export const dateCreated = {
     field: {name: 'dateCreated', type: DATE},
-    ...dateTimeCol
+    ...Col.dateTime
 };
 
 export const lastUpdated = {
     field: {name: 'lastUpdated', type: DATE},
-    ...dateTimeCol
+    ...Col.dateTime
 };
 
 export const lastUpdatedBy = {
