@@ -7,7 +7,7 @@
 import {hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {frame, box} from '@xh/hoist/cmp/layout';
 import {useOnResize} from '@xh/hoist/utils/react';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {minBy, isEqual} from 'lodash';
 import composeRefs from '@seznam/compose-react-refs';
 import PT from 'prop-types';
@@ -55,9 +55,10 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
             minTileWidth,
             maxTileWidth,
             minTileHeight,
-            maxTileHeight,
-            onLayoutChange
+            maxTileHeight
         });
+
+        useEffect(() => onLayoutChange?.(localModel.layout), [localModel.layout]);
 
         ref = composeRefs(
             ref,
@@ -121,8 +122,6 @@ class LocalModel extends HoistModel {
         const layout = this.createLayout();
         if (isEqual(layout, this.layout)) return;
         this.layout = layout;
-
-        this.params.onLayoutChange?.(layout);
     }
 
     getTileStyle(idx) {
