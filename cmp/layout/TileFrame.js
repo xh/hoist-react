@@ -7,7 +7,7 @@
 import {hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {frame, box} from '@xh/hoist/cmp/layout';
 import {useOnResize} from '@xh/hoist/utils/react';
-import {useEffect, useState} from 'react';
+import {useState, useLayoutEffect} from 'react';
 import {minBy, isEqual} from 'lodash';
 import composeRefs from '@seznam/compose-react-refs';
 import PT from 'prop-types';
@@ -58,7 +58,7 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
             maxTileHeight
         });
 
-        useEffect(
+        useLayoutEffect(
             () => onLayoutChange?.(localModel.layout),
             [onLayoutChange, localModel.layout]
         );
