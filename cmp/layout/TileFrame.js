@@ -58,7 +58,10 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
             maxTileHeight
         });
 
-        useEffect(() => onLayoutChange?.(localModel.layout), [localModel.layout]);
+        useEffect(
+            () => onLayoutChange?.(localModel.layout),
+            [onLayoutChange, localModel.layout]
+        );
 
         ref = composeRefs(
             ref,
