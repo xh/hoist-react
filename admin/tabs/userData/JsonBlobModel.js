@@ -20,81 +20,7 @@ export class JsonBlobModel extends HoistModel {
     persistWith = {localStorageKey: 'xhAdminJsonBlobState'};
 
     @managed
-    gridModel = new RestGridModel({
-        persistWith: this.persistWith,
-        colChooserModel: true,
-        enableExport: true,
-        selModel: 'multiple',
-        store: {
-            url: 'rest/jsonBlobAdmin',
-            reloadLookupsOnLoad: true,
-            fieldDefaults: {disableXssProtection: true},
-            fields: [
-                {...JBCol.token.field, editable: false},
-                {...JBCol.owner.field},
-                {...JBCol.acl.field},
-                {...Col.name.field, required: true},
-                {...Col.type.field, lookupName: 'types', required: true, enableCreate: true},
-                {...Col.value.field, type: 'json', required: true},
-                {...JBCol.meta.field},
-                {...Col.description.field},
-                {...JBCol.archived.field, defaultValue: false, required: true},
-                {...JBCol.archivedDate.field, editable: false},
-                {...Col.dateCreated.field, editable: false},
-                {...Col.lastUpdated.field, editable: false},
-                {...Col.lastUpdatedBy.field, editable: false}
-            ]
-        },
-        toolbarActions: [
-            addAction,
-            editAction,
-            cloneAction,
-            deleteAction
-        ],
-        menuActions: [
-            addAction,
-            editAction,
-            cloneAction,
-            deleteAction
-        ],
-        prepareCloneFn: ({clone}) => clone.name = `${clone.name}_CLONE`,
-        sortBy: ['owner', 'name'],
-        groupBy: 'type',
-        unit: 'blob',
-        filterFields: ['name', 'owner', 'type', 'value', 'meta', 'description'],
-        columns: [
-            {...JBCol.token, hidden: true},
-            {...JBCol.archived},
-            {...JBCol.owner},
-            {...JBCol.acl},
-            {...Col.name},
-            {...Col.type, width: 200},
-            {...Col.description},
-            {...Col.value},
-            {...JBCol.meta},
-            {...JBCol.archivedDate, hidden: true},
-            {...Col.dateCreated, hidden: true},
-            {...Col.lastUpdated, hidden: true},
-            {...Col.lastUpdatedBy, hidden: true}
-        ],
-        editors: [
-            {field: 'token'},
-            {field: 'owner'},
-            {field: 'acl'},
-            {field: 'name'},
-            {field: 'type'},
-            {field: 'description', formField: {item: textArea()}},
-            {field: 'value'},
-            {field: 'meta'},
-            {field: 'archived'},
-            {field: 'archivedDate', formField: {readonlyRenderer: v => {
-                return (!isDate(v) || v.getTime() === 0) ? '-' : fmtDateTime(v);
-            }}},
-            {field: 'dateCreated'},
-            {field: 'lastUpdated'},
-            {field: 'lastUpdatedBy'}
-        ]
-    });
+    gridModel;
 
     @managed
     @observable.ref
@@ -103,6 +29,88 @@ export class JsonBlobModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+
+        const required = true,
+            enableCreate = true,
+            hidden = true;
+
+        this.gridModel = new RestGridModel({
+            persistWith: this.persistWith,
+            colChooserModel: true,
+            enableExport: true,
+            selModel: 'multiple',
+            store: {
+                url: 'rest/jsonBlobAdmin',
+                reloadLookupsOnLoad: true,
+                fieldDefaults: {disableXssProtection: true},
+                fields: [
+                    {...JBCol.token.field, editable: false},
+                    {...JBCol.owner.field},
+                    {...JBCol.acl.field},
+                    {...Col.name.field, required},
+                    {...Col.type.field, lookupName: 'types', required, enableCreate},
+                    {...Col.value.field, type: 'json', required},
+                    {...JBCol.meta.field},
+                    {...Col.description.field},
+                    {...JBCol.archived.field, defaultValue: false, required},
+                    {...JBCol.archivedDate.field, editable: false},
+                    {...Col.dateCreated.field, editable: false},
+                    {...Col.lastUpdated.field, editable: false},
+                    {...Col.lastUpdatedBy.field, editable: false}
+                ]
+            },
+            toolbarActions: [
+                addAction,
+                editAction,
+                cloneAction,
+                deleteAction
+            ],
+            menuActions: [
+                addAction,
+                editAction,
+                cloneAction,
+                deleteAction
+            ],
+            prepareCloneFn: ({clone}) => clone.name = `${clone.name}_CLONE`,
+            sortBy: ['owner', 'name'],
+            groupBy: 'type',
+            unit: 'blob',
+            filterFields: ['name', 'owner', 'type', 'value', 'meta', 'description'],
+            columns: [
+                {...JBCol.token, hidden},
+                {...JBCol.archived},
+                {...JBCol.owner},
+                {...JBCol.acl},
+                {...Col.name},
+                {...Col.type, width: 200},
+                {...Col.description},
+                {...Col.value},
+                {...JBCol.meta},
+                {...JBCol.archivedDate, hidden},
+                {...Col.dateCreated, hidden},
+                {...Col.lastUpdated, hidden},
+                {...Col.lastUpdatedBy, hidden}
+            ],
+            editors: [
+                {field: 'token'},
+                {field: 'owner'},
+                {field: 'acl'},
+                {field: 'name'},
+                {field: 'type'},
+                {field: 'description', formField: {item: textArea()}},
+                {field: 'value'},
+                {field: 'meta'},
+                {field: 'archived'},
+                {field: 'archivedDate', formField: {
+                    readonlyRenderer: v => {
+                        return (!isDate(v) || v.getTime() === 0) ? '-' : fmtDateTime(v);
+                    }
+                }},
+                {field: 'dateCreated'},
+                {field: 'lastUpdated'},
+                {field: 'lastUpdatedBy'}
+            ]
+        });
     }
 
     async doLoadAsync(loadSpec) {

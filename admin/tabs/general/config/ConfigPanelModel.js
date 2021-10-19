@@ -29,68 +29,7 @@ export class ConfigPanelModel extends HoistModel {
     regroupDialogModel = new RegroupDialogModel(this);
 
     @managed
-    gridModel = new RestGridModel({
-        persistWith: this.persistWith,
-        colChooserModel: true,
-        enableExport: true,
-        selModel: 'multiple',
-        store: new RestStore({
-            url: 'rest/configAdmin',
-            reloadLookupsOnLoad: true,
-            fieldDefaults: {disableXssProtection: true},
-            fields: [
-                {...Col.name.field, required: true},
-                {...Col.groupName.field, lookupName: 'groupNames', required: true, enableCreate: true},
-                {...Col.valueType.field, lookupName: 'valueTypes', editable: 'onAdd', required: true},
-                {...Col.value.field, typeField: 'valueType', required: true},
-                {...Col.clientVisible.field, defaultValue: false, required: true},
-                {...Col.note.field},
-                {...Col.lastUpdated.field, editable: false},
-                {...Col.lastUpdatedBy.field, editable: false}
-            ]
-        }),
-        actionWarning: {
-            del: (records) =>  `Are you sure you want to delete ${records.length} config(s)? Deleting configs can break running apps.`
-        },
-        toolbarActions: [
-            addAction,
-            editAction,
-            cloneAction,
-            deleteAction
-        ],
-        menuActions: [
-            addAction,
-            editAction,
-            cloneAction,
-            deleteAction,
-            this.regroupDialogModel.regroupAction
-        ],
-        prepareCloneFn: ({clone}) => clone.name = `${clone.name}_CLONE`,
-        unit: 'config',
-        filterFields: ['name', 'value', 'groupName', 'note'],
-        sortBy: 'name',
-        groupBy: 'groupName',
-        columns: [
-            {...Col.groupName, hidden: true},
-            {...Col.name},
-            {...Col.valueType},
-            {...Col.value, flex: null, width: 200, renderer: this.configRenderer, tooltip: this.configRenderer},
-            {...Col.clientVisible},
-            {...Col.note},
-            {...Col.lastUpdatedBy, hidden: true},
-            {...Col.lastUpdated, hidden: true}
-        ],
-        editors: [
-            {field: 'name'},
-            {field: 'groupName'},
-            {field: 'valueType'},
-            {field: 'value'},
-            {field: 'note', formField: {item: textArea({height: 100})}},
-            {field: 'clientVisible'},
-            {field: 'lastUpdated'},
-            {field: 'lastUpdatedBy'}
-        ]
-    });
+    gridModel;
 
     @managed
     @observable.ref
@@ -99,6 +38,73 @@ export class ConfigPanelModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+
+        const required = true,
+            enableCreate = true,
+            hidden = true;
+
+        this.gridModel = new RestGridModel({
+            persistWith: this.persistWith,
+            colChooserModel: true,
+            enableExport: true,
+            selModel: 'multiple',
+            store: new RestStore({
+                url: 'rest/configAdmin',
+                reloadLookupsOnLoad: true,
+                fieldDefaults: {disableXssProtection: true},
+                fields: [
+                    {...Col.name.field, required},
+                    {...Col.groupName.field, lookupName: 'groupNames', required, enableCreate},
+                    {...Col.valueType.field, lookupName: 'valueTypes', editable: 'onAdd', required},
+                    {...Col.value.field, typeField: 'valueType', required},
+                    {...Col.clientVisible.field, defaultValue: false, required},
+                    {...Col.note.field},
+                    {...Col.lastUpdated.field, editable: false},
+                    {...Col.lastUpdatedBy.field, editable: false}
+                ]
+            }),
+            actionWarning: {
+                del: (records) =>  `Are you sure you want to delete ${records.length} config(s)? Deleting configs can break running apps.`
+            },
+            toolbarActions: [
+                addAction,
+                editAction,
+                cloneAction,
+                deleteAction
+            ],
+            menuActions: [
+                addAction,
+                editAction,
+                cloneAction,
+                deleteAction,
+                this.regroupDialogModel.regroupAction
+            ],
+            prepareCloneFn: ({clone}) => clone.name = `${clone.name}_CLONE`,
+            unit: 'config',
+            filterFields: ['name', 'value', 'groupName', 'note'],
+            sortBy: 'name',
+            groupBy: 'groupName',
+            columns: [
+                {...Col.groupName, hidden},
+                {...Col.name},
+                {...Col.valueType},
+                {...Col.value, flex: null, width: 200, renderer: this.configRenderer, tooltip: this.configRenderer},
+                {...Col.clientVisible},
+                {...Col.note},
+                {...Col.lastUpdatedBy, hidden},
+                {...Col.lastUpdated, hidden}
+            ],
+            editors: [
+                {field: 'name'},
+                {field: 'groupName'},
+                {field: 'valueType'},
+                {field: 'value'},
+                {field: 'note', formField: {item: textArea({height: 100})}},
+                {field: 'clientVisible'},
+                {field: 'lastUpdated'},
+                {field: 'lastUpdatedBy'}
+            ]
+        });
     }
 
     async doLoadAsync(loadSpec) {

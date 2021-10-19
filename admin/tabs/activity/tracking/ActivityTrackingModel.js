@@ -144,6 +144,7 @@ export class ActivityTrackingModel extends HoistModel {
             persistWith: this.persistWith
         });
 
+        const hidden = true;
         this.gridModel = new GridModel({
             treeMode: true,
             treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
@@ -170,14 +171,14 @@ export class ActivityTrackingModel extends HoistModel {
                     renderer: (v, params) => params.record.raw.cubeDimension === 'day' ? fmtDate(v) : v,
                     comparator: this.cubeLabelComparator.bind(this)
                 },
-                {...Col.username, hidden: true},
-                {...Col.category, hidden: true},
-                {...Col.device, hidden: true},
-                {...Col.browser, hidden: true},
-                {...Col.userAgent, hidden: true},
-                {...Col.impersonating, hidden: true},
-                {...Col.elapsed, headerName: 'Elapsed (avg)', hidden: true},
-                {...Col.dateRange, hidden: true},
+                {...Col.username, hidden},
+                {...Col.category, hidden},
+                {...Col.device, hidden},
+                {...Col.browser, hidden},
+                {...Col.userAgent, hidden},
+                {...Col.impersonating, hidden},
+                {...Col.elapsed, headerName: 'Elapsed (avg)', hidden},
+                {...Col.dateRange, hidden},
                 {...Col.entryCount}
             ]
         });

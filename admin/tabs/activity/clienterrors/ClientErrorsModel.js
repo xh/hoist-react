@@ -41,6 +41,7 @@ export class ClientErrorsModel extends HoistModel {
         this.startDay = this.getDefaultStartDay();
         this.endDay = this.getDefaultEndDay();
 
+        const hidden = true;
         this.gridModel = new GridModel({
             persistWith: this.persistWith,
             colChooserModel: true,
@@ -54,14 +55,14 @@ export class ClientErrorsModel extends HoistModel {
             columns: [
                 {...Col.userMessageFlag},
                 {...Col.userAlertedFlag},
-                {...Col.entryId, hidden: true},
+                {...Col.entryId, hidden},
                 {...Col.username},
                 {...Col.browser},
                 {...Col.device},
-                {...Col.userAgent, hidden: true},
+                {...Col.userAgent, hidden},
                 {...Col.appVersion},
                 {...Col.appEnvironment},
-                {...Col.msg, displayName: 'User Message', hidden: true},
+                {...Col.msg, displayName: 'User Message', hidden},
                 {...Col.error},
                 {...Col.url},
                 {...Col.dateCreated, displayName: 'Timestamp'},

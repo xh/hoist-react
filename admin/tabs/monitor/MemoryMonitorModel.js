@@ -6,7 +6,7 @@
  */
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, XH, managed} from '@xh/hoist/core';
 import {fmtTime} from '@xh/hoist/format';
 import {checkMinVersion} from '@xh/hoist/utils/js';
 import {forOwn, sortBy} from 'lodash';
@@ -15,9 +15,9 @@ import * as MCol from './MonitorColumns';
 export class MemoryMonitorModel extends HoistModel {
 
     /** @member {GridModel} */
-    gridModel;
+    @managed gridModel;
     /** @member {ChartModel} */
-    chartModel;
+    @managed chartModel;
 
     get minVersionWarning() {
         const minVersion = '8.7.0',

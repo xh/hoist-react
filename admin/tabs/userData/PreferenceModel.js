@@ -26,61 +26,7 @@ export class PreferenceModel extends HoistModel {
     regroupDialogModel = new RegroupDialogModel(this);
 
     @managed
-    gridModel = new RestGridModel({
-        persistWith: this.persistWith,
-        colChooserModel: true,
-        enableExport: true,
-        selModel: 'multiple',
-        store: {
-            url: 'rest/preferenceAdmin',
-            reloadLookupsOnLoad: true,
-            fieldDefaults: {disableXssProtection: true},
-            fields: [
-                {...Col.name.field, required: true},
-                {...Col.groupName.field, lookupName: 'groupNames', required: true, enableCreate: true},
-                {...Col.type.field, lookupName: 'types', editable: 'onAdd', required: true},
-                {...Col.defaultValue.field, typeField: 'type', required: true},
-                {...Col.notes.field},
-                {...Col.local.field, defaultValue: false, required: true},
-                {...Col.lastUpdated.field, editable: false},
-                {...Col.lastUpdatedBy.field, editable: false}
-            ]
-        },
-        sortBy: 'name',
-        groupBy: 'groupName',
-        unit: 'preference',
-        filterFields: ['name', 'groupName'],
-        actionWarning: {
-            del: (records) =>  `Are you sure you want to delete ${records.length} preference(s)? Deleting preferences can break running apps.`
-
-        },
-        menuActions: [
-            addAction,
-            editAction,
-            deleteAction,
-            this.regroupDialogModel.regroupAction
-        ],
-        columns: [
-            {...Col.local},
-            {...Col.name},
-            {...Col.type},
-            {...Col.defaultValue},
-            {...Col.groupName, hidden: true},
-            {...Col.notes},
-            {...Col.lastUpdatedBy, hidden: true},
-            {...Col.lastUpdated, hidden: true}
-        ],
-        editors: [
-            {field: 'name'},
-            {field: 'groupName'},
-            {field: 'type'},
-            {field: 'defaultValue'},
-            {field: 'notes', formField: {item: textArea({height: 100})}},
-            {field: 'local'},
-            {field: 'lastUpdated'},
-            {field: 'lastUpdatedBy'}
-        ]
-    });
+    gridModel;
 
     @managed
     @observable.ref
@@ -89,6 +35,66 @@ export class PreferenceModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+
+        const required = true,
+            enableCreate = true,
+            hidden = true;
+
+        this.gridModel = new RestGridModel({
+            persistWith: this.persistWith,
+            colChooserModel: true,
+            enableExport: true,
+            selModel: 'multiple',
+            store: {
+                url: 'rest/preferenceAdmin',
+                reloadLookupsOnLoad: true,
+                fieldDefaults: {disableXssProtection: true},
+                fields: [
+                    {...Col.name.field, required},
+                    {...Col.groupName.field, lookupName: 'groupNames', required, enableCreate},
+                    {...Col.type.field, lookupName: 'types', editable: 'onAdd', required},
+                    {...Col.defaultValue.field, typeField: 'type', required},
+                    {...Col.notes.field},
+                    {...Col.local.field, defaultValue: false, required},
+                    {...Col.lastUpdated.field, editable: false},
+                    {...Col.lastUpdatedBy.field, editable: false}
+                ]
+            },
+            sortBy: 'name',
+            groupBy: 'groupName',
+            unit: 'preference',
+            filterFields: ['name', 'groupName'],
+            actionWarning: {
+                del: (records) =>  `Are you sure you want to delete ${records.length} preference(s)? Deleting preferences can break running apps.`
+
+            },
+            menuActions: [
+                addAction,
+                editAction,
+                deleteAction,
+                this.regroupDialogModel.regroupAction
+            ],
+            columns: [
+                {...Col.local},
+                {...Col.name},
+                {...Col.type},
+                {...Col.defaultValue},
+                {...Col.groupName, hidden},
+                {...Col.notes},
+                {...Col.lastUpdatedBy, hidden},
+                {...Col.lastUpdated, hidden}
+            ],
+            editors: [
+                {field: 'name'},
+                {field: 'groupName'},
+                {field: 'type'},
+                {field: 'defaultValue'},
+                {field: 'notes', formField: {item: textArea({height: 100})}},
+                {field: 'local'},
+                {field: 'lastUpdated'},
+                {field: 'lastUpdatedBy'}
+            ]
+        });
     }
 
     async doLoadAsync(loadSpec) {

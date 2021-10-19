@@ -44,27 +44,7 @@ export class LogViewerModel extends HoistModel {
     logDisplayModel = new LogDisplayModel(this);
 
     @managed
-    filesGridModel = new GridModel({
-        enableExport: true,
-        hideHeaders: true,
-        persistWith: this.persistWith,
-        store: new UrlStore({
-            url: 'logViewerAdmin/listFiles',
-            idSpec: 'filename',
-            dataRoot: 'files',
-            fields: [{
-                name: 'filename',
-                type: 'string',
-                displayName: 'Log File'
-            }]
-        }),
-        sortBy: ['filename|desc'],
-        columns: [{
-            field: 'filename',
-            minWidth: 160,
-            flex: true
-        }]
-    });
+    filesGridModel;
 
     get selectedRecord() {
         return this.filesGridModel.selectedRecord;
@@ -73,6 +53,29 @@ export class LogViewerModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+
+        this.filesGridModel = new GridModel({
+            enableExport: true,
+            hideHeaders: true,
+            persistWith: this.persistWith,
+            store: new UrlStore({
+                url: 'logViewerAdmin/listFiles',
+                idSpec: 'filename',
+                dataRoot: 'files',
+                fields: [{
+                    name: 'filename',
+                    type: 'string',
+                    displayName: 'Log File'
+                }]
+            }),
+            sortBy: ['filename|desc'],
+            columns: [{
+                field: 'filename',
+                minWidth: 160,
+                flex: true
+            }]
+        });
+
         this.addReaction(this.syncSelectionReaction());
         this.addReaction(this.toggleTailReaction());
         this.addReaction(this.reloadReaction());

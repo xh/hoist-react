@@ -14,6 +14,9 @@ export const monitorEditorPanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
 );
 
+const required = true,
+    hidden = true;
+
 const modelSpec = {
     persistWith: {localStorageKey: 'xhAdminMonitorState'},
     colChooserModel: true,
@@ -22,19 +25,19 @@ const modelSpec = {
         url: 'rest/monitorAdmin',
         fieldDefaults: {disableXssProtection: true},
         fields: [
-            {...MCol.code.field, required: true},
+            {...MCol.code.field, required},
             {...MCol.metricUnit.field},
             {...MCol.warnThreshold.field},
             {...MCol.failThreshold.field},
             {...MCol.sortOrder.field},
 
-            {...Col.name.field, required: true},
+            {...Col.name.field, required},
             {...Col.notes.field},
-            {...Col.active.field, defaultValue: true, required: true},
+            {...Col.active.field, defaultValue: true, required},
             {...Col.lastUpdated.field, editable: false},
             {...Col.lastUpdatedBy.field, editable: false},
 
-            {name: 'metricType', type: 'string', lookupName: 'metricTypes', required: true},
+            {name: 'metricType', type: 'string', lookupName: 'metricTypes', required},
             {name: 'params', type: 'json'}
         ]
     },
@@ -49,8 +52,8 @@ const modelSpec = {
         {...MCol.failThreshold},
         {...MCol.metricUnit},
         {...Col.notes},
-        {...Col.lastUpdatedBy, hidden: true},
-        {...Col.lastUpdated, hidden: true},
+        {...Col.lastUpdatedBy, hidden},
+        {...Col.lastUpdated, hidden},
         {...MCol.sortOrder}
     ],
     editors: [

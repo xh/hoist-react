@@ -12,6 +12,9 @@ export const userPreferencePanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
 );
 
+const required = true,
+    hidden = true;
+
 const modelSpec = {
     persistWith: {localStorageKey: 'xhAdminUserPreferenceState'},
     colChooserModel: true,
@@ -22,11 +25,11 @@ const modelSpec = {
         reloadLookupsOnLoad: true,
         fieldDefaults: {disableXssProtection: true},
         fields: [
-            {...Col.name.field, displayName: 'Pref', lookupName: 'names', editable: 'onAdd', required: true},
+            {...Col.name.field, displayName: 'Pref', lookupName: 'names', editable: 'onAdd', required},
             {...Col.groupName.field, lookupName: 'groupNames', editable: false},
             {...Col.type.field, editable: false},
-            {...Col.username.field, required: true},
-            {...Col.userValue.field, typeField: 'type', required: true},
+            {...Col.username.field, required},
+            {...Col.userValue.field, typeField: 'type', required},
             {...Col.lastUpdated.field, editable: false},
             {...Col.lastUpdatedBy.field, editable: false}
         ]
@@ -39,10 +42,10 @@ const modelSpec = {
         {...Col.name},
         {...Col.type},
         {...Col.username},
-        {...Col.groupName, hidden: true},
+        {...Col.groupName, hidden},
         {...Col.userValue},
-        {...Col.lastUpdatedBy, hidden: true},
-        {...Col.lastUpdated, hidden: true}
+        {...Col.lastUpdatedBy, hidden},
+        {...Col.lastUpdated, hidden}
     ],
     editors: [
         {field: 'name'},

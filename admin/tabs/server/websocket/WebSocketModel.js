@@ -25,40 +25,7 @@ export class WebSocketModel extends HoistModel {
     lastRefresh;
 
     @managed
-    gridModel = new GridModel({
-        emptyText: 'No clients connected.',
-        enableExport: true,
-        store: {
-            idSpec: 'key',
-            processRawData: row => {
-                const authUser = row.authUser.username,
-                    apparentUser = row.apparentUser.username,
-                    impersonating = authUser != apparentUser;
-
-                return {
-                    ...row,
-                    authUser,
-                    apparentUser,
-                    user: impersonating ? `${authUser} (as ${apparentUser})` : authUser
-                };
-            },
-            fields: [
-                {name: 'authUser', type: 'string'},
-                {name: 'apparentUser', type: 'string'}
-            ]
-        },
-        sortBy: ['key'],
-        columns: [
-            WSCol.isOpen,
-            WSCol.key,
-            Col.user,
-            WSCol.createdTime,
-            WSCol.sentMessageCount,
-            WSCol.lastSentTime,
-            WSCol.receivedMessageCount,
-            WSCol.lastReceivedTime
-        ]
-    })
+    gridModel;
 
     @managed
     _timer;
@@ -66,6 +33,42 @@ export class WebSocketModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+
+        this.gridModel = new GridModel({
+            emptyText: 'No clients connected.',
+            enableExport: true,
+            store: {
+                idSpec: 'key',
+                processRawData: row => {
+                    const authUser = row.authUser.username,
+                        apparentUser = row.apparentUser.username,
+                        impersonating = authUser != apparentUser;
+
+                    return {
+                        ...row,
+                        authUser,
+                        apparentUser,
+                        user: impersonating ? `${authUser} (as ${apparentUser})` : authUser
+                    };
+                },
+                fields: [
+                    {name: 'authUser', type: 'string'},
+                    {name: 'apparentUser', type: 'string'}
+                ]
+            },
+            sortBy: ['key'],
+            columns: [
+                WSCol.isOpen,
+                WSCol.key,
+                Col.user,
+                WSCol.createdTime,
+                WSCol.sentMessageCount,
+                WSCol.lastSentTime,
+                WSCol.receivedMessageCount,
+                WSCol.lastReceivedTime
+            ]
+        });
+
         this._timer = Timer.create({
             runFn: () => {
                 if (isDisplayed(this.viewRef.current)) {

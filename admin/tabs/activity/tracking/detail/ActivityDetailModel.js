@@ -20,6 +20,9 @@ export class ActivityDetailModel extends HoistModel {
         makeObservable(this);
         this.parentModel = parentModel;
 
+        const hidden = true,
+            filterable = true;
+
         this.gridModel = new GridModel({
             sortBy: 'dateCreated|desc',
             colChooserModel: true,
@@ -32,17 +35,17 @@ export class ActivityDetailModel extends HoistModel {
             emptyText: 'Select a group on the left to see detailed tracking logs.',
             columns: [
                 {...Col.impersonatingFlag},
-                {...Col.entryId, hidden: true},
-                {...Col.username, filterable: true},
-                {...Col.impersonating, hidden: true},
-                {...Col.category, filterable: true},
-                {...Col.msg, filterable: true},
-                {...Col.data, hidden: true},
-                {...Col.device, filterable: true},
-                {...Col.browser, filterable: true},
-                {...Col.userAgent, hidden: true, filterable: true},
-                {...Col.elapsed, filterable: true},
-                {...Col.dateCreated, displayName: 'Timestamp', filterable: true}
+                {...Col.entryId, hidden},
+                {...Col.username, filterable},
+                {...Col.impersonating, hidden},
+                {...Col.category, filterable},
+                {...Col.msg, filterable},
+                {...Col.data, hidden},
+                {...Col.device, filterable},
+                {...Col.browser, filterable},
+                {...Col.userAgent, hidden, filterable},
+                {...Col.elapsed, filterable},
+                {...Col.dateCreated, displayName: 'Timestamp', filterable}
             ]
         });
 

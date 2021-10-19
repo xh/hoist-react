@@ -18,24 +18,27 @@ export class UserModel extends HoistModel {
     @bindable withRolesOnly = false;
 
     @managed
-    gridModel = new GridModel({
-        persistWith: this.persistWith,
-        colChooserModel: true,
-        enableExport: true,
-        store: {idSpec: 'username'},
-        sortBy: 'username',
-        columns: [
-            {...Col.username},
-            {...Col.email},
-            {...Col.displayName},
-            {...Col.active},
-            {...Col.roles}
-        ]
-    });
+    gridModel;
 
     constructor() {
         super();
         makeObservable(this);
+
+        this.gridModel = new GridModel({
+            persistWith: this.persistWith,
+            colChooserModel: true,
+            enableExport: true,
+            store: {idSpec: 'username'},
+            sortBy: 'username',
+            columns: [
+                {...Col.username},
+                {...Col.email},
+                {...Col.displayName},
+                {...Col.active},
+                {...Col.roles}
+            ]
+        });
+
         this.addReaction({
             track: () => [this.activeOnly, this.withRolesOnly],
             run: () => this.loadAsync()
