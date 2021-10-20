@@ -20,14 +20,15 @@
   }
 
   rect.highcharts-point {
-    outline-style: solid;
-    outline-width: 1px;
-    outline-offset: -1px;
-    // Using transparent borders means they 'double' up, leading to
-    // slightly more pronounced borders around parent groups.
-    outline-color: rgba(0, 0, 0, 0.15);
+    stroke: rgba(0, 0, 0, 0.2);
+    stroke-width: 1px;
 
     &.highcharts-point-select {
+      // We need to *remove* the stroke in order for the inset outline to work
+      stroke: none;
+      outline-style: solid;
+      outline-width: 1px;
+      outline-offset: -1px;
       outline-color: var(--xh-blue-light);
     }
   }
@@ -41,7 +42,7 @@
 
   // Use white borders in dark theme
   &--dark rect.highcharts-point {
-    outline-color: rgba(255, 255, 255, 0.2);
+    stroke: rgba(255, 255, 255, 0.2);
   }
 }
 
