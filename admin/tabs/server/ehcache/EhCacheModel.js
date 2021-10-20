@@ -4,9 +4,10 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {GridModel, numberCol} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
+import * as Col from '@xh/hoist/cmp/grid/columns';
 import {trimEnd} from 'lodash';
 
 export class EhCacheModel extends HoistModel {
@@ -37,8 +38,8 @@ export class EhCacheModel extends HoistModel {
         sortBy: 'name',
         columns: [
             {field: 'name', width: 360},
-            {field: 'heapSize', ...numberCol, headerName: 'Heap Size (MB)', width: 130},
-            {field: 'entries', ...numberCol, width: 120},
+            {field: 'heapSize', ...Col.number, headerName: 'Heap Size (MB)', width: 130},
+            {field: 'entries', ...Col.number, width: 120},
             {field: 'status', width: 120}
         ]
     });
