@@ -60,7 +60,7 @@ export const clientErrorDetail = hoistCmp.factory(
                             formField({
                                 field: 'url',
                                 item: textInput(),
-                                readonlyRenderer: (v) => a({href: v, item: v, target: '_blank'})
+                                readonlyRenderer: hyperlinkVal
                             }),
                             h3(Icon.desktop(), 'Device / Browser'),
                             formField({
@@ -116,3 +116,4 @@ export const clientErrorDetail = hoistCmp.factory(
 
 const valOrNa = v => !isNil(v) ? v.toString() : naSpan();
 const naSpan = () => span({item: 'N/A', className: 'xh-text-color-muted'});
+const hyperlinkVal = v => a({href: v, item: v, target: '_blank'});
