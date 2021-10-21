@@ -6,6 +6,9 @@
 
 * TileFrame now supports new `onLayoutChange` callback prop.
 
+### 🐞 Bug Fixes
+* Field Filters in data package now act only on the `committed` value of the record.  This stabilizes
+  filtering behavior in editable grids.
 
 ## v43.2.0 - 2021-10-14
 
