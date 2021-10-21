@@ -6,6 +6,8 @@
 
 * TileFrame now supports new `onLayoutChange` callback prop.
 
+### 🐞 Bug Fixes
+* `JsonBlobService.updateAsync()` now supports data modifications with `null` values.
 
 ## v43.2.0 - 2021-10-14
 
