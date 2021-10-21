@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {form} from '@xh/hoist/cmp/form';
-import {div, h3, hframe, span, vbox} from '@xh/hoist/cmp/layout';
+import {a, div, h3, hframe, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {jsonInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
@@ -56,6 +56,11 @@ export const clientErrorDetail = hoistCmp.factory(
                             formField({
                                 field: 'id',
                                 item: textInput()
+                            }),
+                            formField({
+                                field: 'url',
+                                item: textInput(),
+                                readonlyRenderer: (v) => a({href: v, item: v, target: '_blank'})
                             }),
                             h3(Icon.desktop(), 'Device / Browser'),
                             formField({
