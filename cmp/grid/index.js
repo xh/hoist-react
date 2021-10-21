@@ -5,11 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-export * from './columns/Core';
-export * from './columns/DatesTimes';
-export * from './columns/ExportFormat';
-export * from './columns/Column';
-export * from './columns/ColumnGroup';
+export * from './columns';
 
 export * from './enums/TreeStyle';
 
