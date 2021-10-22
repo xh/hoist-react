@@ -2,8 +2,9 @@
 
 ## v44.0.0-SNAPSHOT - unreleased
 
-### 🎁 New Features
+⚠ NOTE - apps must update to `hoist-core >= 9.5.0` when taking this hoist-react update.
 
+### 🎁 New Features
 * TileFrame now supports new `onLayoutChange` callback prop.
 
 ### 🐞 Bug Fixes
