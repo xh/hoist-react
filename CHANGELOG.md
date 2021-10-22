@@ -1,13 +1,33 @@
 # Changelog
 
-## v44.0.0-SNAPSHOT - under development
+## v44.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* TileFrame now supports new `onLayoutChange` callback prop.
+
+### 🐞 Bug Fixes
+* Field Filters in data package now act only on the `committed` value of the record.  This stabilizes
+  filtering behavior in editable grids.
+
+## v43.2.0 - 2021-10-14
+
+### 🎁 New Features
+
+* Admins can now configure an app-wide alert banner via a new tab in the Hoist Admin console.
+  Intended to alert users about planned maintenance / downtime, known problems with data or upstream
+  systems, and other similar use cases.
+* Minor re-org of the Hoist Admin console tabs. Panels relating primarily to server-side features
+  (including logging) are now grouped under a top-level "Server" tab. Configs have moved under
+  "General" with the new Alert Banner feature.
 
 ### 🐞 Bug Fixes
 
 * Always enforce a minimal `wait()` within `GridModel.autosizeAsync()` to ensure that the Grid has
   reacted to any data changes and ag-Grid accurately reports on expanded rows to measure.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v43.1.0...develop)
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v43.1.0...v43.2.0)
 
 ## v43.1.0 - 2021-10-04
 
