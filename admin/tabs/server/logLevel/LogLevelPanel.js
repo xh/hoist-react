@@ -6,6 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
+import * as Col from '@xh/hoist/admin/columns';
 import * as LogLevelCol from './LogLevelColumns';
 
 export const logLevelPanel = hoistCmp.factory(
@@ -23,7 +24,9 @@ const modelSpec = {
             {...LogLevelCol.logName.field, required: true},
             {...LogLevelCol.level.field, lookupName: 'levels'},
             {...LogLevelCol.defaultLevel.field, editable: false},
-            {...LogLevelCol.effectiveLevel.field, editable: false}
+            {...LogLevelCol.effectiveLevel.field, editable: false},
+            {...Col.lastUpdated.field, editable: false},
+            {...Col.lastUpdatedBy.field, editable: false}
         ]
     },
     unit: 'log level',
@@ -32,11 +35,15 @@ const modelSpec = {
         LogLevelCol.logName,
         LogLevelCol.defaultLevel,
         LogLevelCol.level,
-        LogLevelCol.effectiveLevel
+        LogLevelCol.effectiveLevel,
+        Col.lastUpdated,
+        Col.lastUpdatedBy
     ],
     editors: [
         {field: 'name'},
-        {field: 'level'}
+        {field: 'level'},
+        {field: 'lastUpdated'},
+        {field: 'lastUpdatedBy'}
     ]
 };
 
