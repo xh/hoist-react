@@ -4,10 +4,10 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {usernameCol} from '@xh/hoist/admin/columns';
-import {boolCheckCol, GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, bindable, makeObservable} from '@xh/hoist/mobx';
+import * as Col from '@xh/hoist/admin/columns';
 import {keyBy, keys} from 'lodash';
 
 export class UserModel extends HoistModel {
@@ -18,24 +18,27 @@ export class UserModel extends HoistModel {
     @bindable withRolesOnly = false;
 
     @managed
-    gridModel = new GridModel({
-        persistWith: this.persistWith,
-        colChooserModel: true,
-        enableExport: true,
-        store: {idSpec: 'username'},
-        sortBy: 'username',
-        columns: [
-            {field: 'username', ...usernameCol},
-            {field: 'email', width: 200},
-            {field: 'displayName', width: 200},
-            {field: 'active', ...boolCheckCol, width: 75},
-            {field: 'roles', minWidth: 130, flex: true, tooltip: true}
-        ]
-    });
+    gridModel;
 
     constructor() {
         super();
         makeObservable(this);
+
+        this.gridModel = new GridModel({
+            persistWith: this.persistWith,
+            colChooserModel: true,
+            enableExport: true,
+            store: {idSpec: 'username'},
+            sortBy: 'username',
+            columns: [
+                {...Col.username},
+                {...Col.email},
+                {...Col.displayName},
+                {...Col.active},
+                {...Col.roles}
+            ]
+        });
+
         this.addReaction({
             track: () => [this.activeOnly, this.withRolesOnly],
             run: () => this.loadAsync()

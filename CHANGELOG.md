@@ -1,6 +1,69 @@
 # Changelog
 
-## v43.0.0-SNAPSHOT - unreleased
+## v44.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* TileFrame now supports new `onLayoutChange` callback prop.
+
+### 🐞 Bug Fixes
+* Field Filters in data package now act only on the `committed` value of the record.  This stabilizes
+  filtering behavior in editable grids.
+
+## v43.2.0 - 2021-10-14
+
+### 🎁 New Features
+
+* Admins can now configure an app-wide alert banner via a new tab in the Hoist Admin console.
+  Intended to alert users about planned maintenance / downtime, known problems with data or upstream
+  systems, and other similar use cases.
+* Minor re-org of the Hoist Admin console tabs. Panels relating primarily to server-side features
+  (including logging) are now grouped under a top-level "Server" tab. Configs have moved under
+  "General" with the new Alert Banner feature.
+
+### 🐞 Bug Fixes
+
+* Always enforce a minimal `wait()` within `GridModel.autosizeAsync()` to ensure that the Grid has
+  reacted to any data changes and ag-Grid accurately reports on expanded rows to measure.
+
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v43.1.0...v43.2.0)
+
+## v43.1.0 - 2021-10-04
+
+### 🎁 New Features
+
+* The Admin Console log viewer now supports downloading log files.
+  * Note apps must update to `hoist-core >= v10.0` to enable this feature.
+  * Core upgrade is _not_ a general requirement of this Hoist React release.
+* The `field` key in the constructor for `Column` will now accept an Object with field defaults, as
+  an alternative to the field name. This form allows the auto-construction of fully-defined `Field`
+  objects from the column specification.
+
+### 🐞 Bug Fixes
+
+* `GridModel` no longer mutates any `selModel` or `colChooser` config objects provided to its
+  constructor, resolving an edge-case bug where re-using the same object for either of these configs
+  across multiple GridModel instances (e.g. as a shared set of defaults) would break.
+* Grid autosizing tweaked to improve size estimation for indented tree rows and on mobile.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.50 -> 3.51`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v43.0.2...v43.1.0)
+
+## v43.0.2 - 2021-10-04
+
+### 🐞 Bug Fixes
+
+* Fix (important) to ensure static preload spinner loaded from the intended path.
+  * Please also update to latest `hoist-dev-utils >= 5.11.1` if possible.
+  * Avoids issue where loading an app on a nested route could trigger double-loading of app assets.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v43.0.1...v43.0.2)
+
+## v43.0.1 - 2021-10-04
 
 ### 🎁 New Features
 
@@ -17,9 +80,8 @@
 * In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`. This
   new component supports a `quickToggle` prop which allows for more streamlined inline editing of
   boolean values.
-* `loadAsync`, `refreshAsync`, and `autoRefreshAsync` now all support passing app-specific metadata.
-  Configuration passed to these methods will be integrated with the standard `LoadSpec` and
-  available to implementations of `doLoadAsync` and other methods in the `LoadSupport` API.
+* `LoadSpec` now supports a new `meta` property. Use this property to pass app-specific metadata
+  through the `LoadSupport` loading and refresh lifecycle.
 * A spinner is now shown while the app downloads and parses its javascript - most noticeable when
   loading a new (uncached) version, especially on a slower mobile connection. (Requires
   `@xh/hoist-dev-utils` v5.11 or greater to enable.)
@@ -67,7 +129,7 @@
 * @blueprintjs/core `3.49 -> 3.50`
 * codemirror `5.62 -> 5.63`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v42.6.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v42.6.0...v43.0.1)
 
 ## v42.6.0 - 2021-09-17
 

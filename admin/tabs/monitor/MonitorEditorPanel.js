@@ -4,14 +4,18 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {boolCheckCol, dateTimeCol, numberCol} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
+import * as Col from '@xh/hoist/admin/columns';
+import * as MCol from './MonitorColumns';
 
 export const monitorEditorPanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
 );
+
+const required = true,
+    hidden = true;
 
 const modelSpec = {
     persistWith: {localStorageKey: 'xhAdminMonitorState'},
@@ -21,72 +25,36 @@ const modelSpec = {
         url: 'rest/monitorAdmin',
         fieldDefaults: {disableXssProtection: true},
         fields: [
-            {
-                name: 'code',
-                required: true
-            },
-            {
-                name: 'name',
-                required: true
-            },
-            {
-                name: 'metricType',
-                lookupName: 'metricTypes',
-                required: true
-            },
-            {
-                name: 'metricUnit'
-            },
-            {
-                name: 'warnThreshold',
-                type: 'int'
-            },
-            {
-                name: 'failThreshold',
-                type: 'int'
-            },
-            {
-                name: 'params',
-                type: 'json'
-            },
-            {
-                name: 'notes'
-            },
-            {
-                name: 'active',
-                type: 'bool',
-                defaultValue: true,
-                required: true
-            },
-            {
-                name: 'sortOrder',
-                type: 'int'
-            },
-            {
-                name: 'lastUpdated',
-                type: 'date',
-                editable: false
-            },
-            {
-                name: 'lastUpdatedBy',
-                editable: false
-            }
+            {...MCol.code.field, required},
+            {...MCol.metricUnit.field},
+            {...MCol.warnThreshold.field},
+            {...MCol.failThreshold.field},
+            {...MCol.sortOrder.field},
+
+            {...Col.name.field, required},
+            {...Col.notes.field},
+            {...Col.active.field, defaultValue: true, required},
+            {...Col.lastUpdated.field, editable: false},
+            {...Col.lastUpdatedBy.field, editable: false},
+
+            {name: 'metricType', type: 'string', lookupName: 'metricTypes', required},
+            {name: 'params', type: 'json'}
         ]
     },
     unit: 'monitor',
     sortBy: 'sortOrder',
     filterFields: ['code', 'name'],
     columns: [
-        {field: 'active', ...boolCheckCol, width: 70},
-        {field: 'code', width: 150},
-        {field: 'name', width: 200},
-        {field: 'warnThreshold', ...numberCol, headerName: 'Warn', width: 130},
-        {field: 'failThreshold', ...numberCol, headerName: 'Fail', width: 130},
-        {field: 'metricUnit', headerName: 'Units', width: 100},
-        {field: 'notes', minWidth: 70, flex: true},
-        {field: 'lastUpdatedBy', width: 160, hidden: true},
-        {field: 'lastUpdated', ...dateTimeCol, hidden: true},
-        {field: 'sortOrder', ...numberCol, headerName: 'Sort', width: 100}
+        {...Col.active},
+        {...MCol.code},
+        {...Col.name},
+        {...MCol.warnThreshold},
+        {...MCol.failThreshold},
+        {...MCol.metricUnit},
+        {...Col.notes},
+        {...Col.lastUpdatedBy, hidden},
+        {...Col.lastUpdated, hidden},
+        {...MCol.sortOrder}
     ],
     editors: [
         {field: 'code'},

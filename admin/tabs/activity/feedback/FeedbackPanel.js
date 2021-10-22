@@ -4,11 +4,10 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {usernameCol} from '@xh/hoist/admin/columns';
-import {dateTimeCol} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {deleteAction, restGrid} from '@xh/hoist/desktop/cmp/rest';
+import * as Col from '@xh/hoist/admin/columns';
 
 export const feedbackPanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
@@ -22,13 +21,13 @@ const modelSpec = {
     store: {
         url: 'rest/feedbackAdmin',
         fields: [
-            {name: 'username', displayName: 'User'},
-            {name: 'msg', displayName: 'Message'},
-            {name: 'browser'},
-            {name: 'device'},
-            {name: 'appVersion', displayName: 'Version'},
-            {name: 'appEnvironment', displayName: 'Environment'},
-            {name: 'dateCreated', displayName: 'Date', type: 'date'}
+            {...Col.username.field},
+            {...Col.msg.field},
+            {...Col.browser.field},
+            {...Col.device.field},
+            {...Col.appVersion.field, displayName: 'Version'},
+            {...Col.appEnvironment.field},
+            {...Col.dateCreated.field, displayName: 'Date'}
         ]
     },
     toolbarActions: [deleteAction],
@@ -38,13 +37,13 @@ const modelSpec = {
     sortBy: 'dateCreated|desc',
     filterFields: ['username', 'msg'],
     columns: [
-        {field: 'username', ...usernameCol},
-        {field: 'browser', width: 120},
-        {field: 'device', width: 100},
-        {field: 'appVersion', width: 120},
-        {field: 'appEnvironment', width: 130},
-        {field: 'msg', minWidth: 120, flex: true},
-        {field: 'dateCreated', ...dateTimeCol}
+        {...Col.username},
+        {...Col.browser},
+        {...Col.device},
+        {...Col.appVersion, displayName: 'Version'},
+        {...Col.appEnvironment},
+        {...Col.msg},
+        {...Col.dateCreated, displayName: 'Date'}
     ],
     editors: [
         {field: 'username'},

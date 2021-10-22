@@ -87,7 +87,7 @@ export class FieldFilter extends Filter {
                 value.map(v => parseFieldValue(v, fieldType)) :
                 parseFieldValue(value, fieldType);
         }
-        const getVal = store ? r => r.get(field) : r => r[field];
+        const getVal = store ? r => r.committedData[field] : r => r[field];
 
         if (FieldFilter.ARRAY_OPERATORS.includes(op)) {
             value = castArray(value);

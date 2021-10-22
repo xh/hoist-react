@@ -23,7 +23,13 @@ export class FileChooserModel extends HoistModel {
 
     gridModel = new GridModel({
         hideHeaders: true,
-        store: {idSpec: 'name'},
+        store: {
+            idSpec: 'name',
+            fields: [
+                {name: 'name', type: 'string'},
+                {name: 'size', type: 'number'}
+            ]
+        },
         columns: [
             {
                 colId: 'icon',

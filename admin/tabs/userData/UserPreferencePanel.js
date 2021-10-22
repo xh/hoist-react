@@ -4,15 +4,16 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {truncate} from 'lodash';
-import {usernameCol} from '@xh/hoist/admin/columns';
-import {dateTimeCol} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
+import * as Col from '@xh/hoist/admin/columns';
 
 export const userPreferencePanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
 );
+
+const required = true,
+    hidden = true;
 
 const modelSpec = {
     persistWith: {localStorageKey: 'xhAdminUserPreferenceState'},
@@ -24,42 +25,13 @@ const modelSpec = {
         reloadLookupsOnLoad: true,
         fieldDefaults: {disableXssProtection: true},
         fields: [
-            {
-                name: 'name',
-                displayName: 'Pref',
-                lookupName: 'names',
-                editable: 'onAdd',
-                required: true
-            },
-            {
-                name: 'groupName',
-                displayName: 'Group',
-                lookupName: 'groupNames',
-                editable: false
-            },
-            {
-                name: 'type',
-                editable: false
-            },
-            {
-                name: 'username',
-                displayName: 'User',
-                required: true
-            },
-            {
-                name: 'userValue',
-                typeField: 'type',
-                required: true
-            },
-            {
-                name: 'lastUpdated',
-                type: 'date',
-                editable: false
-            },
-            {
-                name: 'lastUpdatedBy',
-                editable: false
-            }
+            {...Col.name.field, displayName: 'Pref', lookupName: 'names', editable: 'onAdd', required},
+            {...Col.groupName.field, lookupName: 'groupNames', editable: false},
+            {...Col.type.field, editable: false},
+            {...Col.username.field, required},
+            {...Col.userValue.field, typeField: 'type', required},
+            {...Col.lastUpdated.field, editable: false},
+            {...Col.lastUpdatedBy.field, editable: false}
         ]
     },
     sortBy: 'name',
@@ -67,13 +39,13 @@ const modelSpec = {
     unit: 'preference',
     filterFields: ['name', 'username'],
     columns: [
-        {field: 'name', width: 200},
-        {field: 'type', width: 100},
-        {field: 'username', ...usernameCol},
-        {field: 'groupName', hidden: true},
-        {field: 'userValue', minWidth: 200, flex: true, renderer: truncateIfJson},
-        {field: 'lastUpdatedBy', width: 160, hidden: true},
-        {field: 'lastUpdated', ...dateTimeCol, hidden: true}
+        {...Col.name},
+        {...Col.type},
+        {...Col.username},
+        {...Col.groupName, hidden},
+        {...Col.userValue},
+        {...Col.lastUpdatedBy, hidden},
+        {...Col.lastUpdated, hidden}
     ],
     editors: [
         {field: 'name'},
@@ -83,7 +55,3 @@ const modelSpec = {
         {field: 'lastUpdatedBy'}
     ]
 };
-
-function truncateIfJson(userValue, {record}) {
-    return record.data.type === 'json' ? truncate(userValue, {length: 500}) : userValue;
-}

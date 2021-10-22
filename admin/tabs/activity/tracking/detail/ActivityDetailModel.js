@@ -1,10 +1,8 @@
-import {usernameCol} from '@xh/hoist/admin/columns';
 import {FormModel} from '@xh/hoist/cmp/form';
-import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {managed, HoistModel, XH} from '@xh/hoist/core';
-import {numberRenderer} from '@xh/hoist/format';
-import {Icon} from '@xh/hoist/icon/Icon';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import * as Col from '@xh/hoist/admin/columns';
 
 export class ActivityDetailModel extends HoistModel {
 
@@ -22,6 +20,9 @@ export class ActivityDetailModel extends HoistModel {
         makeObservable(this);
         this.parentModel = parentModel;
 
+        const hidden = true,
+            filterable = true;
+
         this.gridModel = new GridModel({
             sortBy: 'dateCreated|desc',
             colChooserModel: true,
@@ -32,61 +33,19 @@ export class ActivityDetailModel extends HoistModel {
                 filename: `${XH.appCode}-activity-detail`
             },
             emptyText: 'Select a group on the left to see detailed tracking logs.',
-            store: {
-                fields: [
-                    {name: 'username', displayName: 'User', type: 'string'},
-                    {name: 'impersonating', type: 'string'},
-                    {name: 'category', type: 'string'},
-                    {name: 'msg', displayName: 'Message', type: 'string'},
-                    {name: 'data', type: 'json'},
-                    {name: 'device', type: 'string'},
-                    {name: 'browser', type: 'string'},
-                    {name: 'userAgent', type: 'string'},
-                    {name: 'elapsed', type: 'int'},
-                    {name: 'dateCreated', displayName: 'Timestamp', type: 'date'}
-                ]
-            },
             columns: [
-                {
-                    field: 'impersonatingFlag',
-                    headerName: Icon.impersonate(),
-                    headerTooltip: 'Indicates if the user was impersonating another user during tracked activity.',
-                    excludeFromExport: true,
-                    resizable: false,
-                    align: 'center',
-                    width: 50,
-                    renderer: (v, {record}) => {
-                        const {impersonating} = record.data;
-                        return impersonating ?
-                            Icon.impersonate({
-                                asHtml: true,
-                                className: 'xh-text-color-accent',
-                                title: `Impersonating ${impersonating}`
-                            }) : '';
-                    }
-                },
-                {field: 'id', headerName: 'Entry ID', width: 100, align: 'right', hidden: true},
-                {field: 'username', filterable: true, ...usernameCol},
-                {field: 'impersonating', width: 140, hidden: true},
-                {field: 'category', width: 120, filterable: true},
-                {field: 'msg', headerName: 'Message', flex: true, minWidth: 120, autosizeMaxWidth: 400, filterable: true},
-                {field: 'data', flex: true, minWidth: 120, autosizeMaxWidth: 400, hidden: true},
-                {field: 'device', width: 100, filterable: true},
-                {field: 'browser', width: 100, filterable: true},
-                {field: 'userAgent', width: 100, hidden: true, filterable: true},
-                {
-                    field: 'elapsed',
-                    headerName: 'Elapsed',
-                    width: 120,
-                    align: 'right',
-                    filterable: true,
-                    renderer: numberRenderer({
-                        label: 'ms',
-                        nullDisplay: '-',
-                        formatConfig: {thousandSeparated: false, mantissa: 0}
-                    })
-                },
-                {field: 'dateCreated', headerName: 'Timestamp', filterable: true, ...dateTimeCol}
+                {...Col.impersonatingFlag},
+                {...Col.entryId, hidden},
+                {...Col.username, filterable},
+                {...Col.impersonating, hidden},
+                {...Col.category, filterable},
+                {...Col.msg, filterable},
+                {...Col.data, hidden},
+                {...Col.device, filterable},
+                {...Col.browser, filterable},
+                {...Col.userAgent, hidden, filterable},
+                {...Col.elapsed, filterable},
+                {...Col.dateCreated, displayName: 'Timestamp', filterable}
             ]
         });
 

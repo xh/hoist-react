@@ -12,6 +12,7 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {
+    AlertBannerService,
     AutoRefreshService,
     ChangelogService,
     ConfigService,
@@ -88,6 +89,8 @@ class XHClass extends HoistBase {
     // Hoist Core Services
     // Singleton instances of each service are created and installed within initAsync() below.
     //----------------------------------------------------------------------------------------------
+    /** @member {AlertBannerService} */
+    alertBannerService;
     /** @member {AutoRefreshService} */
     autoRefreshService;
     /** @member {ChangelogService} */
@@ -223,10 +226,11 @@ class XHClass extends HoistBase {
      *      Should be an AppSpec, or a config for one.
      */
     renderApp(appSpec) {
+        const spinner = document.getElementById('xh-preload-spinner');
+        if (spinner) spinner.style.display = 'none';
+
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
         const rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
-
-        document.getElementById('xh-preload-spinner').style.display = 'none';
         ReactDOM.render(rootView, document.getElementById('xh-root'));
     }
 
@@ -488,9 +492,8 @@ class XHClass extends HoistBase {
      * @param {Banner-onCloseFn} [config.onClose] - Callback function triggered when the user
      *      clicks the close button. (Note, banners closed via `XH.hideBanner()` or when the max
      *      number of banners shown is exceed will NOT trigger this callback.)
-     * @param {function} [config.actionFn] - If provided, banner will render an action button
-     *      which triggers this function.
-     * @param {Object} [config.actionButtonProps] - Set the properties of the action button
+     * @param {Object} [config.actionButtonProps] - if provided, will render a button within the
+     *      banner to enable the user to take some specific action right from the banner.
      * @param {...*} [config.rest] - additional properties to pass to the banner component
      * @returns {BannerModel}
      */
@@ -760,7 +763,7 @@ class XHClass extends HoistBase {
             }
 
             await this.installServicesAsync(
-                AutoRefreshService, ChangelogService, IdleService,
+                AlertBannerService, AutoRefreshService, ChangelogService, IdleService,
                 GridAutosizeService, GridExportService, WebSocketService
             );
             this.acm.init();
@@ -916,11 +919,11 @@ window['XH'] = XH;
 
 /**
  * @typedef {Object} MessageConfig - configuration object for a modal alert, confirm, or prompt.
- * @property {ReactNode} message - message to be displayed - a string or any valid React node.
+ * @property {(ReactNode|string)} message - message to be displayed.
  * @property {string} [title] - title of message box.
  * @property {Element} [icon] - icon to be displayed.
- * @property {string} [messageKey] - unique key identifying the message.  If subsequent messages
- *      are triggered with this key, they will replace this message.  Useful for usages that may
+ * @property {string} [messageKey] - unique key identifying the message. If subsequent messages
+ *      are triggered with this key, they will replace this message. Useful for usages that may
  *      be producing messages recursively, or via timers and wish to avoid generating a large stack
  *      of duplicates.
  * @property {MessageInput} [input] - config for input to be displayed (as a prompt).
