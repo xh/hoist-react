@@ -11,7 +11,7 @@
 * Field Filters in data package now act only on the `committed` value of the record.  This stabilizes
   filtering behavior in editable grids.
 * `JsonBlobService.updateAsync()` now supports data modifications with `null` values.
-
+*  Fixes an issue with alert banner publishing not broadcasting to all users.
 
 ## v43.2.0 - 2021-10-14
 
