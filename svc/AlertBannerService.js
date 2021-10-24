@@ -9,7 +9,7 @@ import {HoistService, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {compact, isEmpty, map, trim} from 'lodash';
+import {compact, map, trim} from 'lodash';
 
 /**
  * Service to display an app-wide alert banner, as configured via the Hoist Admin console.
@@ -45,22 +45,17 @@ export class AlertBannerService extends HoistService {
     async checkForBannerAsync() {
         if (!this.enabled) return;
 
-        const results = await XH.jsonBlobService.listAsync({
-            type: 'xhAlertBanner',
-            includeValue: true
-        });
-
-        if (isEmpty(results)) {
-            XH.hideBanner('xhAlertBanner');
-            return;
-        }
-
-        const {active, message, intent, iconName, enableClose, publishDate, expires} = results[0].value,
+        const data = await XH.fetchJson({url: 'xh/currentAlert'}),
+            {active, expires, publishDate, message, intent, iconName, enableClose} = data,
             {lastDismissed, onClose} = this;
 
-        if (!active || !message || (expires && expires < Date.now())) {
+        if (!active ||
+            !message ||
+            (expires && expires < Date.now()) ||
+            (lastDismissed && lastDismissed > publishDate)
+        ) {
             XH.hideBanner('xhAlertBanner');
-        } else if (!lastDismissed || lastDismissed < publishDate) {
+        } else {
             const conf = this.genBannerConfig({message, intent, iconName, enableClose});
             XH.showBanner({...conf, onClose});
         }
