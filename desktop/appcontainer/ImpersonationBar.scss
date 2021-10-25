@@ -1,5 +1,16 @@
 .xh-impersonation-bar {
+  background-color: var(--xh-intent-primary-darkest);
   color: white;
-  background-color: midnightblue;
+  padding-left: var(--xh-pad-px);
   z-index: 9999;
+
+  .xh-button {
+    border-color: transparent !important;
+    color: white !important;
+
+    &:hover {
+      border-color: white !important;
+      background-color: transparent !important;
+    }
+  }
 }
