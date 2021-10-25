@@ -45,7 +45,7 @@ export class AlertBannerService extends HoistService {
     async checkForBannerAsync() {
         if (!this.enabled) return;
 
-        const data = await XH.fetchJson({url: 'xh/currentAlert'}),
+        const data = await XH.fetchJson({url: 'xh/alertBanner'}),
             {active, expires, publishDate, message, intent, iconName, enableClose} = data,
             {lastDismissed, onClose} = this;
 

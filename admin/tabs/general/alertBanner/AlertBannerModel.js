@@ -89,7 +89,7 @@ export class AlertBannerModel extends HoistModel {
         const {formModel} = this;
         if (formModel.isDirty && loadSpec.isAutoRefresh) return;
 
-        const value = await XH.fetchJson({url: 'alertBannerAdmin/getAlertSpec'}),
+        const value = await XH.fetchJson({url: 'alertBannerAdmin/alertSpec'}),
             initialValues = {
                 ...value,
                 expires: value.expires ? new Date(value.expires) : null
