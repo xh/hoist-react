@@ -174,7 +174,7 @@ export class AlertBannerModel extends HoistModel {
             url: 'alertBannerAdmin/setAlertSpec',
             params: {value: JSON.stringify(value)}
         }).track({
-            category: 'Banner',
+            category: 'Audit',
             message: 'Updated Alert Banner',
             data: {active, message, intent, iconName, enableClose}
         });
