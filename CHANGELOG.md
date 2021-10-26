@@ -1,5 +1,9 @@
 # Changelog
 
+## v45.0.0-SNAPSHOT - unreleased
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v44.0.0...develop)
+
 ## v44.0.0 - 2021-10-26
 
 ⚠ NOTE - apps must update to `hoist-core >= 10.0.0` when taking this hoist-react update.
