@@ -10,7 +10,6 @@ import {Exception} from '@xh/hoist/exception';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
-import {MINUTES} from '@xh/hoist/utils/datetime';
 import {
     AlertBannerService,
     AutoRefreshService,
@@ -28,17 +27,17 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
+import {MINUTES} from '@xh/hoist/utils/datetime';
 import {checkMinVersion, getClientDeviceInfo, throwIf, withDebug} from '@xh/hoist/utils/js';
 import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
 import parser from 'ua-parser-js';
-
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import '../styles/XH.scss';
 import {ExceptionHandler} from './ExceptionHandler';
 import {RouterModel} from './RouterModel';
 
-const MIN_HOIST_CORE_VERSION = '9.5.0';
+const MIN_HOIST_CORE_VERSION = '10.0.0';
 
 /**
  * Top-level Singleton model for Hoist. This is the main entry point for the API.
@@ -555,7 +554,7 @@ class XHClass extends HoistBase {
      * @param {string} [options.message] - text (ideally user-friendly) describing the error.
      * @param {string} [options.title] - title for an alert dialog, if shown.
      * @param {boolean} [options.showAsError] - configure modal alert to indicate that this is an
-     *      unexpected error. Default true for most exceptions, false for those marked as `isRoutine`.
+     *      unexpected error. Default true for most exceptions, false if marked as `isRoutine`.
      * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
      *      dismiss - default false, excepting session-related exceptions.
      * @param {string[]} [options.hideParams] - A list of parameters that should be hidden from
