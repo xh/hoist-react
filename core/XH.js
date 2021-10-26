@@ -37,7 +37,7 @@ import '../styles/XH.scss';
 import {ExceptionHandler} from './ExceptionHandler';
 import {RouterModel} from './RouterModel';
 
-const MIN_HOIST_CORE_VERSION = '10.0.0';
+const MIN_HOIST_CORE_VERSION = '10.0';
 
 /**
  * Top-level Singleton model for Hoist. This is the main entry point for the API.
