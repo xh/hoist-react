@@ -69,12 +69,13 @@ export class JsonBlobService extends HoistService {
      * @param {string} [data.description]
      */
     async updateAsync(token, {name, value, meta, description}) {
-        const params = {token};
-        if (name) params.name = name;
-        if (value) params.value = JSON.stringify(value);
-        if (meta) params.meta = JSON.stringify(meta);
-        if (description) params.description = description;
-        return XH.fetchJson({url: 'xh/updateJsonBlob', params});
+        return XH.fetchJson({
+            url: 'xh/updateJsonBlob',
+            params: {
+                token,
+                payload: JSON.stringify({name, value, meta, description})
+            }
+        });
     }
 
     /**
