@@ -1,6 +1,6 @@
 # Changelog
 
-## v44.0.0-SNAPSHOT - unreleased
+## v44.0.0 - 2021-10-26
 
 ⚠ NOTE - apps must update to `hoist-core >= 10.0.0` when taking this hoist-react update.
 
@@ -21,7 +21,7 @@
 * Update required to `hoist-core >= 10.0.0` due to changes in `JsonBlobService` APIs and the
   addition of new, dedicated endpoints for Alert Banner management.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v43.2.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v43.2.0...v44.0.0)
 
 ## v43.2.0 - 2021-10-14
 
