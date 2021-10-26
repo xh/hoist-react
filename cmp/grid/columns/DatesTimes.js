@@ -9,20 +9,20 @@ import {ExportFormat} from './ExportFormat';
 
 const defaults = {align: 'right'};
 
-export const dateCol = {
+export const date = {
     ...defaults,
     renderer: dateRenderer(),
     exportFormat: ExportFormat.DATE_FMT,
     width: 120
 };
 
-export const timeCol = {
+export const time = {
     ...defaults,
     renderer: timeRenderer(),
     width: 90
 };
 
-export const dateTimeCol = {
+export const dateTime = {
     ...defaults,
     align: 'left',
     renderer: dateTimeRenderer(),
@@ -30,14 +30,21 @@ export const dateTimeCol = {
     width: 180
 };
 
-export const compactDateCol = {
+export const compactDate = {
     ...defaults,
     renderer: compactDateRenderer(),
     exportFormat: ExportFormat.DATE_FMT,
     width: 100
 };
 
-export const localDateCol = {
-    ...dateCol,
+export const localDate = {
+    ...date,
     exportValue: (v) => v ? v.date : null
 };
+
+// Deprecated aliases with `Col` suffix
+export const dateCol = date;
+export const timeCol = time;
+export const dateTimeCol = dateTime;
+export const compactDateCol = compactDate;
+export const localDateCol = localDate;

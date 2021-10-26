@@ -50,7 +50,7 @@
 
 // Customized here for backdrops behind dialogs.
 // Note that masks use their own CSS var, set in Mask.scss.
-.bp3-overlay-backdrop {
+.bp3-overlay-backdrop:not(.bp3-popover-backdrop) {
   background-color: var(--xh-backdrop-bg);
 }
 

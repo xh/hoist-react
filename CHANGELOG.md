@@ -2,6 +2,16 @@
 
 ## v44.0.0-SNAPSHOT - unreleased
 
+⚠ NOTE - apps must update to `hoist-core >= 9.5.0` when taking this hoist-react update.
+
+### 🎁 New Features
+* TileFrame now supports new `onLayoutChange` callback prop.
+
+### 🐞 Bug Fixes
+* Field Filters in data package now act only on the `committed` value of the record.  This stabilizes
+  filtering behavior in editable grids.
+* `JsonBlobService.updateAsync()` now supports data modifications with `null` values.
+
 
 ## v43.2.0 - 2021-10-14
 
@@ -78,6 +88,10 @@
 * A spinner is now shown while the app downloads and parses its javascript - most noticeable when
   loading a new (uncached) version, especially on a slower mobile connection. (Requires
   `@xh/hoist-dev-utils` v5.11 or greater to enable.)
+* Log Levels now include information on when the custom config was last updated and by whom.
+  * Note apps must update their server-side to `hoist-core v10.0` or greater to persist the date and
+    username associated with the config (although this is _not_ a general or hard requirement for
+    taking this version of hoist-react).
 
 ### ⚙️ Technical
 

@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {compactDateCol, GridModel, numberCol} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
@@ -13,7 +13,9 @@ import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isDisplayed} from '@xh/hoist/utils/js';
+import * as Col from '@xh/hoist/admin/columns';
 import {createRef} from 'react';
+import * as WSCol from './WebSocketColumns';
 
 export class WebSocketModel extends HoistModel {
 
@@ -23,54 +25,7 @@ export class WebSocketModel extends HoistModel {
     lastRefresh;
 
     @managed
-    gridModel = new GridModel({
-        emptyText: 'No clients connected.',
-        enableExport: true,
-        store: {
-            idSpec: 'key',
-            processRawData: row => {
-                const authUser = row.authUser.username,
-                    apparentUser = row.apparentUser.username,
-                    impersonating = authUser != apparentUser;
-
-                return {
-                    ...row,
-                    authUser,
-                    apparentUser,
-                    user: impersonating ? `${authUser} (as ${apparentUser})` : authUser
-                };
-            },
-            fields: [
-                {name: 'isOpen', type: 'bool'},
-                {name: 'createdTime', type: 'date', displayName: 'Created'},
-                {name: 'sentMessageCount', type: 'int', displayName: 'Sent'},
-                {name: 'lastSentTime', type: 'date', displayName: 'Last Sent'},
-                {name: 'receivedMessageCount', type: 'int', displayName: 'Received'},
-                {name: 'lastReceivedTime', type: 'date', displayName: 'Last Received'},
-                {name: 'authUser', type: 'string'},
-                {name: 'apparentUser', type: 'string'}
-            ]
-        },
-        sortBy: ['key'],
-        columns: [
-            {
-                field: 'isOpen',
-                headerName: '',
-                align: 'center',
-                width: 40,
-                renderer: v => v ?
-                    Icon.circle({prefix: 'fas', className: 'xh-green', asHtml: true}) :
-                    Icon.circle({prefix: 'fal', className: 'xh-red', asHtml: true})
-            },
-            {field: 'key', width: 160},
-            {field: 'user', width: 250},
-            {field: 'createdTime', ...compactDateCol},
-            {field: 'sentMessageCount', ...numberCol, width: 90},
-            {field: 'lastSentTime', ...compactDateCol, width: 140},
-            {field: 'receivedMessageCount', ...numberCol, width: 90},
-            {field: 'lastReceivedTime', ...compactDateCol, width: 140}
-        ]
-    })
+    gridModel;
 
     @managed
     _timer;
@@ -78,6 +33,42 @@ export class WebSocketModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+
+        this.gridModel = new GridModel({
+            emptyText: 'No clients connected.',
+            enableExport: true,
+            store: {
+                idSpec: 'key',
+                processRawData: row => {
+                    const authUser = row.authUser.username,
+                        apparentUser = row.apparentUser.username,
+                        impersonating = authUser != apparentUser;
+
+                    return {
+                        ...row,
+                        authUser,
+                        apparentUser,
+                        user: impersonating ? `${authUser} (as ${apparentUser})` : authUser
+                    };
+                },
+                fields: [
+                    {name: 'authUser', type: 'string'},
+                    {name: 'apparentUser', type: 'string'}
+                ]
+            },
+            sortBy: ['key'],
+            columns: [
+                WSCol.isOpen,
+                WSCol.key,
+                Col.user,
+                WSCol.createdTime,
+                WSCol.sentMessageCount,
+                WSCol.lastSentTime,
+                WSCol.receivedMessageCount,
+                WSCol.lastReceivedTime
+            ]
+        });
+
         this._timer = Timer.create({
             runFn: () => {
                 if (isDisplayed(this.viewRef.current)) {
