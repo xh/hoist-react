@@ -154,10 +154,7 @@ class GridLocalModel extends HoistModel {
                     AgGrid.getRowHeightForSizingMode(sizingMode)
             );
         }
-        return max([
-            this.fixedRowHeight,
-            model.agGridModel.getAutoRowHeight(node)
-        ]);
+        return this.fixedRowHeight;
     }
 
     /** @returns {boolean} - true if any root-level records have children */
@@ -646,11 +643,6 @@ class GridLocalModel extends HoistModel {
                     columns = refreshCols.map(c => c.colId);
                 agApi.refreshCells({rowNodes, columns, force: true});
             }
-
-            // Refresh row heights if autoHeight is enabled
-            if (visibleCols.some(c => c.autoHeight)) {
-                agApi.resetRowHeights();
-            }
         }
 
         if (!transaction || transaction.add || transaction.remove) {
@@ -703,7 +695,6 @@ class GridLocalModel extends HoistModel {
         if (isDisplayed(this.viewRef.current) && ev.finished && ev.source === 'autosizeColumns') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
-        ev.api.resetRowHeights();
     };
 
     // Catches row group changes triggered from ag-grid ui components
@@ -729,7 +720,6 @@ class GridLocalModel extends HoistModel {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
-        ev.api.resetRowHeights();
     };
 
     groupSortComparator = (nodeA, nodeB) => {

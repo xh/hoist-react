@@ -1190,10 +1190,6 @@ export class GridModel extends HoistModel {
         }
     }
 
-    getAutoRowHeight(node) {
-        return this.agGridModel.getAutoRowHeight(node);
-    }
-
     gatherLeaves(columns, leaves = []) {
         columns.forEach(col => {
             if (col.groupId) this.gatherLeaves(col.children, leaves);

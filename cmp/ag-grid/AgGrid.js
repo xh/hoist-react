@@ -9,7 +9,7 @@ import {hoistCmp, HoistModel, useLocalModel, uses, elem, XH} from '@xh/hoist/cor
 import {splitLayoutProps, useOnUnmount} from '@xh/hoist/utils/react';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {isNil, max} from 'lodash';
+import {isNil} from 'lodash';
 import './AgGrid.scss';
 import {AgGridModel} from './AgGridModel';
 import {AgGridReact} from '@xh/hoist/kit/ag-grid';
@@ -75,8 +75,6 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
             item: elem(AgGridReact, {
                 // Default some ag-grid props, but allow overriding.
                 getRowHeight: impl.getRowHeight,
-                onColumnResized: impl.onColumnChange,
-                onColumnVisible: impl.onColumnChange,
                 // Pass others on directly.
                 ...agGridProps,
 
@@ -147,15 +145,7 @@ class LocalModel extends HoistModel {
         }
     };
 
-    onColumnChange = (ev) => {
-        ev.api.resetRowHeights();
-    };
-
-    getRowHeight = ({node}) => {
-        const {model} = this;
-        return max([
-            AgGrid.getRowHeightForSizingMode(model.sizingMode),
-            model.getAutoRowHeight(node)
-        ]);
+    getRowHeight = () => {
+        return AgGrid.getRowHeightForSizingMode(this.model.sizingMode);
     }
 }

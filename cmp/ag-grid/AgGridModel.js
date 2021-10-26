@@ -536,21 +536,6 @@ export class AgGridModel extends HoistModel {
         return this.getPinnedRowData('Bottom');
     }
 
-    /**
-     * Required height of row as determined by content in visible autoHeight columns.
-     *
-     * If autoHeight not enabled for any visible columns, this method will return null.
-     *
-     * @param {Row} node - agGrid node.
-     * @returns {Number} - pixel height for row or null.
-     */
-    getAutoRowHeight(node) {
-        if (!this.isReady) return null;
-        const {columnModel} = this.agApi;
-        if (!columnModel.isAutoRowHeightActive()) return null;
-        // return this.agApi.gridOptionsWrapper.autoHeightCalculator.getPreferredHeightForRow(node); // autoHeightCalculator no longer supported?
-    }
-
     //------------------------
     // Implementation
     //------------------------
