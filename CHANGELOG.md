@@ -14,6 +14,7 @@
   filtering behavior in editable grids.
 * `JsonBlobService.updateAsync()` now supports data modifications with `null` values.
 * Fixes an issue with Alert Banner not broadcasting to all users.
+* Selected option in `Select` now scrolls into view on menu open.
 
 ### 💥 Breaking Changes
 
