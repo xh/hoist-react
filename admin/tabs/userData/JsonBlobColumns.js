@@ -8,7 +8,7 @@ import {FieldType} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 
-const {BOOL, DATE, JSON, STRING} = FieldType;
+const {BOOL, AUTO, JSON, STRING} = FieldType;
 
 export const owner = {
     field: {name: 'owner', type: STRING},
@@ -41,7 +41,7 @@ export const archived = {
 };
 
 export const archivedDate = {
-    field: {name: 'archivedDate', type: DATE},
+    field: {name: 'archivedDate', type: AUTO},
     ...Col.dateTime,
     renderer: archivedDateRenderer
 };
