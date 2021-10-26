@@ -6,6 +6,11 @@
 
 * TileFrame now supports new `onLayoutChange` callback prop.
 
+### 💥 Breaking Changes
+* Hoist grids now require ag-Grid v26.1.0 or higher - update your ag-Grid dependency in your app's
+  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for
+  details.
+
 ### 🐞 Bug Fixes
 * Field Filters in data package now act only on the `committed` value of the record.  This stabilizes
   filtering behavior in editable grids.
