@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
-import {elem, hoistCmp} from '@xh/hoist/core';
+import {elem, hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {
     reactAsyncCreatableSelect,
@@ -108,7 +108,10 @@ Select.propTypes = {
      */
     filterFn: PT.func,
 
-    /** True to hide the dropdown indicator, i.e. the down-facing arrow at the right of the Select. */
+    /**
+     * True to hide the dropdown indicator, i.e. the down-facing arrow at the right of the Select.
+     * Defaults to true on tablets, false om desktop.
+     */
     hideDropdownIndicator: PT.bool,
 
     /** True to suppress the default check icon rendered for the currently selected option. */
@@ -221,6 +224,7 @@ class Model extends HoistInputModel {
         return this.props.selectOnFocus ??
             (!this.multiMode && (this.filterMode || this.creatableMode));
     }
+    get hideDropdownIndicator() {return this.props.hideDropdownIndicator ?? XH.isTablet}
     get hideSelectedOptions() {return this.props.hideSelectedOptions ?? this.multiMode}
     get hideSelectedOptionCheck() {return this.props.hideSelectedOptionCheck || this.hideSelectedOptions}
 
@@ -543,7 +547,7 @@ class Model extends HoistInputModel {
     }
 
     getDropdownIndicatorCmp() {
-        return this.props.hideDropdownIndicator ?
+        return this.hideDropdownIndicator ?
             () => null :
             () => Icon.chevronDown({className: 'xh-select__indicator'});
     }
