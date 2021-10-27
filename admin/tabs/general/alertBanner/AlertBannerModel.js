@@ -10,11 +10,9 @@ import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {dateIs, required} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {isEmpty} from 'lodash';
 
 export class AlertBannerModel extends HoistModel {
 
-    token;
     savedValue;
 
     @managed
@@ -91,27 +89,27 @@ export class AlertBannerModel extends HoistModel {
         const {formModel} = this;
         if (formModel.isDirty && loadSpec.isAutoRefresh) return;
 
-        const results = await XH.jsonBlobService.listAsync({
-            type: 'xhAlertBanner',
-            includeValue: true
-        });
-
-        if (isEmpty(results)) return;
-
-        const {token, value} = results[0],
+        const value = await XH.fetchJson({url: 'alertBannerAdmin/alertSpec'}),
             initialValues = {
                 ...value,
                 expires: value.expires ? new Date(value.expires) : null
             };
 
-        this.token = token;
         this.savedValue = value;
         formModel.init(initialValues);
     }
 
     async saveAsync() {
-        const {formModel, token, savedValue} = this,
-            {active, message, intent, iconName, enableClose, expires, created} = formModel.getData();
+        const {formModel, savedValue} = this,
+            {
+                active,
+                message,
+                intent,
+                iconName,
+                enableClose,
+                expires,
+                created
+            } = formModel.getData();
 
         await formModel.validateAsync();
         if (!formModel.isValid) return;
@@ -119,9 +117,9 @@ export class AlertBannerModel extends HoistModel {
         let preservedPublishDate = null;
 
         // Ask some questions if we are dealing with live stuff
-        if (XH.alertBannerService.enabled && active) {
-            // Question 1. Reshow when modifying an already active, closable banner?
-            if (savedValue?.active && savedValue?.enableClose && savedValue?.publishDate) {
+        if (XH.alertBannerService.enabled && (active || savedValue?.active)) {
+            // Question 1. Reshow when modifying an active && already active, closable banner?
+            if (active && savedValue?.active && savedValue?.enableClose && savedValue?.publishDate) {
                 const reshow = await XH.confirm({
                     message: fragment(
                         p('You are updating an already-active banner. Some users might have already read and closed this alert.'),
@@ -146,11 +144,11 @@ export class AlertBannerModel extends HoistModel {
             // Question 2.  Are you sure?
             const finalConfirm = await XH.confirm({
                 message: fragment(
-                    p('This change will immediately show or modify a LIVE banner for ALL users of this application.'),
+                    p('This change will modify a LIVE banner for ALL users of this application.'),
                     p('Are you sure you wish to do this?')
                 ),
                 confirmProps: {
-                    text: 'Yes, show the banner',
+                    text: 'Yes, modify the banner',
                     intent: 'primary',
                     outlined: true
                 }
@@ -159,38 +157,30 @@ export class AlertBannerModel extends HoistModel {
         }
 
         const now = Date.now(),
-            payload = {
-                type: 'xhAlertBanner',
-                name: 'xhAlertBanner',
-                description: 'Configuration for system alert banner, managed through the admin console.',
-                value: {
-                    active,
-                    message,
-                    intent,
-                    iconName,
-                    enableClose,
-                    expires: expires?.getTime(),
-                    publishDate: preservedPublishDate ?? now,
-                    created: created ?? now,
-                    updated: now,
-                    updatedBy: XH.getUsername()
-                }
+            value = {
+                active,
+                message,
+                intent,
+                iconName,
+                enableClose,
+                expires: expires?.getTime(),
+                publishDate: preservedPublishDate ?? now,
+                created: created ?? now,
+                updated: now,
+                updatedBy: XH.getUsername()
             };
 
-        if (token) {
-            await XH.jsonBlobService.updateAsync(token, payload);
-        } else {
-            await XH.jsonBlobService.createAsync(payload);
-        }
-
-        XH.track({
-            category: 'Banner',
+        await XH.fetchJson({
+            url: 'alertBannerAdmin/setAlertSpec',
+            params: {value: JSON.stringify(value)}
+        }).track({
+            category: 'Audit',
             message: 'Updated Alert Banner',
             data: {active, message, intent, iconName, enableClose}
         });
 
         await XH.alertBannerService.checkForBannerAsync();
-        return this.refreshAsync();
+        await this.refreshAsync();
     }
 
     resetForm() {

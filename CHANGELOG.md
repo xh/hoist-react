@@ -1,10 +1,15 @@
 # Changelog
 
-## v44.0.0-SNAPSHOT - unreleased
+## v45.0.0-SNAPSHOT - unreleased
 
-⚠ NOTE - apps must update to `hoist-core >= 9.5.0` when taking this hoist-react update.
+[Commit Log](https://github.com/xh/hoist-react/compare/v44.0.0...develop)
+
+## v44.0.0 - 2021-10-26
+
+⚠ NOTE - apps must update to `hoist-core >= 10.0.0` when taking this hoist-react update.
 
 ### 🎁 New Features
+
 * TileFrame now supports new `onLayoutChange` callback prop.
 
 ### 💥 Breaking Changes
@@ -13,10 +18,19 @@
   details.
 
 ### 🐞 Bug Fixes
-* Field Filters in data package now act only on the `committed` value of the record.  This stabilizes
+
+* Field Filters in data package now act only on the `committed` value of the record. This stabilizes
   filtering behavior in editable grids.
 * `JsonBlobService.updateAsync()` now supports data modifications with `null` values.
+* Fixes an issue with Alert Banner not broadcasting to all users.
+* Selected option in `Select` now scrolls into view on menu open.
 
+### 💥 Breaking Changes
+
+* Update required to `hoist-core >= 10.0.0` due to changes in `JsonBlobService` APIs and the
+  addition of new, dedicated endpoints for Alert Banner management.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v43.2.0...v44.0.0)
 
 ## v43.2.0 - 2021-10-14
 
@@ -33,7 +47,6 @@
 
 * Always enforce a minimal `wait()` within `GridModel.autosizeAsync()` to ensure that the Grid has
   reacted to any data changes and ag-Grid accurately reports on expanded rows to measure.
-
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v43.1.0...v43.2.0)
 
@@ -123,7 +136,7 @@
 * Mobile-specific styles and CSS vars for panel and dialog title background have been tweaked to use
   desktop defaults, and mobile dialogs now respect `--xh-popup-*` vars as expected.
 
-### 🎁 Breaking Changes
+### 💥 Breaking Changes
 
 * In the `@xh/hoist/desktop/grid` package, `CheckboxEditor` has been renamed `BooleanEditor`.
 
