@@ -254,6 +254,7 @@ export class DifferModel extends HoistModel {
         data.forEach(it => {
             delete it.lastUpdated;
             delete it.lastUpdatedBy;
+            delete it.dateCreated;
             delete it.id;
         });
 

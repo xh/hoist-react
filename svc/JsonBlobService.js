@@ -52,10 +52,12 @@ export class JsonBlobService extends HoistService {
         meta,
         description
     }) {
-        const params = {type, name, value: JSON.stringify(value)};
-        if (meta) params.meta = JSON.stringify(meta);
-        if (description) params.description = description;
-        return XH.fetchJson({url: 'xh/createJsonBlob', params});
+        return XH.fetchJson({
+            url: 'xh/createJsonBlob',
+            params: {
+                data: JSON.stringify({type, name, value, meta, description})
+            }
+        });
     }
 
     /**
@@ -73,7 +75,7 @@ export class JsonBlobService extends HoistService {
             url: 'xh/updateJsonBlob',
             params: {
                 token,
-                payload: JSON.stringify({name, value, meta, description})
+                update: JSON.stringify({name, value, meta, description})
             }
         });
     }

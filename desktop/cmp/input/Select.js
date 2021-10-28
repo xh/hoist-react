@@ -646,6 +646,12 @@ const cmp = hoistCmp.factory(
         if (model.manageInputValue) {
             rsProps.inputValue = model.inputValue || '';
             rsProps.onInputChange = model.onInputChange;
+            rsProps.onMenuOpen = () => {
+                wait().then(()=> {
+                    const selectedEl = document.getElementsByClassName('xh-select__option--is-selected')[0];
+                    selectedEl?.scrollIntoView({block: 'end'});
+                });
+            };
         }
 
         if (model.asyncMode) {
