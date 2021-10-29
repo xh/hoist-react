@@ -110,7 +110,7 @@ Select.propTypes = {
 
     /**
      * True to hide the dropdown indicator, i.e. the down-facing arrow at the right of the Select.
-     * Defaults to true on tablets, false om desktop.
+     * Defaults to true on tablets, false on desktop.
      */
     hideDropdownIndicator: PT.bool,
 
