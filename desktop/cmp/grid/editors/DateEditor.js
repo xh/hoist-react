@@ -68,24 +68,22 @@ DateEditor.propTypes = {
  */
 function computeStyleInAgGrid(data, options) {
     const {x, y} = options,
+        sideA = x === 'bottom' ? 'top' : 'bottom',
+        sideB = y === 'right' ? 'left' : 'right',
         {popper} = data.offsets;
 
     data.offsets.reference = getReferenceOffset(data.instance.reference);
     data.offsets.popper =  getPopperOffsets(data.instance.popper, data.offsets.reference, data.placement);
 
     const offsetParent = getOffsetParent(data.instance.popper);
-    // console.log(offsetParent);
     var offsetParentRect = getBoundingClientRect(offsetParent);
 
     // Styles
-    var styles = {
+    const styles = {
         position: popper.position
     };
 
-    var offsets = getRoundedOffsets(data, window.devicePixelRatio < 2 || !isFirefox);
-    // console.log(offsets);
-    var sideA = x === 'bottom' ? 'top' : 'bottom';
-    var sideB = y === 'right' ? 'left' : 'right';
+    var roundedPopperOffsets = getRoundedOffsets(data, window.devicePixelRatio < 2 || !isFirefox);
 
 
     // now, let's make a step back and look at this code closely (wtf?)
@@ -100,14 +98,14 @@ function computeStyleInAgGrid(data, options) {
     var left = void 0,
         top = void 0;
     if (sideA === 'bottom') {
-        top = -offsetParentRect.height + offsets.bottom;
+        top = -offsetParentRect.height + roundedPopperOffsets.bottom;
     } else {
-        top = offsets.top;
+        top = roundedPopperOffsets.top;
     }
     if (sideB === 'right') {
-        left = -offsetParentRect.width + offsets.right;
+        left = -offsetParentRect.width + roundedPopperOffsets.right;
     } else {
-        left = offsets.left;
+        left = roundedPopperOffsets.left;
     }
 
     styles.transform = 'translate3d(' + left + 'px, ' + top + 'px, 0)';
