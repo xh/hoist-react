@@ -2,6 +2,10 @@
 
 ## v45.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Desktop `Select.hideDropdownIndicator` now defaults to `true` on tablet devices.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v44.0.0...develop)
 
 ## v44.0.0 - 2021-10-26
