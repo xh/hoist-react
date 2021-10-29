@@ -7,7 +7,7 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {assign, mapValues, pickBy, hasKey} from 'lodash';
+import {assign, mapValues, pickBy} from 'lodash';
 import {AppOption} from './AppOption';
 
 /**
@@ -116,7 +116,7 @@ export class OptionsDialogModel extends HoistModel {
         const {formModel} = this,
             dirtyFields = pickBy(formModel.fields, {isDirty: true}),
             promises = this.options
-                .filter(o => hasKey(dirtyFields, o.name))
+                .filter(o => dirtyFields[o.name])
                 .map(o => o.setValueAsync(o.name, dirtyFields[o.name].value));
         await Promise.allSettled(promises);
         await XH.prefService.pushPendingAsync();
@@ -124,7 +124,7 @@ export class OptionsDialogModel extends HoistModel {
         XH.track({
             message: 'Changed options',
             category: 'App',
-            data: mapValues(dirtyFields, f => ({oldValue: f.initialValue, newValue: f.value}))
+            data: mapValues(dirtyFields, f => ({value: f.value, oldValue: f.initialValue}))
         });
     }
 }
