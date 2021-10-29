@@ -6,7 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {dateInput} from '@xh/hoist/desktop/cmp/input';
-import {getBoundingClientRect, getOffsetParent, getPopperOffsets, getOffsetRectRelativeToArbitraryNode}  from 'popper.js/dist/popper-utils';
+import {getPopperOffsets, getOffsetRectRelativeToArbitraryNode}  from 'popper.js/dist/popper-utils';
 import {warnIf} from '@xh/hoist/utils/js';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
 import {EditorPropTypes} from './EditorPropTypes';
@@ -72,8 +72,6 @@ function computeStyleInAgGrid(data, options, portalContainer) {
         sideB = y === 'right' ? 'left' : 'right',
         styles = {position: data.offsets.popper.position},
         inputEl = data.instance.reference,
-        offsetParent = getOffsetParent(data.instance.popper),
-        offsetParentRect = getBoundingClientRect(offsetParent),
         rowContainer = inputEl.closest('[ref=eContainer]');
 
     if (!rowContainer) return data;
@@ -88,22 +86,13 @@ function computeStyleInAgGrid(data, options, portalContainer) {
     // 2: must recalc popper offets with new reference offsets
     data.offsets.popper =  getPopperOffsets(data.instance.popper, data.offsets.reference, data.placement);
 
-    const {top, right, bottom, left, height} = data.offsets.popper,
+    const {top, left, height} = data.offsets.popper,
         flipToAbove = top - vScroll + height > vpHeight,
         inputElHeight = data.offsets.reference.height;
 
-    let trLeft = void 0,
-        trTop = void 0;
-    if (sideA === 'bottom') {
-        trTop = -offsetParentRect.height + bottom;
-    } else {
+    let trLeft = left - hScroll,
         trTop = top - (flipToAbove ? inputElHeight + height : 0);
-    }
-    if (sideB === 'right') {
-        trLeft = -offsetParentRect.width + right;
-    } else {
-        trLeft = left - hScroll;
-    }
+
 
     styles.transform = 'translate3d(' + trLeft + 'px, ' + trTop + 'px, 0)';
     styles[sideA] = 0;
