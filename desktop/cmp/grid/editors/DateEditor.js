@@ -39,15 +39,15 @@ export const [DateEditor, dateEditor] = hoistCmp.withFactory({
                 showPickerOnFocus: !!portalContainer,
                 portalContainer,
                 popoverBoundary: 'scrollParent',
-                // popoverBoundary: props.gridModel.agApi.gridBodyComp?.eBodyViewport, // props.gridModel.agApi.gridBodyComp.getFocusableElement(),//portalContainer.children[1],
-                // see https://github.com/palantir/blueprint/blob/d3b72d4d81efa89724567a907b879d0b428c080d/packages/core/src/components/popover/popover.tsx
-                // for example of blueprintjs modifiers
                 popoverMofifiers: {
                     computeStyle: {
                         enabled: true,
-                        fn: computeStyleInAgGrid,
+                        fn: (data, options) => computeStyleInAgGrid(data, options, portalContainer),
                         order: 850
-                    }
+                    },
+                    flip: {enabled: false},
+                    keepTogether: {enabled: false},
+                    preventOverflow: {enabled: false}
                 },
                 ...props.inputProps
             }
@@ -66,32 +66,43 @@ DateEditor.propTypes = {
  * @argument {Object} options - Modifiers configuration and options
  * @returns {Object} The data object, properly modified
  */
-function computeStyleInAgGrid(data, options) {
+function computeStyleInAgGrid(data, options, portalContainer) {
     const {x, y} = options,
         sideA = x === 'bottom' ? 'top' : 'bottom',
         sideB = y === 'right' ? 'left' : 'right',
         styles = {position: data.offsets.popper.position},
+        inputEl = data.instance.reference,
         offsetParent = getOffsetParent(data.instance.popper),
-        offsetParentRect = getBoundingClientRect(offsetParent);
+        offsetParentRect = getBoundingClientRect(offsetParent),
+        rowContainer = inputEl.closest('[ref=eContainer]');
 
+    if (!rowContainer) return data;
+
+    const hScrollPort = rowContainer.parentNode,
+        hScroll = hScrollPort.scrollLeft,
+        vScroll = portalContainer.scrollTop,
+        vpHeight = portalContainer.offsetHeight;
+        
     // 1: recalc reference offsets with ag-grid container
-    data.offsets.reference = getReferenceOffset(data.instance.reference);
+    data.offsets.reference = getOffsetRectRelativeToArbitraryNode(inputEl, rowContainer, false);
     // 2: must recalc popper offets with new reference offsets
     data.offsets.popper =  getPopperOffsets(data.instance.popper, data.offsets.reference, data.placement);
 
-    const {top, right, bottom, left} = data.offsets.popper;
+    const {top, right, bottom, left, height} = data.offsets.popper,
+        flipToAbove = top - vScroll + height > vpHeight,
+        inputElHeight = data.offsets.reference.height;
 
     let trLeft = void 0,
         trTop = void 0;
     if (sideA === 'bottom') {
         trTop = -offsetParentRect.height + bottom;
     } else {
-        trTop = top;
+        trTop = top - (flipToAbove ? inputElHeight + height : 0);
     }
     if (sideB === 'right') {
         trLeft = -offsetParentRect.width + right;
     } else {
-        trLeft = left;
+        trLeft = left - hScroll;
     }
 
     styles.transform = 'translate3d(' + trLeft + 'px, ' + trTop + 'px, 0)';
@@ -109,10 +120,3 @@ function computeStyleInAgGrid(data, options) {
 
     return data;
 }
-
-// Customized to get offset of container of all rows.
-function getReferenceOffset(reference) {
-    const parent = reference.closest('[ref=eViewport]');
-    return getOffsetRectRelativeToArbitraryNode(reference, parent, false);
-}
-  
