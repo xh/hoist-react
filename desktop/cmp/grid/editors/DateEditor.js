@@ -91,11 +91,13 @@ function computeStyleInAgGrid(data, options, portalContainer) {
         return data;
     }
 
-    // 1: recalc reference offsets with ag-grid container
+    // recalc reference offsets with ag-grid container of all rows
     data.offsets.reference = getOffsetRectRelativeToArbitraryNode(inputEl, rowContainer, false);
-    // 2: recalc popper offets with new reference offsets
+
+    // recalc popper offets with new reference offsets
     data.offsets.popper = getPopperOffsets(data.instance.popper, data.offsets.reference, data.placement);
         
+    // adjust popper offsets to avoid hiding popper behind grid edges
     const scrollLeft = rowContainer.parentNode.scrollLeft,
         {scrollTop, offsetWidth: pcWidth, offsetHeight: pcHeight} = portalContainer,
         {top: popperTop, left: popperLeft, height: popperHeight, width: popperWidth} = data.offsets.popper,
