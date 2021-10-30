@@ -109,7 +109,7 @@ function computeStyleInAgGrid(data, options, portalContainer) {
     const alignLeft = popperLeft - scrollLeft < scrollLeft,
         alignRight = inputElLeft + popperWidth > scrollLeft + pcWidth;
 
-    // both are true if grid is narrower than popper
+    // both are true if grid is narrower than popper (in which case will stay center aligned)
     if (!(alignRight && alignLeft)) { 
         trLeft = alignLeft ? inputElLeft : 
             alignRight ? inputElRight - popperWidth : 
