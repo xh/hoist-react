@@ -97,18 +97,30 @@ function computeStyleInAgGrid(data, options, portalContainer) {
     // recalc popper offets with new reference offsets
     data.offsets.popper = getPopperOffsets(data.instance.popper, data.offsets.reference, data.placement);
         
-    // adjust popper offsets to avoid hiding popper behind grid edges
+    // adjust popper offsets to avoid hiding popper behind grid edges when it first appears
     const scrollLeft = rowContainer.parentNode.scrollLeft,
         {scrollTop, offsetWidth: pcWidth, offsetHeight: pcHeight} = portalContainer,
         {top: popperTop, left: popperLeft, height: popperHeight, width: popperWidth} = data.offsets.popper,
-        {left: inputElLeft, right: inputElRight, height: inputElHeight} = data.offsets.reference,
-        flipToAbove = popperTop - scrollTop + popperHeight > pcHeight,
-        xTarget = popperLeft - scrollLeft,
-        alignLeft = xTarget < scrollLeft,
-        alignRight = xTarget + popperWidth > scrollLeft + pcWidth,
-        trLeft = alignLeft ? inputElLeft - scrollLeft : 
-            alignRight ? inputElRight - popperWidth - scrollLeft : 
-                xTarget,
+        {left: inputElLeft, right: inputElRight, height: inputElHeight} = data.offsets.reference;
+
+        
+    // solve x axis.  default position is center aligned
+    let trLeft = popperLeft;
+
+    const alignLeft = popperLeft - scrollLeft < scrollLeft,
+        alignRight = inputElLeft + popperWidth > scrollLeft + pcWidth;
+
+    // both are true if grid is narrower than popper
+    if (!(alignRight && alignLeft)) { 
+        trLeft = alignLeft ? inputElLeft : 
+            alignRight ? inputElRight - popperWidth : 
+                trLeft;
+    }
+
+    trLeft -= scrollLeft;
+
+    // solve y axis.  default position is underneath cell
+    const flipToAbove = popperTop - scrollTop + popperHeight > pcHeight,
         trTop = popperTop - (flipToAbove ? inputElHeight + popperHeight : 0);
 
     styles.transform = 'translate3d(' + trLeft + 'px, ' + trTop + 'px, 0)';
