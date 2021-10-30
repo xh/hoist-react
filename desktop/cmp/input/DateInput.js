@@ -122,7 +122,7 @@ DateInput.propTypes = {
         'auto'
     ]),
 
-    /** Boundary for calendar popover, as per Blueprint docs. Defaults to viewport. */
+    /** Boundary for calendar popover, as per Popper.js docs. Defaults to viewport. */
     popoverBoundary: PT.oneOf(['scrollParent', 'viewport', 'window', PT.element]),
 
     /** Modifiers for calendar popover, as per Blueprint docs. Defaults to null */
