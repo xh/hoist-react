@@ -82,7 +82,10 @@ function computeStyleInAgGrid(data, options, portalContainer) {
             willChange: 'transform'
         },
         inputEl = data.instance.reference,
-        rowContainer = inputEl.closest('[ref=eContainer]') || inputEl.closest('[ref=leftContainer]') || inputEl.closest('[ref=rightContainer]');
+        leftContainer = inputEl.closest('[ref=leftContainer]'),
+        centerContainer = inputEl.closest('[ref=eContainer]'),
+        rightContainer = inputEl.closest('[ref=rightContainer]'),
+        rowContainer = centerContainer || leftContainer || rightContainer;
 
     if (!rowContainer) {
         // prevent flash of popper in top left grid corner
@@ -91,8 +94,12 @@ function computeStyleInAgGrid(data, options, portalContainer) {
         return data;
     }
 
-    // recalc reference offsets with ag-grid container of all rows
+    // recalc reference offsets with the dateEditor cell's column's ag-grid container of all rows
     data.offsets.reference = getOffsetRectRelativeToArbitraryNode(inputEl, rowContainer, false);
+    if (rightContainer) {
+        data.offsets.reference.left += rightContainer.offsetLeft;
+        data.offsets.reference.right += rightContainer.offsetLeft;
+    }
 
     const scrollLeft = rowContainer.parentNode.scrollLeft,
         {scrollTop, offsetWidth: pcWidth, offsetHeight: pcHeight} = portalContainer,
