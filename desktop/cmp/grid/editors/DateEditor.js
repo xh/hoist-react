@@ -6,7 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {dateInput} from '@xh/hoist/desktop/cmp/input';
-import {getPopperOffsets, getOffsetRectRelativeToArbitraryNode}  from 'popper.js/dist/popper-utils';
+import {getPopperOffsets, getOffsetRectRelativeToArbitraryNode} from 'popper.js/dist/popper-utils';
 import {warnIf} from '@xh/hoist/utils/js';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
 import {EditorPropTypes} from './EditorPropTypes';
@@ -43,6 +43,9 @@ export const [DateEditor, dateEditor] = hoistCmp.withFactory({
                         fn: (data, options) => computeStyleInAgGrid(data, options, portalContainer),
                         order: 850
                     },
+                    // Turn off other modifiers
+                    // that the new computeStyle overrides
+                    // These would just waste cycles
                     flip: {enabled: false},
                     keepTogether: {enabled: false},
                     preventOverflow: {enabled: false},
