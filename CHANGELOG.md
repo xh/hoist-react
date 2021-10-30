@@ -6,6 +6,10 @@
 
 * Desktop `Select.hideDropdownIndicator` now defaults to `true` on tablet devices.
 
+### 🐞 Bug Fixes
+
+* Desktop grid inline editor `DateInput`'s date picker popup now appears correctly beside date input cell
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v44.0.0...develop)
 
 ## v44.0.0 - 2021-10-26
