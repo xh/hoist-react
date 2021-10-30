@@ -6,7 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {dateInput} from '@xh/hoist/desktop/cmp/input';
-import {getPopperOffsets, getOffsetRectRelativeToArbitraryNode} from 'popper.js/dist/popper-utils';
+import {getOffsetRectRelativeToArbitraryNode} from 'popper.js/dist/popper-utils';
 import {warnIf} from '@xh/hoist/utils/js';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
 import {EditorPropTypes} from './EditorPropTypes';
@@ -82,7 +82,7 @@ function computeStyleInAgGrid(data, options, portalContainer) {
             willChange: 'transform'
         },
         inputEl = data.instance.reference,
-        rowContainer = inputEl.closest('[ref=eContainer]');
+        rowContainer = inputEl.closest('[ref=eContainer]') || inputEl.closest('[ref=leftContainer]') || inputEl.closest('[ref=rightContainer]');
 
     if (!rowContainer) {
         // prevent flash of popper in top left grid corner
@@ -94,35 +94,32 @@ function computeStyleInAgGrid(data, options, portalContainer) {
     // recalc reference offsets with ag-grid container of all rows
     data.offsets.reference = getOffsetRectRelativeToArbitraryNode(inputEl, rowContainer, false);
 
-    // recalc popper offets with new reference offsets
-    data.offsets.popper = getPopperOffsets(data.instance.popper, data.offsets.reference, data.placement);
-        
     const scrollLeft = rowContainer.parentNode.scrollLeft,
         {scrollTop, offsetWidth: pcWidth, offsetHeight: pcHeight} = portalContainer,
-        {top: popperTop, left: popperLeft, height: popperHeight, width: popperWidth} = data.offsets.popper,
-        {left: inputElLeft, right: inputElRight, height: inputElHeight} = data.offsets.reference;
+        {height: popperHeight, width: popperWidth} = data.offsets.popper,
+        {top: inputElTop, bottom: inputElBottom, left: inputElLeft, right: inputElRight, width: inputElWidth} = data.offsets.reference,
+        pcRight = pcWidth + scrollLeft;
 
-    // Adjust popper offsets to avoid hiding popper behind grid edges when it first appears.
-    // solve x axis.  default position is center aligned
-    let trLeft = popperLeft;
+    // Set popper top & left to avoid hiding popper behind grid edges when cell is visible.
 
-    const alignLeft = popperLeft - scrollLeft < scrollLeft,
-        alignRight = inputElLeft + popperWidth > scrollLeft + pcWidth;
+    // Solve x axis (left).  Default position is center aligned.
+    // If popper width is greater than grid width, popper stays center aligned.
+    let trLeft = inputElLeft + (inputElWidth - popperWidth) / 2;
+ 
+    const alignLeft = trLeft - scrollLeft < 0 && inputElLeft + popperWidth < pcRight,
+        alignRight = trLeft + popperWidth > pcRight && inputElRight - popperWidth > scrollLeft;
 
-    // both are true if grid is narrower than popper (in which case will stay center aligned)
-    if (!(alignRight && alignLeft)) { 
-        trLeft = alignLeft ? inputElLeft : 
-            alignRight ? inputElRight - popperWidth : 
-                trLeft;
-    }
+    trLeft = alignLeft ? inputElLeft : 
+        alignRight ? inputElRight - popperWidth : 
+            trLeft;
 
     trLeft -= scrollLeft;
 
-    // solve y axis.  default position is underneath cell
-    // flips to above if cell is near bottom of grid.
-    // if poppper height is greater than grid height, the popper will flip above, too.
-    const flipToAbove = popperTop - scrollTop + popperHeight > pcHeight,
-        trTop = popperTop - (flipToAbove ? inputElHeight + popperHeight : 0);
+    // Solve y axis (top).  Default position is underneath cell
+    // Flips to above if cell is near bottom of grid.
+    // If poppper height is greater than grid height, the popper stays in the default position.
+    const flipToAbove = popperHeight < pcHeight && inputElBottom - scrollTop + popperHeight > pcHeight,
+        trTop = flipToAbove ? inputElTop - popperHeight : inputElBottom;
 
     styles.transform = 'translate3d(' + trLeft + 'px, ' + trTop + 'px, 0)';
 
