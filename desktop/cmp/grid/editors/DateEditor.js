@@ -97,13 +97,12 @@ function computeStyleInAgGrid(data, options, portalContainer) {
     // recalc popper offets with new reference offsets
     data.offsets.popper = getPopperOffsets(data.instance.popper, data.offsets.reference, data.placement);
         
-    // adjust popper offsets to avoid hiding popper behind grid edges when it first appears
     const scrollLeft = rowContainer.parentNode.scrollLeft,
         {scrollTop, offsetWidth: pcWidth, offsetHeight: pcHeight} = portalContainer,
         {top: popperTop, left: popperLeft, height: popperHeight, width: popperWidth} = data.offsets.popper,
         {left: inputElLeft, right: inputElRight, height: inputElHeight} = data.offsets.reference;
 
-        
+    // Adjust popper offsets to avoid hiding popper behind grid edges when it first appears.
     // solve x axis.  default position is center aligned
     let trLeft = popperLeft;
 
@@ -120,6 +119,8 @@ function computeStyleInAgGrid(data, options, portalContainer) {
     trLeft -= scrollLeft;
 
     // solve y axis.  default position is underneath cell
+    // flips to above if cell is near bottom of grid.
+    // if poppper height is greater than grid height, the popper will flip above, too.
     const flipToAbove = popperTop - scrollTop + popperHeight > pcHeight,
         trTop = popperTop - (flipToAbove ? inputElHeight + popperHeight : 0);
 
