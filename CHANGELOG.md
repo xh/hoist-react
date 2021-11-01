@@ -5,6 +5,7 @@
 ### 🎁 New Features
 
 * Desktop `Select.hideDropdownIndicator` now defaults to `true` on tablet devices.
+* Changes to App Options are now tracked in the admin activity tab.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v44.0.0...develop)
 
