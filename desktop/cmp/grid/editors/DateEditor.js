@@ -37,7 +37,7 @@ export const [DateEditor, dateEditor] = hoistCmp.withFactory({
                 showPickerOnFocus: !!portalContainer,
                 portalContainer,
                 popoverBoundary: 'scrollParent',
-                popoverMofifiers: {
+                popoverModifiers: {
                     computeStyle: {
                         enabled: true,
                         fn: (data, options) => computeStyleInAgGrid(data, options, portalContainer),
@@ -116,9 +116,7 @@ function computeStyleInAgGrid(data, options, portalContainer) {
     const alignLeft = trLeft - scrollLeft < 0 && inputElLeft + popperWidth < pcRight,
         alignRight = trLeft + popperWidth > pcRight && inputElRight - popperWidth > scrollLeft;
 
-    trLeft = alignLeft ? inputElLeft : 
-        alignRight ? inputElRight - popperWidth : 
-            trLeft;
+    trLeft = alignLeft ? inputElLeft : alignRight ? inputElRight - popperWidth : trLeft;
 
     trLeft -= scrollLeft;
 
