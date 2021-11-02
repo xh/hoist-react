@@ -15,22 +15,22 @@
 
   &__list {
     overflow-y: auto !important;
-    border: var(--xh-menu-item-border);
+    border: var(--xh-menu-border);
 
     &__item {
       margin: 0;
       padding: 0 var(--xh-pad-double-px) 0 var(--xh-pad-px);
       font-size: var(--xh-menu-item-font-size-px);
       color: var(--xh-menu-item-text-color);
-      background-color: var(--xh-menu-item-bg) !important;
+      background-color: var(--xh-menu-bg) !important;
       box-shadow: none !important;
 
       &:not(:last-child) {
-        border-bottom: var(--xh-menu-item-border);
+        border-bottom: var(--xh-menu-border);
       }
 
-      &--tapped {
-        background-color: var(--xh-menu-item-pressed-bg) !important;
+      &--pressed {
+        background-color: var(--xh-menu-item-highlight-bg) !important;
       }
 
       & > div {

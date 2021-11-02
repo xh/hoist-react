@@ -72,7 +72,7 @@ Menu.propTypes = {
 
 class LocalModel extends HoistModel {
 
-    @bindable tappedIdx;
+    @bindable pressedIdx;
 
     constructor() {
         super();
@@ -80,7 +80,7 @@ class LocalModel extends HoistModel {
     }
 
     parseMenuItems(items, onDismiss) {
-        const {tappedIdx} = this;
+        const {pressedIdx} = this;
         return items
             .filter(it => !it.omit)
             .map(item => {
@@ -101,14 +101,14 @@ class LocalModel extends HoistModel {
                     tappable: true,
                     className: classNames(
                         'xh-menu__list__item',
-                        idx === tappedIdx ? 'xh-menu__list__item--tapped' : null
+                        idx === pressedIdx ? 'xh-menu__list__item--pressed' : null
                     ),
                     item: div({className: 'center', items: labelItems}),
                     omit: hidden,
-                    onTouchStart: () => this.setTappedIdx(idx),
-                    onTouchEnd: () => this.setTappedIdx(null),
+                    onTouchStart: () => this.setPressedIdx(idx),
+                    onTouchEnd: () => this.setPressedIdx(null),
                     onClick: () => {
-                        this.setTappedIdx(null);
+                        this.setPressedIdx(null);
                         if (actionFn) actionFn();
                         onDismiss();
                     }

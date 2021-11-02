@@ -319,14 +319,16 @@ body {
   //------------------------
   // Menus
   //------------------------
-  --xh-menu-item-bg: var(--menu-item-bg, var(--xh-grid-bg));
-  --xh-menu-item-pressed-bg: var(--menu-item-pressed-bg, var(--xh-grid-selected-row-bg));
-  --xh-menu-item-border: var(--menu-item-border, var(--xh-border-solid));
-  --xh-menu-item-height: var(--menu-item-height, 40);
-  --xh-menu-item-height-px: calc(var(--xh-menu-item-height) * 1px);
+  --xh-menu-bg: var(--menu-bg, var(--xh-bg));
+  --xh-menu-border: var(--menu-border, var(--xh-border-solid));
+  --xh-menu-item-font-size-px: var(--menu-item-font-size-px, var(--xh-font-size-px));
+  // Highlight applied on hover for desktop, press for mobile.
+  --xh-menu-item-highlight-bg: var(--menu-item-highlight-bg, var(--xh-grid-bg-hover));
   --xh-menu-item-text-color: var(--menu-item-text-color, var(--xh-text-color));
-  --xh-menu-item-font-size: var(--menu-item-font-size, var(--xh-font-size));
-  --xh-menu-item-font-size-px: calc(var(--xh-menu-item-font-size) * 1px);
+
+  &.xh-mobile {
+    --xh-menu-item-height-px: var(--menu-item-height-px, 40px);
+  }
 
 
   //------------------------
