@@ -309,3 +309,15 @@ textarea.bp3-input,
     margin-right: var(--xh-form-field-margin-right);
   }
 }
+
+//------------------------
+// Misc
+//------------------------
+.bp3-hotkey-column {
+  padding: var(--xh-pad-double-px);
+
+  .bp3-heading {
+    font-weight: normal;
+    margin-top: 0;
+  }
+}
