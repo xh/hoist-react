@@ -7,6 +7,10 @@
 * Desktop `Select.hideDropdownIndicator` now defaults to `true` on tablet devices.
 * Changes to App Options are now tracked in the admin activity tab.
 
+### 💥 Breaking Changes
+* Hoist grids now require ag-Grid v26.1.0 or higher - update your ag-Grid dependency in your app's
+  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
+
 ### 🐞 Bug Fixes
 
 * Desktop grid inline editor `DateInput`'s date picker popup now appears correctly beside date input cell
@@ -20,11 +24,6 @@
 ### 🎁 New Features
 
 * TileFrame now supports new `onLayoutChange` callback prop.
-
-### 💥 Breaking Changes
-* Hoist grids now require ag-Grid v26.1.0 or higher - update your ag-Grid dependency in your app's
-  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for
-  details.
 
 ### 🐞 Bug Fixes
 
