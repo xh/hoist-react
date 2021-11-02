@@ -156,7 +156,7 @@ function globalHotKeys(model) {
         ret.push({
             global: true,
             combo: 'shift + i',
-            label: 'Open Impersonation Dialog',
+            label: 'Impersonate another user',
             onKeyDown: () => impersonationBarModel.toggleVisibility()
         });
     }
@@ -164,7 +164,7 @@ function globalHotKeys(model) {
         ret.push({
             global: true,
             combo: 'shift + o',
-            label: 'Open Options Dialog',
+            label: 'Open application options',
             onKeyDown: () => optionsDialogModel.toggleVisibility()
         });
     }
