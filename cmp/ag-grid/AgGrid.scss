@@ -391,21 +391,23 @@
 }
 
 //------------------------
-// Context Menu (matching ag-Grid provided menus to BP menus)
+// Context Menu
 //------------------------
 .ag-theme-balham .ag-menu,
 .ag-theme-balham-dark .ag-menu {
   font-family: var(--xh-font-family);
+  font-size: var(--xh-menu-item-font-size-px);
+  color: var(--xh-menu-item-text-color);
 
   // Minimal/high-contrast bg
-  background-color: var(--xh-bg);
-  border: var(--xh-border-solid);
+  background-color: var(--xh-menu-bg);
+  border: var(--xh-menu-border);
 
   // Matching box-shadow of Blueprint context menu popover
   box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.2), 0 2px 4px rgba(16, 22, 26, 0.4), 0 8px 24px rgba(16, 22, 26, 0.4);
 
   .ag-menu-option.ag-menu-option-active {
-    background-color: var(--xh-bg-highlight);
+    background-color: var(--xh-menu-item-highlight-bg);
   }
 
   .ag-menu-option-icon {
@@ -421,6 +423,6 @@
 
   // Keep the submenu caret in the standard text color
   .ag-menu-option-popup-pointer {
-    color: var(--xh-text-color);
+    color: var(--xh-menu-item-text-color);
   }
 }

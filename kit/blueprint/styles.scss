@@ -77,14 +77,30 @@ $pt-transition-duration: 100ms !default;
 //------------------------
 .bp3-dark .bp3-menu,
 .bp3-menu {
-  background-color: var(--xh-bg-alt);
+  background-color: var(--xh-menu-bg);
+  border: var(--xh-menu-border);
+  color: var(--xh-menu-item-text-color);
+  padding: 5px 0;
+
+  .bp3-menu-item {
+    // Default alignment of flex-start leaves Hoist icons shifted up - could target
+    // more specifically if this is a problem in any other contexts.
+    align-items: center;
+    color: var(--xh-menu-item-text-color);
+    padding: 5px 10px;
+
+    &:hover {
+      background-color: var(--xh-menu-item-highlight-bg);
+      border-radius: 0;
+    }
+  }
+
+  .bp3-submenu {
+    padding: 0;
+  }
+
 }
 
-// Default of flex-start leaves Hoist icons shifted up - could target
-// more specifically if this is a problem in any other contexts.
-.bp3-menu-item {
-  align-items: center;
-}
 
 //------------------------
 // Buttons
