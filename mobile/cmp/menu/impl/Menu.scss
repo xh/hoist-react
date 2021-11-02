@@ -21,6 +21,7 @@
     &__item {
       padding: 0 var(--xh-pad-double-px) 0 var(--xh-pad-px);
       background-color: var(--xh-grid-bg) !important;
+      box-shadow: none !important;
 
       &--tapped {
         background-color: var(--xh-grid-selected-row-bg) !important;
