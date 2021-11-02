@@ -6,6 +6,8 @@
 
 * Desktop `Select.hideDropdownIndicator` now defaults to `true` on tablet devices.
 * Changes to App Options are now tracked in the admin activity tab.
+* `GridModel` has new `highlightRowOnClick` option, which highlights a row when the user
+  clicks or taps on the row.
 
 ### 💥 Breaking Changes
 * Hoist grids now require ag-Grid v26.1.0 or higher - update your ag-Grid dependency in your app's
