@@ -4,10 +4,12 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {div, hspacer, vbox} from '@xh/hoist/cmp/layout';
 import {listItem} from '@xh/hoist/kit/onsen';
 import {throwIf} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
 import {isFunction, isEmpty} from 'lodash';
 import {isValidElement} from 'react';
 import PT from 'prop-types';
@@ -33,8 +35,9 @@ export const [Menu, menu] = hoistCmp.withFactory({
     className: 'xh-menu',
     render(props, ref) {
         const {menuItems, onDismiss, title, ...rest} = props,
-            items = parseMenuItems(menuItems, onDismiss);
+            impl = useLocalModel(LocalModel);
 
+        const items = impl.parseMenuItems(menuItems, onDismiss);
         if (isEmpty(items)) return null;
         throwIf(!isFunction(onDismiss), 'Menu requires an `onDismiss` callback function');
 
@@ -67,34 +70,49 @@ Menu.propTypes = {
     title: PT.node
 };
 
-//---------------------------
-// Implementation
-//---------------------------
-function parseMenuItems(items, onDismiss) {
-    return items
-        .filter(it => !it.omit)
-        .map(item => {
-            if (item === '-' || isValidElement(item)) return item;
-            if (!(item instanceof MenuItem)) {
-                item = new MenuItem(item);
-            }
-            if (item.prepareFn) item.prepareFn(item);
-            return item;
-        })
-        .filter(it => !it.hidden)
-        .map((item, idx) => {
-            const {text, icon, actionFn, hidden} = item,
-                labelItems = icon ? [icon, hspacer(10), text] : [text];
+class LocalModel extends HoistModel {
 
-            return listItem({
-                key: idx,
-                tappable: true,
-                item: div({className: 'center', items: labelItems}),
-                omit: hidden,
-                onClick: () => {
-                    if (actionFn) actionFn();
-                    onDismiss();
+    @bindable tappedIdx;
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
+
+    parseMenuItems(items, onDismiss) {
+        const {tappedIdx} = this;
+        return items
+            .filter(it => !it.omit)
+            .map(item => {
+                if (item === '-' || isValidElement(item)) return item;
+                if (!(item instanceof MenuItem)) {
+                    item = new MenuItem(item);
                 }
+                if (item.prepareFn) item.prepareFn(item);
+                return item;
+            })
+            .filter(it => !it.hidden)
+            .map((item, idx) => {
+                const {text, icon, actionFn, hidden} = item,
+                    labelItems = icon ? [icon, hspacer(10), text] : [text];
+
+                return listItem({
+                    key: idx,
+                    tappable: true,
+                    className: classNames(
+                        'xh-menu__list__item',
+                        idx === tappedIdx ? 'xh-menu__list__item--tapped' : null
+                    ),
+                    item: div({className: 'center', items: labelItems}),
+                    omit: hidden,
+                    onTouchStart: () => this.setTappedIdx(idx),
+                    onTouchEnd: () => this.setTappedIdx(null),
+                    onClick: () => {
+                        this.setTappedIdx(null);
+                        if (actionFn) actionFn();
+                        onDismiss();
+                    }
+                });
             });
-        });
+    }
 }
