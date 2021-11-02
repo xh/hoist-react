@@ -11,6 +11,10 @@
 
 * Desktop grid inline editor `DateInput`'s date picker popup now appears correctly beside date input cell
 
+### ✨ Style
+
+* New `--xh-menu-item` vars added to CSS. Note these are currently only applied to the mobile toolkit.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v44.0.0...develop)
 
 ## v44.0.0 - 2021-10-26
