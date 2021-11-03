@@ -19,12 +19,11 @@ import moment from 'moment';
  * @type ConstraintCb
  */
 export const required = ({value, displayName}) => {
-    displayName = displayName ?? 'Field';
     if (
         isNil(value) ||
         (isString(value) && value.trim().length === 0) ||
         (isArray(value) && value.length === 0)
-    ) return `${displayName} is required.`;
+    ) return `${displayName ?? 'Field'} is required.`;
 };
 
 /**
@@ -39,8 +38,7 @@ export const validEmail = ({value, displayName}) => {
     // eslint-disable-next-line no-useless-escape
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
         isValid = re.test(value);
-    displayName = displayName ?? 'Field';
-    if (!isValid) return `${displayName} is not a properly formatted address.`;
+    if (!isValid) return `${displayName ?? 'Field'} is not a properly formatted address.`;
 };
 
 /**
@@ -139,8 +137,7 @@ export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
                 default: error = `after ${maxMoment.format(fmt)}`;
             }
         }
-        displayName = displayName ?? 'Field';
-        return error ? `${displayName} must not be ${error}` : null;
+        return error ? `${displayName ?? 'Field'} must not be ${error}` : null;
     };
 }
 
@@ -174,8 +171,7 @@ export function stringExcludes(...excludeVals) {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
         const fail = excludeVals.find(s => value.includes(s));
-        displayName = displayName ?? 'Field';
-        if (fail) return `${displayName} must not include "${fail}"`;
+        if (fail) return `${displayName ?? 'Field'} must not include "${fail}"`;
     };
 }
 
@@ -188,7 +184,6 @@ export const isValidJson = ({value, displayName}) => {
     try {
         JSON.parse(value);
     } catch {
-        displayName = displayName ?? 'Field';
-        return `${displayName} is not valid JSON`;
+        return `${displayName ?? 'Field'} is not valid JSON`;
     }
 };
