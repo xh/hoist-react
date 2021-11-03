@@ -24,7 +24,7 @@ import {Field} from './Field';
 import {parseFilter} from './filter/Utils';
 import {RecordSet} from './impl/RecordSet';
 import {StoreValidator} from './impl/StoreValidator';
-import {Record} from './Record';
+import {StoreRecord} from './StoreRecord';
 
 /**
  * A managed and observable set of local, in-memory Records.
@@ -66,7 +66,7 @@ export class Store extends HoistBase {
     /** @member {?number} - timestamp (ms) of the last time this store's data was loaded.*/
     @observable lastLoaded = null;
 
-    /** @member {Record} - record containing summary data. */
+    /** @member {StoreRecord} - record containing summary data. */
     @observable.ref summaryRecord = null;
 
     /** @package - used internally by any StoreFilterField that is bound to this store. */
@@ -99,7 +99,7 @@ export class Store extends HoistBase {
      *      `XH.genId` to generate a unique id on the fly. NOTE that in this case, grids and other
      *      components bound to this store will not be able to maintain record state across reloads.
      * @param {function} [c.processRawData] - function to run on each individual data object
-     *      presented to loadData() prior to creating a Record from that object. This function
+     *      presented to loadData() prior to creating a StoreRecord from that object. This function
      *      must return an object, cloning the original object if edits are necessary.
      * @param {(Filter|*|*[])} [c.filter] - one or more filters or configs to create one.  If an
      *      array, a single 'AND' filter will be created.
@@ -167,9 +167,9 @@ export class Store extends HoistBase {
      *
      * If raw data objects have a `children` property, it will be expected to be an array and its
      * items will be recursively processed into child Records, each created with a pointer to its
-     * parent's newly assigned Record ID.
+     * parent's newly assigned StoreRecord ID.
      *
-     * Note that this process will re-use pre-existing Record object instances if they are present
+     * Note that this process will re-use pre-existing StoreRecord object instances if they are present
      * in the new dataset (as identified by their ID), contain the same data, and occupy the same
      * place in any hierarchy across old and new loads. This is to maximize the ability of
      * downstream consumers (e.g. ag-Grid) to recognize Records that have not changed and do not
@@ -213,7 +213,7 @@ export class Store extends HoistBase {
      * source data will be run through this Store's `idSpec` and `processRawData` functions.
      *
      * Adds can also be provided as an object of the form `{rawData, parentId}` to add new Records
-     * under a known, pre-existing parent Record. {@see StoreTransaction} for more details.
+     * under a known, pre-existing parent StoreRecord. {@see StoreTransaction} for more details.
      *
      * Unlike `loadData()`, existing Records that are *not* included in this update transaction
      * will be left in place and as is.
@@ -336,7 +336,7 @@ export class Store extends HoistBase {
     /**
      * Re-runs the Filter on the current data. Applications only need to call this method if
      * the state underlying the filter, other than the record data itself, has changed. Store will
-     * re-filter automatically whenever Record data is updated or modified.
+     * re-filter automatically whenever StoreRecord data is updated or modified.
      */
     refreshFilter() {
         this.rebuildFiltered();
@@ -349,13 +349,13 @@ export class Store extends HoistBase {
      * Note that data objects passed to this method must include a unique ID - callers can generate
      * one with `XH.genId()` if no natural ID can be produced locally on the client.
      *
-     * For Record additions that originate from the server, call `updateData()` instead.
+     * For StoreRecord additions that originate from the server, call `updateData()` instead.
      *
-     * @param {(Object[]|Object)} data - source data for new Record(s). Note that this data will
+     * @param {(Object[]|Object)} data - source data for new StoreRecord(s). Note that this data will
      *      *not* be processed by this Store's `processRawData` or `idSpec` functions, but will be
      *      parsed and potentially transformed according to this Store's Field definitions.
-     * @param {RecordId} [parentId] - ID of the pre-existing parent Record under which this new
-     *      Record should be added, if any.
+     * @param {RecordId} [parentId] - ID of the pre-existing parent StoreRecord under which this new
+     *      StoreRecord should be added, if any.
      */
     @action
     addRecords(data, parentId) {
@@ -370,7 +370,7 @@ export class Store extends HoistBase {
             const parsedData = this.parseRaw(it),
                 parent = this.getById(parentId);
 
-            return new Record({id, data: parsedData, store: this, parent, committedData: null});
+            return new StoreRecord({id, data: parsedData, store: this, parent, committedData: null});
         });
 
         this._current = this._current.withTransaction({add: addRecs});
@@ -381,16 +381,16 @@ export class Store extends HoistBase {
      * Remove Records from the Store in a local, uncommitted state - i.e. when queuing up a set of
      * deletes on the client to be flushed back to the server at a later time.
      *
-     * For Record deletions that originate from the server, call `updateData()` instead.
+     * For StoreRecord deletions that originate from the server, call `updateData()` instead.
      *
-     * @param {(number[]|string[]|Record[])} records - list of Record IDs or Records to remove
+     * @param {(number[]|string[]|StoreRecord[])} records - list of StoreRecord IDs or Records to remove
      */
     @action
     removeRecords(records) {
         records = castArray(records);
         if (isEmpty(records)) return;
 
-        const idsToRemove = records.map(it => (it instanceof Record) ? it.id : it);
+        const idsToRemove = records.map(it => (it instanceof StoreRecord) ? it.id : it);
 
         this._current = this._current
             .withTransaction({remove: idsToRemove})
@@ -400,17 +400,17 @@ export class Store extends HoistBase {
     }
 
     /**
-     * Modify individual Record field values in a local, uncommitted state - i.e. when updating a
-     * Record or Records via an inline grid editor or similar control.
+     * Modify individual StoreRecord field values in a local, uncommitted state - i.e. when updating a
+     * StoreRecord or Records via an inline grid editor or similar control.
      *
      * This method accepts partial updates for any Records to be modified; modifications need only
-     * include the Record ID and any fields that have changed.
+     * include the StoreRecord ID and any fields that have changed.
      *
-     * For Record updates that originate from the server, call `updateData()` instead.
+     * For StoreRecord updates that originate from the server, call `updateData()` instead.
      *
      * @param {(Object[]|Object)} modifications - field-level modifications to apply to existing
      *      Records in this Store. Each object in the list must have an `id` property identifying
-     *      the Record to modify, plus any other properties with updated field values to apply,
+     *      the StoreRecord to modify, plus any other properties with updated field values to apply,
      *      e.g. `{id: 4, quantity: 100}, {id: 5, quantity: 99, customer: 'bob'}`.
      */
     @action
@@ -434,7 +434,7 @@ export class Store extends HoistBase {
             const currentRec = this.getOrThrow(id),
                 updatedData = this.parseUpdate(currentRec.data, mod);
 
-            const updatedRec = new Record({
+            const updatedRec = new StoreRecord({
                 id: currentRec.id,
                 raw: currentRec.raw,
                 data: updatedData,
@@ -450,7 +450,7 @@ export class Store extends HoistBase {
 
         if (isEmpty(updateRecs)) return;
 
-        warnIf(hadDupes, 'Store.modifyRecords() called with multiple updates for the same Records. Only the first modification for each Record was processed.');
+        warnIf(hadDupes, 'Store.modifyRecords() called with multiple updates for the same Records. Only the first modification for each StoreRecord was processed.');
 
         this._current = this._current
             .withTransaction({update: Array.from(updateRecs.values())});
@@ -464,14 +464,14 @@ export class Store extends HoistBase {
      * This restores these Records to the state they were in when last loaded into this Store via
      * `loadData()` or `updateData()`, undoing any local modifications that might have been applied.
      *
-     * @param {(number[]|string[]|Record[])} records - Record IDs or instances to revert
+     * @param {(number[]|string[]|StoreRecord[])} records - StoreRecord IDs or instances to revert
      */
     @action
     revertRecords(records) {
         records = castArray(records);
         if (isEmpty(records)) return;
 
-        records = records.map(it => (it instanceof Record) ? it : this.getOrThrow(it));
+        records = records.map(it => (it instanceof StoreRecord) ? it : this.getOrThrow(it));
 
         this._current = this._current
             .withTransaction({update: records.map(it => this.getCommittedOrThrow(it.id))})
@@ -509,7 +509,7 @@ export class Store extends HoistBase {
 
     /**
      * Records in this store, respecting any filter (if applied).
-     * @return {Record[]}
+     * @return {StoreRecord[]}
      */
     get records() {
         return this._filtered.list;
@@ -517,7 +517,7 @@ export class Store extends HoistBase {
 
     /**
      * All records in this store, unfiltered.
-     * @return {Record[]}
+     * @return {StoreRecord[]}
      */
     get allRecords() {
         return this._current.list;
@@ -525,7 +525,7 @@ export class Store extends HoistBase {
 
     /**
      * All records that were originally loaded into this store.
-     * @return {Record[]}
+     * @return {StoreRecord[]}
      */
     get committedRecords() {
         return this._committed.list;
@@ -533,7 +533,7 @@ export class Store extends HoistBase {
 
     /**
      * Records added locally which have not been committed.
-     * @returns {Record[]}
+     * @returns {StoreRecord[]}
      */
     get addedRecords() {
         return this.allRecords.filter(it => it.isAdd);
@@ -541,7 +541,7 @@ export class Store extends HoistBase {
 
     /**
      * Records removed locally which have not been committed.
-     * @returns {Record[]}
+     * @returns {StoreRecord[]}
      */
     get removedRecords() {
         return differenceBy(this.committedRecords, this.allRecords, 'id');
@@ -549,7 +549,7 @@ export class Store extends HoistBase {
 
     /**
      * Records modified locally since they were last loaded.
-     * @returns {Record[]}
+     * @returns {StoreRecord[]}
      */
     get modifiedRecords() {
         return this.allRecords.filter(it => it.isModified);
@@ -559,7 +559,7 @@ export class Store extends HoistBase {
      * Root records in this store, respecting any filter (if applied).
      * If this store is not hierarchical, this will be identical to 'records'.
      *
-     * @return {Record[]}
+     * @return {StoreRecord[]}
      */
     get rootRecords() {
         return this._filtered.rootList;
@@ -569,7 +569,7 @@ export class Store extends HoistBase {
      * Root records in this store, unfiltered.
      * If this store is not hierarchical, this will be identical to 'allRecords'.
      *
-     * @return {Record[]}
+     * @return {StoreRecord[]}
      */
     get allRootRecords() {
         return this._current.rootList;
@@ -611,7 +611,7 @@ export class Store extends HoistBase {
     /**
      *
      * @param {RecordOrId} recOrId
-     * @return {boolean} - true if the Record is in the store, but currently excluded by a filter.
+     * @return {boolean} - true if the StoreRecord is in the store, but currently excluded by a filter.
      *      False if the record is either not in the Store at all, or not filtered out.
      */
     recordIsFiltered(recOrId) {
@@ -666,10 +666,10 @@ export class Store extends HoistBase {
      * Get a record by ID, or null if no matching record found.
      *
      * @param {RecordId} id
-     * @param {boolean} [respectFilter] - false (default) to return a Record with the given
+     * @param {boolean} [respectFilter] - false (default) to return a StoreRecord with the given
      *      ID even if an active filter is excluding it from the primary `records` collection.
-     *      True to restrict matches to this Store's post-filter Record collection only.
-     * @return {Record}
+     *      True to restrict matches to this Store's post-filter StoreRecord collection only.
+     * @return {StoreRecord}
      */
     getById(id, respectFilter = false) {
         if (isNil(id)) return null;
@@ -682,12 +682,12 @@ export class Store extends HoistBase {
     /**
      * Get children records for a record.
      *
-     * See also the 'children' and 'allChildren' properties on Record - those getters will likely
+     * See also the 'children' and 'allChildren' properties on StoreRecord - those getters will likely
      * be more convenient for most app-level callers.
      *
-     * @param {RecordId} id - ID of Record to be queried.
+     * @param {RecordId} id - ID of StoreRecord to be queried.
      * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
-     * @return {Record[]}
+     * @return {StoreRecord[]}
      */
     getChildrenById(id, respectFilter = false) {
         const rs = respectFilter ? this._filtered : this._current,
@@ -698,12 +698,12 @@ export class Store extends HoistBase {
     /**
      * Get descendant records for a record.
      *
-     * See also the 'descendants' and 'allDescendants' properties on Record - those getters will
+     * See also the 'descendants' and 'allDescendants' properties on StoreRecord - those getters will
      * likely be more convenient for most app-level callers.
      *
-     * @param {RecordId} id - ID of Record to be queried.
+     * @param {RecordId} id - ID of StoreRecord to be queried.
      * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
-     * @return {Record[]}
+     * @return {StoreRecord[]}
      */
     getDescendantsById(id, respectFilter = false) {
         const rs = respectFilter ? this._filtered : this._current,
@@ -714,12 +714,12 @@ export class Store extends HoistBase {
     /**
      * Get ancestor records for a record.
      *
-     * See also the 'ancestors' and 'allAncestors' properties on Record - those getters will likely
+     * See also the 'ancestors' and 'allAncestors' properties on StoreRecord - those getters will likely
      * be more convenient for most app-level callers.
      *
-     * @param {RecordId} id - ID of Record to be queried.
+     * @param {RecordId} id - ID of StoreRecord to be queried.
      * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
-     * @return {Record[]}
+     * @return {StoreRecord[]}
      */
     getAncestorsById(id, respectFilter = false) {
         const rs = respectFilter ? this._filtered : this._current,
@@ -803,7 +803,7 @@ export class Store extends HoistBase {
     }
 
     //---------------------------------------
-    // Record Generation
+    // StoreRecord Generation
     //---------------------------------------
     createRecord(raw, parent, isSummary) {
         const {processRawData} = this;
@@ -824,7 +824,7 @@ export class Store extends HoistBase {
         }
 
         data = this.parseRaw(data);
-        const ret = new Record({id, data, raw, parent, store: this, isSummary});
+        const ret = new StoreRecord({id, data, raw, parent, store: this, isSummary});
 
         // Finalize summary only.  Non-summary finalized by RecordSet
         if (isSummary) ret.finalize();

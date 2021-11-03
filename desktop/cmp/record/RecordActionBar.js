@@ -6,7 +6,7 @@
  */
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
-import {Record, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
+import {StoreRecord, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
 import {buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
@@ -53,8 +53,8 @@ RecordActionBar.propTypes = {
     /** RecordAction configs. */
     actions: PT.arrayOf(PT.object).isRequired,
 
-    /** The data Record to associate with the actions. Required if selModel is omitted. */
-    record: PT.oneOfType([PT.object, Record]),
+    /** The data StoreRecord to associate with the actions. Required if selModel is omitted. */
+    record: PT.oneOfType([PT.object, StoreRecord]),
 
     /** The selection model used to determine the selected records. Required if record is omitted. */
     selModel: PT.instanceOf(StoreSelectionModel),

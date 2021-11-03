@@ -11,7 +11,7 @@ import {computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx'
 import {compact, flatten, isEmpty, isNil} from 'lodash';
 
 /**
- * Computes validation state for a Field on a Record instance
+ * Computes validation state for a Field on a StoreRecord instance
  * @private
  */
 export class RecordFieldValidator extends HoistBase {
@@ -77,7 +77,7 @@ export class RecordFieldValidator extends HoistBase {
 
     /**
      * @param {Object} c - RecordFieldValidator configuration.
-     * @param {Record} c.record - Record to validate
+     * @param {Record} c.record - StoreRecord to validate
      * @param {Field} c.field - Field to validate
      */
     constructor({record, field}) {

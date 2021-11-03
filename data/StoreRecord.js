@@ -14,14 +14,14 @@ import {ValidationState} from './validation/ValidationState';
  * state of that data through possible updates, with support for tracking edits and "committing"
  * changes to provide dirty state.
  *
- * Each Record holds a pointer to its parent record, if any, via that parent's ID. (Note this
+ * Each StoreRecord holds a pointer to its parent record, if any, via that parent's ID. (Note this
  * is deliberately not a direct object reference, to allow parent records to be recreated
  * without requiring children to also be recreated.)
  *
  * Records are intended to be created and managed internally by Store implementations and should
  * most not typically be constructed directly within application code.
  */
-export class Record {
+export class StoreRecord {
 
     /** @member {RecordId} */
     id;
@@ -42,7 +42,7 @@ export class Record {
      *
      * Note that this object will only contain explicit 'own' properties for fields that are
      * not at their default values - default values will be present via the prototype. For an
-     * object providing an explicit enumeration of all field values {@see Record.getValues()}.
+     * object providing an explicit enumeration of all field values {@see StoreRecord.getValues()}.
      */
     data;
 
@@ -56,22 +56,22 @@ export class Record {
 
     get isRecord() {return true}
 
-    /** @returns {boolean} - true if the Record has never been committed. */
+    /** @returns {boolean} - true if the StoreRecord has never been committed. */
     get isAdd() {
         return this.committedData === null;
     }
 
-    /** @returns {boolean} - true if the Record has been modified since it was last committed. */
+    /** @returns {boolean} - true if the StoreRecord has been modified since it was last committed. */
     get isModified() {
         return this.committedData && this.committedData !== this.data;
     }
 
-    /** @returns {boolean} - false if the Record has been added or modified. */
+    /** @returns {boolean} - false if the StoreRecord has been added or modified. */
     get isCommitted() {
         return this.committedData === this.data;
     }
 
-    /** @returns {Record} */
+    /** @returns {StoreRecord} */
     get parent() {
         return this.parentId != null ? this.store.getById(this.parentId) : null;
     }
@@ -94,32 +94,32 @@ export class Record {
         return this.data[fieldName];
     }
 
-    /** @returns {Record[]} - children of this record, respecting any filter (if applied). */
+    /** @returns {StoreRecord[]} - children of this record, respecting any filter (if applied). */
     get children() {
         return this.store.getChildrenById(this.id, true);
     }
 
-    /** @returns {Record[]} - all children of this record, unfiltered. */
+    /** @returns {StoreRecord[]} - all children of this record, unfiltered. */
     get allChildren() {
         return this.store.getChildrenById(this.id, false);
     }
 
-    /** @returns {Record[]} - descendants of this record, respecting any filter (if applied). */
+    /** @returns {StoreRecord[]} - descendants of this record, respecting any filter (if applied). */
     get descendants() {
         return this.store.getDescendantsById(this.id, true);
     }
 
-    /** @returns {Record[]} - all descendants of this record, unfiltered. */
+    /** @returns {StoreRecord[]} - all descendants of this record, unfiltered. */
     get allDescendants() {
         return this.store.getDescendantsById(this.id, false);
     }
 
-    /** @returns {Record[]} - ancestors of this record, respecting any filter (if applied). */
+    /** @returns {StoreRecord[]} - ancestors of this record, respecting any filter (if applied). */
     get ancestors() {
         return this.store.getAncestorsById(this.id, true);
     }
 
-    /** @returns {Record[]} - all ancestors of this record, unfiltered. */
+    /** @returns {StoreRecord[]} - all ancestors of this record, unfiltered. */
     get allAncestors() {
         return this.store.getAncestorsById(this.id, false);
     }
@@ -160,7 +160,7 @@ export class Record {
     }
 
     /**
-     * @returns {Object} - a new object with enumerated values for all Fields in this Record.
+     * @returns {Object} - a new object with enumerated values for all Fields in this StoreRecord.
      *      Unlike 'data', the object returned by this method contains an 'own' property for every
      *      Field in the Store. Useful for cloning/iterating over all values (including defaults).
      */
@@ -173,25 +173,25 @@ export class Record {
     }
 
     /**
-     * Construct a Record from a pre-processed `data` source object.
+     * Construct a StoreRecord from a pre-processed `data` source object.
      *
-     * Not typically called by applications directly. `Store` instances create `Record` instances
+     * Not typically called by applications directly. `Store` instances create `StoreRecord` instances
      * when loading or updating data through their public APIs. {@see Store.createRecord} for the
      * primary implementation, which includes parsing based on `data/Field` types and definitions.
      *
-     * @param {Object} c - Record configuration
-     * @param {RecordId} c.id - Record ID
-     * @param {Store} c.store - Store containing this Record.
-     * @param {Object} c.data - data for this Record, pre-processed if applicable by
+     * @param {Object} c - StoreRecord configuration
+     * @param {RecordId} c.id - StoreRecord ID
+     * @param {Store} c.store - Store containing this StoreRecord.
+     * @param {Object} c.data - data for this StoreRecord, pre-processed if applicable by
      *      `Store.processRawData()` and `Field.parseVal()`. Note: This must be a new object
-     *      dedicated to this Record. This object will be enhanced with an id and frozen.
-     * @param {Object} [c.raw] - the original data for the Record, prior to any Store
+     *      dedicated to this StoreRecord. This object will be enhanced with an id and frozen.
+     * @param {Object} [c.raw] - the original data for the StoreRecord, prior to any Store
      *      pre-processing.  This data is for reference only and will not be altered by this object.
      * @param {Object?} [c.committedData] - the committed version of the data that was loaded
-     *      into a Record in the Store. Pass `null` to indicate that this is a "new" Record that has
+     *      into a StoreRecord in the Store. Pass `null` to indicate that this is a "new" StoreRecord that has
      *      been added since the last load.
-     * @param {Record} [c.parent] - parent Record, if any.
-     * @param {boolean} [c.isSummary] - whether this Record is a summary Record, used to show
+     * @param {StoreRecord} [c.parent] - parent StoreRecord, if any.
+     * @param {boolean} [c.isSummary] - whether this StoreRecord is a summary StoreRecord, used to show
      *      aggregate, grand-total level information in grids when enabled.
      */
     constructor({
@@ -203,7 +203,7 @@ export class Record {
         parent,
         isSummary = false
     }) {
-        throwIf(isNil(id), 'Record has an undefined ID. Use \'Store.idSpec\' to resolve a unique ID for each record.');
+        throwIf(isNil(id), 'StoreRecord has an undefined ID. Use \'Store.idSpec\' to resolve a unique ID for each record.');
         data.id = id;
 
         this.id = id;
@@ -249,7 +249,7 @@ export class Record {
     /**
      * Finalize this record for use in Store, post acceptance by RecordSet.
      *
-     * We finalize the Record post-construction in RecordSet, only once we know that it is going to
+     * We finalize the StoreRecord post-construction in RecordSet, only once we know that it is going to
      * be accepted in the new RecordSet (and is not a duplicate).  This is a performance
      * optimization to avoid operations like freezing on transient records.
      *
@@ -263,9 +263,9 @@ export class Record {
 }
 
 /**
- * @typedef {(number|string)} RecordId - unique identifier for a Record within a Store.
+ * @typedef {(number|string)} RecordId - unique identifier for a StoreRecord within a Store.
  */
 
 /**
- * @typedef {(Record|RecordId)} RecordOrId - a Hoist Record, or an ID for one.
+ * @typedef {(StoreRecord|RecordId)} RecordOrId - a Hoist StoreRecord, or an ID for one.
  */

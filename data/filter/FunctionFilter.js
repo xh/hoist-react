@@ -30,7 +30,7 @@ export class FunctionFilter extends Filter {
      *
      * @param {Object} c - FunctionFilter config.
      * @param {string} c.key - key used to identify this FunctionFilter.
-     * @param {FilterTestFn} c.testFn - function taking a Record or Object and returning a boolean.
+     * @param {FilterTestFn} c.testFn - function taking a StoreRecord or Object and returning a boolean.
      */
     constructor({key, testFn}) {
         super();

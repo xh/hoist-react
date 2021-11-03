@@ -53,7 +53,7 @@ export class DataViewModel extends HoistModel {
      *      as a function returning a StoreContextMenu. Desktop only.
      * @param {RowClassFn} [c.rowClassFn] - closure to generate CSS class names for a row.
      *      NOTE that, once added, classes will *not* be removed if the data changes.
-     *      Use `rowClassRules` instead if Record data can change across refreshes.
+     *      Use `rowClassRules` instead if StoreRecord data can change across refreshes.
      * @param {Object.<string, RowClassRuleFn>} [c.rowClassRules] - object keying CSS
      *      class names to functions determining if they should be added or removed from the row.
      *      See Ag-Grid docs on "row styles" for details.

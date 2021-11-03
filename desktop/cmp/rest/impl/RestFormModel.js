@@ -94,7 +94,7 @@ export class RestFormModel extends HoistModel {
     }
 
     async validateAndSaveAsync() {
-        throwIf(this.parent.readonly, 'Record not saved: this grid is read-only.');
+        throwIf(this.parent.readonly, 'StoreRecord not saved: this grid is read-only.');
         const warning = this.actionWarning[this.isAdd ? 'add' : 'edit'];
 
         const valid = await this.formModel.validateAsync();

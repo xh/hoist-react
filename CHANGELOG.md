@@ -16,6 +16,14 @@
   with the select library component and touch devices.
 * Ensure `Column.autosizeBufferPx` is respected if provided.
 
+
+### 💥 Breaking Changes
+
+* `Record` class refactored to `StoreRecord` in anticipation of upcoming changes to JavaScript
+  standard and to improve compatibility with TypeScript. While application-level use of
+  `Record`/`StoreRecord` is unusual, any such uses will need to be conformed to the new convention.
+
+
 ### ✨ Style
 
 * New `--xh-menu-item` CSS vars added, with tweaks to default desktop menu styling.

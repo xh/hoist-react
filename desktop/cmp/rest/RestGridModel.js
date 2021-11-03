@@ -198,7 +198,7 @@ export class RestGridModel extends HoistModel {
     }
 
     async deleteRecordAsync(record) {
-        throwIf(this.readonly, 'Record not deleted: this grid is read-only');
+        throwIf(this.readonly, 'StoreRecord not deleted: this grid is read-only');
         return this.store.deleteRecordAsync(record)
             .then(() => this.formModel.close())
             .linkTo(this.loadModel)
