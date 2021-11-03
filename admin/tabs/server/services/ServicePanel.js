@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler} from '@xh/hoist/cmp/layout';
+import {filler, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
@@ -20,6 +20,12 @@ export const servicePanel = hoistCmp.factory({
         return panel({
             mask: 'onLoad',
             tbar: [
+                Icon.info(),
+                span({
+                    item: 'Service classes for server-side Hoist and application-level business logic',
+                    className: 'xh-bold'
+                }),
+                filler(),
                 button({
                     icon: Icon.reset(),
                     text: 'Clear Selected',
@@ -27,9 +33,10 @@ export const servicePanel = hoistCmp.factory({
                     onClick: () => model.clearCachesAsync(),
                     disabled: model.gridModel.selModel.isEmpty
                 }),
-                filler(),
+                '-',
                 gridCountLabel({unit: 'service'}),
-                storeFilterField(),
+                '-',
+                storeFilterField({matchMode: 'any'}),
                 exportButton()
             ],
             item: grid({
