@@ -2,6 +2,21 @@
 
 ## v45.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Desktop `Select.hideDropdownIndicator` now defaults to `true` on tablet devices.
+* Changes to App Options are now tracked in the admin activity tab.
+
+### 🐞 Bug Fixes
+
+* Desktop inline grid editor `DateInput` now reliably shows its date picker pop-up aligned with the
+  grid cell under edit.
+
+### ✨ Style
+
+* New `--xh-menu-item` CSS vars added, with tweaks to default desktop menu styling.
+* Highlight background color added to mobile menu items while pressed.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v44.0.0...develop)
 
 ## v44.0.0 - 2021-10-26
