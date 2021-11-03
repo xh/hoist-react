@@ -35,14 +35,13 @@ export class ServerEnvModel extends HoistModel {
                 {
                     field: {name: 'name', type: STRING},
                     width: 300,
-                    tooltip: true,
                     cellClass: 'xh-font-family-mono'
                 },
                 {
                     field: {name: 'value', type: STRING},
                     flex: 1,
-                    tooltip: true,
-                    cellClass: 'xh-font-family-mono'
+                    cellClass: 'xh-font-family-mono',
+                    autoHeight: true
                 }
             ]
         });
