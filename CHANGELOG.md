@@ -19,10 +19,8 @@
 
 ### 💥 Breaking Changes
 
-* `Record` class refactored to `StoreRecord` in anticipation of upcoming changes to JavaScript
-  standard and to improve compatibility with TypeScript. While application-level use of
-  `Record`/`StoreRecord` is unusual, any such uses will need to be conformed to the new convention.
-
+* `Record` class renamed to `StoreRecord` in anticipation of upcoming changes to JavaScript
+  standard and to improve compatibility with TypeScript. 
 
 ### ✨ Style
 
