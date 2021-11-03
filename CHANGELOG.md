@@ -6,6 +6,8 @@
 
 * Desktop `Select.hideDropdownIndicator` now defaults to `true` on tablet devices.
 * Changes to App Options are now tracked in the admin activity tab.
+* New Server > Environment tab added to Admin Console to display UI server environment variables and
+  JVM system properties. (Requires `hoist-core >= 10.1` to enable this optional feature.)
 
 ### 🐞 Bug Fixes
 
