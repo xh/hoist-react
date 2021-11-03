@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {HoistAppModel, managed} from '@xh/hoist/core';
+import {HoistAppModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {activityTab} from './tabs/activity/ActivityTab';
 import {generalTab} from './tabs/general/GeneralTab';
@@ -72,6 +72,7 @@ export class AppModel extends HoistAppModel {
                     {name: 'environment', path: '/environment'},
                     {name: 'services', path: '/services'},
                     {name: 'ehCache', path: '/ehCache'},
+                    {name: 'memory', path: '/memory'},
                     {name: 'webSockets', path: '/webSockets'}
                 ]
             },
@@ -80,8 +81,7 @@ export class AppModel extends HoistAppModel {
                 path: '/monitor',
                 children: [
                     {name: 'status', path: '/status'},
-                    {name: 'config', path: '/config'},
-                    {name: 'memory', path: '/memory'}
+                    {name: 'config', path: '/config'}
                 ]
             },
             {
@@ -98,11 +98,32 @@ export class AppModel extends HoistAppModel {
 
     createTabs() {
         return [
-            {id: 'general', icon: Icon.info(), content: generalTab},
-            {id: 'activity', icon: Icon.analytics(), content: activityTab},
-            {id: 'server', icon: Icon.server(), content: serverTab},
-            {id: 'monitor', icon: Icon.shieldCheck(), content: monitorTab},
-            {id: 'userData', icon: Icon.users(), content: userDataTab}
+            {
+                id: 'general',
+                icon: Icon.info(),
+                content: generalTab
+            },
+            {
+                id: 'activity',
+                icon: Icon.analytics(),
+                content: activityTab
+            },
+            {
+                id: 'server',
+                icon: Icon.server(),
+                content: serverTab
+            },
+            {
+                id: 'monitor',
+                icon: Icon.shieldCheck(),
+                content: monitorTab,
+                omit: !XH.getConf('xhEnableMonitoring', true)
+            },
+            {
+                id: 'userData',
+                icon: Icon.users(),
+                content: userDataTab
+            }
         ];
     }
 }

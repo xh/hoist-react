@@ -48,7 +48,7 @@ export class ServerEnvModel extends HoistModel {
     }
 
     async doLoadAsync(loadSpec) {
-        if (!this.hasMinHoistCoreVersion) return;
+        if (this.minVersionWarning) return;
 
         const resp = await XH.fetchJson({url: 'envAdmin'}),
             data = [];
