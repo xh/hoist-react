@@ -4,6 +4,12 @@ import {FieldType} from '@xh/hoist/data';
 import {checkMinVersion} from '@xh/hoist/utils/js';
 import {forOwn} from 'lodash';
 
+const {STRING} = FieldType;
+
+/**
+ * Model/tab to list server-side environment variables and JVM system properties, as loaded from
+ * a dedicated admin-only endpoint.
+ */
 export class ServerEnvModel extends HoistModel {
 
     /** @member {GridModel} */
@@ -16,7 +22,6 @@ export class ServerEnvModel extends HoistModel {
     constructor() {
         super();
 
-        const {STRING} = FieldType;
         this.gridModel = new GridModel({
             groupBy: 'type',
             sortBy: 'name',
