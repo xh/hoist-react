@@ -316,6 +316,20 @@ body {
     }
   }
 
+  //------------------------
+  // Menus
+  //------------------------
+  --xh-menu-bg: var(--menu-bg, var(--xh-bg));
+  --xh-menu-border: var(--menu-border, var(--xh-border-solid));
+  --xh-menu-item-font-size-px: var(--menu-item-font-size-px, var(--xh-font-size-px));
+  // Highlight applied on hover for desktop, press for mobile.
+  --xh-menu-item-highlight-bg: var(--menu-item-highlight-bg, var(--xh-grid-bg-hover));
+  --xh-menu-item-text-color: var(--menu-item-text-color, var(--xh-text-color));
+
+  &.xh-mobile {
+    --xh-menu-item-height-px: var(--menu-item-height-px, 40px);
+  }
+
 
   //------------------------
   // Charts
