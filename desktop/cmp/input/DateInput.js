@@ -122,8 +122,11 @@ DateInput.propTypes = {
         'auto'
     ]),
 
-    /** Boundary for calendar popover, as per Blueprint docs. Defaults to viewport. */
-    popoverBoundary: PT.oneOf(['scrollParent', 'viewport', 'window']),
+    /** Boundary for calendar popover, as per Popper.js docs. Defaults to viewport. */
+    popoverBoundary: PT.oneOf(['scrollParent', 'viewport', 'window', PT.element]),
+
+    /** Modifiers for calendar popover, as per Blueprint docs. Defaults to null */
+    popoverModifiers: PT.object,
 
     /** Container DOM element to render the calendar popover inside. Defaults to document body. */
     portalContainer: PT.instanceOf(window.HTMLElement),
@@ -422,6 +425,7 @@ const cmp = hoistCmp.factory(
                 usePortal: true,
                 autoFocus: false,
                 enforceFocus: false,
+                modifiers: props.popoverModifiers,
                 position: props.popoverPosition ?? 'auto',
                 boundary: props.popoverBoundary ?? 'viewport',
                 portalContainer: props.portalContainer ?? document.body,
