@@ -15,8 +15,10 @@ export class ServerEnvModel extends HoistModel {
     /** @member {GridModel} */
     @managed gridModel;
 
-    get hasMinHoistCoreVersion() {
-        return checkMinVersion(XH.environmentService.get('hoistCoreVersion'), '10.1');
+    get minVersionWarning() {
+        const minVersion = '10.1.0',
+            currVersion = XH.environmentService.get('hoistCoreVersion');
+        return checkMinVersion(currVersion, minVersion) ? null : `This feature requires Hoist Core v${minVersion} or greater.`;
     }
 
     constructor() {

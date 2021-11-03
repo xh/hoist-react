@@ -13,8 +13,8 @@ export const serverEnvPanel = hoistCmp.factory({
 
     /** @param {ServerEnvModel} model */
     render({model}) {
-        const {lastLoadException, hasMinHoistCoreVersion} = model;
-        if (!hasMinHoistCoreVersion) return placeholder('This feature requires an updated version of Hoist Core.');
+        const {lastLoadException, minVersionWarning} = model;
+        if (minVersionWarning) return placeholder(minVersionWarning);
 
         return panel({
             tbar: [
