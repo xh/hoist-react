@@ -444,8 +444,8 @@ export class TreeMapModel extends HoistModel {
 
 /**
  * @typedef {Object} TreeMapRecord
- * @property {RecordId} id - StoreRecord ID
- * @property {Record} record - Store record from which TreeMapRecord was created.
+ * @property {StoreRecordId} id - Record ID
+ * @property {StoreRecord} record - Record from which TreeMapRecord was created.
  * @property {string} name - Used by Highcharts to determine the node label.
  * @property {number} value - Used by Highcharts to determine the node size.
  * @property {number} heatValue - transient property used to determine the Highcharts colorValue.
@@ -455,6 +455,6 @@ export class TreeMapModel extends HoistModel {
 /**
  * @callback TreeMapModel~tooltipFn - normalized renderer function to produce a tree map tooltip.
  * @param {*} value - raw node data value.
- * @param {Record} record - row-level data StoreRecord.
+ * @param {StoreRecord} record - row-level data record.
  * @return {string} - the formatted value for display.
  */

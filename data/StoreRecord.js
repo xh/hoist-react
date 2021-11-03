@@ -23,15 +23,15 @@ import {ValidationState} from './validation/ValidationState';
  */
 export class StoreRecord {
 
-    /** @member {RecordId} */
+    /** @member {StoreRecordId} */
     id;
-    /** @member {RecordId} */
+    /** @member {StoreRecordId} */
     parentId;
     /** @member {Store} */
     store;
     /** @member {boolean} */
     isSummary;
-    /** @member {RecordId[]} */
+    /** @member {StoreRecordId[]} */
     treePath;
 
     /** @member {Object} - raw data loaded into via Store.loadData() or Store.updateData(). */
@@ -180,7 +180,7 @@ export class StoreRecord {
      * primary implementation, which includes parsing based on `data/Field` types and definitions.
      *
      * @param {Object} c - StoreRecord configuration
-     * @param {RecordId} c.id - StoreRecord ID
+     * @param {StoreRecordId} c.id - Record ID
      * @param {Store} c.store - Store containing this StoreRecord.
      * @param {Object} c.data - data for this StoreRecord, pre-processed if applicable by
      *      `Store.processRawData()` and `Field.parseVal()`. Note: This must be a new object
@@ -190,7 +190,7 @@ export class StoreRecord {
      * @param {Object?} [c.committedData] - the committed version of the data that was loaded
      *      into a StoreRecord in the Store. Pass `null` to indicate that this is a "new" StoreRecord that has
      *      been added since the last load.
-     * @param {StoreRecord} [c.parent] - parent StoreRecord, if any.
+     * @param {StoreRecord} [c.parent] - parent record, if any.
      * @param {boolean} [c.isSummary] - whether this StoreRecord is a summary StoreRecord, used to show
      *      aggregate, grand-total level information in grids when enabled.
      */
@@ -263,9 +263,9 @@ export class StoreRecord {
 }
 
 /**
- * @typedef {(number|string)} RecordId - unique identifier for a StoreRecord within a Store.
+ * @typedef {(number|string)} StoreRecordId - unique identifier for a StoreRecord within a Store.
  */
 
 /**
- * @typedef {(StoreRecord|RecordId)} RecordOrId - a Hoist StoreRecord, or an ID for one.
+ * @typedef {(StoreRecord|StoreRecordId)} StoreRecordOrId - a Hoist StoreRecord, or an ID for one.
  */

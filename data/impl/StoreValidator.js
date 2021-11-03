@@ -102,7 +102,7 @@ export class StoreValidator extends HoistBase {
     }
 
     /**
-     * @param {RecordId} id - ID of RecordValidator (should match record.id)
+     * @param {StoreRecordId} id - ID of RecordValidator (should match record.id)
      * @return {RecordValidator}
      */
     findRecordValidator(id) {
@@ -124,5 +124,5 @@ export class StoreValidator extends HoistBase {
 }
 
 /**
- * @typedef {Object.<RecordId, RecordErrorMap>} StoreErrorMap - map of StoreRecord IDs -> StoreRecord-level error maps.
+ * @typedef {Object.<StoreRecordId, RecordErrorMap>} StoreErrorMap - map of StoreRecord IDs -> StoreRecord-level error maps.
  */

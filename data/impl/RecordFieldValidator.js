@@ -16,7 +16,7 @@ import {compact, flatten, isEmpty, isNil} from 'lodash';
  */
 export class RecordFieldValidator extends HoistBase {
 
-    /** @member {Record} */
+    /** @member {StoreRecord} */
     record;
 
     /** @member {Field} */
@@ -77,7 +77,7 @@ export class RecordFieldValidator extends HoistBase {
 
     /**
      * @param {Object} c - RecordFieldValidator configuration.
-     * @param {Record} c.record - StoreRecord to validate
+     * @param {StoreRecord} c.record - record to validate
      * @param {Field} c.field - Field to validate
      */
     constructor({record, field}) {

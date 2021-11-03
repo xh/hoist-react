@@ -97,9 +97,9 @@ export class RestGridModel extends HoistModel {
     get store() {return this.gridModel.store}
     /** @return {StoreSelectionModel} */
     get selModel() {return this.gridModel.selModel}
-    /** @return {Record[]} */
+    /** @return {StoreRecord[]} */
     get selectedRecords() {return this.gridModel.selectedRecords}
-    /** @return {Record} */
+    /** @return {StoreRecord} */
     get selectedRecord() {return this.gridModel.selectedRecord}
 
     /**
@@ -198,7 +198,7 @@ export class RestGridModel extends HoistModel {
     }
 
     async deleteRecordAsync(record) {
-        throwIf(this.readonly, 'StoreRecord not deleted: this grid is read-only');
+        throwIf(this.readonly, 'Record not deleted: this grid is read-only');
         return this.store.deleteRecordAsync(record)
             .then(() => this.formModel.close())
             .linkTo(this.loadModel)

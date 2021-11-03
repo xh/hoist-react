@@ -187,7 +187,7 @@ export class WebSocketService extends HoistService {
             const msg = JSON.parse(rawMsg.data),
                 {topic, data} = msg;
 
-            // StoreRecord arrival
+            // Record arrival
             this.updateLastMessageTime();
             this.maybeLogMessage('Received message', rawMsg);
 

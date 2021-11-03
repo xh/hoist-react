@@ -493,7 +493,7 @@ export class GridModel extends HoistModel {
     /**
      * Select records in the grid.
      *
-     * @param {(RecordOrId|RecordOrId[])} records - one or more record(s) / ID(s) to select.
+     * @param {(StoreRecordOrId|StoreRecordOrId[])} records - one or more record(s) / ID(s) to select.
      * @param {Object} [options]
      * @param {boolean} [options.ensureVisible] - true to make selection visible if it is within a
      *      collapsed node or outside of the visible scroll window. Default true.
@@ -601,14 +601,14 @@ export class GridModel extends HoistModel {
     /** @return {boolean} - true if any records are selected. */
     get hasSelection() {return !this.selModel.isEmpty}
 
-    /** @return {Record[]} - currently selected records. */
+    /** @return {StoreRecord[]} - currently selected records. */
     get selectedRecords() {return this.selModel.selectedRecords}
 
-    /** @return {RecordId[]} - IDs of currently selected records. */
+    /** @return {StoreRecordId[]} - IDs of currently selected records. */
     get selectedIds() {return this.selModel.selectedIds}
 
     /**
-     * @return {?Record} - single selected record, or null if multiple/no records selected.
+     * @return {?StoreRecord} - single selected record, or null if multiple/no records selected.
      *
      * Note that this getter will also change if just the data of selected record is changed
      * due to store loading or editing.  Applications only interested in the identity
@@ -617,7 +617,7 @@ export class GridModel extends HoistModel {
     get selectedRecord() {return this.selModel.selectedRecord}
 
     /**
-     * @return {?RecordId} - ID of selected record, or null if multiple/no records selected.
+     * @return {?StoreRecordId} - ID of selected record, or null if multiple/no records selected.
      *
      * Note that this getter will *not* change if just the data of selected record is changed
      * due to store loading or editing.  Applications also interested in the contents of the
@@ -1041,7 +1041,7 @@ export class GridModel extends HoistModel {
 
     /**
      * Begin an inline editing session.
-     * @param {RecordOrId} [recOrId] - StoreRecord/ID to edit. If unspecified, the first selected StoreRecord
+     * @param {StoreRecordOrId} [recOrId] - StoreRecord/ID to edit. If unspecified, the first selected StoreRecord
      *      will be used, if any, or the first overall StoreRecord in the grid.
      * @param {string} [colId] - ID of column on which to start editing. If unspecified, the first
      *      editable column will be used.
@@ -1537,7 +1537,7 @@ export class GridModel extends HoistModel {
  * @callback RowClassRuleFn - function to determine if a particular CSS class should be
  *      added/removed from a row, via rowClassRules config.
  * @param {RowClassParams} agParams - as provided by AG-Grid.
- * @param {?Record} agParams.data - the backing Hoist record, if any.
+ * @param {?StoreRecord} agParams.data - the backing Hoist record, if any.
  * @return {boolean} - true if the class to which this function is keyed should be added, false if
  *      it should be removed.
  */

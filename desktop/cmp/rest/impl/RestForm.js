@@ -27,7 +27,7 @@ export const restForm = hoistCmp.factory({
         if (!isOpen) return null;
 
         return dialog({
-            title: isAdd ? 'Add StoreRecord' : (!readonly ? 'Edit StoreRecord' : 'View StoreRecord'),
+            title: isAdd ? 'Add Record' : (!readonly ? 'Edit Record' : 'View Record'),
             icon: isAdd ? Icon.add() : Icon.edit(),
             className,
             isOpen: true,
