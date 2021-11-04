@@ -6,11 +6,11 @@
  */
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, XH, managed} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {fmtTime} from '@xh/hoist/format';
 import {checkMinVersion} from '@xh/hoist/utils/js';
 import {forOwn, sortBy} from 'lodash';
-import * as MCol from './MonitorColumns';
+import * as MCol from '../../monitor/MonitorColumns';
 
 export class MemoryMonitorModel extends HoistModel {
 
