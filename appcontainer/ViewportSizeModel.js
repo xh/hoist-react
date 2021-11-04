@@ -21,7 +21,7 @@ export class ViewportSizeModel extends HoistModel {
     /** @returns {boolean} */
     @computed
     get isPortrait() {
-        return this.width < this.height;
+        return this.size.width < this.size.height;
     }
 
     /** @returns {boolean} */
