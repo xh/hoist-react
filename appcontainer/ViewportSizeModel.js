@@ -6,7 +6,6 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {debounced} from '@xh/hoist/utils/js';
 
 /**
  * Track observable width / height of the browser viewport, and provide observable
@@ -53,7 +52,6 @@ export class ViewportSizeModel extends HoistModel {
     //---------------------
     // Implementation
     //---------------------
-    @debounced(500)
     @action
     setViewportSize() {
         this.width = window.innerWidth;
