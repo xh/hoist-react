@@ -348,17 +348,17 @@ class XHClass extends HoistBase {
     //------------------------
     // Viewport Size
     //------------------------
-    /** @return {Object} - current viewport width / height. */
+    /** @return {Object} - current viewport width / height. (observable) */
     get viewportSize() {
         return this.acm.viewportSizeModel.size;
     }
 
-    /** @return {boolean} - is the viewport in portrait orientation. */
+    /** @return {boolean} - is the viewport in portrait orientation? (observable) */
     get isPortrait() {
         return this.acm.viewportSizeModel.isPortrait;
     }
 
-    /** @return {boolean} - is the viewport in landscape orientation. */
+    /** @return {boolean} - is the viewport in landscape orientation? (observable) */
     get isLandscape() {
         return this.acm.viewportSizeModel.isLandscape;
     }

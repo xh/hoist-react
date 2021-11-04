@@ -7,6 +7,8 @@
 * Changes to App Options are now tracked in the admin activity tab.
 * New Server > Environment tab added to Admin Console to display UI server environment variables and
   JVM system properties. (Requires `hoist-core >= 10.1` to enable this optional feature.)
+* Provided observable getters `XH.viewportSize`, `XH.isPortrait` and `XH.isLandscape` to allow apps
+  to react to changes in viewport size and orientation.
 
 ### 🐞 Bug Fixes
 

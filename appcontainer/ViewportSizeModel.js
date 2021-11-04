@@ -15,18 +15,8 @@ import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
  */
 export class ViewportSizeModel extends HoistModel {
 
-    /** @member {Number} */
-    @observable width;
-
-    /** @member {Number} */
-    @observable height;
-
-    /** @returns {Object} */
-    @computed.struct
-    get size() {
-        const {width, height} = this;
-        return {width, height};
-    }
+    /** @member {Object} - contains `width` and `height` in pixels */
+    @observable.ref size;
 
     /** @returns {boolean} */
     @computed
@@ -43,9 +33,6 @@ export class ViewportSizeModel extends HoistModel {
         super();
         makeObservable(this);
         window.addEventListener('resize', () => this.setViewportSize());
-    }
-
-    init() {
         this.setViewportSize();
     }
 
@@ -54,7 +41,9 @@ export class ViewportSizeModel extends HoistModel {
     //---------------------
     @action
     setViewportSize() {
-        this.width = window.innerWidth;
-        this.height = window.innerHeight;
+        this.size = {
+            width: window.innerWidth,
+            height: window.innerHeight
+        };
     }
 }
