@@ -129,6 +129,8 @@ export class GridModel extends HoistModel {
     @observable.ref columnState = [];
     /** @member {Object} */
     @observable.ref expandState = {};
+    /** @member {AutosizeState} */
+    @observable.ref autosizeState = {};
     /** @member {GridSorter[]} */
     @observable.ref sortBy = [];
     /** @member {string[]} */
@@ -367,7 +369,7 @@ export class GridModel extends HoistModel {
         this.autosizeOptions = defaults(
             {...autosizeOptions},
             {
-                mode: GridAutosizeMode.ON_SIZING_MODE_CHANGE,
+                mode: GridAutosizeMode.MANAGED,
                 includeCollapsedChildren: false,
                 showMask: false,
                 // Larger buffer on mobile (perhaps counterintuitively) to minimize clipping due to
@@ -824,6 +826,28 @@ export class GridModel extends HoistModel {
         }
     }
 
+    @action
+    setAutosizeState(autosizeState) {
+        if (!equal(this.autosizeState, autosizeState)) {
+            this.autosizeState = deepFreeze(autosizeState);
+        }
+    }
+
+    noteAutosized() {
+        this.setAutosizeState({
+            ...this.autosizeState,
+            sizingMode: this.sizingMode,
+            lastAutosize: Date.now()
+        });
+    }
+
+    noteManuallySized() {
+        this.setAutosizeState({
+            ...this.autosizeState,
+            lastManualSize: Date.now()
+        });
+    }
+
     /**
      * This method will update the current column definition if it has changed.
      * Throws an exception if any of the columns provided in colStateChanges are not
@@ -1038,6 +1062,21 @@ export class GridModel extends HoistModel {
             .linkTo(this.autosizeTask);
     }
 
+    /**
+     * True if the GridModel is in 'MANAGED' autosizeMode, and the user has not customized
+     * their column widths.
+     * @returns {boolean}
+     */
+    get autosizeIsManaged() {
+        if (this.autosizeOptions.mode !== GridAutosizeMode.MANAGED) return false;
+        const {lastManualSize, lastAutosize, sizingMode} = this.autosizeState;
+        return (
+            !lastManualSize ||
+            !lastAutosize ||
+            lastManualSize < lastAutosize ||
+            sizingMode !== this.sizingMode
+        );
+    }
 
     /**
      * Begin an inline editing session.
@@ -1178,6 +1217,7 @@ export class GridModel extends HoistModel {
 
         try {
             await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
+            this.noteAutosized();
         } finally {
             if (showMask) {
                 await wait();
@@ -1509,6 +1549,13 @@ export class GridModel extends HoistModel {
  */
 
 /**
+ * @typedef {Object} AutosizeState
+ * @property {number} lastAutosize - timestamp of last time columns were autosized.
+ * @property {number} lastManualSize - timestamp of last time columns were sized manually by the user.
+ * @property {SizingMode} sizingMode - sizing mode used last time the columns were autosized.
+ */
+
+/**
  * @callback GridGroupSortFn - comparator for custom grid group sorting, provided to GridModel.
  * @param {*} groupAVal - first group value to be compared.
  * @param {*} groupBVal - second group value to be compared.
@@ -1544,7 +1591,7 @@ export class GridModel extends HoistModel {
 
 /**
  * @typedef {Object} GridAutosizeOptions
- * @property {GridAutosizeMode} [mode] - defaults to GridAutosizeMode.ON_SIZING_MODE_CHANGE.
+ * @property {GridAutosizeMode} [mode] - defaults to GridAutosizeMode.MANAGED.
  * @property {number} [bufferPx] - additional pixels to add to the size of each column beyond its
  *      absolute minimum. May be used to adjust the spacing in the grid. Columns that wish to
  *      override this value may specify `Column.autosizeBufferPx`. Default is 5.

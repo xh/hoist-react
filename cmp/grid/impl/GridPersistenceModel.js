@@ -65,6 +65,7 @@ export class GridPersistenceModel extends HoistModel {
         if (persistColumns) {
             this.updateGridColumns();
             this.addReaction(this.columnReaction());
+            this.addReaction(this.autosizeReaction());
         }
 
         if (persistGrouping) {
@@ -96,20 +97,29 @@ export class GridPersistenceModel extends HoistModel {
         };
     }
 
-    updateGridColumns() {
-        const {gridModel, state} = this;
-        if (!state.columns) return;
+    autosizeReaction() {
+        const {gridModel} = this;
+        return {
+            track: () => gridModel.autosizeState,
+            run: (autosize) => {
+                this.patchState({autosize});
+            }
+        };
+    }
 
-        gridModel.setColumnState(state.columns);
+    updateGridColumns() {
+        const {gridModel} = this,
+            {columns, autosize} = this.state;
+        if (!isUndefined(columns)) gridModel.setColumnState(columns);
+        if (!isUndefined(autosize)) gridModel.setAutosizeState(autosize);
     }
 
     //--------------------------
     // Sort
     //--------------------------
     sortReaction() {
-        const {gridModel} = this;
         return {
-            track: () => gridModel.sortBy,
+            track: () => this.gridModel.sortBy,
             run: (sortBy) => {
                 this.patchState({sortBy: sortBy.map(it => it.toString())});
             }
