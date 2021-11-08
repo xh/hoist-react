@@ -4,8 +4,11 @@
 
 ### 🎁 New Features
 
-* Desktop `Select.hideDropdownIndicator` now defaults to `true` on tablet devices.
 * Changes to App Options are now tracked in the admin activity tab.
+* New Server > Environment tab added to Admin Console to display UI server environment variables and
+  JVM system properties. (Requires `hoist-core >= 10.1` to enable this optional feature.)
+* Provided observable getters `XH.viewportSize`, `XH.isPortrait` and `XH.isLandscape` to allow apps
+  to react to changes in viewport size and orientation.
 
 ### 💥 Breaking Changes
 * Hoist grids now require ag-Grid v26.1.0 or higher - update your ag-Grid dependency in your app's
@@ -15,6 +18,9 @@
 
 * Desktop inline grid editor `DateInput` now reliably shows its date picker pop-up aligned with the
   grid cell under edit.
+* Desktop `Select.hideDropdownIndicator` now defaults to `true` on tablet devices due to UX bugs
+  with the select library component and touch devices.
+* Ensure `Column.autosizeBufferPx` is respected if provided.
 
 ### ✨ Style
 
