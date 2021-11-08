@@ -71,7 +71,7 @@ export class GridFilterModel extends HoistModel {
      */
     @action
     setColumnFilters(field, filter) {
-        // If current bound filter is an CompoundFilter for a single column, wrap it
+        // If current bound filter is a CompoundFilter for a single column, wrap it
         // in an 'AND' CompoundFilter so new columns get 'ANDed' alongside it.
         let currFilter = this.filter;
         if (currFilter?.isCompoundFilter && currFilter.field) {
