@@ -1,4 +1,4 @@
-import {MemoryMonitorModel} from '@xh/hoist/admin/tabs/monitor/MemoryMonitorModel';
+import {MemoryMonitorModel} from '@xh/hoist/admin/tabs/server/memory/MemoryMonitorModel';
 import {chart} from '@xh/hoist/cmp/chart';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, placeholder} from '@xh/hoist/cmp/layout';
@@ -30,6 +30,7 @@ export const memoryMonitorPanel = hoistCmp.factory({
                 }),
                 filler(),
                 gridCountLabel({unit: 'snapshot'}),
+                '-',
                 exportButton()
             ],
             items: [

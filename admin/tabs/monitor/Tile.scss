@@ -7,15 +7,18 @@
 
 .xh-status-tile {
   color: white;
-  border: 1px solid white;
-  border-radius: var(--xh-border-radius);
+  border: var(--xh-border-solid);
   overflow: hidden;
 
-  &-ok { background-color: var(--xh-green); }
+  .xh-dark & {
+    border-color: white;
+  }
 
-  &-warn { background-color: var(--xh-orange); }
+  &-ok { background-color: var(--xh-intent-success-darker); }
 
-  &-fail { background-color: var(--xh-red); }
+  &-warn { background-color: var(--xh-intent-warning-darker); }
+
+  &-fail { background-color: var(--xh-intent-danger-darker); }
 
   &-inactive { background-color: var(--xh-gray-dark); }
 
