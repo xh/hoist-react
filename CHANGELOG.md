@@ -2,6 +2,12 @@
 
 ## v45.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+* Hoist grids now require ag-Grid v26.1.0 or higher - update your ag-Grid dependency in your app's
+  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
+
+## v44.1.0 - 2021-11-08
+
 ### 🎁 New Features
 
 * Changes to App Options are now tracked in the admin activity tab.
@@ -11,10 +17,6 @@
   to react to changes in viewport size and orientation.
 * `GridModel` has new `highlightRowOnClick` option, which highlights a row when the user
   clicks or taps on the row.
-
-### 💥 Breaking Changes
-* Hoist grids now require ag-Grid v26.1.0 or higher - update your ag-Grid dependency in your app's
-  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
 
 ### 🐞 Bug Fixes
 
@@ -29,7 +31,7 @@
 * New `--xh-menu-item` CSS vars added, with tweaks to default desktop menu styling.
 * Highlight background color added to mobile menu items while pressed.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v44.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v44.0.0...v44.1.0)
 
 ## v44.0.0 - 2021-10-26
 
