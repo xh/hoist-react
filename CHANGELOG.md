@@ -2,6 +2,11 @@
 
 ## v45.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `GridAutosizeMode.MANAGED` to autosize Grid columns on data or `sizingMode` changes, unless
+  the user has manually modified their column widths. It is now the default `GridAutosizeOptions.mode`.
+
 
 ## v44.1.0 - 2021-11-08
 
@@ -12,8 +17,6 @@
   JVM system properties. (Requires `hoist-core >= 10.1` to enable this optional feature.)
 * Provided observable getters `XH.viewportSize`, `XH.isPortrait` and `XH.isLandscape` to allow apps
   to react to changes in viewport size and orientation.
-* Added `GridAutosizeMode.MANAGED` to autosize Grid columns on data or `sizingMode` changes, unless
-  the user has manually modified their column widths. It is now the default `GridAutosizeOptions.mode`.
 
 ### 🐞 Bug Fixes
 
