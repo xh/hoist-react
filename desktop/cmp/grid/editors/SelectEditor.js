@@ -23,6 +23,13 @@ export const [SelectEditor, selectEditor] = hoistCmp.withFactory({
                 hideDropdownIndicator: true,
                 hideSelectedOptionCheck: true,
                 selectOnFocus: false,
+                onCommit: () => {
+                    // When not full-row editing we end the editing after commit to avoid the need
+                    // for the user to click somewhere outside the cell before the record would be
+                    // updated
+                    const {gridModel} = props;
+                    if (!gridModel.fullRowEditing) gridModel.endEditAsync();
+                },
                 rsOptions: {
                     styles: {
                         menu: styles => ({

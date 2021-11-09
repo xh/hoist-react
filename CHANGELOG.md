@@ -2,6 +2,9 @@
 
 ## v45.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Desktop inline grid editor `Select` now commits the value immediately on selection.
 
 ## v44.1.0 - 2021-11-08
 
