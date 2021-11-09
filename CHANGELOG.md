@@ -2,6 +2,10 @@
 
 ## v45.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* `GridModel` has new `highlightRowOnClick` option, which highlights a row when the user
+  clicks or taps on the row.
+
 ### 💥 Breaking Changes
 * Hoist grids now require ag-Grid v26.1.0 or higher - update your ag-Grid dependency in your app's
   `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
@@ -15,8 +19,6 @@
   JVM system properties. (Requires `hoist-core >= 10.1` to enable this optional feature.)
 * Provided observable getters `XH.viewportSize`, `XH.isPortrait` and `XH.isLandscape` to allow apps
   to react to changes in viewport size and orientation.
-* `GridModel` has new `highlightRowOnClick` option, which highlights a row when the user
-  clicks or taps on the row.
 
 ### 🐞 Bug Fixes
 
