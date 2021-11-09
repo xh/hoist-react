@@ -2,6 +2,9 @@
 
 ## v45.0.0-SNAPSHOT - unreleased
 
+
+## v44.1.0 - 2021-11-08
+
 ### 🎁 New Features
 
 * Changes to App Options are now tracked in the admin activity tab.
@@ -23,7 +26,7 @@
 * New `--xh-menu-item` CSS vars added, with tweaks to default desktop menu styling.
 * Highlight background color added to mobile menu items while pressed.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v44.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v44.0.0...v44.1.0)
 
 ## v44.0.0 - 2021-10-26
 
