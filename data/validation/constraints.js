@@ -23,7 +23,7 @@ export const required = ({value, displayName}) => {
         isNil(value) ||
         (isString(value) && value.trim().length === 0) ||
         (isArray(value) && value.length === 0)
-    ) return `${displayName ?? 'Field'} is required.`;
+    ) return `${displayName} is required.`;
 };
 
 /**
@@ -38,7 +38,7 @@ export const validEmail = ({value, displayName}) => {
     // eslint-disable-next-line no-useless-escape
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
         isValid = re.test(value);
-    if (!isValid) return `${displayName ?? 'Field'} is not a properly formatted address.`;
+    if (!isValid) return `${displayName} is not a properly formatted address.`;
 };
 
 /**
@@ -51,8 +51,6 @@ export const validEmail = ({value, displayName}) => {
 export function lengthIs({min, max}) {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
-
-        displayName = displayName ?? 'Field';
 
         if (min != null && value.length < min) return `${displayName} must contain at least ${min} characters.`;
         if (max != null && value.length > max) return `${displayName} must contain no more than ${max} characters.`;
@@ -73,8 +71,6 @@ export function lengthIs({min, max}) {
 export function numberIs({min, max, gt, lt, notZero}) {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
-
-        displayName = displayName ?? 'Field';
 
         if (notZero && value === 0) return `${displayName} must not be zero.`;
         if (isFinite(min) && value < min) return `${displayName} must be greater than or equal to ${min}.`;
@@ -137,7 +133,7 @@ export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
                 default: error = `after ${maxMoment.format(fmt)}`;
             }
         }
-        return error ? `${displayName ?? 'Field'} must not be ${error}` : null;
+        return error ? `${displayName} must not be ${error}` : null;
     };
 }
 
@@ -152,7 +148,6 @@ export function constrainAll(constraint) {
         if (isNil(values) || isEmpty(values)) return null;
 
         for (let value in values) {
-            displayName = displayName ?? 'Field';
             const fail = constraint({value, displayName});
             if (fail) return fail;
         }
@@ -171,7 +166,7 @@ export function stringExcludes(...excludeVals) {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
         const fail = excludeVals.find(s => value.includes(s));
-        if (fail) return `${displayName ?? 'Field'} must not include "${fail}"`;
+        if (fail) return `${displayName} must not include "${fail}"`;
     };
 }
 
@@ -184,6 +179,6 @@ export const isValidJson = ({value, displayName}) => {
     try {
         JSON.parse(value);
     } catch {
-        return `${displayName ?? 'Field'} is not valid JSON`;
+        return `${displayName} is not valid JSON`;
     }
 };
