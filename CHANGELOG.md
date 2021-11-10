@@ -2,11 +2,16 @@
 
 ## v45.0.0-SNAPSHOT - unreleased
 
+
+## v44.1.0 - 2021-11-08
+
 ### 🎁 New Features
 
 * Changes to App Options are now tracked in the admin activity tab.
 * New Server > Environment tab added to Admin Console to display UI server environment variables and
   JVM system properties. (Requires `hoist-core >= 10.1` to enable this optional feature.)
+* Provided observable getters `XH.viewportSize`, `XH.isPortrait` and `XH.isLandscape` to allow apps
+  to react to changes in viewport size and orientation.
 
 ### 🐞 Bug Fixes
 
@@ -21,7 +26,7 @@
 * New `--xh-menu-item` CSS vars added, with tweaks to default desktop menu styling.
 * Highlight background color added to mobile menu items while pressed.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v44.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v44.0.0...v44.1.0)
 
 ## v44.0.0 - 2021-10-26
 
