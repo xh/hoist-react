@@ -4,6 +4,7 @@
 
 ### 🎁 New Features
 
+* Desktop inline grid editor `Select` now commits the value immediately on selection.
 * `DashContainerModel` now supports an observable `showMenuButton` config which will display a
   button in the stack header for showing the context menu
 
