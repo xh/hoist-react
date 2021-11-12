@@ -24,9 +24,7 @@ export const [SelectEditor, selectEditor] = hoistCmp.withFactory({
                 hideSelectedOptionCheck: true,
                 selectOnFocus: false,
                 onCommit: () => {
-                    // When not full-row editing we end the editing after commit to avoid the need
-                    // for the user to click somewhere outside the cell before the record would be
-                    // updated
+                    // When not full-row editing we end editing after commit to avoid extra clicks
                     const {gridModel} = props;
                     if (!gridModel.fullRowEditing) gridModel.endEditAsync();
                 },
