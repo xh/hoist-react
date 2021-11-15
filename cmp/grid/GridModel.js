@@ -828,24 +828,20 @@ export class GridModel extends HoistModel {
 
     @action
     setAutosizeState(autosizeState) {
+        if (this.autosizeOptions.mode !== GridAutosizeMode.MANAGED) return;
         if (!equal(this.autosizeState, autosizeState)) {
             this.autosizeState = deepFreeze(autosizeState);
         }
     }
 
     noteAutosized() {
-        this.setAutosizeState({
-            ...this.autosizeState,
-            sizingMode: this.sizingMode,
-            lastAutosize: Date.now()
-        });
+        const {sizingMode} = this;
+        this.setAutosizeState({sizingMode, customized: false});
     }
 
     noteManuallySized() {
-        this.setAutosizeState({
-            ...this.autosizeState,
-            lastManualSize: Date.now()
-        });
+        const {sizingMode} = this;
+        this.setAutosizeState({sizingMode, customized: true});
     }
 
     /**
@@ -1069,13 +1065,8 @@ export class GridModel extends HoistModel {
      */
     get autosizeIsManaged() {
         if (this.autosizeOptions.mode !== GridAutosizeMode.MANAGED) return false;
-        const {lastManualSize, lastAutosize, sizingMode} = this.autosizeState;
-        return (
-            !lastManualSize ||
-            !lastAutosize ||
-            lastManualSize < lastAutosize ||
-            sizingMode !== this.sizingMode
-        );
+        const {customized, sizingMode} = this.autosizeState;
+        return !customized || sizingMode !== this.sizingMode;
     }
 
     /**
@@ -1550,9 +1541,8 @@ export class GridModel extends HoistModel {
 
 /**
  * @typedef {Object} AutosizeState
- * @property {number} lastAutosize - timestamp of last time columns were autosized.
- * @property {number} lastManualSize - timestamp of last time columns were sized manually by the user.
- * @property {SizingMode} sizingMode - sizing mode used last time the columns were autosized.
+ * @property {boolean} customized - has the user manually customized their column widths.
+ * @property {SizingMode} sizingMode - sizing mode used last time the columns were sized.
  */
 
 /**

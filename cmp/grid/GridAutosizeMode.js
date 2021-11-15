@@ -33,11 +33,4 @@ export const GridAutosizeMode = Object.freeze({
      */
     MANAGED: 'managed'
 
-    // COMING SOON
-    // /**
-    //  *  Grid will autosize columns when data is *first* loaded into a grid.   Persisted grids
-    //  * will only resize again if GridModel's sizingMode subsequently changes.
-    //  */
-    // ON_FIRST_LOAD: 'onFirstLoad'
-
 });
