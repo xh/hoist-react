@@ -21,15 +21,15 @@ export const GridAutosizeMode = Object.freeze({
     ON_DEMAND: 'onDemand',
 
     /**
-     * In addition to the affordances provided by ON_DEMAND, Grid will autosize columns when
-     * the GridModel's sizingMode changes.
+     * Grid will autosize columns when the GridModel's sizingMode changes.
+     * Also offers the affordances provided by ON_DEMAND.
      */
     ON_SIZING_MODE_CHANGE: 'onSizingModeChange',
 
     /**
-     * In addition to the affordances provided by ON_DEMAND, Grid will autosize columns when
-     * the GridModel's sizingMode changes or data is loaded, *unless* the user has manually
-     * modified their column widths.
+     * Grid will autosize columns when the GridModel's sizingMode changes or data is loaded,
+     * unless the user has manually modified their column widths.
+     * Also offers the affordances provided by ON_DEMAND.
      */
     MANAGED: 'managed'
 

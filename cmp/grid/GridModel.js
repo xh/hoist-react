@@ -369,7 +369,7 @@ export class GridModel extends HoistModel {
         this.autosizeOptions = defaults(
             {...autosizeOptions},
             {
-                mode: GridAutosizeMode.MANAGED,
+                mode: GridAutosizeMode.ON_SIZING_MODE_CHANGE,
                 includeCollapsedChildren: false,
                 showMask: false,
                 // Larger buffer on mobile (perhaps counterintuitively) to minimize clipping due to
@@ -1581,7 +1581,7 @@ export class GridModel extends HoistModel {
 
 /**
  * @typedef {Object} GridAutosizeOptions
- * @property {GridAutosizeMode} [mode] - defaults to GridAutosizeMode.MANAGED.
+ * @property {GridAutosizeMode} [mode] - defaults to GridAutosizeMode.ON_SIZING_MODE_CHANGE.
  * @property {number} [bufferPx] - additional pixels to add to the size of each column beyond its
  *      absolute minimum. May be used to adjust the spacing in the grid. Columns that wish to
  *      override this value may specify `Column.autosizeBufferPx`. Default is 5.

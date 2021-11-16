@@ -530,11 +530,13 @@ class GridLocalModel extends HoistModel {
     }
 
     sizingModeReaction() {
-        const {model} = this;
+        const {model} = this,
+            {mode} = model.autosizeOptions;
+
         return {
             track: () => model.sizingMode,
             run: () => {
-                if (model.autosizeIsManaged || model.autosizeOptions.mode === GridAutosizeMode.ON_SIZING_MODE_CHANGE) {
+                if (mode === GridAutosizeMode.MANAGED || mode === GridAutosizeMode.ON_SIZING_MODE_CHANGE) {
                     model.autosizeAsync({showMask: true});
                 }
             }
