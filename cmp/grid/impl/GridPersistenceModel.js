@@ -110,8 +110,21 @@ export class GridPersistenceModel extends HoistModel {
     updateGridColumns() {
         const {gridModel} = this,
             {columns, autosize} = this.state;
-        if (!isUndefined(columns)) gridModel.setColumnState(columns);
-        if (!isUndefined(autosize)) gridModel.setAutosizeState(autosize);
+
+        if (!isUndefined(columns)) {
+            gridModel.setColumnState(columns);
+        }
+
+        if (!isUndefined(autosize)) {
+            gridModel.setAutosizeState(autosize);
+        } else if (!isUndefined(columns)) {
+            // If the user has column state but not autosize state,
+            // put the autosize state into 'customized' mode.
+            gridModel.setAutosizeState({
+                customized: true,
+                sizingMode: gridModel.sizingMode
+            });
+        }
     }
 
     //--------------------------
