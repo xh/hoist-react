@@ -152,9 +152,9 @@ function globalHotKeys(model) {
     const {impersonationBarModel, optionsDialogModel} = model,
         ret = [
             {
-                label: 'Refresh app data',
-                combo: 'shift + r',
                 global: true,
+                combo: 'shift + r',
+                label: 'Refresh app data',
                 onKeyDown: () => XH.refreshAppAsync()
             }
         ];
