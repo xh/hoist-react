@@ -8,6 +8,10 @@
 * `DashContainerModel` now supports an observable `showMenuButton` config which will display a
   button in the stack header for showing the context menu
 
+### ⚙️ Technical
+
+* Refresh app hotkey is now built into hoist's global hotkeys.
+
 ## v44.1.0 - 2021-11-08
 
 ### 🎁 New Features
