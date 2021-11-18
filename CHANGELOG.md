@@ -8,6 +8,14 @@
 * `DashContainerModel` now supports an observable `showMenuButton` config which will display a
   button in the stack header for showing the context menu
 
+### 🐞 Bug Fixes
+
+* `fmtNumber` now correctly rounds and zero pads very large floats.
+
+### ⚙️ Technical
+
+* The `formatConfig` property of the fmtConfig methods's config argument has been deprecated.
+
 ## v44.1.0 - 2021-11-08
 
 ### 🎁 New Features
