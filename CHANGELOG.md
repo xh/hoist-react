@@ -2,6 +2,12 @@
 
 ## v45.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Desktop inline grid editor `Select` now commits the value immediately on selection.
+* `DashContainerModel` now supports an observable `showMenuButton` config which will display a
+  button in the stack header for showing the context menu
+
 ### 💥 Breaking Changes
 * Hoist grids now require ag-Grid v26.1.0 or higher - update your ag-Grid dependency in your app's
   `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
