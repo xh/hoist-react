@@ -119,7 +119,8 @@ export class ActivityTrackingModel extends HoistModel {
                     valueRenderer: (v) => {
                         return fmtNumber(v, {
                             label: 'ms',
-                            formatConfig: {thousandSeparated: false, mantissa: 0}
+                            withCommas: false,
+                            precision: 0
                         });
                     }
                 },

@@ -86,7 +86,8 @@ export const elapsed = {
     renderer: numberRenderer({
         label: 'ms',
         nullDisplay: '-',
-        formatConfig: {thousandSeparated: false, mantissa: 0}
+        withCommas: false,
+        precision: 0
     })
 };
 

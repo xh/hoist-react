@@ -91,7 +91,8 @@ const detailRecForm = hoistCmp.factory(
                                     label: 'ms',
                                     nullDisplay: '-',
                                     asElement: true,
-                                    formatConfig: {thousandSeparated: false, mantissa: 0}
+                                    withCommas: false,
+                                    precision: 0
                                 })
                             }),
                             formField({

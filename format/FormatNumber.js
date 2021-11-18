@@ -7,6 +7,8 @@
 import {span} from '@xh/hoist/cmp/layout';
 import {defaults, isFinite, isFunction, isPlainObject, isString} from 'lodash';
 import numbro from 'numbro';
+import BigNumber from 'bignumber.js';
+import {apiDeprecated} from '../utils/js';
 import {fmtSpan} from './FormatMisc';
 import {createRenderer, saveOriginal} from './FormatUtils';
 
@@ -56,9 +58,10 @@ const UP_TICK = '▴',
  */
 export function fmtNumber(v, {
     nullDisplay = '',
+    /** @deprecated */
     formatConfig = null,
     precision = 'auto',
-    zeroPad = (precision != 'auto'),
+    zeroPad = (precision !== 'auto'),
     ledger = false,
     forceLedgerAlign = true,
     withPlusSign = false,
@@ -76,8 +79,17 @@ export function fmtNumber(v, {
 
     if (isInvalidInput(v)) return nullDisplay;
 
-    formatConfig = formatConfig || buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma);
-    const str = numbro(v).format(formatConfig).replace('-', '');
+    let str = '';
+    if (formatConfig) {
+        apiDeprecated('formatConfig', {msg: `Formatting via Numbro will soon be removed.`, v: 'v45'});
+        str = numbro(v).format(formatConfig).replace('-', '');
+    } else {
+        let BN = buildBNInstance(v, precision, zeroPad, withCommas, omitFourDigitComma),
+            dp = BN.config().DECIMAL_PLACES;
+        BN = BN(v).abs();
+        str = zeroPad ? BN.toFormat(dp) : BN.dp(dp).toFormat();
+    }
+
     let sign = null;
 
     if (v > 0 && withPlusSign) {
@@ -317,10 +329,10 @@ function valueColor(v, colorSpec) {
     return colorSpec.neutral;
 }
 
-function buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma) {
-    const num = Math.abs(v);
+function buildBNInstance(v, precision, zeroPad, withCommas, omitFourDigitComma) {
+    const num = Math.abs(v),
+        format = BigNumber.config().FORMAT;  // the default BigNumber format
 
-    const config = {};
     let mantissa = undefined;
 
     if (precision % 1 === 0) {
@@ -340,11 +352,11 @@ function buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma
         }
     }
 
-    config.thousandSeparated = withCommas &&
-        !(omitFourDigitComma && num < 10000 && (mantissa == 0 || (!zeroPad && Number.isInteger(num))));
-    config.mantissa = mantissa;
-    config.trimMantissa = !zeroPad && mantissa != 0;
-    return config;
+    const useCommas = withCommas &&
+        !(omitFourDigitComma && num < 10000 && (mantissa === 0 || (!zeroPad && Number.isInteger(num))));
+    format.groupSeparator = useCommas ? ',' : '';
+
+    return BigNumber.clone({DECIMAL_PLACES: mantissa, FORMAT: format });
 }
 
 function isInvalidInput(v) {
