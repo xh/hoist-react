@@ -19,7 +19,7 @@ import {isEmpty} from 'lodash';
  * @private
  */
 export const dashContainerContextMenu = hoistCmp.factory({
-    model: null, observable: null,
+    model: null, observer: null,
     render(props) {
         const menuItems = createMenuItems(props);
         return contextMenu({menuItems});
