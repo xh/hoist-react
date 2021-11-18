@@ -29,7 +29,7 @@ const UP_TICK = '▴',
  * @param {number} v - value to format.
  * @param {Object} [opts]
  * @param {string} [opts.nullDisplay] - display string for null values.
- * @param {Object} [opts.formatConfig] - a valid numbro format object.
+ * @param {Object} [opts.formatConfig] - @deprecated - a valid numbro format object.
  * @param {(number|'auto')} [opts.precision] - desired number of decimal places.
  * @param {boolean} [opts.zeroPad] - true to pad with trailing zeros out to given precision.
  * @param {boolean} [opts.ledger] - true to use ledger format.
