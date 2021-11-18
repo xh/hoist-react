@@ -14,7 +14,7 @@
 
 ### ⚙️ Technical
 
-* The `formatConfig` property of the fmtConfig methods's config argument has been deprecated.
+* The `formatConfig` property of the `fmtConfig` method's `config` argument has been deprecated.
 
 ## v44.1.0 - 2021-11-08
 
