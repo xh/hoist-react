@@ -10,7 +10,7 @@
 
 ### ⚙️ Technical
 
-* Refresh app hotkey is now built into hoist's global hotkeys.
+* Refresh app hotkey is now built into hoist's global hotkeys (shift + r).
 
 ## v44.1.0 - 2021-11-08
 
