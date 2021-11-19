@@ -332,7 +332,7 @@ function valueColor(v, colorSpec) {
 }
 
 function buildBNInstance(v, precision, zeroPad, withCommas, omitFourDigitComma) {
-    const num = Math.abs(v),
+    const num = BigNumber(v).abs(),
         format = BigNumber.config().FORMAT;  // the default BigNumber format
 
     let mantissa = undefined;
@@ -341,13 +341,13 @@ function buildBNInstance(v, precision, zeroPad, withCommas, omitFourDigitComma) 
         precision = precision < MAX_NUMERIC_PRECISION ? precision : MAX_NUMERIC_PRECISION;
         mantissa = precision === 0 ? 0 : precision;
     } else {
-        if (num === 0) {
+        if (num.eq(0)) {
             mantissa = 2;
-        } else if (num < .01) {
+        } else if (num.lt(.01)) {
             mantissa = 6;
-        } else if (num < 100) {
+        } else if (num.lt(100)) {
             mantissa = 4;
-        } else if (num < 10000) {
+        } else if (num.lt(10000)) {
             mantissa = 2;
         } else {
             mantissa = 0;
@@ -355,7 +355,7 @@ function buildBNInstance(v, precision, zeroPad, withCommas, omitFourDigitComma) 
     }
 
     const useCommas = withCommas &&
-        !(omitFourDigitComma && num < 10000 && (mantissa === 0 || (!zeroPad && Number.isInteger(num))));
+        !(omitFourDigitComma && num.lt(10000) && (mantissa === 0 || (!zeroPad && num.isInteger())));
     format.groupSeparator = useCommas ? ',' : '';
 
     return BigNumber.clone({DECIMAL_PLACES: mantissa, FORMAT: format });
