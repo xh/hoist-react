@@ -26,7 +26,7 @@ const UP_TICK = '▴',
 /**
  * Standard number formatting for Hoist
  *
- * @param {number} v - value to format.
+ * @param {(number|string|BigNumber)} v - value to format.
  * @param {Object} [opts]
  * @param {string} [opts.nullDisplay] - display string for null values.
  * @param {Object} [opts.formatConfig] - @deprecated - a valid numbro format object.
@@ -105,14 +105,14 @@ export function fmtNumber(v, {
 /**
  * Render number in thousands.
  *
- * @param {number} v - value to format.
+ * @param {(number|string|BigNumber)} v - value to format.
  * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
 export function fmtThousands(v, opts)  {
     opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
-    v = v / THOUSAND;
+    v = BigNumber(v).dividedBy(THOUSAND);
     if (opts.label === true) opts.label = 'k';
     return fmtNumber(v, opts);
 }
@@ -120,7 +120,7 @@ export function fmtThousands(v, opts)  {
 /**
  * Render number in millions.
  *
- * @param {number} v - value to format.
+ * @param {(number|string|BigNumber)} v - value to format.
  * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
 export function fmtMillions(v, opts)  {
@@ -128,7 +128,7 @@ export function fmtMillions(v, opts)  {
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
-    v = v / MILLION;
+    v = BigNumber(v).dividedBy(MILLION);
     if (opts.label === true) opts.label = 'm';
     return fmtNumber(v, opts);
 }
@@ -137,7 +137,7 @@ export function fmtMillions(v, opts)  {
 /**
  * Render number in billions.
  *
- * @param {number} v - value to format.
+ * @param {(number|string|BigNumber)} v - value to format.
  * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
 export function fmtBillions(v, opts)  {
@@ -145,7 +145,7 @@ export function fmtBillions(v, opts)  {
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
-    v = v / BILLION;
+    v = BigNumber(v).dividedBy(BILLION);
     if (opts.label === true) opts.label = 'b';
     return fmtNumber(v, opts);
 }
@@ -153,7 +153,7 @@ export function fmtBillions(v, opts)  {
 /**
  * Render a quantity value, handling highly variable amounts by using 2dp millions for values > 1m
  *
- * @param {number} v - value to format.
+ * @param {(number|string|BigNumber)} v - value to format.
  * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
 export function fmtQuantity(v, opts = {}) {
@@ -161,7 +161,8 @@ export function fmtQuantity(v, opts = {}) {
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
-    const lessThanM = Math.abs(v) < MILLION;
+    v = BigNumber(v);
+    const lessThanM = v.abs().lt(MILLION);
 
     defaults(opts, {
         ledger: true,
@@ -175,7 +176,7 @@ export function fmtQuantity(v, opts = {}) {
 /**
  * Render market price
  *
- * @param {number} v - value to format.
+ * @param {(number|string|BigNumber)} v - value to format.
  * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
 export function fmtPrice(v, opts) {
@@ -183,9 +184,10 @@ export function fmtPrice(v, opts) {
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
+    v = BigNumber(v);
     if (opts.precision === undefined) {
-        const absVal = Math.abs(v);
-        opts.precision = absVal < 1000 && absVal !== 0 ? 2 : 0;
+        const absVal = v.abs();
+        opts.precision = absVal.lt(1000) && !absVal.eq(0) ? 2 : 0;
     }
 
     return fmtNumber(v, opts);
@@ -195,7 +197,7 @@ export function fmtPrice(v, opts) {
  * Render a number as a percent. Value will be multiplied by 100 to calculated the percentage.
  * This behavior purposefully matches Microsoft Excel's percentage formatting.
  *
- * @param {number} v - value to format.
+ * @param {(number|string|BigNumber)} v - value to format.
  * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
 export function fmtPercent(v, opts = {}) {
@@ -204,14 +206,14 @@ export function fmtPercent(v, opts = {}) {
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
     defaults(opts, {precision: 2, label: '%', labelCls: null});
-    return fmtNumber(v * 100, opts);
+    return fmtNumber(BigNumber(v).times(100), opts);
 }
 
 /**
  * Render a minimally formatted, full precision number, suitable for use in tooltips.
  * Only ledger opt is supported.
  *
- * @param {number} v - value to format.
+ * @param {(number|string|BigNumber)} v - value to format.
  * @param {Object} [opts]
  * @param {boolean} [opts.ledger] - true to use ledger format.
  */
