@@ -332,9 +332,7 @@ function valueColor(v, colorSpec) {
 }
 
 function buildBNInstance(v, precision, zeroPad, withCommas, omitFourDigitComma) {
-    const num = BigNumber(v).abs(),
-        format = BigNumber.config().FORMAT;  // the default BigNumber format
-
+    const num = BigNumber(v).abs();
     let mantissa = undefined;
 
     if (precision % 1 === 0) {
@@ -355,10 +353,11 @@ function buildBNInstance(v, precision, zeroPad, withCommas, omitFourDigitComma) 
     }
 
     const useCommas = withCommas &&
-        !(omitFourDigitComma && num.lt(10000) && (mantissa === 0 || (!zeroPad && num.isInteger())));
-    format.groupSeparator = useCommas ? ',' : '';
+        !(omitFourDigitComma && num.lt(10000) && (mantissa === 0 || (!zeroPad && num.isInteger()))),
+        {FORMAT} = BigNumber.config(), // the default BigNumber format
+        groupSeparator = useCommas ? ',' : '';
 
-    return BigNumber.clone({DECIMAL_PLACES: mantissa, FORMAT: format });
+    return BigNumber.clone({DECIMAL_PLACES: mantissa, FORMAT: {...FORMAT, groupSeparator}});
 }
 
 function isInvalidInput(v) {
