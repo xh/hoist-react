@@ -84,7 +84,7 @@ export function fmtNumber(v, {
         apiDeprecated('formatConfig', {msg: `Formatting via Numbro will soon be removed.`, v: 'v45'});
         str = numbro(v).format(formatConfig).replace('-', '');
     } else {
-        let BN = buildBNInstance(v, precision, zeroPad, withCommas, omitFourDigitComma),
+        let BN = buildBnInstance(v, precision, zeroPad, withCommas, omitFourDigitComma),
             dp = BN.config().DECIMAL_PLACES;
         BN = BN(v).abs();
         str = zeroPad ? BN.toFormat(dp) : BN.dp(dp).toFormat();
@@ -331,7 +331,7 @@ function valueColor(v, colorSpec) {
     return colorSpec.neutral;
 }
 
-function buildBNInstance(v, precision, zeroPad, withCommas, omitFourDigitComma) {
+function buildBnInstance(v, precision, zeroPad, withCommas, omitFourDigitComma) {
     const num = BigNumber(v).abs();
     let mantissa = undefined;
 
