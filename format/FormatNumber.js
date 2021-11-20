@@ -84,10 +84,10 @@ export function fmtNumber(v, {
         apiDeprecated('formatConfig', {msg: `Formatting via Numbro will soon be removed.`, v: 'v45'});
         str = numbro(v).format(formatConfig).replace('-', '');
     } else {
-        let BN = buildBnInstance(v, precision, zeroPad, withCommas, omitFourDigitComma),
-            dp = BN.config().DECIMAL_PLACES;
-        BN = BN(v).abs();
-        str = zeroPad ? BN.toFormat(dp) : BN.dp(dp).toFormat();
+        const dp = getDecimalPoints(v, precision),
+            format = getBnFormat(v, dp, zeroPad, withCommas, omitFourDigitComma),
+            num = new BigNumber(v).abs();
+        str = zeroPad ? num.toFormat(dp, format) : num.dp(dp).toFormat(format);
     }
 
     let sign = null;
@@ -331,33 +331,48 @@ function valueColor(v, colorSpec) {
     return colorSpec.neutral;
 }
 
-function buildBnInstance(v, precision, zeroPad, withCommas, omitFourDigitComma) {
-    const num = BigNumber(v).abs();
-    let mantissa = undefined;
+function getBnFormat(v, precision, zeroPad, withCommas, omitFourDigitComma) {
+    const num = new BigNumber(v).abs(),
+        useCommas = withCommas &&
+        !(omitFourDigitComma && num.lt(10000) && (precision === 0 || (!zeroPad && num.isInteger()))),
+        groupSeparator = useCommas ? ',' : '';
+
+    // Important to return the full BN format object,
+    // because BN considers missing values to be deletions of format configs.
+    return {
+        prefix: '',
+        decimalSeparator: '.',
+        groupSeparator,
+        groupSize: 3,
+        secondaryGroupSize: 0,
+        fractionGroupSeparator: ' ',
+        fractionGroupSize: 0,
+        suffix: ''
+    };
+}
+
+function getDecimalPoints(v, precision) {
+    const num = new BigNumber(v).abs();
+    let ret = undefined;
 
     if (precision % 1 === 0) {
         precision = precision < MAX_NUMERIC_PRECISION ? precision : MAX_NUMERIC_PRECISION;
-        mantissa = precision === 0 ? 0 : precision;
+        ret = precision === 0 ? 0 : precision;
     } else {
         if (num.eq(0)) {
-            mantissa = 2;
+            ret = 2;
         } else if (num.lt(.01)) {
-            mantissa = 6;
+            ret = 6;
         } else if (num.lt(100)) {
-            mantissa = 4;
+            ret = 4;
         } else if (num.lt(10000)) {
-            mantissa = 2;
+            ret = 2;
         } else {
-            mantissa = 0;
+            ret = 0;
         }
     }
 
-    const useCommas = withCommas &&
-        !(omitFourDigitComma && num.lt(10000) && (mantissa === 0 || (!zeroPad && num.isInteger()))),
-        {FORMAT} = BigNumber.config(), // the default BigNumber format
-        groupSeparator = useCommas ? ',' : '';
-
-    return BigNumber.clone({DECIMAL_PLACES: mantissa, FORMAT: {...FORMAT, groupSeparator}});
+    return ret;
 }
 
 function isInvalidInput(v) {
