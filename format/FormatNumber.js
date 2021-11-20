@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {span} from '@xh/hoist/cmp/layout';
-import {defaults, isFinite, isFunction, isPlainObject, isString} from 'lodash';
+import {defaults, isFunction, isPlainObject, isString} from 'lodash';
 import numbro from 'numbro';
 import BigNumber from 'bignumber.js';
 import {apiDeprecated} from '../utils/js';
@@ -79,27 +79,28 @@ export function fmtNumber(v, {
 
     if (isInvalidInput(v)) return nullDisplay;
 
+    const bn = new BigNumber(v),
+        abs = bn.abs();
     let str = '';
     if (formatConfig) {
         apiDeprecated('formatConfig', {msg: `Formatting via Numbro will soon be removed.`, v: 'v45'});
         str = numbro(v).format(formatConfig).replace('-', '');
     } else {
-        const dp = getDecimalPoints(v, precision),
-            format = getBnFormat(v, dp, zeroPad, withCommas, omitFourDigitComma),
-            num = new BigNumber(v).abs();
-        str = zeroPad ? num.toFormat(dp, format) : num.dp(dp).toFormat(format);
+        const dp = getDecimalPoints(abs, precision),
+            format = getBnFormat(abs, dp, zeroPad, withCommas, omitFourDigitComma);
+        str = zeroPad ? abs.toFormat(dp, format) : abs.dp(dp).toFormat(format);
     }
 
     let sign = null;
 
-    if (v > 0 && withPlusSign) {
+    if (bn.gt(0) && withPlusSign) {
         sign = '+';
-    } else if (v < 0 && !ledger) {
+    } else if (bn.lt(0) && !ledger) {
         sign = '-';
     }
 
     const opts = {str, sign, ledger, forceLedgerAlign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip, originalValue};
-    return asElement ? fmtNumberElement(v, opts) : fmtNumberString(v, opts);
+    return asElement ? fmtNumberElement(bn, opts) : fmtNumberString(bn, opts);
 }
 
 /**
@@ -229,12 +230,12 @@ export function fmtNumberTooltip(v, {ledger = false} = {}) {
 //---------------
 // Implementation
 //---------------
-function fmtNumberElement(v, opts = {}) {
+function fmtNumberElement(bn, opts = {}) {
     const {str, sign, ledger, forceLedgerAlign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip} = opts;
 
     // CSS classes
     const cls = [];
-    if (colorSpec) cls.push(valueColor(v, colorSpec));
+    if (colorSpec) cls.push(valueColor(bn, colorSpec));
     if (tooltip) cls.push('xh-title-tip');
 
     // Compile child items
@@ -242,7 +243,7 @@ function fmtNumberElement(v, opts = {}) {
         items = [];
 
     if (withSignGlyph) {
-        items.push(signGlyph(v, asElement));
+        items.push(signGlyph(bn, asElement));
     } else if (sign) {
         items.push(sign);
     }
@@ -258,7 +259,7 @@ function fmtNumberElement(v, opts = {}) {
     }
 
     if (ledger) {
-        if (v < 0) {
+        if (bn.lt(0)) {
             items.unshift('(');
             items.push(')');
         } else if (forceLedgerAlign) {
@@ -274,12 +275,12 @@ function fmtNumberElement(v, opts = {}) {
     });
 }
 
-function fmtNumberString(v, opts = {}) {
+function fmtNumberString(bn, opts = {}) {
     const {str, sign, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, prefix} = opts;
     let ret = '';
 
     if (withSignGlyph) {
-        ret += signGlyph(v) + '&nbsp;';
+        ret += signGlyph(bn) + '&nbsp;';
     } else if (sign) {
         ret += sign;
     }
@@ -299,7 +300,7 @@ function fmtNumberString(v, opts = {}) {
     }
 
     if (ledger) {
-        if (v < 0) {
+        if (bn.lt(0)) {
             ret = '(' + ret + ')';
         } else if (forceLedgerAlign) {
             ret += LEDGER_ALIGN_PLACEHOLDER;
@@ -307,7 +308,7 @@ function fmtNumberString(v, opts = {}) {
     }
 
     if (colorSpec) {
-        ret = fmtSpan(ret, {className: valueColor(v, colorSpec)});
+        ret = fmtSpan(ret, {className: valueColor(bn, colorSpec)});
     }
 
     if (tooltip) {
@@ -317,24 +318,23 @@ function fmtNumberString(v, opts = {}) {
     return ret;
 }
 
-function signGlyph(v, asElement) {
-    if (!isFinite(v)) return '';
-    return v === 0 ? fmtSpan(UP_TICK, {className: 'xh-transparent', asElement: asElement}) : v > 0 ? UP_TICK : DOWN_TICK;
+function signGlyph(bn, asElement) {
+    if (!bn.isFinite()) return '';
+    return bn.eq(0) ? fmtSpan(UP_TICK, {className: 'xh-transparent', asElement: asElement}) : bn.gt(0) ? UP_TICK : DOWN_TICK;
 }
 
-function valueColor(v, colorSpec) {
-    if (!isFinite(v) || !colorSpec) return '';
+function valueColor(bn, colorSpec) {
+    if (!bn.isFinite() || !colorSpec) return '';
 
     colorSpec = isPlainObject(colorSpec) ? colorSpec : DEFAULT_COLOR_SPEC;
-    if (v < 0) return colorSpec.neg;
-    if (v > 0) return colorSpec.pos;
+    if (bn.lt(0)) return colorSpec.neg;
+    if (bn.gt(0)) return colorSpec.pos;
     return colorSpec.neutral;
 }
 
-function getBnFormat(v, precision, zeroPad, withCommas, omitFourDigitComma) {
-    const num = new BigNumber(v).abs(),
-        useCommas = withCommas &&
-        !(omitFourDigitComma && num.lt(10000) && (precision === 0 || (!zeroPad && num.isInteger()))),
+function getBnFormat(abs, precision, zeroPad, withCommas, omitFourDigitComma) {
+    const useCommas = withCommas &&
+        !(omitFourDigitComma && abs.lt(10000) && (precision === 0 || (!zeroPad && abs.isInteger()))),
         groupSeparator = useCommas ? ',' : '';
 
     // Important to return the full BN format object,
@@ -351,21 +351,20 @@ function getBnFormat(v, precision, zeroPad, withCommas, omitFourDigitComma) {
     };
 }
 
-function getDecimalPoints(v, precision) {
-    const num = new BigNumber(v).abs();
+function getDecimalPoints(abs, precision) {
     let ret = undefined;
 
     if (precision % 1 === 0) {
         precision = precision < MAX_NUMERIC_PRECISION ? precision : MAX_NUMERIC_PRECISION;
         ret = precision === 0 ? 0 : precision;
     } else {
-        if (num.eq(0)) {
+        if (abs.eq(0)) {
             ret = 2;
-        } else if (num.lt(.01)) {
+        } else if (abs.lt(.01)) {
             ret = 6;
-        } else if (num.lt(100)) {
+        } else if (abs.lt(100)) {
             ret = 4;
-        } else if (num.lt(10000)) {
+        } else if (abs.lt(10000)) {
             ret = 2;
         } else {
             ret = 0;
