@@ -112,7 +112,7 @@ export function fmtThousands(v, opts)  {
     opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
-    v = BigNumber(v).dividedBy(THOUSAND);
+    v = new BigNumber(v).dividedBy(THOUSAND);
     if (opts.label === true) opts.label = 'k';
     return fmtNumber(v, opts);
 }
@@ -128,7 +128,7 @@ export function fmtMillions(v, opts)  {
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
-    v = BigNumber(v).dividedBy(MILLION);
+    v = new BigNumber(v).dividedBy(MILLION);
     if (opts.label === true) opts.label = 'm';
     return fmtNumber(v, opts);
 }
@@ -145,7 +145,7 @@ export function fmtBillions(v, opts)  {
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
-    v = BigNumber(v).dividedBy(BILLION);
+    v = new BigNumber(v).dividedBy(BILLION);
     if (opts.label === true) opts.label = 'b';
     return fmtNumber(v, opts);
 }
@@ -161,7 +161,7 @@ export function fmtQuantity(v, opts = {}) {
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
-    v = BigNumber(v);
+    v = new BigNumber(v);
     const lessThanM = v.abs().lt(MILLION);
 
     defaults(opts, {
@@ -184,7 +184,7 @@ export function fmtPrice(v, opts) {
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
-    v = BigNumber(v);
+    v = new BigNumber(v);
     if (opts.precision === undefined) {
         const absVal = v.abs();
         opts.precision = absVal.lt(1000) && !absVal.eq(0) ? 2 : 0;
