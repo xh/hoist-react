@@ -72,7 +72,6 @@ export class LogDisplayModel extends HoistModel {
             })
             .then(response => {
                 if (!response.success) throw new Error(response.exception);
-                // console.log(response.content.reverse())
                 this.setRows(parent.startLine ? response.content : response.content.reverse());
             })
             .catch(e => {
