@@ -530,12 +530,15 @@ class GridLocalModel extends HoistModel {
     }
 
     sizingModeReaction() {
-        const {model} = this;
+        const {model} = this,
+            {mode} = model.autosizeOptions;
+
         return {
             track: () => model.sizingMode,
             run: () => {
-                if (model.autosizeOptions.mode !== GridAutosizeMode.ON_SIZING_MODE_CHANGE) return;
-                model.autosizeAsync({showMask: true});
+                if (mode === GridAutosizeMode.MANAGED || mode === GridAutosizeMode.ON_SIZING_MODE_CHANGE) {
+                    model.autosizeAsync({showMask: true});
+                }
             }
         };
     }
@@ -657,6 +660,11 @@ class GridLocalModel extends HoistModel {
             wait().then(() => this.syncSelection());
         }
 
+        if (model.autosizeOptions.mode === GridAutosizeMode.MANAGED) {
+            const columns = model.getManagedAutosizeColumns();
+            model.autosizeAsync({columns});
+        }
+
         model.noteAgExpandStateChange();
 
         this._prevRs = newRs;
@@ -700,7 +708,10 @@ class GridLocalModel extends HoistModel {
 
     // Catches column resizing on call to autoSize API.
     onColumnResized = (ev) => {
-        if (isDisplayed(this.viewRef.current) && ev.finished && ev.source === 'autosizeColumns') {
+        if (!isDisplayed(this.viewRef.current) || !ev.finished) return;
+        if (ev.source === 'uiColumnDragged') {
+            this.model.noteColumnManuallySized(ev.column.colId);
+        } else if (ev.source === 'autosizeColumns') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
         ev.api.resetRowHeights();
