@@ -7,6 +7,11 @@
 * Desktop inline grid editor `Select` now commits the value immediately on selection.
 * `DashContainerModel` now supports an observable `showMenuButton` config which will display a
   button in the stack header for showing the context menu
+* Mobile `Button` has new `intent`, `minimal` and `outlined` props.
+
+### 💥 Breaking Changes
+
+* Mobile `Button` no longer supports `modifier` prop. Use `minimal` and `outlined` instead.
 
 ## v44.1.0 - 2021-11-08
 

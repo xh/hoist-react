@@ -10,13 +10,11 @@
   align-items: center;
   justify-content: center;
   font-size: var(--xh-button-font-size-px);
+  height: var(--xh-button-height);
 
-  // TODO - avoid hard-coding these.
-  line-height: 20px;
-  height: 28px;
-
+  // Override Onsen's semi-transparency while pressed
   &:active {
-    opacity: 1; // Override Onsen opacity on tap
+    opacity: 1;
   }
 
   &--disabled,
