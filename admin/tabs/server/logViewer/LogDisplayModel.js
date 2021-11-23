@@ -43,10 +43,12 @@ export class LogDisplayModel extends HoistModel {
     }
 
     syncTail() {
-        const {tail} = this.parent,
-            rowElem = this[tail ? 'lastRowRef' : 'firstRowRef'].current;
+        const {tail} = this.parent;
 
-        if (rowElem) rowElem.scrollIntoView();
+        if (tail) {
+            const rowElem = this.lastRowRef.current;
+            if (rowElem) rowElem.scrollIntoView();
+        }
     }
 
     async doLoadAsync(loadSpec) {
