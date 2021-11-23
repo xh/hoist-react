@@ -32,7 +32,7 @@ export const message = hoistCmp.factory({
         if (!isOpen) return null;
 
         if (cancelProps) {
-            buttons.push(button({modifier: 'quiet', ...cancelProps}));
+            buttons.push(button({minimal: true, ...cancelProps}));
         }
 
         if (confirmProps) {

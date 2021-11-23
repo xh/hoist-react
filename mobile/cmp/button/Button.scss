@@ -1,3 +1,10 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2021 Extremely Heavy Industries Inc.
+ */
+
 .xh-button {
   display: flex;
   align-items: center;
@@ -7,4 +14,160 @@
   // TODO - avoid hard-coding these.
   line-height: 20px;
   height: 28px;
+
+  &:active {
+    opacity: 1; // Override Onsen opacity on tap
+  }
+
+  &--disabled,
+  &--disabled:active {
+    opacity: var(--xh-button-disabled-opacity);
+  }
+
+  // Shaded/filled-in (non-minimal) mode.
+  &--standard {
+    &.xh-button--intent-none {
+      color: var(--xh-button-text-color);
+      background-color: var(--xh-button-bg);
+      .xh-button--enabled {
+        &:active,
+        &.xh-button--active {
+          color: var(--xh-button-active-text-color);
+          background-color: var(--xh-button-active-bg);
+        }
+      }
+    }
+
+    &.xh-button--intent-primary {
+      color: white;
+      background-color: var(--xh-intent-primary);
+      .xh-button--enabled {
+        &:active,
+        &.xh-button--active {
+          background-color: var(--xh-intent-primary-darkest);
+        }
+      }
+    }
+
+    &.xh-button--intent-success {
+      color: white;
+      background-color: var(--xh-intent-success);
+      .xh-button--enabled {
+        &:active,
+        &.xh-button--active {
+          background-color: var(--xh-intent-success-darkest);
+        }
+      }
+    }
+
+    &.xh-button--intent-warning {
+      color: white;
+      background-color: var(--xh-intent-warning);
+      .xh-button--enabled {
+        &:active,
+        &.xh-button--active {
+          background-color: var(--xh-intent-warning-darkest);
+        }
+      }
+    }
+
+    &.xh-button--intent-danger {
+      color: white;
+      background-color: var(--xh-intent-danger);
+      .xh-button--enabled {
+        &:active,
+        &.xh-button--active {
+          background-color: var(--xh-intent-danger-darkest);
+        }
+      }
+    }
+  }
+
+  // Minimal mode.
+  &--minimal,
+  &--minimal.xh-button--enabled:active {
+    background-color: transparent;
+
+    &.xh-button--intent-none {
+      color: var(--xh-text-color);
+      &.xh-button--enabled.xh-button--active {
+        background-color: var(--xh-bg-alt);
+      }
+    }
+
+    &.xh-button--intent-primary {
+      color: var(--xh-intent-primary-darker);
+      &.xh-button--enabled.xh-button--active {
+        background-color: var(--xh-intent-primary-trans2);
+      }
+    }
+
+    &.xh-button--intent-success {
+      color: var(--xh-intent-success-darker);
+      &.xh-button--enabled.xh-button--active {
+        background-color: var(--xh-intent-success-trans2);
+      }
+    }
+
+    &.xh-button--intent-warning {
+      color: var(--xh-intent-warning-darker);
+      &.xh-button--enabled.xh-button--active {
+        background-color: var(--xh-intent-warning-trans2);
+      }
+    }
+
+    &.xh-button--intent-danger {
+      color: var(--xh-intent-danger-darker);
+      &.xh-button--enabled.xh-button--active {
+        background-color: var(--xh-intent-danger-trans2);
+      }
+    }
+  }
+
+  // Outlined mode
+  &--outlined,
+  &--outlined.xh-button--enabled:active {
+    background-color: transparent;
+    border: 1px solid var(--xh-button-bg);
+
+    &.xh-button--intent-none {
+      color: var(--xh-button-bg);
+      border-color: var(--xh-button-bg);
+      &.xh-button--enabled.xh-button--active {
+        background-color: var(--xh-button-bg);
+      }
+    }
+
+    &.xh-button--intent-primary {
+      color: var(--xh-intent-primary-darker);
+      border-color: var(--xh-intent-primary);
+      &.xh-button--enabled.xh-button--active {
+        background-color: var(--xh-intent-primary-trans2);
+      }
+    }
+
+    &.xh-button--intent-success {
+      color: var(--xh-intent-success-darker);
+      border-color: var(--xh-intent-success);
+      &.xh-button--enabled.xh-button--active {
+        background-color: var(--xh-intent-success-trans2);
+      }
+    }
+
+    &.xh-button--intent-warning {
+      color: var(--xh-intent-warning-darker);
+      border-color: var(--xh-intent-warning);
+      &.xh-button--enabled.xh-button--active {
+        background-color: var(--xh-intent-warning-trans2);
+      }
+    }
+
+    &.xh-button--intent-danger {
+      color: var(--xh-intent-danger-darker);
+      border-color: var(--xh-intent-danger);
+      &.xh-button--enabled.xh-button--active {
+        background-color: var(--xh-intent-danger-trans2);
+      }
+    }
+  }
 }

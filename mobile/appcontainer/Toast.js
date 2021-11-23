@@ -34,7 +34,7 @@ export const toast = hoistCmp.factory({
                 span(message),
                 button({
                     icon: Icon.cross(),
-                    modifier: 'quiet',
+                    minimal: true,
                     onClick: () => model.dismiss()
                 })
             ]

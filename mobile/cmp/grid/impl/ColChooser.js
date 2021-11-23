@@ -98,13 +98,13 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
                 button({
                     omit: !showRestoreDefaults,
                     text: 'Reset',
-                    modifier: 'quiet',
+                    minimal: true,
                     onClick: () => model.restoreDefaultsAsync()
                 }),
                 filler(),
                 button({
                     text: 'Cancel',
-                    modifier: 'quiet',
+                    minimal: true,
                     onClick: () => model.close()
                 }),
                 button({
@@ -193,7 +193,7 @@ const row = hoistCmp.factory({
                 button({
                     icon: getButtonIcon(locked, hidden),
                     disabled: locked,
-                    modifier: 'quiet',
+                    minimal: true,
                     onClick: () => model.onHiddenToggleClick(colId, !hidden)
                 })
             ],

@@ -42,7 +42,7 @@ export const impersonationBar = hoistCmp.factory({
                 }),
                 button({
                     icon: Icon.close(),
-                    modifier: 'quiet',
+                    minimal: true,
                     onClick: model.onClose
                 })
             ]

@@ -8,28 +8,8 @@ body.xh-app .xh-button-group .xh-button {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
 
-    &:not(.button--light):not(.button--outline) {
+    &:not(.xh-button--outlined) {
       margin-right: 1px;
     }
-  }
-
-  &:not(.button--outline):not(.button--quiet):not(.button--light).xh-button-active {
-    background-color: var(--xh-button-active-bg);
-    color: var(--xh-button-active-text-color);
-    opacity: 1;
-  }
-
-  &.button--outline.xh-button-active {
-    background-color: var(--xh-button-bg);
-    color: white;
-  }
-
-  &.button--light.xh-button-active {
-    background-color: var(--xh-bg-alt);
-    color: var(--xh-text-color);
-  }
-
-  &.button--quiet.xh-button-active {
-    background-color: var(--xh-bg-alt);
   }
 }
