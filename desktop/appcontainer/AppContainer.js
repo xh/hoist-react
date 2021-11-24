@@ -154,7 +154,7 @@ function globalHotKeys(model) {
             {
                 global: true,
                 combo: 'shift + r',
-                label: 'Refresh app data',
+                label: 'Refresh application data',
                 onKeyDown: () => XH.refreshAppAsync()
             }
         ];
