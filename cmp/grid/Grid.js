@@ -661,8 +661,17 @@ class GridLocalModel extends HoistModel {
         }
 
         if (model.autosizeOptions.mode === GridAutosizeMode.MANAGED) {
-            const columns = model.getManagedAutosizeColumns();
-            model.autosizeAsync({columns});
+            // If sizingMode different to autosizeState, autosize all columns...
+            if (model.autosizeState.sizingMode !== model.sizingMode) {
+                model.autosizeAsync();
+            } else {
+                // ...otherwise, only autosize columns that are not manually sized
+                const columns = model.getLeafColumnIds().filter(colId => {
+                    const state = model.findColumn(model.columnState, colId);
+                    return state && !state.manuallySized;
+                });
+                model.autosizeAsync({columns});
+            }
         }
 
         model.noteAgExpandStateChange();
@@ -710,7 +719,7 @@ class GridLocalModel extends HoistModel {
     onColumnResized = (ev) => {
         if (!isDisplayed(this.viewRef.current) || !ev.finished) return;
         if (ev.source === 'uiColumnDragged') {
-            this.model.noteColumnManuallySized(ev.column.colId);
+            this.model.noteColumnsManuallySized(ev.column.colId);
         } else if (ev.source === 'autosizeColumns') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }

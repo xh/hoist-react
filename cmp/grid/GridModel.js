@@ -369,7 +369,7 @@ export class GridModel extends HoistModel {
         this.autosizeOptions = defaults(
             {...autosizeOptions},
             {
-                mode: GridAutosizeMode.MANAGED,
+                mode: GridAutosizeMode.ON_SIZING_MODE_CHANGE,
                 includeCollapsedChildren: false,
                 showMask: false,
                 // Larger buffer on mobile (perhaps counterintuitively) to minimize clipping due to
@@ -772,7 +772,7 @@ export class GridModel extends HoistModel {
         this.columnState = this.getLeafColumns()
             .map(it => {
                 const {colId, width, hidden, pinned} = it;
-                return {colId, width, hidden, pinned, managedAutosize: true};
+                return {colId, width, hidden, pinned};
             });
     }
 
@@ -836,13 +836,14 @@ export class GridModel extends HoistModel {
         }
     }
 
-    noteColumnManuallySized(colId) {
-        this.applyColumnStateChanges([{colId, managedAutosize: false}]);
+    noteColumnsManuallySized(colIds) {
+        const colStateChanges = castArray(colIds).map(colId => ({colId, manuallySized: true}));
+        this.applyColumnStateChanges(colStateChanges);
     }
 
-    noteColumnAutosized(colId) {
-        if (this.autosizeOptions.mode !== GridAutosizeMode.MANAGED) return;
-        this.applyColumnStateChanges([{colId, managedAutosize: true}]);
+    noteColumnsAutosized(colIds) {
+        const colStateChanges = castArray(colIds).map(colId => ({colId, manuallySized: false}));
+        this.applyColumnStateChanges(colStateChanges);
         this.setAutosizeState({sizingMode: this.sizingMode});
     }
 
@@ -874,7 +875,7 @@ export class GridModel extends HoistModel {
             if (!isNil(change.width)) col.width = change.width;
             if (!isNil(change.hidden)) col.hidden = change.hidden;
             if (!isUndefined(change.pinned)) col.pinned = change.pinned;
-            if (!isNil(change.managedAutosize)) col.managedAutosize = change.managedAutosize;
+            if (!isNil(change.manuallySized)) col.manuallySized = change.manuallySized;
         });
 
         // 2) If the changes provided is a full list of leaf columns, synchronize the sort order
@@ -1062,21 +1063,6 @@ export class GridModel extends HoistModel {
     }
 
     /**
-     * Return all leaf-level column ids whose autosize is managed.
-     * @returns {string[]}
-     */
-    getManagedAutosizeColumns() {
-        if (this.autosizeOptions.mode !== GridAutosizeMode.MANAGED) return [];
-
-        // If sizingMode different to autosizeState, return all leaf columns...
-        const colIds = this.getLeafColumnIds();
-        if (this.autosizeState.sizingMode !== this.sizingMode) return colIds;
-
-        // ...otherwise, return columns that are managed
-        return colIds.filter(colId => this.findColumn(this.columnState, colId)?.managedAutosize);
-    }
-
-    /**
      * Begin an inline editing session.
      * @param {RecordOrId} [recOrId] - Record/ID to edit. If unspecified, the first selected Record
      *      will be used, if any, or the first overall Record in the grid.
@@ -1215,7 +1201,7 @@ export class GridModel extends HoistModel {
 
         try {
             await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
-            colIds.forEach(it => this.noteColumnAutosized(it));
+            this.noteColumnsAutosized(colIds);
         } finally {
             if (showMask) {
                 await wait();
@@ -1344,13 +1330,10 @@ export class GridModel extends HoistModel {
     // they are set programmatically (e.g. fixed / action columns), and saved state should not
     // conflict with any code-level updates to their widths.
     removeTransientWidths(columnState) {
-        const gridCols = this.getLeafColumns(),
-            {mode} = this.autosizeOptions;
-
+        const gridCols = this.getLeafColumns();
         return columnState.map(state => {
             const col = this.findColumn(gridCols, state.colId);
             if (!col.resizable) state = omit(state, 'width');
-            if (mode !== GridAutosizeMode.MANAGED) state = omit(state, 'managedAutosize');
             return state;
         });
     }
@@ -1547,8 +1530,7 @@ export class GridModel extends HoistModel {
  * @property {number} [width] - new width to set for the column
  * @property {boolean} [hidden] - visibility of the column
  * @property {string} [pinned] - 'left'|'right' if pinned, null if not
- * @property {boolean} [managedAutosize] - is this columns width managed by autosize?
- *      Only applicable when GridAutosizeMode is MANAGED.
+ * @property {boolean} [manuallySized] - has this column been resized manually?
  */
 
 /**
