@@ -828,12 +828,12 @@ class XHClass extends HoistBase {
         return await this.fetchService
             .fetchJson({
                 url: 'xh/authStatus',
-                timeout: 3 * MINUTES     // Accomodate delay for user at a credentials prompt
+                timeout: 3 * MINUTES     // Accommodate delay for user at a credentials prompt
             })
             .then(r => r.authenticated)
             .catch(e => {
                 // 401s normal / expected for non-SSO apps when user not yet logged in.
-                if (e.httpStatus == 401) return false;
+                if (e.httpStatus === 401) return false;
                 // Other exceptions indicate e.g. connectivity issue, server down - raise to user.
                 throw e;
             });
