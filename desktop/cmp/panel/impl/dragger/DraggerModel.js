@@ -8,6 +8,7 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {clamp, throttle} from 'lodash';
+import $ from 'jquery';
 
 export class DraggerModel extends HoistModel {
 
@@ -53,6 +54,8 @@ export class DraggerModel extends HoistModel {
         const dragger = e.target;
         this.panelEl = dragger.parentElement;
         const {panelEl: panel, panelModel} = this;
+
+        $('iframe').css('pointer-events', 'none');
 
         throwIf(
             !panel.nextElementSibling && !panel.previousElementSibling,
@@ -113,6 +116,8 @@ export class DraggerModel extends HoistModel {
     };
 
     onDragEnd = () => {
+        $('iframe').css('pointer-events', 'auto');
+
         const {panelModel} = this;
         if (!panelModel.isResizing) return;
 
