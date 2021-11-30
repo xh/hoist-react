@@ -8,7 +8,6 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {clamp, throttle} from 'lodash';
-import $ from 'jquery';
 
 export class DraggerModel extends HoistModel {
 
@@ -55,8 +54,10 @@ export class DraggerModel extends HoistModel {
         this.panelEl = dragger.parentElement;
         const {panelEl: panel, panelModel} = this;
 
+        /** Workaround to allow dragging over iframe, which is its own separate document and cannot
+         listen for events from main document. {@see onDragEnd} */
         if (XH.isDesktop) {
-            $('iframe').css('pointer-events', 'none');
+            document.getElementById('xh-root').classList.add('xh-disable-iframe-pointer-events');
         }
 
         throwIf(
@@ -118,8 +119,9 @@ export class DraggerModel extends HoistModel {
     };
 
     onDragEnd = () => {
+        /** Remove class name added as workaround for dragging over iframe {@see onDragStart} */
         if (XH.isDesktop) {
-            $('iframe').css('pointer-events', 'auto');
+            document.getElementById('xh-root').classList.remove('xh-disable-iframe-pointer-events');
         }
 
         const {panelModel} = this;
