@@ -55,7 +55,9 @@ export class DraggerModel extends HoistModel {
         this.panelEl = dragger.parentElement;
         const {panelEl: panel, panelModel} = this;
 
-        $('iframe').css('pointer-events', 'none');
+        if (XH.isDesktop) {
+            $('iframe').css('pointer-events', 'none');
+        }
 
         throwIf(
             !panel.nextElementSibling && !panel.previousElementSibling,
@@ -116,7 +118,9 @@ export class DraggerModel extends HoistModel {
     };
 
     onDragEnd = () => {
-        $('iframe').css('pointer-events', 'auto');
+        if (XH.isDesktop) {
+            $('iframe').css('pointer-events', 'auto');
+        }
 
         const {panelModel} = this;
         if (!panelModel.isResizing) return;
