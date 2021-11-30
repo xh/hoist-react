@@ -7,6 +7,8 @@
 * Desktop inline grid editor `Select` now commits the value immediately on selection.
 * `DashContainerModel` now supports an observable `showMenuButton` config which will display a
   button in the stack header for showing the context menu
+* Added `GridAutosizeMode.MANAGED` to autosize Grid columns on data or `sizingMode` changes, unless
+  the user has manually modified their column widths.
 
 ### ⚙️ Technical
 
