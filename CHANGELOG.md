@@ -10,6 +10,10 @@
 * Added `GridAutosizeMode.MANAGED` to autosize Grid columns on data or `sizingMode` changes, unless
   the user has manually modified their column widths.
 
+### ⚙️ Technical
+
+* Refresh application hotkey is now built into hoist's global hotkeys (shift + r).
+
 ## v44.1.0 - 2021-11-08
 
 ### 🎁 New Features
