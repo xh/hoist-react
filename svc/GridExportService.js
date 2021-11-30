@@ -319,9 +319,8 @@ export class GridExportService extends HoistService {
 
     getRecordRow(gridModel, record, columns, depth) {
         const node = gridModel.agApi.getRowNode(record.id),
-            forServer = true,
             data = columns.map(column => {
-                return this.getExportableValueForCell({gridModel, record, column, node, forServer});
+                return this.getExportableValueForCell({gridModel, record, column, node, forServer: true});
             });
         return {data, depth};
     }

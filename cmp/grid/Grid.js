@@ -774,8 +774,6 @@ class GridLocalModel extends HoistModel {
         this.model.agGridModel.agApi.setFilterModel(filterState);
     }
 
-    // Underlying value for treeColumns is actually the record ID due to getDataPath() impl.
-    // Special handling here, similar to that in Column class, to extract the desired value.
     processCellForClipboard = ({value, node, column}) => {
         const {model} = this,
             recId = node.id,
