@@ -781,7 +781,7 @@ class GridLocalModel extends HoistModel {
             record = isNil(recId) ? null : model.store.getById(recId, true),
             xhColumn = isNil(colId) ? null : model.getColumn(colId);
 
-        if (!record || xhColumn) return value;
+        if (!record || !xhColumn) return value;
 
         return XH.gridExportService.getExportableValueForCell({
             model,
