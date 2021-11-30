@@ -13,6 +13,10 @@
 
 * Mobile `Button` no longer supports `modifier` prop. Use `minimal` and `outlined` instead.
 
+### ⚙️ Technical
+
+* Refresh application hotkey is now built into hoist's global hotkeys (shift + r).
+
 ## v44.1.0 - 2021-11-08
 
 ### 🎁 New Features

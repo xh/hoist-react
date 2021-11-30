@@ -150,7 +150,14 @@ const bannerList = hoistCmp.factory({
 
 function globalHotKeys(model) {
     const {impersonationBarModel, optionsDialogModel} = model,
-        ret = [];
+        ret = [
+            {
+                global: true,
+                combo: 'shift + r',
+                label: 'Refresh application data',
+                onKeyDown: () => XH.refreshAppAsync()
+            }
+        ];
 
     if (XH.identityService.canAuthUserImpersonate) {
         ret.push({
