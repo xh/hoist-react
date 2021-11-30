@@ -14,6 +14,10 @@
 * Hoist grids now require ag-Grid v26.1.0 or higher - update your ag-Grid dependency in your app's
   `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
 
+### ⚙️ Technical
+
+* Refresh application hotkey is now built into hoist's global hotkeys (shift + r).
+
 ## v44.1.0 - 2021-11-08
 
 ### 🎁 New Features
