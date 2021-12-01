@@ -11,10 +11,9 @@
   the user has manually modified their column widths.
 * Copying from Grids to the clipboard will now use the value provided by the `exportValue`
   property on the column.
-
-### ⚙️ Technical
-
 * Refresh application hotkey is now built into hoist's global hotkeys (shift + r).
+* New Non-SSO applications will now automatically reload when a request fails due to
+session timeout.
 
 ## v44.1.0 - 2021-11-08
 
