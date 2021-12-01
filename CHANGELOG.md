@@ -9,8 +9,8 @@
   button in the stack header for showing the context menu
 * Added `GridAutosizeMode.MANAGED` to autosize Grid columns on data or `sizingMode` changes, unless
   the user has manually modified their column widths.
-* Copying from Grids to the clipboard will now use the formatting provided by the `exportValue` and
-  `exportFormat` properties on the column.
+* Copying from Grids to the clipboard will now use the value provided by the `exportValue`
+  property on the column.
 
 ### ⚙️ Technical
 

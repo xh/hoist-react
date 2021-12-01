@@ -152,14 +152,16 @@ export class GridExportService extends HoistService {
      * @param {GridModel} c.gridModel
      * @param {Record} c.record
      * @param {Column} c.column
-     * @param {Object} c.node - ag-Grid row
+     * @param {Object} [c.node] - rendered ag-Grid row, if available.  Necessary for
+     *            exporting agGrid aggregates.
      * @param {boolean} [c.forServer] - for posting to server, default false.
      * @return {String} - value suitable for export to excel, csv, or clipboard.
      */
     getExportableValueForCell({gridModel, record, column, node, forServer = false}) {
         const {field, exportValue, getValueFn} = column,
-            aggData = gridModel.treeMode && !isEmpty(record.children) ? node.aggData : null;
+            aggData = node && gridModel.treeMode && !isEmpty(record.children) ? node.aggData : null;
 
+        // 0) Main processing
         let value = getValueFn({record, field, column, gridModel});
         // Modify value using exportValue
         if (isString(exportValue) && record.data[exportValue] !== null) {
@@ -175,7 +177,7 @@ export class GridExportService extends HoistService {
 
         if (isNil(value)) return null;
 
-        // Get cell-level format if function form provided
+        // 1) Support per-cell exportFormat
         let {exportFormat} = column,
             cellHasExportFormat = isFunction(exportFormat);
 
@@ -183,7 +185,8 @@ export class GridExportService extends HoistService {
             exportFormat = exportFormat(value, {record, column, gridModel});
         }
 
-        // Enforce date formats expected by server
+        // 2) Dates: Provide date data expected by server endpoint.
+        // Also, approximate formats for CSV and clipboard.
         if (exportFormat === ExportFormat.DATE_FMT) value = fmtDate(value);
         if (exportFormat === ExportFormat.DATETIME_FMT) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
 
@@ -318,7 +321,7 @@ export class GridExportService extends HoistService {
     }
 
     getRecordRow(gridModel, record, columns, depth) {
-        const node = gridModel.agApi.getRowNode(record.id),
+        const node = gridModel.agApi?.getRowNode(record.id),
             data = columns.map(column => {
                 return this.getExportableValueForCell({gridModel, record, column, node, forServer: true});
             });
