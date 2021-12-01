@@ -530,12 +530,15 @@ class GridLocalModel extends HoistModel {
     }
 
     sizingModeReaction() {
-        const {model} = this;
+        const {model} = this,
+            {mode} = model.autosizeOptions;
+
         return {
             track: () => model.sizingMode,
             run: () => {
-                if (model.autosizeOptions.mode !== GridAutosizeMode.ON_SIZING_MODE_CHANGE) return;
-                model.autosizeAsync({showMask: true});
+                if (mode === GridAutosizeMode.MANAGED || mode === GridAutosizeMode.ON_SIZING_MODE_CHANGE) {
+                    model.autosizeAsync({showMask: true});
+                }
             }
         };
     }
@@ -657,6 +660,20 @@ class GridLocalModel extends HoistModel {
             wait().then(() => this.syncSelection());
         }
 
+        if (model.autosizeOptions.mode === GridAutosizeMode.MANAGED) {
+            // If sizingMode different to autosizeState, autosize all columns...
+            if (model.autosizeState.sizingMode !== model.sizingMode) {
+                model.autosizeAsync();
+            } else {
+                // ...otherwise, only autosize columns that are not manually sized
+                const columns = model.getLeafColumnIds().filter(colId => {
+                    const state = model.findColumn(model.columnState, colId);
+                    return state && !state.manuallySized;
+                });
+                model.autosizeAsync({columns});
+            }
+        }
+
         model.noteAgExpandStateChange();
 
         this._prevRs = newRs;
@@ -700,7 +717,10 @@ class GridLocalModel extends HoistModel {
 
     // Catches column resizing on call to autoSize API.
     onColumnResized = (ev) => {
-        if (isDisplayed(this.viewRef.current) && ev.finished && ev.source === 'autosizeColumns') {
+        if (!isDisplayed(this.viewRef.current) || !ev.finished) return;
+        if (ev.source === 'uiColumnDragged') {
+            this.model.noteColumnsManuallySized(ev.column.colId);
+        } else if (ev.source === 'autosizeColumns') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
         ev.api.resetRowHeights();
@@ -754,10 +774,21 @@ class GridLocalModel extends HoistModel {
         this.model.agGridModel.agApi.setFilterModel(filterState);
     }
 
-    // Underlying value for treeColumns is actually the record ID due to getDataPath() impl.
-    // Special handling here, similar to that in Column class, to extract the desired value.
-    processCellForClipboard({value, node, column}) {
-        return column.isTreeColumn ? node.data[column.field] : value;
+    processCellForClipboard = ({value, node, column}) => {
+        const {model} = this,
+            recId = node.id,
+            colId = column.colId,
+            record = isNil(recId) ? null : model.store.getById(recId, true),
+            xhColumn = isNil(colId) ? null : model.getColumn(colId);
+
+        if (!record || !xhColumn) return value;
+
+        return XH.gridExportService.getExportableValueForCell({
+            gridModel: model,
+            record,
+            column: xhColumn,
+            node
+        });
     }
 
     navigateToNextCell = (agParams) => {

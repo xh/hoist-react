@@ -12,7 +12,18 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
 import {StatusCodes} from 'http-status-codes';
-import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq, compact, findIndex} from 'lodash';
+import {
+    castArray,
+    isArray,
+    isEmpty,
+    isFunction,
+    isNil,
+    isString,
+    sortBy,
+    uniq,
+    compact,
+    findIndex
+} from 'lodash';
 import {span, a} from '@xh/hoist/cmp/layout';
 import {wait} from '@xh/hoist/promise';
 
@@ -129,6 +140,61 @@ export class GridExportService extends HoistService {
             await dismissStartToast();
             this.showFailToast(e);
         }
+    }
+
+    /**
+     * Get the exportable value for a given cell.
+     *
+     * This method is used internally by this service, but also made available
+     * publicly for use by grid clipboard functionality.
+     *
+     * @param {Object} c
+     * @param {GridModel} c.gridModel
+     * @param {Record} c.record
+     * @param {Column} c.column
+     * @param {Object} [c.node] - rendered ag-Grid row, if available.  Necessary for
+     *            exporting agGrid aggregates.
+     * @param {boolean} [c.forServer] - for posting to server, default false.
+     * @return {String} - value suitable for export to excel, csv, or clipboard.
+     */
+    getExportableValueForCell({gridModel, record, column, node, forServer = false}) {
+        const {field, exportValue, getValueFn} = column,
+            aggData = node && gridModel.treeMode && !isEmpty(record.children) ? node.aggData : null;
+
+        // 0) Main processing
+        let value = getValueFn({record, field, column, gridModel});
+        // Modify value using exportValue
+        if (isString(exportValue) && record.data[exportValue] !== null) {
+            // If exportValue points to a different field
+            value = record.data[exportValue];
+        } else if (isFunction(exportValue)) {
+            // If export value is a function that transforms the value
+            value = exportValue(value, {record, column, gridModel});
+        } else if (aggData && !isNil(aggData[field])) {
+            // If we found aggregate data calculated by agGrid
+            value = aggData[field];
+        }
+
+        if (isNil(value)) return null;
+
+        // 1) Support per-cell exportFormat
+        let {exportFormat} = column,
+            cellHasExportFormat = isFunction(exportFormat);
+
+        if (cellHasExportFormat) {
+            exportFormat = exportFormat(value, {record, column, gridModel});
+        }
+
+        // 2) Dates: Provide date data expected by server endpoint.
+        // Also, approximate formats for CSV and clipboard.
+        if (exportFormat === ExportFormat.DATE_FMT) value = fmtDate(value);
+        if (exportFormat === ExportFormat.DATETIME_FMT) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
+
+        value = value.toString();
+
+        return forServer && cellHasExportFormat ?
+            {value, format: exportFormat} :
+            value;
     }
 
     //-----------------------
@@ -255,46 +321,11 @@ export class GridExportService extends HoistService {
     }
 
     getRecordRow(gridModel, record, columns, depth) {
-        let aggData = null;
-        if (gridModel.treeMode && record.children.length) {
-            aggData = gridModel.agApi.getRowNode(record.id).aggData;
-        }
-        const data = columns.map(it => this.getCellData(gridModel, record, it, aggData));
+        const node = gridModel.agApi?.getRowNode(record.id),
+            data = columns.map(column => {
+                return this.getExportableValueForCell({gridModel, record, column, node, forServer: true});
+            });
         return {data, depth};
-    }
-
-    getCellData(gridModel, record, column, aggData) {
-        const {field, exportValue, getValueFn} = column;
-
-        let value = getValueFn({record, field, column, gridModel});
-        // Modify value using exportValue
-        if (isString(exportValue) && record.data[exportValue] !== null) {
-            // If exportValue points to a different field
-            value = record.data[exportValue];
-        } else if (isFunction(exportValue)) {
-            // If export value is a function that transforms the value
-            value = exportValue(value, {record, column, gridModel});
-        } else if (aggData && !isNil(aggData[field])) {
-            // If we found aggregate data calculated by agGrid
-            value = aggData[field];
-        }
-
-        if (isNil(value)) return null;
-
-        // Get cell-level format if function form provided
-        let {exportFormat} = column,
-            cellHasExportFormat = isFunction(exportFormat);
-
-        if (cellHasExportFormat) {
-            exportFormat = exportFormat(value, {record, column, gridModel});
-        }
-
-        // Enforce date formats expected by server
-        if (exportFormat === ExportFormat.DATE_FMT) value = fmtDate(value);
-        if (exportFormat === ExportFormat.DATETIME_FMT) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
-
-        value = value.toString();
-        return cellHasExportFormat ? {value, format: exportFormat} : value;
     }
 
     getContentType(type) {
