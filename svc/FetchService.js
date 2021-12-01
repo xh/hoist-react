@@ -27,6 +27,11 @@ import {never} from '@xh/hoist/promise';
  *
  * Note that the convenience methods `fetchJson`, `postJson`, `putJson` all accept the same options
  * as the main entry point `fetch`, as they delegate to fetch after setting additional defaults.
+ *
+ * Note: For non-SSO apps, FetchService will automatically trigger a reload of the app if a
+ * 401 is encountered from a local (relative) request.  This default behavior is designed to allow
+ * more seamless re-establishment of timed out authentication sessions, but can be turned off
+ * via config if needed.
  */
 export class FetchService extends HoistService {
 
@@ -243,15 +248,18 @@ export class FetchService extends HoistService {
     }
 
     async maybeReloadForAuthAsync() {
-        // Reload app to renew auth. Be careful not to trigger during
-        // initialization, or to get caught in a tight reload loop
-        const {appState, localStorageService} = XH;
-        if (appState !== AppState.RUNNING && appState !== AppState.SUSPENDED) return;
-        if (!olderThan(localStorageService.get('xhLastAuthReload', null), ONE_MINUTE)) return;
+        const {appState, configService, localStorageService} = XH;
 
-        localStorageService.set('xhLastAuthReload', Date.now());
-        XH.reloadApp();
-        await never();
+        // Don't interfere with initialization, avoid tight loops, and provide kill switch
+        if (
+            configService.get('xhReloadOnFailedAuth', true) &&
+            appState === AppState.RUNNING &&
+            olderThan(localStorageService.get('xhLastFailedAuthReload', null), ONE_MINUTE)
+        ) {
+            localStorageService.set('xhLastFailedAuthReload', Date.now());
+            XH.reloadApp();
+            await never();
+        }
     }
 
     async sendJsonInternalAsync(opts) {
