@@ -252,8 +252,8 @@ export class FetchService extends HoistService {
 
         // Don't interfere with initialization, avoid tight loops, and provide kill switch
         if (
-            configService.get('xhReloadOnFailedAuth', true) &&
             appState === AppState.RUNNING &&
+            configService.get('xhReloadOnFailedAuth', true) &&
             olderThan(localStorageService.get('xhLastFailedAuthReload', null), ONE_MINUTE)
         ) {
             localStorageService.set('xhLastFailedAuthReload', Date.now());
