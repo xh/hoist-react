@@ -71,6 +71,8 @@ export class GridModel extends HoistModel {
             'OK to proceed?'
         );
 
+    static DEFAULT_AUTOSIZE_MODE = GridAutosizeMode.ON_SIZING_MODE_CHANGE;
+
     //------------------------
     // Immutable public properties
     //------------------------
@@ -369,7 +371,7 @@ export class GridModel extends HoistModel {
         this.autosizeOptions = defaults(
             {...autosizeOptions},
             {
-                mode: GridAutosizeMode.ON_SIZING_MODE_CHANGE,
+                mode: GridModel.DEFAULT_AUTOSIZE_MODE,
                 includeCollapsedChildren: false,
                 showMask: false,
                 // Larger buffer on mobile (perhaps counterintuitively) to minimize clipping due to
