@@ -15,6 +15,10 @@
 * New Non-SSO applications will now automatically reload when a request fails due to
 session timeout.
 
+### 🐞 Bug Fixes
+
+* Desktop panel splitter can now be dragged over an `iframe` and reliably resize the panel.
+
 ## v44.1.0 - 2021-11-08
 
 ### 🎁 New Features
