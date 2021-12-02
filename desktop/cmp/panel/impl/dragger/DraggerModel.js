@@ -224,7 +224,6 @@ export class DraggerModel extends HoistModel {
     /**
      * @param {('none'|'auto')} v - Workaround to allow dragging over iframe, which is its own
      *  separate document and cannot listen for events from main document.
-     *  {@see onDragStart|onDragEnd}
      */
     setIframePointerEvents(v) {
         for (const el of document.getElementsByTagName('iframe')) {
