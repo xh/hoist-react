@@ -8,8 +8,10 @@ import {castArray, isString} from 'lodash';
 import {apiDeprecated} from './LangUtils';
 
 /**
- * Track a function execution, logging the provided message(s) on debug with timing information in
- * a single message after the tracked function returns.
+ * Track a function execution with console.log.
+ *
+ * This method will log the provided message(s) with timing information in
+ * a single message *after* the tracked function returns.
  *
  * If the function passed to this util returns a Promise, it will wait until the Promise resolves
  * or completes to finish its logging. The actual object returned by the tracked function will
@@ -19,10 +21,21 @@ import {apiDeprecated} from './LangUtils';
  * @param {function} fn
  * @param {(Object|string)} [source] - class, function or string to label the source of the message
  */
-export function withDebug(msgs, fn, source) {
-    return loggedDo(msgs, fn, source);
+export function withInfo(msgs, fn, source) {
+    return loggedDo(msgs, fn, source, 'info');
 }
 
+/**
+ * Track a function execution with console.debug.
+ * See @see withInfo for more details.
+ *
+ * @param {(string[]|string)} msgs
+ * @param {function} fn
+ * @param {(Object|string)} [source] - class, function or string to label the source of the message
+ */
+export function withDebug(msgs, fn, source) {
+    return loggedDo(msgs, fn, source, 'debug');
+}
 
 /**
  * Track a function execution, logging the provided message(s) on debug with timing information in
@@ -35,20 +48,31 @@ export function withShortDebug(msgs, fn, source) {
     return withDebug(msgs, fn, source);
 }
 
+
 /**
- * Log a message for debugging with standardized formatting.
+ * Log a message with console.log.
+ *
+ * @param {(string[]|string)} msgs
+ * @param {(Object|string)} [source] - class, function or string to label the source of the message
+ */
+export function logInfo(msgs, source) {
+    return loggedDo(msgs, null, source, 'info');
+}
+
+/**
+ * Log a message with console.debug.
  *
  * @param {(string[]|string)} msgs
  * @param {(Object|string)} [source] - class, function or string to label the source of the message
  */
 export function logDebug(msgs, source) {
-    return loggedDo(msgs, null, source);
+    return loggedDo(msgs, null, source, 'debug');
 }
 
 //----------------------------------
 // Implementation
 //----------------------------------
-function loggedDo(msgs, fn, source) {
+function loggedDo(msgs, fn, source, level) {
 
     source = parseSource(source);
     msgs = castArray(msgs);
@@ -56,27 +80,33 @@ function loggedDo(msgs, fn, source) {
 
     // Support simple message only
     if (!fn) {
-        writeLog(msg, source);
+        writeLog(msg, source, level);
         return;
     }
 
     // ..otherwise a wrapped call..
-    const start = Date.now();
-    let ret;
+    let start, ret;
+    const logCompletion = () => {
+            const elapsed = Date.now() - start;
+            writeLog(`${msg} | ${elapsed}ms`, source, level);
+        },
+        logException =  (e) => {
+            const elapsed = Date.now() - start;
+            writeLog(`${msg} | failed - ${e.message ?? e.name ?? 'Unknown error'} | ${elapsed}ms`, source, level);
+        };
+
+    start = Date.now();
     try {
         ret = fn();
     } catch (e) {
-        logException(start, msg, source, e);
+        logException(e);
         throw e;
     }
 
     if (ret instanceof Promise) {
-        ret.then(
-            () => logCompletion(start, msg, source),
-            (e) => logException(start, msg, source, e)
-        );
+        ret.then(logCompletion, logException);
     } else {
-        logCompletion(start, msg, source);
+        logCompletion();
     }
 
     return ret;
@@ -89,16 +119,7 @@ function parseSource(source) {
     return '';
 }
 
-function writeLog(msg, source) {
-    console.debug(source ? `[${source}] ${msg}` : msg);
-}
-
-function logCompletion(start, msg, source) {
-    const elapsed = Date.now() - start;
-    writeLog(`${msg} | ${elapsed}ms`, source);
-}
-
-function logException(start, msg, source, e)  {
-    const elapsed = Date.now() - start;
-    writeLog(`${msg} | failed - ${e.message || e.name || 'Unknown error'} | ${elapsed}ms`, source);
+function writeLog(msg, source, level) {
+    if (source) msg = `[${source}] ${msg}`;
+    level === 'info' ? console.log(msg) : console.debug(msg);
 }
