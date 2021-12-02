@@ -54,16 +54,12 @@ export class DraggerModel extends HoistModel {
         this.panelEl = dragger.parentElement;
         const {panelEl: panel, panelModel} = this;
 
-        /** Workaround to allow dragging over iframe, which is its own separate document and cannot
-         listen for events from main document. {@see onDragEnd} */
-        if (XH.isDesktop) {
-            document.getElementById('xh-root').classList.add('xh-disable-iframe-pointer-events');
-        }
-
         throwIf(
             !panel.nextElementSibling && !panel.previousElementSibling,
             'Resizable panel has no sibling panel against which to resize.'
         );
+
+        if (XH.isDesktop) this.setIframePointerEvents('none');
 
         e.stopPropagation();
 
@@ -119,10 +115,7 @@ export class DraggerModel extends HoistModel {
     };
 
     onDragEnd = () => {
-        /** Remove class name added as workaround for dragging over iframe {@see onDragStart} */
-        if (XH.isDesktop) {
-            document.getElementById('xh-root').classList.remove('xh-disable-iframe-pointer-events');
-        }
+        if (XH.isDesktop) this.setIframePointerEvents('auto');
 
         const {panelModel} = this;
         if (!panelModel.isResizing) return;
@@ -226,5 +219,16 @@ export class DraggerModel extends HoistModel {
 
     isValidTouchEvent(e) {
         return e.touches && e.touches.length > 0;
+    }
+
+    /**
+     * @param {('none'|'auto')} v - Workaround to allow dragging over iframe, which is its own
+     *  separate document and cannot listen for events from main document.
+     *  {@see onDragStart|onDragEnd}
+     */
+    setIframePointerEvents(v) {
+        for (const el of document.getElementsByTagName('iframe')) {
+            el.style['pointer-events'] = v;
+        }
     }
 }
