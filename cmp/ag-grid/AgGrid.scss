@@ -351,78 +351,80 @@
   }
 }
 
-// Ensure ag-grid popups (context menus, tooltips, and column filter controls) with default z-index of 5
-// appear over bp dialogs with z-index of 20.
-.ag-theme-balham.ag-popup,
-.ag-theme-balham-dark.ag-popup {
-  .ag-popup-child {
-    z-index: 30;
-  }
-}
-
-//------------------------
-// Tree Mode
-//------------------------
-.xh-grid--hierarchical:not(.xh-data-view) > .ag-theme-balham.xh-ag-grid,
-.xh-grid--hierarchical:not(.xh-data-view) > .ag-theme-balham-dark.xh-ag-grid {
-  // Vertically center tree grid affordances
-  .ag-row .ag-cell-wrapper.ag-row-group {
-    align-items: center;
-  }
-}
-
-//------------------------
-// Overlay masks
-//------------------------
-.ag-overlay {
-  // Match loading overlay color to mask, suppress display of text in center.
-  .ag-overlay-loading-wrapper {
-    background-color: var(--xh-mask-bg);
-
-    .ag-overlay-loading-center {
-      display: none;
+body.xh-app {
+  // Ensure ag-grid popups (context menus, tooltips, and column filter controls) with default z-index of 5
+  // appear over bp dialogs with z-index of 20.
+  .ag-theme-balham.ag-popup,
+  .ag-theme-balham-dark.ag-popup {
+    .ag-popup-child {
+      z-index: 30;
     }
   }
 
-  // Reduce default contrast of emptyText.
-  .ag-overlay-no-rows-wrapper {
-    color: var(--xh-grid-empty-text-color);
-  }
-}
-
-//------------------------
-// Context Menu
-//------------------------
-.ag-theme-balham .ag-menu,
-.ag-theme-balham-dark .ag-menu {
-  font-family: var(--xh-font-family);
-  font-size: var(--xh-menu-item-font-size-px);
-  color: var(--xh-menu-item-text-color);
-
-  // Minimal/high-contrast bg
-  background-color: var(--xh-menu-bg);
-  border: var(--xh-menu-border);
-
-  // Matching box-shadow of Blueprint context menu popover
-  box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.2), 0 2px 4px rgba(16, 22, 26, 0.4), 0 8px 24px rgba(16, 22, 26, 0.4);
-
-  .ag-menu-option.ag-menu-option-active {
-    background-color: var(--xh-menu-item-highlight-bg);
+  //------------------------
+  // Tree Mode
+  //------------------------
+  .xh-grid--hierarchical:not(.xh-data-view) > .ag-theme-balham.xh-ag-grid,
+  .xh-grid--hierarchical:not(.xh-data-view) > .ag-theme-balham-dark.xh-ag-grid {
+    // Vertically center tree grid affordances
+    .ag-row .ag-cell-wrapper.ag-row-group {
+      align-items: center;
+    }
   }
 
-  .ag-menu-option-icon {
-    text-align: center;
-    padding-left: 8px;
-    padding-right: 8px;
+  //------------------------
+  // Overlay masks
+  //------------------------
+  .ag-overlay {
+    // Match loading overlay color to mask, suppress display of text in center.
+    .ag-overlay-loading-wrapper {
+      background-color: var(--xh-mask-bg);
+
+      .ag-overlay-loading-center {
+        display: none;
+      }
+    }
+
+    // Reduce default contrast of emptyText.
+    .ag-overlay-no-rows-wrapper {
+      color: var(--xh-grid-empty-text-color);
+    }
   }
 
-  // Mute the shortcut text to keep focus on the actual option text
-  .ag-menu-option-shortcut {
-    color: var(--xh-text-color-muted);
-  }
-
-  // Keep the submenu caret in the standard text color
-  .ag-menu-option-popup-pointer {
+  //------------------------
+  // Context Menu
+  //------------------------
+  .ag-theme-balham .ag-menu,
+  .ag-theme-balham-dark .ag-menu {
+    font-family: var(--xh-font-family);
+    font-size: var(--xh-menu-item-font-size-px);
     color: var(--xh-menu-item-text-color);
+
+    // Minimal/high-contrast bg
+    background-color: var(--xh-menu-bg);
+    border: var(--xh-menu-border);
+
+    // Matching box-shadow of Blueprint context menu popover
+    box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.2), 0 2px 4px rgba(16, 22, 26, 0.4), 0 8px 24px rgba(16, 22, 26, 0.4);
+
+    .ag-menu-option.ag-menu-option-active {
+      background-color: var(--xh-menu-item-highlight-bg);
+    }
+
+    .ag-menu-option-icon {
+      text-align: center;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+
+    // Mute the shortcut text to keep focus on the actual option text
+    .ag-menu-option-shortcut {
+      color: var(--xh-text-color-muted);
+    }
+
+    // Keep the submenu caret in the standard text color
+    .ag-menu-option-popup-pointer {
+      color: var(--xh-menu-item-text-color);
+    }
   }
 }
