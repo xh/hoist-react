@@ -10,8 +10,8 @@ import {apiDeprecated} from './LangUtils';
 /**
  * Track a function execution with console.log.
  *
- * This method will log the provided message(s) with timing information in
- * a single message *after* the tracked function returns.
+ * This method will log the provided message(s) with timing information in a single message *after*
+ * the tracked function returns.
  *
  * If the function passed to this util returns a Promise, it will wait until the Promise resolves
  * or completes to finish its logging. The actual object returned by the tracked function will
@@ -27,7 +27,7 @@ export function withInfo(msgs, fn, source) {
 
 /**
  * Track a function execution with console.debug.
- * See @see withInfo for more details.
+ * @see withInfo
  *
  * @param {(string[]|string)} msgs
  * @param {function} fn
@@ -36,18 +36,6 @@ export function withInfo(msgs, fn, source) {
 export function withDebug(msgs, fn, source) {
     return loggedDo(msgs, fn, source, 'debug');
 }
-
-/**
- * Track a function execution, logging the provided message(s) on debug with timing information in
- * a single message after the tracked function returns.
- *
- * @deprecated use withDebug instead.
- */
-export function withShortDebug(msgs, fn, source) {
-    apiDeprecated('withShortDebug', {msg: 'Use withDebug() instead', v: 'v44'});
-    return withDebug(msgs, fn, source);
-}
-
 
 /**
  * Log a message with console.log.
@@ -69,22 +57,28 @@ export function logDebug(msgs, source) {
     return loggedDo(msgs, null, source, 'debug');
 }
 
+/** @deprecated */
+export function withShortDebug(msgs, fn, source) {
+    apiDeprecated('withShortDebug', {msg: 'Use withDebug() instead', v: 'v45'});
+    return withDebug(msgs, fn, source);
+}
+
+
 //----------------------------------
 // Implementation
 //----------------------------------
 function loggedDo(msgs, fn, source, level) {
-
     source = parseSource(source);
     msgs = castArray(msgs);
     const msg = msgs.join(' | ');
 
-    // Support simple message only
+    // Support simple message only.
     if (!fn) {
         writeLog(msg, source, level);
         return;
     }
 
-    // ..otherwise a wrapped call..
+    // Otherwise, wrap the call to the provided fn.
     let start, ret;
     const logCompletion = () => {
             const elapsed = Date.now() - start;
