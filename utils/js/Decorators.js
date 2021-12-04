@@ -6,7 +6,7 @@
  */
 import {debounce, isFunction} from 'lodash';
 import {throwIf, getOrCreate} from './LangUtils';
-import {withDebug} from './WithDebug';
+import {withDebug} from './LogUtils';
 
 /**
  * Decorates a class method so that it is debounced by the specified duration.

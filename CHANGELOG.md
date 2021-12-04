@@ -12,8 +12,9 @@
 * Copying from Grids to the clipboard will now use the value provided by the `exportValue`
   property on the column.
 * Refresh application hotkey is now built into hoist's global hotkeys (shift + r).
-* New Non-SSO applications will now automatically reload when a request fails due to
-session timeout.
+* Non-SSO applications will now automatically reload when a request fails due to session timeout.
+* New utility methods `withInfo` and `logInfo` provide variants of the existing `withDebug` and
+  `logDebug` methods, but log at the more verbose `console.log` level.
 
 ### 🐞 Bug Fixes
 
