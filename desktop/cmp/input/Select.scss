@@ -182,10 +182,7 @@
     &__value-container--is-multi {
       height: 28px;
       overflow-y: auto !important;
-      
-      div {
-        line-height: 14px;
-      }
+      line-height: 1.2; // Ensure the line-height does not cause the scrollbar to appear
     }
   }
 }
