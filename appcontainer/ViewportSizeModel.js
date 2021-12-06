@@ -6,6 +6,7 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
+import {isFinite} from 'lodash';
 
 /**
  * Track observable width / height of the browser viewport, and provide observable
@@ -18,10 +19,15 @@ export class ViewportSizeModel extends HoistModel {
     /** @member {Object} - contains `width` and `height` in pixels */
     @observable.ref size;
 
+    /** @member {int} - orientation in degrees [0, 90,180, 270] */
+    @observable.ref orientation;
+
     /** @returns {boolean} */
     @computed
     get isPortrait() {
-        return this.size.width < this.size.height;
+        const {orientation, size} = this;
+        if (isFinite(orientation)) return orientation === 0 || orientation === 90;
+        return size.width < size.height;
     }
 
     /** @returns {boolean} */
@@ -41,6 +47,7 @@ export class ViewportSizeModel extends HoistModel {
     //---------------------
     @action
     setViewportSize() {
+        this.orientation = window.orientation;
         this.size = {
             width: window.innerWidth,
             height: window.innerHeight
