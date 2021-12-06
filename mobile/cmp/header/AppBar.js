@@ -66,9 +66,8 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                     icon: icon,
                     omit: !icon,
                     onClick: () => {
-                        if (XH.routerModel.hasRoute('default')) {
-                            XH.navigate('default');
-                        }
+                        // Navigate to root-level route
+                        XH.navigate(XH.appModel.getRoutes()[0].name);
                     }
                 }),
                 div({
