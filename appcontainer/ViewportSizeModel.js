@@ -51,7 +51,7 @@ export class ViewportSizeModel extends HoistModel {
     onResize() {
         // On touch devices, we don't expect the actual area of the viewport to change,
         // only it's orientation (i.e. swapping width and height). The only expected cause of
-        // changes to the viewport are is showing the keyboard, which we should ignore.
+        // changes to the viewport area is showing the keyboard, which we should ignore.
         if (XH.isPhone || XH.isTablet) {
             const area = window.innerWidth * window.innerHeight,
                 initialArea = this.initialSize.width * this.initialSize.height;
