@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 
 /**
@@ -17,6 +17,9 @@ export class ViewportSizeModel extends HoistModel {
 
     /** @member {Object} - contains `width` and `height` in pixels */
     @observable.ref size;
+
+    /** @member {Object} - contains `width` and `height` in pixels */
+    initialSize;
 
     /** @returns {boolean} */
     @computed
@@ -32,13 +35,32 @@ export class ViewportSizeModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
-        window.addEventListener('resize', () => this.setViewportSize());
+
+        this.initialSize = {
+            width: window.innerWidth,
+            height: window.innerHeight
+        };
+
+        window.addEventListener('resize', () => this.onResize());
         this.setViewportSize();
     }
 
     //---------------------
     // Implementation
     //---------------------
+    onResize() {
+        // On touch devices, we don't expect the actual area of the viewport to change,
+        // only it's orientation (i.e. swapping width and height). The only expected cause of
+        // changes to the viewport are is showing the keyboard, which we should ignore.
+        if (XH.isPhone || XH.isTablet) {
+            const area = window.innerWidth * window.innerHeight,
+                initialArea = this.initialSize.width * this.initialSize.height;
+            if (area < initialArea) return;
+        }
+
+        this.setViewportSize();
+    }
+
     @action
     setViewportSize() {
         this.size = {
