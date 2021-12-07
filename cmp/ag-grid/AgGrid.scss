@@ -349,28 +349,6 @@
   .ag-set-filter-select-all {
     padding: var(--xh-pad-half-px) 0;
   }
-}
-
-body.xh-app {
-  // Ensure ag-grid popups (context menus, tooltips, and column filter controls) with default z-index of 5
-  // appear over bp dialogs with z-index of 20.
-  .ag-theme-balham.ag-popup,
-  .ag-theme-balham-dark.ag-popup {
-    .ag-popup-child {
-      z-index: 30;
-    }
-  }
-
-  //------------------------
-  // Tree Mode
-  //------------------------
-  .xh-grid--hierarchical:not(.xh-data-view) > .ag-theme-balham.xh-ag-grid,
-  .xh-grid--hierarchical:not(.xh-data-view) > .ag-theme-balham-dark.xh-ag-grid {
-    // Vertically center tree grid affordances
-    .ag-row .ag-cell-wrapper.ag-row-group {
-      align-items: center;
-    }
-  }
 
   //------------------------
   // Overlay masks
@@ -388,6 +366,28 @@ body.xh-app {
     // Reduce default contrast of emptyText.
     .ag-overlay-no-rows-wrapper {
       color: var(--xh-grid-empty-text-color);
+    }
+  }
+}
+
+//------------------------
+// Tree Mode
+//------------------------
+.xh-grid--hierarchical:not(.xh-data-view) > .ag-theme-balham.xh-ag-grid,
+.xh-grid--hierarchical:not(.xh-data-view) > .ag-theme-balham-dark.xh-ag-grid {
+  // Vertically center tree grid affordances
+  .ag-row .ag-cell-wrapper.ag-row-group {
+    align-items: center;
+  }
+}
+
+body.xh-app {
+  // Ensure ag-grid popups (context menus, tooltips, and column filter controls) with default z-index of 5
+  // appear over bp dialogs with z-index of 20.
+  .ag-theme-balham.ag-popup,
+  .ag-theme-balham-dark.ag-popup {
+    .ag-popup-child {
+      z-index: 30;
     }
   }
 
