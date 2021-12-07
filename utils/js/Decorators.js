@@ -30,7 +30,7 @@ export function debounced(duration) {
 }
 
 /**
- * Modify a method or getter so that it will compute once lazily, and then cache the results.
+ * Modify a method or getter so that it will compute once lazily and then cache the results.
  * Not appropriate for methods that take arguments. Typically useful on immutable objects.
  */
 export function computeOnce(target, key, descriptor) {
@@ -51,8 +51,8 @@ export function computeOnce(target, key, descriptor) {
 }
 
 /**
- * Modify a method so that it execution is tracked and timed with a debug message
- * @see {withDebug}
+ * Modify a method so that its execution is tracked and timed with a debug message.
+ * @see withDebug
  */
 export function logWithDebug(target, key, descriptor) {
     const {value} = descriptor;
