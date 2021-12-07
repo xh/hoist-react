@@ -7,10 +7,18 @@
 * Desktop inline grid editor `Select` now commits the value immediately on selection.
 * `DashContainerModel` now supports an observable `showMenuButton` config which will display a
   button in the stack header for showing the context menu
-
-### ⚙️ Technical
-
+* Added `GridAutosizeMode.MANAGED` to autosize Grid columns on data or `sizingMode` changes, unless
+  the user has manually modified their column widths.
+* Copying from Grids to the clipboard will now use the value provided by the `exportValue`
+  property on the column.
 * Refresh application hotkey is now built into hoist's global hotkeys (shift + r).
+* Non-SSO applications will now automatically reload when a request fails due to session timeout.
+* New utility methods `withInfo` and `logInfo` provide variants of the existing `withDebug` and
+  `logDebug` methods, but log at the more verbose `console.log` level.
+
+### 🐞 Bug Fixes
+
+* Desktop panel splitter can now be dragged over an `iframe` and reliably resize the panel.
 
 ## v44.1.0 - 2021-11-08
 

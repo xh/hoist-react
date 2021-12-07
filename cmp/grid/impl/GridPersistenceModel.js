@@ -89,27 +89,28 @@ export class GridPersistenceModel extends HoistModel {
     columnReaction() {
         const {gridModel} = this;
         return {
-            track: () => gridModel.columnState,
-            run: (columnState) => {
-                this.patchState({columns: gridModel.removeTransientWidths(columnState)});
+            track: () => [gridModel.columnState, gridModel.autosizeState],
+            run: ([columnState, autosizeState]) => {
+                this.patchState({
+                    columns: gridModel.removeTransientWidths(columnState),
+                    autosize: autosizeState
+                });
             }
         };
     }
 
     updateGridColumns() {
-        const {gridModel, state} = this;
-        if (!state.columns) return;
-
-        gridModel.setColumnState(state.columns);
+        const {columns, autosize} = this.state;
+        if (!isUndefined(columns)) this.gridModel.setColumnState(columns);
+        if (!isUndefined(autosize)) this.gridModel.setAutosizeState(autosize);
     }
 
     //--------------------------
     // Sort
     //--------------------------
     sortReaction() {
-        const {gridModel} = this;
         return {
-            track: () => gridModel.sortBy,
+            track: () => this.gridModel.sortBy,
             run: (sortBy) => {
                 this.patchState({sortBy: sortBy.map(it => it.toString())});
             }
