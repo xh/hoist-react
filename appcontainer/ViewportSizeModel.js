@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 
 /**
@@ -21,7 +21,10 @@ export class ViewportSizeModel extends HoistModel {
     /** @returns {boolean} */
     @computed
     get isPortrait() {
-        return this.size.width < this.size.height;
+        const {size} = this, // Force triggering observation of size.
+            {width, height} = XH.isPhone || XH.isTablet ? window.screen : size;
+
+        return width < height;
     }
 
     /** @returns {boolean} */

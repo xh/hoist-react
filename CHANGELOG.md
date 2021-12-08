@@ -19,6 +19,9 @@
 ### 🐞 Bug Fixes
 
 * Desktop panel splitter can now be dragged over an `iframe` and reliably resize the panel.
+* Ensure scrollbar does not appear on mulit-select in toolbar when not needed.
+* `XH.isPortrait` property fixed so that it no longer changes due to the appearance of the
+  mobile keyboard.
 
 ## v44.1.0 - 2021-11-08
 
