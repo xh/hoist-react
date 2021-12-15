@@ -1,9 +1,9 @@
 # Changelog
 
-## v44.2.1 - 2021-12-15
+## v44.3.0 - 2021-12-15
 
 ### 🐞 Bug Fixes
-*
+* Fixes issue with columns failing to resize on first try.
 * Fixes issue preventing use of context menus on iPad.
 
 ### 📚 Libraries
