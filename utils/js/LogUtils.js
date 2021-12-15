@@ -5,7 +5,6 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {castArray, isString} from 'lodash';
-import {apiDeprecated} from './LangUtils';
 
 /**
  * Track a function execution with console.log.
@@ -56,13 +55,6 @@ export function logInfo(msgs, source) {
 export function logDebug(msgs, source) {
     return loggedDo(msgs, null, source, 'debug');
 }
-
-/** @deprecated */
-export function withShortDebug(msgs, fn, source) {
-    apiDeprecated('withShortDebug', {msg: 'Use withDebug() instead', v: 'v45'});
-    return withDebug(msgs, fn, source);
-}
-
 
 //----------------------------------
 // Implementation

@@ -8,7 +8,6 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {castArray, compact, remove, isEqual, union, map} from 'lodash';
-import {apiDeprecated} from '@xh/hoist/utils/js';
 
 /**
  * Model for managing store selections.
@@ -124,30 +123,6 @@ export class StoreSelectionModel extends HoistModel {
     @action
     clear() {
         this.select([]);
-    }
-
-    /** @deprecated */
-    get records() {
-        apiDeprecated('StoreSelectionModel.records', {msg: 'Use selectedRecords instead', v: 'v44'});
-        return this.selectedRecords;
-    }
-
-    /** @deprecated */
-    get ids() {
-        apiDeprecated('StoreSelectionModel.ids', {msg: 'Use selectedIds instead', v: 'v44'});
-        return this.selectedIds;
-    }
-
-    /** @deprecated */
-    get singleRecord() {
-        apiDeprecated('StoreSelectionModel.singleRecord', {msg: 'Use selectedRecord instead', v: 'v44'});
-        return this.selectedRecord;
-    }
-
-    /** @deprecated */
-    get selectedRecordId() {
-        apiDeprecated('StoreSelectionModel.selectedRecordId', {msg: 'Use selectedId instead', v: 'v44'});
-        return this.selectedId;
     }
 
     //------------------------
