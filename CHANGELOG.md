@@ -1,5 +1,10 @@
 # Changelog
 
+## v45.0.0-SNAPSHOT - unreleased
+
+* [Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...develop)
+
+
 ## v44.3.0 - 2021-12-15
 
 ### 🐞 Bug Fixes
