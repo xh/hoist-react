@@ -3,7 +3,12 @@
 ## v44.2.1 - 2021-12-15
 
 ### 🐞 Bug Fixes
+*
 * Fixes issue preventing use of context menus on iPad.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.51 -> 3.52`
 
 * [Commit Log](https://github.com/xh/hoist-react/compare/v44.2.0...v44.2.1)
 
