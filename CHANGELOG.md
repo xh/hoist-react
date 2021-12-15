@@ -1,5 +1,12 @@
 # Changelog
 
+## v44.2.1 - 2021-12-15
+
+### 🐞 Bug Fixes
+* Fixes issue preventing use of context menus on iPad.
+
+* [Commit Log](https://github.com/xh/hoist-react/compare/v44.2.0...v44.2.1)
+
 ## v44.2.0 - 2021-12-07
 
 ### 🎁 New Features
