@@ -719,7 +719,8 @@ class GridLocalModel extends HoistModel {
     onColumnResized = (ev) => {
         if (!isDisplayed(this.viewRef.current) || !ev.finished) return;
         if (ev.source === 'uiColumnDragged') {
-            this.model.noteColumnsManuallySized(ev.column.colId);
+            const width = ev.columnApi.getColumnState().find(it => it.colId === ev.column.colId)?.width;
+            this.model.noteColumnManuallySized(ev.column.colId, width);
         } else if (ev.source === 'autosizeColumns') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
