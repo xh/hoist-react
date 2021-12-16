@@ -13,7 +13,7 @@ import {action, observable, bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {cloneDeep, defaultsDeep, find, isFinite, reject} from 'lodash';
+import {cloneDeep, defaultsDeep, find, isFinite, isNil, reject} from 'lodash';
 import {DashViewModel} from './DashViewModel';
 import {DashViewSpec} from './DashViewSpec';
 import {dashContainerMenuButton} from './impl/DashContainerMenuButton';
@@ -395,21 +395,27 @@ export class DashContainerModel extends HoistModel {
         // Add context menu listener for adding components
         const $el = stack.header.element;
         $el.off('contextmenu').contextmenu(e => {
-            this.showContextMenu(e, {stack});
+            this.showContextMenu(e, $el, {stack});
             return false;
         });
     }
 
-    showContextMenu(e, {stack, viewModel, index}) {
+    showContextMenu(e, $target, {stack, viewModel, index}) {
         if (this.contentLocked) return;
 
-        const offset = {left: e.clientX, top: e.clientY},
-            menu = dashContainerContextMenu({
-                stack,
-                viewModel,
-                index,
-                dashContainerModel: this
-            });
+        // If event does not contain co-ordinates, fallback to showing context menu below target
+        let offset = {left: e.clientX, top: e.clientY};
+        if (isNil(offset.left) || isNil(offset.top)) {
+            offset = $target.offset();
+            offset.top += 30;
+        }
+
+        const menu = dashContainerContextMenu({
+            stack,
+            viewModel,
+            index,
+            dashContainerModel: this
+        });
 
         ContextMenu.show(menu, offset, null, XH.darkTheme);
     }
@@ -456,7 +462,7 @@ export class DashContainerModel extends HoistModel {
 
             $el.off('contextmenu').contextmenu(e => {
                 const index = stack.contentItems.indexOf(item);
-                this.showContextMenu(e, {stack, viewModel, index});
+                this.showContextMenu(e, $el, {stack, viewModel, index});
                 return false;
             });
 

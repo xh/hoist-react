@@ -980,17 +980,17 @@
     "@babel/helper-validator-identifier" "^7.15.7"
     to-fast-properties "^2.0.0"
 
-"@blueprintjs/colors@^4.0.0-alpha.1":
-  version "4.0.0-alpha.1"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/colors/-/colors-4.0.0-alpha.1.tgz#370684b404e5400494169c54cc3a31385fc6db6a"
-  integrity sha512-i95xW/cAIijJAMIBDrXw1WLbGVXVaRDRG1Ga0CxOtMVwL20zvdXlQj7EMqhkgVEJo9LaKNIDliPI+jsh7h5Lag==
+"@blueprintjs/colors@^4.0.0-alpha.2":
+  version "4.0.0-alpha.2"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/colors/-/colors-4.0.0-alpha.2.tgz#ce8e7450ae542fcddb72b372b49669adf13c0173"
+  integrity sha512-B8NX2oKVTPGVJd7ZCbm9FMPoEdQiLKceo0/UxsJ+gwqNiuo45RzdmrXACI6oFO4hGHL2WiLU0oysLNj2zpHDkA==
 
-"@blueprintjs/core@^3.51.3", "@blueprintjs/core@~3.51.0":
-  version "3.51.3"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.51.3.tgz#d74dd9ac299c0d8f635f04a81c8bda7ef534f069"
-  integrity sha512-Z3xGWBMBuboKFx19uxWNAUjITsCmpm+594R/KEAM578uT6yoydT6s5S7N12APAsFe8w3H1Yu2hbWHlHTvRfOhA==
+"@blueprintjs/core@^3.52.0", "@blueprintjs/core@~3.52.0":
+  version "3.52.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.52.0.tgz#cfb558fb435ba4b3e79e44ed470c79a787fa3724"
+  integrity sha512-92Tsr0uw1ey8ZsdYSfPyeN1hbjI8PC+HWyXUSNG+nM4g5AYTuKXVXKTxxGBtZN9hG2LlmUld8YIMFWtuLBErDQ==
   dependencies:
-    "@blueprintjs/colors" "^4.0.0-alpha.1"
+    "@blueprintjs/colors" "^4.0.0-alpha.2"
     "@blueprintjs/icons" "^3.31.0"
     "@types/dom4" "^2.0.1"
     classnames "^2.2"
@@ -1003,12 +1003,12 @@
     resize-observer-polyfill "^1.5.1"
     tslib "~1.13.0"
 
-"@blueprintjs/datetime@~3.23.15":
-  version "3.23.18"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-3.23.18.tgz#341e6959fe1886859a21302dfba8bde322ec114b"
-  integrity sha512-Jb2JUi1I3OlvEjqXR0Wa3M4pmgalYNcpq30UbtYOWZoAEk2NmoLdH7fDE/YPPzg1YVs9k9KHyDg4KeveMxyWgg==
+"@blueprintjs/datetime@~3.23.18":
+  version "3.23.19"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-3.23.19.tgz#43145f7c68970d3880ec17a4299beef3632b7df6"
+  integrity sha512-u8CkI9OOHoC+Kz29QQh53jpV7SbnrDOPqZLEOtZcjjKUm/3fETgOCuFvzinP3+gd9joHKI9+KcM1ggdVAh+hqQ==
   dependencies:
-    "@blueprintjs/core" "^3.51.3"
+    "@blueprintjs/core" "^3.52.0"
     classnames "^2.2"
     react-day-picker "7.4.9"
     react-lifecycles-compat "^3.0.4"

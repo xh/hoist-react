@@ -4,14 +4,14 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH} from '@xh/hoist/core';
+import {HoistService, XH, AppState} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {isLocalDate} from '@xh/hoist/utils/datetime';
+import {isLocalDate, SECONDS, ONE_MINUTE, olderThan} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, omitBy} from 'lodash';
 import {stringify} from 'qs';
-import {SECONDS} from '@xh/hoist/utils/datetime';
+import {never} from '@xh/hoist/promise';
 
 /**
  * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
@@ -27,6 +27,11 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
  *
  * Note that the convenience methods `fetchJson`, `postJson`, `putJson` all accept the same options
  * as the main entry point `fetch`, as they delegate to fetch after setting additional defaults.
+ *
+ * Note: For non-SSO apps, FetchService will automatically trigger a reload of the app if a
+ * 401 is encountered from a local (relative) request.  This default behavior is designed to allow
+ * more seamless re-establishment of timed out authentication sessions, but can be turned off
+ * via config if needed.
  */
 export class FetchService extends HoistService {
 
@@ -164,7 +169,7 @@ export class FetchService extends HoistService {
             }
 
             if (e.isHoistException) throw e;
-            
+
             // Just two other cases where we expect this to throw -- Typically we get a failed response)
             throw (e.name === 'AbortError') ? Exception.fetchAborted(opts, e) : Exception.serverUnavailable(opts, e);
         } finally {
@@ -185,8 +190,8 @@ export class FetchService extends HoistService {
         if (!method) {
             method = (params ? 'POST' : 'GET');
         }
-
-        if (!url.startsWith('/') && !url.includes('//')) {
+        const isRelativeUrl = !url.startsWith('/') && !url.includes('//');
+        if (isRelativeUrl) {
             url = XH.baseUrl + url;
         }
 
@@ -232,10 +237,29 @@ export class FetchService extends HoistService {
 
         if (!ret.ok) {
             ret.responseText = await this.safeResponseTextAsync(ret);
-            throw Exception.fetchError(opts, ret);
+            const e = Exception.fetchError(opts, ret);
+            if (!XH.isSSO && isRelativeUrl && e.httpStatus === 401) {
+                await this.maybeReloadForAuthAsync();
+            }
+            throw e;
         }
 
         return ret;
+    }
+
+    async maybeReloadForAuthAsync() {
+        const {appState, configService, localStorageService} = XH;
+
+        // Don't interfere with initialization, avoid tight loops, and provide kill switch
+        if (
+            appState === AppState.RUNNING &&
+            configService.get('xhReloadOnFailedAuth', true) &&
+            olderThan(localStorageService.get('xhLastFailedAuthReload', null), ONE_MINUTE)
+        ) {
+            localStorageService.set('xhLastFailedAuthReload', Date.now());
+            XH.reloadApp();
+            await never();
+        }
     }
 
     async sendJsonInternalAsync(opts) {

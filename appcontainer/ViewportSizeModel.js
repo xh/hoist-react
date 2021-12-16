@@ -21,7 +21,14 @@ export class ViewportSizeModel extends HoistModel {
     /** @returns {boolean} */
     @computed
     get isPortrait() {
-        return this.size.width < this.size.height;
+        const {size} = this; // Force triggering observation of size.
+
+        // Check Modern API and legacy API (for safari, BB Access)
+        let orientation = this.getOrientation() ?? this.getLegacyOrientation();
+        if (orientation !== null) return orientation === 0 || orientation === 180;
+
+        // Default to aspect ratio
+        return size.width < size.height;
     }
 
     /** @returns {boolean} */
@@ -46,4 +53,15 @@ export class ViewportSizeModel extends HoistModel {
             height: window.innerHeight
         };
     }
+
+    getOrientation() {
+        const {orientation} = window.screen;
+        return orientation ? orientation.angle : null;
+    }
+
+    getLegacyOrientation() {
+        const {orientation} = window;
+        return isFinite(orientation) ? orientation: null;
+    }
+
 }
