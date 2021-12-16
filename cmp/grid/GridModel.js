@@ -838,8 +838,10 @@ export class GridModel extends HoistModel {
         }
     }
 
-    noteColumnsManuallySized(colIds) {
-        const colStateChanges = castArray(colIds).map(colId => ({colId, manuallySized: true}));
+    noteColumnManuallySized(colId, width) {
+        const col = this.findColumn(this.columns, colId);
+        if (!width || !col || col.flex) return;
+        const colStateChanges = [{colId, width, manuallySized: true}];
         this.applyColumnStateChanges(colStateChanges);
     }
 

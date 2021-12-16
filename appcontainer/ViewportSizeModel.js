@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 
 /**
@@ -21,10 +21,14 @@ export class ViewportSizeModel extends HoistModel {
     /** @returns {boolean} */
     @computed
     get isPortrait() {
-        const {size} = this, // Force triggering observation of size.
-            {width, height} = XH.isPhone || XH.isTablet ? window.screen : size;
+        const {size} = this; // Force triggering observation of size.
 
-        return width < height;
+        // Check Modern API and legacy API (for safari, BB Access)
+        let orientation = this.getOrientation() ?? this.getLegacyOrientation();
+        if (orientation !== null) return orientation === 0 || orientation === 180;
+
+        // Default to aspect ratio
+        return size.width < size.height;
     }
 
     /** @returns {boolean} */
@@ -49,4 +53,15 @@ export class ViewportSizeModel extends HoistModel {
             height: window.innerHeight
         };
     }
+
+    getOrientation() {
+        const {orientation} = window.screen;
+        return orientation ? orientation.angle : null;
+    }
+
+    getLegacyOrientation() {
+        const {orientation} = window;
+        return isFinite(orientation) ? orientation: null;
+    }
+
 }
