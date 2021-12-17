@@ -56,7 +56,7 @@ export function parseFilter(spec) {
  * Replace filters in `filter` with `newFilter` by field.
  * @param {Filter} filter - Existing Filter to modify.
  * @param {(Filter|Object|[])} newFilter - New filter(s) to add, or config to create.
- * @param {string} field - Record Field name used to identify filters for replacement
+ * @param {string} field - StoreRecord Field name used to identify filters for replacement
  * @return {Filter} - the new Filter
  */
 export function withFilterByField(filter, newFilter, field) {

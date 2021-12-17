@@ -236,7 +236,7 @@ export class GridModel extends HoistModel {
      * @param {ExportOptions} [c.exportOptions] - default export options.
      * @param {RowClassFn} [c.rowClassFn] - closure to generate CSS class names for a row.
      *      NOTE that, once added, classes will *not* be removed if the data changes.
-     *      Use `rowClassRules` instead if Record data can change across refreshes.
+     *      Use `rowClassRules` instead if StoreRecord data can change across refreshes.
      * @param {Object.<string, RowClassRuleFn>} [c.rowClassRules] - object keying CSS
      *      class names to functions determining if they should be added or removed from the row.
      *      See Ag-Grid docs on "row styles" for details.
@@ -497,7 +497,7 @@ export class GridModel extends HoistModel {
     /**
      * Select records in the grid.
      *
-     * @param {(RecordOrId|RecordOrId[])} records - one or more record(s) / ID(s) to select.
+     * @param {(StoreRecordOrId|StoreRecordOrId[])} records - one or more record(s) / ID(s) to select.
      * @param {Object} [options]
      * @param {boolean} [options.ensureVisible] - true to make selection visible if it is within a
      *      collapsed node or outside of the visible scroll window. Default true.
@@ -605,14 +605,14 @@ export class GridModel extends HoistModel {
     /** @return {boolean} - true if any records are selected. */
     get hasSelection() {return !this.selModel.isEmpty}
 
-    /** @return {Record[]} - currently selected records. */
+    /** @return {StoreRecord[]} - currently selected records. */
     get selectedRecords() {return this.selModel.selectedRecords}
 
-    /** @return {RecordId[]} - IDs of currently selected records. */
+    /** @return {StoreRecordId[]} - IDs of currently selected records. */
     get selectedIds() {return this.selModel.selectedIds}
 
     /**
-     * @return {?Record} - single selected record, or null if multiple/no records selected.
+     * @return {?StoreRecord} - single selected record, or null if multiple/no records selected.
      *
      * Note that this getter will also change if just the data of selected record is changed
      * due to store loading or editing.  Applications only interested in the identity
@@ -621,7 +621,7 @@ export class GridModel extends HoistModel {
     get selectedRecord() {return this.selModel.selectedRecord}
 
     /**
-     * @return {?RecordId} - ID of selected record, or null if multiple/no records selected.
+     * @return {?StoreRecordId} - ID of selected record, or null if multiple/no records selected.
      *
      * Note that this getter will *not* change if just the data of selected record is changed
      * due to store loading or editing.  Applications also interested in the contents of the
@@ -1068,8 +1068,8 @@ export class GridModel extends HoistModel {
 
     /**
      * Begin an inline editing session.
-     * @param {RecordOrId} [recOrId] - Record/ID to edit. If unspecified, the first selected Record
-     *      will be used, if any, or the first overall Record in the grid.
+     * @param {StoreRecordOrId} [recOrId] - StoreRecord/ID to edit. If unspecified, the first selected StoreRecord
+     *      will be used, if any, or the first overall StoreRecord in the grid.
      * @param {string} [colId] - ID of column on which to start editing. If unspecified, the first
      *      editable column will be used.
      * @return {Promise<void>}
@@ -1133,7 +1133,7 @@ export class GridModel extends HoistModel {
     /**
      * Stop an inline editing session, if one is in-progress.
      * @param {boolean} dropPendingChanges - true to cancel current edit without saving pending
-     *      changes in the active editor(s) to the backing Record.
+     *      changes in the active editor(s) to the backing StoreRecord.
      * @return {Promise<void>}
      */
     async endEditAsync(dropPendingChanges = false) {
@@ -1563,7 +1563,7 @@ export class GridModel extends HoistModel {
 
 /**
  * @callback RowClassFn - closure to generate CSS class names for a row.
- * @param {Object} data - the inner data object from the Record associated with the rendered row.
+ * @param {Object} data - the inner data object from the StoreRecord associated with the rendered row.
  * @returns {(String|String[])} - CSS class(es) to apply to the row level.
  */
 
@@ -1571,7 +1571,7 @@ export class GridModel extends HoistModel {
  * @callback RowClassRuleFn - function to determine if a particular CSS class should be
  *      added/removed from a row, via rowClassRules config.
  * @param {RowClassParams} agParams - as provided by AG-Grid.
- * @param {?Record} agParams.data - the backing Hoist record, if any.
+ * @param {?StoreRecord} agParams.data - the backing Hoist record, if any.
  * @return {boolean} - true if the class to which this function is keyed should be added, false if
  *      it should be removed.
  */

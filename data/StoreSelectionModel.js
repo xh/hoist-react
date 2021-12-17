@@ -40,20 +40,20 @@ export class StoreSelectionModel extends HoistModel {
         this.addReaction(this.cullSelectionReaction());
     }
 
-    /** @return {Record[]} - currently selected records. */
+    /** @return {StoreRecord[]} - currently selected records. */
     @computed.struct
     get selectedRecords() {
         return compact(this._ids.map(it => this.store.getById(it, true)));
     }
 
-    /** @return {RecordId[]} - IDs of currently selected records. */
+    /** @return {StoreRecordId[]} - IDs of currently selected records. */
     @computed.struct
     get selectedIds() {
         return map(this.selectedRecords, 'id');
     }
 
     /**
-     * @return {?Record} - single selected record, or null if multiple/no records selected.
+     * @return {?StoreRecord} - single selected record, or null if multiple/no records selected.
      *
      * Note that this getter will also change if just the data of selected record is changed
      * due to store loading or editing.  Applications only interested in the identity
@@ -65,7 +65,7 @@ export class StoreSelectionModel extends HoistModel {
     }
 
     /**
-     * @return {?RecordId} - ID of selected record, or null if multiple/no records selected.
+     * @return {?StoreRecordId} - ID of selected record, or null if multiple/no records selected.
      *
      * Note that this getter will *not* change if just the data of selected record is changed
      * due to store loading or editing.  Applications also interested in the contents of the
@@ -89,7 +89,7 @@ export class StoreSelectionModel extends HoistModel {
 
     /**
      * Set the selection.
-     * @param {(RecordOrId|RecordOrId[])} records - single record/ID or array of records/IDs to select.
+     * @param {(StoreRecordOrId|StoreRecordOrId[])} records - single record/ID or array of records/IDs to select.
      * @param {boolean} [clearSelection] - true to clear previous selection (rather than add to it).
      */
     @action
