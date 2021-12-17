@@ -2,6 +2,11 @@
 
 ## v45.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* `Record` class renamed to `StoreRecord` in anticipation of upcoming changes to JavaScript
+  standard and to improve compatibility with TypeScript. 
+
 * [Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...develop)
 
 
@@ -60,11 +65,6 @@
   with the select library component and touch devices.
 * Ensure `Column.autosizeBufferPx` is respected if provided.
 
-
-### 💥 Breaking Changes
-
-* `Record` class renamed to `StoreRecord` in anticipation of upcoming changes to JavaScript
-  standard and to improve compatibility with TypeScript. 
 
 ### ✨ Style
 
