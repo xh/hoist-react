@@ -8,7 +8,7 @@ import {hbox} from '@xh/hoist/cmp/layout';
 import {div} from '@xh/hoist/cmp/layout/Tags';
 import {hoistCmp, useLocalModel, HoistModel, TaskObserver} from '@xh/hoist/core';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
-import {withDefault, apiRemoved} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {truncate} from 'lodash';
 import PT from 'prop-types';
@@ -37,8 +37,6 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory({
         className,
         model
     }, ref) {
-        apiRemoved('LoadingIndicator.model', {test: model, msg: "Use 'bind' instead", v: 'v44'});
-
         const impl = useLocalModel(() => new LocalMaskModel(bind));
 
         isDisplayed = withDefault(isDisplayed, impl.task?.isPending);

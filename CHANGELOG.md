@@ -5,7 +5,19 @@
 ### 💥 Breaking Changes
 
 * `Record` class renamed to `StoreRecord` in anticipation of upcoming changes to JavaScript
-  standard and to improve compatibility with TypeScript. 
+  standard and to improve compatibility with TypeScript.
+* The following deprecated APIs were removed:
+  * GridModel.selection
+  * GridModel.selectedRecordId
+  * StoreSelectionModel.records
+  * StoreSelectionModel.ids
+  * StoreSelectionModel.singleRecord
+  * StoreSelectionModel.selectedRecordId
+  * DataViewModel.selection
+  * DataViewModel.selectedRecordId
+  * RestGridModel.selection
+  * LogUtils.withShortDebug
+  * Promise.start
 
 * [Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...develop)
 

@@ -7,7 +7,7 @@
 import {div, ul, li} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
-import {apiRemoved, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
     clone,
@@ -414,7 +414,6 @@ export class Column {
 
         this.cellClass = cellClass;
         this.cellClassRules = cellClassRules || {};
-        apiRemoved('Column.agOptions.cellClassRules', {test: agOptions?.cellClassRules, msg: 'Specify cellClassRules as a top-level Column config instead.', v: 'v44'});
 
         this.align = align;
 

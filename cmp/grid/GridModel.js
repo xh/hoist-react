@@ -17,7 +17,6 @@ import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx
 import {wait} from '@xh/hoist/promise';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
-    apiDeprecated,
     deepFreeze,
     ensureUnique,
     logWithDebug,
@@ -1173,18 +1172,6 @@ export class GridModel extends HoistModel {
         }
 
         return this.isReady;
-    }
-
-    /** @deprecated */
-    get selection() {
-        apiDeprecated('GridModel.selection', {msg: 'Use selectedRecords instead', v: 'v44'});
-        return this.selectedRecords;
-    }
-
-    /** @deprecated */
-    get selectedRecordId() {
-        apiDeprecated('GridModel.selectedRecordId', {msg: 'Use selectedId instead', v: 'v44'});
-        return this.selectedId;
     }
 
     //-----------------------
