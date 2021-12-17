@@ -103,7 +103,7 @@ export class BaseFieldModel extends HoistModel {
         super();
         makeObservable(this);
         this.name = name;
-        this.displayName = withDefault(displayName, genDisplayName(name));
+        this.displayName = displayName ?? genDisplayName(name);
         this._origInitialValue = initialValue;
         this.value = this.initialValue = executeIfFunction(initialValue);
         this._disabled = disabled;

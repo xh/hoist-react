@@ -2,11 +2,55 @@
 
 ## v45.0.0-SNAPSHOT - unreleased
 
+* [Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...develop)
+
+
+## v44.3.0 - 2021-12-15
+
+### 🐞 Bug Fixes
+* Fixes issue with columns failing to resize on first try.
+* Fixes issue preventing use of context menus on iPad.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.51 -> 3.52`
+
+* [Commit Log](https://github.com/xh/hoist-react/compare/v44.2.0...v44.3.0)
+
+## v44.2.0 - 2021-12-07
+
+### 🎁 New Features
+
+* Desktop inline grid editor `Select` now commits the value immediately on selection.
+* `DashContainerModel` now supports an observable `showMenuButton` config which will display a
+  button in the stack header for showing the context menu
+* Added `GridAutosizeMode.MANAGED` to autosize Grid columns on data or `sizingMode` changes, unless
+  the user has manually modified their column widths.
+* Copying from Grids to the clipboard will now use the value provided by the `exportValue`
+  property on the column.
+* Refresh application hotkey is now built into hoist's global hotkeys (shift + r).
+* Non-SSO applications will now automatically reload when a request fails due to session timeout.
+* New utility methods `withInfo` and `logInfo` provide variants of the existing `withDebug` and
+  `logDebug` methods, but log at the more verbose `console.log` level.
+
+### 🐞 Bug Fixes
+
+* Desktop panel splitter can now be dragged over an `iframe` and reliably resize the panel.
+* Ensure scrollbar does not appear on multi-select in toolbar when not needed.
+* `XH.isPortrait` property fixed so that it no longer changes due to the appearance of the
+  mobile keyboard.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v44.1.0...v44.2.0)
+
+## v44.1.0 - 2021-11-08
+
 ### 🎁 New Features
 
 * Changes to App Options are now tracked in the admin activity tab.
 * New Server > Environment tab added to Admin Console to display UI server environment variables and
   JVM system properties. (Requires `hoist-core >= 10.1` to enable this optional feature.)
+* Provided observable getters `XH.viewportSize`, `XH.isPortrait` and `XH.isLandscape` to allow apps
+  to react to changes in viewport size and orientation.
 
 ### 🐞 Bug Fixes
 
@@ -27,7 +71,7 @@
 * New `--xh-menu-item` CSS vars added, with tweaks to default desktop menu styling.
 * Highlight background color added to mobile menu items while pressed.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v44.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v44.0.0...v44.1.0)
 
 ## v44.0.0 - 2021-10-26
 

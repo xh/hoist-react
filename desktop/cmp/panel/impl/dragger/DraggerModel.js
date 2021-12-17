@@ -59,6 +59,8 @@ export class DraggerModel extends HoistModel {
             'Resizable panel has no sibling panel against which to resize.'
         );
 
+        if (XH.isDesktop) this.setIframePointerEvents('none');
+
         e.stopPropagation();
 
         const {clientX, clientY} = this.parseEventPositions(e);
@@ -113,6 +115,8 @@ export class DraggerModel extends HoistModel {
     };
 
     onDragEnd = () => {
+        if (XH.isDesktop) this.setIframePointerEvents('auto');
+
         const {panelModel} = this;
         if (!panelModel.isResizing) return;
 
@@ -215,5 +219,15 @@ export class DraggerModel extends HoistModel {
 
     isValidTouchEvent(e) {
         return e.touches && e.touches.length > 0;
+    }
+
+    /**
+     * @param {('none'|'auto')} v - Workaround to allow dragging over iframe, which is its own
+     *  separate document and cannot listen for events from main document.
+     */
+    setIframePointerEvents(v) {
+        for (const el of document.getElementsByTagName('iframe')) {
+            el.style['pointer-events'] = v;
+        }
     }
 }

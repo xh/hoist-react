@@ -265,6 +265,7 @@ export class QueryEngine {
 
         if (!field && !op) return null;
 
+        op = op.toLowerCase();
         return {field, op, value};
     }
 

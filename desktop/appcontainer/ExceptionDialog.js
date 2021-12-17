@@ -96,5 +96,5 @@ export const dismissButton = hoistCmp.factory(
 );
 
 function isSessionExpired(e) {
-    return e && e.httpStatus === 401;
+    return e?.httpStatus === 401;
 }
