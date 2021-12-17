@@ -99,6 +99,14 @@ class Model extends HoistInputModel {
         } else {
             this.noteBlurred();
         }
+
+        // Blur internal input to prevent keyboard showing, but maintain
+        // HoistInputModel's hasFocus using the methods above.
+        // See https://github.com/airbnb/react-dates/issues/1476
+        const inputEl = this.domEl.querySelector('input');
+        if (inputEl === document.activeElement) {
+            inputEl.blur();
+        }
     }
 
     constructor(props) {

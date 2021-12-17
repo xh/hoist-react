@@ -6,7 +6,7 @@
  */
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
-import {Record, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
+import {StoreRecord, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import classNames from 'classnames';
 import {first} from 'lodash';
@@ -64,8 +64,8 @@ RecordActionButton.propTypes = {
     /** The action */
     action: PT.instanceOf(RecordAction).isRequired,
 
-    /** The data Record this action is acting on. */
-    record: PT.oneOfType([PT.object, Record]),
+    /** The data StoreRecord this action is acting on. */
+    record: PT.oneOfType([PT.object, StoreRecord]),
 
     /** The selection model used to determine the selected records */
     selModel: PT.instanceOf(StoreSelectionModel),

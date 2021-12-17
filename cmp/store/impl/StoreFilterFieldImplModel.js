@@ -195,7 +195,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
                 visibleCols = gridModel.getVisibleLeafColumns();
 
             // Push on dot-delimited grid column fields. These are supported by Grid and traverse
-            // sub-objects in Record.data to display nested properties. Given that Grid treats these
+            // sub-objects in StoreRecord.data to display nested properties. Given that Grid treats these
             // as first-class fields and displays them w/o the need for renderers, we want to
             // include them here. (But only if their "root" is in the field list derived from the
             // Store and any given include/excludeField configs.)
