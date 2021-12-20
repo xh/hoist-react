@@ -10,7 +10,7 @@ import {throwIf, logDebug} from '@xh/hoist/utils/js';
 import {maxBy, isNil} from 'lodash';
 
 /**
- * Internal container for Record management within a Store.
+ * Internal container for StoreRecord management within a Store.
  *
  * Note this is an immutable object; its update and filtering APIs return new instances as required.
  *
@@ -155,7 +155,7 @@ export class RecordSet {
     }
 
     withNewRecords(recordMap) {
-        // Reuse existing Record object instances where possible.  See Store.loadData().
+        // Reuse existing StoreRecord object instances where possible.  See Store.loadData().
         // Be sure to finalize any new records that are accepted.
         if (this.empty) {
             recordMap.forEach(r => r.finalize());

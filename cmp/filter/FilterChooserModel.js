@@ -8,7 +8,7 @@ import {HoistModel, managed, PersistenceProvider, XH, TaskObserver} from '@xh/ho
 import {FieldFilter, parseFilter, combineValueFilters, withFilterByTypes} from '@xh/hoist/data';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {throwIf, apiRemoved} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     compact,
@@ -113,9 +113,6 @@ export class FilterChooserModel extends HoistModel {
     } = {}) {
         super();
         makeObservable(this);
-
-        apiRemoved('FilterChooserModel.targetStore', {test: rest.targetStore, msg: "Use 'bind' instead", v: 'v44'});
-        apiRemoved('FilterChooserModel.sourceStore', {test: rest.sourceStore, msg: "Use 'valueSource' instead", v: 'v44'});
 
         this.bind = bind;
         this.valueSource = valueSource;
