@@ -21,6 +21,9 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
     /** @member {object} */
     inputProps;
 
+    /** @member {string} */
+    defaultOp;
+
     /**
      * @param {Object} c - GridFilterFieldSpec configuration.
      * @param {boolean} [c.enableValues] - true to provide the value filter control
@@ -29,12 +32,14 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
      *      value in this values filter display. If not provided, the Column's renderer will be used.
      * @param {object} [c.inputProps] - Props to pass through to the HoistInput components used on
      *      the custom filter tab. Note that the HoistInput component used is decided by fieldType.
+     * @param {string} [c.defaultOp] - Default operator displayed in custom filter tab.
      * @param {*} [c...rest] - arguments for BaseFilterFieldSpec.
      */
     constructor({
         enableValues,
         renderer,
         inputProps,
+        defaultOp,
         ...rest
     }) {
         super(rest);
@@ -42,5 +47,6 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
         this.enableValues = enableValues ?? this.isEnumerableByDefault;
         this.renderer = renderer;
         this.inputProps = inputProps;
+        this.defaultOp = this.ops.includes(defaultOp) ? defaultOp : this.ops[0];
     }
 }
