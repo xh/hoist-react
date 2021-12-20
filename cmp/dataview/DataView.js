@@ -7,7 +7,6 @@
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
-import {apiRemoved} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {isFunction} from 'lodash';
 import PT from 'prop-types';
@@ -25,9 +24,6 @@ export const [DataView, dataView] = hoistCmp.withFactory({
     className: 'xh-data-view',
 
     render({model, className, ...props}, ref) {
-        apiRemoved('DataView.onRowClicked', {test: props.onRowClicked, msg: 'Specify onRowClicked on the DataViewModel instead', v: 'v43'});
-        apiRemoved('DataView.onRowDoubleClicked', {test: props.onRowDoubleClicked, msg: 'Specify onRowDoubleClicked on the DataViewModel instead', v: 'v43'});
-
         const [layoutProps] = splitLayoutProps(props);
         const localModel = useLocalModel(() => new LocalModel(model));
 

@@ -7,7 +7,7 @@
 import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {switchControl} from '@xh/hoist/kit/blueprint';
-import {withDefault, apiRemoved} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 import './SwitchInput.scss';
 
@@ -18,8 +18,6 @@ export const [SwitchInput, switchInput] = hoistCmp.withFactory({
     displayName: 'SwitchInput',
     className: 'xh-switch-input',
     render(props, ref) {
-        apiRemoved('SwitchInput.labelAlign', {test: props.labelAlign, msg: 'Use labelSide instead.', v: 'v43'});
-
         return useHoistInputModel(cmp, props, ref);
     }
 });

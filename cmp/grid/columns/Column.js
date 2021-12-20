@@ -7,7 +7,7 @@
 import {div, ul, li} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
-import {apiRemoved, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
     clone,
@@ -219,7 +219,7 @@ export class Column {
      * @param {(Column~cellClassFn|string|string[])} [c.cellClass] - additional CSS classes to add
      *      to each cell in the column. Supports both string values or function to generate.
      *      NOTE that, once added, classes will *not* be removed if the data changes.
-     *      Use `cellClassRules` instead if Record data can change across refreshes.
+     *      Use `cellClassRules` instead if StoreRecord data can change across refreshes.
      * @param {Object.<string, Column~cellClassRuleFn>} [c.cellClassRules] - object keying CSS
      *      class names to functions determining if they should be added or removed from the cell.
      *      See Ag-Grid docs on "cell styles" for details.
@@ -312,7 +312,7 @@ export class Column {
      * @param {Column~editorFn} [c.editor] - Cell editor Component or a function to create one.
      *      Adding an editor will also install a cellClassRule and tooltip to display the
      *      validation state of the cell in question.
-     * @param {Column~setValueFn} [c.setValueFn] - function for updating Record field for this
+     * @param {Column~setValueFn} [c.setValueFn] - function for updating StoreRecord field for this
      *      column after inline editing.
      * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
      * @param {boolean} [c.enableDotSeparatedFieldPath] - true (default) to enable configuration
@@ -414,7 +414,6 @@ export class Column {
 
         this.cellClass = cellClass;
         this.cellClassRules = cellClassRules || {};
-        apiRemoved('Column.agOptions.cellClassRules', {test: agOptions?.cellClassRules, msg: 'Specify cellClassRules as a top-level Column config instead.', v: 'v44'});
 
         this.align = align;
 
@@ -507,8 +506,8 @@ export class Column {
     }
 
     /**
-     * @param {Record} record
-     * @return {boolean} - true if this column supports editing its field for the given Record.
+     * @param {StoreRecord} record
+     * @return {boolean} - true if this column supports editing its field for the given StoreRecord.
      */
     isEditableForRecord(record) {
         const {editable, gridModel} = this;
@@ -586,8 +585,8 @@ export class Column {
         let setRenderer = (r) => ret.cellRenderer = r,
             setElementRenderer = (r) => ret.cellRendererFramework = r;
 
-        // Our implementation of Grid.getDataPath() > Record.treePath returns data path []s of
-        // Record IDs. TreeColumns use those IDs as their cell values, regardless of field.
+        // Our implementation of Grid.getDataPath() > StoreRecord.treePath returns data path []s of
+        // StoreRecord IDs. TreeColumns use those IDs as their cell values, regardless of field.
         // Add valueGetters below to correct + additional fixes for sorting below.
         if (this.isTreeColumn) {
             ret.showRowGroup = true;
@@ -896,8 +895,8 @@ export function getAgHeaderClassFn(column) {
  * @param {string} sortDir - either 'asc' or 'desc'
  * @param {boolean} abs - true to sort by absolute value
  * @param {Object} params - extra parameters devs might want
- * @param {?Record} params.recordA - data Record for valueA
- * @param {?Record} params.recordB - data Record for valueB
+ * @param {?StoreRecord} params.recordA - data record for valueA
+ * @param {?StoreRecord} params.recordB - data record for valueB
  * @param {?Object} params.agNodeA - row node provided by ag-grid
  * @param {?Object} params.agNodeB - row node provided by ag-grid
  * @param {Column} params.column - column for the cell being rendered
@@ -952,7 +951,7 @@ export function getAgHeaderClassFn(column) {
  *      added/removed from a cell, via cellClassRules config.
  * @param {CellClassParams} agParams - as provided by Ag-Grid.
  * @param {*} agParams.value - the current cell value.
- * @param {?Record} agParams.data - the backing Hoist record for the row, if any.
+ * @param {?StoreRecord} agParams.data - the backing Hoist record for the row, if any.
  * @return {boolean} - true if the class to which this function is keyed should be added, false if
  *      it should be removed.
  */
@@ -965,7 +964,7 @@ export function getAgHeaderClassFn(column) {
 
 /**
  * @typedef {Object} CellContext
- * @property {Record} record - row-level data Record.
+ * @property {StoreRecord} record - row-level data record.
  * @property {Column} column - column for the cell being rendered.
  * @property {GridModel} gridModel - gridModel for the grid.
  * @property {ICellRendererParams} [agParams] - the ag-grid cell renderer params.
@@ -987,7 +986,7 @@ export function getAgHeaderClassFn(column) {
 
 /**
  * @typedef {Object} TooltipMetadata
- * @property {Record} record - row-level data Record.
+ * @property {StoreRecord} record - row-level data record.
  * @property {Column} column - column for the cell being rendered.
  * @property {GridModel} gridModel - gridModel for the grid.
  * @property {ITooltipParams} [agParams] - the ag-grid tooltip params.
@@ -1020,7 +1019,7 @@ export function getAgHeaderClassFn(column) {
  *      This function will be called whenever the user takes some action which would initiate inline
  *      editing of a cell before the actual inline editing session is started.
  * @param {Object} params
- * @param {Record} params.record - row-level data Record.
+ * @param {StoreRecord} params.record - row-level data record.
  * @param {Store} params.store - Store containing the grid data.
  * @param {Column} params.column - column for the cell being edited.
  * @param {GridModel} params.gridModel - gridModel for the grid.
@@ -1031,17 +1030,17 @@ export function getAgHeaderClassFn(column) {
  * @callback Column~editorFn - grid cell editor component, or function to return one.
  *      This value will be used to create a new Component whenever editing is initiated on a cell.
  * @param {Object} params
- * @param {Record} params.record - row-level data Record.
+ * @param {StoreRecord} params.record - row-level data record.
  * @param {Column} params.column - column for the cell being edited.
  * @param {GridModel} params.gridModel - gridModel for the grid.
  * @return {Element} - the React element to use as the cell editor.
  */
 
 /**
- * @callback Column~setValueFn - function to update the value of a Record field after inline editing
+ * @callback Column~setValueFn - function to update the value of a StoreRecord field after inline editing
  * @param {Object} params
  * @param {*} params.value - the new value for the field.
- * @param {Record} params.record - row-level data Record.
+ * @param {StoreRecord} params.record - row-level data record.
  * @param {Store} params.store - Store containing the grid data.
  * @param {Column} params.column - column for the cell being edited.
  * @param {GridModel} params.gridModel - gridModel for the grid.
@@ -1049,9 +1048,9 @@ export function getAgHeaderClassFn(column) {
  */
 
 /**
- * @callback Column~getValueFn - function to get the value of a Record field
+ * @callback Column~getValueFn - function to get the value of a StoreRecord field
  * @param {Object} params
- * @param {Record} params.record - row-level data Record.
+ * @param {StoreRecord} params.record - row-level data record.
  * @param {string} params.field - name of data store field displayed in the column.
  * @param {Store} params.store - Store containing the grid data.
  * @param {Column} params.column - column for the cell being edited.

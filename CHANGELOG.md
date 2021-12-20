@@ -2,6 +2,23 @@
 
 ## v45.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* `Record` class renamed to `StoreRecord` in anticipation of upcoming changes to JavaScript
+  standard and to improve compatibility with TypeScript.
+* The following deprecated APIs were removed:
+  * GridModel.selection
+  * GridModel.selectedRecordId
+  * StoreSelectionModel.records
+  * StoreSelectionModel.ids
+  * StoreSelectionModel.singleRecord
+  * StoreSelectionModel.selectedRecordId
+  * DataViewModel.selection
+  * DataViewModel.selectedRecordId
+  * RestGridModel.selection
+  * LogUtils.withShortDebug
+  * Promise.start
+
 * [Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...develop)
 
 
@@ -59,6 +76,7 @@
 * Desktop `Select.hideDropdownIndicator` now defaults to `true` on tablet devices due to UX bugs
   with the select library component and touch devices.
 * Ensure `Column.autosizeBufferPx` is respected if provided.
+
 
 ### ✨ Style
 
