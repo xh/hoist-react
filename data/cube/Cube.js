@@ -88,7 +88,7 @@ export class Cube extends HoistBase {
     /** @returns {CubeField[]} - Dimension Fields configured for this Cube. */
     get dimensions() {return this.fields.filter(it => it.isDimension)}
 
-    /** @returns {Record[]} - records loaded in to this Cube. */
+    /** @returns {StoreRecord[]} - records loaded in to this Cube. */
     get records() {return this.store.records}
 
     /** @returns {number} - count of currently connected, auto-updating Views. */

@@ -8,30 +8,6 @@ import {TaskObserver, XH} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {action} from '@xh/hoist/mobx';
 import {castArray, isFunction, isNumber, isString} from 'lodash';
-import {apiDeprecated} from '../utils/js';
-
-/**
- * Start a new promise chain.
- *
- * @deprecated  Use `wait()` instead.
- *
- * This method serves as a lightweight way to start a promise chain for any code.
- * It is useful for combining promise based calls with non-promise based calls, especially when
- * the first step may be synchronous.  In these case, we often want to ensure the use of common
- * exception, tracking, state management within a single promise chain.
- *
- * Note: This method will start executing its input function only after a minimal (1ms) delay.
- * This establishes a minimal level of asynchronicity for the entire chain, and is especially
- * important if the chain contains calls to 'linkTo', 'track' or 'timeout'
- *
- * @param {function} [fn] - function appropriate as an argument to `then()`.
- * @returns {Promise}
- */
-export async function start(fn) {
-    apiDeprecated('start', {msg: 'Use wait() instead', v: 'v44'});
-    const promise = new Promise(resolve => setTimeout(resolve, 1));
-    return fn ? promise.then(fn) : start;
-}
 
 /**
  * Return a promise that will resolve after the specified amount of time.
@@ -223,11 +199,6 @@ const enhancePromise = (promisePrototype) => {
 
             if (cfg.isTaskObserver) {
                 cfg = {observer: cfg};
-            }
-
-            if (cfg.model && !cfg.observer) {
-                apiDeprecated('model', {msg: `Provide 'observer' instead`, v: 'v44'});
-                cfg = {...cfg, observer: cfg.model};
             }
 
             if (cfg.observer && !cfg.omit) {

@@ -28,7 +28,7 @@ export class Filter {
      * @param {Store} [store] - if provided, function returned will be appropriate
      *      for testing records of this store. Otherwise, function returned will be appropriate
      *      for testing anonymous objects.
-     * @returns {FilterTestFn} - function taking a Record or Object and returning a boolean.
+     * @returns {FilterTestFn} - function taking a StoreRecord or Object and returning a boolean.
      */
     getTestFn(store) {
         throw XH.exception('Not implemented.');
@@ -44,6 +44,6 @@ export class Filter {
 
 /**
  * @callback FilterTestFn
- * @param {(Object|Record)} candidate - single Hoist Record or plain JS Object to evaluate.
+ * @param {(Object|Record)} candidate - single Hoist StoreRecord or plain JS Object to evaluate.
  * @returns {boolean} - true if the candidate passes and should be included in filtered results.
  */

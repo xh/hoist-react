@@ -19,7 +19,7 @@ import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {computed, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
-import {apiRemoved, isDisplayed, logDebug, logWithDebug, consumeEvent} from '@xh/hoist/utils/js';
+import {isDisplayed, logDebug, logWithDebug, consumeEvent} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {
@@ -71,13 +71,6 @@ export const [Grid, grid] = hoistCmp.withFactory({
      * @param ref
      */
     render({model, className, ...props}, ref) {
-        apiRemoved('Grid.onKeyDown', {test: props.onKeyDown, msg: 'Specify onKeyDown on the GridModel instead.', v: 'v43'});
-        apiRemoved('Grid.onRowClicked', {test: props.onRowClicked, msg: 'Specify onRowClicked on the GridModel instead.', v: 'v43'});
-        apiRemoved('Grid.onRowDoubleClicked', {test: props.onRowDoubleClicked, msg: 'Specify onRowDoubleClicked on the GridModel instead.', v: 'v43'});
-        apiRemoved('Grid.onCellClicked', {test: props.onCellClicked, msg: 'Specify onCellClicked on the GridModel instead.', v: 'v43'});
-        apiRemoved('Grid.onCellDoubleClicked', {test: props.onCellDoubleClicked, msg: 'Specify onCellDoubleClicked on the GridModel instead.', v: 'v43'});
-        apiRemoved('Grid.agOptions.rowClassRules', {test: props.agOptions?.rowClassRules, msg: 'Specify rowClassRules on the GridModel instead.', v: 'v43'});
-
         const {store, treeMode, treeStyle, colChooserModel, filterModel} = model,
             impl = useLocalModel(() => new GridLocalModel(model, props)),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
