@@ -28,7 +28,7 @@ export class ColumnWidthCalculator {
     /**
      *
      * @param {GridModel} gridModel
-     * @param {Record[]} records
+     * @param {StoreRecord[]} records
      * @param {string} colId
      * @param {GridAutosizeOptions} options
      * @returns {*}

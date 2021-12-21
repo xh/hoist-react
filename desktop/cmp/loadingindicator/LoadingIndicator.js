@@ -12,7 +12,7 @@ import classNames from 'classnames';
 import {truncate} from 'lodash';
 import PT from 'prop-types';
 import './LoadingIndicator.scss';
-import {withDefault, apiRemoved} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * A minimal / unobtrusive LoadingIndicator displaying an optional spinner and/or message to signal
@@ -37,8 +37,6 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory({
         className,
         model
     }) {
-        apiRemoved('LoadingIndicator.model', {test: model, msg: "Use 'bind' instead", v: 'v44'});
-
         const impl = useLocalModel(() => new LocalMaskModel(bind));
 
         isDisplayed = withDefault(isDisplayed, impl.task?.isPending);

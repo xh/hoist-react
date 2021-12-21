@@ -8,7 +8,7 @@ import {HoistInputPropTypes, HoistInputModel, useHoistInputModel} from '@xh/hois
 import {hoistCmp} from '@xh/hoist/core';
 import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
 import {computed, makeObservable} from '@xh/hoist/mobx';
-import {withDefault, apiRemoved} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 import {filter, isObject} from 'lodash';
 import PT from 'prop-types';
 import './RadioInput.scss';
@@ -20,8 +20,6 @@ export const [RadioInput, radioInput] = hoistCmp.withFactory({
     displayName: 'RadioInput',
     className: 'xh-radio-input',
     render(props, ref) {
-        apiRemoved('RadioInput.labelAlign', {test: props.labelAlign, msg: 'Use labelSide instead.', v: 'v43'});
-
         return useHoistInputModel(cmp, props, ref, Model);
     }
 });

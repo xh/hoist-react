@@ -8,10 +8,26 @@
   clicks or taps on the row.
 
 ### 💥 Breaking Changes
+
 * Hoist grids now require ag-Grid v26.1.0 or higher - update your ag-Grid dependency in your app's
   `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
+* `Record` class renamed to `StoreRecord` in anticipation of upcoming changes to JavaScript
+  standard and to improve compatibility with TypeScript.
+* The following deprecated APIs were removed:
+  * GridModel.selection
+  * GridModel.selectedRecordId
+  * StoreSelectionModel.records
+  * StoreSelectionModel.ids
+  * StoreSelectionModel.singleRecord
+  * StoreSelectionModel.selectedRecordId
+  * DataViewModel.selection
+  * DataViewModel.selectedRecordId
+  * RestGridModel.selection
+  * LogUtils.withShortDebug
+  * Promise.start
 
 * [Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...develop)
+
 
 ## v44.3.0 - 2021-12-15
 
@@ -67,6 +83,7 @@
 * Desktop `Select.hideDropdownIndicator` now defaults to `true` on tablet devices due to UX bugs
   with the select library component and touch devices.
 * Ensure `Column.autosizeBufferPx` is respected if provided.
+
 
 ### ✨ Style
 

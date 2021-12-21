@@ -6,7 +6,7 @@
  */
 import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';
-import {withDefault, apiRemoved} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 import {hoistCmp} from '@xh/hoist/core';
 import {isNil} from 'lodash';
@@ -19,8 +19,6 @@ export const [Checkbox, checkbox] = hoistCmp.withFactory({
     displayName: 'Checkbox',
     className: 'xh-check-box',
     render(props, ref) {
-        apiRemoved('Checkbox.labelAlign', {test: props.labelAlign, msg: 'Use labelSide instead.', v: 'v43'});
-
         return useHoistInputModel(cmp, props, ref);
     }
 });
