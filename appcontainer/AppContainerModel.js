@@ -15,6 +15,7 @@ import {ImpersonationBarModel} from './ImpersonationBarModel';
 import {MessageSourceModel} from './MessageSourceModel';
 import {OptionsDialogModel} from './OptionsDialogModel';
 import {SizingModeModel} from './SizingModeModel';
+import {ViewportSizeModel} from './ViewportSizeModel';
 import {ThemeModel} from './ThemeModel';
 import {ToastSourceModel} from './ToastSourceModel';
 
@@ -42,6 +43,7 @@ export class AppContainerModel extends HoistModel {
 
     @managed refreshContextModel = new RootRefreshContextModel();
     @managed sizingModeModel = new SizingModeModel();
+    @managed viewportSizeModel = new ViewportSizeModel();
     @managed themeModel = new ThemeModel();
 
     init() {
@@ -58,6 +60,7 @@ export class AppContainerModel extends HoistModel {
             this.toastSourceModel,
             this.refreshContextModel,
             this.sizingModeModel,
+            this.viewportSizeModel,
             this.themeModel
         ];
         models.forEach(it => {

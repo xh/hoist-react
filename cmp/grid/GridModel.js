@@ -17,7 +17,6 @@ import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx
 import {wait} from '@xh/hoist/promise';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
-    apiDeprecated,
     deepFreeze,
     ensureUnique,
     logWithDebug,
@@ -70,6 +69,8 @@ export class GridModel extends HoistModel {
             'This action will clear any customizations you have made to this grid, including filters, column selection, ordering, and sizing.', br(), br(),
             'OK to proceed?'
         );
+
+    static DEFAULT_AUTOSIZE_MODE = GridAutosizeMode.ON_SIZING_MODE_CHANGE;
 
     //------------------------
     // Immutable public properties
@@ -129,6 +130,8 @@ export class GridModel extends HoistModel {
     @observable.ref columnState = [];
     /** @member {Object} */
     @observable.ref expandState = {};
+    /** @member {AutosizeState} */
+    @observable.ref autosizeState = {};
     /** @member {GridSorter[]} */
     @observable.ref sortBy = [];
     /** @member {string[]} */
@@ -232,7 +235,7 @@ export class GridModel extends HoistModel {
      * @param {ExportOptions} [c.exportOptions] - default export options.
      * @param {RowClassFn} [c.rowClassFn] - closure to generate CSS class names for a row.
      *      NOTE that, once added, classes will *not* be removed if the data changes.
-     *      Use `rowClassRules` instead if Record data can change across refreshes.
+     *      Use `rowClassRules` instead if StoreRecord data can change across refreshes.
      * @param {Object.<string, RowClassRuleFn>} [c.rowClassRules] - object keying CSS
      *      class names to functions determining if they should be added or removed from the row.
      *      See Ag-Grid docs on "row styles" for details.
@@ -367,7 +370,7 @@ export class GridModel extends HoistModel {
         this.autosizeOptions = defaults(
             {...autosizeOptions},
             {
-                mode: GridAutosizeMode.ON_SIZING_MODE_CHANGE,
+                mode: GridModel.DEFAULT_AUTOSIZE_MODE,
                 includeCollapsedChildren: false,
                 showMask: false,
                 // Larger buffer on mobile (perhaps counterintuitively) to minimize clipping due to
@@ -493,7 +496,7 @@ export class GridModel extends HoistModel {
     /**
      * Select records in the grid.
      *
-     * @param {(RecordOrId|RecordOrId[])} records - one or more record(s) / ID(s) to select.
+     * @param {(StoreRecordOrId|StoreRecordOrId[])} records - one or more record(s) / ID(s) to select.
      * @param {Object} [options]
      * @param {boolean} [options.ensureVisible] - true to make selection visible if it is within a
      *      collapsed node or outside of the visible scroll window. Default true.
@@ -601,14 +604,14 @@ export class GridModel extends HoistModel {
     /** @return {boolean} - true if any records are selected. */
     get hasSelection() {return !this.selModel.isEmpty}
 
-    /** @return {Record[]} - currently selected records. */
+    /** @return {StoreRecord[]} - currently selected records. */
     get selectedRecords() {return this.selModel.selectedRecords}
 
-    /** @return {RecordId[]} - IDs of currently selected records. */
+    /** @return {StoreRecordId[]} - IDs of currently selected records. */
     get selectedIds() {return this.selModel.selectedIds}
 
     /**
-     * @return {?Record} - single selected record, or null if multiple/no records selected.
+     * @return {?StoreRecord} - single selected record, or null if multiple/no records selected.
      *
      * Note that this getter will also change if just the data of selected record is changed
      * due to store loading or editing.  Applications only interested in the identity
@@ -617,7 +620,7 @@ export class GridModel extends HoistModel {
     get selectedRecord() {return this.selModel.selectedRecord}
 
     /**
-     * @return {?RecordId} - ID of selected record, or null if multiple/no records selected.
+     * @return {?StoreRecordId} - ID of selected record, or null if multiple/no records selected.
      *
      * Note that this getter will *not* change if just the data of selected record is changed
      * due to store loading or editing.  Applications also interested in the contents of the
@@ -768,7 +771,10 @@ export class GridModel extends HoistModel {
 
         this.columns = columns;
         this.columnState = this.getLeafColumns()
-            .map(({colId, width, hidden, pinned}) => ({colId, width, hidden, pinned}));
+            .map(it => {
+                const {colId, width, hidden, pinned} = it;
+                return {colId, width, hidden, pinned};
+            });
     }
 
     /** @param {ColumnState[]} colState */
@@ -824,6 +830,26 @@ export class GridModel extends HoistModel {
         }
     }
 
+    @action
+    setAutosizeState(autosizeState) {
+        if (!equal(this.autosizeState, autosizeState)) {
+            this.autosizeState = deepFreeze(autosizeState);
+        }
+    }
+
+    noteColumnManuallySized(colId, width) {
+        const col = this.findColumn(this.columns, colId);
+        if (!width || !col || col.flex) return;
+        const colStateChanges = [{colId, width, manuallySized: true}];
+        this.applyColumnStateChanges(colStateChanges);
+    }
+
+    noteColumnsAutosized(colIds) {
+        const colStateChanges = castArray(colIds).map(colId => ({colId, manuallySized: false}));
+        this.applyColumnStateChanges(colStateChanges);
+        this.setAutosizeState({sizingMode: this.sizingMode});
+    }
+
     /**
      * This method will update the current column definition if it has changed.
      * Throws an exception if any of the columns provided in colStateChanges are not
@@ -852,6 +878,7 @@ export class GridModel extends HoistModel {
             if (!isNil(change.width)) col.width = change.width;
             if (!isNil(change.hidden)) col.hidden = change.hidden;
             if (!isUndefined(change.pinned)) col.pinned = change.pinned;
+            if (!isNil(change.manuallySized)) col.manuallySized = change.manuallySized;
         });
 
         // 2) If the changes provided is a full list of leaf columns, synchronize the sort order
@@ -1038,11 +1065,10 @@ export class GridModel extends HoistModel {
             .linkTo(this.autosizeTask);
     }
 
-
     /**
      * Begin an inline editing session.
-     * @param {RecordOrId} [recOrId] - Record/ID to edit. If unspecified, the first selected Record
-     *      will be used, if any, or the first overall Record in the grid.
+     * @param {StoreRecordOrId} [recOrId] - StoreRecord/ID to edit. If unspecified, the first selected StoreRecord
+     *      will be used, if any, or the first overall StoreRecord in the grid.
      * @param {string} [colId] - ID of column on which to start editing. If unspecified, the first
      *      editable column will be used.
      * @return {Promise<void>}
@@ -1106,7 +1132,7 @@ export class GridModel extends HoistModel {
     /**
      * Stop an inline editing session, if one is in-progress.
      * @param {boolean} dropPendingChanges - true to cancel current edit without saving pending
-     *      changes in the active editor(s) to the backing Record.
+     *      changes in the active editor(s) to the backing StoreRecord.
      * @return {Promise<void>}
      */
     async endEditAsync(dropPendingChanges = false) {
@@ -1148,18 +1174,6 @@ export class GridModel extends HoistModel {
         return this.isReady;
     }
 
-    /** @deprecated */
-    get selection() {
-        apiDeprecated('GridModel.selection', {msg: 'Use selectedRecords instead', v: 'v44'});
-        return this.selectedRecords;
-    }
-
-    /** @deprecated */
-    get selectedRecordId() {
-        apiDeprecated('GridModel.selectedRecordId', {msg: 'Use selectedId instead', v: 'v44'});
-        return this.selectedId;
-    }
-
     //-----------------------
     // Implementation
     //-----------------------
@@ -1178,6 +1192,7 @@ export class GridModel extends HoistModel {
 
         try {
             await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
+            this.noteColumnsAutosized(colIds);
         } finally {
             if (showMask) {
                 await wait();
@@ -1303,10 +1318,10 @@ export class GridModel extends HoistModel {
     // conflict with any code-level updates to their widths.
     removeTransientWidths(columnState) {
         const gridCols = this.getLeafColumns();
-
         return columnState.map(state => {
             const col = this.findColumn(gridCols, state.colId);
-            return col.resizable ? state : omit(state, 'width');
+            if (!col.resizable) state = omit(state, 'width');
+            return state;
         });
     }
 
@@ -1502,6 +1517,12 @@ export class GridModel extends HoistModel {
  * @property {number} [width] - new width to set for the column
  * @property {boolean} [hidden] - visibility of the column
  * @property {string} [pinned] - 'left'|'right' if pinned, null if not
+ * @property {boolean} [manuallySized] - has this column been resized manually?
+ */
+
+/**
+ * @typedef {Object} AutosizeState
+ * @property {SizingMode} sizingMode - sizing mode used last time the columns were autosized.
  */
 
 /**
@@ -1525,7 +1546,7 @@ export class GridModel extends HoistModel {
 
 /**
  * @callback RowClassFn - closure to generate CSS class names for a row.
- * @param {Object} data - the inner data object from the Record associated with the rendered row.
+ * @param {Object} data - the inner data object from the StoreRecord associated with the rendered row.
  * @returns {(String|String[])} - CSS class(es) to apply to the row level.
  */
 
@@ -1533,7 +1554,7 @@ export class GridModel extends HoistModel {
  * @callback RowClassRuleFn - function to determine if a particular CSS class should be
  *      added/removed from a row, via rowClassRules config.
  * @param {RowClassParams} agParams - as provided by AG-Grid.
- * @param {?Record} agParams.data - the backing Hoist record, if any.
+ * @param {?StoreRecord} agParams.data - the backing Hoist record, if any.
  * @return {boolean} - true if the class to which this function is keyed should be added, false if
  *      it should be removed.
  */

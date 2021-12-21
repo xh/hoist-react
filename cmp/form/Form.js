@@ -8,7 +8,6 @@ import {elemFactory, hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import equal from 'fast-deep-equal';
 import PT from 'prop-types';
 import {createContext, useContext} from 'react';
-import {apiRemoved} from '@xh/hoist/utils/js';
 import {useCached} from '@xh/hoist/utils/react';
 import {FormModel} from './FormModel';
 
@@ -34,8 +33,6 @@ export const [Form, form] = hoistCmp.withFactory({
     model: uses(FormModel, {publishMode: ModelPublishMode.NONE}),
 
     render({model, fieldDefaults = {}, children}) {
-        apiRemoved('Form.labelAlign', {test: fieldDefaults?.labelAlign, msg: 'Use labelTextAlign instead', v: 'v43'});
-
         // gather own and inherited field defaults...
         const parentDefaults = useContext(FormContext).fieldDefaults;
         if (parentDefaults) fieldDefaults = {...parentDefaults, ...fieldDefaults};

@@ -78,7 +78,7 @@ export class Query {
     }
 
     /**
-     * @param {Record} record
+     * @param {StoreRecord} record
      * @returns {boolean}
      */
     test(record) {

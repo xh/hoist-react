@@ -163,7 +163,7 @@ export class SplitTreeMapModel extends HoistModel {
 
 /**
  * @callback SplitTreeMapFilterFn
- * @param {Record} record - record to evaluate for inclusion in the primary vs. secondary map.
+ * @param {StoreRecord} record - record to evaluate for inclusion in the primary vs. secondary map.
  * @return {boolean} - true if record belongs to / should appear within the primary map, falsy to
  *      have it allocated to the secondary map.
  */

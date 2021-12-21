@@ -9,13 +9,13 @@ import PT from 'prop-types';
 
 export const EditorPropTypes = {
 
-    /** Column in Record being edited. */
+    /** Column in StoreRecord being edited. */
     column: PT.object,
 
     /** Owning GridModel of record being edited.  */
     gridModel: PT.object,
 
-    /** Record being edited. */
+    /** StoreRecord being edited. */
     record: PT.object,
 
     /** Props to pass through to the underlying HoistInput component */

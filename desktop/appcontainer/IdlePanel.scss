@@ -10,8 +10,9 @@
   border: var(--xh-border-solid);
 
   img {
+    display: block;
+    margin: 0 auto var(--xh-pad-px);
     border-bottom: var(--xh-border-solid);
-    margin-bottom: var(--xh-pad-px);
   }
 
   p {

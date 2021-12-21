@@ -7,7 +7,7 @@
 import {box, div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
 import {hoistCmp, HoistModel, useLocalModel, TaskObserver} from '@xh/hoist/core';
-import {withDefault, apiRemoved} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 import './Mask.scss';
 
@@ -33,8 +33,6 @@ export const [Mask, mask] = hoistCmp.withFactory({
         className,
         model
     }, ref) {
-        apiRemoved('Mask.model', {test: model, msg: "Use 'bind' instead", v: 'v44'});
-
         const impl = useLocalModel(() => new LocalMaskModel(bind));
 
         isDisplayed = isDisplayed ?? impl.task?.isPending;

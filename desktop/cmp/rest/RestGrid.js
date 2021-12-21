@@ -11,7 +11,6 @@ import {grid} from '@xh/hoist/cmp/grid';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {apiRemoved} from '@xh/hoist/utils/js';
 
 import {restForm} from './impl/RestForm';
 import {restGridToolbar} from './impl/RestGridToolbar';
@@ -30,9 +29,6 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
         formClassName,
         ...props
     }, ref) {
-
-        apiRemoved('RestGrid.onRowDoubleClicked', {test: props.onRowDoubleClicked, msg: 'Specify onRowDoubleClicked on the RestGridModel instead.', v: 'v43'});
-
         const {formModel, gridModel} = model;
 
         return fragment(

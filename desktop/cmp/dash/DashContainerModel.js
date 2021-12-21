@@ -4,6 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import ReactDOM from 'react-dom';
 import {HoistModel, managed, RefreshMode, RenderMode, XH, PersistenceProvider, TaskObserver} from '@xh/hoist/core';
 import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
@@ -12,9 +13,10 @@ import {action, observable, bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {cloneDeep, defaultsDeep, find, isFinite, reject} from 'lodash';
+import {cloneDeep, defaultsDeep, find, isFinite, isNil, reject} from 'lodash';
 import {DashViewModel} from './DashViewModel';
 import {DashViewSpec} from './DashViewSpec';
+import {dashContainerMenuButton} from './impl/DashContainerMenuButton';
 import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
 import {convertGLToState, convertStateToGL, getViewModelId} from './impl/DashContainerUtils';
 import {dashView} from './impl/DashView';
@@ -96,6 +98,8 @@ export class DashContainerModel extends HoistModel {
     @bindable contentLocked;
     /** @member {boolean} */
     @bindable renameLocked;
+    /** @member {boolean} */
+    @bindable showMenuButton;
 
     //------------------------
     // Immutable public properties
@@ -131,6 +135,8 @@ export class DashContainerModel extends HoistModel {
      * @param {boolean} [c.layoutLocked] - prevent re-arranging views by dragging and dropping.
      * @param {boolean} [c.contentLocked] - prevent adding and removing views.
      * @param {boolean} [c.renameLocked] - prevent renaming views.
+     * @param {boolean} [c.showMenuButton] - true to include a button in each stack header showing
+     *      the dash context menu.
      * @param {Object} [c.goldenLayoutSettings] - custom settings to be passed to the GoldenLayout instance.
      *      @see http://golden-layout.com/docs/Config.html
      * @param {PersistOptions} [c.persistWith] - options governing persistence
@@ -149,6 +155,7 @@ export class DashContainerModel extends HoistModel {
         layoutLocked = false,
         contentLocked = false,
         renameLocked = false,
+        showMenuButton = false,
         goldenLayoutSettings,
         persistWith = null,
         emptyText = 'No views have been added to the container.',
@@ -169,6 +176,7 @@ export class DashContainerModel extends HoistModel {
         this.layoutLocked = layoutLocked;
         this.contentLocked = contentLocked;
         this.renameLocked = renameLocked;
+        this.showMenuButton = showMenuButton;
         this.goldenLayoutSettings = goldenLayoutSettings;
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
@@ -380,24 +388,34 @@ export class DashContainerModel extends HoistModel {
         // Listen to active item change to support RenderMode
         stack.on('activeContentItemChanged', () => this.onStackActiveItemChange(stack));
 
+        // Add menu button to stack header
+        const containerEl = stack.header.controlsContainer[0];
+        ReactDOM.render(dashContainerMenuButton({dashContainerModel: this, stack}), containerEl);
+
         // Add context menu listener for adding components
         const $el = stack.header.element;
         $el.off('contextmenu').contextmenu(e => {
-            this.showContextMenu(e, {stack});
+            this.showContextMenu(e, $el, {stack});
             return false;
         });
     }
 
-    showContextMenu(e, {stack, viewModel, index}) {
+    showContextMenu(e, $target, {stack, viewModel, index}) {
         if (this.contentLocked) return;
 
-        const offset = {left: e.clientX, top: e.clientY},
-            menu = dashContainerContextMenu({
-                stack,
-                viewModel,
-                index,
-                dashContainerModel: this
-            });
+        // If event does not contain co-ordinates, fallback to showing context menu below target
+        let offset = {left: e.clientX, top: e.clientY};
+        if (isNil(offset.left) || isNil(offset.top)) {
+            offset = $target.offset();
+            offset.top += 30;
+        }
+
+        const menu = dashContainerContextMenu({
+            stack,
+            viewModel,
+            index,
+            dashContainerModel: this
+        });
 
         ContextMenu.show(menu, offset, null, XH.darkTheme);
     }
@@ -444,7 +462,7 @@ export class DashContainerModel extends HoistModel {
 
             $el.off('contextmenu').contextmenu(e => {
                 const index = stack.contentItems.indexOf(item);
-                this.showContextMenu(e, {stack, viewModel, index});
+                this.showContextMenu(e, $el, {stack, viewModel, index});
                 return false;
             });
 
