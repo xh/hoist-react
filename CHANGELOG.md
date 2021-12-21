@@ -4,7 +4,7 @@
 
 ### 💥 Breaking Changes
 
-* Hoist grids now require ag-Grid v26.1.0 or higher - update your ag-Grid dependency in your app's
+* Hoist grids now require ag-Grid v26.2.0 or higher - update your ag-Grid dependency in your app's
   `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
 * `Record` class renamed to `StoreRecord` in anticipation of upcoming changes to JavaScript
   standard and to improve compatibility with TypeScript.
