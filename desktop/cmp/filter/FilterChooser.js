@@ -28,7 +28,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
     className: 'xh-filter-chooser',
     render({model, className, ...props}, ref) {
         const [layoutProps, chooserProps] = splitLayoutProps(props),
-            {inputRef, selectOptions, unsupportedFilter, favoritesIsOpen} = model,
+            {inputRef, suggestFieldsWhenEmpty, selectOptions, unsupportedFilter, favoritesIsOpen} = model,
             {autoFocus, enableClear, leftIcon, maxMenuHeight, menuPlacement} = chooserProps,
             disabled = unsupportedFilter || chooserProps.disabled,
             placeholder = unsupportedFilter ?
@@ -58,9 +58,9 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                     options: selectOptions,
                     optionRenderer,
                     rsOptions: {
-                        defaultOptions: false,
-                        openMenuOnClick: false,
-                        openMenuOnFocus: false,
+                        defaultOptions: suggestFieldsWhenEmpty,
+                        openMenuOnClick: suggestFieldsWhenEmpty,
+                        openMenuOnFocus: suggestFieldsWhenEmpty,
                         isOptionDisabled: (opt) => opt.type === 'msg',
                         noOptionsMessage: () => null,
                         loadingMessage: () => null,

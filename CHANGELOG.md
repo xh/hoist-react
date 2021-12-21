@@ -2,6 +2,11 @@
 
 ## v45.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `FilterChooserModel` supports new `suggestFieldsWhenEmpty` config, which can be used to
+  aid the discoverability of the available fields.
+
 ### 💥 Breaking Changes
 
 * `Record` class renamed to `StoreRecord` in anticipation of upcoming changes to JavaScript
