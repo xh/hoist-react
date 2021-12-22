@@ -19,6 +19,10 @@
   * LogUtils.withShortDebug
   * Promise.start
 
+### 🐞 Bug Fixes
+
+* Fixes issue displaying the DashContainer overflow menu when the menu button is enabled
+
 * [Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...develop)
 
 
