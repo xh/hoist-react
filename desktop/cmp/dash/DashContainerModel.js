@@ -388,9 +388,12 @@ export class DashContainerModel extends HoistModel {
         // Listen to active item change to support RenderMode
         stack.on('activeContentItemChanged', () => this.onStackActiveItemChange(stack));
 
-        // Add menu button to stack header
-        const containerEl = stack.header.controlsContainer[0];
-        ReactDOM.render(dashContainerMenuButton({dashContainerModel: this, stack}), containerEl);
+        // Add menu button to stack header, being sure to preserve any controls that GL has installed
+        const controlsContainerEl = stack.header.controlsContainer[0],
+            menuContainerEl = document.createElement('div');
+
+        controlsContainerEl.appendChild(menuContainerEl);
+        ReactDOM.render(dashContainerMenuButton({dashContainerModel: this, stack}), menuContainerEl);
 
         // Add context menu listener for adding components
         const $el = stack.header.element;
