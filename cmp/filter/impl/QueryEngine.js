@@ -26,7 +26,7 @@ import {
 /**
  * Provide the querying support for FilterChooserModel.
  *
- *  @private
+ * @private
  *
  * Process the user typed query, FieldSpecs, and FilterChooserModel to come up with a sorted list
  * of auto-complete options to be displayed to the user.
@@ -46,13 +46,14 @@ export class QueryEngine {
     //-----------------------------------------------------------------
     async queryAsync(query) {
         const q = this.getDecomposedQuery(query);
-        if (!q) return [];
 
         //-----------------------------------------------------------------------
-        // We respond in four primary states, described and implemented below.
+        // We respond in five primary states, described and implemented below.
         //-----------------------------------------------------------------------
         let ret = [];
-        if (q.field && !q.op) {
+        if (!q) {
+            ret = this.whenNoQuery();
+        } else if (q.field && !q.op) {
             ret = this.openSearching(q);
         } else if (q.field && q.op === 'is') {
             ret = this.withIsSearchingOnField(q);
@@ -66,7 +67,14 @@ export class QueryEngine {
     }
 
     //------------------------------------------------------------------------
-    // 1) No op yet, so field not fixed -- get field or value matches.
+    // 1) No query -- return all field suggestions if enabled
+    //------------------------------------------------------------------------
+    whenNoQuery() {
+        return this.model.suggestFieldsWhenEmpty ? this.getFieldOpts() : [];
+    }
+
+    //------------------------------------------------------------------------
+    // 2) No op yet, so field not fixed -- get field or value matches.
     //------------------------------------------------------------------------
     openSearching(q) {
         // Suggest matching *fields* for the user to select on their way to a more targeted query.
@@ -91,7 +99,7 @@ export class QueryEngine {
     }
 
     //--------------------------------------------------------
-    // 2) Op is the psuedo 'is' operator and field is set
+    // 3) Op is the psuedo 'is' operator and field is set
     //-------------------------------------------------------
     withIsSearchingOnField(q) {
         const spec = find(this.fieldSpecs, s => caselessEquals(s.displayName, q.field));
@@ -117,7 +125,7 @@ export class QueryEngine {
     }
 
     //----------------------------------------------------------------------------------
-    // 3) We have an op and our field is set -- produce suggestions on that field
+    // 4) We have an op and our field is set -- produce suggestions on that field
     //----------------------------------------------------------------------------------
     valueSearchingOnField(q) {
         const spec = find(this.fieldSpecs, s => caselessEquals(s.displayName, q.field));
@@ -169,7 +177,7 @@ export class QueryEngine {
     }
 
     //------------------------------------------------------------------------------------------
-    // 4) We have an op and a value but no field-- look in *all* fields for matching candidates
+    // 5) We have an op and a value but no field-- look in *all* fields for matching candidates
     //-------------------------------------------------------------------------------------------
     valueSearchingOnAll(q) {
         let ret = flatMap(this.fieldSpecs, spec => this.getValueMatchesForField(q.op, q.value, spec));
@@ -184,7 +192,7 @@ export class QueryEngine {
     //-------------------------------------------------
     getFieldOpts(queryStr) {
         return this.fieldSpecs
-            .filter(s => caselessStartsWith(s.displayName, queryStr))
+            .filter(s => !queryStr || caselessStartsWith(s.displayName, queryStr))
             .map(s => fieldOption({fieldSpec: s, isExact: caselessEquals(s.displayName, queryStr)}));
     }
 
@@ -278,6 +286,7 @@ export class QueryEngine {
             results;
     }
 }
+
 //----------------------
 // Local Helper functions
 //------------------------

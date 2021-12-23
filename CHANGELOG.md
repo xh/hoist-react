@@ -2,6 +2,12 @@
 
 ## v45.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `FilterChooser` displays available fields when the query is empty. This can be disabled
+  with the new `FilterChooserModel.suggestFieldsWhenEmpty` config.
+* `TreeMap` uses lightest shading for zero heat, reserving grey for nil.
+
 ### 💥 Breaking Changes
 
 * Hoist grids now require ag-Grid v26.2.0 or higher - update your ag-Grid dependency in your app's
