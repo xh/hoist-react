@@ -154,7 +154,7 @@ class LocalModel extends HoistModel {
     }
 
     renderHighChart() {
-        // Chart does not rerender well in fullscreen mode
+        // Chart does not re-render well in fullscreen mode
         // so just close fullscreen mode if it's open.
         if (this.chart?.fullscreen?.isOpen) {
             this.chart.fullscreen.close();
