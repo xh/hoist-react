@@ -188,8 +188,6 @@ class GridLocalModel extends HoistModel {
         // 'immutableData' and 'rowDataChangeDetectionStrategy' props both deal with a *new* sets of rowData.
         // We use transactions instead, but our data fully immutable so seems safest to set these as well.
         let ret = {
-            // reactUi will be made the default in AG Grid v27
-            reactUi: true,
             model: model.agGridModel,
             immutableData: true,
             rowDataChangeDetectionStrategy: 'IdentityCheck',
