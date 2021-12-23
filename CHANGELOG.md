@@ -28,6 +28,7 @@
 ### 🐞 Bug Fixes
 
 * Fixes issue displaying the DashContainer overflow menu when the menu button is enabled
+* A chart in fullscreen mode now gracefully exits fullscreen mode before re-rendering
 
 * [Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...develop)
 
