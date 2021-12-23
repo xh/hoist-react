@@ -111,7 +111,7 @@ export class FilterChooserModel extends HoistModel {
         valueSource = bind,
         initialValue = null,
         initialFavorites = [],
-        suggestFieldsWhenEmpty,
+        suggestFieldsWhenEmpty = true,
         maxTags = 100,
         maxResults = 50,
         persistWith,

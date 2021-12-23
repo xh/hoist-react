@@ -52,7 +52,7 @@ export class QueryEngine {
         //-----------------------------------------------------------------------
         let ret = [];
         if (!q) {
-            ret = this.suggestAllFields();
+            ret = this.whenNoQuery();
         } else if (q.field && !q.op) {
             ret = this.openSearching(q);
         } else if (q.field && q.op === 'is') {
@@ -67,11 +67,10 @@ export class QueryEngine {
     }
 
     //------------------------------------------------------------------------
-    // 1) No query -- return all field suggestions
+    // 1) No query -- return all field suggestions if enabled
     //------------------------------------------------------------------------
-    suggestAllFields() {
-        // Suggest all for the user to select on their way to a more targeted query.
-        return this.getFieldOpts();
+    whenNoQuery() {
+        return this.model.suggestFieldsWhenEmpty ? this.getFieldOpts() : [];
     }
 
     //------------------------------------------------------------------------

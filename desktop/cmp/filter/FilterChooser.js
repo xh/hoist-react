@@ -60,7 +60,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                     rsOptions: {
                         defaultOptions: suggestFieldsWhenEmpty,
                         openMenuOnClick: suggestFieldsWhenEmpty,
-                        openMenuOnFocus: suggestFieldsWhenEmpty,
+                        openMenuOnFocus: false,
                         isOptionDisabled: (opt) => opt.type === 'msg',
                         noOptionsMessage: () => null,
                         loadingMessage: () => null,

@@ -4,8 +4,8 @@
 
 ### 🎁 New Features
 
-* `FilterChooserModel` supports new `suggestFieldsWhenEmpty` config, which can be used to
-  aid the discoverability of the available fields.
+* `FilterChooser` displays available fields when the query is empty. This can be disabled
+  with the new `FilterChooserModel.suggestFieldsWhenEmpty` config.
 * `TreeMap` uses lightest shading for zero heat, reserving grey for nil.
 
 ### 💥 Breaking Changes
