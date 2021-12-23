@@ -48,6 +48,9 @@ export class FilterChooserModel extends HoistModel {
     /** @member {FilterChooserFieldSpec[]} */
     @managed fieldSpecs = [];
 
+    /** @member {boolean} */
+    suggestFieldsWhenEmpty;
+
     /** @member {number} */
     maxTags;
 
@@ -93,6 +96,8 @@ export class FilterChooserModel extends HoistModel {
      *      FieldFilters, to be 'AND'ed together.
      * @param {(Filter[]|function)} [c.initialFavorites] - initial favorites as an array of filter
      *      configurations, or a function to produce such an array.
+     * @param {boolean} [c.suggestFieldsWhenEmpty] - true to offer all field suggestions when the
+     *      control is focussed with an empty query, to aid discoverability.
      * @param {number} [c.maxTags] - maximum number of filter tags to render before disabling the
      *      control. Limits the performance impact of rendering large filters.
      * @param {number} [c.maxResults] - maximum number of dropdown options to show before
@@ -106,6 +111,7 @@ export class FilterChooserModel extends HoistModel {
         valueSource = bind,
         initialValue = null,
         initialFavorites = [],
+        suggestFieldsWhenEmpty = true,
         maxTags = 100,
         maxResults = 50,
         persistWith,
@@ -117,6 +123,7 @@ export class FilterChooserModel extends HoistModel {
         this.bind = bind;
         this.valueSource = valueSource;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
+        this.suggestFieldsWhenEmpty = !!suggestFieldsWhenEmpty;
         this.maxTags = maxTags;
         this.maxResults = maxResults;
         this.queryEngine = new QueryEngine(this);
