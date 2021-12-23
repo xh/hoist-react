@@ -277,8 +277,8 @@ class LocalModel extends HoistModel {
                 stops: [
                     [0,   darkTheme ? '#CC0000' : '#640000'], // Max negative
                     [0.4, darkTheme ? '#0E0909' : '#f7f2f2'], // Min negative
-                    [0.5, darkTheme ? '#555555' : '#BBBBBB'], // Zero / None
-                    [0.6, darkTheme ? '#090E09' : '#f2f7f2'], // Min positive
+                    [0.5, darkTheme ? '#555555' : '#BBBBBB'], // None / incomputable
+                    [0.6, darkTheme ? '#090E09' : '#f2f7f2'], // Min positive / zero
                     [1,   darkTheme ? '#00CC00' : '#006400'] // Max positive
                 ]
             }
