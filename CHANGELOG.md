@@ -6,6 +6,7 @@
 
 * `FilterChooserModel` supports new `suggestFieldsWhenEmpty` config, which can be used to
   aid the discoverability of the available fields.
+* `TreeMap` uses lightest shading for zero heat, reserving grey for nil.
 
 ### 💥 Breaking Changes
 
@@ -23,6 +24,10 @@
   * RestGridModel.selection
   * LogUtils.withShortDebug
   * Promise.start
+
+### 🐞 Bug Fixes
+
+* Fixes issue displaying the DashContainer overflow menu when the menu button is enabled
 
 * [Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...develop)
 
