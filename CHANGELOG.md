@@ -2,6 +2,10 @@
 
 ## v45.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `TreeMap` uses lightest shading for zero heat, reserving grey for nil.
+
 ### 💥 Breaking Changes
 
 * `Record` class renamed to `StoreRecord` in anticipation of upcoming changes to JavaScript
