@@ -346,9 +346,11 @@ export class TreeMapModel extends HoistModel {
                 const {heatValue} = it,
                     isValid = this.valueIsValid(heatValue);
 
-                if (isValid && heatValue > 0) it.colorValue = 0.8;
-                if (isValid && heatValue < 0) it.colorValue = 0.2;
-                if (!it.colorValue) it.colorValue = 0.5;
+                if (isValid) {
+                    it.colorValue = heatValue >= 0 ? 0.8 : 0.2;
+                } else {
+                    it.colorValue = 0.5;
+                }
             });
             return data;
         }
@@ -373,14 +375,12 @@ export class TreeMapModel extends HoistModel {
                 return;
             }
 
-            if (heatValue > 0) {
+            if (heatValue >= 0) {
                 // Normalize positive values between 0.6-1
                 it.colorValue = this.normalizeToRange(heatValue, 0, maxHeat, 0.6, 1);
-            } else if (heatValue < 0) {
+            } else {
                 // Normalize negative values between 0-0.4
                 it.colorValue = this.normalizeToRange(Math.abs(heatValue), maxHeat, 0, 0, 0.4);
-            } else {
-                it.colorValue = 0.5; // Exactly zero
             }
         });
 

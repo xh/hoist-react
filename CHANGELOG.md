@@ -2,6 +2,12 @@
 
 ## v45.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `FilterChooser` displays available fields when the query is empty. This can be disabled
+  with the new `FilterChooserModel.suggestFieldsWhenEmpty` config.
+* `TreeMap` uses lightest shading for zero heat, reserving grey for nil.
+
 ### 💥 Breaking Changes
 
 * `Record` class renamed to `StoreRecord` in anticipation of upcoming changes to JavaScript
@@ -18,6 +24,11 @@
   * RestGridModel.selection
   * LogUtils.withShortDebug
   * Promise.start
+
+### 🐞 Bug Fixes
+
+* Fixes issue displaying the DashContainer overflow menu when the menu button is enabled
+* A chart in fullscreen mode now gracefully exits fullscreen mode before re-rendering
 
 * [Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...develop)
 
