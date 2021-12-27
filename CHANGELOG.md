@@ -7,6 +7,7 @@
 * `FilterChooser` displays available fields when the query is empty. This can be disabled with the
   new `FilterChooserModel.suggestFieldsWhenEmpty` config.
 * `TreeMap` uses lightest shading for zero heat, reserving grey for nil.
+* Admin Activity's `ClientErrors` and `ActivityDetail` now show second precision in their timestamps.
 
 ### 💥 Breaking Changes
 
