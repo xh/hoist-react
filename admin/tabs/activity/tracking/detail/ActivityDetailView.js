@@ -8,7 +8,7 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 import {jsonInput, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {dateTimeRenderer, numberRenderer} from '@xh/hoist/format';
+import {dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {ActivityDetailModel} from './ActivityDetailModel';
 
@@ -82,7 +82,7 @@ const detailRecForm = hoistCmp.factory(
                             formField({
                                 field: 'dateCreated',
                                 item: textInput(),
-                                readonlyRenderer: dateTimeRenderer({})
+                                readonlyRenderer: dateTimeSecRenderer({})
                             }),
                             formField({
                                 field: 'elapsed',

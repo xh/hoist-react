@@ -11,7 +11,7 @@ const {DATE, STRING} = FieldType;
 
 export const dateCreated = {
     field: {name: 'dateCreated', type: DATE},
-    ...Col.dateTime
+    ...Col.dateTimeSec
 };
 
 export const lastUpdated = {
