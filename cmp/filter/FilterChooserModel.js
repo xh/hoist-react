@@ -4,32 +4,33 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, PersistenceProvider, XH, TaskObserver} from '@xh/hoist/core';
-import {FieldFilter, parseFilter, combineValueFilters, withFilterByTypes} from '@xh/hoist/data';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {HoistModel, managed, PersistenceProvider, TaskObserver, XH} from '@xh/hoist/core';
+import {combineValueFilters, FieldFilter, parseFilter, withFilterByTypes} from '@xh/hoist/data';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
-    compact,
     cloneDeep,
+    compact,
+    flatMap,
     flatten,
+    forEach,
     groupBy,
+    isArray,
     isEmpty,
+    isFinite,
+    isFunction,
     isString,
     partition,
     sortBy,
-    flatMap,
-    forEach,
-    isArray,
-    isFunction,
     uniq,
     uniqBy
 } from 'lodash';
 
 import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
+import {compoundFilterOption, fieldFilterOption} from './impl/Option';
 import {QueryEngine} from './impl/QueryEngine';
-import {fieldFilterOption, compoundFilterOption} from './impl/Option';
 
 export class FilterChooserModel extends HoistModel {
 
@@ -88,8 +89,8 @@ export class FilterChooserModel extends HoistModel {
      *      wish to combine this model's values with other filters, send it to the server,
      *      or otherwise observe and handle value changes manually.
      * @param {(Store|View)} [c.valueSource] - Store or cube View to be used to lookup matching
-     *      Field-level defaults for `fieldSpecs` and to provide suggested data values (if configured)
-     *      from user input. Defaults to `bind` if provided.
+     *      Field-level defaults for `fieldSpecs` and to provide suggested data values (if so
+     *      configured) from user input. Defaults to `bind` if provided.
      * @param {(Filter|* |[]|function)} [c.initialValue] - Configuration for a filter appropriate
      *      to be rendered and managed by FilterChooser, or a function to produce the same.
      *      Note that FilterChooser currently can only edit and create a flat collection of

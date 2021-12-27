@@ -105,7 +105,7 @@ const allKeys = [...dimKeys, ...flexKeys, ...alignKeys, ...overflowKeys, ...othe
 //------------------------
 const toPx = (v) => {
     // Note isFinite() is native JS - not _.isFinite() - true for numbers + numbers-strings.
-    return isFinite(v) ? `${v}px` : v;
+    return window.isFinite(v) ? `${v}px` : v;
 };
 
 const toTlbrPx = (v) => {
