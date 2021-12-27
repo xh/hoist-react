@@ -11,6 +11,11 @@ const {DATE, STRING} = FieldType;
 
 export const dateCreated = {
     field: {name: 'dateCreated', type: DATE},
+    ...Col.dateTime
+};
+
+export const dateCreatedWithSec = {
+    field: {name: 'dateCreated', type: DATE},
     ...Col.dateTimeSec
 };
 

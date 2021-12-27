@@ -45,7 +45,7 @@ export class ActivityDetailModel extends HoistModel {
                 {...Col.browser, filterable},
                 {...Col.userAgent, hidden, filterable},
                 {...Col.elapsed, filterable},
-                {...Col.dateCreated, displayName: 'Timestamp', filterable}
+                {...Col.dateCreatedWithSec, displayName: 'Timestamp', filterable}
             ]
         });
 
