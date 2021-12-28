@@ -117,7 +117,7 @@ export class LogViewerModel extends HoistModel {
             const recs = this.filesGridModel.selectedRecords,
                 count = recs.length;
             if (!count ||
-                !(await XH.confirm({title: 'Confirm Delete?', message:`Delete ${count} files?`}))) {
+                !(await XH.confirm({title: 'Confirm Delete?', message: `Delete ${count} files?`}))) {
                 return;
             }
             const filenames = recs.map(r => r.data.filename);
@@ -125,7 +125,7 @@ export class LogViewerModel extends HoistModel {
                 url: 'logViewerAdmin/deleteFiles',
                 params: {filenames}
             });
-            await this.refreshAsync()
+            await this.refreshAsync();
         } catch (e) {
             XH.handleException(e);
         }
