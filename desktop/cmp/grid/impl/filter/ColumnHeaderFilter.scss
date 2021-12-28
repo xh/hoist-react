@@ -9,10 +9,8 @@
   height: 350px;
 
   &__icon {
-    margin-top: 2px;
     flex: none !important;
-    width: 1.5em;
-    font-size: 12px;
+    width: var(--xh-grid-header-icon-width);
     color: var(--xh-grid-header-icon-color);
   }
 

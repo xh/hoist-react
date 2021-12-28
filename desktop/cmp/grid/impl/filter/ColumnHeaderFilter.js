@@ -48,6 +48,7 @@ export const columnHeaderFilter = hoistCmp.factory({
                     model.openMenu();
                 }
             }),
+            targetTagName: 'div',
             content: content()
         });
     }
