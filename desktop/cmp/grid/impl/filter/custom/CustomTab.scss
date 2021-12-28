@@ -26,12 +26,13 @@
 
       .xh-select {
         flex: none;
-        width: 170px !important;
+        width: 200px !important;
       }
 
       .xh-button {
         padding: 0 !important;
-        min-width: 24px !important;
+        min-width: 30px !important;
+        margin-left: 2px;
         min-height: 24px !important;
       }
     }
@@ -40,12 +41,12 @@
       margin-top: var(--xh-pad-half-px);
 
       .xh-input {
-        width: 210px !important;
+        width: 200px !important;
       }
 
       .bp3-popover-wrapper,
       .bp3-input-group {
-        width: 100%;
+        width: 200px;
       }
     }
   }

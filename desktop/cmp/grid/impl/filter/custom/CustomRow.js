@@ -19,6 +19,8 @@ import {CustomRowModel} from './CustomRowModel';
  */
 export const customRow = hoistCmp.factory({
     model: uses(CustomRowModel),
+
+    /** @param {CustomRowModel} model */
     render({model}) {
         const {options, op, hideInput} = model;
         return div({
@@ -34,7 +36,6 @@ export const customRow = hoistCmp.factory({
                             options,
                             optionRenderer: (opt) => operatorRenderer({opt})
                         }),
-                        filler(),
                         button({
                             icon: Icon.delete(),
                             intent: 'danger',
