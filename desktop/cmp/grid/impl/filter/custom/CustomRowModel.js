@@ -97,17 +97,17 @@ export class CustomRowModel extends HoistModel {
     getOperatorLabel(op) {
         switch (op) {
             case '=':
-                return 'Equal';
+                return 'Equals';
             case '!=':
-                return 'Not equal';
+                return 'Not equals';
             case '>':
                 return 'Greater than';
             case '>=':
-                return 'Greater than or equal';
+                return 'Greater than or equals';
             case '<':
                 return 'Less than';
             case '<=':
-                return 'Less than or equal';
+                return 'Less than or equals';
             case 'like':
                 return 'Like';
             case 'not like':
