@@ -57,16 +57,20 @@ export const customTab = hoistCmp.factory({
 const tbar = hoistCmp.factory(
     ({model}) => {
         return toolbar({
+            className: 'xh-custom-filter-tab__tbar',
             omit: model.rowModels.length < 2,
             compact: true,
             items: [
+                filler(),
                 buttonGroupInput({
                     bind: 'op',
+                    outlined: true,
                     items: [
                         button({value: 'AND', text: 'AND'}),
                         button({value: 'OR', text: 'OR'})
                     ]
-                })
+                }),
+                filler()
             ]
         });
     }

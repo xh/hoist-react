@@ -30,7 +30,7 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
      *      within the filter affordance. Defaults to true for enumerable fieldTypes.
      * @param {Column~rendererFn} [c.renderer] - function returning a formatted string for each
      *      value in this values filter display. If not provided, the Column's renderer will be used.
-     * @param {object} [c.inputProps] - Props to pass through to the HoistInput components used on
+     * @param {Object} [c.inputProps] - Props to pass through to the HoistInput components used on
      *      the custom filter tab. Note that the HoistInput component used is decided by fieldType.
      * @param {string} [c.defaultOp] - Default operator displayed in custom filter tab.
      * @param {*} [c...rest] - arguments for BaseFilterFieldSpec.

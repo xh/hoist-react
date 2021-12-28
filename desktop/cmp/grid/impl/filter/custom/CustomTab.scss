@@ -9,9 +9,16 @@
     }
   }
 
+  &__tbar {
+    background-color: transparent;
+    .xh-button {
+      width: 60px;
+    }
+  }
+
   &__row {
     padding: var(--xh-pad-half-px);
-    border-bottom: var(--xh-border-solid);
+    border-bottom: 1px solid var(--xh-grid-border-color);
 
     &__top {
       display: flex;

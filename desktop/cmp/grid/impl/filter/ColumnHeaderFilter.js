@@ -115,8 +115,7 @@ const switcherButton = hoistCmp.factory(
             className: 'xh-column-header-filter__tab-switcher__button',
             text: title,
             active: activeTabId === id,
-            intent: 'primary',
-            minimal: false,
+            outlined: true,
             onClick: () => tabContainerModel.activateTab(id)
         });
     }
