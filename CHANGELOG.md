@@ -7,6 +7,7 @@
 * `FilterChooser` displays available fields when the query is empty. This can be disabled with the
   new `FilterChooserModel.suggestFieldsWhenEmpty` config.
 * `TreeMap` uses lightest shading for zero heat, reserving grey for nil.
+* Grid column filters tweaked with several improvements to usability and styling.
 
 ### 💥 Breaking Changes
 
@@ -27,8 +28,8 @@
 
 ### 🐞 Bug Fixes
 
-* Fixes issue displaying the DashContainer overflow menu when the menu button is enabled
-* A chart in fullscreen mode now gracefully exits fullscreen mode before re-rendering
+* `DashContainer` overflow menu still displays when the optional menu button is enabled.
+* Charts in fullscreen mode now exit fullscreen mode gracefully before re-rendering.
 
 ### 📚 Libraries
 

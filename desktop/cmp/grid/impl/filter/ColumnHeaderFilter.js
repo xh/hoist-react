@@ -48,6 +48,7 @@ export const columnHeaderFilter = hoistCmp.factory({
                     model.openMenu();
                 }
             }),
+            targetTagName: 'div',
             content: content()
         });
     }
@@ -71,31 +72,24 @@ const content = hoistCmp.factory({
 const bbar = hoistCmp.factory({
     render({model}) {
         const {commitOnChange} = model;
-        return toolbar({
-            compact: true,
-            items: [
-                button({
-                    icon: Icon.delete(),
-                    text: 'Clear',
-                    intent: 'danger',
-                    disabled: !model.hasFilter,
-                    onClick: () => model.clear()
-                }),
-                filler(),
-                button({
-                    text: commitOnChange ? 'Close' : 'Cancel',
-                    onClick: () => model.closeMenu()
-                }),
-                button({
-                    omit: commitOnChange,
-                    icon: Icon.check(),
-                    text: 'Apply',
-                    intent: 'success',
-                    disabled: !model.hasFilter && !model.hasPendingFilter,
-                    onClick: () => model.commit()
-                })
-            ]
-        });
+        return toolbar(
+            filler(),
+            button({
+                icon: Icon.delete(),
+                text: 'Clear Filter',
+                intent: 'danger',
+                disabled: !model.hasFilter,
+                onClick: () => model.clear()
+            }),
+            button({
+                omit: commitOnChange,
+                icon: Icon.check(),
+                text: 'Apply Filter',
+                intent: 'success',
+                disabled: !model.hasFilter && !model.hasPendingFilter,
+                onClick: () => model.commit()
+            })
+        );
     }
 });
 
@@ -121,8 +115,7 @@ const switcherButton = hoistCmp.factory(
             className: 'xh-column-header-filter__tab-switcher__button',
             text: title,
             active: activeTabId === id,
-            intent: 'primary',
-            minimal: false,
+            outlined: true,
             onClick: () => tabContainerModel.activateTab(id)
         });
     }
