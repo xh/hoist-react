@@ -7,8 +7,14 @@
 * `FilterChooser` displays available fields when the query is empty. This can be disabled with the
   new `FilterChooserModel.suggestFieldsWhenEmpty` config.
 * `TreeMap` uses lightest shading for zero heat, reserving grey for nil.
+* New property `Store.reuseRecords` to govern if records should be reused based on sharing
+identical (by reference) raw data.  NOTE: this behavior was previously built-in, but was deemed
+problematic and unnecessary for most applications.  Applications with large data sets that want to
+continue to use this caching should set this flag explicitly.
 
 ### 💥 Breaking Changes
+* `Store.reuseRecords` must now be explicitly set on grids with large data sets that wish to cache
+records by raw data identity.
 
 * `Record` class renamed to `StoreRecord` in anticipation of upcoming changes to JavaScript standard
   and to improve compatibility with TypeScript.
