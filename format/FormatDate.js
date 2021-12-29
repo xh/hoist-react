@@ -13,6 +13,7 @@ import {createRenderer, saveOriginal} from './FormatUtils';
 
 export const DATE_FMT = 'YYYY-MM-DD',
     DATETIME_FMT = 'YYYY-MM-DD h:mma',
+    DATETIMESEC_FMT = 'YYYY-MM-DD h:mm:ssa',
     TIME_FMT = 'h:mma',
     MONTH_DAY_FMT = 'MMM D';
 
@@ -55,6 +56,14 @@ export function fmtDate(v, opts) {
 export function fmtDateTime(v, opts) {
     opts = isString(opts) ? {fmt: opts} : {...opts};
     defaults(opts, {fmt: DATETIME_FMT});
+    saveOriginal(v, opts);
+
+    return fmtDate(v, opts);
+}
+
+export function fmtDateTimeSec(v, opts) {
+    opts = isString(opts) ? {fmt: opts} : {...opts};
+    defaults(opts, {fmt: DATETIMESEC_FMT});
     saveOriginal(v, opts);
 
     return fmtDate(v, opts);
@@ -121,5 +130,6 @@ export function fmtCompactDate(v, {
 
 export const dateRenderer = createRenderer(fmtDate),
     dateTimeRenderer = createRenderer(fmtDateTime),
+    dateTimeSecRenderer = createRenderer(fmtDateTimeSec),
     timeRenderer = createRenderer(fmtTime),
     compactDateRenderer = createRenderer(fmtCompactDate);

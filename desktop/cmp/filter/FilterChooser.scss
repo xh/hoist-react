@@ -54,6 +54,10 @@
   }
 
   &__field {
+    .prefix {
+      color: var(--xh-text-color-muted);
+    }
+
     .name {
       margin-left: var(--xh-pad-half-px);
       color: var(--xh-intent-primary);

@@ -116,6 +116,12 @@ export class Store extends HoistBase {
      * @param {boolean} [c.idEncodesTreePath] - set to true to indicate that the id for a record
      *      implies a fixed position of the record within the any tree hierarchy.  May be set to
      *      true to maximize performance (default false).
+     * @param {boolean} [c.reuseRecords] - set to true to indicate that records can be cached and
+     *      reused based on id and the raw data object they refer to.  This is a useful optimization
+     *      for large datasets with immutable raw data, allowing them to avoid equality checks,
+     *      object creation, and raw data processing when reloading reference-identical data.
+     *      Should not be used if a processRawData function that depends on external state is
+     *      provided, as this function will be circumvented on subsequent reloads.  Default false.
      * @param {Object} [c.experimental] - flags for experimental features. These features are
      *     designed for early client-access and testing, but are not yet part of the Hoist API.
      * @param {Object[]} [c.data] - source data to load.
@@ -131,6 +137,7 @@ export class Store extends HoistBase {
         loadRootAsSummary = false,
         freezeData = true,
         idEncodesTreePath = false,
+        reuseRecords = false,
         experimental,
         data
     }) {
@@ -146,6 +153,7 @@ export class Store extends HoistBase {
         this.loadRootAsSummary = loadRootAsSummary;
         this.freezeData = freezeData;
         this.idEncodesTreePath = idEncodesTreePath;
+        this.reuseRecords = reuseRecords;
         this.lastUpdated = Date.now();
 
         this.resetRecords();
@@ -806,21 +814,22 @@ export class Store extends HoistBase {
     // StoreRecord Generation
     //---------------------------------------
     createRecord(raw, parent, isSummary) {
-        const {processRawData} = this;
+        // Note idSpec run against raw data here.
+        const id = this.idSpec(raw);
 
+        // Potentially re-use existing record if raw data is reference equal and tree path identical
+        if (this.reuseRecords) {
+            const cached = this._committed?.recordMap.get(id);
+            if (cached?.raw === raw && equal(cached.parent?.treePath, parent?.treePath)) {
+                return cached;
+            }
+        }
+
+        const {processRawData} = this;
         let data = raw;
         if (processRawData) {
             data = processRawData(raw);
             throwIf(!data, 'Store.processRawData should return an object. If writing/editing, be sure to return a clone!');
-        }
-
-        // Note idSpec run against raw data here.
-        const id = this.idSpec(raw);
-
-        // Re-use existing record if raw data and tree path identical
-        const cached = this._committed?.recordMap.get(id);
-        if (cached && cached.raw === raw && equal(cached.parent?.treePath, parent?.treePath)) {
-            return cached;
         }
 
         data = this.parseRaw(data);

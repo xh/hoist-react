@@ -16,7 +16,7 @@ import {isNil} from 'lodash';
  * Create an option representing a field suggestion
  * @return {FilterChooserOption}
  */
-export function fieldOption({fieldSpec, isExact = false}) {
+export function fieldOption({fieldSpec, isExact = false, inclPrefix = true}) {
     const {displayName} = fieldSpec;
     return {
         type: 'field',
@@ -24,6 +24,7 @@ export function fieldOption({fieldSpec, isExact = false}) {
         label: displayName,
         isExact,
 
+        inclPrefix,
         fieldSpec
     };
 }
@@ -89,7 +90,7 @@ export function msgOption(msg) {
  * @property {string} type - one of ['filter'|'field'|'msg'] - indicates if option allows user to
  *      select a fully-formed filter or a field to use for filtering, or if option is an
  *      unselectable informational message.
- * @property {string} value  - unique value for the underlying Select.
+ * @property {string} value - unique value for the underlying Select.
  * @property {string} label - unique display for the underlying Select.
  * @property {boolean} isExact - if based on a matching process, was this an exact match?
  */

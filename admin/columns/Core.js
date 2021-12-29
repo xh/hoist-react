@@ -20,7 +20,8 @@ export const type = {
 
 export const description = {
     field: {name: 'description', type: STRING},
-    width: 200
+    flex: true,
+    minWidth: 200
 };
 
 export const notes = {

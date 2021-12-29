@@ -10,7 +10,7 @@ import {hoistCmp} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {jsonInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {fmtDateTime} from '@xh/hoist/format';
+import {fmtDateTimeSec} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {isNil} from 'lodash';
 
@@ -42,7 +42,7 @@ export const clientErrorDetail = hoistCmp.factory(
                             formField({
                                 field: 'dateCreated',
                                 item: textInput(),
-                                readonlyRenderer: fmtDateTime
+                                readonlyRenderer: fmtDateTimeSec
                             }),
                             formField({
                                 field: 'appVersion',

@@ -4,6 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistAppModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -17,6 +18,13 @@ export class AppModel extends HoistAppModel {
 
     @managed
     _tabModel;
+
+    constructor() {
+        super();
+
+        // Enable managed autosize mode across Hoist Admin console grids.
+        GridModel.DEFAULT_AUTOSIZE_MODE = GridAutosizeMode.MANAGED;
+    }
 
     getRoutes() {
         return [
