@@ -22,12 +22,14 @@ export const userPanel = hoistCmp.factory({
             tbar: [
                 switchInput({
                     bind: 'activeOnly',
-                    label: 'Active only'
+                    label: 'Active only',
+                    labelSide: 'left'
                 }),
                 '-',
                 switchInput({
                     bind: 'withRolesOnly',
-                    label: 'With roles only'
+                    label: 'With roles only',
+                    labelSide: 'left'
                 }),
                 filler(),
                 gridCountLabel({unit: 'user'}),
