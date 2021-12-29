@@ -58,6 +58,7 @@ export class LogViewerModel extends HoistModel {
             enableExport: true,
             hideHeaders: true,
             persistWith: this.persistWith,
+            selModel: 'multiple',
             store: new UrlStore({
                 url: 'logViewerAdmin/listFiles',
                 idSpec: 'filename',
@@ -73,6 +74,12 @@ export class LogViewerModel extends HoistModel {
                 field: 'filename',
                 minWidth: 160,
                 flex: true
+            }],
+            contextMenu: [{
+                icon: Icon.delete(),
+                text: 'Delete',
+                recordsRequired: true,
+                actionFn: () => this.deleteSelectedAsync()
             }]
         });
 
@@ -101,6 +108,27 @@ export class LogViewerModel extends HoistModel {
         } catch (e) {
             XH.handleException(e, {title: 'Error loading list of available log files'});
         }
+    }
+
+    async deleteSelectedAsync() {
+        try {
+            const recs = this.filesGridModel.selectedRecords,
+                count = recs.length;
+            if (!count) return;
+
+            const confirmed = await XH.confirm({title: 'Confirm Delete?', message: `Delete ${count} files?`});
+            if (!confirmed) return;
+
+            const filenames = recs.map(r => r.data.filename);
+            await XH.fetch({
+                url: 'logViewerAdmin/deleteFiles',
+                params: {filenames}
+            });
+            await this.refreshAsync();
+        } catch (e) {
+            XH.handleException(e);
+        }
+
     }
 
     async downloadSelectedAsync() {
