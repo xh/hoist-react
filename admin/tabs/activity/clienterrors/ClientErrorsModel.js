@@ -63,10 +63,10 @@ export class ClientErrorsModel extends HoistModel {
                 {...Col.appVersion},
                 {...Col.appEnvironment},
                 {...Col.msg, displayName: 'User Message', hidden},
-                {...Col.error},
+                {...Col.error, hidden},
                 {...Col.url},
-                {...Col.dateCreatedWithSec, displayName: 'Timestamp'},
-                {...Col.day}
+                {...Col.day},
+                {...Col.dateCreatedWithSec, displayName: 'Timestamp'}
             ]
         });
 
