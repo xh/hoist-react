@@ -70,7 +70,10 @@ export class QueryEngine {
     // 1) No query -- return all field suggestions if enabled
     //------------------------------------------------------------------------
     whenNoQuery() {
-        return this.model.suggestFieldsWhenEmpty ? this.getFieldOpts() : [];
+        const {suggestFieldsWhenEmpty, sortFieldSuggestions} = this.model;
+        if (!suggestFieldsWhenEmpty) return [];
+        const ret = this.getFieldOpts();
+        return sortFieldSuggestions ? this.sort(ret) : ret;
     }
 
     //------------------------------------------------------------------------
@@ -193,7 +196,11 @@ export class QueryEngine {
     getFieldOpts(queryStr) {
         return this.fieldSpecs
             .filter(s => !queryStr || caselessStartsWith(s.displayName, queryStr))
-            .map(s => fieldOption({fieldSpec: s, isExact: caselessEquals(s.displayName, queryStr)}));
+            .map(s => fieldOption({
+                fieldSpec: s,
+                inclPrefix: !!queryStr,
+                isExact: caselessEquals(s.displayName, queryStr)
+            }));
     }
 
     getValueMatchesForField(op, queryStr, spec) {
@@ -278,12 +285,16 @@ export class QueryEngine {
     }
 
     sortAndTruncate(results) {
-        results = sortBy(results, o => o.type, o => !o.isExact, o => o.label);
+        results = this.sort(results);
 
         const max = this.model.maxResults;
         return max > 0 && results.length > max ?
             [...results.slice(0, max), msgOption(`${max} of ${fmtNumber(results.length)} results shown`)] :
             results;
+    }
+
+    sort(results) {
+        return sortBy(results, o => o.type, o => !o.isExact, o => o.label);
     }
 }
 
