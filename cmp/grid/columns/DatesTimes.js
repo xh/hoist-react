@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {compactDateRenderer, dateRenderer, dateTimeRenderer, timeRenderer} from '@xh/hoist/format';
+import {compactDateRenderer, dateRenderer, dateTimeRenderer, dateTimeSecRenderer, timeRenderer} from '@xh/hoist/format';
 import {ExportFormat} from './ExportFormat';
 
 const defaults = {align: 'right'};
@@ -28,6 +28,14 @@ export const dateTime = {
     renderer: dateTimeRenderer(),
     exportFormat: ExportFormat.DATETIME_FMT,
     width: 180
+};
+
+export const dateTimeSec = {
+    ...defaults,
+    align: 'left',
+    renderer: dateTimeSecRenderer(),
+    exportFormat: ExportFormat.DATETIME_FMT,
+    width: 190
 };
 
 export const compactDate = {

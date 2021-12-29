@@ -14,6 +14,11 @@ export const dateCreated = {
     ...Col.dateTime
 };
 
+export const dateCreatedWithSec = {
+    field: {name: 'dateCreated', type: DATE},
+    ...Col.dateTimeSec
+};
+
 export const lastUpdated = {
     field: {name: 'lastUpdated', type: DATE},
     ...Col.dateTime
