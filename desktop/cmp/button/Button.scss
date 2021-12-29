@@ -51,6 +51,8 @@
     .xh-button.bp3-button {
       &.xh-button--minimal,
       &.xh-button--outlined {
+        // Ensures outlined buttons in button-groups appear seamlessly adjacent to each other in dark mode.
+        margin-right: 0;
         padding: var(--xh-pad-half-px) var(--xh-pad-px);
       }
 

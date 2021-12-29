@@ -6,9 +6,9 @@
  */
 import {XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
-import {olderThan, MILLISECONDS, MINUTES} from '@xh/hoist/utils/datetime';
+import {MILLISECONDS, MINUTES, olderThan} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
-import {pull, isNil, isFunction, isBoolean, isString} from 'lodash';
+import {isBoolean, isFinite, isFunction, isNil, isString, pull} from 'lodash';
 
 /**
  *
@@ -45,7 +45,7 @@ export class Timer {
      *
      * Main entry point, to get a new, managed timer.
      *
-     * @param {function} runFn - return a promise to allow timer to block and prevent overlapping runs.
+     * @param {function} runFn - return a promise to allow timer to prevent overlapping runs.
      * @param {(number|function|string)} interval - interval between runs, in milliseconds.
      *      if <=0 job will not run.  If specified as a function, will be re-evaluated after every
      *      timer run.  If specified as a string, value will be assumed to be a config, and will be
