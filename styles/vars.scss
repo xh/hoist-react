@@ -436,6 +436,7 @@ body {
 
   --xh-grid-header-border-color: var(--grid-header-border-color, var(--xh-grid-border-color));
   --xh-grid-header-icon-color: var(--grid-header-icon-color, var(--xh-text-color-muted));
+  --xh-grid-header-icon-width: var(--grid-header-icon-width, 1.4em);
   --xh-grid-header-lr-pad: var(--grid-header-cell-lr-pad, 11);
   --xh-grid-header-lr-pad-px: calc(var(--xh-grid-header-lr-pad) * 1px);
   --xh-grid-header-font-family: var(--grid-header-font-family, var(--xh-grid-font-family));

@@ -30,7 +30,22 @@ export const customTab = hoistCmp.factory({
                 frame(
                     div({
                         className: 'xh-custom-filter-tab__list',
-                        items: model.rowModels.map(it => customRow({model: it, key: it.xhId}))
+                        items: [
+                            ...model.rowModels.map(it => customRow({model: it, key: it.xhId})),
+                            div({
+                                className: 'xh-custom-filter-tab__list__add-btn-row',
+                                items: [
+                                    filler(),
+                                    button({
+                                        icon: Icon.add(),
+                                        text: 'Add',
+                                        intent: 'success',
+                                        title: 'Add condition',
+                                        onClick: () => model.addEmptyRow()
+                                    })
+                                ]
+                            })
+                        ]
                     })
                 ),
                 implicitJoinMessage()
@@ -42,23 +57,20 @@ export const customTab = hoistCmp.factory({
 const tbar = hoistCmp.factory(
     ({model}) => {
         return toolbar({
+            className: 'xh-custom-filter-tab__tbar',
+            omit: model.rowModels.length < 2,
             compact: true,
             items: [
+                filler(),
                 buttonGroupInput({
                     bind: 'op',
+                    outlined: true,
                     items: [
                         button({value: 'AND', text: 'AND'}),
                         button({value: 'OR', text: 'OR'})
                     ]
                 }),
-                filler(),
-                button({
-                    icon: Icon.add(),
-                    text: 'Add',
-                    intent: 'success',
-                    title: 'Add condition',
-                    onClick: () => model.addEmptyRow()
-                })
+                filler()
             ]
         });
     }
