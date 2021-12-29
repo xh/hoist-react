@@ -19,25 +19,34 @@ import {CustomRowModel} from './CustomRowModel';
  */
 export const customRow = hoistCmp.factory({
     model: uses(CustomRowModel),
+
+    /** @param {CustomRowModel} model */
     render({model}) {
         const {options, op, hideInput} = model;
-        return hbox({
+        return div({
             className: `xh-custom-filter-tab__row xh-custom-filter-tab__row--${kebabCase(op)}`,
             items: [
-                select({
-                    bind: 'op',
-                    enableFilter: false,
-                    hideDropdownIndicator: true,
-                    hideSelectedOptionCheck: true,
-                    menuWidth: 110,
-                    options,
-                    optionRenderer: (opt) => operatorRenderer({opt})
+                hbox({
+                    className: `xh-custom-filter-tab__row__top`,
+                    items: [
+                        select({
+                            bind: 'op',
+                            enableFilter: false,
+                            hideSelectedOptionCheck: true,
+                            options,
+                            optionRenderer: (opt) => operatorRenderer({opt})
+                        }),
+                        button({
+                            icon: Icon.delete(),
+                            intent: 'danger',
+                            onClick: () => model.removeRow()
+                        })
+                    ]
                 }),
-                inputField({omit: hideInput}),
-                button({
-                    icon: Icon.delete(),
-                    intent: 'danger',
-                    onClick: () => model.removeRow()
+                hbox({
+                    omit: hideInput,
+                    className: `xh-custom-filter-tab__row__bottom`,
+                    item: inputField()
                 })
             ]
         });
@@ -55,6 +64,7 @@ const inputField = hoistCmp.factory(
                 enableClear: true,
                 flex: 1,
                 width: null,
+                autoFocus: true,
                 commitOnChange,
                 ...fieldSpec.inputProps
             };

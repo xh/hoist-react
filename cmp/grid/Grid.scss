@@ -43,7 +43,6 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    min-height: 32px;
     cursor: pointer;
 
     span {
@@ -56,7 +55,7 @@
     .xh-grid-header-menu-icon,
     .xh-grid-header-expand-collapse-icon {
       color: var(--xh-grid-header-icon-color);
-      width: 1.5em;
+      width: var(--xh-grid-header-icon-width);
     }
 
     &.xh-grid-header-multisort .xh-grid-header-sort-icon svg {
@@ -452,7 +451,7 @@
 
   .xh-grid-header-sort-icon,
   .xh-grid-header-menu-icon {
-    width: 1.5em;
+    width: var(--xh-grid-header-icon-width);
     display: none;
   }
 

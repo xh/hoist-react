@@ -33,15 +33,14 @@ export const valuesTab = hoistCmp.factory({
 
 const tbar = hoistCmp.factory(
     () => {
-        return toolbar({
-            compact: true,
-            item: storeFilterField({
+        return toolbar(
+            storeFilterField({
                 bind: 'filterText',
                 leftIcon: Icon.search(),
                 placeholder: 'Search...',
                 flex: 1
             })
-        });
+        );
     }
 );
 
