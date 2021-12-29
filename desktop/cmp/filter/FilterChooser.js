@@ -125,12 +125,12 @@ function optionRenderer(opt) {
 
 const fieldOption = hoistCmp.factory({
     model: false, observer: false, memo: false,
-    render({fieldSpec}) {
+    render({fieldSpec, inclPrefix}) {
         const {displayName, ops, example} = fieldSpec;
         return hframe({
             className: 'xh-filter-chooser-option__field',
             items: [
-                div('e.g.'),
+                div({className: 'prefix', item: 'e.g.', omit: !inclPrefix}),
                 div({className: 'name', item: displayName}),
                 div({className: 'operators', item: '[ ' + ops.join(', ') + ' ]'}),
                 div({className: 'example', item: example})
