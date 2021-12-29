@@ -6,7 +6,6 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
-import {Icon} from '@xh/hoist/icon';
 import {isNil, isArray} from 'lodash';
 
 /**
@@ -54,10 +53,14 @@ export class CustomRowModel extends HoistModel {
     }
 
     get options() {
-        return this.parentModel.availableOperators.map(value => {
-            const label = this.getOperatorLabel(value);
-            return {label, value};
-        });
+        return [
+            ...this.fieldSpec.ops.map(value => {
+                const label = this.getOperatorLabel(value);
+                return {label, value};
+            }),
+            {label: 'Is blank', value: 'blank'},
+            {label: 'Is not blank', value: 'not blank'}
+        ];
     }
 
     get commitOnChange() {
@@ -87,7 +90,7 @@ export class CustomRowModel extends HoistModel {
 
         this.parentModel = parentModel;
         this.colFilterModel = parentModel.parentModel;
-        this.op = op ?? this.options[0].value;
+        this.op = op ?? this.fieldSpec.defaultOp;
         this.inputVal = value;
     }
 
@@ -98,17 +101,25 @@ export class CustomRowModel extends HoistModel {
     getOperatorLabel(op) {
         switch (op) {
             case '=':
-                return Icon.equals();
+                return 'Equals';
             case '!=':
-                return Icon.notEquals();
+                return 'Not equals';
             case '>':
-                return Icon.greaterThan();
+                return 'Greater than';
             case '>=':
-                return Icon.greaterThanEqual();
+                return 'Greater than or equals';
             case '<':
-                return Icon.lessThan();
+                return 'Less than';
             case '<=':
-                return Icon.lessThanEqual();
+                return 'Less than or equals';
+            case 'like':
+                return 'Like';
+            case 'not like':
+                return 'Not like';
+            case 'begins':
+                return 'Begins with';
+            case 'ends':
+                return 'Ends with';
         }
         return op;
     }

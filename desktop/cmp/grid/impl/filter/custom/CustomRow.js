@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {hbox, div, filler} from '@xh/hoist/cmp/layout';
+import {hbox, div} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {dateInput, numberInput, select} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
@@ -19,6 +19,8 @@ import {CustomRowModel} from './CustomRowModel';
  */
 export const customRow = hoistCmp.factory({
     model: uses(CustomRowModel),
+
+    /** @param {CustomRowModel} model */
     render({model}) {
         const {options, op, hideInput} = model;
         return div({
@@ -30,13 +32,10 @@ export const customRow = hoistCmp.factory({
                         select({
                             bind: 'op',
                             enableFilter: false,
-                            hideDropdownIndicator: true,
                             hideSelectedOptionCheck: true,
-                            menuWidth: 110,
                             options,
                             optionRenderer: (opt) => operatorRenderer({opt})
                         }),
-                        filler(),
                         button({
                             icon: Icon.delete(),
                             intent: 'danger',
@@ -45,8 +44,9 @@ export const customRow = hoistCmp.factory({
                     ]
                 }),
                 hbox({
+                    omit: hideInput,
                     className: `xh-custom-filter-tab__row__bottom`,
-                    item: inputField({omit: hideInput})
+                    item: inputField()
                 })
             ]
         });
@@ -61,7 +61,10 @@ const inputField = hoistCmp.factory(
         const {fieldSpec, commitOnChange} = model,
             props = {
                 bind: 'inputVal',
-                width: 210,
+                enableClear: true,
+                flex: 1,
+                width: null,
+                autoFocus: true,
                 commitOnChange,
                 ...fieldSpec.inputProps
             };
