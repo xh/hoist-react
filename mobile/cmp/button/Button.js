@@ -33,19 +33,20 @@ export const [Button, button] = hoistCmp.withFactory({
             disabled,
             icon,
             intent,
-            minimal,
             onClick,
-            outlined,
             style,
             text,
             ...rest
         } = nonLayoutProps;
 
+        let {outlined, minimal} = nonLayoutProps;
         if (rest?.modifier === 'outline') {
-            apiDeprecated('Button.modifier = `outline`', {msg: 'Use `outlined` instead', v: 'v45'});
+            apiDeprecated('Button.modifier = `outline`', {msg: 'Use `outlined` instead', v: 'v47'});
+            outlined = outlined ?? true;
         }
         if (rest?.modifier === 'quiet') {
-            apiDeprecated('Button.modifier = `quiet`', {msg: 'Use `minimal` instead', v: 'v45'});
+            apiDeprecated('Button.modifier = `quiet`', {msg: 'Use `minimal` instead', v: 'v47'});
+            minimal = minimal ?? true;
         }
 
         if (disabled) {
