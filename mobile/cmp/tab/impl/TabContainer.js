@@ -73,15 +73,7 @@ class LocalModel extends HoistModel {
 
     swiper;
 
-    // Capture a reference to the underlying Onsen Swiper from the Tabbar ref.
-    // Note that we must debounce as the first time this method is called the
-    // Tabbar's constructor has not completed and it does not yet have a Swiper.
-    @debounced(1)
-    setSwiper(ref) {
-        if (this.swiper) return;
-        this.swiper = ref?._tabbar?._swiper;
-    }
-
+    // Due to currently unknown reasons, this event handler sometimes gets removed. See: #2842
     constructor() {
         super();
         this.addReaction({
@@ -89,4 +81,14 @@ class LocalModel extends HoistModel {
             run: () => this.swiper?.onResize()
         });
     }
+
+
+    // Capture a reference to the underlying Onsen Swiper from the Tabbar ref.
+    // We must debounce as the first time this method is called the Tabbar's constructor has not completed.
+    @debounced(1)
+    setSwiper(ref) {
+        if (this.swiper) return;
+        this.swiper = ref?._tabbar?._swiper;
+    }
+
 }
