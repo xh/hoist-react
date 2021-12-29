@@ -112,12 +112,17 @@ export class GridFilterModel extends HoistModel {
     }
 
     /**
-     * Get all FieldFilters for specified field
+     * @param {string} field
+     * @return {FieldFilter[]} - all FieldFilters for specified field
      */
     getColumnFilters(field) {
         return flattenFilter(this.filter).filter(it => it.field === field);
     }
 
+    /**
+     * @param {string} field
+     * @returns {GridFilterFieldSpec}
+     */
     getFieldSpec(field) {
         return this.fieldSpecs.find(it => it.field === field);
     }
