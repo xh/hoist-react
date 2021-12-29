@@ -75,14 +75,12 @@ export class LogViewerModel extends HoistModel {
                 minWidth: 160,
                 flex: true
             }],
-            contextMenu: [
-                {
-                    icon: Icon.delete(),
-                    text: 'Delete',
-                    recordsRequired: true,
-                    actionFn: () => this.deleteSelectedAsync()
-                }
-            ]
+            contextMenu: [{
+                icon: Icon.delete(),
+                text: 'Delete',
+                recordsRequired: true,
+                actionFn: () => this.deleteSelectedAsync()
+            }]
         });
 
         this.addReaction(this.syncSelectionReaction());
@@ -116,10 +114,11 @@ export class LogViewerModel extends HoistModel {
         try {
             const recs = this.filesGridModel.selectedRecords,
                 count = recs.length;
-            if (!count ||
-                !(await XH.confirm({title: 'Confirm Delete?', message: `Delete ${count} files?`}))) {
-                return;
-            }
+            if (!count) return;
+
+            const confirmed = await XH.confirm({title: 'Confirm Delete?', message: `Delete ${count} files?`});
+            if (!confirmed) return;
+
             const filenames = recs.map(r => r.data.filename);
             await XH.fetch({
                 url: 'logViewerAdmin/deleteFiles',
