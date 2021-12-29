@@ -7,7 +7,7 @@
 import {HoistModel, useLocalModel, XH} from '@xh/hoist/core';
 import {div, frame} from '@xh/hoist/cmp/layout';
 import {tab as onsenTab, tabbar as onsenTabbar, page} from '@xh/hoist/kit/onsen';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, debounced} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import classNames from 'classnames';
 import './Tabs.scss';
@@ -43,8 +43,8 @@ export function tabContainerImpl({model, className}) {
         className: classNames(className, `xh-tab-container--${switcher?.orientation}`),
         position: switcher?.orientation,
         index: activeTab ? tabs.indexOf(activeTab) : 0,
-        renderTabs: (idx, tabbar) => {
-            impl.setSwiper(tabbar?._tabbar?._swiper);
+        renderTabs: (idx, ref) => {
+            impl.setSwiper(ref);
             return tabs.map(renderTabModel);
         },
         onPreChange: (e) => model.activateTab(tabs[e.index].id),
@@ -73,9 +73,13 @@ class LocalModel extends HoistModel {
 
     swiper;
 
-    setSwiper(swiper) {
+    // Capture a reference to the underlying Onsen Swiper from the Tabbar ref.
+    // Note that we must debounce as the first time this method is called the
+    // Tabbar's constructor has not completed and it does not yet have a Swiper.
+    @debounced(1)
+    setSwiper(ref) {
         if (this.swiper) return;
-        this.swiper = swiper;
+        this.swiper = ref?._tabbar?._swiper;
     }
 
     constructor() {
