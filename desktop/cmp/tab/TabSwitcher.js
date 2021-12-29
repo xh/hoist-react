@@ -4,20 +4,32 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, useLocalModel} from '@xh/hoist/core';
-import {box, div, span, hframe} from '@xh/hoist/cmp/layout';
-import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {Icon} from '@xh/hoist/icon';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {hoistCmp, uses} from '@xh/hoist/core';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {tab as bpTab, tabs as bpTabs, tooltip as bpTooltip, popover, menu, menuItem} from '@xh/hoist/kit/blueprint';
-import {getLayoutProps, createObservableRef, useOnResize, useOnVisibleChange, useOnScroll} from '@xh/hoist/utils/react';
-import {debounced, throwIf, isDisplayed} from '@xh/hoist/utils/js';
-import {isEmpty, compact} from 'lodash';
-import classNames from 'classnames';
-import PT from 'prop-types';
 import composeRefs from '@seznam/compose-react-refs';
+import {box, div, hframe, span} from '@xh/hoist/cmp/layout';
+import {TabContainerModel} from '@xh/hoist/cmp/tab';
+import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {Icon} from '@xh/hoist/icon';
+import {
+    menu,
+    menuItem,
+    popover,
+    tab as bpTab,
+    tabs as bpTabs,
+    tooltip as bpTooltip
+} from '@xh/hoist/kit/blueprint';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {debounced, isDisplayed, throwIf} from '@xh/hoist/utils/js';
+import {
+    createObservableRef,
+    getLayoutProps,
+    useOnResize,
+    useOnScroll,
+    useOnVisibleChange
+} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
+import {compact, isEmpty, isFinite} from 'lodash';
+import PT from 'prop-types';
 
 /**
  * Component to indicate and control the active tab of a TabContainer.

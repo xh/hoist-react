@@ -42,9 +42,9 @@ export const columnHeader = hoistCmp.factory({
 
             let icon;
             if (sort === 'asc') {
-                icon = abs ? Icon.arrowToTop({size: 'sm'}) : Icon.arrowUp({size: 'sm'});
+                icon = abs ? Icon.arrowToTop() : Icon.arrowUp();
             } else if (sort === 'desc') {
-                icon = abs ? Icon.arrowToBottom({size: 'sm'}) : Icon.arrowDown({size: 'sm'});
+                icon = abs ? Icon.arrowToBottom() : Icon.arrowDown();
             }
             return div({className: 'xh-grid-header-sort-icon', item: icon});
         };
