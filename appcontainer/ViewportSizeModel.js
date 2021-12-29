@@ -5,7 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {isFinite} from 'lodash';
 
 /**
  * Track observable width / height of the browser viewport, and provide observable
@@ -61,7 +62,7 @@ export class ViewportSizeModel extends HoistModel {
 
     getLegacyOrientation() {
         const {orientation} = window;
-        return isFinite(orientation) ? orientation: null;
+        return isFinite(orientation) ? orientation : null;
     }
 
 }
