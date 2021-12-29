@@ -70,15 +70,9 @@ const inputField = hoistCmp.factory(
             };
 
         if (fieldSpec.isNumericFieldType) {
-            return numberInput({
-                ...props,
-                enableShorthandUnits: true
-            });
+            return numberInput({...props, enableShorthandUnits: true});
         } else if (fieldSpec.isDateBasedFieldType) {
-            return dateInput({
-                ...props,
-                valueType: fieldSpec.fieldType
-            });
+            return dateInput({...props, valueType: fieldSpec.fieldType});
         }
 
         return select({

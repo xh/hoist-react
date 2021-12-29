@@ -41,14 +41,6 @@ export class CustomTabModel extends HoistModel {
         return this.parentModel.columnFilters;
     }
 
-    get availableOperators() {
-        return [
-            ...this.fieldSpec.ops,
-            'blank',
-            'not blank'
-        ];
-    }
-
     constructor(parentModel) {
         super();
         makeObservable(this);
