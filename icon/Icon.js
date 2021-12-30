@@ -228,6 +228,7 @@ export const Icon = {
     playCircle(p)       {return Icon.icon({...p,  iconName: 'play-circle'})},
     plus(p)             {return Icon.icon({...p,  iconName: 'plus'})},
     plusCircle(p)       {return Icon.icon({...p,  iconName: 'plus-circle'})},
+    pointer(p)          {return Icon.icon({...p,  iconName: 'hand-point-up'})},
     portfolio(p)        {return Icon.icon({...p,  iconName: 'briefcase'})},
     poundSign(p)        {return Icon.icon({...p,  iconName: 'pound-sign'})},
     print(p)            {return Icon.icon({...p,  iconName: 'print'})},
