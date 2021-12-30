@@ -8,7 +8,6 @@ import {filler, label, span, strong} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {Icon} from '@xh/hoist/icon/';
 import {fmtTimeZone} from '@xh/hoist/utils/impl';
 
 export const logViewerToolbar = hoistCmp.factory(

@@ -4,8 +4,9 @@
 
 ### 🎁 New Features
 
-* `FilterChooser` displays available fields when the query is empty. This can be disabled with the
-  new `FilterChooserModel.suggestFieldsWhenEmpty` config.
+* `FilterChooser` displays a list of fields configured for filtering to improve the usability /
+  discoverability of the control. Enabled by default, but can be disabled via
+  new `suggestFieldsWhenEmpty` model config.
 * `TreeMap` uses lightest shading for zero heat, reserving grey for nil.
 * New property `Store.reuseRecords` controls if records should be reused across loads based on
   sharing identical (by reference) raw data. NOTE - this behavior was previously always enabled, but
@@ -17,9 +18,10 @@
 ### 💥 Breaking Changes
 
 * `Store.reuseRecords` must now be explicitly set on Stores with large datasets that wish to cache
-  records by raw data identity.
+  records by raw data identity (see above).
 * `Record` class renamed to `StoreRecord` in anticipation of upcoming changes to JavaScript standard
   and to improve compatibility with TypeScript.
+  * Not expected to have much or any impact on application code, except potentially JSDoc typings.
 * Mobile `Button` no longer supports `modifier` prop. Use `minimal` and `outlined` instead.
 * The following deprecated APIs were removed:
     * GridModel.selection
@@ -46,9 +48,9 @@
 * http-status-codes `2.1 -> 2.2`
 * prop-types `15.7 -> 15.8`
 * store2 `2.12 -> 2.13`
-* ua-parser-js `0.7 -> 1.0.2` - +re-enabling auto-patch updates
+* ua-parser-js `0.7 -> 1.0.2` (re-enables auto-patch updates)
 
-* [Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...develop)
 
 ## v44.3.0 - 2021-12-15
 
