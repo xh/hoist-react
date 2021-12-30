@@ -71,7 +71,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
      * @param ref
      */
     render({model, className, ...props}, ref) {
-        const {store, treeMode, treeStyle, colChooserModel, filterModel} = model,
+        const {store, treeMode, treeStyle, highlightRowOnClick, colChooserModel, filterModel} = model,
             impl = useLocalModel(() => new GridLocalModel(model, props)),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
             maxDepth = impl.isHierarchical ? store.maxDepth : null;
@@ -79,7 +79,8 @@ export const [Grid, grid] = hoistCmp.withFactory({
         className = classNames(
             className,
             impl.isHierarchical ? `xh-grid--hierarchical xh-grid--max-depth-${maxDepth}` : 'xh-grid--flat',
-            treeMode ? getTreeStyleClasses(treeStyle) : null
+            treeMode ? getTreeStyleClasses(treeStyle) : null,
+            highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null
         );
 
         return fragment(
@@ -221,6 +222,7 @@ class GridLocalModel extends HoistModel {
             onCellContextMenu: model.onCellContextMenu,
             onCellClicked: model.onCellClicked,
             onCellDoubleClicked: model.onCellDoubleClicked,
+            onCellMouseDown: this.onCellMouseDown,
             onRowClicked: this.onRowClicked,
             onRowDoubleClicked: this.onRowDoubleClicked,
             onRowGroupOpened: this.onRowGroupOpened,
@@ -777,6 +779,17 @@ class GridLocalModel extends HoistModel {
 
     navigateToNextCell = (agParams) => {
         return this.rowKeyNavSupport?.navigateToNextCell(agParams);
+    };
+
+    onCellMouseDown = (evt) => {
+        const {model} = this;
+        if (model.highlightRowOnClick) {
+            model.agApi.flashCells({
+                rowNodes: [evt.node],
+                flashDelay: 100,
+                fadeDelay: 100
+            });
+        }
     };
 
     onKeyDown = (evt) => {

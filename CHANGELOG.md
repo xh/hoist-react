@@ -13,6 +13,8 @@
   can be problematic under certain conditions and is not necessary for most applications. Apps with
   large datasets that want to continue to use this caching should set this flag explicitly.
 * Grid column filters tweaked with several improvements to usability and styling.
+* `GridModel` has new `highlightRowOnClick` option, which highlights a row when the user
+  clicks or taps on the row.
 
 
 ### ⚙️ Technical
