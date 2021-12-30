@@ -8,6 +8,10 @@ body.xh-app .xh-button-group .xh-button {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
 
+    &.xh-button--outlined {
+      border-right: none;
+    }
+
     &:not(.xh-button--outlined) {
       margin-right: 1px;
     }
