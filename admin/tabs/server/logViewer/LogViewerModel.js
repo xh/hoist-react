@@ -4,16 +4,16 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
+import {Icon} from '@xh/hoist/icon';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
-import {debounced, isDisplayed} from '@xh/hoist/utils/js';
-import {Icon} from '@xh/hoist/icon';
-import {createRef} from 'react';
+import {checkMinVersion, debounced, isDisplayed} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
+import {createRef} from 'react';
 import {LogDisplayModel} from './LogDisplayModel';
 
 /**
@@ -50,6 +50,22 @@ export class LogViewerModel extends HoistModel {
         return this.filesGridModel.selectedRecord;
     }
 
+    deleteFileAction = {
+        text: 'Delete',
+        icon: Icon.delete(),
+        intent: 'danger',
+        recordsRequired: true,
+        actionFn: () => this.deleteSelectedAsync()
+    };
+
+    downloadFileAction = {
+        text: 'Download',
+        icon: Icon.download(),
+        recordsRequired: 1,
+        disabled: !checkMinVersion(XH.environmentService.get('hoistCoreVersion'), '9.4'),
+        actionFn: () => this.downloadSelectedAsync()
+    };
+
     constructor() {
         super();
         makeObservable(this);
@@ -57,7 +73,7 @@ export class LogViewerModel extends HoistModel {
         this.filesGridModel = new GridModel({
             enableExport: true,
             hideHeaders: true,
-            persistWith: this.persistWith,
+            selModel: 'multiple',
             store: new UrlStore({
                 url: 'logViewerAdmin/listFiles',
                 idSpec: 'filename',
@@ -68,12 +84,15 @@ export class LogViewerModel extends HoistModel {
                     displayName: 'Log File'
                 }]
             }),
-            sortBy: ['filename|desc'],
-            columns: [{
-                field: 'filename',
-                minWidth: 160,
-                flex: true
-            }]
+            sortBy: 'filename',
+            columns: [{field: 'filename', flex: true}],
+            autosizeOptions: {mode: GridAutosizeMode.DISABLED},
+            contextMenu: [
+                this.downloadFileAction,
+                this.deleteFileAction,
+                '-',
+                ...GridModel.defaultContextMenu
+            ]
         });
 
         this.addReaction(this.syncSelectionReaction());
@@ -93,7 +112,7 @@ export class LogViewerModel extends HoistModel {
         try {
             await store.loadAsync(loadSpec);
             if (selModel.isEmpty) {
-                const latestAppLog = store.records.find(rec => rec.data.filename == `${XH.appCode}.log`);
+                const latestAppLog = store.records.find(rec => rec.data.filename === `${XH.appCode}.log`);
                 if (latestAppLog) {
                     selModel.select(latestAppLog);
                 }
@@ -101,6 +120,30 @@ export class LogViewerModel extends HoistModel {
         } catch (e) {
             XH.handleException(e, {title: 'Error loading list of available log files'});
         }
+    }
+
+    async deleteSelectedAsync() {
+        try {
+            const recs = this.filesGridModel.selectedRecords,
+                count = recs.length;
+            if (!count) return;
+
+            const confirmed = await XH.confirm({
+                title: 'Please Confirm',
+                message: `Delete ${count} log files on the server? This cannot be undone.`
+            });
+            if (!confirmed) return;
+
+            const filenames = recs.map(r => r.data.filename);
+            await XH.fetch({
+                url: 'logViewerAdmin/deleteFiles',
+                params: {filenames}
+            });
+            await this.refreshAsync();
+        } catch (e) {
+            XH.handleException(e);
+        }
+
     }
 
     async downloadSelectedAsync() {

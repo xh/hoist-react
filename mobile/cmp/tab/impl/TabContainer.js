@@ -4,24 +4,24 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {HoistModel, useLocalModel, XH} from '@xh/hoist/core';
 import {div, frame} from '@xh/hoist/cmp/layout';
-import {tab as onsenTab, tabbar} from '@xh/hoist/kit/onsen';
-import {throwIf} from '@xh/hoist/utils/js';
-import classNames from 'classnames';
-import {tab} from './Tab';
+import {tab as onsenTab, tabbar as onsenTabbar, page} from '@xh/hoist/kit/onsen';
+import {throwIf, debounced} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import {page} from '@xh/hoist/kit/onsen';
-
+import classNames from 'classnames';
 import './Tabs.scss';
+import {tab} from './Tab';
 
 /**
  * Mobile Implementation of TabContainer.
  *
  * @private
  */
-export function tabContainerImpl({model, className, ...props}) {
+export function tabContainerImpl({model, className}) {
     const {activeTab, switcher} = model,
-        tabs = model.tabs.filter(it => !it.excludeFromSwitcher);
+        tabs = model.tabs.filter(it => !it.excludeFromSwitcher),
+        impl = useLocalModel(LocalModel);
 
     throwIf(
         switcher && !['top', 'bottom'].includes(switcher?.orientation),
@@ -38,11 +38,15 @@ export function tabContainerImpl({model, className, ...props}) {
             })
         });
     }
-    return tabbar({
+
+    return onsenTabbar({
         className: classNames(className, `xh-tab-container--${switcher?.orientation}`),
         position: switcher?.orientation,
         index: activeTab ? tabs.indexOf(activeTab) : 0,
-        renderTabs: () => tabs.map(renderTabModel),
+        renderTabs: (idx, ref) => {
+            impl.setSwiper(ref);
+            return tabs.map(renderTabModel);
+        },
         onPreChange: (e) => model.activateTab(tabs[e.index].id),
         visible: !!switcher,
         ...switcher
@@ -63,4 +67,28 @@ function renderTabModel(tabModel) {
             ]
         })
     };
+}
+
+class LocalModel extends HoistModel {
+
+    swiper;
+
+    // Due to currently unknown reasons, this event handler sometimes gets removed. See: #2842
+    constructor() {
+        super();
+        this.addReaction({
+            track: () => XH.isPortrait,
+            run: () => this.swiper?.onResize()
+        });
+    }
+
+
+    // Capture a reference to the underlying Onsen Swiper from the Tabbar ref.
+    // We must debounce as the first time this method is called the Tabbar's constructor has not completed.
+    @debounced(1)
+    setSwiper(ref) {
+        if (this.swiper) return;
+        this.swiper = ref?._tabbar?._swiper;
+    }
+
 }

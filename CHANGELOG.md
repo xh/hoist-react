@@ -4,17 +4,29 @@
 
 ### 🎁 New Features
 
-* `FilterChooser` displays available fields when the query is empty. This can be disabled with the
-  new `FilterChooserModel.suggestFieldsWhenEmpty` config.
+* `FilterChooser` displays a list of fields configured for filtering to improve the usability /
+  discoverability of the control. Enabled by default, but can be disabled via
+  new `suggestFieldsWhenEmpty` model config.
 * `TreeMap` uses lightest shading for zero heat, reserving grey for nil.
+* New property `Store.reuseRecords` controls if records should be reused across loads based on
+  sharing identical (by reference) raw data. NOTE - this behavior was previously always enabled, but
+  can be problematic under certain conditions and is not necessary for most applications. Apps with
+  large datasets that want to continue to use this caching should set this flag explicitly.
 * Grid column filters tweaked with several improvements to usability and styling.
+
+
+### Technical
+*
+* Hoist grids now require ag-Grid v26.2.0 or higher - update your ag-Grid dependency in your app's
+  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
 
 ### 💥 Breaking Changes
 
-* Hoist grids now require ag-Grid v26.2.0 or higher - update your ag-Grid dependency in your app's
-  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
+* `Store.reuseRecords` must now be explicitly set on Stores with large datasets that wish to cache
+  records by raw data identity (see above).
 * `Record` class renamed to `StoreRecord` in anticipation of upcoming changes to JavaScript standard
   and to improve compatibility with TypeScript.
+  * Not expected to have much or any impact on application code, except potentially JSDoc typings.
 * The following deprecated APIs were removed:
     * GridModel.selection
     * GridModel.selectedRecordId
@@ -40,9 +52,9 @@
 * http-status-codes `2.1 -> 2.2`
 * prop-types `15.7 -> 15.8`
 * store2 `2.12 -> 2.13`
-* ua-parser-js `0.7 -> 1.0.2` - +re-enabling auto-patch updates
+* ua-parser-js `0.7 -> 1.0.2` (re-enables auto-patch updates)
 
-* [Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...develop)
 
 ## v44.3.0 - 2021-12-15
 

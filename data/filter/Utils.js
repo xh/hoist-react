@@ -115,9 +115,8 @@ export function withFilterByTypes(filter, newFilter, types) {
 }
 
 /**
- * Recursively flatten a CompoundFilter, and return an array of all nested non-Compound filters
- *
- * @returns {Filter[]} - array of all nested non compound filters
+ * Recursively flatten a CompoundFilter, and return an array of all nested non-compound filters
+ * @return {Filter[]} - array of all nested non-compound filters
  */
 export function flattenFilter(spec) {
     if (!spec) return [];
@@ -129,8 +128,7 @@ export function flattenFilter(spec) {
 /**
  * Recombine FieldFilters with array support on same field into single FieldFilter.
  * Filters other than array-based FieldFilters will be returned unmodified.
- *
- * @returns {Filter[]}
+ * @return {Filter[]}
  */
 export function combineValueFilters(filters = []) {
     const groupMap = groupBy(filters, ({op, field}) => `${op}|${field}`);
