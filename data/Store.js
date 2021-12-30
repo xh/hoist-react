@@ -15,6 +15,7 @@ import {
     differenceBy,
     isArray,
     isEmpty,
+    isFunction,
     isNil,
     isString,
     remove as lodashRemove
@@ -92,12 +93,13 @@ export class Store extends HoistBase {
      * @param {(string[]|FieldConfig[]|Field[])} c.fields - Field names, configs, or instances.
      * @param {{}} [fieldDefaults] - default configs applied to `Field` instances constructed
      *      internally by this Store. {@see FieldConfig} for options
-     * @param {(function|string)} [c.idSpec] - specification for selecting or producing an immutable
-     *      unique id for each record. May be either a string property name (default is 'id') or a
-     *      function to create an id from the raw unprocessed data. Will be normalized to a function
-     *      upon Store construction. If there is no natural id to select/generate, you can use
-     *      `XH.genId` to generate a unique id on the fly. NOTE that in this case, grids and other
-     *      components bound to this store will not be able to maintain record state across reloads.
+     * @param {(function|string)} [c.idSpec] - specification for producing an immutable
+     *      unique string as an id for each record. May be provided as either a string property name
+     *      (default is 'id') or a function that receives the raw data and returns a string. This
+     *      property will be normalized to a function upon Store construction. If there is no
+     *      natural id to select/generate, you can use `XH.genId` to generate a unique id on the
+     *      fly. NOTE that in this case, grids and other components bound to this store will not be
+     *      able to maintain record state across reloads.
      * @param {function} [c.processRawData] - function to run on each individual data object
      *      presented to loadData() prior to creating a StoreRecord from that object. This function
      *      must return an object, cloning the original object if edits are necessary.
@@ -145,7 +147,7 @@ export class Store extends HoistBase {
         makeObservable(this);
         this.experimental = this.parseExperimental(experimental);
         this.fields = this.parseFields(fields, fieldDefaults);
-        this.idSpec = isString(idSpec) ? (data) => data[idSpec] : idSpec;
+        this.idSpec = this.parseIdSpec(idSpec);
         this.processRawData = processRawData;
         this.filter = parseFilter(filter);
         this.filterIncludesChildren = filterIncludesChildren;
@@ -245,7 +247,7 @@ export class Store extends HoistBase {
         const changeLog = {};
 
         // Build a transaction object out of a flat list of adds and updates
-        let rawTransaction = null;
+        let rawTransaction;
         if (isArray(rawData)) {
             const update = [], add = [];
             rawData.forEach(it => {
@@ -814,7 +816,6 @@ export class Store extends HoistBase {
     // StoreRecord Generation
     //---------------------------------------
     createRecord(raw, parent, isSummary) {
-        // Note idSpec run against raw data here.
         const id = this.idSpec(raw);
 
         // Potentially re-use existing record if raw data is reference equal and tree path identical
@@ -921,6 +922,16 @@ export class Store extends HoistBase {
             ...experimental
         };
     }
+
+    parseIdSpec(idSpec) {
+        if (isString(idSpec)) return (raw) => raw[idSpec]?.toString();
+        if (isFunction(idSpec)) return (raw) => idSpec(raw)?.toString();
+        throw XH.exception(
+            'idSpec should be either a name of a field, or a function to generate an id.'
+        );
+    }
+
+
 }
 
 //---------------------------------------------------------------------

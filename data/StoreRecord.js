@@ -203,7 +203,10 @@ export class StoreRecord {
         parent,
         isSummary = false
     }) {
-        throwIf(isNil(id), 'StoreRecord has an undefined ID. Use \'Store.idSpec\' to resolve a unique ID for each record.');
+        throwIf(
+            isNil(id),
+            "Record needs an ID. Use 'Store.idSpec' to specify a unique string ID for each record."
+        );
         data.id = id;
 
         this.id = id;
