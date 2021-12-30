@@ -23,15 +23,15 @@ import {ValidationState} from './validation/ValidationState';
  */
 export class StoreRecord {
 
-    /** @member {StoreRecordId} */
+    /** @member {string} */
     id;
-    /** @member {StoreRecordId} */
+    /** @member {string} */
     parentId;
     /** @member {Store} */
     store;
     /** @member {boolean} */
     isSummary;
-    /** @member {StoreRecordId[]} */
+    /** @member {string[]} */
     treePath;
 
     /** @member {Object} - raw data loaded into via Store.loadData() or Store.updateData(). */
@@ -180,7 +180,7 @@ export class StoreRecord {
      * primary implementation, which includes parsing based on `data/Field` types and definitions.
      *
      * @param {Object} c - StoreRecord configuration
-     * @param {StoreRecordId} c.id - Record ID
+     * @param {string} c.id - Record ID
      * @param {Store} c.store - Store containing this StoreRecord.
      * @param {Object} c.data - data for this StoreRecord, pre-processed if applicable by
      *      `Store.processRawData()` and `Field.parseVal()`. Note: This must be a new object
@@ -265,10 +265,7 @@ export class StoreRecord {
     }
 }
 
-/**
- * @typedef {(number|string)} StoreRecordId - unique identifier for a StoreRecord within a Store.
- */
 
 /**
- * @typedef {(StoreRecord|StoreRecordId)} StoreRecordOrId - a Hoist StoreRecord, or an ID for one.
+ * @typedef {(StoreRecord|string)} StoreRecordOrId - a Hoist StoreRecord, or an ID for one.
  */

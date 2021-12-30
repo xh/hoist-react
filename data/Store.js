@@ -364,7 +364,7 @@ export class Store extends HoistBase {
      * @param {(Object[]|Object)} data - source data for new StoreRecord(s). Note that this data will
      *      *not* be processed by this Store's `processRawData` or `idSpec` functions, but will be
      *      parsed and potentially transformed according to this Store's Field definitions.
-     * @param {StoreRecordId} [parentId] - ID of the pre-existing parent record under which this new
+     * @param {string} [parentId] - ID of the pre-existing parent record under which this new
      *      record should be added, if any.
      */
     @action
@@ -675,7 +675,7 @@ export class Store extends HoistBase {
     /**
      * Get a record by ID, or null if no matching record found.
      *
-     * @param {StoreRecordId} id
+     * @param {string} id
      * @param {boolean} [respectFilter] - false (default) to return a StoreRecord with the given
      *      ID even if an active filter is excluding it from the primary `records` collection.
      *      True to restrict matches to this Store's post-filter StoreRecord collection only.
