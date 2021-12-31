@@ -153,7 +153,9 @@ export class ColumnHeaderFilterModel extends HoistModel {
     @action
     syncWithFilter() {
         const {columnFilters, isCustomFilter, valuesTabModel, customTabModel, tabContainerModel} = this,
-            toTab = isCustomFilter || !valuesTabModel ? customTabModel : valuesTabModel;
+            useCustomTab = isCustomFilter || !valuesTabModel,
+            toTab = useCustomTab ? customTabModel : valuesTabModel,
+            toTabId = useCustomTab ? 'customFilter' : 'valuesFilter';
 
         this.resetTabModels();
 
@@ -161,7 +163,7 @@ export class ColumnHeaderFilterModel extends HoistModel {
             toTab.syncWithFilter();
         }
 
-        tabContainerModel.activateTab(toTab);
+        tabContainerModel.activateTab(toTabId);
     }
 
     setColumnFilters(filters) {
