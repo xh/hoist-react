@@ -6,20 +6,9 @@
  */
 import {HoistModel, managed, SizingMode} from '@xh/hoist/core';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {parseFilter} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
-import {
-    castArray,
-    compact,
-    difference,
-    isEmpty,
-    isNil,
-    uniqBy,
-    partition,
-    without,
-    isDate
-} from 'lodash';
+import {castArray, difference, isEmpty, partition, without} from 'lodash';
 
 export class ValuesTabModel extends HoistModel {
     /** @member {ColumnHeaderFilterModel} */
@@ -31,24 +20,12 @@ export class ValuesTabModel extends HoistModel {
     @managed @observable.ref gridModel;
 
     /**
-     * @member {*[]} List of available (i.e. excluding hidden) values to display in the grid
-     */
-    @observable.ref values = [];
-
-    /**
-     * @member {*[]} List of all (i.e. including hidden) values in the dataset
-     */
-    @observable.ref allValues = [];
-
-    /**
      * @member {*[]} List of currently checked values in the list
      */
     @observable.ref pendingValues = [];
 
-    @bindable filterText = null; // Bound search term for `StoreFilterField`
-    @observable hasHiddenValues = false; // Are values hidden due to filters on other columns?
-
-    BLANK_STR = '[blank]';
+    /** @member {?string} Bound search term for `StoreFilterField` */
+    @bindable filterText = null;
 
     /**
      * @member {Object} - FieldFilter config output by this model
@@ -80,16 +57,24 @@ export class ValuesTabModel extends HoistModel {
         return this.parentModel.fieldSpec;
     }
 
-    get currentGridFilter() {
-        return this.parentModel.currentGridFilter;
-    }
-
     get columnFilters() {
         return this.parentModel.columnFilters;
     }
 
-    get valueSource() {
-        return this.parentModel.gridFilterModel.bind;
+    get storeValuesModel() {
+        return this.parentModel.storeValuesModel;
+    }
+
+    get values() {
+        return this.storeValuesModel.values;
+    }
+
+    get totalValues() {
+        return this.storeValuesModel.allValues.length;
+    }
+
+    get hasHiddenValues() {
+        return this.values.length < this.totalValues;
     }
 
     constructor(parentModel) {
@@ -111,7 +96,8 @@ export class ValuesTabModel extends HoistModel {
 
     @action
     reset() {
-        this.doReset();
+        this.filterText = null;
+        this.pendingValues = this.values;
     }
 
     @action
@@ -126,15 +112,15 @@ export class ValuesTabModel extends HoistModel {
     // Implementation
     //-------------------
     getFilter() {
-        const {pendingValues, values, allValues, field, BLANK_STR} = this,
-            included = pendingValues.map(it => it === BLANK_STR ? null : it),
-            excluded = difference(values, pendingValues).map(it => it === BLANK_STR ? null : it);
+        const {storeValuesModel, pendingValues, values, totalValues, field} = this,
+            included = pendingValues.map(it => storeValuesModel.fromDisplayValue(it)),
+            excluded = difference(values, pendingValues).map(it => storeValuesModel.fromDisplayValue(it));
 
-        if (included.length === allValues.length || excluded.length === allValues.length) {
+        if (included.length === totalValues || excluded.length === totalValues) {
             return null;
         }
 
-        const weight = allValues.length <= 10 ? 2.5 : 1, // Prefer '=' for short lists
+        const weight = totalValues <= 10 ? 2.5 : 1, // Prefer '=' for short lists
             op = included.length > (excluded.length * weight) ? '!=' : '=',
             arr = op === '=' ? included : excluded;
 
@@ -145,52 +131,8 @@ export class ValuesTabModel extends HoistModel {
     }
 
     @action
-    doReset() {
-        const {currentGridFilter, columnFilters, valueSource, BLANK_STR} = this,
-            sourceStore = valueSource.isView ? valueSource.cube.store : valueSource,
-            allRecords = sourceStore.allRecords;
-
-        // Apply external filters *not* pertaining to this field to the sourceStore
-        // to get the filtered set of available values to offer as options.
-        const cleanedFilter = this.cleanFilter(currentGridFilter);
-        let filteredRecords = allRecords;
-        if (cleanedFilter) {
-            const testFn = parseFilter(cleanedFilter).getTestFn(sourceStore);
-            filteredRecords = allRecords.filter(testFn);
-        }
-
-        // Get values from current column filter
-        const filterValues = [];
-        columnFilters.forEach(filter => {
-            const newValues = castArray(filter.value).map(value => isNil(value) ? BLANK_STR : value);
-            filterValues.push(...newValues);
-        });
-
-        // Combine unique values from record sets and column filters.
-        const allValues = uniqBy([
-            ...allRecords.map(rec => this.valueFromRecord(rec)),
-            ...filterValues
-        ], this.getUniqueValue);
-        let values;
-        if (cleanedFilter) {
-            values = uniqBy([
-                ...filteredRecords.map(rec => this.valueFromRecord(rec)),
-                ...filterValues
-            ], this.getUniqueValue);
-        } else {
-            values = allValues;
-        }
-
-        this.allValues = allValues;
-        this.values = this.pendingValues = values;
-        this.hasHiddenValues = values.length < allValues.length;
-        this.filterText = null;
-    }
-
-    @action
     doSyncWithFilter() {
-        const {values, columnFilters, BLANK_STR} = this;
-
+        const {values, columnFilters, storeValuesModel} = this;
         if (isEmpty(columnFilters)) return;
 
         // We are only interested '!=' filters if we have no '=' filters.
@@ -200,7 +142,7 @@ export class ValuesTabModel extends HoistModel {
             filterValues = [];
 
         arr.forEach(filter => {
-            const newValues = castArray(filter.value).map(value => isNil(value) ? BLANK_STR : value);
+            const newValues = castArray(filter.value).map(value => storeValuesModel.toDisplayValue(value));
             filterValues.push(...newValues); // Todo: Is this safe?
         });
 
@@ -213,16 +155,6 @@ export class ValuesTabModel extends HoistModel {
         }
     }
 
-    valueFromRecord(record) {
-        const ret = record.get(this.field);
-        return isNil(ret) || ret === '' ? this.BLANK_STR : ret;
-    }
-
-    getUniqueValue(value) {
-        // Return ms timestamp for dates to facilitate uniqueness check
-        return isDate(value) ? value.getTime() : value;
-    }
-
     syncGrid() {
         const {values, pendingValues} = this;
         const data = values.map(value => {
@@ -232,31 +164,15 @@ export class ValuesTabModel extends HoistModel {
         this.gridModel.loadData(data);
     }
 
-    /**
-     * Recursively modify a Filter|CompoundFilter to remove all FieldFilters that reference this column
-     */
-    cleanFilter(filter) {
-        if (!filter) return filter;
-
-        const {field, filters, op} = filter;
-        if (filters) {
-            const ret = compact(filters.map(it => this.cleanFilter(it)));
-            return !isEmpty(ret) ? {op, filters: ret} : null;
-        } else if (field === this.field) {
-            return null;
-        }
-
-        return filter;
-    }
-
     createGridModel() {
-        const {BLANK_STR} = this,
+        const {storeValuesModel} = this,
+            {BLANK_STR} = storeValuesModel,
             {align, headerAlign, displayName} = this.parentModel.column,
             renderer = this.fieldSpec.renderer ?? this.parentModel.column.renderer;
 
         return new GridModel({
             store: {
-                idSpec: (raw) => this.getUniqueValue(raw.value).toString(),
+                idSpec: (raw) => storeValuesModel.getUniqueValue(raw.value).toString(),
                 fields: [
                     {name: 'value', type: 'auto'},
                     {name: 'isChecked', type: 'bool'}
