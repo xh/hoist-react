@@ -10,7 +10,6 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isEmpty} from 'lodash';
-import {StoreValuesModel} from './impl/StoreValuesModel';
 import {customTab} from './custom/CustomTab';
 import {CustomTabModel} from './custom/CustomTabModel';
 import {valuesTab} from './values/ValuesTab';
@@ -26,8 +25,6 @@ export class ColumnHeaderFilterModel extends HoistModel {
 
     @observable isOpen = false;
 
-    /** @member {StoreValuesModel} */
-    @managed storeValuesModel;
     /** @member {TabContainerModel} */
     @managed tabContainerModel;
     /** @member {ValuesTabModel} */
@@ -78,7 +75,6 @@ export class ColumnHeaderFilterModel extends HoistModel {
         this.fieldSpec = filterModel.getFieldSpec(column.field);
 
         const {enableValues} = this.fieldSpec;
-        this.storeValuesModel = enableValues ? new StoreValuesModel(this) : null;
         this.valuesTabModel = enableValues ? new ValuesTabModel(this) : null;
         this.customTabModel = new CustomTabModel(this);
         this.tabContainerModel = new TabContainerModel({
@@ -155,17 +151,13 @@ export class ColumnHeaderFilterModel extends HoistModel {
     //-------------------
     @action
     syncWithFilter() {
-        const {columnFilters, isCustomFilter, storeValuesModel, valuesTabModel, customTabModel, tabContainerModel} = this,
+        const {isCustomFilter, valuesTabModel, customTabModel, tabContainerModel} = this,
             useCustomTab = isCustomFilter || !valuesTabModel,
             toTab = useCustomTab ? customTabModel : valuesTabModel,
             toTabId = useCustomTab ? 'customFilter' : 'valuesFilter';
 
-        storeValuesModel?.refresh();
         this.resetTabModels();
-
-        if (!isEmpty(columnFilters)) {
-            toTab.syncWithFilter();
-        }
+        toTab.syncWithFilter();
 
         tabContainerModel.activateTab(toTabId);
     }

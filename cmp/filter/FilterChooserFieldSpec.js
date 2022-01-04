@@ -20,9 +20,6 @@ import {isFunction, isString, isNil} from 'lodash';
  */
 export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
 
-    /** @member {?Array} - data values available for suggestion. */
-    values;
-
     /** @member {(boolean|SuggestValuesCb)} */
     suggestValues;
 
@@ -40,7 +37,6 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
 
     /**
      * @param {Object} c - FilterChooserFieldSpec configuration.
-     * @param {*[]} [c.values] - explicit list of available values for this field.
      * @param {(boolean|SuggestValuesCb)} [c.suggestValues] - true to provide
      *      auto-complete options with enumerated matches when user specifies '=', or'!='.
      *      Defaults to true for enumerable fieldTypes, otherwise false.  May be also
@@ -57,7 +53,6 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
      * @param {*} [c...rest] - arguments for BaseFilterFieldSpec.
      */
     constructor({
-        values,
         suggestValues,
         forceSelection,
         valueRenderer,
@@ -72,7 +67,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         this.valueRenderer = valueRenderer;
         this.valueParser = valueParser;
         this.example = this.parseExample(example);
-        this.loadValues(values);
+        this.initValues();
 
         throwIf(
             !this.values && forceSelection,
@@ -131,11 +126,8 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
     //------------------------
     // Implementation
     //------------------------
-    loadValues(values) {
-        if (values) {
-            this.values = values;
-            return;
-        }
+    initValues() {
+        if (this.values) return;
 
         if (this.isBoolFieldType) {
             this.values = [true, false];

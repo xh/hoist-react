@@ -61,16 +61,16 @@ export class ValuesTabModel extends HoistModel {
         return this.parentModel.columnFilters;
     }
 
-    get storeValuesModel() {
-        return this.parentModel.storeValuesModel;
+    get gridFilterModel() {
+        return this.parentModel.gridFilterModel;
     }
 
     get values() {
-        return this.storeValuesModel.values;
+        return this.fieldSpec.values;
     }
 
     get totalValues() {
-        return this.storeValuesModel.allValues.length;
+        return this.fieldSpec.allValues?.length;
     }
 
     get hasHiddenValues() {
@@ -85,7 +85,7 @@ export class ValuesTabModel extends HoistModel {
         this.gridModel = this.createGridModel();
 
         this.addReaction({
-            track: () => [this.values, this.pendingValues],
+            track: () => this.pendingValues,
             run: () => this.syncGrid()
         });
     }
@@ -97,7 +97,7 @@ export class ValuesTabModel extends HoistModel {
     @action
     reset() {
         this.filterText = null;
-        this.pendingValues = this.values;
+        this.fieldSpec.loadValues();
     }
 
     @action
@@ -112,9 +112,9 @@ export class ValuesTabModel extends HoistModel {
     // Implementation
     //-------------------
     getFilter() {
-        const {storeValuesModel, pendingValues, values, totalValues, field} = this,
-            included = pendingValues.map(it => storeValuesModel.fromDisplayValue(it)),
-            excluded = difference(values, pendingValues).map(it => storeValuesModel.fromDisplayValue(it));
+        const {gridFilterModel, pendingValues, values, totalValues, field} = this,
+            included = pendingValues.map(it => gridFilterModel.fromDisplayValue(it)),
+            excluded = difference(values, pendingValues).map(it => gridFilterModel.fromDisplayValue(it));
 
         if (included.length === totalValues || excluded.length === totalValues) {
             return null;
@@ -132,8 +132,11 @@ export class ValuesTabModel extends HoistModel {
 
     @action
     doSyncWithFilter() {
-        const {values, columnFilters, storeValuesModel} = this;
-        if (isEmpty(columnFilters)) return;
+        const {values, columnFilters, gridFilterModel} = this;
+        if (isEmpty(columnFilters)) {
+            this.pendingValues = values;
+            return;
+        }
 
         // We are only interested '!=' filters if we have no '=' filters.
         const [equalsFilters, notEqualsFilters] = partition(columnFilters, f => f.op === '='),
@@ -142,7 +145,7 @@ export class ValuesTabModel extends HoistModel {
             filterValues = [];
 
         arr.forEach(filter => {
-            const newValues = castArray(filter.value).map(value => storeValuesModel.toDisplayValue(value));
+            const newValues = castArray(filter.value).map(value => gridFilterModel.toDisplayValue(value));
             filterValues.push(...newValues); // Todo: Is this safe?
         });
 
@@ -165,14 +168,13 @@ export class ValuesTabModel extends HoistModel {
     }
 
     createGridModel() {
-        const {storeValuesModel} = this,
-            {BLANK_STR} = storeValuesModel,
+        const {BLANK_STR} = this.gridFilterModel,
             {align, headerAlign, displayName} = this.parentModel.column,
             renderer = this.fieldSpec.renderer ?? this.parentModel.column.renderer;
 
         return new GridModel({
             store: {
-                idSpec: (raw) => storeValuesModel.getUniqueValue(raw.value).toString(),
+                idSpec: (raw) => this.fieldSpec.getUniqueValue(raw.value).toString(),
                 fields: [
                     {name: 'value', type: 'auto'},
                     {name: 'isChecked', type: 'bool'}

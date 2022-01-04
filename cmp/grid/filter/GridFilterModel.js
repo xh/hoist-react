@@ -9,7 +9,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {FieldFilter, flattenFilter, withFilterByField, withFilterByTypes} from '@xh/hoist/data';
 import {wait} from '@xh/hoist/promise';
-import {find, isString, castArray, uniq} from 'lodash';
+import {find, isString, castArray, uniq, isNil} from 'lodash';
 
 import {GridFilterFieldSpec} from './GridFilterFieldSpec';
 
@@ -34,6 +34,9 @@ export class GridFilterModel extends HoistModel {
 
     // Open state for filter dialog
     @observable dialogOpen = false;
+
+    // Display for nil or empty values
+    BLANK_STR = '[blank]';
 
     /**
      * @param {Object} c - GridFilterModel configuration.
@@ -127,6 +130,16 @@ export class GridFilterModel extends HoistModel {
         return this.fieldSpecs.find(it => it.field === field);
     }
 
+    // Todo: Better name?
+    toDisplayValue(value) {
+        return isNil(value) || value === '' ? this.BLANK_STR : value;
+    }
+
+    // Todo: Better name?
+    fromDisplayValue(value) {
+        return value === this.BLANK_STR ? null : value;
+    }
+
     /** @package */
     @action
     openDialog() {
@@ -157,6 +170,7 @@ export class GridFilterModel extends HoistModel {
         return specs.map(spec => {
             if (isString(spec)) spec = {field: spec};
             return new GridFilterFieldSpec({
+                filterModel: this,
                 source: bind,
                 ...fieldSpecDefaults,
                 ...spec

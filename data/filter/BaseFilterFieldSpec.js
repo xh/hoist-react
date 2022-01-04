@@ -33,6 +33,9 @@ export class BaseFilterFieldSpec extends HoistBase {
     /** @member {(Store|View)} */
     source;
 
+    /** @member {?Array} - data values available for suggestion. */
+    values;
+
     /**
      * @param {Object} c - BaseFilterFieldSpec configuration.
      * @param {string} c.field - identifying field name to filter on.
@@ -44,13 +47,15 @@ export class BaseFilterFieldSpec extends HoistBase {
      *      a supported set based on the fieldType.
      * @param {(Store|View)} [c.source] - Used to source matching data `Field` and extract
      *      values if configured.
+     * @param {*[]} [c.values] - explicit list of available values for this field.
      */
     constructor({
         field,
         fieldType,
         displayName,
         ops,
-        source
+        source,
+        values
     }) {
         super();
         this.field = field;
@@ -60,6 +65,7 @@ export class BaseFilterFieldSpec extends HoistBase {
         this.fieldType = fieldType ?? sourceField?.type ?? FieldType.AUTO;
         this.displayName = displayName ?? sourceField?.displayName ?? genDisplayName(field);
         this.ops = this.parseOperators(ops);
+        this.values = values;
     }
 
     /**
