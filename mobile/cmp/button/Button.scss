@@ -124,7 +124,8 @@
         color: var(--xh-text-color);
         border-color: var(--xh-button-bg);
         &.xh-button--enabled.xh-button--active {
-          background-color: var(--xh-bg-alt);
+          color: var(--xh-button-active-text-color);
+          background-color: var(--xh-button-active-bg);
         }
       }
 
