@@ -34,7 +34,7 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
 
     /**
      * @param {Object} c - GridFilterFieldSpec configuration.
-     * @param {GridFilterModel} c.filterModel - parent GridFilterModel which owns this field spec.
+     * @param {GridFilterModel} c.filterModel - GridFilterModel instance which owns this fieldSpec.
      * @param {boolean} [c.enableValues] - true to provide the value filter control
      *      within the filter affordance. Defaults to true for enumerable fieldTypes.
      * @param {Column~rendererFn} [c.renderer] - function returning a formatted string for each
