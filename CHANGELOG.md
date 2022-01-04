@@ -13,6 +13,7 @@
   can be problematic under certain conditions and is not necessary for most applications. Apps with
   large datasets that want to continue to use this caching should set this flag explicitly.
 * Grid column filters tweaked with several improvements to usability and styling.
+* LocalDate.get() will now support inputs in either 'YYYY-MM-DD' format or 'YYYYMMDD' format.
 
 ### 💥 Breaking Changes
 

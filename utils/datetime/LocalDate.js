@@ -41,29 +41,22 @@ export class LocalDate {
      * Get an instance of this class.
      * This is the standard way to get an instance of this object from serialized server-side data.
      *
-     * @param {string} s - a valid date in 'YYYYMMDD' format.
+     * @param {string} s - a valid date in 'YYYY-MM-DD' or 'YYYYMMDD' format.
      * @returns {LocalDate}
      */
     static get(s) {
         if (isNil(s)) return s;
-        throwIf(!isString(s) || !LocalDate.fmtRegEx.test(s), 'LocalDate.get() requires a string of the form "YYYYMMDD"');
-
-        let {_instances} = this,
-            ret = _instances.get(s);
-
-        if (!ret) {
-            ret = new LocalDate(s);
-            _instances.set(s, ret);
-        }
-
-        return ret;
+        if (!isString(s)) this.throwInvalidArgument(s);
+        s = s.replaceAll('-', '');
+        const {_instances} = this;
+        return _instances.get(s) ?? _instances.set(s, new LocalDate(s));
     }
 
     /**
      * Get an instance of this class.
      *
      * Note: Applications should favor using the `get()` factory instead of this method.
-     * `get()` takes an explicit 'yyyyMMDD' format and is the safest way to get a LocalDate.
+     * `get()` takes an explicit 'YYYYMMDD' format and is the safest way to get a LocalDate.
      *
      * @params {*} val - any string, timestamp, or date parsable by moment.js.
      * @returns {LocalDate}
@@ -313,8 +306,8 @@ export class LocalDate {
     //-------------------
     /** @private - use one of the static factory methods instead. */
     constructor(s) {
-        const m = moment(s, 'YYYYMMDD');
-        throwIf(!m.isValid(), `Invalid argument for LocalDate: ${s}`);
+        const m = moment(s, 'YYYYMMDD', true);
+        if (!m.isValid()) this.throwInvalidArgument(s);
         this._isoString = s;
         this._moment = m;
         this._date = m.toDate();
@@ -328,6 +321,11 @@ export class LocalDate {
             `Invalid unit for LocalDate adjustment: ${unit}`
         );
     }
+
+    throwInvalidArgument(s) {
+        throw XH.exception(`Invalid argument for LocalDate: ${s}.  Use a valid date in 'YYYYMMDDD' or 'YYYY-MM-DD' format.`)
+    }
+
 }
 
 /**
