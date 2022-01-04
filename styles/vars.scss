@@ -284,6 +284,7 @@ body {
   --xh-button-bg-darkest: var(--xh-intent-neutral-darkest);
   --xh-button-bg-lighter: var(--xh-intent-neutral-lighter);
   --xh-button-bg-lightest: var(--xh-intent-neutral-lightest);
+  --xh-button-border-radius-px: var(--button-border-radius-px, var(--xh-border-radius-px));
   --xh-button-disabled-opacity: var(--button-disabled-opacity, 0.4);
   --xh-button-font-family: var(--button-font-family, var(--xh-font-family));
   --xh-button-font-size: var(--button-font-size, var(--xh-font-size));

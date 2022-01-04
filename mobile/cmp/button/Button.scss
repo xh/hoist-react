@@ -15,6 +15,7 @@
     justify-content: center;
     font-size: var(--xh-button-font-size-px);
     height: var(--xh-button-height);
+    border-radius: var(--xh-button-border-radius-px);
 
     // Override Onsen's semi-transparency while pressed
     &:active {
