@@ -28,21 +28,24 @@
     }
 
     // Shaded/filled-in (non-minimal) mode.
-    &--standard,
-    &--standard.xh-button--enabled:active {
+    &--standard {
       &.xh-button--intent-none {
         color: var(--xh-button-text-color);
         background-color: var(--xh-button-bg);
-        &.xh-button--enabled.xh-button--active {
+        &.xh-button--active {
           color: var(--xh-button-active-text-color);
           background-color: var(--xh-button-active-bg);
+        }
+        &.xh-button--enabled:active {
+          background-color: var(--xh-button-bg-darkest);
         }
       }
 
       &.xh-button--intent-primary {
         color: white;
         background-color: var(--xh-intent-primary);
-        &.xh-button--enabled.xh-button--active {
+        &.xh-button--active,
+        &.xh-button--enabled:active {
           background-color: var(--xh-intent-primary-darkest);
         }
       }
@@ -50,7 +53,8 @@
       &.xh-button--intent-success {
         color: white;
         background-color: var(--xh-intent-success);
-        &.xh-button--enabled.xh-button--active {
+        &.xh-button--active,
+        &.xh-button--enabled:active {
           background-color: var(--xh-intent-success-darkest);
         }
       }
@@ -58,7 +62,8 @@
       &.xh-button--intent-warning {
         color: white;
         background-color: var(--xh-intent-warning);
-        &.xh-button--enabled.xh-button--active {
+        &.xh-button--active,
+        &.xh-button--enabled:active {
           background-color: var(--xh-intent-warning-darkest);
         }
       }
@@ -66,73 +71,83 @@
       &.xh-button--intent-danger {
         color: white;
         background-color: var(--xh-intent-danger);
-        &.xh-button--enabled.xh-button--active {
+        &.xh-button--active,
+        &.xh-button--enabled:active {
           background-color: var(--xh-intent-danger-darkest);
         }
       }
     }
 
     // Minimal mode.
-    &--minimal,
-    &--minimal.xh-button--enabled:active {
+    &--minimal {
       background-color: transparent;
 
       &.xh-button--intent-none {
         color: var(--xh-text-color);
-        &.xh-button--enabled.xh-button--active {
+        &.xh-button--active {
           color: var(--xh-button-active-text-color);
           background-color: var(--xh-button-active-bg);
+        }
+        &.xh-button--enabled:active {
+          background-color: var(--xh-button-bg-darker);
         }
       }
 
       &.xh-button--intent-primary {
         color: var(--xh-intent-primary-darker);
-        &.xh-button--enabled.xh-button--active {
+        &.xh-button--active,
+        &.xh-button--enabled:active {
           background-color: var(--xh-intent-primary-trans2);
         }
       }
 
       &.xh-button--intent-success {
         color: var(--xh-intent-success-darker);
-        &.xh-button--enabled.xh-button--active {
+        &.xh-button--active,
+        &.xh-button--enabled:active {
           background-color: var(--xh-intent-success-trans2);
         }
       }
 
       &.xh-button--intent-warning {
         color: var(--xh-intent-warning-darker);
-        &.xh-button--enabled.xh-button--active {
+        &.xh-button--active,
+        &.xh-button--enabled:active {
           background-color: var(--xh-intent-warning-trans2);
         }
       }
 
       &.xh-button--intent-danger {
         color: var(--xh-intent-danger-darker);
-        &.xh-button--enabled.xh-button--active {
+        &.xh-button--active,
+        &.xh-button--enabled:active {
           background-color: var(--xh-intent-danger-trans2);
         }
       }
     }
 
     // Outlined mode
-    &--outlined,
-    &--outlined.xh-button--enabled:active {
+    &--outlined {
       background-color: transparent;
       border: 1px solid var(--xh-button-bg);
 
       &.xh-button--intent-none {
         color: var(--xh-text-color);
         border-color: var(--xh-button-bg);
-        &.xh-button--enabled.xh-button--active {
+        &.xh-button--active {
           color: var(--xh-button-active-text-color);
           background-color: var(--xh-button-active-bg);
+        }
+        &.xh-button--enabled:active {
+          background-color: var(--xh-button-bg-darker);
         }
       }
 
       &.xh-button--intent-primary {
         color: var(--xh-intent-primary-darker);
         border-color: var(--xh-intent-primary);
-        &.xh-button--enabled.xh-button--active {
+        &.xh-button--active,
+        &.xh-button--enabled:active {
           background-color: var(--xh-intent-primary-trans2);
         }
       }
@@ -140,7 +155,8 @@
       &.xh-button--intent-success {
         color: var(--xh-intent-success-darker);
         border-color: var(--xh-intent-success);
-        &.xh-button--enabled.xh-button--active {
+        &.xh-button--active,
+        &.xh-button--enabled:active {
           background-color: var(--xh-intent-success-trans2);
         }
       }
@@ -148,7 +164,8 @@
       &.xh-button--intent-warning {
         color: var(--xh-intent-warning-darker);
         border-color: var(--xh-intent-warning);
-        &.xh-button--enabled.xh-button--active {
+        &.xh-button--active,
+        &.xh-button--enabled:active {
           background-color: var(--xh-intent-warning-trans2);
         }
       }
@@ -156,7 +173,8 @@
       &.xh-button--intent-danger {
         color: var(--xh-intent-danger-darker);
         border-color: var(--xh-intent-danger);
-        &.xh-button--enabled.xh-button--active {
+        &.xh-button--active,
+        &.xh-button--enabled:active {
           background-color: var(--xh-intent-danger-trans2);
         }
       }
@@ -169,8 +187,22 @@
 //---------------------------
 .xh-app.xh-dark {
   .xh-button {
+    &--standard {
+      &.xh-button--intent-none {
+        &.xh-button--enabled:active {
+          background-color: var(--xh-button-bg-lightest);
+        }
+      }
+    }
+
     &--minimal,
     &--outlined {
+      &.xh-button--intent-none {
+        &.xh-button--enabled:active {
+          background-color: var(--xh-button-bg-lighter);
+        }
+      }
+
       &.xh-button--intent-primary {
         color: var(--xh-intent-primary-lighter);
         border-color: var(--xh-intent-primary-lighter);

@@ -313,6 +313,15 @@ body {
     --xh-button-height: var(--button-height, 28px);
     --xh-toolbar-button-bg: var(--toolbar-button-bg, var(--xh-button-bg));
 
+    // Light theme pressed bg for 'minimal' / 'outlined'
+    --xh-button-bg-darker: var(--button-bg-darker, var(--xh-intent-neutral-darkest));
+    // Light theme pressed bg for 'standard'
+    --xh-button-bg-darkest: var(--button-bg-darkest, #{mc('blue-grey', '800')});
+    // Dark theme pressed bg for 'minimal' / 'outlined'
+    --xh-button-bg-lighter: var(--button-bg-lighter, var(--xh-intent-neutral-lightest));
+    // Dark theme pressed bg for 'standard'
+    --xh-button-bg-lightest: var(--button-bg-lightest, #{mc('blue-grey', '400')});
+
     &.xh-dark {
       --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '800'), mc('light-blue', '600'), 50%)});
     }
