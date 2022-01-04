@@ -58,24 +58,36 @@ export const customRow = hoistCmp.factory({
 //-------------------
 const inputField = hoistCmp.factory(
     ({model}) => {
-        const {fieldSpec, commitOnChange} = model,
+        const {fieldSpec, commitOnChange, op} = model,
             props = {
                 bind: 'inputVal',
                 enableClear: true,
-                flex: 1,
-                width: null,
+                width: 200,
                 autoFocus: true,
                 commitOnChange,
                 ...fieldSpec.inputProps
             };
 
         if (fieldSpec.isNumericFieldType) {
-            return numberInput({...props, enableShorthandUnits: true});
+            return numberInput({
+                ...props,
+                enableShorthandUnits: true
+            });
         } else if (fieldSpec.isDateBasedFieldType) {
-            return dateInput({...props, valueType: fieldSpec.fieldType});
+            return dateInput({
+                ...props,
+                valueType: fieldSpec.fieldType
+            });
+        } else if (fieldSpec.supportsSuggestions(op)) {
+            return select({
+                ...props,
+                options: fieldSpec.values,
+                enableCreate: true,
+                hideSelectedOptionCheck: true
+            });
+        } else {
+            return textInput(props);
         }
-
-        return textInput(props);
     }
 );
 
