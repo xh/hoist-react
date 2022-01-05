@@ -56,16 +56,16 @@ export class MonitorResultsModel extends HoistModel {
         return XH
             .fetchJson({url: 'monitorAdmin/results', loadSpec})
             .then(rows => {
-                this.completeLoad(true, rows);
+                this.completeLoad(rows);
             }).catch(e => {
-                this.completeLoad(false, e);
-                XH.handleException(e);
+                this.completeLoad({});
+                throw e;
             });
     }
 
     @action
-    completeLoad(success, vals) {
-        this.results = sortBy(success ? Object.values(vals) : [], 'sortOrder');
+    completeLoad(vals) {
+        this.results = sortBy(Object.values(vals), 'sortOrder');
         this.getLastRun();
     }
 
