@@ -82,7 +82,7 @@ export class BaseFilterFieldSpec extends HoistBase {
         this.enableValues = enableValues ?? this.isEnumerableByDefault;
         this.forceSelection = forceSelection ?? false;
         this.values = values ?? (this.isBoolFieldType ? [true, false] : null);
-        this._hasExplicitValues = !isEmpty(this.values);
+        this.hasExplicitValues = !isEmpty(this.values);
     }
 
     /**
@@ -130,8 +130,9 @@ export class BaseFilterFieldSpec extends HoistBase {
     }
 
     loadValues() {
-        if (this._hasExplicitValues || !this.enableValues) return;
-        this.loadValuesFromSource();
+        if (!this.hasExplicitValues && this.enableValues) {
+            this.loadValuesFromSource();
+        }
     }
 
     /**

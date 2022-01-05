@@ -130,12 +130,10 @@ export class GridFilterModel extends HoistModel {
         return this.fieldSpecs.find(it => it.field === field);
     }
 
-    // Todo: Better name?
     toDisplayValue(value) {
         return isNil(value) || value === '' ? this.BLANK_STR : value;
     }
 
-    // Todo: Better name?
     fromDisplayValue(value) {
         return value === this.BLANK_STR ? null : value;
     }

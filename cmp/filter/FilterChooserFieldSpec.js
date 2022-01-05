@@ -50,7 +50,11 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         this.valueParser = valueParser;
         this.example = this.parseExample(example);
 
-        if (!this._hasExplicitValues && this.source && this.sourceField && (this.enableValues || this.forceSelection)) {
+        if (!this.hasExplicitValues &&
+            this.source &&
+            this.sourceField &&
+            (this.enableValues || this.forceSelection)
+        ) {
             this.addReaction({
                 track: () => this.source.lastUpdated,
                 run: () => this.loadValues(),
