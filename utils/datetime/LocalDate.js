@@ -26,10 +26,6 @@ export class LocalDate {
     static _instances = new Map();
     static VALID_UNITS = ['year', 'quarter', 'month', 'week', 'day', 'date'];
 
-    // Very basic preliminary regex to partially validate input to LocalDate.get().
-    // Input fully validated as a date when passed to moment in constructor.
-    static fmtRegEx = new RegExp(/^\d{8}$/);
-
     _isoString;
     _moment;
     _date;
@@ -41,21 +37,19 @@ export class LocalDate {
      * Get an instance of this class.
      * This is the standard way to get an instance of this object from serialized server-side data.
      *
-     * @param {string} s - a valid date in 'YYYYMMDD' format.
+     * @param {string} s - a valid date in 'YYYY-MM-DD' or 'YYYYMMDD' format.
      * @returns {LocalDate}
      */
     static get(s) {
         if (isNil(s)) return s;
-        throwIf(!isString(s) || !LocalDate.fmtRegEx.test(s), 'LocalDate.get() requires a string of the form "YYYYMMDD"');
-
+        throwIf(!isString(s), 'String required for LocalDate.get()');
+        s = s.replaceAll('-', '');
         let {_instances} = this,
             ret = _instances.get(s);
-
         if (!ret) {
             ret = new LocalDate(s);
             _instances.set(s, ret);
         }
-
         return ret;
     }
 
@@ -63,7 +57,8 @@ export class LocalDate {
      * Get an instance of this class.
      *
      * Note: Applications should favor using the `get()` factory instead of this method.
-     * `get()` takes an explicit 'yyyyMMDD' format and is the safest way to get a LocalDate.
+     * `get()` takes an explicit 'YYYYMMDD' or 'YYYY-MM-DD' format and is the safest way to get
+     * a LocalDate.
      *
      * @params {*} val - any string, timestamp, or date parsable by moment.js.
      * @returns {LocalDate}
@@ -313,8 +308,11 @@ export class LocalDate {
     //-------------------
     /** @private - use one of the static factory methods instead. */
     constructor(s) {
-        const m = moment(s, 'YYYYMMDD');
-        throwIf(!m.isValid(), `Invalid argument for LocalDate: ${s}`);
+        const m = moment(s, 'YYYYMMDD', true);
+        throwIf(
+            !m.isValid(),
+            `Invalid argument for LocalDate: ${s}.  Use 'YYYYMMDD' or 'YYYY-MM-DD' format.`
+        );
         this._isoString = s;
         this._moment = m;
         this._date = m.toDate();
