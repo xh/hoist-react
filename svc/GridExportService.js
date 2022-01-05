@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {ExportFormat} from '@xh/hoist/cmp/grid';
+import {ExcelFormat} from '@xh/hoist/cmp/grid';
 import {HoistService, XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
@@ -176,23 +176,23 @@ export class GridExportService extends HoistService {
 
         if (isNil(value)) return null;
 
-        // 1) Support per-cell exportFormat
-        let {exportFormat} = column,
-            cellHasExportFormat = isFunction(exportFormat);
+        // 1) Support per-cell excelFormat
+        let {excelFormat} = column,
+            cellHasExcelFormat = isFunction(excelFormat);
 
-        if (cellHasExportFormat) {
-            exportFormat = exportFormat(value, {record, column, gridModel});
+        if (cellHasExcelFormat) {
+            excelFormat = excelFormat(value, {record, column, gridModel});
         }
 
         // 2) Dates: Provide date data expected by server endpoint.
         // Also, approximate formats for CSV and clipboard.
-        if (exportFormat === ExportFormat.DATE_FMT) value = fmtDate(value);
-        if (exportFormat === ExportFormat.DATETIME_FMT) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
+        if (excelFormat === ExcelFormat.DATE_FMT) value = fmtDate(value);
+        if (excelFormat === ExcelFormat.DATETIME_FMT) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
 
         value = value.toString();
 
-        return forExcel && cellHasExportFormat ?
-            {value, format: exportFormat} :
+        return forExcel && cellHasExcelFormat ?
+            {value, format: excelFormat} :
             value;
     }
 
@@ -243,18 +243,18 @@ export class GridExportService extends HoistService {
     getColumnMetadata(columns) {
         return columns.map(column => {
             const {field, exportWidth: width} = column;
-            let {exportFormat} = column, type = null;
+            let {excelFormat} = column, type = null;
 
             // If using the function form to support per-cell formats, replace with
-            // ExportFormat.DEFAULT as a placeholder at the column level. The cell-level data for
+            // ExcelFormat.DEFAULT as a placeholder at the column level. The cell-level data for
             // this column will be shipped with the calculated formats.
-            if (isFunction(exportFormat)) exportFormat = ExportFormat.DEFAULT;
+            if (isFunction(excelFormat)) excelFormat = ExcelFormat.DEFAULT;
 
-            if (exportFormat === ExportFormat.DATE_FMT) type = 'date';
-            if (exportFormat === ExportFormat.DATETIME_FMT) type = 'datetime';
-            if (exportFormat === ExportFormat.LONG_TEXT) type = 'longText';
+            if (excelFormat === ExcelFormat.DATE_FMT) type = 'date';
+            if (excelFormat === ExcelFormat.DATETIME_FMT) type = 'datetime';
+            if (excelFormat === ExcelFormat.LONG_TEXT) type = 'longText';
 
-            return {field, type, format: exportFormat, width};
+            return {field, type, format: excelFormat, width};
         });
     }
 
