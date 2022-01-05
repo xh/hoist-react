@@ -20,8 +20,9 @@
 * Mobile `Button` has new `intent`, `minimal` and `outlined` props.
 
 ### 💥 Breaking Changes
-
 * `FilterChooserFieldSpec.suggestValues` has been renamed `enableValues`, and now only accepts a boolean.
+* `Column.exportFormat`, `Column.exportWidth` and the `ExportFormat` enum have been renamed
+ `Column.excelFormat`, `Column.excelWidth` and `ExcelFormat` respectively.
 * `Store.reuseRecords` must now be explicitly set on Stores with large datasets that wish to cache
   records by raw data identity (see above).
 * `Record` class renamed to `StoreRecord` in anticipation of upcoming changes to JavaScript standard

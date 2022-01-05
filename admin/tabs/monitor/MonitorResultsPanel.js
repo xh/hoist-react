@@ -13,6 +13,7 @@ import './MonitorResultsPanel.scss';
 import {MonitorResultsModel} from './MonitorResultsModel';
 import {monitorResultsToolbar} from './MonitorResultsToolbar';
 import {tile} from './Tile';
+import {errorMessage} from '../../../desktop/cmp/error';
 
 export const monitorResultsPanel = hoistCmp.factory({
     model: creates(MonitorResultsModel),
@@ -30,7 +31,11 @@ export const monitorResultsPanel = hoistCmp.factory({
 
 const body = hoistCmp.factory(
     ({model}) => {
-        const {results} = model;
+        const {results, lastLoadException} = model;
+
+        if (lastLoadException) {
+            return errorMessage({error: lastLoadException});
+        }
 
         if (isEmpty(results)) {
             return placeholder('No monitors configured for this application.');

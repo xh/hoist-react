@@ -7,7 +7,7 @@
 import {div, ul, li} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
-import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault, apiRemoved} from '@xh/hoist/utils/js';
 import {
     castArray,
     clone,
@@ -25,7 +25,7 @@ import {
 import {forwardRef, useImperativeHandle, useState, createElement} from 'react';
 import classNames from 'classnames';
 import {GridSorter} from '../impl/GridSorter';
-import {ExportFormat} from './ExportFormat';
+import {ExcelFormat} from './ExcelFormat';
 
 /**
  * Cross-platform definition and API for a standardized Grid column.
@@ -155,12 +155,12 @@ export class Column {
     exportName
     /** @member {(string|Column~exportValueFn)} */
     exportValue;
-    /** @member {(ExportFormat|function)} */
-    exportFormat;
-    /** @member {number} */
-    exportWidth;
     /** @member {boolean} */
     excludeFromExport;
+    /** @member {(ExcelFormat|function)} */
+    excelFormat;
+    /** @member {number} */
+    excelWidth;
 
     /** @member {boolean} */
     autosizable;
@@ -289,10 +289,10 @@ export class Column {
      *      for use within an Excel or CSV file header.
      * @param {(string|Column~exportValueFn)} [c.exportValue] - alternate field name to reference or
      *      function to call when producing a value for a file export. {@see GridExportService}
-     * @param {(ExportFormat|function)} [c.exportFormat] - structured format string for Excel-based
-     *      exports, or a function to produce one. {@see ExportFormat}
-     * @param {number} [c.exportWidth] - width in characters for Excel-based exports. Typically
-     *     used with ExportFormat.LONG_TEXT to enable text wrapping.
+     * @param {(ExcelFormat|function)} [c.excelFormat] - structured format string for Excel-based
+     *      exports, or a function to produce one. {@see ExcelFormat}
+     * @param {number} [c.excelWidth] - width in characters for Excel-based exports. Typically
+     *     used with ExcelFormat.LONG_TEXT to enable text wrapping.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
      * @param {boolean} [c.autosizable] - allow autosizing this column.
      * @param {boolean} [c.autosizeIncludeHeader] - true to include the header width when
@@ -365,9 +365,9 @@ export class Column {
         hideable,
         exportName,
         exportValue,
-        exportFormat,
-        exportWidth,
         excludeFromExport,
+        excelFormat,
+        excelWidth,
         autosizable,
         autosizeIncludeHeader,
         autosizeIncludeHeaderIcons,
@@ -475,9 +475,12 @@ export class Column {
         // fallback again to colId internally if headerName is or returns an Element.
         this.exportName = exportName || this.headerName || this.colId;
         this.exportValue = exportValue;
-        this.exportFormat = withDefault(exportFormat, ExportFormat.DEFAULT);
-        this.exportWidth = exportWidth || null;
         this.excludeFromExport = withDefault(excludeFromExport, !this.field);
+
+        apiRemoved('Column.exportFormat', {test: rest.exportFormat, msg: 'Use `excelFormat` instead', v: 47});
+        apiRemoved('Column.exportWidth', {test: rest.exportWidth, msg: 'Use `excelWidth` instead', v: 47});
+        this.excelFormat = withDefault(excelFormat, ExcelFormat.DEFAULT);
+        this.excelWidth = excelWidth ?? null;
 
         this.autosizable = withDefault(autosizable, this.resizable, true);
         this.autosizeIncludeHeader = withDefault(autosizeIncludeHeader, true);
