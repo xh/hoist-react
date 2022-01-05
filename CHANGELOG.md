@@ -13,6 +13,7 @@
   can be problematic under certain conditions and is not necessary for most applications. Apps with
   large datasets that want to continue to use this caching should set this flag explicitly.
 * Grid column filters tweaked with several improvements to usability and styling.
+* `LocalDate.get()` now supports both 'YYYY-MM-DD' and 'YYYYMMDD' inputs.
 * Mobile `Button` has new `intent`, `minimal` and `outlined` props.
 
 ### 💥 Breaking Changes

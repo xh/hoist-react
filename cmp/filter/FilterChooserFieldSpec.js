@@ -7,9 +7,8 @@
 import {BaseFilterFieldSpec} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
 import {FieldType, parseFieldValue} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
-import {LocalDate} from '@xh/hoist/utils/datetime';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
-import {isFunction, isString, isNil} from 'lodash';
+import {isFunction, isNil} from 'lodash';
 
 /**
  * Filter field specification class for the typeahead `FilterChooser` component. Manages additional
@@ -114,12 +113,6 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
 
             if (isFunction(this.valueParser)) {
                 return this.valueParser(value, op);
-            }
-
-            // Special handling for default localDate to supports user entering dash-separated dates,
-            // which is likely given that we show resolved dates in that format.
-            if (fieldType === FieldType.LOCAL_DATE && isString(value)) {
-                return LocalDate.get(value.replace(/-/g, ''));
             }
 
             return parseFieldValue(value, fieldType, undefined);
