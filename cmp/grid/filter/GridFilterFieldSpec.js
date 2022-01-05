@@ -94,7 +94,7 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
             values = allValues;
         }
 
-        this.values = values;
+        this.values = values.sort();
         this.valueCount = allValues.length;
     }
 
