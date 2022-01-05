@@ -1,6 +1,6 @@
 # Changelog
 
-## v45.0.0-SNAPSHOT - unreleased
+## v45.0.0 - 2022-01-05
 
 ### 🎁 New Features
 
@@ -56,7 +56,7 @@
 * store2 `2.12 -> 2.13`
 * ua-parser-js `0.7 -> 1.0.2` (re-enables auto-patch updates)
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...v45.0.0)
 
 ## v44.3.0 - 2021-12-15
 
