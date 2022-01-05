@@ -5,14 +5,14 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {compactDateRenderer, dateRenderer, dateTimeRenderer, dateTimeSecRenderer, timeRenderer} from '@xh/hoist/format';
-import {ExportFormat} from './ExportFormat';
+import {ExcelFormat} from './ExcelFormat';
 
 const defaults = {align: 'right'};
 
 export const date = {
     ...defaults,
     renderer: dateRenderer(),
-    exportFormat: ExportFormat.DATE_FMT,
+    excelFormat: ExcelFormat.DATE_FMT,
     width: 120
 };
 
@@ -26,7 +26,7 @@ export const dateTime = {
     ...defaults,
     align: 'left',
     renderer: dateTimeRenderer(),
-    exportFormat: ExportFormat.DATETIME_FMT,
+    excelFormat: ExcelFormat.DATETIME_FMT,
     width: 180
 };
 
@@ -34,14 +34,14 @@ export const dateTimeSec = {
     ...defaults,
     align: 'left',
     renderer: dateTimeSecRenderer(),
-    exportFormat: ExportFormat.DATETIME_FMT,
+    excelFormat: ExcelFormat.DATETIME_FMT,
     width: 190
 };
 
 export const compactDate = {
     ...defaults,
     renderer: compactDateRenderer(),
-    exportFormat: ExportFormat.DATE_FMT,
+    excelFormat: ExcelFormat.DATE_FMT,
     width: 100
 };
 

@@ -7,13 +7,13 @@
 
 /**
  * Data-type specific cell formats used in server-side Excel exports.
- * Specify for a Grid Column via the `Column.exportFormat` config.
+ * Specify for a Grid Column via the `Column.excelFormat` config.
  * @enum {string}
  */
-export const ExportFormat = {
+export const ExcelFormat = {
     DEFAULT:            'General',
 
-    // Custom ExportFormat that enables text wrapping when used with ExportWidth.
+    // Custom ExcelFormat that enables text wrapping when used with ExportWidth.
     LONG_TEXT:          'Text',
 
     // Numbers
