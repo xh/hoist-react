@@ -242,8 +242,8 @@ export class GridExportService extends HoistService {
 
     getColumnMetadata(columns) {
         return columns.map(column => {
-            const {field, exportWidth: width} = column;
-            let {excelFormat} = column, type = null;
+            let {field, excelWidth, excelFormat} = column,
+                type = null;
 
             // If using the function form to support per-cell formats, replace with
             // ExcelFormat.DEFAULT as a placeholder at the column level. The cell-level data for
@@ -254,7 +254,7 @@ export class GridExportService extends HoistService {
             if (excelFormat === ExcelFormat.DATETIME_FMT) type = 'datetime';
             if (excelFormat === ExcelFormat.LONG_TEXT) type = 'longText';
 
-            return {field, type, format: excelFormat, width};
+            return {field, type, format: excelFormat, width: excelWidth};
         });
     }
 

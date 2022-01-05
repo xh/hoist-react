@@ -13,7 +13,7 @@
 export const ExcelFormat = {
     DEFAULT:            'General',
 
-    // Custom ExcelFormat that enables text wrapping when used with ExportWidth.
+    // ExcelFormat that enables text wrapping when used with Column.exportWidth.
     LONG_TEXT:          'Text',
 
     // Numbers
