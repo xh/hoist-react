@@ -82,7 +82,7 @@ const inputField = hoistCmp.factory(
             return select({
                 ...props,
                 options: fieldSpec.values,
-                enableCreate: true,
+                enableCreate: !fieldSpec.forceSelection,
                 hideSelectedOptionCheck: true
             });
         } else {

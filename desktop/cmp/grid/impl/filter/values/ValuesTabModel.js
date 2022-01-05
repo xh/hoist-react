@@ -69,12 +69,12 @@ export class ValuesTabModel extends HoistModel {
         return this.fieldSpec.values;
     }
 
-    get totalValues() {
-        return this.fieldSpec.allValues?.length;
+    get valueCount() {
+        return this.fieldSpec.valueCount;
     }
 
     get hasHiddenValues() {
-        return this.values.length < this.totalValues;
+        return this.values.length < this.valueCount;
     }
 
     constructor(parentModel) {
@@ -112,15 +112,15 @@ export class ValuesTabModel extends HoistModel {
     // Implementation
     //-------------------
     getFilter() {
-        const {gridFilterModel, pendingValues, values, totalValues, field} = this,
+        const {gridFilterModel, pendingValues, values, valueCount, field} = this,
             included = pendingValues.map(it => gridFilterModel.fromDisplayValue(it)),
             excluded = difference(values, pendingValues).map(it => gridFilterModel.fromDisplayValue(it));
 
-        if (included.length === totalValues || excluded.length === totalValues) {
+        if (included.length === valueCount || excluded.length === valueCount) {
             return null;
         }
 
-        const weight = totalValues <= 10 ? 2.5 : 1, // Prefer '=' for short lists
+        const weight = valueCount <= 10 ? 2.5 : 1, // Prefer '=' for short lists
             op = included.length > (excluded.length * weight) ? '!=' : '=',
             arr = op === '=' ? included : excluded;
 

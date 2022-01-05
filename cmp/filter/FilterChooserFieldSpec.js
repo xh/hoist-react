@@ -19,12 +19,6 @@ import {isFunction, isNil} from 'lodash';
  */
 export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
 
-    /** @member {(boolean|SuggestValuesCb)} */
-    suggestValues;
-
-    /** @member {boolean} */
-    forceSelection;
-
     /** @member {FilterChooserValueRendererCb} */
     valueRenderer;
 
@@ -36,13 +30,6 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
 
     /**
      * @param {Object} c - FilterChooserFieldSpec configuration.
-     * @param {(boolean|SuggestValuesCb)} [c.suggestValues] - true to provide
-     *      auto-complete options with enumerated matches when user specifies '=', or'!='.
-     *      Defaults to true for enumerable fieldTypes, otherwise false.  May be also
-     *      specified as the function to be used for the matching. (If true a default "word start"
-     *      matching against the formatted value will be used.)
-     * @param {boolean} [c.forceSelection] - true to require value entered to be an available value
-     *      for '=' and '!=' operators. Defaults to false.
      * @param {FilterChooserValueRendererCb} [c.valueRenderer] - function to produce a suitably
      *      formatted string for display to the user for any given field value.
      * @param {FilterChooserValueParserCb} [c.valueParser] - function to parse user's input from a
@@ -52,8 +39,6 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
      * @param {*} [c...rest] - arguments for BaseFilterFieldSpec.
      */
     constructor({
-        suggestValues,
-        forceSelection,
         valueRenderer,
         valueParser,
         example,
@@ -61,15 +46,20 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
     }) {
         super(rest);
 
-        this.suggestValues = suggestValues ?? this.isEnumerableByDefault;
-        this.forceSelection = forceSelection ?? false;
         this.valueRenderer = valueRenderer;
         this.valueParser = valueParser;
         this.example = this.parseExample(example);
-        this.initValues();
+
+        if (!this._hasExplicitValues && this.source && this.sourceField && (this.enableValues || this.forceSelection)) {
+            this.addReaction({
+                track: () => this.source.lastUpdated,
+                run: () => this.loadValues(),
+                fireImmediately: true
+            });
+        }
 
         throwIf(
-            !this.values && forceSelection,
+            !this.values && this.forceSelection,
             `Must provide lookup values for field '${this.field}', or set forceSelection to false.`
         );
 
@@ -77,17 +67,6 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
             !this.valueParser && this.fieldType === FieldType.DATE,
             "Must provide an appropriate valueParser arg for fields with type 'date'"
         );
-    }
-
-    /**
-     * @param {string} op
-     * @returns {boolean}
-     */
-    supportsSuggestions(op) {
-        return this.values &&
-            this.suggestValues &&
-            this.supportsOperator(op) &&
-            (op === '=' || op === '!=');
     }
 
     renderValue(value, op) {
@@ -119,23 +98,6 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
     //------------------------
     // Implementation
     //------------------------
-    initValues() {
-        if (this.values) return;
-
-        if (this.isBoolFieldType) {
-            this.values = [true, false];
-            return;
-        }
-
-        if (this.source && this.sourceField && (this.suggestValues || this.forceSelection)) {
-            this.addReaction({
-                track: () => this.source.lastUpdated,
-                run: () => this.loadValuesFromSource(),
-                fireImmediately: true
-            });
-        }
-    }
-
     parseExample(example) {
         if (example) return example;
         if (this.isBoolFieldType) return 'true | false';

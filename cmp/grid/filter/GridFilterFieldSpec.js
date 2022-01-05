@@ -17,9 +17,6 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
     /** @member {GridFilterModel} */
     filterModel;
 
-    /** @member {boolean} */
-    enableValues;
-
     /** @member {Column~rendererFn} */
     renderer;
 
@@ -29,14 +26,12 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
     /** @member {string} */
     defaultOp;
 
-    /** @member {?Array} - List of all (i.e. including hidden) values values for this field. */
-    allValues;
+    /** @member {int} */
+    valueCount;
 
     /**
      * @param {Object} c - GridFilterFieldSpec configuration.
      * @param {GridFilterModel} c.filterModel - GridFilterModel instance which owns this fieldSpec.
-     * @param {boolean} [c.enableValues] - true to provide the value filter control
-     *      within the filter affordance. Defaults to true for enumerable fieldTypes.
      * @param {Column~rendererFn} [c.renderer] - function returning a formatted string for each
      *      value in this values filter display. If not provided, the Column's renderer will be used.
      * @param {Object} [c.inputProps] - Props to pass through to the HoistInput components used on
@@ -46,7 +41,6 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
      */
     constructor({
         filterModel,
-        enableValues,
         renderer,
         inputProps,
         defaultOp,
@@ -55,27 +49,9 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
         super(rest);
 
         this.filterModel = filterModel;
-        this.enableValues = enableValues ?? this.isEnumerableByDefault;
         this.renderer = renderer;
         this.inputProps = inputProps;
         this.defaultOp = this.ops.includes(defaultOp) ? defaultOp : this.ops[0];
-        this._hasExplicitValues = !isEmpty(this.values);
-    }
-
-    loadValues() {
-        if (this._hasExplicitValues || !this.enableValues) return;
-        this.loadValuesFromSource();
-    }
-
-    /**
-     * @param {string} op
-     * @returns {boolean}
-     */
-    supportsSuggestions(op) {
-        return this.values &&
-            this.enableValues &&
-            this.supportsOperator(op) &&
-            (op === '=' || op === '!=');
     }
 
     //------------------------
@@ -119,7 +95,7 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
         }
 
         this.values = values;
-        this.allValues = allValues;
+        this.valueCount = allValues.length;
     }
 
     /**
