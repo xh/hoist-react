@@ -113,7 +113,7 @@ const popoverCmp = hoistCmp.factory(
                     filler(),
                     button({
                         text: 'Cancel',
-                        modifier: 'quiet',
+                        minimal: true,
                         onClick: () => model.closePopover()
                     }),
                     button({
@@ -203,7 +203,7 @@ const dimensionRow = hoistCmp.factory({
                         button({
                             icon: Icon.delete(),
                             className: 'xh-grouping-chooser__row__remove-btn',
-                            modifier: 'quiet',
+                            minimal: true,
                             onClick: () => model.removePendingDimAtIdx(idx)
                         })
                     ],
@@ -257,7 +257,7 @@ const favoritesButton = hoistCmp.factory({
         if (!model.persistFavorites) return null;
         return button({
             icon: Icon.favorite(),
-            modifier: 'quiet',
+            minimal: true,
             className: 'xh-grouping-chooser__favorite-button',
             onClick: () => model.openFavoritesMenu()
         });
@@ -284,7 +284,7 @@ const favoriteMenuItem = hoistCmp.factory({
             items: [
                 button({
                     text: label,
-                    modifier: 'quiet',
+                    minimal: true,
                     flex: 1,
                     onClick: () => {
                         model.setValue(value);
@@ -293,7 +293,7 @@ const favoriteMenuItem = hoistCmp.factory({
                 }),
                 button({
                     icon: Icon.delete(),
-                    modifier: 'quiet',
+                    minimal: true,
                     onClick: () => model.removeFavorite(value)
                 })
             ]

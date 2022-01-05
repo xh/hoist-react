@@ -50,7 +50,7 @@ export const optionsDialog = hoistCmp.factory({
                 filler(),
                 button({
                     text: 'Cancel',
-                    modifier: 'quiet',
+                    minimal: true,
                     onClick: () => model.hide()
                 }),
                 button({
