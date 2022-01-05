@@ -81,19 +81,19 @@ export class ClientErrorsModel extends HoistModel {
                 'userAlerted',
                 {
                     field: 'userAgent',
-                    suggestValues: false
+                    enableValues: false
                 },
                 {
                     field: 'msg',
-                    suggestValues: false
+                    enableValues: false
                 },
                 {
                     field: 'error',
-                    suggestValues: false
+                    enableValues: false
                 },
                 {
                     field: 'url',
-                    suggestValues: false
+                    enableValues: false
                 },
                 {
                     field: 'dateCreated',

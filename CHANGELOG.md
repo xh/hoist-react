@@ -4,6 +4,9 @@
 
 ### 🎁 New Features
 
+* Grid filters configured with `GridFilterFieldSpec.enableValues` offer autocomplete suggestions
+  for 'Equals' and 'Not Equals' filters.
+* `GridFilterFieldSpec` has new `values` and `forceSelection` configs.
 * `FilterChooser` displays a list of fields configured for filtering to improve the usability /
   discoverability of the control. Enabled by default, but can be disabled via
   new `suggestFieldsWhenEmpty` model config.
@@ -17,7 +20,7 @@
 * Mobile `Button` has new `intent`, `minimal` and `outlined` props.
 
 ### 💥 Breaking Changes
-
+* `FilterChooserFieldSpec.suggestValues` has been renamed `enableValues`, and now only accepts a boolean.
 * `Column.exportFormat`, `Column.exportWidth` and the `ExportFormat` enum have been renamed
  `Column.excelFormat`, `Column.excelWidth` and `ExcelFormat` respectively.
 * `Store.reuseRecords` must now be explicitly set on Stores with large datasets that wish to cache
