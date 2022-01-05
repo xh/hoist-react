@@ -63,7 +63,6 @@ export class GridExportService extends HoistService {
             records = gridModel.store.rootRecords,
             meta = this.getColumnMetadata(exportColumns);
 
-
         if (records.length === 0) {
             XH.warningToast('No data found to export.');
             return;
@@ -73,12 +72,12 @@ export class GridExportService extends HoistService {
         const rows = gridModel.showSummary && summaryRecord ?
             [
                 this.getHeaderRow(exportColumns, type, gridModel),
-                this.getRecordRow(gridModel, summaryRecord, exportColumns, 0),
-                ...this.getRecordRowsRecursive(gridModel, records, exportColumns, 1)
+                this.getRecordRow(gridModel, summaryRecord, exportColumns, type, 0),
+                ...this.getRecordRowsRecursive(gridModel, records, exportColumns, type, 1)
             ] :
             [
                 this.getHeaderRow(exportColumns, type, gridModel),
-                ...this.getRecordRowsRecursive(gridModel, records, exportColumns, 0)
+                ...this.getRecordRowsRecursive(gridModel, records, exportColumns, type, 0)
             ];
 
         // Show separate 'started' toasts for larger (i.e. slower) exports.
@@ -154,10 +153,10 @@ export class GridExportService extends HoistService {
      * @param {Column} c.column
      * @param {Object} [c.node] - rendered ag-Grid row, if available.  Necessary for
      *            exporting agGrid aggregates.
-     * @param {boolean} [c.forServer] - for posting to server, default false.
+     * @param {boolean} [c.forExcel] - for posting to server-side excel export, default false.
      * @return {String} - value suitable for export to excel, csv, or clipboard.
      */
-    getExportableValueForCell({gridModel, record, column, node, forServer = false}) {
+    getExportableValueForCell({gridModel, record, column, node, forExcel = false}) {
         const {field, exportValue, getValueFn} = column,
             aggData = node && gridModel.treeMode && !isEmpty(record.children) ? node.aggData : null;
 
@@ -192,7 +191,7 @@ export class GridExportService extends HoistService {
 
         value = value.toString();
 
-        return forServer && cellHasExportFormat ?
+        return forExcel && cellHasExportFormat ?
             {value, format: exportFormat} :
             value;
     }
@@ -284,7 +283,7 @@ export class GridExportService extends HoistService {
         return {data: headers, depth: 0};
     }
 
-    getRecordRowsRecursive(gridModel, records, columns, depth) {
+    getRecordRowsRecursive(gridModel, records, columns, type, depth) {
         const {sortBy, treeMode, agApi} = gridModel,
             ret = [];
 
@@ -310,9 +309,9 @@ export class GridExportService extends HoistService {
         });
 
         records.forEach(record => {
-            ret.push(this.getRecordRow(gridModel, record, columns, depth));
+            ret.push(this.getRecordRow(gridModel, record, columns, type, depth));
             if (treeMode && record.children.length) {
-                const childRows = this.getRecordRowsRecursive(gridModel, record.children, columns, depth + 1);
+                const childRows = this.getRecordRowsRecursive(gridModel, record.children, columns, type, depth + 1);
                 childRows.forEach(r => ret.push(r));
             }
         });
@@ -320,10 +319,11 @@ export class GridExportService extends HoistService {
         return ret;
     }
 
-    getRecordRow(gridModel, record, columns, depth) {
+    getRecordRow(gridModel, record, columns, type, depth) {
         const node = gridModel.agApi?.getRowNode(record.id),
+            forExcel = type !== 'csv',
             data = columns.map(column => {
-                return this.getExportableValueForCell({gridModel, record, column, node, forServer: true});
+                return this.getExportableValueForCell({gridModel, record, column, node, forExcel});
             });
         return {data, depth};
     }
