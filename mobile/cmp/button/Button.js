@@ -6,8 +6,9 @@
  */
 import {hspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
-import {button as onsenButton, Button as OnsenButton} from '@xh/hoist/kit/onsen';
+import {button as onsenButton} from '@xh/hoist/kit/onsen';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {apiDeprecated} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import PT from 'prop-types';
 import './Button.scss';
@@ -22,8 +23,48 @@ export const [Button, button] = hoistCmp.withFactory({
     className: 'xh-button',
 
     render(props, ref) {
-        const [layoutProps, {icon, className, text, modifier, active, onClick, style, ...rest}] = splitLayoutProps(props),
+        const [layoutProps, nonLayoutProps] = splitLayoutProps(props),
+            classes = [],
             items = [];
+
+        const {
+            active,
+            className,
+            disabled,
+            icon,
+            intent,
+            onClick,
+            style,
+            text,
+            ...rest
+        } = nonLayoutProps;
+
+        let {outlined, minimal} = nonLayoutProps;
+        if (rest?.modifier === 'outline') {
+            apiDeprecated('Button.modifier = `outline`', {msg: 'Use `outlined` instead', v: 'v47'});
+            outlined = outlined ?? true;
+        }
+        if (rest?.modifier === 'quiet') {
+            apiDeprecated('Button.modifier = `quiet`', {msg: 'Use `minimal` instead', v: 'v47'});
+            minimal = minimal ?? true;
+        }
+
+        if (disabled) {
+            classes.push('xh-button--disabled');
+        } else {
+            classes.push('xh-button--enabled');
+        }
+
+        if (intent) {
+            classes.push(`xh-button--intent-${intent}`);
+        } else {
+            classes.push(`xh-button--intent-none`);
+        }
+
+        if (minimal) classes.push('xh-button--minimal');
+        if (outlined) classes.push('xh-button--outlined');
+        if (!minimal && !outlined) classes.push('xh-button--standard');
+        if (active) classes.push('xh-button--active');
 
         if (icon && text) {
             items.push(icon, hspacer(8), text);
@@ -36,23 +77,26 @@ export const [Button, button] = hoistCmp.withFactory({
         return onsenButton({
             ref,
             items,
-            modifier,
             onClick,
-
+            className: classNames(className, classes),
             style: {
                 ...style,
                 ...layoutProps
             },
-
-            ...rest,
-            className: classNames(className, active ? 'xh-button-active' : null)
+            ...rest
         });
     }
 });
 
 Button.propTypes = {
-    ...OnsenButton.propTypes,
     active: PT.bool,
+    className: PT.string,
+    disabled: PT.bool,
     icon: PT.element,
+    intent: PT.oneOf(['primary', 'success', 'warning', 'danger']),
+    minimal: PT.bool,
+    onClick: PT.func,
+    outlined: PT.bool,
+    style: PT.object,
     text: PT.node
 };

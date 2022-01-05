@@ -284,6 +284,7 @@ body {
   --xh-button-bg-darkest: var(--xh-intent-neutral-darkest);
   --xh-button-bg-lighter: var(--xh-intent-neutral-lighter);
   --xh-button-bg-lightest: var(--xh-intent-neutral-lightest);
+  --xh-button-border-radius-px: var(--button-border-radius-px, var(--xh-border-radius-px));
   --xh-button-disabled-opacity: var(--button-disabled-opacity, 0.4);
   --xh-button-font-family: var(--button-font-family, var(--xh-font-family));
   --xh-button-font-size: var(--button-font-size, var(--xh-font-size));
@@ -309,7 +310,17 @@ body {
     --xh-button-active-text-color: var(--button-active-text-color, white);
     --xh-button-bg: var(--button-bg, #{mc('blue-grey', '600')});
     --xh-button-text-color: var(--button-text-color, white);
+    --xh-button-height: var(--button-height, 28px);
     --xh-toolbar-button-bg: var(--toolbar-button-bg, var(--xh-button-bg));
+
+    // Light theme pressed bg for 'minimal' / 'outlined'
+    --xh-button-bg-darker: var(--button-bg-darker, var(--xh-intent-neutral-darkest));
+    // Light theme pressed bg for 'standard'
+    --xh-button-bg-darkest: var(--button-bg-darkest, #{mc('blue-grey', '800')});
+    // Dark theme pressed bg for 'minimal' / 'outlined'
+    --xh-button-bg-lighter: var(--button-bg-lighter, var(--xh-intent-neutral-lightest));
+    // Dark theme pressed bg for 'standard'
+    --xh-button-bg-lightest: var(--button-bg-lightest, #{mc('blue-grey', '400')});
 
     &.xh-dark {
       --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '800'), mc('light-blue', '600'), 50%)});

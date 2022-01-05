@@ -13,7 +13,8 @@
   can be problematic under certain conditions and is not necessary for most applications. Apps with
   large datasets that want to continue to use this caching should set this flag explicitly.
 * Grid column filters tweaked with several improvements to usability and styling.
-* LocalDate.get() will now support inputs in either 'YYYY-MM-DD' format or 'YYYYMMDD' format.
+* `LocalDate.get()` now supports both 'YYYY-MM-DD' and 'YYYYMMDD' inputs.
+* Mobile `Button` has new `intent`, `minimal` and `outlined` props.
 
 ### 💥 Breaking Changes
 
@@ -22,6 +23,7 @@
 * `Record` class renamed to `StoreRecord` in anticipation of upcoming changes to JavaScript standard
   and to improve compatibility with TypeScript.
   * Not expected to have much or any impact on application code, except potentially JSDoc typings.
+* Mobile `Button` no longer supports `modifier` prop. Use `minimal` and `outlined` instead.
 * The following deprecated APIs were removed:
     * GridModel.selection
     * GridModel.selectedRecordId
