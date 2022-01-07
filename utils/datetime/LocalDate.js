@@ -43,7 +43,7 @@ export class LocalDate {
     static get(s) {
         if (isNil(s)) return s;
         throwIf(!isString(s), 'String required for LocalDate.get()');
-        s = s.replaceAll('-', '');
+        s = s.replace('-', '').replace('-', '');   // Use replaceAll when fully supported.
         let {_instances} = this,
             ret = _instances.get(s);
         if (!ret) {
