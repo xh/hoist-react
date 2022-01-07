@@ -17,6 +17,7 @@ import {
     isEmpty,
     isNil,
     isString,
+    isFunction,
     remove as lodashRemove
 } from 'lodash';
 
@@ -145,7 +146,7 @@ export class Store extends HoistBase {
         makeObservable(this);
         this.experimental = this.parseExperimental(experimental);
         this.fields = this.parseFields(fields, fieldDefaults);
-        this.idSpec = isString(idSpec) ? (data) => data[idSpec] : idSpec;
+        this.idSpec = this.parseIdSpec(idSpec);
         this.processRawData = processRawData;
         this.filter = parseFilter(filter);
         this.filterIncludesChildren = filterIncludesChildren;
@@ -920,6 +921,23 @@ export class Store extends HoistBase {
             ...XH.getConf('xhStoreExperimental', {}),
             ...experimental
         };
+    }
+
+    parseIdSpec(idSpec) {
+        let ret;
+        if (isString(idSpec)) {
+            ret = (raw) => raw[idSpec];
+        } else if (isFunction(idSpec)) {
+            ret = (raw) => idSpec(raw);
+        } else {
+            throw XH.exception(
+                'idSpec should be either a name of a field, or a function to generate an id.'
+            );
+        }
+
+        return this.experimental.castIdToString ?
+            (raw) => ret(raw)?.toString() :
+            ret;
     }
 }
 
