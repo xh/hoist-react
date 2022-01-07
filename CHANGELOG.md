@@ -1,8 +1,14 @@
 # Changelog
 
-## v46.0.0-SNAPSHOT - unreleased
+## v45.0.1 - 2022-01-07
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v45.0.0...develop)
+### 🐞 Bug Fixes
+* Fixed a minor bug preventing Hoist apps from running on mobile Blackberry Access (Android) browsers
+
+### ⚙️ Technical
+* New flag `Store.experimental.castIdToString`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v45.0.0...v45.0.1)
 
 ## v45.0.0 - 2022-01-05
 
