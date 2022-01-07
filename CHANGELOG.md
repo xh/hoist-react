@@ -1,5 +1,7 @@
 # Changelog
 
+## v46.0.0-SNAPSHOT - unreleased
+
 ## v45.0.1 - 2022-01-07
 
 ### 🐞 Bug Fixes
