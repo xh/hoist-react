@@ -1,6 +1,8 @@
 # Changelog
 
 ## v46.0.0-SNAPSHOT - unreleased
+### 🐞 Bug Fixes
+* Fixed cache clearing method on Admin Console's Server > Services tab.
 
 ## v45.0.1 - 2022-01-07
 
