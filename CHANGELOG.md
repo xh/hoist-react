@@ -4,7 +4,7 @@
 
 ### 💥 Breaking Changes
 
-* `LocalDate.toString()`, `LocalDate.toJSON()` and `LocalDate.valueOf()` all return a string with dashes: `YYYY-MM-DD`.  Prior versions returned the string without dashes: `YYYYMMDD`.
+* `LocalDate.toString()`, `LocalDate.toJSON()` and `LocalDate.valueOf()` all return a string with dashes: `YYYY-MM-DD`.  Prior versions returned the string without dashes: `YYYYMMDD`.  This changes requires use of Hoist-Core v11.0.4 or later.
 
 ### 🐞 Bug Fixes
 * Fixed cache clearing method on Admin Console's Server > Services tab.
