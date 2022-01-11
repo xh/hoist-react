@@ -313,7 +313,7 @@ export class LocalDate {
             !m.isValid(),
             `Invalid argument for LocalDate: ${s}.  Use 'YYYYMMDD' or 'YYYY-MM-DD' format.`
         );
-        this._isoString = s;
+        this._isoString = s.slice(0, 4) + '-' + s.slice(4, 6) + '-' + s.slice(6, 8);
         this._moment = m;
         this._date = m.toDate();
     }
