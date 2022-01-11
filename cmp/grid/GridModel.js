@@ -46,6 +46,7 @@ import {
     omit,
     pull
 } from 'lodash';
+import {debounced} from '../../utils/js';
 import {GridPersistenceModel} from './impl/GridPersistenceModel';
 import {GridSorter} from './impl/GridSorter';
 
@@ -144,6 +145,11 @@ export class GridModel extends HoistModel {
     @observable treeStyle;
     /** @member {boolean} */
     @observable isEditing = false;
+
+    /** @member {boolean} - The distinction from the 'isEditing' flag is that this property does
+     * not flip to true during transient navigation from cell to cell, but rather is debounced
+     * such that the grid will "settle" for a short time before toggling*/
+    @observable gridIsInEditMode = false;
 
     static defaultContextMenu = [
         'filter',
@@ -425,6 +431,11 @@ export class GridModel extends HoistModel {
         this.onCellClicked = onCellClicked;
         this.onCellDoubleClicked = onCellDoubleClicked;
         this.onCellContextMenu = onCellContextMenu;
+
+        this.addReaction({
+           track: () => this.isEditing,
+           run: (isEditing) => this.updateIsInEditingMode(isEditing)
+        });
     }
 
     /**
@@ -1152,6 +1163,12 @@ export class GridModel extends HoistModel {
     @action
     onCellEditingStopped = () => {
         this.isEditing = false;
+    }
+
+    @debounced(500)
+    @action
+    updateIsInEditingMode(isEditing) {
+        this.gridIsInEditMode = isEditing;
     }
 
     /**
