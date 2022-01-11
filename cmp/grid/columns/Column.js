@@ -20,9 +20,10 @@ import {
     isNil,
     isNumber,
     isPlainObject,
-    isString
+    isString,
+    toString
 } from 'lodash';
-import {forwardRef, useImperativeHandle, useState, createElement} from 'react';
+import {forwardRef, useImperativeHandle, useState, createElement, isValidElement} from 'react';
 import classNames from 'classnames';
 import {GridSorter} from '../impl/GridSorter';
 import {ExcelFormat} from './ExcelFormat';
@@ -651,7 +652,7 @@ export class Column {
                     tooltipSpec(val, {record, column: this, gridModel, agParams}) :
                     val;
 
-                return ret ?? null;
+                return isValidElement(ret) ? ret : toString(ret);
             });
         }
 
