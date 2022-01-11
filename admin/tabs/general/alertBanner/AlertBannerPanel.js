@@ -42,7 +42,7 @@ export const alertBannerPanel = hoistCmp.factory({
 
 const formPanel = hoistCmp.factory(
     ({model}) => {
-        const {formModel, loadModel} = model,
+        const {formModel} = model,
             {isDirty, isValid} = formModel;
 
         return panel({
@@ -162,7 +162,7 @@ const formPanel = hoistCmp.factory(
                     icon: Icon.check(),
                     intent: 'success',
                     disabled: !isValid || !isDirty,
-                    onClick: () => model.saveAsync().linkTo(loadModel)
+                    onClick: () => model.saveAsync()
                 })
             ]
         });

@@ -100,6 +100,28 @@ export class AlertBannerModel extends HoistModel {
     }
 
     async saveAsync() {
+        return this
+            .saveInternalAsync()
+            .linkTo(this.loadModel)
+            .catchDefault();
+    }
+
+    resetForm() {
+        this.formModel.reset();
+        this.refreshAsync();
+    }
+
+    //----------------
+    // Implementation
+    //----------------
+    @action
+    syncPreview() {
+        const conf = XH.alertBannerService.genBannerConfig(this.formModel.getData());
+        this.bannerModel = new BannerModel(conf);
+    }
+
+    @action
+    async saveInternalAsync() {
         const {formModel, savedValue} = this,
             {
                 active,
@@ -181,19 +203,5 @@ export class AlertBannerModel extends HoistModel {
 
         await XH.alertBannerService.checkForBannerAsync();
         await this.refreshAsync();
-    }
-
-    resetForm() {
-        this.formModel.reset();
-        this.refreshAsync();
-    }
-
-    //----------------
-    // Implementation
-    //----------------
-    @action
-    syncPreview() {
-        const conf = XH.alertBannerService.genBannerConfig(this.formModel.getData());
-        this.bannerModel = new BannerModel(conf);
     }
 }
