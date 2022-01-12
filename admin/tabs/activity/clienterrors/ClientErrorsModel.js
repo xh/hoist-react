@@ -204,7 +204,14 @@ export class ClientErrorsModel extends HoistModel {
     }
 
     getParams() {
-        const {startDay, endDay} = this;
+        // TODO - revert this date formatting when most client apps
+        // have migrated to Hoist-Core 13.0.5 or later.
+        const BASIC_ISO_DATE_FORMAT = 'YYYYMMDD';
+
+        const startDay = this.startDay.format(BASIC_ISO_DATE_FORMAT),
+            endDay = this.endDay.format(BASIC_ISO_DATE_FORMAT);
+        // END TODO
+        
         return {startDay, endDay};
     }
 
