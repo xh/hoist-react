@@ -26,6 +26,10 @@ export class LocalDate {
     static _instances = new Map();
     static VALID_UNITS = ['year', 'quarter', 'month', 'week', 'day', 'date'];
 
+    // Regex to check if string passed to LocalDate.get() needs dashes added.
+    // Input fully validated as a date when passed to moment in constructor.
+    static noDashesRegEx = new RegExp(/^\d{8}$/);
+
     _isoString;
     _moment;
     _date;
@@ -43,7 +47,9 @@ export class LocalDate {
     static get(s) {
         if (isNil(s)) return s;
         throwIf(!isString(s), 'String required for LocalDate.get()');
-        s = s.replace('-', '').replace('-', '');   // Use replaceAll when fully supported.
+        s = LocalDate.noDashesRegEx.test(s) ? 
+            s.slice(0, 4) + '-' + s.slice(4, 6) + '-' + s.slice(6, 8) : 
+            s;
         let {_instances} = this,
             ret = _instances.get(s);
         if (!ret) {
@@ -67,7 +73,7 @@ export class LocalDate {
         if (isNil(val)) return val;
         if (val.isLocalDate) return val;
         const m = moment.isMoment(val) ? val : moment(val);
-        return this.get(m.format('YYYYMMDD'));
+        return this.get(m.format('YYYY-MM-DD'));
     }
 
     /** @returns {LocalDate} - a LocalDate representing the current day. */
@@ -308,12 +314,12 @@ export class LocalDate {
     //-------------------
     /** @private - use one of the static factory methods instead. */
     constructor(s) {
-        const m = moment(s, 'YYYYMMDD', true);
+        const m = moment(s, 'YYYY-MM-DD', true);
         throwIf(
             !m.isValid(),
             `Invalid argument for LocalDate: ${s}.  Use 'YYYYMMDD' or 'YYYY-MM-DD' format.`
         );
-        this._isoString = s.slice(0, 4) + '-' + s.slice(4, 6) + '-' + s.slice(6, 8);
+        this._isoString = s;
         this._moment = m;
         this._date = m.toDate();
     }
