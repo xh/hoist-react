@@ -860,7 +860,7 @@ export class Store extends HoistBase {
 
             recordMap.set(id, rec);
 
-            if (loadTreeData && loadTreeDataFrom && raw[loadTreeDataFrom]) {
+            if (loadTreeData && raw[loadTreeDataFrom]) {
                 this.createRecords(raw[loadTreeDataFrom], rec, recordMap);
             }
         });
