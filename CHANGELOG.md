@@ -1,6 +1,11 @@
 # Changelog
 
 ## v46.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+* `FilterChooser` has new `menuWidth` prop, allowing you to specify as width for the dropdown
+  menu that is different from the control.
+
 ### 🐞 Bug Fixes
 * Fixed cache clearing method on Admin Console's Server > Services tab.
 

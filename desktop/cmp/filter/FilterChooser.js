@@ -29,7 +29,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
     render({model, className, ...props}, ref) {
         const [layoutProps, chooserProps] = splitLayoutProps(props),
             {inputRef, suggestFieldsWhenEmpty, selectOptions, unsupportedFilter, favoritesIsOpen} = model,
-            {autoFocus, enableClear, leftIcon, maxMenuHeight, menuPlacement} = chooserProps,
+            {autoFocus, enableClear, leftIcon, maxMenuHeight, menuPlacement, menuWidth} = chooserProps,
             disabled = unsupportedFilter || chooserProps.disabled,
             placeholder = unsupportedFilter ?
                 'Unsupported filter' : // Todo: How to message this better?
@@ -49,6 +49,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                     autoFocus,
                     disabled,
                     menuPlacement,
+                    menuWidth,
                     placeholder,
                     leftIcon: withDefault(leftIcon, Icon.filter()),
                     enableClear: withDefault(enableClear, true),
@@ -105,6 +106,9 @@ FilterChooser.propTypes = {
 
     /** Placement of the dropdown menu relative to the input control. */
     menuPlacement: PT.oneOf(['auto', 'top', 'bottom']),
+
+    /** Width in pixels for the dropdown menu - if unspecified, defaults to control width. */
+    menuWidth: PT.number,
 
     /** Text to display when control is empty. */
     placeholder: PT.string
