@@ -168,7 +168,6 @@ export class ActivityTrackingModel extends HoistModel {
                     flex: 1,
                     minWidth: 100,
                     isTreeColumn: true,
-                    renderer: (v, params) => params.record.raw.cubeDimension === 'day' ? fmtDate(v) : v,
                     comparator: this.cubeLabelComparator.bind(this)
                 },
                 {...Col.username, hidden},
