@@ -2,12 +2,18 @@
 
 ## v46.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `FilterChooser` has new `menuWidth` prop, allowing you to specify as width for the dropdown
+  menu that is different from the control.
+
 ### 💥 Breaking Changes
 
 * `LocalDate.toString()`, `LocalDate.toJSON()` and `LocalDate.valueOf()` all return a string with dashes: `YYYY-MM-DD`.  
   Prior versions returned the string without dashes: `YYYYMMDD`.  Requires Hoist-Core v13.0.5 or later.
 
 ### 🐞 Bug Fixes
+
 * Fixed cache clearing method on Admin Console's Server > Services tab.
 
 ## v45.0.1 - 2022-01-07
