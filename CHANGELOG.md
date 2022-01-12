@@ -10,7 +10,7 @@
 ### 💥 Breaking Changes
 
 * `LocalDate.toString()`, `LocalDate.toJSON()` and `LocalDate.valueOf()` all return a string with dashes: `YYYY-MM-DD`.  
-  Prior versions returned the string without dashes: `YYYYMMDD`.  Requires Hoist-Core v13.0.5 or later.
+  Prior versions returned the string without dashes: `YYYYMMDD`.
 
 ### 🐞 Bug Fixes
 
