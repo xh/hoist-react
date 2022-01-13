@@ -2,18 +2,19 @@
 
 ## v46.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* `LocalDate` methods `toString()`, `toJSON()`, `valueOf()`, and `isoString()` now all return the
+  standard ISO format: `YYYY-MM-DD`. (Prior versions returned`YYYYMMDD`).
+  This is consistent with the built-in javascript `Date.toISOString()`
+
+
 ## v45.0.2 - 2022-01-13
 
 ### 🎁 New Features
 
 * `FilterChooser` has new `menuWidth` prop, allowing you to specify as width for the dropdown
   menu that is different from the control.
-
-### 💥 Breaking Changes
-
-* `LocalDate` methods `toString()`, `toJSON()`, `valueOf()`, and `isoString()` now all return the
-standard ISO format: `YYYY-MM-DD`. (Prior versions returned`YYYYMMDD`).
-This is consistent with the built-in javascript `Date.toISOString()`
 
 ### 🐞 Bug Fixes
 
