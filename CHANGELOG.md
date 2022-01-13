@@ -1,5 +1,7 @@
 # Changelog
 
+## v46.0.0-SNAPSHOT - unreleased
+
 ## v45.0.2 - 2022-01-13
 
 ### 🎁 New Features
