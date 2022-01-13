@@ -204,14 +204,11 @@ export class ActivityTrackingModel extends HoistModel {
     async doLoadAsync(loadSpec) {
         const {cube, formModel} = this;
 
-        // TODO - revert this date formatting when most client apps
-        // have migrated to Hoist-Core 13.0.5 or later.
-        const params = formModel.getData(),
-            BASIC_ISO_DATE_FORMAT = 'YYYYMMDD';
+        const params = formModel.getData();
 
-        params.startDay = params.startDay.format(BASIC_ISO_DATE_FORMAT);
-        params.endDay = params.endDay.format(BASIC_ISO_DATE_FORMAT);
-        // END TODO
+        // TODO - revert formatting when most apps have migrated to Hoist-Core 13
+        params.startDay = params.startDay.format('YYYYMMDD');
+        params.endDay = params.endDay.format('YYYYMMDD');
 
         try {
             const data = await XH.fetchJson({
