@@ -43,7 +43,7 @@ export class LocalDate {
     static get(s) {
         if (isNil(s)) return s;
         throwIf(!isString(s), 'String required for LocalDate.get()');
-        s = s.replace('-', '').replace('-', '');   // Use replaceAll when fully supported.
+        s = s.length == 8 ? s.slice(0, 4) + '-' + s.slice(4, 6) + '-' + s.slice(6, 8) : s;
         let {_instances} = this,
             ret = _instances.get(s);
         if (!ret) {
@@ -67,7 +67,7 @@ export class LocalDate {
         if (isNil(val)) return val;
         if (val.isLocalDate) return val;
         const m = moment.isMoment(val) ? val : moment(val);
-        return this.get(m.format('YYYYMMDD'));
+        return this.get(m.format('YYYY-MM-DD'));
     }
 
     /** @returns {LocalDate} - a LocalDate representing the current day. */
@@ -308,7 +308,7 @@ export class LocalDate {
     //-------------------
     /** @private - use one of the static factory methods instead. */
     constructor(s) {
-        const m = moment(s, 'YYYYMMDD', true);
+        const m = moment(s, 'YYYY-MM-DD', true);
         throwIf(
             !m.isValid(),
             `Invalid argument for LocalDate: ${s}.  Use 'YYYYMMDD' or 'YYYY-MM-DD' format.`
