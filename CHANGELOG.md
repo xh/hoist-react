@@ -9,8 +9,9 @@
 
 ### 💥 Breaking Changes
 
-* `LocalDate.toString()`, `LocalDate.toJSON()` and `LocalDate.valueOf()` all return a string with dashes: `YYYY-MM-DD`.  
-  Prior versions returned the string without dashes: `YYYYMMDD`.
+* `LocalDate` methods `toString()`, `toJSON()`, `valueOf()`, and `isoString()` now all return the
+standard ISO format: `YYYY-MM-DD`. (Prior versions returned`YYYYMMDD`).
+This is consistent with the built-in javascript `Date.toISOString()`
 
 ### 🐞 Bug Fixes
 

@@ -26,10 +26,6 @@ export class LocalDate {
     static _instances = new Map();
     static VALID_UNITS = ['year', 'quarter', 'month', 'week', 'day', 'date'];
 
-    // Regex to check if string passed to LocalDate.get() needs dashes added.
-    // Input fully validated as a date when passed to moment in constructor.
-    static noDashesRegEx = new RegExp(/^\d{8}$/);
-
     _isoString;
     _moment;
     _date;
@@ -47,9 +43,7 @@ export class LocalDate {
     static get(s) {
         if (isNil(s)) return s;
         throwIf(!isString(s), 'String required for LocalDate.get()');
-        s = LocalDate.noDashesRegEx.test(s) ? 
-            s.slice(0, 4) + '-' + s.slice(4, 6) + '-' + s.slice(6, 8) : 
-            s;
+        s = s.length == 8 ? s.slice(0, 4) + '-' + s.slice(4, 6) + '-' + s.slice(6, 8) : s;
         let {_instances} = this,
             ret = _instances.get(s);
         if (!ret) {
