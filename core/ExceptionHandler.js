@@ -16,6 +16,11 @@ export class ExceptionHandler {
 
     #isUnloading = false;
 
+    // Error property paths to replace with "[redacted]"
+    static REDACT_PATHS = [
+        'fetchOptions.headers.Authorization'
+    ];
+
     constructor() {
         window.addEventListener('unload', () => this.#isUnloading = true);
     }
@@ -50,6 +55,8 @@ export class ExceptionHandler {
      *      'isAutoRefresh' fetch exceptions.
      * @param {boolean} [options.showAlert] - display an alert dialog to the user. Default true,
      *      excepting 'isAutoRefresh' and 'isFetchAborted' exceptions.
+     * @param {boolean} [options.showWithToast] - if `showAlert`, display the error message in a toast
+     *      rather than a dialog.
      * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
      *      dismiss - default false, excepting session-related exceptions.
      * @param {string[]} [options.hideParams] - A list of parameters that should be hidden from
@@ -62,7 +69,15 @@ export class ExceptionHandler {
 
         this.logException(exception, options);
         if (options.showAlert) {
-            XH.appContainerModel.exceptionDialogModel.show(exception, options);
+            if (!options.showWithToast) {
+                XH.toast({
+                    message: exception.message,
+                    intent: 'danger',
+                    timeout: 10000
+                });
+            } else {
+                XH.appContainerModel.exceptionDialogModel.show(exception, options);
+            }
         }
         if (options.logOnServer) {
             this.logOnServerAsync({exception, userAlerted: options.showAlert});
@@ -110,7 +125,7 @@ export class ExceptionHandler {
      */
     async logOnServerAsync({exception, userAlerted, userMessage}) {
         try {
-            const error = stringifyErrorSafely(exception),
+            const error = stringifyErrorSafely(exception, ExceptionHandler.REDACT_PATHS),
                 username = XH.getUsername();
 
             if (!username) {

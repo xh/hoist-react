@@ -5,18 +5,18 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {stripTags} from '@xh/hoist/utils/js';
-import {omitBy, isNil, forOwn, isObject, isArray} from 'lodash';
+import {omitBy, isNil, forOwn, isObject, isArray, has, set} from 'lodash';
 
 /**
  * Serialize an error object safely for submission to server, or user display.
  * This method will avoid circular references and will trim the depth of the object.
  *
  * @param {Error} error
+ * @param {(string[])} redactPaths - array of property paths to redact
  * @return string
  */
-export function stringifyErrorSafely(error) {
+export function stringifyErrorSafely(error, redactPaths = []) {
     try {
-
         // 1) Create basic structure.
         // Raw Error does not have 'own' properties, so be explicit about core name/message/stack
         // Order here intentional for serialization
@@ -48,9 +48,13 @@ export function stringifyErrorSafely(error) {
             delete fetchOptions.loadSpec;
         }
 
-        // 4) Stringify and cleanse
-        return stripTags(JSON.stringify(ret, null, 4));
+        // 4) Redact specified values
+        redactPaths.forEach(path => {
+            if (has(ret, path)) set(ret, path, '[redacted]');
+        });
 
+        // 5) Stringify and cleanse
+        return stripTags(JSON.stringify(ret, null, 4));
     } catch (e) {
         const message = 'Failed to serialize error';
         console.error(message, error, e);

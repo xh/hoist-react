@@ -13,6 +13,7 @@ import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {textArea} from '@xh/hoist/mobile/cmp/input';
+import {ExceptionHandler} from '@xh/hoist/core/ExceptionHandler';
 import {dismissButton} from './ExceptionDialog';
 
 /**
@@ -31,7 +32,7 @@ export const exceptionDialogDetails = hoistCmp.factory({
 
         if (!detailsIsOpen || !exception) return null;
 
-        const errorStr = stringifyErrorSafely(exception);
+        const errorStr = stringifyErrorSafely(exception, ExceptionHandler.REDACT_PATHS);
         const header = table(
             tbody(
                 row('Name', exception.name),
