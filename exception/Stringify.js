@@ -6,6 +6,7 @@
  */
 import {stripTags} from '@xh/hoist/utils/js';
 import {omitBy, isNil, forOwn, isObject, isArray, has, set} from 'lodash';
+import {ExceptionHandlerDefaults} from '../core/ExceptionHandlerDefaults';
 
 /**
  * Serialize an error object safely for submission to server, or user display.
@@ -49,8 +50,9 @@ export function stringifyErrorSafely(error, redactPaths = []) {
         }
 
         // 4) Redact specified values
-        redactPaths.forEach(path => {
-            if (has(ret, path)) set(ret, path, '[redacted]');
+        const {REDACT_PATHS, REDACT_TEXT} = ExceptionHandlerDefaults;
+        REDACT_PATHS.forEach(path => {
+            if (has(ret, path)) set(ret, path, REDACT_TEXT);
         });
 
         // 5) Stringify and cleanse

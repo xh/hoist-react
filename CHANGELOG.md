@@ -4,6 +4,8 @@
 
 ### 🎁 New Features
 
+* `ExceptionHandlerDefaults` provides a collection of overwritable static properties, allowing
+  you to set app-wide default behaviour for exception handling.
 * `XH.handleException()` has new `alertType` option, enabling you to show as either `dialog` or `toast`.
 * `XH.toast()` takes new `actionButtonProps` option, for showing an action button within the toast.
 

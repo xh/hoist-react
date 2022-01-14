@@ -6,6 +6,8 @@
  */
 import {Exception, stringifyErrorSafely} from '@xh/hoist/exception';
 import {stripTags} from '@xh/hoist/utils/js';
+import {Icon} from '@xh/hoist/icon';
+import {ExceptionHandlerDefaults} from './ExceptionHandlerDefaults';
 import {XH} from './XH';
 
 /**
@@ -15,11 +17,6 @@ import {XH} from './XH';
 export class ExceptionHandler {
 
     #isUnloading = false;
-
-    // Error property paths to replace with "[redacted]"
-    static REDACT_PATHS = [
-        'fetchOptions.headers.Authorization'
-    ];
 
     constructor() {
         window.addEventListener('unload', () => this.#isUnloading = true);
@@ -42,6 +39,8 @@ export class ExceptionHandler {
      * course of "normal" app operation and do not represent unexpected errors. When true, this
      * handler will apply defaults that avoid overly alarming the user and skip server-side logging.
      *
+     * Defaults are derived from {@see ExceptionHandlerDefaults} where appropriate.
+     *
      * @param {(Error|Object|string)} exception - Error or thrown object - if not an Error, an
      *      Exception will be created via `Exception.create()`.
      * @param {Object} [options] - controls on how the exception should be shown and/or logged.
@@ -56,7 +55,7 @@ export class ExceptionHandler {
      * @param {boolean} [options.showAlert] - display an alert dialog to the user. Default true,
      *      excepting 'isAutoRefresh' and 'isFetchAborted' exceptions.
      * @param {string} [options.alertType] - if `showAlert`, which type of alert to display.
-     *      Valid options are 'dialog'|'toast'. Defaults to 'dialog'.
+     *      Valid options are 'dialog'|'toast'. Defaults to ExceptionHandlerDefaults.ALERT_TYPE.
      * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
      *      dismiss - default false, excepting session-related exceptions.
      * @param {string[]} [options.hideParams] - A list of parameters that should be hidden from
@@ -69,11 +68,15 @@ export class ExceptionHandler {
 
         this.logException(exception, options);
         if (options.showAlert) {
-            if (options.alertType === 'toast') {
+            const alertType = options.alertType ?? ExceptionHandlerDefaults.ALERT_TYPE;
+            if (alertType === 'toast') {
                 XH.toast({
                     message: exception.message,
-                    intent: 'danger',
-                    timeout: 10000
+                    actionButtonProps: {
+                        icon: Icon.search(),
+                        onClick: () => XH.appContainerModel.exceptionDialogModel.show(exception, options)
+                    },
+                    ...ExceptionHandlerDefaults.TOAST_PROPS
                 });
             } else {
                 XH.appContainerModel.exceptionDialogModel.show(exception, options);
@@ -125,7 +128,7 @@ export class ExceptionHandler {
      */
     async logOnServerAsync({exception, userAlerted, userMessage}) {
         try {
-            const error = stringifyErrorSafely(exception, ExceptionHandler.REDACT_PATHS),
+            const error = stringifyErrorSafely(exception),
                 username = XH.getUsername();
 
             if (!username) {
