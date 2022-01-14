@@ -4,7 +4,7 @@
 
 ### 🎁 New Features
 
-* `XH.handleException()` has new `showWithToast` option, to display as toast rather than a dialog.
+* `XH.handleException()` has new `alertType` option, enabling you to show as either `dialog` or `toast`.
 
 ### 💥 Breaking Changes
 

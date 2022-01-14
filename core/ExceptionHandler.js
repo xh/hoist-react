@@ -55,8 +55,8 @@ export class ExceptionHandler {
      *      'isAutoRefresh' fetch exceptions.
      * @param {boolean} [options.showAlert] - display an alert dialog to the user. Default true,
      *      excepting 'isAutoRefresh' and 'isFetchAborted' exceptions.
-     * @param {boolean} [options.showWithToast] - if `showAlert`, display the error message in a toast
-     *      rather than a dialog.
+     * @param {string} [options.alertType] - if `showAlert`, which type of alert to display.
+     *      Valid options are 'dialog'|'toast'. Defaults to 'dialog'.
      * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
      *      dismiss - default false, excepting session-related exceptions.
      * @param {string[]} [options.hideParams] - A list of parameters that should be hidden from
@@ -69,7 +69,7 @@ export class ExceptionHandler {
 
         this.logException(exception, options);
         if (options.showAlert) {
-            if (!options.showWithToast) {
+            if (options.alertType === 'toast') {
                 XH.toast({
                     message: exception.message,
                     intent: 'danger',
@@ -169,7 +169,6 @@ export class ExceptionHandler {
 
         return {exception, options};
     }
-
 
     hideParams(exception, options) {
         const {fetchOptions} = exception,
