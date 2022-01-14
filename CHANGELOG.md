@@ -2,6 +2,10 @@
 
 ## v46.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `XH.handleException()` has new `showWithToast` option, to display as toast rather than a dialog.
+
 ### 💥 Breaking Changes
 
 * `LocalDate` methods `toString()`, `toJSON()`, `valueOf()`, and `isoString()` now all return the
