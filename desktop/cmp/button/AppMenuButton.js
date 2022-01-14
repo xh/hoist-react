@@ -129,7 +129,7 @@ function buildMenuItems({
             omit: hideAdminItem,
             text: 'Admin',
             icon: Icon.wrench(),
-            onClick: () => window.open('/admin')
+            onClick: () => XH.openAdminConsole()
         },
         {
             omit: hideImpersonateItem,

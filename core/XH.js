@@ -848,6 +848,11 @@ class XHClass extends HoistBase {
         this.acm.optionsDialogModel.setOptions(this.appModel.getAppOptions());
     }
 
+    openAdminConsole() {
+        if (!XH.getUser().isHoistAdmin) return;
+        this.acm.openAdminConsole();
+    }
+
     get acm() {return this.appContainerModel}
 
     async initServicesInternalAsync(svcs) {

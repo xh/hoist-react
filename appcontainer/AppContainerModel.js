@@ -4,7 +4,11 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {DockContainerModel} from '@xh/hoist/cmp/dock';
+import {filler, iframe} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, RootRefreshContextModel, TaskObserver, XH} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {AboutDialogModel} from './AboutDialogModel';
 import {BannerSourceModel} from './BannerSourceModel';
@@ -34,6 +38,7 @@ export class AppContainerModel extends HoistModel {
     @managed changelogDialogModel = new ChangelogDialogModel();
     @managed exceptionDialogModel = new ExceptionDialogModel();
     @managed feedbackDialogModel = new FeedbackDialogModel();
+    @managed adminDockContainerModel = new DockContainerModel();
     @managed impersonationBarModel = new ImpersonationBarModel();
     @managed optionsDialogModel = new OptionsDialogModel();
 
@@ -53,6 +58,7 @@ export class AppContainerModel extends HoistModel {
             this.changelogDialogModel,
             this.exceptionDialogModel,
             this.feedbackDialogModel,
+            this.adminDockContainerModel,
             this.impersonationBarModel,
             this.optionsDialogModel,
             this.bannerSourceModel,
@@ -65,6 +71,37 @@ export class AppContainerModel extends HoistModel {
         ];
         models.forEach(it => {
             if (it.init) it.init();
+        });
+    }
+
+    /**
+     * Activate the admin console in a docked view.
+     */
+    openAdminConsole() {
+        this.adminDockContainerModel.addView({
+            id: 'admin',
+            icon: Icon.wrench(),
+            title: 'Admin Console',
+            content: panel({
+                flex: 1,
+                height: '100%',
+                item: iframe({
+                    src: '/admin',
+                    frameBorder: 0,
+                    style: {height: '100%'}
+                }),
+                bbar: [
+                    filler(),
+                    button({
+                        icon: Icon.refresh(),
+                        text: 'Reload App',
+                        onClick: () => XH.reloadApp()
+                    })
+                ]
+            }),
+            height: '90vh',
+            width: '90vw',
+            allowDialog: false
         });
     }
 
