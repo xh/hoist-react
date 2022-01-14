@@ -5,6 +5,7 @@
 ### 🎁 New Features
 
 * `XH.handleException()` has new `alertType` option, enabling you to show as either `dialog` or `toast`.
+* `XH.toast()` takes new `actionButtonProps` option, for showing an action button within the toast.
 
 ### 💥 Breaking Changes
 
