@@ -218,7 +218,7 @@ function useResolvedModel(spec, props, lookup, displayName) {
     ));
 
     // register and load owned model
-    useOwnedModelLinker(isOwned ? model : null);
+    useOwnedModelLinker(isOwned ? model : null, lookup);
 
     // wire any modelRef
     useOnMount(() => {

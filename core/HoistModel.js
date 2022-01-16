@@ -27,9 +27,16 @@ import {LoadSupport} from './refresh/LoadSupport';
  * When declaring any observable properties on your model class, note that you **must** define a
  * constructor for it and call `makeObservable(this)` from within that constructor.
  *
- * When model is *created* by a HoistComponent it is considered to be 'owned' by that component,
- * meaning its existence is directly tied to the lifecycle of the component. An owned model will be
- * automatically destroyed when its component is unmounted.
+ * Models that are *created* directly by a HoistComponent (via the creates() spec or the
+ * useLocalModel() hook) are considered "owned" models and are an important aspect of Hoist.  Owned
+ * models have access to the model context hierarchy they reside in via the
+ * `lookupModel` methods.  These models also support the following special lifecycle support:
+ *
+ *      - The onLinked() method will be called when the model has been linked to the
+ *          graphical/context hierarchy.
+ *      - loadAsync() will be called automatically.  The model will be registered in the appropriate
+ *          RefreshContext for subsequent calls to refreshAsync().
+ *      - The destroy() method will be called when the associated component has been unmounted.
  *
  * HoistModels that need to load or refresh their state from any external source (e.g. a remote
  * API or local service call) are encouraged to implement the abstract `doLoadAsync()` method
@@ -43,6 +50,8 @@ import {LoadSupport} from './refresh/LoadSupport';
  */
 export class HoistModel extends HoistBase {
 
+    _modelLookup = null;
+
     get isHoistModel() {return true}
 
     constructor() {
@@ -52,6 +61,9 @@ export class HoistModel extends HoistBase {
         }
     }
 
+    //----------------
+    // Load Support
+    //---------------
     /**
      * @member {LoadSupport} - provides optional support for Hoist's approach to managed loading.
      *
@@ -103,5 +115,28 @@ export class HoistModel extends HoistBase {
      */
     async doLoadAsync(loadSpec) {}
 
+
+    //-----------------------
+    // Owned Model Support
+    //-----------------------
+    /**
+     * Called when this model has been linked to the graphical/context hierarchy.
+     * For use by "owned" models only.
+     *
+     * Models that require access to context for initialization should typically do this
+     * work in this method.
+     */
+    onLinked() {}
+
+    /**
+     * Lookup an ancestor model in the context hierarchy.
+     * For use by "owned" models only.
+     *
+     * @param {ModelSelector} selector - type of model to lookup.
+     * @returns {HoistModel} - model, or null if no matching model found.
+     */
+    lookupModel(selector = '*') {
+        return this._modelLookup?.lookupModel(selector) ?? null;
+    }
 }
 HoistModel.isHoistModel = true;

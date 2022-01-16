@@ -40,7 +40,7 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
         onLayoutChange,
         ...props
     }, ref) {
-        const localModel = useLocalModel(() => new LocalModel()),
+        const localModel = useLocalModel(LocalModel),
             [width, setWidth] = useState(),
             [height, setHeight] = useState();
 

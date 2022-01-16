@@ -17,8 +17,8 @@ import {backIndicator} from './BackIndicator';
  */
 export const swiper = hoistCmp.factory({
     model: uses(NavigatorModel),
-    render({model, children}) {
-        const impl = useLocalModel(() => new LocalModel(model));
+    render({children}) {
+        const impl = useLocalModel(LocalModel);
         return frame(
             refreshIndicator({model: impl}),
             backIndicator({model: impl}),
@@ -48,10 +48,9 @@ class LocalModel extends HoistModel {
     @action refreshStart()              {this.refreshProgress = 0}
     @action refreshEnd()                {this.refreshProgress = null}
 
-    constructor(navigatorModel) {
-        super();
+    onLinked() {
         makeObservable(this);
-        this.navigatorModel = navigatorModel;
+        this.navigatorModel = this.lookupModel(NavigatorModel);
     }
 
     @action

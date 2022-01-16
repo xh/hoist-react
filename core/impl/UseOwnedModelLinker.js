@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {XH, RefreshContextModel, useContextModel} from '@xh/hoist/core';
+import {XH, RefreshContextModel} from '@xh/hoist/core';
 import {useOnUnmount} from '@xh/hoist/utils/react';
 import {useEffect} from 'react';
 
@@ -18,14 +18,18 @@ import {useEffect} from 'react';
  */
 
 /* eslint-disable react-hooks/exhaustive-deps */
-export function useOwnedModelLinker(model) {
-    const context = useContextModel(RefreshContextModel);
+export function useOwnedModelLinker(model, modelLookup) {
+    if (model) {
+        model._modelLookup = modelLookup;
+        model.onLinked();
+    }
     useEffect(() => {
         if (model?.loadSupport) {
             model.loadAsync();
-            if (context) {
-                context.register(model);
-                return () => context.unregister(model);
+            const refreshContext = modelLookup?.lookupModel(RefreshContextModel);
+            if (refreshContext) {
+                refreshContext.register(model);
+                return () => refreshContext.unregister(model);
             }
         }
     }, []);

@@ -36,10 +36,8 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
     className: 'xh-col-chooser',
 
     render({model, className}) {
-        const {isOpen, gridModel, pinnedColumn, visibleColumns, hiddenColumns, showRestoreDefaults} = model;
-        const impl = useLocalModel(LocalModel);
-        impl.model = model;
-
+        const {isOpen, gridModel, pinnedColumn, visibleColumns, hiddenColumns, showRestoreDefaults} = model,
+            impl = useLocalModel(LocalModel);
         return dialogPanel({
             isOpen,
             title: 'Choose Columns',
@@ -206,7 +204,9 @@ const row = hoistCmp.factory({
 
 class LocalModel extends HoistModel {
 
-    model;
+    onLinked() {
+        this.model = this.lookupModel(ColChooserModel);
+    }
 
     onDragEnd = (result) => {
         const {model} = this,

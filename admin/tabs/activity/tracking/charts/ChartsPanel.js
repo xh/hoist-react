@@ -6,7 +6,7 @@
  */
 import {chart} from '@xh/hoist/cmp/chart';
 import {filler} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, creates} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -16,7 +16,7 @@ import {dialog} from '@xh/hoist/kit/blueprint';
 import {ChartsModel} from './ChartsModel';
 
 export const chartsPanel = hoistCmp.factory({
-    model: uses(ChartsModel),
+    model: creates(ChartsModel),
     render({model, ...props}) {
         const {chartModel} = model;
 

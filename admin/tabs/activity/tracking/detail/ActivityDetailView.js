@@ -2,7 +2,7 @@ import {form} from '@xh/hoist/cmp/form';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {div, filler, h3, hframe, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, creates} from '@xh/hoist/core';
 import {colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {jsonInput, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
@@ -13,7 +13,7 @@ import {Icon} from '@xh/hoist/icon/Icon';
 import {ActivityDetailModel} from './ActivityDetailModel';
 
 export const activityDetailView = hoistCmp.factory({
-    model: uses(ActivityDetailModel),
+    model: creates(ActivityDetailModel),
 
     render({model, ...props}) {
         return panel({

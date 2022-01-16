@@ -21,8 +21,8 @@ export const toastSource = hoistCmp.factory({
     displayName: 'ToastSource',
     model: uses(ToastSourceModel),
 
-    render({model}) {
-        useLocalModel(() => new LocalModel(model));
+    render() {
+        useLocalModel(LocalModel);
         return null;
     }
 });
@@ -32,10 +32,10 @@ class LocalModel extends HoistModel {
 
     _toasterMap = new Map();
 
-    constructor(toastSourceModel) {
-        super();
+    onLinked() {
+        const sourceModel = this.lookupModel(ToastSourceModel);
         this.addReaction({
-            track: () => [toastSourceModel.toastModels, map(toastSourceModel.toastModels, 'isOpen')],
+            track: () => [sourceModel.toastModels, map(sourceModel.toastModels, 'isOpen')],
             run: ([models]) => this.displayPendingToasts(models)
         });
     }

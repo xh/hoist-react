@@ -32,6 +32,7 @@ export function useLocalModel(spec) {
         if (!spec) return null;
         return spec.isHoistModel ? new spec() : spec.call();
     });
-    useOwnedModelLinker(ret);
+    const modelLookup = useContext(ModelLookupContext);
+    useOwnedModelLinker(ret, modelLookup);
     return ret;
 }

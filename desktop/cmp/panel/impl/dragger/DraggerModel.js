@@ -8,6 +8,7 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {clamp, throttle} from 'lodash';
+import {PanelModel} from '../../PanelModel';
 
 export class DraggerModel extends HoistModel {
 
@@ -22,10 +23,9 @@ export class DraggerModel extends HoistModel {
     dragBar = null;
     maxSize = null;
 
-    constructor(panelModel) {
-        super();
-        this.panelModel = panelModel;
-        this.throttledSetSize = throttle(size => panelModel.setSize(size), 50);
+    onLinked() {
+        this.panelModel = this.lookupModel(PanelModel);
+        this.throttledSetSize = throttle(size => this.panelModel.setSize(size), 50);
 
         // Add listeners to el to ensure we can get non-passive handlers than can preventDefault()
         // React synthetic touch events on certain browsers (e.g. airwatch) don't yield that

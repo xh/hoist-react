@@ -24,15 +24,15 @@ export const [DataView, dataView] = hoistCmp.withFactory({
     className: 'xh-data-view',
 
     render({model, className, ...props}, ref) {
-        const [layoutProps] = splitLayoutProps(props);
-        const localModel = useLocalModel(() => new LocalModel(model));
+        const [layoutProps] = splitLayoutProps(props),
+            impl = useLocalModel(LocalModel);
 
         return grid({
             ...layoutProps,
             className,
             ref,
             model: model.gridModel,
-            agOptions: localModel.agOptions
+            agOptions: impl.agOptions
         });
     }
 });
@@ -43,12 +43,11 @@ DataView.propTypes = {
 };
 
 class LocalModel extends HoistModel {
-    model;
+
     agOptions;
 
-    constructor(model) {
-        super();
-        this.model = model;
+    onLinked() {
+        const model = this.lookupModel(DataViewModel);
 
         this.addReaction({
             track: () => [model.itemHeight, model.groupRowHeight],

@@ -13,14 +13,9 @@ import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {sortBy} from 'lodash';
 import moment from 'moment';
+import {ActivityTrackingModel} from '../ActivityTrackingModel';
 
 export class ChartsModel extends HoistModel {
-
-    /** @member {ActivityTrackingModel} */
-    parentModel;
-
-    @observable.ref data = [];
-    @observable.ref dimensions = [];
 
     /** @member {string} - metric to chart on Y axis - one of:
      *      + entryCount - count of total track log entries within the primary dim group.
@@ -96,17 +91,18 @@ export class ChartsModel extends HoistModel {
         return (dimensions.length >= 2) ? dimensions[1] : null;
     }
 
-    @action
-    setDataAndDims({data, dimensions}) {
-        this.dimensions = dimensions;
-        this.data = data;
+    get data() {
+        const roots = this.parentModel.gridModel.store.allRootRecords;
+        return roots.length ? roots[0].children : [];
     }
 
-    constructor({parentModel}) {
-        super();
-        makeObservable(this);
-        this.parentModel = parentModel;
+    get dimensions() {
+        return this.parentModel.dimensions;
+    }
 
+    onLinked() {
+        makeObservable(this);
+        this.parentModel = this.lookupModel(ActivityTrackingModel);
         this.addReaction({
             track: () => [this.data, this.metric],
             run: () => this.loadChart()
@@ -130,7 +126,7 @@ export class ChartsModel extends HoistModel {
         const {data, metric, primaryDim, showAsTimeseries} = this,
             metricLabel = this.getLabelForMetric(metric, false),
             sortedData = sortBy(data, aggRow => {
-                const {cubeLabel} = aggRow;
+                const {cubeLabel} = aggRow.data;
                 switch (primaryDim) {
                     case 'day': return LocalDate.from(cubeLabel).timestamp;
                     case 'month': return moment(cubeLabel, 'MMM YYYY').valueOf();
@@ -138,8 +134,9 @@ export class ChartsModel extends HoistModel {
                 }
             }),
             chartData = sortedData.map(aggRow => {
-                const xVal = showAsTimeseries ? LocalDate.from(aggRow.cubeLabel).timestamp : aggRow.cubeLabel;
-                return [xVal, Math.round(aggRow[metric])];
+                const {cubeLabel} = aggRow.data;
+                const xVal = showAsTimeseries ? LocalDate.from(cubeLabel).timestamp : cubeLabel;
+                return [xVal, Math.round(aggRow.data[metric])];
             });
 
         return [{name: metricLabel, data: chartData}];
