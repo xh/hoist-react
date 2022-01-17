@@ -8,6 +8,9 @@
   standard ISO format: `YYYY-MM-DD`. (Prior versions returned`YYYYMMDD`).
   This is consistent with the built-in javascript `Date.toISOString()`
 
+### 🐞 Bug Fixes
+
+* Fix to incorrect viewport orientation reporting due to laggy mobile resize events and DOM APIs.
 
 ## v45.0.2 - 2022-01-13
 
