@@ -472,6 +472,11 @@ export class GridModel extends HoistModel {
 
         this.filterModel?.clear();
         this.persistenceModel?.clear();
+
+        if (this.autosizeOptions.mode === GridAutosizeMode.MANAGED) {
+            await this.autosizeAsync();
+        }
+
         return true;
     }
 
