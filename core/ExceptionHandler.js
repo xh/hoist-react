@@ -18,18 +18,12 @@ import {XH} from './XH';
 export class ExceptionHandler {
 
     /**
-     * Property paths within error details JSON to replace with REDACT_TEXT
+     * Property paths within error details JSON to replace with '******'
      * @type {string[]}
      */
     static REDACT_PATHS = [
         'fetchOptions.headers.Authorization'
     ];
-
-    /**
-     * Text used to replace values that match REDACT_PATHS
-     * @type {string}
-     */
-    static REDACT_TEXT = '[redacted]';
 
     /**
      * Default type of alert to use to display exceptions with `showAlert`.
@@ -228,9 +222,8 @@ export class ExceptionHandler {
             }
 
             // 4) Redact specified values
-            const {REDACT_PATHS, REDACT_TEXT} = ExceptionHandler;
-            REDACT_PATHS.forEach(path => {
-                if (has(ret, path)) set(ret, path, REDACT_TEXT);
+            ExceptionHandler.REDACT_PATHS.forEach(path => {
+                if (has(ret, path)) set(ret, path, '******');
             });
 
             // 5) Stringify and cleanse
