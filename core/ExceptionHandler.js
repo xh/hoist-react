@@ -5,6 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {Exception, stringifyErrorSafely} from '@xh/hoist/exception';
+import {fragment, span} from '@xh/hoist/cmp/layout';
 import {stripTags} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
 import {ExceptionHandlerDefaults} from './ExceptionHandlerDefaults';
@@ -71,7 +72,10 @@ export class ExceptionHandler {
             const alertType = options.alertType ?? ExceptionHandlerDefaults.ALERT_TYPE;
             if (alertType === 'toast') {
                 XH.toast({
-                    message: exception.message,
+                    message: fragment(
+                        span({className: 'xh-toast__title', item: 'Exception:'}),
+                        span({className: 'xh-toast__body', item: exception.message})
+                    ),
                     actionButtonProps: {
                         icon: Icon.search(),
                         onClick: () => XH.appContainerModel.exceptionDialogModel.show(exception, options)
