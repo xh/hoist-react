@@ -18,6 +18,8 @@
   public method on `XH.exceptionHandler`.
     * Not expected to have much or any impact on application code.
 
+### ⚙️ Technical
+* New flag `GridModel.isInEditingMode`
 
 ## v45.0.2 - 2022-01-13
 
