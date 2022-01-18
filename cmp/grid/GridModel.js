@@ -153,7 +153,7 @@ export class GridModel extends HoistModel {
      *      but rather is debounced such that grid editing will need to "settle" for a
      *      short time before toggling.
      */
-    @observable gridIsInEditMode = false;
+    @observable isInEditingMode = false;
 
     static defaultContextMenu = [
         'filter',
@@ -438,7 +438,7 @@ export class GridModel extends HoistModel {
 
         this.addReaction({
             track: () => this.isEditing,
-            run: (isEditing) => this.gridIsInEditMode = isEditing,
+            run: (isEditing) => this.isInEditingMode = isEditing,
             debounce: 500
         });
     }

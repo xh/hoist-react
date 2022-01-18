@@ -9,7 +9,7 @@
   This is consistent with the built-in javascript `Date.toISOString()`
 
 ### ⚙️ Technical
-* New flag `GridModel.gridIsInEditMode`
+* New flag `GridModel.isInEditingMode`
 
 ## v45.0.2 - 2022-01-13
 
