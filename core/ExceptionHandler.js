@@ -4,11 +4,11 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {Exception, stringifyErrorSafely} from '@xh/hoist/exception';
+import {Exception} from '@xh/hoist/exception';
 import {fragment, span} from '@xh/hoist/cmp/layout';
 import {stripTags} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
-import {ExceptionHandlerDefaults} from './ExceptionHandlerDefaults';
+import {forOwn, has, isArray, isNil, isObject, omitBy, set} from 'lodash';
 import {XH} from './XH';
 
 /**
@@ -16,6 +16,36 @@ import {XH} from './XH';
  * Manages the logging and display of exceptions.
  */
 export class ExceptionHandler {
+
+    /**
+     * Property paths within error details JSON to replace with REDACT_TEXT
+     * @type {string[]}
+     */
+    static REDACT_PATHS = [
+        'fetchOptions.headers.Authorization'
+    ];
+
+    /**
+     * Text used to replace values that match REDACT_PATHS
+     * @type {string}
+     */
+    static REDACT_TEXT = '[redacted]';
+
+    /**
+     * Default type of alert to use to display exceptions with `showAlert`.
+     * Valid options are 'dialog'|'toast'.
+     * @type {string}
+     */
+    static ALERT_TYPE = 'dialog';
+
+    /**
+     * Default props provided to toast, when alert type is 'toast'
+     * @type {Object}
+     */
+    static TOAST_PROPS = {
+        intent: 'danger',
+        timeout: 10000
+    };
 
     #isUnloading = false;
 
@@ -40,8 +70,6 @@ export class ExceptionHandler {
      * course of "normal" app operation and do not represent unexpected errors. When true, this
      * handler will apply defaults that avoid overly alarming the user and skip server-side logging.
      *
-     * Defaults are derived from {@see ExceptionHandlerDefaults} where appropriate.
-     *
      * @param {(Error|Object|string)} exception - Error or thrown object - if not an Error, an
      *      Exception will be created via `Exception.create()`.
      * @param {Object} [options] - controls on how the exception should be shown and/or logged.
@@ -56,7 +84,7 @@ export class ExceptionHandler {
      * @param {boolean} [options.showAlert] - display an alert dialog to the user. Default true,
      *      excepting 'isAutoRefresh' and 'isFetchAborted' exceptions.
      * @param {string} [options.alertType] - if `showAlert`, which type of alert to display.
-     *      Valid options are 'dialog'|'toast'. Defaults to ExceptionHandlerDefaults.ALERT_TYPE.
+     *      Valid options are 'dialog'|'toast'. Defaults to ExceptionHandler.ALERT_TYPE.
      * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
      *      dismiss - default false, excepting session-related exceptions.
      * @param {string[]} [options.hideParams] - A list of parameters that should be hidden from
@@ -69,7 +97,7 @@ export class ExceptionHandler {
 
         this.logException(exception, options);
         if (options.showAlert) {
-            const alertType = options.alertType ?? ExceptionHandlerDefaults.ALERT_TYPE;
+            const alertType = options.alertType ?? ExceptionHandler.ALERT_TYPE;
             if (alertType === 'toast') {
                 XH.toast({
                     message: fragment(
@@ -80,7 +108,7 @@ export class ExceptionHandler {
                         icon: Icon.search(),
                         onClick: () => XH.appContainerModel.exceptionDialogModel.show(exception, options)
                     },
-                    ...ExceptionHandlerDefaults.TOAST_PROPS
+                    ...ExceptionHandler.TOAST_PROPS
                 });
             } else {
                 XH.appContainerModel.exceptionDialogModel.show(exception, options);
@@ -132,7 +160,7 @@ export class ExceptionHandler {
      */
     async logOnServerAsync({exception, userAlerted, userMessage}) {
         try {
-            const error = stringifyErrorSafely(exception),
+            const error = this.stringifyErrorSafely(exception),
                 username = XH.getUsername();
 
             if (!username) {
@@ -155,6 +183,61 @@ export class ExceptionHandler {
         } catch (e) {
             console.error('Exception while submitting error report to UI server', e);
             return false;
+        }
+    }
+
+    /**
+     * Serialize an error object safely for submission to server, or user display.
+     * This method will avoid circular references and will trim the depth of the object.
+     *
+     * @param {Error} error
+     * @return string
+     */
+    stringifyErrorSafely(error) {
+        try {
+            // 1) Create basic structure.
+            // Raw Error does not have 'own' properties, so be explicit about core name/message/stack
+            // Order here intentional for serialization
+            let ret = {
+                name: error.name,
+                message: error.message
+            };
+            Object.assign(ret, error);
+            ret.stack = error.stack?.split(/\n/g);
+
+            ret = omitBy(ret, isNil);
+
+            // 2) Deep clone/protect against circularity/monstrosity
+            ret = this.cloneAndTrim(ret);
+
+            // 3) Additional ad-hoc cleanups
+            // Remove noisy grails exception wrapper info
+            // Remove verbose loadSpec from fetchOptions
+            const {serverDetails} = ret;
+            if (serverDetails?.className === 'GrailsCompressingFilter') {
+                delete serverDetails.className;
+                delete serverDetails.lineNumber;
+            }
+
+            const {fetchOptions} = ret;
+            if (fetchOptions?.loadSpec) {
+                fetchOptions.loadType = fetchOptions.loadSpec.typeDisplay;
+                fetchOptions.loadNumber = fetchOptions.loadSpec.loadNumber;
+                delete fetchOptions.loadSpec;
+            }
+
+            // 4) Redact specified values
+            const {REDACT_PATHS, REDACT_TEXT} = ExceptionHandler;
+            REDACT_PATHS.forEach(path => {
+                if (has(ret, path)) set(ret, path, REDACT_TEXT);
+            });
+
+            // 5) Stringify and cleanse
+            return stripTags(JSON.stringify(ret, null, 4));
+        } catch (e) {
+            const message = 'Failed to serialize error';
+            console.error(message, error, e);
+            return JSON.stringify({message}, null, 4);
         }
     }
 
@@ -244,5 +327,28 @@ export class ExceptionHandler {
         // statuses of 0, 4XX, 5XX are server errors, so the javascript stack
         // is irrelevant and potentially misleading
         if (/^[045]/.test(exception.httpStatus)) delete exception.stack;
+    }
+
+    cloneAndTrim(obj, depth = 5) {
+        // Create a depth-constrained, deep copy of an object for safe-use in stringify
+        //   - Skip private _XXXX properties.
+        //   - Don't touch objects that implement toJSON()
+        if (depth < 1) return null;
+
+        const ret = {};
+        forOwn(obj, (val, key) => {
+            if (key.startsWith('_')) return;
+            if (val && !val.toJSON) {
+                if (isObject(val)) {
+                    val = depth > 1 ? this.cloneAndTrim(val, depth - 1) : '{...}';
+                }
+                if (isArray(val)) {
+                    val = depth > 1 ? val.map(it => this.cloneAndTrim(it, depth - 1)) : '[...]';
+                }
+            }
+            ret[key] = val;
+        });
+
+        return ret;
     }
 }

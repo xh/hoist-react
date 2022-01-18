@@ -4,7 +4,7 @@
 
 ### 🎁 New Features
 
-* `ExceptionHandlerDefaults` provides a collection of overwritable static properties, allowing
+* `ExceptionHandler` provides a collection of overwritable static properties, allowing
   you to set app-wide default behaviour for exception handling.
 * `XH.handleException()` has new `alertType` option, enabling you to show as either `dialog` or `toast`.
 * `XH.toast()` takes new `actionButtonProps` option, for showing an action button within the toast.
@@ -14,6 +14,9 @@
 * `LocalDate` methods `toString()`, `toJSON()`, `valueOf()`, and `isoString()` now all return the
   standard ISO format: `YYYY-MM-DD`. (Prior versions returned`YYYYMMDD`).
   This is consistent with the built-in javascript `Date.toISOString()`
+* The `stringifyErrorSafely` function has been moved from the `@xh/hoist/exception` package to a
+  public method on `XH.exceptionHandler`.
+    * Not expected to have much or any impact on application code.
 
 
 ## v45.0.2 - 2022-01-13
