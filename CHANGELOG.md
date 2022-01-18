@@ -8,6 +8,8 @@
   standard ISO format: `YYYY-MM-DD`. (Prior versions returned`YYYYMMDD`).
   This is consistent with the built-in javascript `Date.toISOString()`
 
+### ⚙️ Technical
+* New flag `GridModel.gridIsInEditMode`
 
 ## v45.0.2 - 2022-01-13
 
@@ -30,7 +32,6 @@
 
 ### ⚙️ Technical
 * New flag `Store.experimental.castIdToString`
-* New flag `GridModel.gridIsInEditMode`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v45.0.0...v45.0.1)
 
