@@ -11,6 +11,7 @@
 
 ### ⚙️ Technical
 * New flag `Store.experimental.castIdToString`
+* New flag `GridModel.gridIsInEditMode`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v45.0.0...v45.0.1)
 

@@ -143,12 +143,17 @@ export class GridModel extends HoistModel {
     @observable emptyText;
     /** @member {TreeStyle} */
     @observable treeStyle;
-    /** @member {boolean} */
+
+    /** @member {boolean} - Flag to track inline editing at a granular level.
+     *      Will toggle each time row or cell editing is activated or ended.
+     */
     @observable isEditing = false;
 
-    /** @member {boolean} - The distinction from the 'isEditing' flag is that this property does
-     * not flip to true during transient navigation from cell to cell, but rather is debounced
-     * such that the grid will "settle" for a short time before toggling*/
+    /** @member {boolean} - Flag to track inline editing at a general level.
+     *      Will not change during transient navigation from cell to cell or row to row,
+     *      but rather is debounced such that grid editing will need to "settle" for a
+     *      short time before toggling.
+     */
     @observable gridIsInEditMode = false;
 
     static defaultContextMenu = [
@@ -433,8 +438,9 @@ export class GridModel extends HoistModel {
         this.onCellContextMenu = onCellContextMenu;
 
         this.addReaction({
-           track: () => this.isEditing,
-           run: (isEditing) => this.updateIsInEditingMode(isEditing)
+            track: () => this.isEditing,
+            run: (isEditing) => this.gridIsInEditMode = isEditing,
+            debounce: 500
         });
     }
 
@@ -1163,12 +1169,6 @@ export class GridModel extends HoistModel {
     @action
     onCellEditingStopped = () => {
         this.isEditing = false;
-    }
-
-    @debounced(500)
-    @action
-    updateIsInEditingMode(isEditing) {
-        this.gridIsInEditMode = isEditing;
     }
 
     /**
