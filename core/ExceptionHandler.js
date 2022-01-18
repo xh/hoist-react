@@ -43,7 +43,6 @@ export class ExceptionHandler {
      * @type {Object}
      */
     static TOAST_PROPS = {
-        intent: 'danger',
         timeout: 10000
     };
 
@@ -95,27 +94,29 @@ export class ExceptionHandler {
 
         ({exception, options} = this.parseArgs(exception, options));
 
+        const {showAlert, alertType, logOnServer, title, message, showAsError} = options;
+
         this.logException(exception, options);
-        if (options.showAlert) {
-            const alertType = options.alertType ?? ExceptionHandler.ALERT_TYPE;
+        if (showAlert) {
             if (alertType === 'toast') {
                 XH.toast({
                     message: fragment(
-                        span({className: 'xh-toast__title', item: 'Exception:'}),
-                        span({className: 'xh-toast__body', item: exception.message})
+                        span({className: 'xh-toast__title', item: title, omit: !title}),
+                        span({className: 'xh-toast__body', item: message})
                     ),
                     actionButtonProps: {
                         icon: Icon.search(),
                         onClick: () => XH.appContainerModel.exceptionDialogModel.show(exception, options)
                     },
+                    intent: showAsError ? 'danger' : 'primary',
                     ...ExceptionHandler.TOAST_PROPS
                 });
             } else {
                 XH.appContainerModel.exceptionDialogModel.show(exception, options);
             }
         }
-        if (options.logOnServer) {
-            this.logOnServerAsync({exception, userAlerted: options.showAlert});
+        if (logOnServer) {
+            this.logOnServerAsync({exception, userAlerted: showAlert});
         }
     }
 
@@ -290,6 +291,7 @@ export class ExceptionHandler {
         ret.logOnServer = ret.logOnServer ?? (ret.showAsError && !isAutoRefresh);
         ret.showAlert = ret.showAlert ?? (!isAutoRefresh && !isFetchAborted);
         ret.requireReload = ret.requireReload ?? !!e.requireReload;
+        ret.alertType = ret.alertType ?? ExceptionHandler.ALERT_TYPE;
 
         ret.title = ret.title || (ret.showAsError ? 'Error' : 'Alert');
         ret.message = ret.message || e.message || e.name || 'An unknown error occurred.';
