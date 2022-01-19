@@ -9,7 +9,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {FieldFilter, flattenFilter, withFilterByField, withFilterByTypes} from '@xh/hoist/data';
 import {wait} from '@xh/hoist/promise';
-import {find, isString, castArray, uniq, every, compact} from 'lodash';
+import {find, isString, isNil, castArray, uniq, every, compact} from 'lodash';
 
 import {GridFilterFieldSpec} from './GridFilterFieldSpec';
 
@@ -34,6 +34,9 @@ export class GridFilterModel extends HoistModel {
 
     // Open state for filter dialog
     @observable dialogOpen = false;
+
+    // Display for nil or empty values
+    BLANK_STR = '[blank]';
 
     /**
      * @param {Object} c - GridFilterModel configuration.
@@ -112,21 +115,35 @@ export class GridFilterModel extends HoistModel {
     }
 
     /**
-     * Get all FieldFilters for specified field
+     * @param {string} field
+     * @return {FieldFilter[]} - all FieldFilters for specified field
      */
     getColumnFilters(field) {
         return flattenFilter(this.filter).filter(it => it.field === field);
     }
 
     /**
-     * Get the CompoundFilter that wraps the filters for specified field
+     * @param {string} field
+     * @return {CompoundFilter} - the CompoundFilter that wraps the filters for specified field
      */
     getColumnCompoundFilter(field) {
         return this.getOuterCompoundFilter(this.filter, field);
     }
 
+    /**
+     * @param {string} field
+     * @returns {GridFilterFieldSpec}
+     */
     getFieldSpec(field) {
         return this.fieldSpecs.find(it => it.field === field);
+    }
+
+    toDisplayValue(value) {
+        return isNil(value) || value === '' ? this.BLANK_STR : value;
+    }
+
+    fromDisplayValue(value) {
+        return value === this.BLANK_STR ? null : value;
     }
 
     /** @package */
@@ -159,6 +176,7 @@ export class GridFilterModel extends HoistModel {
         return specs.map(spec => {
             if (isString(spec)) spec = {field: spec};
             return new GridFilterFieldSpec({
+                filterModel: this,
                 source: bind,
                 ...fieldSpecDefaults,
                 ...spec

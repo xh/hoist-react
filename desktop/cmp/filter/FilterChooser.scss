@@ -54,6 +54,14 @@
   }
 
   &__field {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    .prefix {
+      color: var(--xh-text-color-muted);
+    }
+
     .name {
       margin-left: var(--xh-pad-half-px);
       color: var(--xh-intent-primary);

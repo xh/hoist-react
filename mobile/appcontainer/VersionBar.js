@@ -30,7 +30,7 @@ export const versionBar = hoistCmp.factory({
                 [XH.appName, env, version].join(' • '),
                 button({
                     icon: Icon.info(),
-                    modifier: 'quiet',
+                    minimal: true,
                     onClick: () => XH.showAboutDialog()
                 })
             ]

@@ -22,7 +22,7 @@ export const toast = hoistCmp.factory({
     model: uses(ToastModel),
 
     render({model}) {
-        const {icon, message, intent} = model,
+        const {icon, message, intent, actionButtonProps} = model,
             cls = `xh-toast xh-intent-${intent}`;
 
         return onsenToast({
@@ -33,8 +33,13 @@ export const toast = hoistCmp.factory({
                 icon,
                 span(message),
                 button({
+                    omit: !actionButtonProps,
+                    minimal: true,
+                    ...actionButtonProps
+                }),
+                button({
                     icon: Icon.cross(),
-                    modifier: 'quiet',
+                    minimal: true,
                     onClick: () => model.dismiss()
                 })
             ]

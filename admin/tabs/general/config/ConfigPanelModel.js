@@ -88,7 +88,7 @@ export class ConfigPanelModel extends HoistModel {
                 {...Col.groupName, hidden},
                 {...Col.name},
                 {...Col.valueType},
-                {...Col.value, flex: null, width: 200, renderer: this.configRenderer, tooltip: this.configRenderer},
+                {...Col.value, renderer: this.configRenderer, tooltip: this.configRenderer},
                 {...Col.clientVisible},
                 {...Col.note},
                 {...Col.lastUpdatedBy, hidden},

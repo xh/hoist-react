@@ -1,18 +1,79 @@
 # Changelog
 
-## v45.0.0-SNAPSHOT - unreleased
+## v46.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
 
-* `FilterChooser` displays available fields when the query is empty. This can be disabled with the
-  new `FilterChooserModel.suggestFieldsWhenEmpty` config.
-* `TreeMap` uses lightest shading for zero heat, reserving grey for nil.
-* Grid column filters tweaked with several improvements to usability and styling.
+* `ExceptionHandler` provides a collection of overwritable static properties, allowing
+  you to set app-wide default behaviour for exception handling.
+* `XH.handleException()` has new `alertType` option, enabling you to show as either `dialog` or `toast`.
+* `XH.toast()` takes new `actionButtonProps` option, for showing an action button within the toast.
 
 ### 💥 Breaking Changes
 
+* `LocalDate` methods `toString()`, `toJSON()`, `valueOf()`, and `isoString()` now all return the
+  standard ISO format: `YYYY-MM-DD`. (Prior versions returned`YYYYMMDD`).
+  This is consistent with the built-in javascript `Date.toISOString()`
+* The `stringifyErrorSafely` function has been moved from the `@xh/hoist/exception` package to a
+  public method on `XH.exceptionHandler`.
+    * Not expected to have much or any impact on application code.
+
+### ⚙️ Technical
+* New flag `GridModel.isInEditingMode`
+
+## v45.0.2 - 2022-01-13
+
+### 🎁 New Features
+
+* `FilterChooser` has new `menuWidth` prop, allowing you to specify as width for the dropdown
+  menu that is different from the control.
+
+### 🐞 Bug Fixes
+
+* Fixed cache clearing method on Admin Console's Server > Services tab.
+* Several fixes to behavior of `GridAutosizeMode.MANAGED`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v45.0.1...v45.0.2)
+
+## v45.0.1 - 2022-01-07
+
+### 🐞 Bug Fixes
+* Fixed a minor bug preventing Hoist apps from running on mobile Blackberry Access (Android) browsers
+
+### ⚙️ Technical
+* New flag `Store.experimental.castIdToString`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v45.0.0...v45.0.1)
+
+## v45.0.0 - 2022-01-05
+
+### 🎁 New Features
+
+* Grid filters configured with `GridFilterFieldSpec.enableValues` offer autocomplete suggestions
+  for 'Equals' and 'Not Equals' filters.
+* `GridFilterFieldSpec` has new `values` and `forceSelection` configs.
+* `FilterChooser` displays a list of fields configured for filtering to improve the usability /
+  discoverability of the control. Enabled by default, but can be disabled via
+  new `suggestFieldsWhenEmpty` model config.
+* `TreeMap` uses lightest shading for zero heat, reserving grey for nil.
+* New property `Store.reuseRecords` controls if records should be reused across loads based on
+  sharing identical (by reference) raw data. NOTE - this behavior was previously always enabled, but
+  can be problematic under certain conditions and is not necessary for most applications. Apps with
+  large datasets that want to continue to use this caching should set this flag explicitly.
+* Grid column filters tweaked with several improvements to usability and styling.
+* `LocalDate.get()` now supports both 'YYYY-MM-DD' and 'YYYYMMDD' inputs.
+* Mobile `Button` has new `intent`, `minimal` and `outlined` props.
+
+### 💥 Breaking Changes
+* `FilterChooserFieldSpec.suggestValues` has been renamed `enableValues`, and now only accepts a boolean.
+* `Column.exportFormat`, `Column.exportWidth` and the `ExportFormat` enum have been renamed
+ `Column.excelFormat`, `Column.excelWidth` and `ExcelFormat` respectively.
+* `Store.reuseRecords` must now be explicitly set on Stores with large datasets that wish to cache
+  records by raw data identity (see above).
 * `Record` class renamed to `StoreRecord` in anticipation of upcoming changes to JavaScript standard
   and to improve compatibility with TypeScript.
+  * Not expected to have much or any impact on application code, except potentially JSDoc typings.
+* Mobile `Button` no longer supports `modifier` prop. Use `minimal` and `outlined` instead.
 * The following deprecated APIs were removed:
     * GridModel.selection
     * GridModel.selectedRecordId
@@ -38,9 +99,9 @@
 * http-status-codes `2.1 -> 2.2`
 * prop-types `15.7 -> 15.8`
 * store2 `2.12 -> 2.13`
-* ua-parser-js `0.7 -> 1.0.2` - +re-enabling auto-patch updates
+* ua-parser-js `0.7 -> 1.0.2` (re-enables auto-patch updates)
 
-* [Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...v45.0.0)
 
 ## v44.3.0 - 2021-12-15
 

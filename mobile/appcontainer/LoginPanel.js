@@ -71,7 +71,6 @@ export const loginPanel = hoistCmp.factory({
                         button({
                             icon: Icon.login(),
                             text: loginInProgress ? 'Please wait...' : 'Login',
-                            modifier: 'cta',
                             disabled: !isValid || loginInProgress,
                             onClick: () => model.submitAsync()
                         })

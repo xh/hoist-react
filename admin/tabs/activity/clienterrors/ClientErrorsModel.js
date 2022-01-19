@@ -63,10 +63,10 @@ export class ClientErrorsModel extends HoistModel {
                 {...Col.appVersion},
                 {...Col.appEnvironment},
                 {...Col.msg, displayName: 'User Message', hidden},
-                {...Col.error},
+                {...Col.error, hidden},
                 {...Col.url},
-                {...Col.dateCreated, displayName: 'Timestamp'},
-                {...Col.day}
+                {...Col.day},
+                {...Col.dateCreatedWithSec, displayName: 'Timestamp'}
             ]
         });
 
@@ -81,19 +81,19 @@ export class ClientErrorsModel extends HoistModel {
                 'userAlerted',
                 {
                     field: 'userAgent',
-                    suggestValues: false
+                    enableValues: false
                 },
                 {
                     field: 'msg',
-                    suggestValues: false
+                    enableValues: false
                 },
                 {
                     field: 'error',
-                    suggestValues: false
+                    enableValues: false
                 },
                 {
                     field: 'url',
-                    suggestValues: false
+                    enableValues: false
                 },
                 {
                     field: 'dateCreated',
@@ -204,8 +204,11 @@ export class ClientErrorsModel extends HoistModel {
     }
 
     getParams() {
-        const {startDay, endDay} = this;
-        return {startDay, endDay};
+        // TODO - revert formatting when most apps have migrated to Hoist-Core 13
+        return {
+            startDay: this.startDay.format('YYYYMMDD'),
+            endDay: this.endDay.format('YYYYMMDD')
+        };
     }
 
     getDefaultStartDay() {return LocalDate.currentAppDay().subtract(6)}

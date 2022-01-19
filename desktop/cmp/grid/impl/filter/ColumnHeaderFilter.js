@@ -4,30 +4,30 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, uses} from '@xh/hoist/core';
-import {div, filler} from '@xh/hoist/cmp/layout';
-import {popover} from '@xh/hoist/kit/blueprint';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {tabContainer} from '@xh/hoist/cmp/tab';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {buttonGroup, button} from '@xh/hoist/desktop/cmp/button';
-import {Icon} from '@xh/hoist/icon';
-import {FieldType} from '@xh/hoist/data';
-import {stopPropagation} from '@xh/hoist/utils/js';
 
+import {div, filler} from '@xh/hoist/cmp/layout';
+import {tabContainer} from '@xh/hoist/cmp/tab';
+import {hoistCmp, uses} from '@xh/hoist/core';
+import {FieldType} from '@xh/hoist/data';
+import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {Icon} from '@xh/hoist/icon';
+import {popover} from '@xh/hoist/kit/blueprint';
+import {stopPropagation} from '@xh/hoist/utils/js';
 import './ColumnHeaderFilter.scss';
 import {ColumnHeaderFilterModel} from './ColumnHeaderFilterModel';
 
 /**
- * Component to manage column filters from header.
- *
- * Will appear as a "filter" icon if filters are present and
- * provide an appropriate editor for managing the filters.
+ * Component to manage column filters from header. Will appear as a "filter" icon if filters are
+ * present and provides an appropriate dialog UI for managing the filters when clicked.
  *
  * @private
  */
 export const columnHeaderFilter = hoistCmp.factory({
     model: uses(ColumnHeaderFilterModel),
+
+    /** @param {ColumnHeaderFilterModel} model */
     render({model}) {
         const {isOpen, hasFilter} = model;
         return popover({

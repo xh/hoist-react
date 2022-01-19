@@ -52,6 +52,9 @@ export class FilterChooserModel extends HoistModel {
     /** @member {boolean} */
     suggestFieldsWhenEmpty;
 
+    /** @member {boolean} */
+    sortFieldSuggestions;
+
     /** @member {number} */
     maxTags;
 
@@ -99,6 +102,8 @@ export class FilterChooserModel extends HoistModel {
      *      configurations, or a function to produce such an array.
      * @param {boolean} [c.suggestFieldsWhenEmpty] - true to offer all field suggestions when the
      *      control is focussed with an empty query, to aid discoverability.
+     * @param {boolean} [c.sortFieldSuggestions] - true (default) to sort field suggestions by
+     *      displayed label. Set to false to preserve the order provided to `fieldSpecs`.
      * @param {number} [c.maxTags] - maximum number of filter tags to render before disabling the
      *      control. Limits the performance impact of rendering large filters.
      * @param {number} [c.maxResults] - maximum number of dropdown options to show before
@@ -113,6 +118,7 @@ export class FilterChooserModel extends HoistModel {
         initialValue = null,
         initialFavorites = [],
         suggestFieldsWhenEmpty = true,
+        sortFieldSuggestions = true,
         maxTags = 100,
         maxResults = 50,
         persistWith,
@@ -125,6 +131,7 @@ export class FilterChooserModel extends HoistModel {
         this.valueSource = valueSource;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
         this.suggestFieldsWhenEmpty = !!suggestFieldsWhenEmpty;
+        this.sortFieldSuggestions = sortFieldSuggestions;
         this.maxTags = maxTags;
         this.maxResults = maxResults;
         this.queryEngine = new QueryEngine(this);

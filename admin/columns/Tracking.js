@@ -141,7 +141,8 @@ export const url = {
         type: STRING,
         displayName: 'URL'
     },
-    width: 250
+    width: 250,
+    autosizeMaxWidth: 400
 };
 
 export const userAgent = {

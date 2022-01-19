@@ -84,12 +84,12 @@ export class JsonBlobModel extends HoistModel {
                 {...Col.name},
                 {...Col.type, width: 200},
                 {...Col.description},
-                {...Col.value},
-                {...JBCol.meta},
+                {...Col.value, hidden},
+                {...JBCol.meta, hidden},
                 {...JBCol.archivedDate, hidden},
                 {...Col.dateCreated, hidden},
-                {...Col.lastUpdated, hidden},
-                {...Col.lastUpdatedBy, hidden}
+                {...Col.lastUpdatedBy, hidden},
+                {...Col.lastUpdated}
             ],
             editors: [
                 {field: 'token'},

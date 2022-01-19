@@ -7,7 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {lowerFirst} from 'lodash';
+import {isEmpty, lowerFirst} from 'lodash';
 
 export class ServiceModel extends HoistModel {
 
@@ -35,13 +35,13 @@ export class ServiceModel extends HoistModel {
     });
 
     async clearCachesAsync() {
-        const {selection} = this.gridModel;
-        if (!selection.length) return;
+        const {selectedRecords} = this.gridModel;
+        if (isEmpty(selectedRecords)) return;
 
         try {
             await XH.fetchJson({
                 url: 'serviceAdmin/clearCaches',
-                params: {names: selection.map(it => it.data.name)}
+                params: {names: selectedRecords.map(it => it.data.name)}
             });
             await this.refreshAsync();
             XH.successToast('Service caches cleared.');

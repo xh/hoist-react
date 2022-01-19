@@ -6,6 +6,7 @@
  */
 import {HoistBase} from '@xh/hoist/core';
 import {FieldFilter, FieldType, genDisplayName} from '@xh/hoist/data';
+import {isEmpty} from 'lodash';
 
 /**
  * Defines field-level filtering options and provides metadata for presenting these options in
@@ -33,6 +34,15 @@ export class BaseFilterFieldSpec extends HoistBase {
     /** @member {(Store|View)} */
     source;
 
+    /** @member {boolean} */
+    enableValues;
+
+    /** @member {boolean} */
+    forceSelection;
+
+    /** @member {?Array} */
+    values;
+
     /**
      * @param {Object} c - BaseFilterFieldSpec configuration.
      * @param {string} c.field - identifying field name to filter on.
@@ -44,13 +54,22 @@ export class BaseFilterFieldSpec extends HoistBase {
      *      a supported set based on the fieldType.
      * @param {(Store|View)} [c.source] - Used to source matching data `Field` and extract
      *      values if configured.
+     * @param {boolean} [c.enableValues] - true to provide interfaces and auto-complete options
+     *      with enumerated matches for creating '=' or '!=' filters. Defaults to true for
+     *      enumerable fieldTypes.
+     * @param {boolean} [c.forceSelection] - true to require value entered to be an available value
+     *      for '=' and '!=' operators. Defaults to false.
+     * @param {*[]} [c.values] - explicit list of available values for this field.
      */
     constructor({
         field,
         fieldType,
         displayName,
         ops,
-        source
+        source,
+        enableValues,
+        forceSelection,
+        values
     }) {
         super();
         this.field = field;
@@ -60,6 +79,10 @@ export class BaseFilterFieldSpec extends HoistBase {
         this.fieldType = fieldType ?? sourceField?.type ?? FieldType.AUTO;
         this.displayName = displayName ?? sourceField?.displayName ?? genDisplayName(field);
         this.ops = this.parseOperators(ops);
+        this.enableValues = enableValues ?? this.isEnumerableByDefault;
+        this.forceSelection = forceSelection ?? false;
+        this.values = values ?? (this.isBoolFieldType ? [true, false] : null);
+        this.hasExplicitValues = !isEmpty(this.values);
     }
 
     /**
@@ -106,6 +129,12 @@ export class BaseFilterFieldSpec extends HoistBase {
         return this.fieldType === FieldType.BOOL;
     }
 
+    loadValues() {
+        if (!this.hasExplicitValues && this.enableValues) {
+            this.loadValuesFromSource();
+        }
+    }
+
     /**
      * @param {string} op
      * @return {boolean}
@@ -113,6 +142,22 @@ export class BaseFilterFieldSpec extends HoistBase {
     supportsOperator(op) {
         return this.ops.includes(op);
     }
+
+    /**
+     * @param {string} op
+     * @returns {boolean}
+     */
+    supportsSuggestions(op) {
+        return this.values &&
+            this.enableValues &&
+            this.supportsOperator(op) &&
+            (op === '=' || op === '!=');
+    }
+
+    //------------------------
+    // Abstract
+    //------------------------
+    loadValuesFromSource() {}
 
     //------------------------
     // Implementation

@@ -29,6 +29,8 @@ export class ToastModel extends HoistModel {
     timeout;
     /** @member {string} */
     intent;
+    /** @member {object} */
+    actionButtonProps;
     /** @member {string} */
     position;
     /** @member {HTMLElement} */
@@ -41,6 +43,7 @@ export class ToastModel extends HoistModel {
         icon,
         timeout = 3 * SECONDS,
         intent = 'primary',
+        actionButtonProps,
         position = Position.BOTTOM_RIGHT,
         containerRef = null
     }) {
@@ -50,6 +53,7 @@ export class ToastModel extends HoistModel {
         this.icon = icon;
         this.timeout = timeout;
         this.intent = intent;
+        this.actionButtonProps = actionButtonProps;
         this.position = position;
         this.containerRef = containerRef;
     }

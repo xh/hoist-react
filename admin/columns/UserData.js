@@ -12,20 +12,22 @@ const {AUTO, BOOL, STRING} = FieldType;
 
 export const value = {
     field: {name: 'value', type: AUTO},
-    flex: 1,
+    width: 200,
+    autosizeMaxWidth: 400,
     renderer: truncateValue
 };
 
 export const defaultValue = {
     field: {name: 'defaultValue', type: AUTO},
     width: 200,
+    autosizeMaxWidth: 400,
     renderer: truncateIfJson
 };
 
 export const userValue = {
     field: {name: 'userValue', type: AUTO},
-    minWidth: 200,
     flex: true,
+    minWidth: 200,
     renderer: truncateIfJson
 };
 
