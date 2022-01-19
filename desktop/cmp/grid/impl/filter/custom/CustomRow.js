@@ -7,7 +7,7 @@
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {vbox, div} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {dateInput, numberInput, select} from '@xh/hoist/desktop/cmp/input';
+import {dateInput, numberInput, select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {kebabCase} from 'lodash';
 
@@ -85,18 +85,17 @@ const inputField = hoistCmp.factory(
                 ...props,
                 valueType: fieldSpec.fieldType
             });
-        } else {
-            const options = fieldSpec.supportsSuggestions(op) ? fieldSpec.values : null,
-                enableCreate = !fieldSpec.forceSelection;
-
+        } else if (fieldSpec.supportsSuggestions(op)) {
             return select({
                 ...props,
-                options,
-                enableCreate,
+                options: fieldSpec.values,
+                enableCreate: !fieldSpec.forceSelection,
                 enableMulti: true,
                 hideDropdownIndicator: true,
                 hideSelectedOptionCheck: true
             });
+        } else {
+            return textInput(props);
         }
     }
 );
