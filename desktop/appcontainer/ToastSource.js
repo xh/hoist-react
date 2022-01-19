@@ -43,7 +43,7 @@ class LocalModel extends HoistModel {
     /** @param {ToastModel[]} models */
     displayPendingToasts(models) {
         models.forEach(model => {
-            let {bpId, isOpen, icon, position, containerRef, ...rest} = model;
+            let {bpId, isOpen, icon, actionButtonProps, position, containerRef, ...rest} = model;
 
             // 1) If toast is visible and sent to bp, or already obsolete -- nothing to do
             if ((!!bpId) === isOpen) return;
@@ -54,6 +54,7 @@ class LocalModel extends HoistModel {
                 model.bpId = toaster.show({
                     className: 'xh-toast',
                     icon: div({className: 'xh-toast__icon', item: icon}),
+                    action: actionButtonProps,
                     onDismiss: () => wait(0).then(() => model.dismiss()),
                     ...rest
                 });

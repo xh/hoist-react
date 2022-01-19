@@ -168,7 +168,6 @@ export class ActivityTrackingModel extends HoistModel {
                     flex: 1,
                     minWidth: 100,
                     isTreeColumn: true,
-                    renderer: (v, params) => params.record.raw.cubeDimension === 'day' ? fmtDate(v) : v,
                     comparator: this.cubeLabelComparator.bind(this)
                 },
                 {...Col.username, hidden},
@@ -204,10 +203,17 @@ export class ActivityTrackingModel extends HoistModel {
 
     async doLoadAsync(loadSpec) {
         const {cube, formModel} = this;
+
+        const params = formModel.getData();
+
+        // TODO - revert formatting when most apps have migrated to Hoist-Core 13
+        params.startDay = params.startDay.format('YYYYMMDD');
+        params.endDay = params.endDay.format('YYYYMMDD');
+
         try {
             const data = await XH.fetchJson({
                 url: 'trackLogAdmin',
-                params: formModel.getData(),
+                params,
                 loadSpec
             });
 
