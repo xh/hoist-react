@@ -92,7 +92,8 @@ const inputField = hoistCmp.factory(
                 enableCreate: !fieldSpec.forceSelection,
                 enableMulti: true,
                 hideDropdownIndicator: true,
-                hideSelectedOptionCheck: true
+                hideSelectedOptionCheck: true,
+                enableClear: false
             });
         } else {
             return textInput(props);
