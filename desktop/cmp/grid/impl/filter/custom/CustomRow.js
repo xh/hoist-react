@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {hbox, div} from '@xh/hoist/cmp/layout';
+import {vbox, div} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {dateInput, numberInput, select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
@@ -26,27 +26,34 @@ export const customRow = hoistCmp.factory({
         return div({
             className: `xh-custom-filter-tab__row xh-custom-filter-tab__row--${kebabCase(op)}`,
             items: [
-                hbox({
-                    className: `xh-custom-filter-tab__row__top`,
+                vbox({
+                    className: `xh-custom-filter-tab__row__body`,
                     items: [
-                        select({
-                            bind: 'op',
-                            enableFilter: false,
-                            hideSelectedOptionCheck: true,
-                            options,
-                            optionRenderer: (opt) => operatorRenderer({opt})
+                        div({
+                            className: `xh-custom-filter-tab__row__top`,
+                            item: select({
+                                bind: 'op',
+                                enableFilter: false,
+                                hideSelectedOptionCheck: true,
+                                width: '100%',
+                                options,
+                                optionRenderer: (opt) => operatorRenderer({opt})
+                            })
                         }),
-                        button({
-                            icon: Icon.delete(),
-                            intent: 'danger',
-                            onClick: () => model.removeRow()
+                        div({
+                            omit: hideInput,
+                            className: `xh-custom-filter-tab__row__bottom`,
+                            item: inputField()
                         })
                     ]
                 }),
-                hbox({
-                    omit: hideInput,
-                    className: `xh-custom-filter-tab__row__bottom`,
-                    item: inputField()
+                div({
+                    className: `xh-custom-filter-tab__row__right`,
+                    item: button({
+                        icon: Icon.delete(),
+                        intent: 'danger',
+                        onClick: () => model.removeRow()
+                    })
                 })
             ]
         });
@@ -58,24 +65,36 @@ export const customRow = hoistCmp.factory({
 //-------------------
 const inputField = hoistCmp.factory(
     ({model}) => {
-        const {fieldSpec, commitOnChange} = model,
+        const {fieldSpec, commitOnChange, op} = model,
             props = {
                 bind: 'inputVal',
                 enableClear: true,
-                flex: 1,
-                width: null,
+                width: '100%',
                 autoFocus: true,
                 commitOnChange,
                 ...fieldSpec.inputProps
             };
 
         if (fieldSpec.isNumericFieldType) {
-            return numberInput({...props, enableShorthandUnits: true});
+            return numberInput({
+                ...props,
+                enableShorthandUnits: true
+            });
         } else if (fieldSpec.isDateBasedFieldType) {
-            return dateInput({...props, valueType: fieldSpec.fieldType});
+            return dateInput({
+                ...props,
+                valueType: fieldSpec.fieldType
+            });
+        } else if (fieldSpec.supportsSuggestions(op)) {
+            return select({
+                ...props,
+                options: fieldSpec.values,
+                enableCreate: !fieldSpec.forceSelection,
+                hideSelectedOptionCheck: true
+            });
+        } else {
+            return textInput(props);
         }
-
-        return textInput(props);
     }
 );
 

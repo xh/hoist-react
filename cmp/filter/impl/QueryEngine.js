@@ -8,7 +8,6 @@
 import {FieldFilter} from '@xh/hoist/data';
 import {fieldOption, fieldFilterOption, msgOption} from './Option';
 import {fmtNumber} from '@xh/hoist/format';
-
 import {
     escapeRegExp,
     isEmpty,
@@ -18,10 +17,8 @@ import {
     flatMap,
     find,
     castArray,
-    isFunction,
     without
 } from 'lodash';
-
 
 /**
  * Provide the querying support for FilterChooserModel.
@@ -148,13 +145,17 @@ export class QueryEngine {
             ret = this.getValueMatchesForField(q.op, q.value, spec);
             ret = this.sortAndTruncate(ret);
         }
+
         // Add query value itself if needed and allowed
         const value = spec.parseValue(q.value),
             valueValid = !isNaN(value) && !isNil(value) && value !== '',
-            {forceSelection, suggestValues} = spec;
-        if (valueValid &&
+            {forceSelection, enableValues} = spec;
+
+        if (
+            valueValid &&
             (!forceSelection || !supportsSuggestions) &&
-            ret.every(it => it.filter?.value !== value)) {
+            ret.every(it => it.filter?.value !== value)
+        ) {
             ret.push(
                 fieldFilterOption({
                     filter: new FieldFilter({field: spec.field, op: q.op, value}),
@@ -166,12 +167,12 @@ export class QueryEngine {
         // Errors
         if (isEmpty(ret)) {
             // No input and no suggestions coming. Keep template up and encourage user to type!
-            if (q.value === '' || !suggestValues) {
+            if (q.value === '' || !enableValues) {
                 ret.push(fieldOption({fieldSpec: spec}));
             }
 
             // If we had valid input and can suggest, empty is a reportable problem
-            if (q.value !== '' && valueValid && suggestValues) {
+            if (q.value !== '' && valueValid && enableValues) {
                 ret.push(msgOption('No matches found'));
             }
         }
@@ -206,12 +207,9 @@ export class QueryEngine {
     getValueMatchesForField(op, queryStr, spec) {
         if (!spec.supportsSuggestions(op)) return [];
 
-        let {values, suggestValues} = spec;
-
-        const value = spec.parseValue(queryStr),
-            testFn = isFunction(suggestValues) ?
-                suggestValues(queryStr, value) :
-                defaultSuggestValues(queryStr, value);
+        const {values, field} = spec,
+            value = spec.parseValue(queryStr),
+            testFn = defaultSuggestValues(queryStr, value);
 
         // assume spec will not produce dup values.  React-select will de-dup identical opts as well
         const ret = [];
@@ -220,7 +218,7 @@ export class QueryEngine {
             if (testFn(formattedValue, v)) {
                 ret.push(
                     fieldFilterOption({
-                        filter: new FieldFilter({field: spec.field, op, value: v}),
+                        filter: new FieldFilter({field, op, value: v}),
                         fieldSpec: spec,
                         isExact: value === v || caselessEquals(formattedValue, queryStr)
                     })

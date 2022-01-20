@@ -13,7 +13,7 @@
 .xh-app.xh-dark,
 .xh-app.xh-dark.bp3-dark {
   .xh-button.bp3-button {
-    border-radius: var(--xh-border-radius-px);
+    border-radius: var(--xh-button-border-radius-px);
     font-family: var(--xh-button-font-family);
     font-size: var(--xh-button-font-size-px);
     white-space: nowrap;
@@ -62,13 +62,13 @@
       &.xh-button--standard,
       &.xh-button--outlined {
         &:first-child {
-          border-bottom-left-radius: var(--xh-border-radius-px);
-          border-top-left-radius: var(--xh-border-radius-px);
+          border-bottom-left-radius: var(--xh-button-border-radius-px);
+          border-top-left-radius: var(--xh-button-border-radius-px);
         }
 
         &:last-child {
-          border-bottom-right-radius: var(--xh-border-radius-px);
-          border-top-right-radius: var(--xh-border-radius-px);
+          border-bottom-right-radius: var(--xh-button-border-radius-px);
+          border-top-right-radius: var(--xh-button-border-radius-px);
         }
       }
 

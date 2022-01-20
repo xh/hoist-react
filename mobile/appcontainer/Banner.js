@@ -68,7 +68,7 @@ const actionButton = hoistCmp.factory(
 
         return button({
             className: 'xh-banner__action-button',
-            modifier: 'outline',
+            outlined: true,
             ...actionButtonProps
         });
     }
@@ -81,7 +81,7 @@ const dismissButton = hoistCmp.factory(
 
         return button({
             icon: Icon.close(),
-            modifier: 'quiet',
+            minimal: true,
             className: 'xh-banner__dismiss-button',
             onClick: () => {
                 XH.hideBanner(category);

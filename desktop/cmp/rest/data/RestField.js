@@ -27,7 +27,7 @@ export class RestField extends Field {
 
     /**
      * @param {(boolean|string)} [editable] - false to disable editing and present field as
-     *      readonly data. True (default) to enable editing, or special string token 'addOnly'
+     *      readonly data. True (default) to enable editing, or special string token 'onAdd'
      *      to enable editing only when first creating a new record.
      * @param {boolean} [required] - true to require a non-null value for additions and edits.
      * @param {(Object[]|string[])} [lookup] - Array of available option values.

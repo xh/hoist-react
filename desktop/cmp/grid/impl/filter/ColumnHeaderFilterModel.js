@@ -74,7 +74,8 @@ export class ColumnHeaderFilterModel extends HoistModel {
         this.column = column;
         this.fieldSpec = filterModel.getFieldSpec(column.field);
 
-        this.valuesTabModel = new ValuesTabModel(this);
+        const {enableValues} = this.fieldSpec;
+        this.valuesTabModel = enableValues ? new ValuesTabModel(this) : null;
         this.customTabModel = new CustomTabModel(this);
         this.tabContainerModel = new TabContainerModel({
             switcher: false,
@@ -82,7 +83,8 @@ export class ColumnHeaderFilterModel extends HoistModel {
                 {
                     id: 'valuesFilter',
                     title: 'Values',
-                    content: valuesTab
+                    content: valuesTab,
+                    omit: !enableValues
                 },
                 {
                     id: 'customFilter',
@@ -93,7 +95,7 @@ export class ColumnHeaderFilterModel extends HoistModel {
         });
 
         this.addReaction({
-            track: () => this.valuesTabModel.filter,
+            track: () => this.valuesTabModel?.filter,
             run: () => this.doCommitOnChange('valuesFilter'),
             debounce: 100
         });
@@ -109,17 +111,16 @@ export class ColumnHeaderFilterModel extends HoistModel {
     commit(close = true) {
         const {tabContainerModel, customTabModel, valuesTabModel} = this,
             {activeTabId} = tabContainerModel,
-            activeTabModel = activeTabId === 'valuesFilter' ? valuesTabModel : customTabModel,
-            otherTabModel = activeTabId === 'valuesFilter' ? customTabModel : valuesTabModel;
+            valuesIsActive = activeTabId === 'valuesFilter',
+            activeTabModel = valuesIsActive ? valuesTabModel : customTabModel,
+            otherTabModel = valuesIsActive ? customTabModel : valuesTabModel;
 
         this.setColumnFilters(activeTabModel.filter);
         if (close) {
             this.closeMenu();
         } else {
             // We must wait before resetting as GridFilterModel.setFilter() is async
-            wait().then(() => {
-                otherTabModel.reset();
-            });
+            wait().then(() => otherTabModel?.reset());
         }
     }
 
@@ -130,10 +131,7 @@ export class ColumnHeaderFilterModel extends HoistModel {
             this.closeMenu();
         } else {
             // We must wait before resetting as GridFilterModel.setFilter() is async
-            wait().then(() => {
-                this.valuesTabModel.reset();
-                this.customTabModel.reset();
-            });
+            wait().then(() => this.resetTabModels());
         }
     }
 
@@ -153,27 +151,15 @@ export class ColumnHeaderFilterModel extends HoistModel {
     //-------------------
     @action
     syncWithFilter() {
-        const {
-                columnFilters, isCustomFilter, fieldSpec,
-                valuesTabModel, customTabModel, tabContainerModel
-            } = this,
-            useCustomFilterTab = isCustomFilter || !fieldSpec.enableValues;
+        const {isCustomFilter, valuesTabModel, customTabModel, tabContainerModel} = this,
+            useCustomTab = isCustomFilter || !valuesTabModel,
+            toTab = useCustomTab ? customTabModel : valuesTabModel,
+            toTabId = useCustomTab ? 'customFilter' : 'valuesFilter';
 
-        valuesTabModel.reset();
-        customTabModel.reset();
+        this.resetTabModels();
+        toTab.syncWithFilter();
 
-        if (!isEmpty(columnFilters)) {
-            if (useCustomFilterTab) {
-                // There are column filters that can only be represented on the custom filter tab
-                customTabModel.syncWithFilter();
-            } else {
-                // There is a column filter that can be represented on the values filter tab
-                valuesTabModel.syncWithFilter();
-            }
-        }
-
-        const tab = useCustomFilterTab ? 'customFilter' : 'valuesFilter';
-        tabContainerModel.activateTab(tab);
+        tabContainerModel.activateTab(toTabId);
     }
 
     setColumnFilters(filters) {
@@ -184,5 +170,10 @@ export class ColumnHeaderFilterModel extends HoistModel {
         if (!this.commitOnChange) return;
         if (this.tabContainerModel.activeTabId !== tab) return;
         this.commit(false);
+    }
+
+    resetTabModels() {
+        this.customTabModel.reset();
+        this.valuesTabModel?.reset();
     }
 }

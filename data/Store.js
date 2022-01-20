@@ -15,9 +15,9 @@ import {
     differenceBy,
     isArray,
     isEmpty,
-    isFunction,
     isNil,
     isString,
+    isFunction,
     remove as lodashRemove
 } from 'lodash';
 
@@ -48,6 +48,9 @@ export class Store extends HoistBase {
 
     /** @member {boolean} */
     loadTreeData;
+
+    /** @member {string} */
+    loadTreeDataFrom;
 
     /** @member {boolean} */
     loadRootAsSummary;
@@ -103,13 +106,13 @@ export class Store extends HoistBase {
      * @param {function} [c.processRawData] - function to run on each individual data object
      *      presented to loadData() prior to creating a StoreRecord from that object. This function
      *      must return an object, cloning the original object if edits are necessary.
-     * @param {(Filter|*|*[])} [c.filter] - one or more filters or configs to create one.  If an
+     * @param {(Filter|*|*[])} [c.filter] - one or more filters or configs to create one. If an
      *      array, a single 'AND' filter will be created.
      * @param {boolean} [c.filterIncludesChildren] - true if all children of a passing record should
      *      also be considered passing (default false).
-     * @param {boolean} [c.loadTreeData] - true to load hierarchical/tree data. When this flag is
-     *      true, the children property on raw data objects will be used to load child records.
-     *      (default true).
+     * @param {boolean} [c.loadTreeData] - true (default) to load hierarchical/tree data, if any.
+     * @param {string} [c.loadTreeDataFrom] - the property on each raw data object that holds its
+     *      (raw) child objects, if any. Default 'children', no effect if `loadTreeData: false`.
      * @param {boolean} [c.loadRootAsSummary] - true to treat the root node in hierarchical data as
      *      the summary record (default false).
      * @param {boolean} [c.freezeData] - true to freeze the internal data object of the record.
@@ -136,6 +139,7 @@ export class Store extends HoistBase {
         filter = null,
         filterIncludesChildren = false,
         loadTreeData = true,
+        loadTreeDataFrom = 'children',
         loadRootAsSummary = false,
         freezeData = true,
         idEncodesTreePath = false,
@@ -152,6 +156,7 @@ export class Store extends HoistBase {
         this.filter = parseFilter(filter);
         this.filterIncludesChildren = filterIncludesChildren;
         this.loadTreeData = loadTreeData;
+        this.loadTreeDataFrom = loadTreeDataFrom;
         this.loadRootAsSummary = loadRootAsSummary;
         this.freezeData = freezeData;
         this.idEncodesTreePath = idEncodesTreePath;
@@ -843,7 +848,7 @@ export class Store extends HoistBase {
     }
 
     createRecords(rawData, parent, recordMap = new Map()) {
-        const {loadTreeData} = this;
+        const {loadTreeData, loadTreeDataFrom} = this;
         rawData.forEach(raw => {
             const rec = this.createRecord(raw, parent),
                 {id} = rec;
@@ -855,8 +860,8 @@ export class Store extends HoistBase {
 
             recordMap.set(id, rec);
 
-            if (loadTreeData && raw.children) {
-                this.createRecords(raw.children, rec, recordMap);
+            if (loadTreeData && raw[loadTreeDataFrom]) {
+                this.createRecords(raw[loadTreeDataFrom], rec, recordMap);
             }
         });
         return recordMap;
@@ -930,8 +935,6 @@ export class Store extends HoistBase {
             'idSpec should be either a name of a field, or a function to generate an id.'
         );
     }
-
-
 }
 
 //---------------------------------------------------------------------

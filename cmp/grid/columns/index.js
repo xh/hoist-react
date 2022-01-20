@@ -6,6 +6,6 @@
  */
 export * from './Core';
 export * from './DatesTimes';
-export * from './ExportFormat';
+export * from './ExcelFormat';
 export * from './Column';
 export * from './ColumnGroup';
