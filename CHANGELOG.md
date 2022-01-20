@@ -8,6 +8,8 @@
   you to set app-wide default behaviour for exception handling.
 * `XH.handleException()` has new `alertType` option, enabling you to show as either `dialog` or `toast`.
 * `XH.toast()` takes new `actionButtonProps` option, for showing an action button within the toast.
+* `GridModel` has new `highlightRowOnClick` option, which highlights a row when the user clicks or
+  taps on the row.
 
 ### 💥 Breaking Changes
 
@@ -20,6 +22,11 @@
 
 ### ⚙️ Technical
 * New flag `GridModel.isInEditingMode`
+* Record ids in `Store` must now always be strings (previously integers were also supported.) If
+  the id produced by `Store.idSpec` is not a string, it will be cast to one.  This may effect
+  applications that submit these ids back to the server.
+* Hoist grids now require ag-Grid v26.2.0 or higher - update your ag-Grid dependency in your app's
+  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
 
 ## v45.0.2 - 2022-01-13
 

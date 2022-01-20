@@ -117,6 +117,8 @@ export class GridModel extends HoistModel {
     fullRowEditing;
     /** @member {boolean} */
     hideEmptyTextBeforeLoad;
+    /** @member {boolean} */
+    highlightRowOnClick;
 
     /** @member {AgGridModel} */
     @managed agGridModel;
@@ -297,6 +299,10 @@ export class GridModel extends HoistModel {
      *      should not immediately respond to user or programmatic changes to the sortBy property,
      *      but will instead wait for the next load of data, which is assumed to be pre-sorted.
      *      Default false.
+     * @param {boolean} [c.highlightRowOnClick] - Set to true to highlight a row on click. Intended
+     *      to provide feedback to users in grids without selection. Note this setting overrides the
+     *      styling used by Column.highlightOnChange, and is not recommended for use alongside that
+     *      feature. Default true for mobiles, otherwise false.
      * @param {Object} [c.experimental] - flags for experimental features. These features are
      *     designed for early client-access and testing, but are not yet part of the Hoist API.
      * @param {*} [c...rest] - additional data to attach to this model instance.
@@ -354,6 +360,7 @@ export class GridModel extends HoistModel {
         restoreDefaultsWarning = GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
         fullRowEditing = false,
         clicksToEdit = 2,
+        highlightRowOnClick = XH.isMobileApp,
         experimental,
         ...rest
     }) {
@@ -393,6 +400,7 @@ export class GridModel extends HoistModel {
         this.fullRowEditing = fullRowEditing;
         this.clicksToExpand = clicksToExpand;
         this.clicksToEdit = clicksToEdit;
+        this.highlightRowOnClick = highlightRowOnClick;
 
         throwIf(
             autosizeOptions.fillMode && !['all', 'left', 'right', 'none'].includes(autosizeOptions.fillMode),
@@ -1224,10 +1232,6 @@ export class GridModel extends HoistModel {
                 }
             }
         }
-    }
-
-    getAutoRowHeight(node) {
-        return this.agGridModel.getAutoRowHeight(node);
     }
 
     gatherLeaves(columns, leaves = []) {
