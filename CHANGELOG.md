@@ -4,36 +4,38 @@
 
 ### 🎁 New Features
 
-* `ExceptionHandler` provides a collection of overwritable static properties, allowing
-  you to set app-wide default behaviour for exception handling.
-* `XH.handleException()` has new `alertType` option, enabling you to show as either `dialog` or `toast`.
-* `XH.toast()` takes new `actionButtonProps` option, for showing an action button within the toast.
-* `GridModel` has new `highlightRowOnClick` option, which highlights a row when the user clicks or
-  taps on the row.
+* `ExceptionHandler` provides a collection of overwritable static properties, allowing you to set
+  app-wide default behaviour for exception handling.
+* `XH.handleException()` takes new `alertType` option to render error alerts via the familiar
+  `dialog` or new `toast` UI.
+* `XH.toast()` takes new `actionButtonProps` option to render an action button within a toast.
+* New `GridModel.highlightRowOnClick` config adds a temporary highlight class to grid rows on user
+  click/tap. Intended to improve UI feedback - especially on mobile, where it's enabled by default.
+* New `GridModel.isInEditingMode` observable tracks inline editing start/stop with a built-in
+  debounce, avoiding rapid cycling when e.g. tabbing between cells.
 
 ### 💥 Breaking Changes
 
-* `LocalDate` methods `toString()`, `toJSON()`, `valueOf()`, and `isoString()` now all return the
-  standard ISO format: `YYYY-MM-DD`. (Prior versions returned`YYYYMMDD`).
-  This is consistent with the built-in javascript `Date.toISOString()`
-* The `stringifyErrorSafely` function has been moved from the `@xh/hoist/exception` package to a
-  public method on `XH.exceptionHandler`.
-    * Not expected to have much or any impact on application code.
-
-### ⚙️ Technical
-* New flag `GridModel.isInEditingMode`
-* Record ids in `Store` must now always be strings (previously integers were also supported.) If
-  the id produced by `Store.idSpec` is not a string, it will be cast to one.  This may effect
-  applications that submit these ids back to the server.
-* Hoist grids now require ag-Grid v26.2.0 or higher - update your ag-Grid dependency in your app's
+* Hoist now requires ag-Grid v26.2.0 or higher - update your ag-Grid dependency in your app's
   `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
+* `StoreRecord.id` must now be a String. Integers IDs were previously supported, but will be cast
+  Strings during record creation.
+    * Apps using numeric record IDs for internal or server-side APIs will need to be reviewed and
+      updated to handle/convert string values.
+    * This change was necessitated by a change to Ag-Grid, which now also requires String IDs for
+      its row node APIs.
+* `LocalDate` methods `toString()`, `toJSON()`, `valueOf()`, and `isoString()` now all return the
+  standard ISO format `YYYY-MM-DD`, consistent with built-in `Date.toISOString()`. Prior versions
+  returned`YYYYMMDD`.
+* The `stringifyErrorSafely` function has been moved from the `@xh/hoist/exception` package to a
+  public method on `XH.exceptionHandler`. (No/little impact expected on app code.)
 
 ## v45.0.2 - 2022-01-13
 
 ### 🎁 New Features
 
-* `FilterChooser` has new `menuWidth` prop, allowing you to specify as width for the dropdown
-  menu that is different from the control.
+* `FilterChooser` has new `menuWidth` prop, allowing you to specify as width for the dropdown menu
+  that is different from the control.
 
 ### 🐞 Bug Fixes
 
@@ -45,9 +47,12 @@
 ## v45.0.1 - 2022-01-07
 
 ### 🐞 Bug Fixes
-* Fixed a minor bug preventing Hoist apps from running on mobile Blackberry Access (Android) browsers
+
+* Fixed a minor bug preventing Hoist apps from running on mobile Blackberry Access (Android)
+  browsers
 
 ### ⚙️ Technical
+
 * New flag `Store.experimental.castIdToString`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v45.0.0...v45.0.1)
@@ -72,14 +77,16 @@
 * Mobile `Button` has new `intent`, `minimal` and `outlined` props.
 
 ### 💥 Breaking Changes
-* `FilterChooserFieldSpec.suggestValues` has been renamed `enableValues`, and now only accepts a boolean.
+
+* `FilterChooserFieldSpec.suggestValues` has been renamed `enableValues`, and now only accepts a
+  boolean.
 * `Column.exportFormat`, `Column.exportWidth` and the `ExportFormat` enum have been renamed
- `Column.excelFormat`, `Column.excelWidth` and `ExcelFormat` respectively.
+  `Column.excelFormat`, `Column.excelWidth` and `ExcelFormat` respectively.
 * `Store.reuseRecords` must now be explicitly set on Stores with large datasets that wish to cache
   records by raw data identity (see above).
 * `Record` class renamed to `StoreRecord` in anticipation of upcoming changes to JavaScript standard
   and to improve compatibility with TypeScript.
-  * Not expected to have much or any impact on application code, except potentially JSDoc typings.
+    * Not expected to have much or any impact on application code, except potentially JSDoc typings.
 * Mobile `Button` no longer supports `modifier` prop. Use `minimal` and `outlined` instead.
 * The following deprecated APIs were removed:
     * GridModel.selection
