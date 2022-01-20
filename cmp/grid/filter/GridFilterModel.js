@@ -9,7 +9,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {FieldFilter, flattenFilter, withFilterByField, withFilterByTypes} from '@xh/hoist/data';
 import {wait} from '@xh/hoist/promise';
-import {find, isString, castArray, uniq, isNil} from 'lodash';
+import {find, isString, isNil, castArray, uniq, every, compact} from 'lodash';
 
 import {GridFilterFieldSpec} from './GridFilterFieldSpec';
 
@@ -74,10 +74,10 @@ export class GridFilterModel extends HoistModel {
      */
     @action
     setColumnFilters(field, filter) {
-        // If current bound filter is an 'OR' CompoundFilter, wrap it in an 'AND'
-        // CompoundFilter so new columns get 'ANDed' alongside it.
+        // If current bound filter is a CompoundFilter for a single column, wrap it
+        // in an 'AND' CompoundFilter so new columns get 'ANDed' alongside it.
         let currFilter = this.filter;
-        if (currFilter?.isCompoundFilter && currFilter.op === 'OR') {
+        if (currFilter?.isCompoundFilter && currFilter.field) {
             currFilter = {filters: [currFilter], op: 'AND'};
         }
 
@@ -120,6 +120,14 @@ export class GridFilterModel extends HoistModel {
      */
     getColumnFilters(field) {
         return flattenFilter(this.filter).filter(it => it.field === field);
+    }
+
+    /**
+     * @param {string} field
+     * @return {CompoundFilter} - the CompoundFilter that wraps the filters for specified field
+     */
+    getColumnCompoundFilter(field) {
+        return this.getOuterCompoundFilter(this.filter, field);
     }
 
     /**
@@ -174,5 +182,19 @@ export class GridFilterModel extends HoistModel {
                 ...spec
             });
         });
+    }
+
+    getOuterCompoundFilter(filter, field) {
+        if (!filter?.isCompoundFilter) return null;
+
+        // This is the outer compound filter if all its children
+        // are FieldFilters on the matching field.
+        if (every(filter.filters, {field})) {
+            return filter;
+        }
+
+        // Otherwise, check any CompoundFilter children
+        const results = compact(filter.filters.map(it => this.getOuterCompoundFilter(it, field)));
+        return results.length === 1 ? results[0] : null;
     }
 }

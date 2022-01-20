@@ -8,7 +8,6 @@ import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel'
 import {filler, fragment, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
-import {stringifyErrorSafely} from '@xh/hoist/exception';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
@@ -31,7 +30,7 @@ export const exceptionDialogDetails = hoistCmp.factory({
 
         if (!detailsIsOpen || !exception) return null;
 
-        const errorStr = stringifyErrorSafely(exception);
+        const errorStr = XH.exceptionHandler.stringifyErrorSafely(exception);
         const header = table(
             tbody(
                 row('Name', exception.name),

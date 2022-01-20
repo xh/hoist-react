@@ -458,6 +458,8 @@ class XHClass extends HoistBase {
      * @param {?number} [config.timeout] - time in ms (default 3000) to show before auto-dismissing
      *      the toast, or null to keep toast visible until manually dismissed.
      * @param {string} [config.intent] - one of [primary|success|warning|danger].
+     * @param {Object} [config.actionButtonProps] - if provided, will render a button within the
+     *      toast to enable the user to take some specific action right from the toast.
      * @param {Object} [config.position] - Relative position at which to display toast, e.g.
      *      "bottom-right" (default) or "top". (Desktop only.)
      * @param {HTMLElement} [config.containerRef] - DOM element relative to which the toast should

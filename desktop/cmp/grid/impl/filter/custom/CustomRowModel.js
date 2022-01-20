@@ -6,7 +6,7 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
-import {isNil} from 'lodash';
+import {isNil, isArray} from 'lodash';
 
 /**
  * @private
@@ -39,6 +39,10 @@ export class CustomRowModel extends HoistModel {
             value = null;
         } else if (isNil(value)) {
             return null;
+        }
+
+        if (isArray(value) && value.length === 1) {
+            value = value[0];
         }
 
         return {field, op, value};
