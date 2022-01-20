@@ -189,7 +189,7 @@ export class GridFilterModel extends HoistModel {
 
         // This is the outer compound filter if all its children
         // are FieldFilters on the matching field.
-        if (every(filter.filters, it => it.field === field)) {
+        if (every(filter.filters, {field})) {
             return filter;
         }
 
