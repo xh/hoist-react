@@ -1,7 +1,7 @@
 .xh-input.xh-textarea {
   display: flex;
   align-items: stretch;
-  background-color: var(--xh-bg);
+  background: var(--xh-input-bg);
 
   textarea {
     flex: 1;
