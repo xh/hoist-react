@@ -13,6 +13,8 @@
   click/tap. Intended to improve UI feedback - especially on mobile, where it's enabled by default.
 * New `GridModel.isInEditingMode` observable tracks inline editing start/stop with a built-in
   debounce, avoiding rapid cycling when e.g. tabbing between cells.
+* `NumberInput` now supports a new `scaleFactor` prop which will be applied when converting between
+  the internal and external values.
 
 ### 💥 Breaking Changes
 
