@@ -26,13 +26,14 @@ export function useContextModel(selector = '*') {
  * when component is unmounted.
  *
  * @param {(Class|function)} [spec] - class of HoistModel to create, or a function to call to generate one.
+ * @param {Object} [props] - optional props to pass to model's 'componentProps` property.
  */
-export function useLocalModel(spec) {
+export function useLocalModel(spec, props) {
     const [ret] = useState(() => {
         if (!spec) return null;
         return spec.isHoistModel ? new spec() : spec.call();
     });
     const modelLookup = useContext(ModelLookupContext);
-    useOwnedModelLinker(ret, modelLookup);
+    useOwnedModelLinker(ret, {modelLookup, props});
     return ret;
 }

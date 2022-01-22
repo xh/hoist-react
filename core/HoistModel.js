@@ -4,9 +4,12 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {each} from 'lodash';
+import {throwIf} from '../utils/js';
 import {HoistBase} from './HoistBase';
 import {managed} from './HoistBaseDecorators';
 import {LoadSupport} from './refresh/LoadSupport';
+import {observable, computed, action} from '@xh/hoist/mobx';
 
 /**
  * Core superclass for stateful Models in Hoist. Models are used throughout the toolkit and
@@ -19,24 +22,27 @@ import {LoadSupport} from './refresh/LoadSupport';
  * prop to the component's `render()` function, where the model's properties can be read/rendered
  * and any imperative APIs wired to buttons, callbacks, and other handlers.
  *
+ * Models in Hoist are created in a tree-like hierarchy that is closely associated with the React
+ * Component Tree.  The following mechanisms support this important relationship:
+ *      - The `componentProps` observable property.  This property will be populated for models
+ *      directly associated with an "owning" component (i.e. the model was created via
+ *      the `creates()` directive in HoistComponent, or the `useLocalModel()` hook.)
+ *      - The @parent decorator. Use this to inject references to other HoistModels which are
+ *      "ancestors" to this model in the component hierarchy.
+ *      - The @managed decorator.  Use this to indicated  submodels that should be linked to
+ *      the component hierarchy together with this model. These models can therefore perform lookups
+ *      and will be available for (limited) lookup by other components and models in the hierarchy.
+ *      - The onLinked() lifecyle method.  This method will be called when this model (or the model
+ *      managing it) has been fully linked to the component hierarchy. Use this method for any work
+ *      requiring the availability of parent models or `componentProps`.  Note that this method is
+ *      called during the initial rendering of the component creating this model.
+ *
  * It is very common to decorate properties on models with `@observable` and related field-level
  * annotations. This enables automatic, MobX-powered re-rendering of components when these model
  * properties change, or when specific reactions have been wired by the developer via
- * `addReaction()` and related utils from {@see HoistBase}.
- *
- * When declaring any observable properties on your model class, note that you **must** define a
- * constructor for it and call `makeObservable(this)` from within that constructor.
- *
- * Models that are *created* directly by a HoistComponent (via the creates() spec or the
- * useLocalModel() hook) are considered "owned" models and are an important aspect of Hoist.  Owned
- * models have access to the model context hierarchy they reside in via the
- * `lookupModel` methods.  These models also support the following special lifecycle support:
- *
- *      - The onLinked() method will be called when the model has been linked to the
- *          graphical/context hierarchy.
- *      - loadAsync() will be called automatically.  The model will be registered in the appropriate
- *          RefreshContext for subsequent calls to refreshAsync().
- *      - The destroy() method will be called when the associated component has been unmounted.
+ * `addReaction()` and related utils from {@see HoistBase}.  When declaring any observable
+ * properties on your model class, note that you **must** call `makeObservable(this)` to initialize
+ * the observability of the object.
  *
  * HoistModels that need to load or refresh their state from any external source (e.g. a remote
  * API or local service call) are encouraged to implement the abstract `doLoadAsync()` method
@@ -50,9 +56,12 @@ import {LoadSupport} from './refresh/LoadSupport';
  */
 export class HoistModel extends HoistBase {
 
-    _modelLookup = null;
-
+    static get isHoistModel() {return true}
     get isHoistModel() {return true}
+
+    // Internal State
+    @observable.ref _componentProps = null;
+    _modelLookup = null;
 
     constructor() {
         super();
@@ -116,15 +125,28 @@ export class HoistModel extends HoistBase {
     async doLoadAsync(loadSpec) {}
 
 
-    //-----------------------
-    // Owned Model Support
-    //-----------------------
+    //---------------------------
+    // Component/Lookup related support
+    //---------------------------
     /**
-     * Called when this model has been linked to the graphical/context hierarchy.
-     * For use by "owned" models only.
+     * React props on component linked to this model.
      *
-     * Models that require access to context for initialization should typically do this
-     * work in this method.
+     * Only available for models created by creates() directive, or useLocalModel().
+     * Observability is based on a shallow computation for each prop (i.e. a reference
+     * change in any particular prop. will trigger observables to be notified.).
+     */
+    @computed
+    get componentProps() {
+        return this._componentProps;
+    }
+
+    /**
+     * Called when this model (or its managing model) has been linked to the component hierarchy.
+     *
+     * This method will be called when this model (or the model managing it) has been fully linked
+     * to the component hierarchy. Use this method for any work requiring the availability of
+     * parent models or `componentProps`.  Note that this method is called during the initial
+     * rendering of the component creating this model.
      */
     onLinked() {}
 
@@ -138,5 +160,80 @@ export class HoistModel extends HoistBase {
     lookupModel(selector = '*') {
         return this._modelLookup?.lookupModel(selector) ?? null;
     }
+
+    //------------------
+    // For use by Hoist
+    //------------------
+    /** @package*/
+    @action
+    setComponentProps(componentProps) {
+        this._componentProps = componentProps;
+    }
+
+    /** @package **/
+    link(modelLookup) {
+        if (this._modelLookup) return;
+
+        this.doLinkRecursive(modelLookup);
+        this.triggerOnLinkedRecursive();
+    }
+
+    //----------------
+    // Implementation
+    //----------------
+    /** @private */
+    doLinkRecursive(modelLookup) {
+
+        // Link self and inject parent models
+        this._modelLookup = modelLookup;
+        each(this._xhInjectedParentProperties, (selector, name) => {
+            this[name] = modelLookup.lookupModel(selector);
+        });
+
+        // Link sub models
+        this.allManagedModels.forEach(m => m.doLinkRecursive(modelLookup));
+    }
+
+    /** @private */
+    triggerOnLinkedRecursive() {
+        this.onLinked();
+        this.allManagedModels.forEach(m => m.triggerOnLinkedRecursive());
+    }
+
+    /** @private */
+    get allManagedModels() {
+        return this.allManagedInstances.filter(v => v.isHoistModel);
+    }
+
+    markManaged(obj) {
+        // Catch a "late" managed model that needs to be manually linked
+        if (obj.isHoistModel && this._modelLookup) {
+            obj.link(this._modelLookup);
+        }
+        return super.markManaged(obj);
+    }
+
 }
-HoistModel.isHoistModel = true;
+
+
+/**
+ * Parameterized Decorator to inject an instance of an ancestor model in the Model lookup
+ * hierarchy into this object.
+ *
+ * The decorated property will be filled (if possible) only when the Model is linked to the
+ * Component Hierarchy.  Accessing properties decorated with @parent, should typically be
+ * done in the onLinked method(), or later.
+ *
+ * @param {ModelSelector} selector - type/specification of model to lookup.
+ */
+export function parent(selector = '*') {
+    return function(target, property, descriptor) {
+        throwIf(!target.isHoistModel, '@parent decorator should be applied to a subclass of HoistModel');
+        // Be sure to create list for *this* particular class. Clone and include inherited values.
+        if (!target.hasOwnProperty('_xhInjectedParentProperties')) {
+            target._xhInjectedParentProperties = {...target._xhInjectedParentProperties};
+        }
+        target._xhInjectedParentProperties[property] = selector;
+        return descriptor;
+    };
+}

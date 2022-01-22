@@ -18,19 +18,19 @@ import {useEffect} from 'react';
  */
 
 /* eslint-disable react-hooks/exhaustive-deps */
-export function useOwnedModelLinker(model, modelLookup) {
+export function useOwnedModelLinker(model, {modelLookup, props}) {
     if (model) {
-        model._modelLookup = modelLookup;
-        model.onLinked();
+        model.link(modelLookup);
+        if (props) model.setComponentProps(props);
     }
+
     useEffect(() => {
-        if (model?.loadSupport) {
-            model.loadAsync();
-            const refreshContext = modelLookup?.lookupModel(RefreshContextModel);
-            if (refreshContext) {
-                refreshContext.register(model);
-                return () => refreshContext.unregister(model);
-            }
+        if (!model?.loadSupport) return;
+        model.loadAsync();
+        const refreshContext = modelLookup?.lookupModel(RefreshContextModel);
+        if (refreshContext) {
+            refreshContext.register(model);
+            return () => refreshContext.unregister(model);
         }
     }, []);
 

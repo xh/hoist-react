@@ -167,8 +167,8 @@ function wrapWithSimpleModel(render, spec, displayName) {
     return spec.fromContext ?
         // a) with a context lookup
         (props, ref) => {
-            const lookup = useContext(ModelLookupContext),
-                {model} = useResolvedModel(spec, props, lookup, displayName);
+            const modelLookup = useContext(ModelLookupContext),
+                {model} = useResolvedModel(spec, props, modelLookup, displayName);
             return render(propsWithModel(props, model), ref);
         } :
         // b) no context lookup needed, lean and mean.
@@ -187,8 +187,8 @@ function wrapWithPublishedModel(render, spec, displayName) {
         const publishDefault = (spec.publishMode === ModelPublishMode.DEFAULT);  // otherwise LIMITED
 
         // Get the model and context
-        const lookup = useContext(ModelLookupContext),
-            {model, fromContext} = useResolvedModel(spec, props, lookup, displayName);
+        const modelLookup = useContext(ModelLookupContext),
+            {model, fromContext} = useResolvedModel(spec, props, modelLookup, displayName);
 
         // Create any lookup needed for model, caching it in state.
         // Avoid adding extra context if this model already in default context.
@@ -196,8 +196,8 @@ function wrapWithPublishedModel(render, spec, displayName) {
         const createLookup = () => {
             return (
                 model &&
-                (!lookup || !fromContext || (publishDefault && lookup.lookupModel('*') !== model))
-            ) ? new ModelLookup(model, lookup, spec.publishMode) : null;
+                (!modelLookup || !fromContext || (publishDefault && modelLookup.lookupModel('*') !== model))
+            ) ? new ModelLookup(model, modelLookup, spec.publishMode) : null;
         };
         const [newLookup] = useState(createLookup);
 
@@ -210,15 +210,15 @@ function wrapWithPublishedModel(render, spec, displayName) {
 //-------------------------------------------------------------------------
 // Support to resolve/create model at render-time.  Used by wrappers above.
 //-------------------------------------------------------------------------
-function useResolvedModel(spec, props, lookup, displayName) {
+function useResolvedModel(spec, props, modelLookup, displayName) {
     // fixed cache here creates the "immutable" model behavior in hoist components
     // (Need to force full remount with 'key' prop to resolve any new model)
     const [{model, isOwned, fromContext}] = useState(() => (
-        spec instanceof CreatesSpec ? createModel(spec) : lookupModel(spec, props, lookup, displayName)
+        spec instanceof CreatesSpec ? createModel(spec) : lookupModel(spec, props, modelLookup, displayName)
     ));
 
     // register and load owned model
-    useOwnedModelLinker(isOwned ? model : null, lookup);
+    useOwnedModelLinker(isOwned ? model : null, {modelLookup, props});
 
     // wire any modelRef
     useOnMount(() => {
