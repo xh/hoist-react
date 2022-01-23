@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {div, filler} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, uses, lookup} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -204,9 +204,7 @@ const row = hoistCmp.factory({
 
 class LocalModel extends HoistModel {
 
-    onLinked() {
-        this.model = this.lookupModel(ColChooserModel);
-    }
+    @lookup(ColChooserModel) model;
 
     onDragEnd = (result) => {
         const {model} = this,

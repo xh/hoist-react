@@ -1,4 +1,4 @@
-import {hoistCmp, HoistModel, uses, useLocalModel, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, uses, useLocalModel, lookup, XH} from '@xh/hoist/core';
 import {computed, observable, action, makeObservable} from '@xh/hoist/mobx';
 import {frame} from '@xh/hoist/cmp/layout';
 import {gestureDetector} from '@xh/hoist/kit/onsen';
@@ -34,7 +34,7 @@ export const swiper = hoistCmp.factory({
 
 class LocalModel extends HoistModel {
 
-    navigatorModel;
+    @lookup(NavigatorModel) navigatorModel;
     @observable backProgress = null;
     @observable refreshProgress = null;
 
@@ -50,7 +50,6 @@ class LocalModel extends HoistModel {
 
     onLinked() {
         makeObservable(this);
-        this.navigatorModel = this.lookupModel(NavigatorModel);
     }
 
     @action

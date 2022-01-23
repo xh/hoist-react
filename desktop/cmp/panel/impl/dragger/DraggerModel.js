@@ -8,13 +8,14 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {clamp, throttle} from 'lodash';
+import {lookup} from '../../../../../core';
 import {PanelModel} from '../../PanelModel';
 
 export class DraggerModel extends HoistModel {
 
+    @lookup(PanelModel) panelModel;
     ref = createObservableRef();
 
-    panelModel;
     resizeState = null;
     startSize = null;
     diff = null;
@@ -24,7 +25,6 @@ export class DraggerModel extends HoistModel {
     maxSize = null;
 
     onLinked() {
-        this.panelModel = this.lookupModel(PanelModel);
         this.throttledSetSize = throttle(size => this.panelModel.setSize(size), 50);
 
         // Add listeners to el to ensure we can get non-passive handlers than can preventDefault()

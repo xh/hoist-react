@@ -20,8 +20,8 @@ import {useEffect} from 'react';
 /* eslint-disable react-hooks/exhaustive-deps */
 export function useOwnedModelLinker(model, {modelLookup, props}) {
     if (model) {
-        model.link(modelLookup);
         if (props) model.setComponentProps(props);
+        model.link(modelLookup);
     }
 
     useEffect(() => {

@@ -1,11 +1,13 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {managed, HoistModel, XH} from '@xh/hoist/core';
+import {managed, HoistModel, XH, lookup} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import * as Col from '@xh/hoist/admin/columns';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
 
 export class ActivityDetailModel extends HoistModel {
+
+    @lookup(ActivityTrackingModel) parentModel;
 
     /** @member {GridModel} */
     @managed gridModel;
@@ -16,7 +18,6 @@ export class ActivityDetailModel extends HoistModel {
 
     onLinked() {
         makeObservable(this);
-        const parentModel = this.lookupModel(ActivityTrackingModel);
 
         const hidden = true,
             filterable = true;
@@ -53,7 +54,7 @@ export class ActivityDetailModel extends HoistModel {
         });
 
         this.addReaction({
-            track: () => parentModel.gridModel.selectedRecord,
+            track: () => this.parentModel.gridModel.selectedRecord,
             run: (aggRec) => this.showActivityEntriesAsync(aggRec)
         });
 

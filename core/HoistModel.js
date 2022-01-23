@@ -9,7 +9,7 @@ import {throwIf} from '../utils/js';
 import {HoistBase} from './HoistBase';
 import {managed} from './HoistBaseDecorators';
 import {LoadSupport} from './refresh/LoadSupport';
-import {observable, computed, action} from '@xh/hoist/mobx';
+import {observable, computed, action, comparer} from '@xh/hoist/mobx';
 
 /**
  * Core superclass for stateful Models in Hoist. Models are used throughout the toolkit and
@@ -27,12 +27,12 @@ import {observable, computed, action} from '@xh/hoist/mobx';
  *      - The `componentProps` observable property.  This property will be populated for models
  *      directly associated with an "owning" component (i.e. the model was created via
  *      the `creates()` directive in HoistComponent, or the `useLocalModel()` hook.)
- *      - The @parent decorator. Use this to inject references to other HoistModels which are
+ *      - The @lookup decorator. Use this to inject references to other HoistModels which are
  *      "ancestors" to this model in the component hierarchy.
  *      - The @managed decorator.  Use this to indicated  submodels that should be linked to
  *      the component hierarchy together with this model. These models can therefore perform lookups
  *      and will be available for (limited) lookup by other components and models in the hierarchy.
- *      - The onLinked() lifecyle method.  This method will be called when this model (or the model
+ *      - The onLinked() lifecycle method.  This method will be called when this model (or the model
  *      managing it) has been fully linked to the component hierarchy. Use this method for any work
  *      requiring the availability of parent models or `componentProps`.  Note that this method is
  *      called during the initial rendering of the component creating this model.
@@ -135,7 +135,7 @@ export class HoistModel extends HoistBase {
      * Observability is based on a shallow computation for each prop (i.e. a reference
      * change in any particular prop. will trigger observables to be notified.).
      */
-    @computed
+    @computed({equals: comparer.shallow})
     get componentProps() {
         return this._componentProps;
     }
@@ -217,7 +217,7 @@ export class HoistModel extends HoistBase {
 
 
 /**
- * Parameterized Decorator to inject an instance of an ancestor model in the Model lookup
+ * Parameterized decorator to inject an instance of an ancestor model in the Model lookup
  * hierarchy into this object.
  *
  * The decorated property will be filled (if possible) only when the Model is linked to the
@@ -226,7 +226,7 @@ export class HoistModel extends HoistBase {
  *
  * @param {ModelSelector} selector - type/specification of model to lookup.
  */
-export function parent(selector = '*') {
+export function lookup(selector = '*') {
     return function(target, property, descriptor) {
         throwIf(!target.isHoistModel, '@parent decorator should be applied to a subclass of HoistModel');
         // Be sure to create list for *this* particular class. Clone and include inherited values.

@@ -6,7 +6,7 @@
  */
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistModel, managed} from '@xh/hoist/core';
+import {HoistModel, managed, lookup} from '@xh/hoist/core';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
 import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -16,6 +16,8 @@ import moment from 'moment';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
 
 export class ChartsModel extends HoistModel {
+
+    @lookup(ActivityTrackingModel) parentModel;
 
     /** @member {string} - metric to chart on Y axis - one of:
      *      + entryCount - count of total track log entries within the primary dim group.
@@ -102,7 +104,6 @@ export class ChartsModel extends HoistModel {
 
     onLinked() {
         makeObservable(this);
-        this.parentModel = this.lookupModel(ActivityTrackingModel);
         this.addReaction({
             track: () => [this.data, this.metric],
             run: () => this.loadChart()

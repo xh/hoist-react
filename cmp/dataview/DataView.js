@@ -6,7 +6,7 @@
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
-import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, uses, lookup} from '@xh/hoist/core';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {isFunction} from 'lodash';
 import PT from 'prop-types';
@@ -44,10 +44,12 @@ DataView.propTypes = {
 
 class LocalModel extends HoistModel {
 
+    @lookup(DataViewModel) model;
+
     agOptions;
 
     onLinked() {
-        const model = this.lookupModel(DataViewModel);
+        const {model} = this;
 
         this.addReaction({
             track: () => [model.itemHeight, model.groupRowHeight],

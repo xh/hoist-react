@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {div, frame} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, uses, elem, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, uses, elem, lookup, XH} from '@xh/hoist/core';
 import {splitLayoutProps, useOnUnmount} from '@xh/hoist/utils/react';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
@@ -37,7 +37,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
     className: 'xh-ag-grid',
     model: uses(AgGridModel),
 
-    render({model, key, className, onGridReady, ...props}, ref) {
+    render({model, key, className, ...props}, ref) {
 
         if (!AgGridReact) {
             console.error(
@@ -54,8 +54,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
             {sizingMode, showHover, rowBorders, stripeRows, cellBorders, showCellFocus} = model,
             {darkTheme, isDesktop} = XH;
 
-        const impl = useLocalModel(() => new LocalModel(model, agGridProps));
-        impl.onGridReady = onGridReady;
+        const impl = useLocalModel(LocalModel, agGridProps);
 
         useOnUnmount(() => model?.handleGridUnmount());
 
@@ -112,25 +111,22 @@ AgGrid.getHeaderHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.HEADER_
 
 class LocalModel extends HoistModel {
 
-    model;
-    onGridReady;
+    @lookup(AgGridModel) model;
 
     get headerHeight() {
         const {hideHeaders, sizingMode} = this.model;
         return hideHeaders ? 0 : AgGrid.getHeaderHeightForSizingMode(sizingMode);
     }
 
-    constructor(model, agGridProps) {
-        super();
-        this.model = model;
-
+    onLinked() {
+        const {model, componentProps} = this;
         throwIf(model.agApi,
             'Attempted to mount a grid on a GridModel that is already in use. ' +
             'Ensure that you are not binding your grid to the wrong model via context.'
         );
 
         // manage header height if was not explicitly provided to component
-        if (isNil(agGridProps.headerHeight)) {
+        if (isNil(componentProps.headerHeight)) {
             this.addReaction({
                 track: () => [model.agApi, this.headerHeight],
                 run: ([api, headerHeight]) => api?.setHeaderHeight(headerHeight)
@@ -140,9 +136,7 @@ class LocalModel extends HoistModel {
 
     noteGridReady = (agParams) => {
         this.model.handleGridReady(agParams);
-        if (this.onGridReady) {
-            this.onGridReady(agParams);
-        }
+        this.componentProps.onGridReady?.(agParams);
     };
 
     getRowHeight = () => {
