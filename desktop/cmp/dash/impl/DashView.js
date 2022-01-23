@@ -38,8 +38,8 @@ export const dashView = hoistCmp.factory({
         if (
             !isActive &&
             (
-                (renderMode == RenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode == RenderMode.LAZY && !wasActivated.current)
+                (renderMode === RenderMode.UNMOUNT_ON_HIDE) ||
+                (renderMode === RenderMode.LAZY && !wasActivated.current)
             )
         ) {
             return null;
