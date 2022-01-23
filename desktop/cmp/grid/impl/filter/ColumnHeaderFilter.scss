@@ -31,6 +31,8 @@
 
         &.xh-button--active {
           background-color: var(--xh-intent-primary) !important;
+          // Ensure text visible regardless of --xh-panel-title-text-color
+          color: white !important;
         }
       }
     }
