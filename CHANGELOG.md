@@ -1,6 +1,6 @@
 # Changelog
 
-## v46.0.0-SNAPSHOT - unreleased
+## v46.0.0 - 2022-01-25
 
 ### 🎁 New Features
 
@@ -37,6 +37,8 @@
 ### 🐞 Bug Fixes
 
 * Fix to incorrect viewport orientation reporting due to laggy mobile resize events and DOM APIs.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v45.0.0...v46.0.0)
 
 ## v45.0.2 - 2022-01-13
 
