@@ -116,4 +116,25 @@ export class WebSocketModel extends HoistModel {
             }
         });
     }
+
+    async forceReloadOnSelectedAsync() {
+        const {selectedRecord} = this.gridModel;
+        if (!selectedRecord) return;
+
+        await XH.confirm({
+            title: 'Force reload',
+            icon: Icon.refresh(),
+            confirmProps: {text: 'Force Reload'},
+            message: `Force app reload for user ${selectedRecord.data.authUser}`
+        });
+
+        XH.fetchJson({
+            url: 'webSocketAdmin/pushToChannel',
+            params: {
+                channelKey: selectedRecord.data.key,
+                topic: XH.webSocketService.FORCE_APP_RELOAD_TOPIC,
+                message: null
+            }
+        });
+    }
 }

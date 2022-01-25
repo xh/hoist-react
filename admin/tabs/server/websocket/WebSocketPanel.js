@@ -29,6 +29,14 @@ export const webSocketPanel = hoistCmp.factory({
                     disabled: !model.gridModel.selectedRecord,
                     onClick: () => model.sendAlertToSelectedAsync()
                 }),
+                toolbarSep(),
+                button({
+                    text: 'Force reload',
+                    icon: Icon.refresh(),
+                    intent: 'danger',
+                    disabled: !model.gridModel.selectedRecord,
+                    onClick: () => model.forceReloadOnSelectedAsync()
+                }),
                 filler(),
                 relativeTimestamp({bind: 'lastRefresh'}),
                 toolbarSep(),
