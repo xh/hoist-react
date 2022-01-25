@@ -32,6 +32,10 @@
 * The `stringifyErrorSafely` function has been moved from the `@xh/hoist/exception` package to a
   public method on `XH.exceptionHandler`. (No/little impact expected on app code.)
 
+### 🐞 Bug Fixes
+
+* Fix to incorrect viewport orientation reporting due to laggy mobile resize events and DOM APIs.
+
 ## v45.0.2 - 2022-01-13
 
 ### 🎁 New Features
