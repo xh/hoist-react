@@ -71,7 +71,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
      * @param ref
      */
     render({model, className, ...props}, ref) {
-        const {store, treeMode, treeStyle, colChooserModel, filterModel} = model,
+        const {store, treeMode, treeStyle, highlightRowOnClick, colChooserModel, filterModel} = model,
             impl = useLocalModel(() => new GridLocalModel(model, props)),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
             maxDepth = impl.isHierarchical ? store.maxDepth : null;
@@ -79,7 +79,8 @@ export const [Grid, grid] = hoistCmp.withFactory({
         className = classNames(
             className,
             impl.isHierarchical ? `xh-grid--hierarchical xh-grid--max-depth-${maxDepth}` : 'xh-grid--flat',
-            treeMode ? getTreeStyleClasses(treeStyle) : null
+            treeMode ? getTreeStyleClasses(treeStyle) : null,
+            highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null
         );
 
         return fragment(
@@ -137,20 +138,17 @@ class GridLocalModel extends HoistModel {
     getRowHeight(node) {
         const {model, agOptions} = this,
             {sizingMode, groupRowHeight} = model,
-            {groupUseEntireRow} = agOptions;
+            {groupDisplayType} = agOptions;
 
         if (node?.group) {
             return (
                 groupRowHeight ??
-                groupUseEntireRow ?
+                groupDisplayType === 'groupRows' ?
                     AgGrid.getGroupRowHeightForSizingMode(sizingMode) :
                     AgGrid.getRowHeightForSizingMode(sizingMode)
             );
         }
-        return max([
-            this.fixedRowHeight,
-            model.agGridModel.getAutoRowHeight(node)
-        ]);
+        return this.fixedRowHeight;
     }
 
     /** @returns {boolean} - true if any root-level records have children */
@@ -224,6 +222,7 @@ class GridLocalModel extends HoistModel {
             onCellContextMenu: model.onCellContextMenu,
             onCellClicked: model.onCellClicked,
             onCellDoubleClicked: model.onCellDoubleClicked,
+            onCellMouseDown: this.onCellMouseDown,
             onRowClicked: this.onRowClicked,
             onRowDoubleClicked: this.onRowDoubleClicked,
             onRowGroupOpened: this.onRowGroupOpened,
@@ -237,9 +236,9 @@ class GridLocalModel extends HoistModel {
             onCellEditingStopped: model.onCellEditingStopped,
             navigateToNextCell: this.navigateToNextCell,
             processCellForClipboard: this.processCellForClipboard,
-            defaultGroupSortComparator: model.groupSortFn ? this.groupSortComparator : undefined,
+            defaultGroupOrderComparator: model.groupSortFn ? this.groupSortComparator : undefined,
             groupDefaultExpanded: 1,
-            groupUseEntireRow: true,
+            groupDisplayType: 'groupRows',
             groupRowRendererFramework: model.groupRowElementRenderer,
             groupRowRendererParams: {
                 innerRenderer: model.groupRowRenderer,
@@ -275,7 +274,7 @@ class GridLocalModel extends HoistModel {
             ret = {
                 ...ret,
                 groupDefaultExpanded: 0,
-                groupSuppressAutoColumn: true,
+                groupDisplayType: 'custom',
                 treeData: true,
                 getDataPath: this.getDataPath
             };
@@ -493,7 +492,7 @@ class GridLocalModel extends HoistModel {
                     // We need to tell agGrid to refresh its flexed column sizes due to
                     // a regression introduced in 25.1.0.  See #2341
                     if (hasChanges) {
-                        colApi.columnController.refreshFlexedColumns({
+                        colApi.columnModel.refreshFlexedColumns({
                             updateBodyWidths: true,
                             fireResizedEvent: true
                         });
@@ -642,11 +641,6 @@ class GridLocalModel extends HoistModel {
                     columns = refreshCols.map(c => c.colId);
                 agApi.refreshCells({rowNodes, columns, force: true});
             }
-
-            // Refresh row heights if autoHeight is enabled
-            if (visibleCols.some(c => c.autoHeight)) {
-                agApi.resetRowHeights();
-            }
         }
 
         if (!transaction || transaction.add || transaction.remove) {
@@ -718,7 +712,6 @@ class GridLocalModel extends HoistModel {
         } else if (ev.source === 'autosizeColumns') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
-        ev.api.resetRowHeights();
     };
 
     // Catches row group changes triggered from ag-grid ui components
@@ -744,7 +737,6 @@ class GridLocalModel extends HoistModel {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
-        ev.api.resetRowHeights();
     };
 
     groupSortComparator = (nodeA, nodeB) => {
@@ -788,6 +780,17 @@ class GridLocalModel extends HoistModel {
 
     navigateToNextCell = (agParams) => {
         return this.rowKeyNavSupport?.navigateToNextCell(agParams);
+    };
+
+    onCellMouseDown = (evt) => {
+        const {model} = this;
+        if (model.highlightRowOnClick) {
+            model.agApi.flashCells({
+                rowNodes: [evt.node],
+                flashDelay: 100,
+                fadeDelay: 100
+            });
+        }
     };
 
     onKeyDown = (evt) => {

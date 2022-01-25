@@ -10,6 +10,7 @@ import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
+import './SearchInput.scss';
 
 /**
  * A Search Input

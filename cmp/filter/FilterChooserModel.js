@@ -278,17 +278,15 @@ export class FilterChooserModel extends HoistModel {
             throw XH.exception(`Unsupported Filter in FilterChooserModel: ${s}`);
         };
 
-        // 1) Flatten AND CompoundFilters to FieldFilters.
-        if (filter.isCompoundFilter && filter.op === 'AND') {
+        // 1) Flatten CompoundFilters across disparate fields to FieldFilters.
+        if (filter.isCompoundFilter && !filter.field) {
             ret = filter.filters;
         } else  {
             ret = [filter];
         }
-        ret.forEach(f => {
-            if (!f.isFieldFilter && !f.isCompoundFilter) {
-                unsupported('Filters must be FieldFilters or CompoundFilters.');
-            }
-        });
+        if (ret.some(f => !f.isFieldFilter && !f.isCompoundFilter)) {
+            unsupported('Filters must be FieldFilters or CompoundFilters.');
+        }
 
         // 2) Recognize unsupported multiple filters for array-based filters.
         const groupMap = groupBy(ret, ({op, field}) => `${op}|${field}`);
@@ -300,7 +298,7 @@ export class FilterChooserModel extends HoistModel {
         });
 
         // 3) Finally unroll multi-value filters to one value per filter.
-        // The multiple values for will later be restored.
+        // The multiple values will later be restored.
         return flatMap(ret, (f) => {
             return isArray(f.value) ?
                 f.value.map(value => new FieldFilter({...f, value})) :

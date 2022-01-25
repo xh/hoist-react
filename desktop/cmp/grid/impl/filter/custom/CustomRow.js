@@ -90,7 +90,10 @@ const inputField = hoistCmp.factory(
                 ...props,
                 options: fieldSpec.values,
                 enableCreate: !fieldSpec.forceSelection,
-                hideSelectedOptionCheck: true
+                enableMulti: true,
+                hideDropdownIndicator: true,
+                hideSelectedOptionCheck: true,
+                enableClear: false
             });
         } else {
             return textInput(props);

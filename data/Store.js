@@ -96,12 +96,13 @@ export class Store extends HoistBase {
      * @param {(string[]|FieldConfig[]|Field[])} c.fields - Field names, configs, or instances.
      * @param {{}} [fieldDefaults] - default configs applied to `Field` instances constructed
      *      internally by this Store. {@see FieldConfig} for options
-     * @param {(function|string)} [c.idSpec] - specification for selecting or producing an immutable
-     *      unique id for each record. May be either a string property name (default is 'id') or a
-     *      function to create an id from the raw unprocessed data. Will be normalized to a function
-     *      upon Store construction. If there is no natural id to select/generate, you can use
-     *      `XH.genId` to generate a unique id on the fly. NOTE that in this case, grids and other
-     *      components bound to this store will not be able to maintain record state across reloads.
+     * @param {(function|string)} [c.idSpec] - specification for producing an immutable
+     *      unique string as an id for each record. May be provided as either a string property name
+     *      (default is 'id') or a function that receives the raw data and returns a string. This
+     *      property will be normalized to a function upon Store construction. If there is no
+     *      natural id to select/generate, you can use `XH.genId` to generate a unique id on the
+     *      fly. NOTE that in this case, grids and other components bound to this store will not be
+     *      able to maintain record state across reloads.
      * @param {function} [c.processRawData] - function to run on each individual data object
      *      presented to loadData() prior to creating a StoreRecord from that object. This function
      *      must return an object, cloning the original object if edits are necessary.
@@ -251,7 +252,7 @@ export class Store extends HoistBase {
         const changeLog = {};
 
         // Build a transaction object out of a flat list of adds and updates
-        let rawTransaction = null;
+        let rawTransaction;
         if (isArray(rawData)) {
             const update = [], add = [];
             rawData.forEach(it => {
@@ -368,7 +369,7 @@ export class Store extends HoistBase {
      * @param {(Object[]|Object)} data - source data for new StoreRecord(s). Note that this data will
      *      *not* be processed by this Store's `processRawData` or `idSpec` functions, but will be
      *      parsed and potentially transformed according to this Store's Field definitions.
-     * @param {StoreRecordId} [parentId] - ID of the pre-existing parent record under which this new
+     * @param {string} [parentId] - ID of the pre-existing parent record under which this new
      *      record should be added, if any.
      */
     @action
@@ -679,7 +680,7 @@ export class Store extends HoistBase {
     /**
      * Get a record by ID, or null if no matching record found.
      *
-     * @param {StoreRecordId} id
+     * @param {string} id
      * @param {boolean} [respectFilter] - false (default) to return a StoreRecord with the given
      *      ID even if an active filter is excluding it from the primary `records` collection.
      *      True to restrict matches to this Store's post-filter StoreRecord collection only.
@@ -820,7 +821,6 @@ export class Store extends HoistBase {
     // StoreRecord Generation
     //---------------------------------------
     createRecord(raw, parent, isSummary) {
-        // Note idSpec run against raw data here.
         const id = this.idSpec(raw);
 
         // Potentially re-use existing record if raw data is reference equal and tree path identical
@@ -929,20 +929,11 @@ export class Store extends HoistBase {
     }
 
     parseIdSpec(idSpec) {
-        let ret;
-        if (isString(idSpec)) {
-            ret = (raw) => raw[idSpec];
-        } else if (isFunction(idSpec)) {
-            ret = (raw) => idSpec(raw);
-        } else {
-            throw XH.exception(
-                'idSpec should be either a name of a field, or a function to generate an id.'
-            );
-        }
-
-        return this.experimental.castIdToString ?
-            (raw) => ret(raw)?.toString() :
-            ret;
+        if (isString(idSpec)) return (raw) => raw[idSpec]?.toString();
+        if (isFunction(idSpec)) return (raw) => idSpec(raw)?.toString();
+        throw XH.exception(
+            'idSpec should be either a name of a field, or a function to generate an id.'
+        );
     }
 }
 

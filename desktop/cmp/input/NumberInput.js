@@ -92,6 +92,13 @@ NumberInput.propTypes = {
     /** Element to display inline on the right side of the input. */
     rightElement: PT.element,
 
+    /**
+     * Scale factor to apply when converting between the internal and external value. Useful for
+     * cases such as handling a percentage value where the user would expect to see or input 20 but
+     * the external value the input is bound to should be 0.2. Defaults to 1 (no scaling applied).
+     */
+    scaleFactor: PT.number,
+
     /** True to select contents when control receives focus. */
     selectOnFocus: PT.bool,
 
@@ -123,13 +130,21 @@ class Model extends HoistInputModel {
         return withDefault(this.props.commitOnChange, false);
     }
 
+    get scaleFactor() {
+        return withDefault(this.props.scaleFactor, 1);
+    }
+
     onValueChange = (val, valAsString) => {
         this.noteValueChange(valAsString);
     };
 
+    toInternal(val) {
+        return isNil(val) ? null : val * this.scaleFactor;
+    }
+
     toExternal(val) {
         val = this.parseValue(val);
-        return isNaN(val) ? null : val;
+        return isNaN(val) || isNil(val) ? null : val / this.scaleFactor;
     }
 
     onKeyDown = (ev) => {

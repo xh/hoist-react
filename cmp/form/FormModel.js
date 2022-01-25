@@ -56,10 +56,14 @@ export class FormModel extends HoistModel {
     _valuesProxy = this.createValuesProxy();
 
     /**
-     * @return {Object} - proxy for accessing all of the current data values in this form by name.
-     *      Values accessed via this object are observable, and can be used directly in reactions to
-     *      implement logic on change, such as disabling one field based on the value of another.
-     *      Also passed to validation rules to facilitate observable cross-field validation.
+     * @return {Object} - proxy for access to observable field values, keyed by field name.
+     *
+     * Read field value(s) off of this object within a reaction's track or component render function
+     * to react to changes to those specific values - e.g. to disable one field based on the value
+     * of another. This proxy is also passed to validation rules to facilitate reactive cross-field
+     * validation - e.g. marking a field as invalid due to a change in another.
+     *
+     * {@see getData()} instead if you need to get or react to the values of *any/all* fields.
      */
     get values() {
         return this._valuesProxy;
@@ -107,11 +111,12 @@ export class FormModel extends HoistModel {
     }
 
     /**
-     * Get a snapshot of the current values for this form as an object keyed by field name.
-     * Note this is *not* a live or observable object - see the `values` getter for an alternative.
+     * @return {Object} - snapshot of current field values, keyed by field name.
      *
-     * @param {boolean} [dirtyOnly] -- include only dirty fields.
-     * @returns {Object} - a complete map of this model's fields (by name) to their current value.
+     * Call within a reaction's track or component render function to react to *any* field change.
+     * {@see values} instead if you need to get or react to the value of a *single* field.
+     *
+     * @param {boolean} [dirtyOnly] - true to include only dirty field values in the return
      */
     getData(dirtyOnly = false) {
         const fields = dirtyOnly ? pickBy(this.fields, f => f.isDirty) : this.fields;
@@ -169,7 +174,7 @@ export class FormModel extends HoistModel {
      * @see FieldModel.focus() for important information on this method
      * and its limitations.
      *
-     * @returns {FieldModel}
+     * @return {FieldModel}
      */
     @computed
     get focusedField() {
@@ -223,7 +228,7 @@ export class FormModel extends HoistModel {
      * @param {Object} [c]
      * @param {boolean} [c.display] - true to trigger the display of validation errors (if any)
      *      by bound FormField components after validation is complete.
-     * @returns {Promise<boolean>}
+     * @return {Promise<boolean>}
      */
     async validateAsync({display = true} = {}) {
         const promises = map(this.fields, m => m.validateAsync({display}));

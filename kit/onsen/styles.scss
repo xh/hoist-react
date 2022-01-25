@@ -18,7 +18,7 @@
     }
   }
 
-  &:not(.xh-input-label):not(.xh-button-group) {
+  &:not(.xh-input-label):not(.xh-button-group):not(.xh-switch-input):not(.xh-check-box) {
     font-size: 14px;
     border: var(--xh-border-solid);
     border-radius: var(--xh-border-radius-px);

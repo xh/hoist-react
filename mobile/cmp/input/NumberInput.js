@@ -11,7 +11,7 @@ import {input} from '@xh/hoist/kit/onsen';
 import {wait} from '@xh/hoist/promise';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-import {isNaN} from 'lodash';
+import {isNaN, isNil} from 'lodash';
 import PT from 'prop-types';
 import './NumberInput.scss';
 
@@ -63,6 +63,13 @@ NumberInput.propTypes = {
     /** Number of decimal places to allow on field's value, defaults to 4 */
     precision: PT.number,
 
+    /**
+     * Scale factor to apply when converting between the internal and external value. Useful for
+     * cases such as handling a percentage value where the user would expect to see or input 20 but
+     * the external value the input is bound to should be 0.2. Defaults to 1 (no scaling applied).
+     */
+    scaleFactor: PT.number,
+
     /** Whether text in field is selected when field receives focus */
     selectOnFocus: PT.bool,
 
@@ -92,6 +99,10 @@ class Model extends HoistInputModel {
         return withDefault(this.props.commitOnChange, false);
     }
 
+    get scaleFactor() {
+        return withDefault(this.props.scaleFactor, 1);
+    }
+
     select() {
         // first focus, and then wait one tick for value to be put into input element
         this.focus();
@@ -100,9 +111,17 @@ class Model extends HoistInputModel {
 
     onChange = (ev) => {
         let value = this.parseValue(ev.target.value);
-        value = isNaN(value) ? null : value;
+        value = isNaN(value)  ? null : value;
         this.noteValueChange(value);
     };
+
+    toInternal(val) {
+        return isNil(val) ? null : val * this.scaleFactor;
+    }
+
+    toExternal(val) {
+        return isNil(val) ? null : val / this.scaleFactor;
+    }
 
     onKeyDown = (ev) => {
         const {onKeyDown} = this.props;
