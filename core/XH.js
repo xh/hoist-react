@@ -553,6 +553,8 @@ class XHClass extends HoistBase {
      *      'isAutoRefresh' fetch exceptions.
      * @param {boolean} [options.showAlert] - display an alert dialog to the user. Default true,
      *      excepting 'isAutoRefresh' and 'isFetchAborted' exceptions.
+     * @param {string} [options.alertType] - if `showAlert`, which type of alert to display.
+     *      Valid options are 'dialog'|'toast'. Defaults to ExceptionHandler.ALERT_TYPE.
      * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
      *      dismiss - default false, excepting session-related exceptions.
      * @param {Array} [options.hideParams] - A list of parameters that should be hidden from

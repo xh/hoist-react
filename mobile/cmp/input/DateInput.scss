@@ -2,6 +2,7 @@
 .xh-date-input {
   display: flex;
   align-items: stretch;
+  background: var(--xh-input-bg);
 
   & > svg {
     margin: 8px 0;
