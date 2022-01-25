@@ -78,6 +78,13 @@
       font-weight: bold;
     }
   }
+
+  &__minimal-field {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--xh-intent-primary);
+  }
 }
 
 .xh-filter-chooser-favorite-icon {

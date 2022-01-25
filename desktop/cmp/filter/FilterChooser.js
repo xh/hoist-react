@@ -121,6 +121,7 @@ FilterChooser.propTypes = {
 function optionRenderer(opt) {
     switch (opt.type) {
         case 'field' : return fieldOption(opt);
+        case 'minimalField' : return minimalFieldOption(opt);
         case 'filter': return filterOption(opt);
         case 'msg': return messageOption(opt);
     }
@@ -129,16 +130,27 @@ function optionRenderer(opt) {
 
 const fieldOption = hoistCmp.factory({
     model: false, observer: false, memo: false,
-    render({fieldSpec, inclPrefix}) {
+    render({fieldSpec}) {
         const {displayName, ops, example} = fieldSpec;
         return hframe({
             className: 'xh-filter-chooser-option__field',
             items: [
-                div({className: 'prefix', item: 'e.g.', omit: !inclPrefix}),
+                div({className: 'prefix', item: 'e.g.'}),
                 div({className: 'name', item: displayName}),
                 div({className: 'operators', item: '[ ' + ops.join(', ') + ' ]'}),
                 div({className: 'example', item: example})
             ]
+        });
+    }
+});
+
+const minimalFieldOption = hoistCmp.factory({
+    model: false, observer: false, memo: false,
+    render({fieldSpec}) {
+        const {displayName} = fieldSpec;
+        return hframe({
+            className: 'xh-filter-chooser-option__minimal-field',
+            item: displayName
         });
     }
 });
