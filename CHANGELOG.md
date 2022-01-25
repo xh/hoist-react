@@ -15,6 +15,8 @@
   debounce, avoiding rapid cycling when e.g. tabbing between cells.
 * `NumberInput` now supports a new `scaleFactor` prop which will be applied when converting between
   the internal and external values.
+* `FilterChooser` now displays more minimal field name suggestions when first focused, as well as a
+  new, configurable usage hint (`FilterChooserModel.introHelpText`) above those suggestions.
 
 ### 💥 Breaking Changes
 

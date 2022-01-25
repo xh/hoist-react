@@ -30,6 +30,7 @@ import {
  */
 export class QueryEngine {
 
+    /** @member {FilterChooserModel} */
     model;
 
     constructor(model) {
@@ -67,13 +68,15 @@ export class QueryEngine {
     // 1) No query -- return all field suggestions if enabled
     //------------------------------------------------------------------------
     whenNoQuery() {
-        const {suggestFieldsWhenEmpty, sortFieldSuggestions} = this.model;
+        const {suggestFieldsWhenEmpty, sortFieldSuggestions, introHelpText} = this.model;
         if (!suggestFieldsWhenEmpty) return [];
 
         let ret = this.getMinimalFieldOpts();
         if (sortFieldSuggestions) ret = this.sort(ret);
 
-        ret.unshift(msgOption('Type a field, value or condition to start filtering...'));
+        if (introHelpText) {
+            ret.unshift(msgOption(introHelpText));
+        }
 
         return ret;
     }
