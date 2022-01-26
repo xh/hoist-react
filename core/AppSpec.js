@@ -45,6 +45,10 @@ export class AppSpec {
      *      been suspended.  The component will receive a single prop -- onReactivate -- a callback
      *      called when the user has acknowledged the suspension and wishes to reload the app and
      *      continue working.  Specify as a React Component or an element factory.
+     @param {(Class|function)} [c.forceRestartPanel] - optional custom Component to display when App has
+     *      been forced to reload. The component will receive a single prop -- onRestart -- a callback
+     *      called when the user has acknowledged the force restart and wishes to reload the app and
+     *      continue working.  Specify as a React Component or an element factory.
      * @param {?string} [c.loginMessage] - optional message to show on login form (for non-SSO apps).
      * @param {?string} [c.lockoutMessage] - optional message to show users when denied access to app.
      * @param {boolean} [c.showBrowserContextMenu] - true to show the built-in browser context menu
@@ -67,6 +71,7 @@ export class AppSpec {
         trackAppLoad = true,
         webSocketsEnabled = false,
         idlePanel = null,
+        forceRestartPanel= null,
         loginMessage = null,
         lockoutMessage = null,
         showBrowserContextMenu = false,
@@ -100,6 +105,7 @@ export class AppSpec {
 
         this.webSocketsEnabled = webSocketsEnabled;
         this.idlePanel = idlePanel;
+        this.forceRestartPanel = forceRestartPanel;
         this.loginMessage = loginMessage;
         this.lockoutMessage = lockoutMessage;
         this.showBrowserContextMenu = showBrowserContextMenu;

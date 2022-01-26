@@ -1,0 +1,21 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2021 Extremely Heavy Industries Inc.
+ */
+
+.xh-force-restart-panel {
+  flex: 0 0 auto !important;
+  border: var(--xh-border-solid);
+  width: 410px;
+
+  p {
+    padding: var(--xh-pad-px) var(--xh-pad-double-px);
+  }
+}
+
+.xh-viewport.xh-force-restart-viewport {
+  background-color: var(--xh-bg);
+  background-image: none;
+}

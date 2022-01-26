@@ -40,7 +40,7 @@ export class WebSocketService extends HoistService {
     HEARTBEAT_TOPIC = 'xhHeartbeat';
     REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
     TEST_MSG_TOPIC = 'xhTestMessage';
-    FORCE_APP_RELOAD_TOPIC = 'xhForceAppReload';
+    FORCE_APP_RESTART_TOPIC = 'xhForceAppRestart';
 
     /** @property {string} - unique channel assigned by server upon successful connection. */
     @observable channelKey = null;
@@ -200,8 +200,8 @@ export class WebSocketService extends HoistService {
                 case this.TEST_MSG_TOPIC:
                     this.showTestMessageAlert(data);
                     break;
-                case this.FORCE_APP_RELOAD_TOPIC:
-                    this.forceAppReloadAsync();
+                case this.FORCE_APP_RESTART_TOPIC:
+                    XH.forceAppRestart();
                     return;
             }
 
@@ -271,24 +271,6 @@ export class WebSocketService extends HoistService {
             icon: Icon.bullhorn(),
             message
         });
-    }
-
-    async forceAppReloadAsync() {
-        // Suspend activity without setting AppState.SUSPENDED (i.e. don't show Idle panel backdrop)
-        this.disconnect();
-        Timer.cancelAll();
-
-        await XH.alert({
-            title: 'App Update',
-            icon: Icon.warning(),
-            message: 'A critical update has been released, and your app must be refreshed in order to continue.',
-            confirmProps: {
-                icon: Icon.refresh(),
-                text: 'Refresh Now'
-            }
-        });
-
-        XH.reloadApp();
     }
 
     maybeLogMessage(...args) {

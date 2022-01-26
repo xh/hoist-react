@@ -9,6 +9,7 @@ import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {AppState, elem, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {errorBoundary} from '@xh/hoist/core/impl/ErrorBoundary';
 import {changelogDialog} from '@xh/hoist/desktop/appcontainer/ChangelogDialog';
+import {forceRestartPanel} from '@xh/hoist/desktop/appcontainer/ForceRestartPanel';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
 import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserDialog';
@@ -100,6 +101,8 @@ function viewForState() {
             return appContainerView();
         case S.SUSPENDED:
             return idlePanelHost();
+        case S.FORCE_RESTART:
+            return forceRestartPanelHost();
         case S.LOAD_FAILED:
         default:
             return null;
@@ -186,3 +189,10 @@ const idlePanelHost = hoistCmp.factory({
     }
 });
 
+const forceRestartPanelHost = hoistCmp.factory({
+    displayName: 'ForceRestartPanel',
+    render() {
+        const content = XH.appSpec.forceRestartPanel ?? forceRestartPanel;
+        return elementFromContent(content, {onRestart: () => XH.reloadApp()});
+    }
+});

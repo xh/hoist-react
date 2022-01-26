@@ -18,5 +18,6 @@ export const AppState = {
     INITIALIZING:   'INITIALIZING',
     RUNNING:        'RUNNING',
     SUSPENDED:      'SUSPENDED',
+    FORCE_RESTART:  'FORCE_RESTART',
     LOAD_FAILED:    'LOAD_FAILED'
 };

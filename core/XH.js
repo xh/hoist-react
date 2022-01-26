@@ -27,6 +27,7 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
+import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {checkMinVersion, getClientDeviceInfo, throwIf, withDebug} from '@xh/hoist/utils/js';
 import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
@@ -803,6 +804,17 @@ class XHClass extends HoistBase {
             this.setAppState(S.LOAD_FAILED);
             this.handleException(e, {requireReload: true});
         }
+    }
+
+    /**
+     * Called when Hoist Admin forces app instance to reload via websockets.
+     * @private - not intended for application use.
+     */
+    forceAppRestart() {
+        if (XH.appState === AppState.FORCE_RESTART) return;
+        XH.setAppState(AppState.FORCE_RESTART);
+        XH.webSocketService.shutdown();
+        Timer.cancelAll();
     }
 
     //------------------------
