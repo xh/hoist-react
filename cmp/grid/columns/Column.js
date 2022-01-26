@@ -174,7 +174,7 @@ export class Column {
     /** @member {number} */
     autosizeMaxWidth;
     /** @member {number} */
-    autosizeBufferWidth;
+    autosizeBufferPx;
 
     /** @member {boolean} */
     autoHeight;
