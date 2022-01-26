@@ -30,8 +30,8 @@ export class FeedbackDialogModel extends HoistModel {
     }
 
     @action
-    show() {
-        this.message = null;
+    show({message = null} = {}) {
+        this.message = message;
         this.isOpen = true;
     }
 

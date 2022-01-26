@@ -609,9 +609,12 @@ class XHClass extends HoistBase {
         this.acm.changelogDialogModel.show();
     }
 
-    /** Show a dialog to elicit feedback from the user. */
-    showFeedbackDialog() {
-        this.acm.feedbackDialogModel.show();
+    /**
+     * Show a dialog to elicit feedback from the user.
+     * @param {string} [message] - optional message to preset within the feedback dialog.
+     */
+    showFeedbackDialog({message} = {}) {
+        this.acm.feedbackDialogModel.show({message});
     }
 
     /** Show the impersonation bar to allow switching users. */

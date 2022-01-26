@@ -2,6 +2,9 @@
 
 ## v47.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `XH.showFeedbackDialog()` now takes an optional message to pre-populate within the dialog.
 
 ## v46.0.0 - 2022-01-25
 
