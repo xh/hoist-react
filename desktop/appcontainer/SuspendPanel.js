@@ -20,7 +20,7 @@ export const suspendPanel = hoistCmp.factory({
     displayName: 'SuspendPanel',
 
     render() {
-        const message = XH.suspendData?.message
+        const message = XH.suspendData?.message;
         return viewport({
             alignItems: 'center',
             justifyContent: 'center',
