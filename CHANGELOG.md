@@ -5,12 +5,14 @@
 ### 🎁 New Features
 
 * `XH.showFeedbackDialog()` now takes an optional message to pre-populate within the dialog.
+* Ability to force suspension of individual clients from admin.  (requires Web Sockets to be
+enabled on server and client app).
 
 ## v46.0.0 - 2022-01-25
 
 ### 🎁 New Features
 
-* `ExceptionHandler` provides a collection of overwritable static properties, allowing you to set
+* `ExceptionHandler` provides a collection overridable static properties, allowing you to set
   app-wide default behaviour for exception handling.
 * `XH.handleException()` takes new `alertType` option to render error alerts via the familiar
   `dialog` or new `toast` UI.
