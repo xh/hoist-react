@@ -6,7 +6,7 @@
  */
 import {WebSocketModel} from '@xh/hoist/admin/tabs/server/websocket/WebSocketModel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler, frame, fragment, p, code} from '@xh/hoist/cmp/layout';
+import {filler, box, fragment, p} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {XH, creates, hoistCmp} from '@xh/hoist/core';
@@ -21,9 +21,7 @@ export const webSocketPanel = hoistCmp.factory({
     model: creates(WebSocketModel),
 
     render({model}) {
-        if (XH.environmentService.get('webSocketsEnabled') === false) {
-            return notPresentMessage();
-        }
+        if (!XH.webSocketService.enabled) return notPresentMessage();
         return panel({
             tbar: [
                 button({
@@ -50,18 +48,15 @@ export const webSocketPanel = hoistCmp.factory({
 
 
 const notPresentMessage = hoistCmp.factory(
-    () => frame({
+    () => box({
         height: 200,
+        width: 1000,
         items: [
             errorMessage({
                 error: {
                     message: fragment(
                         p('WebSockets are not enabled in this application.'),
-                        p(
-                            'You may need to set ',
-                            code('hoist.webSocketsEnabled = true'),
-                            ' in your configuration.'
-                        )
+                        p('Please ensure that you have enabled web sockets in your server and client application configuration.')
                     )
                 }
             })
