@@ -27,18 +27,21 @@ export const suspendPanel = hoistCmp.factory({
             flexDirection: 'column',
             className: 'xh-suspend-viewport',
             item: panel({
-                title: `Restart ${XH.clientAppName}`,
+                title: `Reload Required`,
                 icon: Icon.refresh(),
                 className: 'xh-suspend-panel',
-                item: div(
-                    p({item: message, omit: !message}),
-                    p('Your application requires a restart.'),
-                    p('Please click restart to continue.')
-                ),
+                item: div({
+                    className: 'xh-suspend-panel__inner',
+                    items: [
+                        p({item: message, omit: !message}),
+                        p(`${XH.clientAppName} must be reloaded to continue.`)
+                    ]
+                }),
                 bbar: [
                     filler(),
                     button({
-                        text: 'Restart now',
+                        text: 'Reload now',
+                        icon: Icon.refresh(),
                         intent: 'primary',
                         minimal: false,
                         autoFocus: true,

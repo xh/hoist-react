@@ -24,7 +24,7 @@ export const suspendPanel = hoistCmp.factory({
         const message = XH.suspendData?.message;
         return panel({
             className: 'xh-suspend-panel',
-            title: `Restart ${XH.clientAppName}`,
+            title: `Reload Required`,
             icon: Icon.refresh(),
             items: [
                 vframe({
@@ -34,14 +34,15 @@ export const suspendPanel = hoistCmp.factory({
                             className: 'xh-suspend-panel__text-container',
                             items: [
                                 p({item: message, omit: !message}),
-                                p('Your application requires a restart.'),
-                                p('Please tap below to continue.')
+                                p(`${XH.clientAppName} must be reloaded to continue.`)
                             ]
                         }),
                         div({
                             className: 'xh-suspend-panel__button-container',
                             item: button({
-                                text: 'Restart Now',
+                                text: 'Reload Now',
+                                icon: Icon.refresh(),
+                                intent: 'primary',
                                 flex: 1,
                                 onClick: () => XH.reloadApp()
                             })

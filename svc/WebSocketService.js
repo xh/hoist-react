@@ -208,6 +208,7 @@ export class WebSocketService extends HoistService {
                     break;
                 case this.FORCE_APP_SUSPEND_TOPIC:
                     XH.suspendApp({reason: 'SERVER_FORCE', message: data});
+                    XH.track({category: 'App', message: 'App suspended via WebSocket'});
                     break;
             }
 

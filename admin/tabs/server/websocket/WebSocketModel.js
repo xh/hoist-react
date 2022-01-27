@@ -4,6 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {div, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
@@ -101,9 +102,12 @@ export class WebSocketModel extends HoistModel {
             icon: Icon.stopCircle(),
             confirmProps: {text: 'Force Suspend', icon: Icon.stopCircle(), intent: 'danger'},
             cancelProps: {autoFocus: true},
-            message: `Force suspend ${selectedRecords.length} client(s)?  Are you sure you want to do this?`,
+            message: div(
+                p(`This action will force ${selectedRecords.length} connected client(s) into suspended mode, halting all background refreshes and other activity, masking the UI, and requiring users to reload the app to continue.`),
+                p('If desired, you can enter a message below to display within the suspended app.')
+            ),
             input: {
-                item: textInput({placeholder: 'Optional Message'}),
+                item: textInput({placeholder: 'User-facing message (optional)'}),
                 initialValue: null
             }
         });
@@ -118,7 +122,12 @@ export class WebSocketModel extends HoistModel {
                         message
                     }
                 }));
-            await Promise.allSettled(tasks);
+
+            await Promise.allSettled(tasks).track({
+                category: 'Audit',
+                message: 'Suspended clients via WebSocket',
+                data: {users: selectedRecords.map(it => it.data.user).sort()}
+            });
         }
     }
 }

@@ -5,17 +5,17 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
-.xh-suspend-panel {
-  flex: 0 0 auto !important;
-  border: var(--xh-border-solid);
-  width: 410px;
-
-  p {
-    padding: var(--xh-pad-px) var(--xh-pad-double-px);
-  }
-}
-
 .xh-viewport.xh-suspend-viewport {
   background-color: var(--xh-bg);
   background-image: none;
+
+  .xh-suspend-panel {
+    flex: none !important;
+    border: var(--xh-border-solid);
+    width: 410px;
+
+    &__inner {
+      padding: var(--xh-pad-double-px);
+    }
+  }
 }

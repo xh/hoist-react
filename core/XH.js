@@ -815,7 +815,7 @@ class XHClass extends HoistBase {
      *
      * Suspension is a terminal state, requiring user to reload the app.
      * Used for idling, forced version upgrades, and ad-hoc killing of problematic clients.
-     * @private - not intended for application use.
+     * @package - not intended for application use.
      */
     suspendApp(suspendData) {
         if (XH.appState === AppState.SUSPENDED) return;
