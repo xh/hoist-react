@@ -34,7 +34,7 @@ export const suspendPanel = hoistCmp.factory({
                             className: 'xh-suspend-panel__text-container',
                             items: [
                                 p({item: message, omit: !message}),
-                                p(message),
+                                p('Your application requires a restart.'),
                                 p('Please tap below to continue.')
                             ]
                         }),
