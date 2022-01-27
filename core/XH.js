@@ -189,6 +189,7 @@ class XHClass extends HoistBase {
     //---------------------------
     // Other State
     //---------------------------
+    suspendData = null;
     accessDeniedMessage = null;
     exceptionHandler = new ExceptionHandler();
 
@@ -810,12 +811,16 @@ class XHClass extends HoistBase {
     }
 
     /**
-     * Called when Hoist Admin forces app instance to reload via websockets.
+     * Suspend all app activity and display, including timers and web sockets.
+     *
+     * Suspension is a terminal state, requiring user to reload the app.
+     * Used for idling, forced version upgrades, and ad-hoc killing of problematic clients.
      * @private - not intended for application use.
      */
-    forceAppRestart() {
-        if (XH.appState === AppState.FORCE_RESTART) return;
-        XH.setAppState(AppState.FORCE_RESTART);
+    suspendApp(suspendData) {
+        if (XH.appState === AppState.SUSPENDED) return;
+        this.suspendData = suspendData;
+        XH.setAppState(AppState.SUSPENDED);
         XH.webSocketService.shutdown();
         Timer.cancelAll();
     }

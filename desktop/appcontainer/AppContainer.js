@@ -9,7 +9,7 @@ import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {AppState, elem, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {errorBoundary} from '@xh/hoist/core/impl/ErrorBoundary';
 import {changelogDialog} from '@xh/hoist/desktop/appcontainer/ChangelogDialog';
-import {forceRestartPanel} from '@xh/hoist/desktop/appcontainer/ForceRestartPanel';
+import {suspendPanel} from '@xh/hoist/desktop/appcontainer/SuspendPanel';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
 import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserDialog';
@@ -100,9 +100,7 @@ function viewForState() {
         case S.RUNNING:
             return appContainerView();
         case S.SUSPENDED:
-            return idlePanelHost();
-        case S.FORCE_RESTART:
-            return forceRestartPanelHost();
+            return suspendedView();
         case S.LOAD_FAILED:
         default:
             return null;
@@ -140,6 +138,17 @@ const appContainerView = hoistCmp.factory({
         return ret;
     }
 });
+
+const suspendedView = hoistCmp.factory({
+    render() {
+        if (XH.suspendData?.reason === 'IDLE') {
+            const content = XH.appSpec.idlePanel ?? idlePanel;
+            return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
+        }
+        return suspendPanel();
+    }
+});
+
 
 const bannerList = hoistCmp.factory({
     render({model}) {
@@ -180,19 +189,3 @@ function globalHotKeys(model) {
     }
     return ret;
 }
-
-const idlePanelHost = hoistCmp.factory({
-    displayName: 'IdlePanel',
-    render() {
-        const content = XH.appSpec.idlePanel ?? idlePanel;
-        return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
-    }
-});
-
-const forceRestartPanelHost = hoistCmp.factory({
-    displayName: 'ForceRestartPanel',
-    render() {
-        const content = XH.appSpec.forceRestartPanel ?? forceRestartPanel;
-        return elementFromContent(content, {onRestart: () => XH.reloadApp()});
-    }
-});

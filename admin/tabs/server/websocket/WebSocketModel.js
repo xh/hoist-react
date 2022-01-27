@@ -117,22 +117,22 @@ export class WebSocketModel extends HoistModel {
         });
     }
 
-    async forceRestartOnSelectedAsync() {
+    async forceSuspendOnSelectedAsync() {
         const {selectedRecord} = this.gridModel;
         if (!selectedRecord) return;
 
         await XH.confirm({
-            title: 'Force restart',
-            icon: Icon.refresh(),
-            confirmProps: {text: 'Force Restart'},
-            message: `Force app reload for user ${selectedRecord.data.authUser}`
+            title: 'Force suspend',
+            icon: Icon.stopCircle(),
+            confirmProps: {text: 'Force Suspend'},
+            message: `Force suspend for user ${selectedRecord.data.authUser}?`
         });
 
         XH.fetchJson({
             url: 'webSocketAdmin/pushToChannel',
             params: {
                 channelKey: selectedRecord.data.key,
-                topic: XH.webSocketService.FORCE_APP_RESTART_TOPIC,
+                topic: XH.webSocketService.FORCE_APP_SUSPEND_TOPIC,
                 message: null
             }
         });

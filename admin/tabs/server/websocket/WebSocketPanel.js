@@ -31,11 +31,11 @@ export const webSocketPanel = hoistCmp.factory({
                 }),
                 toolbarSep(),
                 button({
-                    text: 'Force app restart',
-                    icon: Icon.refresh(),
+                    text: 'Force suspend',
+                    icon: Icon.stopCircle(),
                     intent: 'danger',
                     disabled: !model.gridModel.selectedRecord,
-                    onClick: () => model.forceRestartOnSelectedAsync()
+                    onClick: () => model.forceSuspendOnSelectedAsync()
                 }),
                 filler(),
                 relativeTimestamp({bind: 'lastRefresh'}),

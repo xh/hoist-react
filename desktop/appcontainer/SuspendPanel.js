@@ -10,29 +10,29 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
-import './ForceRestartPanel.scss';
+import './SuspendPanel.scss';
 
 /**
- * Default panel to display when the app is required to reload.
- * This display can be overridden by applications - {@see AppSpec.forceRestartPanel}. *
+ * Generic Panel to display when the app is suspended.
  * @private
  */
-export const forceRestartPanel = hoistCmp.factory({
-    displayName: 'ForceRestartPanel',
+export const suspendPanel = hoistCmp.factory({
+    displayName: 'SuspendPanel',
 
-    render({onRestart}) {
+    render() {
+        const message = XH.suspendData?.message ?? 'Your application requires a restart.';
         return viewport({
             alignItems: 'center',
             justifyContent: 'center',
             flexDirection: 'column',
-            className: 'xh-force-restart-viewport',
+            className: 'xh-suspend-viewport',
             item: panel({
                 title: `Restart ${XH.clientAppName}`,
                 icon: Icon.refresh(),
-                className: 'xh-force-restart-panel',
+                className: 'xh-suspend-panel',
                 item: div(
-                    p('A critical update requiring an app restart has been released.'),
-                    p('Please restart your app to continue.')
+                    p(message),
+                    p('Please click restart to continue.')
                 ),
                 bbar: [
                     filler(),
@@ -41,7 +41,7 @@ export const forceRestartPanel = hoistCmp.factory({
                         intent: 'primary',
                         minimal: false,
                         autoFocus: true,
-                        onClick: onRestart
+                        onClick: () => XH.reloadApp()
                     })
                 ]
             })
