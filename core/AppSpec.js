@@ -67,7 +67,6 @@ export class AppSpec {
         trackAppLoad = true,
         webSocketsEnabled = false,
         idlePanel = null,
-        forceRestartPanel= null,
         loginMessage = null,
         lockoutMessage = null,
         showBrowserContextMenu = false,
@@ -101,7 +100,6 @@ export class AppSpec {
 
         this.webSocketsEnabled = webSocketsEnabled;
         this.idlePanel = idlePanel;
-        this.forceRestartPanel = forceRestartPanel;
         this.loginMessage = loginMessage;
         this.lockoutMessage = lockoutMessage;
         this.showBrowserContextMenu = showBrowserContextMenu;
