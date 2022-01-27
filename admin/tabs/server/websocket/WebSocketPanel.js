@@ -21,7 +21,7 @@ export const webSocketPanel = hoistCmp.factory({
     model: creates(WebSocketModel),
 
     render({model}) {
-        if (XH.environmentService.get('webSocketsEnabled') === true) {
+        if (XH.environmentService.get('webSocketsEnabled') === false) {
             return notPresentMessage();
         }
         return panel({
