@@ -67,7 +67,7 @@ export class WebSocketService extends HoistService {
     async initAsync() {
         if (!this.enabled) return;
 
-        if (XH.environmentService.get('webSocketsEnabled') === true) {
+        if (XH.environmentService.get('webSocketsEnabled') === false) {
             console.error(
                 'WebSockets have been enabled on this client app, but are disabled on the server. ' +
                 'Please adjust your server-side configuration to use WebSockets.'
