@@ -207,9 +207,8 @@ export class WebSocketService extends HoistService {
                     this.installChannelKey(data.channelKey);
                     break;
                 case this.FORCE_APP_SUSPEND_TOPIC:
-                    console.log(data);
                     XH.suspendApp({reason: 'SERVER_FORCE', message: data});
-                    return;
+                    break;
             }
 
             this.notifySubscribers(msg);
