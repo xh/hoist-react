@@ -6,7 +6,7 @@
  */
 
 import {FieldFilter} from '@xh/hoist/data';
-import {fieldOption, fieldFilterOption, msgOption} from './Option';
+import {fieldOption, fieldFilterOption, msgOption, minimalFieldOption} from './Option';
 import {fmtNumber} from '@xh/hoist/format';
 import {
     escapeRegExp,
@@ -30,6 +30,7 @@ import {
  */
 export class QueryEngine {
 
+    /** @member {FilterChooserModel} */
     model;
 
     constructor(model) {
@@ -67,10 +68,17 @@ export class QueryEngine {
     // 1) No query -- return all field suggestions if enabled
     //------------------------------------------------------------------------
     whenNoQuery() {
-        const {suggestFieldsWhenEmpty, sortFieldSuggestions} = this.model;
+        const {suggestFieldsWhenEmpty, sortFieldSuggestions, introHelpText} = this.model;
         if (!suggestFieldsWhenEmpty) return [];
-        const ret = this.getFieldOpts();
-        return sortFieldSuggestions ? this.sort(ret) : ret;
+
+        let ret = this.getMinimalFieldOpts();
+        if (sortFieldSuggestions) ret = this.sort(ret);
+
+        if (introHelpText) {
+            ret.unshift(msgOption(introHelpText));
+        }
+
+        return ret;
     }
 
     //------------------------------------------------------------------------
@@ -199,9 +207,12 @@ export class QueryEngine {
             .filter(s => !queryStr || caselessStartsWith(s.displayName, queryStr))
             .map(s => fieldOption({
                 fieldSpec: s,
-                inclPrefix: !!queryStr,
                 isExact: caselessEquals(s.displayName, queryStr)
             }));
+    }
+
+    getMinimalFieldOpts() {
+        return this.fieldSpecs.map(fieldSpec => minimalFieldOption({fieldSpec}));
     }
 
     getValueMatchesForField(op, queryStr, spec) {

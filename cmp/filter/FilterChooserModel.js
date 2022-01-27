@@ -8,7 +8,7 @@ import {HoistModel, managed, PersistenceProvider, TaskObserver, XH} from '@xh/ho
 import {combineValueFilters, FieldFilter, parseFilter, withFilterByTypes} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     cloneDeep,
@@ -61,6 +61,9 @@ export class FilterChooserModel extends HoistModel {
     /** @member {number} */
     maxResults;
 
+    /** @member {(string|ReactNode)} */
+    introHelpText;
+
     /** @member {PersistenceProvider} */
     @managed provider;
     persistValue = false;
@@ -108,6 +111,8 @@ export class FilterChooserModel extends HoistModel {
      *      control. Limits the performance impact of rendering large filters.
      * @param {number} [c.maxResults] - maximum number of dropdown options to show before
      *      truncating.
+     * @param {(string|ReactNode)} introHelpText - blurb displayed above field suggestions when the
+     *      control is focused but user has yet to enter a query, or null to suppress default.
      * @param {FilterChooserPersistOptions} [c.persistWith] - options governing persistence.
      */
     constructor({
@@ -122,6 +127,7 @@ export class FilterChooserModel extends HoistModel {
         maxTags = 100,
         maxResults = 50,
         persistWith,
+        introHelpText,
         ...rest
     } = {}) {
         super();
@@ -134,6 +140,7 @@ export class FilterChooserModel extends HoistModel {
         this.sortFieldSuggestions = sortFieldSuggestions;
         this.maxTags = maxTags;
         this.maxResults = maxResults;
+        this.introHelpText = withDefault(introHelpText, this.getDefaultIntroHelpText());
         this.queryEngine = new QueryEngine(this);
 
         let value = isFunction(initialValue) ? initialValue() : initialValue,
@@ -443,6 +450,10 @@ export class FilterChooserModel extends HoistModel {
 
         console.error('Invalid filter for FilterChooser', f);
         return false;
+    }
+
+    getDefaultIntroHelpText() {
+        return 'Select or enter a field name (below) or begin typing to match available field values.';
     }
 }
 

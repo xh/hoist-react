@@ -13,18 +13,31 @@ import {isNil} from 'lodash';
 // Options are simple objects to support Select API.
 //----------------------------------------------------------
 /**
- * Create an option representing a field suggestion
+ * Create an option representing a detailed field suggestion
  * @return {FilterChooserOption}
  */
-export function fieldOption({fieldSpec, isExact = false, inclPrefix = true}) {
+export function fieldOption({fieldSpec, isExact = false}) {
     const {displayName} = fieldSpec;
     return {
         type: 'field',
         value: JSON.stringify({displayName}),
         label: displayName,
         isExact,
+        fieldSpec
+    };
+}
 
-        inclPrefix,
+/**
+ * Create an option representing a minimal field suggestion
+ * @return {FilterChooserOption}
+ */
+export function minimalFieldOption({fieldSpec}) {
+    const {displayName} = fieldSpec;
+    return {
+        type: 'minimalField',
+        value: JSON.stringify({displayName}),
+        label: displayName,
+        isExact: false,
         fieldSpec
     };
 }

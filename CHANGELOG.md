@@ -1,6 +1,12 @@
 # Changelog
 
-## v46.0.0-SNAPSHOT - unreleased
+## v47.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* `XH.showFeedbackDialog()` now takes an optional message to pre-populate within the dialog.
+
+## v46.0.0 - 2022-01-25
 
 ### 🎁 New Features
 
@@ -15,6 +21,8 @@
   debounce, avoiding rapid cycling when e.g. tabbing between cells.
 * `NumberInput` now supports a new `scaleFactor` prop which will be applied when converting between
   the internal and external values.
+* `FilterChooser` now displays more minimal field name suggestions when first focused, as well as a
+  new, configurable usage hint (`FilterChooserModel.introHelpText`) above those suggestions.
 
 ### 💥 Breaking Changes
 
@@ -31,6 +39,12 @@
   returned`YYYYMMDD`.
 * The `stringifyErrorSafely` function has been moved from the `@xh/hoist/exception` package to a
   public method on `XH.exceptionHandler`. (No/little impact expected on app code.)
+
+### 🐞 Bug Fixes
+
+* Fix to incorrect viewport orientation reporting due to laggy mobile resize events and DOM APIs.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v45.0.2...v46.0.0)
 
 ## v45.0.2 - 2022-01-13
 
