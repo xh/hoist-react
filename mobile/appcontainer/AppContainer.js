@@ -25,6 +25,7 @@ import {idlePanel} from './IdlePanel';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
+import {suspendPanel} from './SuspendPanel';
 import {messageSource} from './MessageSource';
 import {optionsDialog} from './OptionsDialog';
 import {toastSource} from './ToastSource';
@@ -87,7 +88,7 @@ function viewForState() {
         case S.RUNNING:
             return appContainerView();
         case S.SUSPENDED:
-            return idlePanelHost();
+            return suspendedView();
         case S.LOAD_FAILED:
         default:
             return null;
@@ -127,10 +128,14 @@ const bannerList = hoistCmp.factory({
     }
 });
 
-const idlePanelHost = hoistCmp.factory({
-    displayName: 'IdlePanel',
+
+const suspendedView = hoistCmp.factory({
     render() {
-        const content = XH.appSpec.idlePanel ?? idlePanel;
-        return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
+        if (XH.suspendData?.reason === 'IDLE') {
+            const content = XH.appSpec.idlePanel ?? idlePanel;
+            return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
+        }
+        return suspendPanel();
     }
 });
+

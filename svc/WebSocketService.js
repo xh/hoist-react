@@ -39,7 +39,7 @@ export class WebSocketService extends HoistService {
 
     HEARTBEAT_TOPIC = 'xhHeartbeat';
     REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
-    TEST_MSG_TOPIC = 'xhTestMessage';
+    FORCE_APP_SUSPEND_TOPIC = 'xhForceAppSuspend';
 
     /** @property {string} - unique channel assigned by server upon successful connection. */
     @observable channelKey = null;
@@ -206,8 +206,9 @@ export class WebSocketService extends HoistService {
                 case this.REG_SUCCESS_TOPIC:
                     this.installChannelKey(data.channelKey);
                     break;
-                case this.TEST_MSG_TOPIC:
-                    this.showTestMessageAlert(data);
+                case this.FORCE_APP_SUSPEND_TOPIC:
+                    XH.suspendApp({reason: 'SERVER_FORCE', message: data});
+                    XH.track({category: 'App', message: 'App suspended via WebSocket'});
                     break;
             }
 

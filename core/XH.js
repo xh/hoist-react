@@ -27,6 +27,7 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
+import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {checkMinVersion, getClientDeviceInfo, throwIf, withDebug} from '@xh/hoist/utils/js';
 import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
@@ -188,6 +189,7 @@ class XHClass extends HoistBase {
     //---------------------------
     // Other State
     //---------------------------
+    suspendData = null;
     accessDeniedMessage = null;
     exceptionHandler = new ExceptionHandler();
 
@@ -806,6 +808,21 @@ class XHClass extends HoistBase {
             this.setAppState(S.LOAD_FAILED);
             this.handleException(e, {requireReload: true});
         }
+    }
+
+    /**
+     * Suspend all app activity and display, including timers and web sockets.
+     *
+     * Suspension is a terminal state, requiring user to reload the app.
+     * Used for idling, forced version upgrades, and ad-hoc killing of problematic clients.
+     * @package - not intended for application use.
+     */
+    suspendApp(suspendData) {
+        if (XH.appState === AppState.SUSPENDED) return;
+        this.suspendData = suspendData;
+        XH.setAppState(AppState.SUSPENDED);
+        XH.webSocketService.shutdown();
+        Timer.cancelAll();
     }
 
     //------------------------

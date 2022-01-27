@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {AppState, HoistService, XH, managed} from '@xh/hoist/core';
+import {HoistService, XH, managed} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
 
@@ -55,14 +55,8 @@ export class IdleService extends HoistService {
     }
 
     checkInactivityTimeout() {
-        if (XH.appState === AppState.SUSPENDED) return;
-        if (olderThan(XH.lastActivityMs, this.timeout)) this.suspendApp();
-    }
-
-    suspendApp() {
-        if (XH.appState === AppState.SUSPENDED) return;
-        XH.setAppState(AppState.SUSPENDED);
-        XH.webSocketService.shutdown();
-        Timer.cancelAll();
+        if (olderThan(XH.lastActivityMs, this.timeout)) {
+            XH.suspendApp({reason: 'IDLE'});
+        }
     }
 }
