@@ -7,13 +7,13 @@
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
-import {required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isDisplayed} from '@xh/hoist/utils/js';
 import * as Col from '@xh/hoist/admin/columns';
+import {isEmpty} from 'lodash';
 import {createRef} from 'react';
 import * as WSCol from './WebSocketColumns';
 
@@ -37,12 +37,13 @@ export class WebSocketModel extends HoistModel {
         this.gridModel = new GridModel({
             emptyText: 'No clients connected.',
             enableExport: true,
+            selModel: 'multiple',
             store: {
                 idSpec: 'key',
                 processRawData: row => {
                     const authUser = row.authUser.username,
                         apparentUser = row.apparentUser.username,
-                        impersonating = authUser != apparentUser;
+                        impersonating = authUser !== apparentUser;
 
                     return {
                         ...row,
@@ -91,50 +92,33 @@ export class WebSocketModel extends HoistModel {
         this.lastRefresh = Date.now();
     }
 
-    async sendAlertToSelectedAsync() {
-        const {selectedRecord} = this.gridModel;
-        if (!selectedRecord) return;
+    async forceSuspendOnSelectedAsync() {
+        const {selectedRecords} = this.gridModel;
+        if (isEmpty(selectedRecords)) return;
 
         const message = await XH.prompt({
-            title: 'Send test alert',
-            icon: Icon.bullhorn(),
-            confirmProps: {text: 'Send'},
-            message: `Send an in-app alert to ${selectedRecord.data.authUser} with the text below.`,
-            input: {
-                item: textInput({autoFocus: true, selectOnFocus: true}),
-                initialValue: 'This is a test alert',
-                rules: [required]
-            }
-        });
-
-        XH.fetchJson({
-            url: 'webSocketAdmin/pushToChannel',
-            params: {
-                channelKey: selectedRecord.data.key,
-                topic: XH.webSocketService.TEST_MSG_TOPIC,
-                message
-            }
-        });
-    }
-
-    async forceSuspendOnSelectedAsync() {
-        const {selectedRecord} = this.gridModel;
-        if (!selectedRecord) return;
-
-        await XH.confirm({
             title: 'Force suspend',
             icon: Icon.stopCircle(),
-            confirmProps: {text: 'Force Suspend'},
-            message: `Force suspend for user ${selectedRecord.data.authUser}?`
-        });
-
-        XH.fetchJson({
-            url: 'webSocketAdmin/pushToChannel',
-            params: {
-                channelKey: selectedRecord.data.key,
-                topic: XH.webSocketService.FORCE_APP_SUSPEND_TOPIC,
-                message: null
+            confirmProps: {text: 'Force Suspend', icon: Icon.stopCircle(), intent: 'danger'},
+            cancelProps: {autoFocus: true},
+            message: `Force suspend ${selectedRecords.length} client(s)?  Are you sure you want to do this?`,
+            input: {
+                item: textInput({placeholder: 'Optional Message'}),
+                initialValue: null
             }
         });
+
+        if (message !== false) {
+            const tasks = selectedRecords
+                .map((rec) => XH.fetchJson({
+                    url: 'webSocketAdmin/pushToChannel',
+                    params: {
+                        channelKey: rec.data.key,
+                        topic: XH.webSocketService.FORCE_APP_SUSPEND_TOPIC,
+                        message
+                    }
+                }));
+            await Promise.allSettled(tasks);
+        }
     }
 }

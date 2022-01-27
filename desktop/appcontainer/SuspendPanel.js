@@ -20,7 +20,7 @@ export const suspendPanel = hoistCmp.factory({
     displayName: 'SuspendPanel',
 
     render() {
-        const message = XH.suspendData?.message ?? 'Your application requires a restart.';
+        const message = XH.suspendData?.message
         return viewport({
             alignItems: 'center',
             justifyContent: 'center',
@@ -31,7 +31,8 @@ export const suspendPanel = hoistCmp.factory({
                 icon: Icon.refresh(),
                 className: 'xh-suspend-panel',
                 item: div(
-                    p(message),
+                    p({item: message, omit: !message}),
+                    p('Your application requires a restart.'),
                     p('Please click restart to continue.')
                 ),
                 bbar: [
