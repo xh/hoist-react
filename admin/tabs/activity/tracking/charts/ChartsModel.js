@@ -102,8 +102,12 @@ export class ChartsModel extends HoistModel {
         return this.parentModel.dimensions;
     }
 
-    onLinked() {
+    constructor() {
+        super();
         makeObservable(this);
+    }
+
+    onLinked() {
         this.addReaction({
             track: () => [this.data, this.metric],
             run: () => this.loadChart()

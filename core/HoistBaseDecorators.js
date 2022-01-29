@@ -14,8 +14,6 @@ import {throwIf} from '@xh/hoist/utils/js';
  * Decorator to make a property "managed". Managed properties are designed to hold objects that
  * are created by the referencing object and that implement a `destroy()` method.
  *
- * In a HoistModel, this decorator is also used to indicate related models that should be linked
- * with this model to the component hierarchy.
  * @see HoistBase.markManaged
  */
 export function managed(target, property, descriptor) {

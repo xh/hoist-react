@@ -48,7 +48,8 @@ class LocalModel extends HoistModel {
     @action refreshStart()              {this.refreshProgress = 0}
     @action refreshEnd()                {this.refreshProgress = null}
 
-    onLinked() {
+    constructor() {
+        super();
         makeObservable(this);
     }
 

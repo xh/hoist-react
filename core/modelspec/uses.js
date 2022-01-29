@@ -41,9 +41,10 @@ export function uses(
         fromContext = true,
         publishMode = ModelPublishMode.DEFAULT,
         createFromConfig = true,
-        createDefault = false
+        createDefault = false,
+        link = selector !== '*'
     } = {}) {
-    return new UsesSpec(selector, fromContext, publishMode, createFromConfig, createDefault);
+    return new UsesSpec(selector, fromContext, publishMode, createFromConfig, createDefault, link);
 }
 
 
@@ -53,8 +54,9 @@ export class UsesSpec extends ModelSpec {
     selector;
     createFromConfig;
     createDefault;
+    link;
 
-    constructor(selector, fromContext, publishMode, createFromConfig, createDefault) {
+    constructor(selector, fromContext, publishMode, createFromConfig, createDefault, link) {
         super(fromContext, publishMode);
         throwIf(
             !isFunction(selector) && selector !== '*',
@@ -64,6 +66,7 @@ export class UsesSpec extends ModelSpec {
         this.selector = selector;
         this.createFromConfig = createFromConfig;
         this.createDefault = createDefault;
+        this.link = link;
     }
 }
 

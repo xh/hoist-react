@@ -16,9 +16,12 @@ export class ActivityDetailModel extends HoistModel {
 
     @observable formattedData;
 
-    onLinked() {
+    constructor() {
+        super();
         makeObservable(this);
+    }
 
+    onLinked() {
         const hidden = true,
             filterable = true;
 

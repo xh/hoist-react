@@ -5,6 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {each} from 'lodash';
+import {makeObservable} from 'mobx';
 import {throwIf} from '../utils/js';
 import {HoistBase} from './HoistBase';
 import {managed} from './HoistBaseDecorators';
@@ -22,20 +23,20 @@ import {observable, computed, action, comparer} from '@xh/hoist/mobx';
  * prop to the component's `render()` function, where the model's properties can be read/rendered
  * and any imperative APIs wired to buttons, callbacks, and other handlers.
  *
- * Models in Hoist are created in a tree-like hierarchy that is closely associated with the React
- * Component Tree.  The following mechanisms support this important relationship:
- *      - The `componentProps` observable property.  This property will be populated for models
- *      directly associated with an "owning" component (i.e. the model was created via
- *      the `creates()` directive in HoistComponent, or the `useLocalModel()` hook.)
- *      - The @lookup decorator. Use this to inject references to other HoistModels which are
- *      "ancestors" to this model in the component hierarchy.
- *      - The @managed decorator.  Use this to indicated  submodels that should be linked to
- *      the component hierarchy together with this model. These models can therefore perform lookups
- *      and will be available for (limited) lookup by other components and models in the hierarchy.
- *      - The onLinked() lifecycle method.  This method will be called when this model (or the model
- *      managing it) has been fully linked to the component hierarchy. Use this method for any work
- *      requiring the availability of parent models or `componentProps`.  Note that this method is
- *      called during the initial rendering of the component creating this model.
+ * Models in Hoist store the rendered state of the app and are closely associated with the React
+ * Component tree.  In fact, most models are linked directly in a one-to-one relationship with a
+ * specific component that renders them -- these models are considered "linked", and play a
+ * special role in the framework.  In particular, linked models:
+ *      - are specified by the `creates` and `hosts` directives to hoist component, as well as the
+ *      `useLocalModel` hook.
+ *      - support an observable `componentProps` property which can be used to observe the props of
+ *      their rendered component.
+ *      - support a `lookupModel` method and `@lookup` decorator that can be used to acquire references
+ *      to "ancestors" to this model in the component hierarchy.
+ *      - support an `onLinked` lifecycle method, called when the model has been fully linked to
+ *      the component hierarchy. Use this method for any work requiring the availability of lookups
+ *      or `componentProps`.  Note that this method is called during the initial rendering
+ *      of the component creating this model.
  *
  * It is very common to decorate properties on models with `@observable` and related field-level
  * annotations. This enables automatic, MobX-powered re-rendering of components when these model
@@ -65,6 +66,7 @@ export class HoistModel extends HoistBase {
 
     constructor() {
         super();
+        makeObservable(this);
         if (this.doLoadAsync !== HoistModel.prototype.doLoadAsync) {
             this.loadSupport = new LoadSupport(this);
         }
@@ -126,12 +128,13 @@ export class HoistModel extends HoistBase {
 
 
     //---------------------------
-    // Component/Lookup related support
+    // Linked model support
     //---------------------------
     /**
      * React props on component linked to this model.
      *
-     * Only available for models created by creates() directive, or useLocalModel().
+     * Only available for linked models.
+     *
      * Observability is based on a shallow computation for each prop (i.e. a reference
      * change in any particular prop. will trigger observables to be notified.).
      */
@@ -141,18 +144,21 @@ export class HoistModel extends HoistBase {
     }
 
     /**
-     * Called when this model (or its managing model) has been linked to the component hierarchy.
+     * Called when this model has been linked to the component hierarchy.
      *
-     * This method will be called when this model (or the model managing it) has been fully linked
-     * to the component hierarchy. Use this method for any work requiring the availability of
-     * parent models or `componentProps`.  Note that this method is called during the initial
-     * rendering of the component creating this model.
+     * Only available for linked models.
+     *
+     * This method will be called when this model has been fully linked to the component
+     * hierarchy. Use this method for any work requiring the availability of lookup models or
+     * componentProps.  Note that this method is called during the initial rendering of the
+     * linked component
      */
     onLinked() {}
 
     /**
      * Lookup an ancestor model in the context hierarchy.
-     * For use by "owned" models only.
+     *
+     * Only available for linked models.
      *
      * @param {ModelSelector} selector - type of model to lookup.
      * @returns {HoistModel} - model, or null if no matching model found.
@@ -171,48 +177,17 @@ export class HoistModel extends HoistBase {
     }
 
     /** @package **/
-    link(modelLookup) {
-        if (this._modelLookup) return;
-
-        this.doLinkRecursive(modelLookup);
-        this.triggerOnLinkedRecursive();
-    }
-
-    //----------------
-    // Implementation
-    //----------------
-    /** @private */
-    doLinkRecursive(modelLookup) {
-
-        // Link self and inject parent models
+    @action
+    doLink(modelLookup) {
+        // But lookup and
+        if (!this._modelLookup) return;
         this._modelLookup = modelLookup;
         each(this._xhInjectedParentProperties, (selector, name) => {
             this[name] = modelLookup.lookupModel(selector);
         });
 
-        // Link sub models
-        this.allManagedModels.forEach(m => m.doLinkRecursive(modelLookup));
+        this.onLinked?.();
     }
-
-    /** @private */
-    triggerOnLinkedRecursive() {
-        this.onLinked();
-        this.allManagedModels.forEach(m => m.triggerOnLinkedRecursive());
-    }
-
-    /** @private */
-    get allManagedModels() {
-        return this.allManagedInstances.filter(v => v.isHoistModel);
-    }
-
-    markManaged(obj) {
-        // Catch a "late" managed model that needs to be manually linked
-        if (obj.isHoistModel && this._modelLookup) {
-            obj.link(this._modelLookup);
-        }
-        return super.markManaged(obj);
-    }
-
 }
 
 

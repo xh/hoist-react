@@ -213,12 +213,12 @@ function wrapWithPublishedModel(render, spec, displayName) {
 function useResolvedModel(spec, props, modelLookup, displayName) {
     // fixed cache here creates the "immutable" model behavior in hoist components
     // (Need to force full remount with 'key' prop to resolve any new model)
-    const [{model, isOwned, fromContext}] = useState(() => (
+    const [{model, isOwned, isLinked, fromContext}] = useState(() => (
         spec instanceof CreatesSpec ? createModel(spec) : lookupModel(spec, props, modelLookup, displayName)
     ));
 
-    // register and load owned model
-    useOwnedModelLinker(isOwned ? model : null, {modelLookup, props});
+    useOwnedModel(isOwned ? model : null);
+    if (isLinked) model.doLink(modelLookup, props);
 
     // wire any modelRef
     useOnMount(() => {
@@ -236,16 +236,16 @@ function useResolvedModel(spec, props, modelLookup, displayName) {
 }
 
 function createModel(spec) {
-    return {model: spec.createFn(), isOwned: true, fromContext: false};
+    return {model: spec.createFn(), isOwned: true, isLinked: true, fromContext: false};
 }
 
 function lookupModel(spec, props, modelLookup, displayName) {
     const {model} = props,
-        {selector} = spec;
+        {selector, link} = spec;
 
     // 1) props - config
     if (model && isPlainObject(model) && spec.createFromConfig) {
-        return {model: new selector(model), isOwned: true, fromContext: false};
+        return {model: new selector(model), isOwned: true, isLinked: true, fromContext: false};
     }
 
     // 2) props - instance
@@ -253,20 +253,20 @@ function lookupModel(spec, props, modelLookup, displayName) {
         throwIf(!matchesSelector(model, selector, true),
             `Incorrect model passed to '${displayName}'. Expected: ${formatSelector(selector)} Received: ${model.constructor.name}`
         );
-        return {model, isOwned: false, fromContext: false};
+        return {model, isOwned: false, isLinked: link, fromContext: false};
     }
 
     // 3) context
     if (modelLookup && spec.fromContext) {
         const contextModel = modelLookup.lookupModel(selector);
-        if (contextModel) return {model: contextModel, isOwned: false, fromContext: true};
+        if (contextModel) return {model: contextModel, isOwned: false, isLinked: link, fromContext: true};
     }
 
     // 4) default create
     const create = spec.createDefault;
     if (create) {
         const model = (isFunction(create) ? create() : new selector());
-        return {model, isOwned: true, fromContext: false};
+        return {model, isOwned: true, isLinked: true, fromContext: false};
     }
 
     // 5) No model found
@@ -275,7 +275,7 @@ function lookupModel(spec, props, modelLookup, displayName) {
     if (displayName !== 'FormField') {
         console.debug(`No model found for component ${displayName}.`, spec);
     }
-    return {model: null, isOwned: false, fromContext: false};
+    return {model: null, isOwned: false, isLinked: false, fromContext: false};
 }
 
 //--------------------------

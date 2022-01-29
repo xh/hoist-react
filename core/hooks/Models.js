@@ -6,7 +6,7 @@
  */
 import {useContext, useState} from 'react';
 import {ModelLookupContext} from '../impl/ModelLookup';
-import {useOwnedModelLinker} from '../impl/UseOwnedModelLinker';
+import {useOwnedModelLinker} from '../impl/ModelLinker';
 
 /**
  * Hook to allow a component to access a HoistModel provided in context by an ancestor component.
