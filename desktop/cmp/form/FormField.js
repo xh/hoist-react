@@ -71,12 +71,13 @@ export const [FormField, formField] = hoistCmp.withFactory({
                     className: 'xh-form-field-required-indicator'
                 }) : null;
 
-        // Child related props
+        // Get spec'ed child -- may be null for fields that are always read-only
         const child = getValidChild(children),
             [stableId] = useState(XH.genId()),
-            childId = child.props.id || stableId,
-            childIsSizeable = child.type?.hasLayoutSupport || false,
-            childCssName = `xh-form-field-${kebabCase(getReactElementName(child))}`;
+            childId = child?.props.id ?? stableId,
+            childWidth = child?.props.width,
+            childIsSizeable = child?.type?.hasLayoutSupport ?? false,
+            childElementName = child ? getReactElementName(child) : null;
 
         // Display related props
         const inline = defaultProp('inline', props, formContext, false),
@@ -92,7 +93,8 @@ export const [FormField, formField] = hoistCmp.withFactory({
             readonlyRenderer = defaultProp('readonlyRenderer', props, formContext, defaultReadonlyRenderer);
 
         // Styles
-        const classes = [childCssName];
+        const classes = [];
+        if (childElementName) classes.push(`xh-form-field-${kebabCase(childElementName)}`);
         if (isRequired) classes.push('xh-form-field-required');
         if (inline) classes.push('xh-form-field-inline');
         if (minimal) classes.push('xh-form-field-minimal');
@@ -100,8 +102,8 @@ export const [FormField, formField] = hoistCmp.withFactory({
         if (disabled) classes.push('xh-form-field-disabled');
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
-
-        let childEl = readonly ?
+        // generate actual element child to render
+        let childEl =  !child || readonly ?
             readonlyChild({model, readonlyRenderer}) :
             editableChild({
                 model,
@@ -118,7 +120,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
             childEl = tooltip({
                 target: childEl,
                 targetClassName: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
-                targetTagName: !blockChildren.includes(getReactElementName(child)) || child.props.width ? 'span' : 'div',
+                targetTagName: !blockChildren.includes(childElementName) || childWidth ? 'span' : 'div',
                 position: tooltipPosition,
                 boundary: tooltipBoundary,
                 disabled: !displayNotValid,
@@ -306,9 +308,19 @@ const editableChild = hoistCmp.factory({
 const blockChildren = ['CodeInput', 'JsonInput', 'Select', 'TextInput'];
 
 function getValidChild(children) {
+    const count = Children.count(children);
+    if (count === 0) return null;
+    if (count > 1) {
+        throw XH.exception('Add a single HoistInput child to FormField, or no children and a readonlyRenderer.');
+    }
+
     const child = Children.only(children);
-    throwIf(!child, 'FormField must have a single child.');
-    throwIf(child.props.bind || child.props.model, 'Child Inputs should not specify "bind" or "model" props when used with FormField');
+    throwIf(
+        child.props.bind || child.props.model,
+        'Child of FormField should not specify "bind" or "model" props. These props will ' +
+        'will be set by the FormField to bind it appropriately.'
+    );
+
     return child;
 }
 
