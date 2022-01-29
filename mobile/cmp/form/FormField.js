@@ -215,7 +215,7 @@ const editableChild = hoistCmp.factory({
             }
         }
 
-        if (propTypes.commitOnChange && !isUndefined(commitOnChange)) {
+        if (propTypes?.commitOnChange && !isUndefined(commitOnChange)) {
             overrides.commitOnChange = commitOnChange;
         }
 

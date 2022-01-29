@@ -291,11 +291,11 @@ const editableChild = hoistCmp.factory({
             }
         }
 
-        if (displayNotValid && propTypes.leftIcon && leftErrorIcon) {
+        if (displayNotValid && propTypes?.leftIcon && leftErrorIcon) {
             overrides.leftIcon = Icon.warningCircle();
         }
 
-        if (propTypes.commitOnChange && !isUndefined(commitOnChange)) {
+        if (propTypes?.commitOnChange && !isUndefined(commitOnChange)) {
             overrides.commitOnChange = commitOnChange;
         }
         return cloneElement(child, overrides);
