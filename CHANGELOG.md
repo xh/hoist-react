@@ -8,6 +8,9 @@
 * Admins can now force suspension of individual client apps from the Server > WebSockets tab.
   Intended to e.g. force an app to stop refreshing an expensive query or polling an endpoint removed
   in a new release. Requires websockets to be enabled on both server and client.
+* `FormField` no longer need to specify a child input, and will simply render their readonly version
+   if no child is specified.  This simplifies the common use-case of fields/forms that are always
+   readonly.
 
 ## v46.0.0 - 2022-01-25
 
