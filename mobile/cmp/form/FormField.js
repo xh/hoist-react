@@ -20,19 +20,23 @@ import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import './FormField.scss';
 
 /**
- * Standardised wrapper around a HoistInput Component. FormField provides consistent layout,
- * labelling, and optional display of validation messages for the input component.
+ * Standardised wrapper around a HoistInput component for use in a form. FormField provides
+ * consistent layout, labelling, and optional display of validation messages for the field.
+ * FormField also supports an alternative read-only display of the bound data.
  *
  * This component is intended to be used within a `Form` component and bound to a 'FieldModel'
- * within that Form's backing `FormModel`.  This binding, can happen explicitly, or by name.
-
- * FormField will setup the binding between its child HoistInput and the FieldModel instance
- * and can display validation messages, switch between read-only and disabled variants of its
- * child, and source default props via the parent Form's `fieldDefaults` prop.
+ * within that Form's backing `FormModel`. FormField will set up the binding between its input and the
+ * FieldModel instance and can display validation messages, switch between read-only and disabled
+ * variants of its child, and source default props via the parent Form's `fieldDefaults` prop.
+ *
+ * This component is designed to work with an instance of `HoistInput` as its input, and makes use
+ * of many of HoistInput's props. For best results with a customized input, consider wrapping a
+ * HoistInput and passing all props along to it.   At the very least, all custom inputs
+ * must accept 'model' and 'bind' props in order to show and edit data.
  *
  * FormFields can be sized and otherwise customized via standard layout props. They will
- * adjust their child Inputs to fill their available space (if appropriate given the input type),
- * so the recommended approach is to specify any sizing on the FormField (as opposed to the Input).
+ * adjust their child inputs to fill their available space (if appropriate given the input type),
+ * so the recommended approach is to specify any sizing on the FormField (as opposed to the input).
  */
 export const [FormField, formField] = hoistCmp.withFactory({
     displayName: 'FormField',
