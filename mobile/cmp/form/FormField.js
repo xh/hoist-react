@@ -234,7 +234,9 @@ function getValidChild(children) {
     const count = Children.count(children);
     if (count === 0) return null;
     if (count > 1) {
-        throw XH.exception('Add a single HoistInput child to FormField, or no children and a readonlyRenderer.');
+        throw XH.exception(
+            'Add a single HoistInput child to FormField, or zero children if always readonly.'
+        );
     }
 
     const child = Children.only(children);
