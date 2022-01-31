@@ -8,7 +8,7 @@ import {form} from '@xh/hoist/cmp/form';
 import {a, div, h3, hframe, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {jsonInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
+import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDateTimeSec} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
@@ -35,46 +35,25 @@ export const clientErrorDetail = hoistCmp.factory(
                         style: {width: '400px'},
                         items: [
                             h3(Icon.info(), 'Error Info'),
-                            formField({
-                                field: 'username',
-                                item: textInput()
-                            }),
+                            formField({field: 'username'}),
                             formField({
                                 field: 'dateCreated',
-                                item: textInput(),
                                 readonlyRenderer: fmtDateTimeSec
                             }),
-                            formField({
-                                field: 'appVersion',
-                                item: textInput()
-                            }),
+                            formField({field: 'appVersion'}),
                             formField({
                                 field: 'userAlerted',
-                                label: 'User Alerted?',
-                                item: switchInput()
+                                label: 'User Alerted?'
                             }),
-                            formField({
-                                field: 'id',
-                                item: textInput()
-                            }),
+                            formField({field: 'id'}),
                             formField({
                                 field: 'url',
-                                item: textInput(),
                                 readonlyRenderer: hyperlinkVal
                             }),
                             h3(Icon.desktop(), 'Device / Browser'),
-                            formField({
-                                field: 'device',
-                                item: textInput()
-                            }),
-                            formField({
-                                field: 'browser',
-                                item: textInput()
-                            }),
-                            formField({
-                                field: 'userAgent',
-                                item: textInput()
-                            })
+                            formField({field: 'device'}),
+                            formField({field: 'browser'}),
+                            formField({field: 'userAgent'})
                         ]
                     }),
                     vbox({

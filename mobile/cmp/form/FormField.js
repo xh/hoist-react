@@ -6,7 +6,7 @@
  */
 import {FieldModel, FormContext} from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
+import {hoistCmp, ModelPublishMode, uses, XH} from '@xh/hoist/core';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
@@ -20,19 +20,23 @@ import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import './FormField.scss';
 
 /**
- * Standardised wrapper around a HoistInput Component. FormField provides consistent layout,
- * labelling, and optional display of validation messages for the input component.
+ * Standardised wrapper around a HoistInput component for use in a form. FormField provides
+ * consistent layout, labelling, and optional display of validation messages for the field.
+ * FormField also supports an alternative read-only display of the bound data.
  *
  * This component is intended to be used within a `Form` component and bound to a 'FieldModel'
- * within that Form's backing `FormModel`.  This binding, can happen explicitly, or by name.
-
- * FormField will setup the binding between its child HoistInput and the FieldModel instance
- * and can display validation messages, switch between read-only and disabled variants of its
- * child, and source default props via the parent Form's `fieldDefaults` prop.
+ * within that Form's backing `FormModel`. FormField will set up the binding between its input and the
+ * FieldModel instance and can display validation messages, switch between read-only and disabled
+ * variants of its child, and source default props via the parent Form's `fieldDefaults` prop.
+ *
+ * This component is designed to work with an instance of `HoistInput` as its input, and makes use
+ * of many of HoistInput's props. For best results with a customized input, consider wrapping a
+ * HoistInput and passing all props along to it.   At the very least, all custom inputs
+ * must accept 'model' and 'bind' props in order to show and edit data.
  *
  * FormFields can be sized and otherwise customized via standard layout props. They will
- * adjust their child Inputs to fill their available space (if appropriate given the input type),
- * so the recommended approach is to specify any sizing on the FormField (as opposed to the Input).
+ * adjust their child inputs to fill their available space (if appropriate given the input type),
+ * so the recommended approach is to specify any sizing on the FormField (as opposed to the input).
  */
 export const [FormField, formField] = hoistCmp.withFactory({
     displayName: 'FormField',
@@ -68,9 +72,9 @@ export const [FormField, formField] = hoistCmp.withFactory({
                 }) : null,
             isPending = model && model.isValidationPending;
 
-        // Child related props
+        // Get spec'ed child -- may be null for fields that are always read-only
         const child = getValidChild(children),
-            childIsSizeable = child.type?.hasLayoutSupport || false;
+            childIsSizeable = child?.type?.hasLayoutSupport ?? false;
 
         // Display related props
         const layoutProps =  getLayoutProps(props),
@@ -87,7 +91,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
         if (disabled) classes.push('xh-form-field-disabled');
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
-        let childEl = readonly ?
+        let childEl = readonly || !child ?
             readonlyChild({model, readonlyRenderer}) :
             editableChild({
                 model,
@@ -215,7 +219,7 @@ const editableChild = hoistCmp.factory({
             }
         }
 
-        if (propTypes.commitOnChange && !isUndefined(commitOnChange)) {
+        if (propTypes?.commitOnChange && !isUndefined(commitOnChange)) {
             overrides.commitOnChange = commitOnChange;
         }
 
@@ -227,9 +231,21 @@ const editableChild = hoistCmp.factory({
 // Helper Functions
 //---------------------------------
 function getValidChild(children) {
+    const count = Children.count(children);
+    if (count === 0) return null;
+    if (count > 1) {
+        throw XH.exception(
+            'Add a single HoistInput child to FormField, or zero children if always readonly.'
+        );
+    }
+
     const child = Children.only(children);
-    throwIf(!child, 'FormField child must be a single component.');
-    throwIf(child.props.bind || child.props.model, 'HoistInputs should not specify "bind" or "model" props when used with FormField');
+    throwIf(
+        child.props.bind || child.props.model,
+        'Child of FormField should not specify "bind" or "model" props. These props will ' +
+        'will be set by the FormField to bind it appropriately.'
+    );
+
     return child;
 }
 
