@@ -16,6 +16,9 @@
 * `FormField` would previously throw if given a child that did not have `propTypes`.  This has
    been fixed.
 
+### ⚙️ Technical
+* The docstring for `GridModel.emptyText` now states it can take a string or ReactNode, not HTML.
+
 ## v46.0.0 - 2022-01-25
 
 ### 🎁 New Features
