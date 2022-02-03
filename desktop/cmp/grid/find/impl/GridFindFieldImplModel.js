@@ -215,8 +215,8 @@ export class GridFindFieldImplModel extends HoistModel {
             records.sort((a, b) => {
                 const valueA = getValueFn({record: a, field, column, gridModel}),
                     valueB = getValueFn({record: b, field, column, gridModel}),
-                    nodeA = agApi?.getRowNode(a.agId),
-                    nodeB = agApi?.getRowNode(b.agId);
+                    nodeA = agApi?.getRowNode(a.id),
+                    nodeB = agApi?.getRowNode(b.id);
 
                 return compFn(valueA, valueB, nodeA, nodeB) * direction;
             });
@@ -246,8 +246,8 @@ export class GridFindFieldImplModel extends HoistModel {
             records.sort((a, b) => {
                 const valueA = getValueFn({record: a, field, column, gridModel}),
                     valueB = getValueFn({record: b, field, column, gridModel}),
-                    nodeA = agApi?.getRowNode(a.agId),
-                    nodeB = agApi?.getRowNode(b.agId);
+                    nodeA = agApi?.getRowNode(a.id),
+                    nodeB = agApi?.getRowNode(b.id);
 
                 return groupSortFn(valueA, valueB, field, {gridModel, nodeA, nodeB});
             });

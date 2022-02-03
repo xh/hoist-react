@@ -193,7 +193,7 @@ class GridLocalModel extends HoistModel {
             immutableData: true,
             rowDataChangeDetectionStrategy: 'IdentityCheck',
             suppressColumnVirtualisation: !model.useVirtualColumns,
-            getRowNodeId: (record) => record.agId,
+            getRowNodeId: (data) => data.id,
             defaultColDef: {
                 sortable: true,
                 resizable: true,
@@ -303,7 +303,7 @@ class GridLocalModel extends HoistModel {
         }
         if (!menu) return null;
 
-        const recId = params.node?.data.id,
+        const recId = params.node?.id,
             colId = params.column?.colId,
             record = isNil(recId) ? null : store.getById(recId, true),
             column = isNil(colId) ? null : model.getColumn(colId),
@@ -637,7 +637,7 @@ class GridLocalModel extends HoistModel {
             // Refresh cells in columns with complex renderers
             const refreshCols = visibleCols.filter(c => c.rendererIsComplex);
             if (!isEmpty(refreshCols)) {
-                const rowNodes = compact(transaction.update.map(r => agApi.getRowNode(r.agId))),
+                const rowNodes = compact(transaction.update.map(r => agApi.getRowNode(r.id))),
                     columns = refreshCols.map(c => c.colId);
                 agApi.refreshCells({rowNodes, columns, force: true});
             }
@@ -667,8 +667,8 @@ class GridLocalModel extends HoistModel {
     }
 
     syncSelection() {
-        const {agGridModel, selModel, isReady} = this.model;
-        const selectedIds = selModel.selectedRecords.map(r => r.agId);
+        const {agGridModel, selModel, isReady} = this.model,
+            {selectedIds} = selModel;
         if (isReady && !isEqual(selectedIds, agGridModel.getSelectedRowNodeIds())) {
             agGridModel.setSelectedRowNodeIds(selectedIds);
         }
@@ -685,8 +685,8 @@ class GridLocalModel extends HoistModel {
     //------------------------
     // Event Handlers on AG Grid.
     //------------------------
-    getDataPath = (record) => {
-        return record.treePath;
+    getDataPath = (data) => {
+        return data.treePath;
     };
 
     // We debounce this handler because the implementation of `AgGridModel.setSelectedRowNodeIds()`
@@ -763,7 +763,7 @@ class GridLocalModel extends HoistModel {
 
     processCellForClipboard = ({value, node, column}) => {
         const {model} = this,
-            recId = node.data.id,
+            recId = node.id,
             colId = column.colId,
             record = isNil(recId) ? null : model.store.getById(recId, true),
             xhColumn = isNil(colId) ? null : model.getColumn(colId);
