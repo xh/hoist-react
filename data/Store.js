@@ -97,7 +97,7 @@ export class Store extends HoistBase {
      * @param {{}} [fieldDefaults] - default configs applied to `Field` instances constructed
      *      internally by this Store. {@see FieldConfig} for options
      * @param {(function|string)} [c.idSpec] - specification for producing an immutable
-     *      unique string as an id for each record. May be provided as either a string property name
+     *      unique id for each record. May be provided as either a string property name
      *      (default is 'id') or a function that receives the raw data and returns a string. This
      *      property will be normalized to a function upon Store construction. If there is no
      *      natural id to select/generate, you can use `XH.genId` to generate a unique id on the
@@ -369,7 +369,7 @@ export class Store extends HoistBase {
      * @param {(Object[]|Object)} data - source data for new StoreRecord(s). Note that this data will
      *      *not* be processed by this Store's `processRawData` or `idSpec` functions, but will be
      *      parsed and potentially transformed according to this Store's Field definitions.
-     * @param {string} [parentId] - ID of the pre-existing parent record under which this new
+     * @param {StoreRecordId} [parentId] - ID of the pre-existing parent record under which this new
      *      record should be added, if any.
      */
     @action
@@ -680,7 +680,7 @@ export class Store extends HoistBase {
     /**
      * Get a record by ID, or null if no matching record found.
      *
-     * @param {string} id
+     * @param {StoreRecordId} id
      * @param {boolean} [respectFilter] - false (default) to return a StoreRecord with the given
      *      ID even if an active filter is excluding it from the primary `records` collection.
      *      True to restrict matches to this Store's post-filter StoreRecord collection only.
@@ -929,8 +929,8 @@ export class Store extends HoistBase {
     }
 
     parseIdSpec(idSpec) {
-        if (isString(idSpec)) return (raw) => raw[idSpec]?.toString();
-        if (isFunction(idSpec)) return (raw) => idSpec(raw)?.toString();
+        if (isString(idSpec)) return (raw) => raw[idSpec];
+        if (isFunction(idSpec)) return (raw) => idSpec(raw);
         throw XH.exception(
             'idSpec should be either a name of a field, or a function to generate an id.'
         );

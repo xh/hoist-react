@@ -301,8 +301,8 @@ export class GridExportService extends HoistService {
             records.sort((a, b) => {
                 const valueA = getValueFn({record: a, field, column, gridModel}),
                     valueB = getValueFn({record: b, field, column, gridModel}),
-                    agNodeA = agApi?.getRowNode(a.id),
-                    agNodeB = agApi?.getRowNode(b.id);
+                    agNodeA = agApi?.getRowNode(a.agId),
+                    agNodeB = agApi?.getRowNode(b.agId);
 
                 return compFn(valueA, valueB, agNodeA, agNodeB) * direction;
             });
@@ -320,7 +320,7 @@ export class GridExportService extends HoistService {
     }
 
     getRecordRow(gridModel, record, columns, type, depth) {
-        const node = gridModel.agApi?.getRowNode(record.id),
+        const node = gridModel.agApi?.getRowNode(record.agId),
             forExcel = type !== 'csv',
             data = columns.map(column => {
                 return this.getExportableValueForCell({gridModel, record, column, node, forExcel});

@@ -463,17 +463,16 @@ export class AgGridModel extends HoistModel {
         }
     }
 
-    /** @returns {(string[]|number[])} - list of selected row node ids */
+    /** @returns {(string[])} - list of selected row node ids */
     getSelectedRowNodeIds() {
         this.throwIfNotReady();
-
-        return this.agApi.getSelectedRows().map(it => it.id);
+        return this.agApi.getSelectedNodes().map(it => it.id);
     }
 
     /**
      * Sets the selected row node ids. Any rows currently selected which are not in the list will be
      * deselected.
-     * @param ids {(string[]|number[])} - row node ids to mark as selected
+     * @param ids {(string[])} - row node ids to mark as selected
      */
     setSelectedRowNodeIds(ids) {
         this.throwIfNotReady();
@@ -487,19 +486,27 @@ export class AgGridModel extends HoistModel {
     }
 
     /**
-     * @returns {number} - the id of the first row in the grid, after sorting and filtering, which
+     * @returns {string} - the id of the first row in the grid, after sorting and filtering, which
      *      has data associated with it (i.e. not a group or other synthetic row).
      */
     getFirstSelectableRowNodeId() {
+        return this.getFirstSelectableRowNode()?.id;
+    }
+
+    /**
+     * @returns {{Object}} - the the first row in the grid, after sorting and filtering, which
+     *      has data associated with it (i.e. not a group or other synthetic row).
+     */
+    getFirstSelectableRowNode() {
         this.throwIfNotReady();
 
-        let id = null;
+        let ret = null;
         this.agApi.forEachNodeAfterFilterAndSort(node => {
-            if (isNil(id) && node.data) {
-                id = node.id;
+            if (!ret && node.data) {
+                ret = node;
             }
         });
-        return id;
+        return ret;
     }
 
     /**
