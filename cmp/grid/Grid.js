@@ -762,11 +762,10 @@ class GridLocalModel extends HoistModel {
     }
 
     processCellForClipboard = ({value, node, column}) => {
-        const {model} = this,
-            recId = node.data.id,
-            colId = column.colId,
-            record = isNil(recId) ? null : model.store.getById(recId, true),
-            xhColumn = isNil(colId) ? null : model.getColumn(colId);
+        const record = node.data,
+            {model} = this,
+            {colId} = column,
+            xhColumn = !isNil(colId) ? model.getColumn(colId) : null;
 
         if (!record || !xhColumn) return value;
 

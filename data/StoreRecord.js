@@ -55,9 +55,10 @@ export class StoreRecord {
     committedData;
 
     /**
-     * Id for representing record within ag-Grid node API.
+     * @member {string} - unique id for representing record within ag-Grid node API.
      *
-     * Id of this record, cast to a string.
+     * This id is a string variant of the record id.  It should be used when trying to identify or
+     * locate the record using the ag-Grid callbacks and API.
      */
     agId;
 
@@ -217,7 +218,7 @@ export class StoreRecord {
         data.id = id;
 
         this.id = id;
-        this.agId = id.toString();
+        this.agId = 'ag_'+ id.toString();
         this.store = store;
         this.data = data;
         this.raw = raw;
