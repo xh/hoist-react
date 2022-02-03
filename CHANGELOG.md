@@ -2,6 +2,15 @@
 
 ## v47.0.0-SNAPSHOT - unreleased
 
+
+###  Technical
+* This release improves our workaround to handle the unexpected ag-Grid 26.0.2. changes to node id
+handling. The initial approach in v46.0.0. has been replaced.  Numerical ids are once again
+supported in `StoreRecord` and will no longer be cast automatically to Strings by the framework.
+Instead, applications that are using ag-Grid APIs (e.g. `agApi.getNode()` ) with `Store` records
+should be sure to use the new property `Store.agId`.  We expect such usages to be rare in
+application code.
+
 ### 🎁 New Features
 
 * `XH.showFeedbackDialog()` now takes an optional message to pre-populate within the dialog.
