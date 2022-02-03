@@ -214,6 +214,7 @@ export class StoreRecord {
             isNil(id),
             "Record needs an ID. Use 'Store.idSpec' to specify a unique ID for each record."
         );
+        data.id = id;
 
         this.id = id;
         this.agId = id.toString();
