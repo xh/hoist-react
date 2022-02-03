@@ -2,6 +2,14 @@
 
 ## v47.0.0-SNAPSHOT - unreleased
 
+
+###  Technical
+* This release improves our v46 workaround to handle the recents ag-Grid 26.0.2 change to cast
+node ids to Strings.  Numerical ids provided to `Store` will still be cast automatically to Strings
+by the framework.  However, the originally specified id will be preserved in the `StoreRecord.data`
+property.  This provides easier access to the application native form of the id for submission to
+back end API's and persistence mechanisms.
+
 ### 🎁 New Features
 
 * `XH.showFeedbackDialog()` now takes an optional message to pre-populate within the dialog.

@@ -193,7 +193,7 @@ class GridLocalModel extends HoistModel {
             immutableData: true,
             rowDataChangeDetectionStrategy: 'IdentityCheck',
             suppressColumnVirtualisation: !model.useVirtualColumns,
-            getRowNodeId: (data) => data.id,
+            getRowNodeId: (record) => record.id,
             defaultColDef: {
                 sortable: true,
                 resizable: true,
@@ -685,8 +685,8 @@ class GridLocalModel extends HoistModel {
     //------------------------
     // Event Handlers on AG Grid.
     //------------------------
-    getDataPath = (data) => {
-        return data.treePath;
+    getDataPath = (record) => {
+        return record.treePath;
     };
 
     // We debounce this handler because the implementation of `AgGridModel.setSelectedRowNodeIds()`

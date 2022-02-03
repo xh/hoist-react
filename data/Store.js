@@ -256,7 +256,7 @@ export class Store extends HoistBase {
         if (isArray(rawData)) {
             const update = [], add = [];
             rawData.forEach(it => {
-                const recId = this.idSpec(it);
+                const recId = this.idSpec(it).toString();
                 if (this.getById(recId)) {
                     update.push(it);
                 } else {
@@ -276,7 +276,7 @@ export class Store extends HoistBase {
         let updateRecs, addRecs;
         if (update) {
             updateRecs = update.map(it => {
-                const recId = this.idSpec(it),
+                const recId = this.idSpec(it).toString(),
                     rec = this.getOrThrow(
                         recId,
                         'In order to update grid data, records must have stable ids. Note: XH.genId() will not provide such ids.'
@@ -378,11 +378,13 @@ export class Store extends HoistBase {
         if (isEmpty(data)) return;
 
         const addRecs = data.map(it => {
-            const {id} = it;
-            throwIf(isNil(id), `Must provide 'id' property for new records.`);
+            const appId = it.id;
+            throwIf(isNil(appId), `Must provide 'id' property for new records.`);
+
+            const id = appId.toString();
             throwIf(this.getById(id), `Duplicate id '${id}' provided for new record.`);
 
-            const parsedData = this.parseRaw(it),
+            const parsedData = this.parseRaw(it, appId),
                 parent = this.getById(parentId);
 
             return new StoreRecord({id, data: parsedData, store: this, parent, committedData: null});
@@ -405,7 +407,7 @@ export class Store extends HoistBase {
         records = castArray(records);
         if (isEmpty(records)) return;
 
-        const idsToRemove = records.map(it => (it instanceof StoreRecord) ? it.id : it);
+        const idsToRemove = records.map(it => it.isRecord ? it.id : it);
 
         this._current = this._current
             .withTransaction({remove: idsToRemove})
@@ -436,7 +438,7 @@ export class Store extends HoistBase {
         const updateRecs = new Map();
         let hadDupes = false;
         modifications.forEach(mod => {
-            let {id} = mod;
+            let id = mod.id.toString();
 
             // Ignore multiple updates for the same record - we are updating this Store in a
             // transaction after processing all modifications, so this method is not currently setup
@@ -821,7 +823,8 @@ export class Store extends HoistBase {
     // StoreRecord Generation
     //---------------------------------------
     createRecord(raw, parent, isSummary) {
-        const id = this.idSpec(raw);
+        const appId = this.idSpec(raw),
+            id = appId.toString();
 
         // Potentially re-use existing record if raw data is reference equal and tree path identical
         if (this.reuseRecords) {
@@ -838,7 +841,7 @@ export class Store extends HoistBase {
             throwIf(!data, 'Store.processRawData should return an object. If writing/editing, be sure to return a clone!');
         }
 
-        data = this.parseRaw(data);
+        data = this.parseRaw(data, appId);
         const ret = new StoreRecord({id, data, raw, parent, store: this, isSummary});
 
         // Finalize summary only.  Non-summary finalized by RecordSet
@@ -867,7 +870,7 @@ export class Store extends HoistBase {
         return recordMap;
     }
 
-    parseRaw(data) {
+    parseRaw(data, appId) {
         // a) create/prepare the data object
         const ret = Object.create(this._dataDefaults);
 
@@ -882,6 +885,8 @@ export class Store extends HoistBase {
                 }
             }
         });
+
+        data.id = appId;
 
         return ret;
     }
@@ -929,8 +934,8 @@ export class Store extends HoistBase {
     }
 
     parseIdSpec(idSpec) {
-        if (isString(idSpec)) return (raw) => raw[idSpec]?.toString();
-        if (isFunction(idSpec)) return (raw) => idSpec(raw)?.toString();
+        if (isString(idSpec)) return (raw) => raw[idSpec];
+        if (isFunction(idSpec)) return (raw) => idSpec(raw);
         throw XH.exception(
             'idSpec should be either a name of a field, or a function to generate an id.'
         );
