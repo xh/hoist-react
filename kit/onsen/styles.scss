@@ -26,10 +26,10 @@
     &:not(.xh-input-invalid):focus-within {
       border-color: var(--xh-focus-outline-color);
     }
-  }
 
-  &.xh-input-invalid {
-    border: var(--xh-form-field-invalid-border);
+    &.xh-input-invalid {
+      border: var(--xh-form-field-invalid-border);
+    }
   }
 }
 
