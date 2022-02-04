@@ -1,15 +1,16 @@
 # Changelog
 
-## v47.0.0-SNAPSHOT - unreleased
-
+## v46.1.0 - 2022-02-03
 
 ###  Technical
-* This release improves our workaround to handle the unexpected ag-Grid 26.0.2 changes to node id
-handling. The initial approach in v46.0.0 has been replaced.  Numerical ids are once again
-supported in `StoreRecord` and will no longer be cast automatically to Strings by the framework.
-Instead, applications that are using ag-Grid APIs (e.g. `agApi.getNode()` ) with `Store` records
-should be sure to use the new property `Store.agId`.  We expect such usages to be rare in
-application code.
+* This release modifies our workaround to handle the ag-Grid v26 changes to cast all of their node
+ids to strings.  The initial approach in v46.0.0 -- matching the ag-Grid behavior by casting all
+`StoreRecord` ids to strings -- was deemed too problematic for applications and has been reverted.
+Numerical ids in Store are once again fully supported.
+
+In order to accommodate the ag-Grid changes, applications that are using ag-Grid APIs
+(e.g. `agApi.getNode()` ) with `StoreRecord` should be sure to use the new property `StoreRecord.agId`
+to locate and compare records.  We expect such usages to be rare in application code.
 
 ### 🎁 New Features
 
