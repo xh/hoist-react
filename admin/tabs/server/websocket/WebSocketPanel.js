@@ -25,11 +25,11 @@ export const webSocketPanel = hoistCmp.factory({
         return panel({
             tbar: [
                 button({
-                    text: 'Send test alert',
-                    icon: Icon.bullhorn(),
-                    intent: 'primary',
-                    disabled: !model.gridModel.selectedRecord,
-                    onClick: () => model.sendAlertToSelectedAsync()
+                    text: 'Force suspend',
+                    icon: Icon.stopCircle(),
+                    intent: 'danger',
+                    disabled: !model.gridModel.hasSelection,
+                    onClick: () => model.forceSuspendOnSelectedAsync()
                 }),
                 filler(),
                 relativeTimestamp({bind: 'lastRefresh'}),

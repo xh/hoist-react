@@ -23,15 +23,15 @@ import {ValidationState} from './validation/ValidationState';
  */
 export class StoreRecord {
 
-    /** @member {string} */
+    /** @member {StoreRecordId} */
     id;
-    /** @member {string} */
+    /** @member {StoreRecordId} */
     parentId;
     /** @member {Store} */
     store;
     /** @member {boolean} */
     isSummary;
-    /** @member {string[]} */
+    /** @member {StoreRecordId[]} */
     treePath;
 
     /** @member {Object} - raw data loaded into via Store.loadData() or Store.updateData(). */
@@ -53,6 +53,14 @@ export class StoreRecord {
      * property will point to the same object as `data`.
      */
     committedData;
+
+    /**
+     * @member {string} - unique ID for representing record within ag-Grid node API.
+     *
+     * A string variant of the main record ID.  It should be used when trying to identify or
+     * locate the record using the ag-Grid callbacks and API.
+     */
+    agId;
 
     get isRecord() {return true}
 
@@ -180,7 +188,7 @@ export class StoreRecord {
      * primary implementation, which includes parsing based on `data/Field` types and definitions.
      *
      * @param {Object} c - StoreRecord configuration
-     * @param {string} c.id - Record ID
+     * @param {StoreRecordId} c.id - Record ID
      * @param {Store} c.store - Store containing this StoreRecord.
      * @param {Object} c.data - data for this StoreRecord, pre-processed if applicable by
      *      `Store.processRawData()` and `Field.parseVal()`. Note: This must be a new object
@@ -205,11 +213,12 @@ export class StoreRecord {
     }) {
         throwIf(
             isNil(id),
-            "Record needs an ID. Use 'Store.idSpec' to specify a unique string ID for each record."
+            "Record needs an ID. Use 'Store.idSpec' to specify a unique ID for each record."
         );
         data.id = id;
 
         this.id = id;
+        this.agId = 'ag_'+ id.toString();
         this.store = store;
         this.data = data;
         this.raw = raw;
@@ -265,7 +274,10 @@ export class StoreRecord {
     }
 }
 
+/**
+ * @typedef {(number|string)} StoreRecordId - unique identifier for a StoreRecord within a Store.
+ */
 
 /**
- * @typedef {(StoreRecord|string)} StoreRecordOrId - a Hoist StoreRecord, or an ID for one.
+ * @typedef {(StoreRecord|StoreRecordId)} StoreRecordOrId - a Hoist StoreRecord, or an ID for one.
  */

@@ -15,8 +15,7 @@ import {
     buttonGroupInput,
     dateInput,
     switchInput,
-    textArea,
-    textInput
+    textArea
 } from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {dateTimeRenderer} from '@xh/hoist/format';
@@ -137,14 +136,12 @@ const formPanel = hoistCmp.factory(
                                 omit: !formModel.values.updated,
                                 field: 'updated',
                                 className: 'xh-alert-banner-panel__form-panel__fields--ro',
-                                item: textInput(),
                                 readonlyRenderer: dateTimeRenderer({})
                             }),
                             formField({
                                 omit: !formModel.values.updatedBy,
                                 field: 'updatedBy',
-                                className: 'xh-alert-banner-panel__form-panel__fields--ro',
-                                item: textInput()
+                                className: 'xh-alert-banner-panel__form-panel__fields--ro'
                             })
                         ]
                     })

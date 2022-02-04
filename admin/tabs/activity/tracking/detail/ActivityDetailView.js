@@ -5,7 +5,7 @@ import {storeFilterField} from '@xh/hoist/cmp/store';
 import {hoistCmp, creates} from '@xh/hoist/core';
 import {colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {jsonInput, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
+import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
@@ -63,7 +63,6 @@ const detailRecForm = hoistCmp.factory(
                             h3(Icon.info(), 'Activity'),
                             formField({
                                 field: 'username',
-                                item: textInput(),
                                 readonlyRenderer: (username) => {
                                     if (!username) return naSpan();
                                     const {impersonating} = formModel.values,
@@ -71,22 +70,14 @@ const detailRecForm = hoistCmp.factory(
                                     return span(username, impSpan);
                                 }
                             }),
-                            formField({
-                                field: 'category',
-                                item: textInput()
-                            }),
-                            formField({
-                                field: 'msg',
-                                item: textArea()
-                            }),
+                            formField({field: 'category'}),
+                            formField({field: 'msg'}),
                             formField({
                                 field: 'dateCreated',
-                                item: textInput(),
                                 readonlyRenderer: dateTimeSecRenderer({})
                             }),
                             formField({
                                 field: 'elapsed',
-                                item: textInput(),
                                 readonlyRenderer: numberRenderer({
                                     label: 'ms',
                                     nullDisplay: '-',
@@ -94,23 +85,11 @@ const detailRecForm = hoistCmp.factory(
                                     formatConfig: {thousandSeparated: false, mantissa: 0}
                                 })
                             }),
-                            formField({
-                                field: 'id',
-                                item: textInput()
-                            }),
+                            formField({field: 'id'}),
                             h3(Icon.desktop(), 'Device / Browser'),
-                            formField({
-                                field: 'device',
-                                item: textInput()
-                            }),
-                            formField({
-                                field: 'browser',
-                                item: textInput()
-                            }),
-                            formField({
-                                field: 'userAgent',
-                                item: textInput()
-                            })
+                            formField({field: 'device'}),
+                            formField({field: 'browser'}),
+                            formField({field: 'userAgent'})
                         ]
                     }),
                     panel({
