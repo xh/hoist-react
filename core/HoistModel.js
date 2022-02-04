@@ -6,7 +6,7 @@
  */
 import {each} from 'lodash';
 import {makeObservable} from 'mobx';
-import {throwIf} from '../utils/js';
+import {throwIf, warnIf} from '../utils/js';
 import {HoistBase} from './HoistBase';
 import {managed} from './HoistBaseDecorators';
 import {LoadSupport} from './refresh/LoadSupport';
@@ -27,16 +27,15 @@ import {observable, computed, action, comparer} from '@xh/hoist/mobx';
  * Component tree.  In fact, most models are linked directly in a one-to-one relationship with a
  * specific component that renders them -- these models are considered "linked", and play a
  * special role in the framework.  In particular, linked models:
- *      - are specified by the `creates` and `hosts` directives to hoist component, as well as the
- *      `useLocalModel` hook.
+ *      - are specified by the `creates` directive as well as the `useLocalModel` hook.
  *      - support an observable `componentProps` property which can be used to observe the props of
  *      their rendered component.
- *      - support a `lookupModel` method and `@lookup` decorator that can be used to acquire references
+ *      - support a `lookupModel` method and a `@lookup` decorator that can be used to acquire references
  *      to "ancestors" to this model in the component hierarchy.
  *      - support an `onLinked` lifecycle method, called when the model has been fully linked to
  *      the component hierarchy. Use this method for any work requiring the availability of lookups
- *      or `componentProps`.  Note that this method is called during the initial rendering
- *      of the component creating this model.
+ *      or `componentProps`.
+ *      - are destroyed when their linked component is unmounted.
  *
  * It is very common to decorate properties on models with `@observable` and related field-level
  * annotations. This enables automatic, MobX-powered re-rendering of components when these model
@@ -61,7 +60,8 @@ export class HoistModel extends HoistBase {
     get isHoistModel() {return true}
 
     // Internal State
-    @observable.ref _componentProps = null;
+    @observable.ref
+    _componentProps = null;
     _modelLookup = null;
 
     constructor() {
@@ -126,17 +126,20 @@ export class HoistModel extends HoistBase {
      */
     async doLoadAsync(loadSpec) {}
 
-
     //---------------------------
     // Linked model support
     //---------------------------
+    get isLinked() {
+        return !!this._modelLookup;
+    }
+
     /**
      * React props on component linked to this model.
      *
      * Only available for linked models.
      *
      * Observability is based on a shallow computation for each prop (i.e. a reference
-     * change in any particular prop. will trigger observables to be notified.).
+     * change in any particular prop will trigger observers to be notified).
      */
     @computed({equals: comparer.shallow})
     get componentProps() {
@@ -164,6 +167,12 @@ export class HoistModel extends HoistBase {
      * @returns {HoistModel} - model, or null if no matching model found.
      */
     lookupModel(selector = '*') {
+        warnIf(
+            !this.isLinked,
+            'Attempted to execute a lookup from a model that has not yet been linked. ' +
+            'Ensure this model was created by `creates` or `useLocalModel` and that this ' +
+            'call is occurring during or after the call to onLinked().'
+        );
         return this._modelLookup?.lookupModel(selector) ?? null;
     }
 
@@ -179,8 +188,6 @@ export class HoistModel extends HoistBase {
     /** @package **/
     @action
     doLink(modelLookup) {
-        // But lookup and
-        if (!this._modelLookup) return;
         this._modelLookup = modelLookup;
         each(this._xhInjectedParentProperties, (selector, name) => {
             this[name] = modelLookup.lookupModel(selector);

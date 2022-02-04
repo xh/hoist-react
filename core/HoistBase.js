@@ -15,7 +15,7 @@ import {
     isPlainObject,
     isString,
     isUndefined,
-    upperFirst, compact
+    upperFirst
 } from 'lodash';
 import {
     action,
@@ -219,22 +219,12 @@ export class HoistBase {
     }
 
     /**
-     * All managed instances known to this object. Includes
-     * instances that have been created via markManaged() and @managed.
-     */
-    get allManagedInstances() {
-        const instances = this.#managedInstances,
-            props = this._xhManagedProperties;
-        return props ? [...instances, ...compact(props.map(p => this[p]))] : instances;
-    }
-
-
-    /**
      * Clean up resources associated with this object
      */
     destroy() {
         this.#disposers.forEach(f => f());
-        this.allManagedInstances.forEach(it => XH.safeDestroy(it));
+        this.#managedInstances.forEach(i => XH.safeDestroy(i));
+        this._xhManagedProperties?.forEach(p => XH.safeDestroy(this[p]));
     }
 }
 

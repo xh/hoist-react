@@ -18,7 +18,12 @@ import {useEffect} from 'react';
  */
 
 /* eslint-disable react-hooks/exhaustive-deps */
-export function useOwnedModel(model) {
+export function useModelLinker(model, {props, modelLookup}) {
+    if (model) {
+        if (props) model.setComponentProps(props);
+        if (!model.isLinked) model.doLink(modelLookup);
+    }
+
     useEffect(() => {
         if (!model?.loadSupport) return;
         model.loadAsync();
@@ -30,18 +35,4 @@ export function useOwnedModel(model) {
     }, []);
 
     useOnUnmount(() => XH.safeDestroy(model));
-}
-
-
-/* eslint-disable react-hooks/exhaustive-deps */
-export function useLinkedModel(model, {modelLookup, props}) {
-    if (model) {
-        if (props) model.setComponentProps(props);
-        if (!model.modelLookup) model.link(modelLookup);
-    }
-
-    useOnUnmount(() => {
-        model?.setModelLookup(null);
-    });
-
 }
