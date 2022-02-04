@@ -494,7 +494,7 @@ export class AgGridModel extends HoistModel {
     }
 
     /**
-     * @returns {{Object}} - the the first row in the grid, after sorting and filtering, which
+     * @returns {{Object}} - the first row in the grid, after sorting and filtering, which
      *      has data associated with it (i.e. not a group or other synthetic row).
      */
     getFirstSelectableRowNode() {

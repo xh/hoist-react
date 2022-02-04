@@ -1120,7 +1120,7 @@ export class GridModel extends HoistModel {
                 recToEdit = selectedRecords[0];
             } else {
                 // Or use the first record overall.
-                const firstRowId = agGridModel.getFirstSelectableRowNode().data.id;
+                const firstRowId = agGridModel.getFirstSelectableRowNode()?.data.id;
                 recToEdit = store.getById(firstRowId);
             }
         }

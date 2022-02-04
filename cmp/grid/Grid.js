@@ -292,7 +292,7 @@ class GridLocalModel extends HoistModel {
 
     getContextMenuItems = (params) => {
         const {model, agOptions} = this,
-            {store, selModel, contextMenu} = model;
+            {selModel, contextMenu} = model;
         if (!contextMenu || XH.isMobileApp) return null;
 
         let menu = null;
@@ -303,10 +303,9 @@ class GridLocalModel extends HoistModel {
         }
         if (!menu) return null;
 
-        const recId = params.node?.data.id,
+        const record = params.node?.data,
             colId = params.column?.colId,
-            record = isNil(recId) ? null : store.getById(recId, true),
-            column = isNil(colId) ? null : model.getColumn(colId),
+            column = !isNil(colId) ? model.getColumn(colId) : null,
             {selectedRecords} = model;
 
 
