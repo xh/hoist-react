@@ -559,7 +559,7 @@ export class GridModel extends HoistModel {
 
         // Get first displayed row with data - i.e. backed by a record, not a full-width group row.
         const {selModel} = this,
-            id = this.agGridModel.getFirstSelectableRowNodeId();
+            id = this.agGridModel.getFirstSelectableRowNode()?.data.id;
 
         if (id != null) {
             selModel.select(id);
@@ -603,8 +603,8 @@ export class GridModel extends HoistModel {
             indices = [];
 
         // 1) Expand any selected nodes that are collapsed
-        selectedRecords.forEach(({id}) => {
-            for (let row = agApi.getRowNode(id)?.parent; row; row = row.parent) {
+        selectedRecords.forEach(({agId}) => {
+            for (let row = agApi.getRowNode(agId)?.parent; row; row = row.parent) {
                 if (!row.expanded) {
                     agApi.setRowNodeExpanded(row, true);
                 }
@@ -614,8 +614,8 @@ export class GridModel extends HoistModel {
         await wait();
 
         // 2) Scroll to all selected nodes
-        selectedRecords.forEach(({id}) => {
-            const rowIndex = agApi.getRowNode(id)?.rowIndex;
+        selectedRecords.forEach(({agId}) => {
+            const rowIndex = agApi.getRowNode(agId)?.rowIndex;
             if (!isNil(rowIndex)) indices.push(rowIndex);
         });
 
@@ -857,7 +857,7 @@ export class GridModel extends HoistModel {
 
         // Check required as we may be receiving stale message after unmounting
         if (isReady) {
-            selModel.select(agGridModel.getSelectedRowNodeIds());
+            selModel.select(agGridModel.agApi.getSelectedRows().map(r => r.id));
         }
     }
 
@@ -1120,12 +1120,12 @@ export class GridModel extends HoistModel {
                 recToEdit = selectedRecords[0];
             } else {
                 // Or use the first record overall.
-                const firstRowId = agGridModel.getFirstSelectableRowNodeId();
+                const firstRowId = agGridModel.getFirstSelectableRowNode()?.data.id;
                 recToEdit = store.getById(firstRowId);
             }
         }
 
-        const rowIndex = agApi.getRowNode(recToEdit?.id)?.rowIndex;
+        const rowIndex = agApi.getRowNode(recToEdit?.agId)?.rowIndex;
         if (isNil(rowIndex) || rowIndex < 0) {
             console.warn(
                 'Unable to start editing - ' +
