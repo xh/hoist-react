@@ -4,13 +4,13 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {each} from 'lodash';
+import {forOwn, has} from 'lodash';
 import {makeObservable} from 'mobx';
 import {throwIf, warnIf} from '../utils/js';
 import {HoistBase} from './HoistBase';
 import {managed} from './HoistBaseDecorators';
 import {LoadSupport} from './refresh/LoadSupport';
-import {observable, computed, action, comparer} from '@xh/hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 
 /**
  * Core superclass for stateful Models in Hoist. Models are used throughout the toolkit and
@@ -60,8 +60,8 @@ export class HoistModel extends HoistBase {
     get isHoistModel() {return true}
 
     // Internal State
-    @observable.ref
-    _componentProps = null;
+    @observable
+    _componentProps = {};
     _modelLookup = null;
 
     constructor() {
@@ -141,7 +141,6 @@ export class HoistModel extends HoistBase {
      * Observability is based on a shallow computation for each prop (i.e. a reference
      * change in any particular prop will trigger observers to be notified).
      */
-    @computed({equals: comparer.shallow})
     get componentProps() {
         return this._componentProps;
     }
@@ -181,19 +180,14 @@ export class HoistModel extends HoistBase {
     //------------------
     /** @package*/
     @action
-    setComponentProps(componentProps) {
-        this._componentProps = componentProps;
-    }
-
-    /** @package **/
-    @action
-    doLink(modelLookup) {
-        this._modelLookup = modelLookup;
-        each(this._xhInjectedParentProperties, (selector, name) => {
-            this[name] = modelLookup.lookupModel(selector);
+    setComponentProps(newProps) {
+        const props = this._componentProps;
+        Object.assign(props, newProps);
+        forOwn(props, (v, k) => {
+            if (!has(newProps, k)) {
+                delete props[k];
+            }
         });
-
-        this.onLinked?.();
     }
 }
 

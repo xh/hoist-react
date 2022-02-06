@@ -5,12 +5,13 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {box, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, managed, useLocalModel, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, managed, useLocalModel, XH, lookup} from '@xh/hoist/core';
 import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable, computed} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import moment from 'moment';
 import PT from 'prop-types';
 
@@ -24,20 +25,16 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
     displayName: 'RelativeTimestamp',
     className: 'xh-relative-timestamp',
 
-    render({model, timestamp, bind, options, ...props}, ref) {
+    render(props, ref) {
         const impl = useLocalModel(LocalModel);
 
-        timestamp = withDefault(timestamp, (model && bind ? model[bind] : null));
-
-        impl.setData(timestamp, options);
-
         return box({
-            ...props,
+            ...getLayoutProps(props),
             ref,
             item: span({
                 className: 'xh-title-tip',
                 item: impl.display,
-                title: fmtDateTime(timestamp)
+                title: fmtDateTime(impl.timestamp)
             })
         });
     }
@@ -58,10 +55,8 @@ RelativeTimestamp.propTypes = {
 
 class LocalModel extends HoistModel {
 
-    options;
-    timestamp;
-
     @observable display = '';
+    @lookup('*') model;
 
     @managed
     timer = Timer.create({
@@ -69,15 +64,25 @@ class LocalModel extends HoistModel {
         interval: 5 * SECONDS
     });
 
+    get timestamp() {
+        const {model} = this,
+            {bind, timestamp} = this.componentProps;
+        return withDefault(timestamp, (model && bind ? model[bind] : null));
+    }
+
+    @computed.struct
+    get options() {
+        return this.componentProps.options;
+    }
+
     constructor() {
         super();
         makeObservable(this);
-    }
 
-    setData(timestamp, options) {
-        this.timestamp = timestamp;
-        this.options = options;
-        this.refreshDisplay();
+        this.addReaction({
+            track: () => [this.timestamp, this.options],
+            run: () => this.refreshDisplay()
+        });
     }
 
     @action

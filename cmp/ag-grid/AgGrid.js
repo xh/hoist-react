@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {div, frame} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, uses, elem, lookup, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, uses, elem, XH, lookup} from '@xh/hoist/core';
 import {splitLayoutProps, useOnUnmount} from '@xh/hoist/utils/react';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
@@ -54,7 +54,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
             {sizingMode, showHover, rowBorders, stripeRows, cellBorders, showCellFocus} = model,
             {darkTheme, isDesktop} = XH;
 
-        const impl = useLocalModel(LocalModel, agGridProps);
+        const impl = useLocalModel(LocalModel);
 
         useOnUnmount(() => model?.handleGridUnmount());
 
@@ -119,14 +119,15 @@ class LocalModel extends HoistModel {
     }
 
     onLinked() {
-        const {model, componentProps} = this;
+        const {model} = this;
+
         throwIf(model.agApi,
             'Attempted to mount a grid on a GridModel that is already in use. ' +
             'Ensure that you are not binding your grid to the wrong model via context.'
         );
 
         // manage header height if was not explicitly provided to component
-        if (isNil(componentProps.headerHeight)) {
+        if (isNil(this.componentProps.headerHeight)) {
             this.addReaction({
                 track: () => [model.agApi, this.headerHeight],
                 run: ([api, headerHeight]) => api?.setHeaderHeight(headerHeight)

@@ -12,6 +12,7 @@ import classNames from 'classnames';
 import {isFunction, isPlainObject, isString, isObject} from 'lodash';
 import {observer} from '@xh/hoist/mobx';
 import {forwardRef, memo, useContext, useDebugValue, useState} from 'react';
+import {localModelContext} from './hooks/Models';
 import {ModelLookup, matchesSelector, ModelLookupContext, modelLookupContextProvider} from './impl/ModelLookup';
 
 /**
@@ -164,18 +165,11 @@ function wrapWithModel(render, spec, displayName) {
 // received model explicitly to children.  No need to add any ContextProviders
 //-----------------------------------------------------------------------------------------
 function wrapWithSimpleModel(render, spec, displayName) {
-    return spec.fromContext ?
-        // a) with a context lookup
-        (props, ref) => {
-            const modelLookup = useContext(ModelLookupContext),
-                {model} = useResolvedModel(spec, props, modelLookup, displayName);
-            return render(propsWithModel(props, model), ref);
-        } :
-        // b) no context lookup needed, lean and mean.
-        (props, ref) => {
-            const {model} = useResolvedModel(spec, props, null, displayName);
-            return render(propsWithModel(props, model), ref);
-        };
+    return (props, ref) => {
+        const modelLookup = useContext(ModelLookupContext),
+            {model} = useResolvedModel(spec, props, modelLookup, displayName);
+        return callRender(render, model, modelLookup, props, ref);
+    };
 }
 
 //------------------------------------------------------------------------------------
@@ -190,6 +184,7 @@ function wrapWithPublishedModel(render, spec, displayName) {
         const modelLookup = useContext(ModelLookupContext),
             {model, fromContext} = useResolvedModel(spec, props, modelLookup, displayName);
 
+
         // Create any lookup needed for model, caching it in state.
         // Avoid adding extra context if this model already in default context.
         // Fixed cache here ok due to the "immutable" model from useResolvedModel
@@ -202,9 +197,25 @@ function wrapWithPublishedModel(render, spec, displayName) {
         const [newLookup] = useState(createLookup);
 
         // Render the app specified elements, either raw or wrapped in context
-        const rendering = render(propsWithModel(props, model), ref);
+        const rendering = callRender(render, model, newLookup ?? modelLookup, props, ref);
         return newLookup ? modelLookupContextProvider({value: newLookup, item: rendering}) : rendering;
     };
+}
+
+//-------------------------------------------------------------------------------
+// Wrapped call to the app specified render method.
+// Provide enhanced props, and set context needed by useLocalModel() calls within
+//------------------------------------------------------------------------------
+function callRender(render, model, modelLookup, props, ref) {
+    const ctx = localModelContext;
+    try {
+        ctx.props = props;
+        ctx.modelLookup = modelLookup;
+        return render(propsWithModel(props, model), ref);
+    } finally {
+        ctx.props = null;
+        ctx.modelLookup = null;
+    }
 }
 
 //-------------------------------------------------------------------------
@@ -217,7 +228,7 @@ function useResolvedModel(spec, props, modelLookup, displayName) {
         spec instanceof CreatesSpec ? createModel(spec) : lookupModel(spec, props, modelLookup, displayName)
     ));
 
-    useModelLinker(isLinked ? model : null, {props, modelLookup});
+    useModelLinker(isLinked ? model : null, modelLookup, props);
 
     // wire any modelRef
     useOnMount(() => {
@@ -302,3 +313,4 @@ function propsWithModel(props, model) {
 function propsWithClassName(props, className) {
     return enhancedProps(props, 'className', className);
 }
+

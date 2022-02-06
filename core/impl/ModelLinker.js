@@ -6,6 +6,7 @@
  */
 import {XH, RefreshContextModel} from '@xh/hoist/core';
 import {useOnUnmount} from '@xh/hoist/utils/react';
+import {each} from 'lodash';
 import {useEffect} from 'react';
 
 /**
@@ -16,12 +17,21 @@ import {useEffect} from 'react';
  *
  * No-op, if model is null.
  */
-
 /* eslint-disable react-hooks/exhaustive-deps */
-export function useModelLinker(model, {props, modelLookup}) {
+export function useModelLinker(model, modelLookup, props) {
     if (model) {
+        const {isLinked} = model;
+        if (!isLinked) {
+            model._modelLookup = modelLookup;
+            each(model._xhInjectedParentProperties, (selector, name) => {
+                model[name] = modelLookup.lookupModel(selector);
+            });
+        }
         if (props) model.setComponentProps(props);
-        if (!model.isLinked) model.doLink(modelLookup);
+
+        if (!isLinked) {
+            model.onLinked?.();
+        }
     }
 
     useEffect(() => {

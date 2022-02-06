@@ -4,13 +4,12 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {useEffect} from 'react';
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
+import {lookup, hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {useContextMenu} from '@xh/hoist/desktop/hooks';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
-import {bindable, runInAction, makeObservable} from '@xh/hoist/mobx';
+import {runInAction} from '@xh/hoist/mobx';
 import {
     createObservableRef,
     getLayoutProps,
@@ -53,14 +52,12 @@ export const [Chart, chart] = hoistCmp.withFactory({
             });
         }
 
-        const impl = useLocalModel(() => new LocalModel(model, aspectRatio));
+        const impl = useLocalModel(LocalModel);
         ref = composeRefs(
             ref,
             useOnResize(impl.onResize),
             useOnVisibleChange(impl.onVisibleChange)
         );
-
-        useEffect(() => impl.setAspectRatio(aspectRatio), [impl, aspectRatio]);
 
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
         const layoutProps = getLayoutProps(props);
@@ -97,30 +94,28 @@ Chart.propTypes = {
 };
 
 class LocalModel extends HoistModel {
-    @bindable aspectRatio;
+
     chartRef = createObservableRef();
-    model;
+
+    @lookup(ChartModel) model;
     contextMenu;
     prevSeriesConfig;
 
-    constructor(model, aspectRatio) {
-        super();
-        makeObservable(this);
-        this.model = model;
-        this.aspectRatio = aspectRatio;
+    onLinked() {
         this.contextMenu = this.getContextMenu();
 
         this.addReaction({
             track: () => [
-                this.aspectRatio,
+                this.componentProps.aspectRatio,
                 this.chartRef.current,
-                model.highchartsConfig,
+                this.model.highchartsConfig,
                 XH.darkTheme
             ],
-            run: () => this.renderHighChart()
+            run: () => this.renderHighChart(),
+            debounce: 0
         });
         this.addReaction({
-            track: () => model.series,
+            track: () => this.model.series,
             run: () => this.updateSeries()
         });
     }
@@ -198,7 +193,7 @@ class LocalModel extends HoistModel {
     };
 
     getChartDims({width, height}) {
-        const {aspectRatio} = this;
+        const {aspectRatio} = this.componentProps;
 
         if (!aspectRatio || aspectRatio <= 0) return {width, height};
 

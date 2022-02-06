@@ -72,7 +72,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
      */
     render({model, className, ...props}, ref) {
         const {store, treeMode, treeStyle, highlightRowOnClick, colChooserModel, filterModel} = model,
-            impl = useLocalModel(GridLocalModel, props),
+            impl = useLocalModel(GridLocalModel),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
             maxDepth = impl.isHierarchical ? store.maxDepth : null;
 

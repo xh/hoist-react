@@ -25,15 +25,23 @@ export function useContextModel(selector = '*') {
  * Create a new model that will be maintained for lifetime of component and destroyed
  * when component is unmounted.
  *
- * @param {(Class|function)} [spec] - class of HoistModel to create, or a function to call to generate one.
- * @param {Object} [props] - optional props to pass to model's 'componentProps` property.
+ * @param {(Class|function)} [spec] - class of HoistModel to create, or a function to call to
+ * generate one.
  */
-export function useLocalModel(spec, props) {
+export function useLocalModel(spec) {
     const [ret] = useState(() => {
         if (!spec) return null;
         return spec.isHoistModel ? new spec() : spec.call();
     });
-    const modelLookup = useContext(ModelLookupContext);
-    useModelLinker(ret, {modelLookup, props});
+    useModelLinker(ret, localModelContext.modelLookup, localModelContext.props ?? {});
     return ret;
 }
+
+/**
+ * @package -- not for application use.
+ *
+ * Default Context for useLocalModel.  Set by HoistComponent during render to minimize app
+ * boiler plate required.
+ * @type {null}
+ */
+export const localModelContext = {modelLookup: null, props: null};
