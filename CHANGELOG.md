@@ -1,6 +1,6 @@
 # Changelog
 
-## v46.1.0 - 2022-02-03
+## v46.1.0 - 2022-02-07
 
 ###  Technical
 * This release modifies our workaround to handle the ag-Grid v26 changes to cast all of their node
