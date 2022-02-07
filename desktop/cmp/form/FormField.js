@@ -107,9 +107,11 @@ export const [FormField, formField] = hoistCmp.withFactory({
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
         // generate actual element child to render
-        let childEl =  !child || readonly ?
-            readonlyChild({model, readonlyRenderer}) :
-            editableChild({
+        let childEl;
+        if (!child || readonly) {
+            childEl = readonlyChild({model, readonlyRenderer})
+        } else {
+            childEl = editableChild({
                 model,
                 child,
                 childIsSizeable,
@@ -120,16 +122,17 @@ export const [FormField, formField] = hoistCmp.withFactory({
                 commitOnChange
             });
 
-        if (minimal) {
-            childEl = tooltip({
-                target: childEl,
-                targetClassName: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
-                targetTagName: !blockChildren.includes(childElementName) || childWidth ? 'span' : 'div',
-                position: tooltipPosition,
-                boundary: tooltipBoundary,
-                disabled: !displayNotValid,
-                content: getErrorTooltipContent(errors)
-            });
+            if (minimal) {
+                childEl = tooltip({
+                    target: childEl,
+                    targetClassName: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
+                    targetTagName: !blockChildren.includes(childElementName) || childWidth ? 'span' : 'div',
+                    position: tooltipPosition,
+                    boundary: tooltipBoundary,
+                    disabled: !displayNotValid,
+                    content: getErrorTooltipContent(errors)
+                });
+            }
         }
 
         return box({
