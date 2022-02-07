@@ -67,7 +67,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
                             bbar: toolbar({
                                 omit: !gridModel.enableColumnPinning,
                                 items: [
-                                    label('Pin first column'),
+                                    label({model, item: 'Pin first column'}),
                                     filler(),
                                     switchInput({model, bind: 'pinFirst'})
                                 ]

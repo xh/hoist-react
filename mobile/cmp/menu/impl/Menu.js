@@ -31,11 +31,10 @@ import {MenuItem} from '../MenuItem';
  */
 export const [Menu, menu] = hoistCmp.withFactory({
     displayName: 'Menu',
-    model: false,
     className: 'xh-menu',
-    render(props, ref) {
-        const {menuItems, onDismiss, title, ...rest} = props,
-            impl = useLocalModel(LocalModel);
+    render({menuItems, onDismiss, title, ...props}, ref) {
+
+        const impl = useLocalModel(LocalModel);
 
         const items = impl.parseMenuItems(menuItems, onDismiss);
         if (isEmpty(items)) return null;
@@ -54,7 +53,7 @@ export const [Menu, menu] = hoistCmp.withFactory({
                     items
                 })
             ],
-            ...rest
+            ...props
         });
     }
 });

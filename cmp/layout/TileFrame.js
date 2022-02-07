@@ -26,7 +26,7 @@ import './TileFrame.scss';
  */
 export const [TileFrame, tileFrame] = hoistCmp.withFactory({
     displayName: 'TileFrame',
-    model: false, memo: false, observer: false,
+    memo: false, observer: false,
     className: 'xh-tile-frame',
 
     render({

@@ -5,6 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {useContext, useState} from 'react';
+import {throwIf} from '@xh/hoist/utils/js';
 import {ModelLookupContext} from '../impl/ModelLookup';
 import {useModelLinker} from '../impl/ModelLinker';
 
@@ -33,7 +34,13 @@ export function useLocalModel(spec) {
         if (!spec) return null;
         return spec.isHoistModel ? new spec() : spec.call();
     });
-    useModelLinker(ret, localModelContext.modelLookup, localModelContext.props ?? {});
+    const {modelLookup, props} = localModelContext;
+    throwIf(
+        !modelLookup || !props,
+        'Cannot use useLocalModel() in this render method. ' +
+        'Please ensure that this is a HoistComponent and that its `model` spec is not falsy.'
+    );
+    useModelLinker(ret, modelLookup, props);
     return ret;
 }
 
