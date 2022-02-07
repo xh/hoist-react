@@ -1,5 +1,9 @@
 # Changelog
 
+## v47.0.0-SNAPSHOT - unreleased
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v46.1.0...develop)
+
 ## v46.1.0 - 2022-02-07
 
 ###  Technical
