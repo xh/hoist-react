@@ -1,6 +1,24 @@
 # Changelog
 
-## v46.1.0 - 2022-02-03
+## v47.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* Version 47 provides new features to simplify the wiring of models to each other and the components
+they render.  In particular, it formalizes the existing concept of "linked" HoistModels -- models
+created by Hoist via the `creates` directive or the `useLocalModel` hook -- and provides them with
+the following new features:
+   - an observable `componentProps` property with access to the props of their rendered component.
+   - a `lookupModel()` method and a `@lookup` decorator that can be used to acquire references to
+     "ancestors" models in the component hierarchy.
+   - new `onLinked()` lifecycle method, called when the model has been fully linked to
+     the component hierarchy and the features above are fully available.
+As before, linked models are auto-loaded and registered for refreshes within the `RefreshContext`
+they reside in, as well as destroyed when their linked component is unmounted.  Also note that
+these features are "opt-in" and should be fully backward compatible with existing application code.
+
+
+## v46.1.0 - 2022-02-07
 
 ###  Technical
 * This release modifies our workaround to handle the ag-Grid v26 changes to cast all of their node
