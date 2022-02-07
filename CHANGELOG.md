@@ -26,6 +26,8 @@ to locate and compare records.  We expect such usages to be rare in application 
 * `FormField` would previously throw if given a child that did not have `propTypes`.  This has
    been fixed.
 
+[Commit Log](https://github.com/xh/hoist-react/compare/v46.0.0...v46.1.0)
+
 ## v46.0.0 - 2022-01-25
 
 ### 🎁 New Features
