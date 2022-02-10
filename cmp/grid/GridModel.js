@@ -1420,7 +1420,14 @@ export class GridModel extends HoistModel {
         const newFields = [];
         forEach(leafColsByFieldName, (col, name) => {
             if (name !== 'id' && !storeFieldNames.includes(name)) {
-                newFields.push({name, displayName: col.displayName, ...col.fieldSpec});
+                newFields.push({
+                    name,
+                    displayName: col.displayName,
+                    // Spread the column's fieldSpec, while ensuring `name` and `type` refer to the
+                    // root for dot-separated fields
+                    ...omit(col.fieldSpec, ['name', 'type']),
+                    type: isArray(col.fieldPath) ? FieldType.AUTO : col.fieldSpec?.type
+                });
             }
         });
 
