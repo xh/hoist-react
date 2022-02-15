@@ -2,6 +2,9 @@
 
 ## v47.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+* Prevent `onClick` for mobile `Buttons` that are `disabled`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v46.1.0...develop)
 
 ## v46.1.0 - 2022-02-07
