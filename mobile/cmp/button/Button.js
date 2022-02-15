@@ -78,6 +78,7 @@ export const [Button, button] = hoistCmp.withFactory({
             ref,
             items,
             onClick,
+            disabled,
             className: classNames(className, classes),
             style: {
                 ...style,
