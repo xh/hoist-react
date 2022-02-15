@@ -13,7 +13,6 @@ import './Editors.scss';
 export const [TextEditor, textEditor] = hoistCmp.withFactory({
     displayName: 'TextEditor',
     className: 'xh-text-editor',
-    model: false,
     memo: false,
     observer: false,
     render(props, ref) {
