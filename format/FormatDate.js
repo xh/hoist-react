@@ -9,7 +9,7 @@ import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {defaults, isString} from 'lodash';
 import moment from 'moment';
 import {fmtSpan} from './FormatMisc';
-import {createRenderer, saveOriginal} from './FormatUtils';
+import {asElementDeprecationWarning, createRenderer, saveOriginal} from './FormatUtils';
 
 export const DATE_FMT = 'YYYY-MM-DD',
     DATETIME_FMT = 'YYYY-MM-DD h:mma',
@@ -29,11 +29,12 @@ const INVALID_DATE = moment(null).format();
  * @param {string} [opts.fmt] - a MomentJs format string.
  * @param {function} [opts.tooltip] - function to generate a tooltip string,
  *      passed the original value to be formatted.
- * @param {boolean} [opts.asElement] - return a React element rather than an HTML string.
+ * @param {boolean} [opts.asHtml] - return an HTML string rather than a React element.
  * @param {*} [opts.originalValue] - holds the unaltered original value to be formatted.
  *      Not typically used by applications.
  */
 export function fmtDate(v, opts) {
+    asElementDeprecationWarning(opts);
     if (v == null) return opts?.nullDisplay ?? '';
     opts = isString(opts) ? {fmt: opts} : {...opts};
 
@@ -47,10 +48,10 @@ export function fmtDate(v, opts) {
     if (ret === INVALID_DATE) {
         ret = '';
     } else if (opts.tooltip) {
-        ret = fmtSpan(ret, {className: 'xh-title-tip', title: opts.tooltip(opts.originalValue), asElement: opts.asElement});
+        ret = fmtSpan(ret, {className: 'xh-title-tip', title: opts.tooltip(opts.originalValue), asHtml: opts.asHtml});
     }
 
-    return opts.asElement ? span(ret) : ret;
+    return opts.asHtml ? ret : span(ret);
 }
 
 export function fmtDateTime(v, opts) {
@@ -93,7 +94,7 @@ export function fmtTime(v, opts) {
  *      to be considered 'recent' or 'near'.
  * @param {function} [opts.tooltip] - function to generate a tooltip string,
  *      passed the original value to be formatted.
- * @param {boolean} [opts.asElement] - return a React element rather than an HTML string
+ * @param {boolean} [opts.asHtml] - return an HTML string rather than a React element.
  * @param {*} [opts.originalValue] - holds the unaltered original value to be formatted.
  *      Not typically used by applications.
  *
@@ -105,7 +106,7 @@ export function fmtCompactDate(v, {
     distantFmt = DATE_FMT,
     distantThreshold = 6,
     tooltip = null,
-    asElement = false,
+    asHtml = false,
     originalValue = v
 } = {}) {
     if (isLocalDate(v)) v = v.date;
@@ -115,7 +116,7 @@ export function fmtCompactDate(v, {
         valueDay = fmtDate(v),
         recentPast = now.clone().subtract(distantThreshold, 'months').endOf('month'),
         nearFuture = now.clone().add(distantThreshold, 'months').date(1),
-        dateOpts = {tooltip, originalValue, asElement};
+        dateOpts = {tooltip, originalValue, asHtml};
 
     if (today === valueDay) {
         dateOpts.fmt = sameDayFmt;
