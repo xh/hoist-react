@@ -109,8 +109,8 @@ class Model extends HoistInputModel {
         }
     }
 
-    constructor(props) {
-        super(props);
+    constructor() {
+        super();
         makeObservable(this);
     }
 
@@ -124,24 +124,24 @@ class Model extends HoistInputModel {
 
     // Prop-backed convenience getters
     get maxDate() {
-        const {maxDate} = this.props;
+        const {maxDate} = this.componentProps;
         if (!maxDate) return moment().add(100, 'years');
         return isLocalDate(maxDate) ? maxDate.moment : moment(maxDate);
     }
 
     get minDate() {
-        const {minDate} = this.props;
+        const {minDate} = this.componentProps;
         if (!minDate) return moment().subtract(100, 'years');
         return isLocalDate(minDate) ? minDate.moment : moment(minDate);
     }
 
     get initialMonth() {
-        const {initialMonth} = this.props;
+        const {initialMonth} = this.componentProps;
         return isLocalDate(initialMonth) ? initialMonth.moment : moment(initialMonth);
     }
 
     get valueType() {
-        return withDefault(this.props.valueType, 'date');
+        return withDefault(this.componentProps.valueType, 'date');
     }
 
     toExternal(internal) {
@@ -168,7 +168,7 @@ class Model extends HoistInputModel {
     }
 
     getFormat() {
-        const {formatString} = this.props;
+        const {formatString} = this.componentProps;
         return formatString || 'YYYY-MM-DD';
     }
 

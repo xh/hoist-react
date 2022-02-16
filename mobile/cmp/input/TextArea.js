@@ -53,7 +53,7 @@ TextArea.hasLayoutSupport = true;
 
 class Model extends HoistInputModel {
     get commitOnChange() {
-        return withDefault(this.props.commitOnChange, false);
+        return withDefault(this.componentProps.commitOnChange, false);
     }
 
     get inputEl() {
@@ -65,12 +65,11 @@ class Model extends HoistInputModel {
     };
 
     onKeyDown = (ev) => {
-        const {onKeyDown} = this.props;
-        if (onKeyDown) onKeyDown(ev);
+        this.componentProps.onKeyDown?.(ev);
     };
 
     onFocus = (ev) => {
-        if (this.props.selectOnFocus && ev.target && ev.target.select) {
+        if (this.componentProps.selectOnFocus && ev.target && ev.target.select) {
             ev.target.select();
         }
         this.noteFocused();

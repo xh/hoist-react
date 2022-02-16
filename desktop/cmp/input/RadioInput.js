@@ -61,7 +61,7 @@ class Model extends HoistInputModel {
 
     @computed
     get normalizedOptions() {
-        const options = this.props.options ?? [];
+        const options = this.componentProps.options ?? [];
         return options.map(o => {
             const ret = isObject(o) ?
                 {label: o.label, value: o.value, disabled: o.disabled} :
@@ -72,8 +72,8 @@ class Model extends HoistInputModel {
         });
     }
 
-    constructor(props) {
-        super(props);
+    constructor() {
+        super();
         makeObservable(this);
     }
 

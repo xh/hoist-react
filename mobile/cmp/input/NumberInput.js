@@ -96,11 +96,11 @@ class Model extends HoistInputModel {
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/gi;
 
     get commitOnChange() {
-        return withDefault(this.props.commitOnChange, false);
+        return withDefault(this.componentProps.commitOnChange, false);
     }
 
     get scaleFactor() {
-        return withDefault(this.props.scaleFactor, 1);
+        return withDefault(this.componentProps.scaleFactor, 1);
     }
 
     select() {
@@ -124,16 +124,15 @@ class Model extends HoistInputModel {
     }
 
     onKeyDown = (ev) => {
-        const {onKeyDown} = this.props;
         if (ev.key === 'Enter') this.doCommit();
-        if (onKeyDown) onKeyDown(ev);
+        this.componentProps.onKeyDown?.(ev);
     };
 
     onFocus = (ev) => {
         this.noteFocused();
 
         // Deferred to allow any value conversion to complete and flush into input.
-        if (this.props.selectOnFocus) {
+        if (this.componentProps.selectOnFocus) {
             const target = ev.target;
             if (target && target.select) wait().then(() => target.select());
         }
@@ -147,10 +146,10 @@ class Model extends HoistInputModel {
     formatValue(value) {
         if (value == null) return '';
 
-        const {props} = this,
-            {valueLabel, displayWithCommas} = props,
-            precision = withDefault(props.precision, 4),
-            zeroPad = withDefault(props.zeroPad, false),
+        const {componentProps} = this,
+            {valueLabel, displayWithCommas} = componentProps,
+            precision = withDefault(componentProps.precision, 4),
+            zeroPad = withDefault(componentProps.zeroPad, false),
             formattedVal = fmtNumber(value, {precision, zeroPad, label: valueLabel, labelCls: null});
 
         return displayWithCommas ? formattedVal : formattedVal.replace(/,/g, '');

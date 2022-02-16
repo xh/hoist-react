@@ -19,28 +19,31 @@ import {useEffect} from 'react';
  */
 /* eslint-disable react-hooks/exhaustive-deps */
 export function useModelLinker(model, modelLookup, props) {
+    let propsSet = false;
     if (model) {
-        const {isLinked} = model;
-        if (!isLinked) {
+        if (!model.isLinked) {
             model._modelLookup = modelLookup;
             each(model._xhInjectedParentProperties, (selector, name) => {
                 model[name] = modelLookup.lookupModel(selector);
             });
-        }
-        if (props) model.setComponentProps(props);
-
-        if (!isLinked) {
+            model.setComponentProps(props);
+            propsSet = true;
             model.onLinked?.();
         }
     }
 
     useEffect(() => {
-        if (!model?.loadSupport) return;
-        model.loadAsync();
-        const refreshContext = modelLookup?.lookupModel(RefreshContextModel);
-        if (refreshContext) {
-            refreshContext.register(model);
-            return () => refreshContext.unregister(model);
+        if (model && !propsSet) model.setComponentProps(props);
+    }, [props]);
+
+    useEffect(() => {
+        if (model?.loadSupport) {
+            model.loadAsync();
+            const refreshContext = modelLookup?.lookupModel(RefreshContextModel);
+            if (refreshContext) {
+                refreshContext.register(model);
+                return () => refreshContext.unregister(model);
+            }
         }
     }, []);
 

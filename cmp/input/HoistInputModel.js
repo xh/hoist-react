@@ -6,10 +6,10 @@
  */
 import {HoistModel, useLocalModel} from '@xh/hoist/core';
 import {FieldModel} from '@xh/hoist/cmp/form';
-import {action, computed, observable, bindable, makeObservable} from '@xh/hoist/mobx';
+import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {isEqual} from 'lodash';
-import {useEffect, useImperativeHandle} from 'react';
+import {useImperativeHandle} from 'react';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import './HoistInput.scss';
 import ReactDOM from 'react-dom';
@@ -102,20 +102,28 @@ export class HoistInputModel extends HoistModel {
         return this.inputRef.current ?? this.domEl?.querySelector('input');
     }
 
+    /**
+     *  Bound model, if any.
+     *
+     * @returns {HoistModel}
+     */
+    get model() {
+        return this.componentProps.model;
+    }
+
     //-----------------------
     // Implementation State
     //------------------------
-    model;                                   // Reference to bound model, if any
-    @bindable.ref props;                     // Props on input
     @observable.ref internalValue = null;    // Cached internal value
     inputRef = createObservableRef();        // ref to internal <input> element, if any
     domRef = createObservableRef();          // ref to outermost element, or class Component.
 
-    constructor(props) {
+    constructor() {
         super();
         makeObservable(this);
-        this.props = props;
-        this.model = props.model;
+    }
+
+    onLinked() {
         this.addReaction(this.externalValueReaction());
     }
 
@@ -165,7 +173,7 @@ export class HoistInputModel extends HoistModel {
      */
     @computed
     get externalValue() {
-        const {value, bind} = this.props,
+        const {value, bind} = this.componentProps,
             {model} = this;
         if (model && bind) {
             return model[bind];
@@ -184,7 +192,7 @@ export class HoistInputModel extends HoistModel {
      * This is the primary method for HoistInput implementations to call on value change.
      */
     noteValueChange(val) {
-        const {onChange} = this.props,
+        const {onChange} = this.componentProps,
             oldVal = this.internalValue;
 
         this.setInternalValue(val);
@@ -283,7 +291,7 @@ export class HoistInputModel extends HoistModel {
     }
 
     doCommitInternal() {
-        const {onCommit, bind} = this.props,
+        const {onCommit, bind} = this.componentProps,
             {model} = this;
         let currentValue = this.externalValue,
             newValue = this.externalFromInternal();
@@ -323,9 +331,8 @@ export class HoistInputModel extends HoistModel {
  * @returns {element} - react element to be rendered
  */
 export function useHoistInputModel(component, props, ref, modelSpec = HoistInputModel) {
-    const inputModel = useLocalModel(() => new modelSpec(props));
+    const inputModel = useLocalModel(modelSpec);
 
-    useEffect(() => inputModel.setProps(props));
     useImperativeHandle(ref, () => inputModel);
 
     const field = inputModel.getField(),
