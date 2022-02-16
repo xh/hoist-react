@@ -5,18 +5,25 @@
 ### 🎁 New Features
 
 * Version 47 provides new features to simplify the wiring of models to each other and the components
-they render.  In particular, it formalizes the existing concept of "linked" HoistModels -- models
-created by Hoist via the `creates` directive or the `useLocalModel` hook -- and provides them with
-the following new features:
-   - an observable `componentProps` property with access to the props of their rendered component.
-   - a `lookupModel()` method and a `@lookup` decorator that can be used to acquire references to
-     "ancestors" models in the component hierarchy.
-   - new `onLinked()` lifecycle method, called when the model has been fully linked to
-     the component hierarchy and the features above are fully available.
-As before, linked models are auto-loaded and registered for refreshes within the `RefreshContext`
-they reside in, as well as destroyed when their linked component is unmounted.  Also note that
-these features are "opt-in" and should be fully backward compatible with existing application code.
+  they render.  In particular, it formalizes the existing concept of "linked" HoistModels -- models
+  created by Hoist via the `creates` directive or the `useLocalModel` hook -- and provides them with
+  the following new features:
+    - an observable `componentProps` property with access to the props of their rendered component.
+    - a `lookupModel()` method and a `@lookup` decorator that can be used to acquire references to
+      "ancestors" models in the component hierarchy.
+    - new `onLinked()` lifecycle method, called when the model has been fully linked to
+      the component hierarchy and the features above are fully available.
+      As before, linked models are auto-loaded and registered for refreshes within the `RefreshContext`
+      they reside in, as well as destroyed when their linked component is unmounted.  Also note that
+      these features are "opt-in" and should be fully backward compatible with existing application code.
 
+
+## v46.1.1 - 2022-02-15
+
+### 🐞 Bug Fixes
+* Prevent `onClick` for mobile `Buttons` that are `disabled`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v46.1.0...v46.1.1)
 
 ## v46.1.0 - 2022-02-07
 
@@ -43,6 +50,8 @@ to locate and compare records.  We expect such usages to be rare in application 
 ### 🐞 Bug Fixes
 * `FormField` would previously throw if given a child that did not have `propTypes`.  This has
    been fixed.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v46.0.0...v46.1.0)
 
 ## v46.0.0 - 2022-01-25
 
