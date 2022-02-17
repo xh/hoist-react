@@ -358,7 +358,7 @@ class Model extends HoistInputModel {
     }
 
     formatDate(date) {
-        return fmtDate(date, {fmt: this.getFormatString()});
+        return fmtDate(date, {fmt: this.getFormatString(), asHtml: true});
     }
 
     parseDate(dateString, strictInputParsing = this.strictInputParsing) {

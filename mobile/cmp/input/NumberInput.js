@@ -151,7 +151,7 @@ class Model extends HoistInputModel {
             {valueLabel, displayWithCommas} = props,
             precision = withDefault(props.precision, 4),
             zeroPad = withDefault(props.zeroPad, false),
-            formattedVal = fmtNumber(value, {precision, zeroPad, label: valueLabel, labelCls: null});
+            formattedVal = fmtNumber(value, {precision, zeroPad, label: valueLabel, labelCls: null, asHtml: true});
 
         return displayWithCommas ? formattedVal : formattedVal.replace(/,/g, '');
     }

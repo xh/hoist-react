@@ -134,7 +134,7 @@ class LocalModel extends HoistModel {
             parts.push(this.errorString);
         } else {
             const time = getAdjustedTime(offset);
-            parts.push(fmtDate(time, format));
+            parts.push(fmtDate(time, {fmt: format, asHtml: true}));
         }
 
         if (prefix) parts.unshift(prefix);
