@@ -1036,9 +1036,8 @@ export class GridModel extends HoistModel {
                 colDefaults.tooltip = null;
                 colDefaults.tooltipElement = null;
             }
-            if (config.renderer || config.elementRenderer) {
+            if (config.renderer) {
                 colDefaults.renderer = null;
-                colDefaults.elementRenderer = null;
             }
             config = defaultsDeep({}, config, colDefaults);
         }

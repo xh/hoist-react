@@ -64,8 +64,6 @@ export class ColumnWidthCalculator {
 
     calcDataWidth(gridModel, records, column, options) {
         try {
-            if (column.elementRenderer) return null;
-
             const {store, treeMode} = gridModel;
             if (treeMode && column.isTreeColumn && store.allRootCount !== store.allCount) {
                 // For tree columns, we need to account for the indentation at the different depths.

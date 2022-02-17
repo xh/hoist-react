@@ -218,7 +218,7 @@ class GridLocalModel extends HoistModel {
             getRowHeight: ({node}) => this.getRowHeight(node),
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             rowClassRules: model.rowClassRules,
-            noRowsOverlayComponentFramework: observer(() => div(this.emptyText)),
+            noRowsOverlayComponent: observer(() => div(this.emptyText)),
             onCellContextMenu: model.onCellContextMenu,
             onCellClicked: model.onCellClicked,
             onCellDoubleClicked: model.onCellDoubleClicked,
@@ -239,7 +239,7 @@ class GridLocalModel extends HoistModel {
             defaultGroupOrderComparator: model.groupSortFn ? this.groupSortComparator : undefined,
             groupDefaultExpanded: 1,
             groupDisplayType: 'groupRows',
-            groupRowRendererFramework: model.groupRowElementRenderer,
+            groupRowRenderer: model.groupRowElementRenderer,
             groupRowRendererParams: {
                 innerRenderer: model.groupRowRenderer,
                 suppressCount: !model.showGroupRowCounts

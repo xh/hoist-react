@@ -30,8 +30,7 @@ export class DataViewModel extends HoistModel {
     /**
      * @param {Object} c - DataViewModel configuration.
      * @param {(Store|Object)} c.store - a Store instance, or a config to create one.
-     * @param {Column~elementRendererFn} c.elementRenderer - function returning a React element for
-     *      each data row.
+     * @param {Column~rendererFn} c.renderer - renderer to use for each data row.
      * @param {(number|function)} itemHeight - Row height (in px) for each item displayed in the view,
      *      or a function which returns a number. Function will receive {record, dataViewModel, agParams}.
      * @param {(string|string[])} [c.groupBy] - field(s) by which to do full-width row grouping.
@@ -68,7 +67,7 @@ export class DataViewModel extends HoistModel {
      */
     constructor({
         store,
-        elementRenderer,
+        renderer,
         itemHeight,
         groupBy,
         groupRowHeight,
@@ -108,7 +107,7 @@ export class DataViewModel extends HoistModel {
         columns.push({
             colId: 'xhDataViewColumn',
             flex: true,
-            elementRenderer,
+            renderer,
             rendererIsComplex: true
         });
 

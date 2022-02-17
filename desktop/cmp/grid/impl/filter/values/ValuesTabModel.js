@@ -205,7 +205,7 @@ export class ValuesTabModel extends HoistModel {
                     },
                     width: 30,
                     rendererIsComplex: true,
-                    elementRenderer: (v, {record}) => {
+                    renderer: (v, {record}) => {
                         return checkbox({
                             displayUnsetState: true,
                             value: record.data.isChecked,
