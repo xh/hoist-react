@@ -66,7 +66,7 @@ class LocalModel extends HoistModel {
     constructor({columnGroup: agColumnGroup}) {
         super();
         makeObservable(this);
-        this.agColumnGroup = agColumnGroup.originalColumnGroup;
+        this.agColumnGroup = agColumnGroup.providedColumnGroup;
         this.syncIsExpanded();
         this.agColumnGroup.addEventListener('expandedChanged', this.syncIsExpanded);
     }
