@@ -2,6 +2,8 @@
 
 ## v47.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+* Fixed an issue where column autosize can reset column order under certain circumstances.
 
 ## v46.1.1 - 2022-02-15
 
