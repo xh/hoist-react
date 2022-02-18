@@ -181,6 +181,8 @@ export class Column {
     editable;
     /** @member {Column~editorFn} */
     editor;
+    /** @member {boolean} */
+    editorIsPopup;
     /** @member {Column~setValueFn} */
     setValueFn;
     /** @member {Column~getValueFn} */
@@ -306,6 +308,9 @@ export class Column {
      * @param {Column~editorFn} [c.editor] - Cell editor Component or a function to create one.
      *      Adding an editor will also install a cellClassRule and tooltip to display the
      *      validation state of the cell in question.
+     * @param {boolean} [c.editorIsPopup] - true if this cell editor should be rendered as a popup
+     *      over the cell instead of within the actual cell element. Popup editors will have their
+     *      width set to match the cell by default. Typically used with textarea cell editors.
      * @param {Column~setValueFn} [c.setValueFn] - function for updating StoreRecord field for this
      *      column after inline editing.
      * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
@@ -372,6 +377,7 @@ export class Column {
         tooltipElement,
         editable,
         editor,
+        editorIsPopup,
         setValueFn,
         getValueFn,
         enableDotSeparatedFieldPath,
@@ -486,6 +492,7 @@ export class Column {
 
         this.editable = editable || false;
         this.editor = editor;
+        this.editorIsPopup = editorIsPopup;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
@@ -679,7 +686,7 @@ export class Column {
             // requires all cells to have an inner element to work properly. We check agOptions
             // in case the dev has specified either renderer option directly against the ag-Grid
             // API (done sometimes with components for performance reasons).
-            setRenderer((agParams) => agParams.value?.toString());
+            setRenderer((agParams) => agParams.value?.toString() ?? null);
         }
 
         const sortCfg = find(gridModel.sortBy, {colId: ret.colId});
@@ -733,7 +740,7 @@ export class Column {
         }
 
         if (editor) {
-            ret.cellEditorFramework = forwardRef((agParams, ref) => {
+            ret.cellEditor = forwardRef((agParams, ref) => {
                 const props = {
                     record: agParams.data,
                     gridModel,
@@ -746,6 +753,7 @@ export class Column {
                 if (isFunction(editor)) return editor(props);
                 throw XH.exception('Column editor must be a HoistComponent or a render function');
             });
+            ret.cellEditorPopup = this.editorIsPopup;
             ret.cellClassRules = {
                 'xh-cell--invalid': (agParams) => {
                     const record = agParams.data;
