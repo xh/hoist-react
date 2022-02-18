@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {div, ul, li} from '@xh/hoist/cmp/layout';
+import {div, ul, li, span} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault, apiRemoved, apiDeprecated} from '@xh/hoist/utils/js';
@@ -676,17 +676,18 @@ export class Column {
         }
 
         const {renderer} = this;
+        // Our flexbox enabled cell styling requires all cells to have a non-flex inner element
+        // to work properly, so we wrap the output of all renderers in a span.
         if (renderer) {
             setRenderer((agParams) => {
-                return renderer(agParams.value, {record: agParams.data, column: this, gridModel, agParams});
+                return span(renderer(agParams.value, {record: agParams.data, column: this, gridModel, agParams}));
             });
         } else if (!agOptions.cellRenderer && !agOptions.cellRendererFramework) {
             // By always providing a minimal cell pass-through cellRenderer, we can ensure the
-            // cell contents are wrapped in a span by Ag-Grid. Our flexbox enabled cell styling
-            // requires all cells to have an inner element to work properly. We check agOptions
-            // in case the dev has specified either renderer option directly against the ag-Grid
-            // API (done sometimes with components for performance reasons).
-            setRenderer((agParams) => agParams.value?.toString() ?? null);
+            // cell contents are wrapped in a span by Ag-Grid. We check agOptions in case
+            // the dev has specified either renderer option directly against the ag-Grid API
+            // (done sometimes with components for performance reasons).
+            setRenderer((agParams) => span(agParams.value?.toString()));
         }
 
         const sortCfg = find(gridModel.sortBy, {colId: ret.colId});
