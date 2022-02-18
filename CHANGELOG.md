@@ -1,9 +1,11 @@
 # Changelog
 
-## v47.0.0-SNAPSHOT - unreleased
+## v46.1.2 - 2022-02-18
 
 ### 🐞 Bug Fixes
 * Fixed an issue where column autosize can reset column order under certain circumstances.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v46.1.1...v46.1.2)
 
 ## v46.1.1 - 2022-02-15
 
