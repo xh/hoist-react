@@ -2,6 +2,11 @@
 
 ## v47.0.0-SNAPSHOT - under development
 
+### 🐞 Bug Fixes
+
+* Fixed an issue where the menu would flash open and closed when clicking on the `FilterChooser`
+  favorites button.
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.52 -> 3.53`
