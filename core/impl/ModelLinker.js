@@ -37,7 +37,9 @@ export function useModelLinker(model, modelLookup, props) {
     }, [props]);
 
     useEffect(() => {
-        if (model?.loadSupport) {
+        if (!model) return;
+        model.onMounted?.();
+        if (model.loadSupport) {
             model.loadAsync();
             const refreshContext = modelLookup?.lookupModel(RefreshContextModel);
             if (refreshContext) {
@@ -45,6 +47,7 @@ export function useModelLinker(model, modelLookup, props) {
                 return () => refreshContext.unregister(model);
             }
         }
+
     }, []);
 
     useOnUnmount(() => XH.safeDestroy(model));

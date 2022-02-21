@@ -9,6 +9,7 @@ import {makeObservable} from 'mobx';
 import {throwIf, warnIf} from '../utils/js';
 import {HoistBase} from './HoistBase';
 import {managed} from './HoistBaseDecorators';
+import {ensureIsSelector} from './modelspec/uses';
 import {LoadSupport} from './refresh/LoadSupport';
 import {observable, action} from '@xh/hoist/mobx';
 
@@ -146,16 +147,28 @@ export class HoistModel extends HoistBase {
     }
 
     /**
-     * Called when this model has been linked to the component hierarchy.
+     * Called during first render of the component linked to this model.
      *
      * Only available for linked models.
      *
      * This method will be called when this model has been fully linked to the component
      * hierarchy. Use this method for any work requiring the availability of lookup models or
-     * componentProps.  Note that this method is called during the initial rendering of the
-     * linked component
+     * componentProps.  Note that this method is called *during* the initial rendering of the
+     * linked component.  See also `onMounted` for a version of this method, that will be called
+     * after the first render is complete.
      */
     onLinked() {}
+
+
+    /**
+     * Called after first render of the component linked to this model.
+     *
+     * Only available for linked models.
+     *
+     * This method is similar to onLinked, however it will be called after rendering has completed
+     * using the native react `useEffect` hook.
+     */
+    onMounted() {}
 
     /**
      * Lookup an ancestor model in the context hierarchy.
@@ -202,7 +215,8 @@ export class HoistModel extends HoistBase {
  *
  * @param {ModelSelector} selector - type/specification of model to lookup.
  */
-export function lookup(selector = '*') {
+export function lookup(selector) {
+    ensureIsSelector(selector);
     return function(target, property, descriptor) {
         throwIf(!target.isHoistModel, '@parent decorator should be applied to a subclass of HoistModel');
         // Be sure to create list for *this* particular class. Clone and include inherited values.

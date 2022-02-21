@@ -246,7 +246,10 @@ function useResolvedModel(spec, props, modelLookup, displayName) {
 }
 
 function createModel(spec) {
-    return {model: spec.createFn(), isLinked: true, fromContext: false};
+    let model = spec.createFn();
+    if (isFunction(model)) model = new model();
+
+    return {model, isLinked: true, fromContext: false};
 }
 
 function lookupModel(spec, props, modelLookup, displayName) {

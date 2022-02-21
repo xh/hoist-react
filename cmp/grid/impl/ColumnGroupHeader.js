@@ -19,7 +19,7 @@ import {isFunction} from 'lodash';
 export const columnGroupHeader = hoistCmp.factory({
     displayName: 'ColumnGroupHeader',
     className: 'xh-grid-group-header',
-    model: creates(() => new LocalModel()),
+    model: creates(() => LocalModel),
 
     render({model, className, xhColumnGroup, gridModel, setExpanded, displayName}) {
         const {isExpandable, isExpanded} = model;

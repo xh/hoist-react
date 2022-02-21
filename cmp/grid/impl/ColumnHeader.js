@@ -29,7 +29,7 @@ import {GridSorter} from './GridSorter';
 export const columnHeader = hoistCmp.factory({
     displayName: 'ColumnHeader',
     className: 'xh-grid-header',
-    model: creates(() => new LocalModel()),
+    model: creates(() => LocalModel),
 
     render({className, model, enableMenu, showColumnMenu, displayName}) {
         const {gridModel, xhColumn} = model,

@@ -47,6 +47,13 @@ export function uses(
 }
 
 
+export function ensureIsSelector(s) {
+    throwIf(
+        !isFunction(s) && s !== '*',
+        'A valid Class, function, or "*" is required as a selector.'
+    );
+}
+
 /** @private */
 export class UsesSpec extends ModelSpec {
 
@@ -56,10 +63,8 @@ export class UsesSpec extends ModelSpec {
 
     constructor(selector, fromContext, publishMode, createFromConfig, createDefault) {
         super(fromContext, publishMode);
-        throwIf(
-            !isFunction(selector) && selector !== '*',
-            'A valid Class, function, or "*" is required as a selector in uses().'
-        );
+
+        ensureIsSelector(selector);
 
         this.selector = selector;
         this.createFromConfig = createFromConfig;
@@ -67,8 +72,7 @@ export class UsesSpec extends ModelSpec {
     }
 }
 
-
 /**
  * @typedef {(Class|function|string)} ModelSelector -- class (or superclass) to match, function
- *      taking a model and returning a boolean, or  '*' to accept any Model.
+ *      taking a model and returning a boolean, or '*' to accept any Model.
  */

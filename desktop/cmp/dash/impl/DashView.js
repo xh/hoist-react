@@ -6,7 +6,6 @@
  */
 import {frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
-import {modelLookupContextProvider} from '@xh/hoist/core/impl/ModelLookup';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
 import {DashViewModel} from '../DashViewModel';
@@ -45,14 +44,11 @@ export const dashView = hoistCmp.factory({
             return null;
         }
 
-        return modelLookupContextProvider({
-            value: model.containerModel.modelLookupContext,
-            item: frame({
-                className,
-                item: refreshContextView({
-                    model: refreshContextModel,
-                    item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
-                })
+        return frame({
+            className,
+            item: refreshContextView({
+                model: refreshContextModel,
+                item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
             })
         });
     }
