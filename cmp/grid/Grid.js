@@ -207,7 +207,7 @@ class GridLocalModel extends HoistModel {
                 groupContracted: Icon.angleRight({asHtml: true, className: 'ag-group-contracted'}),
                 clipboardCopy: Icon.copy({asHtml: true})
             },
-            frameworkComponents: {
+            components: {
                 agColumnHeader: (props) => columnHeader({gridModel: model, ...props}),
                 agColumnGroupHeader: (props) => columnGroupHeader(props)
             },
