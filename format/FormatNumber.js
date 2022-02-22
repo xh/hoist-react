@@ -293,11 +293,11 @@ function fmtNumberString(v, opts = {}) {
     }
 
     if (colorSpec) {
-        ret = fmtSpan(ret, {className: valueColor(v, colorSpec)});
+        ret = fmtSpan(ret, {className: valueColor(v, colorSpec), asHtml});
     }
 
     if (tooltip) {
-        ret = fmtSpan(ret, {className: 'xh-title-tip', title: processToolTip(tooltip, opts)});
+        ret = fmtSpan(ret, {className: 'xh-title-tip', title: processToolTip(tooltip, opts), asHtml});
     }
 
     return ret;
