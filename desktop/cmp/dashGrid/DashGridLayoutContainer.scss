@@ -1,0 +1,23 @@
+.dash-grid-layout-container {
+  overflow: auto !important;
+
+  .react-grid-item {
+    border: var(--xh-border-solid);
+    box-shadow: var(--xh-popover-box-shadow);
+    display: flex;
+
+    > .react-resizable-handle {
+      &::after {
+        border-color: var(--xh-text-color-muted);
+      }
+    }
+
+    &.react-grid-placeholder {
+      background-color: var(--xh-intent-primary);
+    }
+
+    .xh-panel-header {
+      cursor: move;
+    }
+  }
+}
