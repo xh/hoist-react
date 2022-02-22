@@ -1078,9 +1078,9 @@ export class GridModel extends HoistModel {
         let colIds, includeColFn = () => true;
         if (isFunction(columns)) {
             includeColFn = columns;
-            colIds = this.getLeafColumnIds();
+            colIds = this.columnState.map(it => it.colId);
         } else {
-            colIds = columns ?? this.getLeafColumnIds();
+            colIds = columns ?? this.columnState.map(it => it.colId);
         }
 
         colIds = castArray(colIds).filter(id => {
