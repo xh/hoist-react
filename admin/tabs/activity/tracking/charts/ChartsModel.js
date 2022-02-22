@@ -17,6 +17,7 @@ import {ActivityTrackingModel} from '../ActivityTrackingModel';
 
 export class ChartsModel extends HoistModel {
 
+    /** @member {ActivityTrackingModel} */
     @lookup(ActivityTrackingModel) parentModel;
 
     /** @member {string} - metric to chart on Y axis - one of:

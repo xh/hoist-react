@@ -6,7 +6,7 @@
  */
 import {div, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, elem, XH, lookup} from '@xh/hoist/core';
-import {splitLayoutProps, useOnUnmount} from '@xh/hoist/utils/react';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isNil} from 'lodash';
@@ -55,8 +55,6 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
             {darkTheme, isDesktop} = XH;
 
         const impl = useLocalModel(LocalModel);
-
-        useOnUnmount(() => model?.handleGridUnmount());
 
         return frame({
             ref,
@@ -142,5 +140,10 @@ class LocalModel extends HoistModel {
 
     getRowHeight = () => {
         return AgGrid.getRowHeightForSizingMode(this.model.sizingMode);
+    }
+
+    destroy() {
+        this.model?.handleGridUnmount();
+        super.destroy();
     }
 }

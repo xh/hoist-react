@@ -50,7 +50,8 @@ export function uses(
 export function ensureIsSelector(s) {
     throwIf(
         !isFunction(s) && s !== '*',
-        'A valid Class, function, or "*" is required as a selector.'
+        'A valid Class, function, or "*" is required as a selector.' +
+        'Functional form may take a model and return a boolean, or take no arguments and return a Class'
     );
 }
 
@@ -73,6 +74,7 @@ export class UsesSpec extends ModelSpec {
 }
 
 /**
- * @typedef {(Class|function|string)} ModelSelector -- class (or superclass) to match, function
- *      taking a model and returning a boolean, or '*' to accept any Model.
+ * @typedef {(Class|function|string)} ModelSelector -- class (or superclass) to match,
+ *      function taking a model and returning a boolean, function returning a class
+ *      or '*' to accept any Model.
  */

@@ -33,9 +33,12 @@ import {observable, action} from '@xh/hoist/mobx';
  *      their rendered component.
  *      - support a `lookupModel` method and a `@lookup` decorator that can be used to acquire references
  *      to "ancestors" to this model in the component hierarchy.
- *      - support an `onLinked` lifecycle method, called when the model has been fully linked to
- *      the component hierarchy. Use this method for any work requiring the availability of lookups
- *      or `componentProps`.
+ *      - support `onLinked` and `onMounted` lifecycle methods, called when the model has been fully
+ *      linked to the component hierarchy. Use these methods for any work requiring the availability
+ *      of lookups or `componentProps`.
+ *      - have `loadAsync()` called automatically when their component is first mounted and the
+ *      model will be registered with the nearest {@see RefreshContextModel} in the component
+ *      hierarchy.
  *      - are destroyed when their linked component is unmounted.
  *
  * It is very common to decorate properties on models with `@observable` and related field-level
@@ -50,10 +53,6 @@ import {observable, action} from '@xh/hoist/mobx';
  * defined on this superclass. This will trigger the installation of a {@see LoadSupport} instance
  * on the model and enable several extensions to help track and manage async loads via the model's
  * public `loadAsync()` entry point.
- *
- * If the model is owned by a component, its `loadAsync()` be called automatically when the
- * component is first mounted and whenever triggered by the nearest {@see RefreshContextModel}
- * in the component hierarchy.
  */
 export class HoistModel extends HoistBase {
 
@@ -203,7 +202,6 @@ export class HoistModel extends HoistBase {
         });
     }
 }
-
 
 /**
  * Parameterized decorator to inject an instance of an ancestor model in the Model lookup

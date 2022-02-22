@@ -28,7 +28,7 @@ export function useModelLinker(model, modelLookup, props) {
             });
             model.setComponentProps(props);
             propsSet = true;
-            model.onLinked?.();
+            model.onLinked();
         }
     }
 
@@ -38,7 +38,7 @@ export function useModelLinker(model, modelLookup, props) {
 
     useEffect(() => {
         if (!model) return;
-        model.onMounted?.();
+        model.onMounted();
         if (model.loadSupport) {
             model.loadAsync();
             const refreshContext = modelLookup?.lookupModel(RefreshContextModel);
