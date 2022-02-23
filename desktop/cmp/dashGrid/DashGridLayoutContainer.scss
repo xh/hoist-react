@@ -1,5 +1,6 @@
 .dash-grid-layout-container {
-  overflow: auto !important;
+  width: 100%;
+  overflow: auto;
 
   .react-grid-item {
     border: var(--xh-border-solid);
