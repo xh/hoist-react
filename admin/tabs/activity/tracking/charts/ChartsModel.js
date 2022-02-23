@@ -18,7 +18,7 @@ import {ActivityTrackingModel} from '../ActivityTrackingModel';
 export class ChartsModel extends HoistModel {
 
     /** @member {ActivityTrackingModel} */
-    @lookup(ActivityTrackingModel) parentModel;
+    @lookup(ActivityTrackingModel) activityTrackingModel;
 
     /** @member {string} - metric to chart on Y axis - one of:
      *      + entryCount - count of total track log entries within the primary dim group.
@@ -27,6 +27,7 @@ export class ChartsModel extends HoistModel {
      */
     @bindable metric = 'entryCount'
 
+    /** @member {ChartModel} */
     @managed categoryChartModel = new ChartModel({
         highchartsConfig: {
             chart: {type: 'column', animation: false},
@@ -38,6 +39,7 @@ export class ChartsModel extends HoistModel {
         }
     });
 
+    /** @member {ChartModel} */
     @managed timeseriesChartModel = new ChartModel({
         highchartsConfig: {
             chart: {type: 'line', animation: false},
@@ -95,12 +97,12 @@ export class ChartsModel extends HoistModel {
     }
 
     get data() {
-        const roots = this.parentModel.gridModel.store.allRootRecords;
+        const roots = this.activityTrackingModel.gridModel.store.allRootRecords;
         return roots.length ? roots[0].children : [];
     }
 
     get dimensions() {
-        return this.parentModel.dimensions;
+        return this.activityTrackingModel.dimensions;
     }
 
     constructor() {
@@ -140,9 +142,10 @@ export class ChartsModel extends HoistModel {
                 }
             }),
             chartData = sortedData.map(aggRow => {
-                const {cubeLabel} = aggRow.data;
-                const xVal = showAsTimeseries ? LocalDate.from(cubeLabel).timestamp : cubeLabel;
-                return [xVal, Math.round(aggRow.data[metric])];
+                const {cubeLabel} = aggRow.data,
+                    xVal = showAsTimeseries ? LocalDate.from(cubeLabel).timestamp : cubeLabel,
+                    yVal = Math.round(aggRow.data[metric]);
+                return [xVal, yVal];
             });
 
         return [{name: metricLabel, data: chartData}];

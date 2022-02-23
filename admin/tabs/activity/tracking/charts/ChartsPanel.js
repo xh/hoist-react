@@ -49,11 +49,11 @@ export const chartsPanel = hoistCmp.factory({
 
 const chartDialog = hoistCmp.factory(
     ({model}) => {
-        const {chartModel, parentModel} = model;
+        const {chartModel, activityTrackingModel} = model;
         if (!model.showDialog) return null;
 
         return dialog({
-            title: parentModel.queryDisplayString,
+            title: activityTrackingModel.queryDisplayString,
             icon: Icon.chartBar(),
             style: {
                 width: '90vw',

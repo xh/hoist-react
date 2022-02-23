@@ -128,8 +128,8 @@ class LocalModel extends HoistModel {
     }
 
     async saveAsync() {
-        const {model, formModel} = this;
-        const valid = await formModel.validateAsync();
+        const {model, formModel} = this,
+            valid = await formModel.validateAsync();
         if (!valid) return;
 
         const newFilter = JSON.parse(formModel.values.filter),

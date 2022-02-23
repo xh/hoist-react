@@ -7,10 +7,12 @@ import {ActivityTrackingModel} from '../ActivityTrackingModel';
 
 export class ActivityDetailModel extends HoistModel {
 
-    @lookup(ActivityTrackingModel) parentModel;
+    /** @member {ActivityTrackingModel} */
+    @lookup(ActivityTrackingModel) activityTrackingModel;
 
     /** @member {GridModel} */
     @managed gridModel;
+
     /** @member {FormModel} */
     @managed formModel;
 
@@ -57,7 +59,7 @@ export class ActivityDetailModel extends HoistModel {
         });
 
         this.addReaction({
-            track: () => this.parentModel.gridModel.selectedRecord,
+            track: () => this.activityTrackingModel.gridModel.selectedRecord,
             run: (aggRec) => this.showActivityEntriesAsync(aggRec)
         });
 

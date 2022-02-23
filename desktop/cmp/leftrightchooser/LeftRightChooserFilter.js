@@ -48,10 +48,11 @@ LeftRightChooserFilter.propTypes = {
 
 class LocalModel extends HoistModel {
 
+    /** @member {LeftRightChooserModel} */
+    @lookup(LeftRightChooserModel) model;
+
     @bindable
     value = null;
-
-    @lookup(LeftRightChooserModel) model;
 
     constructor() {
         super();

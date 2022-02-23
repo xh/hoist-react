@@ -12,7 +12,7 @@ import {CustomRowModel} from './CustomRowModel';
 
 export class CustomTabModel extends HoistModel {
     /** @member {ColumnHeaderFilterModel} */
-    parentModel;
+    headerFilterModel;
 
     @bindable op = 'AND';
     @observable.ref rowModels = [];
@@ -30,21 +30,21 @@ export class CustomTabModel extends HoistModel {
     }
 
     get fieldSpec() {
-        return this.parentModel.fieldSpec;
+        return this.headerFilterModel.fieldSpec;
     }
 
     get currentGridFilter() {
-        return this.parentModel.currentGridFilter;
+        return this.headerFilterModel.currentGridFilter;
     }
 
     get columnFilters() {
-        return this.parentModel.columnFilters;
+        return this.headerFilterModel.columnFilters;
     }
 
-    constructor(parentModel) {
+    constructor(headerFilterModel) {
         super();
         makeObservable(this);
-        this.parentModel = parentModel;
+        this.headerFilterModel = headerFilterModel;
     }
 
     syncWithFilter() {

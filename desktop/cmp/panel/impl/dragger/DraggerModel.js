@@ -13,7 +13,9 @@ import {PanelModel} from '../../PanelModel';
 
 export class DraggerModel extends HoistModel {
 
+    /** @member {PanelModel} */
     @lookup(PanelModel) panelModel;
+
     ref = createObservableRef();
 
     resizeState = null;

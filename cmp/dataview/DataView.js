@@ -44,6 +44,7 @@ DataView.propTypes = {
 
 class LocalModel extends HoistModel {
 
+    /** @member {DataViewModel} */
     @lookup(DataViewModel) model;
 
     agOptions;

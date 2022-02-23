@@ -40,7 +40,6 @@ export const [Chart, chart] = hoistCmp.withFactory({
     className: 'xh-chart',
 
     render({model, className, aspectRatio, ...props}, ref) {
-
         if (!Highcharts) {
             console.error(
                 'Highcharts has not been imported in to this application. Please import and ' +
@@ -95,9 +94,10 @@ Chart.propTypes = {
 
 class LocalModel extends HoistModel {
 
-    chartRef = createObservableRef();
-
+    /** @member {ChartModel} */
     @lookup(ChartModel) model;
+
+    chartRef = createObservableRef();
     contextMenu;
     prevSeriesConfig;
 

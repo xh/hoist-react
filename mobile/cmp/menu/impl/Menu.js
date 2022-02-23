@@ -33,10 +33,9 @@ export const [Menu, menu] = hoistCmp.withFactory({
     displayName: 'Menu',
     className: 'xh-menu',
     render({menuItems, onDismiss, title, ...props}, ref) {
+        const impl = useLocalModel(LocalModel),
+            items = impl.parseMenuItems(menuItems, onDismiss);
 
-        const impl = useLocalModel(LocalModel);
-
-        const items = impl.parseMenuItems(menuItems, onDismiss);
         if (isEmpty(items)) return null;
         throwIf(!isFunction(onDismiss), 'Menu requires an `onDismiss` callback function');
 

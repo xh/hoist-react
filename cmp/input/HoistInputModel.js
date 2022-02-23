@@ -72,7 +72,6 @@ export class HoistInputModel extends HoistModel {
         return model instanceof FieldModel ? model : null;
     }
 
-
     /**
      * Ref to top-most rendered DOM element in this component.
      *
@@ -103,7 +102,7 @@ export class HoistInputModel extends HoistModel {
     }
 
     /**
-     *  Bound model, if any.
+     * Bound model, if any.
      *
      * @returns {HoistModel}
      */

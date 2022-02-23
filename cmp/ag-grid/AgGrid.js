@@ -109,6 +109,7 @@ AgGrid.getHeaderHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.HEADER_
 
 class LocalModel extends HoistModel {
 
+    /** @member {AgGridModel} */
     @lookup(AgGridModel) model;
 
     get headerHeight() {
