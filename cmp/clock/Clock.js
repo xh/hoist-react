@@ -24,9 +24,10 @@ export const [Clock, clock] = hoistCmp.withFactory({
     displayName: 'Clock',
     className: 'xh-clock',
 
-    render(props, ref) {
+    render({className, ...props}, ref) {
         const impl = useLocalModel(LocalModel);
         return box({
+            className,
             ...getLayoutProps(props),
             ref,
             item: span(impl.display)
