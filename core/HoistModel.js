@@ -177,7 +177,7 @@ export class HoistModel extends HoistBase {
      * @param {ModelSelector} selector - type of model to lookup.
      * @returns {HoistModel} - model, or null if no matching model found.
      */
-    lookupModel(selector = '*') {
+    lookupModel(selector) {
         warnIf(
             !this.isLinked,
             'Attempted to execute a lookup from a model that has not yet been linked. ' +

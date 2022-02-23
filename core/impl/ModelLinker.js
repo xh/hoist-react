@@ -6,6 +6,7 @@
  */
 import {XH, RefreshContextModel} from '@xh/hoist/core';
 import {useOnUnmount} from '@xh/hoist/utils/react';
+import {throwIf} from '@xh/hoist/utils/js';
 import {each} from 'lodash';
 import {useEffect} from 'react';
 
@@ -24,7 +25,13 @@ export function useModelLinker(model, modelLookup, props) {
         if (!model.isLinked) {
             model._modelLookup = modelLookup;
             each(model._xhInjectedParentProperties, (selector, name) => {
-                model[name] = modelLookup.lookupModel(selector);
+                const parentModel = modelLookup.lookupModel(selector);
+                throwIf(
+                    !parentModel,
+                    `Failed to resolve @lookup for '${name}'.  Ensure this decorator is applied to
+                    a linked model and that an appropriate parent model exist for this selector.`
+                );
+                model[name] = parentModel;
             });
             model.setComponentProps(props);
             propsSet = true;
