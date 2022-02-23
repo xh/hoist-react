@@ -18,6 +18,11 @@
   the new features described above are all "opt-in" and should be fully backward compatible with
   existing application code.
 
+### 💥 Breaking Changes
+   Dashboard widgets no longer receive the `viewModel` prop.  Access to the `DashViewModel` within a
+   widget should be obtained using either the lookup decorator (i.e. `@lookup(DashViewModel)`)
+   or the `lookupModel()` method.
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.52 -> 3.53`

@@ -29,7 +29,7 @@ export function useModelLinker(model, modelLookup, props) {
                 throwIf(
                     !parentModel,
                     `Failed to resolve @lookup for '${name}'.  Ensure this decorator is applied to
-                    a linked model and that an appropriate parent model exist for this selector.`
+                    a linked model and that an appropriate parent model exists for this selector.`
                 );
                 model[name] = parentModel;
             });
