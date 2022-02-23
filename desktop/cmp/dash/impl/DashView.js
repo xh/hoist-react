@@ -48,7 +48,7 @@ export const dashView = hoistCmp.factory({
             className,
             item: refreshContextView({
                 model: refreshContextModel,
-                item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
+                item: elementFromContent(viewSpec.content, {flex: 1})
             })
         });
     }

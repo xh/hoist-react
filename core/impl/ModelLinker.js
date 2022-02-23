@@ -45,7 +45,7 @@ export function useModelLinker(model, modelLookup, props) {
 
     useEffect(() => {
         if (!model) return;
-        model.onMounted();
+        model.afterLinked();
         if (model.loadSupport) {
             model.loadAsync();
             const refreshContext = modelLookup?.lookupModel(RefreshContextModel);
