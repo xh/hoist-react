@@ -10,12 +10,13 @@
   the following new features:
     - an observable `componentProps` property with access to the props of their rendered component.
     - a `lookupModel()` method and a `@lookup` decorator that can be used to acquire references to
-      "ancestors" models in the component hierarchy.
-    - new `onLinked()` and `onMounted()` lifecycle methods, called when the model's associated
+      other HoistModels that are ancestors of the model in the component hierarchy.
+    - new `onLinked()` and `afterLinked()` lifecycle methods, called when the model's associated
       component is first rendered.
-    - As before, linked models are auto-loaded and registered for refreshes within the `RefreshContext`
-      they reside in, as well as destroyed when their linked component is unmounted.  Also note that
-      these features are "opt-in" and should be fully backward compatible with existing application code.
+  As before, linked models are auto-loaded and registered for refreshes within the `RefreshContext`
+  they reside in, as well as destroyed when their linked component is unmounted.  Also note that
+  the new features described above are all "opt-in" and should be fully backward compatible with
+  existing application code.
 
 ### 📚 Libraries
 

@@ -24,21 +24,20 @@ import {observable, action} from '@xh/hoist/mobx';
  * prop to the component's `render()` function, where the model's properties can be read/rendered
  * and any imperative APIs wired to buttons, callbacks, and other handlers.
  *
- * Models in Hoist store the rendered state of the app and are closely associated with the React
- * Component tree.  In fact, most models are linked directly in a one-to-one relationship with a
- * specific component that renders them -- these models are considered "linked", and play a
+ * Certain models are instantiated by Hoist and linked directly in a one-to-one relationship with
+ * a specific component that renders them -- these models are considered "linked", and play a
  * special role in the framework.  In particular, linked models:
  *      - are specified by the `creates` directive as well as the `useLocalModel` hook.
  *      - support an observable `componentProps` property which can be used to observe the props of
- *      their rendered component.
- *      - support a `lookupModel` method and a `@lookup` decorator that can be used to acquire references
- *      to "ancestors" to this model in the component hierarchy.
- *      - support `onLinked` and `onMounted` lifecycle methods, called when the model has been fully
- *      linked to the component hierarchy. Use these methods for any work requiring the availability
+ *      their associated component.
+ *      - support a `lookupModel` method and a `@lookup` decorator that can be used to acquire
+ *      references to "ancestors" to this model in the component hierarchy.
+ *      - support `onLinked` and `afterLinked` lifecycle methods, called during the first rendering
+ *      of their associated component.  Use these methods for any work requiring the availability
  *      of lookups or `componentProps`.
- *      - have `loadAsync()` called automatically when their component is first mounted and the
- *      model will be registered with the nearest {@see RefreshContextModel} in the component
- *      hierarchy.
+ *      - have `loadAsync()` called automatically when their component is first mounted, as well
+ *      as register themselves for subsequent refreshes with the nearest {@see RefreshContextModel}
+ *      in the component hierarchy.
  *      - are destroyed when their linked component is unmounted.
  *
  * It is very common to decorate properties on models with `@observable` and related field-level
@@ -153,7 +152,7 @@ export class HoistModel extends HoistBase {
      * This method will be called when this model has been fully linked to the component
      * hierarchy. Use this method for any work requiring the availability of lookup models or
      * componentProps.  Note that this method is called *during* the initial rendering of the
-     * linked component.  See also `onMounted` for a version of this method, that will be called
+     * linked component.  See also `afterLinked` for a version of this method, that will be called
      * after the first render is complete.
      */
     onLinked() {}
@@ -164,10 +163,10 @@ export class HoistModel extends HoistBase {
      *
      * Only available for linked models.
      *
-     * This method is similar to onLinked, however it will be called after rendering has completed
+     * This method is similar to `onLinked`, however it will be called after rendering has completed
      * using the native react `useEffect` hook.
      */
-    onMounted() {}
+    afterLinked() {}
 
     /**
      * Lookup an ancestor model in the context hierarchy.
