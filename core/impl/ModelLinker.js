@@ -20,42 +20,47 @@ import {useEffect} from 'react';
  */
 /* eslint-disable react-hooks/exhaustive-deps */
 export function useModelLinker(model, modelLookup, props) {
-    let propsSet = false;
-    if (model) {
-        if (!model.isLinked) {
-            model._modelLookup = modelLookup;
-            each(model._xhInjectedParentProperties, (selector, name) => {
-                const parentModel = modelLookup.lookupModel(selector);
-                throwIf(
-                    !parentModel,
-                    `Failed to resolve @lookup for '${name}'.  Ensure this decorator is applied to
-                    a linked model and that an appropriate parent model exists for this selector.`
-                );
-                model[name] = parentModel;
-            });
-            model.setComponentProps(props);
-            propsSet = true;
-            model.onLinked();
-        }
+    // 0) Are we executing the link now (i.e. is this the first render)
+    const isLinking = model && !model.isLinked;
+
+    // 1) Linking synchronous work: resolve lookups, initialize props, and call onLinked()
+    if (isLinking) {
+        model._modelLookup = modelLookup;
+        each(model._xhInjectedParentProperties, (selector, name) => {
+            const parentModel = modelLookup.lookupModel(selector);
+            throwIf(
+                !parentModel,
+                `Failed to resolve @lookup for '${name}'.  Ensure that an appropriate parent
+                model exists for this selector in the component hierarchy.`
+            );
+            model[name] = parentModel;
+        });
+        model.setComponentProps(props);
+        model.onLinked();
     }
 
+    // 2) Linking async work: call afterLinked(), and wire up loadSupport
     useEffect(() => {
-        if (model && !propsSet) model.setComponentProps(props);
-    }, [props]);
-
-    useEffect(() => {
-        if (!model) return;
-        model.afterLinked();
-        if (model.loadSupport) {
-            model.loadAsync();
-            const refreshContext = modelLookup?.lookupModel(RefreshContextModel);
-            if (refreshContext) {
-                refreshContext.register(model);
-                return () => refreshContext.unregister(model);
+        if (isLinking) {
+            model.afterLinked();
+            if (model.loadSupport) {
+                model.loadAsync();
+                const refreshContext = modelLookup?.lookupModel(RefreshContextModel);
+                if (refreshContext) {
+                    refreshContext.register(model);
+                    return () => refreshContext.unregister(model);
+                }
             }
         }
-
     }, []);
 
+
+    // 3) Subsequent renders: update props (async to avoid triggering synchronous state changes)
+    useEffect(() => {
+        if (!isLinking) model?.setComponentProps(props);
+    }, [props]);
+
+
+    // 4) Destroy on unmount
     useOnUnmount(() => XH.safeDestroy(model));
 }

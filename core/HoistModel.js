@@ -206,16 +206,16 @@ export class HoistModel extends HoistBase {
  * Parameterized decorator to inject an instance of an ancestor model in the Model lookup
  * hierarchy into this object.
  *
- * The decorated property will be filled (if possible) only when the Model is linked to the
- * Component Hierarchy.  Accessing properties decorated with @parent, should typically be
- * done in the onLinked method(), or later.
+ * The decorated property will be filled only when the Model is linked to the Component Hierarchy.
+ * Accessing properties decorated with @lookup should first be done in the onLinked(),
+ * or afterLinked() handlers.
  *
  * @param {ModelSelector} selector - type/specification of model to lookup.
  */
 export function lookup(selector) {
     ensureIsSelector(selector);
     return function(target, property, descriptor) {
-        throwIf(!target.isHoistModel, '@parent decorator should be applied to a subclass of HoistModel');
+        throwIf(!target.isHoistModel, '@lookup decorator should be applied to a subclass of HoistModel');
         // Be sure to create list for *this* particular class. Clone and include inherited values.
         if (!target.hasOwnProperty('_xhInjectedParentProperties')) {
             target._xhInjectedParentProperties = {...target._xhInjectedParentProperties};
