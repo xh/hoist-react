@@ -122,7 +122,7 @@ export class HoistInputModel extends HoistModel {
         makeObservable(this);
     }
 
-    onLinked() {
+    afterLinked() {
         this.addReaction(this.externalValueReaction());
     }
 
