@@ -107,6 +107,12 @@ export class DashGridLayoutContainerModel extends HoistModel {
         this.viewModels = [...this.viewModels, model];
     }
 
+    @action
+    removeView(id) {
+        this.layout = this.layout.filter(it => it.i !== id);
+        this.viewModels = this.viewModels.filter(it => it.id !== id);
+    }
+
     getViewSpec(id) {
         return this.viewSpecs.find(it => it.id === id);
     }

@@ -9,6 +9,10 @@ import {hoistCmp, ModelPublishMode, refreshContextView, RenderMode, uses} from '
 import {modelLookupContextProvider} from '@xh/hoist/core/impl/ModelLookup';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
+import {Icon} from '../../../../icon';
+import {DashGridLayoutContainerModel} from '../../dashGrid';
+import {panel} from '../../panel';
+import {button} from '../../button';
 import {DashViewModel} from '../DashViewModel';
 
 /**
@@ -45,15 +49,31 @@ export const dashView = hoistCmp.factory({
             return null;
         }
 
-        return modelLookupContextProvider({
-            value: model.containerModel.modelLookupContext,
-            item: frame({
+        if (model.containerModel instanceof DashGridLayoutContainerModel) {
+            return panel({
                 className,
-                item: refreshContextView({
-                    model: refreshContextModel,
-                    item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
+                compactHeader: true,
+                title: model.title,
+                icon: model.icon,
+                headerItems: [
+                    button({
+                        icon: Icon.cross(),
+                        onClick: () => model.containerModel.removeView(model.id)
+                    })
+                ],
+                item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
+            });
+        } else {
+            return modelLookupContextProvider({
+                value: model.containerModel.modelLookupContext,
+                item: frame({
+                    className,
+                    item: refreshContextView({
+                        model: refreshContextModel,
+                        item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
+                    })
                 })
-            })
-        });
+            });
+        }
     }
 });

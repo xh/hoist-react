@@ -31,6 +31,7 @@ export const dashGridLayoutContainer = hoistCmp.factory({
                 compactType: 'vertical',
                 autoSize: true,
                 isBounded: true,
+                draggableHandle: '.xh-panel-header',
                 onLayoutChange: (layout) => model.setLayout(layout),
                 items: model.viewModels.map(vm => div({
                     key: vm.id,
