@@ -6,9 +6,9 @@
  */
 import {XH, RefreshContextModel} from '@xh/hoist/core';
 import {useOnUnmount} from '@xh/hoist/utils/react';
-import {throwIf} from '@xh/hoist/utils/js';
 import {each} from 'lodash';
 import {useEffect} from 'react';
+import {formatSelector} from '../modelspec/uses';
 
 /**
  * @private
@@ -28,11 +28,12 @@ export function useModelLinker(model, modelLookup, props) {
         model._modelLookup = modelLookup;
         each(model._xhInjectedParentProperties, (selector, name) => {
             const parentModel = modelLookup.lookupModel(selector);
-            throwIf(
-                !parentModel,
-                `Failed to resolve @lookup for '${name}'.  Ensure that an appropriate parent
-                model exists for this selector in the component hierarchy.`
-            );
+            if (!parentModel) {
+                throw XH.exception(
+                    `Failed to resolve @lookup for property '${name}' with selector ${formatSelector(selector)}.
+                    Ensure that an appropriate parent model exists for this selector in the component hierarchy.`
+                );
+            }
             model[name] = parentModel;
         });
         model.setComponentProps(props);

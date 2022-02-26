@@ -4,12 +4,12 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {CreatesSpec, elemFactory, ModelPublishMode, ModelSpec, uses} from '@xh/hoist/core';
+import {CreatesSpec, elemFactory, ModelPublishMode, ModelSpec, uses, formatSelector} from '@xh/hoist/core';
 import {useModelLinker} from '@xh/hoist/core/impl/ModelLinker';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {useOnMount} from '@xh/hoist/utils/react';
+import {useOnMount, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isFunction, isPlainObject, isString, isObject} from 'lodash';
+import {isFunction, isPlainObject, isObject} from 'lodash';
 import {observer} from '@xh/hoist/mobx';
 import {forwardRef, memo, useContext, useDebugValue, useState} from 'react';
 import {localModelContext} from './hooks/Models';
@@ -168,7 +168,7 @@ function wrapWithSimpleModel(render, spec, displayName) {
     return (props, ref) => {
         const modelLookup = useContext(ModelLookupContext),
             {model} = useResolvedModel(spec, props, modelLookup, displayName);
-        return callRender(render, model, modelLookup, props, ref);
+        return callRender(render, spec, model, modelLookup, props, ref, displayName);
     };
 }
 
@@ -197,7 +197,7 @@ function wrapWithPublishedModel(render, spec, displayName) {
         const [newLookup] = useState(createLookup);
 
         // Render the app specified elements, either raw or wrapped in context
-        const rendering = callRender(render, model, newLookup ?? modelLookup, props, ref);
+        const rendering = callRender(render, spec, model, newLookup ?? modelLookup, props, ref, displayName);
         return newLookup ? modelLookupContextProvider({value: newLookup, item: rendering}) : rendering;
     };
 }
@@ -206,7 +206,15 @@ function wrapWithPublishedModel(render, spec, displayName) {
 // Wrapped call to the app specified render method.
 // Provide enhanced props, and set context needed by useLocalModel() calls within
 //------------------------------------------------------------------------------
-function callRender(render, model, modelLookup, props, ref) {
+function callRender(render, spec, model, modelLookup, props, ref, displayName) {
+    if (!model && !spec.optional) {
+        console.error(`
+            Failed to find model with selector '${formatSelector(spec.selector)}' for
+            component '${displayName}'.  Ensure the proper model is available via context, or
+            specify explicitly using the 'model' prop.
+        `);
+        return hoistCmp._errorCmp({...getLayoutProps(props), item: 'No model found'});
+    }
     const ctx = localModelContext;
     try {
         ctx.props = props;
@@ -253,7 +261,7 @@ function createModel(spec) {
 }
 
 function lookupModel(spec, props, modelLookup, displayName) {
-    const {model} = props,
+    let {model} = props,
         {selector} = spec;
 
     // 1) props - config
@@ -263,9 +271,14 @@ function lookupModel(spec, props, modelLookup, displayName) {
 
     // 2) props - instance
     if (model) {
-        throwIf(!matchesSelector(model, selector, true),
-            `Incorrect model passed to '${displayName}'. Expected: ${formatSelector(selector)} Received: ${model.constructor.name}`
-        );
+        if (!matchesSelector(model, selector, true)) {
+            console.error(
+                `Incorrect model passed to '${displayName}'.
+                Expected: ${formatSelector(selector)}
+                Received: ${model.constructor.name}`
+            );
+            model = null;
+        }
         return {model, isLinked: false, fromContext: false};
     }
 
@@ -282,24 +295,12 @@ function lookupModel(spec, props, modelLookup, displayName) {
         return {model, isLinked: true, fromContext: false};
     }
 
-    // 5) No model found
-    // Log on debug, as we don't expect this to happen for most components/applications.
-    // Don't throw, so as to allow Components flexibility to fail gently.
-    if (displayName !== 'FormField') {
-        console.debug(`No model found for component ${displayName}.`, spec);
-    }
     return {model: null, isLinked: false, fromContext: false};
 }
 
 //--------------------------
 // Other helpers
 //--------------------------
-function formatSelector(selector) {
-    if (isString(selector)) return selector;
-    if (isFunction(selector)  && selector.isHoistModel) return selector.name;
-    return '[Selector]';
-}
-
 function enhancedProps(props, name, value) {
     // Clone frozen props object, but don't re-clone when done multiple times for single render
     if (!Object.isExtensible(props)) {
@@ -317,3 +318,9 @@ function propsWithClassName(props, className) {
     return enhancedProps(props, 'className', className);
 }
 
+/**
+ * @package -- Not for application use.
+ *
+ * Alternative component to render certain errors caught within hoistComponent.
+ */
+hoistComponent._errorCmp = null;

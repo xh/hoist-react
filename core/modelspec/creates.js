@@ -37,7 +37,7 @@ export class CreatesSpec extends ModelSpec {
     createFn;
 
     constructor(spec, publishMode) {
-        super(false, publishMode);
+        super(false, publishMode, false);
         if (spec.isHoistModel) {
             throwIf(spec.lookupModel, 'Specified model type must *not* be an instance. Specify a class name instead.');
             this.createFn = () => spec;

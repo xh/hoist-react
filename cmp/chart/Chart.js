@@ -6,6 +6,7 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
+import {placeholder} from '../layout';
 import {lookup, hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {useContextMenu} from '@xh/hoist/desktop/hooks';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
@@ -45,10 +46,7 @@ export const [Chart, chart] = hoistCmp.withFactory({
                 'Highcharts has not been imported in to this application. Please import and ' +
                 'register in Bootstrap.js. See the XH Toolbox app for an example.'
             );
-            return div({
-                className: 'xh-text-color-accent xh-pad',
-                item: 'Highcharts library not available.'
-            });
+            return placeholder('Highcharts library not available.');
         }
 
         const impl = useLocalModel(LocalModel);

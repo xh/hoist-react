@@ -42,7 +42,11 @@ import './FormField.scss';
 export const [FormField, formField] = hoistCmp.withFactory({
     displayName: 'FormField',
     className: 'xh-form-field',
-    model: uses(FieldModel, {fromContext: false, publishMode: ModelPublishMode.NONE}),
+    model: uses(FieldModel, {
+        fromContext: false,
+        publishMode: ModelPublishMode.NONE,
+        optional: true
+    }),
 
     render({model, className, field, children, info, ...props}, ref) {
         // Resolve FieldModel

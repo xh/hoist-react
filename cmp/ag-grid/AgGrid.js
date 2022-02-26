@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {div, frame} from '@xh/hoist/cmp/layout';
+import {placeholder, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, elem, XH, lookup} from '@xh/hoist/core';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -44,10 +44,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
                 'ag-Grid has not been imported in to this application. Please import and ' +
                 'register modules in Bootstrap.js. See the XH Toolbox app for an example.'
             );
-            return div({
-                className: 'xh-text-color-accent xh-pad',
-                item: 'ag-Grid library not available.'
-            });
+            return placeholder('ag-Grid library not available.');
         }
 
         const [layoutProps, agGridProps] = splitLayoutProps(props),
