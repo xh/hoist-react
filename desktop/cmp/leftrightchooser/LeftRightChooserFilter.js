@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, uses, lookup} from '@xh/hoist/core';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
@@ -20,10 +20,8 @@ export const [LeftRightChooserFilter, leftRightChooserFilter] = hoistCmp.withFac
     displayName: 'LeftRightChooserFilter',
     model: uses(LeftRightChooserModel),
 
-    render(props) {
+    render() {
         const impl = useLocalModel(LocalModel);
-        impl.lastProps = props;
-
         return textInput({
             placeholder: 'Quick filter...',
             bind: 'value',
@@ -49,7 +47,9 @@ LeftRightChooserFilter.propTypes = {
 
 
 class LocalModel extends HoistModel {
-    lastProps;
+
+    /** @member {LeftRightChooserModel} */
+    @lookup(LeftRightChooserModel) model;
 
     @bindable
     value = null;
@@ -64,7 +64,7 @@ class LocalModel extends HoistModel {
     }
 
     runFilter() {
-        const {fields = ['text', 'group'], anyMatch = false, model} = this.lastProps;
+        const {fields = ['text', 'group'], anyMatch = false} = this.componentProps;
         let searchTerm = escapeRegExp(this.value);
 
         if (!anyMatch) {
@@ -79,13 +79,13 @@ class LocalModel extends HoistModel {
             });
         };
 
-        model.setDisplayFilter(filter);
+        this.model.setDisplayFilter(filter);
     }
 
     destroy() {
         // This unusual bit of code is extremely important -- the model we are linking to might
         // survive the display of this component and should be restored. (This happens with GridColumnChooser)
-        this.lastProps.model.setDisplayFilter(null);
+        this.model.setDisplayFilter(null);
         super.destroy();
     }
 }

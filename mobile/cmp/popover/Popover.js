@@ -26,22 +26,19 @@ import './Popover.scss';
  */
 export const [Popover, popover] = hoistCmp.withFactory({
     displayName: 'Popover',
-    model: false,
     className: 'xh-popover',
 
     render({
         className,
         target,
         content,
-        isOpen,
-        onInteraction,
         disabled = false,
         backdrop = false,
         position = 'auto',
         popoverClassName,
         popperOptions
     }) {
-        const impl = useLocalModel(() => new LocalModel()),
+        const impl = useLocalModel(LocalModel),
             popper = usePopper(impl.targetEl, impl.contentEl, {
                 placement: impl.menuPositionToPlacement(position),
                 strategy: 'fixed',
@@ -54,11 +51,6 @@ export const [Popover, popover] = hoistCmp.withFactory({
                 }],
                 ...popperOptions
             });
-
-        // Respect controlled mode prop
-        if (!isNil(isOpen)) {
-            impl.setControlledMode(isOpen, onInteraction);
-        }
 
         return div({
             className,
@@ -163,12 +155,23 @@ class LocalModel extends HoistModel {
             track: () => XH.routerState,
             run: () => this.setIsOpen(false)
         });
+
+        this.addReaction({
+            track: () => this.componentProps.isOpen,
+            run: (isOpen) => {
+                if (!isNil(isOpen)) {
+                    this.setControlledMode(isOpen);
+                }
+            },
+            fireImmediately: true
+        });
     }
 
     @action
-    setControlledMode(isOpen, onInteraction) {
+    setControlledMode(isOpen) {
         this.isOpen = isOpen;
         this._controlledMode = true;
+        const {onInteraction} = this.componentProps;
         if (isFunction(onInteraction)) {
             this._onInteraction = onInteraction;
         }

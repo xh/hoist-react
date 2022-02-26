@@ -34,6 +34,7 @@ import {LoadSupport} from './refresh/LoadSupport';
  */
 export class HoistService extends HoistBase {
 
+    static get isHoistService() {return true}
     get isHoistService() {return true}
 
     constructor() {
@@ -98,6 +99,4 @@ export class HoistService extends HoistBase {
      *      `loadSupport` or when making calls to the core {@see FetchService} APIs.
      */
     async doLoadAsync(loadSpec) {}
-
 }
-HoistService.isHoistService = true;

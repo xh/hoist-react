@@ -24,3 +24,4 @@ export const [Placeholder, placeholder] = hoistCmp.withFactory({
         return box({...props, ref});
     }
 });
+hoistCmp._errorCmp = placeholder;

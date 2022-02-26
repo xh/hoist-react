@@ -4,14 +4,15 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {CreatesSpec, elemFactory, ModelPublishMode, ModelSpec, uses} from '@xh/hoist/core';
-import {useOwnedModelLinker} from '@xh/hoist/core/impl/UseOwnedModelLinker';
+import {CreatesSpec, elemFactory, ModelPublishMode, ModelSpec, uses, formatSelector} from '@xh/hoist/core';
+import {useModelLinker} from '@xh/hoist/core/impl/ModelLinker';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {useOnMount} from '@xh/hoist/utils/react';
+import {useOnMount, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isFunction, isPlainObject, isString, isObject} from 'lodash';
+import {isFunction, isPlainObject, isObject} from 'lodash';
 import {observer} from '@xh/hoist/mobx';
 import {forwardRef, memo, useContext, useDebugValue, useState} from 'react';
+import {localModelContext} from './hooks/Models';
 import {ModelLookup, matchesSelector, ModelLookupContext, modelLookupContextProvider} from './impl/ModelLookup';
 
 /**
@@ -164,18 +165,11 @@ function wrapWithModel(render, spec, displayName) {
 // received model explicitly to children.  No need to add any ContextProviders
 //-----------------------------------------------------------------------------------------
 function wrapWithSimpleModel(render, spec, displayName) {
-    return spec.fromContext ?
-        // a) with a context lookup
-        (props, ref) => {
-            const lookup = useContext(ModelLookupContext),
-                {model} = useResolvedModel(spec, props, lookup, displayName);
-            return render(propsWithModel(props, model), ref);
-        } :
-        // b) no context lookup needed, lean and mean.
-        (props, ref) => {
-            const {model} = useResolvedModel(spec, props, null, displayName);
-            return render(propsWithModel(props, model), ref);
-        };
+    return (props, ref) => {
+        const modelLookup = useContext(ModelLookupContext),
+            {model} = useResolvedModel(spec, props, modelLookup, displayName);
+        return callRender(render, spec, model, modelLookup, props, ref, displayName);
+    };
 }
 
 //------------------------------------------------------------------------------------
@@ -187,8 +181,9 @@ function wrapWithPublishedModel(render, spec, displayName) {
         const publishDefault = (spec.publishMode === ModelPublishMode.DEFAULT);  // otherwise LIMITED
 
         // Get the model and context
-        const lookup = useContext(ModelLookupContext),
-            {model, fromContext} = useResolvedModel(spec, props, lookup, displayName);
+        const modelLookup = useContext(ModelLookupContext),
+            {model, fromContext} = useResolvedModel(spec, props, modelLookup, displayName);
+
 
         // Create any lookup needed for model, caching it in state.
         // Avoid adding extra context if this model already in default context.
@@ -196,29 +191,52 @@ function wrapWithPublishedModel(render, spec, displayName) {
         const createLookup = () => {
             return (
                 model &&
-                (!lookup || !fromContext || (publishDefault && lookup.lookupModel('*') !== model))
-            ) ? new ModelLookup(model, lookup, spec.publishMode) : null;
+                (!modelLookup || !fromContext || (publishDefault && modelLookup.lookupModel('*') !== model))
+            ) ? new ModelLookup(model, modelLookup, spec.publishMode) : null;
         };
         const [newLookup] = useState(createLookup);
 
         // Render the app specified elements, either raw or wrapped in context
-        const rendering = render(propsWithModel(props, model), ref);
+        const rendering = callRender(render, spec, model, newLookup ?? modelLookup, props, ref, displayName);
         return newLookup ? modelLookupContextProvider({value: newLookup, item: rendering}) : rendering;
     };
+}
+
+//-------------------------------------------------------------------------------
+// Wrapped call to the app specified render method.
+// Provide enhanced props, and set context needed by useLocalModel() calls within
+//------------------------------------------------------------------------------
+function callRender(render, spec, model, modelLookup, props, ref, displayName) {
+    if (!model && !spec.optional) {
+        console.error(`
+            Failed to find model with selector '${formatSelector(spec.selector)}' for
+            component '${displayName}'.  Ensure the proper model is available via context, or
+            specify explicitly using the 'model' prop.
+        `);
+        return hoistCmp._errorCmp({...getLayoutProps(props), item: 'No model found'});
+    }
+    const ctx = localModelContext;
+    try {
+        ctx.props = props;
+        ctx.modelLookup = modelLookup;
+        return render(propsWithModel(props, model), ref);
+    } finally {
+        ctx.props = null;
+        ctx.modelLookup = null;
+    }
 }
 
 //-------------------------------------------------------------------------
 // Support to resolve/create model at render-time.  Used by wrappers above.
 //-------------------------------------------------------------------------
-function useResolvedModel(spec, props, lookup, displayName) {
+function useResolvedModel(spec, props, modelLookup, displayName) {
     // fixed cache here creates the "immutable" model behavior in hoist components
     // (Need to force full remount with 'key' prop to resolve any new model)
-    const [{model, isOwned, fromContext}] = useState(() => (
-        spec instanceof CreatesSpec ? createModel(spec) : lookupModel(spec, props, lookup, displayName)
+    const [{model, isLinked, fromContext}] = useState(() => (
+        spec instanceof CreatesSpec ? createModel(spec) : lookupModel(spec, props, modelLookup, displayName)
     ));
 
-    // register and load owned model
-    useOwnedModelLinker(isOwned ? model : null);
+    useModelLinker(isLinked ? model : null, modelLookup, props);
 
     // wire any modelRef
     useOnMount(() => {
@@ -230,63 +248,59 @@ function useResolvedModel(spec, props, lookup, displayName) {
         }
     });
 
-    useDebugValue(model, m => m.constructor.name + (isOwned ? ' (owned)' : ''));
+    useDebugValue(model, m => m.constructor.name + (isLinked ? ' (linked)' : ''));
 
     return {model, fromContext};
 }
 
 function createModel(spec) {
-    return {model: spec.createFn(), isOwned: true, fromContext: false};
+    let model = spec.createFn();
+    if (isFunction(model)) model = new model();
+
+    return {model, isLinked: true, fromContext: false};
 }
 
 function lookupModel(spec, props, modelLookup, displayName) {
-    const {model} = props,
+    let {model} = props,
         {selector} = spec;
 
     // 1) props - config
     if (model && isPlainObject(model) && spec.createFromConfig) {
-        return {model: new selector(model), isOwned: true, fromContext: false};
+        return {model: new selector(model), isLinked: true, fromContext: false};
     }
 
     // 2) props - instance
     if (model) {
-        throwIf(!matchesSelector(model, selector, true),
-            `Incorrect model passed to '${displayName}'. Expected: ${formatSelector(selector)} Received: ${model.constructor.name}`
-        );
-        return {model, isOwned: false, fromContext: false};
+        if (!matchesSelector(model, selector, true)) {
+            console.error(
+                `Incorrect model passed to '${displayName}'.
+                Expected: ${formatSelector(selector)}
+                Received: ${model.constructor.name}`
+            );
+            model = null;
+        }
+        return {model, isLinked: false, fromContext: false};
     }
 
     // 3) context
     if (modelLookup && spec.fromContext) {
         const contextModel = modelLookup.lookupModel(selector);
-        if (contextModel) return {model: contextModel, isOwned: false, fromContext: true};
+        if (contextModel) return {model: contextModel, isLinked: false, fromContext: true};
     }
 
     // 4) default create
     const create = spec.createDefault;
     if (create) {
         const model = (isFunction(create) ? create() : new selector());
-        return {model, isOwned: true, fromContext: false};
+        return {model, isLinked: true, fromContext: false};
     }
 
-    // 5) No model found
-    // Log on debug, as we don't expect this to happen for most components/applications.
-    // Don't throw, so as to allow Components flexibility to fail gently.
-    if (displayName !== 'FormField') {
-        console.debug(`No model found for component ${displayName}.`, spec);
-    }
-    return {model: null, isOwned: false, fromContext: false};
+    return {model: null, isLinked: false, fromContext: false};
 }
 
 //--------------------------
 // Other helpers
 //--------------------------
-function formatSelector(selector) {
-    if (isString(selector)) return selector;
-    if (isFunction(selector)  && selector.isHoistModel) return selector.name;
-    return '[Selector]';
-}
-
 function enhancedProps(props, name, value) {
     // Clone frozen props object, but don't re-clone when done multiple times for single render
     if (!Object.isExtensible(props)) {
@@ -303,3 +317,10 @@ function propsWithModel(props, model) {
 function propsWithClassName(props, className) {
     return enhancedProps(props, 'className', className);
 }
+
+/**
+ * @package -- Not for application use.
+ *
+ * Alternative component to render certain errors caught within hoistComponent.
+ */
+hoistComponent._errorCmp = null;

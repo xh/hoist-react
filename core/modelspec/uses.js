@@ -6,7 +6,7 @@
  */
 import {throwIf} from '@xh/hoist/utils/js';
 import {ModelPublishMode, ModelSpec} from './ModelSpec';
-import {isFunction} from 'lodash';
+import {isFunction, isString} from 'lodash';
 
 /**
  * Returns a ModelSpec to define how a functional HoistComponent should source its primary backing
@@ -34,6 +34,7 @@ import {isFunction} from 'lodash';
  *      construct an instance on-demand. Selector must be a HoistModel Class.
  * @param {(boolean|function)} [flags.createDefault] - true to create a model if none provided.
  *      Selector must be a HoistModel Class, or a custom function may be provided for this argument.
+ * @param {boolean} [flags.optional] - true to specify a model that is optional.  Default false.
  * @returns {ModelSpec}
  */
 export function uses(
@@ -41,9 +42,43 @@ export function uses(
         fromContext = true,
         publishMode = ModelPublishMode.DEFAULT,
         createFromConfig = true,
-        createDefault = false
+        createDefault = false,
+        optional = false
     } = {}) {
-    return new UsesSpec(selector, fromContext, publishMode, createFromConfig, createDefault);
+    return new UsesSpec(selector, fromContext, publishMode, createFromConfig, createDefault, optional);
+}
+
+
+/**
+ * Ensure an object is a ModelSelector, or throw.
+ *
+ * @param {Object} s
+ */
+export function ensureIsSelector(s) {
+    throwIf(
+        !isFunction(s) && s !== '*',
+        'A valid Class, function, or "*" is required as a selector.' +
+        'Functional form may take a model and return a boolean, or take no arguments and return a Class'
+    );
+}
+
+/**
+ * Format a ModelSelector for debugging purposes.
+ *
+ * @param {ModelSelector} selector
+ * @returns {string}
+ */
+export function formatSelector(selector) {
+    if (isString(selector)) return selector;
+    if (isFunction(selector)) {
+        if (selector.isHoistModel) return selector.name;
+        try {
+            selector = selector();
+        } catch (e) {
+        }
+        if (selector.isHoistModel) return '() => ' + selector.name;
+    }
+    return '[Selector]';
 }
 
 
@@ -54,12 +89,10 @@ export class UsesSpec extends ModelSpec {
     createFromConfig;
     createDefault;
 
-    constructor(selector, fromContext, publishMode, createFromConfig, createDefault) {
-        super(fromContext, publishMode);
-        throwIf(
-            !isFunction(selector) && selector !== '*',
-            'A valid Class, function, or "*" is required as a selector in uses().'
-        );
+    constructor(selector, fromContext, publishMode, createFromConfig, createDefault, optional) {
+        super(fromContext, publishMode, optional);
+
+        ensureIsSelector(selector);
 
         this.selector = selector;
         this.createFromConfig = createFromConfig;
@@ -67,8 +100,8 @@ export class UsesSpec extends ModelSpec {
     }
 }
 
-
 /**
- * @typedef {(Class|function|string)} ModelSelector -- class (or superclass) to match, function
- *      taking a model and returning a boolean, or  '*' to accept any Model.
+ * @typedef {(Class|function|string)} ModelSelector -- class (or superclass) to match,
+ *      function taking a model and returning a boolean, function returning a class
+ *      or '*' to accept any Model.
  */
