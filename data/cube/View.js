@@ -11,6 +11,7 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf, logWithDebug} from '@xh/hoist/utils/js';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import {castArray, forEach, groupBy, isEmpty, isNil, map, isEqual, keys, find} from 'lodash';
+import {AggregationContext} from './aggregate/AggregationContext';
 
 import {AggregateRow} from './row/AggregateRow';
 import {BucketRow} from './row/BucketRow';
@@ -46,6 +47,7 @@ export class View extends HoistBase {
     _rows = null;
     _rowCache = null;
     _leafMap = null; // Leaves, by source record id.
+    _simpleAggs = false;
 
     /**
      * @private - applications should use `Cube.createView()`.
@@ -64,6 +66,9 @@ export class View extends HoistBase {
         this.query = query;
         this.stores = castArray(stores);
         this._rowCache = new Map();
+        this._simpleAggs = query.fields.every(
+            ({aggregator}) => !aggregator || aggregator.dependsOnChildrenOnly
+        );
         this.fullUpdate();
 
         if (connect) {
@@ -110,8 +115,12 @@ export class View extends HoistBase {
         const newQuery = this.query.clone(overrides);
         if (this.query.equals(newQuery)) return;
 
-        // If anything other than just filter changing, blow away row cache
-        if (!isEqual(keys(overrides), ['filter'])) {
+        this._simpleAggs = newQuery.fields.every(
+            ({aggregator}) => !aggregator || aggregator.dependsOnChildrenOnly
+        );
+
+        // Only blow away row cache if more than filter changing, or we have complex aggregates.
+        if (!this._childOnlyAggs || !isEqual(keys(overrides), ['filter'])) {
             this._rowCache.clear();
         }
 
@@ -186,8 +195,32 @@ export class View extends HoistBase {
     //------------------------
     @logWithDebug
     fullUpdate() {
+        this._aggContext = new AggregationContext(this, this.computeFilteredRecords());
         this.generateRows();
         this.loadStores();
+        this.updateResults();
+    }
+
+    dataOnlyUpdate(updates) {
+        const {_leafMap, _aggContext, stores} = this,
+            updatedRows = new Set(),
+            {filteredRecords} = _aggContext;
+
+        updates.forEach(rec => {
+            filteredRecords.set(rec.id, rec);
+            const leaf = _leafMap.get(rec.id);
+            leaf?.applyDataUpdate(rec, updatedRows);
+        });
+
+        this._aggContext = new AggregationContext(this, filteredRecords);
+
+        stores.forEach(store => {
+            const recordUpdates = [];
+            updatedRows.forEach(row => {
+                if (store.getById(row.id)) recordUpdates.push(row);
+            });
+            store.updateData({update: recordUpdates});
+        });
         this.updateResults();
     }
 
@@ -200,25 +233,6 @@ export class View extends HoistBase {
         this.stores.forEach(s => s.loadData(storeRows));
     }
 
-    dataOnlyUpdate(updates) {
-        const {_leafMap} = this,
-            updatedRows = new Set();
-
-        updates.forEach(rec => {
-            const leaf = _leafMap.get(rec.id);
-            leaf?.applyDataUpdate(rec, updatedRows);
-        });
-
-        this.stores.forEach(store => {
-            const recordUpdates = [];
-            updatedRows.forEach(row => {
-                if (store.getById(row.id)) recordUpdates.push(row);
-            });
-            store.updateData({update: recordUpdates});
-        });
-        this.updateResults();
-    }
-
     updateResults() {
         const {_leafMap, _rows} = this;
         this.result = {rows: _rows, leafMap: _leafMap};
@@ -228,11 +242,11 @@ export class View extends HoistBase {
 
     // Generate a new full data representation
     generateRows() {
-        const {query, cube} = this,
+        const {query, _aggContext} = this,
             {dimensions, includeRoot} = query,
             rootId = 'root';
 
-        const records = cube.store.records.filter(rec => query.test(rec));
+        const records = Array.from(_aggContext.filteredRecords.values());
 
         const leafMap = new Map();
         let newRows = this.groupAndInsertRecords(records, dimensions, rootId, {}, leafMap);
@@ -327,6 +341,7 @@ export class View extends HoistBase {
     // return a list of simple updates for leaves we have or false if leaf population changing
     getSimpleUpdates(t) {
         if (!t) return [];
+        if (!this._simpleAggs) return false;
         const {_leafMap, query} = this;
 
         // 1) Simple case: no filter
@@ -378,6 +393,15 @@ export class View extends HoistBase {
         }
         ret = fn();
         this._rowCache.set(id, ret);
+        return ret;
+    }
+
+    computeFilteredRecords() {
+        const {query, cube} = this,
+            ret = new Map();
+        cube.store.records
+            .filter(r => query.test(r))
+            .forEach(r => ret.set(r.id, r));
         return ret;
     }
 

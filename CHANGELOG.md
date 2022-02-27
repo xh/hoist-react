@@ -22,6 +22,10 @@
   if a model specified with this directive cannot be resolved.   A new `optional` config
   (default false) supports the case of components that support optional models.
 
+* New support in Cube views for aggregators that depend on rows in the data set other than their
+  direct children.  See new property `Aggregator.dependOnChildrenOnly` and `AggregationContext`
+  argument passed to `Aggregator.aggregate()` and `Aggregator.replace()`
+
 ### 💥 Breaking Changes
    Dashboard widgets no longer receive the `viewModel` prop.  Access to the `DashViewModel` within a
    widget should be obtained using either the lookup decorator (i.e. `@lookup(DashViewModel)`)
