@@ -5,11 +5,10 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {hoistCmp, useContextModel, useLocalModel, XH} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, XH} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
 import {storeFilterFieldImpl as desktopStoreFilterFieldImpl} from '@xh/hoist/dynamics/desktop';
 import {storeFilterFieldImpl as mobileStoreFilterFieldImpl} from '@xh/hoist/dynamics/mobile';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 import {StoreFilterFieldImplModel} from './impl/StoreFilterFieldImplModel';
 
@@ -38,18 +37,11 @@ export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory({
     displayName: 'StoreFilterField',
     className: 'xh-store-filter-field',
 
-    render({gridModel, store, ...props}) {
-        throwIf(gridModel && store, "Cannot specify both 'gridModel' and 'store' props.");
-        if (!store) {
-            gridModel = withDefault(gridModel, useContextModel(GridModel));
-            store = gridModel?.store ?? null;
-        }
-
-        const impl = useLocalModel(() => new StoreFilterFieldImplModel({gridModel, store, ...props}));
-        impl.updateFilterProps(props);
+    render(props) {
+        const model = useLocalModel(StoreFilterFieldImplModel);
         return XH.isMobileApp ?
-            mobileStoreFilterFieldImpl({...props, model: impl, bind: 'filterText'}) :
-            desktopStoreFilterFieldImpl({...props, model: impl, bind: 'filterText'});
+            mobileStoreFilterFieldImpl({...props, model, bind: 'filterText'}) :
+            desktopStoreFilterFieldImpl({...props, model, bind: 'filterText'});
     }
 });
 

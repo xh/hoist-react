@@ -4,7 +4,6 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {ActivityDetailModel} from '@xh/hoist/admin/tabs/activity/tracking/detail/ActivityDetailModel';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
@@ -17,7 +16,6 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 import * as Col from '@xh/hoist/admin/columns';
 import {isEmpty} from 'lodash';
 import moment from 'moment';
-import {ChartsModel} from './charts/ChartsModel';
 
 export const PERSIST_ACTIVITY = {localStorageKey: 'xhAdminActivityState'};
 
@@ -35,11 +33,6 @@ export class ActivityTrackingModel extends HoistModel {
     @managed filterChooserModel;
     /** @member {GridModel} */
     @managed gridModel;
-
-    /** @member {ActivityDetailModel} */
-    @managed activityDetailModel;
-    /** @member {ChartsModel} */
-    @managed chartsModel;
 
     get dimensions() {return this.groupingChooserModel.value}
 
@@ -182,9 +175,6 @@ export class ActivityTrackingModel extends HoistModel {
             ]
         });
 
-        this.activityDetailModel = new ActivityDetailModel({parentModel: this});
-        this.chartsModel = new ChartsModel({parentModel: this});
-
         this.addReaction({
             track: () => {
                 const vals = this.formModel.values;
@@ -196,7 +186,7 @@ export class ActivityTrackingModel extends HoistModel {
 
         this.addReaction({
             track: () => [this.cube.records, this.filterChooserModel.value, this.dimensions],
-            run: () => this.loadGridAndChartAsync(),
+            run: () => this.loadGridAsync(),
             debounce: 100
         });
     }
@@ -229,8 +219,8 @@ export class ActivityTrackingModel extends HoistModel {
         }
     }
 
-    async loadGridAndChartAsync() {
-        const {cube, gridModel, chartsModel, dimensions} = this,
+    async loadGridAsync() {
+        const {cube, gridModel, dimensions} = this,
             data = cube.executeQuery({
                 dimensions,
                 filter: this.filterChooserModel.value,
@@ -241,9 +231,6 @@ export class ActivityTrackingModel extends HoistModel {
         data.forEach(node => this.separateLeafRows(node));
         gridModel.loadData(data);
         await gridModel.preSelectFirstAsync();
-
-        // Pass children of root (total) node to chart to plot first-level grouping.
-        chartsModel.setDataAndDims({data: data[0].children, dimensions});
     }
 
     // Cube emits leaves in "children" collection - rename that collection to "leafRows" so we can

@@ -39,10 +39,12 @@ import {getOrCreate} from '../utils/js';
  */
 export class HoistBase {
 
+    static get isHoistBase() {return true}
+    get isHoistBase() {return true}
+
+    // Internal State
     #managedInstances = [];
     #disposers = [];
-
-    get isHoistBase() {return true}
 
     /**
      * Add and start a managed reaction.
@@ -225,7 +227,6 @@ export class HoistBase {
         this._xhManagedProperties?.forEach(p => XH.safeDestroy(this[p]));
     }
 }
-HoistBase.isHoistBase = true;
 
 //--------------------------------------------------
 // Implementation

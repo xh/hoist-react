@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, uses, HoistModel, useLocalModel, managed} from '@xh/hoist/core';
+import {hoistCmp, uses, HoistModel, useLocalModel, managed, lookup} from '@xh/hoist/core';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {required, parseFilter, withFilterByTypes} from '@xh/hoist/data';
 import {filler} from '@xh/hoist/cmp/layout';
@@ -32,7 +32,7 @@ export const gridFilterDialog = hoistCmp.factory({
     model: uses(GridFilterModel),
     className: 'xh-grid-filter-dialog',
     render({model, className}) {
-        const impl = useLocalModel(() => new LocalModel(model));
+        const impl = useLocalModel(LocalModel);
         if (!model.dialogOpen) return null;
         return dialog({
             className,
@@ -90,7 +90,7 @@ const bbar = hoistCmp.factory(
 class LocalModel extends HoistModel {
 
     /** @member {GridFilterModel} */
-    model;
+    @lookup(GridFilterModel) model;
 
     /** @member {FormModel} */
     @managed
@@ -118,12 +118,9 @@ class LocalModel extends HoistModel {
         ]
     });
 
-    constructor(model) {
-        super();
-        this.model = model;
-
+    onLinked() {
         this.addReaction({
-            track: () => model.dialogOpen,
+            track: () => this.model.dialogOpen,
             run: (open) => {
                 if (open) this.loadForm();
             }
@@ -131,13 +128,14 @@ class LocalModel extends HoistModel {
     }
 
     async saveAsync() {
-        const valid = await this.formModel.validateAsync();
+        const {model, formModel} = this,
+            valid = await formModel.validateAsync();
         if (!valid) return;
 
-        const newFilter = JSON.parse(this.formModel.values.filter),
-            filter = withFilterByTypes(this.model.filter, newFilter, ['FieldFilter', 'CompoundFilter']);
+        const newFilter = JSON.parse(formModel.values.filter),
+            filter = withFilterByTypes(model.filter, newFilter, ['FieldFilter', 'CompoundFilter']);
 
-        this.model.setFilter(filter);
+        model.setFilter(filter);
         this.close();
     }
 

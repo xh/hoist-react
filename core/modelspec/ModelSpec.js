@@ -16,10 +16,12 @@
 export class ModelSpec {
     fromContext;
     publishMode;
+    optional;
 
-    constructor(fromContext, publishMode) {
+    constructor(fromContext, publishMode, optional) {
         this.fromContext = fromContext;
         this.publishMode = publishMode;
+        this.optional = optional;
     }
 }
 

@@ -4,10 +4,11 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, XH, lookup} from '@xh/hoist/core';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {FieldType, withFilterByKey} from '@xh/hoist/data';
-import {action, makeObservable} from '@xh/hoist/mobx';
-import {stripTags, throwIf, warnIf} from '@xh/hoist/utils/js';
+import {action, makeObservable, comparer} from '@xh/hoist/mobx';
+import {stripTags, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     debounce,
     escapeRegExp,
@@ -17,7 +18,6 @@ import {
     intersection,
     isArray,
     isEmpty,
-    isEqual,
     isUndefined,
     without
 } from 'lodash';
@@ -27,53 +27,35 @@ import {
  */
 export class StoreFilterFieldImplModel extends HoistModel {
 
-    model;
-    bind;
+    @lookup('*') model;
 
     /** @type {GridModel} */
     gridModel;
     /** @type {Store} */
     store;
 
-    filterBuffer;
-    onFilterChange;
-    includeFields;
-    excludeFields;
-    matchMode;
-    autoApply;
-
     filter;
     bufferedApplyFilter;
 
-    constructor({
-        model,
-        bind,
-        gridModel,
-        store,
-        filterBuffer = 200,
-        onFilterChange,
-        includeFields,
-        excludeFields,
-        matchMode = 'startWord',
-        autoApply = true
-    }) {
+    constructor() {
         super();
         makeObservable(this);
-        this.model = model;
-        this.bind = bind;
-        this.gridModel = gridModel;
-        this.store = store;
-        this.filterBuffer = filterBuffer;
-        this.onFilterChange = onFilterChange;
-        this.includeFields = includeFields;
-        this.excludeFields = excludeFields;
-        this.matchMode = matchMode;
-        this.autoApply = autoApply;
+    }
 
+    onLinked() {
+        let {gridModel, store, includeFields, bind, filterBuffer = 200} = this.componentProps;
+
+        throwIf(gridModel && store, "Cannot specify both 'gridModel' and 'store' props.");
+        if (!store) {
+            gridModel = withDefault(gridModel, this.lookupModel(GridModel));
+            store = gridModel?.store ?? null;
+        }
         warnIf(!gridModel && !store && isEmpty(includeFields),
             "Must specify one of 'gridModel', 'store', or 'includeFields' or the filter will be a no-op."
         );
         throwIf(!store && !bind, "Must specify either 'bind' or a 'store' in StoreFilterField.");
+        this.store = store;
+        this.gridModel = gridModel;
 
         this.bufferedApplyFilter = debounce(() => this.applyFilter(), filterBuffer);
 
@@ -82,40 +64,29 @@ export class StoreFilterFieldImplModel extends HoistModel {
             run: () => this.regenerateFilter(),
             fireImmediately: true
         });
-    }
 
-    // We allow these to be dynamic by updating on every render.
-    updateFilterProps({
-        onFilterChange,
-        includeFields,
-        excludeFields
-    }) {
-        // just record change to callback
-        this.onFilterChange = onFilterChange;
-
-        // ...other changes require re-generation
-        if (!isEqual([includeFields, excludeFields], [this.includeFields, this.excludeFields])) {
-            this.includeFields = includeFields;
-            this.excludeFields = excludeFields;
-            this.regenerateFilter();
-        }
+        this.addReaction({
+            track: () => [this.componentProps.includeFields, this.componentProps.excludeFields],
+            run: () => this.regenerateFilter(),
+            equals: comparer.structural
+        });
     }
 
     //------------------------------------------------------------------
     // Trampoline value to bindable -- from bound model, or store
     //------------------------------------------------------------------
     get filterText() {
-        const {bind, model, store} = this;
-        return bind ? model[bind] : store.xhFilterText;
+        const {bind, model} = this.componentProps;
+        return bind ? model[bind] : this.store.xhFilterText;
     }
 
     @action
     setFilterText(v) {
-        const {bind, model, store} = this;
+        const {bind, model} = this.componentProps;
         if (bind) {
             model.setBindable(bind, v);
         } else {
-            store.setXhFilterText(v);
+            this.store.setXhFilterText(v);
         }
     }
 
@@ -142,7 +113,8 @@ export class StoreFilterFieldImplModel extends HoistModel {
     }
 
     regenerateFilter() {
-        const {filter, filterText, autoApply} = this,
+        const {filter, filterText} = this,
+            {autoApply = true, onFilterChange} = this.componentProps,
             activeFields = this.getActiveFields(),
             initializing = isUndefined(filter);
 
@@ -158,7 +130,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
         if (filter === newFilter) return;
 
         this.filter = newFilter;
-        if (!initializing && this.onFilterChange) this.onFilterChange(newFilter);
+        if (!initializing && onFilterChange) onFilterChange(newFilter);
 
         if (autoApply) {
             // Only respect the buffer for non-null changes. Allows immediate initialization and quick clearing.
@@ -172,7 +144,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
 
     getRegex(searchTerm) {
         searchTerm = escapeRegExp(searchTerm);
-        switch (this.matchMode) {
+        switch (this.componentProps.matchMode ?? 'startWord') {
             case 'any':
                 return new RegExp(searchTerm, 'i');
             case 'start':

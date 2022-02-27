@@ -24,18 +24,15 @@ import './Mask.scss';
 export const [Mask, mask] = hoistCmp.withFactory({
     displayName: 'Mask',
     className: 'xh-mask',
-    model: false,
 
     render({
-        bind,
         isDisplayed,
         message,
         inline = true,
         spinner = false,
-        className,
-        model
+        className
     }) {
-        const impl = useLocalModel(() => new LocalMaskModel(bind));
+        const impl = useLocalModel(LocalMaskModel);
 
         isDisplayed = withDefault(isDisplayed, impl.task?.isPending);
         message = withDefault(message, impl.task?.message);
@@ -83,8 +80,9 @@ Mask.propTypes = {
 
 class LocalMaskModel extends HoistModel {
     task;
-    constructor(bind) {
-        super();
+
+    onLinked() {
+        const {bind} = this.componentProps;
         if (bind) {
             this.task = bind instanceof TaskObserver ?
                 bind :

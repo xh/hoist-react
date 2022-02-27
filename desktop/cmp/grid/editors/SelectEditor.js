@@ -13,7 +13,6 @@ import './Editors.scss';
 export const [SelectEditor, selectEditor] = hoistCmp.withFactory({
     displayName: 'SelectEditor',
     className: 'xh-select-editor',
-    model: false,
     memo: false,
     observer: false,
     render(props, ref) {
