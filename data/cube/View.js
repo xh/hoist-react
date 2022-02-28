@@ -47,7 +47,8 @@ export class View extends HoistBase {
     _rows = null;
     _rowCache = null;
     _leafMap = null; // Leaves, by source record id.
-    _simpleAggs = false;
+    _recordMap = null; // Records, by source record id
+    _aggContext = null;
 
     /**
      * @private - applications should use `Cube.createView()`.
@@ -66,9 +67,6 @@ export class View extends HoistBase {
         this.query = query;
         this.stores = castArray(stores);
         this._rowCache = new Map();
-        this._simpleAggs = query.fields.every(
-            ({aggregator}) => !aggregator || aggregator.dependsOnChildrenOnly
-        );
         this.fullUpdate();
 
         if (connect) {
@@ -115,16 +113,13 @@ export class View extends HoistBase {
         const newQuery = this.query.clone(overrides);
         if (this.query.equals(newQuery)) return;
 
-        this._simpleAggs = newQuery.fields.every(
-            ({aggregator}) => !aggregator || aggregator.dependsOnChildrenOnly
-        );
+        this.query = newQuery;
 
         // Only blow away row cache if more than filter changing, or we have complex aggregates.
-        if (!this._childOnlyAggs || !isEqual(keys(overrides), ['filter'])) {
+        if (!this.aggregatorsAreSimple || !isEqual(keys(overrides), ['filter'])) {
             this._rowCache.clear();
         }
 
-        this.query = newQuery;
         this.fullUpdate();
     }
 
@@ -195,24 +190,24 @@ export class View extends HoistBase {
     //------------------------
     @logWithDebug
     fullUpdate() {
-        this._aggContext = new AggregationContext(this, this.computeFilteredRecords());
+        this.filterRecords();
+        this.createAggregationContext();
         this.generateRows();
         this.loadStores();
         this.updateResults();
     }
 
     dataOnlyUpdate(updates) {
-        const {_leafMap, _aggContext, stores} = this,
-            updatedRows = new Set(),
-            {filteredRecords} = _aggContext;
+        const {_leafMap, _recordMap, stores} = this,
+            updatedRows = new Set();
 
         updates.forEach(rec => {
-            filteredRecords.set(rec.id, rec);
+            _recordMap.set(rec.id, rec);
             const leaf = _leafMap.get(rec.id);
             leaf?.applyDataUpdate(rec, updatedRows);
         });
 
-        this._aggContext = new AggregationContext(this, filteredRecords);
+        this.createAggregationContext();
 
         stores.forEach(store => {
             const recordUpdates = [];
@@ -242,12 +237,11 @@ export class View extends HoistBase {
 
     // Generate a new full data representation
     generateRows() {
-        const {query, _aggContext} = this,
+        const {query} = this,
             {dimensions, includeRoot} = query,
             rootId = 'root';
 
-        const records = Array.from(_aggContext.filteredRecords.values());
-
+        const records = this._aggContext.filteredRecords;
         const leafMap = new Map();
         let newRows = this.groupAndInsertRecords(records, dimensions, rootId, {}, leafMap);
         newRows = this.bucketRows(newRows, rootId, {});
@@ -338,10 +332,11 @@ export class View extends HoistBase {
         return ret;
     }
 
-    // return a list of simple updates for leaves we have or false if leaf population changing
+    // return a list of simple data updates we can apply to  leaves.
+    // false if leaf population changing, or aggregations are complex
     getSimpleUpdates(t) {
         if (!t) return [];
-        if (!this._simpleAggs) return false;
+        if (!this.aggregatorsAreSimple) return false;
         const {_leafMap, query} = this;
 
         // 1) Simple case: no filter
@@ -396,13 +391,23 @@ export class View extends HoistBase {
         return ret;
     }
 
-    computeFilteredRecords() {
+    filterRecords() {
         const {query, cube} = this,
             ret = new Map();
         cube.store.records
             .filter(r => query.test(r))
             .forEach(r => ret.set(r.id, r));
-        return ret;
+        this._recordMap = ret;
+    }
+
+    createAggregationContext() {
+        this._aggContext = new AggregationContext(this, Array.from(this._recordMap.values()));
+    }
+
+    get aggregatorsAreSimple() {
+        return this.query.fields.every(
+            ({aggregator}) => !aggregator || aggregator.dependsOnChildrenOnly
+        );
     }
 
     destroy() {
