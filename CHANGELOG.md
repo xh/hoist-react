@@ -26,8 +26,14 @@
   direct children.  See new property `Aggregator.dependOnChildrenOnly` and `AggregationContext`
   argument passed to `Aggregator.aggregate()` and `Aggregator.replace()`
 
+### 🐞 Bug Fixes
+
+* Fixed an issue where the menu would flash open and closed when clicking on the `FilterChooser`
+  favorites button.
+
 ### 💥 Breaking Changes
-   Dashboard widgets no longer receive the `viewModel` prop.  Access to the `DashViewModel` within a
+
+* Dashboard widgets no longer receive the `viewModel` prop.  Access to the `DashViewModel` within a
    widget should be obtained using either the lookup decorator (i.e. `@lookup(DashViewModel)`)
    or the `lookupModel()` method.
 
