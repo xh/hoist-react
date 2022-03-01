@@ -22,6 +22,10 @@
   if a model specified with this directive cannot be resolved.   A new `optional` config
   (default false) supports the case of components that support optional models.
 
+* New support in Cube views for aggregators that depend on rows in the data set other than their
+  direct children.  See new property `Aggregator.dependOnChildrenOnly` and `AggregationContext`
+  argument passed to `Aggregator.aggregate()` and `Aggregator.replace()`
+
 ### 🐞 Bug Fixes
 
 * Fixed an issue where the menu would flash open and closed when clicking on the `FilterChooser`
