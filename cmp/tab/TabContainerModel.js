@@ -253,7 +253,7 @@ export class TabContainerModel extends HoistModel {
         if (route) {
             XH.navigate(route + '.' + tab.id);
         } else {
-            this.setActiveTabId(tab.id);
+            this.setActiveTabIdInternal(tab.id);
         }
     }
 
@@ -273,7 +273,7 @@ export class TabContainerModel extends HoistModel {
     // Implementation
     //-------------------------
     @action
-    setActiveTabId(id) {
+    setActiveTabIdInternal(id) {
         const tab = this.findTab(id);
         throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
@@ -289,7 +289,7 @@ export class TabContainerModel extends HoistModel {
         if (router.isActive(route)) {
             const tab = tabs.find(t => router.isActive(route + '.' + t.id));
             if (tab && !tab.isActive && !tab.disabled) {
-                this.setActiveTabId(tab.id);
+                this.setActiveTabIdInternal(tab.id);
             }
         }
     }
