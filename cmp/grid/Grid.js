@@ -8,7 +8,7 @@ import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {getTreeStyleClasses, GridAutosizeMode} from '@xh/hoist/cmp/grid';
 import {div, fragment, frame} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, uses, XH, lookup} from '@xh/hoist/core';
 import {
     colChooser as desktopColChooser,
     gridFilterDialog,
@@ -72,7 +72,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
      */
     render({model, className, ...props}, ref) {
         const {store, treeMode, treeStyle, highlightRowOnClick, colChooserModel, filterModel} = model,
-            impl = useLocalModel(() => new GridLocalModel(model, props)),
+            impl = useLocalModel(GridLocalModel),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
             maxDepth = impl.isHierarchical ? store.maxDepth : null;
 
@@ -127,7 +127,7 @@ Grid.propTypes = {
 class GridLocalModel extends HoistModel {
 
     /** @member {GridModel} */
-    model;
+    @lookup(GridModel) model;
     /** @member {Object} */
     agOptions;
     /** @member {RefObject} */
@@ -165,10 +165,8 @@ class GridLocalModel extends HoistModel {
         return emptyText;
     }
 
-    constructor(model, props) {
-        super();
-        this.model = model;
-        this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(model) : null;
+    onLinked() {
+        this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(this.model) : null;
         this.addReaction(this.selectionReaction());
         this.addReaction(this.sortReaction());
         this.addReaction(this.columnsReaction());
@@ -179,7 +177,7 @@ class GridLocalModel extends HoistModel {
         this.addReaction(this.sizingModeReaction());
         this.addReaction(this.validationDisplayReaction());
 
-        this.agOptions = merge(this.createDefaultAgOptions(), props.agOptions || {});
+        this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
     }
 
     createDefaultAgOptions() {
@@ -652,10 +650,9 @@ class GridLocalModel extends HoistModel {
                 model.autosizeAsync();
             } else {
                 // ...otherwise, only autosize columns that are not manually sized
-                const columns = model.getLeafColumnIds().filter(colId => {
-                    const state = model.findColumn(model.columnState, colId);
-                    return state && !state.manuallySized;
-                });
+                const columns = model.columnState
+                    .filter(it => !it.manuallySized)
+                    .map(it => it.colId);
                 model.autosizeAsync({columns});
             }
         }

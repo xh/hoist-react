@@ -4,14 +4,14 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, useContextModel, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {hbox, vbox, span} from '@xh/hoist/cmp/layout';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {errorIf, withDefault, consumeEvent} from '@xh/hoist/utils/js';
+import {consumeEvent} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 import './GridFindField.scss';
 import {GridFindFieldImplModel} from './impl/GridFindFieldImplModel';
@@ -35,18 +35,9 @@ import {GridFindFieldImplModel} from './impl/GridFindFieldImplModel';
 export const [GridFindField, gridFindField] = hoistCmp.withFactory({
     displayName: 'GridFindField',
     className: 'xh-grid-find-field',
-    model: null,
-    render(props) {
-        let [layoutProps, {gridModel, className, ...restProps}] = splitLayoutProps(props);
-
-        gridModel = withDefault(gridModel, useContextModel(GridModel));
-        errorIf(
-            !gridModel?.selModel?.isEnabled,
-            'GridFindField must be bound to GridModel with an enabled StoreSelectionModel.'
-        );
-
-        const impl = useLocalModel(() => new GridFindFieldImplModel({gridModel, ...props}));
-        impl.updateProps(props);
+    render({className, model, ...props}) {
+        let [layoutProps, restProps] = splitLayoutProps(props);
+        const impl = useLocalModel(GridFindFieldImplModel);
 
         return hbox({
             width: 180,
@@ -142,16 +133,6 @@ GridFindField.propTypes = {
     includeFields: PT.arrayOf(PT.string),
 
     /** Names of field(s) to exclude from search. Cannot be used with `includeFields`. */
-    excludeFields: PT.arrayOf(PT.string),
-
-    /**
-     * Field on optional model to which this component should bind its raw (text) value to persist
-     * across renders. Specify this field to control the state of this component directly. These
-     * are both advanced use-cases - this prop is typically left unset.
-     */
-    bind: PT.string,
-
-    /** Optional model for raw value binding - see comments on the `bind` prop for details. */
-    model: PT.object
+    excludeFields: PT.arrayOf(PT.string)
 
 };

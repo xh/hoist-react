@@ -117,13 +117,14 @@ export class BaseRow {
 
     applyDataUpdate(childUpdates, updatedRows) {
         const {parent, canAggregate, data, children} = this,
+            ctx = this.view._aggContext,
             myUpdates = [];
         childUpdates.forEach(update => {
             const {field} = update,
                 {name} = field;
             if (canAggregate[name]) {
                 const oldValue = data[name],
-                    newValue = field.aggregator.replace(children, oldValue, update);
+                    newValue = field.aggregator.replace(children, oldValue, update, ctx);
                 update.oldValue = oldValue;
                 update.newValue = newValue;
                 myUpdates.push(update);
@@ -138,10 +139,11 @@ export class BaseRow {
     }
 
     computeAggregates() {
-        const {children, canAggregate, view, data} = this;
+        const {children, canAggregate, view, data} = this,
+            ctx = view._aggContext;
         view.fields.forEach(({aggregator, name}) => {
             if (canAggregate[name]) {
-                data[name] = aggregator.aggregate(children, name);
+                data[name] = aggregator.aggregate(children, name, ctx);
             }
         });
     }

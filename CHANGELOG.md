@@ -1,20 +1,73 @@
 # Changelog
 
-## v47.0.0-SNAPSHOT - unreleased
+## v47.0.0-SNAPSHOT - under development
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v46.1.0...develop)
+### 🎁 New Features
+
+* Version 47 provides new features to simplify the wiring of models to each other and the components
+  they render.  In particular, it formalizes the existing concept of "linked" HoistModels -- models
+  created by Hoist via the `creates` directive or the `useLocalModel` hook -- and provides them with
+  the following new features:
+    - an observable `componentProps` property with access to the props of their rendered component.
+    - a `lookupModel()` method and a `@lookup` decorator that can be used to acquire references to
+      other HoistModels that are ancestors of the model in the component hierarchy.
+    - new `onLinked()` and `afterLinked()` lifecycle methods, called when the model's associated
+      component is first rendered.
+  As before, linked models are auto-loaded and registered for refreshes within the `RefreshContext`
+  they reside in, as well as destroyed when their linked component is unmounted.  Also note that
+  the new features described above are all "opt-in" and should be fully backward compatible with
+  existing application code.
+
+* Improvements to `uses()` directive to `HoistComponent`.  Hoist will now more cleanly alert
+  if a model specified with this directive cannot be resolved.   A new `optional` config
+  (default false) supports the case of components that support optional models.
+
+* New support in Cube views for aggregators that depend on rows in the data set other than their
+  direct children.  See new property `Aggregator.dependOnChildrenOnly` and `AggregationContext`
+  argument passed to `Aggregator.aggregate()` and `Aggregator.replace()`
+
+### 🐞 Bug Fixes
+
+* Fixed an issue where the menu would flash open and closed when clicking on the `FilterChooser`
+  favorites button.
+
+### 💥 Breaking Changes
+
+* Dashboard widgets no longer receive the `viewModel` prop.  Access to the `DashViewModel` within a
+   widget should be obtained using either the lookup decorator (i.e. `@lookup(DashViewModel)`)
+   or the `lookupModel()` method.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.52 -> 3.53`
+
+## v46.1.2 - 2022-02-18
+
+### 🐞 Bug Fixes
+
+* Fixed an issue where column autosize can reset column order under certain circumstances.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v46.1.1...v46.1.2)
+
+## v46.1.1 - 2022-02-15
+
+### 🐞 Bug Fixes
+
+* Prevent `onClick` for disabled mobile `Buttons`.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v46.1.0...v46.1.1)
 
 ## v46.1.0 - 2022-02-07
 
-###  Technical
-* This release modifies our workaround to handle the ag-Grid v26 changes to cast all of their node
-ids to strings.  The initial approach in v46.0.0 -- matching the ag-Grid behavior by casting all
-`StoreRecord` ids to strings -- was deemed too problematic for applications and has been reverted.
-Numerical ids in Store are once again fully supported.
+### Technical
 
-In order to accommodate the ag-Grid changes, applications that are using ag-Grid APIs
-(e.g. `agApi.getNode()` ) with `StoreRecord` should be sure to use the new property `StoreRecord.agId`
-to locate and compare records.  We expect such usages to be rare in application code.
+* This release modifies our workaround to handle the ag-Grid v26 changes to cast all of their node
+  ids to strings. The initial approach in v46.0.0 - matching the ag-Grid behavior by casting all
+  `StoreRecord` ids to strings - was deemed too problematic for applications and has been reverted.
+  Numerical ids in Store are once again fully supported.
+* To accommodate the ag-Grid changes, applications that are using ag-Grid APIs (e.g.
+  `agApi.getNode()`) should be sure to use the new property `StoreRecord.agId` to locate and compare
+  records. We expect such usages to be rare in application code.
 
 ### 🎁 New Features
 
@@ -22,13 +75,13 @@ to locate and compare records.  We expect such usages to be rare in application 
 * Admins can now force suspension of individual client apps from the Server > WebSockets tab.
   Intended to e.g. force an app to stop refreshing an expensive query or polling an endpoint removed
   in a new release. Requires websockets to be enabled on both server and client.
-* `FormField`s no longer need to specify a child input, and will simply render their readonly version
-   if no child is specified.  This simplifies the common use-case of fields/forms that are always
-   readonly.
+* `FormField`s no longer need to specify a child input, and will simply render their readonly
+  version if no child is specified. This simplifies the common use-case of fields/forms that are
+  always readonly.
 
 ### 🐞 Bug Fixes
-* `FormField` would previously throw if given a child that did not have `propTypes`.  This has
-   been fixed.
+
+* `FormField` no longer throw if given a child that did not have `propTypes`.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v46.0.0...v46.1.0)
 

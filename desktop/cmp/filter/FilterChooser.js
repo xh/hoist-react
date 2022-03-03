@@ -189,7 +189,7 @@ function favoritesIcon(model) {
             'xh-select__indicator',
             'xh-filter-chooser-favorite-icon'
         ),
-        onClick: (e) => {
+        onMouseDown: (e) => {
             model.openFavoritesMenu();
             e.stopPropagation();
         }

@@ -37,7 +37,7 @@ export class ModelLookup {
      * @param {ModelSelector} selector - type of model to lookup.
      * @returns {HoistModel} - model, or null if no matching model found.
      */
-    lookupModel(selector = '*') {
+    lookupModel(selector) {
         const {model, publishMode, parent} = this,
             modeIsDefault = (publishMode === ModelPublishMode.DEFAULT);
 
@@ -64,15 +64,20 @@ export class ModelLookup {
 }
 
 export function matchesSelector(model, selector, acceptWildcard = false) {
-    if (!model || !selector)    return false;
-    if (selector === '*')       return acceptWildcard;
+    if (!model || !selector) return false;
+    if (selector === '*') return acceptWildcard;
 
     if (isFunction(selector)) {
-        // Need to distinguish a class constructor from a generic function here
-        // In general a clunky op, but can short-circuit: selector almost always a HoistModel!
-        return selector.isHoistModel || (selector.toString().startsWith('class')) ?
-            model instanceof selector :
-            selector(model);
+        // 1) it's a constructor function/class
+        if (selector.isHoistModel) {
+            return model instanceof selector;
+        }
+
+        // 2) it's a callable function, call for either a boolean or a constructor function/class
+        const result = selector(model);
+        return isFunction(result) && result.isHoistModel ?
+            model instanceof result :
+            !!result;
     }
     return false;
 }

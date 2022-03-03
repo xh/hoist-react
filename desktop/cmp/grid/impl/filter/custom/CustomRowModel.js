@@ -16,7 +16,7 @@ export class CustomRowModel extends HoistModel {
     parentModel;
 
     /** @member {ColumnHeaderFilterModel} */
-    colFilterModel;
+    headerFilterModel;
 
     @bindable op;
     @bindable inputVal;
@@ -68,7 +68,7 @@ export class CustomRowModel extends HoistModel {
         // If the filter model commits on change, the inputs shouldn't as it would be too aggressive
         // while typing in values. Conversely, if the filter model doesn't, we prefer commitOnChange
         // for the inputs as it eagerly validates the "Apply" button.
-        return !this.parentModel.parentModel.commitOnChange;
+        return !this.headerFilterModel.commitOnChange;
     }
 
     get hideInput() {
@@ -89,7 +89,7 @@ export class CustomRowModel extends HoistModel {
         }
 
         this.parentModel = parentModel;
-        this.colFilterModel = parentModel.parentModel;
+        this.headerFilterModel = parentModel.headerFilterModel;
         this.op = op ?? this.fieldSpec.defaultOp;
         this.inputVal = value;
     }

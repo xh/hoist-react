@@ -69,7 +69,6 @@ export class DashViewModel extends HoistModel {
         this.title = title ?? viewSpec.title;
         this.viewState = viewState;
         this.containerModel = containerModel;
-
         this.refreshContextModel = new ManagedRefreshContextModel(this);
     }
 
