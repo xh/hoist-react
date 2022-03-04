@@ -119,7 +119,10 @@ export const [FormField, formField] = hoistCmp.withFactory({
                     items: [label, requiredIndicator]
                 }),
                 div({
-                    className: childIsSizeable ? 'xh-form-field-fill' : '',
+                    className: classNames(
+                        'xh-form-field-inner',
+                        childIsSizeable ? 'xh-form-field-inner--flex' : 'xh-form-field-inner--block'
+                    ),
                     items: [
                         childEl,
                         div({

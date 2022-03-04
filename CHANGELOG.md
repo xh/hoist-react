@@ -26,6 +26,10 @@
   direct children.  See new property `Aggregator.dependOnChildrenOnly` and `AggregationContext`
   argument passed to `Aggregator.aggregate()` and `Aggregator.replace()`
 
+* Clarified internal CSS classes and styling for `FormField`.
+  * ⚠️ Note that as part of this change, the `xh-form-field-fill` class name is no longer in use.
+    Apps should check for any styles for that class and replace with `.xh-form-field-inner--flex`.
+
 ### 🐞 Bug Fixes
 
 * Fixed an issue where the menu would flash open and closed when clicking on the `FilterChooser`
