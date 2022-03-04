@@ -38,6 +38,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
     render({model, className}) {
         const {isOpen, gridModel, pinnedColumn, visibleColumns, hiddenColumns, showRestoreDefaults} = model,
             impl = useLocalModel(LocalModel);
+
         return dialogPanel({
             isOpen,
             title: 'Choose Columns',
@@ -52,7 +53,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
                             className: 'xh-col-chooser__section',
                             scrollable: true,
                             items: [
-                                row({col: pinnedColumn}),
+                                row({col: pinnedColumn, model: impl}),
                                 droppable({
                                     droppableId: 'visible-columns',
                                     item: (dndProps) => columnList({

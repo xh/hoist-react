@@ -2,6 +2,11 @@
 
 ## v48.0.0-SNAPSHOT - unreleased
 
+## v47.0.1 - 2022-03-04
+
+### 🐞 Bug Fixes
+
+* Fix to mobile `ColChooser` error re. internal model handling.
 
 ## v47.0.0 - 2022-03-04
 
