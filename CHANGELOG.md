@@ -5,30 +5,26 @@
 ### 🎁 New Features
 
 * Version 47 provides new features to simplify the wiring of models to each other and the components
-  they render.  In particular, it formalizes the existing concept of "linked" HoistModels -- models
-  created by Hoist via the `creates` directive or the `useLocalModel` hook -- and provides them with
+  they render. In particular, it formalizes the existing concept of "linked" HoistModels - models
+  created by Hoist via the `creates` directive or the `useLocalModel` hook - and provides them with
   the following new features:
     - an observable `componentProps` property with access to the props of their rendered component.
     - a `lookupModel()` method and a `@lookup` decorator that can be used to acquire references to
       other HoistModels that are ancestors of the model in the component hierarchy.
     - new `onLinked()` and `afterLinked()` lifecycle methods, called when the model's associated
       component is first rendered.
-  As before, linked models are auto-loaded and registered for refreshes within the `RefreshContext`
-  they reside in, as well as destroyed when their linked component is unmounted.  Also note that
-  the new features described above are all "opt-in" and should be fully backward compatible with
+* As before, linked models are auto-loaded and registered for refreshes within the `RefreshContext`
+  they reside in, as well as destroyed when their linked component is unmounted. Also note that the
+  new features described above are all "opt-in" and should be fully backward compatible with
   existing application code.
-
-* Improvements to `uses()` directive to `HoistComponent`.  Hoist will now more cleanly alert
-  if a model specified with this directive cannot be resolved.   A new `optional` config
-  (default false) supports the case of components that support optional models.
-
+* Hoist will now more clearly alert if a model specified via the `uses()` directive cannot be
+  resolved. A new `optional` config (default false) supports components with optional models.
 * New support in Cube views for aggregators that depend on rows in the data set other than their
-  direct children.  See new property `Aggregator.dependOnChildrenOnly` and `AggregationContext`
+  direct children. See new property `Aggregator.dependOnChildrenOnly` and new `AggregationContext`
   argument passed to `Aggregator.aggregate()` and `Aggregator.replace()`
-
 * Clarified internal CSS classes and styling for `FormField`.
-  * ⚠️ Note that as part of this change, the `xh-form-field-fill` class name is no longer in use.
-    Apps should check for any styles for that class and replace with `.xh-form-field-inner--flex`.
+    * ⚠️ Note that as part of this change, the `xh-form-field-fill` class name is no longer in use.
+      Apps should check for any styles for that class and replace with `.xh-form-field-inner--flex`.
 
 ### 🐞 Bug Fixes
 
@@ -37,9 +33,9 @@
 
 ### 💥 Breaking Changes
 
-* Dashboard widgets no longer receive the `viewModel` prop.  Access to the `DashViewModel` within a
-   widget should be obtained using either the lookup decorator (i.e. `@lookup(DashViewModel)`)
-   or the `lookupModel()` method.
+* Dashboard widgets no longer receive the `viewModel` prop. Access to the `DashViewModel` within a
+  widget should be obtained using either the lookup decorator (i.e. `@lookup(DashViewModel)`)
+  or the `lookupModel()` method.
 
 ### 📚 Libraries
 
