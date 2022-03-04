@@ -1,6 +1,6 @@
 # Changelog
 
-## v47.0.0-SNAPSHOT - under development
+## v47.0.0 - 2022-03-04
 
 ### 🎁 New Features
 
@@ -40,6 +40,8 @@
 ### 📚 Libraries
 
 * @blueprintjs/core `3.52 -> 3.53`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v46.1.2...v47.0.0)
 
 ## v46.1.2 - 2022-02-18
 
