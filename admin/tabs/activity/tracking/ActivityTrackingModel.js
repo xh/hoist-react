@@ -171,7 +171,8 @@ export class ActivityTrackingModel extends HoistModel {
                 {...Col.impersonating, hidden},
                 {...Col.elapsed, headerName: 'Elapsed (avg)', hidden},
                 {...Col.dateRange, hidden},
-                {...Col.entryCount}
+                {...Col.entryCount},
+                {field: 'count', hidden}
             ]
         });
 
