@@ -1,8 +1,8 @@
 # Changelog
 
-## v48.0.0-SNAPSHOT - unreleased
+## v47.0.1 - 2022-03-06
 
-## v47.0.1 - 2022-03-04
+[Commit Log](https://github.com/xh/hoist-react/compare/v47.0.0...v47.0.1)
 
 ### 🐞 Bug Fixes
 
