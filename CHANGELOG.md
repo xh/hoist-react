@@ -2,6 +2,25 @@
 
 ## v48.0.0-SNAPSHOT- unreleased
 
+### 🎁 New Features
+
+* A new version of `hoist-dev-utils`, which updates `Webpack` to v5 to provide includes faster and
+  more stable builds. Impact on application code should be minimal, but is detailed below.
+
+### 💥 Breaking Changes
+
+* As part of the `hoist-dev-utils` and associated `Webpack` upgrades:
+  * Imports from `package.json` no longer support default export - you must import the entire json
+    as an object. This is most likely to be relevant in your apps `Bootstrap.js`.
+  * The syntax form passing variables to `yarn` scripts in your package.json has changed:
+    * e.g. `webpack --env.prodBuild` > `webpack --env prodBuild`
+  * If you have a mobile app, you must provide a wider range of favicons for display on devices.
+    See https://github.com/xh/hoist-dev-utils/#favicons for more details.
+
+### 📚 Libraries
+
+* @xh/hoist-dev-utils `5.13.0 -> 6.0.0`
+
 ## v47.0.1 - 2022-03-06
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v47.0.0...v47.0.1)
