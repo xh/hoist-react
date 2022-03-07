@@ -5,15 +5,15 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {agGridVersion} from '@xh/hoist/kit/ag-grid';
-import {version as blueprintCoreVersion} from '@blueprintjs/core/package.json';
+import bpPkg from '@blueprintjs/core/package.json';
 import {HoistService, XH} from '@xh/hoist/core';
-import {version as hoistReactVersion} from '@xh/hoist/package.json';
+import hoistPkg from '@xh/hoist/package.json';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {deepFreeze} from '@xh/hoist/utils/js';
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {defaults} from 'lodash';
-import {version as mobxVersion} from 'mobx/package.json';
+import mobxPkg from 'mobx/package.json';
 import {version as reactVersion} from 'react';
 
 export class EnvironmentService extends HoistService {
@@ -33,10 +33,10 @@ export class EnvironmentService extends HoistService {
             clientVersion: XH.appVersion,
             clientBuild: XH.appBuild,
             reactVersion,
-            hoistReactVersion,
+            hoistReactVersion: hoistPkg.version,
             agGridVersion,
-            mobxVersion,
-            blueprintCoreVersion,
+            mobxVersion: mobxPkg.version,
+            blueprintCoreVersion: bpPkg.version,
             clientTimeZone,
             clientTimeZoneOffset
         }, serverEnv);
