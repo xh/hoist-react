@@ -5,8 +5,11 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 
+import {XH} from '@xh/hoist/core';
 import {stripTags} from '@xh/hoist/utils/js';
-import {forOwn, groupBy, isEmpty, isFunction, isNil, map, max, min,  sortBy} from 'lodash';
+import {forOwn, groupBy, isEmpty, isFunction, isNil, isString, map, max, min, sortBy} from 'lodash';
+import {isValidElement} from 'react';
+import {renderToString} from 'react-dom/server';
 
 /**
  * Calculates the column width required to display column.  Used by GridAutoSizeService.
@@ -150,10 +153,23 @@ export class ColumnWidthCalculator {
     //------------------
     // Autosize header cell
     //------------------
+    getHeaderHtml(gridModel, column) {
+        const {headerName} = column,
+            headerValue = isFunction(headerName) ? headerName({column, gridModel}) : headerName;
+
+        if (isString(headerValue)) {
+            return headerValue;
+        } else if (isValidElement(headerValue)) {
+            return renderToString(headerValue);
+        }
+
+        throw XH.exception('Unable to get column header html because value is not a string or valid react element');
+    }
+
     getHeaderWidth(gridModel, column, includeHeaderIcons, bufferPx) {
-        const {colId, headerName, agOptions, sortable, filterable} = column,
+        const {colId, agOptions, sortable, filterable} = column,
             {sizingMode} = gridModel,
-            headerHtml = isFunction(headerName) ? headerName({column, gridModel}) : headerName,
+            headerHtml = this.getHeaderHtml(gridModel, column),
             showSort = sortable && (includeHeaderIcons || gridModel.sortBy.find(sorter => sorter.colId === colId)),
             showMenu = (agOptions?.suppressMenu === false || filterable) && includeHeaderIcons;
 
