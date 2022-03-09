@@ -2,6 +2,11 @@
 
 ## v48.0.0-SNAPSHOT- unreleased
 
+### 🎁 New Features
+
+* Added `GridModel.restoreDefaultsFn`, an optional function allowing apps to extend
+  `GridModel.restoreDefaultsAsync()` to additionally reset app-specific state.
+
 ## v47.0.1 - 2022-03-06
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v47.0.0...v47.0.1)
