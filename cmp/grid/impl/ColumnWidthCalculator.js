@@ -7,9 +7,9 @@
 
 import {XH} from '@xh/hoist/core';
 import {stripTags} from '@xh/hoist/utils/js';
-import {forOwn, groupBy, isEmpty, isFunction, isNil, isString, map, max, min, sortBy} from 'lodash';
+import {forOwn, groupBy, isEmpty, isArray, isFunction, isNil, isString, map, max, min, sortBy} from 'lodash';
 import {isValidElement} from 'react';
-import {renderToString} from 'react-dom/server';
+import {renderToStaticMarkup} from 'react-dom/server';
 
 /**
  * Calculates the column width required to display column.  Used by GridAutoSizeService.
@@ -153,6 +153,21 @@ export class ColumnWidthCalculator {
     //------------------
     // Autosize header cell
     //------------------
+    getHeaderWidth(gridModel, column, includeHeaderIcons, bufferPx) {
+        const {colId, agOptions, sortable, filterable} = column,
+            {sizingMode} = gridModel,
+            headerHtml = this.getHeaderHtml(gridModel, column),
+            headerClass = this.getHeaderClass(gridModel, column),
+            showSort = sortable && (includeHeaderIcons || gridModel.sortBy.find(sorter => sorter.colId === colId)),
+            showMenu = (agOptions?.suppressMenu === false || filterable) && includeHeaderIcons;
+
+        // Render to a hidden header cell to calculate the max displayed width
+        const headerEl = this.getHeaderEl();
+        this.setHeaderClassNames(sizingMode, showSort, showMenu, headerClass);
+        headerEl.firstChild.innerHTML = headerHtml;
+        return Math.ceil(headerEl.clientWidth) + bufferPx;
+    }
+
     getHeaderHtml(gridModel, column) {
         const {headerName} = column,
             headerValue = isFunction(headerName) ? headerName({column, gridModel}) : headerName;
@@ -160,24 +175,10 @@ export class ColumnWidthCalculator {
         if (isString(headerValue)) {
             return headerValue;
         } else if (isValidElement(headerValue)) {
-            return renderToString(headerValue);
+            return renderToStaticMarkup(headerValue);
         }
 
         throw XH.exception('Unable to get column header html because value is not a string or valid react element');
-    }
-
-    getHeaderWidth(gridModel, column, includeHeaderIcons, bufferPx) {
-        const {colId, agOptions, sortable, filterable} = column,
-            {sizingMode} = gridModel,
-            headerHtml = this.getHeaderHtml(gridModel, column),
-            showSort = sortable && (includeHeaderIcons || gridModel.sortBy.find(sorter => sorter.colId === colId)),
-            showMenu = (agOptions?.suppressMenu === false || filterable) && includeHeaderIcons;
-
-        // Render to a hidden header cell to calculate the max displayed width
-        const headerEl = this.getHeaderEl();
-        this.setHeaderClassNames(sizingMode, showSort, showMenu);
-        headerEl.firstChild.innerHTML = headerHtml;
-        return Math.ceil(headerEl.clientWidth) + bufferPx;
     }
 
     resetHeaderClassNames() {
@@ -186,14 +187,15 @@ export class ColumnWidthCalculator {
         headerEl.classList.add('xh-grid-autosize-header');
     }
 
-    setHeaderClassNames(sizingMode, showSort, showMenu) {
+    setHeaderClassNames(sizingMode, showSort, showMenu, headerClass) {
         this.resetHeaderClassNames();
         this.getHeaderEl().classList.add(
             'xh-grid-autosize-header--active',
-            `xh-grid-autosize-header--${sizingMode}`,
-            showSort ? 'xh-grid-autosize-header--sort' : null,
-            showMenu ? 'xh-grid-autosize-header--menu' : null
+            `xh-grid-autosize-header--${sizingMode}`
         );
+        if (showSort) this.getHeaderEl().classList.add('xh-grid-autosize-header--sort');
+        if (showMenu) this.getHeaderEl().classList.add('xh-grid-autosize-header--menu');
+        if (!isEmpty(headerClass)) this.getHeaderEl().classList.add(...headerClass.split(' '));
     }
 
     getHeaderEl() {
@@ -214,6 +216,24 @@ export class ColumnWidthCalculator {
             this._headerEl = headerEl;
         }
         return this._headerEl;
+    }
+
+    getHeaderClass(gridModel, column) {
+        let {headerClass} = column;
+        if (isNil(headerClass)) return '';
+
+        if (isFunction(headerClass)) {
+            headerClass = headerClass(column, gridModel);
+        }
+
+        const ret = [];
+        if (isString(headerClass)) {
+            ret.push(headerClass);
+        } else if (isArray(headerClass)) {
+            ret.push(...headerClass);
+        }
+
+        return ret.join(' ');
     }
 
     //------------------
