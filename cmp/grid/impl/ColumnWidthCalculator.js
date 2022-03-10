@@ -223,7 +223,7 @@ export class ColumnWidthCalculator {
         if (isNil(headerClass)) return '';
 
         if (isFunction(headerClass)) {
-            headerClass = headerClass(column, gridModel);
+            headerClass = headerClass({column, gridModel});
         }
 
         const ret = [];
