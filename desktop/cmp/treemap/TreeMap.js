@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, uses, XH, lookup} from '@xh/hoist/core';
 import {box, div, placeholder} from '@xh/hoist/cmp/layout';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
@@ -30,7 +30,7 @@ import {TreeMapModel} from './TreeMapModel';
  * @see TreeMapModel
  */
 export const [TreeMap, treeMap] = hoistCmp.withFactory({
-    displayName: 'TreeMapModel',
+    displayName: 'TreeMap',
     model: uses(TreeMapModel),
     className: 'xh-treemap',
 
@@ -43,7 +43,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
             return 'Highcharts not available';
         }
 
-        const impl = useLocalModel(() => new LocalModel(model));
+        const impl = useLocalModel(LocalModel);
         ref = composeRefs(
             ref,
             useOnResize(impl.startResize),
@@ -99,7 +99,7 @@ TreeMap.propTypes = {
 class LocalModel extends HoistModel {
 
     /** @member {TreeMapModel} */
-    model;
+    @lookup(TreeMapModel) model;
     chartRef = createObservableRef();
 
     chart = null;
@@ -110,10 +110,8 @@ class LocalModel extends HoistModel {
         return XH.darkTheme ? 'dark' : 'light';
     }
 
-    constructor(model) {
-        super();
-        this.model = model;
-
+    onLinked() {
+        const {model} = this;
         // Detect double-clicks vs single-clicks
         this.clickCount = 0;
         this.debouncedClickHandler = debounce(this.clickHandler, 500);

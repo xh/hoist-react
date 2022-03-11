@@ -7,7 +7,6 @@ import './Editors.scss';
 export const [TextAreaEditor, textAreaEditor] = hoistCmp.withFactory({
     displayName: 'TextAreaEditor',
     className: 'xh-textarea-editor',
-    model: false,
     memo: false,
     observer: false,
     render(props, ref) {

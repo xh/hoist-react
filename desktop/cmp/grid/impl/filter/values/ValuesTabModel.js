@@ -12,7 +12,7 @@ import {castArray, difference, isEmpty, partition, without} from 'lodash';
 
 export class ValuesTabModel extends HoistModel {
     /** @member {ColumnHeaderFilterModel} */
-    parentModel;
+    headerFilterModel;
 
     /**
      * @member {GridModel} - Checkbox grid to display enumerated set of values
@@ -50,19 +50,19 @@ export class ValuesTabModel extends HoistModel {
     }
 
     get field() {
-        return this.parentModel.field;
+        return this.headerFilterModel.field;
     }
 
     get fieldSpec() {
-        return this.parentModel.fieldSpec;
+        return this.headerFilterModel.fieldSpec;
     }
 
     get columnFilters() {
-        return this.parentModel.columnFilters;
+        return this.headerFilterModel.columnFilters;
     }
 
     get gridFilterModel() {
-        return this.parentModel.gridFilterModel;
+        return this.headerFilterModel.gridFilterModel;
     }
 
     get values() {
@@ -77,11 +77,11 @@ export class ValuesTabModel extends HoistModel {
         return this.values.length < this.valueCount;
     }
 
-    constructor(parentModel) {
+    constructor(headerFilterModel) {
         super();
         makeObservable(this);
 
-        this.parentModel = parentModel;
+        this.headerFilterModel = headerFilterModel;
         this.gridModel = this.createGridModel();
 
         this.addReaction({
@@ -169,8 +169,8 @@ export class ValuesTabModel extends HoistModel {
 
     createGridModel() {
         const {BLANK_STR} = this.gridFilterModel,
-            {align, headerAlign, displayName} = this.parentModel.column,
-            renderer = this.fieldSpec.renderer ?? this.parentModel.column.renderer;
+            {align, headerAlign, displayName} = this.headerFilterModel.column,
+            renderer = this.fieldSpec.renderer ?? this.headerFilterModel.column.renderer;
 
         return new GridModel({
             store: {

@@ -6,8 +6,8 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {FieldType} from '@xh/hoist/data';
-import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {stripTags, throwIf} from '@xh/hoist/utils/js';
+import {action, computed, observable, makeObservable, comparer} from '@xh/hoist/mobx';
+import {stripTags, throwIf, errorIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     escapeRegExp,
@@ -18,10 +18,10 @@ import {
     isNil,
     isArray,
     isEmpty,
-    isEqual,
     isFinite,
     without
 } from 'lodash';
+import {GridModel} from '@xh/hoist/cmp/grid';
 
 /**
  * @private
@@ -30,17 +30,19 @@ export class GridFindFieldImplModel extends HoistModel {
 
     /** @member {GridModel} */
     gridModel;
+
     /** @member {string} */
-    matchMode;
+    get matchMode() {return this.componentProps.matchMode ?? 'startWord'}
     /** @member {number} */
-    queryBuffer;
+    get queryBuffer() {return this.componentProps.queryBuffer ?? 200}
     /** @member {string[]} */
-    includeFields;
+    get includeFields() {return this.componentProps.includeFields}
     /** @member {string[]} */
-    excludeFields;
+    get excludeFields() {return this.componentProps.excludeFields}
 
     @observable.ref results;
     inputRef = createObservableRef();
+    _records = null;
 
     get count() {
         return this.results?.length;
@@ -74,45 +76,35 @@ export class GridFindFieldImplModel extends HoistModel {
     }
 
     //------------------------------------------------------------------
-    // Trampoline value to bindable -- from bound model, or grid
+    // Trampoline value to grid
     //------------------------------------------------------------------
     get query() {
-        const {bind, model, gridModel} = this;
-        return bind ? model[bind] : gridModel.xhFindQuery;
+        return this.gridModel.xhFindQuery;
     }
 
     @action
     setQuery(v) {
-        const {bind, model, gridModel} = this;
-        if (bind) {
-            model.setBindable(bind, v);
-        } else {
-            gridModel.setXhFindQuery(v);
-        }
+        this.gridModel.setXhFindQuery(v);
     }
 
-    constructor({
-        gridModel,
-        matchMode = 'startWord',
-        queryBuffer = 200,
-        includeFields,
-        excludeFields
-    }) {
+    constructor() {
         super();
         makeObservable(this);
+    }
 
-        this.gridModel = gridModel;
-        this.matchMode = matchMode;
-        this.queryBuffer = queryBuffer;
-        this.includeFields = includeFields;
-        this.excludeFields = excludeFields;
+    onLinked() {
+        const gridModel = this.gridModel = withDefault(this.componentProps.gridModel, this.lookupModel(GridModel));
+        errorIf(
+            !gridModel?.selModel?.isEnabled,
+            'GridFindField must be bound to GridModel with an enabled StoreSelectionModel.'
+        );
 
         throwIf(!gridModel, "Must specify 'gridModel' in GridFindField.");
 
         this.addReaction({
             track: () => this.query,
             run: () => this.updateResults(true),
-            debounce: queryBuffer
+            debounce: this.queryBuffer
         });
 
         this.addReaction({
@@ -127,15 +119,12 @@ export class GridFindFieldImplModel extends HoistModel {
                 if (this.hasQuery) this.updateResults();
             }
         });
-    }
 
-    // We allow these to be dynamically updated on every render.
-    updateProps({includeFields, excludeFields}) {
-        if (!isEqual([includeFields, excludeFields], [this.includeFields, this.excludeFields])) {
-            this.includeFields = includeFields;
-            this.excludeFields = excludeFields;
-            this.updateResults();
-        }
+        this.addReaction({
+            track: () => [this.includeFields, this.excludeFields],
+            run: () => this.updateResults(),
+            equals: comparer.structural
+        });
     }
 
     selectPrev() {

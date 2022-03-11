@@ -15,31 +15,39 @@
     padding: 0 0 3px;
   }
 
-  .xh-form-field-fill {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-
-    .xh-input {
-      .bp3-input-group {
-        width: 100%;
-      }
-
-      &.bp3-popover-target,
-      .bp3-popover-target {
-        display: block;
-      }
+  .xh-form-field-inner {
+    // Used for unsizeable children
+    &--block {
+      display: block;
     }
 
-    .bp3-popover-wrapper:not(.xh-form-field-error-msg) {
-      display: flex;
+    // Used for sizeable children that should fill the FormField
+    &--flex {
       flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
 
-      & > .bp3-popover-target,
-      & > .bp3-popover-target > .bp3-control-group {
+      .xh-input {
+        .bp3-input-group {
+          width: 100%;
+        }
+
+        &.bp3-popover-target,
+        .bp3-popover-target {
+          display: block;
+        }
+      }
+
+      .bp3-popover-wrapper:not(.xh-form-field-error-msg) {
         display: flex;
         flex: 1;
+
+        & > .bp3-popover-target,
+        & > .bp3-popover-target > .bp3-control-group {
+          display: flex;
+          flex: 1;
+        }
       }
     }
   }
@@ -120,7 +128,7 @@ ul.xh-form-field-error-tooltip {
   align-items: baseline;
   overflow: visible !important;
 
-  .xh-form-field-fill {
+  .xh-form-field-inner--flex {
     flex-direction: row;
     align-items: center;
   }

@@ -16,7 +16,6 @@ import './Editors.scss';
 export const [BooleanEditor, booleanEditor] = hoistCmp.withFactory({
     displayName: 'BooleanEditor',
     className: 'xh-boolean-editor',
-    model: false,
     memo: false,
     observer: false,
     render({

@@ -215,18 +215,18 @@ class Model extends HoistInputModel {
     @bindable.ref internalOptions = [];
 
     // Prop-backed convenience getters
-    get asyncMode() {return !!this.props.queryFn}
-    get creatableMode() {return !!this.props.enableCreate}
-    get windowedMode() {return !!this.props.enableWindowed}
-    get multiMode() {return !!this.props.enableMulti}
-    get filterMode() {return this.props.enableFilter ?? true}
+    get asyncMode() {return !!this.componentProps.queryFn}
+    get creatableMode() {return !!this.componentProps.enableCreate}
+    get windowedMode() {return !!this.componentProps.enableWindowed}
+    get multiMode() {return !!this.componentProps.enableMulti}
+    get filterMode() {return this.componentProps.enableFilter ?? true}
     get selectOnFocus() {
-        return this.props.selectOnFocus ??
+        return this.componentProps.selectOnFocus ??
             (!this.multiMode && (this.filterMode || this.creatableMode));
     }
-    get hideDropdownIndicator() {return this.props.hideDropdownIndicator ?? XH.isTablet}
-    get hideSelectedOptions() {return this.props.hideSelectedOptions ?? this.multiMode}
-    get hideSelectedOptionCheck() {return this.props.hideSelectedOptionCheck || this.hideSelectedOptions}
+    get hideDropdownIndicator() {return this.componentProps.hideDropdownIndicator ?? XH.isTablet}
+    get hideSelectedOptions() {return this.componentProps.hideSelectedOptions ?? this.multiMode}
+    get hideSelectedOptionCheck() {return this.componentProps.hideSelectedOptionCheck || this.hideSelectedOptions}
 
 
     // Managed value for underlying text input under certain conditions
@@ -237,15 +237,17 @@ class Model extends HoistInputModel {
         return this.filterMode && !this.multiMode;
     }
 
-    constructor(props) {
-        super(props);
+    constructor() {
+        super();
         makeObservable(this);
+    }
 
-        const queryBuffer = withDefault(props.queryBuffer, 300);
+    onLinked() {
+        const queryBuffer = withDefault(this.componentProps.queryBuffer, 300);
         if (queryBuffer) this.doQueryAsync = debouncePromise(this.doQueryAsync, queryBuffer);
 
         this.addReaction({
-            track: () => this.props.options,
+            track: () => this.componentProps.options,
             run: (opts) => {
                 opts = this.normalizeOptions(opts);
                 this.setInternalOptions(opts);
@@ -353,7 +355,7 @@ class Model extends HoistInputModel {
     // Options / value handling
     //-------------------------
     filterOption = (opt, inputVal) => {
-        const {props, asyncMode, inputValue, inputValueChangedSinceSelect} = this;
+        const {componentProps, asyncMode, inputValue, inputValueChangedSinceSelect} = this;
 
         // 1) show all options if input has not changed since last select (i.e. user has not typed)
         //    or if in async mode (i.e. queryFn specified).
@@ -365,7 +367,7 @@ class Model extends HoistInputModel {
         }
 
         // 2) Use function provided by app
-        const {filterFn} = props;
+        const {filterFn} = componentProps;
         if (filterFn) {
             return filterFn(opt, inputVal);
         }
@@ -433,9 +435,9 @@ class Model extends HoistInputModel {
     }
 
     objectToOption(src, depth) {
-        const {props} = this,
-            labelField = withDefault(props.labelField, 'label'),
-            valueField = withDefault(props.valueField, 'value');
+        const {componentProps} = this,
+            labelField = withDefault(componentProps.labelField, 'label'),
+            valueField = withDefault(componentProps.valueField, 'value');
 
         throwIf(
             !src.hasOwnProperty(valueField) && !src.hasOwnProperty('options'),
@@ -455,7 +457,7 @@ class Model extends HoistInputModel {
     // Async
     //------------------------
     doQueryAsync = (query) => {
-        return this.props
+        return this.componentProps
             .queryFn(query)
             .then(matchOpts => {
                 // Normalize query return.
@@ -485,7 +487,7 @@ class Model extends HoistInputModel {
     loadingMessageFn = (params) => {
         // workaround for https://github.com/jacobworrel/react-windowed-select/issues/19
         if (!params) return '';
-        const {loadingMessageFn} = this.props,
+        const {loadingMessageFn} = this.componentProps,
             q = params.inputValue;
 
         return loadingMessageFn ? loadingMessageFn(q) : 'Loading...';
@@ -504,7 +506,7 @@ class Model extends HoistInputModel {
 
         // For rendering dropdown menu items, use an optionRenderer if provided - or use the
         // implementation here to render a checkmark next to the active selection.
-        const optionRenderer = this.props.optionRenderer || this.optionRenderer;
+        const optionRenderer = this.componentProps.optionRenderer || this.optionRenderer;
         return optionRenderer(opt);
     };
 
@@ -534,7 +536,7 @@ class Model extends HoistInputModel {
     _valueContainerCmp = null;
     getValueContainerCmp() {
         if (!this._valueContainerCmp) {
-            const {leftIcon} = this.props;
+            const {leftIcon} = this.componentProps;
             this._valueContainerCmp = leftIcon ?
                 (props) => fragment(
                     span({className: 'xh-select__control__left-icon', item: leftIcon}),
@@ -577,7 +579,7 @@ class Model extends HoistInputModel {
     noOptionsMessageFn = (params) => {
         // account for bug in react-windowed-select https://github.com/jacobworrel/react-windowed-select/issues/19
         if (!params) return '';
-        const {noOptionsMessageFn} = this.props,
+        const {noOptionsMessageFn} = this.componentProps,
             q = params.inputValue;
 
         if (noOptionsMessageFn) return noOptionsMessageFn(q);
@@ -586,7 +588,7 @@ class Model extends HoistInputModel {
     };
 
     createMessageFn = (q) => {
-        const {createMessageFn} = this.props;
+        const {createMessageFn} = this.componentProps;
         return createMessageFn ? createMessageFn(q) : `Create "${q}"`;
     };
 

@@ -26,7 +26,7 @@ import './TileFrame.scss';
  */
 export const [TileFrame, tileFrame] = hoistCmp.withFactory({
     displayName: 'TileFrame',
-    model: false, memo: false, observer: false,
+    memo: false, observer: false,
     className: 'xh-tile-frame',
 
     render({
@@ -40,7 +40,7 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
         onLayoutChange,
         ...props
     }, ref) {
-        const localModel = useLocalModel(() => new LocalModel()),
+        const localModel = useLocalModel(LocalModel),
             [width, setWidth] = useState(),
             [height, setHeight] = useState();
 

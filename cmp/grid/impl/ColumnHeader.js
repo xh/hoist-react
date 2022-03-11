@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmp, HoistModel, useLocalModel, managed} from '@xh/hoist/core';
+import {XH, hoistCmp, HoistModel, creates, managed} from '@xh/hoist/core';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {Column} from '@xh/hoist/cmp/grid';
@@ -29,15 +29,14 @@ import {GridSorter} from './GridSorter';
 export const columnHeader = hoistCmp.factory({
     displayName: 'ColumnHeader',
     className: 'xh-grid-header',
-    model: false,
+    model: creates(() => ColumnHeaderModel),
 
-    render(props) {
-        const impl = useLocalModel(() => new LocalModel(props)),
-            {gridModel, xhColumn} = impl,
+    render({className, model, enableMenu, showColumnMenu, displayName}) {
+        const {gridModel, xhColumn} = model,
             {isDesktop} = XH;
 
         const sortIcon = () => {
-            const {abs, sort} = impl.activeGridSorter ?? {};
+            const {abs, sort} = model.activeGridSorter ?? {};
             if (!sort) return null;
 
             let icon;
@@ -50,45 +49,46 @@ export const columnHeader = hoistCmp.factory({
         };
 
         const menuIcon = () => {
-            if (impl.enableFilter) return columnHeaderFilter({model: impl.columnHeaderFilterModel});
-            if (!props.enableMenu) return null;
+            if (model.enableFilter) return columnHeaderFilter();
+            if (!enableMenu) return null;
             return div({
                 className: 'xh-grid-header-menu-icon',
-                item: impl.isAgFiltered ? Icon.filter() : Icon.bars(),
-                ref: impl.agFilterButtonRef,
+                item: model.isAgFiltered ? Icon.filter() : Icon.bars(),
+                ref: model.agFilterButtonRef,
                 onClick: (e) => {
                     e.stopPropagation();
-                    props.showColumnMenu(impl.agFilterButtonRef.current);
+                    showColumnMenu(model.agFilterButtonRef.current);
                 }
             });
         };
 
         const expandCollapseIcon = () => {
-            if (!xhColumn || !xhColumn.isTreeColumn || !xhColumn.headerHasExpandCollapse || !impl.rootsWithChildren) {
+            const {xhColumn} = model;
+            if (!xhColumn || !xhColumn.isTreeColumn || !xhColumn.headerHasExpandCollapse || !model.rootsWithChildren) {
                 return null;
             }
 
-            const icon = impl.majorityIsExpanded ?
+            const icon = model.majorityIsExpanded ?
                 Icon.angleDown({prefix: 'fal', size: 'lg'}) :
                 Icon.angleRight({prefix: 'fal', size: 'lg'});
 
             return div({
                 className: 'xh-grid-header-expand-collapse-icon',
                 item: icon,
-                onClick: isDesktop ? impl.onExpandOrCollapse : null,
-                onTouchStart: !isDesktop ? impl.onExpandOrCollapse : null
+                onClick: isDesktop ? model.onExpandOrCollapse : null,
+                onTouchStart: !isDesktop ? model.onExpandOrCollapse : null
             });
         };
 
         const extraClasses = [
-            impl.isFiltered ? 'xh-grid-header-filtered' : null,
-            impl.activeGridSorter ? 'xh-grid-header-sorted' : null,
-            impl.hasNonPrimarySort ? 'xh-grid-header-multisort' : null
+            model.isFiltered ? 'xh-grid-header-filtered' : null,
+            model.activeGridSorter ? 'xh-grid-header-sorted' : null,
+            model.hasNonPrimarySort ? 'xh-grid-header-multisort' : null
         ];
 
-        // `props.displayName` is the output of the Column `headerValueGetter` and should always be a string
+        // `displayName` is the output of the Column `headerValueGetter` and should always be a string
         // If `xhColumn` is present, it can consulted for a richer `headerName`
-        let headerElem = props.displayName;
+        let headerElem = displayName;
         if (xhColumn) {
             headerElem = isFunction(xhColumn.headerName) ?
                 xhColumn.headerName({column: xhColumn, gridModel}) :
@@ -100,7 +100,7 @@ export const columnHeader = hoistCmp.factory({
         if (isDesktop && isUndefined(xhColumn?.headerTooltip)) {
             onMouseEnter = ({target: el}) => {
                 if (el.offsetWidth < el.scrollWidth) {
-                    const title = isString(headerElem) ? headerElem : props.displayName;
+                    const title = isString(headerElem) ? headerElem : displayName;
                     el.setAttribute('title', title);
                 } else {
                     el.removeAttribute('title');
@@ -109,12 +109,12 @@ export const columnHeader = hoistCmp.factory({
         }
 
         return div({
-            className:      classNames(props.className, extraClasses),
-            onClick:        isDesktop  ? impl.onClick : null,
-            onDoubleClick:  isDesktop  ? impl.onDoubleClick : null,
-            onMouseDown:    isDesktop  ? impl.onMouseDown : null,
-            onTouchStart:   !isDesktop ? impl.onTouchStart : null,
-            onTouchEnd:     !isDesktop ? impl.onTouchEnd : null,
+            className:      classNames(className, extraClasses),
+            onClick:        isDesktop  ? model.onClick : null,
+            onDoubleClick:  isDesktop  ? model.onDoubleClick : null,
+            onMouseDown:    isDesktop  ? model.onMouseDown : null,
+            onTouchStart:   !isDesktop ? model.onTouchStart : null,
+            onTouchEnd:     !isDesktop ? model.onTouchEnd : null,
 
             items: [
                 expandCollapseIcon(),
@@ -127,12 +127,14 @@ export const columnHeader = hoistCmp.factory({
 });
 
 
-class LocalModel extends HoistModel {
-    gridModel;
-    xhColumn;
-    agColumn;
-    colId;
-    enableSorting;
+class ColumnHeaderModel extends HoistModel {
+
+    get gridModel()     {return this.componentProps.gridModel}
+    get xhColumn()      {return this.componentProps.xhColumn}
+    get agColumn()      {return this.componentProps.column}
+    get colId()         {return this.agColumn.colId}
+    get enableSorting() {return this.xhColumn?.sortable}
+
     availableSorts;
 
     // Hoist Filtering
@@ -148,17 +150,15 @@ class LocalModel extends HoistModel {
     _lastTouchStart = null;
     _lastMouseDown = null;
 
-    constructor({gridModel, xhColumn, column: agColumn}) {
+    constructor() {
         super();
         makeObservable(this);
+    }
 
-        const {filterModel} = gridModel;
+    onLinked() {
+        const {xhColumn, agColumn} = this,
+            {filterModel} = this.gridModel;
 
-        this.gridModel = gridModel;
-        this.xhColumn = xhColumn;
-        this.agColumn = agColumn;
-        this.colId = agColumn.colId;
-        this.enableSorting = xhColumn?.sortable;
         this.availableSorts = this.parseAvailableSorts();
 
         if (!XH.isMobileApp && xhColumn?.filterable && filterModel?.getFieldSpec(xhColumn.field)) {

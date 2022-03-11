@@ -14,6 +14,7 @@ import {wait} from '@xh/hoist/promise';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {cloneDeep, defaultsDeep, find, isFinite, isNil, reject} from 'lodash';
+import {modelLookupContextProvider} from '@xh/hoist/core/impl/ModelLookup';
 import {DashViewModel} from './DashViewModel';
 import {DashViewSpec} from './DashViewSpec';
 import {dashContainerMenuButton} from './impl/DashContainerMenuButton';
@@ -575,7 +576,10 @@ export class DashContainerModel extends HoistModel {
                 });
 
                 this.addViewModel(model);
-                return dashView({model});
+                return modelLookupContextProvider({
+                    value: this.modelLookupContext,
+                    item: dashView({model})
+                });
             });
         });
 
