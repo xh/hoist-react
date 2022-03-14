@@ -2,6 +2,10 @@
 
 ## v48.0.0-SNAPSHOT- unreleased
 
+### 🎁 New Features
+
+* Added `AppSpec.lockoutPanel`, allowing apps to specify a custom component.
+
 ### 🐞 Bug Fixes
 
 * Fix column auto-sizing when `headerName` is/returns an element
