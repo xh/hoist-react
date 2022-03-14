@@ -16,6 +16,7 @@
     * e.g. `webpack --env.prodBuild` > `webpack --env prodBuild`
   * If you have a mobile app, you must provide a wider range of favicons for display on devices.
     See https://github.com/xh/hoist-dev-utils/#favicons for more details.
+* Fix column auto-sizing when `headerName` is/returns an element
 
 ### 📚 Libraries
 
