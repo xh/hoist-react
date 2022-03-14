@@ -1,5 +1,6 @@
 .dash-grid-layout-container {
   width: 100%;
+  height: 100%;
   overflow: auto;
 
   .react-grid-item {
@@ -8,8 +9,26 @@
     display: flex;
 
     > .react-resizable-handle {
+
+      // Make the resize handles fill the entire side
+      &.react-resizable-handle-s,
+      &.react-resizable-handle-n {
+        left: 0;
+        width: 100%;
+        height: 3px;
+        transform: rotate(0);
+      }
+
+      &.react-resizable-handle-e,
+      &.react-resizable-handle-w {
+        top: 0;
+        height: 100%;
+        transform: rotate(0);
+      }
+
+      // Hide the resize handles
       &::after {
-        border-color: var(--xh-text-color-muted);
+        border-color: transparent;
       }
     }
 

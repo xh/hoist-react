@@ -1,15 +1,17 @@
-import {defaultsDeep, forEach} from 'lodash';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {defaultsDeep, forEach, isNil} from 'lodash';
 import {HoistModel, PersistenceProvider, XH} from '../../../core';
 import {debounced, ensureUniqueBy} from '../../../utils/js';
-import {DashViewSpec} from '../dash';
-import {DashViewModel} from '../dash/DashViewModel';
+import {DashViewSpec, DashViewModel} from '../dash';
 
 export class DashGridLayoutContainerModel extends HoistModel {
     @observable.ref layout = [];
     @observable.ref viewModels = [];
-    @bindable columns = 4;
-    @bindable rowHeight = 50;
+    @bindable columns;
+    @bindable rowHeight;
+    @bindable isDraggable;
+    @bindable isResizable;
+    @bindable compact;
 
     /** @member {DashViewSpec[]} */
     viewSpecs = [];
@@ -17,10 +19,22 @@ export class DashGridLayoutContainerModel extends HoistModel {
     constructor({
         viewSpecDefaults,
         viewSpecs,
+        initialState = {},
+        columns = 8,
+        rowHeight = 50,
+        isDraggable = true,
+        isResizable = true,
+        compact = true,
         persistWith = null
     }) {
         super();
         makeObservable(this);
+
+        this.columns = columns;
+        this.rowHeight = rowHeight;
+        this.isDraggable = isDraggable;
+        this.isResizable = isResizable;
+        this.compact = compact;
 
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
@@ -41,26 +55,8 @@ export class DashGridLayoutContainerModel extends HoistModel {
             }
         }
 
-        if (persistState?.state) {
-            const {layout, viewState} = persistState.state;
-            this.layout = layout;
-
-            const models = [];
-            forEach(viewState, (state, id) => {
-                const viewSpec = this.getViewSpec(state.viewSpecId);
-                models.push(new DashViewModel({
-                    id,
-                    viewSpec,
-                    // icon: state.icon ? deserializeIcon(state.icon) : viewSpec.icon, TODO
-                    title: state.title ?? viewSpec.title,
-                    viewState: state.viewState,
-                    containerModel: this
-                }));
-            });
-            this.viewModels = models;
-
-            console.log('Loaded DashGridLayoutContainer state', persistState.state);
-        }
+        const state = persistState?.state ?? initialState;
+        this.setState(state);
 
         this.addReaction({
             track: () => [this.layout, this.viewState],
@@ -68,16 +64,50 @@ export class DashGridLayoutContainerModel extends HoistModel {
         });
     }
 
+    get state() {
+        return {
+            layout: this.layout,
+            viewState: this.viewState,
+            columns: this.columns,
+            rowHeight: this.rowHeight,
+            isDraggable: this.isDraggable,
+            isResizable: this.isResizable,
+            compact: this.compact
+        };
+    }
+
     @action
-    setLayout(layout) {
-        this.layout = layout;
+    setState(state) {
+        const {
+            layout = {},
+            viewState = {},
+            columns,
+            rowHeight,
+            isDraggable,
+            isResizable,
+            compact
+        } = state;
+
+        if (!isNil(columns)) this.columns = columns;
+        if (!isNil(rowHeight)) this.rowHeight = rowHeight;
+        if (!isNil(isDraggable)) this.isDraggable = isDraggable;
+        if (!isNil(isResizable)) this.isResizable = isResizable;
+        if (!isNil(compact)) this.compact = compact;
+
+        this.setLayout(layout);
+        this.setViewState(viewState);
     }
 
     @debounced(1000)
     @action
     publishState() {
-        const {layout, viewState} = this;
-        this.provider?.write({state: {layout, viewState}});
+        const {state} = this;
+        this.provider?.write({state});
+    }
+
+    @action
+    setLayout(layout) {
+        this.layout = layout;
     }
 
     get viewState() {
@@ -91,6 +121,26 @@ export class DashGridLayoutContainerModel extends HoistModel {
             };
         });
         return ret;
+    }
+
+    @action
+    setViewState(viewState) {
+        XH.safeDestroy(this.viewModels);
+
+        const models = [];
+        forEach(viewState, (state, id) => {
+            const viewSpec = this.getViewSpec(state.viewSpecId);
+            models.push(new DashViewModel({
+                id,
+                viewSpec,
+                // icon: state.icon ? deserializeIcon(state.icon) : viewSpec.icon, TODO
+                title: state.title ?? viewSpec.title,
+                viewState: state.viewState,
+                containerModel: this
+            }));
+        });
+
+        this.viewModels = models;
     }
 
     @action
@@ -110,6 +160,10 @@ export class DashGridLayoutContainerModel extends HoistModel {
     @action
     removeView(id) {
         this.layout = this.layout.filter(it => it.i !== id);
+
+        const viewModel = this.viewModels.find(it => it.id === id);
+        XH.safeDestroy(viewModel);
+
         this.viewModels = this.viewModels.filter(it => it.id !== id);
     }
 
