@@ -2,6 +2,11 @@
 
 ## v48.0.0-SNAPSHOT- unreleased
 
+### 🎁 New Features
+
+* Added `GridModel.restoreDefaultsFn`, an optional function allowing apps to extend
+  `GridModel.restoreDefaultsAsync()` to additionally reset app-specific state.
+
 ### 🐞 Bug Fixes
 
 * Fix column auto-sizing when `headerName` is/returns an element
