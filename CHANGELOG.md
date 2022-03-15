@@ -3,7 +3,8 @@
 ## v48.0.0-SNAPSHOT- unreleased
 
 ### 🎁 New Features
-
+* Configs passed to `XH.message()` and variants support a new `cancelAlign` property. Customize
+  to "left" to render Cancel and Confirm actions separated by a filler.
 * Added `GridModel.restoreDefaultsFn`, an optional function allowing apps to extend
   `GridModel.restoreDefaultsAsync()` to additionally reset app-specific state.
 

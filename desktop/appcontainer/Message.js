@@ -59,7 +59,7 @@ const inputCmp = hoistCmp.factory(
                 item: withDefault(input.item, textInput({
                     autoFocus: true,
                     selectOnFocus: true,
-                    onKeyDown: evt => {if (evt.key == 'Enter') model.doConfirmAsync();}
+                    onKeyDown: evt => {if (evt.key === 'Enter') model.doConfirmAsync();}
                 }))
             })
         });
@@ -68,11 +68,17 @@ const inputCmp = hoistCmp.factory(
 
 const bbar = hoistCmp.factory(
     ({model}) => {
-        const {confirmProps, cancelProps, formModel} = model,
-            ret = [filler()];
+        const {confirmProps, cancelProps, cancelAlign, formModel} = model,
+            ret = [];
 
         if (cancelProps) {
             ret.push(button(cancelProps));
+        }
+
+        if (cancelAlign === 'left') {
+            ret.push(filler());
+        } else {
+            ret.unshift(filler());
         }
 
         if (confirmProps) {
