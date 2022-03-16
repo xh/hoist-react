@@ -974,6 +974,8 @@ window['XH'] = XH;
  * @property {Object} [cancelProps] - props for secondary cancel button.
  *      Must provide either text or icon for button to be displayed, or use a preconfigured
  *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
+ * @property {string} [cancelAlign] - specify 'left' to place the Cancel button (if shown) on the
+ *      left edge of the dialog toolbar, with a filler between it and Confirm.
  * @property {function} [onConfirm] - Callback to execute when confirm is clicked.
  * @property {function} [onCancel] - Callback to execute when cancel is clicked.
  */
