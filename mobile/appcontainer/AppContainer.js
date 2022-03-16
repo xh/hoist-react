@@ -98,8 +98,8 @@ function viewForState() {
 const lockoutView = hoistCmp.factory({
     displayName: 'LockoutView',
     render() {
-        const cmp = XH.appSpec.lockoutPanel ?? lockoutPanel;
-        return cmp();
+        const content = XH.appSpec.lockoutPanel ?? lockoutPanel;
+        return elementFromContent(content);
     }
 });
 
