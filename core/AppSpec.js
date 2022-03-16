@@ -40,11 +40,14 @@ export class AppSpec {
      * @param {boolean} [c.trackAppLoad] - true (default) to write a track log statement after the
      *      app has loaded and fully initialized, including elapsed time of asset loading and init.
      * @param {boolean} [c.webSocketsEnabled] - true to enable Hoist websocket connectivity,
-     *      establish a connection and initiate a heartbeat..
+     *      establish a connection and initiate a heartbeat.
      * @param {(Class|function)} [c.idlePanel] - optional custom Component to display when App has
-     *      been suspended.  The component will receive a single prop -- onReactivate -- a callback
+     *      been suspended. The component will receive a single prop -- onReactivate -- a callback
      *      called when the user has acknowledged the suspension and wishes to reload the app and
-     *      continue working.  Specify as a React Component or an element factory.
+     *      continue working. Specify as a React Component or an element factory.
+     * @param {(Class|function)} [c.lockoutPanel] - optional custom Component to display when the
+     *      user is denied access to app. Intended for apps that implement custom auth flows.
+     *      See also `lockoutMessage` for a more lightweight customization option.
      * @param {?string} [c.loginMessage] - optional message to show on login form (for non-SSO apps).
      * @param {?string} [c.lockoutMessage] - optional message to show users when denied access to app.
      * @param {boolean} [c.showBrowserContextMenu] - true to show the built-in browser context menu
@@ -67,6 +70,7 @@ export class AppSpec {
         trackAppLoad = true,
         webSocketsEnabled = false,
         idlePanel = null,
+        lockoutPanel = null,
         loginMessage = null,
         lockoutMessage = null,
         showBrowserContextMenu = false,
@@ -96,10 +100,11 @@ export class AppSpec {
         this.isMobileApp = isMobileApp;
         this.isSSO = isSSO;
         this.checkAccess = checkAccess;
-        this.trackAppLoad = trackAppLoad;
 
+        this.trackAppLoad = trackAppLoad;
         this.webSocketsEnabled = webSocketsEnabled;
         this.idlePanel = idlePanel;
+        this.lockoutPanel = lockoutPanel;
         this.loginMessage = loginMessage;
         this.lockoutMessage = lockoutMessage;
         this.showBrowserContextMenu = showBrowserContextMenu;
