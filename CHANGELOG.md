@@ -4,19 +4,27 @@
 
 ### 🎁 New Features
 
-* A new version of `hoist-dev-utils`, which updates `Webpack` to v5 to provide includes faster and
-  more stable builds. Impact on application code should be minimal, but is detailed below.
+* Configs passed to `XH.message()` and variants support a new `cancelAlign` property. Customize
+  to "left" to render Cancel and Confirm actions separated by a filler.
+* Added `GridModel.restoreDefaultsFn`, an optional function allowing apps to extend
+  `GridModel.restoreDefaultsAsync()` to additionally reset app-specific state.
+* Added `AppSpec.lockoutPanel`, allowing apps to specify a custom component.
+
+### 🐞 Bug Fixes
+
+* Fix column auto-sizing when `headerName` is/returns an element
 
 ### 💥 Breaking Changes
 
-* As part of the `hoist-dev-utils` and associated `Webpack` upgrades:
+* Update required to `hoist-dev-utils` v6, which updates the Hoist build toolchain to the latest
+  Webpack v5 and updates a number of supporting libraries from that project. At the application
+  level, a few minor tweaks will be required:
   * Imports from `package.json` no longer support default export - you must import the entire json
-    as an object. This is most likely to be relevant in your apps `Bootstrap.js`.
+    as an object. This is most likely to be relevant in `Bootstrap.js`.
   * The syntax form passing variables to `yarn` scripts in your package.json has changed:
     * e.g. `webpack --env.prodBuild` > `webpack --env prodBuild`
   * If you have a mobile app, you must provide a wider range of favicons for display on devices.
     See https://github.com/xh/hoist-dev-utils/#favicons for more details.
-* Fix column auto-sizing when `headerName` is/returns an element
 
 ### 📚 Libraries
 

@@ -111,6 +111,8 @@ export class GridModel extends HoistModel {
     useVirtualColumns;
     /** @member {GridAutosizeOptions} */
     autosizeOptions;
+    /** @member {function} */
+    restoreDefaultsFn;
     /** @member {ReactNode} */
     restoreDefaultsWarning;
     /** @member {boolean} */
@@ -218,6 +220,9 @@ export class GridModel extends HoistModel {
      *      GridFilterModel, or boolean `true` to enable default. Desktop only.
      * @param {(ColChooserModelConfig|boolean)} [c.colChooserModel] - config with which to create a
      *      ColChooserModel, or boolean `true` to enable default.
+     * @param {function} [c.restoreDefaultsFn] - Async function to be called when the user triggers
+     *      GridModel.restoreDefaultsAsync(). This function will be called after the built-in
+     *      defaults have been restored, and can be used to restore application specific defaults.
      * @param {?ReactNode} [c.restoreDefaultsWarning] - Confirmation warning to be presented to
      *      user before restoring default grid state. Set to null to skip user confirmation.
      * @param {GridModelPersistOptions} [c.persistWith] - options governing persistence.
@@ -359,6 +364,7 @@ export class GridModel extends HoistModel {
         contextMenu,
         useVirtualColumns = false,
         autosizeOptions = {},
+        restoreDefaultsFn,
         restoreDefaultsWarning = GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
         fullRowEditing = false,
         clicksToEdit = 2,
@@ -398,6 +404,7 @@ export class GridModel extends HoistModel {
                 fillMode: 'none'
             }
         );
+        this.restoreDefaultsFn = restoreDefaultsFn;
         this.restoreDefaultsWarning = restoreDefaultsWarning;
         this.fullRowEditing = fullRowEditing;
         this.clicksToExpand = clicksToExpand;
@@ -484,6 +491,10 @@ export class GridModel extends HoistModel {
 
         if (this.autosizeOptions.mode === GridAutosizeMode.MANAGED) {
             await this.autosizeAsync();
+        }
+
+        if (this.restoreDefaultsFn) {
+            await this.restoreDefaultsFn();
         }
 
         return true;

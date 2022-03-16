@@ -23,6 +23,7 @@ export class MessageModel extends HoistModel {
     input;
     confirmProps;
     cancelProps;
+    cancelAlign;
     onConfirm;
     onCancel;
     messageKey;
@@ -41,6 +42,7 @@ export class MessageModel extends HoistModel {
         input,
         confirmProps = {},
         cancelProps = {},
+        cancelAlign = 'right',
         onConfirm,
         onCancel,
 
@@ -73,6 +75,7 @@ export class MessageModel extends HoistModel {
 
         this.confirmProps = this.parseButtonProps(confirmProps, () => this.doConfirmAsync(), confirmText, confirmIntent);
         this.cancelProps = this.parseButtonProps(cancelProps, () => this.doCancel(), cancelText, cancelIntent);
+        this.cancelAlign = cancelAlign;
 
         this.onConfirm = onConfirm;
         this.onCancel = onCancel;
@@ -135,7 +138,7 @@ export class MessageModel extends HoistModel {
 
 /**
  * @typedef {Object} MessageInput
- * @property {Element} [item] - the react element to render; should be a HoistInput, defaults to a
+ * @property {Element} [item] - the React element to render; should be a HoistInput, defaults to a
  *      platform appropriate TextInput.
  * @property {Rule[]} [rules] - validation constraints to apply.
  * @property {*} [initialValue] - initial value for the input.
