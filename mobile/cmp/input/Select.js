@@ -288,7 +288,6 @@ class Model extends HoistInputModel {
             if (action === 'input-change') {
                 this.inputValue = value;
                 this.inputValueChangedSinceSelect = true;
-                if (!value) this.noteValueChange(null);
             } else if (action === 'input-blur') {
                 this.inputValue = null;
                 this.inputValueChangedSinceSelect = false;
@@ -615,6 +614,7 @@ const cmp = hoistCmp.factory(
         if (model.manageInputValue) {
             rsProps.inputValue = model.inputValue || '';
             rsProps.onInputChange = model.onInputChange;
+            rsProps.controlShouldRenderValue = !model.hasFocus;
         }
 
         if (model.asyncMode) {
