@@ -13,6 +13,7 @@
 ### 🐞 Bug Fixes
 
 * Fix column auto-sizing when `headerName` is/returns an element
+* Fixed an issue where `Select` inputs would commit `null` whilst clearing the text input.
 
 ## v47.0.1 - 2022-03-06
 
