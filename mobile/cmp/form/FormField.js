@@ -209,7 +209,7 @@ const editableChild = hoistCmp.factory({
             model,
             bind: 'value',
             disabled: props.disabled || disabled,
-            ref: composeRefs(model._boundInputRef, child.ref)
+            ref: composeRefs(model?._boundInputRef, child.ref)
         };
 
         // If FormField is sized and item doesn't specify its own dimensions,
