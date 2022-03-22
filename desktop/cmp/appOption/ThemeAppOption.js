@@ -22,14 +22,15 @@ export const themeAppOption = ({formFieldProps, inputProps} = {}) => {
             label: 'Theme',
             item: buttonGroupInput({
                 items: [
-                    button({value: false, text: 'Light', icon: Icon.sun(), width: '50%'}),
-                    button({value: true, text: 'Dark', icon: Icon.moon(), width: '50%'})
+                    button({value: 'light', text: 'Light', icon: Icon.sun(), width: '33.33%'}),
+                    button({value: 'dark', text: 'Dark', icon: Icon.moon(), width: '33.33%'}),
+                    button({value: 'system', text: 'System', icon: Icon.sync(), width: '33.33%'})
                 ],
                 ...inputProps
             }),
             ...formFieldProps
         },
-        valueGetter: () => XH.darkTheme,
-        valueSetter: (v) => XH.setDarkTheme(v)
+        valueGetter: () => XH.themePref,
+        valueSetter: (v) => XH.setThemePref(v)
     };
 };
