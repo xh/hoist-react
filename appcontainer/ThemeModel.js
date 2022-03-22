@@ -13,10 +13,8 @@ import {action, observable, makeObservable} from '@xh/hoist/mobx';
  *  @private
  */
 export class ThemeModel extends HoistModel {
-
-    @observable darkTheme = false;
-    @observable themePref = 'light';
-    systemDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
+    /** @member {boolean} */
+    @observable darkTheme;
 
     constructor() {
         super();
@@ -39,27 +37,20 @@ export class ThemeModel extends HoistModel {
 
     @action
     setThemePref(value) {
-        this.setDarkTheme(value === 'dark');
-        this.detectSystemTheme(value === 'system')
-        this.themePref = value;
+        if (value === 'system') {
+            this.setDarkTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
+        } else {
+            this.setDarkTheme(value === 'dark');
+        }
         XH.setPref('xhTheme', value);
     }
 
-    /**
-     * Detects when the user's system is in dark mode and updates the theme accordingly
-     * @param {boolean} value - Whether to detect the system theme
-     */
-    detectSystemTheme(value) {{
-        const listener = (event) => this.setDarkTheme((event.matches));
-        if(value) {
-            this.setDarkTheme(this.systemDarkMode.matches);
-            this.systemDarkMode.addEventListener('change', listener);
-        } else {
-            this.systemDarkMode.removeEventListener('change', listener);
-        }
-    }}
-
     init() {
         this.setThemePref(XH.getPref('xhTheme'));
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
+            if (XH.getPref('xhTheme') === 'system') {
+                this.setDarkTheme(event.matches);
+            }
+        });
     }
 }

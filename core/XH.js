@@ -324,12 +324,18 @@ class XHClass extends HoistBase {
         return this.acm.themeModel.toggleTheme();
     }
 
-    /** Enable/disable the dark theme directly (useful for custom app option controls). */
+    /**
+     * Enable/disable the dark theme directly (useful for custom app option controls).
+     * @param {boolean} value
+     */
     setDarkTheme(value) {
-        return this.acm.themeModel.setDarkTheme(value);
+        this.setThemePref(value ? 'dark' : 'light');
     }
 
-    /** Sets the theme directly (useful for custom app option controls). */
+    /**
+     * Sets the theme directly (useful for custom app option controls).
+     * @param {string} value - 'light', 'dark', or 'system'
+     */
     setThemePref(value) {
         return this.acm.themeModel.setThemePref(value);
     }
@@ -337,11 +343,6 @@ class XHClass extends HoistBase {
     /** Is the app currently rendering in dark theme? */
     get darkTheme() {
         return this.acm.themeModel.darkTheme;
-    }
-
-    /** What is the current theme pref? */
-    get themePref() {
-        return this.acm.themeModel.themePref;
     }
 
     //------------------------

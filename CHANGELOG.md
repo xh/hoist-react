@@ -9,6 +9,7 @@
 * Added `GridModel.restoreDefaultsFn`, an optional function allowing apps to extend
   `GridModel.restoreDefaultsAsync()` to additionally reset app-specific state.
 * Added `AppSpec.lockoutPanel`, allowing apps to specify a custom component.
+* Added support for "sync with system" as a theme option.
 
 ### 🐞 Bug Fixes
 

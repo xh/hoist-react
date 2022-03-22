@@ -30,7 +30,7 @@ export const themeAppOption = ({formFieldProps, inputProps} = {}) => {
             }),
             ...formFieldProps
         },
-        valueGetter: () => XH.themePref,
+        prefName: 'xhTheme',
         valueSetter: (v) => XH.setThemePref(v)
     };
 };
