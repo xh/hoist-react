@@ -29,7 +29,13 @@ import {
 } from '@xh/hoist/svc';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
-import {checkMinVersion, getClientDeviceInfo, throwIf, withDebug} from '@xh/hoist/utils/js';
+import {
+    apiDeprecated,
+    checkMinVersion,
+    getClientDeviceInfo,
+    throwIf,
+    withDebug
+} from '@xh/hoist/utils/js';
 import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
 import parser from 'ua-parser-js';
@@ -327,17 +333,19 @@ class XHClass extends HoistBase {
     /**
      * Enable/disable the dark theme directly (useful for custom app option controls).
      * @param {boolean} value
+     * @deprecated
      */
     setDarkTheme(value) {
-        this.setThemePref(value ? 'dark' : 'light');
+        apiDeprecated('setDarkTheme', {v: '50', msg: 'Use setTheme instead.'});
+        this.setTheme(value ? 'dark' : 'light');
     }
 
     /**
      * Sets the theme directly (useful for custom app option controls).
      * @param {string} value - 'light', 'dark', or 'system'
      */
-    setThemePref(value) {
-        return this.acm.themeModel.setThemePref(value);
+    setTheme(value) {
+        return this.acm.themeModel.setTheme(value);
     }
 
     /** Is the app currently rendering in dark theme? */

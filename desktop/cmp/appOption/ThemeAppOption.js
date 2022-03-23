@@ -31,6 +31,6 @@ export const themeAppOption = ({formFieldProps, inputProps} = {}) => {
             ...formFieldProps
         },
         prefName: 'xhTheme',
-        valueSetter: (v) => XH.setThemePref(v)
+        valueSetter: (v) => XH.setTheme(v)
     };
 };
