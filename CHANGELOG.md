@@ -15,6 +15,11 @@
 
 * Fix column auto-sizing when `headerName` is/returns an element
 
+### 📚 Libraries
+
+* @blueprintjs/core `3.53 -> 3.54`
+* @blueprintjs/datetime `3.23 -> 3.24`
+
 ## v47.0.1 - 2022-03-06
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v47.0.0...v47.0.1)
