@@ -9,6 +9,7 @@
 * Added `GridModel.restoreDefaultsFn`, an optional function allowing apps to extend
   `GridModel.restoreDefaultsAsync()` to additionally reset app-specific state.
 * Added `AppSpec.lockoutPanel`, allowing apps to specify a custom component.
+* Added support for "sync with system" as a theme option.
 
 ### 🐞 Bug Fixes
 
@@ -29,6 +30,8 @@
 ### 📚 Libraries
 
 * @xh/hoist-dev-utils `5.13.0 -> 6.0.0`
+* @blueprintjs/core `3.53 -> 3.54`
+* @blueprintjs/datetime `3.23 -> 3.24`
 
 ## v47.0.1 - 2022-03-06
 
