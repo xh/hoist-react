@@ -121,9 +121,8 @@ export class SubformsFieldModel extends BaseFieldModel {
 
     @computed
     get isDirty() {
-        const {value, initialValue} = this;
-
         // Catch changed values within subforms, as well as adds/deletes/sorts
+        const {value, initialValue} = this;
         return (
             value.some(s => s.isDirty) ||
             !isEqual(initialValue.map(s => s.getData()), value.map(s => s.getData()))
