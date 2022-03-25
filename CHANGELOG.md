@@ -13,6 +13,7 @@
 
 ### 🐞 Bug Fixes
 
+* Fix bug where subforms were not properly registering as dirty
 * Fix column auto-sizing when `headerName` is/returns an element
 * Fixed an issue where `Select` inputs would commit `null` whilst clearing the text input.
 
