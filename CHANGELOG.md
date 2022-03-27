@@ -1,5 +1,9 @@
 # Changelog
 
+## v48.0.0-SNAPSHOT - under development
+
+No changes yet...
+
 ## v47.1.1 - 2022-03-26
 
 ### 🎁 New Features
