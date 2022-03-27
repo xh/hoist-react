@@ -1,6 +1,6 @@
 # Changelog
 
-## v47.1.0 - 2022-03-26
+## v47.1.1 - 2022-03-26
 
 ### 🎁 New Features
 
@@ -17,13 +17,14 @@
 * Fixed column auto-sizing when `headerName` is/returns an element.
 * Fixed bug where subforms were not properly registering as dirty.
 * Fixed an issue where `Select` inputs would commit `null` whilst clearing the text input.
+* Fixed `Clock` component bug introduced in v47 (configured timezone was not respected).
 
 ### 📚 Libraries
 
 * @blueprintjs/core `3.53 -> 3.54`
 * @blueprintjs/datetime `3.23 -> 3.24`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v47.0.1...v47.1.0)
+[Commit Log](https://github.com/xh/hoist-react/compare/v47.0.1...v47.1.1)
 
 ## v47.0.1 - 2022-03-06
 
