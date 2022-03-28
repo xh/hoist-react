@@ -8,7 +8,7 @@ import {managed, XH} from '@xh/hoist/core';
 import {ValidationState} from '@xh/hoist/data';
 import {action, computed, makeObservable, override} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {clone, defaults, flatMap, isArray, partition, without} from 'lodash';
+import {clone, defaults, isEqual, flatMap, isArray, partition, without} from 'lodash';
 import {executeIfFunction, withDefault} from '../../../utils/js';
 import {FormModel} from '../FormModel';
 import {BaseFieldModel} from './BaseFieldModel';
@@ -121,7 +121,12 @@ export class SubformsFieldModel extends BaseFieldModel {
 
     @computed
     get isDirty() {
-        return this.value.some(s => s.isDirty) || super.isDirty;
+        // Catch changed values within subforms, as well as adds/deletes/sorts
+        const {value, initialValue} = this;
+        return (
+            value.some(s => s.isDirty) ||
+            !isEqual(initialValue.map(s => s.getData()), value.map(s => s.getData()))
+        );
     }
 
     @override

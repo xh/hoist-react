@@ -86,7 +86,7 @@ class LocalModel extends HoistModel {
     }
 
     async loadTimezoneOffsetAsync() {
-        const {timezone} = this;
+        const {timezone} = this.componentProps;
 
         try {
             if (!timezone) {
@@ -95,10 +95,11 @@ class LocalModel extends HoistModel {
                 return;
             }
 
-            this.offset = await XH.fetchJson({
+            const offsetResp = await XH.fetchJson({
                 url: 'xh/getTimeZoneOffset',
                 params: {timeZoneId: timezone}
             });
+            this.offset = offsetResp.offset;
             this.offsetException = null;
         } catch (e) {
             XH.handleException(e, {showAlert: false, logOnServer: false});
