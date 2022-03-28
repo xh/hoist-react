@@ -96,7 +96,7 @@ function viewForState() {
         case S.LOGIN_REQUIRED:
             return loginPanel();
         case S.ACCESS_DENIED:
-            return lockoutPanel();
+            return lockoutView();
         case S.RUNNING:
             return appContainerView();
         case S.SUSPENDED:
@@ -106,6 +106,14 @@ function viewForState() {
             return null;
     }
 }
+
+const lockoutView = hoistCmp.factory({
+    displayName: 'LockoutView',
+    render() {
+        const content = XH.appSpec.lockoutPanel ?? lockoutPanel;
+        return elementFromContent(content);
+    }
+});
 
 const appContainerView = hoistCmp.factory({
     displayName: 'AppContainerView',

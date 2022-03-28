@@ -13,8 +13,8 @@ import {action, observable, makeObservable} from '@xh/hoist/mobx';
  *  @private
  */
 export class ThemeModel extends HoistModel {
-
-    @observable darkTheme = false;
+    /** @member {boolean} */
+    @observable darkTheme;
 
     constructor() {
         super();
@@ -23,7 +23,7 @@ export class ThemeModel extends HoistModel {
 
     @action
     toggleTheme() {
-        this.setDarkTheme(!this.darkTheme);
+        this.setTheme(this.darkTheme ? 'light' : 'dark');
     }
 
     @action
@@ -32,10 +32,33 @@ export class ThemeModel extends HoistModel {
         classList.toggle('xh-dark', value);
         classList.toggle('bp3-dark', value);
         this.darkTheme = value;
-        XH.setPref('xhTheme', value ? 'dark' : 'light');
+
+    }
+
+    @action
+    setTheme(value) {
+        switch (value) {
+            case 'system':
+                this.setDarkTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
+                break;
+            case 'dark':
+                this.setDarkTheme(true);
+                break;
+            case 'light':
+                this.setDarkTheme(false);
+                break;
+            default:
+                throw XH.exception("Unrecognized value for theme pref.  Must be either 'system', 'dark', or 'light'.");
+        }
+        XH.setPref('xhTheme', value);
     }
 
     init() {
-        this.setDarkTheme(XH.getPref('xhTheme') === 'dark');
+        this.setTheme(XH.getPref('xhTheme'));
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
+            if (XH.getPref('xhTheme') === 'system') {
+                this.setDarkTheme(event.matches);
+            }
+        });
     }
 }

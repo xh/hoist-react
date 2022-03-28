@@ -1,18 +1,42 @@
 # Changelog
 
-## v48.0.0-SNAPSHOT- unreleased
+## v48.0.0-SNAPSHOT - under development
+
+No changes yet...
+
+## v47.1.1 - 2022-03-26
+
+### 🎁 New Features
+
+* New "sync with system" theme option - sets the Hoist theme to light/dark based on the user's OS.
+* Added `cancelAlign` config to `XH.message()` and variants. Customize to "left" to render
+  Cancel and Confirm actions separated by a filler.
+* Added `GridModel.restoreDefaultsFn`, an optional function called after `restoreDefaultsAsync`.
+  Allows apps to run additional, app-specific logic after a grid has been reset (e.g. resetting
+  other, related preferences or state not managed by `GridModel` directly).
+* Added `AppSpec.lockoutPanel`, allowing apps to specify a custom component.
 
 ### 🐞 Bug Fixes
 
-* Fix column auto-sizing when `headerName` is/returns an element
+* Fixed column auto-sizing when `headerName` is/returns an element.
+* Fixed bug where subforms were not properly registering as dirty.
+* Fixed an issue where `Select` inputs would commit `null` whilst clearing the text input.
+* Fixed `Clock` component bug introduced in v47 (configured timezone was not respected).
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.53 -> 3.54`
+* @blueprintjs/datetime `3.23 -> 3.24`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v47.0.1...v47.1.1)
 
 ## v47.0.1 - 2022-03-06
-
-[Commit Log](https://github.com/xh/hoist-react/compare/v47.0.0...v47.0.1)
 
 ### 🐞 Bug Fixes
 
 * Fix to mobile `ColChooser` error re. internal model handling.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v47.0.0...v47.0.1)
 
 ## v47.0.0 - 2022-03-04
 
