@@ -2,7 +2,10 @@
 
 ## v48.0.0-SNAPSHOT - under development
 
-No changes yet...
+### 🐞 Bug Fixes
+
+* `FieldFilter`'s check of `committedData` is now null safe.  A record with no `committedData` will not be filtered out.
+
 
 ## v47.1.1 - 2022-03-26
 
