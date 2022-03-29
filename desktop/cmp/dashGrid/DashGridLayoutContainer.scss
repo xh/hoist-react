@@ -37,7 +37,24 @@
     }
 
     .xh-panel-header {
-      cursor: move;
+      background-color: var(--xh-panel-bg-light);
+      height: var(--xh-title-ultra-compact-height-px);
+
+      &__title {
+        color: var(--xh-text-color-headings);
+        cursor: move;
+      }
+
+      // Header glyph.
+      & > .svg-inline--fa {
+        color: var(--xh-text-color-headings);
+      }
+
+      // Header "tool" buttons.
+      .xh-button--minimal.xh-button--intent-none {
+        color: var(--xh-text-color-headings) !important;
+
+      }
     }
   }
 }
