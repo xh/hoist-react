@@ -2,7 +2,7 @@ import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {defaultsDeep, forEach, isNil} from 'lodash';
 import {HoistModel, PersistenceProvider, XH} from '../../../core';
 import {debounced, ensureUniqueBy} from '../../../utils/js';
-import {DashViewSpec, DashViewModel} from '../dash';
+import {DashGridLayoutViewSpec, DashGridLayoutViewModel} from '@xh/hoist/desktop/cmp/dashGrid';
 
 export class DashGridLayoutContainerModel extends HoistModel {
     @observable.ref layout = [];
@@ -13,7 +13,7 @@ export class DashGridLayoutContainerModel extends HoistModel {
     @bindable isResizable;
     @bindable compact;
 
-    /** @member {DashViewSpec[]} */
+    /** @member {DashGridLayoutViewSpec[]} */
     viewSpecs = [];
 
     constructor({
@@ -39,7 +39,7 @@ export class DashGridLayoutContainerModel extends HoistModel {
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {
-            return new DashViewSpec(defaultsDeep({}, cfg, viewSpecDefaults));
+            return new DashGridLayoutViewSpec(defaultsDeep({}, cfg, viewSpecDefaults));
         });
 
         // Read state from provider -- fail gently
@@ -130,7 +130,7 @@ export class DashGridLayoutContainerModel extends HoistModel {
         const models = [];
         forEach(viewState, (state, id) => {
             const viewSpec = this.getViewSpec(state.viewSpecId);
-            models.push(new DashViewModel({
+            models.push(new DashGridLayoutViewModel({
                 id,
                 viewSpec,
                 // icon: state.icon ? deserializeIcon(state.icon) : viewSpec.icon, TODO
@@ -147,13 +147,15 @@ export class DashGridLayoutContainerModel extends HoistModel {
     addView(viewSpecId) {
         const viewSpec = this.getViewSpec(viewSpecId),
             id = `${XH.genId()}_${Date.now()}`,
-            model = new DashViewModel({
+            model = new DashGridLayoutViewModel({
                 id,
                 viewSpec,
                 containerModel: this
-            });
+            }),
+            h = viewSpec.initHeight,
+            w = viewSpec.initWidth;
 
-        this.layout = [...this.layout, {i: id, x: 0, y: 0, w: 1, h: 1}];
+        this.layout = [...this.layout, {i: id, x: 0, y: 0, h, w}];
         this.viewModels = [...this.viewModels, model];
     }
 
