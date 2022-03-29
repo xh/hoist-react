@@ -17,10 +17,13 @@ export class DashGridLayoutContainerModel extends HoistModel {
     /** @member {DashGridLayoutViewSpec[]} */
     viewSpecs = [];
 
+    /** @member {[]} */
+    initialViews;
+
     constructor({
         viewSpecDefaults,
         viewSpecs,
-        initialState = {},
+        initialViews = [],
         columns = 8,
         rowHeight = 50,
         isDraggable = true,
@@ -36,6 +39,8 @@ export class DashGridLayoutContainerModel extends HoistModel {
         this.isDraggable = isDraggable;
         this.isResizable = isResizable;
         this.compact = compact;
+        this.initialViews = initialViews;
+        this.restoreState = {initialViews, columns, rowHeight};
 
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
@@ -56,8 +61,11 @@ export class DashGridLayoutContainerModel extends HoistModel {
             }
         }
 
-        const state = persistState?.state ?? initialState;
+        const state = persistState?.state ?? {layout: []};
         this.setState(state);
+
+        // If no persisted state, default to the initial views
+        if (!persistState?.state) this.setInitialViews();
 
         this.addReaction({
             track: () => [this.layout, this.viewState],
@@ -144,8 +152,16 @@ export class DashGridLayoutContainerModel extends HoistModel {
         this.viewModels = models;
     }
 
+    /**
+     * Adds a view to the DashGridLayoutContainer
+     * @param {string} viewSpecId
+     * @param {number} x
+     * @param {number} y
+     * @param {number} width
+     * @param {number} height
+     */
     @action
-    addView(viewSpecId) {
+    addView(viewSpecId, {x, y, width, height} = {}) {
         const viewSpec = this.getViewSpec(viewSpecId),
             id = `${XH.genId()}_${Date.now()}`,
             model = new DashGridLayoutViewModel({
@@ -153,10 +169,10 @@ export class DashGridLayoutContainerModel extends HoistModel {
                 viewSpec,
                 containerModel: this
             }),
-            h = viewSpec.initHeight,
-            w = viewSpec.initWidth;
+            h = height || viewSpec.initHeight,
+            w = width || viewSpec.initWidth;
 
-        this.layout = [...this.layout, {i: id, x: 0, y: 0, h, w}];
+        this.layout = [...this.layout, {i: id, x: x || 0, y: y || 0, h, w}];
         this.viewModels = [...this.viewModels, model];
     }
 
@@ -170,6 +186,15 @@ export class DashGridLayoutContainerModel extends HoistModel {
         this.viewModels = this.viewModels.filter(it => it.id !== id);
     }
 
+    @action
+    removeAllViews() {
+        this.layout = [];
+        for (let viewModel of this.viewModels) {
+            XH.safeDestroy(viewModel);
+        }
+        this.viewModels = [];
+    }
+
     async renameView(id) {
         const view = this.viewModels.find(it => it.id === id),
             allowRename = view?.viewSpec?.allowRename;
@@ -177,9 +202,12 @@ export class DashGridLayoutContainerModel extends HoistModel {
         const newName = await XH.prompt({
             message: `Rename '${view.title}' to`,
             title: 'Rename...',
-            icon: Icon.edit()
+            icon: Icon.edit(),
+            input: {
+                initialValue: view.title
+            }
         });
-        if (newName) view.title = newName;
+        if (newName) view.setTitle(newName);
     }
 
     getViewSpec(id) {
@@ -189,5 +217,27 @@ export class DashGridLayoutContainerModel extends HoistModel {
     // Get all ViewModels with a given DashViewSpec.id
     getItemsBySpecId(id) {
         return this.viewModels.filter(it => it.viewSpec.id === id);
+    }
+
+    setInitialViews() {
+        this.removeAllViews();
+        this.initialViews.forEach(view => {
+            const {id, x, y, width, height} = view;
+            this.addView(id, {x, y, width, height});
+        });
+    }
+
+    /**
+     * Restore the initial state as specified by the application at construction time. This is the
+     * state without any persisted state or user changes applied.
+     *
+     * This method will clear the persistent state saved for this component, if any.
+     */
+    restoreDefaults() {
+        const {columns, rowHeight} = this.restoreState;
+        this.setColumns(columns);
+        this.setRowHeight(rowHeight);
+        this.setInitialViews();
+        this.provider?.clear();
     }
 }
