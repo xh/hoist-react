@@ -1,3 +1,4 @@
+import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {defaultsDeep, forEach, isNil} from 'lodash';
 import {HoistModel, PersistenceProvider, XH} from '../../../core';
@@ -167,6 +168,18 @@ export class DashGridLayoutContainerModel extends HoistModel {
         XH.safeDestroy(viewModel);
 
         this.viewModels = this.viewModels.filter(it => it.id !== id);
+    }
+
+    async renameView(id) {
+        const view = this.viewModels.find(it => it.id === id),
+            allowRename = view?.viewSpec?.allowRename;
+        if (!allowRename) return;
+        const newName = await XH.prompt({
+            message: `Rename '${view.title}' to`,
+            title: 'Rename...',
+            icon: Icon.edit()
+        });
+        if (newName) view.title = newName;
     }
 
     getViewSpec(id) {

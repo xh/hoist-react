@@ -6,12 +6,14 @@
  */
 import {frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
+import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
 import {Icon} from '../../../../icon';
 import {DashGridLayoutContainerModel} from '../../dashGrid';
 import {panel} from '../../panel';
 import {button} from '../../button';
+import {popover, Position} from '@xh/hoist/kit/blueprint';
 import {DashViewModel} from '../DashViewModel';
 
 /**
@@ -30,7 +32,7 @@ export const dashView = hoistCmp.factory({
     model: uses(DashViewModel, {publishMode: ModelPublishMode.LIMITED}),
 
     render({model, className}) {
-        const {isActive, renderMode, refreshContextModel, viewSpec} = model,
+        const {isActive, renderMode, refreshContextModel, viewSpec, containerModel, id} = model,
             wasActivated = useRef(false);
 
         // Respect RenderMode
@@ -48,17 +50,37 @@ export const dashView = hoistCmp.factory({
             return null;
         }
 
-        if (model.containerModel instanceof DashGridLayoutContainerModel) {
+        if (containerModel instanceof DashGridLayoutContainerModel) {
             return panel({
                 className,
                 compactHeader: true,
                 title: model.title,
                 icon: model.icon,
                 headerItems: [
-                    button({
-                        icon: Icon.cross(),
-                        onClick: () => model.containerModel.removeView(model.id)
-                    })
+                    viewSpec.allowRename ?
+                        popover({
+                            position: Position.BOTTOM,
+                            minimal: true,
+                            target: button({
+                                icon: Icon.ellipsisVertical()
+                            }),
+                            content: contextMenu({
+                                menuItems: [
+                                    {
+                                        text: 'Rename',
+                                        icon: Icon.edit(),
+                                        hidden: !viewSpec.allowRename,
+                                        disabled: !viewSpec.allowRename,
+                                        actionFn: () => containerModel.renameView(id)
+                                    }
+                                ]
+                            })
+                        }) : null,
+                    viewSpec.allowRemove ?
+                        button({
+                            icon: Icon.cross(),
+                            onClick: () => model.containerModel.removeView(model.id)
+                        }) : null
                 ],
                 item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
             });
