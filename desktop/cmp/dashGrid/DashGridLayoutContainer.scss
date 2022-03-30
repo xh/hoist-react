@@ -11,19 +11,27 @@
     > .react-resizable-handle {
 
       // Make the resize handles fill the entire side
-      &.react-resizable-handle-s,
-      &.react-resizable-handle-n {
+      &.react-resizable-handle-s {
+        bottom: -4px;
+        height: 8px;
         left: 0;
-        width: 100%;
-        height: 3px;
         transform: rotate(0);
+        width: 100%;
       }
 
-      &.react-resizable-handle-e,
-      &.react-resizable-handle-w {
-        top: 0;
+      &.react-resizable-handle-e {
         height: 100%;
+        right: -4px;
+        top: 0;
         transform: rotate(0);
+        width: 8px;
+      }
+
+      &.react-resizable-handle-se {
+        bottom: -8px;
+        height: 16px;
+        right: -8px;
+        width: 16px;
       }
 
       // Hide the resize handles
