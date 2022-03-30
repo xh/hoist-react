@@ -54,6 +54,7 @@ export const impersonationBar = hoistCmp.factory({
                     enableCreate: true,
                     placeholder: 'Select User...',
                     width: 250,
+                    menuWidth: 300,
                     onCommit: model.onCommit
                 }),
                 button({

@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {div, filler} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, uses, lookup} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -36,9 +36,8 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
     className: 'xh-col-chooser',
 
     render({model, className}) {
-        const {isOpen, gridModel, pinnedColumn, visibleColumns, hiddenColumns, showRestoreDefaults} = model;
-        const impl = useLocalModel(LocalModel);
-        impl.model = model;
+        const {isOpen, gridModel, pinnedColumn, visibleColumns, hiddenColumns, showRestoreDefaults} = model,
+            impl = useLocalModel(LocalModel);
 
         return dialogPanel({
             isOpen,
@@ -54,7 +53,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
                             className: 'xh-col-chooser__section',
                             scrollable: true,
                             items: [
-                                row({col: pinnedColumn}),
+                                row({col: pinnedColumn, model: impl}),
                                 droppable({
                                     droppableId: 'visible-columns',
                                     item: (dndProps) => columnList({
@@ -69,7 +68,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
                             bbar: toolbar({
                                 omit: !gridModel.enableColumnPinning,
                                 items: [
-                                    label('Pin first column'),
+                                    label({model, item: 'Pin first column'}),
                                     filler(),
                                     switchInput({model, bind: 'pinFirst'})
                                 ]
@@ -206,7 +205,7 @@ const row = hoistCmp.factory({
 
 class LocalModel extends HoistModel {
 
-    model;
+    @lookup(ColChooserModel) model;
 
     onDragEnd = (result) => {
         const {model} = this,

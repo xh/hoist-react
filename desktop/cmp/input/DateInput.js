@@ -185,28 +185,28 @@ class Model extends HoistInputModel {
 
     // Prop-backed convenience getters
     get maxDate() {
-        const {maxDate} = this.props;
+        const {maxDate} = this.componentProps;
         if (!maxDate) return moment().add(100, 'years').toDate();
         return isLocalDate(maxDate) ? maxDate.date : maxDate;
     }
 
     get minDate() {
-        const {minDate} = this.props;
+        const {minDate} = this.componentProps;
         if (!minDate) return moment().subtract(100, 'years').toDate();
         return isLocalDate(minDate) ? minDate.date : minDate;
     }
 
     get initialMonth() {
-        const {initialMonth} = this.props;
+        const {initialMonth} = this.componentProps;
         return isLocalDate(initialMonth) ? initialMonth.date : initialMonth;
     }
 
-    get valueType()             {return withDefault(this.props.valueType, 'date')}
-    get strictInputParsing()    {return withDefault(this.props.strictInputParsing, false)}
-    get timePrecision()         {return this.valueType === 'localDate' ? null : this.props.timePrecision}
+    get valueType()             {return withDefault(this.componentProps.valueType, 'date')}
+    get strictInputParsing()    {return withDefault(this.componentProps.strictInputParsing, false)}
+    get timePrecision()         {return this.valueType === 'localDate' ? null : this.componentProps.timePrecision}
 
-    constructor(props) {
-        super(props);
+    constructor() {
+        super();
         makeObservable(this);
     }
 
@@ -335,13 +335,13 @@ class Model extends HoistInputModel {
     }
 
     getFormatString() {
-        const {formatString} = this.props;
+        const {formatString} = this.componentProps;
 
         return formatString ?? this.addTimeFmt('YYYY-MM-DD');
     }
 
     getParseStrings() {
-        const {formatString, parseStrings} = this.props;
+        const {formatString, parseStrings} = this.componentProps;
 
         if (parseStrings) return castArray(parseStrings);
 

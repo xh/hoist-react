@@ -6,7 +6,7 @@
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
-import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, uses, lookup} from '@xh/hoist/core';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {isFunction} from 'lodash';
 import PT from 'prop-types';
@@ -24,15 +24,15 @@ export const [DataView, dataView] = hoistCmp.withFactory({
     className: 'xh-data-view',
 
     render({model, className, ...props}, ref) {
-        const [layoutProps] = splitLayoutProps(props);
-        const localModel = useLocalModel(() => new LocalModel(model));
+        const [layoutProps] = splitLayoutProps(props),
+            impl = useLocalModel(LocalModel);
 
         return grid({
             ...layoutProps,
             className,
             ref,
             model: model.gridModel,
-            agOptions: localModel.agOptions
+            agOptions: impl.agOptions
         });
     }
 });
@@ -43,12 +43,14 @@ DataView.propTypes = {
 };
 
 class LocalModel extends HoistModel {
-    model;
+
+    /** @member {DataViewModel} */
+    @lookup(DataViewModel) model;
+
     agOptions;
 
-    constructor(model) {
-        super();
-        this.model = model;
+    onLinked() {
+        const {model} = this;
 
         this.addReaction({
             track: () => [model.itemHeight, model.groupRowHeight],

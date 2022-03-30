@@ -13,7 +13,6 @@ import './Editors.scss';
 export const [NumberEditor, numberEditor] = hoistCmp.withFactory({
     displayName: 'NumberEditor',
     className: 'xh-number-editor',
-    model: false,
     memo: false,
     observer: false,
     render(props, ref) {

@@ -17,9 +17,9 @@ import {throwIf} from '@xh/hoist/utils/js';
  * @see HoistBase.markManaged
  */
 export function managed(target, property, descriptor) {
-    throwIf(!target.isHoistBase, '@managed decorator should be applied to an instance of HoistBase');
-    // Be sure to create list for *this* particular class. Clone and included inherited values.
-    if (!target.hasOwnProperty('xhManagedProperties')) {
+    throwIf(!target.isHoistBase, '@managed decorator should be applied to a subclass of HoistBase');
+    // Be sure to create list for *this* particular class. Clone and include inherited values.
+    if (!target.hasOwnProperty('_xhManagedProperties')) {
         target._xhManagedProperties = [...(target._xhManagedProperties ?? [])];
     }
     target._xhManagedProperties.push(property);

@@ -25,8 +25,8 @@ export const message = hoistCmp.factory({
     model: uses(MessageModel),
 
     render({model}) {
-        const isOpen = model && model.isOpen,
-            {icon, title, message, formModel, cancelProps, confirmProps} = model,
+        const isOpen = model?.isOpen,
+            {icon, title, message, formModel, confirmProps, cancelProps, cancelAlign} = model,
             buttons = [];
 
         if (!isOpen) return null;
@@ -35,16 +35,20 @@ export const message = hoistCmp.factory({
             buttons.push(button({minimal: true, ...cancelProps}));
         }
 
+        if (cancelProps || confirmProps) {
+            if (cancelAlign === 'left') {
+                buttons.push(filler());
+            } else {
+                buttons.unshift(filler());
+            }
+        }
+
         if (confirmProps) {
             // Merge in formModel.isValid here in render stage to get reactivity.
             buttons.push(formModel ?
                 button({...confirmProps, disabled: !formModel.isValid}) :
                 button(confirmProps)
             );
-        }
-
-        if (buttons.length) {
-            buttons.unshift(filler());
         }
 
         return dialog({

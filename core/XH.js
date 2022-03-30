@@ -29,7 +29,13 @@ import {
 } from '@xh/hoist/svc';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
-import {checkMinVersion, getClientDeviceInfo, throwIf, withDebug} from '@xh/hoist/utils/js';
+import {
+    apiDeprecated,
+    checkMinVersion,
+    getClientDeviceInfo,
+    throwIf,
+    withDebug
+} from '@xh/hoist/utils/js';
 import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
 import parser from 'ua-parser-js';
@@ -324,9 +330,22 @@ class XHClass extends HoistBase {
         return this.acm.themeModel.toggleTheme();
     }
 
-    /** Enable/disable the dark theme directly (useful for custom app option controls). */
+    /**
+     * Enable/disable the dark theme directly (useful for custom app option controls).
+     * @param {boolean} value
+     * @deprecated
+     */
     setDarkTheme(value) {
-        return this.acm.themeModel.setDarkTheme(value);
+        apiDeprecated('setDarkTheme', {v: '50', msg: 'Use setTheme instead.'});
+        this.setTheme(value ? 'dark' : 'light');
+    }
+
+    /**
+     * Sets the theme directly (useful for custom app option controls).
+     * @param {string} value - 'light', 'dark', or 'system'
+     */
+    setTheme(value) {
+        return this.acm.themeModel.setTheme(value);
     }
 
     /** Is the app currently rendering in dark theme? */
@@ -974,6 +993,8 @@ window['XH'] = XH;
  * @property {Object} [cancelProps] - props for secondary cancel button.
  *      Must provide either text or icon for button to be displayed, or use a preconfigured
  *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
+ * @property {string} [cancelAlign] - specify 'left' to place the Cancel button (if shown) on the
+ *      left edge of the dialog toolbar, with a filler between it and Confirm.
  * @property {function} [onConfirm] - Callback to execute when confirm is clicked.
  * @property {function} [onCancel] - Callback to execute when cancel is clicked.
  */

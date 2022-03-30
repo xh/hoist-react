@@ -134,14 +134,14 @@ class Model extends HoistInputModel {
 
     @observable fullScreen = false;
 
-    get commitOnChange() {return withDefault(this.props.commitOnChange, true)}
+    get commitOnChange() {return withDefault(this.componentProps.commitOnChange, true)}
 
-    get showCopyButton() {return withDefault(this.props.showCopyButton, false)}
+    get showCopyButton() {return withDefault(this.componentProps.showCopyButton, false)}
 
-    get showFullscreenButton() {return withDefault(this.props.showFullscreenButton, true)}
+    get showFullscreenButton() {return withDefault(this.componentProps.showFullscreenButton, true)}
 
     get showFormatButton() {
-        const {disabled, readonly, formatter, showFormatButton} = this.props;
+        const {disabled, readonly, formatter, showFormatButton} = this.componentProps;
         return (!disabled && !readonly && isFunction(formatter) && withDefault(showFormatButton, true));
     }
 
@@ -151,17 +151,17 @@ class Model extends HoistInputModel {
     }
 
     get showSearchInput() {
-        return withDefault(this.props.enableSearch, this.fullScreen);
+        return withDefault(this.componentProps.enableSearch, this.fullScreen);
     }
 
     get showToolbar() {
-        const {props, showSearchInput, showAnyActionButtons, fullScreen} = this;
+        const {componentProps, showSearchInput, showAnyActionButtons, fullScreen} = this;
         // Always show if showing searchInput - it's the only place searchInput can live.
         if (showSearchInput) return true;
         // Show if prop enabled and at least one action button.
-        if (props.showToolbar && showAnyActionButtons) return true;
+        if (componentProps.showToolbar && showAnyActionButtons) return true;
         // Show if fullscreen w/buttons and prop not explicitly *disabled*.
-        return (fullScreen && showAnyActionButtons && props.showToolbar !== false);
+        return (fullScreen && showAnyActionButtons && componentProps.showToolbar !== false);
     }
 
     get actionButtons() {
@@ -199,9 +199,12 @@ class Model extends HoistInputModel {
         this.editor?.execCommand('selectAll');
     }
 
-    constructor(props) {
-        super(props);
+    constructor() {
+        super();
         makeObservable(this);
+    }
+
+    onLinked() {
         this.addReaction({
             track: () => XH.darkTheme,
             run: () => {
@@ -222,7 +225,7 @@ class Model extends HoistInputModel {
         });
 
         this.addReaction({
-            track: () => this.props.readonly || this.props.disabled,
+            track: () => this.componentProps.readonly || this.componentProps.disabled,
             run: (editorReadOnly) => {
                 this.editor.setOption('readOnly', editorReadOnly);
             }
@@ -251,7 +254,7 @@ class Model extends HoistInputModel {
 
     createCodeEditor(textAreaComp) {
         const editorSpec = defaultsDeep(
-            this.props.editorProps,
+            this.componentProps.editorProps,
             this.createDefaults()
         );
 
@@ -263,7 +266,7 @@ class Model extends HoistInputModel {
     }
 
     createDefaults() {
-        const {disabled, readonly, mode, linter, autoFocus} = this.props;
+        const {disabled, readonly, mode, linter, autoFocus} = this.componentProps;
         let gutters = [
             'CodeMirror-linenumbers',
             'CodeMirror-foldgutter'
@@ -299,7 +302,7 @@ class Model extends HoistInputModel {
     };
 
     onAutoFormat = () => {
-        if (!isFunction(this.props.formatter)) return;
+        if (!isFunction(this.componentProps.formatter)) return;
 
         const editor = this.editor,
             val = this.tryPrettyPrint(editor.getValue());
@@ -308,7 +311,7 @@ class Model extends HoistInputModel {
 
     tryPrettyPrint(str) {
         try {
-            return this.props.formatter(str);
+            return this.componentProps.formatter(str);
         } catch (e) {
             return str;
         }

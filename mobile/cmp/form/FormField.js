@@ -41,7 +41,11 @@ import './FormField.scss';
 export const [FormField, formField] = hoistCmp.withFactory({
     displayName: 'FormField',
     className: 'xh-form-field',
-    model: uses(FieldModel, {fromContext: false, publishMode: ModelPublishMode.NONE}),
+    model: uses(FieldModel, {
+        fromContext: false,
+        publishMode: ModelPublishMode.NONE,
+        optional: true
+    }),
 
     render({model, className, field, children, info, ...props}, ref) {
 
@@ -115,7 +119,10 @@ export const [FormField, formField] = hoistCmp.withFactory({
                     items: [label, requiredIndicator]
                 }),
                 div({
-                    className: childIsSizeable ? 'xh-form-field-fill' : '',
+                    className: classNames(
+                        'xh-form-field-inner',
+                        childIsSizeable ? 'xh-form-field-inner--flex' : 'xh-form-field-inner--block'
+                    ),
                     items: [
                         childEl,
                         div({
@@ -202,7 +209,7 @@ const editableChild = hoistCmp.factory({
             model,
             bind: 'value',
             disabled: props.disabled || disabled,
-            ref: composeRefs(model._boundInputRef, child.ref)
+            ref: composeRefs(model?._boundInputRef, child.ref)
         };
 
         // If FormField is sized and item doesn't specify its own dimensions,

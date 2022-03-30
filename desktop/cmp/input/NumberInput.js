@@ -127,11 +127,11 @@ class Model extends HoistInputModel {
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
     get commitOnChange() {
-        return withDefault(this.props.commitOnChange, false);
+        return withDefault(this.componentProps.commitOnChange, false);
     }
 
     get scaleFactor() {
-        return withDefault(this.props.scaleFactor, 1);
+        return withDefault(this.componentProps.scaleFactor, 1);
     }
 
     onValueChange = (val, valAsString) => {
@@ -149,17 +149,17 @@ class Model extends HoistInputModel {
 
     onKeyDown = (ev) => {
         if (ev.key === 'Enter') this.doCommit();
-        if (this.props.onKeyDown) this.props.onKeyDown(ev);
+        this.componentProps.onKeyDown?.(ev);
     };
 
     formatRenderValue(value) {
         if (value == null) return '';
         if (this.hasFocus) return value;
 
-        const {props} = this,
-            {valueLabel, displayWithCommas} = props,
-            precision = withDefault(props.precision, 4),
-            zeroPad = withDefault(props.zeroPad, false),
+        const {componentProps} = this,
+            {valueLabel, displayWithCommas} = componentProps,
+            precision = withDefault(componentProps.precision, 4),
+            zeroPad = withDefault(componentProps.zeroPad, false),
             formattedVal = fmtNumber(value, {precision, zeroPad, label: valueLabel, labelCls: null, asHtml: true});
 
         return displayWithCommas ? formattedVal : formattedVal.replace(/,/g, '');
@@ -194,7 +194,7 @@ class Model extends HoistInputModel {
         this.noteFocused();
 
         // Deferred to allow any value conversion to complete and flush into input.
-        if (this.props.selectOnFocus) {
+        if (this.componentProps.selectOnFocus) {
             const target = ev.target;
             wait().then(() => target.select());
         }

@@ -6,14 +6,14 @@
  */
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, uses, lookup} from '@xh/hoist/core';
 import {Toaster} from '@xh/hoist/kit/blueprint';
 import {isElement, map} from 'lodash';
 import {wait} from '../../promise';
 import './Toast.scss';
 
 /**
- *  Support for showing Toasts in a application. This component does not render any content
+ *  Support for showing Toasts in an application. This component does not render any content
  *  directly, but for technical reasons (primarily symmetry with mobile) it remains a component.
  *  @private
  */
@@ -21,8 +21,8 @@ export const toastSource = hoistCmp.factory({
     displayName: 'ToastSource',
     model: uses(ToastSourceModel),
 
-    render({model}) {
-        useLocalModel(() => new LocalModel(model));
+    render() {
+        useLocalModel(LocalModel);
         return null;
     }
 });
@@ -30,12 +30,15 @@ export const toastSource = hoistCmp.factory({
 
 class LocalModel extends HoistModel {
 
+    /** @member {ToastSourceModel} */
+    @lookup(ToastSourceModel) sourceModel;
+
     _toasterMap = new Map();
 
-    constructor(toastSourceModel) {
-        super();
+    onLinked() {
+        const {sourceModel} = this;
         this.addReaction({
-            track: () => [toastSourceModel.toastModels, map(toastSourceModel.toastModels, 'isOpen')],
+            track: () => [sourceModel.toastModels, map(sourceModel.toastModels, 'isOpen')],
             run: ([models]) => this.displayPendingToasts(models)
         });
     }

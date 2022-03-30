@@ -46,7 +46,7 @@ const tbar = hoistCmp.factory(
 
 const body = hoistCmp.factory(
     ({model}) => {
-        const {isCustomFilter} = model.parentModel;
+        const {isCustomFilter} = model.headerFilterModel;
         if (isCustomFilter) return customFilterPlaceholder();
         return vframe(
             grid(),
@@ -66,7 +66,7 @@ const customFilterPlaceholder = hoistCmp.factory(
                         icon: Icon.undo(),
                         text: 'Clear',
                         intent: 'danger',
-                        onClick: () => model.parentModel.clear(false)
+                        onClick: () => model.headerFilterModel.clear(false)
                     })
                 ]
             })

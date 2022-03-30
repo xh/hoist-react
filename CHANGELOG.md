@@ -1,10 +1,85 @@
 # Changelog
 
-## v47.0.0-SNAPSHOT - under development
+## v48.0.0-SNAPSHOT - under development
+
+No changes yet...
+
+## v47.1.1 - 2022-03-26
+
+### 🎁 New Features
+
+* New "sync with system" theme option - sets the Hoist theme to light/dark based on the user's OS.
+* Added `cancelAlign` config to `XH.message()` and variants. Customize to "left" to render
+  Cancel and Confirm actions separated by a filler.
+* Added `GridModel.restoreDefaultsFn`, an optional function called after `restoreDefaultsAsync`.
+  Allows apps to run additional, app-specific logic after a grid has been reset (e.g. resetting
+  other, related preferences or state not managed by `GridModel` directly).
+* Added `AppSpec.lockoutPanel`, allowing apps to specify a custom component.
+
+### 🐞 Bug Fixes
+
+* Fixed column auto-sizing when `headerName` is/returns an element.
+* Fixed bug where subforms were not properly registering as dirty.
+* Fixed an issue where `Select` inputs would commit `null` whilst clearing the text input.
+* Fixed `Clock` component bug introduced in v47 (configured timezone was not respected).
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.53 -> 3.54`
+* @blueprintjs/datetime `3.23 -> 3.24`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v47.0.1...v47.1.1)
+
+## v47.0.1 - 2022-03-06
+
+### 🐞 Bug Fixes
+
+* Fix to mobile `ColChooser` error re. internal model handling.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v47.0.0...v47.0.1)
+
+## v47.0.0 - 2022-03-04
+
+### 🎁 New Features
+
+* Version 47 provides new features to simplify the wiring of models to each other and the components
+  they render. In particular, it formalizes the existing concept of "linked" HoistModels - models
+  created by Hoist via the `creates` directive or the `useLocalModel` hook - and provides them with
+  the following new features:
+    - an observable `componentProps` property with access to the props of their rendered component.
+    - a `lookupModel()` method and a `@lookup` decorator that can be used to acquire references to
+      other HoistModels that are ancestors of the model in the component hierarchy.
+    - new `onLinked()` and `afterLinked()` lifecycle methods, called when the model's associated
+      component is first rendered.
+* As before, linked models are auto-loaded and registered for refreshes within the `RefreshContext`
+  they reside in, as well as destroyed when their linked component is unmounted. Also note that the
+  new features described above are all "opt-in" and should be fully backward compatible with
+  existing application code.
+* Hoist will now more clearly alert if a model specified via the `uses()` directive cannot be
+  resolved. A new `optional` config (default false) supports components with optional models.
+* New support in Cube views for aggregators that depend on rows in the data set other than their
+  direct children. See new property `Aggregator.dependOnChildrenOnly` and new `AggregationContext`
+  argument passed to `Aggregator.aggregate()` and `Aggregator.replace()`
+* Clarified internal CSS classes and styling for `FormField`.
+    * ⚠️ Note that as part of this change, the `xh-form-field-fill` class name is no longer in use.
+      Apps should check for any styles for that class and replace with `.xh-form-field-inner--flex`.
+
+### 🐞 Bug Fixes
+
+* Fixed an issue where the menu would flash open and closed when clicking on the `FilterChooser`
+  favorites button.
+
+### 💥 Breaking Changes
+
+* Dashboard widgets no longer receive the `viewModel` prop. Access to the `DashViewModel` within a
+  widget should be obtained using either the lookup decorator (i.e. `@lookup(DashViewModel)`)
+  or the `lookupModel()` method.
 
 ### 📚 Libraries
 
 * @blueprintjs/core `3.52 -> 3.53`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v46.1.2...v47.0.0)
 
 ## v46.1.2 - 2022-02-18
 

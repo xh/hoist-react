@@ -10,9 +10,9 @@ import {fmtDate, TIME_FMT} from '@xh/hoist/format';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, ONE_SECOND} from '@xh/hoist/utils/datetime';
-import {withDefault} from '@xh/hoist/utils/js';
 import {isNumber} from 'lodash';
 import PT from 'prop-types';
+import {getLayoutProps} from '../../utils/react';
 
 /**
  * A component to display the current time.
@@ -24,16 +24,11 @@ export const [Clock, clock] = hoistCmp.withFactory({
     displayName: 'Clock',
     className: 'xh-clock',
 
-    render({timezone, format, updateInterval, prefix, suffix, errorString, ...props}, ref) {
-        format = format || TIME_FMT;
-        updateInterval = updateInterval || ONE_SECOND;
-        errorString = withDefault(errorString, '???');
-
+    render({className, ...props}, ref) {
         const impl = useLocalModel(LocalModel);
-        impl.setData({timezone, format, updateInterval, prefix, suffix, errorString});
-
         return box({
-            ...props,
+            className,
+            ...getLayoutProps(props),
             ref,
             item: span(impl.display)
         });
@@ -64,12 +59,6 @@ Clock.propTypes = {
 };
 
 class LocalModel extends HoistModel {
-    timezone;
-    format;
-    updateInterval;
-    prefix;
-    suffix;
-    errorString;
 
     offset;
     offsetException;
@@ -81,57 +70,54 @@ class LocalModel extends HoistModel {
         super();
         makeObservable(this);
     }
-    setData({timezone, format, updateInterval, prefix, suffix, errorString}) {
-        this.format = format;
-        this.updateInterval = updateInterval;
-        this.prefix = prefix;
-        this.suffix = suffix;
-        this.errorString = errorString;
 
-        if (timezone !== this.timezone) {
-            this.timezone = timezone;
-            this.loadTimezoneOffsetAsync();
-        }
+    onLinked() {
+        this.addReaction({
+            track: () => this.componentProps.timeZone,
+            run: () => this.loadTimezoneOffsetAsync(),
+            fireImmediately: true
+        });
 
-        if (!this.timer) {
-            this.timer = Timer.create({
-                runFn: () => this.refreshDisplay(),
-                interval: () => this.updateInterval
-            });
-        }
+        this.timer = Timer.create({
+            runFn: () => this.refreshDisplay(),
+            interval: () => this.componentProps.updateInterval ?? ONE_SECOND,
+            fireImmediately: true
+        });
     }
 
     async loadTimezoneOffsetAsync() {
-        const {timezone} = this;
+        const {timezone} = this.componentProps;
 
-        if (!timezone) {
-            this.offset = null;
-            this.offsetException = null;
-            this.refreshDisplay();
-        } else {
-            try {
-                const {offset} = await XH.fetchJson({
-                    url: 'xh/getTimeZoneOffset',
-                    params: {timeZoneId: timezone}
-                });
-                this.offset = offset;
-            } catch (e) {
-                XH.handleException(e, {showAlert: false, logOnServer: false});
+        try {
+            if (!timezone) {
                 this.offset = null;
-                this.offsetException = e;
-            } finally {
-                this.refreshDisplay();
+                this.offsetException = null;
+                return;
             }
+
+            const offsetResp = await XH.fetchJson({
+                url: 'xh/getTimeZoneOffset',
+                params: {timeZoneId: timezone}
+            });
+            this.offset = offsetResp.offset;
+            this.offsetException = null;
+        } catch (e) {
+            XH.handleException(e, {showAlert: false, logOnServer: false});
+            this.offset = null;
+            this.offsetException = e;
+        } finally {
+            this.refreshDisplay();
         }
     }
 
     @action
     refreshDisplay() {
-        const {prefix, suffix, format, offset, offsetException} = this,
+        const {prefix, suffix, format = TIME_FMT, errorString = '???'} = this.componentProps,
+            {offset, offsetException} = this,
             parts = [];
 
         if (offsetException) {
-            parts.push(this.errorString);
+            parts.push(errorString);
         } else {
             const time = getAdjustedTime(offset);
             parts.push(fmtDate(time, {fmt: format, asHtml: true}));
