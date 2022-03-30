@@ -184,14 +184,11 @@ class GridLocalModel extends HoistModel {
         const {model} = this,
             {clicksToEdit, selModel} = model;
 
-        // 'immutableData' and 'rowDataChangeDetectionStrategy' props both deal with a *new* sets of rowData.
-        // We use transactions instead, but our data fully immutable so seems safest to set these as well.
         let ret = {
             model: model.agGridModel,
-            immutableData: true,
-            rowDataChangeDetectionStrategy: 'IdentityCheck',
             suppressColumnVirtualisation: !model.useVirtualColumns,
-            getRowNodeId: (record) => record.agId,
+            getRowId: (record) => record.agId,
+            rowDataChangeDetectionStrategy: 'IdentityCheck',
             defaultColDef: {
                 sortable: true,
                 resizable: true,
