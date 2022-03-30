@@ -2,7 +2,7 @@ import {ContextMenu} from '@blueprintjs/core';
 import {div} from '../../../cmp/layout';
 import {elemFactory, hoistCmp, uses, XH} from '../../../core';
 import {dashContainerContextMenu} from '../dash/impl/DashContainerContextMenu';
-import {dashView} from '../dash/impl/DashView';
+import {dashGridLayoutView} from '@xh/hoist/desktop/cmp/dashGrid/impl/DashGridLayoutView';
 import {DashGridLayoutContainerModel} from './DashGridLayoutContainerModel';
 import './DashGridLayoutContainer.scss';
 
@@ -44,7 +44,7 @@ export const dashGridLayoutContainer = hoistCmp.factory({
                 onLayoutChange: (layout) => model.setLayout(layout),
                 items: model.viewModels.map(vm => div({
                     key: vm.id,
-                    item: dashView({model: vm})
+                    item: dashGridLayoutView({model: vm})
                 }))
             })
         });
