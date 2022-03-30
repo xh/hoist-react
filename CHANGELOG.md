@@ -2,7 +2,14 @@
 
 ## v48.0.0-SNAPSHOT - under development
 
-No changes yet...
+### 🎁 New Features
+
+* FontAwesome upgraded to v6. This includes redesigns of the majority of bundled icons - please
+  check your app's icon usages carefully.
+
+### 📚 Libraries
+
+* @fortawesome/fontawesome-pro `5.14 -> 6.1`
 
 ## v47.1.1 - 2022-03-26
 
