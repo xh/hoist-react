@@ -10,4 +10,8 @@ import {DashViewModel} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
  * Model for a content item within a DashGridLayoutContainer. Extends {@see DashViewModel}
  */
 export class DashGridLayoutViewModel extends DashViewModel {
+    get positionParams() {
+        const {containerModel, id} = this;
+        return containerModel.layout.find(view => view.i === id);
+    }
 }

@@ -57,30 +57,36 @@ export const dashView = hoistCmp.factory({
                 title: model.title,
                 icon: model.icon,
                 headerItems: [
-                    viewSpec.allowRename ?
-                        popover({
-                            position: Position.BOTTOM,
-                            minimal: true,
-                            target: button({
-                                icon: Icon.ellipsisVertical()
-                            }),
-                            content: contextMenu({
-                                menuItems: [
-                                    {
-                                        text: 'Rename',
-                                        icon: Icon.edit(),
-                                        hidden: !viewSpec.allowRename,
-                                        disabled: !viewSpec.allowRename,
-                                        actionFn: () => containerModel.renameView(id)
-                                    }
-                                ]
-                            })
-                        }) : null,
-                    viewSpec.allowRemove ?
-                        button({
-                            icon: Icon.cross(),
-                            onClick: () => model.containerModel.removeView(model.id)
-                        }) : null
+                    popover({
+                        position: Position.BOTTOM,
+                        minimal: true,
+                        target: button({
+                            icon: Icon.ellipsisVertical()
+                        }),
+                        content: contextMenu({
+                            menuItems: [
+                                {
+                                    text: 'Rename',
+                                    icon: Icon.edit(),
+                                    disabled: !viewSpec.allowRename,
+                                    actionFn: () => containerModel.renameView(id)
+                                },
+                                {
+                                    text: 'Duplicate',
+                                    icon: Icon.copy(),
+                                    actionFn: () =>
+                                        containerModel.addView(viewSpec.id, model.positionParams)
+                                },
+                                '-',
+                                {
+                                    text: 'Remove',
+                                    icon: Icon.cross(),
+                                    disabled: !viewSpec.allowRemove,
+                                    actionFn: () => containerModel.removeView(id)
+                                }
+                            ]
+                        })
+                    })
                 ],
                 item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
             });

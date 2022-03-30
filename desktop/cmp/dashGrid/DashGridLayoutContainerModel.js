@@ -168,20 +168,20 @@ export class DashGridLayoutContainerModel extends HoistModel {
      * @param {string} viewSpecId
      * @param {number} x
      * @param {number} y
-     * @param {number} width
-     * @param {number} height
+     * @param {number} w
+     * @param {number} h
      */
     @action
-    addView(viewSpecId, {x, y, width, height} = {}) {
+    addView(viewSpecId, {x, y, w, h} = {}) {
         const viewSpec = this.getViewSpec(viewSpecId),
             id = `${XH.genId()}_${Date.now()}`,
             model = new DashGridLayoutViewModel({
                 id,
                 viewSpec,
                 containerModel: this
-            }),
-            h = height || viewSpec.initHeight,
-            w = width || viewSpec.initWidth;
+            });
+        h = h || viewSpec.initHeight;
+        w = w || viewSpec.initWidth;
         this.layout = [...this.layout, {i: id, x: x || 0, y: y || 0, h, w}];
         this.viewModels = [...this.viewModels, model];
     }
