@@ -87,7 +87,8 @@ export class FieldFilter extends Filter {
                 value.map(v => parseFieldValue(v, fieldType)) :
                 parseFieldValue(value, fieldType);
         }
-        const getVal = store ? r => r.committedData[field] : r => r[field];
+        const getVal = store ? r => r.committedData[field] : r => r[field],
+            mustIgnore = r => store && isNil(r.committedData); // Ignore (do not filter out) record if part of a store and it has no committed data
 
         if (FieldFilter.ARRAY_OPERATORS.includes(op)) {
             value = castArray(value);
@@ -96,64 +97,64 @@ export class FieldFilter extends Filter {
         switch (op) {
             case '=':
                 return r => {
-                    if (isNil(r.committedData)) return true; // Ignore (do not filter out) record if not committed
+                    if (mustIgnore(r)) return true; 
                     let v = getVal(r);
                     if (isNil(v) || v === '') v = null;
                     return value.includes(v);
                 };
             case '!=':
                 return r => {
-                    if (isNil(r.committedData)) return true;
+                    if (mustIgnore(r)) return true;
                     let v = getVal(r);
                     if (isNil(v) || v === '') v = null;
                     return !value.includes(v);
                 };
             case '>':
                 return r => {
-                    if (isNil(r.committedData)) return true;
+                    if (mustIgnore(r)) return true;
                     const v = getVal(r);
                     return !isNil(v) && v > value;
                 };
             case '>=':
                 return r => {
-                    if (isNil(r.committedData)) return true;
+                    if (mustIgnore(r)) return true;
                     const v = getVal(r);
                     return !isNil(v) && v >= value;
                 };
             case '<':
                 return r => {
-                    if (isNil(r.committedData)) return true;
+                    if (mustIgnore(r)) return true;
                     const v = getVal(r);
                     return !isNil(v) && v < value;
                 };
             case '<=':
                 return r => {
-                    if (isNil(r.committedData)) return true;
+                    if (mustIgnore(r)) return true;
                     const v = getVal(r);
                     return !isNil(v) && v <= value;
                 };
             case 'like':
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
                 return r => {
-                    if (isNil(r.committedData)) return true;
+                    if (mustIgnore(r)) return true;
                     return regExps.some(re => re.test(getVal(r)));
                 };
             case 'not like':
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
                 return r => {
-                    if (isNil(r.committedData)) return true;
+                    if (mustIgnore(r)) return true;
                     regExps.every(re => !re.test(getVal(r)));
                 };
             case 'begins':
                 regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
                 return r => {
-                    if (isNil(r.committedData)) return true;
+                    if (mustIgnore(r)) return true;
                     regExps.some(re => re.test(getVal(r)));
                 };
             case 'ends':
                 regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
                 return r => {
-                    if (isNil(r.committedData)) return true;
+                    if (mustIgnore(r)) return true;
                     regExps.some(re => re.test(getVal(r)));
                 };
             default:
