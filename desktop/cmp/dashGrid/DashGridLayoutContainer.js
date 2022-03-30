@@ -16,7 +16,9 @@ export const dashGridLayoutContainer = hoistCmp.factory({
     render({className, model}) {
         return div({
             className,
+            ref: model.ref,
             onContextMenu: (e) => {
+                model.setNextPosition(e.clientX, e.clientY);
                 ContextMenu.show(
                     dashContainerContextMenu({dashContainerModel: model}),
                     {left: e.clientX, top: e.clientY},
@@ -31,6 +33,9 @@ export const dashGridLayoutContainer = hoistCmp.factory({
                 isDraggable: model.isDraggable,
                 isResizable: model.isResizable,
                 compactType: model.compact ? 'vertical' : null,
+                margin: model.margin,
+                maxRows: model.maxRows,
+                containerPadding: model.containerPadding,
                 autoSize: true,
                 isBounded: true,
                 draggableHandle: '.xh-panel-header',

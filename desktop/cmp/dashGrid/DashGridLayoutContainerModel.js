@@ -1,6 +1,7 @@
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {defaultsDeep, forEach, isNil} from 'lodash';
+import {createRef} from 'react';
 import {HoistModel, PersistenceProvider, XH} from '../../../core';
 import {debounced, ensureUniqueBy} from '../../../utils/js';
 import {DashGridLayoutViewSpec, DashGridLayoutViewModel} from '@xh/hoist/desktop/cmp/dashGrid';
@@ -19,6 +20,12 @@ export class DashGridLayoutContainerModel extends HoistModel {
 
     /** @member {[]} */
     initialViews;
+
+    /** @member {DOMElement} */
+    ref = createRef()
+
+    /** @member {Object} Position for next added item **/
+    nextPosition = {x: 0, y: 0};
 
     constructor({
         viewSpecDefaults,
@@ -41,6 +48,10 @@ export class DashGridLayoutContainerModel extends HoistModel {
         this.compact = compact;
         this.initialViews = initialViews;
         this.restoreState = {initialViews, columns, rowHeight};
+        this.maxRows = Infinity;
+        this.margin = [10, 10];
+        this.containerPadding = null;
+
 
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
@@ -171,7 +182,6 @@ export class DashGridLayoutContainerModel extends HoistModel {
             }),
             h = height || viewSpec.initHeight,
             w = width || viewSpec.initWidth;
-
         this.layout = [...this.layout, {i: id, x: x || 0, y: y || 0, h, w}];
         this.viewModels = [...this.viewModels, model];
     }
@@ -239,5 +249,47 @@ export class DashGridLayoutContainerModel extends HoistModel {
         this.setRowHeight(rowHeight);
         this.setInitialViews();
         this.provider?.clear();
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
+    /**
+     * Used to set the {x, y} position for the next added item based on the mouse location when
+     * context menu is triggered
+     * @param {number} x - clientX position
+     * @param {number} y - clientY position
+     */
+    setNextPosition(x, y) {
+        const calcXY = (positionParams, top, left, w=0, h=0) => {
+            const calcGridColWidth = (positionParams) => {
+                const { margin, containerPadding, containerWidth, cols } = positionParams;
+                return (
+                    (containerWidth - margin[0] * (cols - 1) - containerPadding[0] * 2) / cols
+                );
+            };
+
+            const clamp = (num, lowerBound, upperBound) =>
+                Math.max(Math.min(num, upperBound), lowerBound);
+
+            const {margin, cols, rowHeight, maxRows} = positionParams;
+            const colWidth = calcGridColWidth(positionParams);
+            let x = Math.round((left - margin[0]) / (colWidth + margin[0]));
+            let y = Math.round((top - margin[1]) / (rowHeight + margin[1]));
+
+            x = clamp(x, 0, cols - w);
+            y = clamp(y, 0, maxRows - h);
+            return { x, y };
+        };
+
+        const {margin, columns: cols, rowHeight, maxRows, ref, containerPadding} = this,
+            containerPosition = ref.current.getBoundingClientRect(),
+            {left: containerLeft, top: containerTop, width: containerWidth} = containerPosition,
+            positionParams = {margin, cols, rowHeight, maxRows,
+                containerPadding: containerPadding ?? margin, containerWidth},
+            left = x - containerLeft,
+            top = y - containerTop;
+
+        this.nextPosition = calcXY(positionParams, top, left);
     }
 }
