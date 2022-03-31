@@ -2,14 +2,14 @@ import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {defaultsDeep, forEach, isNil} from 'lodash';
 import {createRef} from 'react';
-import {HoistModel, PersistenceProvider, XH} from '@xh/hoist/core';
+import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
 import {debounced, ensureUniqueBy} from '@xh/hoist/utils/js';
 import {DashGridLayoutViewSpec, DashGridLayoutViewModel} from '@xh/hoist/desktop/cmp/dashGrid';
 
 export class DashGridLayoutContainerModel extends HoistModel {
     @observable.ref layout = [];
-    @observable.ref viewModels = [];
+    @managed @observable.ref viewModels = [];
     @bindable columns;
     @bindable rowHeight;
     @bindable isDraggable;
