@@ -1,7 +1,9 @@
 import {ContextMenu} from '@blueprintjs/core';
+import {
+    dashGridLayoutContainerContextMenu
+} from '@xh/hoist/desktop/cmp/dashGrid/impl/DashGridLayoutContainerContextMenu';
 import {div} from '../../../cmp/layout';
 import {elemFactory, hoistCmp, uses, XH} from '../../../core';
-import {dashContainerContextMenu} from '../dash/impl/DashContainerContextMenu';
 import {dashGridLayoutView} from '@xh/hoist/desktop/cmp/dashGrid/impl/DashGridLayoutView';
 import {DashGridLayoutContainerModel} from './DashGridLayoutContainerModel';
 import './DashGridLayoutContainer.scss';
@@ -20,7 +22,7 @@ export const dashGridLayoutContainer = hoistCmp.factory({
             onContextMenu: (e) => {
                 model.setNextPosition(e.clientX, e.clientY);
                 ContextMenu.show(
-                    dashContainerContextMenu({dashContainerModel: model}),
+                    dashGridLayoutContainerContextMenu({dashGridLayoutContainerModel: model}),
                     {left: e.clientX, top: e.clientY},
                     null,
                     XH.darkTheme

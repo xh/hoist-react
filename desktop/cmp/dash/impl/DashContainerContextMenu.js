@@ -6,7 +6,6 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
-import {DashGridLayoutContainerModel} from '@xh/hoist/desktop/cmp/dashGrid';
 import {Icon} from '@xh/hoist/icon';
 import {isEmpty} from 'lodash';
 
@@ -101,9 +100,7 @@ function createAddMenuItems(props) {
             item = {
                 text: title,
                 icon: icon,
-                actionFn: dashContainerModel instanceof DashGridLayoutContainerModel ?
-                    () => dashContainerModel.addView(id, dashContainerModel.nextPosition) :
-                    () => dashContainerModel.addView(id, stack, index + 1)
+                actionFn: () => dashContainerModel.addView(id, stack, index + 1)
             };
 
         // Group if necessary
