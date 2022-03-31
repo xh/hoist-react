@@ -13,6 +13,11 @@
     by default. The `asElement` option to these functions has been removed. Use the new `asHtml`
     option to return a HTML string.
 
+### 🐞 Bug Fixes
+
+* `FieldFilter`'s check of `committedData` is now null safe.  A record with no `committedData` will not be filtered out.
+
+
 ## v47.1.1 - 2022-03-26
 
 ### 🎁 New Features
