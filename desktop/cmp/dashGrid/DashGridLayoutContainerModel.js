@@ -2,8 +2,9 @@ import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {defaultsDeep, forEach, isNil} from 'lodash';
 import {createRef} from 'react';
-import {HoistModel, PersistenceProvider, XH} from '../../../core';
-import {debounced, ensureUniqueBy} from '../../../utils/js';
+import {HoistModel, PersistenceProvider, XH} from '@xh/hoist/core';
+import {required} from '@xh/hoist/data';
+import {debounced, ensureUniqueBy} from '@xh/hoist/utils/js';
 import {DashGridLayoutViewSpec, DashGridLayoutViewModel} from '@xh/hoist/desktop/cmp/dashGrid';
 
 export class DashGridLayoutContainerModel extends HoistModel {
@@ -51,7 +52,6 @@ export class DashGridLayoutContainerModel extends HoistModel {
         this.maxRows = Infinity;
         this.margin = [10, 10];
         this.containerPadding = null;
-
 
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
@@ -179,8 +179,8 @@ export class DashGridLayoutContainerModel extends HoistModel {
                 viewSpec,
                 containerModel: this
             });
-        h = h || viewSpec.initHeight;
-        w = w || viewSpec.initWidth;
+        h = h || viewSpec.height;
+        w = w || viewSpec.width;
         this.layout = [...this.layout, {i: id, x: x || 0, y: y || 0, h, w}];
         this.viewModels = [...this.viewModels, model];
     }
@@ -213,7 +213,8 @@ export class DashGridLayoutContainerModel extends HoistModel {
             title: 'Rename...',
             icon: Icon.edit(),
             input: {
-                initialValue: view.title
+                initialValue: view.title,
+                rules: [required]
             }
         });
         if (newName) view.setTitle(newName);

@@ -66,7 +66,7 @@ export const dashGridLayoutView = hoistCmp.factory({
                                 text: 'Rename',
                                 icon: Icon.edit(),
                                 intent: 'primary',
-                                disabled: !viewSpec.allowRename,
+                                hidden: !viewSpec.allowRename,
                                 actionFn: () => containerModel.renameView(id)
                             },
                             {
@@ -80,7 +80,7 @@ export const dashGridLayoutView = hoistCmp.factory({
                                 text: 'Remove',
                                 icon: Icon.cross(),
                                 intent: 'danger',
-                                disabled: !viewSpec.allowRemove,
+                                hidden: !viewSpec.allowRemove,
                                 actionFn: () => containerModel.removeView(id)
                             }
                         ]

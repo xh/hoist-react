@@ -1,11 +1,9 @@
 import {ContextMenu} from '@blueprintjs/core';
-import {
-    dashGridLayoutContainerContextMenu
-} from '@xh/hoist/desktop/cmp/dashGrid/impl/DashGridLayoutContainerContextMenu';
 import classNames from 'classnames';
-import {div} from '../../../cmp/layout';
-import {elemFactory, hoistCmp, uses, XH} from '../../../core';
-import {dashGridLayoutView} from '@xh/hoist/desktop/cmp/dashGrid/impl/DashGridLayoutView';
+import {div} from '@xh/hoist/cmp/layout';
+import {elemFactory, hoistCmp, uses, XH} from '@xh/hoist/core';
+import {dashGridLayoutView} from './impl/DashGridLayoutView';
+import {dashGridLayoutContainerContextMenu} from './impl/DashGridLayoutContainerContextMenu';
 import {DashGridLayoutContainerModel} from './DashGridLayoutContainerModel';
 import './DashGridLayoutContainer.scss';
 

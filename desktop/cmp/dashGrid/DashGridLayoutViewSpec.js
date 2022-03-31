@@ -16,21 +16,21 @@ import {DashViewSpec} from '@xh/hoist/desktop/cmp/dash/DashViewSpec';
  */
 export class DashGridLayoutViewSpec extends DashViewSpec {
 
-    initHeight;
-    initWidth;
+    height;
+    width;
 
     /**
      *
-     * @param {number} initHeight - initial height of view when added to container (default 3)
-     * @param {number} initWidth - initial width of view when added to container (default 3)
+     * @param {number} height - initial height of view when added to container (default 3)
+     * @param {number} width - initial width of view when added to container (default 3)
      */
     constructor({
-        initHeight = 3,
-        initWidth = 3,
+        height = 3,
+        width = 3,
         ...rest
     }) {
         super(rest);
-        this.initHeight = initHeight;
-        this.initWidth = initWidth;
+        this.height = height;
+        this.width = width;
     }
 }
