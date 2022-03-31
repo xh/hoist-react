@@ -5,7 +5,6 @@
 
   .react-grid-item {
     border: var(--xh-border-solid);
-    box-shadow: var(--xh-popover-box-shadow);
     display: flex;
 
     > .react-resizable-handle {
@@ -44,24 +43,28 @@
       background-color: var(--xh-intent-primary);
     }
 
-    .xh-panel-header {
-      background-color: var(--xh-panel-bg-light);
-      height: var(--xh-title-ultra-compact-height-px);
+    > .xh-panel {
+      > .xh-panel__content {
+        > .xh-panel-header {
+          background-color: var(--xh-panel-bg-light);
+          height: var(--xh-title-ultra-compact-height-px);
 
-      &__title {
-        color: var(--xh-text-color-headings);
-        cursor: move;
-      }
+          .xh-panel-header__title {
+            color: var(--xh-text-color-headings);
+            cursor: move;
+          }
 
-      // Header glyph.
-      & > .svg-inline--fa {
-        color: var(--xh-text-color-headings);
-      }
+          // Header glyph.
+          & > .svg-inline--fa {
+            color: var(--xh-text-color-headings);
+          }
 
-      // Header "tool" buttons.
-      .xh-button--minimal.xh-button--intent-none {
-        color: var(--xh-text-color-headings) !important;
+          // Header "tool" buttons.
+          .xh-button--minimal.xh-button--intent-none {
+            color: var(--xh-text-color-headings) !important;
 
+          }
+        }
       }
     }
   }

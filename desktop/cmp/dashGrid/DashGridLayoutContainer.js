@@ -40,7 +40,7 @@ export const dashGridLayoutContainer = hoistCmp.factory({
                 containerPadding: model.containerPadding,
                 autoSize: true,
                 isBounded: true,
-                draggableHandle: '.xh-panel-header',
+                draggableHandle: '.xh-panel > .xh-panel__content > .xh-panel-header',
                 // Resizing always pins to the nw corner, so dragging from anywhere other than se sides/corner is unintuitive
                 resizeHandles: ['s', 'e', 'se'],
                 onLayoutChange: (layout) => model.setLayout(layout),
