@@ -7,6 +7,10 @@
 * FontAwesome upgraded to v6. This includes redesigns of the majority of bundled icons - please
   check your app's icon usages carefully.
 
+### 🐞 Bug Fixes
+
+* `FieldFilter`'s check of `committedData` is now null safe.  A record with no `committedData` will not be filtered out.
+
 ### 📚 Libraries
 
 * @fortawesome/fontawesome-pro `5.14 -> 6.1`
