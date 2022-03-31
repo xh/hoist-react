@@ -47,24 +47,37 @@ function createAddMenuItems({dashGridLayoutContainerModel}) {
 
     const addToGroup = (item, groupName) => {
         const group = groupedItems[groupName];
-        if (group) group.push(item);
-        else groupedItems[groupName] = [item];
+        if (group) {
+            group.push(item);
+        } else {
+            groupedItems[groupName] = [item];
+        }
     };
 
     dashGridLayoutContainerModel.viewSpecs
-        .filter(viewSpec => viewSpec.allowAdd &&
-            (!viewSpec.unique ||
-                !(dashGridLayoutContainerModel.getItemsBySpecId(viewSpec.id).length)))
+        .filter(viewSpec => {
+            return viewSpec.allowAdd &&
+                (
+                    !viewSpec.unique ||
+                    !(dashGridLayoutContainerModel.getItemsBySpecId(viewSpec.id).length)
+                );
+        })
         .forEach(viewSpec => {
             const {title, icon, groupName, id} = viewSpec,
                 item = {
                     text: title,
                     icon: icon,
-                    actionFn: () => dashGridLayoutContainerModel
-                        .addView(id, dashGridLayoutContainerModel.nextPosition)
+                    actionFn: () => dashGridLayoutContainerModel.addView(
+                        id,
+                        dashGridLayoutContainerModel.nextPosition
+                    )
                 };
-            if (groupName) addToGroup(item, groupName);
-            else ungroupedItems.push(item);
+
+            if (groupName) {
+                addToGroup(item, groupName);
+            } else {
+                ungroupedItems.push(item);
+            }
         });
 
 
@@ -78,6 +91,7 @@ function createAddMenuItems({dashGridLayoutContainerModel}) {
                     items = groupedItems[group];
                 return {icon, text, items};
             }),
-        ...ungroupedItems];
+        ...ungroupedItems
+    ];
 }
 
