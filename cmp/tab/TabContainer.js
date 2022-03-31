@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, ModelPublishMode, uses, XH} from '@xh/hoist/core';
+import {hoistCmp, ModelPublishMode, uses, XH, refreshContextView} from '@xh/hoist/core';
 import {tabContainerImpl as desktopTabContainerImpl} from '@xh/hoist/dynamics/desktop';
 import {tabContainerImpl as mobileTabContainerImpl} from '@xh/hoist/dynamics/mobile';
 import PT from 'prop-types';
@@ -32,7 +32,10 @@ export const [TabContainer, tabContainer] = hoistCmp.withFactory({
     className: 'xh-tab-container',
 
     render(props, ref) {
-        return XH.isMobileApp ? mobileTabContainerImpl(props, ref) : desktopTabContainerImpl(props, ref);
+        return refreshContextView({
+            model: props.model.refreshContextModel,
+            item: XH.isMobileApp ? mobileTabContainerImpl(props, ref) : desktopTabContainerImpl(props, ref)
+        });
     }
 });
 

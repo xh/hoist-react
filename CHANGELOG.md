@@ -2,9 +2,16 @@
 
 ## v48.0.0-SNAPSHOT - under development
 
+### 🎁 New Features
+
+* Added `TabContainerModel.loadAsync()`, `TabContainerModel.refreshAsync()` and
+  `TabContainerModel.autoRefreshAsync()`, allowing apps programmatically load a TabContainer's contents,
+  respecting the tabs' `RefreshMode`.
+
 ### 🐞 Bug Fixes
 
-* `FieldFilter`'s check of `committedData` is now null safe.  A record with no `committedData` will not be filtered out.
+* `FieldFilter`'s check of `committedData` is now null safe.  A record with no `committedData` will
+  not be filtered out.
 
 
 ## v47.1.1 - 2022-03-26

@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, PersistenceProvider, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
+import {HoistModel, managed, RefreshContextModel, PersistenceProvider, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {find, isString, isUndefined, without, difference} from 'lodash';
@@ -45,6 +45,10 @@ export class TabContainerModel extends HoistModel {
 
     /** @member {(string|ReactNode)} */
     emptyText;
+
+    /** @member {RefreshContextModel} */
+    @managed
+    refreshContextModel;
 
     _lastActiveTabId;
 
@@ -101,6 +105,7 @@ export class TabContainerModel extends HoistModel {
         this.route = route;
         this.track = track;
         this.setTabs(tabs);
+        this.refreshContextModel = new RefreshContextModel();
 
         if (route) {
             if (XH.isMobileApp) {
@@ -267,6 +272,22 @@ export class TabContainerModel extends HoistModel {
     activateNextTab() {
         const {nextTab} = this;
         if (nextTab) this.activateTab(nextTab.id);
+    }
+
+    //-----------------------------
+    // Trigger load / refreshes of TabContainer directly.
+    // Note that we are intentionally *not* implementing LoadSupport here.
+    //-----------------------------
+    async loadAsync(loadSpec) {
+        return this.refreshContextModel.loadAsync(loadSpec);
+    }
+
+    async refreshAsync(meta) {
+        return this.refreshContextModel.refreshAsync(meta);
+    }
+
+    async autoRefreshAsync(meta) {
+        return this.refreshContextModel.autoRefreshAsync(meta);
     }
 
     //-------------------------
