@@ -119,7 +119,6 @@ export class DashGridLayoutContainerModel extends HoistModel {
     }
 
     @debounced(1000)
-    @action
     publishState() {
         const {state} = this;
         this.provider?.write({state});
