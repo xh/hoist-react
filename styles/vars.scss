@@ -589,7 +589,6 @@ body {
   // Panels
   //------------------------
   --xh-panel-bg: var(--panel-bg, var(--xh-bg));
-  --xh-panel-bg-light: var(--panel-bg-light, var(--xh-intent-neutral-lightest));
   --xh-panel-border-color: var(--panel-border-color, var(--xh-border-color));
   --xh-panel-border-width: var(--panel-border-width, 0);
   --xh-panel-border-width-px: calc(var(--xh-panel-border-width) * 1px);
@@ -598,10 +597,6 @@ body {
   --xh-panel-title-font-size: var(--panel-title-font-size, var(--xh-title-font-size));
   --xh-panel-title-font-size-px: calc(var(--xh-panel-title-font-size) * 1px);
   --xh-panel-title-text-color: var(--panel-title-text-color, var(--xh-title-text-color));
-
-  &.xh-dark {
-    --xh-panel-bg-light: var(--panel-bg-light, var(--xh-intent-neutral-darkest));
-  }
 
   &.xh-mobile {
     --xh-panel-title-bg: var(--panel-title-bg, #{mc('blue-grey', '100')});

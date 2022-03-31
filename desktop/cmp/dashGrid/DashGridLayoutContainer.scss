@@ -46,22 +46,21 @@
     > .xh-panel {
       > .xh-panel__content {
         > .xh-panel-header {
-          background-color: var(--xh-panel-bg-light);
+          background-color: var(--xh-intent-neutral-trans1);
           height: var(--xh-title-ultra-compact-height-px);
+          border-bottom: var(--xh-border-solid);
 
-          .xh-panel-header__title {
-            color: var(--xh-text-color-headings);
-            cursor: move;
-          }
-
-          // Header glyph.
+          .xh-panel-header__title,
           & > .svg-inline--fa {
-            color: var(--xh-text-color-headings);
+            color: var(--xh-gray);
+            cursor: move;
+            font-size: 12px;
+            margin-right: var(--xh-pad-half-px);
           }
 
           // Header "tool" buttons.
           .xh-button--minimal.xh-button--intent-none {
-            color: var(--xh-text-color-headings) !important;
+            color: var(--xh-gray) !important;
 
           }
         }
