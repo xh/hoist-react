@@ -26,7 +26,7 @@ export const dashView = hoistCmp.factory({
     model: uses(DashViewModel, {publishMode: ModelPublishMode.LIMITED}),
 
     render({model, className}) {
-        const {isActive, renderMode, refreshContextModel, viewSpec, containerModel, id} = model,
+        const {isActive, renderMode, refreshContextModel, viewSpec} = model,
             wasActivated = useRef(false);
 
         // Respect RenderMode
