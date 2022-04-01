@@ -1040,15 +1040,12 @@ export class GridModel extends HoistModel {
 
     buildColumn(config) {
         // Merge leaf config with defaults.
-        // Ensure *any* tooltip or renderer setting on column itself always wins.
+        // Ensure *any* tooltip setting on column itself always wins.
         if (this.colDefaults && !config.children) {
             let colDefaults = {...this.colDefaults};
             if (config.tooltip || config.tooltipElement) {
                 colDefaults.tooltip = null;
                 colDefaults.tooltipElement = null;
-            }
-            if (config.renderer) {
-                colDefaults.renderer = null;
             }
             config = defaultsDeep({}, config, colDefaults);
         }

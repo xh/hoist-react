@@ -7,7 +7,7 @@
 import {div, ul, li, span} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
-import {throwIf, warnIf, withDefault, apiRemoved, apiDeprecated} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault, apiRemoved} from '@xh/hoist/utils/js';
 import {
     castArray,
     clone,
@@ -259,7 +259,7 @@ export class Column {
      *       but always locked in the displayed collection of columns.
      * @param {(boolean|string)} [c.pinned] - set to true/'left' or 'right' to pin (aka "lock") the
      *      column to the side of the grid, ensuring it's visible while horizontally scrolling.
-     * @param {Column~rendererFn} [c.renderer] - function returning a react component for each
+     * @param {Column~rendererFn} [c.renderer] - function returning a React Element for each
      *      cell value in this Column.
      * @param {boolean} [c.rendererIsComplex] - true if this renderer relies on more than
      *      just the value of the field associated with this column. Set to true to ensure that
@@ -448,8 +448,8 @@ export class Column {
         this.hideable = withDefault(hideable, !this.isTreeColumn);
         this.pinned = this.parsePinned(pinned);
 
-        apiDeprecated('elementRenderer', {test: rest.elementRenderer, msg: 'Use renderer instead'});
-        this.renderer = renderer ?? rest.elementRenderer;
+        apiRemoved('Column.elementRenderer', {test: rest.elementRenderer, msg: 'Use `renderer` instead', v: 48});
+        this.renderer = renderer;
         this.rendererIsComplex = rendererIsComplex;
         this.highlightOnChange = highlightOnChange;
         warnIf(
@@ -682,7 +682,7 @@ export class Column {
             setRenderer((agParams) => {
                 return span(renderer(agParams.value, {record: agParams.data, column: this, gridModel, agParams}));
             });
-        } else if (!agOptions.cellRenderer && !agOptions.cellRendererFramework) {
+        } else if (!agOptions.cellRenderer) {
             // By always providing a minimal cell pass-through cellRenderer, we can ensure the
             // cell contents are wrapped in a span by Ag-Grid. We check agOptions in case
             // the dev has specified either renderer option directly against the ag-Grid API

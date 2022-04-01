@@ -12,6 +12,8 @@
   * Formatter methods and renderers (e.g. `fmtNumber`, `numberRenderer`, etc.) now return React Elements
     by default. The `asElement` option to these functions has been removed. Use the new `asHtml`
     option to return a HTML string.
+  * The `isPopup` argument to `useInlineEditorModel()` has been removed. If you want to display your
+    inline editor in a popup, you must set the new flag `Column.editorIsPopup` to `true`.
 
 ### 🐞 Bug Fixes
 

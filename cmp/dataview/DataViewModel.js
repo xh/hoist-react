@@ -7,7 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, apiRemoved} from '@xh/hoist/utils/js';
 import {isFunction, isNumber} from 'lodash';
 
 /**
@@ -93,6 +93,8 @@ export class DataViewModel extends HoistModel {
             !isFunction(itemHeight) && !isNumber(itemHeight),
             'Must specify DataViewModel.itemHeight as a number or a function to set a pixel height for each item.'
         );
+
+        apiRemoved('DataViewModel.elementRenderer', {test: restArgs.elementRenderer, msg: 'Use `renderer` instead', v: 48});
 
         this.itemHeight = itemHeight;
         this.groupRowHeight = groupRowHeight;
