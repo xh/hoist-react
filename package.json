@@ -65,7 +65,6 @@
     "react-onsenui": "~1.11.5",
     "react-popper": "~2.2.5",
     "react-select": "~4.3.1",
-    "react-sizeme": "^3.0.2",
     "react-transition-group": "~4.4.2",
     "react-windowed-select": "~3.1.2",
     "regenerator-runtime": "~0.13.7",
