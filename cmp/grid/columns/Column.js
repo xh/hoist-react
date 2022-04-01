@@ -597,6 +597,21 @@ export class Column {
             setRenderer = (r) => ret.cellRendererParams.innerRenderer = r;
         }
 
+        // By always providing a minimal pass-through cellRenderer, we can ensure the
+        // cell contents are wrapped in a span for styling purposes. We check agOptions in case
+        // the dev has specified a renderer option directly against the ag-Grid API.
+        const {renderer} = this;
+        if (!agOptions.cellRenderer) {
+            setRenderer((agParams) => {
+                const ret = renderer ?
+                    renderer(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
+                    agParams.value?.toString();
+
+                // Add wrapping span for styling purposes
+                return span({className: 'xh-cell-inner-wrapper', item: ret});
+            });
+        }
+
         // Tooltip Handling
         const {tooltip, tooltipElement, editor} = this,
             tooltipSpec = tooltipElement ?? tooltip;
@@ -673,21 +688,6 @@ export class Column {
         } else {
             ret.suppressSizeToFit = true;
             ret.width = this.width;
-        }
-
-        const {renderer} = this;
-        // Our flexbox enabled cell styling requires all cells to have a non-flex inner element
-        // to work properly, so we wrap the output of all renderers in a span.
-        if (renderer) {
-            setRenderer((agParams) => {
-                return span(renderer(agParams.value, {record: agParams.data, column: this, gridModel, agParams}));
-            });
-        } else if (!agOptions.cellRenderer) {
-            // By always providing a minimal cell pass-through cellRenderer, we can ensure the
-            // cell contents are wrapped in a span by Ag-Grid. We check agOptions in case
-            // the dev has specified either renderer option directly against the ag-Grid API
-            // (done sometimes with components for performance reasons).
-            setRenderer((agParams) => span(agParams.value?.toString()));
         }
 
         const sortCfg = find(gridModel.sortBy, {colId: ret.colId});
