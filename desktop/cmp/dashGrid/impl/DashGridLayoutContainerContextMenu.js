@@ -22,8 +22,8 @@ import {isEmpty} from 'lodash';
 export const dashGridLayoutContainerContextMenu = hoistCmp.factory({
     model: null,
     observer: null,
-    render({dashGridLayoutContainerModel}) {
-        const menuItems = createMenuItems({dashGridLayoutContainerModel});
+    render({dashGridLayoutContainerModel, clickPosition}) {
+        const menuItems = createMenuItems({dashGridLayoutContainerModel, clickPosition});
         return contextMenu({menuItems});
     }
 });
@@ -31,8 +31,8 @@ export const dashGridLayoutContainerContextMenu = hoistCmp.factory({
 //---------------------------
 // Implementation
 //---------------------------
-function createMenuItems({dashGridLayoutContainerModel}) {
-    const addMenuItems = createAddMenuItems({dashGridLayoutContainerModel});
+function createMenuItems({dashGridLayoutContainerModel, clickPosition}) {
+    const addMenuItems = createAddMenuItems({dashGridLayoutContainerModel, clickPosition});
     return [{
         text: 'Add',
         icon: Icon.add(),
@@ -41,9 +41,13 @@ function createMenuItems({dashGridLayoutContainerModel}) {
     }];
 }
 
-function createAddMenuItems({dashGridLayoutContainerModel}) {
+function createAddMenuItems({dashGridLayoutContainerModel, clickPosition}) {
+
+
     const groupedItems = {},
-        ungroupedItems = [];
+        ungroupedItems = [],
+        {x, y} = clickPosition,
+        addPosition = calcAddPosition(x, y, dashGridLayoutContainerModel);
 
     const addToGroup = (item, groupName) => {
         const group = groupedItems[groupName];
@@ -69,7 +73,7 @@ function createAddMenuItems({dashGridLayoutContainerModel}) {
                     icon: icon,
                     actionFn: () => dashGridLayoutContainerModel.addView(
                         id,
-                        dashGridLayoutContainerModel.nextPosition
+                        addPosition
                     )
                 };
 
@@ -95,3 +99,45 @@ function createAddMenuItems({dashGridLayoutContainerModel}) {
     ];
 }
 
+//------------------------
+// Implementation
+//------------------------
+/**
+ * Used to set the {x, y} position for the next added item based on the mouse location when
+ * context menu is triggered
+ * @param {number} x - clientX position
+ * @param {number} y - clientY position
+ * @param {DashGridLayoutContainerModel}
+ */
+const calcAddPosition = (x, y, dashGridLayoutContainerModel) => {
+    const calcXY = (positionParams, top, left, w=0, h=0) => {
+        const calcGridColWidth = (positionParams) => {
+            const { margin, containerPadding, containerWidth, cols } = positionParams;
+            return (
+                (containerWidth - margin[0] * (cols - 1) - containerPadding[0] * 2) / cols
+            );
+        };
+
+        const clamp = (num, lowerBound, upperBound) =>
+            Math.max(Math.min(num, upperBound), lowerBound);
+
+        const {margin, cols, rowHeight, maxRows} = positionParams;
+        const colWidth = calcGridColWidth(positionParams);
+        let x = Math.round((left - margin[0]) / (colWidth + margin[0]));
+        let y = Math.round((top - margin[1]) / (rowHeight + margin[1]));
+
+        x = clamp(x, 0, cols - w);
+        y = clamp(y, 0, maxRows - h);
+        return { x, y };
+    };
+
+    const {margin, columns: cols, rowHeight, maxRows, ref, containerPadding} = dashGridLayoutContainerModel,
+        containerPosition = ref.current.getBoundingClientRect(),
+        {left: containerLeft, top: containerTop, width: containerWidth} = containerPosition,
+        positionParams = {margin, cols, rowHeight, maxRows,
+            containerPadding: containerPadding ?? margin, containerWidth},
+        left = x - containerLeft,
+        top = y - containerTop;
+
+    return calcXY(positionParams, top, left);
+};

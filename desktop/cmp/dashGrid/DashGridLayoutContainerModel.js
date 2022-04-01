@@ -25,8 +25,13 @@ export class DashGridLayoutContainerModel extends HoistModel {
     /** @member {DOMElement} */
     ref = createRef()
 
-    /** @member {Object} Position for next added item **/
-    nextPosition = {x: 0, y: 0};
+    /** @member {number[]} - [marginX, marginY] */
+    @bindable
+    margin;
+
+    /** @member {number[]} - [paddingX, paddingY] */
+    @bindable
+    containerPadding;
 
     constructor({
         viewSpecDefaults,
@@ -37,7 +42,10 @@ export class DashGridLayoutContainerModel extends HoistModel {
         isDraggable = true,
         isResizable = true,
         compact = true,
-        persistWith = null
+        persistWith = null,
+        margin = [10, 10],
+        maxRows = Infinity,
+        containerPadding = null
     }) {
         super();
         makeObservable(this);
@@ -49,9 +57,9 @@ export class DashGridLayoutContainerModel extends HoistModel {
         this.compact = compact;
         this.initialViews = initialViews;
         this.restoreState = {initialViews, columns, rowHeight};
-        this.maxRows = Infinity;
-        this.margin = [10, 10];
-        this.containerPadding = null;
+        this.maxRows = maxRows;
+        this.margin = margin;
+        this.containerPadding = containerPadding;
 
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
@@ -76,7 +84,7 @@ export class DashGridLayoutContainerModel extends HoistModel {
         this.setState(state);
 
         // If no persisted state, default to the initial views
-        if (!persistState?.state) this.setInitialViews();
+        if (!persistState?.state) this.restoreInitialViews();
 
         this.addReaction({
             track: () => [this.layout, this.viewState],
@@ -198,10 +206,7 @@ export class DashGridLayoutContainerModel extends HoistModel {
     @action
     removeAllViews() {
         this.layout = [];
-        for (let viewModel of this.viewModels) {
-            XH.safeDestroy(viewModel);
-        }
-        this.viewModels = [];
+        XH.safeDestroy(this.viewModels);
     }
 
     async renameView(id) {
@@ -229,7 +234,7 @@ export class DashGridLayoutContainerModel extends HoistModel {
         return this.viewModels.filter(it => it.viewSpec.id === id);
     }
 
-    setInitialViews() {
+    restoreInitialViews() {
         this.removeAllViews();
         this.initialViews.forEach(view => {
             const {id, x, y, width, height} = view;
@@ -247,49 +252,7 @@ export class DashGridLayoutContainerModel extends HoistModel {
         const {columns, rowHeight} = this.restoreState;
         this.setColumns(columns);
         this.setRowHeight(rowHeight);
-        this.setInitialViews();
+        this.restoreInitialViews();
         this.provider?.clear();
-    }
-
-    //------------------------
-    // Implementation
-    //------------------------
-    /**
-     * Used to set the {x, y} position for the next added item based on the mouse location when
-     * context menu is triggered
-     * @param {number} x - clientX position
-     * @param {number} y - clientY position
-     */
-    setNextPosition(x, y) {
-        const calcXY = (positionParams, top, left, w=0, h=0) => {
-            const calcGridColWidth = (positionParams) => {
-                const { margin, containerPadding, containerWidth, cols } = positionParams;
-                return (
-                    (containerWidth - margin[0] * (cols - 1) - containerPadding[0] * 2) / cols
-                );
-            };
-
-            const clamp = (num, lowerBound, upperBound) =>
-                Math.max(Math.min(num, upperBound), lowerBound);
-
-            const {margin, cols, rowHeight, maxRows} = positionParams;
-            const colWidth = calcGridColWidth(positionParams);
-            let x = Math.round((left - margin[0]) / (colWidth + margin[0]));
-            let y = Math.round((top - margin[1]) / (rowHeight + margin[1]));
-
-            x = clamp(x, 0, cols - w);
-            y = clamp(y, 0, maxRows - h);
-            return { x, y };
-        };
-
-        const {margin, columns: cols, rowHeight, maxRows, ref, containerPadding} = this,
-            containerPosition = ref.current.getBoundingClientRect(),
-            {left: containerLeft, top: containerTop, width: containerWidth} = containerPosition,
-            positionParams = {margin, cols, rowHeight, maxRows,
-                containerPadding: containerPadding ?? margin, containerWidth},
-            left = x - containerLeft,
-            top = y - containerTop;
-
-        this.nextPosition = calcXY(positionParams, top, left);
     }
 }

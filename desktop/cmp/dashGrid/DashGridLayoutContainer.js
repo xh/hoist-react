@@ -23,10 +23,11 @@ export const dashGridLayoutContainer = hoistCmp.factory({
             ),
             ref: model.ref,
             onContextMenu: (e) => {
-                model.setNextPosition(e.clientX, e.clientY);
+                const {clientX: x, clientY: y} = e;
                 ContextMenu.show(
-                    dashGridLayoutContainerContextMenu({dashGridLayoutContainerModel: model}),
-                    {left: e.clientX, top: e.clientY},
+                    dashGridLayoutContainerContextMenu({dashGridLayoutContainerModel: model,
+                        clickPosition: {x, y}}),
+                    {left: x, top: y},
                     null,
                     XH.darkTheme
                 );

@@ -4,10 +4,9 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, ModelPublishMode, RenderMode, uses} from '@xh/hoist/core';
+import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {elementFromContent} from '@xh/hoist/utils/react';
-import {useRef} from 'react';
 import {Icon} from '@xh/hoist/icon';
 import {panel} from '../../panel';
 import {button} from '../../button';
@@ -30,24 +29,7 @@ export const dashGridLayoutView = hoistCmp.factory({
     model: uses(DashGridLayoutViewModel, {publishMode: ModelPublishMode.LIMITED}),
 
     render({model, className}) {
-        const {isActive, renderMode, viewSpec, containerModel, id} = model,
-            wasActivated = useRef(false);
-
-        // Respect RenderMode
-        if (!wasActivated.current && isActive) {
-            wasActivated.current = true;
-        }
-
-        if (
-            !isActive &&
-            (
-                (renderMode === RenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode === RenderMode.LAZY && !wasActivated.current)
-            )
-        ) {
-            return null;
-        }
-
+        const {viewSpec, containerModel, id} = model;
         return panel({
             className,
             compactHeader: true,
