@@ -99,11 +99,8 @@ export class ColumnWidthCalculator {
             const ctx = {record, field, column, gridModel, store},
                 rawValue = getValueFn(ctx);
 
-            // Convert elements to strings, without html tags but including parentheses / units etc.
             let value = renderer ? renderer(rawValue, ctx) : rawValue;
-            if (isValidElement(value)) {
-                value = stripTags(renderToStaticMarkup(value));
-            }
+            if (isValidElement(value)) value = renderToStaticMarkup(value);
 
             const recs = recsByValue.get(value);
             if (!recs) {
@@ -114,8 +111,9 @@ export class ColumnWidthCalculator {
         });
 
         // 2) Use a canvas to estimate and sort by the pixel width of the string value.
+        // Strip html tags but include parentheses / units etc. for renderers that may return elements.
         const sortedValues = sortBy(Array.from(recsByValue.keys()), value => {
-            const width = isNil(value) ? 0 : this.getStringWidth(value.toString());
+            const width = isNil(value) ? 0 : this.getStringWidth(stripTags(value.toString()));
             return width + indentationPx;
         });
 
