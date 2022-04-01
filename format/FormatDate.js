@@ -4,7 +4,6 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {span} from '@xh/hoist/cmp/layout';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {defaults, isString} from 'lodash';
 import moment from 'moment';
@@ -51,7 +50,7 @@ export function fmtDate(v, opts) {
         ret = fmtSpan(ret, {className: 'xh-title-tip', title: opts.tooltip(opts.originalValue), asHtml: opts.asHtml});
     }
 
-    return opts.asHtml ? ret : span(ret);
+    return ret;
 }
 
 export function fmtDateTime(v, opts) {
