@@ -1,5 +1,7 @@
 # Changelog
 
+## v48.0.0-SNAPSHOT - unreleased
+
 ## v47.1.2 - 2022-04-01
 
 ### 🐞 Bug Fixes
