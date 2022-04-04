@@ -32,13 +32,18 @@ export const dashGridLayoutContainerContextMenu = hoistCmp.factory({
 // Implementation
 //---------------------------
 function createMenuItems({dashGridLayoutContainerModel, clickPosition}) {
-    const addMenuItems = createAddMenuItems({dashGridLayoutContainerModel, clickPosition});
-    return [{
-        text: 'Add',
-        icon: Icon.add(),
-        disabled: isEmpty(addMenuItems),
-        items: addMenuItems
-    }];
+    const addMenuItems = createAddMenuItems({dashGridLayoutContainerModel, clickPosition}),
+        {extraMenuItems} = dashGridLayoutContainerModel;
+    return [
+        {
+            text: 'Add',
+            icon: Icon.add(),
+            disabled: isEmpty(addMenuItems),
+            items: addMenuItems
+        },
+        ...(extraMenuItems ? ['-', ...extraMenuItems] : [])
+
+    ];
 }
 
 function createAddMenuItems({dashGridLayoutContainerModel, clickPosition}) {

@@ -45,7 +45,8 @@ export class DashGridLayoutContainerModel extends HoistModel {
         persistWith = null,
         margin = [10, 10],
         maxRows = Infinity,
-        containerPadding = null
+        containerPadding = null,
+        extraMenuItems
     }) {
         super();
         makeObservable(this);
@@ -60,6 +61,7 @@ export class DashGridLayoutContainerModel extends HoistModel {
         this.maxRows = maxRows;
         this.margin = margin;
         this.containerPadding = containerPadding;
+        this.extraMenuItems = extraMenuItems;
 
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');

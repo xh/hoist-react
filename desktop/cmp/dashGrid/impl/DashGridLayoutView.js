@@ -29,7 +29,8 @@ export const dashGridLayoutView = hoistCmp.factory({
     model: uses(DashGridLayoutViewModel, {publishMode: ModelPublishMode.LIMITED}),
 
     render({model, className}) {
-        const {viewSpec, viewState, containerModel, id, positionParams, title} = model;
+        const {viewSpec, viewState, containerModel, id, positionParams, title} = model,
+            {extraMenuItems} = containerModel;
         return panel({
             className,
             compactHeader: true,
@@ -57,14 +58,14 @@ export const dashGridLayoutView = hoistCmp.factory({
                                 actionFn: () =>
                                     containerModel.addView(viewSpec.id, {...positionParams, viewState, title})
                             },
-                            '-',
                             {
                                 text: 'Remove',
                                 icon: Icon.cross(),
                                 intent: 'danger',
                                 hidden: !viewSpec.allowRemove,
                                 actionFn: () => containerModel.removeView(id)
-                            }
+                            },
+                            ...(extraMenuItems ? ['-', ...extraMenuItems] : [])
                         ]
                     })
                 })
