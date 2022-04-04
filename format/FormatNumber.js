@@ -149,7 +149,8 @@ export function fmtQuantity(v, opts = {}) {
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
-    const lessThanM = Math.abs(v) < MILLION;
+    const lessThanM = Math.abs(v) < MILLION,
+        greaterThanB = Math.abs(v) >= BILLION;
 
     defaults(opts, {
         ledger: true,
@@ -157,7 +158,11 @@ export function fmtQuantity(v, opts = {}) {
         precision: lessThanM ? 0 : 2
     });
 
-    return lessThanM ? fmtNumber(v, opts) : fmtMillions(v, opts);
+    return lessThanM ?
+        fmtNumber(v, opts) :
+        greaterThanB ?
+            fmtBillions(v, opts) :
+            fmtMillions(v, opts);
 }
 
 /**
