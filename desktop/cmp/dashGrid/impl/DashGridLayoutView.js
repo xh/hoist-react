@@ -29,7 +29,7 @@ export const dashGridLayoutView = hoistCmp.factory({
     model: uses(DashGridLayoutViewModel, {publishMode: ModelPublishMode.LIMITED}),
 
     render({model, className}) {
-        const {viewSpec, containerModel, id} = model;
+        const {viewSpec, viewState, containerModel, id, positionParams, title} = model;
         return panel({
             className,
             compactHeader: true,
@@ -55,7 +55,7 @@ export const dashGridLayoutView = hoistCmp.factory({
                                 text: 'Duplicate',
                                 icon: Icon.copy(),
                                 actionFn: () =>
-                                    containerModel.addView(viewSpec.id, model.positionParams)
+                                    containerModel.addView(viewSpec.id, {...positionParams, viewState, title})
                             },
                             '-',
                             {
