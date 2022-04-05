@@ -95,8 +95,7 @@ export function hoistComponent(config) {
     // 3) Wrap with HOCs.
     // note that observer will take care of memo and forwardRef if needed
     if (isObserver) {
-        // see https://github.com/mobxjs/mobx/issues/2527 for discuss of observer + forwardRef API
-        ret = observer(ret, {forwardRef: isForwardRef});
+        ret = observer(isForwardRef ? forwardRef(ret) : ret);
     } else {
         if (isForwardRef) {
             ret = forwardRef(ret);

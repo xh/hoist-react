@@ -2,6 +2,11 @@
 
 ## v48.0.0-SNAPSHOT - unreleased
 
+### 📚 Libraries
+
+* mobx `6.3 -> 6.5`
+* mobx-react-lite `3.2 -> 3.3`
+
 ## v47.1.2 - 2022-04-01
 
 ### 🐞 Bug Fixes
