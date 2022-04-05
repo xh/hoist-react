@@ -93,17 +93,10 @@ export function hoistComponent(config) {
     ret.displayName = displayName;
 
     // 3) Wrap with HOCs.
-    // note that observer will take care of memo and forwardRef if needed
-    if (isObserver) {
-        ret = observer(isForwardRef ? forwardRef(ret) : ret);
-    } else {
-        if (isForwardRef) {
-            ret = forwardRef(ret);
-        }
-        if (isMemo) {
-            ret = memo(ret);
-        }
-    }
+    // Note that observer includes memo.
+    if (isForwardRef)           ret = forwardRef(ret);
+    if (isObserver)             ret = observer(ret);
+    if (isMemo && !isObserver)  ret = memo(ret);
 
     // 4) Mark and return.
     ret.displayName = displayName;
