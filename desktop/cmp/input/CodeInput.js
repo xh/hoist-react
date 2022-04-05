@@ -31,8 +31,8 @@ import 'codemirror/addon/selection/mark-selection.js';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/dracula.css';
 import {compact, defaultsDeep, isEqual, isFunction} from 'lodash';
+import {findDOMNode} from 'react-dom';
 import PT from 'prop-types';
-import ReactDOM from 'react-dom';
 import './CodeInput.scss';
 
 /**
@@ -258,7 +258,7 @@ class Model extends HoistInputModel {
             this.createDefaults()
         );
 
-        const taDom = ReactDOM.findDOMNode(textAreaComp),
+        const taDom = findDOMNode(textAreaComp),
             editor = codemirror.fromTextArea(taDom, editorSpec);
 
         editor.on('change', this.handleEditorChange);

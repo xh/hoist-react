@@ -2,6 +2,10 @@
 
 ## v48.0.0-SNAPSHOT - unreleased
 
+### 📚 Libraries
+* react `17.0.1 > 18.0.0`
+* react-dom `17.0.1 > 18.0.0`
+
 ## v47.1.2 - 2022-04-01
 
 ### 🐞 Bug Fixes
