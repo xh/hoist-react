@@ -18,11 +18,8 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
     model: false,
 
     render({className, isOpen, onCancel, icon, title, content, buttons = []}) {
-
         const contextModel = useContextModel('*');
-
         if (!isOpen) return null;
-
         return onsenDialog({
             isOpen: true,
             isCancelable: true,
@@ -59,7 +56,6 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
 const modelHost = hoistCmp.factory({
     model: uses('*'),
     memo: false, observer: false,
-
     render({children}) {
         return children;
     }
