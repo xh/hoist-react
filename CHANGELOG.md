@@ -1,6 +1,18 @@
 # Changelog
 
-## v48.0.0-SNAPSHOT - under development
+## v48.0.0-SNAPSHOT - unreleased
+
+### 📚 Libraries
+
+* mobx `6.3 -> 6.5`
+* mobx-react-lite `3.2 -> 3.3`
+
+## v47.1.2 - 2022-04-01
+
+### 🎁 New Features
+
+* FontAwesome upgraded to v6. This includes redesigns of the majority of bundled icons - please
+  check your app's icon usages carefully.
 
 ### 💥 Breaking Changes
 
@@ -21,6 +33,9 @@
 
 * `FieldFilter`'s check of `committedData` is now null safe.  A record with no `committedData` will not be filtered out.
 
+### 📚 Libraries
+
+* @fortawesome/fontawesome-pro `5.14 -> 6.1`
 
 ## v47.1.1 - 2022-03-26
 
