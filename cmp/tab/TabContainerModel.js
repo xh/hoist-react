@@ -274,22 +274,6 @@ export class TabContainerModel extends HoistModel {
         if (nextTab) this.activateTab(nextTab.id);
     }
 
-    //-----------------------------
-    // Trigger load / refreshes of TabContainer directly.
-    // Note that we are intentionally *not* implementing LoadSupport here.
-    //-----------------------------
-    async loadAsync(loadSpec) {
-        return this.refreshContextModel.loadAsync(loadSpec);
-    }
-
-    async refreshAsync(meta) {
-        return this.refreshContextModel.refreshAsync(meta);
-    }
-
-    async autoRefreshAsync(meta) {
-        return this.refreshContextModel.autoRefreshAsync(meta);
-    }
-
     //-------------------------
     // Implementation
     //-------------------------

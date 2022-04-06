@@ -4,9 +4,7 @@
 
 ### 🎁 New Features
 
-* Added `TabContainerModel.loadAsync()`, `TabContainerModel.refreshAsync()` and
-  `TabContainerModel.autoRefreshAsync()`, allowing apps programmatically load a TabContainer's contents,
-  respecting the tabs' `RefreshMode`.
+* Added `TabContainerModel.refreshContextModel`, allowing apps to programmatically load a TabContainer.
 
 ### 🐞 Bug Fixes
 
