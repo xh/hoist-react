@@ -13,6 +13,13 @@
 * mobx-react-lite `3.2 -> 3.3`
 * @fortawesome/fontawesome-pro `5.14 -> 6.1`
 
+## v47.1.3 - 2022-04-06
+
+### ✨ Style
+
+* Add style support for intents on context menu items
+
+
 
 ## v47.1.2 - 2022-04-01
 
