@@ -11,26 +11,26 @@ import {Icon} from '@xh/hoist/icon';
 import {panel} from '../../../panel';
 import {button} from '../../../button';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
-import {DashReportViewModel} from '../DashReportViewModel';
+import {DashCanvasViewModel} from '../DashCanvasViewModel';
 
 /**
- * Implementation component to show an item within a DashReport.  This component
- * is used by DashReport's internal implementation to:
+ * Implementation component to show an item within a DashCanvas.  This component
+ * is used by DashCanvas's internal implementation to:
  *
- *   - Mount/unmount its contents according to `DashReportViewSpec.renderMode`.
- *   - Track and trigger refreshes according to `DashReportViewSpec.refreshMode`.
+ *   - Mount/unmount its contents according to `DashCanvasViewSpec.renderMode`.
+ *   - Track and trigger refreshes according to `DashCanvasViewSpec.refreshMode`.
  *   - Stretch its contents using a flex layout.
  *
  * @private
  */
-export const dashReportView = hoistCmp.factory({
+export const dashCanvasView = hoistCmp.factory({
     displayName: 'DashGridLayoutView',
     className: 'xh-dash-tab',
-    model: uses(DashReportViewModel, {publishMode: ModelPublishMode.LIMITED}),
+    model: uses(DashCanvasViewModel, {publishMode: ModelPublishMode.LIMITED}),
 
     render({model, className}) {
         const {viewSpec, viewState, containerModel, id, positionParams, title} = model,
-            {extraMenuItems} = containerModel;
+            {extraMenuItems, contentLocked, renameLocked} = containerModel;
         return panel({
             className,
             compactHeader: true,
@@ -50,11 +50,13 @@ export const dashReportView = hoistCmp.factory({
                                 icon: Icon.edit(),
                                 intent: 'primary',
                                 hidden: !viewSpec.allowRename,
+                                disabled: renameLocked,
                                 actionFn: () => containerModel.renameView(id)
                             },
                             {
                                 text: 'Duplicate',
                                 icon: Icon.copy(),
+                                disabled: contentLocked,
                                 actionFn: () =>
                                     containerModel.addView(viewSpec.id, {...positionParams, viewState, title})
                             },
@@ -63,6 +65,7 @@ export const dashReportView = hoistCmp.factory({
                                 icon: Icon.cross(),
                                 intent: 'danger',
                                 hidden: !viewSpec.allowRemove,
+                                disabled: contentLocked,
                                 actionFn: () => containerModel.removeView(id)
                             },
                             ...(extraMenuItems ? ['-', ...extraMenuItems] : [])

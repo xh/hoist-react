@@ -7,22 +7,22 @@
 import {DashViewSpec} from '@xh/hoist/desktop/cmp/dash/DashViewSpec';
 
 /**
- * Spec used to generate DashReportViews and DashReportViewModels within a
- * DashReport.  Extends {@see DashViewSpec}
+ * Spec used to generate DashCanvasViews and DashCanvasViewModels within a
+ * DashCanvas.  Extends {@see DashViewSpec}
  *
  * This class is not typically created directly within applications. Instead, specify
- * DashReportViewSpec configs via the `DashReportModel.viewSpecs` constructor
+ * DashCanvasViewSpec configs via the `DashCanvasModel.viewSpecs` constructor
  * config.
  */
-export class DashReportViewSpec extends DashViewSpec {
+export class DashCanvasViewSpec extends DashViewSpec {
 
     height;
     width;
 
     /**
      *
-     * @param {number} height - initial height of view when added to report (default 3)
-     * @param {number} width - initial width of view when added to report (default 3)
+     * @param {number} height - initial height of view when added to canvas (default 3)
+     * @param {number} width - initial width of view when added to canvas (default 3)
      */
     constructor({
         height = 3,

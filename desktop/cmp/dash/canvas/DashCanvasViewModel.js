@@ -7,9 +7,9 @@
 import {DashViewModel} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
 
 /**
- * Model for a content item within a DashReport. Extends {@see DashViewModel}
+ * Model for a content item within a DashCanvas. Extends {@see DashViewModel}
  */
-export class DashReportViewModel extends DashViewModel {
+export class DashCanvasViewModel extends DashViewModel {
     get positionParams() {
         const {containerModel, id} = this;
         return containerModel.layout.find(view => view.i === id);

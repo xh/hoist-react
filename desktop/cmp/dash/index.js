@@ -11,7 +11,7 @@ export * from './DashViewSpec';
 export * from './container/DashContainer';
 export * from './container/DashContainerModel';
 
-export * from './report/DashReport';
-export * from './report/DashReportModel';
-export * from './report/DashReportViewModel';
-export * from './report/DashReportViewSpec';
+export * from './canvas/DashCanvas';
+export * from './canvas/DashCanvasModel';
+export * from './canvas/DashCanvasViewModel';
+export * from './canvas/DashCanvasViewSpec';
