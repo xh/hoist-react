@@ -11,15 +11,15 @@ import {Icon} from '@xh/hoist/icon';
 import {isEmpty} from 'lodash';
 
 /**
- * Context menu to add items to a DashGridLayoutContainer
+ * Context menu to add items to a DashReport
  *
  * Available view specs are listed in their defined order, optionally
  * grouped by their 'groupName' property
  *
- * @see DashGridLayoutContainerModel
+ * @see DashReportModel
  * @private
  */
-export const dashGridLayoutContainerContextMenu = hoistCmp.factory({
+export const dashReportContextMenu = hoistCmp.factory({
     model: null,
     observer: null,
     render({dashGridLayoutContainerModel, clickPosition}) {
@@ -112,7 +112,7 @@ function createAddMenuItems({dashGridLayoutContainerModel, clickPosition}) {
  * context menu is triggered
  * @param {number} x - clientX position
  * @param {number} y - clientY position
- * @param {DashGridLayoutContainerModel}
+ * @param {DashReportModel}
  */
 const calcAddPosition = (x, y, dashGridLayoutContainerModel) => {
     const calcXY = (positionParams, top, left, w=0, h=0) => {

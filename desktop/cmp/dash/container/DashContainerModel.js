@@ -15,12 +15,12 @@ import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {cloneDeep, defaultsDeep, find, isFinite, isNil, reject} from 'lodash';
 import {modelLookupContextProvider} from '@xh/hoist/core/impl/ModelLookup';
-import {DashViewModel} from './DashViewModel';
-import {DashViewSpec} from './DashViewSpec';
+import {DashViewModel} from '../DashViewModel';
+import {DashViewSpec} from '../DashViewSpec';
 import {dashContainerMenuButton} from './impl/DashContainerMenuButton';
 import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
 import {convertGLToState, convertStateToGL, getViewModelId} from './impl/DashContainerUtils';
-import {dashView} from './impl/DashView';
+import {dashContainerView} from './impl/DashContainerView';
 
 /**
  * Model for a DashContainer, representing its contents and layout state.
@@ -578,7 +578,7 @@ export class DashContainerModel extends HoistModel {
                 this.addViewModel(model);
                 return modelLookupContextProvider({
                     value: this.modelLookupContext,
-                    item: dashView({model})
+                    item: dashContainerView({model})
                 });
             });
         });

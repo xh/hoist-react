@@ -7,22 +7,22 @@
 import {DashViewSpec} from '@xh/hoist/desktop/cmp/dash/DashViewSpec';
 
 /**
- * Spec used to generate DashGridLayoutViews and DashGridLayoutViewModels within a
- * DashGridLayoutContainer.  Extends {@see DashViewSpec}
+ * Spec used to generate DashReportViews and DashReportViewModels within a
+ * DashReport.  Extends {@see DashViewSpec}
  *
  * This class is not typically created directly within applications. Instead, specify
- * DashGridLayoutViewSpec configs via the `DashGridLayoutContainerModel.viewSpecs` constructor
+ * DashReportViewSpec configs via the `DashReportModel.viewSpecs` constructor
  * config.
  */
-export class DashGridLayoutViewSpec extends DashViewSpec {
+export class DashReportViewSpec extends DashViewSpec {
 
     height;
     width;
 
     /**
      *
-     * @param {number} height - initial height of view when added to container (default 3)
-     * @param {number} width - initial width of view when added to container (default 3)
+     * @param {number} height - initial height of view when added to report (default 3)
+     * @param {number} width - initial width of view when added to report (default 3)
      */
     constructor({
         height = 3,

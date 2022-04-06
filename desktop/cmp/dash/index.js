@@ -4,7 +4,14 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-export * from './DashContainer';
-export * from './DashContainerModel';
+
 export * from './DashViewModel';
 export * from './DashViewSpec';
+
+export * from './container/DashContainer';
+export * from './container/DashContainerModel';
+
+export * from './report/DashReport';
+export * from './report/DashReportModel';
+export * from './report/DashReportViewModel';
+export * from './report/DashReportViewSpec';

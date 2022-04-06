@@ -8,25 +8,25 @@ import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
-import {panel} from '../../panel';
-import {button} from '../../button';
+import {panel} from '../../../panel';
+import {button} from '../../../button';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
-import {DashGridLayoutViewModel} from '../../dashGrid/DashGridLayoutViewModel';
+import {DashReportViewModel} from '../DashReportViewModel';
 
 /**
- * Implementation component to show an item within a DashGridLayoutContainer.  This component
- * is used by DashGridLayoutContainer's internal implementation to:
+ * Implementation component to show an item within a DashReport.  This component
+ * is used by DashReport's internal implementation to:
  *
- *   - Mount/unmount its contents according to `DashGridLayoutViewSpec.renderMode`.
- *   - Track and trigger refreshes according to `DashGridLayoutViewSpec.refreshMode`.
+ *   - Mount/unmount its contents according to `DashReportViewSpec.renderMode`.
+ *   - Track and trigger refreshes according to `DashReportViewSpec.refreshMode`.
  *   - Stretch its contents using a flex layout.
  *
  * @private
  */
-export const dashGridLayoutView = hoistCmp.factory({
+export const dashReportView = hoistCmp.factory({
     displayName: 'DashGridLayoutView',
     className: 'xh-dash-tab',
-    model: uses(DashGridLayoutViewModel, {publishMode: ModelPublishMode.LIMITED}),
+    model: uses(DashReportViewModel, {publishMode: ModelPublishMode.LIMITED}),
 
     render({model, className}) {
         const {viewSpec, viewState, containerModel, id, positionParams, title} = model,

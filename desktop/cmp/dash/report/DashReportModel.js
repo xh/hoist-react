@@ -5,9 +5,9 @@ import {createRef} from 'react';
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
 import {debounced, ensureUniqueBy} from '@xh/hoist/utils/js';
-import {DashGridLayoutViewSpec, DashGridLayoutViewModel} from '@xh/hoist/desktop/cmp/dashGrid';
+import {DashReportViewSpec, DashReportViewModel} from '@xh/hoist/desktop/cmp/dash';
 
-export class DashGridLayoutContainerModel extends HoistModel {
+export class DashReportModel extends HoistModel {
     @observable.ref layout = [];
     @managed @observable.ref viewModels = [];
     @bindable columns;
@@ -16,7 +16,7 @@ export class DashGridLayoutContainerModel extends HoistModel {
     @bindable isResizable;
     @bindable compact;
 
-    /** @member {DashGridLayoutViewSpec[]} */
+    /** @member {DashReportViewSpec[]} */
     viewSpecs = [];
 
     /** @member {[]} */
@@ -66,7 +66,7 @@ export class DashGridLayoutContainerModel extends HoistModel {
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {
-            return new DashGridLayoutViewSpec(defaultsDeep({}, cfg, viewSpecDefaults));
+            return new DashReportViewSpec(defaultsDeep({}, cfg, viewSpecDefaults));
         });
 
         // Read state from provider -- fail gently
@@ -159,7 +159,7 @@ export class DashGridLayoutContainerModel extends HoistModel {
         const models = [];
         forEach(viewState, (state, id) => {
             const viewSpec = this.getViewSpec(state.viewSpecId);
-            models.push(new DashGridLayoutViewModel({
+            models.push(new DashReportViewModel({
                 id,
                 viewSpec,
                 // icon: state.icon ? deserializeIcon(state.icon) : viewSpec.icon, TODO
@@ -173,7 +173,7 @@ export class DashGridLayoutContainerModel extends HoistModel {
     }
 
     /**
-     * Adds a view to the DashGridLayoutContainer
+     * Adds a view to the DashReport
      * @param {string} viewSpecId
      * @param {number} x
      * @param {number} y
@@ -186,7 +186,7 @@ export class DashGridLayoutContainerModel extends HoistModel {
     addView(viewSpecId, {x, y, w, h, viewState, title} = {}) {
         const viewSpec = this.getViewSpec(viewSpecId),
             id = `${XH.genId()}_${Date.now()}`,
-            model = new DashGridLayoutViewModel({
+            model = new DashReportViewModel({
                 id,
                 viewSpec,
                 viewState,

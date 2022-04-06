@@ -8,7 +8,7 @@ import {frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
-import {DashViewModel} from '../DashViewModel';
+import {DashViewModel} from '../../DashViewModel';
 
 /**
  * Implementation component to show an item within a DashContainer.  This component
@@ -20,8 +20,8 @@ import {DashViewModel} from '../DashViewModel';
  *
  * @private
  */
-export const dashView = hoistCmp.factory({
-    displayName: 'DashView',
+export const dashContainerView = hoistCmp.factory({
+    displayName: 'DashContainerView',
     className: 'xh-dash-tab',
     model: uses(DashViewModel, {publishMode: ModelPublishMode.LIMITED}),
 
