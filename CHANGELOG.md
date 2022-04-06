@@ -2,6 +2,10 @@
 
 ## v48.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Mobile `Dialog` will scroll internally if taller than the screen.
+
 ### 📚 Libraries
 
 * mobx `6.3 -> 6.5`
