@@ -1,17 +1,20 @@
 import {ContextMenu} from '@blueprintjs/core';
-import classNames from 'classnames';
 import {div} from '@xh/hoist/cmp/layout';
 import {elemFactory, hoistCmp, uses, XH} from '@xh/hoist/core';
-import {dashReportView} from './impl/DashReportView';
-import {dashReportContextMenu} from './impl/DashReportContextMenu';
-import {DashReportModel} from './DashReportModel';
-import './DashReport.scss';
+import classNames from 'classnames';
+import PT from 'prop-types';
 
 import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
+import './DashReport.scss';
+import {DashReportModel} from './DashReportModel';
+import {dashReportContextMenu} from './impl/DashReportContextMenu';
+import {dashReportView} from './impl/DashReportView';
+
 const reactGridLayout = elemFactory(WidthProvider(ReactGridLayout));
 
-export const dashReport = hoistCmp.factory({
+export const [DashReport, dashReport] = hoistCmp.withFactory({
+    displayName: 'DashReport',
     className: 'xh-dash-report',
     model: uses(DashReportModel),
     render({className, model}) {
@@ -25,8 +28,10 @@ export const dashReport = hoistCmp.factory({
             onContextMenu: (e) => {
                 const {clientX: x, clientY: y} = e;
                 ContextMenu.show(
-                    dashReportContextMenu({dashGridLayoutContainerModel: model,
-                        clickPosition: {x, y}}),
+                    dashReportContextMenu({
+                        dashReportModel: model,
+                        clickPosition: {x, y}
+                    }),
                     {left: x, top: y},
                     null,
                     XH.darkTheme
@@ -56,3 +61,7 @@ export const dashReport = hoistCmp.factory({
         });
     }
 });
+
+DashReport.propTypes = {
+    model: PT.oneOfType([PT.instanceOf(DashReportModel), PT.object])
+};

@@ -22,8 +22,8 @@ import {isEmpty} from 'lodash';
 export const dashReportContextMenu = hoistCmp.factory({
     model: null,
     observer: null,
-    render({dashGridLayoutContainerModel, clickPosition}) {
-        const menuItems = createMenuItems({dashGridLayoutContainerModel, clickPosition});
+    render({dashReportModel, clickPosition}) {
+        const menuItems = createMenuItems({dashReportModel, clickPosition});
         return contextMenu({menuItems});
     }
 });
@@ -31,9 +31,9 @@ export const dashReportContextMenu = hoistCmp.factory({
 //---------------------------
 // Implementation
 //---------------------------
-function createMenuItems({dashGridLayoutContainerModel, clickPosition}) {
-    const addMenuItems = createAddMenuItems({dashGridLayoutContainerModel, clickPosition}),
-        {extraMenuItems} = dashGridLayoutContainerModel;
+function createMenuItems({dashReportModel, clickPosition}) {
+    const addMenuItems = createAddMenuItems({dashReportModel, clickPosition}),
+        {extraMenuItems} = dashReportModel;
     return [
         {
             text: 'Add',
@@ -46,13 +46,13 @@ function createMenuItems({dashGridLayoutContainerModel, clickPosition}) {
     ];
 }
 
-function createAddMenuItems({dashGridLayoutContainerModel, clickPosition}) {
+function createAddMenuItems({dashReportModel, clickPosition}) {
 
 
     const groupedItems = {},
         ungroupedItems = [],
         {x, y} = clickPosition,
-        addPosition = calcAddPosition(x, y, dashGridLayoutContainerModel);
+        addPosition = calcAddPosition(x, y, dashReportModel);
 
     const addToGroup = (item, groupName) => {
         const group = groupedItems[groupName];
@@ -63,12 +63,12 @@ function createAddMenuItems({dashGridLayoutContainerModel, clickPosition}) {
         }
     };
 
-    dashGridLayoutContainerModel.viewSpecs
+    dashReportModel.viewSpecs
         .filter(viewSpec => {
             return viewSpec.allowAdd &&
                 (
                     !viewSpec.unique ||
-                    !(dashGridLayoutContainerModel.getItemsBySpecId(viewSpec.id).length)
+                    !(dashReportModel.getItemsBySpecId(viewSpec.id).length)
                 );
         })
         .forEach(viewSpec => {
@@ -76,7 +76,7 @@ function createAddMenuItems({dashGridLayoutContainerModel, clickPosition}) {
                 item = {
                     text: title,
                     icon: icon,
-                    actionFn: () => dashGridLayoutContainerModel.addView(
+                    actionFn: () => dashReportModel.addView(
                         id,
                         addPosition
                     )
@@ -114,7 +114,7 @@ function createAddMenuItems({dashGridLayoutContainerModel, clickPosition}) {
  * @param {number} y - clientY position
  * @param {DashReportModel}
  */
-const calcAddPosition = (x, y, dashGridLayoutContainerModel) => {
+const calcAddPosition = (x, y, dashReportModel) => {
     const calcXY = (positionParams, top, left, w=0, h=0) => {
         const calcGridColWidth = (positionParams) => {
             const { margin, containerPadding, containerWidth, cols } = positionParams;
@@ -136,7 +136,7 @@ const calcAddPosition = (x, y, dashGridLayoutContainerModel) => {
         return { x, y };
     };
 
-    const {margin, columns: cols, rowHeight, maxRows, ref, containerPadding} = dashGridLayoutContainerModel,
+    const {margin, columns: cols, rowHeight, maxRows, ref, containerPadding} = dashReportModel,
         containerPosition = ref.current.getBoundingClientRect(),
         {left: containerLeft, top: containerTop, width: containerWidth} = containerPosition,
         positionParams = {margin, cols, rowHeight, maxRows,

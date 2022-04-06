@@ -1,11 +1,11 @@
-import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {defaultsDeep, forEach, isNil} from 'lodash';
-import {createRef} from 'react';
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
+import {DashReportViewModel, DashReportViewSpec} from '@xh/hoist/desktop/cmp/dash';
+import {Icon} from '@xh/hoist/icon';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {debounced, ensureUniqueBy} from '@xh/hoist/utils/js';
-import {DashReportViewSpec, DashReportViewModel} from '@xh/hoist/desktop/cmp/dash';
+import {defaultsDeep, map} from 'lodash';
+import {createRef} from 'react';
 
 export class DashReportModel extends HoistModel {
     @observable.ref layout = [];
@@ -15,6 +15,10 @@ export class DashReportModel extends HoistModel {
     @bindable isDraggable;
     @bindable isResizable;
     @bindable compact;
+    /** @member {number[]} - [marginX, marginY] */
+    @bindable margin;
+    /** @member {number[]} - [paddingX, paddingY] */
+    @bindable containerPadding;
 
     /** @member {DashReportViewSpec[]} */
     viewSpecs = [];
@@ -23,15 +27,8 @@ export class DashReportModel extends HoistModel {
     initialViews;
 
     /** @member {DOMElement} */
-    ref = createRef()
+    ref = createRef();
 
-    /** @member {number[]} - [marginX, marginY] */
-    @bindable
-    margin;
-
-    /** @member {number[]} - [paddingX, paddingY] */
-    @bindable
-    containerPadding;
 
     constructor({
         viewSpecDefaults,
@@ -57,12 +54,13 @@ export class DashReportModel extends HoistModel {
         this.isResizable = isResizable;
         this.compact = compact;
         this.initialViews = initialViews;
-        this.restoreState = {initialViews, columns, rowHeight};
         this.maxRows = maxRows;
         this.margin = margin;
         this.containerPadding = containerPadding;
-        this.extraMenuItems = extraMenuItems;
 
+        this.restoreState = {initialViews, columns, rowHeight};
+
+        this.extraMenuItems = extraMenuItems;
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {
@@ -73,7 +71,7 @@ export class DashReportModel extends HoistModel {
         let persistState = null;
         if (persistWith) {
             try {
-                this.provider = PersistenceProvider.create({path: 'dashContainer', ...persistWith});
+                this.provider = PersistenceProvider.create({path: 'dashReport', ...persistWith});
                 persistState = this.provider.read();
             } catch (e) {
                 console.error(e);
@@ -97,33 +95,13 @@ export class DashReportModel extends HoistModel {
     get state() {
         return {
             layout: this.layout,
-            viewState: this.viewState,
-            columns: this.columns,
-            rowHeight: this.rowHeight,
-            isDraggable: this.isDraggable,
-            isResizable: this.isResizable,
-            compact: this.compact
+            viewState: this.viewState
         };
     }
 
     @action
     setState(state) {
-        const {
-            layout = {},
-            viewState = {},
-            columns,
-            rowHeight,
-            isDraggable,
-            isResizable,
-            compact
-        } = state;
-
-        if (!isNil(columns)) this.columns = columns;
-        if (!isNil(rowHeight)) this.rowHeight = rowHeight;
-        if (!isNil(isDraggable)) this.isDraggable = isDraggable;
-        if (!isNil(isResizable)) this.isResizable = isResizable;
-        if (!isNil(compact)) this.compact = compact;
-
+        const {layout = {}, viewState = {}} = state;
         this.setLayout(layout);
         this.setViewState(viewState);
     }
@@ -141,9 +119,8 @@ export class DashReportModel extends HoistModel {
 
     get viewState() {
         const ret = {};
-        this.viewModels.map(({id, viewSpec, icon, title, viewState}) => {
+        this.viewModels.forEach(({id, viewSpec, title, viewState}) => {
             ret[id] = {
-                // icon: icon ? convertIconToHtml(icon) : null, TODO
                 viewSpecId: viewSpec.id,
                 title,
                 viewState
@@ -156,20 +133,16 @@ export class DashReportModel extends HoistModel {
     setViewState(viewState) {
         XH.safeDestroy(this.viewModels);
 
-        const models = [];
-        forEach(viewState, (state, id) => {
+        this.viewModels = map(viewState, (state, id) => {
             const viewSpec = this.getViewSpec(state.viewSpecId);
-            models.push(new DashReportViewModel({
+            new DashReportViewModel({
                 id,
                 viewSpec,
-                // icon: state.icon ? deserializeIcon(state.icon) : viewSpec.icon, TODO
                 title: state.title ?? viewSpec.title,
                 viewState: state.viewState,
                 containerModel: this
-            }));
+            });
         });
-
-        this.viewModels = models;
     }
 
     /**
@@ -177,8 +150,8 @@ export class DashReportModel extends HoistModel {
      * @param {string} viewSpecId
      * @param {number} x
      * @param {number} y
-     * @param {number} w
-     * @param {number} h
+     * @param {number} [w]
+     * @param {number} [h]
      * @param {Object} viewState
      * @param {string} title
      */
@@ -193,9 +166,13 @@ export class DashReportModel extends HoistModel {
                 title,
                 containerModel: this
             });
-        h = h || viewSpec.height;
-        w = w || viewSpec.width;
-        this.layout = [...this.layout, {i: id, x: x || 0, y: y || 0, h, w}];
+
+        x = x ?? 0;
+        y = y ?? 0;
+        h = h ?? viewSpec.height;
+        w = w ?? viewSpec.width;
+
+        this.layout = [...this.layout, {i: id, x, y, h, w}];
         this.viewModels = [...this.viewModels, model];
     }
 
@@ -213,6 +190,7 @@ export class DashReportModel extends HoistModel {
     removeAllViews() {
         this.layout = [];
         XH.safeDestroy(this.viewModels);
+        this.viewModels = [];
     }
 
     async renameView(id) {
