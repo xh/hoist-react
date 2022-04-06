@@ -714,6 +714,8 @@ body {
   --xh-title-compact-font-size-px: calc(var(--xh-title-compact-font-size) * 1px);
   --xh-title-compact-height: var(--title-compact-height, 28);
   --xh-title-compact-height-px: calc(var(--xh-title-compact-height) * 1px);
+  --xh-title-ultra-compact-height: var(--title-ultra-compact-height, 24);
+  --xh-title-ultra-compact-height-px: calc(var(--xh-title-ultra-compact-height) * 1px);
 
   &.xh-mobile {
     --xh-title-font-size: var(--title-font-size, var(--xh-font-size));
