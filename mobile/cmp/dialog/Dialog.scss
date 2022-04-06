@@ -5,16 +5,16 @@
     background-color: var(--xh-backdrop-bg);
   }
 
-  & > .dialog {
-    max-width: calc(100% - var(--xh-pad-double-px));
-
-    & > .dialog-container {
-      // Background on inner onsen container deliberately set to *border* color - this avoids small
-      // but noticeable gaps around the edges. The dialog body gets a defined background below for
-      // the actual contents of the component.
-      background-color: var(--xh-popup-border-color);
-      border: var(--xh-popup-border-width-px) solid var(--xh-popup-border-color);
-    }
+  & > .dialog .dialog-container {
+    display: flex;
+    flex-direction: column;
+    max-width: calc(100vw - var(--xh-pad-double-px));
+    max-height: calc(100vh - var(--xh-pad-double-px));
+    // Background on inner onsen container deliberately set to *border* color - this avoids small
+    // but noticeable gaps around the edges. The dialog body gets a defined background below for
+    // the actual contents of the component.
+    background-color: var(--xh-popup-border-color);
+    border: var(--xh-popup-border-width-px) solid var(--xh-popup-border-color);
   }
 
   &__title {
@@ -33,6 +33,7 @@
   &__inner {
     padding: var(--xh-pad-px);
     background-color: var(--xh-bg);
+    overflow-y: auto;
   }
 
   &__toolbar {
