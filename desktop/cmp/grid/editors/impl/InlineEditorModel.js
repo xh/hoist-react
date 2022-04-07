@@ -11,6 +11,7 @@ import {HoistModel, useLocalModel} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {createObservableRef} from '@xh/hoist/utils/react';
+import {apiRemoved} from '@xh/hoist/utils/js';
 
 /**
  * Hook to render a component to be used for inline cell editing in ag-grid.
@@ -22,19 +23,16 @@ import {createObservableRef} from '@xh/hoist/utils/react';
  * @param {function} component - React Component to render - should be a HoistInput
  * @param {Object} props - props passed to containing component
  * @param {Object} ref - forwardRef passed to containing component
- * @param {boolean} [isPopup] - true if this editor should be rendered as a popup over the cell
- *      instead of withing the actual cell element. Popup editors will have their width set to
- *      match the cell by default.
  * @return {ReactElement} - React Element to be rendered
  */
 export function useInlineEditorModel(component, props, ref, isPopup = false) {
     const {className, inputProps, agParams} = props,
         impl = useLocalModel(() => new InlineEditorModel(agParams));
 
+    apiRemoved('isPopup', {test: isPopup, msg: 'Use `Column.editorIsPopup` instead', v: 48});
+
     useImperativeHandle(ref, () => ({
         getValue: () => impl.value,
-
-        isPopup: () => isPopup,
 
         // This is called in full-row editing when the user tabs into the cell
         focusIn: () => impl.focus()
@@ -42,7 +40,7 @@ export function useInlineEditorModel(component, props, ref, isPopup = false) {
 
     return component({
         className: classNames('xh-inline-editor', className),
-        width: isPopup ? agParams.eGridCell.clientWidth : null,
+        width: agParams.eGridCell.clientWidth,
         model: impl,
         bind: 'value',
         commitOnChange: true,

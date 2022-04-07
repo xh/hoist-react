@@ -67,8 +67,6 @@ export class ColumnWidthCalculator {
 
     calcDataWidth(gridModel, records, column, options) {
         try {
-            if (column.elementRenderer) return null;
-
             const {store, treeMode} = gridModel;
             if (treeMode && column.isTreeColumn && store.allRootCount !== store.allCount) {
                 // For tree columns, we need to account for the indentation at the different depths.
@@ -99,8 +97,10 @@ export class ColumnWidthCalculator {
         records.forEach(record => {
             if (!record) return;
             const ctx = {record, field, column, gridModel, store},
-                rawValue = getValueFn(ctx),
-                value = renderer ? renderer(rawValue, ctx) : rawValue;
+                rawValue = getValueFn(ctx);
+
+            let value = renderer ? renderer(rawValue, ctx) : rawValue;
+            if (isValidElement(value)) value = renderToStaticMarkup(value);
 
             const recs = recsByValue.get(value);
             if (!recs) {
@@ -111,7 +111,7 @@ export class ColumnWidthCalculator {
         });
 
         // 2) Use a canvas to estimate and sort by the pixel width of the string value.
-        // Strip html tags but include parentheses / units etc. for renderers that may return html.
+        // Strip html tags but include parentheses / units etc. for renderers that may return elements.
         const sortedValues = sortBy(Array.from(recsByValue.keys()), value => {
             const width = isNil(value) ? 0 : this.getStringWidth(stripTags(value.toString()));
             return width + indentationPx;

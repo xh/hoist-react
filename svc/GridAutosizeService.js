@@ -18,9 +18,7 @@ import {ColumnWidthCalculator} from '../cmp/grid/impl/ColumnWidthCalculator';
  * grid, including off-screen rows and columns and (if requested) collapsed rows.
  *
  * In order to do this efficiently, this service uses heuristics and generally assumes each
- * column consists of similarly formatted strings. Note that it cannot size columns that specify an
- * `elementRenderer` (component) for their display. In this case, no width will be computed, and
- * the column will be ignored by this service.
+ * column consists of similarly formatted strings.
  *
  * {@see GridModel.autosizeOptions} for configurable options.
  */

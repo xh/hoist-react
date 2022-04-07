@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {div, ul, li} from '@xh/hoist/cmp/layout';
+import {div, ul, li, span} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault, apiRemoved} from '@xh/hoist/utils/js';
@@ -23,7 +23,7 @@ import {
     isString,
     toString
 } from 'lodash';
-import {forwardRef, useImperativeHandle, useState, createElement, isValidElement} from 'react';
+import {forwardRef, useImperativeHandle, createElement, isValidElement} from 'react';
 import classNames from 'classnames';
 import {GridSorter} from '../impl/GridSorter';
 import {ExcelFormat} from './ExcelFormat';
@@ -131,8 +131,6 @@ export class Column {
 
     /** @member {Column~rendererFn} */
     renderer;
-    /** @member {Column~elementRendererFn} */
-    elementRenderer;
     /** @member {boolean} */
     rendererIsComplex;
     /** @member {boolean} */
@@ -183,6 +181,8 @@ export class Column {
     editable;
     /** @member {Column~editorFn} */
     editor;
+    /** @member {boolean} */
+    editorIsPopup;
     /** @member {Column~setValueFn} */
     setValueFn;
     /** @member {Column~getValueFn} */
@@ -259,12 +259,8 @@ export class Column {
      *       but always locked in the displayed collection of columns.
      * @param {(boolean|string)} [c.pinned] - set to true/'left' or 'right' to pin (aka "lock") the
      *      column to the side of the grid, ensuring it's visible while horizontally scrolling.
-     * @param {Column~rendererFn} [c.renderer] - function returning a formatted string for each
-     *      cell value in this Column. May return HTML, as this will be rendered by ag-Grid.
-     * @param {Column~elementRendererFn} [c.elementRenderer] - function returning a React Component
-     *      for each cell value in this Column. For use when a Component is required to render or
-     *      encapsulate logic not easily achieved by a simpler `renderer` function returning a
-     *      string. Use with care - this can have a noticeable performance impact on larger grids!
+     * @param {Column~rendererFn} [c.renderer] - function returning a React Element for each
+     *      cell value in this Column.
      * @param {boolean} [c.rendererIsComplex] - true if this renderer relies on more than
      *      just the value of the field associated with this column. Set to true to ensure that
      *      the cells for this column are updated any time the record is changed, but note this can
@@ -307,12 +303,14 @@ export class Column {
      *      `GridAutosizeOptions.bufferPx` which is applied to all columns.
      * @param {boolean} [c.autoHeight] - true to dynamically grow the row height based on the
      *      content of this column's cell.  If true, text will also be set to wrap within cells.
-     *      This property will be ignored if elementRenderer is set.
      * @param {(boolean|Column~editableFn)} [c.editable] - true to make cells in this column
      *     editable, or a function to determine on a record-by-record basis.
      * @param {Column~editorFn} [c.editor] - Cell editor Component or a function to create one.
      *      Adding an editor will also install a cellClassRule and tooltip to display the
      *      validation state of the cell in question.
+     * @param {boolean} [c.editorIsPopup] - true if this cell editor should be rendered as a popup
+     *      over the cell instead of within the actual cell element. Popup editors will have their
+     *      width set to match the cell by default. Typically used with textarea cell editors.
      * @param {Column~setValueFn} [c.setValueFn] - function for updating StoreRecord field for this
      *      column after inline editing.
      * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
@@ -358,7 +356,6 @@ export class Column {
         renderer,
         rendererIsComplex,
         highlightOnChange,
-        elementRenderer,
         chooserName,
         chooserGroup,
         chooserDescription,
@@ -380,6 +377,7 @@ export class Column {
         tooltipElement,
         editable,
         editor,
+        editorIsPopup,
         setValueFn,
         getValueFn,
         enableDotSeparatedFieldPath,
@@ -450,8 +448,8 @@ export class Column {
         this.hideable = withDefault(hideable, !this.isTreeColumn);
         this.pinned = this.parsePinned(pinned);
 
+        apiRemoved('Column.elementRenderer', {test: rest.elementRenderer, msg: 'Use `renderer` instead', v: 48});
         this.renderer = renderer;
-        this.elementRenderer = elementRenderer;
         this.rendererIsComplex = rendererIsComplex;
         this.highlightOnChange = highlightOnChange;
         warnIf(
@@ -491,13 +489,10 @@ export class Column {
         this.autosizeBufferPx = autosizeBufferPx;
 
         this.autoHeight = withDefault(autoHeight, false);
-        warnIf(
-            autoHeight && elementRenderer,
-            'autoHeight is ignored when an elementRenderer is defined. Row heights will not change to accommodate cell content for this column.'
-        );
 
         this.editable = editable || false;
         this.editor = editor;
+        this.editorIsPopup = editorIsPopup;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
@@ -583,11 +578,10 @@ export class Column {
                 }
             };
 
-        // We will change these setters as needed to install the renderers in the proper location
+        // We will change this setter as needed to install the renderer in the proper location
         // for cases like tree columns where we need to set the inner renderer on the default ag-Grid
         // group cell renderer, instead of on the top-level column itself
-        let setRenderer = (r) => ret.cellRenderer = r,
-            setElementRenderer = (r) => ret.cellRendererFramework = r;
+        let setRenderer = (r) => ret.cellRenderer = r;
 
         // Our implementation of Grid.getDataPath() > StoreRecord.treePath returns data path []s of
         // StoreRecord IDs. TreeColumns use those IDs as their cell values, regardless of field.
@@ -601,10 +595,21 @@ export class Column {
             };
 
             setRenderer = (r) => ret.cellRendererParams.innerRenderer = r;
-            setElementRenderer = (r) => {
-                ret.cellRendererParams.innerRenderer = null;
-                ret.cellRendererParams.innerRendererFramework = r;
-            };
+        }
+
+        // By always providing a minimal pass-through cellRenderer, we can ensure the
+        // cell contents are wrapped in a span for styling purposes. We check agOptions in case
+        // the dev has specified a renderer option directly against the ag-Grid API.
+        const {renderer} = this;
+        if (!agOptions.cellRenderer) {
+            setRenderer((agParams) => {
+                const ret = renderer ?
+                    renderer(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
+                    agParams.value?.toString();
+
+                // Add wrapping span for styling purposes
+                return span({className: 'xh-cell-inner-wrapper', item: ret});
+            });
         }
 
         // Tooltip Handling
@@ -614,7 +619,7 @@ export class Column {
         if (tooltipSpec || editor) {
             // ag-Grid requires a return from getter, but value we actually use is computed below
             ret.tooltipValueGetter = () => 'tooltip';
-            ret.tooltipComponentFramework = forwardRef((props, ref) => {
+            ret.tooltipComponent = forwardRef((props, ref) => {
                 const {location} = props;
                 useImperativeHandle(ref, () => ({
                     getReactContainerClasses() {
@@ -685,36 +690,6 @@ export class Column {
             ret.width = this.width;
         }
 
-        const {renderer, elementRenderer} = this;
-        if (renderer) {
-            setRenderer((agParams) => {
-                return renderer(agParams.value, {record: agParams.data, column: this, gridModel, agParams});
-            });
-        } else if (elementRenderer) {
-            setElementRenderer(
-                forwardRef((props, ref) => {
-                    const [agParams, setAgParams] = useState(props);
-                    useImperativeHandle(ref, () => {
-                        return {
-                            refresh: (agParams) => {
-                                setAgParams(agParams);
-                                return true;
-                            }
-                        };
-                    });
-                    const {value, data} = agParams;
-                    return elementRenderer(value, {record: data, column: this, gridModel, agParams});
-                })
-            );
-        } else if (!agOptions.cellRenderer && !agOptions.cellRendererFramework) {
-            // By always providing a minimal cell pass-through cellRenderer, we can ensure the
-            // cell contents are wrapped in a span by Ag-Grid. Our flexbox enabled cell styling
-            // requires all cells to have an inner element to work properly. We check agOptions
-            // in case the dev has specified either renderer option directly against the ag-Grid
-            // API (done sometimes with components for performance reasons).
-            setRenderer((agParams) => agParams.value?.toString());
-        }
-
         const sortCfg = find(gridModel.sortBy, {colId: ret.colId});
         if (sortCfg) {
             ret.sort = sortCfg.sort;
@@ -766,7 +741,7 @@ export class Column {
         }
 
         if (editor) {
-            ret.cellEditorFramework = forwardRef((agParams, ref) => {
+            ret.cellEditor = forwardRef((agParams, ref) => {
                 const props = {
                     record: agParams.data,
                     gridModel,
@@ -779,6 +754,7 @@ export class Column {
                 if (isFunction(editor)) return editor(props);
                 throw XH.exception('Column editor must be a HoistComponent or a render function');
             });
+            ret.cellEditorPopup = this.editorIsPopup;
             ret.cellClassRules = {
                 'xh-cell--invalid': (agParams) => {
                     const record = agParams.data;
@@ -916,17 +892,7 @@ export function getAgHeaderClassFn(column) {
  *      Note that columns with renderers that access/rely on record fields other than the primary
  *      value should also have their `rendererIsComplex` flag set to true to ensure they are
  *      re-run whenever the record (and not just the primary value) changes.
- * @return {string} - the formatted value for display.
- */
-
-/**
- * @callback Column~elementRendererFn - renderer function for a grid cell returning a React element.
- * @param {*} value - cell data value (column + row).
- * @param {CellContext} context - additional data about the column, row and GridModel.
- *      Note that columns with renderers that access/rely on record fields other than the primary
- *      value should also have their `rendererIsComplex` flag set to true to ensure they are
- *      re-run whenever the record (and not just the primary value) changes.
- * @return {Element} - the React element to render.
+ * @return {Element} - the formatted value for display.
  */
 
 /**

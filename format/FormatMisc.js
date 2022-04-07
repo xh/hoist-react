@@ -6,6 +6,7 @@
  */
 import {span} from '@xh/hoist/cmp/layout';
 import {capitalize} from 'lodash';
+import {asElementDeprecationWarning} from './FormatUtils';
 
 /**
  * Basic util for splitting a string (via ' ') and capitalizing each word - e.g. for names.
@@ -28,18 +29,20 @@ export function capitalizeWords(str) {
  * @param {string} [opts.title] - span title
  * @param {boolean} [opts.leadSpc] - set to true to add a space before the v to be wrapped
  * @param {boolean} [opts.trailSpc] - set to true to add a space after the span to be returned
- * @param {boolean} [opts.asElement] - return a react element rather than a html string
+ * @param {boolean} [opts.asHtml] - return an HTML string rather than a React element.
  */
 export function fmtSpan(v, {
     className = null,
     title = null,
     leadSpc = false,
     trailSpc = false,
-    asElement = false
+    asHtml = false,
+    ...rest
 } = {}) {
+    asElementDeprecationWarning(rest);
     if (v == null) return '';
     const opts = {className, title, leadSpc, trailSpc};
-    return asElement ? fmtSpanElement(v, opts) : fmtSpanHtml(v, opts);
+    return asHtml ? fmtSpanHtml(v, opts) : fmtSpanElement(v, opts);
 }
 
 //-----------------

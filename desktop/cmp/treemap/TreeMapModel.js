@@ -101,7 +101,9 @@ export class TreeMapModel extends HoistModel {
      * @param {string} c.valueField - StoreRecord field to use to determine node size.
      * @param {string} c.heatField - StoreRecord field to use to determine node color.
      * @param {function} [c.valueRenderer] - Renderer to use when displaying value in the default tooltip.
+     *      Note that any renderer or formatter provided should be configured to return `asHtml`
      * @param {function} [c.heatRenderer] - Renderer to use when displaying heat in the default tooltip.
+     *      Note that any renderer or formatter provided should be configured to return `asHtml`
      * @param {number} [c.maxHeat] - Value for providing a clamped, stable upper boundary on heat color
      *      intensity. If not provided, maxHeat will be determined by the dataset on each load.
      * @param {number} [c.maxDepth] - Maximum tree depth to render.
@@ -131,8 +133,8 @@ export class TreeMapModel extends HoistModel {
         labelField = 'name',
         valueField = 'value',
         heatField = 'value',
-        valueRenderer = numberRenderer(),
-        heatRenderer = numberRenderer(),
+        valueRenderer = numberRenderer({asHtml: true}),
+        heatRenderer = numberRenderer({asHtml: true}),
         maxHeat,
         maxDepth,
         algorithm = 'squarified',
