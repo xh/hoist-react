@@ -22,6 +22,7 @@ import {DashCanvasViewModel} from '../DashCanvasViewModel';
  *   - Stretch its contents using a flex layout.
  *
  * @private
+ * @Beta
  */
 export const dashCanvasView = hoistCmp.factory({
     displayName: 'DashGridLayoutView',

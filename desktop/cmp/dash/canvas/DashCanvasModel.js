@@ -11,6 +11,9 @@ import {createRef} from 'react';
 /**
  * Model for a DashCanvas, representing its contents and layout state.
  *
+ * ---------- !! NOTE: THIS COMPONENT IS CURRENTLY IN BETA !! ----------
+ * -- Model API is under development and subject to breaking changes --
+ *
  * This model provides support for managing DashCanvass, adding new views on the fly,
  * and tracking / loading state.
  *
@@ -37,6 +40,7 @@ import {createRef} from 'react';
  *     }
  * }
  *
+ * @Beta
  */
 export class DashCanvasModel extends HoistModel {
 
@@ -91,6 +95,9 @@ export class DashCanvasModel extends HoistModel {
     ref = createRef();
 
     /**
+     * ---------- !! NOTE: THIS COMPONENT IS CURRENTLY IN BETA !! ----------
+     * -- Model API is under development and subject to breaking changes --
+     *
      * @param {Object} c - DashCanvasModel configuration.
      * @param {DashCanvasViewSpec[]} c.viewSpecs - A collection of viewSpecs, each describing a type of view
      *      that can be displayed in this container
@@ -177,6 +184,7 @@ export class DashCanvasModel extends HoistModel {
      *
      * This method will clear the persistent state saved for this component, if any.
      */
+    @action
     restoreDefaults() {
         const {restoreState} = this;
         this.layoutLocked = restoreState.layoutLocked;

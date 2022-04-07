@@ -11,8 +11,15 @@ import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
 
-const reactGridLayout = elemFactory(WidthProvider(ReactGridLayout));
-
+/**
+ * Display a "canvas" of child components in accordance with a DashCanvasModel
+ * @see DashCanvasModel
+ *
+ * -------- !! NOTE: THIS COMPONENT IS CURRENTLY IN BETA !! --------
+ * -- Its API is under development and subject to breaking changes --
+ *
+ * @Beta
+ */
 export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
     displayName: 'DashCanvas',
     className: 'xh-dash-Canvas',
@@ -65,3 +72,5 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
 DashCanvas.propTypes = {
     model: PT.oneOfType([PT.instanceOf(DashCanvasModel), PT.object])
 };
+
+const reactGridLayout = elemFactory(WidthProvider(ReactGridLayout));
