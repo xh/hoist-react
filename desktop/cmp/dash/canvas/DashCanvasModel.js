@@ -192,8 +192,7 @@ export class DashCanvasModel extends HoistModel {
         this.renameLocked = restoreState.renameLocked;
         this.setColumns(restoreState.columns);
         this.setRowHeight(restoreState.rowHeight);
-        this.setLayout(restoreState.initialState.layout);
-        this.viewState = restoreState.initialState.viewState;
+        this.setState(restoreState.initialState);
         this.provider?.clear();
     }
 
