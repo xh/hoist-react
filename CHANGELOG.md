@@ -7,8 +7,20 @@
 * FontAwesome upgraded to v6. This includes redesigns of the majority of bundled icons - please
   check your app's icon usages carefully.
 
-### 📚 Libraries
+### 💥 Breaking Changes
 
+* Update required to `hoist-dev-utils` v6, which updates the Hoist build toolchain to the latest
+  Webpack v5 and updates a number of supporting libraries from that project. At the application
+  level, a few minor tweaks will be required:
+    * Imports from `package.json` no longer support default export - you must import the entire json
+      as an object. This is most likely to be relevant in `Bootstrap.js`.
+    * The syntax form passing variables to `yarn` scripts in your package.json has changed:
+        * e.g. `webpack --env.prodBuild` > `webpack --env prodBuild`
+    * If you have a mobile app, you must provide a wider range of favicons for display on devices.
+      See https://github.com/xh/hoist-dev-utils/#favicons for more details.
+
+### 📚 Libraries
+* @xh/hoist-dev-utils `5.13.0 -> 6.0.0`
 * mobx `6.3 -> 6.5`
 * mobx-react-lite `3.2 -> 3.3`
 * @fortawesome/fontawesome-pro `5.14 -> 6.1`
@@ -40,21 +52,8 @@
 * Fixed an issue where `Select` inputs would commit `null` whilst clearing the text input.
 * Fixed `Clock` component bug introduced in v47 (configured timezone was not respected).
 
-### 💥 Breaking Changes
-
-* Update required to `hoist-dev-utils` v6, which updates the Hoist build toolchain to the latest
-  Webpack v5 and updates a number of supporting libraries from that project. At the application
-  level, a few minor tweaks will be required:
-  * Imports from `package.json` no longer support default export - you must import the entire json
-    as an object. This is most likely to be relevant in `Bootstrap.js`.
-  * The syntax form passing variables to `yarn` scripts in your package.json has changed:
-    * e.g. `webpack --env.prodBuild` > `webpack --env prodBuild`
-  * If you have a mobile app, you must provide a wider range of favicons for display on devices.
-    See https://github.com/xh/hoist-dev-utils/#favicons for more details.
-
 ### 📚 Libraries
 
-* @xh/hoist-dev-utils `5.13.0 -> 6.0.0`
 * @blueprintjs/core `3.53 -> 3.54`
 * @blueprintjs/datetime `3.23 -> 3.24`
 
