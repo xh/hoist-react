@@ -25,11 +25,14 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
     className: 'xh-dash-canvas',
     model: uses(DashCanvasModel),
     render({className, model}) {
+        const isDraggable = !model.layoutLocked,
+            isResizable = !model.layoutLocked;
+
         return div({
             className: classNames(
                 className,
-                model.isDraggable ? `${className}--draggable` : null,
-                model.isResizable ? `${className}--resizable` : null
+                isDraggable ? `${className}--draggable` : null,
+                isResizable ? `${className}--resizable` : null
             ),
             ref: model.ref,
             onContextMenu: (e) => {
@@ -48,8 +51,8 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
                 layout: model.layout,
                 cols: model.columns,
                 rowHeight: model.rowHeight,
-                isDraggable: !model.layoutLocked,
-                isResizable: !model.layoutLocked,
+                isDraggable,
+                isResizable,
                 compactType: model.compact ? 'vertical' : null,
                 margin: model.margin,
                 maxRows: model.maxRows,
