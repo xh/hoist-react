@@ -2,9 +2,18 @@
 
 ## v48.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* Mobile `Dialog` will scroll internally if taller than the screen.
+* FontAwesome upgraded to v6. This includes redesigns of the majority of bundled icons - please
+  check your app's icon usages carefully.
+
 ### 📚 Libraries
 * react `17.0.1 > 18.0.0`
 * react-dom `17.0.1 > 18.0.0`
+* mobx `6.3 -> 6.5`
+* mobx-react-lite `3.2 -> 3.3`
+* @fortawesome/fontawesome-pro `5.14 -> 6.1`
+
 
 ## v47.1.2 - 2022-04-01
 
