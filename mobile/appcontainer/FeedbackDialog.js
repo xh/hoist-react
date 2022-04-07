@@ -31,7 +31,8 @@ export const feedbackDialog = hoistCmp.factory({
             onCancel: () => model.hide(),
             content: textArea({
                 placeholder: 'Please enter your comments...',
-                bind: 'message'
+                bind: 'message',
+                height: 250
             }),
             buttons: [
                 filler(),
