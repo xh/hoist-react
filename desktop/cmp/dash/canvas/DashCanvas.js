@@ -22,7 +22,7 @@ import {dashCanvasView} from './impl/DashCanvasView';
  */
 export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
     displayName: 'DashCanvas',
-    className: 'xh-dash-Canvas',
+    className: 'xh-dash-canvas',
     model: uses(DashCanvasModel),
     render({className, model}) {
         return div({
