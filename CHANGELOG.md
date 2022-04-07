@@ -6,6 +6,7 @@
 * Mobile `Dialog` will scroll internally if taller than the screen.
 * FontAwesome upgraded to v6. This includes redesigns of the majority of bundled icons - please
   check your app's icon usages carefully.
+* Added `TabContainerModel.refreshContextModel`, allowing apps to programmatically load a TabContainer.
 
 ### 📚 Libraries
 
@@ -15,10 +16,6 @@
 
 
 ## v47.1.2 - 2022-04-01
-
-### 🎁 New Features
-
-* Added `TabContainerModel.refreshContextModel`, allowing apps to programmatically load a TabContainer.
 
 ### 🐞 Bug Fixes
 
