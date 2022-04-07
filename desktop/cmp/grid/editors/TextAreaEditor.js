@@ -19,7 +19,7 @@ export const [TextAreaEditor, textAreaEditor] = hoistCmp.withFactory({
                 ...props.inputProps
             }
         };
-        return useInlineEditorModel(textArea, props, ref, true);
+        return useInlineEditorModel(textArea, props, ref);
     }
 });
 TextAreaEditor.propTypes = {
