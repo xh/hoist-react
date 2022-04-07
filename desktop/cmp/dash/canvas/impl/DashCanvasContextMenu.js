@@ -80,7 +80,7 @@ function createAddMenuItems({dashCanvasModel, clickPosition}) {
                     icon: icon,
                     actionFn: () => dashCanvasModel.addView(
                         id,
-                        addPosition
+                        {layout: addPosition}
                     )
                 };
 
