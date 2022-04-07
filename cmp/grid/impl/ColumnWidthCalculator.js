@@ -172,12 +172,9 @@ export class ColumnWidthCalculator {
         const {headerName} = column,
             headerValue = isFunction(headerName) ? headerName({column, gridModel}) : headerName;
 
-        if (isString(headerValue)) {
-            return headerValue;
-        } else if (isValidElement(headerValue)) {
-            return renderToStaticMarkup(headerValue);
-        }
-
+        if (isNil(headerValue)) return '';
+        if (isString(headerValue)) return headerValue;
+        if (isValidElement(headerValue)) return renderToStaticMarkup(headerValue);
         throw XH.exception('Unable to get column header html because value is not a string or valid react element');
     }
 
