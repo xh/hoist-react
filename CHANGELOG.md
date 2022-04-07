@@ -6,6 +6,7 @@
 * Mobile `Dialog` will scroll internally if taller than the screen.
 * FontAwesome upgraded to v6. This includes redesigns of the majority of bundled icons - please
   check your app's icon usages carefully.
+* `fmtQuantity` now handles values in the billions as well as millions.
 
 ### 💥 Breaking Changes
 
