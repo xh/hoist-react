@@ -1,8 +1,40 @@
 # Changelog
 
-## v48.0.0-SNAPSHOT - under development
+## v48.0.0-SNAPSHOT - unreleased
 
-No changes yet...
+### 🎁 New Features
+* Mobile `Dialog` will scroll internally if taller than the screen.
+* FontAwesome upgraded to v6. This includes redesigns of the majority of bundled icons - please
+  check your app's icon usages carefully.
+
+### 💥 Breaking Changes
+
+* Hoist now requires ag-Grid v27.1.0 or higher - update your ag-Grid dependency in your app's
+  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
+  Note that ag-Grid 27 includes a major upgrade to render native React elements rather than HTML and
+  also included major API changes.  To accommodate these changes, the following changes are required in Hoist apps:
+    * `Column.renderer` should now return a React Element rather than an HTML string. Please check your
+      column renderers carefully. As part of this change, `Column.elementRenderer` has been removed.
+    * `DataViewModel.elementRenderer` has been renamed `DataViewModel.renderer`.
+    * Formatter methods and renderers (e.g. `fmtNumber`, `numberRenderer`, etc.) now return React Elements
+      by default. The `asElement` option to these functions has been removed. Use the new `asHtml`
+      option to return a HTML string.
+    * The `isPopup` argument to `useInlineEditorModel()` has been removed. If you want to display your
+      inline editor in a popup, you must set the new flag `Column.editorIsPopup` to `true`.
+
+### 📚 Libraries
+
+* mobx `6.3 -> 6.5`
+* mobx-react-lite `3.2 -> 3.3`
+* @fortawesome/fontawesome-pro `5.14 -> 6.1`
+
+
+## v47.1.2 - 2022-04-01
+
+### 🐞 Bug Fixes
+
+* `FieldFilter`'s check of `committedData` is now null safe.  A record with no `committedData` will not be filtered out.
+
 
 ## v47.1.1 - 2022-03-26
 

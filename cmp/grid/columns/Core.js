@@ -12,7 +12,7 @@ export const boolCheck = {
     width: 34,
     align: 'center',
     resizable: false,
-    renderer: (v) => v ? Icon.check({prefix: 'fas', className: 'xh-green', asHtml: true}) : ''
+    renderer: (v) => v ? Icon.check({prefix: 'fas', className: 'xh-green'}) : null
 };
 
 export const number = {
@@ -25,7 +25,7 @@ export const fileExt = {
     width: 28,
     align: 'center',
     resizable: false,
-    renderer: (v) => v ? Icon.fileIcon({filename: v, title: v, asHtml: true}) : ''
+    renderer: (v) => v ? Icon.fileIcon({filename: v, title: v}) : null
 };
 
 // Deprecated aliases with `Col` suffix

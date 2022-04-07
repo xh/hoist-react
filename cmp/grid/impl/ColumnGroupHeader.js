@@ -64,7 +64,7 @@ class ColumnGroupHeaderModel extends HoistModel {
 
     /** @member {ColumnGroup} */
     get agColumnGroup() {
-        return this.componentProps.columnGroup.originalColumnGroup;
+        return this.componentProps.columnGroup.providedColumnGroup;
     }
 
     constructor() {

@@ -5,8 +5,9 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {RecordAction} from '@xh/hoist/data';
-import {convertIconToHtml} from '@xh/hoist/icon';
+import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {throwIf} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
 import {isEmpty} from 'lodash';
 
 import './Actions.scss';
@@ -51,49 +52,35 @@ export const actionCol = {
         const {actions, actionsShowOnHoverOnly, gridModel} = column;
         if (isEmpty(actions)) return null;
 
-        const buttonGroupEl = document.createElement('div');
-        buttonGroupEl.classList.add('bp3-button-group', 'xh-button-group');
-        if (actionsShowOnHoverOnly) {
-            buttonGroupEl.classList.add('xh-show-on-hover');
-        }
-
-        actions.forEach(action => {
+        const buttons = actions.map(action => {
             action = new RecordAction(action);
 
             const {icon, intent, className, disabled, tooltip, hidden} = action.getDisplaySpec({record, selectedRecords: [record], gridModel, column});
             throwIf(!icon, 'An icon is required for any RecordAction rendered within a grid action column.');
 
-            if (hidden) return;
+            if (hidden) return null;
 
-            const buttonEl = document.createElement('button');
-            buttonEl.classList.add('bp3-button', 'bp3-minimal', 'bp3-small', 'xh-button', 'xh-record-action-button', 'xh-button--minimal');
-
-            if (disabled) {
-                buttonEl.classList.add('xh-button--disabled');
-                buttonEl.setAttribute('disabled', 'true');
-            } else {
-                buttonEl.classList.add('xh-button--enabled');
-            }
-
-            if (!isEmpty(tooltip)) buttonEl.setAttribute('title', tooltip);
-            if (!isEmpty(intent)) {
-                buttonEl.classList.add(`bp3-intent-${intent}`, `xh-button--intent-${intent}`);
-            } else {
-                buttonEl.classList.add('xh-button--intent-none');
-            }
-
-            if (className) buttonEl.classList.add(className);
-
-            buttonEl.innerHTML = convertIconToHtml(icon);
-            buttonEl.addEventListener('click', (ev) => {
-                ev.stopPropagation();
-                action.call({record, selectedRecords: [record], gridModel, column, buttonEl});
+            return button({
+                icon,
+                disabled,
+                tooltip,
+                intent,
+                className: classNames(
+                    'bp3-small',
+                    'xh-record-action-button',
+                    className
+                ),
+                onClick: (ev) => {
+                    ev.stopPropagation();
+                    action.call({record, selectedRecords: [record], gridModel, column});
+                }
             });
-
-            buttonGroupEl.appendChild(buttonEl);
         });
 
-        return buttonGroupEl;
+        return buttonGroup({
+            className: actionsShowOnHoverOnly ? 'xh-show-on-hover' : null,
+            items: buttons
+        });
     }
 };
 
