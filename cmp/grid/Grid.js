@@ -246,7 +246,8 @@ class GridLocalModel extends HoistModel {
             editType: model.fullRowEditing ? 'fullRow' : undefined,
             singleClickEdit: clicksToEdit === 1,
             suppressClickEdit: clicksToEdit !== 1 && clicksToEdit !== 2,
-            stopEditingWhenCellsLoseFocus: true
+            stopEditingWhenCellsLoseFocus: true,
+            suppressLastEmptyLineOnPaste: true
         };
 
         // Platform specific defaults

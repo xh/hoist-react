@@ -8,13 +8,15 @@ import {HOURS} from '@xh/hoist/utils/datetime';
 import {fmtNumber} from '@xh/hoist/format';
 
 /**
- * @private
- * Pending additional support for client-side Time zone API
+ * @private Pending additional support for client-side Time zone API
+ * @param {string} name
+ * @param {number} offset
+ * @return {string}
  */
 export function fmtTimeZone(name, offset) {
     if (!name) return '';
 
-    return name != 'GMT' ?
-        `${name} (GMT${fmtNumber(offset/HOURS, {withPlusSign: true})})` :
+    return name !== 'GMT' ?
+        `${name} (GMT${fmtNumber(offset/HOURS, {withPlusSign: true, asHtml: true})})` :
         `${name}`;
 }
