@@ -198,6 +198,7 @@ export const Icon = {
     institution(p)      {return Icon.icon({...p,  iconName: 'university'})},
     instrument(p)       {return Icon.icon({...p,  iconName: 'file-certificate'})},
     json(p)             {return Icon.icon({...p,  iconName: 'brackets-curly'})},
+    layout(p)           {return Icon.icon({...p,  iconName: 'table-layout'})},
     learn(p)            {return Icon.icon({...p,  iconName: 'graduation-cap'})},
     lessThan(p)         {return Icon.icon({...p,  iconName: 'less-than'})},
     lessThanEqual(p)    {return Icon.icon({...p,  iconName: 'less-than-equal'})},
