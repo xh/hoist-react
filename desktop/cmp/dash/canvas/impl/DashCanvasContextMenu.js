@@ -13,15 +13,11 @@ import {isEmpty} from 'lodash';
 /**
  * Context menu to add items to a DashCanvas
  *
- * -------- !! NOTE: THIS COMPONENT IS CURRENTLY IN BETA !! --------
- * -- Its API is under development and subject to breaking changes --
- *
  * Available view specs are listed in their defined order, optionally
  * grouped by their 'groupName' property
  *
  * @see DashCanvasModel
  * @private
- * @Beta
  */
 export const dashCanvasContextMenu = hoistCmp.factory({
     model: null,
@@ -45,7 +41,8 @@ function createMenuItems({dashCanvasModel, clickPosition}) {
             disabled: contentLocked || isEmpty(addMenuItems),
             items: addMenuItems
         },
-        ...(extraMenuItems ? ['-', ...extraMenuItems] : [])
+        '-',
+        ...(extraMenuItems ?? [])
 
     ];
 }

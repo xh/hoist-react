@@ -22,7 +22,6 @@ import {DashCanvasViewModel} from '../DashCanvasViewModel';
  *   - Stretch its contents using a flex layout.
  *
  * @private
- * @Beta
  */
 export const dashCanvasView = hoistCmp.factory({
     displayName: 'DashGridLayoutView',
@@ -69,7 +68,8 @@ export const dashCanvasView = hoistCmp.factory({
                                 disabled: contentLocked,
                                 actionFn: () => containerModel.removeView(id)
                             },
-                            ...(extraMenuItems ? ['-', ...extraMenuItems] : [])
+                            '-',
+                            ...(extraMenuItems ?? [])
                         ]
                     })
                 })
