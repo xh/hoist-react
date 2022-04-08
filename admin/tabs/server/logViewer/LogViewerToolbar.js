@@ -47,13 +47,13 @@ export const logViewerToolbar = hoistCmp.factory(
             filler(),
             span({
                 style: {whitespace: 'nowrap'},
-                items: ['Server TZ: ', strong(fmtTimeZone(zone, offset))],
+                items: ['Server Time: ', strong(clock({timezone: zone, format: 'HH:mm:ss'}))],
                 omit: !zone  // zone env support requires hoist-core 7.1+
             }),
             '-',
             span({
                 style: {whitespace: 'nowrap'},
-                items: ['Server Time: ', strong(clock({timezone: zone, format: 'HH:mm:ss'}))],
+                items: ['Server TZ: ', strong(fmtTimeZone(zone, offset))],
                 omit: !zone  // zone env support requires hoist-core 7.1+
             })
         );
