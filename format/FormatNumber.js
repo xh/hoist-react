@@ -140,7 +140,8 @@ export function fmtBillions(v, opts)  {
 }
 
 /**
- * Render a quantity value, handling highly variable amounts by using 2dp millions for values > 1m
+ * Render a quantity value, handling highly variable amounts by using units of millions (m) and
+ * billions (b) as needed.'
  *
  * @param {number} v - value to format.
  * @param {Object} [opts] - @see {@link fmtNumber} method.
@@ -150,7 +151,8 @@ export function fmtQuantity(v, opts = {}) {
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
-    const lessThanM = Math.abs(v) < MILLION;
+    const lessThanM = Math.abs(v) < MILLION,
+        lessThanB = Math.abs(v) < BILLION;
 
     defaults(opts, {
         ledger: true,
@@ -158,7 +160,9 @@ export function fmtQuantity(v, opts = {}) {
         precision: lessThanM ? 0 : 2
     });
 
-    return lessThanM ? fmtNumber(v, opts) : fmtMillions(v, opts);
+    if (lessThanM) return fmtNumber(v, opts);
+    if (lessThanB) return fmtMillions(v, opts);
+    return fmtBillions(v, opts);
 }
 
 /**
