@@ -32,7 +32,7 @@ export const logViewer = hoistCmp.factory({
                     compactHeader: true,
                     model: {
                         side: 'left',
-                        defaultSize: 280
+                        defaultSize: 460
                     },
                     item: grid(),
                     bbar: [

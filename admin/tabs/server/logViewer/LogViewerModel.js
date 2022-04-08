@@ -7,6 +7,7 @@
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
+import {fmtDateTime, fmtFileSize} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
@@ -72,7 +73,6 @@ export class LogViewerModel extends HoistModel {
 
         this.filesGridModel = new GridModel({
             enableExport: true,
-            hideHeaders: true,
             selModel: 'multiple',
             store: new UrlStore({
                 url: 'logViewerAdmin/listFiles',
@@ -81,11 +81,27 @@ export class LogViewerModel extends HoistModel {
                 fields: [{
                     name: 'filename',
                     type: 'string',
-                    displayName: 'Log File'
+                    displayName: 'Name'
+                }, {
+                    name: 'size',
+                    type: 'number',
+                    displayName: 'Size',
+                    side: 'left'
+                }, {
+                    name: 'lastModified',
+                    type: 'number',
+                    displayName: 'Last Modified',
+                    side: 'left'
                 }]
             }),
             sortBy: 'filename',
-            columns: [{field: 'filename', flex: true}],
+            columns: [
+                {field: 'filename', flex: 1, minWidth: 160},
+                {field: 'size', width: 100,
+                    renderer: (size) => size ? fmtFileSize(size): ''},
+                {field: 'lastModified', width: 170,
+                    renderer: (lastModified) => lastModified ? fmtDateTime(lastModified, {fmt: 'HH:mm:ss YYYY-MM-DD'}) : ''}
+            ],
             autosizeOptions: {mode: GridAutosizeMode.DISABLED},
             contextMenu: [
                 this.downloadFileAction,
@@ -198,12 +214,6 @@ export class LogViewerModel extends HoistModel {
         };
     }
 
-    toggleTailReaction() {
-        return {
-
-        };
-    }
-
     autoRefreshLines() {
         const {logDisplayModel, tail, viewRef} = this;
 
@@ -218,6 +228,6 @@ export class LogViewerModel extends HoistModel {
 
     @debounced(300)
     loadLog() {
-        this.logDisplayModel.loadAsync();
+        this.logDisplayModel.refreshAsync();
     }
 }
