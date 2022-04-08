@@ -4,7 +4,7 @@
 // Tabs
 //------------------------
 .bp3-tab-panel > div {
-  margin: 0 !important;  // TODO - investigate this....
+  margin: 0 !important; // TODO - investigate this....
 }
 
 .bp3-tab > svg:first-child {
@@ -65,8 +65,8 @@ $pt-transition-duration: 100ms !default;
 // https://github.com/palantir/blueprint/blob/1bfd1e42303d2626bfc3923eec2195ab4dc696d2/packages/core/src/components/popover/_popover.scss#L54
 .bp3-popover {
   @include react-transition(
-    "bp3-popover",
-    (transform: scale(1) scale(1)),
+      "bp3-popover",
+      (transform: scale(1) scale(1)),
     $duration: 0,
     $after: "> &"
   );
@@ -93,6 +93,40 @@ $pt-transition-duration: 100ms !default;
       background-color: var(--xh-menu-item-highlight-bg);
       border-radius: 0;
     }
+
+    &.bp3-intent-primary {
+      color: var(--xh-intent-primary);
+    }
+
+    &.bp3-intent-success {
+      color: var(--xh-intent-success);
+    }
+
+    &.bp3-intent-warning {
+      color: var(--xh-intent-warning);
+    }
+
+    &.bp3-intent-danger {
+      color: var(--xh-intent-danger);
+    }
+
+    .xh-dark & {
+      &.bp3-intent-primary {
+        color: var(--xh-intent-primary-lighter);
+      }
+
+      &.bp3-intent-success {
+        color: var(--xh-intent-success-lighter);
+      }
+
+      &.bp3-intent-warning {
+        color: var(--xh-intent-warning-lighter);
+      }
+
+      &.bp3-intent-danger {
+        color: var(--xh-intent-danger-lighter);
+      }
+    }
   }
 
   .bp3-submenu {
@@ -114,6 +148,7 @@ $pt-transition-duration: 100ms !default;
     &.xh-button--enabled {
       &:hover {
         background-color: unset !important;
+
         svg {
           color: var(--xh-button-text-color) !important;
         }
@@ -233,7 +268,7 @@ textarea.bp3-input,
 }
 
 .bp3-slider-handle:focus {
-  outline: unset;  // override browser default styles
+  outline: unset; // override browser default styles
   box-shadow: var(--xh-slider-handle-focused-box-shadow);
 }
 
