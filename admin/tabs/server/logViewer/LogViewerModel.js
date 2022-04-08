@@ -28,7 +28,7 @@ export class LogViewerModel extends HoistModel {
     @persist
     tail = false;
 
-    @bindable startLine = null;
+    @bindable startLine = 1;
     @bindable maxLines = 1000;
     @bindable pattern = '';
 
@@ -96,7 +96,14 @@ export class LogViewerModel extends HoistModel {
         });
 
         this.addReaction(this.syncSelectionReaction());
-        this.addReaction(this.toggleTailReaction());
+        this.addReaction({
+            track: () => this.tail,
+            run: (tail) => {
+                this.setStartLine(tail ? null : 1);
+                this.loadLog();
+            },
+            fireImmediately: true
+        });
         this.addReaction(this.reloadReaction());
 
         this.timer = Timer.create({
@@ -193,11 +200,7 @@ export class LogViewerModel extends HoistModel {
 
     toggleTailReaction() {
         return {
-            track: () => this.tail,
-            run: (tail) => {
-                this.setStartLine(tail ? null : 1);
-                this.loadLog();
-            }
+
         };
     }
 
