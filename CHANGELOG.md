@@ -22,6 +22,11 @@
     * The `isPopup` argument to `useInlineEditorModel()` has been removed. If you want to display your
       inline editor in a popup, you must set the new flag `Column.editorIsPopup` to `true`.
 
+### 🐞 Bug Fixes
+
+* Set ag-Grid's `suppressLastEmptyLineOnPaste` to true to work around a bug with Excel (Windows)
+  that adds an empty line beneath the range pasted from the clipboard in editable grids.
+
 ### 📚 Libraries
 
 * mobx `6.3 -> 6.5`
