@@ -65,8 +65,8 @@ $pt-transition-duration: 100ms !default;
 // https://github.com/palantir/blueprint/blob/1bfd1e42303d2626bfc3923eec2195ab4dc696d2/packages/core/src/components/popover/_popover.scss#L54
 .bp3-popover {
   @include react-transition(
-      "bp3-popover",
-      (transform: scale(1) scale(1)),
+    "bp3-popover",
+    (transform: scale(1) scale(1)),
     $duration: 0,
     $after: "> &"
   );
