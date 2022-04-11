@@ -163,7 +163,7 @@ export const userAlertedFlag = {
     align: 'center',
     width: 50,
     exportName: 'User Alerted?',
-    renderer: v => v ? Icon.window({asHtml: true}) : ''
+    renderer: v => v ? Icon.window() : null
 };
 
 export const userMessageFlag = {
@@ -176,7 +176,7 @@ export const userMessageFlag = {
     width: 50,
     renderer: (v, {record}) => {
         const {msg} = record.data;
-        return msg ? Icon.comment({asHtml: true}) : '';
+        return msg ? Icon.comment() : null;
     }
 };
 
