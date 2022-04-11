@@ -58,7 +58,7 @@ export const dashCanvasView = hoistCmp.factory({
                                 icon: Icon.copy(),
                                 disabled: contentLocked,
                                 actionFn: () =>
-                                    containerModel.addView(viewSpec.id, {...positionParams, viewState, title})
+                                    containerModel.addView(viewSpec.id, {layout: positionParams, state: viewState, title})
                             },
                             {
                                 text: 'Remove',
