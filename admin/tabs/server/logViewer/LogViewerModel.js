@@ -7,7 +7,10 @@
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {fmtDateTime, fmtFileSize} from '@xh/hoist/format';
+import {
+    fmtCompactDate,
+    fmtNumber
+} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
@@ -85,13 +88,11 @@ export class LogViewerModel extends HoistModel {
                 }, {
                     name: 'size',
                     type: 'number',
-                    displayName: 'Size',
-                    side: 'left'
+                    displayName: 'Size'
                 }, {
                     name: 'lastModified',
                     type: 'number',
-                    displayName: 'Last Modified',
-                    side: 'left'
+                    displayName: 'Last Modified'
                 }]
             }),
             sortBy: 'filename',
@@ -100,7 +101,7 @@ export class LogViewerModel extends HoistModel {
                 {field: 'size', width: 100,
                     renderer: (size) => size ? fmtFileSize(size): ''},
                 {field: 'lastModified', width: 170,
-                    renderer: (lastModified) => lastModified ? fmtDateTime(lastModified, {fmt: 'HH:mm:ss YYYY-MM-DD'}) : ''}
+                    renderer: (lastModified) => lastModified ? fmtCompactDate(lastModified): ''}
             ],
             autosizeOptions: {mode: GridAutosizeMode.DISABLED},
             contextMenu: [
@@ -230,4 +231,23 @@ export class LogViewerModel extends HoistModel {
     loadLog() {
         this.logDisplayModel.refreshAsync();
     }
+}
+
+function fmtFileSize(v) {
+    if (v == null) return '';
+    if (v < 0) return '';
+
+    let v_kb;
+    if (v < 1000) {
+        v_kb = v/1000;
+    } else {
+        v_kb = Math.round(v/1000);
+    }
+
+    return fmtNumber(v_kb, {
+        label: ' KB',
+        precision: 0,
+        labelCls: null,
+        asHtml: true
+    });
 }

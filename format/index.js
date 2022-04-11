@@ -9,4 +9,3 @@ export * from './FormatNumber';
 export * from './FormatDate';
 export * from './FormatUtils';
 export * from './FormatMisc';
-export * from './FormatFileSize';
