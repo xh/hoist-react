@@ -98,10 +98,12 @@ export class LogViewerModel extends HoistModel {
             sortBy: 'filename',
             columns: [
                 {field: 'filename', flex: 1, minWidth: 160},
-                {field: 'size', width: 100,
+                {field: 'size', width: 90,
                     renderer: (size) => size ? fmtFileSize(size): ''},
-                {field: 'lastModified', width: 170,
-                    renderer: (lastModified) => lastModified ? fmtCompactDate(lastModified): ''}
+                {field: 'lastModified', width: 90,
+                    renderer: (lastModified) => lastModified ? fmtCompactDate(lastModified, {
+                        sameDayFmt: 'HH:mm:ss'
+                    }): ''}
             ],
             autosizeOptions: {mode: GridAutosizeMode.DISABLED},
             contextMenu: [
@@ -239,14 +241,16 @@ function fmtFileSize(v) {
 
     let v_kb;
     if (v < 1000) {
-        v_kb = v/1000;
+        // Round to ones decimal place
+        v_kb = Math.round(v/100)/10;
     } else {
+        // Round to whole KB
         v_kb = Math.round(v/1000);
     }
 
     return fmtNumber(v_kb, {
         label: ' KB',
-        precision: 0,
+        precision: 'auto',
         labelCls: null,
         asHtml: true
     });
