@@ -4,17 +4,20 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {clock} from '@xh/hoist/cmp/clock';
 import {grid} from '@xh/hoist/cmp/grid';
-import {hframe} from '@xh/hoist/cmp/layout';
+import {hframe, label, strong} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {creates, hoistCmp} from '@xh/hoist/core';
+import {creates, hoistCmp, XH} from '@xh/hoist/core';
+import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
+import {fmtTimeZone} from '@xh/hoist/utils/impl';
 import {logDisplay} from './LogDisplay';
 import './LogViewer.scss';
 import {LogViewerModel} from './LogViewerModel';
-import {logViewerToolbar} from './LogViewerToolbar';
 
 export const logViewer = hoistCmp.factory({
     model: creates(LogViewerModel),
@@ -22,6 +25,7 @@ export const logViewer = hoistCmp.factory({
     /** @param {LogViewerModel} model */
     render({model}) {
         const {filesGridModel} = model;
+
         return hframe({
             className: 'xh-log-viewer',
             ref: model.viewRef,
@@ -48,11 +52,64 @@ export const logViewer = hoistCmp.factory({
                     ]
                 }),
                 panel({
-                    tbar: logViewerToolbar(),
+                    tbar: tbar(),
                     item: logDisplay(),
+                    bbar: bbar(),
                     mask: 'onLoad'
                 })
             ]
         });
     }
 });
+
+const bbar = hoistCmp.factory(
+    () => {
+        const envSvc = XH.environmentService,
+            zone = envSvc.get('serverTimeZone'),
+            offset = envSvc.get('serverTimeZoneOffset');
+
+        return toolbar({
+            items: [
+                'Server Time:',
+                strong(clock({timezone: zone, format: 'HH:mm:ss'})),
+                label(' ['),
+                fmtTimeZone(zone, offset),
+                ']'
+            ],
+            omit: !zone  // zone env support requires hoist-core 7.1+
+        });
+    }
+);
+
+const tbar = hoistCmp.factory(
+    ({model}) => {
+        return toolbar(
+            label('Start line:'),
+            numberInput({
+                bind: 'startLine',
+                min: 1,
+                width: 80,
+                disabled: model.tail
+            }),
+            label('Max lines:'),
+            numberInput({
+                bind: 'maxLines',
+                min: 1,
+                width: 80
+            }),
+            '-',
+            textInput({
+                bind: 'pattern',
+                placeholder: 'Search...',
+                enableClear: true,
+                width: 150
+            }),
+            '-',
+            switchInput({
+                bind: 'tail',
+                label: 'Tail mode',
+                labelSide: 'left'
+            })
+        );
+    }
+);
