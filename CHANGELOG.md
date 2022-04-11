@@ -6,6 +6,8 @@
 * Mobile `Dialog` will scroll internally if taller than the screen.
 * FontAwesome upgraded to v6. This includes redesigns of the majority of bundled icons - please
   check your app's icon usages carefully.
+* `fmtQuantity` now displays values greater than one billion with `b` unit, similar to current
+  handling of millions with `m`.
 
 ### 💥 Breaking Changes
 
@@ -21,6 +23,11 @@
       option to return a HTML string.
     * The `isPopup` argument to `useInlineEditorModel()` has been removed. If you want to display your
       inline editor in a popup, you must set the new flag `Column.editorIsPopup` to `true`.
+
+### 🐞 Bug Fixes
+
+* Set ag-Grid's `suppressLastEmptyLineOnPaste` to true to work around a bug with Excel (Windows)
+  that adds an empty line beneath the range pasted from the clipboard in editable grids.
 
 ### 📚 Libraries
 

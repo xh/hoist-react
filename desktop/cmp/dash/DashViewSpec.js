@@ -8,10 +8,9 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
 
 /**
- * Spec used to generate a DashViews and DashViewModels within a DashContainer.
+ * Spec used to generate DashViews and DashViewModels within a DashContainer or DashCanvas.
  *
- * This class is not typically created directly within applications. Instead, specify
- * DashViewSpec configs via the `DashContainerModel.viewSpecs` constructor config.
+ * This is a base class for {@link DashContainerViewSpec} and {@link DashCanvasViewSpec}
  */
 export class DashViewSpec {
 
@@ -25,8 +24,6 @@ export class DashViewSpec {
     allowAdd;
     allowRemove;
     allowRename;
-    renderMode;
-    refreshMode;
 
     /**
      * @param {string} id - unique identifier of the DashViewSpec
@@ -43,10 +40,7 @@ export class DashViewSpec {
      *      References to this view in state will be respected.
      * @param {boolean} [allowRemove] - true (default) to allow removing instances from the DashContainer.
      * @param {boolean} [allowRename] - true (default) to allow renaming the view.
-     * @param {RenderMode} [renderMode] - strategy for rendering this DashView. If null, will
-     *      default to its container's mode. See enum for description of supported modes.
-     * @param {RefreshMode} [refreshMode] - strategy for refreshing this DashView. If null, will
-     *      default to its container's mode. See enum for description of supported modes.
+
      * @param {...*} [rest] - additional properties to store on the DashViewSpec
      */
     constructor({
@@ -60,8 +54,6 @@ export class DashViewSpec {
         allowAdd = true,
         allowRemove = true,
         allowRename = true,
-        renderMode,
-        refreshMode,
         ...rest
     }) {
         throwIf(!id, 'DashViewSpec requires an id');
@@ -80,8 +72,6 @@ export class DashViewSpec {
         this.allowAdd = allowAdd;
         this.allowRemove = allowRemove;
         this.allowRename = allowRename;
-        this.renderMode = renderMode;
-        this.refreshMode = refreshMode;
     }
 
     //---------------------

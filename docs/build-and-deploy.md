@@ -8,6 +8,7 @@ Grails / Gradle based server. That is technically the domain of
 at the build process.
 
 ***At a high level, the build process:***
+
 * Builds the Grails back-end via Gradle, producing a WAR file.
 * Builds the JS front-end via Webpack, producing a set of production ready client assets.
 * Copies both outputs into a pair of Docker containers and publishes those containers as the
@@ -32,7 +33,7 @@ within the application source code via both the Gradle and Webpack configs.
 
 #### 1.1) Refresh and Lint JS Client
 
-We do this first to fail fast if the client code doesn’t pass the linter checks, which is relatively
+We do this first to fail fast if the client code doesn't pass the linter checks, which is relatively
 common. This step could also run any preflight unit tests, etc. should you be diligent enough to
 have them.
 
@@ -41,20 +42,29 @@ yarn
 yarn lint
 ```
 
-#### 1.2) Set Gradle project name
+#### 1.2) Set Gradle project name (optional)
 
 It’s best to be explicit with Gradle about the name of the project. By default it uses the name of
 the containing directory, which in a CI build is probably a random hash.
 
-Project names can be set via a `settings.gradle`in the project root, but we often don’t want to
-check in a `settings.gradle` with each app project. as we commonly build and test [custom Grails
-plugins](https://github.com/xh/hoist-core#custom-plugins-for-enterprise-deployments) by running in a
-[multi-project build mode](https://docs.gradle.org/current/userguide/multi_project_builds.html) with
-an under-development Grails plugin and the app checked out as siblings in a parent wrapper
+Project names can be set by creating a `settings.gradle` in the project root with the following:
+
+```properties
+rootProject.name="appCode"
+```
+
+*If you have such a file in your project, this build step should be ignored / skipped entirely.*
+
+However, we sometimes do not check in a `settings.gradle` with each app project as we commonly build
+and
+test [custom Grails plugins](https://github.com/xh/hoist-core#custom-plugins-for-enterprise-deployments)
+by running in
+a [multi-project build mode](https://docs.gradle.org/current/userguide/multi_project_builds.html)
+with an under-development Grails plugin _and_ the app checked out as siblings in a parent wrapper
 directory. That parent directory (which is local to the developer’s machine and not in source
 control) has its own `settings.gradle` file to bind the app and plugin together. You can’t have more
 than one `settings.gradle` in a Gradle project, so this dev-time setup would conflict with a checked
-in version should one exist
+in version should one exist.
 
 As a workaround, we can have the build system take the app name (we use a project-level Teamcity
 `%param%`) and then write out a `settings.gradle` file in place within the checked out source.
@@ -63,74 +73,53 @@ As a workaround, we can have the build system take the app name (we use a projec
 echo "rootProject.name = \"%appCode%\"" > settings.gradle
 ```
 
-This step could be avoided by checking in a `settings.gradle` with the app and, should you need the
-special plugin development setup outlined above, manually deleting or renaming it (and remembering
-to not check that change into source control). In many cases, in-line Grails plugin development will
-be a rarity or limited to XH or a smaller set of developers.
-
 ### 2\) Server and Client Builds
 
-#### 2.1) Build (and optionally publish) Grails server WAR with Gradle
+#### 2.1) Build Grails server WAR with Gradle
 
 This step calls into a `build.gradle` script checked in with each project to build the Grails
-server-side into a WAR and then publish that to an internal Maven repo.
+server-side into a WAR.
 
-Publishing the built WAR to an internal Maven repo is not necessary, but it does give us some parity
-with how we build and publish Grails plugins and is relatively standard with versioned Java
-artifacts. That said, the “real” output of the build will be a pair of Docker containers (below),
-and we’re not pushing the corresponding client JS assets to Maven or baking them into the WAR - both
-of which make publishing the WAR somewhat arbitrary. 🤷 The choice as to whether or not to publish
-can depend on the nature of the app and the standards/controls expected within the organization.
+This step takes an application version as well as an optional build tag, both of which are baked
+into the build:
 
-This step takes an application version, which is baked into the build. This can be left out, in
-which case it will default to the version specified within the app’s `gradle.properties` file. Our
+* `xhAppVersion` - an x.y.z version for releases, or `x.y-SNAPSHOT` for transient builds.
+* `xhAppBuild` - this is an optional arg that gets baked into the server and client and exposed as a
+  variable for display in the built-in Hoist admin client. We use it to pass a git commit hash,
+  which then provides another way to cross-reference exactly what snapshot of the codebase was used
+  to build any given running application.
+
+Both version and build can be left unspecified, in which case the version will default to the
+version specified within the app’s `gradle.properties` file (the build tag is nullable). Our
 convention is to leave `gradle.properties` checked in with the next snapshot version and have the
 builds override via a Gradle `-P` option when doing a particular versioned build. This means that
 “snapshot” builds can simply leave the argument off, versioned builds can supply it (we use a
 Teamcity param supplied via a required prompt), and `gradle.properties` only needs to change in
 source control when a new major release moves us to a new snapshot.
 
-When publishing, the build script is typically also setup to accept credentials w/deploy rights to
-the internal Maven repository. The
-[Toolbox build script](https://github.com/xh/toolbox/blob/develop/build.gradle) provides an example
-\- see the `publishing` section.
-
 Teamcity can use its dedicated “Gradle runner” to provide a more customized view on the task, or a
 simple command runner could be used. In both cases, a Gradle wrapper should be checked in with the
 project and used according to Gradle best practices.
 
 ```bash
-# If publishing - will build WAR then push to Maven as per particular config in build.gradle
-./gradlew publishApp -PxhAppVersion=%appVersion% -PmavenDeployUser=%deployUser% -PmavenDeployPassword=%deployPwd%
-
 # If building WAR only
-./gradlew war -PxhAppVersion=%appVersion%
+./gradlew war -PxhAppVersion=%appVersion% -PxhAppBuild=%appBuild%
 ```
 
-In both cases, the output is a `appCode-appVersion.war` file file within `/build/libs`.
+In both cases, the output is a `appCode-appVersion.war` file within `/build/libs`.
 
 #### 2.2) Build JS Client with Webpack
 
 This step builds all the client-side assets (JS/CSS/static resources) with Webpack, taking the
 source and dependencies and producing concatenated, minified, and hashed files suitable for serving
-to browsers. We use `yarn` as our package manager / runner tool, although `npm` is also fine if
-preferred.
+to browsers. We use `yarn` as our package manager / runner tool.
 
 This step takes several arguments that are passed via a script in `package.json` to Webpack. Each
 project has a `webpack.config.js` file checked into the root of its `client-app` directory that
 accepts any args and runs them through a script provided by
 [hoist-dev-utils](https://github.com/xh/hoist-dev-utils/blob/master/configureWebpack.js) to produce
-a fully-based Webpack configuration object. The two args typically set during the build process (as
-opposed to being checked in to the app's `webpack.config.js`) are:
-
-* `appVersion` - the same x.y.z version supplied to the server-side build above. We take the same
-  approach on the client as we do on the server, where the next snapshot version is left defaulted
-  within the app’s `webpack.config.js` file and then overridden via this arg for versioned builds
-  only.
-* `appBuild` - this is an optional arg that gets baked into the client code and exposed as a
-  variable for display in the built-in Hoist admin client. We use it to pass a git commit hash,
-  which then provides another way to cross-reference exactly what snapshot of the codebase was used
-  to build any given running application.
+a fully-based Webpack configuration object. The appVersion and appBuild params, detailed above, are
+the most common options passed in at build-time.
 
 An example Teamcity command line runner. ⚠️ Note this must run with `client-app` as its working
 directory:
@@ -316,8 +305,8 @@ server {
 
 The build system now simply needs to copy the built client-side resources into the Docker context
 and build the image. The sample below is simplified, but could also include the return code checks
-in the Tomcat example above. Note the `-nginx` suffix on the container tag. ⚠️ This example must also
-run with `docker/nginx` as its working directory:
+in the Tomcat example above. Note the `-nginx` suffix on the container tag. ⚠️ This example must
+also run with `docker/nginx` as its working directory:
 
 ```bash
 cp -R ../../client-app/build/ .
@@ -407,6 +396,6 @@ sudo docker system prune -af
 
 📫☎️🌎 info@xh.io | <https://xh.io/contact>
 
-Copyright © 2021 Extremely Heavy Industries Inc.
+Copyright © 2022 Extremely Heavy Industries Inc.
 
 
