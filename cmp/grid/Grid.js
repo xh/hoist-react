@@ -247,7 +247,8 @@ class GridLocalModel extends HoistModel {
             singleClickEdit: clicksToEdit === 1,
             suppressClickEdit: clicksToEdit !== 1 && clicksToEdit !== 2,
             stopEditingWhenCellsLoseFocus: true,
-            suppressLastEmptyLineOnPaste: true
+            suppressLastEmptyLineOnPaste: true,
+            suppressClipboardApi: true
         };
 
         // Platform specific defaults
