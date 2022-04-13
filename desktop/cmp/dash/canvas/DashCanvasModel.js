@@ -5,7 +5,7 @@ import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {debounced, ensureUniqueBy} from '@xh/hoist/utils/js';
 import {defaultsDeep} from 'lodash';
-import {computed} from 'mobx';
+import {computed, runInAction} from 'mobx';
 import {createRef} from 'react';
 import {throwIf} from '../../../../utils/js';
 
@@ -278,9 +278,8 @@ export class DashCanvasModel extends HoistModel {
     }
 
     @debounced(1000)
-    @action
     publishState() {
-        this.state = this.buildState();
+        runInAction(()=>{this.state = this.buildState()});
         this.provider?.write({state: this.state});
     }
 
