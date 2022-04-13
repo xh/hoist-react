@@ -4,17 +4,21 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {clock} from '@xh/hoist/cmp/clock';
 import {grid} from '@xh/hoist/cmp/grid';
-import {hframe} from '@xh/hoist/cmp/layout';
+import {filler, hframe, hspacer, label} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {creates, hoistCmp} from '@xh/hoist/core';
+import {creates, hoistCmp, XH} from '@xh/hoist/core';
+import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
+import {HOURS} from '@xh/hoist/utils/datetime';
 import {logDisplay} from './LogDisplay';
 import './LogViewer.scss';
 import {LogViewerModel} from './LogViewerModel';
-import {logViewerToolbar} from './LogViewerToolbar';
 
 export const logViewer = hoistCmp.factory({
     model: creates(LogViewerModel),
@@ -22,6 +26,7 @@ export const logViewer = hoistCmp.factory({
     /** @param {LogViewerModel} model */
     render({model}) {
         const {filesGridModel} = model;
+
         return hframe({
             className: 'xh-log-viewer',
             ref: model.viewRef,
@@ -32,7 +37,7 @@ export const logViewer = hoistCmp.factory({
                     compactHeader: true,
                     model: {
                         side: 'left',
-                        defaultSize: 280
+                        defaultSize: 380
                     },
                     item: grid(),
                     bbar: [
@@ -48,11 +53,65 @@ export const logViewer = hoistCmp.factory({
                     ]
                 }),
                 panel({
-                    tbar: logViewerToolbar(),
+                    tbar: tbar(),
                     item: logDisplay(),
+                    bbar: bbar(),
                     mask: 'onLoad'
                 })
             ]
         });
     }
 });
+
+const tbar = hoistCmp.factory(
+    ({model}) => {
+        return toolbar(
+            label('Start line:'),
+            numberInput({
+                bind: 'startLine',
+                min: 1,
+                width: 80,
+                disabled: model.tail,
+                displayWithCommas: true
+            }),
+            label('Max lines:'),
+            numberInput({
+                bind: 'maxLines',
+                min: 1,
+                width: 80,
+                displayWithCommas: true
+            }),
+            '-',
+            textInput({
+                bind: 'pattern',
+                placeholder: 'Search...',
+                enableClear: true,
+                width: 150
+            }),
+            '-',
+            switchInput({
+                bind: 'tail',
+                label: 'Tail mode',
+                labelSide: 'left'
+            })
+        );
+    }
+);
+
+const bbar = hoistCmp.factory(
+    () => {
+        const zone = XH.getEnv('serverTimeZone'),
+            offset = XH.getEnv('serverTimeZoneOffset');
+
+        return toolbar({
+            items: [
+                filler(),
+                'Server Time:',
+                clock({timezone: zone, format: 'HH:mm'}),
+                hspacer(2),
+                `[GMT${fmtNumber(offset/HOURS, {withPlusSign: true, asHtml: true})}]`
+            ],
+            omit: !zone  // zone env support requires hoist-core 7.1+
+        });
+    }
+);
