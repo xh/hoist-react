@@ -36,7 +36,7 @@ export const logViewer = hoistCmp.factory({
                     compactHeader: true,
                     model: {
                         side: 'left',
-                        defaultSize: 460
+                        defaultSize: 380
                     },
                     item: grid(),
                     bbar: [
@@ -64,9 +64,8 @@ export const logViewer = hoistCmp.factory({
 
 const bbar = hoistCmp.factory(
     () => {
-        const envSvc = XH.environmentService,
-            zone = envSvc.get('serverTimeZone'),
-            offset = envSvc.get('serverTimeZoneOffset');
+        const zone = XH.getEnv('serverTimeZone'),
+            offset = XH.getEnv('serverTimeZoneOffset');
 
         return toolbar({
             items: [
@@ -89,13 +88,15 @@ const tbar = hoistCmp.factory(
                 bind: 'startLine',
                 min: 1,
                 width: 80,
-                disabled: model.tail
+                disabled: model.tail,
+                displayWithCommas: true
             }),
             label('Max lines:'),
             numberInput({
                 bind: 'maxLines',
                 min: 1,
-                width: 80
+                width: 80,
+                displayWithCommas: true
             }),
             '-',
             textInput({

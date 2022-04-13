@@ -8,6 +8,7 @@ import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
 import {
+    compactDateRenderer,
     fmtCompactDate,
     fmtNumber
 } from '@xh/hoist/format';
@@ -74,45 +75,7 @@ export class LogViewerModel extends HoistModel {
         super();
         makeObservable(this);
 
-        this.filesGridModel = new GridModel({
-            enableExport: true,
-            selModel: 'multiple',
-            store: new UrlStore({
-                url: 'logViewerAdmin/listFiles',
-                idSpec: 'filename',
-                dataRoot: 'files',
-                fields: [{
-                    name: 'filename',
-                    type: 'string',
-                    displayName: 'Name'
-                }, {
-                    name: 'size',
-                    type: 'number',
-                    displayName: 'Size'
-                }, {
-                    name: 'lastModified',
-                    type: 'number',
-                    displayName: 'Last Modified'
-                }]
-            }),
-            sortBy: 'filename',
-            columns: [
-                {field: 'filename', flex: 1, minWidth: 160},
-                {field: 'size', width: 90,
-                    renderer: (size) => size ? fmtFileSize(size): ''},
-                {field: 'lastModified', width: 90,
-                    renderer: (lastModified) => lastModified ? fmtCompactDate(lastModified, {
-                        sameDayFmt: 'HH:mm:ss'
-                    }): ''}
-            ],
-            autosizeOptions: {mode: GridAutosizeMode.DISABLED},
-            contextMenu: [
-                this.downloadFileAction,
-                this.deleteFileAction,
-                '-',
-                ...GridModel.defaultContextMenu
-            ]
-        });
+        this.filesGridModel = this.createGridModel();
 
         this.addReaction(this.syncSelectionReaction());
         this.addReaction({
@@ -199,6 +162,56 @@ export class LogViewerModel extends HoistModel {
     //---------------------------------
     // Implementation
     //---------------------------------
+    createGridModel() {
+        const supportFileAttrs = checkMinVersion(XH.getEnv('hoistCoreVersion'),'13.2.0');
+
+        return new GridModel({
+            enableExport: true,
+            selModel: 'multiple',
+            store: new UrlStore({
+                url: 'logViewerAdmin/listFiles',
+                idSpec: 'filename',
+                dataRoot: 'files',
+                fields: [{
+                    name: 'filename',
+                    type: 'string',
+                    displayName: 'Name'
+                }, {
+                    name: 'size',
+                    type: 'number',
+                    displayName: 'Size [kb]'
+                }, {
+                    name: 'lastModified',
+                    type: 'number',
+                    displayName: 'Modified'
+                }]
+            }),
+            sortBy: 'lastModified|desc',
+            columns: [
+                {field: 'filename', flex: 1, minWidth: 160},
+                {
+                    field: 'size',
+                    width: 80,
+                    renderer: fileSizeRenderer,
+                    omit: !supportFileAttrs
+                },
+                {
+                    field: 'lastModified',
+                    width: 100,
+                    renderer: compactDateRenderer({sameDayFmt: 'HH:mm:ss'}),
+                    omit: !supportFileAttrs
+                }
+            ],
+            autosizeOptions: {mode: GridAutosizeMode.DISABLED},
+            contextMenu: [
+                this.downloadFileAction,
+                this.deleteFileAction,
+                '-',
+                ...GridModel.defaultContextMenu
+            ]
+        });
+    }
+
     syncSelectionReaction() {
         return {
             track: () => this.selectedRecord,
@@ -235,23 +248,9 @@ export class LogViewerModel extends HoistModel {
     }
 }
 
-function fmtFileSize(v) {
+function fileSizeRenderer(v) {
     if (v == null) return '';
     if (v < 0) return '';
 
-    let v_kb;
-    if (v < 1000) {
-        // Round to ones decimal place
-        v_kb = Math.round(v/100)/10;
-    } else {
-        // Round to whole KB
-        v_kb = Math.round(v/1000);
-    }
-
-    return fmtNumber(v_kb, {
-        label: ' KB',
-        precision: 'auto',
-        labelCls: null,
-        asHtml: true
-    });
+    return fmtNumber(v/1000, {precision: 1});
 }
