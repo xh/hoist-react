@@ -63,24 +63,6 @@ export const logViewer = hoistCmp.factory({
     }
 });
 
-const bbar = hoistCmp.factory(
-    () => {
-        const zone = XH.getEnv('serverTimeZone'),
-            offset = XH.getEnv('serverTimeZoneOffset');
-
-        return toolbar({
-            items: [
-                filler(),
-                'Server Time:',
-                clock({timezone: zone, format: 'HH:mm'}),
-                hspacer(2),
-                `[GMT${fmtNumber(offset/HOURS, {withPlusSign: true, asHtml: true})}]`
-            ],
-            omit: !zone  // zone env support requires hoist-core 7.1+
-        });
-    }
-);
-
 const tbar = hoistCmp.factory(
     ({model}) => {
         return toolbar(
@@ -113,5 +95,23 @@ const tbar = hoistCmp.factory(
                 labelSide: 'left'
             })
         );
+    }
+);
+
+const bbar = hoistCmp.factory(
+    () => {
+        const zone = XH.getEnv('serverTimeZone'),
+            offset = XH.getEnv('serverTimeZoneOffset');
+
+        return toolbar({
+            items: [
+                filler(),
+                'Server Time:',
+                clock({timezone: zone, format: 'HH:mm'}),
+                hspacer(2),
+                `[GMT${fmtNumber(offset/HOURS, {withPlusSign: true, asHtml: true})}]`
+            ],
+            omit: !zone  // zone env support requires hoist-core 7.1+
+        });
     }
 );

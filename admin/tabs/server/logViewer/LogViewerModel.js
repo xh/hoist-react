@@ -162,7 +162,7 @@ export class LogViewerModel extends HoistModel {
     // Implementation
     //---------------------------------
     createGridModel() {
-        const supportFileAttrs = checkMinVersion(XH.getEnv('hoistCoreVersion'),'13.2.0');
+        const supportFileAttrs = checkMinVersion(XH.getEnv('hoistCoreVersion'), '13.2.0');
 
         return new GridModel({
             enableExport: true,
@@ -249,7 +249,5 @@ export class LogViewerModel extends HoistModel {
 
 function fileSizeRenderer(v) {
     if (v == null) return '';
-    if (v < 0) return '';
-
     return fmtNumber(v/1000, {precision: 1});
 }
