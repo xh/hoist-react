@@ -8,6 +8,7 @@
   check your app's icon usages carefully.
 * `fmtQuantity` now displays values greater than one billion with `b` unit, similar to current
   handling of millions with `m`.
+* Enhancements to admin log viewer to show timezone and log file metadata.
 
 ### 💥 Breaking Changes
 
