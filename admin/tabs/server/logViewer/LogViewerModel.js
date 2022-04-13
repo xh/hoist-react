@@ -9,7 +9,6 @@ import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
 import {
     compactDateRenderer,
-    fmtCompactDate,
     fmtNumber
 } from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';

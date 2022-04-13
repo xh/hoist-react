@@ -6,15 +6,16 @@
  */
 import {clock} from '@xh/hoist/cmp/clock';
 import {grid} from '@xh/hoist/cmp/grid';
-import {hframe, label, strong} from '@xh/hoist/cmp/layout';
+import {filler, hframe, hspacer, label} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {fmtTimeZone} from '@xh/hoist/utils/impl';
+import {HOURS} from '@xh/hoist/utils/datetime';
 import {logDisplay} from './LogDisplay';
 import './LogViewer.scss';
 import {LogViewerModel} from './LogViewerModel';
@@ -69,11 +70,11 @@ const bbar = hoistCmp.factory(
 
         return toolbar({
             items: [
+                filler(),
                 'Server Time:',
-                strong(clock({timezone: zone, format: 'HH:mm:ss'})),
-                label(' ['),
-                fmtTimeZone(zone, offset),
-                ']'
+                clock({timezone: zone, format: 'HH:mm'}),
+                hspacer(2),
+                `[GMT${fmtNumber(offset/HOURS, {withPlusSign: true, asHtml: true})}]`
             ],
             omit: !zone  // zone env support requires hoist-core 7.1+
         });
