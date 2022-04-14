@@ -6,32 +6,19 @@
  */
 
 .xh-log-display {
-  color: var(--xh-blue-gray-dark);
-  background-color: var(--xh-yellow-light);
-  height: 100%;
-  overflow: scroll;
 
   &__row {
     font-family: var(--xh-font-family-mono);
     font-size: var(--xh-font-size-small-em);
-    user-select: none;
-
-    &:hover {
-      background-color: var(--xh-bg-highlight);
-      color: var(--xh-text-color-highlight);
-    }
 
     &-number {
       color: var(--xh-text-color-accent);
-      border-right: var(--xh-border-dotted);
-      padding-right: var(--xh-pad-px);
-      min-width: 50px;
-      text-align: end;
+      border-right: var(--xh-border-dotted) !important;
+      align-items: flex-start !important;
     }
 
     &-content {
-      padding-left: var(--xh-pad-px);
-      white-space: pre;
+      //white-space: normal;
     }
   }
 }

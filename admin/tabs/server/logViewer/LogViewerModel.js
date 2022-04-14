@@ -25,24 +25,10 @@ import {LogDisplayModel} from './LogDisplayModel';
  */
 export class LogViewerModel extends HoistModel {
 
-    persistWith = {localStorageKey: 'xhAdminLogViewerState'};
-
-    // Form State/Display options
-    @bindable
-    @persist
-    tail = false;
-
-    @bindable startLine = 1;
-    @bindable maxLines = 1000;
-    @bindable pattern = '';
-
     // Overall State
     @observable file = null;
 
     viewRef = createRef();
-
-    @managed
-    timer = null;
 
     @managed
     logDisplayModel = new LogDisplayModel(this);
@@ -77,21 +63,6 @@ export class LogViewerModel extends HoistModel {
         this.filesGridModel = this.createGridModel();
 
         this.addReaction(this.syncSelectionReaction());
-        this.addReaction({
-            track: () => this.tail,
-            run: (tail) => {
-                this.setStartLine(tail ? null : 1);
-                this.loadLog();
-            },
-            fireImmediately: true
-        });
-        this.addReaction(this.reloadReaction());
-
-        this.timer = Timer.create({
-            runFn: () => this.autoRefreshLines(),
-            interval: 5 * SECONDS,
-            delay: true
-        });
     }
 
     @action
@@ -216,34 +187,10 @@ export class LogViewerModel extends HoistModel {
             track: () => this.selectedRecord,
             run: (rec) => {
                 this.file = rec?.data?.filename;
-                this.loadLog();
+                this.logDisplayModel.loadLog();
             },
             debounce: {interval: 300, leading: true}
         };
-    }
-
-    reloadReaction() {
-        return {
-            track: () => [this.pattern, this.maxLines, this.startLine],
-            run: () => this.loadLog()
-        };
-    }
-
-    autoRefreshLines() {
-        const {logDisplayModel, tail, viewRef} = this;
-
-        if (tail &&
-            logDisplayModel.tailIsDisplayed &&
-            olderThan(logDisplayModel.lastLoadCompleted, 5 * SECONDS) &&
-            isDisplayed(viewRef.current)
-        ) {
-            logDisplayModel.refreshAsync();
-        }
-    }
-
-    @debounced(300)
-    loadLog() {
-        this.logDisplayModel.refreshAsync();
     }
 }
 
