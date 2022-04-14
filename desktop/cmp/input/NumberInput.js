@@ -205,28 +205,35 @@ const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props);
 
-        // BP NumberInput bases expected precision off of dps in minorStepSize, if specified.
+        // BP's min/max can cause problems when controlled value is formatted string so only set
+        // when focused and rendered value is number.  min/max only constrains step editing anyway
+        const min = model.hasFocus ? props.min : undefined,
+            max = model.hasFocus ? props.max : undefined;
+
+        // BP bases expected precision off of dps in minorStepSize, if specified.
         // The default BP value of 0.1 for this prop emits a console warning any time the input
         // value extends beyond 1 dp. Re-default here to sync with our `precision` prop.
         // See https://blueprintjs.com/docs/#core/components/numeric-input.numeric-precision
         const precision = withDefault(props.precision, 4),
+            majorStepSize = props.majorStepSize,
             minorStepSize = precision ?
                 withDefault(props.minorStepSize, round(Math.pow(10, -precision), precision)) :
                 null;
 
+        // Render BP input.  Force remount when focus changes to avoid problems with cached state.
         return numericInput({
+            key: model.xhId + model.hasFocus,
             value: model.formatRenderValue(model.renderValue),
-
-            allowNumericCharactersOnly: !props.enableShorthandUnits,
+            allowNumericCharactersOnly: !props.enableShorthandUnits && !props.displayWithCommas,
             buttonPosition: 'none',
             disabled: props.disabled,
             fill: props.fill,
             inputRef: composeRefs(model.inputRef, props.inputRef),
             leftIcon: props.leftIcon,
-            max: props.max,
-            majorStepSize: props.majorStepSize,
-            min: props.min,
+            min,
+            max,
             minorStepSize,
+            majorStepSize,
             placeholder: props.placeholder,
             rightElement: props.rightElement,
             stepSize: props.stepSize,
