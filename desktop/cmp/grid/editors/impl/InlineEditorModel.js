@@ -11,7 +11,6 @@ import {HoistModel, useLocalModel} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {apiRemoved} from '@xh/hoist/utils/js';
 
 /**
  * Hook to render a component to be used for inline cell editing in ag-grid.
@@ -25,11 +24,9 @@ import {apiRemoved} from '@xh/hoist/utils/js';
  * @param {Object} ref - forwardRef passed to containing component
  * @return {ReactElement} - React Element to be rendered
  */
-export function useInlineEditorModel(component, props, ref, isPopup = false) {
+export function useInlineEditorModel(component, props, ref) {
     const {className, inputProps, agParams} = props,
         impl = useLocalModel(() => new InlineEditorModel(agParams));
-
-    apiRemoved('isPopup', {test: isPopup, msg: 'Use `Column.editorIsPopup` instead', v: 48});
 
     useImperativeHandle(ref, () => ({
         getValue: () => impl.value,
