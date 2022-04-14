@@ -60,9 +60,6 @@ export class LogDisplayModel extends HoistModel {
             delay: true
         });
         this.addReaction(this.reloadReaction());
-
-        console.warn('Exposing foo to window');
-        window.foo = this;
     }
 
     async doLoadAsync(loadSpec) {

@@ -6,12 +6,14 @@
  */
 import {grid} from '@xh/hoist/cmp/grid';
 import {clock} from '@xh/hoist/cmp/clock';
-import {strong, label} from '@xh/hoist/cmp/layout';
+import {strong, label, filler, hspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {fmtNumber} from '@xh/hoist/format';
+import {HOURS} from '@xh/hoist/utils/datetime';
 import {fmtTimeZone} from '@xh/hoist/utils/impl';
 import './LogViewer.scss';
 import {LogDisplayModel} from './LogDisplayModel';
@@ -81,11 +83,11 @@ const bbar = hoistCmp.factory(
 
         return toolbar({
             items: [
+                filler(),
                 'Server Time:',
-                strong(clock({timezone: zone, format: 'HH:mm:ss'})),
-                label(' ['),
-                fmtTimeZone(zone, offset),
-                ']'
+                clock({timezone: zone, format: 'HH:mm'}),
+                hspacer(2),
+                `[GMT${fmtNumber(offset/HOURS, {withPlusSign: true, asHtml: true})}]`
             ],
             omit: !zone  // zone env support requires hoist-core 7.1+
         });
