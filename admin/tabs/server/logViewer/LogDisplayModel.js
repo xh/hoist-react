@@ -7,11 +7,12 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, XH, managed, SizingMode, persist} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {Store} from '@xh/hoist/data';
+import {FieldType, Store} from '@xh/hoist/data';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
+import {maxBy} from 'lodash';
 
 /**
  * @private
@@ -19,9 +20,6 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 export class LogDisplayModel extends HoistModel {
 
     persistWith = {localStorageKey: 'xhAdminLogViewerState'};
-
-    firstRowRef = createObservableRef();
-    lastRowRef = createObservableRef();
 
     // Form State/Display options
     @bindable
@@ -35,14 +33,15 @@ export class LogDisplayModel extends HoistModel {
     @managed
     timer = null;
 
+    /** @member {GridModel}*/
     @managed
-    logDisplayGrid;
+    gridModel;
 
     constructor(parent) {
         super();
         makeObservable(this);
 
-        this.logDisplayGrid = this.createGridModel();
+        this.gridModel = this.createGridModel();
 
         this.parent = parent;
 
@@ -50,6 +49,7 @@ export class LogDisplayModel extends HoistModel {
             track: () => this.tail,
             run: (tail) => {
                 this.setStartLine(tail ? null : 1);
+                this.scrollToTailAsync();
                 this.loadLog();
             },
             fireImmediately: true
@@ -66,7 +66,7 @@ export class LogDisplayModel extends HoistModel {
         const {parent} = this;
 
         if (!parent.file) {
-            this.logDisplayGrid.clear();
+            this.gridModel.clear();
             return;
         }
 
@@ -102,21 +102,12 @@ export class LogDisplayModel extends HoistModel {
             rowBorders: false,
             sizingMode: SizingMode.TINY,
             sortBy: 'rowNum|asc',
-            store: new Store({
-                idSpec: 'rowNum',
-                fields: [
-                    {
-                        name: 'rowNum',
-                        type: 'number'
-                    }, {
-                        name: 'rowContent',
-                        type: 'string'
-                    }
-                ]
-            }),
+            store: {
+                idSpec: 'rowNum'
+            },
             columns: [
                 {
-                    field: 'rowNum',
+                    field: {name: 'rowNum', type: FieldType.NUMBER},
                     width: 4,
                     cellClass: 'xh-log-display__row-number'
                 },
@@ -134,6 +125,7 @@ export class LogDisplayModel extends HoistModel {
 
     updateGridData(data) {
         let maxRowLength = 200;
+
         const gridData = data.map(
             (row) => {
                 if (row[1].length > maxRowLength) {
@@ -145,9 +137,20 @@ export class LogDisplayModel extends HoistModel {
                 };
             });
         // Estimate the length of the row in pixels based on (character count) * (font size)
-        this.logDisplayGrid.setColumnState([{colId: 'rowContent', width: maxRowLength * 6}]);
+        this.gridModel.setColumnState([{colId: 'rowContent', width: maxRowLength * 6}]);
 
-        this.logDisplayGrid.loadData(gridData);
+        this.gridModel.loadData(gridData);
+
+        this.scrollToTailAsync();
+    }
+
+    async scrollToTailAsync() {
+        const {tail, gridModel} = this;
+        if (tail && !gridModel.hasSelection) {
+            const lastRecord = maxBy(gridModel.store.records, 'id');
+            await gridModel.selectAsync(lastRecord);
+            gridModel.clearSelection();
+        }
     }
 
     reloadReaction() {
@@ -166,12 +169,6 @@ export class LogDisplayModel extends HoistModel {
         ) {
             this.doLoadAsync();
         }
-    }
-
-    get tailIsDisplayed() {
-        const {lastRowRef} = this,
-            rect = lastRowRef.current && lastRowRef.current.getBoundingClientRect();
-        return rect && rect.bottom <= window.innerHeight;
     }
 
     @debounced(300)
