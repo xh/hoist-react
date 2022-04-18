@@ -202,6 +202,7 @@ class Model extends HoistInputModel {
         super.noteBlurred();
         wait().then(() => {
             const input = this.inputRef.current;
+            // Force value to re-render in control to workaround issue with blueprint state caching
             if (input) input.value = this.formatRenderValue(this.renderValue);
         });
     }
@@ -227,7 +228,7 @@ const cmp = hoistCmp.factory(
                 withDefault(props.minorStepSize, round(Math.pow(10, -precision), precision)) :
                 null;
 
-        // Render BP input.  Force remount when focus changes to avoid problems with cached state.
+        // Render BP input.
         return numericInput({
             value: model.formatRenderValue(model.renderValue),
             allowNumericCharactersOnly: !props.enableShorthandUnits && !props.displayWithCommas,
