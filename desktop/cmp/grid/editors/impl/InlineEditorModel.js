@@ -32,7 +32,9 @@ export function useInlineEditorModel(component, props, ref) {
         getValue: () => impl.value,
 
         // This is called in full-row editing when the user tabs into the cell
-        focusIn: () => impl.focus()
+        focusIn: () => impl.focus(),
+
+        inputModel: () => impl.ref.current
     }));
 
     return component({

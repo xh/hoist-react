@@ -573,8 +573,16 @@ export class Column {
                 suppressKeyboardEvent: ({editing, event}) => {
                     if (!editing) return false;
 
+                    // Avoid stomping on react-select menus in editors
+                    const {gridModel, colId} = this,
+                        editor = gridModel.agApi.getCellEditorInstances({columns: [colId]})[0],
+                        reactSelect = editor?.inputModel?.().reactSelect;
+                    if (reactSelect?.state.menuIsOpen) return true;
+
                     // Allow shift+enter to add newlines in certain editors
                     if (event.shiftKey && event.key === 'Enter') return true;
+
+                    return false;
                 }
             };
 
