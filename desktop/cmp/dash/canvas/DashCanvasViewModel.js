@@ -16,7 +16,7 @@ import {createRef} from 'react';
  * @Beta
  */
 export class DashCanvasViewModel extends DashViewModel {
-    /** @member {DOMElement} */
+    /** @member {RefObject<DOMElement>} */
     ref = createRef();
 
     get positionParams() {

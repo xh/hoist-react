@@ -64,7 +64,7 @@ export class DashCanvasModel extends HoistModel {
     //------------------------
     // Implementation properties
     //------------------------
-    /** @member {React.DOMElement} */
+    /** @member {RefObject<DOMElement>} */
     ref = createRef();
 
     /**
@@ -198,7 +198,7 @@ export class DashCanvasModel extends HoistModel {
      * @param {Object} [layout] - layout information for where to add the view and what it's initial size should be
      * @param {string} [title] - title for the view
      * @param {Object} [state] - internal state for the view contents
-     * @returns {React.DOMElement} - reference to view DOM element
+     * @returns {DashCanvasViewModel}
      */
     @action
     addView(viewSpecId, {layout, title, state}) {
@@ -230,7 +230,7 @@ export class DashCanvasModel extends HoistModel {
 
         this.layout = [...this.layout, {i: id, x, y, h, w}];
         this.viewModels = [...this.viewModels, model];
-        return model.ref;
+        return model;
     }
 
     /**
