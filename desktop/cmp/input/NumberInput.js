@@ -190,15 +190,22 @@ class Model extends HoistInputModel {
         return parseFloat(value);
     }
 
-    onFocus = (ev) => {
-        this.noteFocused();
-
-        // Deferred to allow any value conversion to complete and flush into input.
+    noteFocused() {
+        super.noteFocused();
         if (this.componentProps.selectOnFocus) {
-            const target = ev.target;
-            wait().then(() => target.select());
+            // Deferred to allow any value conversion to complete and flush into input.
+            wait().then(() => this.inputRef.current?.select());
         }
     }
+
+    noteBlurred() {
+        super.noteBlurred();
+        wait().then(() => {
+            const input = this.inputRef.current;
+            if (input) input.value = this.formatRenderValue(this.renderValue);
+        });
+    }
+
 }
 
 const cmp = hoistCmp.factory(
@@ -222,7 +229,6 @@ const cmp = hoistCmp.factory(
 
         // Render BP input.  Force remount when focus changes to avoid problems with cached state.
         return numericInput({
-            key: model.xhId + model.hasFocus,
             value: model.formatRenderValue(model.renderValue),
             allowNumericCharactersOnly: !props.enableShorthandUnits && !props.displayWithCommas,
             buttonPosition: 'none',
