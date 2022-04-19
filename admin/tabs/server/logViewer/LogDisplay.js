@@ -4,21 +4,18 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {grid} from '@xh/hoist/cmp/grid';
 import {clock} from '@xh/hoist/cmp/clock';
-import {label, filler, hspacer} from '@xh/hoist/cmp/layout';
+import {grid} from '@xh/hoist/cmp/grid';
+import {hspacer, label} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
-import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {HOURS} from '@xh/hoist/utils/datetime';
-import './LogViewer.scss';
 import {LogDisplayModel} from './LogDisplayModel';
+import './LogViewer.scss';
 
 /**
  * @private
@@ -65,13 +62,13 @@ const tbar = hoistCmp.factory(
                 placeholder: 'Filter',
                 leftIcon: Icon.filter(),
                 enableClear: true,
-                width: 200
+                width: 160
             }),
-            gridFindField({width: 200}),
+            gridFindField({width: 160}),
             '-',
             switchInput({
                 bind: 'tail',
-                label: 'Tail mode',
+                label: 'Tail',
                 labelSide: 'left'
             }),
             hspacer(5),

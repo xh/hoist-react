@@ -5,10 +5,10 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, XH, managed, SizingMode, persist} from '@xh/hoist/core';
+import {HoistModel, managed, persist, SizingMode, XH} from '@xh/hoist/core';
+import {FieldType} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {FieldType} from '@xh/hoist/data';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
@@ -59,7 +59,7 @@ export class LogDisplayModel extends HoistModel {
         });
 
         this.addReaction({
-            track: () => [this.pattern, this.maxLines, this.startLine],
+            track: () => [this.parent.file, this.pattern, this.maxLines, this.startLine],
             run: () => this.loadLog()
         });
 
@@ -185,6 +185,7 @@ export class LogDisplayModel extends HoistModel {
 
         if (tailActive &&
             olderThan(this.lastLoadCompleted, 5 * SECONDS) &&
+            !this.loadModel.isPending &&
             isDisplayed(viewRef.current)
         ) {
             this.loadLog();
