@@ -506,7 +506,7 @@ export class Column {
 
     /** @return {boolean} - true if column should always remain visible */
     get lockVisible() {
-        return !this.hideable || !this.gridModel.colChooserModel || XH.isMobileApp;
+        return !this.hideable || !this.gridModel.colChooserModel;
     }
 
     /** @return {boolean} - true if column is initialized as hidden and cannot be made visible via ChooserModel. */
@@ -550,7 +550,7 @@ export class Column {
                 suppressMovable: !this.movable,
                 lockPinned: !gridModel.enableColumnPinning || XH.isMobileApp,
                 pinned: this.pinned,
-                lockVisible: this.lockVisible,
+                lockVisible: this.lockVisible || XH.isMobileApp,
                 headerComponentParams: {gridModel, xhColumn: this},
                 suppressColumnsToolPanel: this.excludeFromChooser,
                 suppressFiltersToolPanel: this.excludeFromChooser,
