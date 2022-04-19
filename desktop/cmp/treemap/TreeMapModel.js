@@ -347,16 +347,13 @@ export class TreeMapModel extends HoistModel {
             data.forEach(it => {
                 const {heatValue, record} = it,
                     value = record.data[valueField],
-                    isValid = this.valueIsValid(heatValue);
+                    isValid = this.valueIsValid(heatValue),
+                    checkValue = heatValue !== 0 ? heatValue : value;
 
-                if (isValid) {
-                    if (heatValue === 0) {
-                        it.colorValue = value >= 0 ? 0.8 : 0.2;
-                    } else {
-                        it.colorValue = heatValue >= 0 ? 0.8 : 0.2;
-                    }
-                } else {
+                if (!isValid || (heatValue === 0 && value === 0)) {
                     it.colorValue = 0.5;
+                } else {
+                    it.colorValue = checkValue > 0 ? 0.8 : 0.2;
                 }
             });
             return data;
@@ -383,16 +380,7 @@ export class TreeMapModel extends HoistModel {
                 return;
             }
 
-            // if (heatValue === 0)
-                // check if in primary or secondary map model to determine if colorValue should be positive or negative
-                // or could check if value is positive or negative
-            if (heatValue === 0) {
-                if (value > 0) {
-                    it.colorValue = this.normalizeToRange(heatValue, 0, maxHeat, 0.6, 1);
-                } else {
-                    it.colorValue = this.normalizeToRange(Math.abs(heatValue), maxHeat, 0, 0, 0.4);
-                }
-            } else if (heatValue > 0) {
+            if (heatValue > 0 || (heatValue === 0 && value > 0)) {
                 // Normalize positive values between 0.6-1
                 it.colorValue = this.normalizeToRange(heatValue, 0, maxHeat, 0.6, 1);
             } else {

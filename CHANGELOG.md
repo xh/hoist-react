@@ -30,6 +30,7 @@
 * Set ag-Grid's `suppressLastEmptyLineOnPaste` to true to work around a bug with Excel (Windows)
   that adds an empty line beneath the range pasted from the clipboard in editable grids.
 * Fixes an issue where NumberInput would initially render blank values when `max` and `min` were set.
+* Fixes an issue where tree maps would always show green for a `heatValue` of zero.
 
 ### 📚 Libraries
 
