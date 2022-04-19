@@ -60,6 +60,11 @@ export class DashCanvasModel extends HoistModel {
     //------------------------
     /** @member {DashCanvasViewSpec[]} */
     viewSpecs = [];
+    /** @member {string} */
+    emptyText;
+    /** @member {string} */
+    addViewButtonText;
+
 
     //------------------------
     // Implementation properties
@@ -86,6 +91,8 @@ export class DashCanvasModel extends HoistModel {
      * @param {number[]} c.margin - Between items [x,y] in pixels
      * @param {number} c.maxRows - Maximum number of rows permitted for this container
      * @param {number[]} c.containerPadding - Padding inside the container [x, y] in pixels
+     * @param {string} [c.emptyText] - text to display when the container is empty
+     * @param {string} [c.addViewButtonText] - text to display on the add view button
      * @param {Array} [c.extraMenuItems] - Array of RecordActions, configs or token strings, with
      *      which to create additional context menu items. Extra menu items will appear
      *      in the container's context menu below the 'Add' action, and in the 'Options' context
@@ -99,6 +106,8 @@ export class DashCanvasModel extends HoistModel {
         contentLocked = false,
         renameLocked = false,
         persistWith = null,
+        emptyText = 'No views have been added to the container.',
+        addViewButtonText = 'Add View',
         columns = 8,
         rowHeight = 50,
         compact = true,
@@ -131,6 +140,8 @@ export class DashCanvasModel extends HoistModel {
         this.margin = margin;
         this.containerPadding = containerPadding;
         this.compact = compact;
+        this.emptyText = emptyText;
+        this.addViewButtonText = addViewButtonText;
         this.extraMenuItems = extraMenuItems;
 
         // Read state from provider -- fail gently
@@ -329,6 +340,11 @@ export class DashCanvasModel extends HoistModel {
     // Get all ViewModels with a given DashViewSpec.id
     getItemsBySpecId(id) {
         return this.viewModels.filter(it => it.viewSpec.id === id);
+    }
+
+    /** @returns {boolean} */
+    get isEmpty() {
+        return this.layout.length === 0;
     }
 }
 

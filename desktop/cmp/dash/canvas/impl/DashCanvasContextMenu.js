@@ -50,7 +50,8 @@ function createMenuItems({dashCanvasModel, clickPosition}) {
 function createAddMenuItems({dashCanvasModel, clickPosition}) {
     const groupedItems = {},
         ungroupedItems = [],
-        {x, y} = clickPosition,
+        x = clickPosition?.x ?? 0,
+        y = clickPosition?.y ?? 0,
         addPosition = calcAddPosition(x, y, dashCanvasModel);
 
     const addToGroup = (item, groupName) => {

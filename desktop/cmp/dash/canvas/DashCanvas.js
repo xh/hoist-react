@@ -1,6 +1,9 @@
 import {ContextMenu} from '@blueprintjs/core';
-import {div} from '@xh/hoist/cmp/layout';
+import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {elemFactory, hoistCmp, uses, XH} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {Icon} from '@xh/hoist/icon';
+import {Classes, overlay, popover} from '@xh/hoist/kit/blueprint';
 import classNames from 'classnames';
 import PT from 'prop-types';
 
@@ -42,7 +45,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
                     x = clientX + ref.current.scrollLeft,
                     y = clientY + ref.current.scrollTop;
 
-                if (classList.contains('react-grid-layout') || classList.contains('react-resizable-handle')) {
+                if (classList.contains('react-grid-layout') || classList.contains('react-resizable-handle')|| classList.contains('xh-dash-canvas')) {
                     ContextMenu.show(
                         dashCanvasContextMenu({
                             dashCanvasModel: model,
@@ -54,27 +57,30 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
                     );
                 }
             },
-            item: reactGridLayout({
-                layout: model.layout,
-                cols: model.columns,
-                rowHeight: model.rowHeight,
-                isDraggable,
-                isResizable,
-                compactType: model.compact ? 'vertical' : null,
-                margin: model.margin,
-                maxRows: model.maxRows,
-                containerPadding: model.containerPadding,
-                autoSize: true,
-                isBounded: true,
-                draggableHandle: '.xh-panel > .xh-panel__content > .xh-panel-header',
-                // Resizing always pins to the nw corner, so dragging from anywhere other than se sides/corner is unintuitive
-                resizeHandles: ['s', 'e', 'se'],
-                onLayoutChange: (layout) => model.setLayout(layout),
-                items: model.viewModels.map(vm => div({
-                    key: vm.id,
-                    item: dashCanvasView({model: vm})
-                }))
-            })
+            items: [
+                reactGridLayout({
+                    layout: model.layout,
+                    cols: model.columns,
+                    rowHeight: model.rowHeight,
+                    isDraggable,
+                    isResizable,
+                    compactType: model.compact ? 'vertical' : null,
+                    margin: model.margin,
+                    maxRows: model.maxRows,
+                    containerPadding: model.containerPadding,
+                    autoSize: true,
+                    isBounded: true,
+                    draggableHandle: '.xh-panel > .xh-panel__content > .xh-panel-header',
+                    // Resizing always pins to the nw corner, so dragging from anywhere other than se sides/corner is unintuitive
+                    resizeHandles: ['s', 'e', 'se'],
+                    onLayoutChange: (layout) => model.setLayout(layout),
+                    items: model.viewModels.map(vm => div({
+                        key: vm.id,
+                        item: dashCanvasView({model: vm})
+                    }))
+                }),
+                emptyContainerOverlay()
+            ]
         });
     }
 });
@@ -82,5 +88,38 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
 DashCanvas.propTypes = {
     model: PT.oneOfType([PT.instanceOf(DashCanvasModel), PT.object])
 };
+
+const emptyContainerOverlay = hoistCmp.factory(
+    ({model}) => {
+        const {isEmpty, emptyText, addViewButtonText} = model;
+        if (!isEmpty) return null;
+
+        return overlay({
+            className: `xh-dash-canvas--empty-overlay ${Classes.OVERLAY_SCROLL_CONTAINER}`,
+            autoFocus: true,
+            isOpen: true,
+            canEscapeKeyClose: false,
+            usePortal: false,
+            enforceFocus: false,
+            item: vbox({
+                alignItems: 'center',
+                items: [
+                    div(emptyText),
+                    vspacer(10),
+                    popover({
+                        interactionKind: 'click',
+                        item: button({
+                            icon: Icon.add(),
+                            text: addViewButtonText
+                        }),
+                        content: dashCanvasContextMenu({
+                            dashCanvasModel: model
+                        })
+                    })
+                ]
+            })
+        });
+    }
+);
 
 const reactGridLayout = elemFactory(WidthProvider(ReactGridLayout));
