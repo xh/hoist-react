@@ -232,6 +232,7 @@ class GridLocalModel extends HoistModel {
             navigateToNextCell: this.navigateToNextCell,
             processCellForClipboard: this.processCellForClipboard,
             defaultGroupOrderComparator: model.groupSortFn ? this.groupSortComparator : undefined,
+            suppressMakeColumnVisibleAfterUnGroup: true,
             groupDefaultExpanded: 1,
             groupDisplayType: 'groupRows',
             groupRowRenderer: model.groupRowElementRenderer,

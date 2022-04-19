@@ -94,7 +94,7 @@ export class Column {
     align;
 
     /** @member {boolean} */
-    hidden
+    hidden;
     /** @member {(boolean|number)} */
     flex;
     /** @member {number} */
@@ -275,8 +275,8 @@ export class Column {
      * @param {string} [c.chooserName] - name to display within the column chooser component.
      *      Defaults to `displayName`, can be longer / less abbreviated than `headerName` might be.
      * @param {string} [c.chooserGroup] - group name to display within the column chooser
-     *     component.
-     *      Chooser will automatically group its "available columns" grid if any cols provide.
+     *     component. Chooser will automatically group its "available columns" grid if any cols
+     *     provide.
      * @param {string} [c.chooserDescription] - additional descriptive text to display within the
      *      column chooser. Appears when the column is selected within the chooser UI.
      * @param {boolean} [c.excludeFromChooser] - true to hide the column from the column chooser
@@ -504,6 +504,16 @@ export class Column {
         warnIf(this.agOptions.valueGetter, `Column '${this.colId}' uses valueGetter through agOptions. Remove and use custom getValueFn if needed.`);
     }
 
+    /** @return {boolean} - true if column should always remain visible */
+    get lockVisible() {
+        return !this.hideable || !this.gridModel.colChooserModel;
+    }
+
+    /** @return {boolean} - true if column is initialized as hidden and cannot be made visible via ChooserModel. */
+    get lockHidden() {
+        return this.hidden && (this.excludeFromChooser || !this.gridModel.colChooserModel);
+    }
+
     /**
      * @param {StoreRecord} record
      * @return {boolean} - true if this column supports editing its field for the given StoreRecord.
@@ -540,7 +550,7 @@ export class Column {
                 suppressMovable: !this.movable,
                 lockPinned: !gridModel.enableColumnPinning || XH.isMobileApp,
                 pinned: this.pinned,
-                lockVisible: !this.hideable || !gridModel.colChooserModel || XH.isMobileApp,
+                lockVisible: this.lockVisible || XH.isMobileApp,
                 headerComponentParams: {gridModel, xhColumn: this},
                 suppressColumnsToolPanel: this.excludeFromChooser,
                 suppressFiltersToolPanel: this.excludeFromChooser,

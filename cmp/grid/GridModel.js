@@ -32,6 +32,7 @@ import {
     compact,
     defaults,
     defaultsDeep,
+    difference,
     find,
     forEach,
     isArray,
@@ -101,6 +102,10 @@ export class GridModel extends HoistModel {
     groupSortFn;
     /** @member {boolean} */
     showGroupRowCounts;
+    /** @member {boolean} */
+    hideGroupedColumns;
+    /** @member {boolean} */
+    showUngroupedColumns;
     /** @member {boolean} */
     enableColumnPinning;
     /** @member {boolean} */
@@ -267,6 +272,8 @@ export class GridModel extends HoistModel {
      * @param {GridGroupSortFn} [c.groupSortFn] - function to use to sort full-row groups.
      *      Called with two group values to compare in the form of a standard JS comparator.
      *      Default is an ascending string sort. Set to `null` to prevent sorting of groups.
+     * @param {boolean} [c.hideGroupedColumns] - true to hide grouped columns. Default true.
+     * @param {boolean} [c.showUngroupedColumns] - true to show ungrouped columns. Default true.
      * @param {function} [c.onKeyDown] - Callback when a key down event is detected on the
      *      grid. Function will receive an event with the standard 'target' element. Note that
      *      the ag-Grid API provides limited ability to customize keyboard handling. This handler
@@ -352,6 +359,8 @@ export class GridModel extends HoistModel {
         groupRowRenderer,
         groupRowElementRenderer,
         groupSortFn,
+        hideGroupedColumns = true,
+        showUngroupedColumns = true,
 
         onKeyDown,
         onRowClicked,
@@ -389,6 +398,8 @@ export class GridModel extends HoistModel {
         this.groupRowElementRenderer = groupRowElementRenderer;
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.showGroupRowCounts = showGroupRowCounts;
+        this.hideGroupedColumns = hideGroupedColumns;
+        this.showUngroupedColumns = showUngroupedColumns;
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
@@ -708,12 +719,32 @@ export class GridModel extends HoistModel {
     @action
     setGroupBy(colIds) {
         colIds = isNil(colIds) ? [] : castArray(colIds);
+        const getCol = (colId) => this.findColumn(this.columns, colId),
+            invalidColIds = colIds.filter(it => !getCol(it));
 
-        const invalidColIds = colIds.filter(it => !this.findColumn(this.columns, it));
         if (invalidColIds.length) {
             console.warn('Unknown colId specified in groupBy - grid will not be grouped.', invalidColIds);
             colIds = [];
         }
+
+        // Set column visibility as specified, respecting locked visible/hidden states.
+        const {groupBy, hideGroupedColumns, showUngroupedColumns, colChooserModel} = this,
+            ungroupedColIds = difference(groupBy, colIds);
+
+        colIds.forEach(it => {
+            if (getCol(it).lockVisible) return;
+            if (hideGroupedColumns) this.hideColumn(it);
+        });
+
+        ungroupedColIds.forEach(it => {
+            const col = getCol(it);
+            if (col.lockHidden) return;
+            if (showUngroupedColumns) this.showColumn(it);
+
+            if (!showUngroupedColumns && hideGroupedColumns && (col.excludeFromChooser || !colChooserModel)) {
+                console.warn('Column cannot be made visible after grouping due to GridModel and/or Column configuration. colId:', col.colId);
+            }
+        });
 
         this.groupBy = colIds;
     }
