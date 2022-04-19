@@ -105,7 +105,7 @@ export const Icon = {
     boxFull(p)          {return Icon.icon({...p,  iconName: 'box-full'})},
     bullhorn(p)         {return Icon.icon({...p,  iconName: 'bullhorn'})},
     calculator(p)       {return Icon.icon({...p,  iconName: 'calculator'})},
-    calendar(p)         {return Icon.icon({...p,  iconName: 'calendar-alt'})},
+    calendar(p)         {return Icon.icon({...p,  iconName: 'calendar-day'})},
     camera(p)           {return Icon.icon({...p,  iconName: 'camera'})},
     caretLeft(p)        {return Icon.icon({...p,  iconName: 'caret-left'})},
     caretRight(p)       {return Icon.icon({...p,  iconName: 'caret-right'})},
