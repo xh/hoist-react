@@ -9,6 +9,7 @@ import {clock} from '@xh/hoist/cmp/clock';
 import {label, filler, hspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -32,11 +33,7 @@ export const logDisplay = hoistCmp.factory({
             className: 'xh-log-display',
             tbar: tbar(),
             item: grid(),
-            loadingIndicator: loadingIndicator({
-                bind: model.loadModel,
-                message: 'Loading...',
-                spinner: false
-            }),
+            loadingIndicator: 'onLoad',
             bbar: bbar()
         });
     }
@@ -54,6 +51,7 @@ const tbar = hoistCmp.factory(
                 disabled: model.tail,
                 displayWithCommas: true
             }),
+            hspacer(5),
             label('Max lines:'),
             numberInput({
                 bind: 'maxLines',
@@ -64,24 +62,29 @@ const tbar = hoistCmp.factory(
             '-',
             textInput({
                 bind: 'pattern',
-                placeholder: 'Search...',
+                placeholder: 'Filter',
+                leftIcon: Icon.filter(),
                 enableClear: true,
-                width: 150
+                width: 200
             }),
+            gridFindField({width: 200}),
             '-',
             switchInput({
                 bind: 'tail',
                 label: 'Tail mode',
                 labelSide: 'left'
             }),
+            hspacer(5),
             button({
-                icon: Icon.arrowToBottom(),
-                tooltip: 'Scroll to End',
+                icon: Icon.pause(),
+                intent: 'warning',
+                outlined: true,
+                text: 'Paused',
                 onClick: () => {
                     model.gridModel.clearSelection();
                     model.scrollToTail();
                 },
-                omit: !model.tail || !model.gridModel.hasSelection
+                omit: !model.tail || model.tailActive
             })
         );
     }
@@ -89,16 +92,16 @@ const tbar = hoistCmp.factory(
 
 const bbar = hoistCmp.factory(
     () => {
-        const zone = XH.getEnv('serverTimeZone'),
-            offset = XH.getEnv('serverTimeZoneOffset');
+        const zone = XH.getEnv('serverTimeZone');
 
         return toolbar({
             items: [
-                filler(),
-                'Server Time:',
-                clock({timezone: zone, format: 'HH:mm'}),
-                hspacer(2),
-                `[GMT${fmtNumber(offset/HOURS, {withPlusSign: true, asHtml: true})}]`
+                'Server time:',
+                clock({
+                    timezone: zone,
+                    format: 'HH:mm [GMT]Z',
+                    className: 'xh-font-family-mono xh-font-size-small'
+                })
             ],
             omit: !zone  // zone env support requires hoist-core 7.1+
         });

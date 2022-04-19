@@ -24,18 +24,7 @@ import {LogDisplayModel} from './LogDisplayModel';
  * @private
  */
 export class LogViewerModel extends HoistModel {
-
-    persistWith = {localStorageKey: 'xhAdminLogViewerState'};
-
-    // Form State/Display options
-    @bindable
-    @persist
-    tail = false;
-
-    @bindable startLine = 1;
-    @bindable maxLines = 1000;
-    @bindable pattern = '';
-
+    
     // Overall State
     @observable file = null;
 

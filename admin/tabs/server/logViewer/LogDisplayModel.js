@@ -10,7 +10,7 @@ import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {FieldType} from '@xh/hoist/data';
 import {Timer} from '@xh/hoist/utils/async';
-import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
+import {olderThan, ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
 import {maxBy} from 'lodash';
 
@@ -37,6 +37,10 @@ export class LogDisplayModel extends HoistModel {
     @managed
     gridModel;
 
+    get tailActive() {
+        return this.tail && !this.gridModel.hasSelection;
+    }
+
     constructor(parent) {
         super();
         makeObservable(this);
@@ -49,17 +53,21 @@ export class LogDisplayModel extends HoistModel {
             track: () => this.tail,
             run: (tail) => {
                 this.setStartLine(tail ? null : 1);
-                this.scrollToTail();
                 this.loadLog();
             },
             fireImmediately: true
         });
+
+        this.addReaction({
+            track: () => [this.pattern, this.maxLines, this.startLine],
+            run: () => this.loadLog()
+        });
+
         this.timer = Timer.create({
             runFn: () => this.autoRefreshLines(),
-            interval: 5 * SECONDS,
+            interval: ONE_SECOND,
             delay: true
         });
-        this.addReaction(this.reloadReaction());
     }
 
     async doLoadAsync(loadSpec) {
@@ -70,8 +78,8 @@ export class LogDisplayModel extends HoistModel {
             return;
         }
 
-        return XH
-            .fetchJson({
+        try {
+            const response = await XH.fetchJson({
                 url: 'logViewerAdmin/getFile',
                 params: {
                     filename: parent.file,
@@ -80,16 +88,14 @@ export class LogDisplayModel extends HoistModel {
                     pattern: this.pattern
                 },
                 loadSpec
-            })
-            .then(response => {
-                if (!response.success) throw new Error(response.exception);
-                this.updateGridData(response.content);
-            })
-            .catch(e => {
-                // Show errors inline in the viewer vs. a modal alert or catchDefault().
-                const msg = e.message || 'An unknown error occurred';
-                this.updateGridData([[0, `Error: ${msg}`]]);
             });
+            if (!response.success) throw XH.exception(response.exception);
+            this.updateGridData(response.content);
+        } catch (e) {
+            // Show errors inline in the viewer vs. a modal alert or catchDefault().
+            const msg = e.message || 'An unknown error occurred';
+            this.updateGridData([[0, `Error: ${msg}`]]);
+        }
     }
 
     //---------------------------------
@@ -131,17 +137,11 @@ export class LogDisplayModel extends HoistModel {
                 {
                     text: 'Deselect All',
                     actionFn: () => this.gridModel.clearSelection(),
-                    icon: Icon.minusCircle(),
-                    secondaryText: 'Ctrl+K'
+                    icon: Icon.minusCircle()
                 }
             ],
             onRowClicked: (evt) => {
-                if (evt.data.id === this.gridModel.selectedId) {
-                    this.gridModel.clearSelection();
-                }
-            },
-            onKeyDown: (evt) => {
-                if ((evt.ctrlKey || evt.metaKey) && evt.key === 'k') {
+                if (evt.data === this.gridModel.selectedRecord) {
                     this.gridModel.clearSelection();
                 }
             }
@@ -149,7 +149,7 @@ export class LogDisplayModel extends HoistModel {
     }
 
     updateGridData(data) {
-        const {tail, gridModel} = this;
+        const {tailActive, gridModel} = this;
         let maxRowLength = 200;
         const gridData = data.map(
             (row) => {
@@ -161,42 +161,33 @@ export class LogDisplayModel extends HoistModel {
                     'rowContent': row[1]
                 };
             });
+
         // Estimate the length of the row in pixels based on (character count) * (font size)
-        this.gridModel.setColumnState([{colId: 'rowContent', width: maxRowLength * 6}]);
+        gridModel.setColumnState([{colId: 'rowContent', width: maxRowLength * 6}]);
 
-        this.gridModel.loadData(gridData);
+        gridModel.loadData(gridData);
 
-        if (tail && !gridModel.hasSelection) {
+        if (tailActive) {
             this.scrollToTail();
         }
     }
 
-    scrollToTail() {
+    async scrollToTail() {
         const {gridModel} = this;
         const lastRecord = maxBy(gridModel.store.records, 'id');
-        // Screen moved directly using agApi to avoid flickering, perhaps add this functionality to GridModel
+        // Ensure last record visible without requiring selection
         gridModel.agApi?.ensureNodeVisible(lastRecord);
-
-        // Screen moved using selecting the record with GridModel, causes a flicker as row is momentarily selected
-        // await gridModel.selectAsync(lastRecord);
-        // gridModel.clearSelection();
-    }
-
-    reloadReaction() {
-        return {
-            track: () => [this.pattern, this.maxLines, this.startLine],
-            run: () => this.doLoadAsync()
-        };
     }
 
     autoRefreshLines() {
-        const {viewRef} = this.parent;
+        const {tailActive, parent} = this,
+            {viewRef} = parent;
 
-        if (this.tail &&
+        if (tailActive &&
             olderThan(this.lastLoadCompleted, 5 * SECONDS) &&
             isDisplayed(viewRef.current)
         ) {
-            this.doLoadAsync();
+            this.loadLog();
         }
     }
 
