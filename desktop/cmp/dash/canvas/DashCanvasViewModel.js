@@ -5,6 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {DashViewModel} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
+import {makeObservable, observable} from 'mobx';
 import {createRef} from 'react';
 
 /**
@@ -18,6 +19,14 @@ import {createRef} from 'react';
 export class DashCanvasViewModel extends DashViewModel {
     /** @member {RefObject<DOMElement>} */
     ref = createRef();
+    /** @member {boolean} */
+    @observable hidePanelHeader;
+
+    constructor(cfg) {
+        super(cfg);
+        makeObservable(this);
+        this.hidePanelHeader = cfg.viewSpec.hidePanelHeader ?? false;
+    }
 
     get positionParams() {
         const {containerModel, id} = this;

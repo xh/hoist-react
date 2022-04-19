@@ -29,52 +29,55 @@ export const dashCanvasView = hoistCmp.factory({
     model: uses(DashCanvasViewModel, {publishMode: ModelPublishMode.LIMITED}),
 
     render({model, className}) {
-        const {viewSpec, viewState, containerModel, id, positionParams, title, ref} = model,
-            {extraMenuItems, contentLocked, renameLocked} = containerModel;
+        const {viewSpec, viewState, containerModel, id, positionParams, title, ref, hidePanelHeader} = model,
+            {extraMenuItems, contentLocked, renameLocked} = containerModel,
+            headerProps = hidePanelHeader ? {} : {
+                compactHeader: true,
+                title: model.title,
+                icon: model.icon,
+                headerItems: [
+                    popover({
+                        position: Position.BOTTOM,
+                        minimal: true,
+                        target: button({
+                            icon: Icon.ellipsisVertical()
+                        }),
+                        content: contextMenu({
+                            menuItems: [
+                                {
+                                    text: 'Rename',
+                                    icon: Icon.edit(),
+                                    intent: 'primary',
+                                    hidden: !viewSpec.allowRename,
+                                    disabled: renameLocked,
+                                    actionFn: () => containerModel.renameView(id)
+                                },
+                                {
+                                    text: 'Duplicate',
+                                    icon: Icon.copy(),
+                                    disabled: contentLocked || viewSpec.unique,
+                                    actionFn: () =>
+                                        containerModel.addView(viewSpec.id, {layout: positionParams, state: viewState, title})
+                                },
+                                {
+                                    text: 'Remove',
+                                    icon: Icon.cross(),
+                                    intent: 'danger',
+                                    hidden: !viewSpec.allowRemove,
+                                    disabled: contentLocked,
+                                    actionFn: () => containerModel.removeView(id)
+                                },
+                                '-',
+                                ...(extraMenuItems ?? [])
+                            ]
+                        })
+                    })
+                ]
+            };
         return panel({
             className,
             ref,
-            compactHeader: true,
-            title: model.title,
-            icon: model.icon,
-            headerItems: [
-                popover({
-                    position: Position.BOTTOM,
-                    minimal: true,
-                    target: button({
-                        icon: Icon.ellipsisVertical()
-                    }),
-                    content: contextMenu({
-                        menuItems: [
-                            {
-                                text: 'Rename',
-                                icon: Icon.edit(),
-                                intent: 'primary',
-                                hidden: !viewSpec.allowRename,
-                                disabled: renameLocked,
-                                actionFn: () => containerModel.renameView(id)
-                            },
-                            {
-                                text: 'Duplicate',
-                                icon: Icon.copy(),
-                                disabled: contentLocked || viewSpec.unique,
-                                actionFn: () =>
-                                    containerModel.addView(viewSpec.id, {layout: positionParams, state: viewState, title})
-                            },
-                            {
-                                text: 'Remove',
-                                icon: Icon.cross(),
-                                intent: 'danger',
-                                hidden: !viewSpec.allowRemove,
-                                disabled: contentLocked,
-                                actionFn: () => containerModel.removeView(id)
-                            },
-                            '-',
-                            ...(extraMenuItems ?? [])
-                        ]
-                    })
-                })
-            ],
+            ...headerProps,
             item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
         });
     }

@@ -23,6 +23,7 @@ export class DashCanvasViewSpec extends DashViewSpec {
 
     height;
     width;
+    hidePanelHeader;
 
     /**
      *
@@ -32,10 +33,12 @@ export class DashCanvasViewSpec extends DashViewSpec {
     constructor({
         height = 3,
         width = 3,
+        hidePanelHeader = false,
         ...rest
     }) {
         super(rest);
         this.height = height;
         this.width = width;
+        this.hidePanelHeader = hidePanelHeader;
     }
 }
