@@ -5,6 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {DashViewModel} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
+import {createRef} from 'react';
 
 /**
  * Model for a content item within a DashCanvas. Extends {@see DashViewModel}
@@ -15,6 +16,9 @@ import {DashViewModel} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
  * @Beta
  */
 export class DashCanvasViewModel extends DashViewModel {
+    /** @member {RefObject<DOMElement>} */
+    ref = createRef();
+
     get positionParams() {
         const {containerModel, id} = this;
         return containerModel.layout.find(view => view.i === id);

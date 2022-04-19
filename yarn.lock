@@ -1185,6 +1185,13 @@
   dependencies:
     "@fortawesome/fontawesome-common-types" "6.1.1"
 
+"@fortawesome/pro-thin-svg-icons@^6.1.1":
+  version "6.1.1"
+  resolved "https://npm.fontawesome.com/@fortawesome/pro-thin-svg-icons/-/6.1.1/pro-thin-svg-icons-6.1.1.tgz#ab5c8f35c8c7992ad6aa07f071fca965196f9946"
+  integrity sha512-mrx+5LUd/LxTjcF0d4smYS8cWiEnik7f1BVkNvnPeq3iNpce+kutKXWFYtkD561Wyl4Ylb+8gSF48W7yYf1Xjw==
+  dependencies:
+    "@fortawesome/fontawesome-common-types" "6.1.1"
+
 "@fortawesome/react-fontawesome@~0.1.17":
   version "0.1.18"
   resolved "https://npm.fontawesome.com/@fortawesome/react-fontawesome/-/0.1.18/react-fontawesome-0.1.18.tgz#dae37f718a24e14d7a99a5496c873d69af3fbd73"

@@ -8,7 +8,8 @@
   check your app's icon usages carefully.
 * `fmtQuantity` now displays values greater than one billion with `b` unit, similar to current
   handling of millions with `m`.
-* Enhancements to admin log viewer to show timezone and log file metadata.
+* Enhancements to admin log viewer. Log file metadata (size & last modified) available with
+  optional upgrade to `hoist-core >= 13.2`.
 * Added `GridModel.hideGroupedColumns` and `GridModel.showUngroupedColumns` to manage visibility of
   columns when grouped and ungrouped. Both default to true.
 
@@ -29,9 +30,10 @@
 
 ### 🐞 Bug Fixes
 
-* Set ag-Grid's `suppressLastEmptyLineOnPaste` to `true` to work around a bug with Excel (Windows)
+* Set ag-Grid's `suppressLastEmptyLineOnPaste` to true to work around a bug with Excel (Windows)
   that adds an empty line beneath the range pasted from the clipboard in editable grids.
 * Fixes an issue where NumberInput would initially render blank values when `max` and `min` were set.
+* Fixes an issue where tree maps would always show green for a `heatValue` of zero.
 * Set ag-Grid's `suppressMakeColumnVisibleAfterUnGroup` to `true` to avoid unwanted visibility state
   changes when `Column.excludeFromChooser` is set to `true`. New `GridModel.hideGroupedColumns` and
   `GridModel.showUngroupedColumns` will not affect columns that have their visibility or hidden states locked.
