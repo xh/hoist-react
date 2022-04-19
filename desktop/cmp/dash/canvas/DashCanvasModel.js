@@ -162,6 +162,7 @@ export class DashCanvasModel extends HoistModel {
     loadState(state) {
         this.clear();
         state.forEach(state => this.addView(state.viewSpecId, state));
+        this._publishStateImmediately();
     }
 
     /**
@@ -280,8 +281,12 @@ export class DashCanvasModel extends HoistModel {
     }
 
     @debounced(1000)
-    @action
     publishState() {
+        this._publishStateImmediately();
+    }
+
+    @action
+    _publishStateImmediately() {
         this.state = this.buildState();
         this.provider?.write({state: this.state});
     }

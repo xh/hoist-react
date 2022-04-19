@@ -26,7 +26,8 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
     model: uses(DashCanvasModel),
     render({className, model}) {
         const isDraggable = !model.layoutLocked,
-            isResizable = !model.layoutLocked;
+            isResizable = !model.layoutLocked,
+            {ref} = model;
 
         return div({
             className: classNames(
@@ -34,18 +35,24 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
                 isDraggable ? `${className}--draggable` : null,
                 isResizable ? `${className}--resizable` : null
             ),
-            ref: model.ref,
+            ref,
             onContextMenu: (e) => {
-                const {clientX: x, clientY: y} = e;
-                ContextMenu.show(
-                    dashCanvasContextMenu({
-                        dashCanvasModel: model,
-                        clickPosition: {x, y}
-                    }),
-                    {left: x, top: y},
-                    null,
-                    XH.darkTheme
-                );
+                const {clientX, clientY, target} = e,
+                    {classList} = target,
+                    x = clientX + ref.current.scrollLeft,
+                    y = clientY + ref.current.scrollTop;
+
+                if (classList.contains('react-grid-layout') || classList.contains('react-resizable-handle')) {
+                    ContextMenu.show(
+                        dashCanvasContextMenu({
+                            dashCanvasModel: model,
+                            clickPosition: {x, y}
+                        }),
+                        {left: clientX, top: clientY},
+                        null,
+                        XH.darkTheme
+                    );
+                }
             },
             item: reactGridLayout({
                 layout: model.layout,

@@ -8,7 +8,7 @@
 import {hoistCmp} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
-import {isEmpty} from 'lodash';
+import {delay, isEmpty} from 'lodash';
 
 /**
  * Context menu to add items to a DashCanvas
@@ -75,10 +75,14 @@ function createAddMenuItems({dashCanvasModel, clickPosition}) {
                 item = {
                     text: title,
                     icon: icon,
-                    actionFn: () => dashCanvasModel.addView(
-                        id,
-                        {layout: addPosition}
-                    )
+                    actionFn: () => {
+                        const viewModel = dashCanvasModel.addView(
+                            id,
+                            {layout: addPosition}
+                        );
+                        // Delay allows view to render before scrolling into view
+                        delay(() => viewModel.ref.current.scrollIntoView({behavior: 'smooth'}), 1);
+                    }
                 };
 
             if (groupName) {
