@@ -29,10 +29,11 @@ export const dashCanvasView = hoistCmp.factory({
     model: uses(DashCanvasViewModel, {publishMode: ModelPublishMode.LIMITED}),
 
     render({model, className}) {
-        const {viewSpec, viewState, containerModel, id, positionParams, title} = model,
+        const {viewSpec, viewState, containerModel, id, positionParams, title, ref} = model,
             {extraMenuItems, contentLocked, renameLocked} = containerModel;
         return panel({
             className,
+            ref,
             compactHeader: true,
             title: model.title,
             icon: model.icon,
