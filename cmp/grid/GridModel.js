@@ -31,7 +31,7 @@ import {
     cloneDeep,
     compact,
     defaults,
-    defaultsDeep,
+    defaultsDeep, difference,
     find,
     forEach,
     isArray,
@@ -708,12 +708,24 @@ export class GridModel extends HoistModel {
     @action
     setGroupBy(colIds) {
         colIds = isNil(colIds) ? [] : castArray(colIds);
+        const getCol = (colId) => this.findColumn(this.columns, colId),
+            invalidColIds = colIds.filter(it => !getCol(it));
 
-        const invalidColIds = colIds.filter(it => !this.findColumn(this.columns, it));
         if (invalidColIds.length) {
             console.warn('Unknown colId specified in groupBy - grid will not be grouped.', invalidColIds);
             colIds = [];
         }
+
+        const {groupBy} = this,
+            ungroupedColIds = difference(groupBy, colIds);
+
+        colIds.forEach(it => {
+            if (getCol(it).hideWhenGrouped) this.hideColumn(it);
+        });
+
+        ungroupedColIds.forEach(it => {
+            if (getCol(it)?.showWhenUngrouped) this.showColumn(it);
+        });
 
         this.groupBy = colIds;
     }

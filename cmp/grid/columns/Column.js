@@ -94,7 +94,11 @@ export class Column {
     align;
 
     /** @member {boolean} */
-    hidden
+    hidden;
+    /** @member {boolean} */
+    hideWhenGrouped;
+    /** @member {boolean} */
+    showWhenUngrouped;
     /** @member {(boolean|number)} */
     flex;
     /** @member {number} */
@@ -225,6 +229,8 @@ export class Column {
      *      class names to functions determining if they should be added or removed from the cell.
      *      See Ag-Grid docs on "cell styles" for details.
      * @param {boolean} [c.hidden] - true to suppress default display of the column.
+     * @param {boolean} [c.hideWhenGrouped] - true to hide column when grouped.
+     * @param {boolean} [c.showWhenUngrouped] - true to show column when ungrouped.
      * @param {string} [c.align] - horizontal alignment of cell contents.
      *      Valid values are:  'left' (default), 'right' or 'center'.
      * @param {number} [c.width] - default width in pixels.
@@ -338,6 +344,8 @@ export class Column {
         cellClass,
         cellClassRules,
         hidden,
+        hideWhenGrouped,
+        showWhenUngrouped,
         align,
         width,
         minWidth,
@@ -417,6 +425,8 @@ export class Column {
         this.align = align;
 
         this.hidden = withDefault(hidden, false);
+        this.hideWhenGrouped = withDefault(hideWhenGrouped, true);
+        this.showWhenUngrouped = withDefault(showWhenUngrouped, false);
         warnIf(rest.hide, `Column ${this.colId} configured with {hide: true} - use "hidden" instead.`);
 
         warnIf(
@@ -467,7 +477,10 @@ export class Column {
         this.chooserName = chooserName || this.displayName;
         this.chooserGroup = chooserGroup;
         this.chooserDescription = chooserDescription;
-        this.excludeFromChooser = withDefault(excludeFromChooser, false);
+        this.excludeFromChooser = withDefault(showWhenUngrouped && hidden ? false : excludeFromChooser, false);
+        warnIf(showWhenUngrouped && hidden && excludeFromChooser,
+            `Column "${this.colId}" cannot be configured with {hidden: true, excludeFromChooser: true} AND {showWhenUngrouped: true}. ExcludeFromChooser will be ignored.`
+        );
 
         // ExportName must be non-empty string. Default to headerName if unspecified (it supports
         // the function form of headerName) and fallback to colId. Note GridExportService can
