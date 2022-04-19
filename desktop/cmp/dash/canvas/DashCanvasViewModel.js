@@ -25,7 +25,7 @@ export class DashCanvasViewModel extends DashViewModel {
     constructor(cfg) {
         super(cfg);
         makeObservable(this);
-        this.hidePanelHeader = cfg.viewSpec.hidePanelHeader ?? false;
+        this.hidePanelHeader = !!cfg.viewSpec.hidePanelHeader;
     }
 
     get positionParams() {

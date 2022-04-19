@@ -40,12 +40,11 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
             ),
             ref,
             onContextMenu: (e) => {
-                const {clientX, clientY, target} = e,
-                    {classList} = target,
-                    x = clientX + ref.current.scrollLeft,
-                    y = clientY + ref.current.scrollTop;
-
+                const {classList} = e.target;
                 if (classList.contains('react-grid-layout') || classList.contains('react-resizable-handle')|| classList.contains('xh-dash-canvas')) {
+                    const {clientX, clientY} = e,
+                        x = clientX + ref.current.scrollLeft,
+                        y = clientY + ref.current.scrollTop;
                     ContextMenu.show(
                         dashCanvasContextMenu({
                             dashCanvasModel: model,
