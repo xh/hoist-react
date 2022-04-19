@@ -8,7 +8,8 @@
   check your app's icon usages carefully.
 * `fmtQuantity` now displays values greater than one billion with `b` unit, similar to current
   handling of millions with `m`.
-* Enhancements to admin log viewer to show timezone and log file metadata.
+* Enhancements to admin log viewer. Log file metadata (size & last modified) available with
+  optional upgrade to `hoist-core >= 13.2`.
 
 ### 💥 Breaking Changes
 

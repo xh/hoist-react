@@ -5,17 +5,12 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {
-    compactDateRenderer,
-    fmtNumber
-} from '@xh/hoist/format';
+import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {Timer} from '@xh/hoist/utils/async';
-import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
-import {checkMinVersion, debounced, isDisplayed} from '@xh/hoist/utils/js';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {checkMinVersion} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
 import {createRef} from 'react';
 import {LogDisplayModel} from './LogDisplayModel';
@@ -25,24 +20,10 @@ import {LogDisplayModel} from './LogDisplayModel';
  */
 export class LogViewerModel extends HoistModel {
 
-    persistWith = {localStorageKey: 'xhAdminLogViewerState'};
-
-    // Form State/Display options
-    @bindable
-    @persist
-    tail = false;
-
-    @bindable startLine = 1;
-    @bindable maxLines = 1000;
-    @bindable pattern = '';
-
     // Overall State
     @observable file = null;
 
     viewRef = createRef();
-
-    @managed
-    timer = null;
 
     @managed
     logDisplayModel = new LogDisplayModel(this);
@@ -76,21 +57,11 @@ export class LogViewerModel extends HoistModel {
 
         this.filesGridModel = this.createGridModel();
 
-        this.addReaction(this.syncSelectionReaction());
         this.addReaction({
-            track: () => this.tail,
-            run: (tail) => {
-                this.setStartLine(tail ? null : 1);
-                this.loadLog();
-            },
-            fireImmediately: true
-        });
-        this.addReaction(this.reloadReaction());
-
-        this.timer = Timer.create({
-            runFn: () => this.autoRefreshLines(),
-            interval: 5 * SECONDS,
-            delay: true
+            track: () => this.selectedRecord,
+            run: (rec) => {
+                this.file = rec?.data?.filename;
+            }
         });
     }
 
@@ -209,41 +180,6 @@ export class LogViewerModel extends HoistModel {
                 ...GridModel.defaultContextMenu
             ]
         });
-    }
-
-    syncSelectionReaction() {
-        return {
-            track: () => this.selectedRecord,
-            run: (rec) => {
-                this.file = rec?.data?.filename;
-                this.loadLog();
-            },
-            debounce: {interval: 300, leading: true}
-        };
-    }
-
-    reloadReaction() {
-        return {
-            track: () => [this.pattern, this.maxLines, this.startLine],
-            run: () => this.loadLog()
-        };
-    }
-
-    autoRefreshLines() {
-        const {logDisplayModel, tail, viewRef} = this;
-
-        if (tail &&
-            logDisplayModel.tailIsDisplayed &&
-            olderThan(logDisplayModel.lastLoadCompleted, 5 * SECONDS) &&
-            isDisplayed(viewRef.current)
-        ) {
-            logDisplayModel.refreshAsync();
-        }
-    }
-
-    @debounced(300)
-    loadLog() {
-        this.logDisplayModel.refreshAsync();
     }
 }
 
