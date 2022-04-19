@@ -6,15 +6,16 @@
  */
 import {grid} from '@xh/hoist/cmp/grid';
 import {clock} from '@xh/hoist/cmp/clock';
-import {strong, label, filler, hspacer} from '@xh/hoist/cmp/layout';
+import {label, filler, hspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtNumber} from '@xh/hoist/format';
+import {Icon} from '@xh/hoist/icon';
 import {HOURS} from '@xh/hoist/utils/datetime';
-import {fmtTimeZone} from '@xh/hoist/utils/impl';
 import './LogViewer.scss';
 import {LogDisplayModel} from './LogDisplayModel';
 
@@ -42,6 +43,7 @@ export const logDisplay = hoistCmp.factory({
 });
 
 const tbar = hoistCmp.factory(
+    /** @param {LogDisplayModel} model */
     ({model}) => {
         return toolbar(
             label('Start line:'),
@@ -71,6 +73,15 @@ const tbar = hoistCmp.factory(
                 bind: 'tail',
                 label: 'Tail mode',
                 labelSide: 'left'
+            }),
+            button({
+                icon: Icon.arrowToBottom(),
+                tooltip: 'Scroll to End',
+                onClick: () => {
+                    model.gridModel.clearSelection();
+                    model.scrollToTail();
+                },
+                omit: !model.tail || !model.gridModel.hasSelection
             })
         );
     }

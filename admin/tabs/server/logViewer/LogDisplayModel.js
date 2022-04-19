@@ -6,12 +6,12 @@
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, XH, managed, SizingMode, persist} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {FieldType, Store} from '@xh/hoist/data';
+import {FieldType} from '@xh/hoist/data';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
-import {createObservableRef} from '@xh/hoist/utils/react';
 import {maxBy} from 'lodash';
 
 /**
@@ -49,7 +49,7 @@ export class LogDisplayModel extends HoistModel {
             track: () => this.tail,
             run: (tail) => {
                 this.setStartLine(tail ? null : 1);
-                this.scrollToTailAsync();
+                this.scrollToTail();
                 this.loadLog();
             },
             fireImmediately: true
@@ -115,17 +115,42 @@ export class LogDisplayModel extends HoistModel {
                     field: 'rowContent',
                     width: 1200,
                     autosizable: false,
-                    cellClass:  'xh-log-display__row-content'
+                    cellClass: 'xh-log-display__row-content'
                 }
             ],
-            rowClassFn: () => 'xh-log-display__row'
-
+            rowClassFn: () => 'xh-log-display__row',
+            contextMenu: [
+                'copy',
+                '-',
+                {
+                    text: 'Select All',
+                    actionFn: () => this.gridModel.selModel.selectAll(),
+                    icon: Icon.plusCircle(),
+                    secondaryText: 'Ctrl+A'
+                },
+                {
+                    text: 'Deselect All',
+                    actionFn: () => this.gridModel.clearSelection(),
+                    icon: Icon.minusCircle(),
+                    secondaryText: 'Ctrl+K'
+                }
+            ],
+            onRowClicked: (evt) => {
+                if (evt.data.id === this.gridModel.selectedId) {
+                    this.gridModel.clearSelection();
+                }
+            },
+            onKeyDown: (evt) => {
+                if ((evt.ctrlKey || evt.metaKey) && evt.key === 'k') {
+                    this.gridModel.clearSelection();
+                }
+            }
         });
     }
 
     updateGridData(data) {
+        const {tail, gridModel} = this;
         let maxRowLength = 200;
-
         const gridData = data.map(
             (row) => {
                 if (row[1].length > maxRowLength) {
@@ -141,16 +166,20 @@ export class LogDisplayModel extends HoistModel {
 
         this.gridModel.loadData(gridData);
 
-        this.scrollToTailAsync();
+        if (tail && !gridModel.hasSelection) {
+            this.scrollToTail();
+        }
     }
 
-    async scrollToTailAsync() {
-        const {tail, gridModel} = this;
-        if (tail && !gridModel.hasSelection) {
-            const lastRecord = maxBy(gridModel.store.records, 'id');
-            await gridModel.selectAsync(lastRecord);
-            gridModel.clearSelection();
-        }
+    scrollToTail() {
+        const {gridModel} = this;
+        const lastRecord = maxBy(gridModel.store.records, 'id');
+        // Screen moved directly using agApi to avoid flickering, perhaps add this functionality to GridModel
+        gridModel.agApi?.ensureNodeVisible(lastRecord);
+
+        // Screen moved using selecting the record with GridModel, causes a flicker as row is momentarily selected
+        // await gridModel.selectAsync(lastRecord);
+        // gridModel.clearSelection();
     }
 
     reloadReaction() {
