@@ -377,7 +377,7 @@ export class TreeMapModel extends HoistModel {
                 return;
             }
 
-            if (heatValue >= 0) {
+            if (heatValue > 0) {
                 // Normalize positive values between 0.6-1
                 it.colorValue = this.normalizeToRange(heatValue, 0, maxHeat, 0.6, 1);
             } else {
