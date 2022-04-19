@@ -330,7 +330,7 @@ export class TreeMapModel extends HoistModel {
      * c) 'none' ignores the heat value altogether, coloring all nodes with the neutral color
      */
     normaliseColorValues(data) {
-        const {colorMode, heatField} = this;
+        const {colorMode, heatField, valueField} = this;
 
         //---------------------
         // ColorMode === 'none'
@@ -345,11 +345,13 @@ export class TreeMapModel extends HoistModel {
         //---------------------
         if (colorMode === 'wash') {
             data.forEach(it => {
-                const {heatValue} = it,
-                    isValid = this.valueIsValid(heatValue);
+                const {heatValue, record} = it,
+                    value = record.data[valueField],
+                    colorValue = heatValue === 0 ? value : heatValue,
+                    isValid = this.valueIsValid(colorValue);
 
                 if (isValid) {
-                    it.colorValue = heatValue >= 0 ? 0.8 : 0.2;
+                    it.colorValue = colorValue > 0 ? 0.8 : 0.2;
                 } else {
                     it.colorValue = 0.5;
                 }
@@ -370,19 +372,21 @@ export class TreeMapModel extends HoistModel {
         // 2) Transform heatValue into a normalized colorValue, according to the colorMode.
         const maxHeat = isFinite(this.maxHeat) ? this.maxHeat : max(heatValues);
         data.forEach(it => {
-            const {heatValue} = it;
+            const {heatValue, record} = it,
+                value = record.data[valueField],
+                colorValue = heatValue === 0 ? value : heatValue;
 
-            if (!this.valueIsValid(heatValue)) {
+            if (!this.valueIsValid(colorValue)) {
                 it.colorValue = 0.5; // Treat invalid values as zero
                 return;
             }
 
-            if (heatValue > 0) {
+            if (colorValue > 0) {
                 // Normalize positive values between 0.6-1
-                it.colorValue = this.normalizeToRange(heatValue, 0, maxHeat, 0.6, 1);
+                it.colorValue = this.normalizeToRange(colorValue, 0, maxHeat, 0.6, 1);
             } else {
                 // Normalize negative values between 0-0.4
-                it.colorValue = this.normalizeToRange(Math.abs(heatValue), maxHeat, 0, 0, 0.4);
+                it.colorValue = this.normalizeToRange(Math.abs(colorValue), maxHeat, 0, 0, 0.4);
             }
         });
 
