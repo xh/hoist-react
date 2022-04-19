@@ -269,7 +269,7 @@ function fmtNumberString(v, opts = {}) {
     let ret = '';
 
     if (withSignGlyph) {
-        ret += signGlyph(v, asHtml) + '&nbsp;';
+        ret += signGlyph(v, asHtml);
     } else if (sign) {
         ret += sign;
     }
