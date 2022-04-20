@@ -13,7 +13,7 @@
 
 ### 💥 Breaking Changes
 
-* Hoist now requires ag-Grid v27.1.0 or higher - update your ag-Grid dependency in your app's
+* Hoist now requires ag-Grid v27.2.0 or higher - update your ag-Grid dependency in your app's
   `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
   Note that ag-Grid 27 includes a major upgrade to render native React elements rather than HTML and
   also included major API changes.  To accommodate these changes, the following changes are required in Hoist apps:

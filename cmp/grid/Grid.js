@@ -231,7 +231,7 @@ class GridLocalModel extends HoistModel {
             onCellEditingStopped: model.onCellEditingStopped,
             navigateToNextCell: this.navigateToNextCell,
             processCellForClipboard: this.processCellForClipboard,
-            defaultGroupOrderComparator: model.groupSortFn ? this.groupSortComparator : undefined,
+            initialGroupOrderComparator: model.groupSortFn ? this.groupSortComparator : undefined,
             groupDefaultExpanded: 1,
             groupDisplayType: 'groupRows',
             groupRowRenderer: model.groupRowElementRenderer,
@@ -734,7 +734,7 @@ class GridLocalModel extends HoistModel {
         }
     };
 
-    groupSortComparator = (nodeA, nodeB) => {
+    groupSortComparator = ({nodeA, nodeB}) => {
         const gridModel = this.model;
         return gridModel.groupSortFn(nodeA.key, nodeB.key, nodeA.field, {gridModel, nodeA, nodeB});
     };
