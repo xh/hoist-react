@@ -32,4 +32,12 @@ export class DashCanvasViewModel extends DashViewModel {
         const {containerModel, id} = this;
         return containerModel.layout.find(view => view.i === id);
     }
+
+    /**
+     * Return true if DashCanvasView has rendered and is accessible via the DOM
+     * @returns {boolean}
+     */
+    ensureVisible() {
+        return !!this.ref.current;
+    }
 }

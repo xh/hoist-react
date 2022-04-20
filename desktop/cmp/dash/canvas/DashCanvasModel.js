@@ -5,7 +5,7 @@ import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {debounced, ensureUniqueBy} from '@xh/hoist/utils/js';
 import {defaultsDeep} from 'lodash';
-import {computed} from 'mobx';
+import {computed, runInAction} from 'mobx';
 import {createRef} from 'react';
 import {throwIf} from '../../../../utils/js';
 
@@ -260,6 +260,19 @@ export class DashCanvasModel extends HoistModel {
     }
 
     /**
+     * Replace a view in the DashCanvas with a different viewSpec, keeping the existing layout
+     * @param {string} newViewSpecId - DashCanvasViewSpec id to replace with
+     * @param {string} oldViewId - DashCanvasViewModel id to be replaced
+     */
+    replaceView(newViewSpecId, oldViewId) {
+        const layout = this.getItemLayout(oldViewId);
+        runInAction(()=>{
+            this.removeView(oldViewId);
+            this.addView(newViewSpecId, {layout});
+        });
+    }
+
+    /**
      * Rename a view in the DashCanvas
      * @param {string} id - DashCanvasViewModel id to remove from the container
      */
@@ -280,6 +293,16 @@ export class DashCanvasModel extends HoistModel {
         });
 
         if (newName) view.setTitle(newName);
+    }
+
+    /**
+     * Return true if DashCanvasView has rendered and is accessible via the DOM
+     * @param {string} id - DashCanvasViewModel id
+     * @returns {boolean}
+     */
+    ensureVisible(id) {
+        const view = this.viewModels.find(it => it.id === id);
+        return view?.ensureVisible();
     }
 
     //------------------------
@@ -340,6 +363,10 @@ export class DashCanvasModel extends HoistModel {
     // Get all ViewModels with a given DashViewSpec.id
     getItemsBySpecId(id) {
         return this.viewModels.filter(it => it.viewSpec.id === id);
+    }
+
+    getItemLayout(id) {
+        return this.layout.find(it => it.i === id);
     }
 
     /** @returns {boolean} */

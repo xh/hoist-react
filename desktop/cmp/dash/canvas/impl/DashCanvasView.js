@@ -6,6 +6,7 @@
  */
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
+import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
 import {panel} from '../../../panel';
@@ -31,6 +32,7 @@ export const dashCanvasView = hoistCmp.factory({
     render({model, className}) {
         const {viewSpec, viewState, containerModel, id, positionParams, title, ref, hidePanelHeader} = model,
             {extraMenuItems, contentLocked, renameLocked} = containerModel,
+            replaceMenuItems = createViewMenuItems({dashCanvasModel: containerModel, viewIdToReplace: id}),
             headerProps = hidePanelHeader ? {} : {
                 compactHeader: true,
                 title: model.title,
@@ -58,6 +60,12 @@ export const dashCanvasView = hoistCmp.factory({
                                     disabled: contentLocked || viewSpec.unique,
                                     actionFn: () =>
                                         containerModel.addView(viewSpec.id, {layout: positionParams, state: viewState, title})
+                                },
+                                {
+                                    text: 'Replace',
+                                    icon: Icon.transaction(),
+                                    items: replaceMenuItems,
+                                    hidden: !viewSpec.allowRemove || contentLocked
                                 },
                                 {
                                     text: 'Remove',
