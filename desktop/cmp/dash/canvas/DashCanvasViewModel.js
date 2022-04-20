@@ -22,11 +22,14 @@ export class DashCanvasViewModel extends DashViewModel {
     ref = createRef();
     /** @member {boolean} */
     @observable hidePanelHeader;
+    /** @member {boolean} */
+    @observable hideMenuButton;
 
     constructor(cfg) {
         super(cfg);
         makeObservable(this);
         this.hidePanelHeader = !!cfg.viewSpec.hidePanelHeader;
+        this.hideMenuButton = !!cfg.viewSpec.hideMenuButton;
     }
 
     get positionParams() {

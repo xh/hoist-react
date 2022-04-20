@@ -48,6 +48,8 @@ export const dashCanvasView = hoistCmp.factory({
 
 const dashCanvasViewPopover = hoistCmp.factory(
     ({model}) => {
+        if (model.hideMenuButton) return null;
+
         const {viewState, viewSpec, id, containerModel, positionParams, title} = model,
             {extraMenuItems, contentLocked, renameLocked} = containerModel,
             replaceMenuItems = createViewMenuItems({dashCanvasModel: containerModel, viewIdToReplace: id});
