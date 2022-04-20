@@ -118,7 +118,6 @@ export class DashCanvasModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
-        window.canvas = this;
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {
