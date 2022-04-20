@@ -295,13 +295,12 @@ export class DashCanvasModel extends HoistModel {
     }
 
     /**
-     * Return true if DashCanvasView has rendered and is accessible via the DOM
+     * Scrolls a DashCanvasView into view
      * @param {string} id - DashCanvasViewModel id
-     * @returns {boolean}
      */
-    ensureVisible(id) {
+    ensureViewVisible(id) {
         const view = this.viewModels.find(it => it.id === id);
-        return view?.ensureVisible();
+        view?.ensureVisible();
     }
 
     //------------------------

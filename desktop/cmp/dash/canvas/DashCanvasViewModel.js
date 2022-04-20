@@ -5,6 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {DashViewModel} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
+import {debounced} from '@xh/hoist/utils/js';
 import {makeObservable, observable} from 'mobx';
 import {createRef} from 'react';
 
@@ -33,11 +34,9 @@ export class DashCanvasViewModel extends DashViewModel {
         return containerModel.layout.find(view => view.i === id);
     }
 
-    /**
-     * Return true if DashCanvasView has rendered and is accessible via the DOM
-     * @returns {boolean}
-     */
+    /** Scrolls the DashCanvasView into view */
+    @debounced(1)
     ensureVisible() {
-        return !!this.ref.current;
+        this.ref.current.scrollIntoView({behavior: 'smooth', block: 'center'});
     }
 }

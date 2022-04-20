@@ -6,7 +6,6 @@
  */
 
 import {Icon} from '@xh/hoist/icon';
-import {wait} from '@xh/hoist/promise';
 
 /**
  * Used to create view menu items (for adding or replacing views)
@@ -52,8 +51,7 @@ export const createViewMenuItems = ({dashCanvasModel, clickPosition, viewIdToRep
                                 id,
                                 {layout: addPosition}
                             );
-                            waitFor(()=>viewModel.ensureVisible())
-                                .then(()=>viewModel.ref.current.scrollIntoView({behavior: 'smooth', block: 'center'}));
+                            viewModel.ensureVisible();
                         }
                     }
                 };
@@ -118,12 +116,4 @@ const calcAddPosition = (x, y, dashCanvasModel) => {
         top = y - containerTop;
 
     return calcXY(positionParams, top, left);
-};
-
-const waitFor = (conditionFn, interval=1) => {
-    const check = (resolve) => {
-        if (conditionFn()) resolve();
-        else wait(interval).then(()=>check(resolve));
-    };
-    return new Promise(check);
 };
