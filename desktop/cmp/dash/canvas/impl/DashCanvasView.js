@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
-import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
+import {ContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
@@ -52,28 +52,21 @@ const dashCanvasViewPopover = hoistCmp.factory(
 
         const {viewState, viewSpec, id, containerModel, positionParams, title} = model,
             {extraMenuItems, contentLocked, renameLocked} = containerModel,
-            replaceMenuItems = createViewMenuItems({dashCanvasModel: containerModel, viewIdToReplace: id});
+            replaceMenuItems = createViewMenuItems({dashCanvasModel: containerModel, viewIdToReplace: id}),
 
-        return popover({
-            position: Position.BOTTOM,
-            minimal: true,
-            target: button({
-                icon: Icon.ellipsisVertical()
-            }),
-            content: contextMenu({
+            content = ContextMenu({
                 menuItems: [
                     {
                         text: 'Rename',
                         icon: Icon.edit(),
                         intent: 'primary',
-                        hidden: !viewSpec.allowRename,
-                        disabled: renameLocked,
+                        hidden: !viewSpec.allowRename || renameLocked,
                         actionFn: () => containerModel.renameView(id)
                     },
                     {
                         text: 'Duplicate',
                         icon: Icon.copy(),
-                        disabled: contentLocked || viewSpec.unique,
+                        hidden: contentLocked || viewSpec.unique,
                         actionFn: () =>
                             containerModel.addView(viewSpec.id, {
                                 layout: positionParams,
@@ -91,14 +84,23 @@ const dashCanvasViewPopover = hoistCmp.factory(
                         text: 'Remove',
                         icon: Icon.cross(),
                         intent: 'danger',
-                        hidden: !viewSpec.allowRemove,
-                        disabled: contentLocked,
+                        hidden: !viewSpec.allowRemove || contentLocked,
                         actionFn: () => containerModel.removeView(id)
                     },
                     '-',
                     ...(extraMenuItems ?? [])
                 ]
-            })
+            });
+
+        if (!content) return null;
+
+        return popover({
+            position: Position.BOTTOM,
+            minimal: true,
+            target: button({
+                icon: Icon.ellipsisVertical()
+            }),
+            content
         });
     }
 );
