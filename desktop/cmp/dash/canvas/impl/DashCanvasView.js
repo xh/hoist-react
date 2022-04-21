@@ -11,7 +11,7 @@ import {elementFromContent} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
 import {panel} from '../../../panel';
 import {button} from '../../../button';
-import {dialog, popover, Position} from '@xh/hoist/kit/blueprint';
+import {popover, Position} from '@xh/hoist/kit/blueprint';
 import {DashCanvasViewModel} from '../DashCanvasViewModel';
 
 /**
@@ -28,31 +28,15 @@ export const dashCanvasView = hoistCmp.factory({
     displayName: 'DashGridLayoutView',
     className: 'xh-dash-tab',
     model: uses(DashCanvasViewModel, {publishMode: ModelPublishMode.LIMITED}),
-    render(props) {
-        return props.model.fullScreen ? fullScreenCmp(props) : viewCmp(props);
-    }
-});
-
-const fullScreenCmp = hoistCmp.factory(
-    ({model, className}) => dialog({
-        className: 'xh-dash-tab__fullscreen',
-        isOpen: true,
-        canOutsideClickClose: true,
-        item: viewCmp(({model, className})),
-        onClose: ()=>model.toggleFullScreen()
-    })
-);
-
-const viewCmp = hoistCmp.factory(
-    ({model, className}) => {
+    render({model, className}) {
         const {viewSpec, ref, hidePanelHeader} = model,
             headerProps = hidePanelHeader ? {} : {
                 compactHeader: true,
                 title: model.title,
                 icon: model.icon,
                 headerItems: [
-                    headerMenu(),
-                    fullScreenButton()
+                    // TODO - Investigate why {model} must be passed explicitly here
+                    headerMenu({model})
                 ]
             };
         return panel({
@@ -62,21 +46,7 @@ const viewCmp = hoistCmp.factory(
             item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
         });
     }
-);
-
-const fullScreenButton = hoistCmp.factory(
-    ({model}) => {
-        if (model.hideFullScreenButton) return null;
-
-        const {fullScreen} = model;
-
-        return button({
-            icon: fullScreen ? Icon.collapse() : Icon.expand(),
-            title: fullScreen ? 'Exit full screen' : 'Full screen',
-            onClick: () => model.toggleFullScreen()
-        });
-    }
-);
+});
 
 const headerMenu = hoistCmp.factory(
     ({model}) => {

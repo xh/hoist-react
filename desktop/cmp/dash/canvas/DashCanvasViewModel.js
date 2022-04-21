@@ -23,17 +23,12 @@ export class DashCanvasViewModel extends DashViewModel {
     @observable hidePanelHeader;
     /** @member {boolean} */
     @observable hideMenuButton;
-    /** @member {boolean} */
-    @observable hideFullScreenButton;
-    /** @member {boolean} */
-    @observable fullScreen = false;
 
     constructor(cfg) {
         super(cfg);
         makeObservable(this);
         this.hidePanelHeader = !!cfg.viewSpec.hidePanelHeader;
         this.hideMenuButton = !!cfg.viewSpec.hideMenuButton;
-        this.hideFullScreenButton = !!cfg.viewSpec.hideFullScreenButton;
     }
 
     get positionParams() {
@@ -47,11 +42,5 @@ export class DashCanvasViewModel extends DashViewModel {
         when(() => ref.current).then(() => {
             ref.current.scrollIntoView({behavior: 'smooth', block: 'nearest'});
         });
-    }
-
-    /** Toggle full screen mode for view */
-    @action
-    toggleFullScreen() {
-        this.fullScreen = !this.fullScreen;
     }
 }
