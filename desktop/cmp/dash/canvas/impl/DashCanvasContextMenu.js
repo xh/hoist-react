@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 import {hoistCmp} from '@xh/hoist/core';
@@ -17,14 +17,13 @@ import {isEmpty} from 'lodash';
  * Available view specs are listed in their defined order, optionally
  * grouped by their 'groupName' property
  *
- * @see DashCanvasModel
  * @private
  */
 export const dashCanvasContextMenu = hoistCmp.factory({
     model: null,
     observer: null,
-    render({dashCanvasModel, clickPosition}) {
-        const menuItems = createMenuItems({dashCanvasModel, clickPosition});
+    render({dashCanvasModel, position}) {
+        const menuItems = createMenuItems({dashCanvasModel, position});
         return contextMenu({menuItems});
     }
 });
@@ -32,14 +31,14 @@ export const dashCanvasContextMenu = hoistCmp.factory({
 //---------------------------
 // Implementation
 //---------------------------
-function createMenuItems({dashCanvasModel, clickPosition}) {
-    const addMenuItems = createViewMenuItems({dashCanvasModel, clickPosition}),
+function createMenuItems({dashCanvasModel, position}) {
+    const addMenuItems = createViewMenuItems({dashCanvasModel, position}),
         {extraMenuItems, contentLocked} = dashCanvasModel;
     return [
         {
             text: 'Add',
             icon: Icon.add(),
-            disabled: contentLocked || isEmpty(addMenuItems),
+            hidden: contentLocked || isEmpty(addMenuItems),
             items: addMenuItems
         },
         '-',

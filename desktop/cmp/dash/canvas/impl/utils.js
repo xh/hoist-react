@@ -9,17 +9,19 @@ import {Icon} from '@xh/hoist/icon';
 
 /**
  * Used to create view menu items (for adding or replacing views)
- * @param {DashCanvasModel} dashCanvasModel
- * @param {Object} clickPosition - {x, y}
- * @param {string} viewIdToReplace - if replacing an existing view
- * @returns {Object[]}
+ * @private
  */
-export const createViewMenuItems = ({dashCanvasModel, clickPosition, viewIdToReplace}) => {
+export function createViewMenuItems({
+    dashCanvasModel,
+    position = null,
+    viewId = null,
+    replaceExisting = false
+}) {
     const groupedItems = {},
         ungroupedItems = [],
-        x = clickPosition?.x ?? 0,
-        y = clickPosition?.y ?? 0,
-        addPosition = !viewIdToReplace ? calcAddPosition(x, y, dashCanvasModel) : null;
+        x = position?.x ?? 0,
+        y = position?.y ?? 0,
+        addPosition = !viewId ? calcAddPosition(x, y, dashCanvasModel) : null;
 
     const addToGroup = (item, groupName) => {
         const group = groupedItems[groupName];
@@ -44,14 +46,13 @@ export const createViewMenuItems = ({dashCanvasModel, clickPosition, viewIdToRep
                     text: title,
                     icon: icon,
                     actionFn: () => {
-                        if (viewIdToReplace) {
-                            dashCanvasModel.replaceView(id, viewIdToReplace);
+                        if (replaceExisting) {
+                            dashCanvasModel.replaceView(id, viewId);
                         } else {
-                            const viewModel = dashCanvasModel.addView(
+                            dashCanvasModel.addView(
                                 id,
-                                {layout: addPosition}
-                            );
-                            viewModel.ensureVisible();
+                                {layout: addPosition, neighborViewId: viewId}
+                            ).ensureVisible();
                         }
                     }
                 };
@@ -76,7 +77,7 @@ export const createViewMenuItems = ({dashCanvasModel, clickPosition, viewIdToRep
             }),
         ...ungroupedItems
     ];
-};
+}
 
 /**
  * Used to set the {x, y} position for the next added item based on the mouse location when

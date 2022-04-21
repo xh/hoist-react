@@ -51,8 +51,8 @@ const viewCmp = hoistCmp.factory(
                 title: model.title,
                 icon: model.icon,
                 headerItems: [
-                    dashCanvasViewPopover({model}),
-                    fullScreenButton({model})
+                    headerMenu(),
+                    fullScreenButton()
                 ]
             };
         return panel({
@@ -78,22 +78,49 @@ const fullScreenButton = hoistCmp.factory(
     }
 );
 
-const dashCanvasViewPopover = hoistCmp.factory(
+const headerMenu = hoistCmp.factory(
     ({model}) => {
         if (model.hideMenuButton) return null;
 
         const {viewState, viewSpec, id, containerModel, positionParams, title} = model,
             {extraMenuItems, contentLocked, renameLocked} = containerModel,
-            replaceMenuItems = createViewMenuItems({dashCanvasModel: containerModel, viewIdToReplace: id}),
+
+            addMenuItems = createViewMenuItems({
+                dashCanvasModel: containerModel,
+                viewId: id
+            }),
+
+            replaceMenuItems = createViewMenuItems({
+                dashCanvasModel: containerModel,
+                viewId: id,
+                replaceExisting: true
+            }),
 
             content = ContextMenu({
                 menuItems: [
                     {
+                        text: 'Add',
+                        icon: Icon.add(),
+                        items: addMenuItems,
+                        hidden: contentLocked
+                    },
+                    {
+                        text: 'Remove',
+                        icon: Icon.cross(),
+                        hidden: !viewSpec.allowRemove || contentLocked,
+                        actionFn: () => containerModel.removeView(id)
+                    },
+                    {
                         text: 'Rename',
                         icon: Icon.edit(),
-                        intent: 'primary',
                         hidden: !viewSpec.allowRename || renameLocked,
                         actionFn: () => containerModel.renameView(id)
+                    },
+                    {
+                        text: 'Replace',
+                        icon: Icon.transaction(),
+                        items: replaceMenuItems,
+                        hidden: !viewSpec.allowRemove || contentLocked
                     },
                     {
                         text: 'Duplicate',
@@ -104,26 +131,15 @@ const dashCanvasViewPopover = hoistCmp.factory(
                                 layout: positionParams,
                                 state: viewState,
                                 title
-                            })
-                    },
-                    {
-                        text: 'Replace',
-                        icon: Icon.transaction(),
-                        items: replaceMenuItems,
-                        hidden: !viewSpec.allowRemove || contentLocked
-                    },
-                    {
-                        text: 'Remove',
-                        icon: Icon.cross(),
-                        intent: 'danger',
-                        hidden: !viewSpec.allowRemove || contentLocked,
-                        actionFn: () => containerModel.removeView(id)
+                            }).ensureVisible()
                     },
                     '-',
                     ...(extraMenuItems ?? [])
                 ]
             });
 
+        // Workaround using React functional component to check if ContextMenu renders null
+        // TODO - build a popover wrapper that null-checks content instead of this workaround
         if (!content) return null;
 
         return popover({

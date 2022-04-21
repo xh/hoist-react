@@ -3,8 +3,9 @@ import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {wait} from '@xh/hoist/promise';
 import {debounced, ensureUniqueBy} from '@xh/hoist/utils/js';
-import {defaultsDeep} from 'lodash';
+import {defaultsDeep, times} from 'lodash';
 import {computed, runInAction} from 'mobx';
 import {createRef} from 'react';
 import {throwIf} from '../../../../utils/js';
@@ -108,7 +109,7 @@ export class DashCanvasModel extends HoistModel {
         persistWith = null,
         emptyText = 'No views have been added to the container.',
         addViewButtonText = 'Add View',
-        columns = 8,
+        columns = 10,
         rowHeight = 50,
         compact = true,
         margin = [10, 10],
@@ -155,13 +156,7 @@ export class DashCanvasModel extends HoistModel {
                 this.provider = null;
             }
         }
-
         this.loadState(persistState?.state ?? initialState);
-
-        this.addReaction({
-            track: () => [this.layout, this.viewState],
-            run: () => this.publishState()
-        });
     }
 
     /**
@@ -172,7 +167,13 @@ export class DashCanvasModel extends HoistModel {
     loadState(state) {
         this.clear();
         state.forEach(state => this.addView(state.viewSpecId, state));
-        this._publishStateImmediately();
+        wait().then(() =>
+            this.reaction = this.reaction ??
+                this.addReaction({
+                    track: () => [this.layout, this.viewState],
+                    run: () => this.publishState()
+                })
+        );
     }
 
     /**
@@ -209,10 +210,11 @@ export class DashCanvasModel extends HoistModel {
      * @param {Object} [layout] - layout information for where to add the view and what it's initial size should be
      * @param {string} [title] - title for the view
      * @param {Object} [state] - internal state for the view contents
+     * @param {string} [neighborViewId] - id of view to add next to
      * @returns {DashCanvasViewModel}
      */
     @action
-    addView(viewSpecId, {layout, title, state}) {
+    addView(viewSpecId, {layout, title, state, neighborViewId}) {
         const viewSpec = this.getViewSpec(viewSpecId),
             instances = this.getItemsBySpecId(viewSpecId);
 
@@ -234,8 +236,9 @@ export class DashCanvasModel extends HoistModel {
                 title: title ?? viewSpec.title,
                 containerModel: this
             }),
-            x = layout?.x ?? 0,
-            y = layout?.y ?? 0,
+            neighborLayout = neighborViewId ? this.getItemLayout(neighborViewId) : null,
+            x = neighborLayout?.x ?? layout?.x ?? 0,
+            y = neighborLayout?.y ?? layout?.y ?? 0,
             h = layout?.h ?? viewSpec.height ?? 1,
             w = layout?.w ?? viewSpec.width ?? 1;
 
@@ -259,13 +262,13 @@ export class DashCanvasModel extends HoistModel {
     }
 
     /**
-     * Replace a view in the DashCanvas with a different viewSpec, keeping the existing layout
-     * @param {string} newViewSpecId - DashCanvasViewSpec id to replace with
-     * @param {string} oldViewId - DashCanvasViewModel id to be replaced
+     * Replace a view in the DashCanvas with a different view, keeping the existing layout
+     * @param {string} newViewSpecId - id of view spec to insert
+     * @param {string} oldViewId - id of view model to be replaced
      */
     replaceView(newViewSpecId, oldViewId) {
         const layout = this.getItemLayout(oldViewId);
-        runInAction(()=>{
+        runInAction(() => {
             this.removeView(oldViewId);
             this.addView(newViewSpecId, {layout});
         });
@@ -273,7 +276,7 @@ export class DashCanvasModel extends HoistModel {
 
     /**
      * Rename a view in the DashCanvas
-     * @param {string} id - DashCanvasViewModel id to remove from the container
+     * @param {string} id
      */
     async renameView(id) {
         const view = this.viewModels.find(it => it.id === id),
@@ -295,8 +298,19 @@ export class DashCanvasModel extends HoistModel {
     }
 
     /**
+     * Return current size of canvas
+     * @returns {{colCount: number, rowCount: number}}
+     */
+    getSize() {
+        return {
+            rowCount: this.layout.reduce((prev, cur) => Math.max(prev, cur.y + cur.h), 0),
+            colCount: this.columns
+        };
+    }
+
+    /**
      * Scrolls a DashCanvasView into view
-     * @param {string} id - DashCanvasViewModel id
+     * @param {string} id
      */
     ensureViewVisible(id) {
         const view = this.viewModels.find(it => it.id === id);
@@ -314,11 +328,6 @@ export class DashCanvasModel extends HoistModel {
 
     @debounced(1000)
     publishState() {
-        this._publishStateImmediately();
-    }
-
-    @action
-    _publishStateImmediately() {
         this.state = this.buildState();
         this.provider?.write({state: this.state});
     }
@@ -370,6 +379,45 @@ export class DashCanvasModel extends HoistModel {
     /** @returns {boolean} */
     get isEmpty() {
         return this.layout.length === 0;
+    }
+
+    getFirstAvailablePosition(
+        {width, height},
+        {startX = 0, startY = 0, defaultX = 0, endY = null}
+    ) {
+        const {rowCount, colCount} = this.getSize(),
+            occupied = times(colCount, () => Array(rowCount).fill(false));
+
+        // Fill 2D array 'occupied' with true / false if coordinate is occupied
+        for (let item of this.layout) {
+            for (let y = item.y; y < item.y + item.h; y++) {
+                for (let x = item.x; x < item.x + item.w; x++) {
+                    occupied[x][y] = true;
+                }
+            }
+        }
+
+        const checkPosition = (startX, startY) => {
+            for (let y = startY; y < startY + height; y++) {
+                for (let x = startX; x < startX + width; x++) {
+                    if (y === rowCount) return true;
+                    if (occupied[y][x]) return false;
+                }
+            }
+            return true;
+        };
+
+        // Traverse 2D array of coordinates, and check if view fits
+        for (let y = startY; y < (endY ?? rowCount); y++) {
+            for (let x = y === startY ? startX : 0; x < colCount; x++) {
+                if (x + width > colCount) break;
+                if (checkPosition(x, y)) {
+                    return {x, y};
+                }
+            }
+        }
+
+        return {x: defaultX, y: endY ?? rowCount};
     }
 }
 

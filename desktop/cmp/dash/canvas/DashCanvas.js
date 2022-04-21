@@ -29,8 +29,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
     model: uses(DashCanvasModel),
     render({className, model}) {
         const isDraggable = !model.layoutLocked,
-            isResizable = !model.layoutLocked,
-            {ref} = model;
+            isResizable = !model.layoutLocked;
 
         return div({
             className: classNames(
@@ -38,24 +37,8 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
                 isDraggable ? `${className}--draggable` : null,
                 isResizable ? `${className}--resizable` : null
             ),
-            ref,
-            onContextMenu: (e) => {
-                const {classList} = e.target;
-                if (classList.contains('react-grid-layout') || classList.contains('react-resizable-handle')|| classList.contains('xh-dash-canvas')) {
-                    const {clientX, clientY} = e,
-                        x = clientX + ref.current.scrollLeft,
-                        y = clientY + ref.current.scrollTop;
-                    ContextMenu.show(
-                        dashCanvasContextMenu({
-                            dashCanvasModel: model,
-                            clickPosition: {x, y}
-                        }),
-                        {left: clientX, top: clientY},
-                        null,
-                        XH.darkTheme
-                    );
-                }
-            },
+            ref: model.ref,
+            onContextMenu: (e) => onContextMenu(e, model),
             items: [
                 reactGridLayout({
                     layout: model.layout,
@@ -120,5 +103,26 @@ const emptyContainerOverlay = hoistCmp.factory(
         });
     }
 );
+
+const onContextMenu = (e, model) => {
+    const {classList} = e.target;
+    if (classList.contains('react-grid-layout') ||
+            classList.contains('react-resizable-handle') ||
+            classList.contains('xh-dash-canvas')
+    ) {
+        const {clientX, clientY} = e,
+            x = clientX + model.ref.current.scrollLeft,
+            y = clientY + model.ref.current.scrollTop;
+        ContextMenu.show(
+            dashCanvasContextMenu({
+                dashCanvasModel: model,
+                position: {x, y}
+            }),
+            {left: clientX, top: clientY},
+            null,
+            XH.darkTheme
+        );
+    }
+};
 
 const reactGridLayout = elemFactory(WidthProvider(ReactGridLayout));

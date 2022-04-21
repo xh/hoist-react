@@ -5,9 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {DashViewModel} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
-import {debounced} from '@xh/hoist/utils/js';
-import {action, makeObservable, observable} from 'mobx';
-import {createRef} from 'react';
+import {createObservableRef} from '@xh/hoist/utils/react';
+import {action, makeObservable, observable, when} from 'mobx';
 
 /**
  * Model for a content item within a DashCanvas. Extends {@see DashViewModel}
@@ -19,7 +18,7 @@ import {createRef} from 'react';
  */
 export class DashCanvasViewModel extends DashViewModel {
     /** @member {RefObject<DOMElement>} */
-    ref = createRef();
+    ref = createObservableRef();
     /** @member {boolean} */
     @observable hidePanelHeader;
     /** @member {boolean} */
@@ -43,9 +42,11 @@ export class DashCanvasViewModel extends DashViewModel {
     }
 
     /** Scrolls the DashCanvasView into view */
-    @debounced(1)
     ensureVisible() {
-        this.ref.current.scrollIntoView({behavior: 'smooth', block: 'center'});
+        const {ref} = this;
+        when(() => ref.current).then(() => {
+            ref.current.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+        });
     }
 
     /** Toggle full screen mode for view */
