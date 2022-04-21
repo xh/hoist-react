@@ -3,7 +3,6 @@ import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
 import {debounced, ensureUniqueBy} from '@xh/hoist/utils/js';
 import {defaultsDeep, isEqual} from 'lodash';
 import {computed, runInAction} from 'mobx';
