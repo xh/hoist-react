@@ -6,7 +6,7 @@
  */
 import {HoistModel, managed, SizingMode} from '@xh/hoist/core';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {castArray, difference, isEmpty, partition, without} from 'lodash';
 
@@ -183,6 +183,7 @@ export class ValuesTabModel extends HoistModel {
             selModel: 'disabled',
             emptyText: 'No records found...',
             contextMenu: null,
+            autosizeOptions: {mode: GridAutosizeMode.DISABLED},
             sizingMode: SizingMode.COMPACT,
             stripeRows: false,
             sortBy: 'value',
