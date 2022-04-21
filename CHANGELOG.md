@@ -1,7 +1,20 @@
 # Changelog
 
-## v48.0.0-SNAPSHOT - unreleased
+## v48.0.0 - 2022-04-21
 
+### 🎁 New Features
+* A new `DashCanvas` layout component for creating scrollable dashboards that allow users to manually
+  place and size their widgets using a grid-based layout. Note that this component is in Beta and
+  its API is subject to change.
+* FontAwesome upgraded to v6. This includes redesigns of the majority of bundled icons - please
+  check your app's icon usages carefully.
+* `fmtQuantity` now displays values greater than one billion with `b` unit, similar to current
+  handling of millions with `m`.
+* Enhancements to admin log viewer. Log file metadata (size & last modified) available with
+  optional upgrade to `hoist-core >= 13.2`.
+* Mobile `Dialog` will scroll internally if taller than the screen.
+* Configs passed to `XH.message()` and its variants now take an optional `className` to apply to the
+  message dialog.
 ### 💥 Breaking Changes
 
 * Hoist now requires ag-Grid v27.2.0 or higher - update your ag-Grid dependency in your app's
@@ -20,18 +33,6 @@
       your inline editor in a popup, you must set the new flag `Column.editorIsPopup` to `true`.
 * Deprecated message configs `confirmText`, `confirmIntent`, `cancelText`, `cancelIntent` have been
   removed.
-
-### 🎁 New Features
-
-* FontAwesome upgraded to v6. This includes redesigns of the majority of bundled icons - please
-  check your app's icon usages carefully.
-* `fmtQuantity` now displays values greater than one billion with `b` unit, similar to current
-  handling of millions with `m`.
-* Enhancements to admin log viewer. Log file metadata (size & last modified) available with
-  optional upgrade to `hoist-core >= 13.2`.
-* Mobile `Dialog` will scroll internally if taller than the screen.
-* Configs passed to `XH.message()` and its variants now take an optional `className` to apply to the
-  message dialog.
 
 ### 🐞 Bug Fixes
 
