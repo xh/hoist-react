@@ -6,7 +6,7 @@
  */
 import {DashViewModel} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {action, makeObservable, observable, when} from 'mobx';
+import {makeObservable, observable} from 'mobx';
 
 /**
  * Model for a content item within a DashCanvas. Extends {@see DashViewModel}
@@ -39,8 +39,9 @@ export class DashCanvasViewModel extends DashViewModel {
     /** Scrolls the DashCanvasView into view */
     ensureVisible() {
         const {ref} = this;
-        when(() => ref.current).then(() => {
-            ref.current.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+        this.addReaction({
+            when: () => ref.current,
+            run: () => ref.current.scrollIntoView({behavior: 'smooth', block: 'nearest'})
         });
     }
 }

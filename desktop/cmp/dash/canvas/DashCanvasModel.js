@@ -5,7 +5,7 @@ import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {debounced, ensureUniqueBy} from '@xh/hoist/utils/js';
-import {defaultsDeep, times} from 'lodash';
+import {defaultsDeep, isEqual} from 'lodash';
 import {computed, runInAction} from 'mobx';
 import {createRef} from 'react';
 import {throwIf} from '../../../../utils/js';
@@ -107,7 +107,7 @@ export class DashCanvasModel extends HoistModel {
         contentLocked = false,
         renameLocked = false,
         persistWith = null,
-        emptyText = 'No views have been added to the container.',
+        emptyText = 'No views have been added.',
         addViewButtonText = 'Add View',
         columns = 10,
         rowHeight = 50,
@@ -157,23 +157,10 @@ export class DashCanvasModel extends HoistModel {
             }
         }
         this.loadState(persistState?.state ?? initialState);
-    }
-
-    /**
-     * Loads the provided state into the DashCanvas
-     * @param {DashCanvasItemState[]} state
-     */
-    @action
-    loadState(state) {
-        this.clear();
-        state.forEach(state => this.addView(state.viewSpecId, state));
-        wait().then(() =>
-            this.reaction = this.reaction ??
-                this.addReaction({
-                    track: () => [this.layout, this.viewState],
-                    run: () => this.publishState()
-                })
-        );
+        this.addReaction({
+            track: () => [this.viewState, this.layout],
+            run: () => this.publishState()
+        });
     }
 
     /**
@@ -323,7 +310,19 @@ export class DashCanvasModel extends HoistModel {
 
     @action
     setLayout(layout) {
-        this.layout = layout;
+        const strippedLayout = layout.map(viewLayout => {
+            const {i, x, y, w, h} = viewLayout;
+            return {i, x, y, w, h};
+        });
+        if (!isEqual(this.layout, strippedLayout)) {
+            this.layout = strippedLayout;
+        }
+    }
+
+    @action
+    loadState(state) {
+        this.clear();
+        state.forEach(state => this.addView(state.viewSpecId, state));
     }
 
     @debounced(1000)
