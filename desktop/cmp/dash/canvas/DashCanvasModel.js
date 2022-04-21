@@ -380,45 +380,6 @@ export class DashCanvasModel extends HoistModel {
     get isEmpty() {
         return this.layout.length === 0;
     }
-
-    getFirstAvailablePosition(
-        {width, height},
-        {startX = 0, startY = 0, defaultX = 0, endY = null}
-    ) {
-        const {rowCount, colCount} = this.getSize(),
-            occupied = times(colCount, () => Array(rowCount).fill(false));
-
-        // Fill 2D array 'occupied' with true / false if coordinate is occupied
-        for (let item of this.layout) {
-            for (let y = item.y; y < item.y + item.h; y++) {
-                for (let x = item.x; x < item.x + item.w; x++) {
-                    occupied[x][y] = true;
-                }
-            }
-        }
-
-        const checkPosition = (startX, startY) => {
-            for (let y = startY; y < startY + height; y++) {
-                for (let x = startX; x < startX + width; x++) {
-                    if (y === rowCount) return true;
-                    if (occupied[y][x]) return false;
-                }
-            }
-            return true;
-        };
-
-        // Traverse 2D array of coordinates, and check if view fits
-        for (let y = startY; y < (endY ?? rowCount); y++) {
-            for (let x = y === startY ? startX : 0; x < colCount; x++) {
-                if (x + width > colCount) break;
-                if (checkPosition(x, y)) {
-                    return {x, y};
-                }
-            }
-        }
-
-        return {x: defaultX, y: endY ?? rowCount};
-    }
 }
 
 /**
