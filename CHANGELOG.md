@@ -18,6 +18,8 @@
       new `asHtml` option to return an HTML string where required.
     * The `isPopup` argument to `useInlineEditorModel()` has been removed. If you want to display
       your inline editor in a popup, you must set the new flag `Column.editorIsPopup` to `true`.
+* Deprecated message configs `confirmText`, `confirmIntent`, `cancelText`, `cancelIntent` have been
+  removed.
 
 ### 🎁 New Features
 
@@ -28,6 +30,8 @@
 * Enhancements to admin log viewer. Log file metadata (size & last modified) available with
   optional upgrade to `hoist-core >= 13.2`.
 * Mobile `Dialog` will scroll internally if taller than the screen.
+* Configs passed to `XH.message()` and its variants now take an optional `className` to apply to the
+  message dialog.
 
 ### 🐞 Bug Fixes
 
