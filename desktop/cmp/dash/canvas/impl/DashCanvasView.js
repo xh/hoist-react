@@ -5,7 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
-import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
+import {ContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
+import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
 import {panel} from '../../../panel';
@@ -27,55 +28,106 @@ export const dashCanvasView = hoistCmp.factory({
     displayName: 'DashGridLayoutView',
     className: 'xh-dash-tab',
     model: uses(DashCanvasViewModel, {publishMode: ModelPublishMode.LIMITED}),
-
     render({model, className}) {
-        const {viewSpec, viewState, containerModel, id, positionParams, title, ref} = model,
-            {extraMenuItems, contentLocked, renameLocked} = containerModel;
+        const {viewSpec, ref, hidePanelHeader} = model,
+            headerProps = hidePanelHeader ? {} : {
+                compactHeader: true,
+                title: model.title,
+                icon: model.icon,
+                headerItems: [
+                    // TODO - Investigate why {model} must be passed explicitly here
+                    headerMenu({model})
+                ]
+            };
         return panel({
             className,
             ref,
-            compactHeader: true,
-            title: model.title,
-            icon: model.icon,
-            headerItems: [
-                popover({
-                    position: Position.BOTTOM,
-                    minimal: true,
-                    target: button({
-                        icon: Icon.ellipsisVertical()
-                    }),
-                    content: contextMenu({
-                        menuItems: [
-                            {
-                                text: 'Rename',
-                                icon: Icon.edit(),
-                                intent: 'primary',
-                                hidden: !viewSpec.allowRename,
-                                disabled: renameLocked,
-                                actionFn: () => containerModel.renameView(id)
-                            },
-                            {
-                                text: 'Duplicate',
-                                icon: Icon.copy(),
-                                disabled: contentLocked || viewSpec.unique,
-                                actionFn: () =>
-                                    containerModel.addView(viewSpec.id, {layout: positionParams, state: viewState, title})
-                            },
-                            {
-                                text: 'Remove',
-                                icon: Icon.cross(),
-                                intent: 'danger',
-                                hidden: !viewSpec.allowRemove,
-                                disabled: contentLocked,
-                                actionFn: () => containerModel.removeView(id)
-                            },
-                            '-',
-                            ...(extraMenuItems ?? [])
-                        ]
-                    })
-                })
-            ],
+            ...headerProps,
             item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
         });
     }
 });
+
+const headerMenu = hoistCmp.factory(
+    ({model}) => {
+        if (model.hideMenuButton) return null;
+
+        const {viewState, viewSpec, id, containerModel, positionParams, title} = model,
+            {extraMenuItems, contentLocked, renameLocked} = containerModel,
+
+            addMenuItems = createViewMenuItems({
+                dashCanvasModel: containerModel,
+                viewId: id
+            }),
+
+            replaceMenuItems = createViewMenuItems({
+                dashCanvasModel: containerModel,
+                viewId: id,
+                replaceExisting: true
+            }),
+
+            content = ContextMenu({
+                menuItems: [
+                    {
+                        text: 'Add',
+                        icon: Icon.add(),
+                        items: addMenuItems,
+                        hidden: contentLocked
+                    },
+                    {
+                        text: 'Remove',
+                        icon: Icon.cross(),
+                        hidden: !viewSpec.allowRemove || contentLocked,
+                        actionFn: () => containerModel.removeView(id)
+                    },
+                    {
+                        text: 'Rename',
+                        icon: Icon.edit(),
+                        hidden: !viewSpec.allowRename || renameLocked,
+                        actionFn: () => containerModel.renameView(id)
+                    },
+                    {
+                        text: 'Replace',
+                        icon: Icon.transaction(),
+                        items: replaceMenuItems,
+                        hidden: !viewSpec.allowRemove || contentLocked
+                    },
+                    {
+                        text: 'Duplicate',
+                        icon: Icon.copy(),
+                        hidden: contentLocked || viewSpec.unique,
+                        actionFn: () =>
+                            containerModel.addView(viewSpec.id, {
+                                layout: getDuplicateLayout(positionParams),
+                                state: viewState,
+                                title
+                            }).ensureVisible()
+                    },
+                    '-',
+                    ...(extraMenuItems ?? [])
+                ]
+            });
+
+        // Workaround using React functional component to check if ContextMenu renders null
+        // TODO - build a popover wrapper that null-checks content instead of this workaround
+        if (!content) return null;
+
+        return popover({
+            position: Position.BOTTOM,
+            minimal: true,
+            target: button({
+                icon: Icon.ellipsisVertical()
+            }),
+            content
+        });
+    }
+);
+
+//------------------------
+// Implementation
+//------------------------
+/** Returns layout for duplicate view, directly underneath original */
+const getDuplicateLayout = (layout) => {
+    const {y, h} = layout;
+    return {...layout, y: y + h - 1};
+};
