@@ -2,10 +2,12 @@
 
 ## v49.0.0-SNAPSHOT - unreleased
 
-### 🐞 Bug Fixes
+### 🎁 New Features
+* Improve default rendering to call `toString()` on non-react elements returned by renderers.
 
-* Fixed issue where Column renderers returning boolean values did not actually render the value.
-* Fixed issue with model lookups in HoistComponent's callRender method
+### 🐞 Bug Fixes
+* Fixed issue with missing `model` property in `Model.componentProps` in certain cases.
+
 
 ## v48.0.0 - 2022-04-21
 
