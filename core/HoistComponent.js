@@ -209,9 +209,10 @@ function callRender(render, spec, model, modelLookup, props, ref, displayName) {
     }
     const ctx = localModelContext;
     try {
+        props = propsWithModel(props, model)
         ctx.props = props;
         ctx.modelLookup = modelLookup;
-        return render(propsWithModel(props, model), ref);
+        return render(props, ref);
     } finally {
         ctx.props = null;
         ctx.modelLookup = null;

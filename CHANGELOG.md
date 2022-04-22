@@ -5,6 +5,7 @@
 ### 🐞 Bug Fixes
 
 * Fixed issue where Column renderers returning boolean values did not actually render the value.
+* Fixed issue with model lookups in HoistComponent's callRender method
 
 ## v48.0.0 - 2022-04-21
 
