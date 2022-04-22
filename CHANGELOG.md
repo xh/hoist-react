@@ -15,6 +15,7 @@
 * Mobile `Dialog` will scroll internally if taller than the screen.
 * Configs passed to `XH.message()` and its variants now take an optional `className` to apply to the
   message dialog.
+
 ### 💥 Breaking Changes
 
 * Hoist now requires ag-Grid v27.2.0 or higher - update your ag-Grid dependency in your app's
