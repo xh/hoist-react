@@ -4,16 +4,18 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {div, ul, li, span} from '@xh/hoist/cmp/layout';
+import {div, li, span, ul} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
-import {throwIf, warnIf, withDefault, apiRemoved} from '@xh/hoist/utils/js';
+import {apiRemoved, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
 import {
     castArray,
     clone,
     find,
     get,
     isArray,
+    isBoolean,
     isEmpty,
     isFinite,
     isFunction,
@@ -23,8 +25,7 @@ import {
     isString,
     toString
 } from 'lodash';
-import {forwardRef, useImperativeHandle, createElement, isValidElement} from 'react';
-import classNames from 'classnames';
+import {createElement, forwardRef, isValidElement, useImperativeHandle} from 'react';
 import {GridSorter} from '../impl/GridSorter';
 import {ExcelFormat} from './ExcelFormat';
 
@@ -611,9 +612,14 @@ export class Column {
         const {renderer} = this;
         if (!agOptions.cellRenderer) {
             setRenderer((agParams) => {
-                const ret = renderer ?
+                let ret = renderer ?
                     renderer(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
                     agParams.value?.toString();
+
+                // Stringify booleans returned by renderers - won't render otherwise.
+                if (renderer && isBoolean(ret)) {
+                    ret = ret.toString();
+                }
 
                 // Add wrapping span for styling purposes
                 return span({className: 'xh-cell-inner-wrapper', item: ret});
