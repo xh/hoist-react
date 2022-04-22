@@ -242,8 +242,8 @@ export class GridExportService extends HoistService {
 
     getColumnMetadata(columns) {
         return columns.map(column => {
-            let {field, excelWidth, excelFormat} = column,
-                type = null;
+            let {field, excelWidth, excelFormat, fieldSpec} = column,
+                type = fieldSpec?.type;
 
             // If using the function form to support per-cell formats, replace with
             // ExcelFormat.DEFAULT as a placeholder at the column level. The cell-level data for
