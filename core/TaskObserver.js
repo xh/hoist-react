@@ -93,7 +93,7 @@ export class TaskObserver {
 
     /**
      * The message describing the executing task. Observable.
-     * @returns {?string}
+     * @returns {?ReactNode}
      */
     get message() {
         return null;
@@ -101,7 +101,7 @@ export class TaskObserver {
 
     /**
      *  Set the message describing the executing task.
-     *  @param {?string} msg
+     *  @param {?ReactNode} msg
      */
     setMessage(msg) {}
 
@@ -134,7 +134,7 @@ export class TaskObserver {
 class CompoundObserver extends TaskObserver {
     _mode;
     @observable.ref _subtasks;
-    @observable _message
+    @observable.ref _message;
 
     constructor(mode, subtasks, message) {
         super();
