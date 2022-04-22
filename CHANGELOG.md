@@ -2,22 +2,26 @@
 
 ## v49.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed issue where Column renderers returning boolean values did not actually render the value.
 
 ## v48.0.0 - 2022-04-21
 
 ### 🎁 New Features
-* A new `DashCanvas` layout component for creating scrollable dashboards that allow users to manually
-  place and size their widgets using a grid-based layout. Note that this component is in Beta and
-  its API is subject to change.
+
+* A new `DashCanvas` layout component for creating scrollable dashboards that allow users to
+  manually place and size their widgets using a grid-based layout. Note that this component is in
+  beta and its API is subject to change.
 * FontAwesome upgraded to v6. This includes redesigns of the majority of bundled icons - please
   check your app's icon usages carefully.
-* `fmtQuantity` now displays values greater than one billion with `b` unit, similar to current
-  handling of millions with `m`.
 * Enhancements to admin log viewer. Log file metadata (size & last modified) available with
   optional upgrade to `hoist-core >= 13.2`.
 * Mobile `Dialog` will scroll internally if taller than the screen.
 * Configs passed to `XH.message()` and its variants now take an optional `className` to apply to the
   message dialog.
+* `fmtQuantity` now displays values greater than one billion with `b` unit, similar to current
+  handling of millions with `m`.
 
 ### 💥 Breaking Changes
 
@@ -53,7 +57,6 @@
 * mobx-react-lite `3.2 -> 3.3`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v47.1.2...v48.0.0)
-
 
 ## v47.1.2 - 2022-04-01
 
