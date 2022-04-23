@@ -5,7 +5,9 @@
 ### 🐞 Bug Fixes
 
 * Fixed issue where Column renderers returning boolean values did not actually render the value.
-* Fixed issue with model lookups in HoistComponent's callRender method
+* Fixed issue with model lookups in HoistComponent's callRender method.
+* Fixed issue where exporting to excel file would occasionally coerce strings (like "1e10") into
+  numbers. Upgrade to `hoist-core >= 13.2` for the fixed behavior.
 
 ## v48.0.0 - 2022-04-21
 
