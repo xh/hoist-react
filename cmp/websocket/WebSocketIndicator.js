@@ -28,7 +28,7 @@ export const [WebSocketIndicator, webSocketIndicator] = hoistCmp.withFactory({
         } else if (connected) {
             icon = Icon.circle({prefix: 'fas', intent: 'success'});
             txt = 'Connected';
-            tooltip = `Last message: ${fmtTime(lastMessageTime)}`;
+            tooltip = `Last message: ${fmtTime(lastMessageTime, {asHtml: true})}`;
         } else {
             icon = Icon.xCircle({intent: 'danger'});
             txt = 'Disconnected';
