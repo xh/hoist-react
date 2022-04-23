@@ -1,13 +1,13 @@
 # Changelog
 
-## v49.0.0-SNAPSHOT - unreleased
-
-### 🎁 New Features
-* Improve default rendering to call `toString()` on non-react elements returned by renderers.
+## v48.0.1 - 2022-04-22
 
 ### 🐞 Bug Fixes
-* Fixed issue with missing `model` property in `Model.componentProps` in certain cases.
 
+* Improve default rendering to call `toString()` on non-react elements returned by renderers.
+* Fixed issue with `model` property missing from `Model.componentProps` under certain conditions.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v48.0.0...v48.0.1)
 
 ## v48.0.0 - 2022-04-21
 
