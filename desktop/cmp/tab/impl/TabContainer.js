@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {hbox, vbox, div, frame} from '@xh/hoist/cmp/layout';
+import {hbox, vbox, div, placeholder} from '@xh/hoist/cmp/layout';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import '../Tabs.scss';
 import {tabSwitcher} from '../TabSwitcher';
@@ -40,13 +40,7 @@ function getChildren(model) {
     if (isEmpty(tabs)) {
         return div({
             className: 'xh-tab-wrapper',
-            item: frame(
-                div({
-                    flex: 1,
-                    className: 'xh-text-color-accent xh-pad xh-tab--empty',
-                    item: model.emptyText
-                })
-            )
+            item: placeholder(model.emptyText)
         });
     }
 
