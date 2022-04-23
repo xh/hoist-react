@@ -42,7 +42,7 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory({
                 const count = includeChildren ? store.count : store.rootCount,
                     unitLabel = count === 1 ? singularize(unit) : pluralize(unit);
 
-                return `${fmtCount(count, {asHtml: true})} ${unitLabel}`;
+                return `${fmtCount(count)} ${unitLabel}`;
             },
             selCountString = () => {
                 const count = selectedRecords.length,
