@@ -982,6 +982,7 @@ window['XH'] = XH;
  * @property {(ReactNode|string)} message - message to be displayed.
  * @property {string} [title] - title of message box.
  * @property {Element} [icon] - icon to be displayed.
+ * @property {string} [className] - class name to apply to rendered dialog.
  * @property {string} [messageKey] - unique key identifying the message. If subsequent messages
  *      are triggered with this key, they will replace this message. Useful for usages that may
  *      be producing messages recursively, or via timers and wish to avoid generating a large stack

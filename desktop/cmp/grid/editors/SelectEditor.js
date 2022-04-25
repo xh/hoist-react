@@ -10,6 +10,7 @@ import {useInlineEditorModel} from './impl/InlineEditorModel';
 import {EditorPropTypes} from './EditorPropTypes';
 import './Editors.scss';
 
+// Todo: Select Editor fails to commit if you select item in list using Enter key...?
 export const [SelectEditor, selectEditor] = hoistCmp.withFactory({
     displayName: 'SelectEditor',
     className: 'xh-select-editor',

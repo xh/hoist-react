@@ -5,13 +5,12 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
+import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {Timer} from '@xh/hoist/utils/async';
-import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
-import {checkMinVersion, debounced, isDisplayed} from '@xh/hoist/utils/js';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {checkMinVersion} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
 import {createRef} from 'react';
 import {LogDisplayModel} from './LogDisplayModel';
@@ -21,24 +20,10 @@ import {LogDisplayModel} from './LogDisplayModel';
  */
 export class LogViewerModel extends HoistModel {
 
-    persistWith = {localStorageKey: 'xhAdminLogViewerState'};
-
-    // Form State/Display options
-    @bindable
-    @persist
-    tail = false;
-
-    @bindable startLine = null;
-    @bindable maxLines = 1000;
-    @bindable pattern = '';
-
     // Overall State
     @observable file = null;
 
     viewRef = createRef();
-
-    @managed
-    timer = null;
 
     @managed
     logDisplayModel = new LogDisplayModel(this);
@@ -70,39 +55,13 @@ export class LogViewerModel extends HoistModel {
         super();
         makeObservable(this);
 
-        this.filesGridModel = new GridModel({
-            enableExport: true,
-            hideHeaders: true,
-            selModel: 'multiple',
-            store: new UrlStore({
-                url: 'logViewerAdmin/listFiles',
-                idSpec: 'filename',
-                dataRoot: 'files',
-                fields: [{
-                    name: 'filename',
-                    type: 'string',
-                    displayName: 'Log File'
-                }]
-            }),
-            sortBy: 'filename',
-            columns: [{field: 'filename', flex: true}],
-            autosizeOptions: {mode: GridAutosizeMode.DISABLED},
-            contextMenu: [
-                this.downloadFileAction,
-                this.deleteFileAction,
-                '-',
-                ...GridModel.defaultContextMenu
-            ]
-        });
+        this.filesGridModel = this.createGridModel();
 
-        this.addReaction(this.syncSelectionReaction());
-        this.addReaction(this.toggleTailReaction());
-        this.addReaction(this.reloadReaction());
-
-        this.timer = Timer.create({
-            runFn: () => this.autoRefreshLines(),
-            interval: 5 * SECONDS,
-            delay: true
+        this.addReaction({
+            track: () => this.selectedRecord,
+            run: (rec) => {
+                this.file = rec?.data?.filename;
+            }
         });
     }
 
@@ -173,48 +132,58 @@ export class LogViewerModel extends HoistModel {
     //---------------------------------
     // Implementation
     //---------------------------------
-    syncSelectionReaction() {
-        return {
-            track: () => this.selectedRecord,
-            run: (rec) => {
-                this.file = rec?.data?.filename;
-                this.loadLog();
-            },
-            debounce: {interval: 300, leading: true}
-        };
-    }
+    createGridModel() {
+        const supportFileAttrs = checkMinVersion(XH.getEnv('hoistCoreVersion'), '13.2.0');
 
-    reloadReaction() {
-        return {
-            track: () => [this.pattern, this.maxLines, this.startLine],
-            run: () => this.loadLog()
-        };
+        return new GridModel({
+            enableExport: true,
+            selModel: 'multiple',
+            store: new UrlStore({
+                url: 'logViewerAdmin/listFiles',
+                idSpec: 'filename',
+                dataRoot: 'files',
+                fields: [{
+                    name: 'filename',
+                    type: 'string',
+                    displayName: 'Name'
+                }, {
+                    name: 'size',
+                    type: 'number',
+                    displayName: 'Size [kb]'
+                }, {
+                    name: 'lastModified',
+                    type: 'number',
+                    displayName: 'Modified'
+                }]
+            }),
+            sortBy: 'lastModified|desc',
+            columns: [
+                {field: 'filename', flex: 1, minWidth: 160},
+                {
+                    field: 'size',
+                    width: 80,
+                    renderer: fileSizeRenderer,
+                    omit: !supportFileAttrs
+                },
+                {
+                    field: 'lastModified',
+                    width: 100,
+                    renderer: compactDateRenderer({sameDayFmt: 'HH:mm:ss'}),
+                    omit: !supportFileAttrs
+                }
+            ],
+            autosizeOptions: {mode: GridAutosizeMode.DISABLED},
+            contextMenu: [
+                this.downloadFileAction,
+                this.deleteFileAction,
+                '-',
+                ...GridModel.defaultContextMenu
+            ]
+        });
     }
+}
 
-    toggleTailReaction() {
-        return {
-            track: () => this.tail,
-            run: (tail) => {
-                this.setStartLine(tail ? null : 1);
-                this.loadLog();
-            }
-        };
-    }
-
-    autoRefreshLines() {
-        const {logDisplayModel, tail, viewRef} = this;
-
-        if (tail &&
-            logDisplayModel.tailIsDisplayed &&
-            olderThan(logDisplayModel.lastLoadCompleted, 5 * SECONDS) &&
-            isDisplayed(viewRef.current)
-        ) {
-            logDisplayModel.refreshAsync();
-        }
-    }
-
-    @debounced(300)
-    loadLog() {
-        this.logDisplayModel.loadAsync();
-    }
+function fileSizeRenderer(v) {
+    if (v == null) return '';
+    return fmtNumber(v/1000, {precision: 1});
 }

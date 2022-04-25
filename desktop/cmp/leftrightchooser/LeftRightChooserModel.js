@@ -5,6 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {div} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {computed, makeObservable} from '@xh/hoist/mobx';
@@ -179,17 +180,15 @@ export class LeftRightChooserModel extends HoistModel {
     //------------------------
     getTextColRenderer(side) {
         const groupingEnabled = side === 'left' ? this.leftGroupingEnabled : this.rightGroupingEnabled,
-            lockSvg = Icon.lock({prefix: 'fal', asHtml: true});
+            lockSvg = Icon.lock({prefix: 'fal'});
 
         return (v, {record}) => {
             const groupClass = groupingEnabled && this._hasGrouping ? 'xh-lr-chooser__group-row' : '';
-            return `
-                <div class='xh-lr-chooser__item-row ${groupClass}'>
-                    ${v} ${record.data.locked ? lockSvg : ''}
-                </div>
-            `;
+            return div({
+                className: `xh-lr-chooser__item-row ${groupClass}`,
+                items: [v, record.data.locked ? lockSvg : null]
+            });
         };
-
     }
 
     preprocessData(data) {

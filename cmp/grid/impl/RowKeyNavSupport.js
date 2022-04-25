@@ -27,15 +27,14 @@ export class RowKeyNavSupport {
             prevIsTreeCol = previousCellPosition?.column.colDef.xhColumn.isTreeColumn,
             prevNode = prevIndex != null ? agApi.getDisplayedRowAtIndex(prevIndex) : null,
             prevNodeIsParent = prevNode && prevNode.allChildrenCount,
-            canExpandCollapse = prevNodeIsParent && (!showCellFocus || prevIsTreeCol),
-            KEY_UP = 38, KEY_DOWN = 40, KEY_LEFT = 37, KEY_RIGHT = 39;
+            canExpandCollapse = prevNodeIsParent && (!showCellFocus || prevIsTreeCol);
 
         switch (key) {
-            case KEY_DOWN:
-            case KEY_UP:
+            case 'ArrowDown':
+            case 'ArrowUp':
                 if (nextIndex != null) {
 
-                    const isUp = (key === KEY_UP);
+                    const isUp = (key === 'ArrowUp');
 
                     // agGrid can weirdly wrap focus when bottom summary present - prevent that
                     if (isUp !== (nextIndex < prevIndex)) return previousCellPosition;
@@ -62,13 +61,13 @@ export class RowKeyNavSupport {
                 }
 
                 return nextCellPosition;
-            case KEY_LEFT:
+            case 'ArrowLeft':
                 if (canExpandCollapse && prevNode.expanded) {
                     prevNode.setExpanded(false);
                     return;
                 }
                 return nextCellPosition;
-            case KEY_RIGHT:
+            case 'ArrowRight':
                 if (canExpandCollapse && !prevNode.expanded) {
                     prevNode.setExpanded(true);
                     return;

@@ -16,8 +16,8 @@ export const isOpen = {
     align: 'center',
     width: 40,
     renderer: v => v ?
-        Icon.circle({prefix: 'fas', className: 'xh-green', asHtml: true}) :
-        Icon.circle({prefix: 'fal', className: 'xh-red', asHtml: true})
+        Icon.circle({prefix: 'fas', className: 'xh-green'}) :
+        Icon.circle({prefix: 'fal', className: 'xh-red'})
 };
 
 export const key = {

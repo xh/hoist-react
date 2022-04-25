@@ -4,6 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {apiDeprecated} from '@xh/hoist/utils/js';
 
 /**
  * Generate a renderer for a given formatter function.
@@ -31,4 +32,14 @@ export function saveOriginal(v, opts) {
     if (opts.originalValue === undefined) {
         opts.originalValue = v;
     }
+}
+
+/**
+ * Test for and output a deprecation warning for `asElement`
+ */
+export function asElementDeprecationWarning(opts) {
+    apiDeprecated('asElement', {
+        test: opts?.asElement,
+        msg: 'Formatters return elements by default. You can use `asHtml` to return a HTML string'
+    });
 }

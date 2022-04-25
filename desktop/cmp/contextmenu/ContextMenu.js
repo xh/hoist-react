@@ -71,6 +71,7 @@ function parseMenuItems(items) {
             return menuItem({
                 text: item.text,
                 icon: item.icon,
+                intent: item.intent,
                 onClick: item.actionFn ? () => wait().then(item.actionFn) : null,    // do async to allow menu to close
                 disabled: item.disabled,
                 items

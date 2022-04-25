@@ -20,13 +20,14 @@ export class MessageModel extends HoistModel {
     title;
     icon;
     message;
+    messageKey;
+    className;
     input;
     confirmProps;
     cancelProps;
     cancelAlign;
     onConfirm;
     onCancel;
-    messageKey;
 
     // Promise to be resolved when user has clicked on choice and its internal resolver
     result;
@@ -39,31 +40,22 @@ export class MessageModel extends HoistModel {
         icon,
         message,
         messageKey,
+        className,
         input,
         confirmProps = {},
         cancelProps = {},
         cancelAlign = 'right',
         onConfirm,
-        onCancel,
-
-        // Deprecated
-        confirmText,
-        confirmIntent,
-        cancelText,
-        cancelIntent
+        onCancel
     }) {
         super();
         makeObservable(this);
-        warnIf(
-            (confirmText || confirmIntent || cancelText || cancelIntent),
-            'Message "confirmText", "confirmIntent", "cancelText", and "cancelIntent" configs have' +
-            ' been deprecated - use "confirmProps" and "cancelProps" instead.'
-        );
 
         this.title = title;
         this.icon = icon;
         this.message = message;
         this.messageKey = messageKey;
+        this.className = className;
 
         if (input) {
             this.input = input;
@@ -73,8 +65,8 @@ export class MessageModel extends HoistModel {
             );
         }
 
-        this.confirmProps = this.parseButtonProps(confirmProps, () => this.doConfirmAsync(), confirmText, confirmIntent);
-        this.cancelProps = this.parseButtonProps(cancelProps, () => this.doCancel(), cancelText, cancelIntent);
+        this.confirmProps = this.parseButtonProps(confirmProps, () => this.doConfirmAsync());
+        this.cancelProps = this.parseButtonProps(cancelProps, () => this.doCancel());
         this.cancelAlign = cancelAlign;
 
         this.onConfirm = onConfirm;
@@ -126,12 +118,10 @@ export class MessageModel extends HoistModel {
 
     // Merge handler and deprecated props into consolidated object.
     // Return null if neither text nor icon provided - button should not be displayed.
-    parseButtonProps(props, handler, deprText, deprIntent) {
+    parseButtonProps(props, handler) {
         warnIf(props.onClick, 'Cannot specify "onClick" callback for default Message buttons - callback will be ignored.');
 
         const ret = {...props, onClick: handler};
-        if (deprText) ret.text = deprText;
-        if (deprIntent) ret.intent = deprIntent;
         return (ret.text || ret.icon) ? ret : null;
     }
 }
