@@ -8,7 +8,7 @@ import {span} from '@xh/hoist/cmp/layout';
 import {defaults, isFinite, isFunction, isPlainObject, isString} from 'lodash';
 import numbro from 'numbro';
 import {fmtSpan} from './FormatMisc';
-import {createRenderer, saveOriginal} from './FormatUtils';
+import {asElementDeprecationWarning, createRenderer, saveOriginal} from './FormatUtils';
 
 const THOUSAND = 1000,
     MILLION  = 1000000,
@@ -45,7 +45,7 @@ const UP_TICK = '▴',
  *      value. True to use red/green/grey defaults, or provide an object with alternate CSS classes.
  * @param {(boolean|fmtNumber~tooltipFn)} [opts.tooltip] - true to enable default tooltip with
  *      minimally formatted original value, or a function to generate a custom tooltip string.
- * @param {boolean} [opts.asElement] - return a React element rather than a HTML string
+ * @param {boolean} [opts.asHtml] - return an HTML string rather than a React element.
  * @param {number} [opts.originalValue] - holds the unaltered original value to be formatted.
  *      Not typically used by applications.
  *
@@ -70,10 +70,11 @@ export function fmtNumber(v, {
     labelCls = 'xh-units-label',
     colorSpec = false,
     tooltip = null,
-    asElement = false,
-    originalValue = v
+    asHtml = false,
+    originalValue = v,
+    ...rest
 } = {}) {
-
+    asElementDeprecationWarning(rest);
     if (isInvalidInput(v)) return nullDisplay;
 
     formatConfig = formatConfig || buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma);
@@ -87,7 +88,7 @@ export function fmtNumber(v, {
     }
 
     const opts = {str, sign, ledger, forceLedgerAlign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip, originalValue};
-    return asElement ? fmtNumberElement(v, opts) : fmtNumberString(v, opts);
+    return asHtml ? fmtNumberString(v, opts) : fmtNumberElement(v, opts);
 }
 
 /**
@@ -139,7 +140,8 @@ export function fmtBillions(v, opts)  {
 }
 
 /**
- * Render a quantity value, handling highly variable amounts by using 2dp millions for values > 1m
+ * Render a quantity value, handling highly variable amounts by using units of millions (m) and
+ * billions (b) as needed.'
  *
  * @param {number} v - value to format.
  * @param {Object} [opts] - @see {@link fmtNumber} method.
@@ -149,7 +151,8 @@ export function fmtQuantity(v, opts = {}) {
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
-    const lessThanM = Math.abs(v) < MILLION;
+    const lessThanM = Math.abs(v) < MILLION,
+        lessThanB = Math.abs(v) < BILLION;
 
     defaults(opts, {
         ledger: true,
@@ -157,7 +160,9 @@ export function fmtQuantity(v, opts = {}) {
         precision: lessThanM ? 0 : 2
     });
 
-    return lessThanM ? fmtNumber(v, opts) : fmtMillions(v, opts);
+    if (lessThanM) return fmtNumber(v, opts);
+    if (lessThanB) return fmtMillions(v, opts);
+    return fmtBillions(v, opts);
 }
 
 /**
@@ -224,11 +229,9 @@ function fmtNumberElement(v, opts = {}) {
     if (tooltip) cls.push('xh-title-tip');
 
     // Compile child items
-    const asElement = true,
-        items = [];
-
+    const items = [];
     if (withSignGlyph) {
-        items.push(signGlyph(v, asElement));
+        items.push(signGlyph(v));
     } else if (sign) {
         items.push(sign);
     }
@@ -240,7 +243,7 @@ function fmtNumberElement(v, opts = {}) {
     items.push(str);
 
     if (isString(label)) {
-        items.push(labelCls ? fmtSpan(label, {className: labelCls, asElement: asElement}) : label);
+        items.push(labelCls ? fmtSpan(label, {className: labelCls}) : label);
     }
 
     if (ledger) {
@@ -261,11 +264,12 @@ function fmtNumberElement(v, opts = {}) {
 }
 
 function fmtNumberString(v, opts = {}) {
-    const {str, sign, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, prefix} = opts;
+    const {str, sign, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, prefix} = opts,
+        asHtml = true;
     let ret = '';
 
     if (withSignGlyph) {
-        ret += signGlyph(v) + '&nbsp;';
+        ret += signGlyph(v, asHtml);
     } else if (sign) {
         ret += sign;
     }
@@ -278,7 +282,7 @@ function fmtNumberString(v, opts = {}) {
 
     if (isString(label)) {
         if (labelCls) {
-            ret += fmtSpan(label, {className: labelCls});
+            ret += fmtSpan(label, {className: labelCls, asHtml});
         } else {
             ret += label;
         }
@@ -293,19 +297,19 @@ function fmtNumberString(v, opts = {}) {
     }
 
     if (colorSpec) {
-        ret = fmtSpan(ret, {className: valueColor(v, colorSpec)});
+        ret = fmtSpan(ret, {className: valueColor(v, colorSpec), asHtml});
     }
 
     if (tooltip) {
-        ret = fmtSpan(ret, {className: 'xh-title-tip', title: processToolTip(tooltip, opts)});
+        ret = fmtSpan(ret, {className: 'xh-title-tip', title: processToolTip(tooltip, opts), asHtml});
     }
 
     return ret;
 }
 
-function signGlyph(v, asElement) {
+function signGlyph(v, asHtml) {
     if (!isFinite(v)) return '';
-    return v === 0 ? fmtSpan(UP_TICK, {className: 'xh-transparent', asElement: asElement}) : v > 0 ? UP_TICK : DOWN_TICK;
+    return v === 0 ? fmtSpan(UP_TICK, {className: 'xh-transparent', asHtml}) : v > 0 ? UP_TICK : DOWN_TICK;
 }
 
 function valueColor(v, colorSpec) {

@@ -81,7 +81,6 @@ const detailRecForm = hoistCmp.factory(
                                 readonlyRenderer: numberRenderer({
                                     label: 'ms',
                                     nullDisplay: '-',
-                                    asElement: true,
                                     formatConfig: {thousandSeparated: false, mantissa: 0}
                                 })
                             }),

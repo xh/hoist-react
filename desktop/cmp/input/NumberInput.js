@@ -160,7 +160,7 @@ class Model extends HoistInputModel {
             {valueLabel, displayWithCommas} = componentProps,
             precision = withDefault(componentProps.precision, 4),
             zeroPad = withDefault(componentProps.zeroPad, false),
-            formattedVal = fmtNumber(value, {precision, zeroPad, label: valueLabel, labelCls: null});
+            formattedVal = fmtNumber(value, {precision, zeroPad, label: valueLabel, labelCls: null, asHtml: true});
 
         return displayWithCommas ? formattedVal : formattedVal.replace(/,/g, '');
     }
@@ -190,43 +190,57 @@ class Model extends HoistInputModel {
         return parseFloat(value);
     }
 
-    onFocus = (ev) => {
-        this.noteFocused();
-
-        // Deferred to allow any value conversion to complete and flush into input.
+    noteFocused() {
+        super.noteFocused();
         if (this.componentProps.selectOnFocus) {
-            const target = ev.target;
-            wait().then(() => target.select());
+            // Deferred to allow any value conversion to complete and flush into input.
+            wait().then(() => this.inputRef.current?.select());
         }
     }
+
+    noteBlurred() {
+        super.noteBlurred();
+        wait().then(() => {
+            const input = this.inputRef.current;
+            // Force value to re-render in control to workaround issue with blueprint state caching
+            if (input) input.value = this.formatRenderValue(this.renderValue);
+        });
+    }
+
 }
 
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props);
 
-        // BP NumberInput bases expected precision off of dps in minorStepSize, if specified.
+        // BP's min/max can cause problems when controlled value is formatted string so only set
+        // when focused and rendered value is number.  min/max only constrains step editing anyway
+        const min = model.hasFocus ? props.min : undefined,
+            max = model.hasFocus ? props.max : undefined;
+
+        // BP bases expected precision off of dps in minorStepSize, if specified.
         // The default BP value of 0.1 for this prop emits a console warning any time the input
         // value extends beyond 1 dp. Re-default here to sync with our `precision` prop.
         // See https://blueprintjs.com/docs/#core/components/numeric-input.numeric-precision
         const precision = withDefault(props.precision, 4),
+            majorStepSize = props.majorStepSize,
             minorStepSize = precision ?
                 withDefault(props.minorStepSize, round(Math.pow(10, -precision), precision)) :
                 null;
 
+        // Render BP input.
         return numericInput({
             value: model.formatRenderValue(model.renderValue),
-
-            allowNumericCharactersOnly: !props.enableShorthandUnits,
+            allowNumericCharactersOnly: !props.enableShorthandUnits && !props.displayWithCommas,
             buttonPosition: 'none',
             disabled: props.disabled,
             fill: props.fill,
             inputRef: composeRefs(model.inputRef, props.inputRef),
             leftIcon: props.leftIcon,
-            max: props.max,
-            majorStepSize: props.majorStepSize,
-            min: props.min,
+            min,
+            max,
             minorStepSize,
+            majorStepSize,
             placeholder: props.placeholder,
             rightElement: props.rightElement,
             stepSize: props.stepSize,

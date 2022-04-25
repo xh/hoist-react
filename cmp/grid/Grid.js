@@ -184,14 +184,11 @@ class GridLocalModel extends HoistModel {
         const {model} = this,
             {clicksToEdit, selModel} = model;
 
-        // 'immutableData' and 'rowDataChangeDetectionStrategy' props both deal with a *new* sets of rowData.
-        // We use transactions instead, but our data fully immutable so seems safest to set these as well.
         let ret = {
             model: model.agGridModel,
-            immutableData: true,
-            rowDataChangeDetectionStrategy: 'IdentityCheck',
             suppressColumnVirtualisation: !model.useVirtualColumns,
-            getRowNodeId: (record) => record.agId,
+            getRowId: ({data}) => data.agId,
+            rowDataChangeDetectionStrategy: 'IdentityCheck',
             defaultColDef: {
                 sortable: true,
                 resizable: true,
@@ -205,7 +202,7 @@ class GridLocalModel extends HoistModel {
                 groupContracted: Icon.angleRight({asHtml: true, className: 'ag-group-contracted'}),
                 clipboardCopy: Icon.copy({asHtml: true})
             },
-            frameworkComponents: {
+            components: {
                 agColumnHeader: (props) => columnHeader({gridModel: model, ...props}),
                 agColumnGroupHeader: (props) => columnGroupHeader(props)
             },
@@ -216,7 +213,7 @@ class GridLocalModel extends HoistModel {
             getRowHeight: ({node}) => this.getRowHeight(node),
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             rowClassRules: model.rowClassRules,
-            noRowsOverlayComponentFramework: observer(() => div(this.emptyText)),
+            noRowsOverlayComponent: observer(() => div(this.emptyText)),
             onCellContextMenu: model.onCellContextMenu,
             onCellClicked: model.onCellClicked,
             onCellDoubleClicked: model.onCellDoubleClicked,
@@ -234,10 +231,10 @@ class GridLocalModel extends HoistModel {
             onCellEditingStopped: model.onCellEditingStopped,
             navigateToNextCell: this.navigateToNextCell,
             processCellForClipboard: this.processCellForClipboard,
-            defaultGroupOrderComparator: model.groupSortFn ? this.groupSortComparator : undefined,
+            initialGroupOrderComparator: model.groupSortFn ? this.groupSortComparator : undefined,
             groupDefaultExpanded: 1,
             groupDisplayType: 'groupRows',
-            groupRowRendererFramework: model.groupRowElementRenderer,
+            groupRowRenderer: model.groupRowElementRenderer,
             groupRowRendererParams: {
                 innerRenderer: model.groupRowRenderer,
                 suppressCount: !model.showGroupRowCounts
@@ -249,7 +246,9 @@ class GridLocalModel extends HoistModel {
             editType: model.fullRowEditing ? 'fullRow' : undefined,
             singleClickEdit: clicksToEdit === 1,
             suppressClickEdit: clicksToEdit !== 1 && clicksToEdit !== 2,
-            stopEditingWhenCellsLoseFocus: true
+            stopEditingWhenCellsLoseFocus: true,
+            suppressLastEmptyLineOnPaste: true,
+            suppressClipboardApi: true
         };
 
         // Platform specific defaults
@@ -735,7 +734,7 @@ class GridLocalModel extends HoistModel {
         }
     };
 
-    groupSortComparator = (nodeA, nodeB) => {
+    groupSortComparator = ({nodeA, nodeB}) => {
         const gridModel = this.model;
         return gridModel.groupSortFn(nodeA.key, nodeB.key, nodeA.field, {gridModel, nodeA, nodeB});
     };

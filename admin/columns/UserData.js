@@ -64,7 +64,7 @@ export const local = {
 };
 
 function truncateIfJson(value, {record}) {
-    return record.data.type === 'json' ? truncateValue(value) : value;
+    return record.data.type === 'json' ? truncateValue(value) : value?.toString();
 }
 
 function truncateValue(value) {

@@ -60,10 +60,9 @@ export const impersonatingFlag = {
         const {impersonating} = record.data;
         return impersonating ?
             Icon.impersonate({
-                asHtml: true,
                 className: 'xh-text-color-accent',
                 title: `Impersonating ${impersonating}`
-            }) : '';
+            }) : null;
     }
 };
 

@@ -15,12 +15,12 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 import {cloneDeep, defaultsDeep, find, isFinite, isNil, reject} from 'lodash';
 import {modelLookupContextProvider} from '@xh/hoist/core/impl/ModelLookup';
 import {createRoot} from 'react-dom/client';
-import {DashViewModel} from './DashViewModel';
-import {DashViewSpec} from './DashViewSpec';
+import {DashViewModel} from '../DashViewModel';
+import {DashContainerViewSpec} from './DashContainerViewSpec';
 import {dashContainerMenuButton} from './impl/DashContainerMenuButton';
 import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
 import {convertGLToState, convertStateToGL, getViewModelId} from './impl/DashContainerUtils';
-import {dashView} from './impl/DashView';
+import {dashContainerView} from './impl/DashContainerView';
 
 /**
  * Model for a DashContainer, representing its contents and layout state.
@@ -42,7 +42,7 @@ import {dashView} from './impl/DashView';
  * size at parse time. Any unaccounted for space will be divided equally across the remaing children.
  *
  * We differ from GoldenLayout by offering a new type `view`. These should be configured as
- * id references to the provided DashViewSpec, e.g. {type: `view`, id: ViewSpec.id}. These should
+ * id references to the provided DashContainerViewSpec, e.g. {type: `view`, id: ViewSpec.id}. These should
  * be used instead of the `component` and `react-component` types provided by GoldenLayout.
  *
  * Note that loading state will destroy and reinitialize all components. Therefore,
@@ -105,7 +105,7 @@ export class DashContainerModel extends HoistModel {
     //------------------------
     // Immutable public properties
     //------------------------
-    /** @member {DashViewSpec[]} */
+    /** @member {DashContainerViewSpec[]} */
     viewSpecs = [];
     /** @member {RenderMode} */
     renderMode;
@@ -125,14 +125,14 @@ export class DashContainerModel extends HoistModel {
 
     /**
      * @param {Object} c - DashContainerModel configuration.
-     * @param {DashViewSpec[]} c.viewSpecs - A collection of viewSpecs, each describing a type of view
+     * @param {DashContainerViewSpec[]} c.viewSpecs - A collection of viewSpecs, each describing a type of view
      *      that can be displayed in this container
      * @param {Object} [c.viewSpecDefaults] - Properties to be set on all viewSpecs.  Merges deeply.
      * @param {Object[]} [c.initialState] - Default layout state for this container.
-     * @param {RenderMode} [c.renderMode] - strategy for rendering DashViews. Can be set
-     *      per-view via `DashViewSpec.renderMode`. See enum for description of supported modes.
-     * @param {RefreshMode} [c.refreshMode] - strategy for refreshing DashViews. Can be set
-     *      per-view via `DashViewSpec.refreshMode`. See enum for description of supported modes.
+     * @param {RenderMode} [c.renderMode] - strategy for rendering DashContainerViews. Can be set
+     *      per-view via `DashContainerViewSpec.renderMode`. See enum for description of supported modes.
+     * @param {RefreshMode} [c.refreshMode] - strategy for refreshing DashContainerViews. Can be set
+     *      per-view via `DashContainerViewSpec.refreshMode`. See enum for description of supported modes.
      * @param {boolean} [c.layoutLocked] - prevent re-arranging views by dragging and dropping.
      * @param {boolean} [c.contentLocked] - prevent adding and removing views.
      * @param {boolean} [c.renameLocked] - prevent renaming views.
@@ -168,7 +168,7 @@ export class DashContainerModel extends HoistModel {
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {
-            return new DashViewSpec(defaultsDeep({}, cfg, viewSpecDefaults));
+            return new DashContainerViewSpec(defaultsDeep({}, cfg, viewSpecDefaults));
         });
 
         this.restoreState = {initialState, layoutLocked, contentLocked, renameLocked};
@@ -248,7 +248,7 @@ export class DashContainerModel extends HoistModel {
     /**
      * Add a view to the container.
      *
-     * @param {string} id - DashViewSpec id to add to the container
+     * @param {string} id - DashContainerViewSpec id to add to the container
      * @param {object} container - GoldenLayout container to add it to. If not provided, will be added to the root container.
      * @param {number} [index] - An optional index that determines at which position the new item should be added.
      */
@@ -259,9 +259,9 @@ export class DashContainerModel extends HoistModel {
         const viewSpec = this.getViewSpec(id),
             instances = this.getItemsBySpecId(id);
 
-        throwIf(!viewSpec, `Trying to add non-existent or omitted DashViewSpec. id=${id}`);
-        throwIf(!viewSpec.allowAdd, `Trying to add DashViewSpec with allowAdd=false. id=${id}`);
-        throwIf(viewSpec.unique && instances.length, `Trying to add multiple instances of a DashViewSpec with unique=true. id=${id}`);
+        throwIf(!viewSpec, `Trying to add non-existent or omitted DashContainerViewSpec. id=${id}`);
+        throwIf(!viewSpec.allowAdd, `Trying to add DashContainerViewSpec with allowAdd=false. id=${id}`);
+        throwIf(viewSpec.unique && instances.length, `Trying to add multiple instances of a DashContainerViewSpec with unique=true. id=${id}`);
 
         if (!container) container = goldenLayout.root.contentItems[0];
 
@@ -581,7 +581,7 @@ export class DashContainerModel extends HoistModel {
                 this.addViewModel(model);
                 return modelLookupContextProvider({
                     value: this.modelLookupContext,
-                    item: dashView({model})
+                    item: dashContainerView({model})
                 });
             });
         });

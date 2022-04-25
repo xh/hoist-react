@@ -101,7 +101,9 @@ export class TreeMapModel extends HoistModel {
      * @param {string} c.valueField - StoreRecord field to use to determine node size.
      * @param {string} c.heatField - StoreRecord field to use to determine node color.
      * @param {function} [c.valueRenderer] - Renderer to use when displaying value in the default tooltip.
+     *      Note that any renderer or formatter provided should be configured to return `asHtml`
      * @param {function} [c.heatRenderer] - Renderer to use when displaying heat in the default tooltip.
+     *      Note that any renderer or formatter provided should be configured to return `asHtml`
      * @param {number} [c.maxHeat] - Value for providing a clamped, stable upper boundary on heat color
      *      intensity. If not provided, maxHeat will be determined by the dataset on each load.
      * @param {number} [c.maxDepth] - Maximum tree depth to render.
@@ -131,8 +133,8 @@ export class TreeMapModel extends HoistModel {
         labelField = 'name',
         valueField = 'value',
         heatField = 'value',
-        valueRenderer = numberRenderer(),
-        heatRenderer = numberRenderer(),
+        valueRenderer = numberRenderer({asHtml: true}),
+        heatRenderer = numberRenderer({asHtml: true}),
         maxHeat,
         maxDepth,
         algorithm = 'squarified',
@@ -328,7 +330,7 @@ export class TreeMapModel extends HoistModel {
      * c) 'none' ignores the heat value altogether, coloring all nodes with the neutral color
      */
     normaliseColorValues(data) {
-        const {colorMode, heatField} = this;
+        const {colorMode, heatField, valueField} = this;
 
         //---------------------
         // ColorMode === 'none'
@@ -343,15 +345,18 @@ export class TreeMapModel extends HoistModel {
         //---------------------
         if (colorMode === 'wash') {
             data.forEach(it => {
-                const {heatValue} = it,
+                const {heatValue, record} = it,
                     isValid = this.valueIsValid(heatValue);
 
-                if (isValid) {
-                    it.colorValue = heatValue >= 0 ? 0.8 : 0.2;
-                } else {
+                if (!isValid) {
                     it.colorValue = 0.5;
+                    return;
                 }
+                // If heatValue equals 0, defer to the value for sign to determine color.
+                const checkValue = heatValue !== 0 ? heatValue : record.data[valueField];
+                it.colorValue = checkValue !== 0 ? (checkValue > 0 ? 0.8 : 0.2) : 0.5;
             });
+
             return data;
         }
 
@@ -368,19 +373,23 @@ export class TreeMapModel extends HoistModel {
         // 2) Transform heatValue into a normalized colorValue, according to the colorMode.
         const maxHeat = isFinite(this.maxHeat) ? this.maxHeat : max(heatValues);
         data.forEach(it => {
-            const {heatValue} = it;
+            const {heatValue, record} = it;
 
             if (!this.valueIsValid(heatValue)) {
-                it.colorValue = 0.5; // Treat invalid values as zero
+                it.colorValue = 0.5;
                 return;
             }
 
-            if (heatValue >= 0) {
+            // If heatValue equals 0, defer to the value for sign to determine color.
+            const checkValue = heatValue !== 0 ? heatValue : record.data[valueField];
+            if (checkValue > 0) {
                 // Normalize positive values between 0.6-1
                 it.colorValue = this.normalizeToRange(heatValue, 0, maxHeat, 0.6, 1);
-            } else {
+            } else if (checkValue < 0) {
                 // Normalize negative values between 0-0.4
                 it.colorValue = this.normalizeToRange(Math.abs(heatValue), maxHeat, 0, 0, 0.4);
+            } else {
+                it.colorValue = 0.5;
             }
         });
 

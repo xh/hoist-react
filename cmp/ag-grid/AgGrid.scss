@@ -192,7 +192,7 @@
     // the flex-child to overflow, as by default flex children take up as much
     // width as necessary to fit their contents.
     // See https://makandracards.com/makandra/66994-css-flex-and-min-width
-    & > * {
+    .xh-cell-inner-wrapper {
       flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;

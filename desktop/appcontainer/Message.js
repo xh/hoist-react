@@ -14,6 +14,7 @@ import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
 import './Message.scss';
 
 /**
@@ -25,7 +26,7 @@ export const message = hoistCmp.factory({
     model: uses(MessageModel),
     className: 'xh-message',
 
-    render({model, ...props}) {
+    render({model, className, ...props}) {
 
         if (!model.isOpen) return null;
 
@@ -34,6 +35,7 @@ export const message = hoistCmp.factory({
             isCloseButtonShown: false,
             title: model.title,
             icon: model.icon,
+            className: classNames(className, model.className),
             items: [
                 dialogBody(
                     model.message,
