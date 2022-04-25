@@ -7,7 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, apiRemoved} from '@xh/hoist/utils/js';
 import {isFunction, isNumber} from 'lodash';
 
 /**
@@ -30,8 +30,7 @@ export class DataViewModel extends HoistModel {
     /**
      * @param {Object} c - DataViewModel configuration.
      * @param {(Store|Object)} c.store - a Store instance, or a config to create one.
-     * @param {Column~elementRendererFn} c.elementRenderer - function returning a React element for
-     *      each data row.
+     * @param {Column~rendererFn} c.renderer - renderer to use for each data row.
      * @param {(number|function)} itemHeight - Row height (in px) for each item displayed in the view,
      *      or a function which returns a number. Function will receive {record, dataViewModel, agParams}.
      * @param {(string|string[])} [c.groupBy] - field(s) by which to do full-width row grouping.
@@ -68,7 +67,7 @@ export class DataViewModel extends HoistModel {
      */
     constructor({
         store,
-        elementRenderer,
+        renderer,
         itemHeight,
         groupBy,
         groupRowHeight,
@@ -95,6 +94,8 @@ export class DataViewModel extends HoistModel {
             'Must specify DataViewModel.itemHeight as a number or a function to set a pixel height for each item.'
         );
 
+        apiRemoved('DataViewModel.elementRenderer', {test: restArgs.elementRenderer, msg: 'Use `renderer` instead', v: 48});
+
         this.itemHeight = itemHeight;
         this.groupRowHeight = groupRowHeight;
 
@@ -108,7 +109,7 @@ export class DataViewModel extends HoistModel {
         columns.push({
             colId: 'xhDataViewColumn',
             flex: true,
-            elementRenderer,
+            renderer,
             rendererIsComplex: true
         });
 

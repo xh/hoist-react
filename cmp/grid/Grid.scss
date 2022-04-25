@@ -11,18 +11,12 @@
   //------------------------
   // Core Header Classes
   //------------------------
-  .ag-header-cell,
-  .ag-header-group-cell {
-    > .ag-react-container {
-      width: 100%;
-    }
-  }
-
   .xh-grid-group-header {
     display: flex;
     flex-direction: row;
     align-items: center;
     min-height: 32px;
+    width: 100%;
 
     &--expandable {
       cursor: pointer;
@@ -44,6 +38,7 @@
     flex-direction: row;
     align-items: center;
     cursor: pointer;
+    width: 100%;
 
     span {
       flex: 1;

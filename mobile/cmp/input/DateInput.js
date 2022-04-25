@@ -173,7 +173,7 @@ class Model extends HoistInputModel {
     }
 
     formatDate(date) {
-        return fmtDate(date, {fmt: this.getFormat()});
+        return fmtDate(date, {fmt: this.getFormat(), asHtml: true});
     }
 }
 

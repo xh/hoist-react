@@ -16,6 +16,7 @@ export class ContextMenuItem {
 
     text;
     icon;
+    intent;
     actionFn;
     items;
     disabled;
@@ -25,6 +26,7 @@ export class ContextMenuItem {
      * @param {Object} c - ContextMenuItem configuration.
      * @param {string} c.text - label to be displayed.
      * @param {Element} [c.icon] - icon to be displayed.
+     * @param {string} [c.intent] - intent to be used for rendering the action.
      * @param {function} [c.actionFn] - Executed when the user clicks the menuitem.
      * @param {Object[]} [c.items] - child menu items.
      * @param {boolean} [c.disabled] - true to disable this item.
@@ -33,6 +35,7 @@ export class ContextMenuItem {
     constructor({
         text,
         icon = null,
+        intent,
         actionFn = null,
         items = null,
         disabled = false,
@@ -40,6 +43,7 @@ export class ContextMenuItem {
     }) {
         this.text = text;
         this.icon = icon;
+        this.intent = intent;
         this.actionFn = actionFn;
         this.items = items;
         this.disabled = disabled;

@@ -89,6 +89,11 @@
 
 .xh-filter-chooser-favorite-icon {
   margin-left: var(--xh-pad-half-px);
+
+  // Matched to GroupingChooser equivalent.
+  &.svg-inline--fa {
+    width: 12px;
+  }
 }
 
 .xh-filter-chooser-favorite {

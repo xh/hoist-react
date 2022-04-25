@@ -4,6 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {div, span} from '@xh/hoist/cmp/layout';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {isString, partition} from 'lodash';
 
@@ -33,46 +34,49 @@ export function multiFieldRenderer(value, context) {
     warnIf(!column.rowHeight, 'MultiFieldRenderer works best with rowHeight: Grid.MULTIFIELD_ROW_HEIGHT');
 
     const {mainRenderer, delimiter, subFields = []} = multiFieldConfig,
-        [topFields, bottomFields] = partition(subFields, it => it.position == 'top'),
-        containerEl = document.createElement('div'),
-        topEl = document.createElement('div'),
-        bottomEl = document.createElement('div');
-
-    // Create container
-    containerEl.classList.add('xh-multifield-renderer');
-    containerEl.appendChild(topEl);
-    containerEl.appendChild(bottomEl);
+        [topFields, bottomFields] = partition(subFields, it => it.position === 'top'),
+        topRowItems = [],
+        bottomRowItems = [];
 
     // Render main field to top row
-    topEl.classList.add('xh-multifield-renderer-row', 'xh-multifield-renderer-top');
-    topEl.appendChild(renderMainField(value, mainRenderer, context));
+    topRowItems.push(renderMainField(value, mainRenderer, context));
 
     // Render SubFields to top row
     topFields.forEach(it => {
-        if (delimiter) topEl.appendChild(renderDelimiter(delimiter));
-        topEl.appendChild(renderSubField(it, context));
+        if (delimiter) topRowItems.push(renderDelimiter(delimiter));
+        topRowItems.push(renderSubField(it, context));
     });
 
     // Render SubFields to bottom row
-    bottomEl.classList.add('xh-multifield-renderer-row', 'xh-multifield-renderer-bottom');
     bottomFields.forEach((it, idx) => {
-        if (delimiter && idx > 0) bottomEl.appendChild(renderDelimiter(delimiter));
-        bottomEl.appendChild(renderSubField(it, context));
+        if (delimiter && idx > 0) bottomRowItems.push(renderDelimiter(delimiter));
+        bottomRowItems.push(renderSubField(it, context));
     });
 
-    return containerEl;
+    return div({
+        className: 'xh-multifield-renderer',
+        items: [
+            div({
+                className: 'xh-multifield-renderer-row xh-multifield-renderer-top',
+                items: topRowItems
+            }),
+            div({
+                className: 'xh-multifield-renderer-row xh-multifield-renderer-bottom',
+                items: bottomRowItems
+            })
+        ]
+    });
 }
 
 //------------------
 // Implementation
 //------------------
 function renderMainField(value, renderer, context) {
-    const {column} = context,
-        fieldEl = document.createElement('div');
-
-    fieldEl.classList.add('xh-multifield-renderer-field');
-    fieldEl.innerHTML = renderValue(value, renderer, column, context);
-    return fieldEl;
+    const {column} = context;
+    return div({
+        className: 'xh-multifield-renderer-field',
+        item: renderValue(value, renderer, column, context)
+    });
 }
 
 function renderSubField({colId, label}, context) {
@@ -82,25 +86,26 @@ function renderSubField({colId, label}, context) {
     throwIf(!column, `Subfield ${colId} not found`);
 
     const {field, headerName, renderer} = column,
-        value = record.data[field],
-        fieldEl = document.createElement('div');
+        value = record.data[field];
 
     if (label && !isString(label)) label = headerName;
 
-    fieldEl.classList.add('xh-multifield-renderer-field');
-    fieldEl.innerHTML = (label ? `${label}: ` : '') + renderValue(value, renderer, column, context);
-    return fieldEl;
+    return div({
+        className: 'xh-multifield-renderer-field',
+        items: [
+            label ? `${label}: ` : null,
+            renderValue(value, renderer, column, context)
+        ]
+    });
 }
 
 function renderValue(value, renderer, column, context) {
-    let ret = value;
-    if (renderer) ret = renderer(value, {...context, column});
-    return ret;
+    return renderer ? renderer(value, {...context, column}) : value;
 }
 
 function renderDelimiter(delimiter) {
-    const delimiterEl = document.createElement('span');
-    delimiterEl.classList.add('xh-multifield-renderer-delimiter');
-    delimiterEl.innerHTML = delimiter;
-    return delimiterEl;
+    return span({
+        className: 'xh-multifield-renderer-delimiter',
+        item: delimiter
+    });
 }

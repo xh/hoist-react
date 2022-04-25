@@ -14,7 +14,6 @@ import {Icon} from '@xh/hoist/icon';
 import {logDisplay} from './LogDisplay';
 import './LogViewer.scss';
 import {LogViewerModel} from './LogViewerModel';
-import {logViewerToolbar} from './LogViewerToolbar';
 
 export const logViewer = hoistCmp.factory({
     model: creates(LogViewerModel),
@@ -22,6 +21,7 @@ export const logViewer = hoistCmp.factory({
     /** @param {LogViewerModel} model */
     render({model}) {
         const {filesGridModel} = model;
+
         return hframe({
             className: 'xh-log-viewer',
             ref: model.viewRef,
@@ -32,7 +32,7 @@ export const logViewer = hoistCmp.factory({
                     compactHeader: true,
                     model: {
                         side: 'left',
-                        defaultSize: 280
+                        defaultSize: 380
                     },
                     item: grid(),
                     bbar: [
@@ -47,11 +47,7 @@ export const logViewer = hoistCmp.factory({
                         })
                     ]
                 }),
-                panel({
-                    tbar: logViewerToolbar(),
-                    item: logDisplay(),
-                    mask: 'onLoad'
-                })
+                logDisplay()
             ]
         });
     }
