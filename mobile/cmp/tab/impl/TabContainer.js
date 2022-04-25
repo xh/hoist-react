@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, useLocalModel, XH} from '@xh/hoist/core';
-import {div, frame} from '@xh/hoist/cmp/layout';
+import {div, placeholder} from '@xh/hoist/cmp/layout';
 import {tab as onsenTab, tabbar as onsenTabbar, page} from '@xh/hoist/kit/onsen';
 import {throwIf, debounced} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
@@ -31,11 +31,7 @@ export function tabContainerImpl({model, className}) {
     if (isEmpty(tabs)) {
         return page({
             className: 'xh-tab-page',
-            item: frame({
-                alignItems: 'center',
-                justifyContent: 'center',
-                item: model.emptyText
-            })
+            item: placeholder(model.emptyText)
         });
     }
 
