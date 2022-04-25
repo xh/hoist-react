@@ -118,7 +118,7 @@ export class ConfigPanelModel extends HoistModel {
             case 'json':
                 return truncate(value, {length: 500});
             default:
-                return value;
+                return value?.toString();
         }
     }
 

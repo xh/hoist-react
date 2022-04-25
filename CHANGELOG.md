@@ -1,6 +1,6 @@
 # Changelog
 
-## v49.0.0-SNAPSHOT - unreleased
+## v48.0.1 - 2022-04-22
 
 ### 🐞 Bug Fixes
 
@@ -8,6 +8,10 @@
 * Fixed issue with model lookups in HoistComponent's callRender method.
 * Fixed issue where exporting to excel file would occasionally coerce strings (like "1e10") into
   numbers. Upgrade to `hoist-core >= 13.2` for the fixed behavior.
+* Improve default rendering to call `toString()` on non-react elements returned by renderers.
+* Fixed issue with `model` property missing from `Model.componentProps` under certain conditions.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v48.0.0...v48.0.1)
 
 ## v48.0.0 - 2022-04-21
 

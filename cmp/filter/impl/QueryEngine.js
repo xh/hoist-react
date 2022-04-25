@@ -298,7 +298,7 @@ export class QueryEngine {
 
         const max = this.model.maxResults;
         return max > 0 && results.length > max ?
-            [...results.slice(0, max), msgOption(`${max} of ${fmtNumber(results.length)} results shown`)] :
+            [...results.slice(0, max), msgOption(`${max} of ${fmtNumber(results.length, {asHtml: true})} results shown`)] :
             results;
     }
 

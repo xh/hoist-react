@@ -15,7 +15,6 @@ import {
     find,
     get,
     isArray,
-    isBoolean,
     isEmpty,
     isFinite,
     isFunction,
@@ -614,12 +613,9 @@ export class Column {
             setRenderer((agParams) => {
                 let ret = renderer ?
                     renderer(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
-                    agParams.value?.toString();
+                    agParams.value;
 
-                // Stringify booleans returned by renderers - won't render otherwise.
-                if (renderer && isBoolean(ret)) {
-                    ret = ret.toString();
-                }
+                ret = isNil(ret) || isValidElement(ret) ? ret : toString(ret);
 
                 // Add wrapping span for styling purposes
                 return span({className: 'xh-cell-inner-wrapper', item: ret});
