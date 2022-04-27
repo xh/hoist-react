@@ -60,17 +60,14 @@ MenuButton.propTypes = {
         'auto'
     ]),
 
-    /** Optional title to display above the menu */
-    title: PT.node,
-
     /** True to disable user interaction */
     disabled: PT.bool,
 
-    /** True to not have an arrow pointing to the target and use a subtler animation. */
-    minimal: PT.bool,
-
     /** True to omit the button when the menu content is empty */
     omitIfEmpty: PT.bool,
+
+    /** Props passed to the internal popover */
+    popoverProps: PT.object,
 
     /**
      * Array of:

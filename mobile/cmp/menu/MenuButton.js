@@ -71,6 +71,9 @@ MenuButton.propTypes = {
     /** True to disable user interaction */
     disabled: PT.bool,
 
+    /** True to omit the button when the menu content is empty */
+    omitIfEmpty: PT.bool,
+
     /** Props passed to the internal popover */
     popoverProps: PT.object
 };
