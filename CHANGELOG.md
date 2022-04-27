@@ -1,49 +1,74 @@
 # Changelog
 
-## v48.0.0-SNAPSHOT - unreleased
+## v48.0.1 - 2022-04-22
+
+### 🐞 Bug Fixes
+
+* Improve default rendering to call `toString()` on non-react elements returned by renderers.
+* Fixed issue with `model` property missing from `Model.componentProps` under certain conditions.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v48.0.0...v48.0.1)
+
+## v48.0.0 - 2022-04-21
 
 ### 🎁 New Features
-* Mobile `Dialog` will scroll internally if taller than the screen.
+
+* A new `DashCanvas` layout component for creating scrollable dashboards that allow users to
+  manually place and size their widgets using a grid-based layout. Note that this component is in
+  beta and its API is subject to change.
 * FontAwesome upgraded to v6. This includes redesigns of the majority of bundled icons - please
   check your app's icon usages carefully.
+* Enhancements to admin log viewer. Log file metadata (size & last modified) available with
+  optional upgrade to `hoist-core >= 13.2`.
+* Mobile `Dialog` will scroll internally if taller than the screen.
+* Configs passed to `XH.message()` and its variants now take an optional `className` to apply to the
+  message dialog.
 * `fmtQuantity` now displays values greater than one billion with `b` unit, similar to current
   handling of millions with `m`.
-* Enhancements to admin log viewer to show timezone and log file metadata.
 
 ### 💥 Breaking Changes
 
-* Hoist now requires ag-Grid v27.1.0 or higher - update your ag-Grid dependency in your app's
+* Hoist now requires ag-Grid v27.2.0 or higher - update your ag-Grid dependency in your app's
   `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
-  Note that ag-Grid 27 includes a major upgrade to render native React elements rather than HTML and
-  also included major API changes.  To accommodate these changes, the following changes are required in Hoist apps:
-    * `Column.renderer` should now return a React Element rather than an HTML string. Please check your
-      column renderers carefully. As part of this change, `Column.elementRenderer` has been removed.
+  NOTE that ag-Grid 27 includes a big breaking change to render cell contents via native React
+  elements rather than HTML, along with other major API changes. To accommodate these changes, the
+  following changes are required in Hoist apps:
+    * `Column.renderer` must now return a React Element rather than an HTML string (plain strings
+      are also OK, but any formatting must be done via React). Please review your app grids and
+      update any custom renderers accordingly. `Column.elementRenderer` has been removed.
     * `DataViewModel.elementRenderer` has been renamed `DataViewModel.renderer`.
-    * Formatter methods and renderers (e.g. `fmtNumber`, `numberRenderer`, etc.) now return React Elements
-      by default. The `asElement` option to these functions has been removed. Use the new `asHtml`
-      option to return a HTML string.
-    * The `isPopup` argument to `useInlineEditorModel()` has been removed. If you want to display your
-      inline editor in a popup, you must set the new flag `Column.editorIsPopup` to `true`.
+    * Formatter methods and renderers (e.g. `fmtNumber`, `numberRenderer`, etc.) now return React
+      Elements by default. The `asElement` option to these functions has been removed. Use the
+      new `asHtml` option to return an HTML string where required.
+    * The `isPopup` argument to `useInlineEditorModel()` has been removed. If you want to display
+      your inline editor in a popup, you must set the new flag `Column.editorIsPopup` to `true`.
+* Deprecated message configs `confirmText`, `confirmIntent`, `cancelText`, `cancelIntent` have been
+  removed.
 
 ### 🐞 Bug Fixes
 
 * Set ag-Grid's `suppressLastEmptyLineOnPaste` to true to work around a bug with Excel (Windows)
   that adds an empty line beneath the range pasted from the clipboard in editable grids.
-* Fixes an issue where NumberInput would initially render blank values when `max` and `min` were set.
+* Fixes an issue where `NumberInput` would initially render blank values if `max` or `min` were
+  set.
+* Fixes an issue where tree maps would always show green for a `heatValue` of zero.
 
 ### 📚 Libraries
 
+* @fortawesome/fontawesome-pro `5.14 -> 6.1`
 * mobx `6.3 -> 6.5`
 * mobx-react-lite `3.2 -> 3.3`
-* @fortawesome/fontawesome-pro `5.14 -> 6.1`
 
+[Commit Log](https://github.com/xh/hoist-react/compare/v47.1.2...v48.0.0)
 
 ## v47.1.2 - 2022-04-01
 
 ### 🐞 Bug Fixes
 
-* `FieldFilter`'s check of `committedData` is now null safe.  A record with no `committedData` will not be filtered out.
+* `FieldFilter`'s check of `committedData` is now null safe. A record with no `committedData` will
+  not be filtered out.
 
+[Commit Log](https://github.com/xh/hoist-react/compare/v47.1.1...v47.1.2)
 
 ## v47.1.1 - 2022-03-26
 

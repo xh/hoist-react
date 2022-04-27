@@ -37,7 +37,7 @@ export function createViewMenuItems({
             return viewSpec.allowAdd &&
                 (
                     !viewSpec.unique ||
-                    !(dashCanvasModel.getItemsBySpecId(viewSpec.id).length)
+                    !(dashCanvasModel.getViewsBySpecId(viewSpec.id).length)
                 );
         })
         .forEach(viewSpec => {
@@ -47,11 +47,11 @@ export function createViewMenuItems({
                     icon: icon,
                     actionFn: () => {
                         if (replaceExisting) {
-                            dashCanvasModel.replaceView(id, viewId);
+                            dashCanvasModel.replaceView(viewId, id);
                         } else {
                             dashCanvasModel.addView(
                                 id,
-                                {layout: addPosition, neighborViewId: viewId}
+                                {layout: addPosition, previousViewId: viewId}
                             ).ensureVisible();
                         }
                     }

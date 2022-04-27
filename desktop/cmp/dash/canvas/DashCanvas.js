@@ -18,8 +18,8 @@ import {dashCanvasView} from './impl/DashCanvasView';
  * Display a "canvas" of child components in accordance with a DashCanvasModel
  * @see DashCanvasModel
  *
- * -------- !! NOTE: THIS COMPONENT IS CURRENTLY IN BETA !! --------
- * -- Its API is under development and subject to breaking changes --
+ * NOTE: This component is currently in BETA. Its API is under development
+ * and subject to change in future versions.
  *
  * @Beta
  */
