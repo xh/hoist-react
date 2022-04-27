@@ -4,7 +4,7 @@ import {DashCanvasViewModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/das
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {debounced, ensureUniqueBy} from '@xh/hoist/utils/js';
-import {defaultsDeep, isEqual, find, without} from 'lodash';
+import {defaultsDeep, isEqual, find, without, times} from 'lodash';
 import {computed} from 'mobx';
 import {createRef} from 'react';
 import {throwIf} from '../../../../utils/js';
@@ -54,6 +54,11 @@ export class DashCanvasModel extends HoistModel {
     @bindable margin;
     /** @member {number[]} - [paddingX, paddingY] */
     @bindable containerPadding;
+
+    /** @returns {number} - current number of rows in canvas */
+    get rows() {
+        return this.layout.reduce((prev, cur) => Math.max(prev, cur.y + cur.h), 0);
+    }
 
     //------------------------
     // Immutable public properties
@@ -297,17 +302,6 @@ export class DashCanvasModel extends HoistModel {
         this.getView(id)?.ensureVisible();
     }
 
-    /**
-     * Return current size of canvas
-     * @returns {{colCount: number, rowCount: number}}
-     */
-    getSize() {
-        return {
-            rowCount: this.layout.reduce((prev, cur) => Math.max(prev, cur.y + cur.h), 0),
-            colCount: this.columns
-        };
-    }
-
     //------------------------
     // Implementation
     //------------------------
@@ -379,18 +373,15 @@ export class DashCanvasModel extends HoistModel {
         return this.viewModels.filter(it => it.viewSpec.id === id);
     }
 
-    getFirstAvailablePosition(
-        {width, height},
-        {startX = 0, startY = 0, defaultX = 0, endY = null}
-    ) {
-        const {rowCount, colCount} = this.getSize(),
-            occupied = times(colCount, () => Array(rowCount).fill(false));
+    getFirstAvailablePosition({width, height, startX = 0, startY = 0, defaultX = 0, endY = null}) {
+        const {rows, columns} = this,
+            occupied = times(rows, () => Array(columns).fill(false));
 
         // Fill 2D array 'occupied' with true / false if coordinate is occupied
         for (let item of this.layout) {
             for (let y = item.y; y < item.y + item.h; y++) {
                 for (let x = item.x; x < item.x + item.w; x++) {
-                    occupied[x][y] = true;
+                    occupied[y][x] = true;
                 }
             }
         }
@@ -398,7 +389,7 @@ export class DashCanvasModel extends HoistModel {
         const checkPosition = (startX, startY) => {
             for (let y = startY; y < startY + height; y++) {
                 for (let x = startX; x < startX + width; x++) {
-                    if (y === rowCount) return true;
+                    if (y === rows) return true;
                     if (occupied[y][x]) return false;
                 }
             }
@@ -406,16 +397,16 @@ export class DashCanvasModel extends HoistModel {
         };
 
         // Traverse 2D array of coordinates, and check if view fits
-        for (let y = startY; y < (endY ?? rowCount); y++) {
-            for (let x = y === startY ? startX : 0; x < colCount; x++) {
-                if (x + width > colCount) break;
+        for (let y = startY; y < (endY ?? rows); y++) {
+            for (let x = y === startY ? startX : 0; x < columns; x++) {
+                if (x + width > columns) break;
                 if (checkPosition(x, y)) {
                     return {x, y};
                 }
             }
         }
 
-        return {x: defaultX, y: endY ?? rowCount};
+        return {x: defaultX, y: endY ?? rows};
     }
 }
 
