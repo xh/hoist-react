@@ -1,5 +1,11 @@
 # Changelog
 
+### 🎁 New Features
+
+* A new desktop `MenuButton` component preconfigured for use as a trigger for a dropdown menu
+* Mobile `MenuButton` will now be omitted by default when it contains no menu items.  Can disable
+  this feature by setting `omitIfEmpty` prop to `false`
+
 ## v48.0.1 - 2022-04-22
 
 ### 🐞 Bug Fixes
