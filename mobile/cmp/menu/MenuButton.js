@@ -26,16 +26,19 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory({
         menuPosition = 'auto',
         title,
         disabled,
+        omitIfEmpty = true,
         popoverProps,
         icon = Icon.bars(),
         ...props
     }) {
         const impl = useLocalModel(LocalModel);
 
+        if (omitIfEmpty && isEmpty(menuItems)) return null;
+
         return popover({
             isOpen: impl.isOpen,
             position: menuPosition,
-            disabled: disabled,
+            disabled,
             target: button({icon, disabled, ...props}),
             content: menu({menuItems, title, onDismiss: () => impl.setIsOpen(false)}),
             onInteraction: (nextOpenState) => impl.setIsOpen(nextOpenState),
@@ -44,6 +47,8 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory({
         });
     }
 });
+
+const isEmpty = (menuItems) => !menuItems.some(it => !it.omit && !it.hidden);
 
 MenuButton.propTypes = {
     ...Button.propTypes,
