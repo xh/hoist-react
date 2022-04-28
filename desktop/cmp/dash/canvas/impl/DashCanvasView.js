@@ -97,7 +97,7 @@ const headerMenu = hoistCmp.factory(
                         icon: Icon.copy(),
                         hidden: contentLocked || viewSpec.unique,
                         actionFn: () =>
-                            containerModel.addView(viewSpec.id, {
+                            containerModel.addViewInternal(viewSpec.id, {
                                 layout: getDuplicateLayout(positionParams, model),
                                 state: viewState,
                                 title
@@ -129,6 +129,6 @@ const headerMenu = hoistCmp.factory(
 /** Returns layout for duplicate view, directly underneath original */
 const getDuplicateLayout = (layout, model) => {
     const {w: width, h: height, x: startX, y: startY} = layout;
-    return {...layout, ...model.containerModel.getFirstAvailablePosition({width, height, startX, startY})};
+    return {...layout, ...model.containerModel.getNextAvailablePosition({width, height, startX, startY})};
 
 };
