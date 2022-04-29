@@ -9,8 +9,8 @@ import {action, observable} from '@xh/hoist/mobx';
 /**
  * Create an observable ref.
  *
- * The object returned by this function  has the same API as
- * the value returned by React.createRef(),  but the `current`
+ * The object returned by this function has the same API as
+ * the value returned by React.createRef(), but the `current`
  * property is a MobX observable value.
  *
  * https://reactjs.org/docs/refs-and-the-dom.html
