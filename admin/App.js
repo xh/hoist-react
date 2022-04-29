@@ -29,7 +29,7 @@ export const App = hoistCmp({
 
 
 const tbar = hoistCmp.factory(
-    () => appBar({
+    ({model}) => appBar({
         icon: Icon.gears({size: '2x', prefix: 'fal'}),
         leftItems: [
             tabSwitcher({enableOverflow: true})
@@ -44,7 +44,8 @@ const tbar = hoistCmp.factory(
         ],
         appMenuButtonProps: {
             hideAdminItem: true,
-            hideFeedbackItem: true
+            hideFeedbackItem: true,
+            extraItems: model.getAppMenuButtonExtraItems()
         }
     })
 );
