@@ -1,5 +1,12 @@
 # Changelog
 
+## v49.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* Added `Store.filterValueMode`, allowing apps more control over how values are retrieved from
+  records when filtering on record fields.
+
 ## v48.0.1 - 2022-04-22
 
 ### 🐞 Bug Fixes
