@@ -6,6 +6,7 @@
  */
 import {ExcelFormat} from '@xh/hoist/cmp/grid';
 import {HoistService, XH} from '@xh/hoist/core';
+import {FieldType} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -243,16 +244,12 @@ export class GridExportService extends HoistService {
     getColumnMetadata(columns) {
         return columns.map(column => {
             let {field, excelWidth, excelFormat, fieldSpec} = column,
-                type = fieldSpec?.type;
+                type = fieldSpec?.type ?? FieldType.AUTO;
 
             // If using the function form to support per-cell formats, replace with
             // ExcelFormat.DEFAULT as a placeholder at the column level. The cell-level data for
             // this column will be shipped with the calculated formats.
             if (isFunction(excelFormat)) excelFormat = ExcelFormat.DEFAULT;
-
-            if (excelFormat === ExcelFormat.DATE_FMT) type = 'date';
-            if (excelFormat === ExcelFormat.DATETIME_FMT) type = 'datetime';
-            if (excelFormat === ExcelFormat.LONG_TEXT) type = 'longText';
 
             return {field, type, format: excelFormat, width: excelWidth};
         });
