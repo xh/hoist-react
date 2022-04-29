@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {parseFieldValue} from '@xh/hoist/data';
+import {FilterValueMode, parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, difference, escapeRegExp, isArray, isNil, isUndefined, isString} from 'lodash';
 
@@ -87,78 +87,71 @@ export class FieldFilter extends Filter {
                 value.map(v => parseFieldValue(v, fieldType)) :
                 parseFieldValue(value, fieldType);
         }
-        const getVal = store ? r => r.committedData[field] : r => r[field],
-            doNotFilter = r => store && isNil(r.committedData); // Ignore (do not filter out) record if part of a store and it has no committed data
 
         if (FieldFilter.ARRAY_OPERATORS.includes(op)) {
             value = castArray(value);
         }
 
+        let opTestFn;
         switch (op) {
             case '=':
-                return r => {
-                    if (doNotFilter(r)) return true; 
-                    let v = getVal(r);
+                opTestFn = v => {
                     if (isNil(v) || v === '') v = null;
                     return value.includes(v);
                 };
+                break;
             case '!=':
-                return r => {
-                    if (doNotFilter(r)) return true;
-                    let v = getVal(r);
+                opTestFn = v => {
                     if (isNil(v) || v === '') v = null;
                     return !value.includes(v);
                 };
+                break;
             case '>':
-                return r => {
-                    if (doNotFilter(r)) return true;
-                    const v = getVal(r);
-                    return !isNil(v) && v > value;
-                };
+                opTestFn = v => !isNil(v) && v > value;
+                break;
             case '>=':
-                return r => {
-                    if (doNotFilter(r)) return true;
-                    const v = getVal(r);
-                    return !isNil(v) && v >= value;
-                };
+                opTestFn = v => !isNil(v) && v >= value;
+                break;
             case '<':
-                return r => {
-                    if (doNotFilter(r)) return true;
-                    const v = getVal(r);
-                    return !isNil(v) && v < value;
-                };
+                opTestFn = v => !isNil(v) && v < value;
+                break;
             case '<=':
-                return r => {
-                    if (doNotFilter(r)) return true;
-                    const v = getVal(r);
-                    return !isNil(v) && v <= value;
-                };
+                opTestFn = v => !isNil(v) && v <= value;
+                break;
             case 'like':
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
-                return r => {
-                    if (doNotFilter(r)) return true;
-                    return regExps.some(re => re.test(getVal(r)));
-                };
+                opTestFn = v => regExps.some(re => re.test(v));
+                break;
             case 'not like':
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
-                return r => {
-                    if (doNotFilter(r)) return true;
-                    regExps.every(re => !re.test(getVal(r)));
-                };
+                opTestFn = v => regExps.every(re => !re.test(v));
+                break;
             case 'begins':
                 regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
-                return r => {
-                    if (doNotFilter(r)) return true;
-                    regExps.some(re => re.test(getVal(r)));
-                };
+                opTestFn = v => regExps.some(re => re.test(v));
+                break;
             case 'ends':
                 regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
-                return r => {
-                    if (doNotFilter(r)) return true;
-                    regExps.some(re => re.test(getVal(r)));
-                };
+                opTestFn = v => regExps.some(re => re.test(v));
+                break;
             default:
                 throw XH.exception(`Unknown operator: ${op}`);
+        }
+
+        if (!store) return r => opTestFn(r[field]);
+
+        // Pass/fail depends on the filter value mode of the store
+        // Uncommitted records always pass the filter
+        switch (store.filterValueMode) {
+            case FilterValueMode.COMMITTED:
+                // Pass only if the committed value passes
+                return r => r.isAdd || opTestFn(r.getCommitted(field));
+            case FilterValueMode.CURRENT:
+                // Pass only if the current value passes
+                return r => r.isAdd || opTestFn(r.get(field));
+            case FilterValueMode.ANY:
+                // Pass if either the current or committed value passes
+                return r => r.isAdd || opTestFn(r.get(field)) || opTestFn(r.getCommitted(field));
         }
     }
 

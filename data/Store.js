@@ -46,6 +46,9 @@ export class Store extends HoistBase {
     /** @member {boolean} */
     @observable filterIncludesChildren;
 
+    /** @member {FilterValueMode} */
+    @observable filterValueMode;
+
     /** @member {boolean} */
     loadTreeData;
 
@@ -110,6 +113,9 @@ export class Store extends HoistBase {
      *      array, a single 'AND' filter will be created.
      * @param {boolean} [c.filterIncludesChildren] - true if all children of a passing record should
      *      also be considered passing (default false).
+     * @param {FilterValueMode} [c.filterValueMode] - determines how record field values are
+     *      considered when processing filters. Default behavior is to only consider 'committed'
+     *      values.
      * @param {boolean} [c.loadTreeData] - true (default) to load hierarchical/tree data, if any.
      * @param {string} [c.loadTreeDataFrom] - the property on each raw data object that holds its
      *      (raw) child objects, if any. Default 'children', no effect if `loadTreeData: false`.
@@ -138,6 +144,7 @@ export class Store extends HoistBase {
         processRawData = null,
         filter = null,
         filterIncludesChildren = false,
+        filterValueMode = FilterValueMode.COMMITTED,
         loadTreeData = true,
         loadTreeDataFrom = 'children',
         loadRootAsSummary = false,
@@ -155,6 +162,7 @@ export class Store extends HoistBase {
         this.processRawData = processRawData;
         this.filter = parseFilter(filter);
         this.filterIncludesChildren = filterIncludesChildren;
+        this.filterValueMode = filterValueMode;
         this.loadTreeData = loadTreeData;
         this.loadTreeDataFrom = loadTreeDataFrom;
         this.loadRootAsSummary = loadRootAsSummary;
@@ -618,6 +626,16 @@ export class Store extends HoistBase {
         this.rebuildFiltered();
     }
 
+    /**
+     * Sets the filter value mode on this store and rebuilds the filtered data.
+     * @param {FilterValueMode} mode
+     */
+    @action
+    setFilterValueMode(mode) {
+        this.filterValueMode = mode;
+        this.rebuildFiltered();
+    }
+
     /** Convenience method to clear the Filter applied to this store. */
     clearFilter() {
         this.setFilter(null);
@@ -946,6 +964,25 @@ function forIn(obj, fn) {
         fn(obj[key], key);
     }
 }
+
+/**
+ * Modes for how record field values should be considered when filtering.
+ * @readonly
+ * @enum {string}
+ */
+export const FilterValueMode = Object.freeze({
+    /** The committed value is used to test the filter. */
+    COMMITTED: 'committed',
+
+    /** The current value is used to test the filter. */
+    CURRENT: 'current',
+
+    /**
+     * Both the committed and current values are used to test the filter and the record passes if
+     * either value passes.
+     */
+    ANY: 'any'
+});
 
 /**
  * @typedef {Object} StoreTransaction - object representing data changes to perform on a Store's
