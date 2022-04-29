@@ -1,5 +1,11 @@
 # Changelog
 
+## v49.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* Apps can now add to the admin console's menu items through `AppModel.getAppMenuButtonExtraItems`.
+
 ## v48.0.1 - 2022-04-22
 
 ### 🐞 Bug Fixes
