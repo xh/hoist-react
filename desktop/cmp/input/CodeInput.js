@@ -14,8 +14,9 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog, textArea} from '@xh/hoist/kit/blueprint';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {wait} from '@xh/hoist/promise';
 import {withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import * as codemirror from 'codemirror';
 import 'codemirror/addon/fold/brace-fold.js';
@@ -32,7 +33,7 @@ import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/dracula.css';
 import {compact, defaultsDeep, isEqual, isFunction} from 'lodash';
 import PT from 'prop-types';
-import ReactDOM from 'react-dom';
+import ReactDOM, {createPortal} from 'react-dom';
 import './CodeInput.scss';
 
 /**
@@ -125,6 +126,10 @@ class Model extends HoistInputModel {
     /** @member {CodeMirror} - a CodeMirror editor instance. */
     editor;
 
+    // For maintaining same component in fullscreen
+    reusableNode = document.createElement('div');
+    cmpRefs = {fullScreen: createObservableRef(), host: createObservableRef()};
+
     // Support for internal search feature.
     cursor = null;
     @bindable query = '';
@@ -202,6 +207,14 @@ class Model extends HoistInputModel {
     constructor() {
         super();
         makeObservable(this);
+
+        this.initReusableNode();
+    }
+
+    initReusableNode() {
+        this.reusableNode.style.all = 'inherit';
+        this.reusableNode.id = 'reusableNode';
+        document.body.appendChild(this.reusableNode);
     }
 
     onLinked() {
@@ -241,6 +254,27 @@ class Model extends HoistInputModel {
                 }
             },
             debounce: 300
+        });
+    }
+
+    afterLinked() {
+        // Move DOM node between full-screen component and host component
+        this.addReaction({
+            track: () => this.cmpRefs.fullScreen.current,
+            run: (isFullScreen) => {
+                if (isFullScreen) {
+                    this.cmpRefs.fullScreen.current.appendChild(this.reusableNode);
+                } else {
+                    this.cmpRefs.host.current.appendChild(this.reusableNode);
+                }
+            },
+            fireImmediately: true
+        });
+
+        // Maintain focus when switching in and out of full screen mode
+        this.addReaction({
+            track: () => this.fullScreen,
+            run: () => wait().then(() => {this.focus()})
         });
     }
 
@@ -424,25 +458,28 @@ const cmp = hoistCmp.factory(
             ref
         };
 
-        return model.fullScreen ? fullscreenCmp(childProps) : inputCmp(childProps);
+        return fragment(hostCmp(), fullscreenCmp(), createPortal(inputCmp(childProps), model.reusableNode));
     }
 );
 
 const fullscreenCmp = hoistCmp.factory(
-    ({model, ...props}, ref) => fragment(
-        dialog({
+    ({model, ...props}, ref) => {
+        if (!model.fullScreen) return null;
+        return dialog({
             className: 'xh-code-input__dialog',
             isOpen: true,
             canOutsideClickClose: true,
-            item: inputCmp({flex: 1}),
+            item: div({
+                ref: model.cmpRefs.fullScreen,
+                style: {display: 'flex', flexDirection: 'column', height: '100%'}
+            }),
             onClose: () => model.toggleFullScreen()
-        }),
-        box({
-            ...props,
-            className: 'xh-code-input__placeholder',
-            ref
-        })
-    )
+        });
+    }
+);
+
+const hostCmp = hoistCmp.factory(
+    ({model}) => div({ref: model.cmpRefs.host, style: {width: '100%'}})
 );
 
 const inputCmp = hoistCmp.factory(
