@@ -48,8 +48,9 @@ export class ModelLookup {
         // Try model's direct children. Wildcard not accepted (but would capture model itself above)
         if (modeIsDefault) {
             let ret = null;
-            forOwn(model, (value) => {
-                if (value?.isHoistModel && value.matchesSelector(selector)) {
+
+            forOwn(model, (value, key) => {
+                if (!key.startsWith('_') && value?.isHoistModel && value.matchesSelector(selector)) {
                     ret = value;
                     return false;
                 }
