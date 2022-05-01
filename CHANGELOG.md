@@ -1,5 +1,14 @@
 # Changelog
 
+## v49.0.0-SNAPSHOT - unreleased
+
+### 🐞 New Features
+
+* Improve behavior and fix bugs related to `NumberInput.min` and `NumberInput.max` props.
+The new implementation no longer relies on the underlying props provided by Blueprint, which were
+buggy and only constrained the value during incremental stepping with keyboard or mouse.
+
+
 ## v48.0.1 - 2022-04-22
 
 ### 🐞 Bug Fixes

@@ -39,15 +39,16 @@ NumberInput.propTypes = {
      Inputs suffixed with k, m, or b will be calculated as thousands, millions, or billions respectively */
     enableShorthandUnits: PT.bool,
 
+
     /**
-     * Minimum value - NOTE, as with underlying HTML input, this ONLY constrains step-wise updates
-     * made via increment/decrement handling, does NOT validate or block out-of-bounds inputs.
+     * Minimum value.  Note that this will govern the smallest value that this control can produce
+     * via user input.  Smaller values passed to it via props or a bound model will still be displayed.
      */
     min: PT.number,
 
     /**
-     * Maximum value - NOTE, as with underlying HTML input, this ONLY constrains step-wise updates
-     * made via increment/decrement handling, does NOT validate or block out-of-bounds inputs.
+     * Maximum value.  Note that this will govern the largest value that this control can produce
+     * via user input.  Larger values passed to it via props or a bound model will still be displayed.
      */
     max: PT.number,
 
@@ -120,7 +121,17 @@ class Model extends HoistInputModel {
     }
 
     toExternal(val) {
-        return isNil(val) ? null : val / this.scaleFactor;
+        const {min, max} = this.componentProps;
+        val = this.parseValue(val);
+        if (isNaN(val) || isNil(val)) return null;
+
+        val = val / this.scaleFactor;
+
+        // Enforce min/max here. This is in addition to the onsen props which
+        // only limit the incremental step change.
+        return ((!isNil(min) && val < min) || (!isNil(max) && val > max)) ?
+            this.externalValue :
+            val;
     }
 
     onKeyDown = (ev) => {

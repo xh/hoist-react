@@ -62,9 +62,10 @@ NumberInput.propTypes = {
     /** Icon to display inline on the left side of the input. */
     leftIcon: PT.element,
 
+
     /**
-     * Minimum value - NOTE, as with underlying HTML input, this ONLY constrains step-wise updates
-     * made via increment/decrement handling, does NOT validate or block out-of-bounds inputs.
+     * Minimum value.  Note that this will govern the smallest value that this control can produce
+     * via user input.  Smaller values passed to it via props or a bound model will still be displayed.
      */
     min: PT.number,
 
@@ -72,8 +73,8 @@ NumberInput.propTypes = {
     majorStepSize: PT.number,
 
     /**
-     * Maximum value - NOTE, as with underlying HTML input, this ONLY constrains step-wise updates
-     * made via increment/decrement handling, does NOT validate or block out-of-bounds inputs.
+     * Maximum value.  Note that this will govern the largest value that this control can produce
+     * via user input.  Larger values passed to it via props or a bound model will still be displayed.
      */
     max: PT.number,
 
@@ -143,8 +144,17 @@ class Model extends HoistInputModel {
     }
 
     toExternal(val) {
+        const {min, max} = this.componentProps;
         val = this.parseValue(val);
-        return isNaN(val) || isNil(val) ? null : val / this.scaleFactor;
+        if (isNaN(val) || isNil(val)) return null;
+
+        val = val / this.scaleFactor;
+
+        // Enforce min/max here. This is instead of the bp props which are
+        // buggy and only limit the incremental step change in any case
+        return ((!isNil(min) && val < min) || (!isNil(max) && val > max)) ?
+            this.externalValue :
+            val;
     }
 
     onKeyDown = (ev) => {
@@ -213,11 +223,6 @@ const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props);
 
-        // BP's min/max can cause problems when controlled value is formatted string so only set
-        // when focused and rendered value is number.  min/max only constrains step editing anyway
-        const min = model.hasFocus ? props.min : undefined,
-            max = model.hasFocus ? props.max : undefined;
-
         // BP bases expected precision off of dps in minorStepSize, if specified.
         // The default BP value of 0.1 for this prop emits a console warning any time the input
         // value extends beyond 1 dp. Re-default here to sync with our `precision` prop.
@@ -237,8 +242,6 @@ const cmp = hoistCmp.factory(
             fill: props.fill,
             inputRef: composeRefs(model.inputRef, props.inputRef),
             leftIcon: props.leftIcon,
-            min,
-            max,
             minorStepSize,
             majorStepSize,
             placeholder: props.placeholder,
