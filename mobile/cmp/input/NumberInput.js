@@ -129,9 +129,10 @@ class Model extends HoistInputModel {
 
         // Enforce min/max here. This is in addition to the onsen props which
         // only limit the incremental step change.
-        return ((!isNil(min) && val < min) || (!isNil(max) && val > max)) ?
-            this.externalValue :
-            val;
+        if (!isNil(min) && val < min) return this.externalValue;
+        if (!isNil(max) && val > max) return this.externalValue;
+
+        return val;
     }
 
     onKeyDown = (ev) => {

@@ -152,9 +152,10 @@ class Model extends HoistInputModel {
 
         // Enforce min/max here. This is instead of the bp props which are
         // buggy and only limit the incremental step change in any case
-        return ((!isNil(min) && val < min) || (!isNil(max) && val > max)) ?
-            this.externalValue :
-            val;
+        if (!isNil(min) && val < min) return this.externalValue;
+        if (!isNil(max) && val > max) return this.externalValue;
+
+        return val;
     }
 
     onKeyDown = (ev) => {
