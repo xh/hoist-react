@@ -9,8 +9,9 @@ import {hoistCmp} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
-import {withDefault} from '@xh/hoist/utils/js';
+import {withDefault, debounced} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
+import {useLayoutEffect} from 'react';
 import composeRefs from '@seznam/compose-react-refs';
 import {isNaN, isNil, isNumber, round} from 'lodash';
 import PT from 'prop-types';
@@ -127,6 +128,12 @@ NumberInput.hasLayoutSupport = true;
 class Model extends HoistInputModel {
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
+
+    @debounced(250)
+    doCommitOnChangeInternal() {
+        super.doCommitOnChangeInternal();
+    }
+
     get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
     }
@@ -144,19 +151,27 @@ class Model extends HoistInputModel {
     }
 
     toExternal(val) {
-        const {min, max} = this.componentProps;
         val = this.parseValue(val);
-        if (isNaN(val) || isNil(val)) return null;
+        if (isNaN(val)) return val;
+        if (isNil(val)) return null;
 
-        val = val / this.scaleFactor;
+        return val / this.scaleFactor;
+    }
+
+    isValid(val) {
+        const {min, max} = this.componentProps;
+
+        if (isNaN(val)) return false;
+        if (val === null) return true;
 
         // Enforce min/max here. This is instead of the bp props which are
         // buggy and only limit the incremental step change in any case
-        if (!isNil(min) && val < min) return this.externalValue;
-        if (!isNil(max) && val > max) return this.externalValue;
+        if (!isNil(min) && val < min) return false;
+        if (!isNil(max) && val > max) return false;
 
-        return val;
+        return true;
     }
+
 
     onKeyDown = (ev) => {
         if (ev.key === 'Enter') this.doCommit();
@@ -208,21 +223,21 @@ class Model extends HoistInputModel {
             wait().then(() => this.inputRef.current?.select());
         }
     }
-
-    noteBlurred() {
-        super.noteBlurred();
-        wait().then(() => {
-            const input = this.inputRef.current;
-            // Force value to re-render in control to workaround issue with blueprint state caching
-            if (input) input.value = this.formatRenderValue(this.renderValue);
-        });
-    }
-
 }
 
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
-        const {width, ...layoutProps} = getLayoutProps(props);
+        const {width, ...layoutProps} = getLayoutProps(props),
+            renderValue = model.formatRenderValue(model.renderValue);
+
+
+        // BP workaround -- min, max, and stepsize can block Blueprint from rendering
+        // intended value in underlying control -- ensure it is always shown.
+        useLayoutEffect(() => {
+            const input = model.inputRef.current;
+            if (input) input.value = renderValue;
+        });
+
 
         // BP bases expected precision off of dps in minorStepSize, if specified.
         // The default BP value of 0.1 for this prop emits a console warning any time the input
@@ -236,13 +251,15 @@ const cmp = hoistCmp.factory(
 
         // Render BP input.
         return numericInput({
-            value: model.formatRenderValue(model.renderValue),
+            value: renderValue,
             allowNumericCharactersOnly: !props.enableShorthandUnits && !props.displayWithCommas,
             buttonPosition: 'none',
             disabled: props.disabled,
             fill: props.fill,
             inputRef: composeRefs(model.inputRef, props.inputRef),
             leftIcon: props.leftIcon,
+            min: props.min,
+            max: props.max,
             minorStepSize,
             majorStepSize,
             placeholder: props.placeholder,

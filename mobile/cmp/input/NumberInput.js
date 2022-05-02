@@ -9,7 +9,7 @@ import {hoistCmp} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {input} from '@xh/hoist/kit/onsen';
 import {wait} from '@xh/hoist/promise';
-import {withDefault} from '@xh/hoist/utils/js';
+import {withDefault, debounced} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN, isNil} from 'lodash';
 import PT from 'prop-types';
@@ -96,6 +96,11 @@ class Model extends HoistInputModel {
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/gi;
 
+    @debounced(250)
+    doCommitOnChangeInternal() {
+        super.doCommitOnChangeInternal();
+    }
+
     get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
     }
@@ -121,19 +126,27 @@ class Model extends HoistInputModel {
     }
 
     toExternal(val) {
-        const {min, max} = this.componentProps;
         val = this.parseValue(val);
-        if (isNaN(val) || isNil(val)) return null;
+        if (isNaN(val)) return val;
+        if (isNil(val)) return null;
 
-        val = val / this.scaleFactor;
-
-        // Enforce min/max here. This is in addition to the onsen props which
-        // only limit the incremental step change.
-        if (!isNil(min) && val < min) return this.externalValue;
-        if (!isNil(max) && val > max) return this.externalValue;
-
-        return val;
+        return val / this.scaleFactor;
     }
+
+    isValid(val) {
+        const {min, max} = this.componentProps;
+
+        if (isNaN(val)) return false;
+        if (val === null) return true;
+
+        // Enforce min/max here. This is instead of the bp props which are
+        // buggy and only limit the incremental step change in any case
+        if (!isNil(min) && val < min) return false;
+        if (!isNil(max) && val > max) return false;
+
+        return true;
+    }
+
 
     onKeyDown = (ev) => {
         if (ev.key === 'Enter') this.doCommit();

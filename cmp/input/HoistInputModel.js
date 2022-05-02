@@ -196,7 +196,7 @@ export class HoistInputModel extends HoistModel {
 
         this.setInternalValue(val);
         if (onChange) onChange(this.toExternal(val), this.toExternal(oldVal));
-        if (this.commitOnChange) this.doCommitInternal();
+        if (this.commitOnChange) this.doCommitOnChangeInternal();
     }
 
     /**
@@ -262,6 +262,10 @@ export class HoistInputModel extends HoistModel {
     //----------------------
     // Implementation
     //------------------------
+    isValid(externalValue) {
+        return true;
+    }
+
     internalFromExternal() {
         const ret = this.toInternal(this.externalValue);
 
@@ -289,13 +293,17 @@ export class HoistInputModel extends HoistModel {
         };
     }
 
+    doCommitOnChangeInternal() {
+        this.doCommitInternal();
+    }
+
     doCommitInternal() {
         const {onCommit, bind} = this.componentProps,
             {model} = this;
         let currentValue = this.externalValue,
             newValue = this.externalFromInternal();
 
-        if (isEqual(newValue, currentValue)) return;
+        if (isEqual(newValue, currentValue) || !this.isValid(newValue)) return;
 
         if (model && bind) {
             model.setBindable(bind, newValue);
