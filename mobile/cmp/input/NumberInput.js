@@ -11,7 +11,7 @@ import {input} from '@xh/hoist/kit/onsen';
 import {wait} from '@xh/hoist/promise';
 import {withDefault, debounced} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-import {isNaN, isNil} from 'lodash';
+import {isNaN, isNil, isNumber} from 'lodash';
 import PT from 'prop-types';
 import './NumberInput.scss';
 
@@ -94,7 +94,7 @@ NumberInput.hasLayoutSupport = true;
 
 class Model extends HoistInputModel {
 
-    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/gi;
+    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
     @debounced(250)
     doCommitOnChangeInternal() {
@@ -115,10 +115,8 @@ class Model extends HoistInputModel {
         wait().then(() => super.select());
     }
 
-    onChange = (ev) => {
-        let value = this.parseValue(ev.target.value);
-        value = isNaN(value)  ? null : value;
-        this.noteValueChange(value);
+    onValueChange = (ev) => {
+        this.noteValueChange(ev.target.value);
     };
 
     toInternal(val) {
@@ -181,7 +179,9 @@ class Model extends HoistInputModel {
     }
 
     parseValue(value) {
-        if (!value) return value;
+        if (isNil(value) || value === '') return null;
+        if (isNumber(value)) return value;
+
         value = value.toString();
         value = value.replace(/,/g, '');
 
@@ -197,12 +197,11 @@ class Model extends HoistInputModel {
                 case 'b':
                     return num * 1000000000;
                 default:
-                    return null;
+                    return NaN;
             }
         }
 
-        value = parseFloat(value);
-        return isNaN(value) ? null : value;
+        return parseFloat(value);
     }
 }
 
@@ -235,7 +234,7 @@ const cmp = hoistCmp.factory(
             },
             spellCheck: false,
 
-            onChange: model.onChange,
+            onChange: model.onValueChange,
             onKeyDown: model.onKeyDown,
             onBlur: model.onBlur,
             onFocus: model.onFocus,

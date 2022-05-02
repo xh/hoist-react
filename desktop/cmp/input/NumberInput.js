@@ -195,6 +195,7 @@ class Model extends HoistInputModel {
         if (isNil(value) || value === '') return null;
         if (isNumber(value)) return value;
 
+        value = value.toString();
         value = value.replace(/,/g, '');
 
         if (Model.shorthandValidator.test(value)) {
