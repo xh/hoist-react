@@ -1,5 +1,11 @@
 # Changelog
 
+## v49.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+* Apps can now hide the Admin console's General > Users tab  by setting `hideUsersTab` to false in
+  the new soft config `xhAdminConsoleConfig`.
+
 ## v48.0.1 - 2022-04-22
 
 ### 🐞 Bug Fixes
