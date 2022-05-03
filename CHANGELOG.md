@@ -5,9 +5,16 @@
 ### 🎁 New Features
 
 * Apps can now add to the admin console's menu items through `AppModel.getAppMenuButtonExtraItems`.
+* Apps can now hide the Admin > General > Users tab  by setting `hideUsersTab` to false in the new
+  soft config `xhAdminAppConfig`.
 * Panels now offer modalSupport, which allows the user to expand a panel into a modal state,
     without requiring its contents to re-render.  All state is preserved when toggling between
     inline and modal views.
+
+### 🐞 Bug Fixes
+
+* Fix bug where Admin Activity Chart pop-out dialog did not display on first render
+
 
 ### ⚙️ Technical
 
@@ -21,8 +28,6 @@
 
 * Improve default rendering to call `toString()` on non-react elements returned by renderers.
 * Fixed issue with `model` property missing from `Model.componentProps` under certain conditions.
-* Fix bug where Admin Activity Chart pop-out dialog did not display on first render
-
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v48.0.0...v48.0.1)
 
