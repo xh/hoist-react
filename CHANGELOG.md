@@ -3,8 +3,15 @@
 ## v49.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
+* Apps can now add to the admin console's menu items through `AppModel.getAppMenuButtonExtraItems`.
 * Apps can now hide the Admin console's General > Users tab  by setting `hideUsersTab` to false in
-  the new soft config `xhAdminConsoleConfig`.
+  the new soft config `xhAdminAppConfig`.
+
+### ⚙️ Technical
+
+* This version of Hoist now more strictly enforces that only instances of `HoistModel` may serve as
+ models for `HoistComponent`s.  This is not expected to be a problem for most apps, but may require
+ rework for applications that were binding components to non-standard models.
 
 ## v48.0.1 - 2022-04-22
 

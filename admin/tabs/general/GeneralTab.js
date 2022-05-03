@@ -21,14 +21,14 @@ export const generalTab = hoistCmp.factory(
             tabs: [
                 {id: 'about', icon: Icon.info(), content: aboutPanel},
                 {id: 'config', icon: Icon.settings(), content: configPanel},
-                {id: 'users', icon: Icon.users(), content: userPanel, omit: omitTab('hideUsersTab')},
+                {id: 'users', icon: Icon.users(), content: userPanel, omit: hideUsersTab()},
                 {id: 'alertBanner', icon: Icon.bullhorn(), content: alertBannerPanel}
             ]
         }
     })
 );
 
-const omitTab = (field) => {
-    const conf = XH.getConf('xhAdminConsoleConfig', {});
-    return conf[field];
-}
+const hideUsersTab = () => {
+    const conf = XH.getConf('xhAdminAppConfig', {});
+    return conf['hideUsersTab'];
+};
