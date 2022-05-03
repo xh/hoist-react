@@ -3,7 +3,7 @@ import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {debounced, ensureUniqueBy} from '@xh/hoist/utils/js';
+import {ensureUniqueBy} from '@xh/hoist/utils/js';
 import {defaultsDeep, isEqual, find, without, times} from 'lodash';
 import {computed} from 'mobx';
 import {createRef} from 'react';
@@ -344,7 +344,7 @@ export class DashCanvasModel extends HoistModel {
         state.forEach(state => this.addViewInternal(state.viewSpecId, state));
     }
 
-    @debounced(1000)
+    @action
     publishState() {
         this.state = this.buildState();
         this.provider?.write({state: this.state});
