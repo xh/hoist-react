@@ -5,18 +5,18 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {box, div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
+import {div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
+import {fullScreenHandler} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenHandler';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {dialog, textArea} from '@xh/hoist/kit/blueprint';
+import {textArea} from '@xh/hoist/kit/blueprint';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
 import {withDefault} from '@xh/hoist/utils/js';
-import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import * as codemirror from 'codemirror';
 import 'codemirror/addon/fold/brace-fold.js';
@@ -33,7 +33,7 @@ import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/dracula.css';
 import {compact, defaultsDeep, isEqual, isFunction} from 'lodash';
 import PT from 'prop-types';
-import ReactDOM, {createPortal} from 'react-dom';
+import ReactDOM from 'react-dom';
 import './CodeInput.scss';
 
 /**
@@ -46,13 +46,15 @@ import './CodeInput.scss';
  * TODO - understanding sizing spec / requirements for component vs. generated CodeMirror.
  * Reconcile LayoutSupport with width/height props. https://github.com/xh/hoist-react/issues/327
  */
+
 export const [CodeInput, codeInput] = hoistCmp.withFactory({
     displayName: 'CodeInput',
     className: 'xh-code-input',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, Model);
+        return fullScreenHandler(useHoistInputModel(cmp, props, ref, Model));
     }
 });
+
 CodeInput.propTypes = {
     ...HoistInputPropTypes,
 
@@ -122,13 +124,11 @@ CodeInput.hasLayoutSupport = true;
 // Implementation
 //------------------------------
 class Model extends HoistInputModel {
+    /** @member {FullScreenHandlerModel} */
+    fullScreenHandlerModel;
 
     /** @member {CodeMirror} - a CodeMirror editor instance. */
     editor;
-
-    // For maintaining same component in fullscreen
-    reusableNode = document.createElement('div');
-    cmpRefs = {fullScreen: createObservableRef(), host: createObservableRef()};
 
     // Support for internal search feature.
     cursor = null;
@@ -137,7 +137,9 @@ class Model extends HoistInputModel {
     @observable.ref matches = [];
     get matchCount() {return this.matches.length}
 
-    @observable fullScreen = false;
+    get fullScreen() {
+        return this.fullScreenHandlerModel?.isFullScreen;
+    }
 
     get commitOnChange() {return withDefault(this.componentProps.commitOnChange, true)}
 
@@ -207,14 +209,6 @@ class Model extends HoistInputModel {
     constructor() {
         super();
         makeObservable(this);
-
-        this.initReusableNode();
-    }
-
-    initReusableNode() {
-        this.reusableNode.style.all = 'inherit';
-        this.reusableNode.id = 'reusableNode';
-        document.body.appendChild(this.reusableNode);
     }
 
     onLinked() {
@@ -258,24 +252,7 @@ class Model extends HoistInputModel {
     }
 
     afterLinked() {
-        // Move DOM node between full-screen component and host component
-        this.addReaction({
-            track: () => this.cmpRefs.fullScreen.current,
-            run: (isFullScreen) => {
-                if (isFullScreen) {
-                    this.cmpRefs.fullScreen.current.appendChild(this.reusableNode);
-                } else {
-                    this.cmpRefs.host.current.appendChild(this.reusableNode);
-                }
-            },
-            fireImmediately: true
-        });
-
-        // Maintain focus when switching in and out of full screen mode
-        this.addReaction({
-            track: () => this.fullScreen,
-            run: () => wait().then(() => {this.focus()})
-        });
+        this.fullScreenHandlerModel.onFullScreenChange = () => {this.focus()};
     }
 
 
@@ -351,9 +328,8 @@ class Model extends HoistInputModel {
         }
     }
 
-    @action
     toggleFullScreen() {
-        this.fullScreen = !this.fullScreen;
+        this.fullScreenHandlerModel?.toggleFullScreen();
     }
 
     //------------------------
@@ -447,39 +423,20 @@ class Model extends HoistInputModel {
     }
 }
 
-
 const cmp = hoistCmp.factory(
-    ({model, className, ...props}, ref) => {
+    ({model, className, fullScreenHandlerModel, ...props}, ref) => {
         const childProps = {
             width: 300,
             height: 100,
             ...getLayoutProps(props),
             className,
-            ref
+            ref,
+            model
         };
+        model.fullScreenHandlerModel = fullScreenHandlerModel;
 
-        return fragment(hostCmp(), fullscreenCmp(), createPortal(inputCmp(childProps), model.reusableNode));
+        return inputCmp(childProps);
     }
-);
-
-const fullscreenCmp = hoistCmp.factory(
-    ({model, ...props}, ref) => {
-        if (!model.fullScreen) return null;
-        return dialog({
-            className: 'xh-code-input__dialog',
-            isOpen: true,
-            canOutsideClickClose: true,
-            item: div({
-                ref: model.cmpRefs.fullScreen,
-                style: {display: 'flex', flexDirection: 'column', height: '100%'}
-            }),
-            onClose: () => model.toggleFullScreen()
-        });
-    }
-);
-
-const hostCmp = hoistCmp.factory(
-    ({model}) => div({ref: model.cmpRefs.host, style: {width: '100%'}})
 );
 
 const inputCmp = hoistCmp.factory(

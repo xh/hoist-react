@@ -8,8 +8,7 @@ import {ChartModel} from '@xh/hoist/cmp/chart';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, lookup} from '@xh/hoist/core';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
+import { bindable, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {sortBy} from 'lodash';
 import moment from 'moment';
@@ -63,18 +62,6 @@ export class ChartsModel extends HoistModel {
             yAxis: [{title: {text: null}, allowDecimals: false}]
         }
     });
-
-    @observable showDialog = false;
-
-    @action
-    async toggleDialog() {
-        this.showDialog = !this.showDialog;
-
-        // Hack to get primary, non-dialog chart to re-render once dialog is dismissed.
-        // Sharing chart models between chart component instances appears to be risky...
-        await wait();
-        this.chartModel.setHighchartsConfig({...this.chartModel.highchartsConfig});
-    }
 
     get showAsTimeseries() {
         return this.dimensions[0] === 'day';

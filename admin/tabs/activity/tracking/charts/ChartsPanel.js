@@ -5,80 +5,57 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {chart} from '@xh/hoist/cmp/chart';
-import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, creates} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {withFullScreenHandler} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenHandler';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {dialog} from '@xh/hoist/kit/blueprint';
 
 import {ChartsModel} from './ChartsModel';
 
-export const chartsPanel = hoistCmp.factory({
-    model: creates(ChartsModel),
-    render({model, ...props}) {
-        const {chartModel} = model;
+export const chartsPanel = hoistCmp.factory(
+    () => panel({
+        item: activityChart(),
+        model: {
+            side: 'bottom',
+            defaultSize: 370
+        }
+    })
+);
 
+const activityChart = withFullScreenHandler(hoistCmp.factory({
+    model: creates(ChartsModel),
+    render({model, fullScreenHandlerModel, ...props}) {
+        const {chartModel, activityTrackingModel} = model,
+            {isFullScreen} = fullScreenHandlerModel;
         return panel({
-            title: 'Aggregate Activity Chart',
+            title: !isFullScreen ? 'Aggregate Activity Chart' :
+                activityTrackingModel.queryDisplayString,
             icon: Icon.chartBar(),
-            compactHeader: true,
-            items: [
-                chart({
-                    model: chartModel,
-                    key: chartModel.xhId
-                }),
-                chartDialog()
-            ],
+            compactHeader: !isFullScreen,
+            item: chart({
+                model: chartModel,
+                key: chartModel.xhId
+            }),
             headerItems: [
                 button({
-                    icon: Icon.openExternal(),
-                    onClick: () => model.toggleDialog()
+                    icon: !isFullScreen ? Icon.openExternal() : Icon.close(),
+                    onClick: () => fullScreenHandlerModel.toggleFullScreen()
                 })
             ],
             bbar: [metricSwitcher({multiline: true})],
-            model: {
-                side: 'bottom',
-                defaultSize: 370
-            },
+            height: '100%',
             ...props
         });
     }
-});
-
-const chartDialog = hoistCmp.factory(
-    ({model}) => {
-        const {chartModel, activityTrackingModel} = model;
-        if (!model.showDialog) return null;
-
-        return dialog({
-            title: activityTrackingModel.queryDisplayString,
-            icon: Icon.chartBar(),
-            style: {
-                width: '90vw',
-                height: '60vh'
-            },
-            isOpen: true,
-            item: panel({
-                item: chart({
-                    model: chartModel,
-                    key: `${chartModel.xhId}-dialog`
-                }),
-                bbar: [
-                    filler(),
-                    metricSwitcher(),
-                    filler(),
-                    button({
-                        text: 'Close',
-                        onClick: () => model.toggleDialog()
-                    })
-                ]
-            }),
-            onClose: () => model.toggleDialog()
-        });
+}),
+{
+    style: {
+        width: '90vw',
+        height: '60vh'
     }
-);
+});
 
 const metricSwitcher = hoistCmp.factory(
     ({model, multiline}) => {

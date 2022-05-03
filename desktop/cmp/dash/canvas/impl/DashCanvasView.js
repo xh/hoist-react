@@ -7,6 +7,7 @@
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {ContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils';
+import {withFullScreenHandler} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenHandler';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
 import {panel} from '../../../panel';
@@ -24,19 +25,20 @@ import {DashCanvasViewModel} from '../DashCanvasViewModel';
  *
  * @private
  */
-export const dashCanvasView = hoistCmp.factory({
+export const dashCanvasView = withFullScreenHandler(hoistCmp.factory({
     displayName: 'DashGridLayoutView',
     className: 'xh-dash-tab',
     model: uses(DashCanvasViewModel, {publishMode: ModelPublishMode.LIMITED}),
-    render({model, className}) {
+    render({model, className, fullScreenHandlerModel}) {
         const {viewSpec, ref, hidePanelHeader} = model,
             headerProps = hidePanelHeader ? {} : {
                 compactHeader: true,
                 title: model.title,
                 icon: model.icon,
                 headerItems: [
+                    fullScreenButton({fullScreenHandlerModel, omit: model.hideFullScreenButton}),
                     // TODO - Investigate why {model} must be passed explicitly here
-                    headerMenu({model})
+                    headerMenu({model, omit: fullScreenHandlerModel.isFullScreen})
                 ]
             };
         return panel({
@@ -46,7 +48,14 @@ export const dashCanvasView = hoistCmp.factory({
             item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
         });
     }
-});
+}));
+
+const fullScreenButton = hoistCmp.factory(
+    ({fullScreenHandlerModel}) => button({
+        icon: !fullScreenHandlerModel.isFullScreen ? Icon.expand() : Icon.close(),
+        onClick: () => fullScreenHandlerModel.toggleFullScreen()
+    })
+);
 
 const headerMenu = hoistCmp.factory(
     ({model}) => {

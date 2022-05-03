@@ -23,12 +23,15 @@ export class DashCanvasViewModel extends DashViewModel {
     @observable hidePanelHeader;
     /** @member {boolean} */
     @observable hideMenuButton;
+    /** @member {boolean} */
+    @observable hideFullScreenButton;
 
     constructor(cfg) {
         super(cfg);
         makeObservable(this);
         this.hidePanelHeader = !!cfg.viewSpec.hidePanelHeader;
         this.hideMenuButton = !!cfg.viewSpec.hideMenuButton;
+        this.hideFullScreenButton = !!cfg.viewSpec.hideFullScreenButton;
     }
 
     get positionParams() {
