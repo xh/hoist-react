@@ -43,6 +43,8 @@
   an "#ERROR" placeholder token in the affected cell.
 * New `xhChangelogConfig.limitToRoles` soft-config allows the in-app changelog (aka release notes)
   to be gated to a subset of users based on their role.
+* A new `FullScreenHandler` component and convenience `withFullScreenHandler()` function for
+    providing a component with full screen expansion capabilities
 
 ### 💥 Breaking Changes
 
@@ -61,6 +63,8 @@
 * Fixed a bug with Panel drag-to-resize within iframes on Windows.
 * Worked around an Ag-Grid bug where the grid would render incorrectly on certain sorting changes,
   specifically for abs sort columns, leaving mis-aligned rows and gaps in the grid body layout.
+* Fix bug where Admin Activity Chart pop-out dialog did not display on first render
+
 
 ### ⚙️ Technical
 
