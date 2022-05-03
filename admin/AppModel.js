@@ -50,6 +50,10 @@ export class AppModel extends HoistAppModel {
     //------------------------
     // For override / extension
     //------------------------
+    getAppMenuButtonExtraItems() {
+        return [];
+    }
+
     getTabRoutes() {
         return [
             {

@@ -2,6 +2,10 @@
 
 ## v49.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Apps can now add to the admin console's menu items through `AppModel.getAppMenuButtonExtraItems`.
+
 ### ⚙️ Technical
 
 * This version of Hoist now more strictly enforces that only instances of `HoistModel` may serve as
