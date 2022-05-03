@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {elemFactory, ModelPublishMode} from '@xh/hoist/core';
-import {forOwn, isFunction} from 'lodash';
+import {forOwn} from 'lodash';
 import {createContext} from 'react';
 
 /**
@@ -41,16 +41,16 @@ export class ModelLookup {
         const {model, publishMode, parent} = this,
             modeIsDefault = (publishMode === ModelPublishMode.DEFAULT);
 
-        // Try this model - but only accept wildcard for default mode!
-        if (matchesSelector(model, selector, modeIsDefault)) {
+        if (model.matchesSelector(selector, modeIsDefault)) {
             return model;
         }
 
-        // Potentially try this model's direct children, do not accept wildcard
+        // Try model's direct children. Wildcard not accepted (but would capture model itself above)
         if (modeIsDefault) {
             let ret = null;
-            forOwn(model, (value) => {
-                if (matchesSelector(value, selector)) {
+
+            forOwn(model, (value, key) => {
+                if (!key.startsWith('_') && value?.isHoistModel && value.matchesSelector(selector)) {
                     ret = value;
                     return false;
                 }
@@ -62,26 +62,6 @@ export class ModelLookup {
         return parent?.lookupModel(selector) ?? null;
     }
 }
-
-export function matchesSelector(model, selector, acceptWildcard = false) {
-    if (!model || !selector) return false;
-    if (selector === '*') return acceptWildcard;
-
-    if (isFunction(selector)) {
-        // 1) it's a constructor function/class
-        if (selector.isHoistModel) {
-            return model instanceof selector;
-        }
-
-        // 2) it's a callable function, call for either a boolean or a constructor function/class
-        const result = selector(model);
-        return isFunction(result) && result.isHoistModel ?
-            model instanceof result :
-            !!result;
-    }
-    return false;
-}
-
 
 /**
  * Context used to publish a ModelLookup

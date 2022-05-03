@@ -6,6 +6,12 @@
 
 * Apps can now add to the admin console's menu items through `AppModel.getAppMenuButtonExtraItems`.
 
+### ⚙️ Technical
+
+* This version of Hoist now more strictly enforces that only instances of `HoistModel` may serve as
+ models for `HoistComponent`s.  This is not expected to be a problem for most apps, but may require
+ rework for applications that were binding components to non-standard models.
+
 ## v48.0.1 - 2022-04-22
 
 ### 🐞 Bug Fixes
