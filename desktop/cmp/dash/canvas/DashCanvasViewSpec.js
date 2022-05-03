@@ -25,18 +25,21 @@ export class DashCanvasViewSpec extends DashViewSpec {
     width;
     hidePanelHeader;
     hideMenuButton;
+    hideFullScreenButton;
 
     /**
      * @param {number} height - initial height of view when added to canvas (default 5)
      * @param {number} width - initial width of view when added to canvas (default 5)
      * @param {boolean} hidePanelHeader - true to hide the panel header (default false)
      * @param {boolean} hideMenuButton - true to hide the panel header menu button (default false)
+     * @param {boolean} hideFullScreenButton - true to hide the full screen button (default false)
      */
     constructor({
         height = 5,
         width = 5,
         hidePanelHeader = false,
         hideMenuButton = false,
+        hideFullScreenButton = false,
         ...rest
     }) {
         super(rest);
@@ -44,5 +47,6 @@ export class DashCanvasViewSpec extends DashViewSpec {
         this.width = width;
         this.hidePanelHeader = hidePanelHeader;
         this.hideMenuButton = hideMenuButton;
+        this.hideFullScreenButton = hideFullScreenButton;
     }
 }
