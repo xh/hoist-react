@@ -9,6 +9,12 @@
     without requiring its contents to re-render.  All state is preserved when toggling between
     inline and modal views.
 
+### ⚙️ Technical
+
+* This version of Hoist now more strictly enforces that only instances of `HoistModel` may serve as
+ models for `HoistComponent`s.  This is not expected to be a problem for most apps, but may require
+ rework for applications that were binding components to non-standard models.
+
 ## v48.0.1 - 2022-04-22
 
 ### 🐞 Bug Fixes
