@@ -5,8 +5,8 @@
 ### 🎁 New Features
 
 * Apps can now add to the admin console's menu items through `AppModel.getAppMenuButtonExtraItems`.
-* Apps can now hide the Admin console's General > Users tab  by setting `hideUsersTab` to false in
-  the new soft config `xhAdminAppConfig`.
+* Apps can now hide the Admin > General > Users tab  by setting `hideUsersTab` to false in the new
+  soft config `xhAdminAppConfig`.
 
 ### ⚙️ Technical
 
