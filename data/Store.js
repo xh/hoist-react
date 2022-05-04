@@ -18,7 +18,8 @@ import {
     isNil,
     isString,
     isFunction,
-    remove as lodashRemove
+    remove as lodashRemove,
+    some
 } from 'lodash';
 
 import {Field} from './Field';
@@ -208,6 +209,11 @@ export class Store extends HoistBase {
             );
             rawSummaryData = rawData[0];
             rawData = rawData[0].children ?? [];
+
+            throwIf(
+                some(rawData, it => rawSummaryData.id === it.id),
+                `Summary row ID ${rawSummaryData.id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
+            );
         }
 
         const records = this.createRecords(rawData, null);
