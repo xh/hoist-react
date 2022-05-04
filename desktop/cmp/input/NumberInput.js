@@ -186,8 +186,7 @@ class Model extends HoistInputModel {
         if (isNaN(val)) return false;
         if (val === null) return true;
 
-        // Enforce min/max here. This is instead of the bp props which are
-        // buggy and only limit the incremental step change in any case
+        // Enforce min/max here on commit. BP props only limit the incremental step change
         if (!isNil(min) && val < min) return false;
         if (!isNil(max) && val > max) return false;
 

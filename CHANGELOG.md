@@ -4,10 +4,13 @@
 
 ### 🐞 New Features
 
-* Improve behavior and fix bugs related to `NumberInput.min` and `NumberInput.max` props.
-The new implementation no longer relies on the underlying props provided by Blueprint, which were
-buggy and only constrained the value during incremental stepping with keyboard or mouse.
-
+* Improve behavior of `NumberInput`:
+ ** Improvements to  `min` and `max` props.
+    The new implementation constrains the set value more fully whether changes being made by
+    keyboard or mouse. Also fixed some bugs related to Blueprint.
+ ** The `precision` prop is now respected more fully.  All values produced by editing the control
+    will respect this value.
+ ** Added debounce to make value more stable during user typing.
 
 ## v48.0.1 - 2022-04-22
 

@@ -67,7 +67,8 @@ NumberInput.propTypes = {
     /**
      * Scale factor to apply when converting between the internal and external value. Useful for
      * cases such as handling a percentage value where the user would expect to see or input 20 but
-     * the external value the input is bound to should be 0.2. Defaults to 1 (no scaling applied).
+     * the external value the input is bound to should be 0.2. Must be a factor of 10.
+     * Defaults to 1 (no scaling applied).
      */
     scaleFactor: PT.number,
 
