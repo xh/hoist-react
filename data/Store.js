@@ -979,7 +979,7 @@ export const FilterValueMode = Object.freeze({
 
     /**
      * Both the committed and current values are used to test the filter and the record passes if
-     * either value passes.
+     * either value passes. This is the recommended mode for inline-editing enabled Grids.
      */
     ANY: 'any'
 });
