@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {throwIf} from '@xh/hoist/utils/js';
-import {get, isNil} from 'lodash';
+import {isNil} from 'lodash';
 import {ValidationState} from './validation/ValidationState';
 
 /**
@@ -107,7 +107,7 @@ export class StoreRecord {
      * @returns {*} - the committed value of a field.
      */
     getCommitted(fieldName) {
-        return get(this.committedData, fieldName);
+        return this.committedData ? this.committedData[fieldName] : undefined;
     }
 
     /** @returns {StoreRecord[]} - children of this record, respecting any filter (if applied). */
