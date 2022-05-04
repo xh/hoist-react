@@ -18,6 +18,9 @@
   between the two maps. Useful for tree maps that may have both positive and negative heat values on
   each side which can make it hard to determine where one map ends and the other begins.
 
+### 🐞 Bug Fixes
+
+* Hoist will now throw if `Store.summaryRecord`'s ID is not unique.
 
 ### ⚙️ Technical
 
