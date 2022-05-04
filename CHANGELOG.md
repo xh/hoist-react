@@ -10,7 +10,7 @@
 
 ### 🐞 Bug Fixes
 
-* `Store.loadData()` will now throw if the summary record's ID is not unique.
+* Hoist will now throw if the summary record's ID is not unique.
 
 ### ⚙️ Technical
 

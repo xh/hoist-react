@@ -211,20 +211,13 @@ export class Store extends HoistBase {
             rawData = rawData[0].children ?? [];
         }
 
-        if (rawSummaryData) {
-            throwIf(
-                some(rawData, it => rawSummaryData.id === it.id),
-                `Summary row ID ${rawSummaryData.id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
-            );
-        }
+        this.summaryRecord = rawSummaryData ?
+            this.createRecord(rawSummaryData, null, true) :
+            null;
 
         const records = this.createRecords(rawData, null);
         this._committed = this._current = this._committed.withNewRecords(records);
         this.rebuildFiltered();
-
-        this.summaryRecord = rawSummaryData ?
-            this.createRecord(rawSummaryData, null, true) :
-            null;
 
         this.lastLoaded = this.lastUpdated = Date.now();
     }
@@ -862,7 +855,7 @@ export class Store extends HoistBase {
                 {id} = rec;
 
             throwIf(
-                recordMap.has(id),
+                recordMap.has(id) || this.summaryRecord?.id === id,
                 `ID ${id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
             );
 
