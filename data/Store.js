@@ -114,7 +114,7 @@ export class Store extends HoistBase {
      * @param {boolean} [c.filterIncludesChildren] - true if all children of a passing record should
      *      also be considered passing (default false).
      * @param {FilterValueMode} [c.filterValueMode] - determines how record field values are
-     *      considered when processing filters. Default behavior is to only consider 'committed'
+     *      considered when processing `FieldFilter`s. Default behavior is to only consider 'committed'
      *      values.
      * @param {boolean} [c.loadTreeData] - true (default) to load hierarchical/tree data, if any.
      * @param {string} [c.loadTreeDataFrom] - the property on each raw data object that holds its
@@ -966,7 +966,7 @@ function forIn(obj, fn) {
 }
 
 /**
- * Modes for how record field values should be considered when filtering.
+ * Determines which Record field values should be used for matching against a `FieldFilter`.
  * @readonly
  * @enum {string}
  */
