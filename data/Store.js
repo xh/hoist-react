@@ -209,7 +209,9 @@ export class Store extends HoistBase {
             );
             rawSummaryData = rawData[0];
             rawData = rawData[0].children ?? [];
+        }
 
+        if (rawSummaryData) {
             throwIf(
                 some(rawData, it => rawSummaryData.id === it.id),
                 `Summary row ID ${rawSummaryData.id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`

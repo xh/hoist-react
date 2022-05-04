@@ -8,6 +8,10 @@
 * Apps can now hide the Admin > General > Users tab  by setting `hideUsersTab` to false in the new
   soft config `xhAdminAppConfig`.
 
+### 🐞 Bug Fixes
+
+* `Store.loadData()` will now throw if the summary record's ID is not unique.
+
 ### ⚙️ Technical
 
 * Stricter Model Binding/Lookup: This version of Hoist now more strictly enforces that only
