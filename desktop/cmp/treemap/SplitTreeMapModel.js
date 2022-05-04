@@ -47,6 +47,8 @@ export class SplitTreeMapModel extends HoistModel {
      * @param {SplitTreeMapFilterFn} [c.mapFilter] - filter used to allocate records between the
      *      primary and secondary maps. Defaults to: `record[valueField] >= 0`.
      * @param {SplitTreeMapTitleFn} [c.mapTitleFn] - function to render region titles.
+     * @param {boolean} [c.showSplitter] - true to insert a four pixel buffer between the two maps.
+            Defaults to false.
      * @param {string} [c.orientation] - 'vertical' (default) to display primary and secondary maps
      *      one above the other, 'horizontal' to show them side-by-side.
      *
