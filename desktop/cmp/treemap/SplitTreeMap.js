@@ -16,6 +16,7 @@ import PT from 'prop-types';
 import './SplitTreeMap.scss';
 import {SplitTreeMapModel} from './SplitTreeMapModel';
 import {treeMap} from './TreeMap';
+import {splitter} from './impl/Splitter';
 
 /**
  * A component which divides data across two TreeMaps.
@@ -48,7 +49,15 @@ SplitTreeMap.propTypes = {
 
 const childMaps = hoistCmp.factory(
     ({model}) => {
-        const {primaryMapModel, secondaryMapModel, empty, emptyText, isMasking} = model;
+        const {
+            primaryMapModel,
+            secondaryMapModel,
+            empty,
+            emptyText,
+            isMasking,
+            mapTitleFn,
+            showSplitter
+        } = model;
         if (empty) return placeholder(emptyText);
 
         const pTotal = primaryMapModel.total,
@@ -74,6 +83,8 @@ const childMaps = hoistCmp.factory(
                 className: 'xh-split-treemap__map-holder',
                 item: treeMap({model: primaryMapModel})
             }),
+
+            splitter({omit: !!mapTitleFn || !showSplitter}),
 
             // Secondary Map
             mapTitle({isPrimary: false}),
