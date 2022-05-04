@@ -18,9 +18,11 @@
 
 ### ⚙️ Technical
 
-* This version of Hoist now more strictly enforces that only instances of `HoistModel` may serve as
- models for `HoistComponent`s.  This is not expected to be a problem for most apps, but may require
- rework for applications that were binding components to non-standard models.
+* Stricter Model Binding/Lookup: This version of Hoist now more strictly enforces that only
+ instances of `HoistModel` may serve as  models for `HoistComponent`s.  In addition, Hoist models
+ stored at properties with the `_` prefix are also considered private and not eligible for model
+ lookup. These changes are not expected to be a problem for most apps, but may require minor rework
+ for applications that were binding components to non-standard or "private" models.
 
 ## v48.0.1 - 2022-04-22
 
