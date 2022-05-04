@@ -18,8 +18,7 @@ import {
     isNil,
     isString,
     isFunction,
-    remove as lodashRemove,
-    some
+    remove as lodashRemove
 } from 'lodash';
 
 import {Field} from './Field';
