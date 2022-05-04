@@ -7,7 +7,7 @@
 * Apps can now add to the admin console's menu items through `AppModel.getAppMenuButtonExtraItems`.
 * Apps can now hide the Admin > General > Users tab  by setting `hideUsersTab` to false in the new
   soft config `xhAdminAppConfig`.
-* Tree maps now take a `showSpitter` property, defaulted to `false`, to insert a four pixel buffer
+* Tree maps now take a `showSplitter` property, defaulted to `false`, to insert a four pixel buffer
   between the two maps. Useful for tree maps that may have both positive and negative heat values on
   each side which can make it hard to determine where one map ends and the other begins.
 
