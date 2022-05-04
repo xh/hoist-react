@@ -18,11 +18,11 @@ export const App = hoistCmp({
     displayName: 'App',
     model: uses(AppModel),
 
-    render({model}) {
+    render() {
         return panel({
             tbar: tbar(),
             className: 'xh-admin-app-frame',
-            item: tabContainer({model: model.tabModel})
+            item: tabContainer()
         });
     }
 });
