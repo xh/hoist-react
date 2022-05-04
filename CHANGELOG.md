@@ -4,8 +4,19 @@
 
 ### 🎁 New Features
 
+* Apps can now add to the admin console's menu items through `AppModel.getAppMenuButtonExtraItems`.
+* Apps can now hide the Admin > General > Users tab  by setting `hideUsersTab` to false in the new
+  soft config `xhAdminAppConfig`.
 * Added `Store.filterValueMode`, allowing apps more control over how values are retrieved from
   records when filtering on record fields.
+
+### ⚙️ Technical
+
+* Stricter Model Binding/Lookup: This version of Hoist now more strictly enforces that only
+ instances of `HoistModel` may serve as  models for `HoistComponent`s.  In addition, Hoist models
+ stored at properties with the `_` prefix are also considered private and not eligible for model
+ lookup. These changes are not expected to be a problem for most apps, but may require minor rework
+ for applications that were binding components to non-standard or "private" models.
 
 ## v48.0.1 - 2022-04-22
 
