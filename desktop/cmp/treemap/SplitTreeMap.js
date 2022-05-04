@@ -14,9 +14,9 @@ import classNames from 'classnames';
 import PT from 'prop-types';
 
 import './SplitTreeMap.scss';
-import {splitter} from './Splitter';
 import {SplitTreeMapModel} from './SplitTreeMapModel';
 import {treeMap} from './TreeMap';
+import {splitter} from './impl/Splitter';
 
 /**
  * A component which divides data across two TreeMaps.

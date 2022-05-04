@@ -7,9 +7,13 @@
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 
-import {SplitTreeMapModel} from './SplitTreeMapModel';
+import {SplitTreeMapModel} from '../SplitTreeMapModel';
 import './Splitter.scss';
 
+
+/**
+ * @private
+ */
 export const splitter = hoistCmp.factory({
     displayName: 'TreeMap Splitter',
     model: uses(SplitTreeMapModel),
