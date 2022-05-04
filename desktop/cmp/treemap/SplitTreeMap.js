@@ -76,9 +76,7 @@ const childMaps = hoistCmp.factory(
                 item: treeMap({model: primaryMapModel})
             }),
 
-            splitter({
-                omit: !!mapTitleFn
-            }),
+            splitter({omit: !!mapTitleFn}),
 
             // Secondary Map
             mapTitle({isPrimary: false}),
