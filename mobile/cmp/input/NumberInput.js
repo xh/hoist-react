@@ -9,9 +9,9 @@ import {hoistCmp} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {input} from '@xh/hoist/kit/onsen';
 import {wait} from '@xh/hoist/promise';
-import {withDefault, debounced} from '@xh/hoist/utils/js';
+import {withDefault, debounced, throwIf} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-import {isNaN, isNil, isNumber} from 'lodash';
+import {isNaN, isNil, isNumber, round} from 'lodash';
 import PT from 'prop-types';
 import './NumberInput.scss';
 
@@ -96,9 +96,13 @@ class Model extends HoistInputModel {
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
-    @debounced(250)
-    doCommitOnChangeInternal() {
-        super.doCommitOnChangeInternal();
+    constructor() {
+        super();
+        throwIf(Math.log10(this.scaleFactor) % 1 !== 0, 'scaleFactor must be a factor of 10');
+    }
+
+    get precision() {
+        return withDefault(this.componentProps.precision, 4);
     }
 
     get commitOnChange() {
@@ -119,8 +123,16 @@ class Model extends HoistInputModel {
         this.noteValueChange(ev.target.value);
     };
 
+    @debounced(250)
+    doCommitOnChangeInternal() {
+        super.doCommitOnChangeInternal();
+    }
+
     toInternal(val) {
-        return isNil(val) ? null : val * this.scaleFactor;
+        if (isNaN(val)) return val;
+        if (isNil(val)) return null;
+
+        return val * this.scaleFactor;
     }
 
     toExternal(val) {
@@ -128,7 +140,18 @@ class Model extends HoistInputModel {
         if (isNaN(val)) return val;
         if (isNil(val)) return null;
 
-        return val / this.scaleFactor;
+        val = val / this.scaleFactor;
+
+        // Round to scale corrected precision
+        let {precision} = this;
+        if (!isNil(precision)) {
+            precision = precision + Math.log10(this.scaleFactor);
+            console.log(precision);
+            console.log(val);
+            val = round(val, precision);
+            console.log(val);
+        }
+        return val;
     }
 
     isValid(val) {
@@ -156,22 +179,22 @@ class Model extends HoistInputModel {
 
         // Deferred to allow any value conversion to complete and flush into input.
         if (this.componentProps.selectOnFocus) {
-            const target = ev.target;
-            if (target && target.select) wait().then(() => target.select());
+            const {target} = ev;
+            if (target?.select) wait().then(() => target.select());
         }
     };
 
-    displayValue(value) {
-        if (value == null) return '';
-        return value.toString();
-    }
+    formatRenderValue(value) {
+        const {componentProps, precision} = this;
 
-    formatValue(value) {
         if (value == null) return '';
 
-        const {componentProps} = this,
-            {valueLabel, displayWithCommas} = componentProps,
-            precision = withDefault(componentProps.precision, 4),
+        if (this.hasFocus) {
+            if (isNumber(value) && !isNil(precision)) value = round(value, precision);
+            return value.toString();
+        }
+
+        const {valueLabel, displayWithCommas} = componentProps,
             zeroPad = withDefault(componentProps.zeroPad, false),
             formattedVal = fmtNumber(value, {precision, zeroPad, label: valueLabel, labelCls: null, asHtml: true});
 
@@ -208,8 +231,8 @@ class Model extends HoistInputModel {
 const cmp = hoistCmp.factory(
     ({model, className, enableShorthandUnits, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props),
-            {hasFocus, renderValue} = model,
-            displayValue = hasFocus ? model.displayValue(renderValue) : model.formatValue(renderValue),
+            {hasFocus} = model,
+            renderValue = model.formatRenderValue(model.renderValue),
             // use 'number' to edit values, but 'text' to displaying formatted values.
             type = hasFocus && !enableShorthandUnits ? 'number' : 'text',
             inputMode = !enableShorthandUnits ? 'decimal' : 'text';
@@ -218,7 +241,7 @@ const cmp = hoistCmp.factory(
             type,
             inputMode,
             className,
-            value: displayValue,
+            value: renderValue,
             disabled: props.disabled,
             min: props.min,
             max: props.max,

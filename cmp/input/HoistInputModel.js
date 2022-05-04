@@ -58,7 +58,7 @@ import ReactDOM from 'react-dom';
 export class HoistInputModel extends HoistModel {
 
     /**
-     * Does this input have the focus ?
+     * Does this input have the focus?
      * @type {boolean}
      */
     @observable hasFocus = false;
@@ -116,6 +116,7 @@ export class HoistInputModel extends HoistModel {
     @observable.ref internalValue = null;    // Cached internal value
     inputRef = createObservableRef();        // ref to internal <input> element, if any
     domRef = createObservableRef();          // ref to outermost element, or class Component.
+    isDirty = false;
 
     constructor() {
         super();
@@ -191,6 +192,7 @@ export class HoistInputModel extends HoistModel {
      * This is the primary method for HoistInput implementations to call on value change.
      */
     noteValueChange(val) {
+        this.isDirty = true;
         const {onChange} = this.componentProps,
             oldVal = this.internalValue;
 
@@ -298,6 +300,9 @@ export class HoistInputModel extends HoistModel {
     }
 
     doCommitInternal() {
+        if (!this.isDirty) return;
+        this.isDirty = false;
+
         const {onCommit, bind} = this.componentProps,
             {model} = this;
         let currentValue = this.externalValue,
