@@ -2,13 +2,13 @@
   background-color: var(--xh-resizable-bg);
 
   &.vertical {
-    height: var(--xh-resizable-size-px);
+    height: 4px;
     border-top: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
     border-bottom: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
   }
 
   &.horizontal {
-    width: var(--xh-resizable-size-px);
+    width: 4px;
     border-left: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
     border-right: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
   }

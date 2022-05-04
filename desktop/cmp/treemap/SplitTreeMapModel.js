@@ -55,6 +55,7 @@ export class SplitTreeMapModel extends HoistModel {
     constructor({
         mapFilter,
         mapTitleFn,
+        showSplitter = false,
         orientation = 'vertical',
         ...rest
     } = {}) {

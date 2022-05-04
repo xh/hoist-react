@@ -49,7 +49,15 @@ SplitTreeMap.propTypes = {
 
 const childMaps = hoistCmp.factory(
     ({model}) => {
-        const {primaryMapModel, secondaryMapModel, empty, emptyText, isMasking, mapTitleFn} = model;
+        const {
+            primaryMapModel,
+            secondaryMapModel,
+            empty,
+            emptyText,
+            isMasking,
+            mapTitleFn,
+            showSplitter
+        } = model;
         if (empty) return placeholder(emptyText);
 
         const pTotal = primaryMapModel.total,
@@ -76,7 +84,7 @@ const childMaps = hoistCmp.factory(
                 item: treeMap({model: primaryMapModel})
             }),
 
-            splitter({omit: !!mapTitleFn}),
+            splitter({omit: !!mapTitleFn || !showSplitter}),
 
             // Secondary Map
             mapTitle({isPrimary: false}),
