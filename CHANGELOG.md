@@ -14,6 +14,9 @@
 ### 🐞 Bug Fixes
 
 * Fix bug where Admin Activity Chart pop-out dialog did not display on first render
+* Tree maps now take a `showSplitter` property, defaulted to `false`, to insert a four pixel buffer
+  between the two maps. Useful for tree maps that may have both positive and negative heat values on
+  each side which can make it hard to determine where one map ends and the other begins.
 
 
 ### ⚙️ Technical
