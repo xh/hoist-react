@@ -17,7 +17,7 @@ import {isNaN, isNil, isNumber, round} from 'lodash';
 import PT from 'prop-types';
 
 /**
- * Number input, with optional support for formatted of display value, shorthand units, and more.
+ * Number input, with optional support for formatting of display value, shorthand units, and more.
  *
  * This component is built on the Blueprint NumericInput and gets default increment/decrement
  * functionality from that component, based on the three stepSize props.
@@ -63,24 +63,23 @@ NumberInput.propTypes = {
     /** Icon to display inline on the left side of the input. */
     leftIcon: PT.element,
 
-
     /**
-     * Minimum value.  Note that this will govern the smallest value that this control can produce
-     * via user input.  Smaller values passed to it via props or a bound model will still be displayed.
+     * Minimum value. Note that this will govern the smallest value that this control can produce
+     * via user input. Smaller values passed to it via props or a bound model will still be displayed.
      */
     min: PT.number,
 
-    /** Major step size for increment/decrement handling. */
-    majorStepSize: PT.number,
-
     /**
-     * Maximum value.  Note that this will govern the largest value that this control can produce
-     * via user input.  Larger values passed to it via props or a bound model will still be displayed.
+     * Maximum value. Note that this will govern the largest value that this control can produce
+     * via user input. Larger values passed to it via props or a bound model will still be displayed.
      */
     max: PT.number,
 
     /** Minor step size for increment/decrement handling. */
     minorStepSize: PT.number,
+
+    /** Major step size for increment/decrement handling. */
+    majorStepSize: PT.number,
 
     /** Callback for normalized keydown event. */
     onKeyDown: PT.func,
@@ -97,7 +96,7 @@ NumberInput.propTypes = {
     /**
      * Scale factor to apply when converting between the internal and external value. Useful for
      * cases such as handling a percentage value where the user would expect to see or input 20 but
-     * the external value the input is bound to should be 0.2.  Must be a factor of 10.
+     * the external value the input is bound to should be 0.2. Must be a factor of 10.
      * Defaults to 1 (no scaling applied).
      */
     scaleFactor: PT.number,
@@ -125,10 +124,9 @@ NumberInput.hasLayoutSupport = true;
 //-----------------------
 // Implementation
 //-----------------------
-
 class Model extends HoistInputModel {
-    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
+    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
     constructor() {
         super();
@@ -155,7 +153,6 @@ class Model extends HoistInputModel {
     doCommitOnChangeInternal() {
         super.doCommitOnChangeInternal();
     }
-
 
     toInternal(val) {
         if (isNaN(val)) return val;
@@ -192,7 +189,6 @@ class Model extends HoistInputModel {
 
         return true;
     }
-
 
     onKeyDown = (ev) => {
         if (ev.key === 'Enter') this.doCommit();
@@ -254,14 +250,12 @@ const cmp = hoistCmp.factory(
         const {width, ...layoutProps} = getLayoutProps(props),
             renderValue = model.formatRenderValue(model.renderValue);
 
-
         // BP workaround -- min, max, and stepsize can block Blueprint from rendering
         // intended value in underlying control -- ensure it is always shown.
         useLayoutEffect(() => {
             const input = model.inputRef.current;
             if (input) input.value = renderValue;
         });
-
 
         // BP bases expected precision off of dps in minorStepSize, if specified.
         // The default BP value of 0.1 for this prop emits a console warning any time the input

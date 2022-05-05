@@ -16,7 +16,7 @@ import PT from 'prop-types';
 import './NumberInput.scss';
 
 /**
- * Number Input, with optional support for formatted of display value,
+ * Number input, with optional support for formatting of display value, shorthand units, and more.
  */
 export const [NumberInput, numberInput] = hoistCmp.withFactory({
     displayName: 'NumberInput',
@@ -32,36 +32,34 @@ NumberInput.propTypes = {
     /** True to commit on every change/keystroke, default false. */
     commitOnChange: PT.bool,
 
-    /** Whether to display large values with commas */
+    /** True to insert commas in displayed value. */
     displayWithCommas: PT.bool,
 
-    /** Set to true for advanced input evaluation, defaults to false.
-     Inputs suffixed with k, m, or b will be calculated as thousands, millions, or billions respectively */
+    /** True to convert entries suffixed with k/m/b to thousands/millions/billions. */
     enableShorthandUnits: PT.bool,
 
-
     /**
-     * Minimum value.  Note that this will govern the smallest value that this control can produce
-     * via user input.  Smaller values passed to it via props or a bound model will still be displayed.
+     * Minimum value. Note that this will govern the smallest value that this control can produce
+     * via user input. Smaller values passed to it via props or a bound model will still be displayed.
      */
     min: PT.number,
 
     /**
-     * Maximum value.  Note that this will govern the largest value that this control can produce
-     * via user input.  Larger values passed to it via props or a bound model will still be displayed.
+     * Maximum value. Note that this will govern the largest value that this control can produce
+     * via user input. Larger values passed to it via props or a bound model will still be displayed.
      */
     max: PT.number,
 
-    /** Onsen modifier string */
+    /** Onsen modifier string. */
     modifier: PT.string,
 
-    /** Function which receives keydown event */
+    /** Function which receives keydown event. */
     onKeyDown: PT.func,
 
-    /** Text to display when control is empty */
+    /** Text to display when control is empty. */
     placeholder: PT.string,
 
-    /** Number of decimal places to allow on field's value, defaults to 4 */
+    /** Max decimal precision of the value, defaults to 4. */
     precision: PT.number,
 
     /**
@@ -72,7 +70,7 @@ NumberInput.propTypes = {
      */
     scaleFactor: PT.number,
 
-    /** Whether text in field is selected when field receives focus */
+    /** True to select contents when control receives focus. */
     selectOnFocus: PT.bool,
 
     /** Alignment of entry text within control, default 'right'. */
@@ -84,7 +82,7 @@ NumberInput.propTypes = {
      */
     valueLabel: PT.string,
 
-    /** Allow/automatically fill in trailing zeros in accord with precision, defaults to false */
+    /** True to pad with trailing zeros out to precision, default false. */
     zeroPad: PT.bool
 };
 NumberInput.hasLayoutSupport = true;
@@ -92,7 +90,6 @@ NumberInput.hasLayoutSupport = true;
 //-----------------------
 // Implementation
 //-----------------------
-
 class Model extends HoistInputModel {
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
@@ -147,10 +144,7 @@ class Model extends HoistInputModel {
         let {precision} = this;
         if (!isNil(precision)) {
             precision = precision + Math.log10(this.scaleFactor);
-            console.log(precision);
-            console.log(val);
             val = round(val, precision);
-            console.log(val);
         }
         return val;
     }
@@ -161,14 +155,12 @@ class Model extends HoistInputModel {
         if (isNaN(val)) return false;
         if (val === null) return true;
 
-        // Enforce min/max here. This is instead of the bp props which are
-        // buggy and only limit the incremental step change in any case
+        // Enforce min/max here on commit.
         if (!isNil(min) && val < min) return false;
         if (!isNil(max) && val > max) return false;
 
         return true;
     }
-
 
     onKeyDown = (ev) => {
         if (ev.key === 'Enter') this.doCommit();
