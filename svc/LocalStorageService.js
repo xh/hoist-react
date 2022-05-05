@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, errorIf} from '@xh/hoist/utils/js';
 import store from 'store2';
 
 /**
@@ -15,6 +15,18 @@ import store from 'store2';
  * Relied upon by Hoist features such as local preference values and grid state.
  */
 export class LocalStorageService extends HoistService {
+
+    constructor() {
+        super();
+        errorIf(this.isFake,
+            'Local Storage is *not* supported in this browser. Transient in-memory storage will ' +
+            'be used for various user state, and lost when the page is closed.'
+        );
+    }
+
+    get isFake() {
+        return store.isFake();
+    }
 
     get(key, defaultValue) {
         const storage = this.getInstance(),
@@ -56,12 +68,7 @@ export class LocalStorageService extends HoistService {
     //------------------
     //  Implementation
     //------------------
-    get supported() {
-        return !store.isFake();
-    }
-
     getInstance() {
-        throwIf(!this.supported, 'Local Storage is not supported');
         return store.namespace(this.getNamespace());
     }
 
