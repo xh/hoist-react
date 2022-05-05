@@ -2,7 +2,15 @@
 
 ## v49.0.0-SNAPSHOT - unreleased
 
-### 🎁 New Features
+### 🐞 New Features
+
+* Improve behavior of `NumberInput`:
+ ** Improvements to  `min` and `max` props.
+    The new implementation constrains the set value more fully whether changes being made by
+    keyboard or mouse. Also fixed some bugs related to Blueprint.
+ ** The `precision` prop is now respected more fully.  All values produced by editing the control
+    will respect this value.
+ ** Added debounce to make value more stable during user typing.
 
 * Apps can now add to the admin console's menu items through `AppModel.getAppMenuButtonExtraItems`.
 * Apps can now hide the Admin > General > Users tab  by setting `hideUsersTab` to false in the new
