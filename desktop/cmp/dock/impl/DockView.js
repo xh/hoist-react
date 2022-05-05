@@ -51,7 +51,7 @@ export const dockView = hoistCmp.factory({
             style: {width, height},
             item: vbox({
                 width: collapsed ? collapsedWidth : width,
-                height,
+                height: !collapsed ? height: null,
                 className: classNames(className, `xh-dock-view--${suffix}`),
                 items: [header, unmount ? null : body]
             })
