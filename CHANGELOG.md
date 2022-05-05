@@ -2,8 +2,8 @@
 
 ### 🎁 New Features
 
-* A new `FullScreenHandler` component and convenience `withFullScreenHandler()` function for
-  providing a component with full screen expansion capabilities
+* A new `FullScreenSupport` component for providing a child component with full screen expansion
+  capabilities
 
 ### 🐞 Bug Fixes
 * Fix bug where Admin Activity Chart pop-out dialog did not display on first render

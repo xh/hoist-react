@@ -6,10 +6,11 @@
  */
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, XH} from '@xh/hoist/core';
+import {hoistCmp, managed, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
-import {fullScreenHandler} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenHandler';
+import {fullScreenSupport} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenSupport';
+import {FullScreenSupportModel} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenSupportModel';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -51,7 +52,7 @@ export const [CodeInput, codeInput] = hoistCmp.withFactory({
     displayName: 'CodeInput',
     className: 'xh-code-input',
     render(props, ref) {
-        return fullScreenHandler(useHoistInputModel(cmp, props, ref, Model));
+        return useHoistInputModel(cmp, props, ref, Model);
     }
 });
 
@@ -124,8 +125,8 @@ CodeInput.hasLayoutSupport = true;
 // Implementation
 //------------------------------
 class Model extends HoistInputModel {
-    /** @member {FullScreenHandlerModel} */
-    fullScreenHandlerModel;
+    /** @member {FullScreenSupportModel} */
+    @managed fullScreenSupportModel = new FullScreenSupportModel();
 
     /** @member {CodeMirror} - a CodeMirror editor instance. */
     editor;
@@ -138,7 +139,7 @@ class Model extends HoistInputModel {
     get matchCount() {return this.matches.length}
 
     get fullScreen() {
-        return this.fullScreenHandlerModel?.isFullScreen;
+        return this.fullScreenSupportModel.isFullScreen;
     }
 
     get commitOnChange() {return withDefault(this.componentProps.commitOnChange, true)}
@@ -209,6 +210,11 @@ class Model extends HoistInputModel {
     constructor() {
         super();
         makeObservable(this);
+        this.addReaction({
+            track: () => this.fullScreenSupportModel.isFullScreen,
+            run: () => this.focus(),
+            debounce: 1
+        });
     }
 
     onLinked() {
@@ -250,11 +256,6 @@ class Model extends HoistInputModel {
             debounce: 300
         });
     }
-
-    afterLinked() {
-        this.fullScreenHandlerModel.onFullScreenChange = () => {this.focus()};
-    }
-
 
     manageCodeEditor = (textAreaComp) => {
         if (textAreaComp) {
@@ -329,7 +330,7 @@ class Model extends HoistInputModel {
     }
 
     toggleFullScreen() {
-        this.fullScreenHandlerModel?.toggleFullScreen();
+        this.fullScreenSupportModel.toggleFullScreen();
     }
 
     //------------------------
@@ -424,7 +425,7 @@ class Model extends HoistInputModel {
 }
 
 const cmp = hoistCmp.factory(
-    ({model, className, fullScreenHandlerModel, ...props}, ref) => {
+    ({model, className, ...props}, ref) => {
         const childProps = {
             width: 300,
             height: 100,
@@ -433,9 +434,8 @@ const cmp = hoistCmp.factory(
             ref,
             model
         };
-        model.fullScreenHandlerModel = fullScreenHandlerModel;
 
-        return inputCmp(childProps);
+        return fullScreenSupport(inputCmp(childProps));
     }
 );
 

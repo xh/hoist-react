@@ -7,6 +7,7 @@
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, lookup} from '@xh/hoist/core';
+import {FullScreenSupportModel} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenSupportModel';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
 import { bindable, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
@@ -15,6 +16,7 @@ import moment from 'moment';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
 
 export class ChartsModel extends HoistModel {
+    @managed fullScreenSupportModel = new FullScreenSupportModel();
 
     /** @member {ActivityTrackingModel} */
     @lookup(ActivityTrackingModel) activityTrackingModel;

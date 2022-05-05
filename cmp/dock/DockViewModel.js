@@ -5,6 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, ManagedRefreshContextModel, XH} from '@xh/hoist/core';
+import {FullScreenSupportModel} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenSupportModel';
 import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
@@ -32,6 +33,7 @@ export class DockViewModel extends HoistModel {
 
     containerModel;
     @managed refreshContextModel;
+    @managed fullScreenSupportModel = new FullScreenSupportModel();
 
     get isActive() {
         return !this.collapsed;
@@ -124,11 +126,13 @@ export class DockViewModel extends HoistModel {
         if (!this.allowDialog) return;
         this.containerModel.views.forEach(it => it.showInDock());
         this.docked = false;
+        this.fullScreenSupportModel.isFullScreen = true;
     }
 
     @action
     showInDock() {
         this.docked = true;
+        this.fullScreenSupportModel.isFullScreen = false;
     }
 
     //-----------------------
@@ -144,11 +148,13 @@ export class DockViewModel extends HoistModel {
 
     @action
     expand() {
+        this.fullScreenSupportModel.isFullScreen = false;
         this.collapsed = false;
     }
 
     @action
     collapse() {
+        this.fullScreenSupportModel.isFullScreen = false;
         this.collapsed = true;
         this.docked = true;
     }

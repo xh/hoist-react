@@ -7,7 +7,7 @@
 import {chart} from '@xh/hoist/cmp/chart';
 import {hoistCmp, creates} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {withFullScreenHandler} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenHandler';
+import {fullScreenSupport} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenSupport';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon/Icon';
@@ -24,36 +24,32 @@ export const chartsPanel = hoistCmp.factory(
     })
 );
 
-const activityChart = withFullScreenHandler(hoistCmp.factory({
+const activityChart = hoistCmp.factory({
     model: creates(ChartsModel),
-    render({model, fullScreenHandlerModel, ...props}) {
-        const {chartModel, activityTrackingModel} = model,
-            {isFullScreen} = fullScreenHandlerModel;
-        return panel({
-            title: !isFullScreen ? 'Aggregate Activity Chart' :
-                activityTrackingModel.queryDisplayString,
-            icon: Icon.chartBar(),
-            compactHeader: !isFullScreen,
-            item: chart({
-                model: chartModel,
-                key: chartModel.xhId
-            }),
-            headerItems: [
-                button({
-                    icon: !isFullScreen ? Icon.openExternal() : Icon.close(),
-                    onClick: () => fullScreenHandlerModel.toggleFullScreen()
-                })
-            ],
-            bbar: [metricSwitcher({multiline: true})],
-            height: '100%',
-            ...props
-        });
-    }
-}),
-{
-    style: {
-        width: '90vw',
-        height: '60vh'
+    render({model, ...props}) {
+        const {chartModel, activityTrackingModel, fullScreenSupportModel} = model,
+            {isFullScreen} = fullScreenSupportModel;
+        return fullScreenSupport({
+            style: {width: '90vw', height: '60vh'},
+            item: panel({
+                title: !isFullScreen ? 'Aggregate Activity Chart' :
+                    activityTrackingModel.queryDisplayString,
+                icon: Icon.chartBar(),
+                compactHeader: !isFullScreen,
+                item: chart({
+                    model: chartModel,
+                    key: chartModel.xhId
+                }),
+                headerItems: [
+                    button({
+                        icon: !isFullScreen ? Icon.openExternal() : Icon.close(),
+                        onClick: () => fullScreenSupportModel.toggleFullScreen()
+                    })
+                ],
+                bbar: [metricSwitcher({multiline: true})],
+                height: '100%',
+                ...props
+            })});
     }
 });
 
