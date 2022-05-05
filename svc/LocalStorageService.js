@@ -5,12 +5,15 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
-import {throwIf, errorIf} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import store from 'store2';
 
 /**
  * Service to provide simple key/value access to browser local storage, appropriately namespaced
  * by application code and username.
+ *
+ * In the unexpected case that local storage is not available, will provide a transient in-memory
+ * storage to support its operations and API.
  *
  * Relied upon by Hoist features such as local preference values and grid state.
  */
@@ -18,10 +21,15 @@ export class LocalStorageService extends HoistService {
 
     constructor() {
         super();
-        errorIf(this.isFake,
-            'Local Storage is not supported in this browser. Transient in-memory storage will ' +
-            'be used for various user state, and lost when the page is closed.'
-        );
+        if (this.isFake) {
+            XH.handleException(
+                XH.exception(
+                    'Local Storage is not supported in this browser. Transient in-memory storage ' +
+                    'will be used for various user state, and lost when the page is closed.'
+                ),
+                {showAlert: false}
+            );
+        }
     }
 
     get isFake() {
