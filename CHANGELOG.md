@@ -43,8 +43,6 @@
   an "#ERROR" placeholder token in the affected cell.
 * New `xhChangelogConfig.limitToRoles` soft-config allows the in-app changelog (aka release notes)
   to be gated to a subset of users based on their role.
-* A new `FullScreenHandler` component and convenience `withFullScreenHandler()` function for
-    providing a component with full screen expansion capabilities
 
 ### 💥 Breaking Changes
 
