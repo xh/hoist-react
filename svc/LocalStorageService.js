@@ -25,7 +25,7 @@ export class LocalStorageService extends HoistService {
             XH.handleException(
                 XH.exception(
                     'Local Storage is not supported in this browser. Transient in-memory storage ' +
-                    'will be used for various user state, and lost when the page is closed.'
+                    'will be used as a fallback.  All data stored will be lost when page is closed.'
                 ),
                 {showAlert: false}
             );
