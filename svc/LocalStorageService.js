@@ -19,7 +19,7 @@ export class LocalStorageService extends HoistService {
     constructor() {
         super();
         errorIf(this.isFake,
-            'Local Storage is *not* supported in this browser. Transient in-memory storage will ' +
+            'Local Storage is not supported in this browser. Transient in-memory storage will ' +
             'be used for various user state, and lost when the page is closed.'
         );
     }
