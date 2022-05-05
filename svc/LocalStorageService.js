@@ -32,10 +32,6 @@ export class LocalStorageService extends HoistService {
         }
     }
 
-    get isFake() {
-        return store.isFake();
-    }
-
     get(key, defaultValue) {
         const storage = this.getInstance(),
             val = storage.get(key, defaultValue);
@@ -71,6 +67,10 @@ export class LocalStorageService extends HoistService {
 
     keys() {
         return this.getInstance().keys();
+    }
+
+    get isFake() {
+        return store.isFake();
     }
 
     //------------------
