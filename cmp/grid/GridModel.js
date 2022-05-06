@@ -380,7 +380,7 @@ export class GridModel extends HoistModel {
         this.rowClassFn = rowClassFn;
         this.rowClassRules = rowClassRules;
         this.groupRowHeight = groupRowHeight;
-        this.groupRowRenderer = makeRendererSafe(groupRowRenderer);
+        this.groupRowRenderer = makeRendererSafe(groupRowRenderer, 'GROUPROW');
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.showGroupRowCounts = showGroupRowCounts;
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);

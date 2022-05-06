@@ -5,13 +5,13 @@ import {isFunction} from 'lodash';
  *
  * @private
  */
-export function makeRendererSafe(fn) {
+export function makeRendererSafe(fn, identifier) {
     if (!isFunction(fn)) return fn;
-    return (...args) => {
+    return function() {
         try {
-            return fn(...args)
+            return fn.apply(null, arguments);
         } catch (e) {
-            console.warn('A grid renderer has thrown an error.', e);
+            console.warn(`Renderer for ${identifier} has thrown an error.`, e);
             return '#ERROR'
         }
     }

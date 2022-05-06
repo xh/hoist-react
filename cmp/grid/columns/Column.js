@@ -450,7 +450,7 @@ export class Column {
         this.pinned = this.parsePinned(pinned);
 
         apiRemoved('Column.elementRenderer', {test: rest.elementRenderer, msg: 'Use `renderer` instead', v: 48});
-        this.renderer = makeRendererSafe(renderer);
+        this.renderer = makeRendererSafe(renderer, this.displayName);
         this.rendererIsComplex = rendererIsComplex;
         this.highlightOnChange = highlightOnChange;
         warnIf(
