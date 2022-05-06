@@ -26,6 +26,12 @@
   between the two maps. Useful for tree maps that may have both positive and negative heat values on
   each side which can make it hard to determine where one map ends and the other begins.
 
+### 💥 Breaking Changes
+
+* `GridModel.groupRowElementRenderer` and `DataViewModel.groupRowElementRenderer` have been removed,
+  please use `groupRowRenderer` instead. It must now return a React Element rather than an HTML
+  string (plain strings are also OK, but any formatting must be done via React).
+
 ### 🐞 Bug Fixes
 
 * Fixed a bug with Panel drag-to-resize within iframes on Windows.

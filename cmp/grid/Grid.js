@@ -234,7 +234,6 @@ class GridLocalModel extends HoistModel {
             initialGroupOrderComparator: model.groupSortFn ? this.groupSortComparator : undefined,
             groupDefaultExpanded: 1,
             groupDisplayType: 'groupRows',
-            groupRowRenderer: model.groupRowElementRenderer,
             groupRowRendererParams: {
                 innerRenderer: model.groupRowRenderer,
                 suppressCount: !model.showGroupRowCounts
@@ -833,11 +832,5 @@ class GridLocalModel extends HoistModel {
 /**
  * @callback Grid~groupRowRendererFn - renderer for a group row
  * @param {ICellRendererParams} context - The group renderer params from ag-Grid.
- * @return {string} - the formatted value for display.
- */
-
-/**
- * @callback Grid~groupRowElementRendererFn - renderer for a group row
- * @param {ICellRendererParams} context - The group renderer params from ag-Grid.
- * @return {Element} - the React element to render.
+ * @return {Element} - the formatted value for display.
  */
