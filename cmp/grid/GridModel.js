@@ -46,6 +46,7 @@ import {
     omit,
     pull
 } from 'lodash';
+import {makeRendererSafe} from '../../format';
 import {GridPersistenceModel} from './impl/GridPersistenceModel';
 import {GridSorter} from './impl/GridSorter';
 
@@ -379,7 +380,7 @@ export class GridModel extends HoistModel {
         this.rowClassFn = rowClassFn;
         this.rowClassRules = rowClassRules;
         this.groupRowHeight = groupRowHeight;
-        this.groupRowRenderer = groupRowRenderer;
+        this.groupRowRenderer = makeRendererSafe(groupRowRenderer);
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.showGroupRowCounts = showGroupRowCounts;
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);

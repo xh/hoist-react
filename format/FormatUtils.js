@@ -4,6 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {isFunction} from 'lodash';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 
 /**
@@ -42,4 +43,19 @@ export function asElementDeprecationWarning(opts) {
         test: opts?.asElement,
         msg: 'Formatters return elements by default. You can use `asHtml` to return a HTML string'
     });
+}
+
+/**
+ * Used to ensure grid renderers cannot bring down an application
+ */
+export function makeRendererSafe(fn) {
+    if (!isFunction(fn)) return fn;
+    return (...args) => {
+        try {
+            return fn(...args)
+        } catch (e) {
+            console.warn('A grid renderer has thrown an error.', e);
+            return '#ERROR'
+        }
+    }
 }
