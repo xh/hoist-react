@@ -48,6 +48,7 @@ import {
 } from 'lodash';
 import {GridPersistenceModel} from './impl/GridPersistenceModel';
 import {GridSorter} from './impl/GridSorter';
+import {makeRendererSafe} from './impl/Utils';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -379,7 +380,7 @@ export class GridModel extends HoistModel {
         this.rowClassFn = rowClassFn;
         this.rowClassRules = rowClassRules;
         this.groupRowHeight = groupRowHeight;
-        this.groupRowRenderer = groupRowRenderer;
+        this.groupRowRenderer = makeRendererSafe(groupRowRenderer, 'GROUPROW');
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.showGroupRowCounts = showGroupRowCounts;
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
