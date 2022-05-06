@@ -1,5 +1,45 @@
 # Changelog
 
+## v49.0.0-SNAPSHOT - unreleased
+
+### 🐞 New Features
+
+* Improve behavior of `NumberInput`:
+ ** Improvements to  `min` and `max` props.
+    The new implementation constrains the set value more fully whether changes being made by
+    keyboard or mouse. Also fixed some bugs related to Blueprint.
+ ** The `precision` prop is now respected more fully.  All values produced by editing the control
+    will respect this value.
+ ** Added debounce to make value more stable during user typing.
+
+* Apps can now add to the admin console's menu items through `AppModel.getAppMenuButtonExtraItems`.
+* Apps can now hide the Admin > General > Users tab  by setting `hideUsersTab` to false in the new
+  soft config `xhAdminAppConfig`.
+* Tree maps now take a `showSplitter` property, defaulted to `false`, to insert a four pixel buffer
+  between the two maps. Useful for tree maps that may have both positive and negative heat values on
+  each side which can make it hard to determine where one map ends and the other begins.
+* Hoist now protects against renderers that may throw by catching the error and printing an error token.
+
+### 💥 Breaking Changes
+
+* `GridModel.groupRowElementRenderer` and `DataViewModel.groupRowElementRenderer` have been removed,
+  please use `groupRowRenderer` instead. It must now return a React Element rather than an HTML
+  string (plain strings are also OK, but any formatting must be done via React).
+
+### 🐞 Bug Fixes
+
+* Fixed a bug with Panel drag-to-resize within iframes on Windows.
+* Fixed a bug where Grid would render incorrectly on sort order change.
+
+### ⚙️ Technical
+
+* Stricter Model Binding/Lookup: This version of Hoist now more strictly enforces that only
+ instances of `HoistModel` may serve as  models for `HoistComponent`s.  In addition, Hoist models
+ stored at properties with the `_` prefix are also considered private and not eligible for model
+ lookup. These changes are not expected to be a problem for most apps, but may require minor rework
+ for applications that were binding components to non-standard or "private" models.
+* Hoist will now throw if `Store.summaryRecord`'s ID is not unique.
+
 ## v48.0.1 - 2022-04-22
 
 ### 🐞 Bug Fixes

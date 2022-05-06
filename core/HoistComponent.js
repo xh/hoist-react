@@ -13,7 +13,7 @@ import {isFunction, isPlainObject, isObject} from 'lodash';
 import {observer} from '@xh/hoist/mobx';
 import {forwardRef, memo, useContext, useDebugValue, useState} from 'react';
 import {localModelContext} from './hooks/Models';
-import {ModelLookup, matchesSelector, ModelLookupContext, modelLookupContextProvider} from './impl/ModelLookup';
+import {ModelLookup, ModelLookupContext, modelLookupContextProvider} from './impl/ModelLookup';
 
 /**
  * Hoist utility for defining functional components. This is the primary method for creating
@@ -264,7 +264,7 @@ function lookupModel(spec, props, modelLookup, displayName) {
 
     // 2) props - instance
     if (model) {
-        if (!matchesSelector(model, selector, true)) {
+        if (!model.isHoistModel || !model.matchesSelector(selector, true)) {
             console.error(
                 `Incorrect model passed to '${displayName}'.
                 Expected: ${formatSelector(selector)}

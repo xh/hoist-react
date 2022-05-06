@@ -247,9 +247,7 @@ export class GridExportService extends HoistService {
         return columns.map(column => {
             let {field, excelWidth, excelFormat, fieldSpec} = column,
                 type = fieldSpec?.type ?? FieldType.AUTO;
-
-            console.log(column);
-
+            
             // If using the function form to support per-cell formats, replace with
             // ExcelFormat.DEFAULT as a placeholder at the column level. The cell-level data for
             // this column will be shipped with the calculated formats.

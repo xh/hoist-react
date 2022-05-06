@@ -48,6 +48,7 @@ import {
 } from 'lodash';
 import {GridPersistenceModel} from './impl/GridPersistenceModel';
 import {GridSorter} from './impl/GridSorter';
+import {managedRenderer} from './impl/Utils';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -95,8 +96,6 @@ export class GridModel extends HoistModel {
     groupRowHeight;
     /** @member {Grid~groupRowRendererFn} */
     groupRowRenderer;
-    /** @member {Grid~groupRowElementRendererFn} */
-    groupRowElementRenderer;
     /** @member {GridGroupSortFn} */
     groupSortFn;
     /** @member {boolean} */
@@ -260,10 +259,7 @@ export class GridModel extends HoistModel {
      *      See Ag-Grid docs on "row styles" for details.
      * @param {number} [c.groupRowHeight] - Height (in px) of a group row. Note that this will
      *      override `sizingMode` for group rows.
-     * @param {Grid~groupRowRendererFn} [c.groupRowRenderer] - function returning a string used to
-     *      render group rows.
-     * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a
-     *      React element used to render group rows.
+     * @param {Grid~groupRowRendererFn} [c.groupRowRenderer] - function used to render group rows.
      * @param {GridGroupSortFn} [c.groupSortFn] - function to use to sort full-row groups.
      *      Called with two group values to compare in the form of a standard JS comparator.
      *      Default is an ascending string sort. Set to `null` to prevent sorting of groups.
@@ -350,7 +346,6 @@ export class GridModel extends HoistModel {
 
         groupRowHeight,
         groupRowRenderer,
-        groupRowElementRenderer,
         groupSortFn,
 
         onKeyDown,
@@ -385,8 +380,7 @@ export class GridModel extends HoistModel {
         this.rowClassFn = rowClassFn;
         this.rowClassRules = rowClassRules;
         this.groupRowHeight = groupRowHeight;
-        this.groupRowRenderer = groupRowRenderer;
-        this.groupRowElementRenderer = groupRowElementRenderer;
+        this.groupRowRenderer = managedRenderer(groupRowRenderer, 'GROUP_ROW');
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.showGroupRowCounts = showGroupRowCounts;
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
