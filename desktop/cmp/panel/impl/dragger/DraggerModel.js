@@ -95,7 +95,7 @@ export class DraggerModel extends HoistModel {
 
         const {screenX, screenY, clientX, clientY} = this.parseEventPositions(e);
         // Skip degenerate final drag event from dropping over non-target
-        if (screenX === 0 && screenY === 0 && clientX === 0 && clientY === 0) {
+        if (screenX === 0 && screenY === 0) {
             return;
         }
 

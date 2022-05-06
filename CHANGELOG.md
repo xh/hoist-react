@@ -21,7 +21,7 @@
 
 ### 🐞 Bug Fixes
 
-* Hoist will now throw if `Store.summaryRecord`'s ID is not unique.
+* Fixed a bug with Panel drag-to-resize within iframes on Windows.
 
 ### ⚙️ Technical
 
@@ -30,6 +30,7 @@
  stored at properties with the `_` prefix are also considered private and not eligible for model
  lookup. These changes are not expected to be a problem for most apps, but may require minor rework
  for applications that were binding components to non-standard or "private" models.
+* Hoist will now throw if `Store.summaryRecord`'s ID is not unique.
 
 ## v48.0.1 - 2022-04-22
 
