@@ -405,6 +405,7 @@ class GridLocalModel extends HoistModel {
             run: ([colApi, sortBy]) => {
                 if (colApi && !model.externalSort) {
                     model.agGridModel.applySortBy(sortBy);
+                    model.agGridModel.agApi.redrawRows();
                 }
             }
         };
