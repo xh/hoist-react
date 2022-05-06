@@ -28,6 +28,7 @@
 ### 🐞 Bug Fixes
 
 * Fixed a bug with Panel drag-to-resize within iframes on Windows.
+* Fixed a bug where Grid would render incorrectly on sort order change.
 
 ### ⚙️ Technical
 
