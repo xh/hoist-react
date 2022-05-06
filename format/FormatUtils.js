@@ -4,7 +4,6 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {isFunction} from 'lodash';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 
 /**
