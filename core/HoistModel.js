@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {forOwn, has} from 'lodash';
+import {forOwn, has, isFunction} from 'lodash';
 import {makeObservable} from 'mobx';
 import {throwIf, warnIf} from '../utils/js';
 import {HoistBase} from './HoistBase';
@@ -199,6 +199,31 @@ export class HoistModel extends HoistBase {
                 delete props[k];
             }
         });
+    }
+
+    /**
+     * Does this model match a ModelSelector?
+     *
+     * @param {ModelSelector} selector
+     * @param {boolean} [acceptWildcard]
+     * @returns {boolean}
+     *
+     * @package
+     */
+    matchesSelector(selector, acceptWildcard = false) {
+        if (selector === '*') return acceptWildcard;
+        if (!isFunction(selector)) return false;
+
+        // 1) selector is a constructor function/class
+        if (selector.isHoistModel) {
+            return this instanceof selector;
+        }
+
+        // 2) selector is a callable function, call for either a boolean or a constructor function/class
+        const result = selector(this);
+        return isFunction(result) && result.isHoistModel ?
+            this instanceof result :
+            !!result;
     }
 }
 

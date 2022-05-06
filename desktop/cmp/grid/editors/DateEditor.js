@@ -21,7 +21,7 @@ export const [DateEditor, dateEditor] = hoistCmp.withFactory({
         // We need to render the day picker popover inside the grid viewport in order for
         // `stopEditingWhenCellsLoseFocus` to work properly - otherwise the day picker becomes
         // unusable due to the grid losing focus and stopping editing when clicking inside picker
-        const portalContainer = props.gridModel.agApi.gridBodyCon?.eBodyViewport;
+        const portalContainer = props.gridModel.agApi.gridBodyCtrl?.eBodyViewport;
 
         warnIf(
             !portalContainer,
@@ -82,9 +82,9 @@ function computeStyleInAgGrid(data, options, portalContainer) {
             willChange: 'transform'
         },
         inputEl = data.instance.reference,
-        leftContainer = inputEl.closest('[ref=leftContainer]'),
-        centerContainer = inputEl.closest('[ref=eContainer]'),
-        rightContainer = inputEl.closest('[ref=rightContainer]'),
+        leftContainer = inputEl.closest('.ag-pinned-left-cols-container'),
+        centerContainer = inputEl.closest('.ag-center-cols-clipper'),
+        rightContainer = inputEl.closest('.ag-pinned-right-cols-container'),
         rowContainer = centerContainer || leftContainer || rightContainer;
 
     if (!rowContainer) {

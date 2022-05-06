@@ -58,7 +58,7 @@ import ReactDOM from 'react-dom';
 export class HoistInputModel extends HoistModel {
 
     /**
-     * Does this input have the focus ?
+     * Does this input have the focus?
      * @type {boolean}
      */
     @observable hasFocus = false;
@@ -116,6 +116,7 @@ export class HoistInputModel extends HoistModel {
     @observable.ref internalValue = null;    // Cached internal value
     inputRef = createObservableRef();        // ref to internal <input> element, if any
     domRef = createObservableRef();          // ref to outermost element, or class Component.
+    isDirty = false;
 
     constructor() {
         super();
@@ -191,12 +192,13 @@ export class HoistInputModel extends HoistModel {
      * This is the primary method for HoistInput implementations to call on value change.
      */
     noteValueChange(val) {
+        this.isDirty = true;
         const {onChange} = this.componentProps,
             oldVal = this.internalValue;
 
         this.setInternalValue(val);
         if (onChange) onChange(this.toExternal(val), this.toExternal(oldVal));
-        if (this.commitOnChange) this.doCommitInternal();
+        if (this.commitOnChange) this.doCommitOnChangeInternal();
     }
 
     /**
@@ -262,6 +264,10 @@ export class HoistInputModel extends HoistModel {
     //----------------------
     // Implementation
     //------------------------
+    isValid(externalValue) {
+        return true;
+    }
+
     internalFromExternal() {
         const ret = this.toInternal(this.externalValue);
 
@@ -289,13 +295,20 @@ export class HoistInputModel extends HoistModel {
         };
     }
 
+    doCommitOnChangeInternal() {
+        this.doCommitInternal();
+    }
+
     doCommitInternal() {
+        if (!this.isDirty) return;
+        this.isDirty = false;
+
         const {onCommit, bind} = this.componentProps,
             {model} = this;
         let currentValue = this.externalValue,
             newValue = this.externalFromInternal();
 
-        if (isEqual(newValue, currentValue)) return;
+        if (isEqual(newValue, currentValue) || !this.isValid(newValue)) return;
 
         if (model && bind) {
             model.setBindable(bind, newValue);

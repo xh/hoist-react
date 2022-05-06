@@ -3,8 +3,8 @@ import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {debounced, ensureUniqueBy} from '@xh/hoist/utils/js';
-import {defaultsDeep, isEqual, find, without} from 'lodash';
+import {ensureUniqueBy} from '@xh/hoist/utils/js';
+import {defaultsDeep, isEqual, find, without, times} from 'lodash';
 import {computed} from 'mobx';
 import {createRef} from 'react';
 import {throwIf} from '../../../../utils/js';
@@ -54,6 +54,11 @@ export class DashCanvasModel extends HoistModel {
     @bindable margin;
     /** @member {number[]} - [paddingX, paddingY] */
     @bindable containerPadding;
+
+    /** @returns {number} - current number of rows in canvas */
+    get rows() {
+        return this.layout.reduce((prev, cur) => Math.max(prev, cur.y + cur.h), 0);
+    }
 
     //------------------------
     // Immutable public properties
@@ -200,44 +205,15 @@ export class DashCanvasModel extends HoistModel {
     /**
      * Adds a view to the DashCanvas
      * @param {string} specId - DashCanvasViewSpec id to add to the container
-     * @param {Object} [layout] - layout information for where to add the view and what it's initial size should be
      * @param {string} [title] - title for the view
-     * @param {Object} [state] - internal state for the view contents
-     * @param {string} [previousViewId] - id of view to add next to
+     * @param {string} [position] - 'first', 'last', 'nextAvailable', or 'previousViewId'
      * @returns {DashCanvasViewModel}
      */
+
     @action
-    addView(specId, {layout, title, state, previousViewId}) {
-        const viewSpec = this.getSpec(specId),
-            instances = this.getViewsBySpecId(specId);
-
-        throwIf(!viewSpec,
-            `Trying to add non-existent or omitted DashCanvasViewSpec. id=${specId}`
-        );
-        throwIf(!viewSpec.allowAdd,
-            `Trying to add DashCanvasViewSpec with allowAdd=false. id=${specId}`
-        );
-        throwIf(viewSpec.unique && instances.length,
-            `Trying to add multiple instances of a DashCanvasViewSpec with unique=true. id=${specId}`
-        );
-
-        const id = this.genViewId(),
-            model = new DashCanvasViewModel({
-                id,
-                viewSpec,
-                viewState: state,
-                title: title ?? viewSpec.title,
-                containerModel: this
-            }),
-            prevLayout = previousViewId ? this.getLayout(previousViewId) : null,
-            x = prevLayout?.x ?? layout?.x ?? 0,
-            y = prevLayout?.y ?? layout?.y ?? 0,
-            h = layout?.h ?? viewSpec.height ?? 1,
-            w = layout?.w ?? viewSpec.width ?? 1;
-
-        this.layout = [...this.layout, {i: id, x, y, h, w}];
-        this.viewModels = [...this.viewModels, model];
-        return model;
+    addView(specId, title, position = 'nextAvailable') {
+        const layout = this.getLayoutFromPosition(position, specId);
+        return this.addViewInternal(specId, {title, layout});
     }
 
     /**
@@ -263,7 +239,7 @@ export class DashCanvasModel extends HoistModel {
     replaceView(id, newSpecId) {
         const layout = this.getLayout(id);
         this.removeView(id);
-        this.addView(newSpecId, {layout});
+        this.addViewInternal(newSpecId, {layout});
     }
 
     /**
@@ -300,6 +276,59 @@ export class DashCanvasModel extends HoistModel {
     //------------------------
     // Implementation
     //------------------------
+    getLayoutFromPosition(position, specId) {
+        switch (position) {
+            case 'first':
+                return {x: 0, y: -1};
+            case 'last':
+                return {x: 0, y: this.rows};
+            case 'nextAvailable':
+                return this.getNextAvailablePosition(this.getSpec(specId));
+            default: {
+                const previousView = this.getView(position);
+                throwIf(!previousView, `Position must be either 'first', 'last', 'nextAvailable' or a valid viewId`);
+                const {x, y} = previousView;
+                return {x, y};
+            }
+        }
+    }
+
+
+    @action
+    addViewInternal(specId, {layout, title, state, previousViewId}) {
+        const viewSpec = this.getSpec(specId),
+            instances = this.getViewsBySpecId(specId);
+
+        throwIf(!viewSpec,
+            `Trying to add non-existent or omitted DashCanvasViewSpec. id=${specId}`
+        );
+        throwIf(!viewSpec.allowAdd,
+            `Trying to add DashCanvasViewSpec with allowAdd=false. id=${specId}`
+        );
+        throwIf(viewSpec.unique && instances.length,
+            `Trying to add multiple instances of a DashCanvasViewSpec with unique=true. id=${specId}`
+        );
+
+        const id = this.genViewId(),
+            model = new DashCanvasViewModel({
+                id,
+                viewSpec,
+                viewState: state,
+                title: title ?? viewSpec.title,
+                containerModel: this
+            }),
+            prevLayout = previousViewId ? this.getLayout(previousViewId) : null,
+            x = prevLayout?.x ?? layout?.x ?? 0,
+            y = prevLayout?.y ?? layout?.y ?? this.rows,
+            h = layout?.h ?? viewSpec.height ?? 1,
+            w = layout?.w ?? viewSpec.width ?? 1;
+
+        this.layout = [...this.layout, {i: id, x, y, h, w}];
+        this.viewModels = [...this.viewModels, model];
+        return model;
+    }
+
+
     @action
     setLayout(layout) {
         // strip extra properties from react-grid
@@ -312,10 +341,10 @@ export class DashCanvasModel extends HoistModel {
     @action
     loadState(state) {
         this.clear();
-        state.forEach(state => this.addView(state.viewSpecId, state));
+        state.forEach(state => this.addViewInternal(state.viewSpecId, state));
     }
 
-    @debounced(1000)
+    @action
     publishState() {
         this.state = this.buildState();
         this.provider?.write({state: this.state});
@@ -366,6 +395,41 @@ export class DashCanvasModel extends HoistModel {
 
     getViewsBySpecId(id) {
         return this.viewModels.filter(it => it.viewSpec.id === id);
+    }
+
+    getNextAvailablePosition({width, height, startX = 0, startY = 0, defaultX = 0, endY = null}) {
+        const {rows, columns} = this,
+            occupied = times(columns, () => Array(rows).fill(false));
+
+        // Fill 2D array 'occupied' with true / false if coordinate is occupied
+        for (let item of this.layout) {
+            for (let y = item.y; y < item.y + item.h; y++) {
+                for (let x = item.x; x < item.x + item.w; x++) {
+                    occupied[x][y] = true;
+                }
+            }
+        }
+        const checkPosition = (originX, originY) => {
+            for (let y = originY; y < originY + height; y++) {
+                for (let x = originX; x < originX + width; x++) {
+                    if (y === rows) return true;
+                    if (occupied[x][y]) return false;
+                }
+            }
+            return true;
+        };
+
+        // Traverse 2D array of coordinates, and check if view fits
+        for (let y = startY; y < (endY ?? rows); y++) {
+            for (let x = y === startY ? startX : 0; x < columns; x++) {
+                if (x + width > columns) break;
+                if (checkPosition(x, y)) {
+                    return {x, y};
+                }
+            }
+        }
+
+        return {x: defaultX, y: endY ?? rows};
     }
 }
 
