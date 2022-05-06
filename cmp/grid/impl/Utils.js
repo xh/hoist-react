@@ -12,7 +12,7 @@ export function makeRendererSafe(fn, identifier) {
             return fn.apply(null, arguments);
         } catch (e) {
             console.warn(`Renderer for ${identifier} has thrown an error.`, e);
-            return '#ERROR'
+            return '#ERROR';
         }
-    }
+    };
 }
