@@ -32,7 +32,10 @@ const inlineContainer = hoistCmp.factory({
         });
     }
 });
-
+// TODO - use overlay instead of dialog
+// TODO - add a button we can just drop in
+// TODO - discuss component name and props (call ModalSupport?)
+// TODO - add to DashContainerViews?
 const modalContainer = hoistCmp.factory({
     model: uses(FullScreenSupportModel),
     render({model, ...modalProps}) {
