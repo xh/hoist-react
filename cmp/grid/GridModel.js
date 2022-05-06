@@ -46,9 +46,9 @@ import {
     omit,
     pull
 } from 'lodash';
-import {makeRendererSafe} from '../../format';
 import {GridPersistenceModel} from './impl/GridPersistenceModel';
 import {GridSorter} from './impl/GridSorter';
+import {makeRendererSafe} from './impl/Utils';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,

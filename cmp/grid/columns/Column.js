@@ -25,8 +25,8 @@ import {
     toString
 } from 'lodash';
 import {createElement, forwardRef, isValidElement, useImperativeHandle} from 'react';
-import {makeRendererSafe} from '../../../format';
 import {GridSorter} from '../impl/GridSorter';
+import {makeRendererSafe} from '../impl/Utils';
 import {ExcelFormat} from './ExcelFormat';
 
 /**
