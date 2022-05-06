@@ -28,6 +28,8 @@ import {
 import {span, a} from '@xh/hoist/cmp/layout';
 import {wait} from '@xh/hoist/promise';
 
+const {DATE, LOCAL_DATE} = FieldType;
+
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
  * @see Column API for options to control exported values and formats.
@@ -158,7 +160,7 @@ export class GridExportService extends HoistService {
      * @return {String} - value suitable for export to excel, csv, or clipboard.
      */
     getExportableValueForCell({gridModel, record, column, node, forExcel = false}) {
-        const {field, exportValue, getValueFn} = column,
+        const {field, exportValue, type, getValueFn} = column,
             aggData = node && gridModel.treeMode && !isEmpty(record.children) ? node.aggData : null;
 
         // 0) Main processing
@@ -187,13 +189,13 @@ export class GridExportService extends HoistService {
 
         // 2) Dates: Provide date data expected by server endpoint.
         // Also, approximate formats for CSV and clipboard.
-        if (excelFormat === ExcelFormat.DATE_FMT) value = fmtDate(value);
-        if (excelFormat === ExcelFormat.DATETIME_FMT) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
+        if (!forExcel && (excelFormat === ExcelFormat.DATE_FMT || type === DATE)) value = fmtDate(value);
+        if (!forExcel && (excelFormat === ExcelFormat.DATETIME_FMT || type === LOCAL_DATE)) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
 
         value = value.toString();
 
-        return forExcel && cellHasExcelFormat ?
-            {value, format: excelFormat} :
+        return forExcel ?
+            {value, format: cellHasExcelFormat ? excelFormat : null, type: type} :
             value;
     }
 
@@ -245,6 +247,8 @@ export class GridExportService extends HoistService {
         return columns.map(column => {
             let {field, excelWidth, excelFormat, fieldSpec} = column,
                 type = fieldSpec?.type ?? FieldType.AUTO;
+
+            console.log(column);
 
             // If using the function form to support per-cell formats, replace with
             // ExcelFormat.DEFAULT as a placeholder at the column level. The cell-level data for
