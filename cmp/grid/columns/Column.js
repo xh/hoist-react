@@ -26,6 +26,7 @@ import {
 } from 'lodash';
 import {createElement, forwardRef, isValidElement, useImperativeHandle} from 'react';
 import {GridSorter} from '../impl/GridSorter';
+import {makeRendererSafe} from '../impl/Utils';
 import {ExcelFormat} from './ExcelFormat';
 
 /**
@@ -449,7 +450,7 @@ export class Column {
         this.pinned = this.parsePinned(pinned);
 
         apiRemoved('Column.elementRenderer', {test: rest.elementRenderer, msg: 'Use `renderer` instead', v: 48});
-        this.renderer = renderer;
+        this.renderer = makeRendererSafe(renderer, this.displayName);
         this.rendererIsComplex = rendererIsComplex;
         this.highlightOnChange = highlightOnChange;
         warnIf(

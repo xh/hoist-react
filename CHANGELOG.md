@@ -18,6 +18,7 @@
 * Tree maps now take a `showSplitter` property, defaulted to `false`, to insert a four pixel buffer
   between the two maps. Useful for tree maps that may have both positive and negative heat values on
   each side which can make it hard to determine where one map ends and the other begins.
+* Hoist now protects against renderers that may throw by catching the error and printing an error token.
 
 ### 💥 Breaking Changes
 
