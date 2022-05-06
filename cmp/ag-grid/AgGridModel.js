@@ -406,6 +406,8 @@ export class AgGridModel extends HoistModel {
             state: newState,
             defaultState: {sort: null, sortIndex: null}
         });
+        agColumnApi.refreshCells(); // Workaround needed for ag v27.
+
         this._prevSortBy = sortBy;
     }
 
