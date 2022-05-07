@@ -189,8 +189,8 @@ export class GridExportService extends HoistService {
 
         // 2) Dates: Provide date data expected by server endpoint.
         // Also, approximate formats for CSV and clipboard.
-        if (!forExcel && (excelFormat === ExcelFormat.DATE_FMT || type === DATE)) value = fmtDate(value);
-        if (!forExcel && (excelFormat === ExcelFormat.DATETIME_FMT || type === LOCAL_DATE)) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
+        if (excelFormat === ExcelFormat.DATE_FMT || type === LOCAL_DATE) value = fmtDate(value);
+        if (excelFormat === ExcelFormat.DATETIME_FMT || type === DATE) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
 
         value = value.toString();
 
@@ -247,7 +247,7 @@ export class GridExportService extends HoistService {
         return columns.map(column => {
             let {field, excelWidth, excelFormat, fieldSpec} = column,
                 type = fieldSpec?.type ?? FieldType.AUTO;
-            
+
             // If using the function form to support per-cell formats, replace with
             // ExcelFormat.DEFAULT as a placeholder at the column level. The cell-level data for
             // this column will be shipped with the calculated formats.
