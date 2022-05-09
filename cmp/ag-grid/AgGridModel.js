@@ -406,7 +406,10 @@ export class AgGridModel extends HoistModel {
             state: newState,
             defaultState: {sort: null, sortIndex: null}
         });
-        agApi.redrawRows(); // Workaround needed for ag v27.
+
+        // Workaround needed for ag v27 to solve this issue:
+        // https://github.com/xh/hoist-react/issues/2997
+        agApi.redrawRows();
 
         this._prevSortBy = sortBy;
     }
