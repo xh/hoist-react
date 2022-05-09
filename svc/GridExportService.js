@@ -195,7 +195,7 @@ export class GridExportService extends HoistService {
         value = value.toString();
 
         return forExcel ?
-            {value, format: cellHasExcelFormat ? excelFormat : null, type: type} :
+            {value, format: cellHasExcelFormat ? excelFormat : null, type} :
             value;
     }
 
