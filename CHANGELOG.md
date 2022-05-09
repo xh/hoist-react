@@ -30,6 +30,8 @@
 
 * Fixed a bug with Panel drag-to-resize within iframes on Windows.
 * Fixed a bug where Grid would render incorrectly on sort order change.
+* Fixed issue where exporting to excel file would occasionally coerce strings (like "1e10") into numbers.
+ Upgrade to `hoist-core >= 13.2` for the fixed behavior.
 
 ### ⚙️ Technical
 
@@ -44,10 +46,6 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed issue where Column renderers returning boolean values did not actually render the value.
-* Fixed issue with model lookups in HoistComponent's callRender method.
-* Fixed issue where exporting to excel file would occasionally coerce strings (like "1e10") into
-  numbers. Upgrade to `hoist-core >= 13.2` for the fixed behavior.
 * Improve default rendering to call `toString()` on non-react elements returned by renderers.
 * Fixed issue with `model` property missing from `Model.componentProps` under certain conditions.
 
