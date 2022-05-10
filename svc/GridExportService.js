@@ -195,8 +195,10 @@ export class GridExportService extends HoistService {
 
         value = value.toString();
 
-        return forExcel ?
-            {value, format: cellHasExcelFormat ? excelFormat : null, type} :
+        // Send cell format with the cell only if it varies per-cell
+        // Otherwise, the export will get the format and type from the column
+        return forExcel && cellHasExcelFormat ?
+            {value, format: excelFormat} :
             value;
     }
 
@@ -252,7 +254,7 @@ export class GridExportService extends HoistService {
             // If using the function form to support per-cell formats, replace with
             // ExcelFormat.DEFAULT as a placeholder at the column level. The cell-level data for
             // this column will be shipped with the calculated formats.
-            if (isFunction(excelFormat)) excelFormat = ExcelFormat.DEFAULT;
+            if (isNil(excelFormat) || isFunction(excelFormat)) excelFormat = ExcelFormat.DEFAULT;
 
             return {field, type, format: excelFormat, width: excelWidth};
         });
