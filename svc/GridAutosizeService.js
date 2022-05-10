@@ -34,11 +34,8 @@ export class GridAutosizeService extends HoistService {
      * @param {GridAutosizeOptions} options - options to use for this autosize.
      */
     async autosizeAsync(gridModel, colIds, options) {
-        // 1) Remove any columns with element renderers
-        colIds = colIds.filter(id => {
-            const col = gridModel.getColumn(id);
-            return col && !col.elementRenderer;
-        });
+        // 1) Check columns exist
+        colIds = colIds.filter(id => gridModel.getColumn(id));
         if (isEmpty(colIds)) return;
 
         // 2) Ensure order of passed colIds matches the current GridModel.columnState.
@@ -110,6 +107,11 @@ export class GridAutosizeService extends HoistService {
             ret = [...store.records];
         }
 
+        // Limit records to 1000, or a 10% sample of total, whichever is largest.
+        const limit = Math.max(1000, Math.floor(ret.length * 0.1));
+        ret = ret.slice(0, limit);
+
+        // Ensure the summary record is always included, since it is likely to contain the largest values.
         if (gridModel.showSummary && store.summaryRecord) {
             ret.push(store.summaryRecord);
         }
