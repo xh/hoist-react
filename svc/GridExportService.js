@@ -160,8 +160,9 @@ export class GridExportService extends HoistService {
      * @return {String} - value suitable for export to excel, csv, or clipboard.
      */
     getExportableValueForCell({gridModel, record, column, node, forExcel = false}) {
-        const {field, exportValue, type, getValueFn} = column,
-            aggData = node && gridModel.treeMode && !isEmpty(record.children) ? node.aggData : null;
+        const {field, exportValue, fieldSpec, getValueFn} = column,
+            aggData = node && gridModel.treeMode && !isEmpty(record.children) ? node.aggData : null,
+            type = fieldSpec?.type;
 
         // 0) Main processing
         let value = getValueFn({record, field, column, gridModel});
