@@ -381,7 +381,7 @@ export class AgGridModel extends HoistModel {
      */
     applySortBy(sortBy) {
         this.throwIfNotReady();
-        const {agColumnApi} = this,
+        const {agColumnApi, agApi} = this,
             prevSortBy = this._prevSortBy;
 
         if (isEqual(prevSortBy, sortBy)) return;
@@ -406,7 +406,7 @@ export class AgGridModel extends HoistModel {
             state: newState,
             defaultState: {sort: null, sortIndex: null}
         });
-        agColumnApi.refreshCells(); // Workaround needed for ag v27.
+        agApi.redrawRows(); // Workaround needed for ag v27.
 
         this._prevSortBy = sortBy;
     }
