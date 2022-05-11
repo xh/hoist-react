@@ -24,9 +24,9 @@ import PT from 'prop-types';
 import {isValidElement, useRef, Children} from 'react';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
+import {modalSupport} from './impl/modal/ModalSupport';
 import './Panel.scss';
 import {PanelModel} from './PanelModel';
-import composeRefs from '@seznam/compose-react-refs';
 
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
@@ -84,11 +84,13 @@ export const [Panel, panel] = hoistCmp.withFactory({
         const {
             resizable,
             collapsible,
+            modalViewSupported,
             collapsed,
             renderMode,
             vertical,
             showSplitter,
-            refreshContextModel
+            refreshContextModel,
+            modalSupportModel
         } = model;
 
         if (collapsed) {
@@ -137,12 +139,17 @@ export const [Panel, panel] = hoistCmp.withFactory({
             item = refreshContextView({model: refreshContextModel, item});
         }
 
-        ref = composeRefs(model._domRef, ref);
+        // 3) Wrap in modal support if needed
+        if (modalViewSupported) {
+            item = modalSupport({model: modalSupportModel, item});
+        }
 
-        // 4) Return wrapped in resizable and its affordances if needed.
-        return resizable || collapsible || showSplitter ?
+        // 4) Return wrapped in resizable affordances if needed, or equivalent layout box
+        item = resizable || collapsible || showSplitter ?
             resizeContainer({ref, item, className}) :
             box({ref, item, className, ...layoutProps});
+
+        return item;
     }
 
 });

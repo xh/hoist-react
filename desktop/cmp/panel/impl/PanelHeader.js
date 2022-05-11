@@ -15,8 +15,14 @@ import './PanelHeader.scss';
 export const panelHeader = hoistCmp.factory({
     displayName: 'PanelHeader',
     model: false,
-    className: 'xh-panel-header',
+    render(props) {
+        const panelModel = useContextModel(PanelModel);
+        return panelModel.isModal ? modalHeader(props) : inlineHeader(props);
+    }
+});
 
+const inlineHeader = hoistCmp.factory({
+    className: 'xh-panel-header',
     render({className, ...props}) {
         const panelModel = useContextModel(PanelModel),
             {collapsed, vertical, side, showHeaderCollapseButton} = panelModel,
@@ -32,6 +38,7 @@ export const panelHeader = hoistCmp.factory({
             sideCls = `xh-panel-header--${side}`,
             compactCls = compact ? 'xh-panel-header--compact' : null;
 
+        // 1) Classic "top" title bar
         if (!collapsed || vertical) {
             return hbox({
                 className: classNames(className, compactCls),
@@ -46,7 +53,9 @@ export const panelHeader = hoistCmp.factory({
                         filler(),
                     hbox({
                         className: 'xh-panel-header__items',
-                        items: [...(!collapsed ? headerItems : []),
+                        items: [
+                            ...(!collapsed ? headerItems : []),
+                            modalButton({panelModel}),
                             collapseButton({panelModel})
                         ],
                         onDoubleClick: (e) => e.stopPropagation()
@@ -54,29 +63,63 @@ export const panelHeader = hoistCmp.factory({
                 ],
                 onDoubleClick
             });
-        } else {
-            // For vertical layout, skip header items.
-            const isLeft = side === 'left';
-            return vbox({
-                className: classNames(className, sideCls, compactCls),
-                flex: 1,
-                items: [
-                    isLeft ? filler() : collapseButton({panelModel}),
-                    icon || null,
-                    title ?
-                        box({
-                            className: titleCls,
-                            item: title
-                        }) :
-                        null,
-                    !isLeft ? filler() : collapseButton({panelModel})
-                ],
-                onDoubleClick
-            });
         }
+
+        // 2) ...otherwise its a narrow, sidebar
+        const isLeft = side === 'left';
+        return vbox({
+            className: classNames(className, sideCls, compactCls),
+            flex: 1,
+            items: [
+                isLeft ? filler() : collapseButton({panelModel}),
+                icon || null,
+                title ?
+                    box({
+                        className: titleCls,
+                        item: title
+                    }) :
+                    null,
+                !isLeft ? filler() : collapseButton({panelModel})
+            ],
+            onDoubleClick
+        });
     }
 });
 
+
+const modalHeader = hoistCmp.factory({
+    className: 'xh-panel-header',
+
+    render({className, ...props}) {
+        const panelModel = useContextModel(PanelModel),
+            {title, icon, compact, headerItems = []} = props;
+
+        if (!title && !icon && !headerItems.length) return null;
+
+        const titleCls = 'xh-panel-header__title',
+            compactCls = compact ? 'xh-panel-header--compact' : null;
+
+        return hbox({
+            className: classNames(className, compactCls),
+            items: [
+                icon || null,
+                title ?
+                    box({
+                        className: titleCls,
+                        flex: 1,
+                        item: title
+                    }) :
+                    filler(),
+                hbox({
+                    className: 'xh-panel-header__items',
+                    items: [...headerItems, modalButton({panelModel})],
+                    onDoubleClick: (e) => e.stopPropagation()
+                })
+            ],
+            onDoubleClick: () => panelModel.toggleIsModal()
+        });
+    }
+});
 
 const collapseButton = hoistCmp.factory(
     ({panelModel}) => {
@@ -90,6 +133,17 @@ const collapseButton = hoistCmp.factory(
         return button({
             icon: Icon[chevron](),
             onClick: () => panelModel.toggleCollapsed(),
+            minimal: true
+        });
+    }
+);
+
+const modalButton = hoistCmp.factory(
+    ({panelModel}) => {
+        if (!panelModel.modalViewSupported || panelModel.collapsed) return null;
+        return button({
+            icon: panelModel.isModal ? Icon.close() : Icon.openExternal(),
+            onClick: () => panelModel.toggleIsModal(),
             minimal: true
         });
     }

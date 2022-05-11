@@ -7,16 +7,23 @@
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, lookup} from '@xh/hoist/core';
-import {FullScreenSupportModel} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenSupportModel';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
-import { bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {sortBy} from 'lodash';
 import moment from 'moment';
+import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
 
 export class ChartsModel extends HoistModel {
-    @managed fullScreenSupportModel = new FullScreenSupportModel();
+    @managed panelModel = new PanelModel({
+        modalViewSupported: true,
+        side: 'bottom',
+        defaultSize: 370,
+        modalViewProps: {
+            style: {width: '90vw', height: '60vh'}
+        }
+    });
 
     /** @member {ActivityTrackingModel} */
     @lookup(ActivityTrackingModel) activityTrackingModel;

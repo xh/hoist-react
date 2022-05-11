@@ -7,49 +7,30 @@
 import {chart} from '@xh/hoist/cmp/chart';
 import {hoistCmp, creates} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {fullScreenSupport} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenSupport';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon/Icon';
 
 import {ChartsModel} from './ChartsModel';
 
-export const chartsPanel = hoistCmp.factory(
-    () => panel({
-        item: activityChart(),
-        model: {
-            side: 'bottom',
-            defaultSize: 370
-        }
-    })
-);
-
-const activityChart = hoistCmp.factory({
+export const chartsPanel = hoistCmp.factory({
     model: creates(ChartsModel),
     render({model, ...props}) {
-        const {chartModel, activityTrackingModel, fullScreenSupportModel} = model,
-            {isFullScreen} = fullScreenSupportModel;
-        return fullScreenSupport({
-            style: {width: '90vw', height: '60vh'},
-            item: panel({
-                title: !isFullScreen ? 'Aggregate Activity Chart' :
-                    activityTrackingModel.queryDisplayString,
-                icon: Icon.chartBar(),
-                compactHeader: !isFullScreen,
-                item: chart({
-                    model: chartModel,
-                    key: chartModel.xhId
-                }),
-                headerItems: [
-                    button({
-                        icon: !isFullScreen ? Icon.openExternal() : Icon.close(),
-                        onClick: () => fullScreenSupportModel.toggleFullScreen()
-                    })
-                ],
-                bbar: [metricSwitcher({multiline: true})],
-                height: '100%',
-                ...props
-            })});
+        const {chartModel, activityTrackingModel, panelModel} = model,
+            {isModal} = panelModel;
+        return panel({
+            title: !isModal ? 'Aggregate Activity Chart' : activityTrackingModel.queryDisplayString,
+            icon: Icon.chartBar(),
+            model: panelModel,
+            compactHeader: !isModal,
+            item: chart({
+                model: chartModel,
+                key: chartModel.xhId
+            }),
+            bbar: [metricSwitcher({multiline: true})],
+            height: '100%',
+            ...props
+        });
     }
 });
 

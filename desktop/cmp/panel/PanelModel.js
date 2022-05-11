@@ -18,6 +18,8 @@ import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isNil} from 'lodash';
 import {createRef} from 'react';
+import {throwIf} from '@xh/hoist/utils/js';
+import {ModalSupportModel} from './impl/modal/ModalSupportModel';
 
 /**
  * PanelModel supports configuration and state-management for user-driven Panel resizing and
@@ -38,6 +40,8 @@ export class PanelModel extends HoistModel {
     side;
     renderMode;
     refreshMode;
+    modalViewSupported;
+    modalViewProps;
     prefName;
     showSplitter;
     showSplitterCollapseButton;
@@ -59,6 +63,11 @@ export class PanelModel extends HoistModel {
     /** Is this panel currently resizing? */
     @observable isResizing = false;
 
+    /** Is the panel rendering in its modal view state? Observable property. */
+    get isModal() {
+        return this.modalSupportModel?.isModal ?? false;
+    }
+
     get isActive() {
         return !this.collapsed;
     }
@@ -66,19 +75,22 @@ export class PanelModel extends HoistModel {
     //-----------------
     // Implementation
     //-----------------
-    _domRef;
+    _resizeRef;
+    @managed modalSupportModel;
 
     /**
      * @param {Object} c - PanelModel configuration
      * @param {boolean} [c.resizable] - Can panel be resized?
      * @param {boolean} [c.resizeWhileDragging] - Redraw panel as resize happens?
      * @param {boolean} [c.collapsible] - Can panel be collapsed, showing only its header?
-     * @param {number} c.defaultSize - Default size (in px) of the panel.
+     * @param {number} [c.defaultSize] - Default size (in px) of the panel.
      * @param {number} [c.minSize] - Minimum size (in px) to which the panel can be resized.
      * @param {?number} [c.maxSize] - Maximum size (in px) to which the panel can be resized.
      * @param {boolean} [c.defaultCollapsed] - Default collapsed state.
-     * @param {string} c.side - Side towards which the panel collapses or shrinks. This relates
+     * @param {string} [c.side] - Side towards which the panel collapses or shrinks. This relates
      *      to the position within a parent vbox or hbox in which the panel should be placed.
+     * @param {boolean} [c.modalViewSupported] - Can the panel be displayed in a modal 'zoom' mode.
+     * @param {Object} [c.modalViewProps] - Props for customizing modal view
      * @param {RenderMode} [c.renderMode] - How should collapsed content be rendered?
      *      Ignored if collapsible is false.
      * @param {RefreshMode} [c.refreshMode] - How should collapsed content be refreshed?
@@ -99,6 +111,8 @@ export class PanelModel extends HoistModel {
         maxSize = null,
         defaultCollapsed = false,
         side,
+        modalViewSupported = false,
+        modalViewProps = {},
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
         persistWith = null,
@@ -130,15 +144,25 @@ export class PanelModel extends HoistModel {
         this.maxSize = maxSize;
         this.defaultCollapsed = defaultCollapsed;
         this.side = side;
+        this.modalViewSupported = modalViewSupported;
+        this.modalViewProps = modalViewProps;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.showSplitter = showSplitter;
         this.showSplitterCollapseButton = showSplitterCollapseButton;
         this.showHeaderCollapseButton = showHeaderCollapseButton;
-        this._domRef = createRef();
 
+        // Set up various optional functionality;
         if (collapsible) {
             this.refreshContextModel = new ManagedRefreshContextModel(this);
+        }
+
+        if (collapsible || resizable) {
+            this._resizeRef = createRef();
+        }
+
+        if (modalViewSupported) {
+            this.modalSupportModel = new ModalSupportModel(this);
         }
 
         // Read state from provider -- fail gently
@@ -178,11 +202,12 @@ export class PanelModel extends HoistModel {
     //----------------------
     @action
     setCollapsed(collapsed) {
+        throwIf(collapsed  && !this.collapsible, 'Panel does not support collapsing.');
 
         // When opening we never want to shrink -- in that degenerate case restore default size.
         // Can happen when no min height and title bar, and user has sized panel to be very small.
         if (this.collapsed && !collapsed) {
-            const el = this._domRef?.current,
+            const el = this._resizeRef?.current,
                 currSize = this.vertical ? el?.offsetHeight : el?.offsetWidth,
                 {size} = this;
             if (isNil(currSize) || isNil(size) || size < currSize) {
@@ -190,13 +215,21 @@ export class PanelModel extends HoistModel {
             }
         }
 
-
         this.collapsed = collapsed;
         this.dispatchResize();
     }
 
     toggleCollapsed() {
         this.setCollapsed(!this.collapsed);
+    }
+
+    setIsModal(isModal) {
+        throwIf(!this.modalViewSupported, 'Panel does not support a modal view.');
+        this.modalSupportModel.setIsModal(isModal);
+    }
+
+    toggleIsModal() {
+        this.setIsModal(!this.isModal);
     }
 
     @action
@@ -230,6 +263,16 @@ export class PanelModel extends HoistModel {
         return this.side === 'top' || this.side === 'left';
     }
 
+    //--------------------------------------------
+    // Implementation (full-screen)
+    //---------------------------------------------
+    createHostNode() {
+        const hostNode = document.createElement('div');
+        hostNode.style.all = 'inherit';
+        document.body.appendChild(hostNode);
+        return hostNode;
+    }
+
     //---------------------------------------------
     // Implementation (internal)
     //---------------------------------------------
@@ -255,4 +298,10 @@ export class PanelModel extends HoistModel {
         // Forces other components to redraw if required.
         wait().then(() => window.dispatchEvent(new Event('resize')));
     }
+
+    destroy() {
+        this.hostNode?.remove();
+        super.destroy();
+    }
+
 }

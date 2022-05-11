@@ -7,7 +7,7 @@
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {ContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils';
-import {fullScreenSupport,} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenSupport';
+import {fullScreenSupport} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenSupport';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
 import {panel} from '../../../panel';
