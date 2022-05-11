@@ -87,8 +87,11 @@ export function fmtNumber(v, {
         sign = '-';
     }
 
-    const opts = {str, sign, ledger, forceLedgerAlign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip, originalValue};
-    return asHtml ? fmtNumberString(v, opts) : fmtNumberElement(v, opts);
+    // As an optimization, return the string form if we do not *need* to wrap in markup.
+    const opts = {str, sign, ledger, forceLedgerAlign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip, originalValue},
+        asString = !withSignGlyph && !colorSpec && !tooltip && (!ledger || !forceLedgerAlign) && (!label || !labelCls);
+
+    return asHtml || asString ? fmtNumberString(v, opts) : fmtNumberElement(v, opts);
 }
 
 /**
@@ -253,7 +256,6 @@ function fmtNumberElement(v, opts = {}) {
         } else if (forceLedgerAlign) {
             items.push(LEDGER_ALIGN_PLACEHOLDER_EL);
         }
-
     }
 
     return span({

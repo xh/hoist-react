@@ -645,13 +645,13 @@ class GridLocalModel extends HoistModel {
         if (model.autosizeOptions.mode === GridAutosizeMode.MANAGED) {
             // If sizingMode different to autosizeState, autosize all columns...
             if (model.autosizeState.sizingMode !== model.sizingMode) {
-                model.autosizeAsync();
+                wait(100).then(() => model.autosizeAsync());
             } else {
                 // ...otherwise, only autosize columns that are not manually sized
                 const columns = model.columnState
                     .filter(it => !it.manuallySized)
                     .map(it => it.colId);
-                model.autosizeAsync({columns});
+                wait(100).then(() => model.autosizeAsync({columns}));
             }
         }
 
