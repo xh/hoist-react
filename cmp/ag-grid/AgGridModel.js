@@ -409,9 +409,10 @@ export class AgGridModel extends HoistModel {
             defaultState: {sort: null, sortIndex: null}
         });
 
+        // Workaround needed for ag v27.
+        // https://github.com/xh/hoist-react/issues/2997
         if (togglingAbsSort) {
-            agApi.redrawRows(); // Workaround needed for ag v27.
-            togglingAbsSort = false;
+            agApi.redrawRows();
         }
 
         this._prevSortBy = sortBy;
