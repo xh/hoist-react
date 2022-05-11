@@ -383,13 +383,15 @@ export class AgGridModel extends HoistModel {
         this.throwIfNotReady();
         const {agColumnApi, agApi} = this,
             prevSortBy = this._prevSortBy;
+        let togglingAbsSort = false;
 
         if (isEqual(prevSortBy, sortBy)) return;
 
         // Preclear if only toggling abs for any sort. Ag-Grid doesn't handle abs and would skip
         if (sortBy.some(curr =>
-            prevSortBy?.some(prev => curr.sort === prev.sort && curr.abs != prev.abs)
+            prevSortBy?.some(prev => curr.sort === prev.sort && curr.colId === prev.colId && curr.abs != prev.abs)
         )) {
+            togglingAbsSort = true;
             agColumnApi.applyColumnState({defaultState: {sort: null, sortIndex: null}});
         }
 
@@ -406,7 +408,10 @@ export class AgGridModel extends HoistModel {
             state: newState,
             defaultState: {sort: null, sortIndex: null}
         });
-        agApi.redrawRows(); // Workaround needed for ag v27.
+
+        if (togglingAbsSort) {
+            agApi.redrawRows();
+        }
 
         this._prevSortBy = sortBy;
     }
