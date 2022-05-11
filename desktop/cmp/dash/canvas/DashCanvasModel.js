@@ -160,7 +160,10 @@ export class DashCanvasModel extends HoistModel {
                 this.provider = null;
             }
         }
+
         this.loadState(persistState?.state ?? initialState);
+        this.state = this.buildState();
+
         this.addReaction({
             track: () => [this.viewState, this.layout],
             run: () => this.publishState()
