@@ -102,7 +102,7 @@ export class ColumnWidthCalculator {
 
         records.forEach(record => {
             if (!record) return;
-            if (!renderedValues.size >= this.VALUE_SAMPLES && !record.isSummary) return;
+            if (renderedValues.size >= this.VALUE_SAMPLES && !record.isSummary) return;
 
             const ctx = {record, field, column, gridModel, store},
                 rawValue = getValueFn(ctx);
