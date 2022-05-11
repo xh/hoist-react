@@ -46,8 +46,7 @@ export const compactDate = {
 };
 
 export const localDate = {
-    ...date,
-    exportValue: (v) => v ? v.date : null
+    ...date
 };
 
 // Deprecated aliases with `Col` suffix
