@@ -1217,10 +1217,10 @@ export class GridModel extends HoistModel {
             agApi.showLoadingOverlay();
         }
 
-        // Always wait to ensure `GridLocalModel.syncData()` reaction has run and ag-Grid
+        // Always wait a tick to ensure `GridLocalModel.syncData()` reaction has run and ag-Grid
         // has been asked to render the current recordset into visible rows for measuring. Also
         // ensures that the mask overlay is rendered (if requested).
-        await wait(100);
+        await wait();
 
         try {
             await XH.gridAutosizeService.autosizeAsync(this, colIds, options);

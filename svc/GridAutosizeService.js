@@ -107,10 +107,6 @@ export class GridAutosizeService extends HoistService {
             ret = [...store.records];
         }
 
-        // Limit records to 1000, or a 10% sample of total, whichever is largest.
-        const limit = Math.max(1000, Math.floor(ret.length * 0.1));
-        ret = ret.slice(0, limit);
-
         // Ensure the summary record is always included, since it is likely to contain the largest values.
         if (gridModel.showSummary && store.summaryRecord) {
             ret.push(store.summaryRecord);

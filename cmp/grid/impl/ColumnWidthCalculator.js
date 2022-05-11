@@ -7,7 +7,7 @@
 
 import {XH} from '@xh/hoist/core';
 import {stripTags} from '@xh/hoist/utils/js';
-import {forOwn, groupBy, isEmpty, isArray, isFunction, isNil, isString, map, max, min, sortBy} from 'lodash';
+import {forOwn, groupBy, isEmpty, isArray, isFunction, isNil, isString, map, max, min, sortBy, shuffle} from 'lodash';
 import {isValidElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 
@@ -21,7 +21,11 @@ import {renderToStaticMarkup} from 'react-dom/server';
  */
 export class ColumnWidthCalculator {
 
-    SAMPLE_COUNT = 10;
+    /** Max number of unique rendered values to consider per column */
+    VALUE_SAMPLES = 1000;
+
+    /** Max number value to calculate size per column */
+    SIZE_CALC_SAMPLES = 10;
 
     _canvasContext;
     _headerEl;
@@ -42,7 +46,7 @@ export class ColumnWidthCalculator {
 
         let result = max([
             this.calcHeaderWidth(gridModel, column, options),
-            this.calcDataWidth(gridModel, records, column, options)
+            this.calcDataWidth(gridModel, shuffle(records), column, options)
         ]);
 
         result = max([result, autosizeMinWidth]);
@@ -88,19 +92,35 @@ export class ColumnWidthCalculator {
     }
 
     calcLevelWidth(gridModel, records, column, options, indentationPx = 0) {
-        const {field, getValueFn, renderer, cellClassFn, cellClassRules} = column,
+        const {field, getValueFn, renderer, rendererIsComplex, cellClassFn, cellClassRules} = column,
             {store, sizingMode, rowClassFn, rowClassRules} = gridModel,
             bufferPx = column.autosizeBufferPx ?? options.bufferPx;
 
         // 1) Get Map of rendered values to List of records that contain them
-        const recsByValue = new Map();
+        const recsByValue = new Map(),
+            renderedValues = new Map();
+
         records.forEach(record => {
             if (!record) return;
+            if (!renderedValues.size >= this.VALUE_SAMPLES && !record.isSummary) return;
+
             const ctx = {record, field, column, gridModel, store},
                 rawValue = getValueFn(ctx);
 
-            let value = renderer ? renderer(rawValue, ctx) : rawValue;
-            if (isValidElement(value)) value = renderToStaticMarkup(value);
+            let value;
+            if (!renderer) {
+                // The simplest case is a column that does not use a renderer
+                value = rawValue;
+                renderedValues.set(rawValue, value);
+            } else if (!rendererIsComplex && renderedValues.get(rawValue)) {
+                // If the column does not use a complex renderer, we can reuse the rendered value.
+                value = renderedValues.get(rawValue);
+            } else {
+                // Otherwise, render and memoize the raw value.
+                value = renderer(rawValue, ctx);
+                if (isValidElement(value)) value = renderToStaticMarkup(value);
+                renderedValues.set(rawValue, value);
+            }
 
             const recs = recsByValue.get(value);
             if (!recs) {
@@ -118,7 +138,7 @@ export class ColumnWidthCalculator {
         });
 
         // 3) Extract the sample set of longest values for rendering and sizing
-        const longestValues = sortedValues.slice(Math.max(sortedValues.length - this.SAMPLE_COUNT, 0));
+        const longestValues = sortedValues.slice(Math.max(sortedValues.length - this.SIZE_CALC_SAMPLES, 0));
 
         // 4) Get longest values, with unique combinations of row and cell classes applied to them
         const samples = longestValues.map(value => {
