@@ -411,6 +411,7 @@ export class AgGridModel extends HoistModel {
 
         if (togglingAbsSort) {
             agApi.redrawRows(); // Workaround needed for ag v27.
+            togglingAbsSort = false;
         }
 
         this._prevSortBy = sortBy;
