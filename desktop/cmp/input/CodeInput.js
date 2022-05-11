@@ -9,8 +9,6 @@ import {div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/c
 import {hoistCmp, managed, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
-import {fullScreenSupport} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenSupport';
-import {FullScreenSupportModel} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenSupportModel';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -36,6 +34,7 @@ import {compact, defaultsDeep, isEqual, isFunction} from 'lodash';
 import PT from 'prop-types';
 import ReactDOM from 'react-dom';
 import './CodeInput.scss';
+import {panel, PanelModel} from '../panel';
 
 /**
  * Code-editor style input, powered by CodeMirror. Displays a gutter with line numbers, mono-spaced
@@ -125,8 +124,8 @@ CodeInput.hasLayoutSupport = true;
 // Implementation
 //------------------------------
 class Model extends HoistInputModel {
-    /** @member {FullScreenSupportModel} */
-    @managed fullScreenSupportModel = new FullScreenSupportModel();
+    /** @member {PanelModel} */
+    @managed panelModel = new PanelModel({modalViewSupported: true, resizable: false, collapsible: false});
 
     /** @member {CodeMirror} - a CodeMirror editor instance. */
     editor;
@@ -139,7 +138,7 @@ class Model extends HoistInputModel {
     get matchCount() {return this.matches.length}
 
     get fullScreen() {
-        return this.fullScreenSupportModel.isFullScreen;
+        return this.panelModel.isModal;
     }
 
     get commitOnChange() {return withDefault(this.componentProps.commitOnChange, true)}
@@ -211,7 +210,7 @@ class Model extends HoistInputModel {
         super();
         makeObservable(this);
         this.addReaction({
-            track: () => this.fullScreenSupportModel.isFullScreen,
+            track: () => this.panelModel.isModal,
             run: () => this.focus(),
             debounce: 1
         });
@@ -330,7 +329,7 @@ class Model extends HoistInputModel {
     }
 
     toggleFullScreen() {
-        this.fullScreenSupportModel.toggleFullScreen();
+        this.panelModel.toggleIsModal();
     }
 
     //------------------------
@@ -435,7 +434,10 @@ const cmp = hoistCmp.factory(
             model
         };
 
-        return fullScreenSupport(inputCmp(childProps));
+        return panel({
+            model: model.panelModel,
+            item: inputCmp(childProps)
+        });
     }
 );
 
