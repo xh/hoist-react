@@ -470,14 +470,16 @@ export class TreeMapModel extends HoistModel {
  */
 
 /**
- * @callback TreeMapModel~valueRendererFn - normalized renderer function to display value in the default tooltip.
+ * @callback TreeMapModel~valueRendererFn - normalized renderer function to display value in the
+ *      tree map tooltip.
  * @param {*} value - raw node data value.
  * @param {StoreRecord} record - row-level data record.
  * @return {string} - the formatted value (html) for display.
  */
 
 /**
- * @callback TreeMapModel~heatRendererFn - normalized renderer function to display heat in the default tooltip.
+ * @callback TreeMapModel~heatRendererFn - normalized renderer function to display heat in the
+ *      tree map tooltip.
  * @param {*} value - raw node data value.
  * @param {StoreRecord} record - row-level data record.
  * @return {string} - the formatted value (html) for display.
