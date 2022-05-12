@@ -419,7 +419,7 @@ class LocalModel extends HoistModel {
             valueDiv = (`
                 <div class='xh-treemap-tooltip__row'>
                     <div>${valueFieldLabel}:</div>
-                    <div>${valueRenderer(value, {record})}</div>
+                    <div>${valueRenderer(value, record)}</div>
                 </div>
             `);
         }
@@ -429,7 +429,7 @@ class LocalModel extends HoistModel {
             heatDiv = (`
                 <div class='xh-treemap-tooltip__row'>
                     <div>${heatFieldLabel}:</div>
-                    <div>${heatRenderer(heat, {record})}</div>
+                    <div>${heatRenderer(heat, record)}</div>
                 </div>
             `);
         }

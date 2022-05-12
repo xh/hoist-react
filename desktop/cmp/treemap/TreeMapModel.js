@@ -100,10 +100,12 @@ export class TreeMapModel extends HoistModel {
      * @param {string} c.labelField - StoreRecord field to use to determine node label.
      * @param {string} c.valueField - StoreRecord field to use to determine node size.
      * @param {string} c.heatField - StoreRecord field to use to determine node color.
-     * @param {function} [c.valueRenderer] - Renderer to use when displaying value in the default tooltip.
-     *      Note that any renderer or formatter provided should be configured to return `asHtml`
-     * @param {function} [c.heatRenderer] - Renderer to use when displaying heat in the default tooltip.
-     *      Note that any renderer or formatter provided should be configured to return `asHtml`
+     * @param {TreeMapModel~valueRendererFn} [c.valueRenderer] - Renderer to use when displaying
+     *      value in the default tooltip. Note that any renderer or formatter provided should be
+     *      configured to return `asHtml`
+     * @param {TreeMapModel~heatRendererFn} [c.heatRenderer] - Renderer to use when displaying heat
+     *      in the default tooltip. Note that any renderer or formatter provided should be
+     *      configured to return `asHtml`
      * @param {number} [c.maxHeat] - Value for providing a clamped, stable upper boundary on heat color
      *      intensity. If not provided, maxHeat will be determined by the dataset on each load.
      * @param {number} [c.maxDepth] - Maximum tree depth to render.
@@ -463,7 +465,20 @@ export class TreeMapModel extends HoistModel {
 
 /**
  * @callback TreeMapModel~tooltipFn - normalized renderer function to produce a tree map tooltip.
+ * @param {StoreRecord} record - row-level data record.
+ * @return {string} - the formatted value (html) for display.
+ */
+
+/**
+ * @callback TreeMapModel~valueRendererFn - normalized renderer function to display value in the default tooltip.
  * @param {*} value - raw node data value.
  * @param {StoreRecord} record - row-level data record.
- * @return {string} - the formatted value for display.
+ * @return {string} - the formatted value (html) for display.
+ */
+
+/**
+ * @callback TreeMapModel~heatRendererFn - normalized renderer function to display heat in the default tooltip.
+ * @param {*} value - raw node data value.
+ * @param {StoreRecord} record - row-level data record.
+ * @return {string} - the formatted value (html) for display.
  */
