@@ -46,6 +46,8 @@
  lookup. These changes are not expected to be a problem for most apps, but may require minor rework
  for applications that were binding components to non-standard or "private" models.
 * Hoist will now throw if `Store.summaryRecord`'s ID is not unique.
+* `TreeMapModel`'s `valueRenderer` and `heatRenderer` properties now accept the `StoreRecord` as a
+  second argument.
 
 ## v48.0.1 - 2022-04-22
 
