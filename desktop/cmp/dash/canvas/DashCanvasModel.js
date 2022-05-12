@@ -210,13 +210,13 @@ export class DashCanvasModel extends HoistModel {
      * @param {string} specId - DashCanvasViewSpec id to add to the container
      * @param {string} [title] - title for the view
      * @param {string} [position] - 'first', 'last', 'nextAvailable', or 'previousViewId'
+     * @param {Object} [state] - initial state for the view
      * @returns {DashCanvasViewModel}
      */
-
     @action
-    addView(specId, title, position = 'nextAvailable') {
+    addView(specId, {title, position = 'nextAvailable', state} = {}) {
         const layout = this.getLayoutFromPosition(position, specId);
-        return this.addViewInternal(specId, {title, layout});
+        return this.addViewInternal(specId, {title, layout, state});
     }
 
     /**
