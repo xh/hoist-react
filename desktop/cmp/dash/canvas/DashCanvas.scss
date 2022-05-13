@@ -80,9 +80,11 @@
     .react-grid-item {
       > .xh-panel {
         > .xh-panel__content {
-          .xh-panel-header__title,
-          > svg {
-            cursor: move;
+          > .xh-panel-header {
+            > .xh-panel-header__title,
+            > svg {
+              cursor: move;
+            }
           }
         }
       }
