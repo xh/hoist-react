@@ -56,7 +56,11 @@ export class ChangelogService extends HoistService {
 
     /** @return {boolean} */
     get enabled() {
-        return XH.isDesktop && this.config.enabled && !isEmpty(this.versions);
+        const {config, versions} = this,
+            {enabled, limitToRoles} = config,
+            userHasAccess = isEmpty(limitToRoles) || limitToRoles.some(it => XH.getUser().hasRole(it));
+
+        return XH.isDesktop && enabled && userHasAccess && !isEmpty(versions);
     }
 
     /** @return {?string} */
@@ -110,7 +114,8 @@ export class ChangelogService extends HoistService {
         return XH.getConf(this.SVC_CONFIG_KEY, {
             enabled: true,
             excludedVersions: [],
-            excludedCategories: []
+            excludedCategories: [],
+            limitToRoles: []
         });
     }
 
