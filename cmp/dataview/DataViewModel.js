@@ -35,10 +35,7 @@ export class DataViewModel extends HoistModel {
      *      or a function which returns a number. Function will receive {record, dataViewModel, agParams}.
      * @param {(string|string[])} [c.groupBy] - field(s) by which to do full-width row grouping.
      * @param {number} [c.groupRowHeight] - Height (in px) of a group row.
-     * @param {Grid~groupRowRendererFn} [c.groupRowRenderer] - function returning a string used to
-     *      render group rows.
-     * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a React
-     *      element used to render group rows.
+     * @param {Grid~groupRowRendererFn} [c.groupRowRenderer] - function used to render group rows.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - field(s) or sorter config(s) with
      *      `colId` and `sort` (asc|desc) keys.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
@@ -72,7 +69,6 @@ export class DataViewModel extends HoistModel {
         groupBy,
         groupRowHeight,
         groupRowRenderer,
-        groupRowElementRenderer,
         sortBy,
         selModel,
         emptyText,
@@ -124,7 +120,6 @@ export class DataViewModel extends HoistModel {
             stripeRows,
             groupBy,
             groupRowRenderer,
-            groupRowElementRenderer,
             rowClassFn,
             rowClassRules,
             onRowClicked,

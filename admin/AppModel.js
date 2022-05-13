@@ -17,10 +17,16 @@ import {userDataTab} from './tabs/userData/UserDataTab';
 export class AppModel extends HoistAppModel {
 
     @managed
-    _tabModel;
+    tabModel;
 
     constructor() {
         super();
+
+        this.tabModel = new TabContainerModel({
+            route: 'default',
+            switcher: false,
+            tabs: this.createTabs()
+        });
 
         // Enable managed autosize mode across Hoist Admin console grids.
         GridModel.DEFAULT_AUTOSIZE_MODE = GridAutosizeMode.MANAGED;
@@ -36,20 +42,13 @@ export class AppModel extends HoistAppModel {
         ];
     }
 
-    get tabModel() {
-        if (!this._tabModel) {
-            this._tabModel = new TabContainerModel({
-                route: 'default',
-                switcher: false,
-                tabs: this.createTabs()
-            });
-        }
-        return this._tabModel;
-    }
-
     //------------------------
     // For override / extension
     //------------------------
+    getAppMenuButtonExtraItems() {
+        return [];
+    }
+
     getTabRoutes() {
         return [
             {

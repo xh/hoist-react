@@ -9,14 +9,14 @@ import {hoistCmp} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {input} from '@xh/hoist/kit/onsen';
 import {wait} from '@xh/hoist/promise';
-import {withDefault} from '@xh/hoist/utils/js';
+import {withDefault, debounced, throwIf} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-import {isNaN, isNil} from 'lodash';
+import {isNaN, isNil, isNumber, round} from 'lodash';
 import PT from 'prop-types';
 import './NumberInput.scss';
 
 /**
- * Number Input, with optional support for formatted of display value,
+ * Number input, with optional support for formatting of display value, shorthand units, and more.
  */
 export const [NumberInput, numberInput] = hoistCmp.withFactory({
     displayName: 'NumberInput',
@@ -32,45 +32,45 @@ NumberInput.propTypes = {
     /** True to commit on every change/keystroke, default false. */
     commitOnChange: PT.bool,
 
-    /** Whether to display large values with commas */
+    /** True to insert commas in displayed value. */
     displayWithCommas: PT.bool,
 
-    /** Set to true for advanced input evaluation, defaults to false.
-     Inputs suffixed with k, m, or b will be calculated as thousands, millions, or billions respectively */
+    /** True to convert entries suffixed with k/m/b to thousands/millions/billions. */
     enableShorthandUnits: PT.bool,
 
     /**
-     * Minimum value - NOTE, as with underlying HTML input, this ONLY constrains step-wise updates
-     * made via increment/decrement handling, does NOT validate or block out-of-bounds inputs.
+     * Minimum value. Note that this will govern the smallest value that this control can produce
+     * via user input. Smaller values passed to it via props or a bound model will still be displayed.
      */
     min: PT.number,
 
     /**
-     * Maximum value - NOTE, as with underlying HTML input, this ONLY constrains step-wise updates
-     * made via increment/decrement handling, does NOT validate or block out-of-bounds inputs.
+     * Maximum value. Note that this will govern the largest value that this control can produce
+     * via user input. Larger values passed to it via props or a bound model will still be displayed.
      */
     max: PT.number,
 
-    /** Onsen modifier string */
+    /** Onsen modifier string. */
     modifier: PT.string,
 
-    /** Function which receives keydown event */
+    /** Function which receives keydown event. */
     onKeyDown: PT.func,
 
-    /** Text to display when control is empty */
+    /** Text to display when control is empty. */
     placeholder: PT.string,
 
-    /** Number of decimal places to allow on field's value, defaults to 4 */
+    /** Max decimal precision of the value, defaults to 4. */
     precision: PT.number,
 
     /**
      * Scale factor to apply when converting between the internal and external value. Useful for
      * cases such as handling a percentage value where the user would expect to see or input 20 but
-     * the external value the input is bound to should be 0.2. Defaults to 1 (no scaling applied).
+     * the external value the input is bound to should be 0.2. Must be a factor of 10.
+     * Defaults to 1 (no scaling applied).
      */
     scaleFactor: PT.number,
 
-    /** Whether text in field is selected when field receives focus */
+    /** True to select contents when control receives focus. */
     selectOnFocus: PT.bool,
 
     /** Alignment of entry text within control, default 'right'. */
@@ -82,7 +82,7 @@ NumberInput.propTypes = {
      */
     valueLabel: PT.string,
 
-    /** Allow/automatically fill in trailing zeros in accord with precision, defaults to false */
+    /** True to pad with trailing zeros out to precision, default false. */
     zeroPad: PT.bool
 };
 NumberInput.hasLayoutSupport = true;
@@ -90,10 +90,18 @@ NumberInput.hasLayoutSupport = true;
 //-----------------------
 // Implementation
 //-----------------------
-
 class Model extends HoistInputModel {
 
-    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/gi;
+    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
+
+    constructor() {
+        super();
+        throwIf(Math.log10(this.scaleFactor) % 1 !== 0, 'scaleFactor must be a factor of 10');
+    }
+
+    get precision() {
+        return withDefault(this.componentProps.precision, 4);
+    }
 
     get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
@@ -109,18 +117,49 @@ class Model extends HoistInputModel {
         wait().then(() => super.select());
     }
 
-    onChange = (ev) => {
-        let value = this.parseValue(ev.target.value);
-        value = isNaN(value)  ? null : value;
-        this.noteValueChange(value);
+    onValueChange = (ev) => {
+        this.noteValueChange(ev.target.value);
     };
 
+    @debounced(250)
+    doCommitOnChangeInternal() {
+        super.doCommitOnChangeInternal();
+    }
+
     toInternal(val) {
-        return isNil(val) ? null : val * this.scaleFactor;
+        if (isNaN(val)) return val;
+        if (isNil(val)) return null;
+
+        return val * this.scaleFactor;
     }
 
     toExternal(val) {
-        return isNil(val) ? null : val / this.scaleFactor;
+        val = this.parseValue(val);
+        if (isNaN(val)) return val;
+        if (isNil(val)) return null;
+
+        val = val / this.scaleFactor;
+
+        // Round to scale corrected precision
+        let {precision} = this;
+        if (!isNil(precision)) {
+            precision = precision + Math.log10(this.scaleFactor);
+            val = round(val, precision);
+        }
+        return val;
+    }
+
+    isValid(val) {
+        const {min, max} = this.componentProps;
+
+        if (isNaN(val)) return false;
+        if (val === null) return true;
+
+        // Enforce min/max here on commit.
+        if (!isNil(min) && val < min) return false;
+        if (!isNil(max) && val > max) return false;
+
+        return true;
     }
 
     onKeyDown = (ev) => {
@@ -133,22 +172,22 @@ class Model extends HoistInputModel {
 
         // Deferred to allow any value conversion to complete and flush into input.
         if (this.componentProps.selectOnFocus) {
-            const target = ev.target;
-            if (target && target.select) wait().then(() => target.select());
+            const {target} = ev;
+            if (target?.select) wait().then(() => target.select());
         }
     };
 
-    displayValue(value) {
-        if (value == null) return '';
-        return value.toString();
-    }
+    formatRenderValue(value) {
+        const {componentProps, precision} = this;
 
-    formatValue(value) {
         if (value == null) return '';
 
-        const {componentProps} = this,
-            {valueLabel, displayWithCommas} = componentProps,
-            precision = withDefault(componentProps.precision, 4),
+        if (this.hasFocus) {
+            if (isNumber(value) && !isNil(precision)) value = round(value, precision);
+            return value.toString();
+        }
+
+        const {valueLabel, displayWithCommas} = componentProps,
             zeroPad = withDefault(componentProps.zeroPad, false),
             formattedVal = fmtNumber(value, {precision, zeroPad, label: valueLabel, labelCls: null, asHtml: true});
 
@@ -156,7 +195,9 @@ class Model extends HoistInputModel {
     }
 
     parseValue(value) {
-        if (!value) return value;
+        if (isNil(value) || value === '') return null;
+        if (isNumber(value)) return value;
+
         value = value.toString();
         value = value.replace(/,/g, '');
 
@@ -172,20 +213,19 @@ class Model extends HoistInputModel {
                 case 'b':
                     return num * 1000000000;
                 default:
-                    return null;
+                    return NaN;
             }
         }
 
-        value = parseFloat(value);
-        return isNaN(value) ? null : value;
+        return parseFloat(value);
     }
 }
 
 const cmp = hoistCmp.factory(
     ({model, className, enableShorthandUnits, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props),
-            {hasFocus, renderValue} = model,
-            displayValue = hasFocus ? model.displayValue(renderValue) : model.formatValue(renderValue),
+            {hasFocus} = model,
+            renderValue = model.formatRenderValue(model.renderValue),
             // use 'number' to edit values, but 'text' to displaying formatted values.
             type = hasFocus && !enableShorthandUnits ? 'number' : 'text',
             inputMode = !enableShorthandUnits ? 'decimal' : 'text';
@@ -194,7 +234,7 @@ const cmp = hoistCmp.factory(
             type,
             inputMode,
             className,
-            value: displayValue,
+            value: renderValue,
             disabled: props.disabled,
             min: props.min,
             max: props.max,
@@ -210,7 +250,7 @@ const cmp = hoistCmp.factory(
             },
             spellCheck: false,
 
-            onChange: model.onChange,
+            onChange: model.onValueChange,
             onKeyDown: model.onKeyDown,
             onBlur: model.onBlur,
             onFocus: model.onFocus,

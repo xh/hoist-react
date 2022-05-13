@@ -9,14 +9,15 @@ import {hoistCmp} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
-import {withDefault} from '@xh/hoist/utils/js';
+import {withDefault, debounced, throwIf} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
+import {useLayoutEffect} from 'react';
 import composeRefs from '@seznam/compose-react-refs';
 import {isNaN, isNil, isNumber, round} from 'lodash';
 import PT from 'prop-types';
 
 /**
- * Number input, with optional support for formatted of display value, shorthand units, and more.
+ * Number input, with optional support for formatting of display value, shorthand units, and more.
  *
  * This component is built on the Blueprint NumericInput and gets default increment/decrement
  * functionality from that component, based on the three stepSize props.
@@ -63,22 +64,22 @@ NumberInput.propTypes = {
     leftIcon: PT.element,
 
     /**
-     * Minimum value - NOTE, as with underlying HTML input, this ONLY constrains step-wise updates
-     * made via increment/decrement handling, does NOT validate or block out-of-bounds inputs.
+     * Minimum value. Note that this will govern the smallest value that this control can produce
+     * via user input. Smaller values passed to it via props or a bound model will still be displayed.
      */
     min: PT.number,
 
-    /** Major step size for increment/decrement handling. */
-    majorStepSize: PT.number,
-
     /**
-     * Maximum value - NOTE, as with underlying HTML input, this ONLY constrains step-wise updates
-     * made via increment/decrement handling, does NOT validate or block out-of-bounds inputs.
+     * Maximum value. Note that this will govern the largest value that this control can produce
+     * via user input. Larger values passed to it via props or a bound model will still be displayed.
      */
     max: PT.number,
 
     /** Minor step size for increment/decrement handling. */
     minorStepSize: PT.number,
+
+    /** Major step size for increment/decrement handling. */
+    majorStepSize: PT.number,
 
     /** Callback for normalized keydown event. */
     onKeyDown: PT.func,
@@ -95,7 +96,8 @@ NumberInput.propTypes = {
     /**
      * Scale factor to apply when converting between the internal and external value. Useful for
      * cases such as handling a percentage value where the user would expect to see or input 20 but
-     * the external value the input is bound to should be 0.2. Defaults to 1 (no scaling applied).
+     * the external value the input is bound to should be 0.2. Must be a factor of 10.
+     * Defaults to 1 (no scaling applied).
      */
     scaleFactor: PT.number,
 
@@ -122,9 +124,18 @@ NumberInput.hasLayoutSupport = true;
 //-----------------------
 // Implementation
 //-----------------------
-
 class Model extends HoistInputModel {
+
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
+
+    constructor() {
+        super();
+        throwIf(Math.log10(this.scaleFactor) % 1 !== 0, 'scaleFactor must be a factor of 10');
+    }
+
+    get precision() {
+        return withDefault(this.componentProps.precision, 4);
+    }
 
     get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
@@ -138,13 +149,45 @@ class Model extends HoistInputModel {
         this.noteValueChange(valAsString);
     };
 
+    @debounced(250)
+    doCommitOnChangeInternal() {
+        super.doCommitOnChangeInternal();
+    }
+
     toInternal(val) {
-        return isNil(val) ? null : val * this.scaleFactor;
+        if (isNaN(val)) return val;
+        if (isNil(val)) return null;
+
+        return val * this.scaleFactor;
     }
 
     toExternal(val) {
         val = this.parseValue(val);
-        return isNaN(val) || isNil(val) ? null : val / this.scaleFactor;
+        if (isNaN(val)) return val;
+        if (isNil(val)) return null;
+
+        val = val / this.scaleFactor;
+
+        // Round to scale corrected precision
+        let {precision} = this;
+        if (!isNil(precision)) {
+            precision = precision + Math.log10(this.scaleFactor);
+            val = round(val, precision);
+        }
+        return val;
+    }
+
+    isValid(val) {
+        const {min, max} = this.componentProps;
+
+        if (isNaN(val)) return false;
+        if (val === null) return true;
+
+        // Enforce min/max here on commit. BP props only limit the incremental step change
+        if (!isNil(min) && val < min) return false;
+        if (!isNil(max) && val > max) return false;
+
+        return true;
     }
 
     onKeyDown = (ev) => {
@@ -153,12 +196,15 @@ class Model extends HoistInputModel {
     };
 
     formatRenderValue(value) {
-        if (value == null) return '';
-        if (this.hasFocus) return value;
+        const {componentProps, precision} = this;
 
-        const {componentProps} = this,
-            {valueLabel, displayWithCommas} = componentProps,
-            precision = withDefault(componentProps.precision, 4),
+        if (value == null) return '';
+
+        if (this.hasFocus) {
+            return isNumber(value) && !isNil(precision) ? round(value, precision) : value;
+        }
+
+        const {valueLabel, displayWithCommas} = componentProps,
             zeroPad = withDefault(componentProps.zeroPad, false),
             formattedVal = fmtNumber(value, {precision, zeroPad, label: valueLabel, labelCls: null, asHtml: true});
 
@@ -167,8 +213,8 @@ class Model extends HoistInputModel {
 
     parseValue(value) {
         if (isNil(value) || value === '') return null;
-        if (isNumber(value)) return value;
 
+        value = value.toString();
         value = value.replace(/,/g, '');
 
         if (Model.shorthandValidator.test(value)) {
@@ -197,32 +243,25 @@ class Model extends HoistInputModel {
             wait().then(() => this.inputRef.current?.select());
         }
     }
-
-    noteBlurred() {
-        super.noteBlurred();
-        wait().then(() => {
-            const input = this.inputRef.current;
-            // Force value to re-render in control to workaround issue with blueprint state caching
-            if (input) input.value = this.formatRenderValue(this.renderValue);
-        });
-    }
-
 }
 
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
-        const {width, ...layoutProps} = getLayoutProps(props);
+        const {width, ...layoutProps} = getLayoutProps(props),
+            renderValue = model.formatRenderValue(model.renderValue);
 
-        // BP's min/max can cause problems when controlled value is formatted string so only set
-        // when focused and rendered value is number.  min/max only constrains step editing anyway
-        const min = model.hasFocus ? props.min : undefined,
-            max = model.hasFocus ? props.max : undefined;
+        // BP workaround -- min, max, and stepsize can block Blueprint from rendering
+        // intended value in underlying control -- ensure it is always shown.
+        useLayoutEffect(() => {
+            const input = model.inputRef.current;
+            if (input) input.value = renderValue;
+        });
 
         // BP bases expected precision off of dps in minorStepSize, if specified.
         // The default BP value of 0.1 for this prop emits a console warning any time the input
         // value extends beyond 1 dp. Re-default here to sync with our `precision` prop.
         // See https://blueprintjs.com/docs/#core/components/numeric-input.numeric-precision
-        const precision = withDefault(props.precision, 4),
+        const {precision} = model,
             majorStepSize = props.majorStepSize,
             minorStepSize = precision ?
                 withDefault(props.minorStepSize, round(Math.pow(10, -precision), precision)) :
@@ -230,15 +269,15 @@ const cmp = hoistCmp.factory(
 
         // Render BP input.
         return numericInput({
-            value: model.formatRenderValue(model.renderValue),
+            value: renderValue,
             allowNumericCharactersOnly: !props.enableShorthandUnits && !props.displayWithCommas,
             buttonPosition: 'none',
             disabled: props.disabled,
             fill: props.fill,
             inputRef: composeRefs(model.inputRef, props.inputRef),
             leftIcon: props.leftIcon,
-            min,
-            max,
+            min: props.min,
+            max: props.max,
             minorStepSize,
             majorStepSize,
             placeholder: props.placeholder,
