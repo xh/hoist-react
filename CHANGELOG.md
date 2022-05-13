@@ -41,6 +41,8 @@
   each side, to keep the two sides clearly distinguished from each other.
 * Hoist now protects against custom Grid renderers that may throw by catching the error and printing
   an "#ERROR" placeholder token in the affected cell.
+* New `xhChangelogConfig.limitToRoles` soft-config allows the in-app changelog (aka release notes)
+  to be gated to a subset of users based on their role.
 
 ### 💥 Breaking Changes
 
