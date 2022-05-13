@@ -47,6 +47,10 @@
 * Includes a new, additional `index-manifest.html` static file required for compatibility with the
   upcoming `hoist-dev-utils v6.0` release (but remains compatible with current/older dev-utils.)
 
+### 📚 Libraries
+
+* mobx-react-lite `3.3 -> 3.4`
+
 ## v48.0.1 - 2022-04-22
 
 ### 🐞 Bug Fixes
