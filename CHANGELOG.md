@@ -66,6 +66,8 @@
 
 * `TreeMapModel.valueRenderer` and `heatRenderer` callbacks are now passed the `StoreRecord` as a
   second argument.
+* Includes a new, additional `index-manifest.html` static file required for compatibility with the
+  upcoming `hoist-dev-utils v6.0` release (but remains compatible with current/older dev-utils.)
 
 ## v48.0.1 - 2022-04-22
 
