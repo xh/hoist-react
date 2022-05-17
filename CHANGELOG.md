@@ -50,6 +50,8 @@
 ### 📚 Libraries
 
 * mobx-react-lite `3.3 -> 3.4`
+* onsenui `2.11.1 -> 2.12.0`
+* react-onsenui `1.11.5 > 1.12.0`
 
 ## v48.0.1 - 2022-04-22
 
