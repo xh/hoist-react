@@ -21,9 +21,9 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
         const contextModel = useContextModel('*');
         if (!isOpen) return null;
         return onsenDialog({
-            isOpen: true,
-            isCancelable: true,
-            onCancel,
+            visible: true,
+            cancelable: true,
+            onDialogCancel: onCancel,
             className,
             item: modelHost({
                 model: contextModel,
