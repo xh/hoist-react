@@ -1,15 +1,6 @@
-// Unset Onsen CSS vars that conflict with hoist override vars
-:root {
-  --text-color: initial;
-  --border-color: initial;
-  --input-text-color: initial;
-  --input-placeholder-color: initial;
-  --font-size: initial;
-  --button-text-color: initial;
-}
-
 // Override styles provided in onsenui.css and onsen-css-components.css to use variable declarations
 body.xh-app.xh-mobile {
+
   // Background
   .page,
   .page__content,

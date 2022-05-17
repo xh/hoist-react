@@ -184,6 +184,18 @@ export class NavigatorModel extends HoistModel {
     }
 
     async onStackChangeAsync() {
+        await this.updateNavigatorPagesAsync();
+
+        // Ensure only the last page is visible after a page transition.
+        if (!this._navigator) return;
+        const {pages} = this._navigator._navi;
+        pages.forEach((pageEl, idx) => {
+            const lastPage = idx === pages.length - 1;
+            pageEl.style.display = lastPage ? 'block' : 'none';
+        });
+    }
+
+    async updateNavigatorPagesAsync() {
         // Sync Onsen Navigator's pages with our stack
         if (!this._navigator) return;
         const {stack} = this,
