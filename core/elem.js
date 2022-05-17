@@ -34,7 +34,6 @@ import {createElement, isValidElement} from 'react';
  * @return ReactElement
  */
 export function elem(type, config = {}) {
-
     const {omit, item, items, ...props} = config;
 
     // 1) Convenience omission syntax.
@@ -61,7 +60,7 @@ export function elem(type, config = {}) {
  * This is a 'curried' version of the raw elem() method.
  *
  * One critical enhancement provided by this factory is that its arguments may be *either* a single
- * config for elem() or either an array or rest arguments representing just the the children to be
+ * config for elem() or either an array or rest arguments representing just the children to be
  * passed to the new Element. This latter case is fully equivalent to specifying `{items: [...]}`
  * and is useful when no attributes need to be applied directly to the Element.
 
@@ -78,10 +77,11 @@ export function elemFactory(type) {
 }
 
 
-//------------------------
-// Implementation
-//------------------------
-function normalizeArgs(args) {
+/**
+ * Handle arguments passed to elemFactory.
+ * @private
+ */
+export function normalizeArgs(args) {
     const len = args.length;
     if (len === 0) return {};
     if (len === 1) {

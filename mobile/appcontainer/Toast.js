@@ -26,7 +26,7 @@ export const toast = hoistCmp.factory({
             cls = `xh-toast xh-intent-${intent}`;
 
         return onsenToast({
-            isOpen: true,
+            visible: true,
             className: cls,
             style: {height: window.innerHeight + 'px'},
             items: [
