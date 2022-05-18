@@ -2,8 +2,9 @@
 
 ### 🎁 New Features
 
-* A new `FullScreenSupport` component for providing a child component with full screen expansion
-  capabilities
+* Panels now offer modalSupport, which allows the user to expand a panel into a modal state,
+  without requiring its contents to re-render.  All state is preserved when toggling between
+  inline and modal views.
 
 ### 🐞 Bug Fixes
 * Fix bug where Admin Activity Chart pop-out dialog did not display on first render

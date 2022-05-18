@@ -28,10 +28,14 @@ const inlineContainer = hoistCmp.factory({
     render({model}) {
         return box({
             ref: model.inlineRef,
-            width: '100%',
             height: '100%',
             display: 'inherit',
-            flexDirection: 'inherit'
+            flexDirection: 'inherit',
+
+            // If not rendering within a container with flexDirection: row, take up all available
+            // width:
+            ...(model.inlineRef.current?.parentElement.style.flexDirection !== 'row' ?
+                {width: '100%'} : {})
         });
     }
 });

@@ -8,7 +8,7 @@ import {DockViewModel} from '@xh/hoist/cmp/dock';
 import {div, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {fullScreenSupport} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenSupport';
+import {modalSupport} from '@xh/hoist/desktop/cmp/impl/modalsupport/ModalSupport';
 import {Icon} from '@xh/hoist/icon';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -45,15 +45,13 @@ export const dockView = hoistCmp.factory({
 
         const suffix = collapsed ? 'collapsed' : docked ? 'docked' : 'dialog';
 
-        return fullScreenSupport({
-            canOutsideClickClose: false,
-            onClose: () => model.onClose(),
-            style: {width, height},
+        return modalSupport({
+            model: model.modalSupportModel,
             item: vbox({
                 width: collapsed ? collapsedWidth : width,
-                height: !collapsed ? height: null,
+                ...(!collapsed ? {height} : {}),
                 className: classNames(className, `xh-dock-view--${suffix}`),
-                items: [header, unmount ? null : body]
+                items: [header, unmount && (collapsed || docked) ? null : body]
             })
         });
     }

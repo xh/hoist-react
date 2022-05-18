@@ -4,9 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {managed} from '@xh/hoist/core';
 import {DashViewModel} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
-import {FullScreenSupportModel} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenSupportModel';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {makeObservable, observable} from 'mobx';
 
@@ -25,17 +23,12 @@ export class DashCanvasViewModel extends DashViewModel {
     @observable hidePanelHeader;
     /** @member {boolean} */
     @observable hideMenuButton;
-    /** @member {boolean} */
-    @observable hideFullScreenButton;
-    /** @member {FullScreenSupportModel} */
-    @managed fullScreenSupportModel = new FullScreenSupportModel();
 
     constructor(cfg) {
         super(cfg);
         makeObservable(this);
         this.hidePanelHeader = !!cfg.viewSpec.hidePanelHeader;
         this.hideMenuButton = !!cfg.viewSpec.hideMenuButton;
-        this.hideFullScreenButton = !!cfg.viewSpec.hideFullScreenButton;
     }
 
     get positionParams() {

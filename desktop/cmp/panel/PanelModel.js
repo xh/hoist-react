@@ -19,7 +19,7 @@ import {wait} from '@xh/hoist/promise';
 import {isNil} from 'lodash';
 import {createRef} from 'react';
 import {throwIf} from '@xh/hoist/utils/js';
-import {ModalSupportModel} from './impl/modal/ModalSupportModel';
+import {ModalSupportModel} from '../impl/modalsupport/ModalSupportModel';
 
 /**
  * PanelModel supports configuration and state-management for user-driven Panel resizing and

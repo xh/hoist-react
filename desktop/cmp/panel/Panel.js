@@ -24,7 +24,7 @@ import PT from 'prop-types';
 import {isValidElement, useRef, Children} from 'react';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
-import {modalSupport} from './impl/modal/ModalSupport';
+import {modalSupport} from '../impl/modalsupport/ModalSupport';
 import './Panel.scss';
 import {PanelModel} from './PanelModel';
 

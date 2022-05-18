@@ -436,7 +436,8 @@ const cmp = hoistCmp.factory(
 
         return panel({
             model: model.panelModel,
-            item: inputCmp(childProps)
+            item: inputCmp(childProps),
+            ...getLayoutProps(props)
         });
     }
 );

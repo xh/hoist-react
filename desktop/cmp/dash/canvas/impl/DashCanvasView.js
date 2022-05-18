@@ -7,7 +7,6 @@
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {ContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils';
-import {fullScreenSupport} from '@xh/hoist/desktop/cmp/fullscreenhandler/FullScreenSupport';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
 import {panel} from '../../../panel';
@@ -30,34 +29,21 @@ export const dashCanvasView = hoistCmp.factory({
     className: 'xh-dash-tab',
     model: uses(DashCanvasViewModel, {publishMode: ModelPublishMode.LIMITED}),
     render({model, className}) {
-        const {viewSpec, ref, hidePanelHeader, fullScreenSupportModel} = model,
+        const {viewSpec, ref, hidePanelHeader} = model,
             headerProps = hidePanelHeader ? {} : {
                 compactHeader: true,
                 title: model.title,
                 icon: model.icon,
-                headerItems: [
-                    fullScreenButton({fullScreenSupportModel, omit: model.hideFullScreenButton}),
-                    headerMenu({omit: fullScreenSupportModel.isFullScreen})
-                ]
+                headerItems: [headerMenu()]
             };
-        return fullScreenSupport({
-            model: fullScreenSupportModel,
-            item: panel({
-                className,
-                ref,
-                ...headerProps,
-                item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
-            })
+        return panel({
+            className,
+            ref,
+            ...headerProps,
+            item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
         });
     }
 });
-
-const fullScreenButton = hoistCmp.factory(
-    ({fullScreenSupportModel}) => button({
-        icon: !fullScreenSupportModel.isFullScreen ? Icon.expand() : Icon.close(),
-        onClick: () => fullScreenSupportModel.toggleFullScreen()
-    })
-);
 
 const headerMenu = hoistCmp.factory({
     model: uses(DashCanvasViewModel),
