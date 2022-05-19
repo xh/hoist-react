@@ -21,6 +21,7 @@
   an "#ERROR" placeholder token in the affected cell.
 * New `xhChangelogConfig.limitToRoles` soft-config allows the in-app changelog (aka release notes)
   to be gated to a subset of users based on their role.
+* Add support for Map and WeakMap collections in LangUtils.getOrCreate
 
 ### 💥 Breaking Changes
 
