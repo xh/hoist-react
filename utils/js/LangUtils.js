@@ -33,8 +33,9 @@ export function getOrCreate(obj, key, fn) {
     if (obj instanceof Map || obj instanceof WeakMap) {
         const val = obj.get(key);
         if (!isUndefined(val)) return val;
-        obj.set(key, fn());
-        return fn();
+        const newVal = fn();
+        obj.set(key, newVal);
+        return newVal;
     } else {
         const val = obj[key];
         if (!isUndefined(val)) return val;
