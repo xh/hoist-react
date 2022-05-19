@@ -31,8 +31,10 @@ mixin(_inflection);
  */
 export function getOrCreate(obj, key, fn) {
     if (obj instanceof Map || obj instanceof WeakMap) {
-        if (obj.has(key)) return obj.get(key);
-        return obj.set(key, fn()).get(key);
+        const val = obj.get(key);
+        if (!isUndefined(val)) return val;
+        obj.set(key, fn());
+        return fn();
     } else {
         const val = obj[key];
         if (!isUndefined(val)) return val;
