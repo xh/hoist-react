@@ -22,6 +22,7 @@
 * New `xhChangelogConfig.limitToRoles` soft-config allows the in-app changelog (aka release notes)
   to be gated to a subset of users based on their role.
 * Add support for Map and WeakMap collections in LangUtils.getOrCreate
+* Mobile `textInput` now accepts an `enableClear` property with a default value of false.
 
 ### 💥 Breaking Changes
 

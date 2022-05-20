@@ -5,4 +5,15 @@
     height: 30px;
     padding: 0 var(--xh-pad-px);
   }
+
+  ons-input {
+    flex: 1;
+  }
+
+  .clear-button {
+    color: var(--xh-text-color-muted);
+    padding-right: 8px;
+    padding-left: 0;
+  }
 }
+
