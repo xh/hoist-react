@@ -135,7 +135,7 @@ const cmp = hoistCmp.factory(
                     onBlur: model.onBlur,
                     onFocus: model.onFocus,
                 }),
-                model.showClearButton ? clearButton() : null
+                clearButton()
             ]
         })
     }
@@ -147,6 +147,7 @@ const clearButton = hoistCmp.factory(
         icon: Icon.cross(),
         tabIndex: -1,
         minimal: true,
+        omit: !model.showClearButton,
         onClick: () => {
             model.noteValueChange(null);
             model.doCommit();
