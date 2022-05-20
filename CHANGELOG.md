@@ -21,6 +21,7 @@
   an "#ERROR" placeholder token in the affected cell.
 * New `xhChangelogConfig.limitToRoles` soft-config allows the in-app changelog (aka release notes)
   to be gated to a subset of users based on their role.
+* Add support for Map and WeakMap collections in LangUtils.getOrCreate
 * Added `TabContainerModel.refreshContextModel`, allowing apps to programmatically load a TabContainer.
 
 ### 💥 Breaking Changes
@@ -45,6 +46,12 @@
 
 * `TreeMapModel.valueRenderer` and `heatRenderer` callbacks are now passed the `StoreRecord` as a
   second argument.
+* Includes a new, additional `index-manifest.html` static file required for compatibility with the
+  upcoming `hoist-dev-utils v6.0` release (but remains compatible with current/older dev-utils.)
+
+### 📚 Libraries
+
+* mobx-react-lite `3.3 -> 3.4`
 
 ## v48.0.1 - 2022-04-22
 

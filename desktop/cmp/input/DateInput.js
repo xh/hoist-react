@@ -419,6 +419,7 @@ const cmp = hoistCmp.factory(
         }
 
         return div({
+            className: 'xh-date-input__wrapper',
             item: popover({
                 isOpen,
                 minimal: true,

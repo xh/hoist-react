@@ -30,9 +30,17 @@ mixin(_inflection);
  * @returns {*} value stored at key
  */
 export function getOrCreate(obj, key, fn) {
-    const val = obj[key];
-    if (!isUndefined(val)) return val;
-    return obj[key] = fn();
+    if (obj instanceof Map || obj instanceof WeakMap) {
+        const val = obj.get(key);
+        if (!isUndefined(val)) return val;
+        const newVal = fn();
+        obj.set(key, newVal);
+        return newVal;
+    } else {
+        const val = obj[key];
+        if (!isUndefined(val)) return val;
+        return obj[key] = fn();
+    }
 }
 
 
