@@ -49,7 +49,7 @@ export function createViewMenuItems({
                         if (replaceExisting) {
                             dashCanvasModel.replaceView(viewId, id);
                         } else {
-                            dashCanvasModel.addView(
+                            dashCanvasModel.addViewInternal(
                                 id,
                                 {layout: addPosition, previousViewId: viewId}
                             ).ensureVisible();

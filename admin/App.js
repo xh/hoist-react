@@ -18,18 +18,18 @@ export const App = hoistCmp({
     displayName: 'App',
     model: uses(AppModel),
 
-    render({model}) {
+    render() {
         return panel({
             tbar: tbar(),
             className: 'xh-admin-app-frame',
-            item: tabContainer({model: model.tabModel})
+            item: tabContainer()
         });
     }
 });
 
 
 const tbar = hoistCmp.factory(
-    () => appBar({
+    ({model}) => appBar({
         icon: Icon.gears({size: '2x', prefix: 'fal'}),
         leftItems: [
             tabSwitcher({enableOverflow: true})
@@ -44,7 +44,8 @@ const tbar = hoistCmp.factory(
         ],
         appMenuButtonProps: {
             hideAdminItem: true,
-            hideFeedbackItem: true
+            hideFeedbackItem: true,
+            extraItems: model.getAppMenuButtonExtraItems()
         }
     })
 );

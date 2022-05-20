@@ -254,6 +254,7 @@ export class FetchService extends HoistService {
         if (
             appState === AppState.RUNNING &&
             configService.get('xhReloadOnFailedAuth', true) &&
+            !localStorageService.isFake &&
             olderThan(localStorageService.get('xhLastFailedAuthReload', null), ONE_MINUTE)
         ) {
             localStorageService.set('xhLastFailedAuthReload', Date.now());

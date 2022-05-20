@@ -248,20 +248,20 @@ export class DashContainerModel extends HoistModel {
     /**
      * Add a view to the container.
      *
-     * @param {string} id - DashContainerViewSpec id to add to the container
-     * @param {object} container - GoldenLayout container to add it to. If not provided, will be added to the root container.
+     * @param {string} specId - DashContainerViewSpec id to add to the container
+     * @param {object} [container] - GoldenLayout container to add it to. If not provided, will be added to the root container.
      * @param {number} [index] - An optional index that determines at which position the new item should be added.
      */
-    addView(id, container, index) {
+    addView(specId, container, index) {
         const {goldenLayout} = this;
         if (!goldenLayout) return;
 
-        const viewSpec = this.getViewSpec(id),
-            instances = this.getItemsBySpecId(id);
+        const viewSpec = this.getViewSpec(specId),
+            instances = this.getItemsBySpecId(specId);
 
-        throwIf(!viewSpec, `Trying to add non-existent or omitted DashContainerViewSpec. id=${id}`);
-        throwIf(!viewSpec.allowAdd, `Trying to add DashContainerViewSpec with allowAdd=false. id=${id}`);
-        throwIf(viewSpec.unique && instances.length, `Trying to add multiple instances of a DashContainerViewSpec with unique=true. id=${id}`);
+        throwIf(!viewSpec, `Trying to add non-existent or omitted DashContainerViewSpec. specId=${specId}`);
+        throwIf(!viewSpec.allowAdd, `Trying to add DashContainerViewSpec with allowAdd=false. specId=${specId}`);
+        throwIf(viewSpec.unique && instances.length, `Trying to add multiple instances of a DashContainerViewSpec with unique=true. specId=${specId}`);
 
         if (!container) container = goldenLayout.root.contentItems[0];
 
