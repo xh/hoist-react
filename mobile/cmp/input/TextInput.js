@@ -67,7 +67,7 @@ TextInput.propTypes = {
     textAlign: PT.oneOf(['left', 'right']),
 
     /** Underlying HTML <input> element type. */
-    type: PT.oneOf(['text', 'password', 'search'])
+    type: PT.oneOf(['text', 'password'])
 };
 TextInput.hasLayoutSupport = true;
 
