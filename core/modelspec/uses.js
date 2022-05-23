@@ -55,11 +55,16 @@ export function uses(
  * @param {Object} s
  */
 export function ensureIsSelector(s) {
-    throwIf(
-        !isFunction(s) && s !== '*',
-        'A valid Class, function, or "*" is required as a selector.' +
-        'Functional form may take a model and return a boolean, or take no arguments and return a Class'
-    );
+    const isFunc = isFunction(s),
+        msg = 'A valid subclass of HoistModel, a function, or "*" is required as a selector.' +
+            'Functional form may take a HoistModel and return a boolean, or take no arguments and ' +
+            'return a subclass of HoistModel.';
+
+    // Basic check for non-functions
+    throwIf(!isFunc && s !== '*', msg);
+
+    // For functions, can only validate that if it is a class constructor it's a HoistModel
+    throwIf(isFunc && s.prototype && !s.isHoistModel, msg);
 }
 
 /**
