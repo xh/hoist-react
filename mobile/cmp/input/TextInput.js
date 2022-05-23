@@ -111,6 +111,11 @@ const cmp = hoistCmp.factory(
         return hbox({
             ref,
             className,
+            style: {
+                ...props.style,
+                ...layoutProps,
+                width: withDefault(width, null)
+            },
             items: [
                 input({
                     value: model.renderValue || '',
@@ -122,28 +127,23 @@ const cmp = hoistCmp.factory(
                     spellCheck: withDefault(props.spellCheck, false),
                     tabIndex: props.tabIndex,
                     type: props.type,
-
-                    style: {
-                        ...props.style,
-                        ...layoutProps,
-                        width: withDefault(width, null),
-                        textAlign: withDefault(props.textAlign, 'left')
-                    },
+                    className: 'xh-text-input__input',
+                    style: {textAlign: withDefault(props.textAlign, 'left')},
 
                     onChange: model.onChange,
                     onKeyDown: model.onKeyDown,
                     onBlur: model.onBlur,
-                    onFocus: model.onFocus,
+                    onFocus: model.onFocus
                 }),
                 clearButton()
             ]
-        })
+        });
     }
 );
 
 const clearButton = hoistCmp.factory(
     ({model}) => button({
-        className: 'clear-button',
+        className: 'xh-text-input__clear-button',
         icon: Icon.cross(),
         tabIndex: -1,
         minimal: true,
