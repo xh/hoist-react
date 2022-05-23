@@ -29,7 +29,10 @@ export function useInlineEditorModel(component, props, ref) {
         impl = useLocalModel(() => new InlineEditorModel(agParams));
 
     useImperativeHandle(ref, () => ({
-        getValue: () => impl.value,
+        getValue: () => {
+            impl.ref.current?.doCommit();
+            return impl.value;
+        },
 
         // This is called in full-row editing when the user tabs into the cell
         focusIn: () => impl.focus(),
