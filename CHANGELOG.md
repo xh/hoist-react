@@ -41,6 +41,7 @@
 * Fixed a bug with Panel drag-to-resize within iframes on Windows.
 * Worked around an Ag-Grid bug where the grid would render incorrectly on certain sorting changes,
   specifically for abs sort columns, leaving mis-aligned rows and gaps in the grid body layout.
+* Fixed a bug in `SelectEditor` that would cause the grid to lose keyboard focus during editing.
 
 ### ⚙️ Technical
 
