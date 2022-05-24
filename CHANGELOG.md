@@ -1,6 +1,6 @@
 # Changelog
 
-## v49.0.0-SNAPSHOT - unreleased
+## v49.0.0 - 2022-05-24
 
 ### 🐞 New Features
 
@@ -17,11 +17,9 @@
 * Added new `SplitTreeMapModel.showSplitter` config to insert a four pixel buffer between the
   component's nested maps. Useful for visualizations with both positive and negative heat values on
   each side, to keep the two sides clearly distinguished from each other.
-* Hoist now protects against custom Grid renderers that may throw by catching the error and printing
-  an "#ERROR" placeholder token in the affected cell.
 * New `xhChangelogConfig.limitToRoles` soft-config allows the in-app changelog (aka release notes)
   to be gated to a subset of users based on their role.
-* Add support for Map and WeakMap collections in LangUtils.getOrCreate
+* Add support for `Map` and `WeakMap` collections in `LangUtils.getOrCreate()`.
 * Mobile `textInput` now accepts an `enableClear` property with a default value of false.
 
 ### 💥 Breaking Changes
@@ -45,14 +43,18 @@
 
 ### ⚙️ Technical
 
+* Hoist now protects against custom Grid renderers that may throw by catching the error and printing
+  an "#ERROR" placeholder token in the affected cell.
 * `TreeMapModel.valueRenderer` and `heatRenderer` callbacks are now passed the `StoreRecord` as a
   second argument.
 * Includes a new, additional `index-manifest.html` static file required for compatibility with the
-  upcoming `hoist-dev-utils v6.0` release (but remains compatible with current/older dev-utils.)
+  upcoming `hoist-dev-utils v6.0` release (but remains compatible with current/older dev-utils).
 
 ### 📚 Libraries
 
 * mobx-react-lite `3.3 -> 3.4`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v48.0.1...v49.0.0)
 
 ## v48.0.1 - 2022-04-22
 
