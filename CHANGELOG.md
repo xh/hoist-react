@@ -1,5 +1,9 @@
 # Changelog
 
+## v50.0.0-SNAPSHOT - unreleased
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v49.0.0...develop)
+
 ## v49.0.0 - 2022-05-24
 
 ### 🐞 New Features
