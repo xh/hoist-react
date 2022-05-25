@@ -34,7 +34,7 @@
 * Model classes passed to `HoistComponents` or configured in their factory must now
   extend `HoistModel`. This has long been a core assumption, but was not previously enforced.
 * Nested model instances stored at properties with a `_` prefix are now considered private and will
-  not be auto-wired or returned by model lookups. This should affect most apps, but will require
+  not be auto-wired or returned by model lookups. This should not affect most apps, but will require
   minor changes for apps that were binding components to non-standard or "private" models.
 * Hoist will now throw if `Store.summaryRecord` does not have a unique ID.
 
