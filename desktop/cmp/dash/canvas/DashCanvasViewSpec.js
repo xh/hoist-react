@@ -25,18 +25,24 @@ export class DashCanvasViewSpec extends DashViewSpec {
     width;
     hidePanelHeader;
     hideMenuButton;
+    headerItems;
+    extraMenuItems;
 
     /**
-     * @param {number} height - initial height of view when added to canvas (default 5)
-     * @param {number} width - initial width of view when added to canvas (default 5)
-     * @param {boolean} hidePanelHeader - true to hide the panel header (default false)
-     * @param {boolean} hideMenuButton - true to hide the panel header menu button (default false)
+     * @param {number} [height] - initial height of view when added to canvas (default 5)
+     * @param {number} [width] - initial width of view when added to canvas (default 5)
+     * @param {boolean} [hidePanelHeader] - true to hide the panel header (default false)
+     * @param {boolean} [hideMenuButton] - true to hide the panel header menu button (default false)
+     * @param {Array} [headerItems] - items to be added to the right-side of the panel header
+     * @param {Array} [extraMenuItems] - array with which to create additional panel menu items
      */
     constructor({
         height = 5,
         width = 5,
         hidePanelHeader = false,
         hideMenuButton = false,
+        headerItems = [],
+        extraMenuItems = [],
         ...rest
     }) {
         super(rest);
@@ -44,5 +50,7 @@ export class DashCanvasViewSpec extends DashViewSpec {
         this.width = width;
         this.hidePanelHeader = hidePanelHeader;
         this.hideMenuButton = hideMenuButton;
+        this.headerItems = headerItems;
+        this.extraMenuItems = extraMenuItems;
     }
 }

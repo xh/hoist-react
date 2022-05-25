@@ -29,13 +29,13 @@ export const dashCanvasView = hoistCmp.factory({
     className: 'xh-dash-tab',
     model: uses(DashCanvasViewModel, {publishMode: ModelPublishMode.LIMITED}),
     render({model, className}) {
-        const {viewSpec, ref, hidePanelHeader} = model,
+        const {viewSpec, ref, hidePanelHeader, headerItems} = model,
             headerProps = hidePanelHeader ? {} : {
                 compactHeader: true,
                 title: model.title,
                 icon: model.icon,
                 headerItems: [
-                    // TODO - Investigate why {model} must be passed explicitly here
+                    ...headerItems,
                     headerMenu({model})
                 ]
             };
@@ -53,7 +53,7 @@ const headerMenu = hoistCmp.factory(
         if (model.hideMenuButton) return null;
 
         const {viewState, viewSpec, id, containerModel, positionParams, title} = model,
-            {extraMenuItems, contentLocked, renameLocked} = containerModel,
+            {contentLocked, renameLocked} = containerModel,
 
             addMenuItems = createViewMenuItems({
                 dashCanvasModel: containerModel,
@@ -104,7 +104,9 @@ const headerMenu = hoistCmp.factory(
                             }).ensureVisible()
                     },
                     '-',
-                    ...(extraMenuItems ?? [])
+                    ...(model.extraMenuItems ?? []),
+                    '-',
+                    ...(containerModel.extraMenuItems ?? [])
                 ]
             });
 
