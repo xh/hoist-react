@@ -2,6 +2,10 @@
 
 ## v50.0.0-SNAPSHOT - unreleased
 
+### 🐞 New Features
+
+* A `DashCanvasViewModel` now supports `headerItems` and `extraMenuItems`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v49.0.0...develop)
 
 ## v49.0.0 - 2022-05-24
