@@ -25,8 +25,6 @@ export class DashCanvasViewModel extends DashViewModel {
     @observable hideMenuButton;
     /** @member {Array} */
     @observable.ref headerItems = [];
-    /** @member {Array} */
-    @observable.ref extraMenuItems = [];
 
     constructor(cfg) {
         super(cfg);
@@ -51,19 +49,10 @@ export class DashCanvasViewModel extends DashViewModel {
 
     /**
      * Specify array of items to be added to the right-side of the panel header
-     * @param {Array} items
+     * @param {ReactNode[]} items
      */
     @action
     setHeaderItems(items) {
         this.headerItems = items;
-    }
-
-    /**
-     * Specify array with which to create additional panel menu items
-     * @param {Array} items
-     */
-    @action
-    setExtraMenuItems(items) {
-        this.extraMenuItems = items;
     }
 }
