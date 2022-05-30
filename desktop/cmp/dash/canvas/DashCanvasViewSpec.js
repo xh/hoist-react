@@ -27,10 +27,10 @@ export class DashCanvasViewSpec extends DashViewSpec {
     hideMenuButton;
 
     /**
-     * @param {number} height - initial height of view when added to canvas (default 5)
-     * @param {number} width - initial width of view when added to canvas (default 5)
-     * @param {boolean} hidePanelHeader - true to hide the panel header (default false)
-     * @param {boolean} hideMenuButton - true to hide the panel header menu button (default false)
+     * @param {number} [height] - initial height of view when added to canvas (default 5)
+     * @param {number} [width] - initial width of view when added to canvas (default 5)
+     * @param {boolean} [hidePanelHeader] - true to hide the panel header (default false)
+     * @param {boolean} [hideMenuButton] - true to hide the panel header menu button (default false)
      */
     constructor({
         height = 5,
