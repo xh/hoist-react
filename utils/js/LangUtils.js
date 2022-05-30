@@ -22,9 +22,9 @@ import _inflection from 'lodash-inflection';
 mixin(_inflection);
 
 /**
- * Get a cached value on an object, creating it, if it does not yet exist.
+ * Get a cached value on an object, creating it if it does not yet exist.
  *
- * @param {Object} obj - object of interest.  Must have writable properties.
+ * @param {Object} obj - object of interest. Must have writable properties.
  * @param {string} key - key (property name) to cache value at in object.
  * @param {function} fn - function to generate value if missing.
  * @returns {*} value stored at key

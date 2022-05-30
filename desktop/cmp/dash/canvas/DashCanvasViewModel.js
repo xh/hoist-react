@@ -6,7 +6,7 @@
  */
 import {DashViewModel} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {makeObservable, observable} from 'mobx';
+import {action, makeObservable, observable} from 'mobx';
 
 /**
  * Model for a content item within a DashCanvas. Extends {@see DashViewModel}
@@ -23,6 +23,8 @@ export class DashCanvasViewModel extends DashViewModel {
     @observable hidePanelHeader;
     /** @member {boolean} */
     @observable hideMenuButton;
+    /** @member {Array} */
+    @observable.ref headerItems = [];
 
     constructor(cfg) {
         super(cfg);
@@ -43,5 +45,14 @@ export class DashCanvasViewModel extends DashViewModel {
             when: () => ref.current,
             run: () => ref.current.scrollIntoView({behavior: 'smooth', block: 'nearest'})
         });
+    }
+
+    /**
+     * Specify array of items to be added to the right-side of the panel header
+     * @param {ReactNode[]} items
+     */
+    @action
+    setHeaderItems(items) {
+        this.headerItems = items;
     }
 }

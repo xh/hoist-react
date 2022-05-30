@@ -6,9 +6,13 @@
  */
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
+import {hbox} from '@xh/hoist/cmp/layout';
 import {input} from '@xh/hoist/kit/onsen';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
+import {button} from '@xh/hoist/mobile/cmp/button';
+import {isEmpty} from 'lodash';
 import PT from 'prop-types';
 import './TextInput.scss';
 
@@ -40,6 +44,9 @@ TextInput.propTypes = {
 
     /** True to commit on every change/keystroke, default false. */
     commitOnChange: PT.bool,
+
+    /** True to show a "clear" button aligned to the right of the control. Defaults to false. */
+    enableClear: PT.bool,
 
     /** Onsen modifier string */
     modifier: PT.string,
@@ -73,6 +80,11 @@ class Model extends HoistInputModel {
         return withDefault(this.componentProps.commitOnChange, false);
     }
 
+    get showClearButton() {
+        const {enableClear, disabled} = this.componentProps;
+        return enableClear && !disabled && !isEmpty(this.internalValue);
+    }
+
     onChange = (ev) => {
         let {value} = ev.target;
         if (value === '') value = null;
@@ -96,31 +108,49 @@ const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props);
 
-        return input({
-            value: model.renderValue || '',
-
-            autoComplete: withDefault(props.autoComplete, props.type === 'password' ? 'new-password' : 'off'),
-            disabled: props.disabled,
-            modifier: props.modifier,
-            placeholder: props.placeholder,
-            spellCheck: withDefault(props.spellCheck, false),
-            tabIndex: props.tabIndex,
-            type: props.type,
-
+        return hbox({
+            ref,
+            className,
             style: {
                 ...props.style,
                 ...layoutProps,
-                width: withDefault(width, null),
-                textAlign: withDefault(props.textAlign, 'left')
+                width: withDefault(width, null)
             },
+            items: [
+                input({
+                    value: model.renderValue || '',
 
-            onChange: model.onChange,
-            onKeyDown: model.onKeyDown,
-            onBlur: model.onBlur,
-            onFocus: model.onFocus,
+                    autoComplete: withDefault(props.autoComplete, props.type === 'password' ? 'new-password' : 'off'),
+                    disabled: props.disabled,
+                    modifier: props.modifier,
+                    placeholder: props.placeholder,
+                    spellCheck: withDefault(props.spellCheck, false),
+                    tabIndex: props.tabIndex,
+                    type: props.type,
+                    className: 'xh-text-input__input',
+                    style: {textAlign: withDefault(props.textAlign, 'left')},
 
-            className,
-            ref
+                    onChange: model.onChange,
+                    onKeyDown: model.onKeyDown,
+                    onBlur: model.onBlur,
+                    onFocus: model.onFocus
+                }),
+                clearButton()
+            ]
         });
     }
+);
+
+const clearButton = hoistCmp.factory(
+    ({model}) => button({
+        className: 'xh-text-input__clear-button',
+        icon: Icon.cross(),
+        tabIndex: -1,
+        minimal: true,
+        omit: !model.showClearButton,
+        onClick: () => {
+            model.noteValueChange(null);
+            model.doCommit();
+        }
+    })
 );
