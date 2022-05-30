@@ -6,6 +6,11 @@
 
 * A `DashCanvasViewModel` now supports `headerItems` and `extraMenuItems`
 
+### 📚 Libraries
+
+* react `17.0.1 > 18.0.0`
+* react-dom `17.0.1 > 18.0.0`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v49.0.0...develop)
 
 ## v49.0.0 - 2022-05-24
@@ -60,8 +65,6 @@
 
 ### 📚 Libraries
 
-* react `17.0.1 > 18.0.0`
-* react-dom `17.0.1 > 18.0.0`
 * mobx-react-lite `3.3 -> 3.4`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v48.0.1...v49.0.0)
