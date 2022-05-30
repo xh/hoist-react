@@ -6,6 +6,11 @@
 
 * A `DashCanvasViewModel` now supports `headerItems` and `extraMenuItems`
 
+### 📚 Libraries
+
+* onsenui `2.11.1 -> 2.12.0`
+* react-onsenui `1.11.5 > 1.12.0`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v49.0.0...develop)
 
 ## v49.0.0 - 2022-05-24
@@ -61,8 +66,6 @@
 ### 📚 Libraries
 
 * mobx-react-lite `3.3 -> 3.4`
-* onsenui `2.11.1 -> 2.12.0`
-* react-onsenui `1.11.5 > 1.12.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v48.0.1...v49.0.0)
 
