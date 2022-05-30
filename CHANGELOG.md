@@ -1,6 +1,14 @@
 # Changelog
 
-## v49.0.0-SNAPSHOT - unreleased
+## v50.0.0-SNAPSHOT - unreleased
+
+### 🐞 New Features
+
+* A `DashCanvasViewModel` now supports `headerItems` and `extraMenuItems`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v49.0.0...develop)
+
+## v49.0.0 - 2022-05-24
 
 ### 🐞 New Features
 
@@ -17,11 +25,10 @@
 * Added new `SplitTreeMapModel.showSplitter` config to insert a four pixel buffer between the
   component's nested maps. Useful for visualizations with both positive and negative heat values on
   each side, to keep the two sides clearly distinguished from each other.
-* Hoist now protects against custom Grid renderers that may throw by catching the error and printing
-  an "#ERROR" placeholder token in the affected cell.
 * New `xhChangelogConfig.limitToRoles` soft-config allows the in-app changelog (aka release notes)
   to be gated to a subset of users based on their role.
-* Add support for Map and WeakMap collections in LangUtils.getOrCreate
+* Add support for `Map` and `WeakMap` collections in `LangUtils.getOrCreate()`.
+* Mobile `textInput` now accepts an `enableClear` property with a default value of false.
 
 ### 💥 Breaking Changes
 
@@ -31,7 +38,7 @@
 * Model classes passed to `HoistComponents` or configured in their factory must now
   extend `HoistModel`. This has long been a core assumption, but was not previously enforced.
 * Nested model instances stored at properties with a `_` prefix are now considered private and will
-  not be auto-wired or returned by model lookups. This should affect most apps, but will require
+  not be auto-wired or returned by model lookups. This should not affect most apps, but will require
   minor changes for apps that were binding components to non-standard or "private" models.
 * Hoist will now throw if `Store.summaryRecord` does not have a unique ID.
 
@@ -40,19 +47,24 @@
 * Fixed a bug with Panel drag-to-resize within iframes on Windows.
 * Worked around an Ag-Grid bug where the grid would render incorrectly on certain sorting changes,
   specifically for abs sort columns, leaving mis-aligned rows and gaps in the grid body layout.
+* Fixed a bug in `SelectEditor` that would cause the grid to lose keyboard focus during editing.
 
 ### ⚙️ Technical
 
+* Hoist now protects against custom Grid renderers that may throw by catching the error and printing
+  an "#ERROR" placeholder token in the affected cell.
 * `TreeMapModel.valueRenderer` and `heatRenderer` callbacks are now passed the `StoreRecord` as a
   second argument.
 * Includes a new, additional `index-manifest.html` static file required for compatibility with the
-  upcoming `hoist-dev-utils v6.0` release (but remains compatible with current/older dev-utils.)
+  upcoming `hoist-dev-utils v6.0` release (but remains compatible with current/older dev-utils).
 
 ### 📚 Libraries
 
 * react `17.0.1 > 18.0.0`
 * react-dom `17.0.1 > 18.0.0`
 * mobx-react-lite `3.3 -> 3.4`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v48.0.1...v49.0.0)
 
 ## v48.0.1 - 2022-04-22
 

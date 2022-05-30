@@ -10,7 +10,6 @@ import {useInlineEditorModel} from './impl/InlineEditorModel';
 import {EditorPropTypes} from './EditorPropTypes';
 import './Editors.scss';
 
-// Todo: Select Editor fails to commit if you select item in list using Enter key...?
 export const [SelectEditor, selectEditor] = hoistCmp.withFactory({
     displayName: 'SelectEditor',
     className: 'xh-select-editor',
@@ -23,11 +22,6 @@ export const [SelectEditor, selectEditor] = hoistCmp.withFactory({
                 hideDropdownIndicator: true,
                 hideSelectedOptionCheck: true,
                 selectOnFocus: false,
-                onCommit: () => {
-                    // When not full-row editing we end editing after commit to avoid extra clicks
-                    const {gridModel} = props;
-                    if (!gridModel.fullRowEditing) gridModel.endEditAsync();
-                },
                 rsOptions: {
                     styles: {
                         menu: styles => ({
