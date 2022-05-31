@@ -23,7 +23,7 @@ import {
     sortBy,
     uniq,
     compact,
-    findIndex, omitBy
+    findIndex
 } from 'lodash';
 import {span, a} from '@xh/hoist/cmp/layout';
 import {wait} from '@xh/hoist/promise';
@@ -165,17 +165,13 @@ export class GridExportService extends HoistService {
             fieldType = record.store.getField(field)?.type ?? AUTO;
 
         // 0) Main processing
-        let value = getValueFn({record, field, column, gridModel}),
-            type = fieldType;
+        let value = getValueFn({record, field, column, gridModel});
         // Modify value using exportValue
         if (isString(exportValue) && record.data[exportValue] !== null) {
             // If exportValue points to a different field
             value = record.data[exportValue];
-            // Use that different field's type, since it is available
-            type = record.store.getField(field)?.type ?? AUTO;
         } else if (isFunction(exportValue)) {
             // If export value is a function that transforms the value
-            // Assume the type of exportValue is the same as of the field
             value = exportValue(value, {record, column, gridModel});
         } else if (aggData && !isNil(aggData[field])) {
             // If we found aggregate data calculated by agGrid
@@ -194,19 +190,13 @@ export class GridExportService extends HoistService {
 
         // 2) Dates: Provide the date data string expected by the server endpoint
         // Also functions as a consistent human-friendly date format for CSV and clipboard
-        if (type === DATE) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
+        if (fieldType === DATE) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
 
         value = value.toString();
 
-        const cellHasVariedType = type !== fieldType;
-
         // Send format and/or type with the cell in an object only if it varies within the column
-        return (forExcel && (cellHasExcelFormat || cellHasVariedType)) ?
-            omitBy({
-                value,
-                format: cellHasExcelFormat ? excelFormat : null,
-                type: cellHasVariedType ? type : null
-            }, isNil) :
+        return (forExcel && cellHasExcelFormat) ?
+            {value, format: excelFormat} :
             value;
     }
     //-----------------------
@@ -254,11 +244,13 @@ export class GridExportService extends HoistService {
     }
 
     getColumnMetadata(columns, gridModel) {
+        const {store} = gridModel;
         return columns.map(column => {
-
-            let {field, excelWidth, excelFormat} = column,
-                // May encounter a field like 'id' that does not correspond to a store field
-                type = gridModel.store.getField(field)?.type ?? AUTO;
+            // Extract type from store for the column's export field (which may differ via exportValue)
+            // Default to 'AUTO' (for non-store fields like 'id')
+            let {field, exportValue, excelWidth, excelFormat} = column,
+                typeField = isString(exportValue) && store.getField(exportValue) ? exportValue : field,
+                type = store.getField(typeField)?.type ?? AUTO;
 
             // Set default excelFormat for dates and localDates on the client
             if (isNil(excelFormat) || excelFormat === ExcelFormat.DEFAULT) {
