@@ -141,7 +141,7 @@ export class GridModel extends HoistModel {
     @observable.ref groupBy = null;
     /** @member {(string|boolean)} */
     @observable showSummary = false;
-    /** @member {string} */
+    /** @member {(ReactNode|string)} */
     @observable emptyText;
     /** @member {TreeStyle} */
     @observable treeStyle;
@@ -225,7 +225,7 @@ export class GridModel extends HoistModel {
      * @param {?ReactNode} [c.restoreDefaultsWarning] - Confirmation warning to be presented to
      *      user before restoring default grid state. Set to null to skip user confirmation.
      * @param {GridModelPersistOptions} [c.persistWith] - options governing persistence.
-     * @param {?ReactNode} [c.emptyText] - text/element to display if grid has no records.
+     * @param {(ReactNode|string)} [c.emptyText] - text/element to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
      * @param {boolean} [c.hideEmptyTextBeforeLoad] - true (default) to hide empty text until
      *      after the Store has been loaded at least once.
@@ -740,8 +740,7 @@ export class GridModel extends HoistModel {
     }
 
     /**
-     * Set the text displayed when the grid is empty.
-     * @param {?ReactNode} emptyText - text/element to display if grid has no records.
+     * @param {(ReactNode|string)} emptyText - text/element to display if grid has no records.
      */
     @action
     setEmptyText(emptyText) {

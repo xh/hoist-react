@@ -42,7 +42,7 @@
       color: var(--xh-text-color);
 
       // Container for DV items should take up all configured row height + flex contents.
-      .ag-react-container {
+      .xh-cell-inner-wrapper {
         height: 100%;
         display: flex;
       }

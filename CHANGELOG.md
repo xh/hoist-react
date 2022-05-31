@@ -1,46 +1,73 @@
 # Changelog
 
-## v49.0.0-SNAPSHOT - unreleased
+## v50.0.0-SNAPSHOT - unreleased
 
 ### 🐞 New Features
 
-* Improve behavior of `NumberInput`:
- ** Improvements to  `min` and `max` props.
-    The new implementation constrains the set value more fully whether changes being made by
-    keyboard or mouse. Also fixed some bugs related to Blueprint.
- ** The `precision` prop is now respected more fully.  All values produced by editing the control
-    will respect this value.
- ** Added debounce to make value more stable during user typing.
+* A `DashCanvasViewModel` now supports `headerItems` and `extraMenuItems`
 
-* Apps can now add to the admin console's menu items through `AppModel.getAppMenuButtonExtraItems`.
-* Apps can now hide the Admin > General > Users tab  by setting `hideUsersTab` to false in the new
-  soft config `xhAdminAppConfig`.
-* Tree maps now take a `showSplitter` property, defaulted to `false`, to insert a four pixel buffer
-  between the two maps. Useful for tree maps that may have both positive and negative heat values on
-  each side which can make it hard to determine where one map ends and the other begins.
-* Hoist now protects against renderers that may throw by catching the error and printing an error token.
+### 🐞 Bug Fixes
+
+* Fixed issue where exporting to excel file would occasionally coerce strings (like "1e10") into numbers.
+  Upgrade to `hoist-core >= 13.2` for the fixed behavior.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v49.0.0...develop)
+
+## v49.0.0 - 2022-05-24
+
+### 🐞 New Features
+
+* Improved desktop `NumberInput`:
+    * Re-implemented `min` and `max` props to properly constrain the value entered and fix several
+      bugs with the underlying Blueprint control.
+    * Fixed the `precision` prop to be fully respected - values emitted by the input are now
+      truncated to the specified precision, if set.
+    * Added additional debouncing to keep the value more stable while a user is typing.
+* Added new `getAppMenuButtonExtraItems()` extension point on `@xh/hoist/admin/AppModel` to allow
+  customization of the Admin Console's app menu.
+* Devs can now hide the Admin > General > Users tab by setting `hideUsersTab: true` within a new,
+  optional `xhAdminAppConfig` soft-config.
+* Added new `SplitTreeMapModel.showSplitter` config to insert a four pixel buffer between the
+  component's nested maps. Useful for visualizations with both positive and negative heat values on
+  each side, to keep the two sides clearly distinguished from each other.
+* New `xhChangelogConfig.limitToRoles` soft-config allows the in-app changelog (aka release notes)
+  to be gated to a subset of users based on their role.
+* Add support for `Map` and `WeakMap` collections in `LangUtils.getOrCreate()`.
+* Mobile `textInput` now accepts an `enableClear` property with a default value of false.
 
 ### 💥 Breaking Changes
 
 * `GridModel.groupRowElementRenderer` and `DataViewModel.groupRowElementRenderer` have been removed,
   please use `groupRowRenderer` instead. It must now return a React Element rather than an HTML
   string (plain strings are also OK, but any formatting must be done via React).
+* Model classes passed to `HoistComponents` or configured in their factory must now
+  extend `HoistModel`. This has long been a core assumption, but was not previously enforced.
+* Nested model instances stored at properties with a `_` prefix are now considered private and will
+  not be auto-wired or returned by model lookups. This should not affect most apps, but will require
+  minor changes for apps that were binding components to non-standard or "private" models.
+* Hoist will now throw if `Store.summaryRecord` does not have a unique ID.
 
 ### 🐞 Bug Fixes
 
 * Fixed a bug with Panel drag-to-resize within iframes on Windows.
-* Fixed a bug where Grid would render incorrectly on sort order change.
-* Fixed issue where exporting to excel file would occasionally coerce strings (like "1e10") into numbers.
- Upgrade to `hoist-core >= 13.2` for the fixed behavior.
+* Worked around an Ag-Grid bug where the grid would render incorrectly on certain sorting changes,
+  specifically for abs sort columns, leaving mis-aligned rows and gaps in the grid body layout.
+* Fixed a bug in `SelectEditor` that would cause the grid to lose keyboard focus during editing.
 
 ### ⚙️ Technical
 
-* Stricter Model Binding/Lookup: This version of Hoist now more strictly enforces that only
- instances of `HoistModel` may serve as  models for `HoistComponent`s.  In addition, Hoist models
- stored at properties with the `_` prefix are also considered private and not eligible for model
- lookup. These changes are not expected to be a problem for most apps, but may require minor rework
- for applications that were binding components to non-standard or "private" models.
-* Hoist will now throw if `Store.summaryRecord`'s ID is not unique.
+* Hoist now protects against custom Grid renderers that may throw by catching the error and printing
+  an "#ERROR" placeholder token in the affected cell.
+* `TreeMapModel.valueRenderer` and `heatRenderer` callbacks are now passed the `StoreRecord` as a
+  second argument.
+* Includes a new, additional `index-manifest.html` static file required for compatibility with the
+  upcoming `hoist-dev-utils v6.0` release (but remains compatible with current/older dev-utils).
+
+### 📚 Libraries
+
+* mobx-react-lite `3.3 -> 3.4`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v48.0.1...v49.0.0)
 
 ## v48.0.1 - 2022-04-22
 
@@ -255,12 +282,13 @@
 
 * Hoist now requires ag-Grid v26.2.0 or higher - update your ag-Grid dependency in your app's
   `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
-* `StoreRecord.id` must now be a String. Integers IDs were previously supported, but will be cast
-  Strings during record creation.
-    * Apps using numeric record IDs for internal or server-side APIs will need to be reviewed and
-      updated to handle/convert string values.
-    * This change was necessitated by a change to Ag-Grid, which now also requires String IDs for
-      its row node APIs.
+* ~~`StoreRecord.id` must now be a String. Integers IDs were previously supported, but will be cast
+  Strings during record creation.~~
+    * ~~Apps using numeric record IDs for internal or server-side APIs will need to be reviewed and
+      updated to handle/convert string values.~~
+    * ~~This change was necessitated by a change to Ag-Grid, which now also requires String IDs for
+      its row node APIs.~~
+    * NOTE - the change above to require string IDs was unwound in v46.1.
 * `LocalDate` methods `toString()`, `toJSON()`, `valueOf()`, and `isoString()` now all return the
   standard ISO format `YYYY-MM-DD`, consistent with built-in `Date.toISOString()`. Prior versions
   returned`YYYYMMDD`.

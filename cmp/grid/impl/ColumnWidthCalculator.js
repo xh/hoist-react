@@ -21,9 +21,6 @@ import {renderToStaticMarkup} from 'react-dom/server';
  */
 export class ColumnWidthCalculator {
 
-    /** Max number of unique rendered values to consider per column */
-    VALUE_SAMPLES = 1000;
-
     /** Max number value to calculate size per column */
     SIZE_CALC_SAMPLES = 10;
 
@@ -102,7 +99,6 @@ export class ColumnWidthCalculator {
 
         records.forEach(record => {
             if (!record) return;
-            if (renderedValues.size >= this.VALUE_SAMPLES && !record.isSummary) return;
 
             const ctx = {record, field, column, gridModel, store},
                 rawValue = getValueFn(ctx);

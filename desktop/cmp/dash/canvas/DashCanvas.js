@@ -53,6 +53,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
                     autoSize: true,
                     isBounded: true,
                     draggableHandle: '.xh-panel > .xh-panel__content > .xh-panel-header',
+                    draggableCancel: '.xh-button',
                     // Resizing always pins to the nw corner, so dragging from anywhere other than se sides/corner is unintuitive
                     resizeHandles: ['s', 'e', 'se'],
                     onLayoutChange: (layout) => model.setLayout(layout),
