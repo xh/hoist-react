@@ -118,8 +118,14 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         // suggest values from already-filtered fields that will expand the results when selected.
         const sourceStore = source.isView ? source.cube.store : source;
         sourceStore.allRecords.forEach(rec => {
-            const val = rec.get(field);
-            if (!isNil(val)) values.add(val);
+            let val = rec.get(field);
+            if (!isNil(val)) {
+                if (sourceStore.getField(field).type === FieldType.ARRAY) {
+                    val.forEach(it => values.add(it));
+                } else {
+                    values.add(val);
+                }
+            }
         });
 
         this.values = Array.from(values);

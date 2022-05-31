@@ -9,6 +9,7 @@ import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {castArray, difference, isEmpty, partition, without} from 'lodash';
+import {FieldType} from '../../../../../../data';
 
 export class ValuesTabModel extends HoistModel {
     /** @member {ColumnHeaderFilterModel} */
@@ -121,13 +122,31 @@ export class ValuesTabModel extends HoistModel {
         }
 
         const weight = valueCount <= 10 ? 2.5 : 1, // Prefer '=' for short lists
-            op = included.length > (excluded.length * weight) ? '!=' : '=',
-            arr = op === '=' ? included : excluded;
+            includeOp = this.getIncludeOp(),
+            excludeOp = this.getExcludeOp(),
+            op = included.length > (excluded.length * weight) ? excludeOp : includeOp,
+            arr = op === includeOp ? included : excluded;
 
         if (isEmpty(arr)) return null;
 
         const value = arr.length === 1 ? arr[0] : arr;
         return {field, op, value};
+    }
+
+    getIncludeOp() {
+        if (this.headerFilterModel.fieldType === FieldType.ARRAY) {
+            return 'includes';
+        }
+
+        return '=';
+    }
+
+    getExcludeOp() {
+        if (this.headerFilterModel.fieldType === FieldType.ARRAY) {
+            return 'does not include';
+        }
+
+        return '!=';
     }
 
     @action
@@ -139,7 +158,7 @@ export class ValuesTabModel extends HoistModel {
         }
 
         // We are only interested '!=' filters if we have no '=' filters.
-        const [equalsFilters, notEqualsFilters] = partition(columnFilters, f => f.op === '='),
+        const [equalsFilters, notEqualsFilters] = partition(columnFilters, f => f.op === this.getIncludeOp()),
             useNotEquals = isEmpty(equalsFilters),
             arr = useNotEquals ? notEqualsFilters : equalsFilters,
             filterValues = [];
@@ -170,7 +189,8 @@ export class ValuesTabModel extends HoistModel {
     createGridModel() {
         const {BLANK_STR} = this.gridFilterModel,
             {align, headerAlign, displayName} = this.headerFilterModel.column,
-            renderer = this.fieldSpec.renderer ?? this.headerFilterModel.column.renderer;
+            {fieldType} = this.headerFilterModel,
+            renderer = this.fieldSpec.renderer ?? (fieldType !== FieldType.ARRAY ? this.headerFilterModel.column.renderer : null);
 
         return new GridModel({
             store: {

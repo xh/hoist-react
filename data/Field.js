@@ -88,6 +88,7 @@ export function parseFieldValue(val, type, defaultValue = null, disableXssProtec
 
     const FT = FieldType;
     switch (type) {
+        case FT.ARRAY:
         case FT.AUTO:
         case FT.JSON:
             return val;
@@ -112,6 +113,7 @@ export function parseFieldValue(val, type, defaultValue = null, disableXssProtec
 
 /** @enum {string} - data types for Fields used within Hoist Store Records and Cubes. */
 export const FieldType = Object.freeze({
+    ARRAY: 'array',
     AUTO: 'auto',
     BOOL: 'bool',
     DATE: 'date',

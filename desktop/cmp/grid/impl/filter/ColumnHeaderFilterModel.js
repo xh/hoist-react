@@ -36,6 +36,14 @@ export class ColumnHeaderFilterModel extends HoistModel {
         return this.fieldSpec.field;
     }
 
+    get store() {
+        return this.gridFilterModel.gridModel.store;
+    }
+
+    get fieldType() {
+        return this.store.getField(this.field).type;
+    }
+
     get currentGridFilter() {
         return this.gridFilterModel.filter;
     }
