@@ -72,7 +72,7 @@ export class ColumnHeaderFilterModel extends HoistModel {
         const {columnCompoundFilter, columnFilters} = this;
         if (columnCompoundFilter) return true;
         if (isEmpty(columnFilters)) return false;
-        return columnFilters.some(it => !['=', '!=', 'includes', 'does not include'].includes(it.op));
+        return columnFilters.some(it => !['=', '!=', 'includes'].includes(it.op));
     }
 
     get commitOnChange() {

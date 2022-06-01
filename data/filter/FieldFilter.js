@@ -8,15 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {
-    castArray,
-    difference,
-    escapeRegExp,
-    isArray,
-    isNil,
-    isUndefined,
-    isString
-} from 'lodash';
+import {castArray, difference, escapeRegExp, isArray, isNil, isUndefined, isString} from 'lodash';
 
 import {Filter} from './Filter';
 

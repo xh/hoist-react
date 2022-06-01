@@ -9,7 +9,7 @@ import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {castArray, difference, isEmpty, partition, uniq, without} from 'lodash';
-import {FieldType} from '../../../../../../data';
+import {FieldType} from '@xh/hoist/data';
 
 export class ValuesTabModel extends HoistModel {
     /** @member {ColumnHeaderFilterModel} */
@@ -140,9 +140,11 @@ export class ValuesTabModel extends HoistModel {
 
     @action
     doSyncWithFilter() {
-        const {values, columnFilters, gridFilterModel} = this;
+        const {values, columnFilters, gridFilterModel} = this,
+            {fieldType} = this.headerFilterModel;
+
         if (isEmpty(columnFilters)) {
-            this.pendingValues = values;
+            this.pendingValues = fieldType === FieldType.ARRAY ? [] : values;
             return;
         }
 
