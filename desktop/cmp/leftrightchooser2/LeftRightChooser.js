@@ -36,10 +36,7 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory({
                     // rowDragManaged: true, // allow for rows to be reordered
                     rowDragEntireRow: true,
                     animateRows: true, // smooth reorder animations
-                    // onRowDragEnter: (e) => console.log('onRowDragEnter', e),
-                    // onRowDragLeave: (e) => console.log('onRowDragLeave', e),
-                    onRowDragEnd: (e) => rightModel.onRowDragEnd(e),
-                    // onRowDragMove: (e) => rightModel.onRowDragMove(e)
+                    onRowDragEnd: (e) => model.onRowDragEnd(e)
                 }
             },
             leftGridOptions = cloneDeep(gridOptions),

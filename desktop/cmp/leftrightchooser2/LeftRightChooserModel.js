@@ -84,21 +84,21 @@ export class LeftRightChooserModel extends HoistModel {
      *      in the header
      */
     constructor({
-                    data = [],
-                    onChange,
-                    ungroupedName = 'Ungrouped',
-                    leftTitle = 'Available',
-                    leftSorted = false,
-                    leftGroupingEnabled = true,
-                    leftGroupingExpanded = true,
-                    leftEmptyText = null,
-                    rightTitle = 'Selected',
-                    rightSorted = false,
-                    rightGroupingEnabled = true,
-                    rightGroupingExpanded = true,
-                    rightEmptyText = null,
-                    showCounts = true
-                }) {
+        data = [],
+        onChange,
+        ungroupedName = 'Ungrouped',
+        leftTitle = 'Available',
+        leftSorted = false,
+        leftGroupingEnabled = true,
+        leftGroupingExpanded = true,
+        leftEmptyText = null,
+        rightTitle = 'Selected',
+        rightSorted = false,
+        rightGroupingEnabled = true,
+        rightGroupingExpanded = true,
+        rightEmptyText = null,
+        showCounts = true
+    }) {
         super();
         makeObservable(this);
         this.onChange = onChange;
@@ -160,9 +160,6 @@ export class LeftRightChooserModel extends HoistModel {
             selModel: 'multiple',
             sortBy: rightSorted ? 'text' : 'sortOrder',
             emptyText: rightEmptyText,
-            onRowDoubleClicked: (e) => this.onRowDoubleClicked(e),
-            onRowDragMove: (e) => this.onRowDragMove(e),
-            onRowDragEnd: (e) => this.onRowDragEnd(e),
             columns: [idxCol, rightTextCol, groupCol]
         });
 
@@ -252,7 +249,7 @@ export class LeftRightChooserModel extends HoistModel {
             leftValues = data
                 .filter(r => r.side === 'left');
 
-        console.log("data: ", data);
+        console.log('data: ', data);
         console.log('right vals: ', rightValues);
 
         this._data = [...leftValues, ...rightValues];
