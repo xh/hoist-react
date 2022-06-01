@@ -8,6 +8,7 @@
 
 ### 🐞 Bug Fixes
 * Fix `DashCanvas` styling so drag-handles no longer cause horizontal scroll bar to appear
+* Fix bug where `DashCanvas` would not resize appropriately on scrollbar visibility change
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v49.0.0...develop)
 
