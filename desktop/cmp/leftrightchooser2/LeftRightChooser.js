@@ -2,22 +2,23 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {grid} from '@xh/hoist/cmp/grid';
 import {hframe, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {cloneDeep} from 'lodash';
 import PT from 'prop-types';
-import {chooserToolbar} from './impl/ChooserToolbar';
-import {description} from './impl/Description';
-import './LeftRightChooser.scss';
+import {chooserToolbar} from '../leftrightchooser/impl/ChooserToolbar';
+import '../leftrightchooser/LeftRightChooser.scss';
 import {LeftRightChooserModel} from './LeftRightChooserModel';
+import {description} from '../leftrightchooser/impl/Description';
+
 
 /**
  * A component for moving a list of items between two arbitrary groups. By convention, the left
  * group represents 'available' items and the right group represents 'selected' items.
- * A nested panel is also available to display a more in-depth description for any selected item.
+ * A next panel is also available to display a more in-depth description for any selected item.
  * @see LeftRightChooserModel
  */
 export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory({
@@ -31,7 +32,14 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory({
                 agOptions: {
                     defaultColDef: {
                         resizable: false
-                    }
+                    },
+                    // rowDragManaged: true, // allow for rows to be reordered
+                    rowDragEntireRow: true,
+                    animateRows: true, // smooth reorder animations
+                    // onRowDragEnter: (e) => console.log('onRowDragEnter', e),
+                    // onRowDragLeave: (e) => console.log('onRowDragLeave', e),
+                    onRowDragEnd: (e) => rightModel.onRowDragEnd(e),
+                    // onRowDragMove: (e) => rightModel.onRowDragMove(e)
                 }
             },
             leftGridOptions = cloneDeep(gridOptions),
