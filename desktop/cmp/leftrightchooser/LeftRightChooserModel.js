@@ -51,13 +51,13 @@ export class LeftRightChooserModel extends HoistModel {
         this.rightModel.store.setFilter(filter);
     }
 
-    /** Currently 'selected' values on the right hand side. */
+    /** Currently 'selected' values on the right-hand side. */
     @computed
     get rightValues() {
         return this.rightModel.store.allRecords.map(it => it.data.value);
     }
 
-    /** Currently 'selected' values on the left hand side. */
+    /** Currently 'selected' values on the left-hand side. */
     @computed
     get leftValues() {
         return this.leftModel.store.allRecords.map(it => it.data.value);

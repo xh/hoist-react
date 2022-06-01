@@ -21,7 +21,7 @@ import {LeftRightChooserModel} from './LeftRightChooserModel';
  * @see LeftRightChooserModel
  */
 export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory({
-    displayName: 'LeftRightChooser',
+        displayName: 'LeftRightChooser',
     model: uses(LeftRightChooserModel),
     className: 'xh-lr-chooser',
 
