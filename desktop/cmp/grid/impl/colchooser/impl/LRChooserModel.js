@@ -242,20 +242,7 @@ export class LRChooserModel extends HoistModel {
             r.sortOrder = idx;
         });
 
-        console.log('sorted right vals: ', rightValues);
-
         this.refreshStores();
-    }
-
-    onRowDragMove(e) {
-        const movingNode = e.node,
-            overNode = e.overNode;
-
-        const fromIndex = movingNode.data.raw.sortOrder,
-            toIndex = overNode.data.raw.sortOrder;
-
-        console.log('From: ', fromIndex);
-        console.log('To: ', toIndex);
     }
 
     onRowDragEnd(e) {
@@ -263,24 +250,13 @@ export class LRChooserModel extends HoistModel {
             overNode = e.overNode;
 
         if (overNode) {
-            // console.log('moving node: ', movingNode);
-            // console.log('over node: ', overNode);
 
             if (movingNode === overNode) return;
 
             const fromIndex = movingNode.data.raw.sortOrder,
                 toIndex = overNode.data.raw.sortOrder;
 
-            // const fromIndex = movingNode.data.sortOrder,
-            //     toIndex = overNode.data.sortOrder;
-
-
-            console.log('From: ', fromIndex);
-            console.log('To: ', toIndex);
-
             movingNode.data.raw.sortOrder = ((toIndex < fromIndex) ? (toIndex - 1) : (toIndex + 1));
-
-            console.log('new sortOrder: ', movingNode.data.raw.sortOrder);
 
             this.reorderData();
         }
