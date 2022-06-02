@@ -2,15 +2,19 @@
 
 ## v50.0.0-SNAPSHOT - unreleased
 
-### 🐞 New Features
+### 🎁 New Features
 
 * A `DashCanvasViewModel` now supports `headerItems` and `extraMenuItems`
+
+### 🐞 Bug Fixes
+* Fix `DashCanvas` styling so drag-handles no longer cause horizontal scroll bar to appear
+* Fix bug where `DashCanvas` would not resize appropriately on scrollbar visibility change
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v49.0.0...develop)
 
 ## v49.0.0 - 2022-05-24
 
-### 🐞 New Features
+### 🎁 New Features
 
 * Improved desktop `NumberInput`:
     * Re-implemented `min` and `max` props to properly constrain the value entered and fix several
