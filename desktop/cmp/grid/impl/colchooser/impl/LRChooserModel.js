@@ -9,12 +9,13 @@ import {div} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {computed, makeObservable} from '@xh/hoist/mobx';
+import {partition, filter, sortBy} from 'lodash';
 
 
 /**
  * A Model for managing the state of a LeftRightChooser.
  */
-export class LeftRightChooserModel extends HoistModel {
+export class LRChooserModel extends HoistModel {
 
     /** @type {GridModel} */
     @managed leftModel;
@@ -65,7 +66,7 @@ export class LeftRightChooserModel extends HoistModel {
     }
 
     /**
-     * @param {Object} c - LeftRightChooserModel configuration.
+     * @param {Object} c - LrChooserModel configuration.
      * @param {LeftRightChooserItemDef[]} c.data - source data for both lists, split by `side`.
      * @param {function} [c.onChange] - callback for when items change sides
      * @param {string} [c.ungroupedName] - placeholder group value when an item has no group.
@@ -108,7 +109,6 @@ export class LeftRightChooserModel extends HoistModel {
         this.rightGroupingEnabled = rightGroupingEnabled;
         this.leftGroupingExpanded = leftGroupingExpanded;
         this.rightGroupingExpanded = rightGroupingExpanded;
-
         const store = {
             fields: [
                 {name: 'text', type: 'string'},
@@ -153,7 +153,7 @@ export class LeftRightChooserModel extends HoistModel {
             sortBy: leftSorted ? 'text' : 'sortOrder',
             emptyText: leftEmptyText,
             onRowDoubleClicked: (e) => this.onRowDoubleClicked(e),
-            columns: [idxCol, leftTextCol, groupCol]
+            columns: [leftTextCol, groupCol]
         });
 
         this.rightModel = new GridModel({
@@ -236,26 +236,14 @@ export class LeftRightChooserModel extends HoistModel {
     }
 
     reorderData() {
-        const data = this._data,
-            rights = data.filter(r => r.side === 'right'),
-            rightValues = data
-                .filter(r => r.side === 'right')
-                .sort((a, b) => {
-                    return a.sortOrder - b.sortOrder;
-                })
-                .map((r, idx) => {
-                    return {
-                        ...r,
-                        sortOrder: idx
-                    };
-                }),
-            leftValues = data
-                .filter(r => r.side === 'left');
+        let rightValues = filter(this._data, {side: 'right'});
+        rightValues = sortBy(rightValues, 'sortOrder');
+        rightValues.forEach((r, idx) => {
+            r.sortOrder = idx;
+        });
 
-        console.log('data: ', rights);
         console.log('sorted right vals: ', rightValues);
 
-        this._data = [...leftValues, ...rightValues];
         this.refreshStores();
     }
 
@@ -274,7 +262,7 @@ export class LeftRightChooserModel extends HoistModel {
         const movingNode = e.node,
             overNode = e.overNode;
 
-        if(overNode) {
+        if (overNode) {
             // console.log('moving node: ', movingNode);
             // console.log('over node: ', overNode);
 
@@ -282,6 +270,10 @@ export class LeftRightChooserModel extends HoistModel {
 
             const fromIndex = movingNode.data.raw.sortOrder,
                 toIndex = overNode.data.raw.sortOrder;
+
+            // const fromIndex = movingNode.data.sortOrder,
+            //     toIndex = overNode.data.sortOrder;
+
 
             console.log('From: ', fromIndex);
             console.log('To: ', toIndex);
@@ -339,8 +331,7 @@ export class LeftRightChooserModel extends HoistModel {
             {leftModel, rightModel} = this;
 
         leftModel.store.loadData(data.filter(it => it.side === 'left'));
-        rightModel.store.loadData(data.filter(it => it.side === 'right')
-        );
+        rightModel.store.loadData(data.filter(it => it.side === 'right'));
     }
 }
 

@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {LeftRightChooserModel} from './impl';
+import {LRChooserModel} from './impl';
 
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 
@@ -40,7 +40,7 @@ export class ColChooserModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
-
+        window.chooserModel = this;
         this.gridModel = gridModel;
         this.commitOnChange = commitOnChange;
         this.showRestoreDefaults = showRestoreDefaults;
@@ -48,7 +48,7 @@ export class ColChooserModel extends HoistModel {
         this.width = width;
         this.height = height;
 
-        this.lrModel = new LeftRightChooserModel({
+        this.lrModel = new LRChooserModel({
             leftTitle: 'Available Columns',
             leftEmptyText: 'No more columns to add.',
             rightTitle: 'Displayed Columns',

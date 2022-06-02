@@ -41,7 +41,7 @@ LeftRightChooserFilter.propTypes = {
     /** True to prevent regex start line anchor from being added. */
     anyMatch: PT.bool,
 
-    /** A LeftRightChooserModel to bind to. */
+    /** A LrChooserModel to bind to. */
     model: PT.object
 };
 

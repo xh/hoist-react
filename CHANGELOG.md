@@ -3439,7 +3439,7 @@ leverage the context for model support discussed above.
   container.
 * The `Label` component from `@xh/hoist/desktop/cmp/input` has been removed. Applications should
   consider using the basic html `label` element instead (or a `FormField` if applicable).
-* The `LeftRightChooserModel` constructor no longer accepts a `leftSortBy` and `rightSortBy`
+* The `LrChooserModel` constructor no longer accepts a `leftSortBy` and `rightSortBy`
   property. The implementation of these properties was generally broken. Use `leftSorted` and
   `rightSorted` instead.
 

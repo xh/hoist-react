@@ -64,7 +64,7 @@ export class LeftRightChooserModel extends HoistModel {
     }
 
     /**
-     * @param {Object} c - LeftRightChooserModel configuration.
+     * @param {Object} c - LrChooserModel configuration.
      * @param {LeftRightChooserItemDef[]} c.data - source data for both lists, split by `side`.
      * @param {function} [c.onChange] - callback for when items change sides
      * @param {string} [c.ungroupedName] - placeholder group value when an item has no group.

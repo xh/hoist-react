@@ -11,7 +11,7 @@ import {cloneDeep} from 'lodash';
 import PT from 'prop-types';
 import {chooserToolbar} from '../../../../leftrightchooser/impl/ChooserToolbar';
 import '../../../../leftrightchooser/LeftRightChooser.scss';
-import {LeftRightChooserModel} from './LeftRightChooserModel';
+import {LRChooserModel} from './LRChooserModel';
 import {description} from '../../../../leftrightchooser/impl/Description';
 
 
@@ -19,11 +19,11 @@ import {description} from '../../../../leftrightchooser/impl/Description';
  * A component for moving a list of items between two arbitrary groups. By convention, the left
  * group represents 'available' items and the right group represents 'selected' items.
  * A next panel is also available to display a more in-depth description for any selected item.
- * @see LeftRightChooserModel
+ * @see LrChooserModel
  */
-export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory({
+export const [LRChooser, lrChooser] = hoistCmp.withFactory({
     displayName: 'LeftRightChooser',
-    model: uses(LeftRightChooserModel),
+    model: uses(LRChooserModel),
     className: 'xh-lr-chooser',
 
     render({model, ...props}, ref) {
@@ -62,7 +62,7 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory({
         });
     }
 });
-LeftRightChooser.propTypes = {
+lrChooser.propTypes = {
     /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(LeftRightChooserModel), PT.object])
+    model: PT.oneOfType([PT.instanceOf(LRChooserModel), PT.object])
 };

@@ -1,2 +1,2 @@
-export * from './LeftRightChooser';
-export * from './LeftRightChooserModel';
+export * from './LRChooser';
+export * from './LRChooserModel';
