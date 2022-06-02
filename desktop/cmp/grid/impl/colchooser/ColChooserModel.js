@@ -5,7 +5,8 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
+import {LeftRightChooserModel} from './impl';
+
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 
 /**

@@ -7,7 +7,7 @@
 import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {leftRightChooser, leftRightChooserFilter} from '@xh/hoist/desktop/cmp/leftrightchooser';
+import {leftRightChooser} from './impl';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -36,7 +36,7 @@ export const colChooser = hoistCmp.factory({
             items: [
                 leftRightChooser({width, height}),
                 toolbar(
-                    leftRightChooserFilter(),
+                    // leftRightChooserFilter(),
                     filler(),
                     button({
                         omit: !showRestoreDefaults,

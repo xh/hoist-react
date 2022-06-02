@@ -10,6 +10,7 @@ import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {computed, makeObservable} from '@xh/hoist/mobx';
 
+
 /**
  * A Model for managing the state of a LeftRightChooser.
  */
@@ -84,21 +85,21 @@ export class LeftRightChooserModel extends HoistModel {
      *      in the header
      */
     constructor({
-        data = [],
-        onChange,
-        ungroupedName = 'Ungrouped',
-        leftTitle = 'Available',
-        leftSorted = false,
-        leftGroupingEnabled = true,
-        leftGroupingExpanded = true,
-        leftEmptyText = null,
-        rightTitle = 'Selected',
-        rightSorted = false,
-        rightGroupingEnabled = true,
-        rightGroupingExpanded = true,
-        rightEmptyText = null,
-        showCounts = true
-    }) {
+                    data = [],
+                    onChange,
+                    ungroupedName = 'Ungrouped',
+                    leftTitle = 'Available',
+                    leftSorted = false,
+                    leftGroupingEnabled = true,
+                    leftGroupingExpanded = true,
+                    leftEmptyText = null,
+                    rightTitle = 'Selected',
+                    rightSorted = false,
+                    rightGroupingEnabled = true,
+                    rightGroupingExpanded = true,
+                    rightEmptyText = null,
+                    showCounts = true
+                }) {
         super();
         makeObservable(this);
         this.onChange = onChange;
@@ -295,7 +296,7 @@ export class LeftRightChooserModel extends HoistModel {
 
     onDragStop(e) {
         if (e.node.data) this.moveRows([e.node.data]);
-        this.reorderData();
+        // this.reorderData();
     }
 
     onRowDoubleClicked(e) {
