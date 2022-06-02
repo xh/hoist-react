@@ -167,7 +167,7 @@ export class FieldFilter extends Filter {
                 return r => {
                     if (doNotFilter(r)) return true;
                     const v = getVal(r);
-                    return !isNil(v) && !v.some(it => value.includes(it));
+                    return isNil(v) || !v.some(it => value.includes(it));
                 };
             default:
                 throw XH.exception(`Unknown operator: ${op}`);
