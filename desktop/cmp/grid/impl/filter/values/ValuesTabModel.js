@@ -123,7 +123,7 @@ export class ValuesTabModel extends HoistModel {
 
         const {fieldType} = this.headerFilterModel;
         let arr, op;
-        if (fieldType === FieldType.ARRAY) {
+        if (fieldType === FieldType.TAGS) {
             arr = included;
             op = 'includes';
         } else {
@@ -144,7 +144,7 @@ export class ValuesTabModel extends HoistModel {
             {fieldType} = this.headerFilterModel;
 
         if (isEmpty(columnFilters)) {
-            this.pendingValues = fieldType === FieldType.ARRAY ? [] : values;
+            this.pendingValues = fieldType === FieldType.TAGS ? [] : values;
             return;
         }
 
@@ -181,7 +181,7 @@ export class ValuesTabModel extends HoistModel {
         const {BLANK_STR} = this.gridFilterModel,
             {align, headerAlign, displayName} = this.headerFilterModel.column,
             {fieldType} = this.headerFilterModel,
-            renderer = this.fieldSpec.renderer ?? (fieldType !== FieldType.ARRAY ? this.headerFilterModel.column.renderer : null);
+            renderer = this.fieldSpec.renderer ?? (fieldType !== FieldType.TAGS ? this.headerFilterModel.column.renderer : null);
 
         return new GridModel({
             store: {

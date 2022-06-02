@@ -10,7 +10,7 @@ import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
 import {Rule} from '@xh/hoist/data';
 import equal from 'fast-deep-equal';
-import {isDate, isString, toNumber, isFinite, startCase, isFunction} from 'lodash';
+import {isDate, isString, toNumber, isFinite, startCase, isFunction, castArray} from 'lodash';
 import DOMPurify from 'dompurify';
 
 /**
@@ -88,7 +88,13 @@ export function parseFieldValue(val, type, defaultValue = null, disableXssProtec
 
     const FT = FieldType;
     switch (type) {
-        case FT.ARRAY:
+        case FT.TAGS:
+            val = castArray(val);
+            val = val.map(v => {
+                if (!disableXssProtection && isString(v)) return DOMPurify.sanitize(v);
+                return v.toString();
+            });
+            return val;
         case FT.AUTO:
         case FT.JSON:
             return val;
@@ -113,7 +119,7 @@ export function parseFieldValue(val, type, defaultValue = null, disableXssProtec
 
 /** @enum {string} - data types for Fields used within Hoist Store Records and Cubes. */
 export const FieldType = Object.freeze({
-    ARRAY: 'array',
+    TAGS: 'tags',
     AUTO: 'auto',
     BOOL: 'bool',
     DATE: 'date',

@@ -107,7 +107,7 @@ export class BaseFilterFieldSpec extends HoistBase {
             case FT.DATE:
             case FT.LOCAL_DATE:
                 return 'range';
-            case FT.ARRAY:
+            case FT.TAGS:
                 return 'collection';
             default:
                 return 'value';
@@ -154,7 +154,7 @@ export class BaseFilterFieldSpec extends HoistBase {
         return this.values &&
             this.enableValues &&
             this.supportsOperator(op) &&
-            (op === '=' || op === '!=' || op === 'includes' || op === 'does not include');
+            (op === '=' || op === '!=' || op === 'includes' || op === 'not includes');
     }
 
     //------------------------
@@ -172,7 +172,7 @@ export class BaseFilterFieldSpec extends HoistBase {
 
     getDefaultOperators() {
         if (this.isBoolFieldType) return ['='];
-        if (this.isCollectionType) return ['includes', 'does not include'];
+        if (this.isCollectionType) return ['includes', 'not includes'];
         return this.isValueType ?
             ['=', '!=', 'like', 'not like', 'begins', 'ends'] :
             ['>', '>=', '<', '<=', '=', '!='];

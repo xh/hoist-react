@@ -9,6 +9,7 @@ import {XH} from '@xh/hoist/core';
 import {parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, difference, escapeRegExp, isArray, isNil, isUndefined, isString} from 'lodash';
+import {FieldType} from '../Field';
 
 import {Filter} from './Filter';
 
@@ -32,8 +33,8 @@ export class FieldFilter extends Filter {
     /** @member {*} */
     value;
 
-    static OPERATORS = ['=', '!=', '>', '>=', '<', '<=', 'like', 'not like', 'begins', 'ends', 'includes', 'does not include'];
-    static ARRAY_OPERATORS = ['=', '!=', 'like', 'not like', 'begins', 'ends', 'includes', 'does not include'];
+    static OPERATORS = ['=', '!=', '>', '>=', '<', '<=', 'like', 'not like', 'begins', 'ends', 'includes', 'not includes'];
+    static ARRAY_OPERATORS = ['=', '!=', 'like', 'not like', 'begins', 'ends', 'includes', 'not includes'];
 
     /**
      * Constructor - not typically called by apps - create from config via `parseFilter()` instead.
@@ -82,7 +83,7 @@ export class FieldFilter extends Filter {
             const storeField = store.getField(field);
             if (!storeField) return () => true; // Ignore (do not filter out) if field not in store
 
-            const fieldType = storeField.type;
+            const fieldType = storeField.type === FieldType.TAGS ? FieldType.STRING : storeField.type;
             value = isArray(value) ?
                 value.map(v => parseFieldValue(v, fieldType)) :
                 parseFieldValue(value, fieldType);
@@ -163,7 +164,7 @@ export class FieldFilter extends Filter {
                     const v = getVal(r);
                     return !isNil(v) && v.some(it => value.includes(it));
                 };
-            case 'does not include':
+            case 'not includes':
                 return r => {
                     if (doNotFilter(r)) return true;
                     const v = getVal(r);

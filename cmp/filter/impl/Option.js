@@ -7,6 +7,7 @@
 
 import {parseFieldValue} from '@xh/hoist/data';
 import {isNil} from 'lodash';
+import {FieldType} from '../../../data';
 
 // ---------------------------------------------------------
 // Generate Options for FilterChooserModel query responses.
@@ -56,6 +57,7 @@ export function fieldFilterOption({filter, fieldSpec, isExact = false}) {
         displayValue = (filter.op === '!=' ? 'not blank' : 'blank');
     } else {
         displayOp = filter.op;
+        fieldType = fieldType === FieldType.TAGS ? FieldType.STRING : fieldType;
         displayValue = fieldSpec.renderValue(parseFieldValue(filter.value, fieldType, null));
     }
 
