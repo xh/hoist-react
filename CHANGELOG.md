@@ -1,14 +1,16 @@
 # Changelog
 
-## v50.0.0-SNAPSHOT - unreleased
+## v49.1.0 - 2022-06-03
 
 ### 🎁 New Features
 
 * A `DashCanvasViewModel` now supports `headerItems` and `extraMenuItems`
 * `Store` now supports a `tags` field type
-    * `FieldFilter` supports `includes` and `excludes` operators for `tags` fields
+* `FieldFilter` supports `includes` and `excludes` operators for `tags` fields
 
 ### 🐞 Bug Fixes
+
+* Fix regression with `begins`, `ends`, and `not like` filters.
 * Fix `DashCanvas` styling so drag-handles no longer cause horizontal scroll bar to appear
 * Fix bug where `DashCanvas` would not resize appropriately on scrollbar visibility change
 
