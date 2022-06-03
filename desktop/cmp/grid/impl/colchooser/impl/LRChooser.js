@@ -27,23 +27,20 @@ export const [LRChooser, lrChooser] = hoistCmp.withFactory({
     className: 'xh-lr-chooser',
 
     render({model, ...props}, ref) {
-        const {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
+        const {leftModel, rightModel} = model,
             gridOptions = {
                 agOptions: {
                     defaultColDef: {
                         resizable: false
                     },
-                    // rowDragManaged: true, // allow for rows to be reordered
                     rowDragEntireRow: true,
-                    animateRows: true, // smooth reorder animations
-                    onRowDragEnd: (e) => model.onRowDragEnd(e)
                 }
             },
             leftGridOptions = cloneDeep(gridOptions),
             rightGridOptions = cloneDeep(gridOptions);
 
-        if (!leftGroupingExpanded) leftGridOptions.agOptions.groupDefaultExpanded = 0;
-        if (!rightGroupingExpanded) rightGridOptions.agOptions.groupDefaultExpanded = 0;
+            leftGridOptions.agOptions.onRowDragEnd = (e) => model.onLeftDragEnd(e);
+            rightGridOptions.agOptions.onRowDragEnd = (e) => model.onRightDragEnd(e);
 
         return vbox({
             ref,

@@ -177,18 +177,8 @@ export class LRChooserModel extends HoistModel {
                 const leftApi = this.leftModel.agApi,
                     rightApi = this.rightModel.agApi;
 
-                const leftDropZoneParams = leftApi.getRowDropZoneParams({
-                        onDragStop: (e) => this.onDragStop(e)
-                    }),
-                    rightDropZoneParams = rightApi.getRowDropZoneParams({
-                        onDragStop: (e) => this.onDragStop(e)
-                    });
-
-                leftApi.addRowDropZone(rightDropZoneParams);
-                rightApi.addRowDropZone(leftDropZoneParams);
-
-                // leftApi.addRowDropZone(rightApi.getRowDropZoneParams());
-                // rightApi.addRowDropZone(leftApi.getRowDropZoneParams());
+                leftApi.addRowDropZone(rightApi.getRowDropZoneParams());
+                rightApi.addRowDropZone(leftApi.getRowDropZoneParams());
             }
         });
 
@@ -249,29 +239,39 @@ export class LRChooserModel extends HoistModel {
         });
 
         this.refreshStores();
-        if(this.onChange) this.onChange();
+        if (this.onChange) this.onChange();
     }
 
-    onRowDragEnd(e) {
-        const movingNode = e.node,
-            overNode = e.overNode;
+    onLeftDragEnd(e) {
+        const row = e.node.data;
+        if (row.data.side === 'right') this.moveRows([row]);
+    }
 
-        if (overNode) {
+    onRightDragEnd(e) {
+        const row = e.node.data,
+            overRow = e.overNode?.data;
 
-            if (movingNode === overNode) return;
-
-            const fromIndex = movingNode.data.raw.sortOrder,
-                toIndex = overNode.data.raw.sortOrder;
-
-            movingNode.data.raw.sortOrder = ((toIndex < fromIndex) ? (toIndex - 1) : (toIndex + 1));
-
+        if (row.data.side === 'right') {
+            // (1) Reordering on the right grid
+            if (overRow) {
+                const toIndex = overRow.raw.sortOrder,
+                    fromIndex = row.raw.sortOrder;
+                row.raw.sortOrder = ((toIndex < fromIndex) ? (toIndex - 1) : (toIndex + 1));
+            } else {
+                row.raw.sortOrder = this._data.length;
+            }
+            this.reorderData();
+        } else {
+            // (2) Moving row from left to right grid
+            if (overRow) {
+                const toIndex = overRow.raw.sortOrder;
+                row.raw.sortOrder = toIndex - 1;
+            } else {
+                row.raw.sortOrder = this._data.length;
+            }
+            this.moveRows([row]);
             this.reorderData();
         }
-    }
-
-    onDragStop(e) {
-        if (e.node.data) this.moveRows([e.node.data]);
-        // this.reorderData();
     }
 
     onRowDoubleClicked(e) {
@@ -288,7 +288,6 @@ export class LRChooserModel extends HoistModel {
         this.refreshStores();
         if (this.onChange) this.onChange();
     }
-
 
     syncSelectionReaction() {
         const leftSel = this.leftModel.selModel,
