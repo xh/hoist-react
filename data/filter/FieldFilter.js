@@ -144,19 +144,19 @@ export class FieldFilter extends Filter {
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
                 return r => {
                     if (doNotFilter(r)) return true;
-                    regExps.every(re => !re.test(getVal(r)));
+                    return regExps.every(re => !re.test(getVal(r)));
                 };
             case 'begins':
                 regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
                 return r => {
                     if (doNotFilter(r)) return true;
-                    regExps.some(re => re.test(getVal(r)));
+                    return regExps.some(re => re.test(getVal(r)));
                 };
             case 'ends':
                 regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
                 return r => {
                     if (doNotFilter(r)) return true;
-                    regExps.some(re => re.test(getVal(r)));
+                    return regExps.some(re => re.test(getVal(r)));
                 };
             case 'includes':
                 return r => {
