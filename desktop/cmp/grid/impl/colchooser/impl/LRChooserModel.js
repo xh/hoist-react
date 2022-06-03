@@ -9,7 +9,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {computed, makeObservable} from '@xh/hoist/mobx';
-import {partition, filter, sortBy} from 'lodash';
+import {filter, sortBy} from 'lodash';
 
 
 /**
@@ -63,6 +63,12 @@ export class LRChooserModel extends HoistModel {
     @computed
     get leftValues() {
         return this.leftModel.store.allRecords.map(it => it.data.value);
+    }
+
+    /** Current column order in the right col chooser grid. */
+    @computed
+    get colOrder() {
+        return [...this.leftModel.store.allRecords, ...sortBy(this.rightModel.store.allRecords, 'data.sortOrder')];
     }
 
     /**
@@ -243,6 +249,7 @@ export class LRChooserModel extends HoistModel {
         });
 
         this.refreshStores();
+        if(this.onChange) this.onChange();
     }
 
     onRowDragEnd(e) {

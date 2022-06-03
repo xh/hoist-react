@@ -6,7 +6,7 @@
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {LRChooserModel} from './impl';
-
+import {isEmpty} from 'lodash';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 
 /**
@@ -40,7 +40,9 @@ export class ColChooserModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
+
         window.chooserModel = this;
+
         this.gridModel = gridModel;
         this.commitOnChange = commitOnChange;
         this.showRestoreDefaults = showRestoreDefaults;
@@ -81,7 +83,7 @@ export class ColChooserModel extends HoistModel {
 
     commit() {
         const {gridModel, lrModel, autosizeOnCommit} = this,
-            {leftValues, rightValues} = lrModel,
+            {leftValues, rightValues, colOrder} = lrModel,
             cols = gridModel.columnState;
 
         const colChanges = [];
@@ -93,8 +95,16 @@ export class ColChooserModel extends HoistModel {
             }
         });
 
-        gridModel.applyColumnStateChanges(colChanges);
-        if (autosizeOnCommit && colChanges.length) gridModel.autosizeAsync({showMask: true});
+        /** no columns switched sides, only changed order */
+        if (colChanges.length === 0) {
+            for (let col of colOrder) {
+                colChanges.push({colId: col.data.value, hidden: (leftValues.indexOf(col.data.value) >= 0)});
+            }
+            gridModel.applyColumnStateChanges(colChanges);
+        } else {
+            gridModel.applyColumnStateChanges(colChanges);
+            if (autosizeOnCommit && colChanges.length) gridModel.autosizeAsync({showMask: true});
+        }
     }
 
     async restoreDefaultsAsync() {

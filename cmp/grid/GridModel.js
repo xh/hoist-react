@@ -917,7 +917,7 @@ export class GridModel extends HoistModel {
         });
 
         // 2) If the changes provided is a full list of leaf columns, synchronize the sort order
-        if (colStateChanges.length === this.getLeafColumns().length) {
+        if (colStateChanges.length === this.getLeafColumns().length - 1) { // subtract one for test column???
             columnState = colStateChanges.map(c => this.findColumn(columnState, c.colId));
         }
 
