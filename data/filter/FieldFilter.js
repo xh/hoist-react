@@ -33,8 +33,8 @@ export class FieldFilter extends Filter {
     /** @member {*} */
     value;
 
-    static OPERATORS = ['=', '!=', '>', '>=', '<', '<=', 'like', 'not like', 'begins', 'ends', 'includes', 'not includes'];
-    static ARRAY_OPERATORS = ['=', '!=', 'like', 'not like', 'begins', 'ends', 'includes', 'not includes'];
+    static OPERATORS = ['=', '!=', '>', '>=', '<', '<=', 'like', 'not like', 'begins', 'ends', 'includes', 'excludes'];
+    static ARRAY_OPERATORS = ['=', '!=', 'like', 'not like', 'begins', 'ends', 'includes', 'excludes'];
 
     /**
      * Constructor - not typically called by apps - create from config via `parseFilter()` instead.
@@ -164,7 +164,7 @@ export class FieldFilter extends Filter {
                     const v = getVal(r);
                     return !isNil(v) && v.some(it => value.includes(it));
                 };
-            case 'not includes':
+            case 'excludes':
                 return r => {
                     if (doNotFilter(r)) return true;
                     const v = getVal(r);

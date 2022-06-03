@@ -154,7 +154,7 @@ export class BaseFilterFieldSpec extends HoistBase {
         return this.values &&
             this.enableValues &&
             this.supportsOperator(op) &&
-            (op === '=' || op === '!=' || op === 'includes' || op === 'not includes');
+            (op === '=' || op === '!=' || op === 'includes' || op === 'excludes');
     }
 
     //------------------------
@@ -172,7 +172,7 @@ export class BaseFilterFieldSpec extends HoistBase {
 
     getDefaultOperators() {
         if (this.isBoolFieldType) return ['='];
-        if (this.isCollectionType) return ['includes', 'not includes'];
+        if (this.isCollectionType) return ['includes', 'excludes'];
         return this.isValueType ?
             ['=', '!=', 'like', 'not like', 'begins', 'ends'] :
             ['>', '>=', '<', '<=', '=', '!='];

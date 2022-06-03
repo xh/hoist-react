@@ -5,8 +5,8 @@
 ### 🐞 New Features
 
 * A `DashCanvasViewModel` now supports `headerItems` and `extraMenuItems`
-* `Store` now supports `array` field type
-    * `FieldFilter` supports `includes` and `does not include` operators for array types
+* `Store` now supports a `tags` field type
+    * `FieldFilter` supports `includes` and `excludes` operators for `tags` fields
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v49.0.0...develop)
 
