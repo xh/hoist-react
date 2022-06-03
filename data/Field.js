@@ -84,20 +84,23 @@ export function parseFieldValue(val, type, defaultValue = null, disableXssProtec
     if (val === undefined || val === null) val = defaultValue;
     if (val === null) return val;
 
-    if (!disableXssProtection && isString(val)) val = DOMPurify.sanitize(val);
+    const sanitizeValue = (v) => {
+        if (disableXssProtection || !isString(v)) return v;
+        return DOMPurify.sanitize(v);
+    };
 
     const FT = FieldType;
     switch (type) {
         case FT.TAGS:
             val = castArray(val);
             val = val.map(v => {
-                if (!disableXssProtection && isString(v)) return DOMPurify.sanitize(v);
+                v = sanitizeValue(v);
                 return v.toString();
             });
             return val;
         case FT.AUTO:
         case FT.JSON:
-            return val;
+            return sanitizeValue(val);
         case FT.INT:
             val = toNumber(val);
             return isFinite(val) ? Math.trunc(val) : null;
@@ -107,6 +110,7 @@ export function parseFieldValue(val, type, defaultValue = null, disableXssProtec
             return !!val;
         case FT.PWD:
         case FT.STRING:
+            val = sanitizeValue(val);
             return val.toString();
         case FT.DATE:
             return isDate(val) ? val : new Date(val);
