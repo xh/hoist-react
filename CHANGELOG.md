@@ -5,6 +5,8 @@
 ### 🎁 New Features
 
 * A `DashCanvasViewModel` now supports `headerItems` and `extraMenuItems`
+* `Store` now supports a `tags` field type
+    * `FieldFilter` supports `includes` and `excludes` operators for `tags` fields
 
 ### 🐞 Bug Fixes
 * Fix `DashCanvas` styling so drag-handles no longer cause horizontal scroll bar to appear

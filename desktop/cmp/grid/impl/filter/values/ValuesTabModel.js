@@ -8,7 +8,8 @@ import {HoistModel, managed, SizingMode} from '@xh/hoist/core';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
-import {castArray, difference, isEmpty, partition, without} from 'lodash';
+import {castArray, difference, isEmpty, partition, uniq, without} from 'lodash';
+import {FieldType} from '@xh/hoist/data';
 
 export class ValuesTabModel extends HoistModel {
     /** @member {ColumnHeaderFilterModel} */
@@ -104,7 +105,7 @@ export class ValuesTabModel extends HoistModel {
     setRecsChecked(isChecked, values) {
         values = castArray(values);
         this.pendingValues = isChecked ?
-            [...this.pendingValues, ...values] :
+            uniq([...this.pendingValues, ...values]) :
             without(this.pendingValues, ...values);
     }
 
@@ -120,9 +121,16 @@ export class ValuesTabModel extends HoistModel {
             return null;
         }
 
-        const weight = valueCount <= 10 ? 2.5 : 1, // Prefer '=' for short lists
-            op = included.length > (excluded.length * weight) ? '!=' : '=',
+        const {fieldType} = this.headerFilterModel;
+        let arr, op;
+        if (fieldType === FieldType.TAGS) {
+            arr = included;
+            op = 'includes';
+        } else {
+            const weight = valueCount <= 10 ? 2.5 : 1; // Prefer '=' for short lists
+            op = included.length > (excluded.length * weight) ? '!=' : '=';
             arr = op === '=' ? included : excluded;
+        }
 
         if (isEmpty(arr)) return null;
 
@@ -132,14 +140,16 @@ export class ValuesTabModel extends HoistModel {
 
     @action
     doSyncWithFilter() {
-        const {values, columnFilters, gridFilterModel} = this;
+        const {values, columnFilters, gridFilterModel} = this,
+            {fieldType} = this.headerFilterModel;
+
         if (isEmpty(columnFilters)) {
-            this.pendingValues = values;
+            this.pendingValues = fieldType === FieldType.TAGS ? [] : values;
             return;
         }
 
         // We are only interested '!=' filters if we have no '=' filters.
-        const [equalsFilters, notEqualsFilters] = partition(columnFilters, f => f.op === '='),
+        const [equalsFilters, notEqualsFilters] = partition(columnFilters, f => f.op === '=' || f.op === 'includes'),
             useNotEquals = isEmpty(equalsFilters),
             arr = useNotEquals ? notEqualsFilters : equalsFilters,
             filterValues = [];
@@ -170,7 +180,8 @@ export class ValuesTabModel extends HoistModel {
     createGridModel() {
         const {BLANK_STR} = this.gridFilterModel,
             {align, headerAlign, displayName} = this.headerFilterModel.column,
-            renderer = this.fieldSpec.renderer ?? this.headerFilterModel.column.renderer;
+            {fieldType} = this.headerFilterModel,
+            renderer = this.fieldSpec.renderer ?? (fieldType !== FieldType.TAGS ? this.headerFilterModel.column.renderer : null);
 
         return new GridModel({
             store: {

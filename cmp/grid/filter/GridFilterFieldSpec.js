@@ -6,7 +6,7 @@
  */
 import {BaseFilterFieldSpec} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
 import {parseFilter} from '@xh/hoist/data';
-import {castArray, compact, isDate, isEmpty, uniqBy} from 'lodash';
+import {castArray, compact, flatten, isDate, isEmpty, uniqBy} from 'lodash';
 
 /**
  * Apps should NOT instantiate this class directly. Instead {@see GridFilterModel.fieldSpecs}
@@ -81,7 +81,7 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
 
         // Combine unique values from record sets and column filters.
         const allValues = uniqBy([
-            ...allRecords.map(rec => this.valueFromRecord(rec)),
+            ...flatten(allRecords.map(rec => this.valueFromRecord(rec))),
             ...filterValues
         ], this.getUniqueValue);
         let values;
