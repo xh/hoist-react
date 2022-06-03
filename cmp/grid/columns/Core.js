@@ -6,6 +6,7 @@
  */
 import {numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
+import {tagsRenderer} from '../renderers/TagsRenderer';
 
 /** Column config to render truthy values with a standardized green check icon. */
 export const boolCheck = {
@@ -26,6 +27,10 @@ export const fileExt = {
     align: 'center',
     resizable: false,
     renderer: (v) => v ? Icon.fileIcon({filename: v, title: v}) : null
+};
+
+export const tags = {
+    renderer: tagsRenderer
 };
 
 // Deprecated aliases with `Col` suffix
