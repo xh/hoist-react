@@ -9,12 +9,11 @@
 * `FieldFilter` supports `includes` and `excludes` operators for `tags` fields
 
 ### 🐞 Bug Fixes
-
 * Fix regression with `begins`, `ends`, and `not like` filters.
 * Fix `DashCanvas` styling so drag-handles no longer cause horizontal scroll bar to appear
 * Fix bug where `DashCanvas` would not resize appropriately on scrollbar visibility change
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v49.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v49.0.0...v49.1.0)
 
 ## v49.0.0 - 2022-05-24
 
