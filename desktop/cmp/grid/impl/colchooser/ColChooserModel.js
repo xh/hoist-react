@@ -39,9 +39,6 @@ export class ColChooserModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
-
-        window.chooserModel = this;
-
         this.gridModel = gridModel;
         this.commitOnChange = commitOnChange;
         this.showRestoreDefaults = showRestoreDefaults;

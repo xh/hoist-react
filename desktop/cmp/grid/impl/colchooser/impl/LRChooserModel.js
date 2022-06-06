@@ -66,12 +66,6 @@ export class LRChooserModel extends HoistModel {
         return this.leftModel.store.allRecords.map(it => it.data.value);
     }
 
-    /** Current column order in the right col chooser grid. */
-    @computed
-    get colOrder() {
-        return [...this.leftModel.store.allRecords, ...sortBy(this.rightModel.store.allRecords, 'data.sortOrder')];
-    }
-
     /**
      * @param {Object} c - LrChooserModel configuration.
      * @param {LeftRightChooserItemDef[]} c.data - source data for both lists, split by `side`.
