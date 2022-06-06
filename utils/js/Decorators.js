@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {debounce, isFunction} from 'lodash';
-import {throwIf, getOrCreate} from './LangUtils';
+import {throwIf, getOrCreate, warnIf} from './LangUtils';
 import {withDebug} from './LogUtils';
 
 /**
@@ -63,4 +63,12 @@ export function logWithDebug(target, key, descriptor) {
             return withDebug(key, () => value.apply(this, args), this);
         }
     };
+}
+
+/**
+ * Modify a member so that it is enumerable. Useful for getters, which default to enumerable = false
+ */
+export function enumerable(target, key, descriptor) {
+    warnIf(descriptor.enumerable, `Unnecessary use of @enumerable: ${key} is already enumerable.`);
+    return {...descriptor, enumerable: true};
 }

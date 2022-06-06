@@ -2,6 +2,9 @@
 
 ## v50.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* New `@enumerable` decorator for making class members `enumerable`
+
 ## v49.1.0 - 2022-06-03
 
 ### 🎁 New Features
