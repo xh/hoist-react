@@ -228,6 +228,20 @@ export class LRChooserModel extends HoistModel {
         if (this.onChange) this.onChange();
     }
 
+    insertRow(row, overRow = null) {
+        if (row === overRow) return;
+        if (overRow === null) {
+            row.raw.sortOrder = this._data.length;
+        } else {
+            const toIndex = overRow.raw.sortOrder;
+            let rightValues = filter(this._data, {side: 'right'});
+            rightValues.forEach((r) => {
+                if (r.sortOrder >= toIndex) r.sortOrder = r.sortOrder + 1;
+            });
+            row.raw.sortOrder = toIndex;
+        }
+    }
+
     onLeftDragEnd(e) {
         const row = e.node.data;
         if (row.data.side === 'right') this.moveRows([row]);
@@ -236,26 +250,14 @@ export class LRChooserModel extends HoistModel {
     onRightDragEnd(e) {
         const row = e.node.data,
             overRow = e.overNode?.data;
-
         if (row.data.side === 'right') {
             // 1) Reordering rows in the right grid
-            if (overRow) {
-                const toIndex = overRow.raw.sortOrder,
-                    fromIndex = row.raw.sortOrder;
-                row.raw.sortOrder = ((toIndex < fromIndex) ? (toIndex - 1) : (toIndex + 1));
-            } else {
-                row.raw.sortOrder = this._data.length;
-            }
+            this.insertRow(row, overRow);
             this.reorderData();
         } else {
             // 2) Moving row from left to right grid
-            if (overRow) {
-                const toIndex = overRow.raw.sortOrder;
-                row.raw.sortOrder = toIndex - 1;
-            } else {
-                row.raw.sortOrder = this._data.length;
-            }
             this.moveRows([row]);
+            this.insertRow(row, overRow);
             this.reorderData();
         }
     }
