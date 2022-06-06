@@ -6,7 +6,6 @@
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {LRChooserModel} from './impl';
-import {isEmpty} from 'lodash';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 
 /**
@@ -49,29 +48,17 @@ export class ColChooserModel extends HoistModel {
         this.autosizeOnCommit = autosizeOnCommit;
         this.width = width;
         this.height = height;
-
-        this.lrModel = new LRChooserModel({
-            leftTitle: 'Available Columns',
-            leftEmptyText: 'No more columns to add.',
-            rightTitle: 'Displayed Columns',
-            rightEmptyText: 'No columns will be visible.',
-            leftSorted: true,
-            rightGroupingEnabled: false,
-            onChange: () => {
-                if (this.commitOnChange) this.commit();
-            }
-        });
     }
 
     @action
     open() {
-        this.syncChooserData();
+        this.createLRModel();
         this.isOpen = true;
     }
 
     @action
     openPopover() {
-        this.syncChooserData();
+        this.createLRModel();
         this.isPopoverOpen = true;
     }
 
@@ -83,28 +70,23 @@ export class ColChooserModel extends HoistModel {
 
     commit() {
         const {gridModel, lrModel, autosizeOnCommit} = this,
-            {leftValues, rightValues, colOrder} = lrModel,
-            cols = gridModel.columnState;
+            {leftValues, rightValues} = lrModel,
+            colChanges = [];
 
-        const colChanges = [];
-        cols.forEach(({colId, hidden}) => {
-            if (leftValues.includes(colId) && !hidden) {
-                colChanges.push({colId, hidden: true});
-            } else if (rightValues.includes(colId) && hidden) {
-                colChanges.push({colId, hidden: false});
-            }
+        leftValues.forEach(col => {
+            colChanges.push({colId: col, hidden: true});
+        });
+        rightValues.forEach(col => {
+            colChanges.push({colId: col, hidden: false});
+        });
+        // must push missing leaf column
+        colChanges.push({
+            colId: 'winLose',
+            hidden: true
         });
 
-        /** no columns switched sides, only changed order */
-        if (colChanges.length === 0) {
-            for (let col of colOrder) {
-                colChanges.push({colId: col.data.value, hidden: (leftValues.indexOf(col.data.value) >= 0)});
-            }
-            gridModel.applyColumnStateChanges(colChanges);
-        } else {
-            gridModel.applyColumnStateChanges(colChanges);
-            if (autosizeOnCommit && colChanges.length) gridModel.autosizeAsync({showMask: true});
-        }
+        gridModel.applyColumnStateChanges(colChanges);
+        if (autosizeOnCommit && colChanges.length) gridModel.autosizeAsync({showMask: true});
     }
 
     async restoreDefaultsAsync() {
@@ -117,23 +99,34 @@ export class ColChooserModel extends HoistModel {
     //------------------------
     // Implementation
     //------------------------
-    syncChooserData() {
+    createLRModel() {
+        XH.destroy(this.lrModel);
+        this.lrModel = new LRChooserModel({
+            leftTitle: 'Available Columns',
+            leftEmptyText: 'No more columns to add.',
+            rightTitle: 'Displayed Columns',
+            rightEmptyText: 'No columns will be visible.',
+            leftSorted: true,
+            onChange: () => {
+                if (this.commitOnChange) this.commit();
+            }
+        });
+
         const {gridModel, lrModel} = this,
             columns = gridModel.getLeafColumns(),
-            hasGrouping = columns.some(it => it.chooserGroup);
-
-        const data = columns.map(it => {
-            const visible = gridModel.isColumnVisible(it.colId);
-            return {
-                value: it.colId,
-                text: it.chooserName,
-                description: it.chooserDescription,
-                group: hasGrouping ? (it.chooserGroup ?? 'Ungrouped') : null,
-                exclude: it.excludeFromChooser,
-                locked: visible && !it.hideable,
-                side: visible ? 'right' : 'left'
-            };
-        });
+            colIds = gridModel.columnState.map(col => col.colId),
+            data = columns.map(it => {
+                const visible = gridModel.isColumnVisible(it.colId);
+                return {
+                    value: it.colId,
+                    text: it.chooserName,
+                    description: it.chooserDescription,
+                    exclude: it.excludeFromChooser,
+                    locked: visible && !it.hideable,
+                    side: visible ? 'right' : 'left',
+                    sortOrder: colIds.indexOf(it.colId)
+                };
+            });
 
         lrModel.setData(data);
     }

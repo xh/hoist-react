@@ -56,7 +56,8 @@ export class LRChooserModel extends HoistModel {
     /** Currently 'selected' values on the right-hand side. */
     @computed
     get rightValues() {
-        return this.rightModel.store.allRecords.map(it => it.data.value);
+        return sortBy(this.rightModel.store.allRecords, 'data.sortOrder')
+            .map(it => it.data.value);
     }
 
     /** Currently 'selected' values on the left-hand side. */
@@ -188,16 +189,8 @@ export class LRChooserModel extends HoistModel {
     }
 
     setData(data) {
-        const hasGrouping = data.some(it => it.group),
-            lhGroupBy = (this.leftGroupingEnabled && hasGrouping) ? 'group' : null,
-            rhGroupBy = (this.rightGroupingEnabled && hasGrouping) ? 'group' : null;
-
         this.hasDescription = data.some(it => it.description);
-        this.leftModel.setGroupBy(lhGroupBy);
-        this.rightModel.setGroupBy(rhGroupBy);
-
         this._data = this.preprocessData(data);
-        this._hasGrouping = hasGrouping;
         this.refreshStores();
     }
 
@@ -220,12 +213,11 @@ export class LRChooserModel extends HoistModel {
     preprocessData(data) {
         return data
             .filter(r => !r.exclude)
-            .map((r, idx) => {
+            .map((r) => {
                 return {
                     id: XH.genId(),
                     group: this._ungroupedName,
                     side: 'left',
-                    sortOrder: idx,
                     ...r
                 };
             });
@@ -252,7 +244,7 @@ export class LRChooserModel extends HoistModel {
             overRow = e.overNode?.data;
 
         if (row.data.side === 'right') {
-            // (1) Reordering on the right grid
+            // 1) Reordering rows in the right grid
             if (overRow) {
                 const toIndex = overRow.raw.sortOrder,
                     fromIndex = row.raw.sortOrder;
@@ -262,7 +254,7 @@ export class LRChooserModel extends HoistModel {
             }
             this.reorderData();
         } else {
-            // (2) Moving row from left to right grid
+            // 2) Moving row from left to right grid
             if (overRow) {
                 const toIndex = overRow.raw.sortOrder;
                 row.raw.sortOrder = toIndex - 1;

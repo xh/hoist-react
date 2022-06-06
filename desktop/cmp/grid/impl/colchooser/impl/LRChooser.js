@@ -33,14 +33,14 @@ export const [LRChooser, lrChooser] = hoistCmp.withFactory({
                     defaultColDef: {
                         resizable: false
                     },
-                    rowDragEntireRow: true,
+                    rowDragEntireRow: true
                 }
             },
             leftGridOptions = cloneDeep(gridOptions),
             rightGridOptions = cloneDeep(gridOptions);
 
-            leftGridOptions.agOptions.onRowDragEnd = (e) => model.onLeftDragEnd(e);
-            rightGridOptions.agOptions.onRowDragEnd = (e) => model.onRightDragEnd(e);
+        leftGridOptions.agOptions.onRowDragEnd = (e) => model.onLeftDragEnd(e);
+        rightGridOptions.agOptions.onRowDragEnd = (e) => model.onRightDragEnd(e);
 
         return vbox({
             ref,
