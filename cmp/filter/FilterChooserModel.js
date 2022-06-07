@@ -234,20 +234,27 @@ export class FilterChooserModel extends HoistModel {
 
             this.selectOptions = !isEmpty(options) ? options : null;
 
-            // Set select value async after options, to ensure it is able to render tags correctly
-            const selectValue = sortBy(displayFilters.map(f => JSON.stringify(f)), f => {
-                const idx = this.selectValue?.indexOf(f);
-                return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
-            });
-            wait().thenAction(() => this.selectValue = selectValue);
+            // Do the next steps asynchronously for UI responsiveness
+            wait().thenAction(() => {
+                // Do not asynchronously modify if stale
+                if (this.value !== value) {
+                    console.debug('FileChooser ignoring stale value', value, 'for new value', this.value);
+                    return;
+                }
 
-            // 4) Round-trip value to bound filter
-            if (bind) {
-                wait().then(() => {
+                // Set select value async after options, to ensure it is able to render tags correctly
+                this.selectValue = sortBy(displayFilters.map(f => JSON.stringify(f)), f => {
+                    const idx = this.selectValue?.indexOf(f);
+                    return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
+                });
+
+                // 4) Round-trip value to bound filter
+                if (bind) {
                     const filter = withFilterByTypes(bind.filter, value, ['FieldFilter', 'CompoundFilter']);
                     bind.setFilter(filter);
-                }).linkTo(this.filterTask);
-            }
+                }
+            }).linkTo(this.filterTask);
+
         } catch (e) {
             console.error('Failed to set value on FilterChooserModel', e);
             this.value = null;

@@ -5,6 +5,9 @@
 ### 🎁 New Features
 * New `@enumerable` decorator for making class members `enumerable`
 
+### 🐞 Bug Fixes
+* Fixed filterChooser looping between old values if changed/updated too rapidly.
+
 ## v49.1.0 - 2022-06-03
 
 ### 🎁 New Features
