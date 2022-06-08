@@ -31,6 +31,7 @@ export class LRChooserModel extends HoistModel {
     _data = null;
     _lastSelectedSide = null;
     _dropTargetId = null;
+    _inRightGrid = false;
 
     /**
      * Filter for data rows to determine if they should be shown.
@@ -109,7 +110,6 @@ export class LRChooserModel extends HoistModel {
             },
             rightTextCol = {
                 field: 'text',
-                rowDrag: true,
                 flex: true,
                 headerName: () => rightTitle + (showCounts ? ` (${this.rightModel.store.count})` : ''),
                 renderer: this.getTextColRenderer('right'),
@@ -138,7 +138,11 @@ export class LRChooserModel extends HoistModel {
             onRowDoubleClicked: (e) => this.onRowDoubleClicked(e),
             columns: [idxCol, rightTextCol],
             rowClassRules: {
-                'xh-lr-chooser__drop-target': ({data}) => data.id === this._dropTargetId
+                'xh-lr-chooser__drop-target': ({data}) => data.id === this._dropTargetId,
+                'xh-lr-chooser__drop-bottom': ({data}) => {
+                    const rightStore = sortBy(this.rightModel.store.allRecords, 'data.sortOrder');
+                    return (this._dropTargetId === 'BOTTOM') && (data.id === rightStore[rightStore.length - 1].id);
+                }
             }
         });
 
@@ -171,7 +175,6 @@ export class LRChooserModel extends HoistModel {
         const lockSvg = Icon.lock({prefix: 'fal'});
 
         return (v, {record}) => {
-
             return div({
                 className: 'xh-lr-chooser__item-row',
                 items: [v, record.data.locked ? lockSvg : null]
@@ -247,18 +250,26 @@ export class LRChooserModel extends HoistModel {
             this.insertRow(row, overRow);
             this.reorderData();
         }
+        this._inRightGrid = false;
         this.onChange?.();
     }
 
     onRowDragMove(e) {
         const dropTargetId = e.overNode?.data.data.id;
         if (this._dropTargetId !== dropTargetId) {
-            this._dropTargetId = dropTargetId;
-            this.rightModel.agApi.redrawRows();
+            if (this._inRightGrid) {
+                this._dropTargetId = (dropTargetId ? dropTargetId : 'BOTTOM');
+            }
         }
+        this.rightModel.agApi.redrawRows();
+    }
+
+    onRightDragEnter() {
+        this._inRightGrid = true;
     }
 
     onRightDragLeave() {
+        this._inRightGrid = false;
         this._dropTargetId = null;
         this.rightModel.agApi.redrawRows();
     }

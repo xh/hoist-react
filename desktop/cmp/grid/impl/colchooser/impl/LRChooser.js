@@ -10,9 +10,9 @@ import {hoistCmp, uses} from '@xh/hoist/core';
 import {cloneDeep} from 'lodash';
 import PT from 'prop-types';
 import {chooserToolbar} from '../../../../leftrightchooser/impl/ChooserToolbar';
+import {description} from '../../../../leftrightchooser/impl/Description';
 import './LRChooser.scss';
 import {LRChooserModel} from './LRChooserModel';
-import {description} from '../../../../leftrightchooser/impl/Description';
 
 
 /**
@@ -43,6 +43,7 @@ export const [LRChooser, lrChooser] = hoistCmp.withFactory({
         leftGridOptions.agOptions.onRowDragEnd = (e) => model.onLeftDragEnd(e);
         rightGridOptions.agOptions.onRowDragEnd = (e) => model.onRightDragEnd(e);
         rightGridOptions.agOptions.onRowDragLeave = (e) => model.onRightDragLeave(e);
+        rightGridOptions.agOptions.onRowDragEnter = (e) => model.onRightDragEnter(e);
 
         return vbox({
             ref,
