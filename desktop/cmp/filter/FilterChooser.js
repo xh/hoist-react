@@ -32,7 +32,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
             {autoFocus, enableClear, leftIcon, maxMenuHeight, menuPlacement, menuWidth} = chooserProps,
             disabled = unsupportedFilter || chooserProps.disabled,
             placeholder = unsupportedFilter ?
-                'Unsupported filter' : // Todo: How to message this better?
+                'Unsupported filter - Click to Clear' : // Todo: How to message this better?
                 withDefault(chooserProps.placeholder, 'Filter...');
 
         return box({
@@ -82,6 +82,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                 minimal: true,
                 onInteraction: (willOpen) => {
                     if (!willOpen) model.closeFavoritesMenu();
+                    if (unsupportedFilter) model.setValue(null);
                 }
             })
         });
