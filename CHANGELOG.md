@@ -2,20 +2,34 @@
 
 ## v50.0.0-SNAPSHOT - unreleased
 
-### 🐞 New Features
+### 🎁 New Features
 
-* A `DashCanvasViewModel` now supports `headerItems` and `extraMenuItems`
+* New `@enumerable` decorator for making class members `enumerable`
 
 ### 🐞 Bug Fixes
 
 * Fixed issue where exporting to excel file would occasionally coerce strings (like "1e10") into numbers.
   Upgrade to `hoist-core >= 13.2` for the fixed behavior.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v49.0.0...develop)
+## v49.1.0 - 2022-06-03
+
+### 🎁 New Features
+
+* A `DashCanvasViewModel` now supports `headerItems` and `extraMenuItems`
+* `Store` now supports a `tags` field type
+* `FieldFilter` supports `includes` and `excludes` operators for `tags` fields
+
+### 🐞 Bug Fixes
+
+* Fix regression with `begins`, `ends`, and `not like` filters.
+* Fix `DashCanvas` styling so drag-handles no longer cause horizontal scroll bar to appear
+* Fix bug where `DashCanvas` would not resize appropriately on scrollbar visibility change
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v49.0.0...v49.1.0)
 
 ## v49.0.0 - 2022-05-24
 
-### 🐞 New Features
+### 🎁 New Features
 
 * Improved desktop `NumberInput`:
     * Re-implemented `min` and `max` props to properly constrain the value entered and fix several
