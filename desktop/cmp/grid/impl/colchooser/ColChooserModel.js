@@ -89,7 +89,7 @@ export class ColChooserModel extends HoistModel {
     async restoreDefaultsAsync() {
         const restored = await this.gridModel.restoreDefaultsAsync();
         if (restored) {
-            this.syncChooserData();
+            this.createLRModel();
         }
     }
 

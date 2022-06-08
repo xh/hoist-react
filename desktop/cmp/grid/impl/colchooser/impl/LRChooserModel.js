@@ -27,15 +27,10 @@ export class LRChooserModel extends HoistModel {
     onChange;
 
     hasDescription = false;
-    leftGroupingEnabled = false;
-    rightGroupingEnabled = false;
-    leftGroupingExpanded = false;
-    rightGroupingExpanded = false;
 
-    _hasGrouping = null;
-    _ungroupedName = null;
     _data = null;
     _lastSelectedSide = null;
+    _dropTargetId = null;
 
     /**
      * Filter for data rows to determine if they should be shown.
@@ -70,18 +65,11 @@ export class LRChooserModel extends HoistModel {
      * @param {Object} c - LrChooserModel configuration.
      * @param {LeftRightChooserItemDef[]} c.data - source data for both lists, split by `side`.
      * @param {function} [c.onChange] - callback for when items change sides
-     * @param {string} [c.ungroupedName] - placeholder group value when an item has no group.
      * @param {?string} [c.leftTitle] - title of the left-side list.
      * @param {boolean} [c.leftSorted] - true to sort items on the left-side list.
-     * @param {boolean} [c.leftGroupingEnabled] - true to enable grouping on the left-side list.
-     * @param {boolean} [c.leftGroupingExpanded] - false to show a grouped left-side list with all
-     *      groups initially collapsed.
      * @param {?string} [c.leftEmptyText] - text to display if left grid has no rows.
      * @param {?string} [c.rightTitle] - title of the right-side list.
      * @param {boolean} [c.rightSorted] - true to sort items on the right-side list.
-     * @param {boolean} [c.rightGroupingEnabled] - true to enable grouping on the right-side list.
-     * @param {boolean} [c.rightGroupingExpanded] - false to show a grouped right-side list with all
-     *      groups initially collapsed.
      * @param {?string} [c.rightEmptyText] - text to display if right grid has no rows.
      * @param {boolean} [c.showCounts] - true to display the count of items on each side
      *      in the header
@@ -89,33 +77,22 @@ export class LRChooserModel extends HoistModel {
     constructor({
                     data = [],
                     onChange,
-                    ungroupedName = 'Ungrouped',
                     leftTitle = 'Available',
                     leftSorted = false,
-                    leftGroupingEnabled = true,
-                    leftGroupingExpanded = true,
                     leftEmptyText = null,
                     rightTitle = 'Selected',
                     rightSorted = false,
-                    rightGroupingEnabled = true,
-                    rightGroupingExpanded = true,
                     rightEmptyText = null,
                     showCounts = true
                 }) {
         super();
         makeObservable(this);
         this.onChange = onChange;
-        this._ungroupedName = ungroupedName;
-        this.leftGroupingEnabled = leftGroupingEnabled;
-        this.rightGroupingEnabled = rightGroupingEnabled;
-        this.leftGroupingExpanded = leftGroupingExpanded;
-        this.rightGroupingExpanded = rightGroupingExpanded;
         const store = {
             fields: [
                 {name: 'text', type: 'string'},
                 {name: 'value', type: 'string'},
                 {name: 'description', type: 'string'},
-                {name: 'group', type: 'string'},
                 {name: 'side', type: 'string'},
                 {name: 'locked', type: 'bool'},
                 {name: 'exclude', type: 'bool'},
@@ -132,6 +109,7 @@ export class LRChooserModel extends HoistModel {
             },
             rightTextCol = {
                 field: 'text',
+                rowDrag: true,
                 flex: true,
                 headerName: () => rightTitle + (showCounts ? ` (${this.rightModel.store.count})` : ''),
                 renderer: this.getTextColRenderer('right'),
@@ -140,11 +118,6 @@ export class LRChooserModel extends HoistModel {
             idxCol = {
                 field: 'sortOrder',
                 headerName: '',
-                sortable: false
-            },
-            groupCol = {
-                field: 'group',
-                headerName: 'Group',
                 hidden: true
             };
 
@@ -154,7 +127,7 @@ export class LRChooserModel extends HoistModel {
             sortBy: leftSorted ? 'text' : 'sortOrder',
             emptyText: leftEmptyText,
             onRowDoubleClicked: (e) => this.onRowDoubleClicked(e),
-            columns: [leftTextCol, groupCol]
+            columns: [leftTextCol]
         });
 
         this.rightModel = new GridModel({
@@ -163,7 +136,10 @@ export class LRChooserModel extends HoistModel {
             sortBy: rightSorted ? 'text' : 'sortOrder',
             emptyText: rightEmptyText,
             onRowDoubleClicked: (e) => this.onRowDoubleClicked(e),
-            columns: [idxCol, rightTextCol, groupCol]
+            columns: [idxCol, rightTextCol],
+            rowClassRules: {
+                'xh-lr-chooser__drop-target': ({data}) => data.id === this._dropTargetId
+            }
         });
 
         this.addReaction({
@@ -191,14 +167,13 @@ export class LRChooserModel extends HoistModel {
     //------------------------
     // Implementation
     //------------------------
-    getTextColRenderer(side) {
-        const groupingEnabled = side === 'left' ? this.leftGroupingEnabled : this.rightGroupingEnabled,
-            lockSvg = Icon.lock({prefix: 'fal'});
+    getTextColRenderer() {
+        const lockSvg = Icon.lock({prefix: 'fal'});
 
         return (v, {record}) => {
-            const groupClass = groupingEnabled && this._hasGrouping ? 'xh-lr-chooser__group-row' : '';
+
             return div({
-                className: `xh-lr-chooser__item-row ${groupClass}`,
+                className: 'xh-lr-chooser__item-row',
                 items: [v, record.data.locked ? lockSvg : null]
             });
         };
@@ -210,7 +185,6 @@ export class LRChooserModel extends HoistModel {
             .map((r) => {
                 return {
                     id: XH.genId(),
-                    group: this._ungroupedName,
                     side: 'left',
                     ...r
                 };
@@ -218,38 +192,51 @@ export class LRChooserModel extends HoistModel {
     }
 
     reorderData() {
-        let rightValues = filter(this._data, {side: 'right'});
-        rightValues = sortBy(rightValues, 'sortOrder');
-        rightValues.forEach((r, idx) => {
+        let rightRaw = filter(this._data, {side: 'right'});
+        rightRaw = sortBy(rightRaw, 'sortOrder');
+        rightRaw.forEach((r, idx) => {
             r.sortOrder = idx;
         });
-
         this.refreshStores();
-        if (this.onChange) this.onChange();
     }
 
     insertRow(row, overRow = null) {
-        if (row === overRow) return;
-        if (overRow === null) {
+        if (!overRow) {
             row.raw.sortOrder = this._data.length;
         } else {
             const toIndex = overRow.raw.sortOrder;
-            let rightValues = filter(this._data, {side: 'right'});
-            rightValues.forEach((r) => {
-                if (r.sortOrder >= toIndex) r.sortOrder = r.sortOrder + 1;
+            let rightRaw = filter(this._data, {side: 'right'});
+            rightRaw.forEach(r => {
+                if (r.sortOrder >= toIndex) r.sortOrder++;
             });
             row.raw.sortOrder = toIndex;
         }
     }
 
+    moveRows(rows) {
+        rows.forEach(rec => {
+            const {locked, side} = rec.data;
+            if (locked) return;
+            rec.raw.side = (side === 'left' ? 'right' : 'left');
+        });
+        this.refreshStores();
+    }
+
+    // Row Drag Event Handlers
     onLeftDragEnd(e) {
         const row = e.node.data;
-        if (row.data.side === 'right') this.moveRows([row]);
+        if (row.data.side === 'right') {
+            this.moveRows([row]);
+            this.onChange?.();
+        }
     }
 
     onRightDragEnd(e) {
+        this._dropTargetId = null;
+        this.rightModel.agApi.redrawRows();
         const row = e.node.data,
             overRow = e.overNode?.data;
+        if (row === overRow) return;
         if (row.data.side === 'right') {
             // 1) Reordering rows in the right grid
             this.insertRow(row, overRow);
@@ -260,21 +247,27 @@ export class LRChooserModel extends HoistModel {
             this.insertRow(row, overRow);
             this.reorderData();
         }
+        this.onChange?.();
+    }
+
+    onRowDragMove(e) {
+        const dropTargetId = e.overNode?.data.data.id;
+        if (this._dropTargetId !== dropTargetId) {
+            this._dropTargetId = dropTargetId;
+            this.rightModel.agApi.redrawRows();
+        }
+    }
+
+    onRightDragLeave() {
+        this._dropTargetId = null;
+        this.rightModel.agApi.redrawRows();
     }
 
     onRowDoubleClicked(e) {
-        if (e.data) this.moveRows([e.data]);
-    }
-
-    moveRows(rows) {
-        rows.forEach(rec => {
-            const {locked, side} = rec.data;
-            if (locked) return;
-            rec.raw.side = (side === 'left' ? 'right' : 'left');
-        });
-
-        this.refreshStores();
-        if (this.onChange) this.onChange();
+        if (e.data) {
+            this.moveRows([e.data]);
+            this.onChange?.();
+        }
     }
 
     syncSelectionReaction() {
@@ -310,7 +303,6 @@ export class LRChooserModel extends HoistModel {
  * @property {string} text - primary label for the item.
  * @property {string} value - value that the item represents.
  * @property {string} [description] - user-friendly, longer description of the item.
- * @property {string} [group] - grid group in which to show the item.
  * @property {string} [side] - initial side of the item - one of ['left', 'right'] - default left.
  * @property {boolean} [locked] - true to prevent the user from moving the item between sides.
  * @property {boolean} [exclude] - true to exclude the item from the chooser entirely.
