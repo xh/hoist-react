@@ -9,7 +9,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {computed, makeObservable} from '@xh/hoist/mobx';
-import {filter, sortBy} from 'lodash';
+import {filter, sortBy, maxBy} from 'lodash';
 
 
 /**
@@ -30,8 +30,9 @@ export class LRChooserModel extends HoistModel {
 
     _data = null;
     _lastSelectedSide = null;
-    _dropTargetId = null;
     _inRightGrid = false;
+    _dropTargetId = null;
+    _dropEdge = null;
 
     /**
      * Filter for data rows to determine if they should be shown.
@@ -138,10 +139,11 @@ export class LRChooserModel extends HoistModel {
             onRowDoubleClicked: (e) => this.onRowDoubleClicked(e),
             columns: [idxCol, rightTextCol],
             rowClassRules: {
-                'xh-lr-chooser__drop-target': ({data}) => data.id === this._dropTargetId,
-                'xh-lr-chooser__drop-bottom': ({data}) => {
-                    const rightStore = sortBy(this.rightModel.store.allRecords, 'data.sortOrder');
-                    return (this._dropTargetId === 'BOTTOM') && (data.id === rightStore[rightStore.length - 1].id);
+                'xh-lr-chooser__drop-above': ({data}) => {
+                    return data.id === this._dropTargetId && this._dropEdge === 'above';
+                },
+                'xh-lr-chooser__drop-below': ({data}) => {
+                    return data.id === this._dropTargetId && this._dropEdge === 'below';
                 }
             }
         });
@@ -203,16 +205,20 @@ export class LRChooserModel extends HoistModel {
         this.refreshStores();
     }
 
-    insertRow(row, overRow = null) {
+    insertRows(rows, overRow = null) {
         if (!overRow) {
-            row.raw.sortOrder = this._data.length;
+            rows.forEach((rec, idx) => {
+                rec.raw.sortOrder = ((this._data.length + 1) + idx);
+            });
         } else {
             const toIndex = overRow.raw.sortOrder;
             let rightRaw = filter(this._data, {side: 'right'});
             rightRaw.forEach(r => {
-                if (r.sortOrder >= toIndex) r.sortOrder++;
+                if (toIndex <= r.sortOrder) r.sortOrder += rows.length;
             });
-            row.raw.sortOrder = toIndex;
+            rows.forEach((rec, idx) => {
+                rec.raw.sortOrder = (toIndex + idx);
+            });
         }
     }
 
@@ -227,9 +233,9 @@ export class LRChooserModel extends HoistModel {
 
     // Row Drag Event Handlers
     onLeftDragEnd(e) {
-        const row = e.node.data;
-        if (row.data.side === 'right') {
-            this.moveRows([row]);
+        const rows = (e.nodes).map(r => r.data);
+        if (rows[0].data.side === 'right') {
+            this.moveRows(rows);
             this.onChange?.();
         }
     }
@@ -237,17 +243,17 @@ export class LRChooserModel extends HoistModel {
     onRightDragEnd(e) {
         this._dropTargetId = null;
         this.rightModel.agApi.redrawRows();
-        const row = e.node.data,
+        const rows = (e.nodes).map(r => r.data),
             overRow = e.overNode?.data;
-        if (row === overRow) return;
-        if (row.data.side === 'right') {
+        if (rows[0] === overRow) return;
+        if (rows[0].data.side === 'right') {
             // 1) Reordering rows in the right grid
-            this.insertRow(row, overRow);
+            this.insertRows(rows, overRow);
             this.reorderData();
         } else {
             // 2) Moving row from left to right grid
-            this.moveRows([row]);
-            this.insertRow(row, overRow);
+            this.moveRows(rows);
+            this.insertRows(rows, overRow);
             this.reorderData();
         }
         this._inRightGrid = false;
@@ -255,10 +261,17 @@ export class LRChooserModel extends HoistModel {
     }
 
     onRowDragMove(e) {
-        const dropTargetId = e.overNode?.data.data.id;
-        if (this._dropTargetId !== dropTargetId) {
-            if (this._inRightGrid) {
-                this._dropTargetId = (dropTargetId ? dropTargetId : 'BOTTOM');
+        if (!this._inRightGrid) {
+            this._dropTargetId = null;
+        } else {
+            const dropRow = e.overNode?.data;
+            if (dropRow) {
+                this._dropTargetId = dropRow.id;
+                this._dropEdge = 'above';
+            } else {
+                const rightStore = this.rightModel.store.allRecords;
+                this._dropTargetId = maxBy(rightStore, r => r.data.sortOrder).id;
+                this._dropEdge = 'below';
             }
         }
         this.rightModel.agApi.redrawRows();

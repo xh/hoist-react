@@ -34,6 +34,9 @@ export const [LRChooser, lrChooser] = hoistCmp.withFactory({
                         resizable: false
                     },
                     rowDragEntireRow: true,
+                    rowDragMultiRow: true,
+                    rowSelection: 'multiple',
+                    animateRows: true,
                     onRowDragMove: (e) => model.onRowDragMove(e)
                 }
             },
