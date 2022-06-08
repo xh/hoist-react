@@ -9,7 +9,7 @@
 ### 🐞 Bug Fixes
 
 * Fixed issue where exporting to excel file would occasionally coerce strings (like "1e10") into numbers.
-  Upgrade to `hoist-core >= 13.2` for the fixed behavior.
+  Upgrade to `hoist-core >= 13.3` for the fixed behavior.
 
 ## v49.1.0 - 2022-06-03
 
