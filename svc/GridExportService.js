@@ -161,8 +161,7 @@ export class GridExportService extends HoistService {
      */
     getExportableValueForCell({gridModel, record, column, node, forExcel = false}) {
         const {field, exportValue, getValueFn} = column,
-            aggData = node && gridModel.treeMode && !isEmpty(record.children) ? node.aggData : null,
-            fieldType = record.store.getField(field)?.type ?? AUTO;
+            aggData = node && gridModel.treeMode && !isEmpty(record.children) ? node.aggData : null;
 
         // 0) Main processing
         let value = getValueFn({record, field, column, gridModel});
@@ -190,7 +189,7 @@ export class GridExportService extends HoistService {
 
         // 2) Dates: Provide the date data string expected by the server endpoint
         // Also functions as a consistent human-friendly date format for CSV and clipboard
-        if (fieldType === DATE) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
+        if (this.getExportFieldType(column) === DATE) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
 
         value = value.toString();
 
@@ -243,14 +242,19 @@ export class GridExportService extends HoistService {
         });
     }
 
-    getColumnMetadata(columns, gridModel) {
-        const {store} = gridModel;
+    // Extract fieldtype from store for the column's export field (which may differ via exportValue)
+    // Default to 'AUTO' (for non-store fields like 'id')
+    getExportFieldType(column) {
+        const {field, exportValue, gridModel} = column,
+            typeField = isString(exportValue) ? exportValue : field;
+
+        return gridModel.store.getField(typeField)?.type ?? AUTO;
+    }
+
+    getColumnMetadata(columns) {
         return columns.map(column => {
-            // Extract type from store for the column's export field (which may differ via exportValue)
-            // Default to 'AUTO' (for non-store fields like 'id')
-            let {field, exportValue, excelWidth, excelFormat} = column,
-                typeField = isString(exportValue) && store.getField(exportValue) ? exportValue : field,
-                type = store.getField(typeField)?.type ?? AUTO;
+            let {field, excelWidth, excelFormat} = column,
+                type = this.getExportFieldType(column);
 
             // Set default excelFormat for dates and localDates on the client
             if (isNil(excelFormat) || excelFormat === ExcelFormat.DEFAULT) {
