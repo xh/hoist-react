@@ -32,7 +32,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
             {autoFocus, enableClear, leftIcon, maxMenuHeight, menuPlacement, menuWidth} = chooserProps,
             disabled = unsupportedFilter || chooserProps.disabled,
             placeholder = unsupportedFilter ?
-                'Unsupported filter - Click to Clear' : // Todo: How to message this better?
+                'Unsupported filter (click to clear)' :
                 withDefault(chooserProps.placeholder, 'Filter...');
 
         return box({

@@ -6,7 +6,8 @@
 * New `@enumerable` decorator for making class members `enumerable`
 
 ### 🐞 Bug Fixes
-* Fixed filterChooser looping between old values if changed/updated too rapidly.
+* Fix `FilterChooser` looping between old values if updated too rapidly.
+* Allow user to clear an unsupported `FilterChooser` value.
 
 ## v49.1.0 - 2022-06-03
 
