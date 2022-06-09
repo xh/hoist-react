@@ -76,11 +76,6 @@ export class ColChooserModel extends HoistModel {
         rightValues.forEach(col => {
             colChanges.push({colId: col, hidden: false});
         });
-        // must push missing leaf column
-        colChanges.push({
-            colId: 'winLose',
-            hidden: true
-        });
 
         gridModel.applyColumnStateChanges(colChanges);
         if (autosizeOnCommit && colChanges.length) gridModel.autosizeAsync({showMask: true});
