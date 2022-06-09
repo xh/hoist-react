@@ -52,7 +52,7 @@
     "inter-ui": "~3.19.3",
     "lodash": "~4.17.21",
     "lodash-inflection": "~1.5.0",
-    "mobx": "~6.5.0",
+    "mobx": "~6.6.0",
     "mobx-react-lite": "~3.4.0",
     "moment": "~2.29.1",
     "numbro": "~2.3.6",

@@ -3,11 +3,17 @@
 ## v50.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-* New `@enumerable` decorator for making class members `enumerable`
+
+* New `@enumerable` decorator for making class members `enumerable`.
 
 ### 🐞 Bug Fixes
+
 * Fix `FilterChooser` looping between old values if updated too rapidly.
 * Allow user to clear an unsupported `FilterChooser` value.
+
+### 📚 Libraries
+
+* mobx `6.5 -> 6.6`
 
 ## v49.1.0 - 2022-06-03
 
@@ -18,6 +24,7 @@
 * `FieldFilter` supports `includes` and `excludes` operators for `tags` fields
 
 ### 🐞 Bug Fixes
+
 * Fix regression with `begins`, `ends`, and `not like` filters.
 * Fix `DashCanvas` styling so drag-handles no longer cause horizontal scroll bar to appear
 * Fix bug where `DashCanvas` would not resize appropriately on scrollbar visibility change
