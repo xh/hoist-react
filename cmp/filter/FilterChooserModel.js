@@ -199,7 +199,7 @@ export class FilterChooserModel extends HoistModel {
      * they will be displayed as tags and can be removed, but not created using
      * the control.
      *
-     * Any other Filter is not supported and will cause the control to be cleared.
+     * Any other Filter is unsupported and will cause the control to show a placeholder error.
      */
     @action
     setValue(value) {
@@ -208,7 +208,7 @@ export class FilterChooserModel extends HoistModel {
             value = parseFilter(value);
             if (this.value?.equals(value)) return;
 
-            // 1) Ensure filter is able to be handled by the FilterChooser
+            // 1) Ensure FilterChooser can handle the requested value.
             const isValid = this.validateFilter(value),
                 displayFilters = isValid ? this.toDisplayFilters(value) : null;
 
@@ -234,20 +234,26 @@ export class FilterChooserModel extends HoistModel {
 
             this.selectOptions = !isEmpty(options) ? options : null;
 
-            // Set select value async after options, to ensure it is able to render tags correctly
-            const selectValue = sortBy(displayFilters.map(f => JSON.stringify(f)), f => {
-                const idx = this.selectValue?.indexOf(f);
-                return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
-            });
-            wait().thenAction(() => this.selectValue = selectValue);
+            // 4) Do the next steps asynchronously for UI responsiveness and to ensure the component
+            // is ready to render the tags correctly (after selectOptions set above).
+            wait().thenAction(() => {
+                // No-op if we've already re-entered this method by the time this async routine runs.
+                if (this.value !== value) {
+                    return;
+                }
 
-            // 4) Round-trip value to bound filter
-            if (bind) {
-                wait().then(() => {
+                this.selectValue = sortBy(displayFilters.map(f => JSON.stringify(f)), f => {
+                    const idx = this.selectValue?.indexOf(f);
+                    return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
+                });
+
+                // 5) Round-trip value to bound filter
+                if (bind) {
                     const filter = withFilterByTypes(bind.filter, value, ['FieldFilter', 'CompoundFilter']);
                     bind.setFilter(filter);
-                }).linkTo(this.filterTask);
-            }
+                }
+            }).linkTo(this.filterTask);
+
         } catch (e) {
             console.error('Failed to set value on FilterChooserModel', e);
             this.value = null;

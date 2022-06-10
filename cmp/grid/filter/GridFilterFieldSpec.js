@@ -87,7 +87,7 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
         let values;
         if (cleanedFilter) {
             values = uniqBy([
-                ...filteredRecords.map(rec => this.valueFromRecord(rec)),
+                ...flatten(filteredRecords.map(rec => this.valueFromRecord(rec))),
                 ...filterValues
             ], this.getUniqueValue);
         } else {
