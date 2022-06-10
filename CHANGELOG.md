@@ -4,6 +4,8 @@
 
 ### 🎁 New Features
 * New `@enumerable` decorator for making class members `enumerable`
+* New `GridAutosizeOption` `renderedRowsOnly` supports more limited autosizing
+  for very large grids.
 
 ## v49.1.0 - 2022-06-03
 

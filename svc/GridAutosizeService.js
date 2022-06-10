@@ -43,9 +43,10 @@ export class GridAutosizeService extends HoistService {
         colIds = sortBy(colIds, id => gridModel.columnState.findIndex(col => col.colId === id));
         runInAction(() => {
             // 3) Shrink columns down to their required widths.
-            const requiredWidths = this.calcRequiredWidths(gridModel, colIds, options);
+            const records = this.gatherRecordsToBeSized(gridModel, options),
+                requiredWidths = this.calcRequiredWidths(gridModel, colIds, records, options);
             gridModel.applyColumnStateChanges(requiredWidths);
-            console.debug('Column widths autosized via GridAutosizeService', requiredWidths);
+            console.debug(`Column widths autosized via GridAutosizeService (${records.length} records)`, requiredWidths);
 
             // 4) Grow columns to fill any remaining space, if enabled.
             const {fillMode} = options;
@@ -64,12 +65,12 @@ export class GridAutosizeService extends HoistService {
     /**
      * @param {GridModel} gridModel
      * @param {string[]} colIds
+     * @param {Record[]} records
      * @param {GridAutosizeOptions} options
      * @return {Object[]} - {colId, width} objects to pass to GridModel.applyColumnStateChanges()
      */
-    calcRequiredWidths(gridModel, colIds, options) {
-        const records = this.gatherRecordsToBeSized(gridModel, options),
-            ret = [];
+    calcRequiredWidths(gridModel, colIds, records, options) {
+        const ret = [];
 
         for (const colId of colIds) {
             const width = this._columnWidthCalculator.calcWidth(gridModel, records, colId, options);
@@ -86,10 +87,16 @@ export class GridAutosizeService extends HoistService {
      */
     gatherRecordsToBeSized(gridModel, options) {
         let {store, agApi, treeMode, groupBy} = gridModel,
-            {includeCollapsedChildren} = options,
+            {includeCollapsedChildren, renderedRowsOnly} = options,
             ret = [];
 
-        if (agApi && !includeCollapsedChildren && (treeMode || groupBy)) {
+
+        if (renderedRowsOnly) {
+            agApi?.getRenderedNodes().forEach(node => {
+                const record = store.getById(node.data?.id);
+                if (record) ret.push(record);
+            });
+        } else if (agApi && !includeCollapsedChildren && (treeMode || groupBy)) {
             // In tree/grouped grids, included expanded rows only by default.
             for (let idx = 0; idx < agApi.getDisplayedRowCount(); idx++) {
                 const node = agApi.getDisplayedRowAtIndex(idx),
