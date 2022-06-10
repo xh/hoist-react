@@ -6,6 +6,7 @@
  */
 import {div, filler, hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
+import {isEmpty} from 'lodash';
 
 /**
  * A standardized header for a Panel component
@@ -17,7 +18,8 @@ export const panelHeader = hoistCmp.factory({
     model: false, memo: false, observer: false,
 
     render({className, title, icon, headerItems = []}) {
-        if (!title && !icon && !headerItems.length) return null;
+        headerItems = headerItems ?? [];
+        if (!title && !icon && isEmpty(headerItems)) return null;
 
         return hbox({
             className,

@@ -10,6 +10,7 @@
 
 * Fix `FilterChooser` looping between old values if updated too rapidly.
 * Allow user to clear an unsupported `FilterChooser` value.
+* Fix bug where `Panel` would throw when `headerItems = null`
 
 ### 📚 Libraries
 
