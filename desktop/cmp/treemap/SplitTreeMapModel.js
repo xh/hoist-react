@@ -30,6 +30,8 @@ export class SplitTreeMapModel extends HoistModel {
     mapFilter;
     /** @member {function} */
     mapTitleFn;
+    /** @member {boolean} */
+    showSplitter;
 
     /** @member {TreeMapModel} */
     @managed primaryMapModel;
@@ -65,6 +67,7 @@ export class SplitTreeMapModel extends HoistModel {
         makeObservable(this);
         this.mapFilter = withDefault(mapFilter, this.defaultMapFilter);
         this.mapTitleFn = mapTitleFn;
+        this.showSplitter = showSplitter;
 
         throwIf(!['vertical', 'horizontal'].includes(orientation), `Orientation "${orientation}" not recognised.`);
         this.orientation = orientation;
