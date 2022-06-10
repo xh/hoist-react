@@ -13,6 +13,7 @@
 * Fix bug where `Panel` would throw when `headerItems = null`
 * Fix column values filtering on `tags` fields if another filter is already present.
 * Fix bug where `SwitchInput` `labelSide` would render inappropriately if within `compact` `toolbar`
+* Fix bug where `SplitTreeMapModel.showSplitter` property wasn't being set in constructor
 
 ### 📚 Libraries
 
