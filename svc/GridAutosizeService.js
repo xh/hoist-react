@@ -45,6 +45,7 @@ export class GridAutosizeService extends HoistService {
             // 3) Shrink columns down to their required widths.
             const records = this.gatherRecordsToBeSized(gridModel, options),
                 requiredWidths = this.calcRequiredWidths(gridModel, colIds, records, options);
+
             gridModel.applyColumnStateChanges(requiredWidths);
             console.debug(`Column widths autosized via GridAutosizeService (${records.length} records)`, requiredWidths);
 
@@ -89,7 +90,6 @@ export class GridAutosizeService extends HoistService {
         let {store, agApi, treeMode, groupBy} = gridModel,
             {includeCollapsedChildren, renderedRowsOnly} = options,
             ret = [];
-
 
         if (renderedRowsOnly) {
             agApi?.getRenderedNodes().forEach(node => {
