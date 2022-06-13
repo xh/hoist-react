@@ -67,6 +67,8 @@ export class ColumnWidthCalculator {
     }
 
     calcDataWidth(gridModel, records, column, options) {
+        if (isEmpty(records)) return null;
+
         try {
             const {store, treeMode} = gridModel;
             if (treeMode && column.isTreeColumn && store.allRootCount !== store.allCount) {
