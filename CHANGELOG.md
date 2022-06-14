@@ -1,6 +1,6 @@
 # Changelog
 
-## v50.0.0-SNAPSHOT - unreleased
+## v49.2.0 - 2010-06-14
 
 ### 🎁 New Features
 
@@ -20,6 +20,9 @@
 ### 📚 Libraries
 
 * mobx `6.5 -> 6.6`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v49.1.0...v49.2.0)
+
 
 ## v49.1.0 - 2022-06-03
 
