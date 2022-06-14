@@ -69,7 +69,6 @@ export class ColChooserModel extends HoistModel {
         const {gridModel, lrModel, autosizeOnCommit} = this,
             {leftValues, rightValues} = lrModel,
             colChanges = [];
-
         leftValues.forEach(col => {
             colChanges.push({colId: col, hidden: true});
         });
@@ -86,6 +85,39 @@ export class ColChooserModel extends HoistModel {
         if (restored) {
             this.createLRModel();
         }
+    }
+
+    // Translate array of columnGroups and columns into tree structure for colChooser rows
+    translateColumns(columns, gridModel, colIds) {
+        const output = [],
+            formatColumns = (list, path, acc) => {
+                list.forEach(it => {
+                    if (it.children) {
+                        acc.push({
+                            id: `${path}>>${it.groupId}`,
+                            name: it.groupId,
+                            text: it.groupId,
+                            children: formatColumns(it.children, `${path}>>${it.groupId}`, [])
+                        });
+                    } else {
+                        const visible = gridModel.isColumnVisible(it.colId);
+                        acc.push({
+                            id: `${path}>>${it.colId}`,
+                            value: it.colId,
+                            text: it.chooserName,
+                            description: it.chooserDescription,
+                            exclude: it.excludeFromChooser,
+                            locked: visible && !it.hideable,
+                            side: visible ? 'right' : 'left',
+                            sortOrder: colIds.indexOf(it.colId)
+                        });
+                    }
+                });
+                return acc;
+            };
+
+        formatColumns(columns, 'root', output);
+        return output;
     }
 
     //------------------------
@@ -105,21 +137,9 @@ export class ColChooserModel extends HoistModel {
         });
 
         const {gridModel, lrModel} = this,
-            columns = gridModel.getLeafColumns(),
+            allColumns = gridModel.columns,
             colIds = gridModel.columnState.map(col => col.colId),
-            data = columns.map(it => {
-                const visible = gridModel.isColumnVisible(it.colId);
-                return {
-                    value: it.colId,
-                    text: it.chooserName,
-                    description: it.chooserDescription,
-                    exclude: it.excludeFromChooser,
-                    locked: visible && !it.hideable,
-                    side: visible ? 'right' : 'left',
-                    sortOrder: colIds.indexOf(it.colId)
-                };
-            });
-
+            data = this.translateColumns(allColumns, gridModel, colIds);
         lrModel.setData(data);
     }
 }

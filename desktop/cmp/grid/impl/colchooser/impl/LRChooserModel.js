@@ -4,12 +4,12 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {filter, sortBy, maxBy} from 'lodash';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {computed, makeObservable} from '@xh/hoist/mobx';
-import {filter, sortBy, maxBy} from 'lodash';
 
 
 /**
@@ -107,23 +107,28 @@ export class LRChooserModel extends HoistModel {
                 flex: true,
                 headerName: () => leftTitle + (showCounts ? ` (${this.leftModel.store.count})` : ''),
                 renderer: this.getTextColRenderer('left'),
-                sortable: false
+                sortable: false,
+                isTreeColumn: true
             },
             rightTextCol = {
                 field: 'text',
                 flex: true,
                 headerName: () => rightTitle + (showCounts ? ` (${this.rightModel.store.count})` : ''),
                 renderer: this.getTextColRenderer('right'),
-                sortable: false
+                sortable: false,
+                isTreeColumn: true
             },
             idxCol = {
                 field: 'sortOrder',
                 headerName: '',
-                hidden: true
+                hidden: false
             };
 
         this.leftModel = new GridModel({
-            store,
+            treeMode: true,
+            store: {
+                loadRootAsSummary: true
+            },
             selModel: 'multiple',
             sortBy: leftSorted ? 'text' : 'sortOrder',
             emptyText: leftEmptyText,
@@ -132,7 +137,10 @@ export class LRChooserModel extends HoistModel {
         });
 
         this.rightModel = new GridModel({
-            store,
+            treeMode: true,
+            store: {
+                loadRootAsSummary: true
+            },
             selModel: 'multiple',
             sortBy: rightSorted ? 'text' : 'sortOrder',
             emptyText: rightEmptyText,
@@ -189,9 +197,9 @@ export class LRChooserModel extends HoistModel {
             .filter(r => !r.exclude)
             .map((r) => {
                 return {
-                    id: XH.genId(),
                     side: 'left',
-                    ...r
+                    ...r,
+                    id: XH.genId(),
                 };
             });
     }
@@ -317,8 +325,18 @@ export class LRChooserModel extends HoistModel {
         const data = this._data,
             {leftModel, rightModel} = this;
 
-        leftModel.store.loadData(data.filter(it => it.side === 'left'));
-        rightModel.store.loadData(data.filter(it => it.side === 'right'));
+        const leftData = [{
+            id: 'leftRoot',
+            name: 'root',
+            children: data.filter(it => it.side === 'left')
+        }], rightData = [{
+            id: 'rightRoot',
+            name: 'root',
+            children: data.filter(it => it.side === 'right')
+        }];
+
+        leftModel.store.loadData(leftData);
+        rightModel.store.loadData(rightData);
     }
 }
 
