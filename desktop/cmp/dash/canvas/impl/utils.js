@@ -80,31 +80,26 @@ export function createViewMenuItems({
 }
 
 /**
- * Returns a dash canvas's column width in pixels
- * @param {DashCanvasModel} dashCanvasModel
- * @returns {number}
- * @private
- */
-export function calcGridColWidth(dashCanvasModel) {
-    const { margin, containerPadding, containerWidth, cols } = getPositionParams(dashCanvasModel);
-    return (containerWidth - margin[0] * (cols - 1) - containerPadding[0] * 2) / cols;
-}
-
-/**
  * Used to set the {x, y} position for the next added item based on the mouse location when
  * context menu is triggered
  * @param {number} x - clientX position
  * @param {number} y - clientY position
- * @param {DashCanvasModel} dashCanvasModel
+ * @param {DashCanvasModel}
  */
 const calcAddPosition = (x, y, dashCanvasModel) => {
     const calcXY = (positionParams, top, left, w=0, h=0) => {
+        const calcGridColWidth = (positionParams) => {
+            const { margin, containerPadding, containerWidth, cols } = positionParams;
+            return (
+                (containerWidth - margin[0] * (cols - 1) - containerPadding[0] * 2) / cols
+            );
+        };
 
         const clamp = (num, lowerBound, upperBound) =>
             Math.max(Math.min(num, upperBound), lowerBound);
 
         const {margin, cols, rowHeight, maxRows} = positionParams;
-        const colWidth = calcGridColWidth(dashCanvasModel);
+        const colWidth = calcGridColWidth(positionParams);
         let x = Math.round((left - margin[0]) / (colWidth + margin[0]));
         let y = Math.round((top - margin[1]) / (rowHeight + margin[1]));
 
@@ -113,25 +108,13 @@ const calcAddPosition = (x, y, dashCanvasModel) => {
         return { x, y };
     };
 
-    const {ref} = dashCanvasModel,
+    const {margin, columns: cols, rowHeight, maxRows, ref, containerPadding} = dashCanvasModel,
         containerPosition = ref.current.getBoundingClientRect(),
-        {left: containerLeft, top: containerTop} = containerPosition,
-        positionParams = getPositionParams(dashCanvasModel),
+        {left: containerLeft, top: containerTop, width: containerWidth} = containerPosition,
+        positionParams = {margin, cols, rowHeight, maxRows,
+            containerPadding: containerPadding ?? margin, containerWidth},
         left = x - containerLeft,
         top = y - containerTop;
 
     return calcXY(positionParams, top, left);
-};
-
-/**
- * Returns position params object for a dashCanvasModel
- * @param {DashCanvasModel} dashCanvasModel
- * @returns {{containerPadding, margin, maxRows, cols, rowHeight, containerWidth}}
- */
-const getPositionParams = (dashCanvasModel) => {
-    const {margin, columns: cols, rowHeight, maxRows, ref, containerPadding} = dashCanvasModel,
-        containerPosition = ref.current.getBoundingClientRect(),
-        {width: containerWidth} = containerPosition;
-    return {margin, cols, rowHeight, maxRows,
-        containerPadding: containerPadding ?? margin, containerWidth};
 };

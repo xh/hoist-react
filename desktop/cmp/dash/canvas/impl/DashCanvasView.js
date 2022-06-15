@@ -4,11 +4,13 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {ContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils';
-import {elementFromContent} from '@xh/hoist/utils/react';
+import {elementFromContent, useOnResize} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
+import {createRef, useRef} from 'react';
 import {panel} from '../../../panel';
 import {button} from '../../../button';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
@@ -29,11 +31,11 @@ export const dashCanvasView = hoistCmp.factory({
     className: 'xh-dash-tab',
     model: uses(DashCanvasViewModel, {publishMode: ModelPublishMode.LIMITED}),
     render({model, className}) {
-        const {viewSpec, ref, hidePanelHeader, headerItems} = model,
+        const {viewSpec, ref, hidePanelHeader, headerItems, title, icon} = model,
             headerProps = hidePanelHeader ? {} : {
                 compactHeader: true,
-                title: model.title,
-                icon: model.icon,
+                title: title,
+                icon: icon,
                 headerItems: [
                     ...headerItems,
                     headerMenu({model})
@@ -43,7 +45,11 @@ export const dashCanvasView = hoistCmp.factory({
             className,
             ref,
             ...headerProps,
-            item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
+            item: elementFromContent(viewSpec.content, {
+                flex: 1,
+                viewModel: model,
+                ref: useOnResize(({height}) => console.log(height))
+            })
         });
     }
 });
