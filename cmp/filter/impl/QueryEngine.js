@@ -6,19 +6,19 @@
  */
 
 import {FieldFilter} from '@xh/hoist/data';
-import {fieldOption, fieldFilterOption, msgOption, minimalFieldOption} from './Option';
 import {fmtNumber} from '@xh/hoist/format';
 import {
+    castArray,
     escapeRegExp,
+    find,
+    flatMap,
     isEmpty,
     isNaN,
     isNil,
     sortBy,
-    flatMap,
-    find,
-    castArray,
     without
 } from 'lodash';
+import {fieldFilterOption, fieldOption, minimalFieldOption, msgOption} from './Option';
 
 /**
  * Provide the querying support for FilterChooserModel.
@@ -203,8 +203,9 @@ export class QueryEngine {
     // Helpers to produce suggestions
     //-------------------------------------------------
     getFieldOpts(queryStr) {
+        const testFn = defaultSuggestValues(queryStr, queryStr);
         return this.fieldSpecs
-            .filter(s => !queryStr || caselessStartsWith(s.displayName, queryStr))
+            .filter(s => !queryStr || testFn(s.displayName, s.field))
             .map(s => fieldOption({
                 fieldSpec: s,
                 isExact: caselessEquals(s.displayName, queryStr)
