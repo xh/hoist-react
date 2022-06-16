@@ -224,7 +224,7 @@ export class PanelModel extends HoistModel {
     }
 
     setIsModal(isModal) {
-        throwIf(!this.modalViewSupported, 'Panel does not support a modal view.');
+        throwIf(!this.modalViewSupported, 'Modal view not enabled for this panel.');
         this.modalSupportModel.setIsModal(isModal);
     }
 
