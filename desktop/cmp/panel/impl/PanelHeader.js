@@ -9,6 +9,7 @@ import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
+import {isEmpty} from 'lodash';
 import {PanelModel} from '../PanelModel';
 import './PanelHeader.scss';
 
@@ -26,9 +27,10 @@ const inlineHeader = hoistCmp.factory({
     render({className, ...props}) {
         const panelModel = useContextModel(PanelModel),
             {collapsed, vertical, side, showHeaderCollapseButton} = panelModel,
-            {title, icon, compact, headerItems = []} = props;
+            {title, icon, compact} = props,
+            headerItems = props.headerItems ?? [];
 
-        if (!title && !icon && !headerItems.length && !showHeaderCollapseButton) return null;
+        if (!title && !icon && isEmpty(headerItems) && !showHeaderCollapseButton) return null;
 
         const onDoubleClick = () => {
             if (panelModel.collapsible) panelModel.toggleCollapsed();

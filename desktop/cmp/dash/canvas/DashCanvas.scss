@@ -1,7 +1,8 @@
 .xh-dash-canvas {
   width: 100%;
   height: 100%;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 
   &--empty-overlay {
     display: flex !important;

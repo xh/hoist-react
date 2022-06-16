@@ -1,31 +1,56 @@
 # Changelog
 
-## v49.0.0-SNAPSHOT - unreleased
+## v50.0.0-SNAPSHOT - unreleased
 
-### 🐞 New Features
+[Commit Log](https://github.com/xh/hoist-react/compare/v49.2.0...develop)
 
-* Improve behavior of `NumberInput`:
- ** Improvements to  `min` and `max` props.
-    The new implementation constrains the set value more fully whether changes being made by
-    keyboard or mouse. Also fixed some bugs related to Blueprint.
- ** The `precision` prop is now respected more fully.  All values produced by editing the control
-    will respect this value.
- ** Added debounce to make value more stable during user typing.
+## v49.2.0 - 2022-06-14
 
-* Apps can now add to the admin console's menu items through `AppModel.getAppMenuButtonExtraItems`.
-* Apps can now hide the Admin > General > Users tab  by setting `hideUsersTab` to false in the new
-  soft config `xhAdminAppConfig`.
+### 🎁 New Features
+
+* New `@enumerable` decorator for making class members `enumerable`
+* New `GridAutosizeOption` `renderedRowsOnly` supports more limited autosizing
+  for very large grids.
 * Panels now offer modalSupport, which allows the user to expand a panel into a modal state,
-    without requiring its contents to re-render.  All state is preserved when toggling between
-    inline and modal views.
+  without requiring its contents to re-render.  All state is preserved when toggling between
+  inline and modal views.
 
 ### 🐞 Bug Fixes
 
-* Fix bug where Admin Activity Chart pop-out dialog did not display on first render
-* Tree maps now take a `showSplitter` property, defaulted to `false`, to insert a four pixel buffer
-  between the two maps. Useful for tree maps that may have both positive and negative heat values on
-  each side which can make it hard to determine where one map ends and the other begins.
-* Hoist now protects against renderers that may throw by catching the error and printing an error token.
+* Fix `FilterChooser` looping between old values if updated too rapidly.
+* Allow user to clear an unsupported `FilterChooser` value.
+* Fix bug where `Panel` would throw when `headerItems = null`
+* Fix column values filtering on `tags` fields if another filter is already present.
+* Fix bug where `SwitchInput` `labelSide` would render inappropriately if within `compact` `toolbar`
+* Fix bug where `SplitTreeMapModel.showSplitter` property wasn't being set in constructor
+
+### 📚 Libraries
+
+* mobx `6.5 -> 6.6`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v49.1.0...v49.2.0)
+
+
+## v49.1.0 - 2022-06-03
+
+### 🎁 New Features
+
+* A `DashCanvasViewModel` now supports `headerItems` and `extraMenuItems`
+* `Store` now supports a `tags` field type
+* `FieldFilter` supports `includes` and `excludes` operators for `tags` fields
+
+### 🐞 Bug Fixes
+
+* Fix regression with `begins`, `ends`, and `not like` filters.
+* Fix `DashCanvas` styling so drag-handles no longer cause horizontal scroll bar to appear
+* Fix bug where `DashCanvas` would not resize appropriately on scrollbar visibility change
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v49.0.0...v49.1.0)
+
+## v49.0.0 - 2022-05-24
+
+### 🎁 New Features
+
 * Improved desktop `NumberInput`:
     * Re-implemented `min` and `max` props to properly constrain the value entered and fix several
       bugs with the underlying Blueprint control.
@@ -39,10 +64,10 @@
 * Added new `SplitTreeMapModel.showSplitter` config to insert a four pixel buffer between the
   component's nested maps. Useful for visualizations with both positive and negative heat values on
   each side, to keep the two sides clearly distinguished from each other.
-* Hoist now protects against custom Grid renderers that may throw by catching the error and printing
-  an "#ERROR" placeholder token in the affected cell.
 * New `xhChangelogConfig.limitToRoles` soft-config allows the in-app changelog (aka release notes)
   to be gated to a subset of users based on their role.
+* Add support for `Map` and `WeakMap` collections in `LangUtils.getOrCreate()`.
+* Mobile `textInput` now accepts an `enableClear` property with a default value of false.
 
 ### 💥 Breaking Changes
 
@@ -52,7 +77,7 @@
 * Model classes passed to `HoistComponents` or configured in their factory must now
   extend `HoistModel`. This has long been a core assumption, but was not previously enforced.
 * Nested model instances stored at properties with a `_` prefix are now considered private and will
-  not be auto-wired or returned by model lookups. This should affect most apps, but will require
+  not be auto-wired or returned by model lookups. This should not affect most apps, but will require
   minor changes for apps that were binding components to non-standard or "private" models.
 * Hoist will now throw if `Store.summaryRecord` does not have a unique ID.
 
@@ -61,19 +86,22 @@
 * Fixed a bug with Panel drag-to-resize within iframes on Windows.
 * Worked around an Ag-Grid bug where the grid would render incorrectly on certain sorting changes,
   specifically for abs sort columns, leaving mis-aligned rows and gaps in the grid body layout.
-* Fix bug where Admin Activity Chart pop-out dialog did not display on first render
-
+* Fixed a bug in `SelectEditor` that would cause the grid to lose keyboard focus during editing.
 
 ### ⚙️ Technical
 
+* Hoist now protects against custom Grid renderers that may throw by catching the error and printing
+  an "#ERROR" placeholder token in the affected cell.
 * `TreeMapModel.valueRenderer` and `heatRenderer` callbacks are now passed the `StoreRecord` as a
   second argument.
 * Includes a new, additional `index-manifest.html` static file required for compatibility with the
-  upcoming `hoist-dev-utils v6.0` release (but remains compatible with current/older dev-utils.)
+  upcoming `hoist-dev-utils v6.0` release (but remains compatible with current/older dev-utils).
 
 ### 📚 Libraries
 
 * mobx-react-lite `3.3 -> 3.4`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v48.0.1...v49.0.0)
 
 ## v48.0.1 - 2022-04-22
 

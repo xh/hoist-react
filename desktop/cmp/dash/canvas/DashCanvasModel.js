@@ -4,9 +4,9 @@ import {DashCanvasViewModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/das
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {ensureUniqueBy} from '@xh/hoist/utils/js';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import {defaultsDeep, isEqual, find, without, times} from 'lodash';
 import {computed} from 'mobx';
-import {createRef} from 'react';
 import {throwIf} from '../../../../utils/js';
 
 /**
@@ -75,7 +75,9 @@ export class DashCanvasModel extends HoistModel {
     // Implementation properties
     //------------------------
     /** @member {RefObject<DOMElement>} */
-    ref = createRef();
+    ref = createObservableRef();
+    /** @member {boolean} scrollbarVisible */
+    scrollbarVisible;
 
     /**
      * ---------- !! NOTE: THIS COMPONENT IS CURRENTLY IN BETA !! ----------
@@ -167,6 +169,14 @@ export class DashCanvasModel extends HoistModel {
         this.addReaction({
             track: () => [this.viewState, this.layout],
             run: () => this.publishState()
+        });
+
+        this.addReaction({
+            when: () => this.ref.current,
+            run: () => {
+                const {current: node} = this.ref;
+                this.scrollbarVisible = node.offsetWidth > node.clientWidth;
+            }
         });
     }
 
@@ -338,6 +348,14 @@ export class DashCanvasModel extends HoistModel {
         layout = layout.map(({i, x, y, w, h}) => ({i, x, y, w, h}));
         if (!isEqual(this.layout, layout)) {
             this.layout = layout;
+
+            // Check if scrollbar visibility has changed, and force resize event if so
+            const {current: node} = this.ref,
+                scrollbarVisible = node.offsetWidth > node.clientWidth;
+            if (scrollbarVisible !== this.scrollbarVisible) {
+                window.dispatchEvent(new Event('resize'));
+                this.scrollbarVisible = scrollbarVisible;
+            }
         }
     }
 

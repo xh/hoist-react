@@ -390,6 +390,7 @@ export class GridModel extends HoistModel {
             {...autosizeOptions},
             {
                 mode: GridModel.DEFAULT_AUTOSIZE_MODE,
+                renderedRowsOnly: false,
                 includeCollapsedChildren: false,
                 showMask: false,
                 // Larger buffer on mobile (perhaps counterintuitively) to minimize clipping due to
@@ -1598,9 +1599,12 @@ export class GridModel extends HoistModel {
  *      override this value may specify `Column.autosizeBufferPx`. Default is 5.
  * @property {boolean} [showMask] - true to show mask over the grid during the autosize operation.
  *      Default is true.
+ * @property {boolean} [renderedRowsOnly] - true to limit operation to rendered rows only.
+ *      Default is false. Set to true for grids that contain many rows and columns, for which
+ *      full autosizing of all data would be too slow.
  * @property {boolean} [includeCollapsedChildren] - true to autosize all rows, even when hidden due
- *      to a collapsed ancestor row. Default is false. Note that setting this to true can
- *      have performance impacts for large tree grids with many cells.
+ *      to a collapsed ancestor row. Only has an effect when renderedRowsOnly is false. Default is false.
+ *      Note that setting this to true can have performance impacts for large tree grids with many cells.
  * @property {function|string|string[]} [columns] - columns ids to autosize, or a function for
  *      testing if the given column should be autosized. Typically used when calling
  *      autosizeAsync() manually. To generally exclude a column from autosizing, see the

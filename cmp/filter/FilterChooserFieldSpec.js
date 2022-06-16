@@ -87,12 +87,11 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
 
     parseValue(value, op) {
         try {
-            const {fieldType} = this;
-
             if (isFunction(this.valueParser)) {
                 return this.valueParser(value, op);
             }
 
+            const fieldType = this.fieldType === FieldType.TAGS ? FieldType.STRING : this.fieldType;
             return parseFieldValue(value, fieldType, undefined);
         } catch (e) {
             return undefined;
@@ -119,7 +118,13 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         const sourceStore = source.isView ? source.cube.store : source;
         sourceStore.allRecords.forEach(rec => {
             const val = rec.get(field);
-            if (!isNil(val)) values.add(val);
+            if (!isNil(val)) {
+                if (sourceStore.getField(field).type === FieldType.TAGS) {
+                    val.forEach(it => values.add(it));
+                } else {
+                    values.add(val);
+                }
+            }
         });
 
         this.values = Array.from(values);

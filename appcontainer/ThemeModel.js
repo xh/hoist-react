@@ -32,11 +32,10 @@ export class ThemeModel extends HoistModel {
         classList.toggle('xh-dark', value);
         classList.toggle('bp3-dark', value);
         this.darkTheme = value;
-
     }
 
     @action
-    setTheme(value) {
+    setTheme(value, persist) {
         switch (value) {
             case 'system':
                 this.setDarkTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -50,7 +49,9 @@ export class ThemeModel extends HoistModel {
             default:
                 throw XH.exception("Unrecognized value for theme pref.  Must be either 'system', 'dark', or 'light'.");
         }
-        XH.setPref('xhTheme', value);
+        if (persist) {
+            XH.setPref('xhTheme', value);
+        }
     }
 
     init() {

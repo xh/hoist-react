@@ -5,7 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {ValidationState} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {flatMap, forOwn, map, mapValues, pickBy, some, values, forEach} from 'lodash';
@@ -48,10 +48,10 @@ export class FormModel extends HoistModel {
     parent = null;
 
     /** @member {boolean} */
-    @bindable disabled;
+    @observable disabled;
 
     /** @member {boolean} */
-    @bindable readonly;
+    @observable readonly;
 
     _valuesProxy = this.createValuesProxy();
 
@@ -74,6 +74,8 @@ export class FormModel extends HoistModel {
      * @param {(FieldModel[]|Object[])} [c.fields] - FieldModels, or configurations to create them,
      *      for all data fields managed by this FormModel.
      * @param {Object} [c.initialValues] - Map of initial values for fields in this model.
+     * @param {boolean} disabled
+     * @param {boolean} readonly
      */
     constructor(
         {
@@ -163,6 +165,18 @@ export class FormModel extends HoistModel {
     @computed
     get isDirty() {
         return some(this.fields, m => m.isDirty);
+    }
+
+    /** @param {boolean} readonly */
+    @action
+    setReadonly(readonly) {
+        this.readonly = readonly;
+    }
+
+    /** @param {boolean} disabled */
+    @action
+    setDisabled(disabled) {
+        this.disabled = disabled;
     }
 
     //-----------------------------------

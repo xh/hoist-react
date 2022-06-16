@@ -156,7 +156,8 @@ export class StoreFilterFieldImplModel extends HoistModel {
     }
 
     getActiveFields() {
-        let {gridModel, includeFields, excludeFields, store} = this;
+        const {gridModel, store, componentProps} = this,
+            {includeFields, excludeFields} = componentProps;
 
         let ret = store ? ['id', ...store.fields.map(f => f.name)] : [];
         if (includeFields) ret = store ? intersection(ret, includeFields) : includeFields;
