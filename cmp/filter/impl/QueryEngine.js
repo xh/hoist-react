@@ -203,9 +203,9 @@ export class QueryEngine {
     // Helpers to produce suggestions
     //-------------------------------------------------
     getFieldOpts(queryStr) {
-        const testFn = defaultSuggestValues(queryStr, queryStr);
+        const testFn = createWordBoundaryTest(queryStr);
         return this.fieldSpecs
-            .filter(s => !queryStr || testFn(s.displayName, s.field))
+            .filter(s => !queryStr || testFn(s.displayName))
             .map(s => fieldOption({
                 fieldSpec: s,
                 isExact: caselessEquals(s.displayName, queryStr)
@@ -221,13 +221,13 @@ export class QueryEngine {
 
         const {values, field} = spec,
             value = spec.parseValue(queryStr),
-            testFn = defaultSuggestValues(queryStr, value);
+            testFn = createWordBoundaryTest(queryStr);
 
         // assume spec will not produce dup values.  React-select will de-dup identical opts as well
         const ret = [];
         values.forEach(v => {
             const formattedValue = spec.renderValue(v);
-            if (testFn(formattedValue, v)) {
+            if (testFn(formattedValue)) {
                 ret.push(
                     fieldFilterOption({
                         filter: new FieldFilter({field, op, value: v}),
@@ -319,7 +319,7 @@ function caselessEquals(target, queryStr) {
     return target?.toString().toLowerCase() === queryStr?.toString().toLowerCase();
 }
 
-function defaultSuggestValues(queryStr, queryValue) {
+function createWordBoundaryTest(queryStr) {
     const regexp = new RegExp('\\b' + escapeRegExp(queryStr), 'i');
-    return (formattedValue, value) => formattedValue.match(regexp);
+    return (formattedValue) => formattedValue.match(regexp);
 }
