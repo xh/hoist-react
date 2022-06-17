@@ -7,7 +7,6 @@
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, lookup} from '@xh/hoist/core';
-import {ModalViewOptions} from '@xh/hoist/desktop/cmp/panel/ModalViewOptions';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
@@ -18,7 +17,7 @@ import {ActivityTrackingModel} from '../ActivityTrackingModel';
 
 export class ChartsModel extends HoistModel {
     @managed panelModel = new PanelModel({
-        modalView: new ModalViewOptions({width: '90vw', height: '60vh'}),
+        modalSupport: {width: '90vw', height: '60vh'},
         side: 'bottom',
         defaultSize: 370
     });

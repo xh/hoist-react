@@ -13,20 +13,21 @@ import {createPortal} from 'react-dom';
 import {ModalSupportModel} from './ModalSupportModel';
 
 /**
- * A modalSupport container provides the ability for its child component to expand into a modal
+ * A ModalSupport container provides the ability for its child component to expand into a modal
  * state, without requiring its contents to re-render.  All of the child component's state is
  * preserved when toggling between inline and modal views.
  *
  * State and DOM refs are managed via a ModalSupportModel, which must be provided.
  *
- * Most applications will not use modalSupport directly, and will instead make use of its
- * implementation in Panel.
+ * Not intended for application use.  Instead, make use of the modal support provided by
+ * {@see Panel}
  *
- * @see Panel
+ * @private
  */
 export const modalSupport = hoistCmp.factory({
     displayName: 'ModalSupport',
     model: uses(ModalSupportModel, {fromContext: false, publishMode: ModelPublishMode.NONE}),
+    memo: false,
     render({model, children}) {
         return fragment(
             // Simple 'box' cmp, inside which to place the child cmp when `model.isModal = false`
@@ -66,7 +67,7 @@ const modalContainer = hoistCmp.factory({
     render({model}) {
         if (!model.isModal) return null;
 
-        const {width, height, canOutsideClickClose} = model.panelModel.modalView;
+        const {width, height, canOutsideClickClose} = model.options;
         return dialog({
             className: 'xh-modal-support__modal',
             style: {width, height},

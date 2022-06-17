@@ -9,10 +9,9 @@ import {div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/c
 import {hoistCmp, managed, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
-import {modalSupport} from '@xh/hoist/desktop/cmp/impl/modalsupport/ModalSupport';
-import {ModalSupportModel} from '@xh/hoist/desktop/cmp/impl/modalsupport/ModalSupportModel';
+import {modalSupport} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupport';
+import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
-import {ModalViewOptions} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {textArea} from '@xh/hoist/kit/blueprint';
@@ -48,7 +47,6 @@ import './CodeInput.scss';
  * TODO - understanding sizing spec / requirements for component vs. generated CodeMirror.
  * Reconcile LayoutSupport with width/height props. https://github.com/xh/hoist-react/issues/327
  */
-
 export const [CodeInput, codeInput] = hoistCmp.withFactory({
     displayName: 'CodeInput',
     className: 'xh-code-input',
@@ -56,7 +54,6 @@ export const [CodeInput, codeInput] = hoistCmp.withFactory({
         return useHoistInputModel(cmp, props, ref, Model);
     }
 });
-
 CodeInput.propTypes = {
     ...HoistInputPropTypes,
 
@@ -127,9 +124,7 @@ CodeInput.hasLayoutSupport = true;
 //------------------------------
 class Model extends HoistInputModel {
     /** @member {ModalSupportModel} */
-    @managed modalSupportModel = new ModalSupportModel({
-        modalView: new ModalViewOptions({width: '90vw', height: '90vh'})
-    });
+    @managed modalSupportModel = new ModalSupportModel();
 
     /** @member {CodeMirror} - a CodeMirror editor instance. */
     editor;
@@ -259,6 +254,7 @@ class Model extends HoistInputModel {
             debounce: 300
         });
     }
+
 
     manageCodeEditor = (textAreaComp) => {
         if (textAreaComp) {

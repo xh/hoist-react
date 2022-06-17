@@ -5,8 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, ManagedRefreshContextModel, XH} from '@xh/hoist/core';
-import {ModalSupportModel} from '@xh/hoist/desktop/cmp/impl/modalsupport/ModalSupportModel';
-import {ModalViewOptions} from '@xh/hoist/desktop/cmp/panel/ModalViewOptions';
+import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
 import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
@@ -111,9 +110,7 @@ export class DockViewModel extends HoistModel {
         this.refreshContextModel = new ManagedRefreshContextModel(this);
 
         this.modalSupportModel = new ModalSupportModel({
-            modalView: new ModalViewOptions({
-                width, height, canOutsideClickClose: false
-            })
+            width: width ?? null, height: height ?? null, canOutsideClickClose: false
         });
     }
 

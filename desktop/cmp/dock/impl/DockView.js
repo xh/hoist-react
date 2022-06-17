@@ -8,7 +8,7 @@ import {DockViewModel} from '@xh/hoist/cmp/dock';
 import {div, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {modalSupport} from '@xh/hoist/desktop/cmp/impl/modalsupport/ModalSupport';
+import {modalSupport} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupport';
 import {Icon} from '@xh/hoist/icon';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -37,10 +37,12 @@ export const dockView = hoistCmp.factory({
         );
 
         const header = headerCmp({compactHeaders}),
-            body = refreshContextView({
-                model: refreshContextModel,
-                item: div({className: 'xh-dock-view__body', item: elementFromContent(model.content)})
-            });
+            body = unmount && (collapsed || docked) ?
+                null :
+                refreshContextView({
+                    model: refreshContextModel,
+                    item: div({className: 'xh-dock-view__body', item: elementFromContent(model.content)})
+                });
 
 
         const suffix = collapsed ? 'collapsed' : docked ? 'docked' : 'dialog';
@@ -49,9 +51,9 @@ export const dockView = hoistCmp.factory({
             model: model.modalSupportModel,
             item: vbox({
                 width: collapsed ? collapsedWidth : width,
-                ...(!collapsed ? {height} : {}),
+                height: !collapsed ? height : undefined,
                 className: classNames(className, `xh-dock-view--${suffix}`),
-                items: [header, unmount && (collapsed || docked) ? null : body]
+                items: [header, body]
             })
         });
     }

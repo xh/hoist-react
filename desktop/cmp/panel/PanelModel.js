@@ -14,13 +14,12 @@ import {
     RenderMode,
     XH
 } from '@xh/hoist/core';
-import {ModalViewOptions} from '@xh/hoist/desktop/cmp/panel/ModalViewOptions';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isNil} from 'lodash';
 import {createRef} from 'react';
 import {throwIf} from '@xh/hoist/utils/js';
-import {ModalSupportModel} from '../impl/modalsupport/ModalSupportModel';
+import {ModalSupportModel} from '../modalsupport/ModalSupportModel';
 
 /**
  * PanelModel supports configuration and state-management for user-driven Panel resizing and
@@ -41,11 +40,11 @@ export class PanelModel extends HoistModel {
     side;
     renderMode;
     refreshMode;
-    modalView;
     prefName;
     showSplitter;
     showSplitterCollapseButton;
     showHeaderCollapseButton;
+    showModalToggleButton;
 
     @managed refreshContextModel;
     @managed provider;
@@ -65,7 +64,11 @@ export class PanelModel extends HoistModel {
 
     /** Is the panel rendering in its modal view state? Observable property. */
     get isModal() {
-        return this.modalSupportModel?.isModal ?? false;
+        return !!this.modalSupportModel?.isModal;
+    }
+
+    get hasModalSupport() {
+        return !!this.modalSupportModel;
     }
 
     get isActive() {
@@ -89,7 +92,8 @@ export class PanelModel extends HoistModel {
      * @param {boolean} [c.defaultCollapsed] - Default collapsed state.
      * @param {string} [c.side] - Side towards which the panel collapses or shrinks. This relates
      *      to the position within a parent vbox or hbox in which the panel should be placed.
-     * @param {boolean|ModalViewOptions} [c.modalView] - Optional config for customizing modal view
+     * @param {boolean|ModalSupportOptions|Object} [c.modalSupport] - Config for customizing modal
+     *      view. True for default configuration. (Default false)
      * @param {RenderMode} [c.renderMode] - How should collapsed content be rendered?
      *      Ignored if collapsible is false.
      * @param {RefreshMode} [c.refreshMode] - How should collapsed content be refreshed?
@@ -100,6 +104,8 @@ export class PanelModel extends HoistModel {
      *      on the splitter? Only applicable if the splitter is visible and the panel is collapsible.
      * @param {boolean} [c.showHeaderCollapseButton] - Should a collapse button be added to the
      *      end of the panel header? Only applicable if the panel is collapsible.
+     * @param {boolean} [c.showModalToggleButton] - Should a modal toggle button be added to the
+     *      end of the panel header? Only applicable if the panel has modal support.
      */
     constructor({
         collapsible = true,
@@ -110,13 +116,14 @@ export class PanelModel extends HoistModel {
         maxSize = null,
         defaultCollapsed = false,
         side,
-        modalView = false,
+        modalSupport = false,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
         persistWith = null,
         showSplitter = resizable || collapsible,
         showSplitterCollapseButton = showSplitter && collapsible,
         showHeaderCollapseButton = true,
+        showModalToggleButton = true,
         ...rest
     }) {
         super();
@@ -142,13 +149,18 @@ export class PanelModel extends HoistModel {
         this.maxSize = maxSize;
         this.defaultCollapsed = defaultCollapsed;
         this.side = side;
-        this.modalView = modalView === true ?
-            new ModalViewOptions({width: '90vw', height: '90vh'}) : modalView;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.showSplitter = showSplitter;
         this.showSplitterCollapseButton = showSplitterCollapseButton;
         this.showHeaderCollapseButton = showHeaderCollapseButton;
+        this.showModalToggleButton = showModalToggleButton;
+
+        if (modalSupport) {
+            this.modalSupportModel = modalSupport === true ?
+                new ModalSupportModel() :
+                new ModalSupportModel(modalSupport);
+        }
 
         // Set up various optional functionality;
         if (collapsible) {
@@ -157,10 +169,6 @@ export class PanelModel extends HoistModel {
 
         if (collapsible || resizable) {
             this._resizeRef = createRef();
-        }
-
-        if (modalView) {
-            this.modalSupportModel = new ModalSupportModel(this);
         }
 
         // Read state from provider -- fail gently
@@ -222,7 +230,7 @@ export class PanelModel extends HoistModel {
     }
 
     setIsModal(isModal) {
-        throwIf(!this.modalView, 'Modal view not enabled for this panel.');
+        throwIf(!this.hasModalSupport, 'Modal view not enabled for this panel.');
         this.modalSupportModel.setIsModal(isModal);
     }
 

@@ -6,7 +6,7 @@
  */
 import {box, filler, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button, modalToggleButton} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
 import {isEmpty} from 'lodash';
@@ -19,14 +19,16 @@ export const panelHeader = hoistCmp.factory({
     className: 'xh-panel-header',
     render({className, ...props}) {
         const panelModel = useContextModel(PanelModel),
-            {collapsed, isModal, vertical, side, showHeaderCollapseButton} = panelModel,
+            {collapsed, collapsible, isModal, hasModalSupport, vertical, side,
+                showHeaderCollapseButton, showModalToggleButton} = panelModel,
             {title, icon, compact} = props,
             headerItems = props.headerItems ?? [];
 
-        if (
-            !title && !icon && isEmpty(headerItems) &&
-            (!showHeaderCollapseButton && !isModal)
-        ) return null;
+        if (!title && !icon && isEmpty(headerItems) &&
+            (!showHeaderCollapseButton || !collapsible) &&
+            (!showModalToggleButton || !hasModalSupport)) {
+            return null;
+        }
 
         const onDoubleClick = () => {
             if (isModal) {
@@ -58,7 +60,7 @@ export const panelHeader = hoistCmp.factory({
                         items: [
                             ...(!collapsed || isModal ? headerItems : []),
                             modalButton({panelModel}),
-                            !isModal ? collapseButton({panelModel}) : null
+                            collapseButton({panelModel})
                         ],
                         onDoubleClick: (e) => e.stopPropagation()
                     })
@@ -90,11 +92,12 @@ export const panelHeader = hoistCmp.factory({
 
 const collapseButton = hoistCmp.factory(
     ({panelModel}) => {
-        if (!panelModel.showHeaderCollapseButton || !panelModel.collapsible) return null;
+        const {showHeaderCollapseButton, collapsible, isModal} = panelModel;
+        if (!showHeaderCollapseButton || !collapsible || isModal) return null;
 
         const {vertical, collapsed, contentFirst} = panelModel,
             directions = vertical ? ['chevronUp', 'chevronDown'] : ['chevronLeft', 'chevronRight'],
-            idx = (contentFirst != collapsed ? 0 : 1),
+            idx = (contentFirst !== collapsed ? 0 : 1),
             chevron = directions[idx];
 
         return button({
@@ -107,11 +110,8 @@ const collapseButton = hoistCmp.factory(
 
 export const modalButton = hoistCmp.factory(
     ({panelModel}) => {
-        if (!panelModel.modalView || panelModel.collapsed) return null;
-        return button({
-            icon: panelModel.isModal ? Icon.close() : Icon.openExternal(),
-            onClick: () => panelModel.toggleIsModal(),
-            minimal: true
-        });
+        const {showModalToggleButton, hasModalSupport} = panelModel;
+        if (!showModalToggleButton || !hasModalSupport) return null;
+        return modalToggleButton();
     }
 );

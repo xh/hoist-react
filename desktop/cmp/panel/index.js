@@ -6,5 +6,5 @@
  */
 export * from './Panel';
 export * from './PanelModel';
-export * from './ModalViewOptions';
+export * from '../modalsupport/ModalSupportOptions';
 

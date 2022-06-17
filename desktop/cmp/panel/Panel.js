@@ -24,7 +24,7 @@ import PT from 'prop-types';
 import {isValidElement, useRef, Children} from 'react';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
-import {modalSupport} from '../impl/modalsupport/ModalSupport';
+import {modalSupport} from '../modalsupport/ModalSupport';
 import './Panel.scss';
 import {PanelModel} from './PanelModel';
 
@@ -84,7 +84,6 @@ export const [Panel, panel] = hoistCmp.withFactory({
         const {
             resizable,
             collapsible,
-            modalView,
             collapsed,
             renderMode,
             vertical,
@@ -120,14 +119,10 @@ export const [Panel, panel] = hoistCmp.withFactory({
         coreContents = useHotkeys(coreContents, hotkeys);
 
         // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
-        const processedPanelHeader = (title || icon || headerItems) ?
-            panelHeader({title, icon, compact: compactHeader, headerItems}) :
-            null;
-
         let item = vbox({
             className: 'xh-panel__content',
             items: [
-                processedPanelHeader,
+                panelHeader({title, icon, compact: compactHeader, headerItems}),
                 coreContents,
                 parseLoadDecorator(maskProp, 'mask', contextModel),
                 parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)
@@ -140,7 +135,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
         }
 
         // 3) Wrap in modal support if needed
-        if (modalView) {
+        if (modalSupportModel) {
             item = modalSupport({model: modalSupportModel, item});
         }
 

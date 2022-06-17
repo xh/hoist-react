@@ -6,9 +6,9 @@
  */
 
 /**
- * Convenience configuration for a PanelModel.modalView
+ * Convenience configuration for a PanelModel.modalSupport
  */
-export class ModalViewOptions {
+export class ModalSupportOptions {
     /** @member {?String|number} */
     width;
     /** @member {?String|number} */
@@ -22,7 +22,7 @@ export class ModalViewOptions {
      * @param {String|number} [height] - css height
      * @param {boolean} [canOutsideClickClose]
      */
-    constructor({width = null, height = null, canOutsideClickClose = true} = {}) {
+    constructor({width = '90vw', height = '90vh', canOutsideClickClose = true} = {}) {
         this.width = width;
         this.height = height;
         this.canOutsideClickClose = canOutsideClickClose;

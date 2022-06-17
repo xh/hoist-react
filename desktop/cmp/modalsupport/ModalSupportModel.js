@@ -6,12 +6,13 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
+import {ModalSupportOptions} from '@xh/hoist/desktop/cmp/panel';
 import {makeObservable, bindable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 
 /**
- * Core Model for a ModalSupport component, responsible for managing `isModal` state and
- * for placing the content `hostNode` in the appropriate container node (either `inline` or `modal`)
+ * Core Model for a ModalSupport component.
+ * This model will place its component's child in 1 of 2 managed DOM nodes (either modal or inline)
  * @private
  */
 export class ModalSupportModel extends HoistModel {
@@ -21,16 +22,17 @@ export class ModalSupportModel extends HoistModel {
     inlineRef = createObservableRef();
     modalRef = createObservableRef();
     hostNode;
+    options;
 
     /**
-     * @param {PanelModel} panelModel
+     * @param {ModalSupportOptions|Object} opts
      */
-    constructor(panelModel) {
+    constructor(opts = new ModalSupportOptions()) {
         super();
         makeObservable(this);
         this.hostNode = this.createHostNode();
 
-        this.panelModel = panelModel;
+        this.options = opts instanceof ModalSupportOptions ? opts : new ModalSupportOptions(opts);
 
         const {inlineRef, modalRef, hostNode} = this;
         this.addReaction({
