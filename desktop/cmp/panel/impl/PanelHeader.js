@@ -105,7 +105,7 @@ const collapseButton = hoistCmp.factory(
     }
 );
 
-const modalButton = hoistCmp.factory(
+export const modalButton = hoistCmp.factory(
     ({panelModel}) => {
         if (!panelModel.modalView || panelModel.collapsed) return null;
         return button({
