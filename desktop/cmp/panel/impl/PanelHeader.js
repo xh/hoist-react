@@ -108,7 +108,7 @@ const collapseButton = hoistCmp.factory(
     }
 );
 
-export const modalButton = hoistCmp.factory(
+const modalButton = hoistCmp.factory(
     ({panelModel}) => {
         const {showModalToggleButton, hasModalSupport} = panelModel;
         if (!showModalToggleButton || !hasModalSupport) return null;
