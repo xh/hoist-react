@@ -84,7 +84,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
         const {
             resizable,
             collapsible,
-            modalViewSupported,
+            modalView,
             collapsed,
             renderMode,
             vertical,
@@ -140,7 +140,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
         }
 
         // 3) Wrap in modal support if needed
-        if (modalViewSupported) {
+        if (modalView) {
             item = modalSupport({model: modalSupportModel, item});
         }
 

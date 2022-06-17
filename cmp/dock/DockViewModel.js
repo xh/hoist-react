@@ -6,6 +6,7 @@
  */
 import {HoistModel, managed, ManagedRefreshContextModel, XH} from '@xh/hoist/core';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/impl/modalsupport/ModalSupportModel';
+import {ModalViewOptions} from '@xh/hoist/desktop/cmp/panel/ModalViewOptions';
 import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
@@ -110,10 +111,9 @@ export class DockViewModel extends HoistModel {
         this.refreshContextModel = new ManagedRefreshContextModel(this);
 
         this.modalSupportModel = new ModalSupportModel({
-            modalViewProps: {
-                canOutsideClickClose: false,
-                style: {width: this.width, height: this.height}
-            }
+            modalView: new ModalViewOptions({
+                width, height, canOutsideClickClose: false
+            })
         });
     }
 

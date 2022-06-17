@@ -16,24 +16,24 @@ import './PanelHeader.scss';
 export const panelHeader = hoistCmp.factory({
     displayName: 'PanelHeader',
     model: false,
-    render(props) {
-        const panelModel = useContextModel(PanelModel);
-        return panelModel.isModal ? modalHeader(props) : inlineHeader(props);
-    }
-});
-
-const inlineHeader = hoistCmp.factory({
     className: 'xh-panel-header',
     render({className, ...props}) {
         const panelModel = useContextModel(PanelModel),
-            {collapsed, vertical, side, showHeaderCollapseButton} = panelModel,
+            {collapsed, isModal, vertical, side, showHeaderCollapseButton} = panelModel,
             {title, icon, compact} = props,
             headerItems = props.headerItems ?? [];
 
-        if (!title && !icon && isEmpty(headerItems) && !showHeaderCollapseButton) return null;
+        if (
+            !title && !icon && isEmpty(headerItems) &&
+            (!showHeaderCollapseButton && !isModal)
+        ) return null;
 
         const onDoubleClick = () => {
-            if (panelModel.collapsible) panelModel.toggleCollapsed();
+            if (isModal) {
+                panelModel.toggleIsModal();
+            } else {
+                panelModel.toggleCollapsed();
+            }
         };
 
         const titleCls = 'xh-panel-header__title',
@@ -41,7 +41,7 @@ const inlineHeader = hoistCmp.factory({
             compactCls = compact ? 'xh-panel-header--compact' : null;
 
         // 1) Classic "top" title bar
-        if (!collapsed || vertical) {
+        if (!collapsed || vertical || isModal) {
             return hbox({
                 className: classNames(className, compactCls),
                 items: [
@@ -56,9 +56,9 @@ const inlineHeader = hoistCmp.factory({
                     hbox({
                         className: 'xh-panel-header__items',
                         items: [
-                            ...(!collapsed ? headerItems : []),
+                            ...(!collapsed || isModal ? headerItems : []),
                             modalButton({panelModel}),
-                            collapseButton({panelModel})
+                            !isModal ? collapseButton({panelModel}) : null
                         ],
                         onDoubleClick: (e) => e.stopPropagation()
                     })
@@ -88,41 +88,6 @@ const inlineHeader = hoistCmp.factory({
     }
 });
 
-
-const modalHeader = hoistCmp.factory({
-    className: 'xh-panel-header',
-
-    render({className, ...props}) {
-        const panelModel = useContextModel(PanelModel),
-            {title, icon, compact, headerItems = []} = props;
-
-        if (!title && !icon && !headerItems.length) return null;
-
-        const titleCls = 'xh-panel-header__title',
-            compactCls = compact ? 'xh-panel-header--compact' : null;
-
-        return hbox({
-            className: classNames(className, compactCls),
-            items: [
-                icon || null,
-                title ?
-                    box({
-                        className: titleCls,
-                        flex: 1,
-                        item: title
-                    }) :
-                    filler(),
-                hbox({
-                    className: 'xh-panel-header__items',
-                    items: [...headerItems, modalButton({panelModel})],
-                    onDoubleClick: (e) => e.stopPropagation()
-                })
-            ],
-            onDoubleClick: () => panelModel.toggleIsModal()
-        });
-    }
-});
-
 const collapseButton = hoistCmp.factory(
     ({panelModel}) => {
         if (!panelModel.showHeaderCollapseButton || !panelModel.collapsible) return null;
@@ -142,7 +107,7 @@ const collapseButton = hoistCmp.factory(
 
 const modalButton = hoistCmp.factory(
     ({panelModel}) => {
-        if (!panelModel.modalViewSupported || panelModel.collapsed) return null;
+        if (!panelModel.modalView || panelModel.collapsed) return null;
         return button({
             icon: panelModel.isModal ? Icon.close() : Icon.openExternal(),
             onClick: () => panelModel.toggleIsModal(),

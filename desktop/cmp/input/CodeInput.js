@@ -9,7 +9,10 @@ import {div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/c
 import {hoistCmp, managed, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
+import {modalSupport} from '@xh/hoist/desktop/cmp/impl/modalsupport/ModalSupport';
+import {ModalSupportModel} from '@xh/hoist/desktop/cmp/impl/modalsupport/ModalSupportModel';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
+import {ModalViewOptions} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {textArea} from '@xh/hoist/kit/blueprint';
@@ -34,7 +37,6 @@ import {compact, defaultsDeep, isEqual, isFunction} from 'lodash';
 import PT from 'prop-types';
 import ReactDOM from 'react-dom';
 import './CodeInput.scss';
-import {panel, PanelModel} from '../panel';
 
 /**
  * Code-editor style input, powered by CodeMirror. Displays a gutter with line numbers, mono-spaced
@@ -124,8 +126,10 @@ CodeInput.hasLayoutSupport = true;
 // Implementation
 //------------------------------
 class Model extends HoistInputModel {
-    /** @member {PanelModel} */
-    @managed panelModel = new PanelModel({modalViewSupported: true, resizable: false, collapsible: false});
+    /** @member {ModalSupportModel} */
+    @managed modalSupportModel = new ModalSupportModel({
+        modalView: new ModalViewOptions({width: '90vw', height: '90vh'})
+    });
 
     /** @member {CodeMirror} - a CodeMirror editor instance. */
     editor;
@@ -138,7 +142,7 @@ class Model extends HoistInputModel {
     get matchCount() {return this.matches.length}
 
     get fullScreen() {
-        return this.panelModel.isModal;
+        return this.modalSupportModel.isModal;
     }
 
     get commitOnChange() {return withDefault(this.componentProps.commitOnChange, true)}
@@ -210,7 +214,7 @@ class Model extends HoistInputModel {
         super();
         makeObservable(this);
         this.addReaction({
-            track: () => this.panelModel.isModal,
+            track: () => this.modalSupportModel.isModal,
             run: () => this.focus(),
             debounce: 1
         });
@@ -329,7 +333,7 @@ class Model extends HoistInputModel {
     }
 
     toggleFullScreen() {
-        this.panelModel.toggleIsModal();
+        this.modalSupportModel.toggleIsModal();
     }
 
     //------------------------
@@ -434,10 +438,9 @@ const cmp = hoistCmp.factory(
             model
         };
 
-        return panel({
-            model: model.panelModel,
-            item: inputCmp(childProps),
-            ...getLayoutProps(props)
+        return modalSupport({
+            model: model.modalSupportModel,
+            item: inputCmp(childProps)
         });
     }
 );

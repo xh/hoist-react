@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 import {box, fragment} from '@xh/hoist/cmp/layout';
@@ -12,21 +12,42 @@ import {Children} from 'react';
 import {createPortal} from 'react-dom';
 import {ModalSupportModel} from './ModalSupportModel';
 
+/**
+ * A modalSupport container provides the ability for its child component to expand into a modal
+ * state, without requiring its contents to re-render.  All of the child component's state is
+ * preserved when toggling between inline and modal views.
+ *
+ * State and DOM refs are managed via a ModalSupportModel, which must be provided.
+ *
+ * Most applications will not use modalSupport directly, and will instead make use of its
+ * implementation in Panel.
+ *
+ * @see Panel
+ */
 export const modalSupport = hoistCmp.factory({
     displayName: 'ModalSupport',
     model: uses(ModalSupportModel, {fromContext: false, publishMode: ModelPublishMode.NONE}),
     render({model, children}) {
         return fragment(
+            // Simple 'box' cmp, inside which to place the child cmp when `model.isModal = false`
             inlineContainer({model}),
+
+            // Dialog cmp, inside which to place the child cmp when `model.isModal = true`
             modalContainer({model}),
+
+            // Render the child cmp inside the `model.hostNode` div.  This div is then placed
+            // inside either the inlineContainer or modalContainer in reaction to the state of
+            // `model.isModal`
             createPortal(Children.only(children), model.hostNode)
         );
     }
 });
 
+// Simple 'box' cmp, inside which to place the child cmp when `model.isModal = false`
 const inlineContainer = hoistCmp.factory({
     render({model}) {
         return box({
+            className: 'xh-modal-support__inline',
             ref: model.inlineRef,
             height: '100%',
             display: 'inherit',
@@ -40,24 +61,23 @@ const inlineContainer = hoistCmp.factory({
     }
 });
 
-
+// Dialog cmp, inside which to place the child cmp when `model.isModal = true`
 const modalContainer = hoistCmp.factory({
     render({model}) {
         if (!model.isModal) return null;
+
+        const {width, height, canOutsideClickClose} = model.panelModel.modalView;
         return dialog({
-            style: {
-                width: '90vw',
-                height: '90vh'
-            },
-            canOutsideClickClose: true,
+            className: 'xh-modal-support__modal',
+            style: {width, height},
+            canOutsideClickClose,
             isOpen: true,
             onClose: () => model.toggleIsModal(),
             item: box({
                 ref: model.modalRef,
                 flexDirection: 'column',
                 height: '100%'
-            }),
-            ...model.panelModel.modalViewProps
+            })
         });
     }
 });

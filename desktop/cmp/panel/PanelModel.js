@@ -14,6 +14,7 @@ import {
     RenderMode,
     XH
 } from '@xh/hoist/core';
+import {ModalViewOptions} from '@xh/hoist/desktop/cmp/panel/ModalViewOptions';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isNil} from 'lodash';
@@ -40,8 +41,7 @@ export class PanelModel extends HoistModel {
     side;
     renderMode;
     refreshMode;
-    modalViewSupported;
-    modalViewProps;
+    modalView;
     prefName;
     showSplitter;
     showSplitterCollapseButton;
@@ -89,8 +89,7 @@ export class PanelModel extends HoistModel {
      * @param {boolean} [c.defaultCollapsed] - Default collapsed state.
      * @param {string} [c.side] - Side towards which the panel collapses or shrinks. This relates
      *      to the position within a parent vbox or hbox in which the panel should be placed.
-     * @param {boolean} [c.modalViewSupported] - Can the panel be displayed in a modal 'zoom' mode.
-     * @param {Object} [c.modalViewProps] - Props for customizing modal view
+     * @param {boolean|ModalViewOptions} [c.modalView] - Optional config for customizing modal view
      * @param {RenderMode} [c.renderMode] - How should collapsed content be rendered?
      *      Ignored if collapsible is false.
      * @param {RefreshMode} [c.refreshMode] - How should collapsed content be refreshed?
@@ -111,8 +110,7 @@ export class PanelModel extends HoistModel {
         maxSize = null,
         defaultCollapsed = false,
         side,
-        modalViewSupported = false,
-        modalViewProps = {},
+        modalView = false,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
         persistWith = null,
@@ -144,8 +142,8 @@ export class PanelModel extends HoistModel {
         this.maxSize = maxSize;
         this.defaultCollapsed = defaultCollapsed;
         this.side = side;
-        this.modalViewSupported = modalViewSupported;
-        this.modalViewProps = modalViewProps;
+        this.modalView = modalView === true ?
+            new ModalViewOptions({width: '90vw', height: '90vh'}) : modalView;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.showSplitter = showSplitter;
@@ -161,7 +159,7 @@ export class PanelModel extends HoistModel {
             this._resizeRef = createRef();
         }
 
-        if (modalViewSupported) {
+        if (modalView) {
             this.modalSupportModel = new ModalSupportModel(this);
         }
 
@@ -224,7 +222,7 @@ export class PanelModel extends HoistModel {
     }
 
     setIsModal(isModal) {
-        throwIf(!this.modalViewSupported, 'Modal view not enabled for this panel.');
+        throwIf(!this.modalView, 'Modal view not enabled for this panel.');
         this.modalSupportModel.setIsModal(isModal);
     }
 
@@ -261,16 +259,6 @@ export class PanelModel extends HoistModel {
     // Does the Panel come before the resizing affordances?
     get contentFirst() {
         return this.side === 'top' || this.side === 'left';
-    }
-
-    //--------------------------------------------
-    // Implementation (full-screen)
-    //---------------------------------------------
-    createHostNode() {
-        const hostNode = document.createElement('div');
-        hostNode.style.all = 'inherit';
-        document.body.appendChild(hostNode);
-        return hostNode;
     }
 
     //---------------------------------------------
