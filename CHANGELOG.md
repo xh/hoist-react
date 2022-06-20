@@ -5,7 +5,8 @@
 ### 🎁 New Features
 
 * FilterChooser field suggestions now search within multi-word field names.
-* Improved autosize behavior for very large grids.
+* Improved autosize performance for very large grids: Asynchronous loops are now used to avoid
+  locking-up entire app during autosize.
 
 ### 🐞 Bug Fixes
 * Fixes several issues where Grid would display rows gaps after operating on it programmatically,
