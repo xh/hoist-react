@@ -75,11 +75,11 @@ export class ColumnWidthCalculator {
             if (treeMode && column.isTreeColumn && store.allRootCount !== store.allCount) {
                 // For tree columns, we need to account for the indentation at the different depths.
                 // Here we group the records by tree depth and determine the max width at each depth.
-                const recordsByDepth = groupBy(records, record => record.ancestors.length),
-                    levelMaxes = map(recordsByDepth, async (records, depth) => {
-                        return await this.calcLevelWidthAsync(gridModel, records, column, options, this.getIndentation(depth));
-                    });
-
+                let recordsByDepth = groupBy(records, record => record.ancestors.length),
+                    levelTasks = map(recordsByDepth, (records, depth) => {
+                        return this.calcLevelWidthAsync(gridModel, records, column, options, this.getIndentation(depth));
+                    }),
+                    levelMaxes = await Promise.all(levelTasks);
                 return max(levelMaxes);
             } else {
                 return this.calcLevelWidthAsync(gridModel, records, column, options);
