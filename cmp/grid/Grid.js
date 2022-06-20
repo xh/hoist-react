@@ -384,8 +384,7 @@ class GridLocalModel extends HoistModel {
             track: () => [model.isReady, store._filtered, model.showSummary, store.summaryRecord],
             run: () => {
                 if (model.isReady) this.syncData();
-            },
-            debounce: 0
+            }
         };
     }
 
@@ -518,12 +517,12 @@ class GridLocalModel extends HoistModel {
     }
 
     sizingModeReaction() {
-        const {model} = this;
+        const {model} = this,
+            {mode} = model.autosizeOptions;
 
         return {
             track: () => model.sizingMode,
             run: () => {
-                const {mode} = model.autosizeOptions;
                 if (mode === GridAutosizeMode.MANAGED || mode === GridAutosizeMode.ON_SIZING_MODE_CHANGE) {
                     model.autosizeAsync({showMask: true});
                 }
@@ -547,7 +546,7 @@ class GridLocalModel extends HoistModel {
                     agApi.refreshCells({columns: colIds, force: true});
                 }
             },
-            debounce: 0
+            debounce: 1
         };
     }
 

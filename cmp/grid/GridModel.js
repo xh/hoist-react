@@ -1193,16 +1193,10 @@ export class GridModel extends HoistModel {
      * TODO - see https://github.com/xh/hoist-react/issues/2551 and note that calls to this method
      *   within this class re-check `isReady` directly. We have observed this method returning
      *   to its caller as true when the ag-grid/API has in fact dismounted and is no longer ready.
-     *
-     * This method will introduce a minimal delay for all calls.  This is useful to ensure
-     * that the grid has had the opportunity to process any pending data updates, which are also
-     * subject to a minimal async debounce.
-     *
      * @param {number} [timeout] - timeout in ms
      * @return {Promise<boolean>} - latest ready state of grid
      */
     async whenReadyAsync(timeout = 3 * SECONDS) {
-        await wait();
         try {
             await when(() => this.isReady, {timeout});
         } catch (ignored) {
