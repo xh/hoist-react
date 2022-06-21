@@ -1216,16 +1216,15 @@ export class GridModel extends HoistModel {
     // Implementation
     //-----------------------
     async autosizeColsInternalAsync(colIds, options) {
-        const {agApi, empty} = this;
-        const showMask = options.showMask && agApi;
+        await this.whenReadyAsync();
+        if (!this.isReady) return;
+
+        const {agApi, empty} = this,
+            {showMask} = options;
 
         if (showMask) {
             agApi.showLoadingOverlay();
         }
-
-        // Always wait a tick to ensure data reaction has had a chance to sync for this tick.
-        // Also ensures that any mask overlay is rendered
-        await wait();
 
         try {
             await XH.gridAutosizeService.autosizeAsync(this, colIds, options);

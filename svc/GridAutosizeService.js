@@ -34,6 +34,9 @@ export class GridAutosizeService extends HoistService {
      * @param {GridAutosizeOptions} options - options to use for this autosize.
      */
     async autosizeAsync(gridModel, colIds, options) {
+        await gridModel.whenReadyAsync();
+        if (!gridModel.isReady) return;
+
         // 1) Check columns exist
         colIds = colIds.filter(id => gridModel.getColumn(id));
         if (isEmpty(colIds)) return;
@@ -103,18 +106,18 @@ export class GridAutosizeService extends HoistService {
             ret = [];
 
         if (renderedRowsOnly) {
-            agApi?.getRenderedNodes().forEach(node => {
+            agApi.getRenderedNodes().forEach(node => {
                 const record = store.getById(node.data?.id);
                 if (record) ret.push(record);
             });
-        } else if (agApi && !includeCollapsedChildren && (treeMode || groupBy)) {
+        } else if (!includeCollapsedChildren && (treeMode || groupBy)) {
             // In tree/grouped grids, included expanded rows only by default.
             for (let idx = 0; idx < agApi.getDisplayedRowCount(); idx++) {
                 const node = agApi.getDisplayedRowAtIndex(idx),
                     record = store.getById(node.data?.id);
                 if (record) ret.push(record);
             }
-        } else if (agApi?.isAnyFilterPresent()) {
+        } else if (agApi.isAnyFilterPresent()) {
             // Respect "native" ag-Grid filtering, if in use.
             agApi.forEachNodeAfterFilter(node => {
                 const record = store.getById(node.data?.id);
