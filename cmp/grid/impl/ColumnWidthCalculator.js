@@ -7,9 +7,10 @@
 
 import {XH} from '@xh/hoist/core';
 import {stripTags} from '@xh/hoist/utils/js';
-import {forOwn, groupBy, isEmpty, isArray, isFunction, isNil, isString, map, max, min, sortBy, shuffle} from 'lodash';
+import {forOwn, groupBy, isEmpty, isArray, isFunction, isNil, isString, map, max, min, sortBy, takeRight} from 'lodash';
 import {isValidElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
+import {forEachAsync} from '@xh/hoist/utils/async';
 
 /**
  * Calculates the column width required to display column.  Used by GridAutoSizeService.
@@ -37,13 +38,13 @@ export class ColumnWidthCalculator {
      * @param {GridAutosizeOptions} options
      * @returns {*}
      */
-    calcWidth(gridModel, records, colId, options) {
+    async calcWidthAsync(gridModel, records, colId, options) {
         const column = gridModel.findColumn(gridModel.columns, colId),
             {autosizeMinWidth, autosizeMaxWidth} = column;
 
         let result = max([
             this.calcHeaderWidth(gridModel, column, options),
-            this.calcDataWidth(gridModel, shuffle(records), column, options)
+            await this.calcDataWidthAsync(gridModel, records, column, options)
         ]);
 
         result = max([result, autosizeMinWidth]);
@@ -66,7 +67,7 @@ export class ColumnWidthCalculator {
         }
     }
 
-    calcDataWidth(gridModel, records, column, options) {
+    async calcDataWidthAsync(gridModel, records, column, options) {
         if (isEmpty(records)) return null;
 
         try {
@@ -75,13 +76,13 @@ export class ColumnWidthCalculator {
                 // For tree columns, we need to account for the indentation at the different depths.
                 // Here we group the records by tree depth and determine the max width at each depth.
                 const recordsByDepth = groupBy(records, record => record.ancestors.length),
-                    levelMaxes = map(recordsByDepth, (records, depth) => {
-                        return this.calcLevelWidth(gridModel, records, column, options, this.getIndentation(depth));
-                    });
-
+                    levelTasks = map(recordsByDepth, (records, depth) => {
+                        return this.calcLevelWidthAsync(gridModel, records, column, options, this.getIndentation(depth));
+                    }),
+                    levelMaxes = await Promise.all(levelTasks);
                 return max(levelMaxes);
             } else {
-                return this.calcLevelWidth(gridModel, records, column, options);
+                return this.calcLevelWidthAsync(gridModel, records, column, options);
             }
         } catch (e) {
             console.warn(`Error calculating max data width for column "${column.colId}".`, e);
@@ -90,59 +91,65 @@ export class ColumnWidthCalculator {
         }
     }
 
-    calcLevelWidth(gridModel, records, column, options, indentationPx = 0) {
-        const {field, getValueFn, renderer, rendererIsComplex, cellClassFn, cellClassRules} = column,
+    async calcLevelWidthAsync(gridModel, records, column, options, indentationPx = 0) {
+        const {
+                field,
+                getValueFn,
+                renderer,
+                rendererIsComplex,
+                cellClassFn,
+                cellClassRules
+            } = column,
             {store, sizingMode, rowClassFn, rowClassRules} = gridModel,
             bufferPx = column.autosizeBufferPx ?? options.bufferPx;
 
-        // 1) Get Map of rendered values to List of records that contain them
-        const recsByValue = new Map(),
-            renderedValues = new Map();
+        // 1) Get map of rendered values to data about it
+        const estimatesByValue = new Map(),
+            renderMemo = renderer && !rendererIsComplex ? (new Map()) : null;
 
-        records.forEach(record => {
+        await forEachAsync(records, record => {
             if (!record) return;
 
             const ctx = {record, field, column, gridModel, store},
                 rawValue = getValueFn(ctx);
 
-            let value;
-            if (!renderer) {
-                // The simplest case is a column that does not use a renderer
-                value = rawValue;
-                renderedValues.set(rawValue, value);
-            } else if (!rendererIsComplex && renderedValues.get(rawValue)) {
-                // If the column does not use a complex renderer, we can reuse the rendered value.
-                value = renderedValues.get(rawValue);
-            } else {
-                // Otherwise, render and memoize the raw value.
-                value = renderer(rawValue, ctx);
-                if (isValidElement(value)) value = renderToStaticMarkup(value);
-                renderedValues.set(rawValue, value);
+            // 1a) Get rendered markup value from raw.  Use memoization if appropriate
+            let value = rawValue;
+            if (renderer) {
+                if (renderMemo?.has(rawValue)) {
+                    value = renderMemo.get(rawValue);
+                } else {
+                    value = renderer(rawValue, ctx);
+                    if (isValidElement(value)) value = renderToStaticMarkup(value);
+                    renderMemo?.set(rawValue, value);
+                }
             }
 
-            const recs = recsByValue.get(value);
-            if (!recs) {
-                recsByValue.set(value, [record]);
+            // 1b) Use a canvas to estimate pixel width of new markup.
+            // Strip html tags but include parentheses / units etc. for renderers that may return elements.
+            const est = estimatesByValue.get(value);
+            if (!est) {
+                estimatesByValue.set(value, {
+                    value,
+                    width: isNil(value) ? 0 : this.getStringWidth(stripTags(value.toString())) + indentationPx,
+                    records: [record]
+                });
             } else {
-                recs.push(record);
+                est.records.push(record);
             }
         });
 
-        // 2) Use a canvas to estimate and sort by the pixel width of the string value.
-        // Strip html tags but include parentheses / units etc. for renderers that may return elements.
-        const sortedValues = sortBy(Array.from(recsByValue.keys()), value => {
-            const width = isNil(value) ? 0 : this.getStringWidth(stripTags(value.toString()));
-            return width + indentationPx;
-        });
+        // 2) Extract the sample set of widest estimate values for rendering and sizing
+        let sample = Array.from(estimatesByValue.values());
+        sample = takeRight(sortBy(sample, 'width'), this.SIZE_CALC_SAMPLES);
 
-        // 3) Extract the sample set of longest values for rendering and sizing
-        const longestValues = sortedValues.slice(Math.max(sortedValues.length - this.SIZE_CALC_SAMPLES, 0));
-
-        // 4) Get longest values, with unique combinations of row and cell classes applied to them
-        const samples = longestValues.map(value => {
+        // 3) Get widest values, after actually rendering all css combinations for all records
+        let ret = 0;
+        await forEachAsync(sample, ({value, records}) => {
+            // Get unique combinations of row and cell classes applied
             const classNames = new Set();
             if (rowClassFn || cellClassFn || !isEmpty(rowClassRules) || !isEmpty(cellClassRules)) {
-                recsByValue.get(value).forEach(record => {
+                records.forEach(record => {
                     const rawValue = getValueFn({record, field, column, gridModel, store}),
                         rowClass = this.getRowClass(gridModel, record),
                         cellClass = this.getCellClass(gridModel, column, record, rawValue);
@@ -151,13 +158,9 @@ export class ColumnWidthCalculator {
             } else {
                 classNames.add('|');
             }
-            return {value, classNames};
-        });
 
-        // 5) Render to a hidden cell to calculate the max displayed width. Loop through all
-        // combinations of cell and row classes applied to this value, and return the largest.
-        let ret = 0;
-        samples.forEach(({value, classNames}) => {
+            // 5) Render to a hidden cell to calculate the max displayed width. Loop through all
+            // combinations of cell and row classes applied to this value, and return the largest.
             classNames.forEach(it => {
                 const [rowClass, cellClass] = it.split('|');
                 this.setClassNames(sizingMode, rowClass, cellClass);

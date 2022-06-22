@@ -2,6 +2,25 @@
 
 ## v50.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* FilterChooser field suggestions now search within multi-word field names.
+* Improved autosize performance for very large grids: Asynchronous loops are now used to avoid
+  locking-up entire app during autosize.
+
+### 🐞 Bug Fixes
+* Fixes several issues where Grid would display rows gaps after operating on it programmatically,
+  This problem was introduced in ag-Grid v27.
+
+### 💥 Breaking Changes
+* The data reactions between `GridModel` and the underlying ag-Grid is now minimally debounced, to
+  avoid multiple data updates during a single event loop tick. This avoids corrupting ag-Grid's
+  underlying state. This should not be a problem for most applications, but
+  applications that are querying any grid state immediately after loading or filtering a grid
+  (e.g. selection, row visible/expansion state, etc.) should be tested carefully and may require a
+  call to  `whenGridReadyAsync()`.  (Note that this method is already incorporated in to several
+  public methods on `GridModel` including  `selectFirstAsync` and `ensureSelectionVisibleAsync`.)
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v49.2.0...develop)
 
 ## v49.2.0 - 2022-06-14

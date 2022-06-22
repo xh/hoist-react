@@ -149,7 +149,7 @@ export class GridExportService extends HoistService {
      *
      * @param {Object} c
      * @param {GridModel} c.gridModel
-     * @param {Record} c.record
+     * @param {StoreRecord} c.record
      * @param {Column} c.column
      * @param {Object} [c.node] - rendered ag-Grid row, if available.  Necessary for
      *            exporting agGrid aggregates.

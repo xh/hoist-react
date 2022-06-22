@@ -18,7 +18,7 @@ export class AggregationContext {
     /** @member {View} - view being aggregated. */
     view;
 
-    /** @member {Record[]} - all records currently meeting the filter for this view.*/
+    /** @member {StoreRecord[]} - all records currently meeting the filter for this view.*/
     filteredRecords;
 
     /**
