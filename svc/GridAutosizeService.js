@@ -76,9 +76,9 @@ export class GridAutosizeService extends HoistService {
     /**
      * @param {GridModel} gridModel
      * @param {string[]} colIds
-     * @param {Record[]} records
+     * @param {StoreRecord[]} records
      * @param {GridAutosizeOptions} options
-     * @return {Object[]} - {colId, width} objects to pass to GridModel.applyColumnStateChanges()
+     * @return {Promise<Object[]>} - {colId, width} objects to pass to GridModel.applyColumnStateChanges()
      */
     async calcRequiredWidthsAsync(gridModel, colIds, records, options) {
         const startRecords = gridModel.store._filtered,
@@ -99,6 +99,7 @@ export class GridAutosizeService extends HoistService {
     /**
      * @param {GridModel} gridModel
      * @param {GridAutosizeOptions} options
+     * @return {StoreRecord[]}
      */
     gatherRecordsToBeSized(gridModel, options) {
         let {store, agApi, treeMode, groupBy} = gridModel,
