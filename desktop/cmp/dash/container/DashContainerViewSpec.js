@@ -8,12 +8,10 @@ import {DashViewSpec} from '@xh/hoist/desktop/cmp/dash/DashViewSpec';
 
 /**
  * Spec used to generate DashContainerViews and DashContainerViewModels within a
- * DashContainer.  Extends {@see DashViewSpec}
+ * {@see DashContainer}.
  *
- * This class is not typically created directly within applications. Instead, specify
- * DashContainerViewSpec configs via the `DashContainerModel.viewSpecs` constructor
- * config.
- *
+ * This class is not typically created directly within applications. Instead, specify as plain
+ * object configs via the `DashContainerModel.viewSpecs` constructor config.
  */
 export class DashContainerViewSpec extends DashViewSpec {
 
@@ -22,7 +20,7 @@ export class DashContainerViewSpec extends DashViewSpec {
 
     /**
      * @param {RenderMode} [renderMode] - strategy for rendering this DashContainerView. If null,
-     * will default to its container's mode. See enum for description of supported modes.
+     *      will default to its container's mode. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing this DashView. If null, will
      *      default to its container's mode. See enum for description of supported modes.
      */

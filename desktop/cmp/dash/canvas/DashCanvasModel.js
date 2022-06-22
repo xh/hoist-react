@@ -3,25 +3,14 @@ import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {ensureUniqueBy} from '@xh/hoist/utils/js';
+import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {defaultsDeep, isEqual, find, without, times} from 'lodash';
+import {defaultsDeep, find, isEqual, times, without} from 'lodash';
 import {computed} from 'mobx';
-import {throwIf} from '../../../../utils/js';
 
 /**
- * Model for a DashCanvas, representing its contents and layout state.
- *
- * NOTE: This component is currently in BETA.  Its API is under development
- * and subject to change in future versions.
- *
- * This model provides support for managing DashCanvass, adding new views on the fly,
- * and tracking / loading state.
- *
- * State should be structured as an array of objects, each with the following properties:
- * {title, viewSpecId, viewState, viewLayout}
- *
- * @Beta
+ * Model for {@see DashCanvas}, managing all configurable options for the component and publishing
+ * the observable state of its current widgets and their layout.
  */
 export class DashCanvasModel extends HoistModel {
 
@@ -76,21 +65,18 @@ export class DashCanvasModel extends HoistModel {
     //------------------------
     /** @member {RefObject<DOMElement>} */
     ref = createObservableRef();
-    /** @member {boolean} scrollbarVisible */
+    /** @member {boolean} */
     scrollbarVisible;
 
     /**
-     * ---------- !! NOTE: THIS COMPONENT IS CURRENTLY IN BETA !! ----------
-     * -- Model API is under development and subject to breaking changes --
-     *
      * @param {Object} c - DashCanvasModel configuration.
-     * @param {DashCanvasViewSpec[]} c.viewSpecs - A collection of viewSpecs, each describing a type of view
-     *      that can be displayed in this container
-     * @param {Object} [c.viewSpecDefaults] - Properties to be set on all viewSpecs.  Merges deeply.
-     * @param {Array} [c.initialState] - Default state for this container.
+     * @param {DashCanvasViewSpec[]} c.viewSpecs - A collection of viewSpecs, each describing a
+     *      type of view that can be displayed in this container
+     * @param {Object} [c.viewSpecDefaults] - Properties to be set on all viewSpecs. Merges deeply.
+     * @param {DashCanvasItemState[]} [c.initialState] - Default state for this container.
      * @param {boolean} [c.layoutLocked] - Prevent re-arranging views by dragging and dropping.
-     * @param {boolean} [c.contentLocked] - Prevent adding and removing views.ocked
-     * @param {boolean} [c.renameLocked] - Prevent renaming views.ked
+     * @param {boolean} [c.contentLocked] - Prevent adding and removing views.
+     * @param {boolean} [c.renameLocked] - Prevent renaming views.
      * @param {PersistOptions} [c.persistWith] - Options governing persistence
      * @param {number} c.columns - Total number of columns (x coordinates for views correspond with column numbers)
      * @param {number} c.rowHeight - Height of each row in pixels (y coordinates for views correspond with row numbers)
@@ -185,9 +171,7 @@ export class DashCanvasModel extends HoistModel {
         return this.layout.length === 0;
     }
 
-    /**
-     * Removes all views from the canvas
-     */
+    /** Removes all views from the canvas */
     @action
     clear() {
         const {viewModels} = this;
@@ -464,8 +448,8 @@ export class DashCanvasModel extends HoistModel {
 
 /**
  * @typedef {Object} DashCanvasItemLayout
- * @property {int} x
- * @property {int} y
- * @property {int} w
- * @property {int} h
+ * @property {number} x
+ * @property {number} y
+ * @property {number} w
+ * @property {number} h
  */

@@ -7,17 +7,10 @@
 import {DashViewSpec} from '@xh/hoist/desktop/cmp/dash/DashViewSpec';
 
 /**
- * Spec used to generate DashCanvasViews and DashCanvasViewModels within a
- * DashCanvas.  Extends {@see DashViewSpec}
+ * Spec used to generate DashCanvasViews and DashCanvasViewModels within a {@see DashCanvas}.
  *
- * -------- !! NOTE: THIS COMPONENT IS CURRENTLY IN BETA !! --------
- * -- Its API is under development and subject to breaking changes --
- *
- * This class is not typically created directly within applications. Instead, specify
- * DashCanvasViewSpec configs via the `DashCanvasModel.viewSpecs` constructor
- * config.
- *
- * @Beta
+ * This class is not typically created directly within applications. Instead, specify as plain
+ * object configs via the `DashCanvasModel.viewSpecs` constructor config.
  */
 export class DashCanvasViewSpec extends DashViewSpec {
 
