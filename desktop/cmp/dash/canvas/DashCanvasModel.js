@@ -240,7 +240,7 @@ export class DashCanvasModel extends HoistModel {
 
         this.layouts = without(this.layouts, removeLayout);
         this.viewModels = without(this.viewModels, removeView);
-        XH.destroy(removeView);
+        XH.safeDestroy(removeView);
     }
 
     /**

@@ -29,20 +29,33 @@ export class DashCanvasViewModel extends DashViewModel {
     @observable.ref headerItems = [];
     /** @member {boolean} */
     @observable autoHeight;
-
-    /** @member {ResizeObserver} */
-    resizeObserver = new window.ResizeObserver(() => this.autoSizeHeight());
+    /** @member {MutationObserver} */
+    mutationObserver;
 
     constructor(cfg) {
         super(cfg);
-
-        window.dc = this;
-
-
         makeObservable(this);
         this.hidePanelHeader = !!cfg.viewSpec.hidePanelHeader;
         this.hideMenuButton = !!cfg.viewSpec.hideMenuButton;
         this.autoHeight = !!cfg.viewSpec.autoHeight;
+
+        this.addReaction({
+            track: () => [this.ref.current, this.autoHeight],
+            run: ([node, autoHeight]) => {
+                if (autoHeight && node) {
+                    this.mutationObserver = new window.MutationObserver(() => this.autoSizeHeight());
+                    this.mutationObserver.observe(node.parentElement,
+                        {
+                            attributes: true,
+                            attributeFilter: ['style'],
+                            subtree: true
+                        }
+                    );
+                } else {
+                    this.mutationObserver?.disconnect();
+                }
+            }
+        });
     }
 
     get positionParams() {
@@ -63,30 +76,30 @@ export class DashCanvasViewModel extends DashViewModel {
      * Auto-size view height to fit its contents
      */
     @debounced(100)
-    autoSizeHeight(...args) {
-        console.log(args);
-        return;
-        console.log('height autosize');
+    autoSizeHeight() {
+        const node = this.ref.current?.parentElement;
 
-        const {id, ref, containerModel} = this,
+        if (!node) return;
+
+        const {id, containerModel} = this,
             {layout, rowHeight, margin} = containerModel,
             newLayout = {...containerModel.getLayout(id)};
 
         // Hold on to initial height:
-        const initHeight = ref.current.parentElement.style.height;
+        const initHeight = node.style.height;
 
         // Set height to 'auto' to leverage some CSS magic
-        ref.current.parentElement.style.height = 'auto';
+        node.style.height = 'auto';
 
         // Calculate new height in grid units
-        const newHeightPx = ref.current.parentElement.offsetHeight;
-        newLayout.h = Math.round((newHeightPx + margin[1]) / (rowHeight + margin[1]));
+        const newHeightPx = node.offsetHeight;
+        newLayout.h = Math.ceil((newHeightPx + margin[1]) / (rowHeight + margin[1]));
 
         // Set CSS height back to initial value (best to let ReactGridLayout mutate this directly)
-        ref.current.parentElement.style.height = initHeight;
+        node.style.height = initHeight;
 
         // Send the new layout back to the parent model
-        this.containerModel.setLayout(uniqBy([newLayout, ...layout], 'i'));
+        containerModel.setLayout(uniqBy([newLayout, ...layout], 'i'));
     }
 
     /**
@@ -96,5 +109,10 @@ export class DashCanvasViewModel extends DashViewModel {
     @action
     setHeaderItems(items) {
         this.headerItems = items;
+    }
+
+    destroy() {
+        this.mutationObserver?.disconnect();
+        super.destroy();
     }
 }
