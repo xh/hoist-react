@@ -1603,7 +1603,7 @@ export class GridModel extends HoistModel {
  *      Default is false. Set to true for grids that contain many rows and columns, for which
  *      full autosizing of all data would be too slow.
  * @property {boolean} [includeCollapsedChildren] - true to autosize all rows, even when hidden due
- *      to a collapsed ancestor row. Only has an effect when visibleRowOnly is false. Default is false.
+ *      to a collapsed ancestor row. Only has an effect when renderedRowsOnly is false. Default is false.
  *      Note that setting this to true can have performance impacts for large tree grids with many cells.
  * @property {function|string|string[]} [columns] - columns ids to autosize, or a function for
  *      testing if the given column should be autosized. Typically used when calling

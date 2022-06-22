@@ -2,6 +2,10 @@
 
 ## v50.0.0-SNAPSHOT - unreleased
 
+[Commit Log](https://github.com/xh/hoist-react/compare/v49.2.0...develop)
+
+## v49.2.0 - 2022-06-14
+
 ### 🎁 New Features
 
 * New `@enumerable` decorator for making class members `enumerable`
@@ -20,6 +24,9 @@
 ### 📚 Libraries
 
 * mobx `6.5 -> 6.6`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v49.1.0...v49.2.0)
+
 
 ## v49.1.0 - 2022-06-03
 
