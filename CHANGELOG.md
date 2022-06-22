@@ -7,6 +7,8 @@
 * FilterChooser field suggestions now search within multi-word field names.
 * Improved autosize performance for very large grids: Asynchronous loops are now used to avoid
   locking-up entire app during autosize.
+* `DashCanvasViewModel` now supports `autoHeight` to automatically resize a `DashCanvasView's`
+  height to fit its contents
 
 ### 🐞 Bug Fixes
 * Fixes several issues where Grid would display rows gaps after operating on it programmatically,
