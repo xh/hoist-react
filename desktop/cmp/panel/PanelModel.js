@@ -40,7 +40,6 @@ export class PanelModel extends HoistModel {
     side;
     renderMode;
     refreshMode;
-    prefName;
     showSplitter;
     showSplitterCollapseButton;
     showHeaderCollapseButton;
@@ -92,8 +91,8 @@ export class PanelModel extends HoistModel {
      * @param {boolean} [c.defaultCollapsed] - Default collapsed state.
      * @param {string} [c.side] - Side towards which the panel collapses or shrinks. This relates
      *      to the position within a parent vbox or hbox in which the panel should be placed.
-     * @param {boolean|ModalSupportOptions|Object} [c.modalSupport] - Config for customizing modal
-     *      view. True for default configuration. (Default false)
+     * @param {boolean|ModalSupportOptions|Object} [c.modalSupport] - set to true to enable built-in
+     *      support for showing panel contents in a modal, or provide a config to further configure.
      * @param {RenderMode} [c.renderMode] - How should collapsed content be rendered?
      *      Ignored if collapsible is false.
      * @param {RefreshMode} [c.refreshMode] - How should collapsed content be refreshed?
