@@ -101,7 +101,7 @@ export class DashCanvasModel extends HoistModel {
         persistWith = null,
         emptyText = 'No views have been added.',
         addViewButtonText = 'Add View',
-        columns = 10,
+        columns = 12,
         rowHeight = 50,
         compact = true,
         margin = [10, 10],
