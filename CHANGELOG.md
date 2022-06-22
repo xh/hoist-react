@@ -21,6 +21,17 @@
   call to  `whenGridReadyAsync()`.  (Note that this method is already incorporated in to several
   public methods on `GridModel` including  `selectFirstAsync` and `ensureSelectionVisibleAsync`.)
 
+
+### 💥 Breaking Changes
+
+* Blueprint has upgraded all of its css class names to use the `bp4-` prefix instead of the `bp3-`
+  prefix.  Any apps styling these classes directly may need to be adjusted.  See
+  https://github.com/palantir/blueprint/wiki/Blueprint-4.0 for more info.
+
+### 📚 Libraries
+
+* blueprint.js `3.54 -> 4.51`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v49.2.0...develop)
 
 ## v49.2.0 - 2022-06-14
