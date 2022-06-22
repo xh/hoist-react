@@ -1193,10 +1193,16 @@ export class GridModel extends HoistModel {
      * TODO - see https://github.com/xh/hoist-react/issues/2551 and note that calls to this method
      *   within this class re-check `isReady` directly. We have observed this method returning
      *   to its caller as true when the ag-grid/API has in fact dismounted and is no longer ready.
+     *
+     * This method will introduce a minimal delay for all calls.  This is useful to ensure
+     * that the grid has had the opportunity to process any pending data updates, which are also
+     * subject to a minimal async debounce.
+     *
      * @param {number} [timeout] - timeout in ms
      * @return {Promise<boolean>} - latest ready state of grid
      */
     async whenReadyAsync(timeout = 3 * SECONDS) {
+        await wait();
         try {
             await when(() => this.isReady, {timeout});
         } catch (ignored) {
@@ -1210,17 +1216,15 @@ export class GridModel extends HoistModel {
     // Implementation
     //-----------------------
     async autosizeColsInternalAsync(colIds, options) {
-        const {agApi, empty} = this;
-        const showMask = options.showMask && agApi;
+        await this.whenReadyAsync();
+        if (!this.isReady) return;
+
+        const {agApi, empty} = this,
+            {showMask} = options;
 
         if (showMask) {
             agApi.showLoadingOverlay();
         }
-
-        // Always wait a tick to ensure `GridLocalModel.syncData()` reaction has run and ag-Grid
-        // has been asked to render the current recordset into visible rows for measuring. Also
-        // ensures that the mask overlay is rendered (if requested).
-        await wait();
 
         try {
             await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
