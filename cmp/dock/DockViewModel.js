@@ -5,6 +5,7 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, ManagedRefreshContextModel, XH} from '@xh/hoist/core';
+import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
 import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
@@ -32,6 +33,7 @@ export class DockViewModel extends HoistModel {
 
     containerModel;
     @managed refreshContextModel;
+    @managed modalSupportModel;
 
     get isActive() {
         return !this.collapsed;
@@ -106,6 +108,10 @@ export class DockViewModel extends HoistModel {
         this._refreshMode = refreshMode;
 
         this.refreshContextModel = new ManagedRefreshContextModel(this);
+
+        this.modalSupportModel = new ModalSupportModel({
+            width: width ?? null, height: height ?? null, canOutsideClickClose: false
+        });
     }
 
     //-----------------------
@@ -124,11 +130,13 @@ export class DockViewModel extends HoistModel {
         if (!this.allowDialog) return;
         this.containerModel.views.forEach(it => it.showInDock());
         this.docked = false;
+        this.modalSupportModel.setIsModal(true);
     }
 
     @action
     showInDock() {
         this.docked = true;
+        this.modalSupportModel.setIsModal(false);
     }
 
     //-----------------------
@@ -144,11 +152,13 @@ export class DockViewModel extends HoistModel {
 
     @action
     expand() {
+        this.modalSupportModel.setIsModal(false);
         this.collapsed = false;
     }
 
     @action
     collapse() {
+        this.modalSupportModel.setIsModal(false);
         this.collapsed = true;
         this.docked = true;
     }
