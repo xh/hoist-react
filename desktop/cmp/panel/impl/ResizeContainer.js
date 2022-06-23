@@ -10,6 +10,7 @@ import {Children} from 'react';
 import {PanelModel} from '../PanelModel';
 import {dragger} from './dragger/Dragger';
 import {splitter} from './Splitter';
+import composeRefs from '@seznam/compose-react-refs';
 
 export const resizeContainer = hoistCmp.factory({
     displayName: 'ResizeContainer',
@@ -34,6 +35,11 @@ export const resizeContainer = hoistCmp.factory({
 
         const cmp = vertical ? vbox : hbox,
             maxDim = vertical ? 'maxHeight' : 'maxWidth';
+
+
+        if (panelModel._resizeRef) {
+            ref = composeRefs(panelModel._resizeRef, ref);
+        }
 
         return cmp({
             ref,

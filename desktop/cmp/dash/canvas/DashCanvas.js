@@ -15,13 +15,15 @@ import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
 
 /**
- * Display a "canvas" of child components in accordance with a DashCanvasModel
+ * Dashboard-style container that allows users to drag-and-drop child widgets into flexible layouts.
+ *
+ * Unlike its cousin {@see DashContainer}, this component scales the width only of its child
+ * widgets as its overall size changes, leaving heights unchanged and scrolling internally as
+ * necessary. This makes it a good candidate for report-style dashboards containing lots of content
+ * that is unlikely to fit or compress nicely on smaller screens. Consider DashContainer when
+ * a space-filling layout is a priority.
+ *
  * @see DashCanvasModel
- *
- * NOTE: This component is currently in BETA. Its API is under development
- * and subject to change in future versions.
- *
- * @Beta
  */
 export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
     displayName: 'DashCanvas',

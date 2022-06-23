@@ -5,80 +5,34 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {chart} from '@xh/hoist/cmp/chart';
-import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, creates} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {dialog} from '@xh/hoist/kit/blueprint';
 
 import {ChartsModel} from './ChartsModel';
 
 export const chartsPanel = hoistCmp.factory({
     model: creates(ChartsModel),
     render({model, ...props}) {
-        const {chartModel} = model;
-
+        const {chartModel, activityTrackingModel, panelModel} = model,
+            {isModal} = panelModel;
         return panel({
-            title: 'Aggregate Activity Chart',
+            title: !isModal ? 'Aggregate Activity Chart' : activityTrackingModel.queryDisplayString,
             icon: Icon.chartBar(),
-            compactHeader: true,
-            items: [
-                chart({
-                    model: chartModel,
-                    key: chartModel.xhId
-                }),
-                chartDialog()
-            ],
-            headerItems: [
-                button({
-                    icon: Icon.openExternal(),
-                    onClick: () => model.toggleDialog()
-                })
-            ],
+            model: panelModel,
+            compactHeader: !isModal,
+            item: chart({
+                model: chartModel,
+                key: chartModel.xhId
+            }),
             bbar: [metricSwitcher({multiline: true})],
-            model: {
-                side: 'bottom',
-                defaultSize: 370
-            },
+            height: '100%',
             ...props
         });
     }
 });
-
-const chartDialog = hoistCmp.factory(
-    ({model}) => {
-        const {chartModel, activityTrackingModel} = model;
-        if (!model.showDialog) return null;
-
-        return dialog({
-            title: activityTrackingModel.queryDisplayString,
-            icon: Icon.chartBar(),
-            style: {
-                width: '90vw',
-                height: '60vh'
-            },
-            isOpen: true,
-            item: panel({
-                item: chart({
-                    model: chartModel,
-                    key: `${chartModel.xhId}-dialog`
-                }),
-                bbar: [
-                    filler(),
-                    metricSwitcher(),
-                    filler(),
-                    button({
-                        text: 'Close',
-                        onClick: () => model.toggleDialog()
-                    })
-                ]
-            }),
-            onClose: () => model.toggleDialog()
-        });
-    }
-);
 
 const metricSwitcher = hoistCmp.factory(
     ({model, multiline}) => {
