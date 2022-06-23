@@ -209,15 +209,15 @@ export class LRChooserModel extends HoistModel {
 
     preprocessData(data) {
         let sortOrder = 0;
-        const traverseData = cols => {
-            return cols.map(col => {
+        const traverse = data => {
+            return data.map(col => {
                 if (col.children) {
                     sortOrder++;
                     return {
                         side: 'left',
                         ...col,
                         sortOrder,
-                        children: traverseData(col.children)
+                        children: traverse(col.children)
                     };
                 }
                 if (!col.exclude) {
@@ -230,7 +230,7 @@ export class LRChooserModel extends HoistModel {
                 }
             });
         };
-        return traverseData(data);
+        return traverse(data);
     }
 
     countNested(rows) {
@@ -251,11 +251,11 @@ export class LRChooserModel extends HoistModel {
     nestedSort() {
         let rightRaw = filter(this._data, {side: 'right'});
         rightRaw = sortBy(rightRaw, 'sortOrder');
-        const traverse = data => {
-            data.forEach(rec => {
-                if (rec.children) {
-                    rec.children = sortBy(rec.children, 'sortOrder');
-                    traverse(rec.children);
+        const traverse = rows => {
+            rows.forEach(row => {
+                if (row.children) {
+                    row.children = sortBy(row.children, 'sortOrder');
+                    traverse(row.children);
                 }
             });
         };
@@ -266,61 +266,60 @@ export class LRChooserModel extends HoistModel {
     reorderData() {
         let sortOrder = 0,
             rightRaw = this.nestedSort();
-        const traverseData = data => {
-            data.forEach(col => {
-                col.sortOrder = sortOrder;
+        const traverse = rows => {
+            rows.forEach(row => {
+                row.sortOrder = sortOrder;
                 sortOrder++;
-                if (col.children) traverseData(col.children);
+                if (row.children) traverse(row.children);
             });
         };
-        traverseData(rightRaw);
+        traverse(rightRaw);
         this.refreshStores();
     }
 
-    appendRows(rows) {
+    append(rows) {
         const rightStore = this.rightModel.store.allRecords;
         let lastSortOrder = maxBy(rightStore, r => r.data.sortOrder).data.sortOrder;
-        const appendData = data => {
-            data.forEach(rec => {
+        const appendData = rows => {
+            rows.forEach(row => {
                 lastSortOrder++;
-                rec.raw.sortOrder = lastSortOrder;
-                if (rec.children) appendData(rec.children);
+                row.raw.sortOrder = lastSortOrder;
+                if (row.children) appendData(row.children);
             });
         };
         appendData(rows);
     }
 
     // accepts an array containing a single row or multiple rows
-    // therefore 'rows' may be a single row or multiple
     rearrangeRows(rows, overRow = null) {
         if (!overRow) {
-            this.appendRows(rows);
+            this.append(rows);
         } else {
             let toIndex = overRow.raw.sortOrder;
             let rightRaw = filter(this._data, {side: 'right'});
             const rowDepth = this.countNested(rows);
-            // shift rows by the number of rows (including nested) being inserted
-            const shiftRows = data => {
-                    data.forEach(rec => {
-                        if ((toIndex <= rec.sortOrder) || rec.children) {
-                            if (toIndex <= rec.sortOrder) {
-                                rec.sortOrder += rowDepth;
+            // shift rows by the number of rows being inserted, including nesting
+            const shiftRows = rows => {
+                    rows.forEach(row => {
+                        if ((toIndex <= row.sortOrder) || row.children) {
+                            if (toIndex <= row.sortOrder) {
+                                row.sortOrder += rowDepth;
                             }
-                            if (rec.children) {
-                                shiftRows(rec.children);
+                            if (row.children) {
+                                shiftRows(row.children);
                             }
                         }
                     });
                 },
                 // update inserted row sortOrders to fit within the allotted space
-                insertRows = data => {
-                    data.forEach((rec, idx) => {
-                        if (rec.raw.children) {
+                insertRows = rows => {
+                    rows.forEach((row, idx) => {
+                        if (row.raw.children) {
                             toIndex++;
-                            rec.raw.sortOrder = toIndex;
-                            insertRows(rec.children);
+                            row.raw.sortOrder = toIndex;
+                            insertRows(row.children);
                         } else {
-                            rec.raw.sortOrder = toIndex + idx;
+                            row.raw.sortOrder = toIndex + idx;
                         }
                     });
                 };
@@ -330,10 +329,10 @@ export class LRChooserModel extends HoistModel {
     }
 
     moveRows(rows) {
-        rows.forEach(rec => {
-            const {locked, side} = rec.raw; // why not rec.data?
+        rows.forEach(row => {
+            const {locked, side} = row.raw;
             if (locked) return;
-            rec.raw.side = (side === 'left' ? 'right' : 'left');
+            row.raw.side = (side === 'left' ? 'right' : 'left');
         });
         this.refreshStores();
     }
@@ -353,7 +352,7 @@ export class LRChooserModel extends HoistModel {
         const rows = (e.nodes).map(r => r.data),
             overRow = e.overNode?.data;
         if (rows[0] === overRow) return;
-        if (rows[0].raw.side === 'right') { // why not in data?
+        if (rows[0].raw.side === 'right') {
             // 1) Reordering rows in the right grid
             this.rearrangeRows(rows, overRow);
             this.reorderData();

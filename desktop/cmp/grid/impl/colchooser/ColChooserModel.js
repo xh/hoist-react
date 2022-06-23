@@ -115,7 +115,7 @@ export class ColChooserModel extends HoistModel {
     }
 
 
-// Translate array of columnGroups and columns into tree structure for colChooser rows
+    // Translate array of columnGroups and columns into tree structure for colChooser rows
     createChooserData(side) {
         const {gridModel} = this,
             allColumns = gridModel.columns,
@@ -125,9 +125,11 @@ export class ColChooserModel extends HoistModel {
             const ret = [];
             cols.forEach((col) => {
                 if (col.children) {
+                    // create a group node
                     const id = `${path}>>${col.groupId}`;
                     const children = processColumns(col.children, id);
                     if (!isEmpty(children)) {
+                        // add the node if it has children
                         ret.push({
                             id,
                             name: col.groupId,
@@ -137,9 +139,11 @@ export class ColChooserModel extends HoistModel {
                         });
                     }
                 } else {
+                    // create a leaf node
                     const visible = gridModel.isColumnVisible(col.colId),
                         id = `${path}>>${col.colId}`;
                     if (side === 'right' && visible) {
+                        // if we are constructing the right tree, we are looking for visible cols
                         ret.push({
                             id,
                             value: col.colId,
@@ -152,6 +156,7 @@ export class ColChooserModel extends HoistModel {
                             side
                         });
                     } else if (side === 'left' && !visible) {
+                        // if we are constructing the left tree, we are looking for hidden cols
                         ret.push({
                             id,
                             value: col.colId,
