@@ -43,7 +43,8 @@ export class DashCanvasViewModel extends DashViewModel {
             track: () => [this.ref.current, this.autoHeight],
             run: ([node, autoHeight]) => {
                 if (autoHeight && node) {
-                    this.mutationObserver = new window.MutationObserver(() => this.autoSizeHeight());
+                    this.mutationObserver = this.mutationObserver ??
+                        new window.MutationObserver(() => this.autoSizeHeight());
                     this.mutationObserver.observe(node.parentElement,
                         {
                             attributes: true,
