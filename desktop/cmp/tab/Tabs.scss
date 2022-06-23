@@ -102,6 +102,8 @@
 
   // Tooltip
   .bp4-tab {
+    color: var(--xh-tab-text-color);
+
     .bp4-popover-wrapper,
     .bp4-popover-target {
       width: 100%;

@@ -44,6 +44,9 @@
   }
 
   .bp4-dialog-body {
+    margin: 0;
+    padding: var(--xh-pad-double-px);
+    background: var(--xh-popup-bg);
     word-break: break-word;
   }
 }
@@ -65,7 +68,7 @@ $pt-transition-duration: 100ms !default;
 // https://github.com/palantir/blueprint/blob/1bfd1e42303d2626bfc3923eec2195ab4dc696d2/packages/core/src/components/popover/_popover.scss#L54
 .bp4-popover {
   @include react-transition(
-    "bp3-popover",
+    "bp4-popover",
     (transform: scale(1) scale(1)),
     $duration: 0,
     $after: "> &"
@@ -88,6 +91,10 @@ $pt-transition-duration: 100ms !default;
     align-items: center;
     color: var(--xh-menu-item-text-color);
     padding: 5px 10px;
+
+    .bp4-menu-item-icon {
+      color: inherit;
+    }
 
     &:hover {
       background-color: var(--xh-menu-item-highlight-bg);
@@ -132,9 +139,11 @@ $pt-transition-duration: 100ms !default;
   .bp4-submenu {
     padding: 0;
   }
-
 }
 
+.bp4-dark .bp4-menu-divider {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
 
 //------------------------
 // Buttons

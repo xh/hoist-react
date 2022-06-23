@@ -9,22 +9,26 @@
   &--anchored {
     position: absolute;
   }
-}
 
-.xh-toast {
-  &__title {
-    margin-bottom: var(--xh-pad-half-px);
-    display: block;
-    font-size: var(--xh-font-size-large-px);
-    color: rgba(255, 255, 255, 0.7);
-  }
+  .xh-toast {
+    &__title {
+      margin-bottom: var(--xh-pad-half-px);
+      display: block;
+      font-size: var(--xh-font-size-large-px);
+      color: rgba(255, 255, 255, 0.7);
+    }
 
-  &__body {
-    font-size: var(--xh-font-size-px);
-  }
+    &__body {
+      font-size: var(--xh-font-size-px);
+    }
 
-  &__icon {
-    align-self: center;
-    margin: 0 0 0 var(--xh-pad-half-px);
+    &__icon {
+      align-self: center;
+      margin: 0 0 0 var(--xh-pad-half-px);
+    }
+
+    .bp4-button {
+      background: none !important;
+    }
   }
 }
