@@ -8,14 +8,19 @@ import {ChartModel} from '@xh/hoist/cmp/chart';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, lookup} from '@xh/hoist/core';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {sortBy} from 'lodash';
 import moment from 'moment';
+import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
 
 export class ChartsModel extends HoistModel {
+    @managed panelModel = new PanelModel({
+        modalSupport: {width: '90vw', height: '60vh'},
+        side: 'bottom',
+        defaultSize: 370
+    });
 
     /** @member {ActivityTrackingModel} */
     @lookup(ActivityTrackingModel) activityTrackingModel;
@@ -63,18 +68,6 @@ export class ChartsModel extends HoistModel {
             yAxis: [{title: {text: null}, allowDecimals: false}]
         }
     });
-
-    @observable showDialog = false;
-
-    @action
-    async toggleDialog() {
-        this.showDialog = !this.showDialog;
-
-        // Hack to get primary, non-dialog chart to re-render once dialog is dismissed.
-        // Sharing chart models between chart component instances appears to be risky...
-        await wait();
-        this.chartModel.setHighchartsConfig({...this.chartModel.highchartsConfig});
-    }
 
     get showAsTimeseries() {
         return this.dimensions[0] === 'day';

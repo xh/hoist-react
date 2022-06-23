@@ -5,14 +5,16 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {box, div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, XH} from '@xh/hoist/core';
+import {div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
+import {hoistCmp, managed, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
+import {modalSupport} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupport';
+import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {dialog, textArea} from '@xh/hoist/kit/blueprint';
+import {textArea} from '@xh/hoist/kit/blueprint';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -121,6 +123,8 @@ CodeInput.hasLayoutSupport = true;
 // Implementation
 //------------------------------
 class Model extends HoistInputModel {
+    /** @member {ModalSupportModel} */
+    @managed modalSupportModel = new ModalSupportModel();
 
     /** @member {CodeMirror} - a CodeMirror editor instance. */
     editor;
@@ -132,7 +136,9 @@ class Model extends HoistInputModel {
     @observable.ref matches = [];
     get matchCount() {return this.matches.length}
 
-    @observable fullScreen = false;
+    get fullScreen() {
+        return this.modalSupportModel.isModal;
+    }
 
     get commitOnChange() {return withDefault(this.componentProps.commitOnChange, true)}
 
@@ -202,6 +208,11 @@ class Model extends HoistInputModel {
     constructor() {
         super();
         makeObservable(this);
+        this.addReaction({
+            track: () => this.modalSupportModel.isModal,
+            run: () => this.focus(),
+            debounce: 1
+        });
     }
 
     onLinked() {
@@ -317,9 +328,8 @@ class Model extends HoistInputModel {
         }
     }
 
-    @action
     toggleFullScreen() {
-        this.fullScreen = !this.fullScreen;
+        this.modalSupportModel.toggleIsModal();
     }
 
     //------------------------
@@ -413,7 +423,6 @@ class Model extends HoistInputModel {
     }
 }
 
-
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
         const childProps = {
@@ -421,28 +430,15 @@ const cmp = hoistCmp.factory(
             height: 100,
             ...getLayoutProps(props),
             className,
-            ref
+            ref,
+            model
         };
 
-        return model.fullScreen ? fullscreenCmp(childProps) : inputCmp(childProps);
+        return modalSupport({
+            model: model.modalSupportModel,
+            item: inputCmp(childProps)
+        });
     }
-);
-
-const fullscreenCmp = hoistCmp.factory(
-    ({model, ...props}, ref) => fragment(
-        dialog({
-            className: 'xh-code-input__dialog',
-            isOpen: true,
-            canOutsideClickClose: true,
-            item: inputCmp({flex: 1}),
-            onClose: () => model.toggleFullScreen()
-        }),
-        box({
-            ...props,
-            className: 'xh-code-input__placeholder',
-            ref
-        })
-    )
 );
 
 const inputCmp = hoistCmp.factory(

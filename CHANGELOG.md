@@ -4,15 +4,19 @@
 
 ### 🎁 New Features
 
+* New `PanelModel.modalSupport` option allows the user to expand a panel into a configurable modal
+  dialog - without developers needing to write custom dialog implementations and without triggering
+  a remount/rerender of the panel's contents.
 * FilterChooser field suggestions now search within multi-word field names.
-* Improved autosize performance for very large grids: Asynchronous loops are now used to avoid
-  locking-up entire app during autosize.
+* Autosize performance has been improved for very large grids.
 
 ### 🐞 Bug Fixes
+
 * Fixes several issues where Grid would display rows gaps after operating on it programmatically,
   This problem was introduced in ag-Grid v27.
 
 ### 💥 Breaking Changes
+
 * The data reactions between `GridModel` and the underlying ag-Grid is now minimally debounced, to
   avoid multiple data updates during a single event loop tick. This avoids corrupting ag-Grid's
   underlying state. This should not be a problem for most applications, but
@@ -45,7 +49,6 @@
 * mobx `6.5 -> 6.6`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v49.1.0...v49.2.0)
-
 
 ## v49.1.0 - 2022-06-03
 

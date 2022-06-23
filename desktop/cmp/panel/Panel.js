@@ -24,9 +24,9 @@ import PT from 'prop-types';
 import {isValidElement, useRef, Children} from 'react';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
+import {modalSupport} from '../modalsupport/ModalSupport';
 import './Panel.scss';
 import {PanelModel} from './PanelModel';
-import composeRefs from '@seznam/compose-react-refs';
 
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
@@ -88,7 +88,8 @@ export const [Panel, panel] = hoistCmp.withFactory({
             renderMode,
             vertical,
             showSplitter,
-            refreshContextModel
+            refreshContextModel,
+            modalSupportModel
         } = model;
 
         if (collapsed) {
@@ -118,14 +119,10 @@ export const [Panel, panel] = hoistCmp.withFactory({
         coreContents = useHotkeys(coreContents, hotkeys);
 
         // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
-        const processedPanelHeader = (title || icon || headerItems) ?
-            panelHeader({title, icon, compact: compactHeader, headerItems}) :
-            null;
-
         let item = vbox({
             className: 'xh-panel__content',
             items: [
-                processedPanelHeader,
+                panelHeader({title, icon, compact: compactHeader, headerItems}),
                 coreContents,
                 parseLoadDecorator(maskProp, 'mask', contextModel),
                 parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)
@@ -137,12 +134,17 @@ export const [Panel, panel] = hoistCmp.withFactory({
             item = refreshContextView({model: refreshContextModel, item});
         }
 
-        ref = composeRefs(model._domRef, ref);
+        // 3) Wrap in modal support if needed
+        if (modalSupportModel) {
+            item = modalSupport({model: modalSupportModel, item});
+        }
 
-        // 4) Return wrapped in resizable and its affordances if needed.
-        return resizable || collapsible || showSplitter ?
+        // 4) Return wrapped in resizable affordances if needed, or equivalent layout box
+        item = resizable || collapsible || showSplitter ?
             resizeContainer({ref, item, className}) :
             box({ref, item, className, ...layoutProps});
+
+        return item;
     }
 
 });
