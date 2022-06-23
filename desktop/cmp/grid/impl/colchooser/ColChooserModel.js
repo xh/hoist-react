@@ -6,6 +6,7 @@
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {LRChooserModel} from './impl';
+import {isEmpty} from 'lodash';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 
 /**
@@ -67,14 +68,19 @@ export class ColChooserModel extends HoistModel {
 
     commit() {
         const {gridModel, lrModel, autosizeOnCommit} = this,
-            {leftValues, rightValues} = lrModel,
+            {leftLeaves, rightLeaves} = lrModel,
             colChanges = [];
-        leftValues.forEach(col => {
-            colChanges.push({colId: col, hidden: true});
-        });
-        rightValues.forEach(col => {
-            colChanges.push({colId: col, hidden: false});
-        });
+
+        leftLeaves
+            .filter(it => it)
+            .forEach(col => {
+                colChanges.push({colId: col, hidden: true});
+            });
+        rightLeaves
+            .filter(it => it)
+            .forEach(col => {
+                colChanges.push({colId: col, hidden: false});
+            });
 
         gridModel.applyColumnStateChanges(colChanges);
         if (autosizeOnCommit && colChanges.length) gridModel.autosizeAsync({showMask: true});
@@ -85,39 +91,6 @@ export class ColChooserModel extends HoistModel {
         if (restored) {
             this.createLRModel();
         }
-    }
-
-    // Translate array of columnGroups and columns into tree structure for colChooser rows
-    translateColumns(columns, gridModel, colIds) {
-        const output = [],
-            formatColumns = (list, path, acc) => {
-                list.forEach(it => {
-                    if (it.children) {
-                        acc.push({
-                            id: `${path}>>${it.groupId}`,
-                            name: it.groupId,
-                            text: it.groupId,
-                            children: formatColumns(it.children, `${path}>>${it.groupId}`, [])
-                        });
-                    } else {
-                        const visible = gridModel.isColumnVisible(it.colId);
-                        acc.push({
-                            id: `${path}>>${it.colId}`,
-                            value: it.colId,
-                            text: it.chooserName,
-                            description: it.chooserDescription,
-                            exclude: it.excludeFromChooser,
-                            locked: visible && !it.hideable,
-                            side: visible ? 'right' : 'left',
-                            sortOrder: colIds.indexOf(it.colId)
-                        });
-                    }
-                });
-                return acc;
-            };
-
-        formatColumns(columns, 'root', output);
-        return output;
     }
 
     //------------------------
@@ -136,10 +109,64 @@ export class ColChooserModel extends HoistModel {
             }
         });
 
-        const {gridModel, lrModel} = this,
+        const rightData = this.createChooserData('right');
+        const leftData = this.createChooserData('left');
+        this.lrModel.setData([...leftData, ...rightData]);
+    }
+
+
+// Translate array of columnGroups and columns into tree structure for colChooser rows
+    createChooserData(side) {
+        const {gridModel} = this,
             allColumns = gridModel.columns,
-            colIds = gridModel.columnState.map(col => col.colId),
-            data = this.translateColumns(allColumns, gridModel, colIds);
-        lrModel.setData(data);
+            colIds = gridModel.columnState.map(col => col.colId);
+
+        const processColumns = (cols, path) => {
+            const ret = [];
+            cols.forEach((col) => {
+                if (col.children) {
+                    const id = `${path}>>${col.groupId}`;
+                    const children = processColumns(col.children, id);
+                    if (!isEmpty(children)) {
+                        ret.push({
+                            id,
+                            name: col.groupId,
+                            text: col.groupId,
+                            children,
+                            side
+                        });
+                    }
+                } else {
+                    const visible = gridModel.isColumnVisible(col.colId),
+                        id = `${path}>>${col.colId}`;
+                    if (side === 'right' && visible) {
+                        ret.push({
+                            id,
+                            value: col.colId,
+                            text: col.chooserName,
+                            description: col.chooserDescription,
+                            exclude: col.excludeFromChooser,
+                            locked: visible && !col.hideable,
+                            sortOrder: colIds.indexOf(col.colId),
+                            isLeaf: true,
+                            side
+                        });
+                    } else if (side === 'left' && !visible) {
+                        ret.push({
+                            id,
+                            value: col.colId,
+                            text: col.chooserName,
+                            description: col.chooserDescription,
+                            exclude: col.excludeFromChooser,
+                            locked: visible && !col.hideable,
+                            isLeaf: true,
+                            side
+                        });
+                    }
+                }
+            });
+            return ret;
+        };
+        return processColumns(allColumns, 'root');
     }
 }
