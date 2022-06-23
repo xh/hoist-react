@@ -33,7 +33,7 @@ export const columnHeader = hoistCmp.factory({
 
     render({className, model, enableMenu, showColumnMenu, displayName}) {
         const {gridModel, xhColumn} = model,
-            {isDesktop} = XH;
+            hasMouseSupport = XH.isDesktop || XH.isTablet;
 
         const sortIcon = () => {
             const {abs, sort} = model.activeGridSorter ?? {};
@@ -75,8 +75,8 @@ export const columnHeader = hoistCmp.factory({
             return div({
                 className: 'xh-grid-header-expand-collapse-icon',
                 item: icon,
-                onClick: isDesktop ? model.onExpandOrCollapse : null,
-                onTouchStart: !isDesktop ? model.onExpandOrCollapse : null
+                onClick: hasMouseSupport ? model.onExpandOrCollapse : null,
+                onTouchStart: !hasMouseSupport ? model.onExpandOrCollapse : null
             });
         };
 
@@ -97,7 +97,7 @@ export const columnHeader = hoistCmp.factory({
 
         // If no app tooltip dynamically toggle a tooltip to display elided header
         let onMouseEnter = null;
-        if (isDesktop && isUndefined(xhColumn?.headerTooltip)) {
+        if (hasMouseSupport && isUndefined(xhColumn?.headerTooltip)) {
             onMouseEnter = ({target: el}) => {
                 if (el.offsetWidth < el.scrollWidth) {
                     const title = isString(headerElem) ? headerElem : displayName;
@@ -110,11 +110,11 @@ export const columnHeader = hoistCmp.factory({
 
         return div({
             className:      classNames(className, extraClasses),
-            onClick:        isDesktop  ? model.onClick : null,
-            onDoubleClick:  isDesktop  ? model.onDoubleClick : null,
-            onMouseDown:    isDesktop  ? model.onMouseDown : null,
-            onTouchStart:   !isDesktop ? model.onTouchStart : null,
-            onTouchEnd:     !isDesktop ? model.onTouchEnd : null,
+            onClick:        hasMouseSupport  ? model.onClick : null,
+            onDoubleClick:  hasMouseSupport  ? model.onDoubleClick : null,
+            onMouseDown:    hasMouseSupport  ? model.onMouseDown : null,
+            onTouchStart:   !hasMouseSupport ? model.onTouchStart : null,
+            onTouchEnd:     !hasMouseSupport ? model.onTouchEnd : null,
 
             items: [
                 expandCollapseIcon(),
