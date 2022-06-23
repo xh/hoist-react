@@ -19,13 +19,11 @@ export const panelHeader = hoistCmp.factory({
     className: 'xh-panel-header',
     render({className, ...props}) {
         const panelModel = useContextModel(PanelModel),
-            {collapsed, collapsible, isModal, hasModalSupport, vertical, side,
-                showHeaderCollapseButton, showModalToggleButton} = panelModel,
+            {collapsed, isModal, hasModalSupport, vertical, side, showModalToggleButton} = panelModel,
             {title, icon, compact} = props,
             headerItems = props.headerItems ?? [];
 
         if (!title && !icon && isEmpty(headerItems) &&
-            (!showHeaderCollapseButton || !collapsible) &&
             (!showModalToggleButton || !hasModalSupport)) {
             return null;
         }
