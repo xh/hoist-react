@@ -208,24 +208,19 @@ export class LRChooserModel extends HoistModel {
     }
 
     preprocessData(data) {
-        let sortOrder = 0;
         const traverse = data => {
             return data.map(col => {
                 if (col.children) {
-                    sortOrder++;
                     return {
                         side: 'left',
                         ...col,
-                        sortOrder,
                         children: traverse(col.children)
                     };
                 }
                 if (!col.exclude) {
-                    sortOrder++;
                     return {
                         side: 'left',
-                        ...col,
-                        sortOrder
+                        ...col
                     };
                 }
             });

@@ -71,14 +71,10 @@ export class ColChooserModel extends HoistModel {
             {leftLeaves, rightLeaves} = lrModel,
             colChanges = [];
 
-        leftLeaves
-            .filter(it => it)
-            .forEach(col => {
+        leftLeaves.forEach(col => {
                 colChanges.push({colId: col, hidden: true});
             });
-        rightLeaves
-            .filter(it => it)
-            .forEach(col => {
+        rightLeaves.forEach(col => {
                 colChanges.push({colId: col, hidden: false});
             });
 
@@ -135,7 +131,8 @@ export class ColChooserModel extends HoistModel {
                             name: col.groupId,
                             text: col.groupId,
                             children,
-                            side
+                            side,
+                            sortOrder: children[0].sortOrder
                         });
                     }
                 } else {
