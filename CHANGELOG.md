@@ -24,6 +24,9 @@
   (e.g. selection, row visible/expansion state, etc.) should be tested carefully and may require a
   call to  `whenGridReadyAsync()`.  (Note that this method is already incorporated in to several
   public methods on `GridModel` including  `selectFirstAsync` and `ensureSelectionVisibleAsync`.)
+* `PanelHeaders` are now more particular in determining whether they should render.  Now, a `Panel`
+  `title` and `icon` must be null or undefined in order to avoid rendering a `PanelHeader`, whereas
+  previously any 'falsey' value was acceptable to avoid rendering the `PanelHeader`
 
 
 ### 💥 Breaking Changes
