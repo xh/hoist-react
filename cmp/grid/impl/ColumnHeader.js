@@ -33,7 +33,7 @@ export const columnHeader = hoistCmp.factory({
 
     render({className, model, enableMenu, showColumnMenu, displayName}) {
         const {gridModel, xhColumn} = model,
-            hasMouseSupport = XH.isDesktop || XH.isTablet;
+            {isDesktop} = XH;
 
         const sortIcon = () => {
             const {abs, sort} = model.activeGridSorter ?? {};
@@ -75,8 +75,8 @@ export const columnHeader = hoistCmp.factory({
             return div({
                 className: 'xh-grid-header-expand-collapse-icon',
                 item: icon,
-                onClick: hasMouseSupport ? model.onExpandOrCollapse : null,
-                onTouchStart: !hasMouseSupport ? model.onExpandOrCollapse : null
+                onClick: model.onExpandOrCollapse,
+                onTouchStart: model.onExpandOrCollapse
             });
         };
 
@@ -97,7 +97,7 @@ export const columnHeader = hoistCmp.factory({
 
         // If no app tooltip dynamically toggle a tooltip to display elided header
         let onMouseEnter = null;
-        if (hasMouseSupport && isUndefined(xhColumn?.headerTooltip)) {
+        if (isDesktop && isUndefined(xhColumn?.headerTooltip)) {
             onMouseEnter = ({target: el}) => {
                 if (el.offsetWidth < el.scrollWidth) {
                     const title = isString(headerElem) ? headerElem : displayName;
@@ -110,11 +110,11 @@ export const columnHeader = hoistCmp.factory({
 
         return div({
             className:      classNames(className, extraClasses),
-            onClick:        hasMouseSupport  ? model.onClick : null,
-            onDoubleClick:  hasMouseSupport  ? model.onDoubleClick : null,
-            onMouseDown:    hasMouseSupport  ? model.onMouseDown : null,
-            onTouchStart:   !hasMouseSupport ? model.onTouchStart : null,
-            onTouchEnd:     !hasMouseSupport ? model.onTouchEnd : null,
+            onClick:        model.onClick,
+            onDoubleClick:  model.onDoubleClick,
+            onMouseDown:    model.onMouseDown,
+            onTouchStart:   model.onTouchStart,
+            onTouchEnd:     model.onTouchEnd,
 
             items: [
                 expandCollapseIcon(),
@@ -217,6 +217,7 @@ class ColumnHeaderModel extends HoistModel {
         const {gridModel, majorityIsExpanded} = this;
 
         e.stopPropagation();
+        e.preventDefault();
         if (majorityIsExpanded) {
             gridModel.collapseAll();
         } else {
@@ -236,11 +237,13 @@ class ColumnHeaderModel extends HoistModel {
     };
 
     // Mobile touch handling
-    onTouchStart = () => {
+    onTouchStart = (e) => {
+        e.preventDefault();
         this._lastTouchStart = Date.now();
     };
 
-    onTouchEnd = () => {
+    onTouchEnd = (e) => {
+        e.preventDefault();
         if (olderThan(this._lastTouchStart, 500)) return;  // avoid spurious reaction to drag end.
 
         if (!olderThan(this._lastTouch, 300)) {
