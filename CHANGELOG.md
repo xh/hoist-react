@@ -34,7 +34,7 @@
 
 ### 📚 Libraries
 
-* blueprint.js `3.54 -> 4.51`
+* blueprint.js `3.54 -> 4.5`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v49.2.0...develop)
 
