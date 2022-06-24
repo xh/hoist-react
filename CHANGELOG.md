@@ -25,6 +25,20 @@
   (e.g. selection, row visible/expansion state, etc.) should be tested carefully and may require a
   call to  `whenGridReadyAsync()`.  (Note that this method is already incorporated in to several
   public methods on `GridModel` including  `selectFirstAsync` and `ensureSelectionVisibleAsync`.)
+* `PanelHeaders` are now more particular in determining whether they should render.  Now, a `Panel`
+  `title` and `icon` must be null or undefined in order to avoid rendering a `PanelHeader`, whereas
+  previously any 'falsey' value was acceptable to avoid rendering the `PanelHeader`
+
+
+### 💥 Breaking Changes
+
+* Blueprint has upgraded all of its css class names to use the `bp4-` prefix instead of the `bp3-`
+  prefix.  Any apps styling these classes directly may need to be adjusted.  See
+  https://github.com/palantir/blueprint/wiki/Blueprint-4.0 for more info.
+
+### 📚 Libraries
+
+* blueprint.js `3.54 -> 4.5`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v49.2.0...develop)
 

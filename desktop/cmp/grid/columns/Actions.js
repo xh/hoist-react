@@ -66,7 +66,7 @@ export const actionCol = {
                 tooltip,
                 intent,
                 className: classNames(
-                    'bp3-small',
+                    'bp4-small',
                     'xh-record-action-button',
                     className
                 ),

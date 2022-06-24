@@ -9,7 +9,7 @@ import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {button, modalToggleButton} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
-import {isEmpty} from 'lodash';
+import {isEmpty, isNil} from 'lodash';
 import {PanelModel} from '../PanelModel';
 import './PanelHeader.scss';
 
@@ -19,16 +19,11 @@ export const panelHeader = hoistCmp.factory({
     className: 'xh-panel-header',
     render({className, ...props}) {
         const panelModel = useContextModel(PanelModel),
-            {collapsed, collapsible, isModal, hasModalSupport, vertical, side,
-                showHeaderCollapseButton, showModalToggleButton} = panelModel,
+            {collapsed, isModal, vertical, side} = panelModel,
             {title, icon, compact} = props,
             headerItems = props.headerItems ?? [];
 
-        if (!title && !icon && isEmpty(headerItems) &&
-            (!showHeaderCollapseButton || !collapsible) &&
-            (!showModalToggleButton || !hasModalSupport)) {
-            return null;
-        }
+        if (isNil(title) && isNil(icon) && isEmpty(headerItems)) return null;
 
         const onDoubleClick = () => {
             if (isModal) {
