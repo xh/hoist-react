@@ -290,7 +290,6 @@ export class DashCanvasModel extends HoistModel {
         }
     }
 
-
     @action
     addViewInternal(specId, {layout, title, state, previousViewId}) {
         const viewSpec = this.getSpec(specId),
@@ -325,7 +324,6 @@ export class DashCanvasModel extends HoistModel {
         return model;
     }
 
-
     @action
     setLayout(layout) {
         // strip extra properties from react-grid
@@ -334,8 +332,9 @@ export class DashCanvasModel extends HoistModel {
             this.layout = layout;
 
             // Check if scrollbar visibility has changed, and force resize event if so
-            const {current: node} = this.ref,
-                scrollbarVisible = node.offsetWidth > node.clientWidth;
+            const node = this.ref.current;
+            if (!node) return;
+            const scrollbarVisible = node.offsetWidth > node.clientWidth;
             if (scrollbarVisible !== this.scrollbarVisible) {
                 window.dispatchEvent(new Event('resize'));
                 this.scrollbarVisible = scrollbarVisible;
