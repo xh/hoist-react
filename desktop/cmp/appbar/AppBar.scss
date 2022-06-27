@@ -37,7 +37,7 @@
   height: var(--xh-appbar-height-px);
   border-bottom: 1px solid var(--xh-appbar-border-color);
   padding: 0 var(--xh-pad-px);
-  box-shadow: 0 0 0 1px rgb(17 20 24 / 10%), 0 1px 1px rgb(17 20 24 / 20%); // Remove thick inner shadow
+  box-shadow: var(--xh-appbar-box-shadow); // Remove thick inner shadow
 
   // Curiously, Admin Log Viewer would cause appbar to shrink without min-height
   min-height: var(--xh-appbar-height-px);
