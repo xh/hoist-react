@@ -75,25 +75,9 @@ export function enumerable(target, key, descriptor) {
 }
 
 /**
- * Designate a class or method / getter as abstract so that it throws if it is:
- *     - Instantiated directly (in the case of a class)
- *     - Called directly (in the case of a method / getter)
+ * Designate a method or getter as abstract so that it throws if it is called directly
  */
 export function abstract(target, key, descriptor) {
-    // 1 - Applied to class
-    if (isFunction(target)) {
-        return class AbstractClass extends target {
-            constructor(...args) {
-                super(...args);
-                throwIf(
-                    this.constructor === AbstractClass,
-                    `${target.name} is abstract and should not be instantiated directly.`
-                );
-            }
-        };
-    }
-
-    // 2 - Applied to method or getter
     const {value, get} = descriptor;
     throwIf(!isFunction(value) && !isFunction(get),
         '@abstract must be applied to a class method or getter.'
@@ -106,7 +90,7 @@ export function abstract(target, key, descriptor) {
         ...descriptor,
         [baseFnName]: function() {
             throw XH.exception(
-                `${key} must be implemented by a concrete subclass of ${target.constructor.name}`
+                `${key} must be implemented by ${this.constructor.name}`
             );
         }
     };
