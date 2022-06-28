@@ -9,6 +9,9 @@
   a remount/rerender of the panel's contents.
 * FilterChooser field suggestions now search within multi-word field names.
 * Autosize performance has been improved for very large grids.
+* `DashCanvas.extraMenuItems` and `DashContainer.extraMenuItems` are now observable properties
+* `ContextMenuItem.hidden` and `MenuItem.hidden` now additionally accept callback functions to
+  be evaluated at runtime when their container menu is rendered
 
 ### 🐞 Bug Fixes
 
