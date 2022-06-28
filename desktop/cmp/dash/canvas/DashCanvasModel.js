@@ -5,7 +5,7 @@ import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {defaultsDeep, find, isEqual, times, without} from 'lodash';
+import {defaultsDeep, find, isEqual, uniqBy, times, without, some} from 'lodash';
 import {computed} from 'mobx';
 
 /**
@@ -67,6 +67,10 @@ export class DashCanvasModel extends HoistModel {
     ref = createObservableRef();
     /** @member {boolean} */
     scrollbarVisible;
+    /** @returns {boolean} - true if any viewModels are in the middle of auto-sizing */
+    get isAutoSizing() {
+        return some(this.viewModels, {isAutoSizing: true});
+    }
 
     /**
      * @param {Object} c - DashCanvasModel configuration.
@@ -350,6 +354,7 @@ export class DashCanvasModel extends HoistModel {
 
     @action
     publishState() {
+        if (this.isAutoSizing) return;
         this.state = this.buildState();
         this.provider?.write({state: this.state});
     }
@@ -389,8 +394,13 @@ export class DashCanvasModel extends HoistModel {
         return find(this.viewModels, {id});
     }
 
+    // TODO - consider renaming this to getViewLayout
     getLayout(id) {
         return find(this.layout, {i: id});
+    }
+
+    setViewLayout(layout) {
+        this.setLayout(uniqBy([layout, ...this.layout], 'i'));
     }
 
     getSpec(id) {

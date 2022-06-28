@@ -5,10 +5,10 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {DashViewModel} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
+import {bindable} from '@xh/hoist/mobx';
 import {debounced} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {action, makeObservable, observable} from 'mobx';
-import {uniqBy} from 'lodash';
 
 /**
  * Model for a content item within a DashCanvas.
@@ -24,9 +24,16 @@ export class DashCanvasViewModel extends DashViewModel {
     /** @member {Array} */
     @observable.ref headerItems = [];
     /** @member {boolean} */
-    @observable autoHeight;
+    @bindable autoHeight;
     /** @member {MutationObserver} */
     mutationObserver;
+    /** @member {ResizeObserver} */
+    resizeObserver;
+
+    // Implementation properties:
+    /** @member {boolean} */
+    isAutoSizing = false;
+
 
     constructor(cfg) {
         super(cfg);
@@ -35,24 +42,7 @@ export class DashCanvasViewModel extends DashViewModel {
         this.hideMenuButton = !!cfg.viewSpec.hideMenuButton;
         this.autoHeight = !!cfg.viewSpec.autoHeight;
 
-        this.addReaction({
-            track: () => [this.ref.current, this.autoHeight],
-            run: ([node, autoHeight]) => {
-                if (autoHeight && node) {
-                    this.mutationObserver = this.mutationObserver ??
-                        new window.MutationObserver(() => this.autoSizeHeight());
-                    this.mutationObserver.observe(node.parentElement,
-                        {
-                            attributes: true,
-                            attributeFilter: ['style'],
-                            subtree: true
-                        }
-                    );
-                } else {
-                    this.mutationObserver?.disconnect();
-                }
-            }
-        });
+        this.addReaction(this.autoHeightReaction());
     }
 
     get positionParams() {
@@ -76,10 +66,8 @@ export class DashCanvasViewModel extends DashViewModel {
     autoSizeHeight() {
         const node = this.ref.current?.parentElement;
 
-        if (!node) return;
-
         const {id, containerModel} = this,
-            {layout, rowHeight, margin} = containerModel,
+            {rowHeight, margin} = containerModel,
             newLayout = {...containerModel.getLayout(id)};
 
         // Hold on to initial height:
@@ -96,7 +84,34 @@ export class DashCanvasViewModel extends DashViewModel {
         node.style.height = initHeight;
 
         // Send the new layout back to the parent model
-        containerModel.setLayout(uniqBy([newLayout, ...layout], 'i'));
+        this.isAutoSizing = true;
+        containerModel.setViewLayout(newLayout);
+        this.isAutoSizing = false;
+    }
+
+    autoHeightReaction() {
+        return {
+            track: () => [this.ref.current, this.autoHeight],
+            run: ([node, autoHeight]) => {
+                if (node && autoHeight) {
+                    this.mutationObserver = this.mutationObserver ??
+                        new window.MutationObserver(() => this.autoSizeHeight());
+                    this.resizeObserver = this.resizeObserver ??
+                        new window.ResizeObserver(() => this.autoSizeHeight());
+                    this.mutationObserver.observe(node,
+                        {
+                            attributes: true,
+                            attributeFilter: ['style'],
+                            subtree: true
+                        }
+                    );
+                    this.resizeObserver.observe(node.parentElement);
+                } else {
+                    this.mutationObserver?.disconnect();
+                    this.resizeObserver?.disconnect();
+                }
+            }
+        };
     }
 
     /**
@@ -110,6 +125,7 @@ export class DashCanvasViewModel extends DashViewModel {
 
     destroy() {
         this.mutationObserver?.disconnect();
+        this.resizeObserver?.disconnect();
         super.destroy();
     }
 }
