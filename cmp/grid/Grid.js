@@ -8,7 +8,7 @@ import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {getTreeStyleClasses, GridAutosizeMode} from '@xh/hoist/cmp/grid';
 import {div, fragment, frame} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, uses, XH, lookup} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, lookup, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {
     colChooser as desktopColChooser,
     gridFilterDialog,
@@ -19,11 +19,12 @@ import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {computed, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
-import {isDisplayed, logDebug, logWithDebug, consumeEvent} from '@xh/hoist/utils/js';
+import {consumeEvent, isDisplayed, logDebug, logWithDebug} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {
     compact,
+    debounce,
     isArray,
     isEmpty,
     isEqual,
@@ -32,7 +33,6 @@ import {
     isString,
     max,
     maxBy,
-    debounce,
     merge
 } from 'lodash';
 import PT from 'prop-types';
@@ -367,7 +367,8 @@ class GridLocalModel extends HoistModel {
                 subMenu: childItems,
                 tooltip: displaySpec.tooltip,
                 disabled: displaySpec.disabled,
-                action: () => action.call(actionParams)
+                // Avoid specifying action if no handler, allows submenus to remain open if accidentally clicked
+                action: action.actionFn ? () => action.call(actionParams) : undefined
             });
         });
 
