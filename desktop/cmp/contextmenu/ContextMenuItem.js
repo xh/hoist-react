@@ -30,7 +30,7 @@ export class ContextMenuItem {
      * @param {function} [c.actionFn] - Executed when the user clicks the menuitem.
      * @param {Object[]} [c.items] - child menu items.
      * @param {boolean} [c.disabled] - true to disable this item.
-     * @param {boolean} [c.hidden] - true to hide this item.
+     * @param {boolean|function} [c.hidden] - true (or fn returning true) to hide this item.
      */
     constructor({
         text,

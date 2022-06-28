@@ -8,7 +8,7 @@ import {hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {div, hspacer, vbox} from '@xh/hoist/cmp/layout';
 import {listItem} from '@xh/hoist/kit/onsen';
-import {throwIf} from '@xh/hoist/utils/js';
+import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isFunction, isEmpty} from 'lodash';
 import {isValidElement} from 'react';
@@ -89,7 +89,7 @@ class LocalModel extends HoistModel {
                 if (item.prepareFn) item.prepareFn(item);
                 return item;
             })
-            .filter(it => !it.hidden)
+            .filter(it => !executeIfFunction(it.hidden))
             .map((item, idx) => {
                 const {text, icon, actionFn, hidden} = item,
                     labelItems = icon ? [icon, hspacer(10), text] : [text];

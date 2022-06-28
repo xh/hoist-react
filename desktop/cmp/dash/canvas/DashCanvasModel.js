@@ -43,6 +43,8 @@ export class DashCanvasModel extends HoistModel {
     @bindable margin;
     /** @member {number[]} - [paddingX, paddingY] */
     @bindable containerPadding;
+    /** @member {ContextMenuItem[]|Object[]|string[]} */
+    @bindable extraMenuItems;
 
     /** @returns {number} - current number of rows in canvas */
     get rows() {
@@ -86,10 +88,10 @@ export class DashCanvasModel extends HoistModel {
      * @param {number[]} c.containerPadding - Padding inside the container [x, y] in pixels
      * @param {string} [c.emptyText] - text to display when the container is empty
      * @param {string} [c.addViewButtonText] - text to display on the add view button
-     * @param {Array} [c.extraMenuItems] - Array of RecordActions, configs or token strings, with
-     *      which to create additional context menu items. Extra menu items will appear
-     *      in the container's context menu below the 'Add' action, and in the 'Options' context
-     *      menus for individual views within the container
+     * @param {ContextMenuItem[]|Object[]|string[]} [c.extraMenuItems] - Array of ContextMenuItems,
+     *      configs or token strings, with which to create additional context menu items. Extra menu
+     *      items will appear in the container's context menu below the 'Add' action, and in the
+     *      'Options' context menus for individual views within the container
      */
     constructor({
         viewSpecs,

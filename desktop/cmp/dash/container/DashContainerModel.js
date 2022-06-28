@@ -101,6 +101,8 @@ export class DashContainerModel extends HoistModel {
     @bindable renameLocked;
     /** @member {boolean} */
     @bindable showMenuButton;
+    /** @member {ContextMenuItem[]|Object[]|string[]} */
+    @bindable extraMenuItems;
 
     //------------------------
     // Immutable public properties
@@ -143,9 +145,10 @@ export class DashContainerModel extends HoistModel {
      * @param {PersistOptions} [c.persistWith] - options governing persistence
      * @param {string} [c.emptyText] - text to display when the container is empty
      * @param {string} [c.addViewButtonText] - text to display on the add view button
-     * @param {Array} [c.extraMenuItems] - array of RecordActions, configs or token strings, with
-     *      which to create additional dash context menu items. Extra menu items will appear
-     *      in the menu section below the 'Add' action, including when the dash container is empty.
+     * @param {ContextMenuItem[]|Object[]|string[]} [c.extraMenuItems] - Array of ContextMenuItems,
+     *      configs or token strings, with which to create additional context menu items. Extra menu
+     *      items will appear in the menu section below the 'Add' action, including when the dash
+     *      container is empty.
      */
     constructor({
         viewSpecs,

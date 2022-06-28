@@ -22,7 +22,7 @@ export class MenuItem {
      * @param {Element} [c.icon] - optional icon to be displayed.
      * @param {function} [c.actionFn] - Executed when the user taps the menuitem.
      * @param {boolean} [c.disabled] - true to disable this item.
-     * @param {boolean} [c.hidden] - true to hide this item.
+     * @param {boolean|function} [c.hidden] - true (or fn returning true) to hide this item.
      * @param {function} [c.prepareFn] - function of the form (item) => {}
      *      The prepareFn is a callback that is triggered before each time the menuitem is shown.
      *      It can be used to modify the menuitem based on the record / selection.
