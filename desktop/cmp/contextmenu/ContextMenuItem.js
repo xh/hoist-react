@@ -21,6 +21,7 @@ export class ContextMenuItem {
     items;
     disabled;
     hidden;
+    displayFn;
 
     /**
      * @param {Object} c - ContextMenuItem configuration.
@@ -30,7 +31,8 @@ export class ContextMenuItem {
      * @param {function} [c.actionFn] - Executed when the user clicks the menuitem.
      * @param {Object[]} [c.items] - child menu items.
      * @param {boolean} [c.disabled] - true to disable this item.
-     * @param {boolean|function} [c.hidden] - true (or fn returning true) to hide this item.
+     * @param {boolean} [c.hidden] - true to hide this item.
+     * @param {DisplayFn} [c.displayFn] - called prior to showing this item in the UI.
      */
     constructor({
         text,
@@ -39,7 +41,8 @@ export class ContextMenuItem {
         actionFn = null,
         items = null,
         disabled = false,
-        hidden = false
+        hidden = false,
+        displayFn = null
     }) {
         this.text = text;
         this.icon = icon;
@@ -48,6 +51,7 @@ export class ContextMenuItem {
         this.items = items;
         this.disabled = disabled;
         this.hidden = hidden;
+        this.displayFn = displayFn;
     }
 
     /**
@@ -78,3 +82,8 @@ export class ContextMenuItem {
         }, defs);
     }
 }
+
+/**
+ * @callback DisplayFn - called prior to rendering the ContextMenuItem's UI element.
+ * @returns {Object} - display configs to override for this render of the item.
+ */

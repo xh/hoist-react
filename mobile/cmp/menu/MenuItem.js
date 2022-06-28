@@ -15,6 +15,7 @@ export class MenuItem {
     disabled;
     hidden;
     prepareFn;
+    displayFn;
 
     /**
      * @param {Object} c - MenuItem configuration.
@@ -22,10 +23,11 @@ export class MenuItem {
      * @param {Element} [c.icon] - optional icon to be displayed.
      * @param {function} [c.actionFn] - Executed when the user taps the menuitem.
      * @param {boolean} [c.disabled] - true to disable this item.
-     * @param {boolean|function} [c.hidden] - true (or fn returning true) to hide this item.
+     * @param {boolean} [c.hidden] - true to hide this item.
      * @param {function} [c.prepareFn] - function of the form (item) => {}
      *      The prepareFn is a callback that is triggered before each time the menuitem is shown.
      *      It can be used to modify the menuitem based on the record / selection.
+     * @param {DisplayFn} [c.displayFn] - called prior to showing this item in the UI.
      */
     constructor({
         text,
@@ -33,7 +35,8 @@ export class MenuItem {
         actionFn = null,
         disabled = false,
         hidden = false,
-        prepareFn = null
+        prepareFn = null,
+        displayFn = null
     }) {
         this.text = text;
         this.icon = icon;
@@ -41,5 +44,11 @@ export class MenuItem {
         this.disabled = disabled;
         this.hidden = hidden;
         this.prepareFn = prepareFn;
+        this.displayFn = displayFn;
     }
 }
+
+/**
+ * @callback DisplayFn - called prior to rendering the MenuItem's UI element.
+ * @returns {Object} - display configs to override for this render of the item.
+ */

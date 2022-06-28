@@ -8,7 +8,6 @@ import {hoistCmp} from '@xh/hoist/core';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
-import {executeIfFunction} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 import {isValidElement} from 'react';
 import {ContextMenuItem} from './ContextMenuItem';
@@ -49,7 +48,9 @@ ContextMenu.propTypes = {
 function parseMenuItems(items) {
     items = items.map(item => {
         if (item === '-' || isValidElement(item)) return item;
-
+        if (item.displayFn) {
+            item = {...item, ...item.displayFn()};
+        }
         if (!(item instanceof ContextMenuItem)) {
             item = new ContextMenuItem(item);
         }
@@ -58,7 +59,7 @@ function parseMenuItems(items) {
     });
 
     return items
-        .filter(it => !executeIfFunction(it.hidden))
+        .filter(it => !it.hidden)
         .filter(filterConsecutiveMenuSeparators())
         .map(item => {
             if (item === '-') return menuDivider();

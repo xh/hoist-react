@@ -8,7 +8,7 @@ import {hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {div, hspacer, vbox} from '@xh/hoist/cmp/layout';
 import {listItem} from '@xh/hoist/kit/onsen';
-import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isFunction, isEmpty} from 'lodash';
 import {isValidElement} from 'react';
@@ -83,13 +83,16 @@ class LocalModel extends HoistModel {
             .filter(it => !it.omit)
             .map(item => {
                 if (item === '-' || isValidElement(item)) return item;
+                if (item.displayFn) {
+                    item = {...item, ...item.displayFn()};
+                }
                 if (!(item instanceof MenuItem)) {
                     item = new MenuItem(item);
                 }
                 if (item.prepareFn) item.prepareFn(item);
                 return item;
             })
-            .filter(it => !executeIfFunction(it.hidden))
+            .filter(it => !it.hidden)
             .map((item, idx) => {
                 const {text, icon, actionFn, hidden} = item,
                     labelItems = icon ? [icon, hspacer(10), text] : [text];
