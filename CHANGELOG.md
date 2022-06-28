@@ -4,17 +4,22 @@
 
 ### 🎁 New Features
 
+* New `PanelModel.modalSupport` option allows the user to expand a panel into a configurable modal
+  dialog - without developers needing to write custom dialog implementations and without triggering
+  a remount/rerender of the panel's contents.
 * FilterChooser field suggestions now search within multi-word field names.
-* Improved autosize performance for very large grids: Asynchronous loops are now used to avoid
-  locking-up entire app during autosize.
+* Autosize performance has been improved for very large grids.
 * `DashCanvasViewModel` now supports `autoHeight` to automatically resize a `DashCanvasView's`
-  height to fit its contents
+    height to fit its contents
 
 ### 🐞 Bug Fixes
+
 * Fixes several issues where Grid would display rows gaps after operating on it programmatically,
   This problem was introduced in ag-Grid v27.
+* Fix bug where ColumnHeaders would not respond to mouse events on tablets
 
 ### 💥 Breaking Changes
+
 * The data reactions between `GridModel` and the underlying ag-Grid is now minimally debounced, to
   avoid multiple data updates during a single event loop tick. This avoids corrupting ag-Grid's
   underlying state. This should not be a problem for most applications, but
@@ -22,6 +27,20 @@
   (e.g. selection, row visible/expansion state, etc.) should be tested carefully and may require a
   call to  `whenGridReadyAsync()`.  (Note that this method is already incorporated in to several
   public methods on `GridModel` including  `selectFirstAsync` and `ensureSelectionVisibleAsync`.)
+* `PanelHeaders` are now more particular in determining whether they should render.  Now, a `Panel`
+  `title` and `icon` must be null or undefined in order to avoid rendering a `PanelHeader`, whereas
+  previously any 'falsey' value was acceptable to avoid rendering the `PanelHeader`
+
+
+### 💥 Breaking Changes
+
+* Blueprint has upgraded all of its css class names to use the `bp4-` prefix instead of the `bp3-`
+  prefix.  Any apps styling these classes directly may need to be adjusted.  See
+  https://github.com/palantir/blueprint/wiki/Blueprint-4.0 for more info.
+
+### 📚 Libraries
+
+* blueprint.js `3.54 -> 4.5`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v49.2.0...develop)
 
@@ -47,7 +66,6 @@
 * mobx `6.5 -> 6.6`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v49.1.0...v49.2.0)
-
 
 ## v49.1.0 - 2022-06-03
 

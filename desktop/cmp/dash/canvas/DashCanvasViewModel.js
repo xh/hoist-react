@@ -11,12 +11,8 @@ import {action, makeObservable, observable} from 'mobx';
 import {uniqBy} from 'lodash';
 
 /**
- * Model for a content item within a DashCanvas. Extends {@see DashViewModel}
- *
- * ---------- !! NOTE: THIS COMPONENT IS CURRENTLY IN BETA !! ----------
- * -- Model API is under development and subject to breaking changes --
- *
- * @Beta
+ * Model for a content item within a DashCanvas.
+ * @extends DashViewModel
  */
 export class DashCanvasViewModel extends DashViewModel {
     /** @member {RefObject<DOMElement>} */
