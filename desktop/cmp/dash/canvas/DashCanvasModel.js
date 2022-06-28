@@ -44,7 +44,7 @@ export class DashCanvasModel extends HoistModel {
     /** @member {number[]} - [paddingX, paddingY] */
     @bindable containerPadding;
     /** @member {ContextMenuItem[]|Object[]|string[]} */
-    @bindable extraMenuItems;
+    @bindable.ref extraMenuItems;
 
     /** @returns {number} - current number of rows in canvas */
     get rows() {

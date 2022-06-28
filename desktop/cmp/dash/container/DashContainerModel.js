@@ -102,7 +102,7 @@ export class DashContainerModel extends HoistModel {
     /** @member {boolean} */
     @bindable showMenuButton;
     /** @member {ContextMenuItem[]|Object[]|string[]} */
-    @bindable extraMenuItems;
+    @bindable.ref extraMenuItems;
 
     //------------------------
     // Immutable public properties
