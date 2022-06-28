@@ -14,6 +14,7 @@
 
 * Fixes several issues where Grid would display rows gaps after operating on it programmatically,
   This problem was introduced in ag-Grid v27.
+* Fix bug where ColumnHeaders would not respond to mouse events on tablets
 
 ### 💥 Breaking Changes
 
