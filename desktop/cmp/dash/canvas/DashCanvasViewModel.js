@@ -5,7 +5,6 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {DashViewModel} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
-import {bindable} from '@xh/hoist/mobx';
 import {debounced} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {action, makeObservable, observable} from 'mobx';
@@ -24,7 +23,7 @@ export class DashCanvasViewModel extends DashViewModel {
     /** @member {Array} */
     @observable.ref headerItems = [];
     /** @member {boolean} */
-    @bindable autoHeight;
+    @observable autoHeight;
     /** @member {MutationObserver} */
     mutationObserver;
     /** @member {ResizeObserver} */
