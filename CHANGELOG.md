@@ -9,7 +9,7 @@
   a remount/rerender of the panel's contents.
 * FilterChooser field suggestions now search within multi-word field names.
 * Autosize performance has been improved for very large grids.
-* New `@abstract` decorator for enforcing abstract classes or methods / getters
+* New `@abstract` decorator for enforcing abstract methods / getters
 
 
 ### 🐞 Bug Fixes
