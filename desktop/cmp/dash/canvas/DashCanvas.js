@@ -6,7 +6,6 @@ import {Icon} from '@xh/hoist/icon';
 import {Classes, overlay, popover} from '@xh/hoist/kit/blueprint';
 import classNames from 'classnames';
 import PT from 'prop-types';
-
 import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import './DashCanvas.scss';
@@ -56,9 +55,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
                     isBounded: true,
                     draggableHandle: '.xh-panel > .xh-panel__content > .xh-panel-header',
                     draggableCancel: '.xh-button',
-                    // Resizing always pins to the nw corner, so dragging from anywhere other than se sides/corner is unintuitive
-                    resizeHandles: ['s', 'e', 'se'],
-                    onLayoutChange: (layout) => model.setLayout(layout),
+                    onLayoutChange: layout => model.setLayout(layout),
                     items: model.viewModels.map(vm => div({
                         key: vm.id,
                         item: dashCanvasView({model: vm})

@@ -5,7 +5,6 @@
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
 import {DashViewModel} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
-import {debounced} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {action, makeObservable, observable} from 'mobx';
 
@@ -24,10 +23,6 @@ export class DashCanvasViewModel extends DashViewModel {
     @observable.ref headerItems = [];
     /** @member {boolean} */
     @observable autoHeight;
-    /** @member {MutationObserver} */
-    mutationObserver;
-    /** @member {ResizeObserver} */
-    resizeObserver;
 
     // Implementation properties:
     /** @member {boolean} */
@@ -59,28 +54,28 @@ export class DashCanvasViewModel extends DashViewModel {
     }
 
     /**
-     * Auto-size view height to fit its contents
+     * Specify array of items to be added to the right-side of the panel header
+     * @param {ReactNode[]} items
      */
-    @debounced(100)
-    autoSizeHeight() {
-        const node = this.ref.current?.parentElement;
+    @action
+    setHeaderItems(items) {
+        this.headerItems = items;
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
+
+    onContentsResized({height}) {
+        if (!this.autoHeight) return;
 
         const {id, containerModel} = this,
             {rowHeight, margin} = containerModel,
-            newLayout = {...containerModel.getViewLayout(id)};
-
-        // Hold on to initial height:
-        const initHeight = node.style.height;
-
-        // Set height to 'auto' to leverage some CSS magic
-        node.style.height = 'auto';
+            newLayout = {...containerModel.getViewLayout(id)},
+            HEADER_HEIGHT = 24;
 
         // Calculate new height in grid units
-        const newHeightPx = node.offsetHeight;
-        newLayout.h = Math.ceil((newHeightPx + margin[1]) / (rowHeight + margin[1]));
-
-        // Set CSS height back to initial value (best to let ReactGridLayout mutate this directly)
-        node.style.height = initHeight;
+        newLayout.h = Math.ceil((height + HEADER_HEIGHT + margin[1]) / (rowHeight + margin[1]));
 
         // Send the new layout back to the parent model
         this.isAutoSizing = true;
@@ -90,41 +85,16 @@ export class DashCanvasViewModel extends DashViewModel {
 
     autoHeightReaction() {
         return {
-            track: () => [this.ref.current, this.autoHeight],
-            run: ([node, autoHeight]) => {
-                if (node && autoHeight) {
-                    this.mutationObserver = this.mutationObserver ??
-                        new window.MutationObserver(() => this.autoSizeHeight());
-                    this.resizeObserver = this.resizeObserver ??
-                        new window.ResizeObserver(() => this.autoSizeHeight());
-                    this.mutationObserver.observe(node,
-                        {
-                            attributes: true,
-                            attributeFilter: ['style'],
-                            subtree: true
-                        }
-                    );
-                    this.resizeObserver.observe(node.parentElement);
-                } else {
-                    this.mutationObserver?.disconnect();
-                    this.resizeObserver?.disconnect();
-                }
-            }
+            track: () => this.autoHeight,
+            run: autoHeight => {
+                const {id, containerModel} = this,
+                    newLayout = {...containerModel.getViewLayout(id)};
+
+                newLayout.resizeHandles = autoHeight ? ['e'] : ['e', 's', 'se'];
+
+                containerModel.setViewLayout(newLayout);
+            },
+            fireImmediately: true
         };
-    }
-
-    /**
-     * Specify array of items to be added to the right-side of the panel header
-     * @param {ReactNode[]} items
-     */
-    @action
-    setHeaderItems(items) {
-        this.headerItems = items;
-    }
-
-    destroy() {
-        this.mutationObserver?.disconnect();
-        this.resizeObserver?.disconnect();
-        super.destroy();
     }
 }

@@ -3,9 +3,9 @@ import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
+import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {defaultsDeep, find, isEqual, uniqBy, times, without, some} from 'lodash';
+import {defaultsDeep, find, isEqualWith, uniqBy, times, without, some, sortBy} from 'lodash';
 import {computed} from 'mobx';
 
 /**
@@ -157,7 +157,7 @@ export class DashCanvasModel extends HoistModel {
         this.state = this.buildState();
 
         this.addReaction({
-            track: () => [this.viewState, this.layout],
+            track: () => this.viewState,
             run: () => this.publishState()
         });
 
@@ -180,7 +180,7 @@ export class DashCanvasModel extends HoistModel {
     clear() {
         const {viewModels} = this;
         this.viewModels = [];
-        this.layout = [];
+        this.setLayout([]);
 
         XH.safeDestroy(viewModels);
     }
@@ -226,7 +226,7 @@ export class DashCanvasModel extends HoistModel {
         const removeLayout = this.getViewLayout(id),
             removeView = this.getView(id);
 
-        this.layouts = without(this.layouts, removeLayout);
+        this.setLayout(without(this.layout, removeLayout));
         this.viewModels = without(this.viewModels, removeView);
         XH.safeDestroy(removeView);
     }
@@ -323,18 +323,25 @@ export class DashCanvasModel extends HoistModel {
             h = layout?.h ?? viewSpec.height ?? 1,
             w = layout?.w ?? viewSpec.width ?? 1;
 
-        this.layout = [...this.layout, {i: id, x, y, h, w}];
+        this.setLayout([...this.layout, {i: id, x, y, h, w}]);
         this.viewModels = [...this.viewModels, model];
         return model;
     }
 
     @action
     setLayout(layout) {
-        // strip extra properties from react-grid
-        layout = layout.map(({i, x, y, w, h}) => ({i, x, y, w, h}));
-        if (!isEqual(this.layout, layout)) {
-            this.layout = layout;
+        // 1- strip extra properties from react-grid
+        layout = layout.map(({i, x, y, w, h, resizeHandles}) => ({i, x, y, w, h, resizeHandles}));
 
+        // 2 - check if dimensions have changed
+        const dimsChanged = !isEqualWith(sortBy(this.layout, 'i'), sortBy(layout.map, 'i'),
+            (v1, v2, key) => key === 'resizeHandles' ? true : undefined);
+
+        // 3 - update the canvas layout
+        this.layout = layout;
+
+        // 4 - additional operations if dimensions have changed
+        if (dimsChanged) {
             // Check if scrollbar visibility has changed, and force resize event if so
             const node = this.ref.current;
             if (!node) return;
@@ -343,6 +350,8 @@ export class DashCanvasModel extends HoistModel {
                 window.dispatchEvent(new Event('resize'));
                 this.scrollbarVisible = scrollbarVisible;
             }
+
+            if (!this.isAutoSizing) this.publishState();
         }
     }
 
@@ -352,9 +361,9 @@ export class DashCanvasModel extends HoistModel {
         state.forEach(state => this.addViewInternal(state.viewSpecId, state));
     }
 
+    @debounced(1000)
     @action
     publishState() {
-        if (this.isAutoSizing) return;
         this.state = this.buildState();
         this.provider?.write({state: this.state});
     }
@@ -363,11 +372,11 @@ export class DashCanvasModel extends HoistModel {
         const {viewState} = this;
 
         return this.layout.map(it => {
-            const {i: viewId, x, y, w, h} = it,
+            const {i: viewId, x, y, w, h, resizeHandles} = it,
                 state = viewState[viewId];
 
             return {
-                layout: {x, y, w, h},
+                layout: {x, y, w, h, resizeHandles},
                 ...state
             };
         });
