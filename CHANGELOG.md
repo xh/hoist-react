@@ -11,6 +11,8 @@
 * Autosize performance has been improved for very large grids.
 * `DashCanvasViewModel` now supports `autoHeight` to automatically resize a `DashCanvasView's`
     height to fit its contents
+* New `@abstract` decorator for enforcing abstract methods / getters
+
 
 ### 🐞 Bug Fixes
 
