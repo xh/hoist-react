@@ -30,7 +30,7 @@ export class ChartsModel extends HoistModel {
      *      + count - count of unique secondary dim values within the primary dim group.
      *      + elapsed - avg elapsed time in ms for the primary dim group.
      */
-    @bindable metric = 'entryCount'
+    @bindable metric = 'entryCount';
 
     /** @member {ChartModel} */
     @managed categoryChartModel = new ChartModel({
@@ -50,6 +50,13 @@ export class ChartsModel extends HoistModel {
             chart: {type: 'line', animation: false},
             plotOptions: {
                 line: {
+                    events: {
+                        click: async event => {
+                            const date = moment(event.point.x).format('YYYY MM DD').split(' ').join('-');
+                            const id = `root>>day=[${date}]`;
+                            await this.selectRow(id);
+                        }
+                    },
                     width: 1,
                     animation: false,
                     step: 'left'
@@ -62,7 +69,9 @@ export class ChartsModel extends HoistModel {
                 title: {},
                 units: [['day', [1]], ['week', [2]], ['month', [1]]],
                 labels: {
-                    formatter: function() {return fmtDate(this.value, 'D MMM')}
+                    formatter: function () {
+                        return fmtDate(this.value, 'D MMM');
+                    }
                 }
             },
             yAxis: [{title: {text: null}, allowDecimals: false}]
@@ -101,6 +110,11 @@ export class ChartsModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+        window.chartsModel = this;
+    }
+
+    async selectRow(id) {
+        await this.activityTrackingModel.gridModel.selectAsync(id);
     }
 
     onLinked() {
@@ -129,9 +143,12 @@ export class ChartsModel extends HoistModel {
             sortedData = sortBy(data, aggRow => {
                 const {cubeLabel} = aggRow.data;
                 switch (primaryDim) {
-                    case 'day': return LocalDate.from(cubeLabel).timestamp;
-                    case 'month': return moment(cubeLabel, 'MMM YYYY').valueOf();
-                    default: return cubeLabel;
+                    case 'day':
+                        return LocalDate.from(cubeLabel).timestamp;
+                    case 'month':
+                        return moment(cubeLabel, 'MMM YYYY').valueOf();
+                    default:
+                        return cubeLabel;
                 }
             }),
             chartData = sortedData.map(aggRow => {
@@ -140,6 +157,16 @@ export class ChartsModel extends HoistModel {
                     yVal = Math.round(aggRow.data[metric]);
                 return [xVal, yVal];
             });
+
+        for (let i = 1; i < chartData.length; i++) {
+            const daysBetween = (((chartData[i][0] - chartData[i - 1][0]) / 86400000) - 1);
+            console.log(daysBetween);
+            if (daysBetween > 0) {
+                for (let j = 0; j < daysBetween; j++) {
+                    chartData.splice(i, 0, [chartData[i - 1][0] + ((daysBetween - j) * 86400000), 0]);
+                }
+            }
+        }
 
         return [{name: metricLabel, data: chartData}];
     }
