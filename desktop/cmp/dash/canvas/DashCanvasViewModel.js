@@ -67,7 +67,7 @@ export class DashCanvasViewModel extends DashViewModel {
 
         const {id, containerModel} = this,
             {rowHeight, margin} = containerModel,
-            newLayout = {...containerModel.getLayout(id)};
+            newLayout = {...containerModel.getViewLayout(id)};
 
         // Hold on to initial height:
         const initHeight = node.style.height;

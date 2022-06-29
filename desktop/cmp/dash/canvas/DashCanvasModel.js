@@ -223,7 +223,7 @@ export class DashCanvasModel extends HoistModel {
      */
     @action
     removeView(id) {
-        const removeLayout = this.getLayout(id),
+        const removeLayout = this.getViewLayout(id),
             removeView = this.getView(id);
 
         this.layouts = without(this.layouts, removeLayout);
@@ -238,7 +238,7 @@ export class DashCanvasModel extends HoistModel {
      */
     @action
     replaceView(id, newSpecId) {
-        const layout = this.getLayout(id);
+        const layout = this.getViewLayout(id);
         this.removeView(id);
         this.addViewInternal(newSpecId, {layout});
     }
@@ -317,7 +317,7 @@ export class DashCanvasModel extends HoistModel {
                 title: title ?? viewSpec.title,
                 containerModel: this
             }),
-            prevLayout = previousViewId ? this.getLayout(previousViewId) : null,
+            prevLayout = previousViewId ? this.getViewLayout(previousViewId) : null,
             x = prevLayout?.x ?? layout?.x ?? 0,
             y = prevLayout?.y ?? layout?.y ?? this.rows,
             h = layout?.h ?? viewSpec.height ?? 1,
@@ -394,8 +394,7 @@ export class DashCanvasModel extends HoistModel {
         return find(this.viewModels, {id});
     }
 
-    // TODO - consider renaming this to getViewLayout
-    getLayout(id) {
+    getViewLayout(id) {
         return find(this.layout, {i: id});
     }
 
