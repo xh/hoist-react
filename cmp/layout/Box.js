@@ -24,7 +24,10 @@ export const [Box, box] = hoistCmp.withFactory({
     model: false, memo: false, observer: false,
 
     render(props, ref) {
-        let [layoutProps, {children, ...restProps}] = splitLayoutProps(props);
+        // Note `model` destructured off of non-layout props to avoid setting model as a bogus DOM
+        // attribute. This low-level component does not lookup a model from context, but it may
+        // easily be passed one from a parent that has not properly managed its own props.
+        let [layoutProps, {children, model, ...restProps}] = splitLayoutProps(props);
 
         restProps = merge(
             {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
