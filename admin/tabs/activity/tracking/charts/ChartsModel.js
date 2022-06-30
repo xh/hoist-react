@@ -14,6 +14,7 @@ import {sortBy} from 'lodash';
 import moment from 'moment';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
+import {ONE_DAY} from '@xh/hoist/utils/datetime/DateTimeUtils';
 
 export class ChartsModel extends HoistModel {
     @managed panelModel = new PanelModel({
@@ -159,18 +160,20 @@ export class ChartsModel extends HoistModel {
             });
 
         if(showAsTimeseries) {
-            const zeroDays = [];
+            const nullData = [];
             for (let i = 1; i < chartData.length; i++) {
-                const daysBetween = (((chartData[i][0] - chartData[i - 1][0]) / 86400000) - 1);
-                if (daysBetween > 0) {
-                    for (let j = 0; j < daysBetween; j++) {
-                        zeroDays.push([chartData[i - 1][0] + ((daysBetween - j) * 86400000), 0]);
+                const nullDayCount = (((chartData[i][0] - chartData[i - 1][0]) / ONE_DAY) - 1);
+                if (nullDayCount > 0) {
+                    for (let j = 1; j <= nullDayCount; j++) {
+                        const nullDay = chartData[i - 1][0] + (j * ONE_DAY)
+                        nullData.push([nullDay, 0]);
                     }
                 }
             }
-            chartData.push(...zeroDays);
-            const completeChartData = sortBy(chartData, data => data[0]);
-            return [{name: metricLabel, data: completeChartData}];
+            if(nullData.length) {
+                chartData.push(...nullData);
+                return [{name: metricLabel, data: sortBy(chartData, data => data[0])}];
+            }
         }
 
         return [{name: metricLabel, data: chartData}];
