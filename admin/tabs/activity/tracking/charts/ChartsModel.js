@@ -158,14 +158,19 @@ export class ChartsModel extends HoistModel {
                 return [xVal, yVal];
             });
 
-        for (let i = 1; i < chartData.length; i++) {
-            const daysBetween = (((chartData[i][0] - chartData[i - 1][0]) / 86400000) - 1);
-            console.log(daysBetween);
-            if (daysBetween > 0) {
-                for (let j = 0; j < daysBetween; j++) {
-                    chartData.splice(i, 0, [chartData[i - 1][0] + ((daysBetween - j) * 86400000), 0]);
+        if(showAsTimeseries) {
+            const zeroDays = [];
+            for (let i = 1; i < chartData.length; i++) {
+                const daysBetween = (((chartData[i][0] - chartData[i - 1][0]) / 86400000) - 1);
+                if (daysBetween > 0) {
+                    for (let j = 0; j < daysBetween; j++) {
+                        zeroDays.push([chartData[i - 1][0] + ((daysBetween - j) * 86400000), 0]);
+                    }
                 }
             }
+            chartData.push(...zeroDays);
+            const completeChartData = sortBy(chartData, data => data[0]);
+            return [{name: metricLabel, data: completeChartData}];
         }
 
         return [{name: metricLabel, data: chartData}];
