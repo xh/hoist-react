@@ -69,18 +69,21 @@ export class DashCanvasViewModel extends DashViewModel {
     onContentsResized({height}) {
         if (!this.autoHeight) return;
 
-        const {id, containerModel} = this,
-            {rowHeight, margin} = containerModel,
-            newLayout = {...containerModel.getViewLayout(id)},
-            HEADER_HEIGHT = 24;
+        try {
+            const {id, containerModel} = this,
+                {rowHeight, margin} = containerModel,
+                newLayout = {...containerModel.getViewLayout(id)},
+                HEADER_HEIGHT = 24;
 
-        // Calculate new height in grid units
-        newLayout.h = Math.ceil((height + HEADER_HEIGHT + margin[1]) / (rowHeight + margin[1]));
+            // Calculate new height in grid units
+            newLayout.h = Math.ceil((height + HEADER_HEIGHT + margin[1]) / (rowHeight + margin[1]));
 
-        // Send the new layout back to the parent model
-        this.isAutoSizing = true;
-        containerModel.setViewLayout(newLayout);
-        this.isAutoSizing = false;
+            // Send the new layout back to the parent model
+            this.isAutoSizing = true;
+            containerModel.setViewLayout(newLayout);
+        } finally {
+            this.isAutoSizing = false;
+        }
     }
 
     autoHeightReaction() {

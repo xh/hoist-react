@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {frame} from '@xh/hoist/cmp/layout';
+import {box} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {ContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils';
@@ -44,10 +44,10 @@ export const dashCanvasView = hoistCmp.factory({
             className,
             ref,
             ...headerProps,
-            item: frame({
+            item: box({
                 ref: useOnResize(dims => model.onContentsResized(dims), {debounce: 100}),
                 item: elementFromContent(viewSpec.content, {flex: 1}),
-                style: autoHeight ? {flex: 'none'} : undefined
+                flex: autoHeight ? 'none' : 'auto'
             })
         });
     }

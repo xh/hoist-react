@@ -5,7 +5,7 @@ import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {defaultsDeep, find, isEqualWith, uniqBy, times, without, some, sortBy} from 'lodash';
+import {defaultsDeep, find, isEqualWith, uniqBy, times, without, some, sortBy, pick} from 'lodash';
 import {computed} from 'mobx';
 
 /**
@@ -331,7 +331,7 @@ export class DashCanvasModel extends HoistModel {
     @action
     setLayout(layout) {
         // 1- strip extra properties from react-grid
-        layout = layout.map(({i, x, y, w, h, resizeHandles}) => ({i, x, y, w, h, resizeHandles}));
+        layout = layout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h', 'resizeHandles']));
 
         // 2 - check if dimensions have changed
         const dimsChanged = !isEqualWith(sortBy(this.layout, 'i'), sortBy(layout.map, 'i'),
