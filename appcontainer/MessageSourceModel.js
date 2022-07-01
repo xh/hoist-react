@@ -79,6 +79,6 @@ export class MessageSourceModel extends HoistModel {
         msgModels.push(model);
         const [keep, cull] = partition(msgModels, 'isOpen');
         this.msgModels = keep;
-        XH.destroy(cull);
+        XH.safeDestroy(cull);
     }
 }
