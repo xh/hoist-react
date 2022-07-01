@@ -27,6 +27,7 @@
 * Both `Panel.title` and `Panel.icon` props must be null or undefined to avoid rendering
   a `PanelHeader`. Previously specifying any 'falsey' value for both (e.g. an empty string
   title) would omit the header.
+* `XHClass` (top-level Singleton model for Hoist) no longer extends `HoistBase`
 
 ### 🐞 Bug Fixes
 
@@ -34,6 +35,7 @@
   could appear after operating on it programmatically (see breaking changes above).
 * `ColumnHeaders` now properly respond to mouse events on tablets (e.g. when using a Bluetooth
   trackpad on an iPad).
+* Fixed bug where `DashCanvasModel.removeView()` was not properly disposing of removed views
 
 ### 📚 Libraries
 

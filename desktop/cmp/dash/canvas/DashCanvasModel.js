@@ -228,9 +228,9 @@ export class DashCanvasModel extends HoistModel {
         const removeLayout = this.getLayout(id),
             removeView = this.getView(id);
 
-        this.layouts = without(this.layouts, removeLayout);
+        this.layout = without(this.layout, removeLayout);
         this.viewModels = without(this.viewModels, removeView);
-        XH.destroy(removeView);
+        XH.safeDestroy(removeView);
     }
 
     /**
