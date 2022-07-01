@@ -36,7 +36,6 @@
 * `ColumnHeaders` now properly respond to mouse events on tablets (e.g. when using a Bluetooth
   trackpad on an iPad).
 * Fixed bug where `DashCanvasModel.removeView()` was not properly disposing of removed views
-* Fixed bug where `MessageSourceModel` was calling `XH.destroy()` rather than `XH.safeDestroy()`
 
 ### 📚 Libraries
 
