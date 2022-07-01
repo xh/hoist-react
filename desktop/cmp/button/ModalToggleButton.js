@@ -4,7 +4,6 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button/Button';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';

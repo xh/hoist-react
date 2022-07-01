@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import ReactDOM from 'react-dom';
 import {HoistModel, managed, RefreshMode, RenderMode, XH, PersistenceProvider, TaskObserver} from '@xh/hoist/core';

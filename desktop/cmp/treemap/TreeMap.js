@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, HoistModel, useLocalModel, uses, XH, lookup} from '@xh/hoist/core';
 import {box, div, placeholder} from '@xh/hoist/cmp/layout';
