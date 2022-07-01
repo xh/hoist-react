@@ -17,7 +17,7 @@ import {
     useOnResize,
     useOnVisibleChange
 } from '@xh/hoist/utils/react';
-import {assign, castArray, clone, cloneDeep, forOwn, isEqual, isPlainObject, merge, omit} from 'lodash';
+import {assign, castArray, cloneDeep, forOwn, isEqual, isPlainObject, merge, omit} from 'lodash';
 import {Icon} from '@xh/hoist/icon';
 import PT from 'prop-types';
 import {ChartModel} from './ChartModel';
@@ -353,7 +353,7 @@ class LocalModel extends HoistModel {
     }
 
     getThemeConfig() {
-        return XH.darkTheme ? clone(DarkTheme) : clone(LightTheme);
+        return XH.darkTheme ? cloneDeep(DarkTheme) : cloneDeep(LightTheme);
     }
 
     getModelConfig() {
