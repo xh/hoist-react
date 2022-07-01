@@ -5,7 +5,7 @@ import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {defaultsDeep, find, isEqual, times, without} from 'lodash';
+import {defaultsDeep, find, isEqual, some, times, without} from 'lodash';
 import {computed} from 'mobx';
 
 /**
@@ -345,7 +345,15 @@ export class DashCanvasModel extends HoistModel {
     @action
     loadState(state) {
         this.clear();
-        state.forEach(state => this.addViewInternal(state.viewSpecId, state));
+        state.forEach(state => {
+            // Fail gracefully on unknown viewSpecId - persisted state could ref. an obsolete widget.
+            const {viewSpecId} = state;
+            if (this.hasSpec(viewSpecId)) {
+                this.addViewInternal(viewSpecId, state);
+            } else {
+                console.warn(`Unknown viewSpecId [${viewSpecId}] found in state - skipping.`);
+            }
+        });
     }
 
     @action
@@ -395,6 +403,10 @@ export class DashCanvasModel extends HoistModel {
 
     getSpec(id) {
         return find(this.viewSpecs, {id});
+    }
+
+    hasSpec(id) {
+        return some(this.viewSpecs, {id});
     }
 
     getViewsBySpecId(id) {
