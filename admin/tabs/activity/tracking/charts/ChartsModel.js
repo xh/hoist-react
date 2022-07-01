@@ -53,7 +53,10 @@ export class ChartsModel extends HoistModel {
                 line: {
                     events: {
                         click: async event => {
-                            const date = moment(event.point.x).format('YYYY MM DD').split(' ').join('-');
+                            const date = moment(event.point.x)
+                                .format('YYYY MM DD')
+                                .split(' ')
+                                .join('-');
                             const id = `root>>day=[${date}]`;
                             await this.selectRow(id);
                         }
@@ -159,18 +162,18 @@ export class ChartsModel extends HoistModel {
                 return [xVal, yVal];
             });
 
-        if(showAsTimeseries) {
+        if (showAsTimeseries) {
             const nullData = [];
             for (let i = 1; i < chartData.length; i++) {
                 const nullDayCount = (((chartData[i][0] - chartData[i - 1][0]) / ONE_DAY) - 1);
                 if (nullDayCount > 0) {
                     for (let j = 1; j <= nullDayCount; j++) {
-                        const nullDay = chartData[i - 1][0] + (j * ONE_DAY)
+                        const nullDay = chartData[i - 1][0] + (j * ONE_DAY);
                         nullData.push([nullDay, 0]);
                     }
                 }
             }
-            if(nullData.length) {
+            if (nullData.length) {
                 chartData.push(...nullData);
                 return [{name: metricLabel, data: sortBy(chartData, data => data[0])}];
             }
@@ -202,5 +205,4 @@ export class ChartsModel extends HoistModel {
             msg: 'Message'
         }[dim] ?? capitalizeWords(dim);
     }
-
 }
