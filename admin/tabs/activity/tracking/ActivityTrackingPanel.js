@@ -112,7 +112,7 @@ const aggregateView = hoistCmp.factory(
             compactHeader: true,
             model: {
                 side: 'left',
-                defaultSize: 400,
+                defaultSize: 500,
                 persistWith: {...PERSIST_ACTIVITY, path: 'aggReportPanel'}
             },
             tbar: [
