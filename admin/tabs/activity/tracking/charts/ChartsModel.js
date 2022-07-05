@@ -52,7 +52,7 @@ export class ChartsModel extends HoistModel {
             plotOptions: {
                 line: {
                     events: {
-                        click: e => {this.selectRowAsync(e)}
+                        click: (e) => this.selectRow(e)
                     },
                     width: 1,
                     animation: false,
@@ -107,12 +107,9 @@ export class ChartsModel extends HoistModel {
         makeObservable(this);
     }
 
-    selectRowAsync(e) {
-        const date = moment(e.point.x)
-            .format('YYYY MM DD')
-            .split(' ')
-            .join('-');
-        const id = `root>>day=[${date}]`;
+    selectRow(e) {
+        const date = moment(e.point.x).format('YYYY-MM-DD'),
+            id = `root>>day=[${date}]`;
         this.activityTrackingModel.gridModel.selectAsync(id);
     }
 
