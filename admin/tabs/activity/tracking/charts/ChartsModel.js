@@ -68,7 +68,7 @@ export class ChartsModel extends HoistModel {
                 title: {},
                 units: [['day', [1]], ['week', [2]], ['month', [1]]],
                 labels: {
-                    formatter: function () {return fmtDate(this.value, 'D MMM')}
+                    formatter: function() {return fmtDate(this.value, 'D MMM')}
                 }
             },
             yAxis: [{title: {text: null}, allowDecimals: false}]

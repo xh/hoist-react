@@ -70,6 +70,7 @@ export class ActivityTrackingModel extends HoistModel {
                 {name: 'maxRows', initialValue: 25000}
             ]
         });
+
         this.cube = new Cube({
             fields: [
                 {...Col.browser.field},
