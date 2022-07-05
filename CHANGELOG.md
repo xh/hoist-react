@@ -9,38 +9,37 @@
   a remount/rerender of the panel's contents.
 * FilterChooser field suggestions now search within multi-word field names.
 * Autosize performance has been improved for very large grids.
-* New `@abstract` decorator for enforcing abstract methods / getters
+* New `@abstract` decorator now available for enforcing abstract methods / getters.
 
+### 💥 Breaking Changes
+
+* The data reactions between `GridModel` and the underlying Ag-Grid is now minimally debounced. This
+  avoids multiple data updates during a single event loop tick, which can corrupt Ag-Grid's
+  underlying state in the latest versions of that library.
+    * This change should not affect most apps, but code that queries grid state immediately after
+      loading or filtering a grid (e.g. selection, row visibility, or expansion state) should be
+      tested carefully and may require a call to `await whenGridReadyAsync()`.
+    * Note that this method is already incorporated in to several public methods on `GridModel`,
+      including `selectFirstAsync()` and `ensureSelectionVisibleAsync()`.
+* Blueprint has updated all of its CSS class names to use the `bp4-` prefix instead of the `bp3-`
+  prefix. Any apps styling these classes directly may need to be adjusted. See
+  https://github.com/palantir/blueprint/wiki/Blueprint-4.0 for more info.
+* Both `Panel.title` and `Panel.icon` props must be null or undefined to avoid rendering
+  a `PanelHeader`. Previously specifying any 'falsey' value for both (e.g. an empty string
+  title) would omit the header.
+* `XHClass` (top-level Singleton model for Hoist) no longer extends `HoistBase`
 
 ### 🐞 Bug Fixes
 
-* Fixes several issues where Grid would display rows gaps after operating on it programmatically,
-  This problem was introduced in ag-Grid v27.
-* Fix bug where ColumnHeaders would not respond to mouse events on tablets
-
-### 💥 Breaking Changes
-
-* The data reactions between `GridModel` and the underlying ag-Grid is now minimally debounced, to
-  avoid multiple data updates during a single event loop tick. This avoids corrupting ag-Grid's
-  underlying state. This should not be a problem for most applications, but
-  applications that are querying any grid state immediately after loading or filtering a grid
-  (e.g. selection, row visible/expansion state, etc.) should be tested carefully and may require a
-  call to  `whenGridReadyAsync()`.  (Note that this method is already incorporated in to several
-  public methods on `GridModel` including  `selectFirstAsync` and `ensureSelectionVisibleAsync`.)
-* `PanelHeaders` are now more particular in determining whether they should render.  Now, a `Panel`
-  `title` and `icon` must be null or undefined in order to avoid rendering a `PanelHeader`, whereas
-  previously any 'falsey' value was acceptable to avoid rendering the `PanelHeader`
-
-
-### 💥 Breaking Changes
-
-* Blueprint has upgraded all of its css class names to use the `bp4-` prefix instead of the `bp3-`
-  prefix.  Any apps styling these classes directly may need to be adjusted.  See
-  https://github.com/palantir/blueprint/wiki/Blueprint-4.0 for more info.
+* Fixes several issues introduced with Ag-Grid v27 where rows gaps and similar rendering issues
+  could appear after operating on it programmatically (see breaking changes above).
+* `ColumnHeaders` now properly respond to mouse events on tablets (e.g. when using a Bluetooth
+  trackpad on an iPad).
+* Fixed bug where `DashCanvasModel.removeView()` was not properly disposing of removed views
 
 ### 📚 Libraries
 
-* blueprint.js `3.54 -> 4.5`
+* @blueprintjs `3.54 -> 4.5`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v49.2.0...develop)
 
@@ -4645,7 +4644,7 @@ and ag-Grid upgrade, and more. 🚀
 
 ------------------------------------------
 
-Copyright © 2021 Extremely Heavy Industries Inc. - all rights reserved
+Copyright © 2022 Extremely Heavy Industries Inc. - all rights reserved
 
 ------------------------------------------
 
