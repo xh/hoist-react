@@ -10,7 +10,7 @@ import {HoistModel, managed, lookup} from '@xh/hoist/core';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {sortBy} from 'lodash';
+import {sortBy, isEmpty} from 'lodash';
 import moment from 'moment';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
@@ -52,9 +52,7 @@ export class ChartsModel extends HoistModel {
             plotOptions: {
                 line: {
                     events: {
-                        click: e => {
-                            this.selectRowAsync(e)
-                        }
+                        click: e => {this.selectRowAsync(e)}
                     },
                     width: 1,
                     animation: false,
@@ -140,8 +138,8 @@ export class ChartsModel extends HoistModel {
 
     getSeriesData() {
         const {data, metric, primaryDim, showAsTimeseries} = this,
-            metricLabel = this.getLabelForMetric(metric, false),
-            sortedData = sortBy(data, aggRow => {
+            metricLabel = this.getLabelForMetric(metric, false);
+        let sortedData = sortBy(data, aggRow => {
                 const {cubeLabel} = aggRow.data;
                 switch (primaryDim) {
                     case 'day': return LocalDate.from(cubeLabel).timestamp;
@@ -156,6 +154,7 @@ export class ChartsModel extends HoistModel {
                 return [xVal, yVal];
             });
 
+        // Insert data where no activity was logged
         if (showAsTimeseries) {
             const fillData = [];
             for (let i = 1; i < chartData.length; i++) {
@@ -167,12 +166,11 @@ export class ChartsModel extends HoistModel {
                     }
                 }
             }
-            if (fillData.length) {
+            if (!isEmpty(fillData)) {
                 chartData.push(...fillData);
-                return [{name: metricLabel, data: sortBy(chartData, data => data[0])}];
+                chartData = sortBy(chartData, data => data[0])
             }
         }
-
         return [{name: metricLabel, data: chartData}];
     }
 
