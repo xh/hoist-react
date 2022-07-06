@@ -165,7 +165,7 @@ export class ChartsModel extends HoistModel {
             }
             if (!isEmpty(fillData)) {
                 chartData.push(...fillData);
-                chartData = sortBy(chartData, data => data[0])
+                chartData = sortBy(chartData, data => data[0]);
             }
         }
         return [{name: metricLabel, data: chartData}];
