@@ -36,7 +36,7 @@ import {
     throwIf,
     withDebug
 } from '@xh/hoist/utils/js';
-import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
+import {camelCase, compact, flatten, isBoolean, isEmpty, isString, uniqueId} from 'lodash';
 import {reaction as mobxReaction} from '@xh/hoist/mobx';
 import ReactDOM from 'react-dom';
 import parser from 'ua-parser-js';
@@ -236,7 +236,18 @@ class XHClass {
         const spinner = document.getElementById('xh-preload-spinner');
         if (spinner) spinner.style.display = 'none';
 
+        // 1) Create AppSpec
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
+
+        // 2) Enforce platform specific components
+        const cmps = window.xhComponents;
+        if (this.isMobileApp && !isEmpty(cmps.desktop)) {
+            throw XH.exception(`Desktop components imported into mobile app: [${cmps.desktop.join(', ')}]`);
+        } else if (!this.isMobileApp && !isEmpty(cmps.mobile)) {
+            throw XH.exception(`Mobile components imported into desktop app: [${cmps.mobile.join(', ')}]`);
+        }
+
+        // 3) Render app to root
         const rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
         ReactDOM.render(rootView, document.getElementById('xh-root'));
     }

@@ -47,6 +47,10 @@ import {ModelLookup, ModelLookupContext, modelLookupContextProvider} from './imp
  * @param {boolean} [config.observer] - true (default) to enable MobX-powered reactivity via the
  *      `observer()` HOC from mobx-react. Components that are known to dereference no observable
  *      state may set this to `false`, but this is not typically done by application code.
+ * @param {boolean} [config.desktop] - true to restrict this component for use with the desktop toolkit.
+ *      Importing this component into a bundle that attempts to render a mobile app will throw.
+ * @param {boolean} [config.mobile] - true to restrict this component for use with the mobile toolkit.
+ *      Importing this component into a bundle that attempts to render a desktop app will throw.
  * @returns {function} - a functional React Component for use within Hoist apps.
  *
  * @see hoistCmp - a shorthand alias to this function.
@@ -63,7 +67,8 @@ export function hoistComponent(config) {
 
     const render = config.render,
         className = config.className,
-        displayName = config.displayName ? config.displayName : 'HoistCmp',
+        displayName = config.displayName ?? 'HoistCmp',
+        platform = config.desktop ? 'desktop' : config.mobile ? 'mobile' : 'core',
         isMemo = withDefault(config.memo, true),
         isObserver = withDefault(config.observer, true),
         isForwardRef = (render.length === 2);
@@ -83,7 +88,7 @@ export function hoistComponent(config) {
     // 2) Decorate with function wrappers with behaviors.
     let ret = render;
     if (modelSpec) {
-        ret = wrapWithModel(ret,  modelSpec, displayName);
+        ret = wrapWithModel(ret, modelSpec, displayName);
     }
     if (className) {
         ret = wrapWithClassName(ret, className);
@@ -98,7 +103,11 @@ export function hoistComponent(config) {
     if (isObserver)             ret = observer(ret);
     if (isMemo && !isObserver)  ret = memo(ret);
 
-    // 4) Mark and return.
+    // 4) Register this component
+    if (!window.xhComponents) window.xhComponents = {desktop: [], mobile: [], core: []};
+    window.xhComponents[platform].push([displayName]);
+
+    // 5) Mark and return.
     ret.displayName = displayName;
     ret.isHoistComponent = true;
 
