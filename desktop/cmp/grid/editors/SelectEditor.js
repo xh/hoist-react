@@ -15,6 +15,7 @@ export const [SelectEditor, selectEditor] = hoistCmp.withFactory({
     className: 'xh-select-editor',
     memo: false,
     observer: false,
+    desktop: true,
     render(props, ref) {
         props = {
             ...props,

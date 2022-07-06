@@ -26,6 +26,7 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
     displayName: 'AppBar',
     className: 'xh-appbar',
     model: false,
+    mobile: true,
 
     render({
         className,

@@ -17,6 +17,7 @@ import {Icon} from '@xh/hoist/icon';
 export const [WhatsNewButton, whatsNewButton] = hoistCmp.withFactory({
     displayName: 'WhatsNewButton',
     model: false,
+    desktop: true,
 
     render(props) {
         if (!XH.changelogService.currentVersionIsUnread) return null;

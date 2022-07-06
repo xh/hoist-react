@@ -16,8 +16,9 @@ import {isValidElement} from 'react';
 
 export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     displayName: 'AppMenuButton',
-    model: false,
     className: 'xh-app-menu',
+    model: false,
+    desktop: true,
 
     render(props) {
         const {

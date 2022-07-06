@@ -15,6 +15,7 @@ import PT from 'prop-types';
 export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory({
     displayName: 'ButtonGroup',
     model: false,
+    desktop: true,
     className: 'xh-button-group',
 
     render(props, ref) {

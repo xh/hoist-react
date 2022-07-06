@@ -17,6 +17,7 @@ import PT from 'prop-types';
 export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory({
     displayName: 'ColAutosizeButton',
     model: false,
+    mobile: true,
 
     render({
         gridModel,

@@ -24,6 +24,7 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory({
     displayName: 'LeftRightChooser',
     model: uses(LeftRightChooserModel),
     className: 'xh-lr-chooser',
+    desktop: true,
 
     render({model, ...props}, ref) {
         const {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,

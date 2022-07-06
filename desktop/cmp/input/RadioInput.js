@@ -19,6 +19,7 @@ import './RadioInput.scss';
 export const [RadioInput, radioInput] = hoistCmp.withFactory({
     displayName: 'RadioInput',
     className: 'xh-radio-input',
+    desktop: true,
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, Model);
     }

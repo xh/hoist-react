@@ -26,6 +26,7 @@ import {button, Button} from './Button';
 export const [ExportButton, exportButton] = hoistCmp.withFactory({
     displayName: 'ExportButton',
     model: false,
+    desktop: true,
 
     render({icon, title, onClick, gridModel, exportOptions = {}, disabled, ...rest}, ref) {
 

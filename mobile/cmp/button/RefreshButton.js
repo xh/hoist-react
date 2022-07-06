@@ -20,6 +20,7 @@ import PT from 'prop-types';
 export const [RefreshButton, refreshButton] = hoistCmp.withFactory({
     displayName: 'RefreshButton',
     model: false,  // For consistency with all other buttons -- the model prop here could be replaced by 'target'
+    mobile: true,
 
     render({model, icon = Icon.sync(), onClick, ...props}) {
         const refreshContextModel = useContextModel(RefreshContextModel);

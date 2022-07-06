@@ -17,6 +17,7 @@ import {button, Button} from '@xh/hoist/mobile/cmp/button';
 export const [LogoutButton, logoutButton] = hoistCmp.withFactory({
     displayName: 'LogoutButton',
     model: false,
+    mobile: true,
 
     render({
         icon = Icon.logout(),

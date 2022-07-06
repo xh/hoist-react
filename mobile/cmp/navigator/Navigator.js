@@ -16,8 +16,9 @@ import {NavigatorModel} from './NavigatorModel';
  */
 export const [Navigator, navigator] = hoistCmp.withFactory({
     displayName: 'Navigator',
-    model: uses(NavigatorModel),
     className: 'xh-navigator',
+    model: uses(NavigatorModel),
+    mobile: true,
 
     render({model, className, animation = 'slide'}) {
         return swiper(

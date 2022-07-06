@@ -17,6 +17,7 @@ export const [DateEditor, dateEditor] = hoistCmp.withFactory({
     className: 'xh-date-editor',
     memo: false,
     observer: false,
+    desktop: true,
     render(props, ref) {
         // We need to render the day picker popover inside the grid viewport in order for
         // `stopEditingWhenCellsLoseFocus` to work properly - otherwise the day picker becomes

@@ -17,6 +17,7 @@ import PT from 'prop-types';
 export const [ClipboardButton, clipboardButton] = hoistCmp.withFactory({
     displayName: 'ClipboardButton',
     model: false,
+    desktop: true,
 
     render(props) {
         let {icon, onClick, text, getCopyText, successMessage, ...rest} = props;

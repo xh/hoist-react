@@ -27,6 +27,7 @@ import {Icon} from '@xh/hoist/icon';
  */
 export const colChooser = hoistCmp.factory({
     className: 'xh-col-chooser',
+    desktop: true,
 
     render({model, className}) {
         const {commitOnChange, showRestoreDefaults, width, height} = model;

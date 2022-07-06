@@ -22,6 +22,7 @@ import './TextInput.scss';
 export const [TextInput, textInput] = hoistCmp.withFactory({
     displayName: 'TextInput',
     className: 'xh-text-input',
+    mobile: true,
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, Model);
     }

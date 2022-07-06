@@ -20,6 +20,7 @@ import {Button, button} from './Button';
 export const [RefreshButton, refreshButton] = hoistCmp.withFactory({
     displayName: 'RefreshButton',
     model: false,  // For consistency with all other buttons -- the model prop here could be replaced by 'target'
+    desktop: true,
 
     render({model, onClick, ...props}, ref) {
         const refreshContextModel = useContextModel(RefreshContextModel);

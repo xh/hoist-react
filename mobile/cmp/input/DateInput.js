@@ -24,6 +24,7 @@ import './DateInput.scss';
 export const [DateInput, dateInput] = hoistCmp.withFactory({
     displayName: 'DateInput',
     className: 'xh-date-input',
+    mobile: true,
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, Model);
     }

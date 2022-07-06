@@ -14,6 +14,7 @@ import {button, Button} from '@xh/hoist/mobile/cmp/button';
 export const [ThemeToggleButton, themeToggleButton] = hoistCmp.withFactory({
     displayName: 'ThemeToggleButton',
     model: false,
+    mobile: true,
 
     render({
         icon = XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),

@@ -28,6 +28,7 @@ import './GroupingChooser.scss';
 export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
     model: uses(GroupingChooserModel),
     className: 'xh-grouping-chooser',
+    desktop: true,
     render({
         model,
         className,

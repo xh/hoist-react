@@ -16,6 +16,7 @@ import {errorIf, withDefault} from '@xh/hoist/utils/js';
 export const [ModalToggleButton, modalToggleButton] = hoistCmp.withFactory({
     displayName: 'ModalToggleButton',
     model: false,
+    desktop: true,
 
     render({panelModel, ...rest}, ref) {
         panelModel = withDefault(panelModel, useContextModel(PanelModel));

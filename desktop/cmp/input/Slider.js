@@ -20,6 +20,7 @@ import './Slider.scss';
 export const [Slider, slider] = hoistCmp.withFactory({
     displayName: 'Slider',
     className: 'xh-slider',
+    desktop: true,
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, Model);
     }

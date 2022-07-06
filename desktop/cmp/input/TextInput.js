@@ -22,6 +22,7 @@ import PT from 'prop-types';
 export const [TextInput, textInput] = hoistCmp.withFactory({
     displayName: 'TextInput',
     className: 'xh-text-input',
+    desktop: true,
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, Model);
     }

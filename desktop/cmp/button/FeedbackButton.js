@@ -15,6 +15,7 @@ import {button, Button} from './Button';
 export const [FeedbackButton, feedbackButton] = hoistCmp.withFactory({
     displayName: 'FeedbackButton',
     model: false,
+    desktop: true,
 
     render(props, ref) {
         return button({

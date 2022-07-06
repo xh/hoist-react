@@ -15,6 +15,7 @@ export const [TextAreaEditor, textAreaEditor] = hoistCmp.withFactory({
     className: 'xh-textarea-editor',
     memo: false,
     observer: false,
+    desktop: true,
     render(props, ref) {
         props = {
             ...props,

@@ -18,6 +18,8 @@ import PT from 'prop-types';
 export const [ExpandCollapseButton, expandCollapseButton] = hoistCmp.withFactory({
     displayName: 'ExpandCollapseButton',
     model: false,
+    mobile: true,
+
     render({
         gridModel,
         onClick,

@@ -34,6 +34,7 @@ import PT from 'prop-types';
 export const [NumberInput, numberInput] = hoistCmp.withFactory({
     displayName: 'NumberInput',
     className: 'xh-number-input',
+    desktop: true,
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, Model);
     }

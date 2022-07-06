@@ -16,6 +16,7 @@ import './Label.scss';
 export const [Label, label] = hoistCmp.withFactory({
     displayName: 'Label',
     className: 'xh-input-label',
+    mobile: true,
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref);
     }

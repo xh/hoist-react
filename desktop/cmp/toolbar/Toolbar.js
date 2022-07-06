@@ -26,6 +26,7 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
     displayName: 'Toolbar',
     model: false, memo: false, observer: false,
     className: 'xh-toolbar',
+    desktop: true,
 
     render({
         children,

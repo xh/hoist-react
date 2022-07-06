@@ -18,6 +18,7 @@ import {isNil} from 'lodash';
 export const [Checkbox, checkbox] = hoistCmp.withFactory({
     displayName: 'Checkbox',
     className: 'xh-check-box',
+    desktop: true,
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref);
     }

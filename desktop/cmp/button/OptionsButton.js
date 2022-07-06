@@ -16,6 +16,7 @@ import {button, Button} from './Button';
 export const [OptionsButton, optionsButton] = hoistCmp.withFactory({
     displayName: 'OptionsButton',
     model: false,
+    desktop: true,
 
     render(props, ref) {
         return button({

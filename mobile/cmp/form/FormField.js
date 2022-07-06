@@ -46,6 +46,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
         publishMode: ModelPublishMode.NONE,
         optional: true
     }),
+    mobile: true,
 
     render({model, className, field, children, info, ...props}, ref) {
 

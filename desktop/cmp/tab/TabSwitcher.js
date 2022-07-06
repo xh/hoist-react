@@ -49,6 +49,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
     displayName: 'TabSwitcher',
     model: uses(TabContainerModel),
     className: 'xh-tab-switcher',
+    desktop: true,
 
     render({
         model,

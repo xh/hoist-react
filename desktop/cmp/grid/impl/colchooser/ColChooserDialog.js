@@ -13,6 +13,7 @@ import {ColChooserModel} from './ColChooserModel';
 export const colChooserDialog = hoistCmp.factory({
     model: uses(ColChooserModel),
     className: 'xh-col-chooser-dialog',
+    desktop: true,
 
     render({model, className}) {
 

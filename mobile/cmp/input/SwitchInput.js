@@ -16,6 +16,7 @@ import './SwitchInput.scss';
 export const [SwitchInput, switchInput] = hoistCmp.withFactory({
     displayName: 'SwitchInput',
     className: 'xh-switch-input',
+    mobile: true,
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref);
     }

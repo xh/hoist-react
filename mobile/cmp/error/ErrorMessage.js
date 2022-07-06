@@ -18,6 +18,8 @@ import './ErrorMessage.scss';
  */
 export const [ErrorMessage, errorMessage] = hoistCmp.withFactory({
     className: 'xh-error-message',
+    mobile: true,
+
     render({
         className,
         model,

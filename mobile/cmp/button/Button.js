@@ -19,8 +19,9 @@ import './Button.scss';
  */
 export const [Button, button] = hoistCmp.withFactory({
     displayName: 'Button',
-    model: false,
     className: 'xh-button',
+    model: false,
+    mobile: true,
 
     render(props, ref) {
         const [layoutProps, nonLayoutProps] = splitLayoutProps(props),

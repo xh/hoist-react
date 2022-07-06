@@ -20,6 +20,7 @@ export const [DialogPanel, dialogPanel] = hoistCmp.withFactory({
     displayName: 'DialogPanel',
     className: 'xh-dialog xh-dialog-panel',
     memo: false, model: false, observer: false,
+    mobile: true,
 
     render({className, isOpen, children, ...rest}) {
 

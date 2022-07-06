@@ -26,6 +26,7 @@ import {recordActionButton} from './impl/RecordActionButton';
 export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory({
     displayName: 'RecordActionBar',
     className: 'xh-record-action-bar',
+    desktop: true,
 
     render(props) {
         const {actions, record, selModel, gridModel, column, buttonProps, vertical, ...rest} = props;

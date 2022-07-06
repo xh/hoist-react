@@ -25,6 +25,7 @@ import {withDefault} from '@xh/hoist/utils/js';
 export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory({
     displayName: 'LoadingIndicator',
     className: 'xh-loading-indicator',
+    desktop: true,
 
     render({
         isDisplayed,

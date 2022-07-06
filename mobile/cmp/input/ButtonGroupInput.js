@@ -23,6 +23,7 @@ import './ButtonGroupInput.scss';
 export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory({
     displayName: 'ButtonGroupInput',
     className: 'xh-button-group-input',
+    mobile: true,
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, Model);
     }

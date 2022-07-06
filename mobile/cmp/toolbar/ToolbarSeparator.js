@@ -15,7 +15,7 @@ export const [ToolbarSeparator, toolbarSeparator] = hoistCmp.withFactory({
     displayName: 'ToolbarSeparator',
     className: 'xh-toolbar__separator',
     model: false, memo: false, observer: false,
-
+    mobile: true,
 
     render({className, ...props}) {
         return span({className, ...props});

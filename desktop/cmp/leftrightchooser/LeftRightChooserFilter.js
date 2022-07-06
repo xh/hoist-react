@@ -19,6 +19,7 @@ import {LeftRightChooserModel} from './LeftRightChooserModel';
 export const [LeftRightChooserFilter, leftRightChooserFilter] = hoistCmp.withFactory({
     displayName: 'LeftRightChooserFilter',
     model: uses(LeftRightChooserModel),
+    desktop: true,
 
     render() {
         const impl = useLocalModel(LocalModel);

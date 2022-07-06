@@ -25,6 +25,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
     displayName: 'Panel',
     className: 'xh-panel',
     model: false,
+    mobile: true,
 
     render(props, ref) {
         const contextModel = useContextModel('*');

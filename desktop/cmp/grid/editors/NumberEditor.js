@@ -15,6 +15,7 @@ export const [NumberEditor, numberEditor] = hoistCmp.withFactory({
     className: 'xh-number-editor',
     memo: false,
     observer: false,
+    desktop: true,
     render(props, ref) {
         return useInlineEditorModel(numberInput, props, ref);
     }

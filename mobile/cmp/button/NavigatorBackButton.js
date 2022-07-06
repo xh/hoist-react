@@ -15,6 +15,7 @@ import {NavigatorModel} from '@xh/hoist/mobile/cmp/navigator';
 export const [NavigatorBackButton, navigatorBackButton] = hoistCmp.withFactory({
     displayName: 'NavigatorBackButton',
     model: false,
+    mobile: true,
 
     render({
         icon = Icon.chevronLeft(),

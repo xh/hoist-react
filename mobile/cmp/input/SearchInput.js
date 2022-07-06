@@ -18,6 +18,7 @@ import './SearchInput.scss';
 export const [SearchInput, searchInput] = hoistCmp.withFactory({
     displayName: 'SearchInput',
     className: 'xh-search-input',
+    mobile: true,
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, Model);
     }

@@ -12,6 +12,7 @@ import {navbarDivider} from '@xh/hoist/kit/blueprint';
  */
 export const [AppBarSeparator, appBarSeparator] = hoistCmp.withFactory({
     displayName: 'AppBarSeparator',
+    desktop: true,
 
     render() {
         return navbarDivider();

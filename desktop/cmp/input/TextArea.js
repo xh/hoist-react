@@ -19,6 +19,7 @@ import './TextArea.scss';
 export const [TextArea, textArea] = hoistCmp.withFactory({
     displayName: 'TextArea',
     className: 'xh-text-area',
+    desktop: true,
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, Model);
     }

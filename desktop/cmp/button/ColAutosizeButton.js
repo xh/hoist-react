@@ -17,6 +17,7 @@ import {button, Button} from './Button';
 export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory({
     displayName: 'ColAutosizeButton',
     model: false,
+    desktop: true,
 
     render({icon, title, onClick, gridModel, disabled, autosizeOptions = {}, ...rest}, ref) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));

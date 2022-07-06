@@ -16,6 +16,7 @@ import {clipboardButton} from './ClipboardButton';
 export const [ClipboardMenuItem, clipboardMenuItem] = hoistCmp.withFactory({
     displayName: 'ClipboardMenuItem',
     model: false,
+    desktop: true,
     observer: false,
 
     render(props) {

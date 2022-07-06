@@ -27,6 +27,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
     displayName: 'GroupingChooser',
     model: uses(GroupingChooserModel),
     className: 'xh-grouping-chooser',
+    mobile: true,
 
     render({
         model,

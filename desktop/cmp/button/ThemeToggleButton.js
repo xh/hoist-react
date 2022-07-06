@@ -14,6 +14,7 @@ import {button, Button} from './Button';
 export const [ThemeToggleButton, themeToggleButton] = hoistCmp.withFactory({
     displayName: 'ThemeToggleButton',
     model: false,
+    desktop: true,
 
     render(props, ref) {
         return button({

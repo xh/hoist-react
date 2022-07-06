@@ -50,6 +50,7 @@ import './CodeInput.scss';
 export const [CodeInput, codeInput] = hoistCmp.withFactory({
     displayName: 'CodeInput',
     className: 'xh-code-input',
+    desktop: true,
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, Model);
     }

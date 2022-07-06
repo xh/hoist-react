@@ -32,6 +32,7 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory({
     displayName: 'FileChooser',
     model: uses(FileChooserModel),
     className: 'xh-file-chooser',
+    desktop: true,
 
     render({
         model,

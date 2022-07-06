@@ -27,6 +27,7 @@ import './Popover.scss';
 export const [Popover, popover] = hoistCmp.withFactory({
     displayName: 'Popover',
     className: 'xh-popover',
+    mobile: true,
 
     render({
         className,

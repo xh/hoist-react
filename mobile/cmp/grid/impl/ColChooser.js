@@ -34,6 +34,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
     displayName: 'ColChooser',
     model: uses(ColChooserModel),
     className: 'xh-col-chooser',
+    mobile: true,
 
     render({model, className}) {
         const {isOpen, gridModel, pinnedColumn, visibleColumns, hiddenColumns, showRestoreDefaults} = model,

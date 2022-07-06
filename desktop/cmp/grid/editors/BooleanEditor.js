@@ -18,6 +18,7 @@ export const [BooleanEditor, booleanEditor] = hoistCmp.withFactory({
     className: 'xh-boolean-editor',
     memo: false,
     observer: false,
+    desktop: true,
     render({
         quickToggle,
         ...props

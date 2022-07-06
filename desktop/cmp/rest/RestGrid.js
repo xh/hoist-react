@@ -20,6 +20,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
     displayName: 'RestGrid',
     model: uses(RestGridModel, {publishMode: ModelPublishMode.LIMITED}),
     className: 'xh-rest-grid',
+    desktop: true,
 
     render({
         model,

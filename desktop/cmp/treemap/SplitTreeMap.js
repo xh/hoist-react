@@ -27,6 +27,7 @@ export const [SplitTreeMap, splitTreeMap]  = hoistCmp.withFactory({
     displayName: 'SplitTreeMap',
     model: uses(SplitTreeMapModel),
     className: 'xh-split-treemap',
+    desktop: true,
 
     render({model, className, ...props}, ref) {
         const {primaryMapModel, secondaryMapModel, orientation} = model,

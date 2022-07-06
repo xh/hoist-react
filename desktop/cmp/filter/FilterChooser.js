@@ -26,6 +26,7 @@ import './FilterChooser.scss';
 export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
     model: uses(FilterChooserModel),
     className: 'xh-filter-chooser',
+    desktop: true,
     render({model, className, ...props}, ref) {
         const [layoutProps, chooserProps] = splitLayoutProps(props),
             {inputRef, suggestFieldsWhenEmpty, selectOptions, unsupportedFilter, favoritesIsOpen} = model,

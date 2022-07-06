@@ -33,6 +33,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     displayName: 'TreeMap',
     model: uses(TreeMapModel),
     className: 'xh-treemap',
+    desktop: true,
 
     render({model, className, ...props}, ref) {
         if (!Highcharts) {

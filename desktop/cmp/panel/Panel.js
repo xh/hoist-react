@@ -47,6 +47,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
         createDefault: () => new PanelModel({collapsible: false, resizable: false})
     }),
     className: 'xh-panel',
+    desktop: true,
 
     render({model, className,  ...props}, ref) {
 

@@ -20,6 +20,7 @@ import PT from 'prop-types';
 export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
     displayName: 'ColChooserButton',
     model: false,
+    mobile: true,
 
     render({
         gridModel,

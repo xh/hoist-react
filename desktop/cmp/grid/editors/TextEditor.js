@@ -15,6 +15,7 @@ export const [TextEditor, textEditor] = hoistCmp.withFactory({
     className: 'xh-text-editor',
     memo: false,
     observer: false,
+    desktop: true,
     render(props, ref) {
         return useInlineEditorModel(textInput, props, ref);
     }

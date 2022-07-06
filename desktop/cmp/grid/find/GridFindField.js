@@ -35,6 +35,7 @@ import {GridFindFieldImplModel} from './impl/GridFindFieldImplModel';
 export const [GridFindField, gridFindField] = hoistCmp.withFactory({
     displayName: 'GridFindField',
     className: 'xh-grid-find-field',
+    desktop: true,
     render({className, model, ...props}) {
         let [layoutProps, restProps] = splitLayoutProps(props);
         const impl = useLocalModel(GridFindFieldImplModel);

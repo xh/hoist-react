@@ -19,6 +19,7 @@ import {button, Button} from './Button';
 export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmp.withFactory({
     displayName: 'RestoreDefaultsButton',
     model: false,
+    desktop: true,
 
     render({
         warningTitle = 'Please Confirm',

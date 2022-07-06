@@ -25,6 +25,7 @@ import {isEmpty} from 'lodash';
 export const [ContextMenu, contextMenu] = hoistCmp.withFactory({
     displayName: 'ContextMenu',
     memo: false, model: false, observer: false,
+    desktop: true,
 
     render({menuItems}) {
         menuItems = parseMenuItems(menuItems);

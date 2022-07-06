@@ -35,6 +35,8 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
     displayName: 'DashCanvas',
     className: 'xh-dash-canvas',
     model: uses(DashCanvasModel),
+    desktop: true,
+
     render({className, model}) {
         const isDraggable = !model.layoutLocked,
             isResizable = !model.layoutLocked;

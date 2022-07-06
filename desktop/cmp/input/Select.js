@@ -51,6 +51,7 @@ import './Select.scss';
 export const [Select, select] = hoistCmp.withFactory({
     displayName: 'Select',
     className: 'xh-select',
+    desktop: true,
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, Model);
     }

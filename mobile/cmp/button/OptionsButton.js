@@ -16,6 +16,7 @@ import {button, Button} from '@xh/hoist/mobile/cmp/button';
 export const [OptionsButton, optionsButton] = hoistCmp.withFactory({
     displayName: 'OptionsButton',
     model: false,
+    mobile: true,
 
     render({
         icon = Icon.gear(),

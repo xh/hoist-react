@@ -15,6 +15,7 @@ import {button, Button} from '@xh/hoist/mobile/cmp/button';
 export const [FeedbackButton, feedbackButton] = hoistCmp.withFactory({
     displayName: 'FeedbackButton',
     model: false,
+    mobile: true,
 
     render({
         icon = Icon.comment({className: 'fa-flip-horizontal'}),

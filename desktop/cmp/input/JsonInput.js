@@ -16,6 +16,7 @@ import {jsonlint} from './impl/jsonlint';
 export const [JsonInput, jsonInput] = hoistCmp.withFactory({
     displayName: 'JsonInput',
     className: 'xh-json-input',
+    desktop: true,
     render(props, ref) {
         return codeInput({
             linter,

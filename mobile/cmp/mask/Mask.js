@@ -22,6 +22,7 @@ import './Mask.scss';
 export const [Mask, mask] = hoistCmp.withFactory({
     displayName: 'Mask',
     className: 'xh-mask',
+    mobile: true,
 
     render({
         isDisplayed,

@@ -18,6 +18,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory({
     displayName: 'ButtonGroup',
     className: 'xh-button-group',
     model: false,
+    mobile: true,
 
     render(props, ref) {
         const {children, className, intent, minimal, outlined, ...rest} = props;

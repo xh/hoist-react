@@ -16,6 +16,7 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
     displayName: 'Dialog',
     className: 'xh-dialog',
     model: false,
+    mobile: true,
 
     render({className, isOpen, onCancel, icon, title, content, buttons = []}) {
         const contextModel = useContextModel('*');

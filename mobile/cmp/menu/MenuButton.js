@@ -20,6 +20,7 @@ import {menu} from './impl/Menu';
 export const [MenuButton, menuButton] = hoistCmp.withFactory({
     displayName: 'MenuButton',
     className: 'xh-menu-button',
+    mobile: true,
 
     render({
         menuItems,

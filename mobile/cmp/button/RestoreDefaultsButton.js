@@ -18,6 +18,8 @@ import PT from 'prop-types';
 export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmp.withFactory({
     displayName: 'RestoreDefaultsButton',
     model: false,
+    mobile: true,
+
     render({
         warningTitle = 'Please Confirm',
         warningMessage = 'All app options (including grid customizations) will be restored to their default settings, and the app will be reloaded.',
