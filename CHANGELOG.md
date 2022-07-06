@@ -4,6 +4,9 @@
 
 ### 🎁 New Features
 
+* Hoist now enforces platform-specific component imports. Importing components from the `desktop`
+  or `mobile` packages into apps for the opposing platform (determined via `AppSpec.isMobileApp`)
+  will cause the app to throw.
 * New `PanelModel.modalSupport` option allows the user to expand a panel into a configurable modal
   dialog - without developers needing to write custom dialog implementations and without triggering
   a remount/rerender of the panel's contents.
