@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import '@xh/hoist/desktop/register';
 import composeRefs from '@seznam/compose-react-refs';
 import {hoistCmp} from '@xh/hoist/core';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
