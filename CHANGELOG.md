@@ -12,7 +12,8 @@
 * New `@abstract` decorator now available for enforcing abstract methods / getters.
 
 ### 💥 Breaking Changes
-
+* Hoist now requires ag-Grid v28.0.0 or higher - update your ag-Grid dependency in your app's
+  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
 * The data reactions between `GridModel` and the underlying Ag-Grid is now minimally debounced. This
   avoids multiple data updates during a single event loop tick, which can corrupt Ag-Grid's
   underlying state in the latest versions of that library.
