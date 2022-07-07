@@ -22,8 +22,8 @@ export class ThemeModel extends HoistModel {
     }
 
     @action
-    toggleTheme(persist = false) {
-        this.setTheme(this.darkTheme ? 'light' : 'dark', persist);
+    toggleTheme() {
+        this.setTheme(this.darkTheme ? 'light' : 'dark');
     }
 
     @action
@@ -35,7 +35,7 @@ export class ThemeModel extends HoistModel {
     }
 
     @action
-    setTheme(value, persist = false) {
+    setTheme(value, persist = true) {
         switch (value) {
             case 'system':
                 this.setDarkTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);

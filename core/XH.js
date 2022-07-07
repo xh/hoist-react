@@ -327,7 +327,7 @@ class XHClass {
     //------------------------
     /** Toggle the theme between light and dark variants. */
     toggleTheme() {
-        return this.acm.themeModel.toggleTheme(true);
+        return this.acm.themeModel.toggleTheme();
     }
 
     /**
