@@ -28,6 +28,7 @@ export class MessageModel extends HoistModel {
     cancelAlign;
     onConfirm;
     onCancel;
+    cancelOnClose;
 
     // Promise to be resolved when user has clicked on choice and its internal resolver
     result;
@@ -46,7 +47,8 @@ export class MessageModel extends HoistModel {
         cancelProps = {},
         cancelAlign = 'right',
         onConfirm,
-        onCancel
+        onCancel,
+        cancelOnClose = true
     }) {
         super();
         makeObservable(this);
@@ -56,6 +58,7 @@ export class MessageModel extends HoistModel {
         this.message = message;
         this.messageKey = messageKey;
         this.className = className;
+        this.cancelOnClose = cancelOnClose;
 
         if (input) {
             this.input = input;
