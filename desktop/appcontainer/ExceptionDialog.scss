@@ -4,19 +4,26 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-
-.xh-exception-dialog-details {
-  pre {
-    border: var(--xh-border-solid);
-    overflow: auto;
-    height: 280px;
-    font-size: var(--xh-font-size-small-px);
-    background-color: var(--xh-bg);
+.xh-exception-dialog {
+  max-height: 80vh;
+  .bp4-dialog-body{
+    max-height: inherit;
+    overflow-y: auto;
   }
 
-  th {
-    text-align: left;
-    font-weight: bold;
-    width: 100px;
+  &-details {
+    pre {
+      border: var(--xh-border-solid);
+      overflow: auto;
+      height: 280px;
+      font-size: var(--xh-font-size-small-px);
+      background-color: var(--xh-bg);
+    }
+
+    th {
+      text-align: left;
+      font-weight: bold;
+      width: 100px;
+    }
   }
 }

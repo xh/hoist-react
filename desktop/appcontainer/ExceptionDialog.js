@@ -41,7 +41,8 @@ export const exceptionDialog = hoistCmp.factory({
                 items: [
                     dialogBody(options.message),
                     bbar()
-                ]
+                ],
+                className: 'xh-exception-dialog',
             }),
             exceptionDialogDetails()
         );
