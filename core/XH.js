@@ -237,14 +237,6 @@ class XHClass {
         if (spinner) spinner.style.display = 'none';
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
 
-        // Enforce platform specific components;
-        throwIf(this.isMobileApp && this._desktopAPIRegistered,
-            `Desktop components imported into mobile app.  Please check your imports.`
-        );
-        throwIf(!this.isMobileApp && this._mobileAPIRegistered,
-            `Mobile files imported into desktop app.  Please check your imports.`
-        );
-
         const rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
         ReactDOM.render(rootView, document.getElementById('xh-root'));
     }
