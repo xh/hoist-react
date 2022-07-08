@@ -8,6 +8,8 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
+import {isEmpty} from 'lodash';
+
 
 /**
  * Model for a single instance of a modal dialog.
@@ -28,7 +30,8 @@ export class MessageModel extends HoistModel {
     cancelAlign;
     onConfirm;
     onCancel;
-    cancelOnClose;
+    allowEscape;
+    cancelOnEscape;
 
     // Promise to be resolved when user has clicked on choice and its internal resolver
     result;
@@ -37,19 +40,20 @@ export class MessageModel extends HoistModel {
     @observable isOpen = true;
 
     constructor({
-        title,
-        icon,
-        message,
-        messageKey,
-        className,
-        input,
-        confirmProps = {},
-        cancelProps = {},
-        cancelAlign = 'right',
-        onConfirm,
-        onCancel,
-        cancelOnClose = true
-    }) {
+                    title,
+                    icon,
+                    message,
+                    messageKey,
+                    className,
+                    input,
+                    confirmProps = {},
+                    cancelProps = {},
+                    cancelAlign = 'right',
+                    onConfirm,
+                    onCancel,
+                    allowEscape = !isEmpty(cancelProps),
+                    cancelOnEscape = false
+                }) {
         super();
         makeObservable(this);
 
@@ -58,7 +62,8 @@ export class MessageModel extends HoistModel {
         this.message = message;
         this.messageKey = messageKey;
         this.className = className;
-        this.cancelOnClose = cancelOnClose;
+        this.allowEscape = allowEscape;
+        this.cancelOnEscape = cancelOnEscape;
 
         if (input) {
             this.input = input;
@@ -94,15 +99,26 @@ export class MessageModel extends HoistModel {
             resolvedVal = this.formModel.getData().value;
         }
 
-        if (this.onConfirm) this.onConfirm();
+        this.onConfirm?.();
         this._resolver(resolvedVal);
         this.close();
     }
 
     @action
     doCancel() {
-        if (this.onCancel) this.onCancel();
+        this.onCancel?.();
         this._resolver(false);
+        this.close();
+    }
+
+    @action
+    doEscape() {
+        if (!this.allowEscape) return;
+        if (this.cancelOnEscape) {
+            this.doCancel();
+            return;
+        }
+        this._resolver(null);
         this.close();
     }
 
