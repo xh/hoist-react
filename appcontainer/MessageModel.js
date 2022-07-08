@@ -10,7 +10,6 @@ import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 
-
 /**
  * Model for a single instance of a modal dialog.
  * Not intended for direct application use. {@see XHClass#message()} and related for the public API.
@@ -40,20 +39,20 @@ export class MessageModel extends HoistModel {
     @observable isOpen = true;
 
     constructor({
-                    title,
-                    icon,
-                    message,
-                    messageKey,
-                    className,
-                    input,
-                    confirmProps = {},
-                    cancelProps = {},
-                    cancelAlign = 'right',
-                    onConfirm,
-                    onCancel,
-                    allowEscape = !isEmpty(cancelProps),
-                    cancelOnEscape = false
-                }) {
+        title,
+        icon,
+        message,
+        messageKey,
+        className,
+        input,
+        confirmProps = {},
+        cancelProps = {},
+        cancelAlign = 'right',
+        onConfirm,
+        onCancel,
+        allowEscape = !isEmpty(cancelProps),
+        cancelOnEscape = false
+    }) {
         super();
         makeObservable(this);
 
