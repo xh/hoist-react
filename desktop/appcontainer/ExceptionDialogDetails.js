@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {div, filler, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
+import {filler, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
@@ -33,10 +33,10 @@ export const exceptionDialogDetails = hoistCmp.factory(
         const header = table(
             tbody(
                 row('Name', exception.name),
-                row('Message', truncate((exception.msg || exception.message || 'N/A'),{length: 300}),
+                row('Message', truncate((exception.msg || exception.message || 'N/A'),{length: 300})),
                 row('App Version', XH.appVersion)
             )
-        ));
+        );
 
         // In the case of a pre-auth failure, the client will not know the user. If that's the case,
         // don't display a message prompt and send button - we will not be able to submit.
