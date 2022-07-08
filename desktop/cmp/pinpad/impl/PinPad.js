@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import '@xh/hoist/desktop/register';
 import composeRefs from '@seznam/compose-react-refs';
 import {hoistCmp} from '@xh/hoist/core';
 import {div, frame, h1, hbox, p, span, vbox, vframe} from '@xh/hoist/cmp/layout';

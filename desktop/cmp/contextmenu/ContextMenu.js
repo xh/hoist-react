@@ -5,13 +5,14 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
+import '@xh/hoist/desktop/register';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import {isEmpty} from 'lodash';
 import PT from 'prop-types';
 import {isValidElement} from 'react';
 import {ContextMenuItem} from './ContextMenuItem';
-import {isEmpty} from 'lodash';
 
 /**
  * ContextMenu

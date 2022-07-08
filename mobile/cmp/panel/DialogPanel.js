@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import '@xh/hoist/mobile/register';
 import {hoistCmp} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/onsen';
 import PT from 'prop-types';

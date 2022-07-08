@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import '@xh/hoist/desktop/register';
 import {hoistCmp} from '@xh/hoist/core';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {useInlineEditorModel} from './impl/InlineEditorModel';

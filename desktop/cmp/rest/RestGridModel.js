@@ -4,6 +4,8 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+
+import '@xh/hoist/desktop/register';
 import {isFunction, isPlainObject} from 'lodash';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';

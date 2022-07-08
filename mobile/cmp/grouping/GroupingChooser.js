@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import '@xh/hoist/mobile/register';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {div, hbox, vbox, vframe, filler, box, placeholder, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';

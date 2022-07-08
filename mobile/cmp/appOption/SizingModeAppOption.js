@@ -8,7 +8,7 @@ import {XH, SizingMode} from '@xh/hoist/core';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/mobile/cmp/input';
 import {values, startCase} from 'lodash';
-
+import '@xh/hoist/mobile/register';
 /**
  * Convenience configuration for the `sizingMode` AppOption.
  * @param {SizingMode[]} [modes] - Supported SizingModes

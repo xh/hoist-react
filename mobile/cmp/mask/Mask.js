@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import '@xh/hoist/mobile/register';
 import {box, div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
 import {hoistCmp, HoistModel, useLocalModel, TaskObserver} from '@xh/hoist/core';

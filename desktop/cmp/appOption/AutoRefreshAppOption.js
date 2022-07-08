@@ -6,6 +6,7 @@
  */
 import {XH} from '@xh/hoist/core';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
+import '@xh/hoist/desktop/register';
 
 /**
  * Convenience configuration for the `autoRefresh` AppOption.

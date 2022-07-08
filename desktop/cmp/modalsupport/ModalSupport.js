@@ -5,6 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+import '@xh/hoist/desktop/register';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/blueprint';

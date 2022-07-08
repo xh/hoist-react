@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import '@xh/hoist/mobile/register';
 import {XH, hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {observable, action, makeObservable} from '@xh/hoist/mobx';
 import {div, fragment} from '@xh/hoist/cmp/layout';

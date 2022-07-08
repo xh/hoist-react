@@ -9,10 +9,11 @@ import {div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/c
 import {hoistCmp, managed, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
+import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
 import {modalSupport} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupport';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
-import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {textArea} from '@xh/hoist/kit/blueprint';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';

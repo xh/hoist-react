@@ -38,6 +38,10 @@
   trackpad on an iPad).
 * Fixed bug where `DashCanvasModel.removeView()` was not properly disposing of removed views
 
+### ⚙️ Technical
+
+* Hoist will now throw if you import a desktop specific class to a mobile app or vice-versa.
+
 ### 📚 Libraries
 
 * @blueprintjs `3.54 -> 4.5`

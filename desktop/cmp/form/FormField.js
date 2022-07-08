@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import '@xh/hoist/desktop/register';
 import {FieldModel, FormContext} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, uses, XH} from '@xh/hoist/core';

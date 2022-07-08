@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import '@xh/hoist/mobile/register';
 import {HoistModel, managed, ManagedRefreshContextModel, RenderMode} from '@xh/hoist/core';
 import {computed, makeObservable} from '@xh/hoist/mobx';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';

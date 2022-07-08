@@ -7,6 +7,7 @@
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
 import {elem, hoistCmp, XH} from '@xh/hoist/core';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {
     reactAsyncCreatableSelect,

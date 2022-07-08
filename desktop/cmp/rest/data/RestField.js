@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import '@xh/hoist/desktop/register';
 import {Field} from '@xh/hoist/data';
 import {withDefault} from '@xh/hoist/utils/js';
 

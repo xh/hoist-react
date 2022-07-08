@@ -4,19 +4,20 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {placeholder, fragment, hframe, vframe, hbox, vbox, box, div, p} from '@xh/hoist/cmp/layout';
-import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
+import {box, div, fragment, hbox, hframe, p, placeholder, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {compact, uniq} from 'lodash';
+import '@xh/hoist/desktop/register';
 import classNames from 'classnames';
+import {compact, uniq} from 'lodash';
 import PT from 'prop-types';
+import {splitter} from './impl/Splitter';
 
 import './SplitTreeMap.scss';
 import {SplitTreeMapModel} from './SplitTreeMapModel';
 import {treeMap} from './TreeMap';
-import {splitter} from './impl/Splitter';
 
 /**
  * A component which divides data across two TreeMaps.

@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import '@xh/hoist/mobile/register';
 import {hoistCmp, useContextModel, RefreshContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from '@xh/hoist/mobile/cmp/button';
