@@ -51,7 +51,7 @@ export class MessageModel extends HoistModel {
         onConfirm,
         onCancel,
         allowEscape = !isEmpty(cancelProps),
-        cancelOnEscape = false
+        cancelOnEscape = true
     }) {
         super();
         makeObservable(this);
