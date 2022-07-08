@@ -4,12 +4,12 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import '@xh/hoist/desktop/register';
 import {hoistCmp} from '@xh/hoist/core';
 import {select} from '@xh/hoist/desktop/cmp/input';
-import {useInlineEditorModel} from './impl/InlineEditorModel';
+import '@xh/hoist/desktop/register';
 import {EditorPropTypes} from './EditorPropTypes';
 import './Editors.scss';
+import {useInlineEditorModel} from './impl/InlineEditorModel';
 
 export const [SelectEditor, selectEditor] = hoistCmp.withFactory({
     displayName: 'SelectEditor',

@@ -5,9 +5,9 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import '@xh/hoist/desktop/register';
 import {box, fragment} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
+import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
+import '@xh/hoist/desktop/register';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {Children} from 'react';
 import {createPortal} from 'react-dom';

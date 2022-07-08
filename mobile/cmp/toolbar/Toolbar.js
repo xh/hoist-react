@@ -4,9 +4,9 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import '@xh/hoist/mobile/register';
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
+import '@xh/hoist/mobile/register';
 import classNames from 'classnames';
 import PT from 'prop-types';
 import './Toolbar.scss';

@@ -5,10 +5,10 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import '@xh/hoist/desktop/register';
 import {HoistModel} from '@xh/hoist/core';
 import {ModalSupportOptions} from '@xh/hoist/desktop/cmp/panel';
-import {makeObservable, bindable} from '@xh/hoist/mobx';
+import '@xh/hoist/desktop/register';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 
 /**

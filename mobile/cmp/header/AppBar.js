@@ -4,12 +4,12 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import '@xh/hoist/mobile/register';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel, XH} from '@xh/hoist/core';
 import {button, navigatorBackButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
 import {NavigatorModel} from '@xh/hoist/mobile/cmp/navigator';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
+import '@xh/hoist/mobile/register';
 import PT from 'prop-types';
 
 import './AppBar.scss';

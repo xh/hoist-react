@@ -6,7 +6,7 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
-import {isNil, isArray} from 'lodash';
+import {isArray, isNil} from 'lodash';
 
 /**
  * @private

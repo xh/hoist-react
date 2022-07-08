@@ -4,9 +4,9 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import '@xh/hoist/desktop/register';
 import {span} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
+import '@xh/hoist/desktop/register';
 import './Toolbar.scss';
 
 /**

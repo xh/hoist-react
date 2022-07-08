@@ -4,12 +4,12 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import '@xh/hoist/desktop/register';
 import {fileExtCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel} from '@xh/hoist/core';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {isEmpty} from 'codemirror/src/util/misc';
 import filesize from 'filesize';
 import {find, uniqBy, without} from 'lodash';

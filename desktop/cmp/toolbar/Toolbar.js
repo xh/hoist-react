@@ -4,10 +4,10 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import '@xh/hoist/desktop/register';
 import {filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {overflowList, popover} from '@xh/hoist/kit/blueprint';
 import {filterConsecutiveToolbarSeparators} from '@xh/hoist/utils/impl';
@@ -15,9 +15,9 @@ import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEmpty} from 'lodash';
 import PT from 'prop-types';
+import {Children} from 'react';
 import './Toolbar.scss';
 import {toolbarSeparator} from './ToolbarSep';
-import {Children} from 'react';
 
 /**
  * A toolbar with built-in styling and padding.

@@ -4,10 +4,10 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import '@xh/hoist/mobile/register';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from '@xh/hoist/mobile/cmp/button';
+import '@xh/hoist/mobile/register';
 
 /**
  * Convenience Button preconfigured for use as a trigger for opening the XH options dialog.

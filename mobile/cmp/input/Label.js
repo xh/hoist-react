@@ -4,10 +4,10 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import '@xh/hoist/mobile/register';
 import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
+import '@xh/hoist/mobile/register';
 import PT from 'prop-types';
 import './Label.scss';
 

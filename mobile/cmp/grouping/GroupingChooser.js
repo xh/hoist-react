@@ -4,18 +4,18 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import '@xh/hoist/mobile/register';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
-import {div, hbox, vbox, vframe, filler, box, placeholder, span} from '@xh/hoist/cmp/layout';
+import {box, div, filler, hbox, placeholder, span, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {button, Button} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {select} from '@xh/hoist/mobile/cmp/input';
-import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
+import '@xh/hoist/mobile/register';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {compact, isEmpty, sortBy} from 'lodash';
 import classNames from 'classnames';
+import {compact, isEmpty, sortBy} from 'lodash';
 import PT from 'prop-types';
 
 import './GroupingChooser.scss';

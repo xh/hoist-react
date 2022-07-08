@@ -4,12 +4,12 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import '@xh/hoist/mobile/register';
 import {hspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {button as onsenButton} from '@xh/hoist/kit/onsen';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
+import '@xh/hoist/mobile/register';
 import {apiDeprecated} from '@xh/hoist/utils/js';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import PT from 'prop-types';
 import './Button.scss';

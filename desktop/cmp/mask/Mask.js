@@ -4,10 +4,10 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import '@xh/hoist/desktop/register';
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
 import {hoistCmp, HoistModel, TaskObserver, useLocalModel} from '@xh/hoist/core';
+import '@xh/hoist/desktop/register';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';

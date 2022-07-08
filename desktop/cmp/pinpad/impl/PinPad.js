@@ -4,12 +4,12 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import '@xh/hoist/desktop/register';
 import composeRefs from '@seznam/compose-react-refs';
-import {hoistCmp} from '@xh/hoist/core';
 import {div, frame, h1, hbox, p, span, vbox, vframe} from '@xh/hoist/cmp/layout';
-import {Icon} from '@xh/hoist/icon/Icon';
+import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import '@xh/hoist/desktop/register';
+import {Icon} from '@xh/hoist/icon/Icon';
 import {isNumber} from 'lodash';
 
 import './PinPad.scss';

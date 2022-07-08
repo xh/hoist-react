@@ -1,2 +1,6 @@
 import {XH} from '@xh/hoist/core';
-XH._mobileAPIRegistered = true;
+
+if(XH._desktopAPIRegistered === true){
+    throw "no";
+ }
+ XH._mobileAPIRegistered = true;
