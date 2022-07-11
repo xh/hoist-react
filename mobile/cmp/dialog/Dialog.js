@@ -2,11 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel, uses} from '@xh/hoist/core';
 import {dialog as onsenDialog} from '@xh/hoist/kit/onsen';
+import '@xh/hoist/mobile/register';
 import './Dialog.scss';
 
 /**

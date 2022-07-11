@@ -2,16 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, useLocalModel} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {hbox, vbox, span} from '@xh/hoist/cmp/layout';
-import {textInput} from '@xh/hoist/desktop/cmp/input';
+import {hbox, span, vbox} from '@xh/hoist/cmp/layout';
+import {hoistCmp, useLocalModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {textInput} from '@xh/hoist/desktop/cmp/input';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {consumeEvent} from '@xh/hoist/utils/js';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
 import './GridFindField.scss';
 import {GridFindFieldImplModel} from './impl/GridFindFieldImplModel';

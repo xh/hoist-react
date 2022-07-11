@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {BaseFilterFieldSpec} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
 import {parseFilter} from '@xh/hoist/data';
@@ -87,7 +87,7 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
         let values;
         if (cleanedFilter) {
             values = uniqBy([
-                ...filteredRecords.map(rec => this.valueFromRecord(rec)),
+                ...flatten(filteredRecords.map(rec => this.valueFromRecord(rec))),
                 ...filterValues
             ], this.getUniqueValue);
         } else {

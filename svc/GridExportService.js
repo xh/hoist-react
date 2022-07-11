@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {ExcelFormat} from '@xh/hoist/cmp/grid';
 import {HoistService, XH} from '@xh/hoist/core';
@@ -152,7 +152,7 @@ export class GridExportService extends HoistService {
      *
      * @param {Object} c
      * @param {GridModel} c.gridModel
-     * @param {Record} c.record
+     * @param {StoreRecord} c.record
      * @param {Column} c.column
      * @param {Object} [c.node] - rendered ag-Grid row, if available.  Necessary for
      *            exporting agGrid aggregates.

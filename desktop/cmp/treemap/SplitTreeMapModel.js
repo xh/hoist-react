@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable, action, computed, makeObservable} from '@xh/hoist/mobx';
+import '@xh/hoist/desktop/register';
+import {action, bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {uniq} from 'lodash';
 
@@ -30,6 +31,8 @@ export class SplitTreeMapModel extends HoistModel {
     mapFilter;
     /** @member {function} */
     mapTitleFn;
+    /** @member {boolean} */
+    showSplitter;
 
     /** @member {TreeMapModel} */
     @managed primaryMapModel;
@@ -65,6 +68,7 @@ export class SplitTreeMapModel extends HoistModel {
         makeObservable(this);
         this.mapFilter = withDefault(mapFilter, this.defaultMapFilter);
         this.mapTitleFn = mapTitleFn;
+        this.showSplitter = showSplitter;
 
         throwIf(!['vertical', 'horizontal'].includes(orientation), `Orientation "${orientation}" not recognised.`);
         this.orientation = orientation;

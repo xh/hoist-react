@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {compactDateRenderer, dateRenderer, dateTimeRenderer, dateTimeSecRenderer, timeRenderer} from '@xh/hoist/format';
 import {ExcelFormat} from './ExcelFormat';

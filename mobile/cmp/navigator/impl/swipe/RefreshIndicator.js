@@ -1,7 +1,7 @@
+import {div} from '@xh/hoist/cmp/layout';
+import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
-import {hoistCmp} from '@xh/hoist/core';
-import {div} from '@xh/hoist/cmp/layout';
 
 /**
  * Indicator for the pulldownToRefresh affordance

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 // Ag-grid installs an outer div around itself.
@@ -301,7 +301,7 @@
       .xh-check-box {
         padding-top: 1px;
 
-        .bp3-control-indicator {
+        .bp4-control-indicator {
           font-size: calc(var(--xh-grid-tiny-font-size-px) + 2px);
         }
       }

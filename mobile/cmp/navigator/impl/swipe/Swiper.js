@@ -1,11 +1,11 @@
-import {hoistCmp, creates} from '@xh/hoist/core';
 import {frame} from '@xh/hoist/cmp/layout';
+import {creates, hoistCmp} from '@xh/hoist/core';
 import {gestureDetector} from '@xh/hoist/kit/onsen';
+import {backIndicator} from './BackIndicator';
+import {refreshIndicator} from './RefreshIndicator';
 
 
 import './Swiper.scss';
-import {refreshIndicator} from './RefreshIndicator';
-import {backIndicator} from './BackIndicator';
 import {SwiperModel} from './SwiperModel';
 
 /**

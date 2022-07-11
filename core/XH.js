@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {p} from '@xh/hoist/cmp/layout';
-import {AppSpec, AppState, elem, HoistBase} from '@xh/hoist/core';
+import {AppSpec, AppState, elem} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
@@ -37,6 +37,7 @@ import {
     withDebug
 } from '@xh/hoist/utils/js';
 import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
+import {reaction as mobxReaction} from '@xh/hoist/mobx';
 import ReactDOM from 'react-dom';
 import parser from 'ua-parser-js';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
@@ -55,14 +56,13 @@ const MIN_HOIST_CORE_VERSION = '10.0';
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
-class XHClass extends HoistBase {
+class XHClass {
 
     #initCalled = false;
     #lastActivityMs = Date.now();
     #uaParser = null;
 
     constructor() {
-        super();
         makeObservable(this);
     }
 
@@ -235,8 +235,8 @@ class XHClass extends HoistBase {
     renderApp(appSpec) {
         const spinner = document.getElementById('xh-preload-spinner');
         if (spinner) spinner.style.display = 'none';
-
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
+
         const rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
         ReactDOM.render(rootView, document.getElementById('xh-root'));
     }
@@ -927,9 +927,9 @@ class XHClass extends HoistBase {
             loginStarted = null,
             loginElapsed = 0;
 
-        const disposer = this.addReaction({
-            track: () => this.appState,
-            run: (state) => {
+        const disposer = mobxReaction(
+            () => this.appState,
+            (state) => {
                 const now = Date.now();
                 switch (state) {
                     case AppState.RUNNING:
@@ -954,7 +954,7 @@ class XHClass extends HoistBase {
                         if (loginStarted) loginElapsed = now - loginStarted;
                 }
             }
-        });
+        );
     }
 
     createActivityListeners() {
@@ -1005,3 +1005,4 @@ window['XH'] = XH;
  * @callback Banner-onCloseFn
  * @param {BannerModel} model - the backing model for the banner which was just closed.
  */
+

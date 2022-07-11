@@ -2,19 +2,20 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
-import {box, div, hbox, vbox, hframe} from '@xh/hoist/cmp/layout';
+import {box, div, hbox, hframe, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {withDefault} from '@xh/hoist/utils/js';
-import {isEmpty, sortBy} from 'lodash';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
+import {isEmpty, sortBy} from 'lodash';
 import PT from 'prop-types';
 
 import './FilterChooser.scss';
@@ -32,7 +33,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
             {autoFocus, enableClear, leftIcon, maxMenuHeight, menuPlacement, menuWidth} = chooserProps,
             disabled = unsupportedFilter || chooserProps.disabled,
             placeholder = unsupportedFilter ?
-                'Unsupported filter' : // Todo: How to message this better?
+                'Unsupported filter (click to clear)' :
                 withDefault(chooserProps.placeholder, 'Filter...');
 
         return box({
@@ -82,6 +83,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                 minimal: true,
                 onInteraction: (willOpen) => {
                     if (!willOpen) model.closeFavoritesMenu();
+                    if (unsupportedFilter) model.setValue(null);
                 }
             })
         });

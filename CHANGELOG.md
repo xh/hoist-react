@@ -4,12 +4,77 @@
 
 ### 🎁 New Features
 
-* New `@enumerable` decorator for making class members `enumerable`
+* New `PanelModel.modalSupport` option allows the user to expand a panel into a configurable modal
+  dialog - without developers needing to write custom dialog implementations and without triggering
+  a remount/rerender of the panel's contents.
+* FilterChooser field suggestions now search within multi-word field names.
+* Autosize performance has been improved for very large grids.
+* New `@abstract` decorator now available for enforcing abstract methods / getters.
+
+### 💥 Breaking Changes
+* Hoist now requires ag-Grid v28.0.0 or higher - update your ag-Grid dependency in your app's
+  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
+* The data reactions between `GridModel` and the underlying Ag-Grid is now minimally debounced. This
+  avoids multiple data updates during a single event loop tick, which can corrupt Ag-Grid's
+  underlying state in the latest versions of that library.
+    * This change should not affect most apps, but code that queries grid state immediately after
+      loading or filtering a grid (e.g. selection, row visibility, or expansion state) should be
+      tested carefully and may require a call to `await whenGridReadyAsync()`.
+    * Note that this method is already incorporated in to several public methods on `GridModel`,
+      including `selectFirstAsync()` and `ensureSelectionVisibleAsync()`.
+* Blueprint has updated all of its CSS class names to use the `bp4-` prefix instead of the `bp3-`
+  prefix. Any apps styling these classes directly may need to be adjusted. See
+  https://github.com/palantir/blueprint/wiki/Blueprint-4.0 for more info.
+* Both `Panel.title` and `Panel.icon` props must be null or undefined to avoid rendering
+  a `PanelHeader`. Previously specifying any 'falsey' value for both (e.g. an empty string
+  title) would omit the header.
+* `XHClass` (top-level Singleton model for Hoist) no longer extends `HoistBase`
+* `DockView` component has been moved into the desktop-specific package `@xh/hoist/desktop/cmp`.
+Users of this component will need to adjust their imports accordingly.
+* Requires `hoist-core >= 14.0`. Excel file exporting now respects column FieldType.
 
 ### 🐞 Bug Fixes
 
-* Fixed issue where exporting to excel file would occasionally coerce strings (like "1e10") into numbers.
-  Upgrade to `hoist-core >= 13.3` for the fixed behavior.
+* Fixes several issues introduced with Ag-Grid v27 where rows gaps and similar rendering issues
+  could appear after operating on it programmatically (see breaking changes above).
+* `ColumnHeaders` now properly respond to mouse events on tablets (e.g. when using a Bluetooth
+  trackpad on an iPad).
+* Fixed bug where `DashCanvasModel.removeView()` was not properly disposing of removed views
+* Fixed exception dialog getting overwhelmed by large messages.
+* Fixed exporting to excel file coercing certain strings (like "1e10") into numbers.
+
+### ⚙️ Technical
+
+* Hoist will now throw if you import a desktop specific class to a mobile app or vice-versa.
+
+### 📚 Libraries
+
+* @blueprintjs `3.54 -> 4.5`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v49.2.0...develop)
+
+## v49.2.0 - 2022-06-14
+
+### 🎁 New Features
+
+* New `@enumerable` decorator for making class members `enumerable`
+* New `GridAutosizeOption` `renderedRowsOnly` supports more limited autosizing
+  for very large grids.
+
+### 🐞 Bug Fixes
+
+* Fix `FilterChooser` looping between old values if updated too rapidly.
+* Allow user to clear an unsupported `FilterChooser` value.
+* Fix bug where `Panel` would throw when `headerItems = null`
+* Fix column values filtering on `tags` fields if another filter is already present.
+* Fix bug where `SwitchInput` `labelSide` would render inappropriately if within `compact` `toolbar`
+* Fix bug where `SplitTreeMapModel.showSplitter` property wasn't being set in constructor
+
+### 📚 Libraries
+
+* mobx `6.5 -> 6.6`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v49.1.0...v49.2.0)
 
 ## v49.1.0 - 2022-06-03
 

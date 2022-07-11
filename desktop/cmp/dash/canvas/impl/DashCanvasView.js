@@ -2,16 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {ContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils';
-import {elementFromContent} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
-import {panel} from '../../../panel';
-import {button} from '../../../button';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
+import {elementFromContent} from '@xh/hoist/utils/react';
+import {button} from '../../../button';
+import {panel} from '../../../panel';
 import {DashCanvasViewModel} from '../DashCanvasViewModel';
 
 /**
