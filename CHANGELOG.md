@@ -10,6 +10,8 @@
 * FilterChooser field suggestions now search within multi-word field names.
 * Autosize performance has been improved for very large grids.
 * New `@abstract` decorator now available for enforcing abstract methods / getters.
+* MessageModel now accepts allowEscape and cancelOnEscape props to control the behavior of a
+  popup message when clicking the backdrop or hitting ESC.
 
 ### 💥 Breaking Changes
 * Hoist now requires ag-Grid v28.0.0 or higher - update your ag-Grid dependency in your app's
