@@ -29,7 +29,8 @@
   a `PanelHeader`. Previously specifying any 'falsey' value for both (e.g. an empty string
   title) would omit the header.
 * `XHClass` (top-level Singleton model for Hoist) no longer extends `HoistBase`
-* DockView component has been moved into desktop
+* `DockView` component has been moved into the desktop-specific package `@xh/hoist/desktop/cmp`.
+Users of this component will need to adjust their imports accordingly.
 
 ### 🐞 Bug Fixes
 
