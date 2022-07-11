@@ -35,6 +35,7 @@ export const exceptionDialog = hoistCmp.factory({
             dialog({
                 isOpen: true,
                 title: options.title,
+                className: 'xh-exception-dialog',
                 isCloseButtonShown: !options.requireReload,
                 onClose,
                 icon: Icon.warning(),
