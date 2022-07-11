@@ -17,12 +17,12 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
     className: 'xh-dialog',
     model: false,
 
-    render({className, isOpen, onCancel, icon, title, content, buttons = []}) {
+    render({className, isOpen, isCancelable, onCancel, icon, title, content, buttons = []}) {
         const contextModel = useContextModel('*');
         if (!isOpen) return null;
         return onsenDialog({
             isOpen: true,
-            isCancelable: true,
+            isCancelable,
             onCancel,
             className,
             item: modelHost({
