@@ -5,6 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {DashViewModel} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
+import '@xh/hoist/desktop/register';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {action, makeObservable, observable} from 'mobx';
 

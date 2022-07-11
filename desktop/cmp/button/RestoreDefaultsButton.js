@@ -6,6 +6,7 @@
  */
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import PT from 'prop-types';
 import {button, Button} from './Button';

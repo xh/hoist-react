@@ -4,11 +4,13 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import {FieldModel, FormContext} from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, uses, XH} from '@xh/hoist/core';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
+import '@xh/hoist/mobile/register';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -16,7 +18,6 @@ import classNames from 'classnames';
 import {isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
 import PT from 'prop-types';
 import {Children, cloneElement, useContext} from 'react';
-import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import './FormField.scss';
 
 /**

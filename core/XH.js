@@ -235,8 +235,8 @@ class XHClass {
     renderApp(appSpec) {
         const spinner = document.getElementById('xh-preload-spinner');
         if (spinner) spinner.style.display = 'none';
-
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
+
         const rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
         ReactDOM.render(rootView, document.getElementById('xh-root'));
     }
@@ -1005,3 +1005,4 @@ window['XH'] = XH;
  * @callback Banner-onCloseFn
  * @param {BannerModel} model - the backing model for the banner which was just closed.
  */
+

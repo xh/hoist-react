@@ -5,14 +5,15 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
-import {hoistCmp, uses} from '@xh/hoist/core';
 import {div, frame, h1, hbox, p, span, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {PinPadModel} from '@xh/hoist/cmp/pinpad';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
+import '@xh/hoist/mobile/register';
 import {isNumber} from 'lodash';
 
 import './PinPad.scss';
-import {PinPadModel} from '@xh/hoist/cmp/pinpad';
 
 /**
  * Mobile Implementation of PinPad.

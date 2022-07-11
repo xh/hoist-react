@@ -6,11 +6,12 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {dateInput} from '@xh/hoist/desktop/cmp/input';
-import {getOffsetRectRelativeToArbitraryNode} from 'popper.js/dist/popper-utils';
+import '@xh/hoist/desktop/register';
 import {warnIf} from '@xh/hoist/utils/js';
-import {useInlineEditorModel} from './impl/InlineEditorModel';
+import {getOffsetRectRelativeToArbitraryNode} from 'popper.js/dist/popper-utils';
 import {EditorPropTypes} from './EditorPropTypes';
 import './Editors.scss';
+import {useInlineEditorModel} from './impl/InlineEditorModel';
 
 export const [DateEditor, dateEditor] = hoistCmp.withFactory({
     displayName: 'DateEditor',

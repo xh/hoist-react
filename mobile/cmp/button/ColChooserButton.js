@@ -8,6 +8,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from '@xh/hoist/mobile/cmp/button';
+import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 

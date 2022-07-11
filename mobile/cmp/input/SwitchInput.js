@@ -7,6 +7,7 @@
 import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {switchControl} from '@xh/hoist/kit/onsen';
+import '@xh/hoist/mobile/register';
 import PT from 'prop-types';
 import './SwitchInput.scss';
 

@@ -6,6 +6,7 @@
  */
 import {XH} from '@xh/hoist/core';
 import {RecordAction} from '@xh/hoist/data';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import copy from 'clipboard-copy';
 import {flatten, isEmpty, isString, uniq} from 'lodash';

@@ -4,10 +4,11 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, XH} from '@xh/hoist/core';
 import {FieldType} from '@xh/hoist/data';
-import {action, computed, observable, makeObservable, comparer} from '@xh/hoist/mobx';
-import {stripTags, throwIf, errorIf, withDefault} from '@xh/hoist/utils/js';
+import {action, comparer, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {errorIf, stripTags, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     escapeRegExp,
@@ -15,13 +16,12 @@ import {
     flatMap,
     get,
     intersection,
-    isNil,
     isArray,
     isEmpty,
     isFinite,
+    isNil,
     without
 } from 'lodash';
-import {GridModel} from '@xh/hoist/cmp/grid';
 
 /**
  * @private

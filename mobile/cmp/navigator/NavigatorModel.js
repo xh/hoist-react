@@ -5,7 +5,8 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
+import '@xh/hoist/mobile/register';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {find, isEqual, keys, merge} from 'lodash';
 import {page} from './impl/Page';

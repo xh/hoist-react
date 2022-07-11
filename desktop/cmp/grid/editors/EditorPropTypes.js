@@ -5,6 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+import '@xh/hoist/desktop/register';
 import PT from 'prop-types';
 
 export const EditorPropTypes = {

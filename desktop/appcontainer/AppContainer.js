@@ -49,7 +49,8 @@ installDesktopImpls({
     gridFilterDialog,
     ColChooserModel,
     ColumnHeaderFilterModel,
-    StoreContextMenu
+    StoreContextMenu,
+    useContextMenu
 });
 /**
  * Top-level wrapper for Desktop applications.

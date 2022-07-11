@@ -14,24 +14,18 @@ import {
     reactCreatableSelect,
     reactSelect
 } from '@xh/hoist/kit/react-select';
+import {button} from '@xh/hoist/mobile/cmp/button';
+import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
+import '@xh/hoist/mobile/register';
 import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
-import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
-import {button} from '@xh/hoist/mobile/cmp/button';
 import debouncePromise from 'debounce-promise';
-import {
-    escapeRegExp,
-    isEqual,
-    isNil,
-    isPlainObject,
-    keyBy,
-    merge
-} from 'lodash';
+import {escapeRegExp, isEqual, isNil, isPlainObject, keyBy, merge} from 'lodash';
+import PT from 'prop-types';
 import {Children} from 'react';
 import ReactDom from 'react-dom';
-import PT from 'prop-types';
 import './Select.scss';
 
 /**

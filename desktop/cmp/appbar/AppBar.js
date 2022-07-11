@@ -4,11 +4,13 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+
 import {span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
 import {appMenuButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {whatsNewButton} from '@xh/hoist/desktop/cmp/button/WhatsNewButton';
+import '@xh/hoist/desktop/register';
 import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';

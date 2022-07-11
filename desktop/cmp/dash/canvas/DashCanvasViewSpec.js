@@ -5,6 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {DashViewSpec} from '@xh/hoist/desktop/cmp/dash/DashViewSpec';
+import '@xh/hoist/desktop/register';
 
 /**
  * Spec used to generate DashCanvasViews and DashCanvasViewModels within a {@see DashCanvas}.

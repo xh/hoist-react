@@ -8,6 +8,7 @@ import {XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/mobile/cmp/input';
+import '@xh/hoist/mobile/register';
 
 /**
  * Convenience configuration for the `theme` AppOption.
