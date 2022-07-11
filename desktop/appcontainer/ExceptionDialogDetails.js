@@ -33,7 +33,7 @@ export const exceptionDialogDetails = hoistCmp.factory(
         const header = table(
             tbody(
                 row('Name', exception.name),
-                row('Message', truncate((exception.msg || exception.message || 'N/A'),{length: 300})),
+                row('Message', truncate((exception.msg || exception.message || 'N/A'), {length: 300})),
                 row('App Version', XH.appVersion)
             )
         );
@@ -51,7 +51,7 @@ export const exceptionDialogDetails = hoistCmp.factory(
             style: {width: 800},
             items: [
                 dialogBody({
-                    className: 'xh-exception-dialog-details',
+                    className: 'xh-exception-dialog__details',
                     items: [
                         header,
                         pre(errorStr),

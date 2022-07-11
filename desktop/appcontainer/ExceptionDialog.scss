@@ -6,12 +6,13 @@
  */
 .xh-exception-dialog {
   max-height: 80vh;
-  .bp4-dialog-body{
+
+  .bp4-dialog-body {
     max-height: inherit;
     overflow-y: auto;
   }
 
-  &-details {
+  &__details {
     pre {
       border: var(--xh-border-solid);
       overflow: auto;
