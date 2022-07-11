@@ -12,6 +12,7 @@ import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
+import {truncate} from 'lodash';
 import {dismissButton} from './ExceptionDialog';
 
 /**
@@ -32,7 +33,7 @@ export const exceptionDialogDetails = hoistCmp.factory(
         const header = table(
             tbody(
                 row('Name', exception.name),
-                row('Message', exception.msg || exception.message || 'N/A'),
+                row('Message', truncate((exception.msg || exception.message || 'N/A'), {length: 300})),
                 row('App Version', XH.appVersion)
             )
         );
@@ -50,7 +51,7 @@ export const exceptionDialogDetails = hoistCmp.factory(
             style: {width: 800},
             items: [
                 dialogBody({
-                    className: 'xh-exception-dialog-details',
+                    className: 'xh-exception-dialog__details',
                     items: [
                         header,
                         pre(errorStr),
