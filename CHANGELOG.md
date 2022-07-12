@@ -1,6 +1,6 @@
 # Changelog
 
-## v50.0.0-SNAPSHOT - unreleased
+## v50.0.0 - 2022-07-12
 
 ### 🎁 New Features
 
@@ -53,7 +53,7 @@ Users of this component will need to adjust their imports accordingly.
 
 * @blueprintjs `3.54 -> 4.5`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v49.2.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v49.2.0...v50.0.0)
 
 ## v49.2.0 - 2022-06-14
 
