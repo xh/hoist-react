@@ -43,7 +43,7 @@ export const message = hoistCmp.factory({
                 ),
                 bbar()
             ],
-            onClose: () => {if (model.cancelProps) model.doCancel();},
+            onClose: () => model.doEscape(),
             ...props
         });
     }

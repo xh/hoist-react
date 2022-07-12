@@ -61,7 +61,8 @@ export const message = hoistCmp.factory({
                 div({omit: !message, className: 'xh-message-content', item: message}),
                 inputCmp()
             ),
-            onCancel: () => model.doCancel()
+            isCancelable: model.dismissable,
+            onCancel: () => model.doEscape()
         });
     }
 });

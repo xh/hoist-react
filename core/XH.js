@@ -999,6 +999,10 @@ window['XH'] = XH;
  *      left edge of the dialog toolbar, with a filler between it and Confirm.
  * @property {function} [onConfirm] - Callback to execute when confirm is clicked.
  * @property {function} [onCancel] - Callback to execute when cancel is clicked.
+ * @property {boolean} [dismissable] - flag to specify whether a popup can be clicked out of or
+ *      escaped.
+ * @property {boolean} [cancelOnDismiss] - flag to specify whether onCancel is executed when
+ *      clicking out of or escaping a popup.
  */
 
 /**
