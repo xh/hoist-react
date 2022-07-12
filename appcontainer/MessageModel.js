@@ -29,8 +29,8 @@ export class MessageModel extends HoistModel {
     cancelAlign;
     onConfirm;
     onCancel;
-    allowEscape;
-    cancelOnEscape;
+    dismissable;
+    cancelOnDismiss;
 
     // Promise to be resolved when user has clicked on choice and its internal resolver
     result;
@@ -50,8 +50,8 @@ export class MessageModel extends HoistModel {
         cancelAlign = 'right',
         onConfirm,
         onCancel,
-        allowEscape = !isEmpty(cancelProps),
-        cancelOnEscape = true
+        dismissable = !isEmpty(cancelProps),
+        cancelOnDismiss = true
     }) {
         super();
         makeObservable(this);
@@ -61,8 +61,8 @@ export class MessageModel extends HoistModel {
         this.message = message;
         this.messageKey = messageKey;
         this.className = className;
-        this.allowEscape = allowEscape;
-        this.cancelOnEscape = cancelOnEscape;
+        this.dismissable = dismissable;
+        this.cancelOnDismiss = cancelOnDismiss;
 
         if (input) {
             this.input = input;
@@ -112,8 +112,8 @@ export class MessageModel extends HoistModel {
 
     @action
     doEscape() {
-        if (!this.allowEscape) return;
-        if (this.cancelOnEscape) {
+        if (!this.dismissable) return;
+        if (this.cancelOnDismiss) {
             this.doCancel();
             return;
         }
