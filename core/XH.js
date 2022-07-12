@@ -8,7 +8,7 @@ import {p} from '@xh/hoist/cmp/layout';
 import {AppSpec, AppState, elem} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {Icon} from '@xh/hoist/icon';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable, reaction as mobxReaction} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {
     AlertBannerService,
@@ -37,7 +37,6 @@ import {
     withDebug
 } from '@xh/hoist/utils/js';
 import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
-import {reaction as mobxReaction} from '@xh/hoist/mobx';
 import ReactDOM from 'react-dom';
 import parser from 'ua-parser-js';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
@@ -45,7 +44,7 @@ import '../styles/XH.scss';
 import {ExceptionHandler} from './ExceptionHandler';
 import {RouterModel} from './RouterModel';
 
-const MIN_HOIST_CORE_VERSION = '10.0';
+const MIN_HOIST_CORE_VERSION = '14.0';
 
 /**
  * Top-level Singleton model for Hoist. This is the main entry point for the API.
