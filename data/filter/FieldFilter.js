@@ -2,13 +2,23 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
 import {parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, difference, escapeRegExp, isArray, isNil, isUndefined, isString} from 'lodash';
+import {
+    castArray,
+    difference,
+    escapeRegExp,
+    isArray,
+    isNil,
+    isString,
+    isUndefined,
+    uniq
+} from 'lodash';
+import {FieldType} from '../Field';
 
 import {Filter} from './Filter';
 
@@ -32,8 +42,8 @@ export class FieldFilter extends Filter {
     /** @member {*} */
     value;
 
-    static OPERATORS = ['=', '!=', '>', '>=', '<', '<=', 'like', 'not like', 'begins', 'ends'];
-    static ARRAY_OPERATORS = ['=', '!=', 'like', 'not like', 'begins', 'ends'];
+    static OPERATORS = ['=', '!=', '>', '>=', '<', '<=', 'like', 'not like', 'begins', 'ends', 'includes', 'excludes'];
+    static ARRAY_OPERATORS = ['=', '!=', 'like', 'not like', 'begins', 'ends', 'includes', 'excludes'];
 
     /**
      * Constructor - not typically called by apps - create from config via `parseFilter()` instead.
@@ -44,7 +54,7 @@ export class FieldFilter extends Filter {
      * @param {(*|[])} c.value - value(s) to use with operator in filter. When used with operators
      *      in the ARRAY_OPERATORS collection, value may be specified as an array. In these cases,
      *      the filter will implement an implicit 'OR' for '='/'like'/'begins'/'ends',
-     *      and an implicit 'AND' for '!='/'not like'.
+     *      and an implicit 'AND' for '!='/'not like'. Duplicated values are omitted.
      */
     constructor({field, op, value}) {
         super();
@@ -60,7 +70,7 @@ export class FieldFilter extends Filter {
 
         this.field = isString(field) ? field : field.name;
         this.op = op;
-        this.value = isArray(value) ? [...value] : value;
+        this.value = isArray(value) ? uniq(value) : value;
 
         Object.freeze(this);
     }
@@ -82,7 +92,7 @@ export class FieldFilter extends Filter {
             const storeField = store.getField(field);
             if (!storeField) return () => true; // Ignore (do not filter out) if field not in store
 
-            const fieldType = storeField.type;
+            const fieldType = storeField.type === FieldType.TAGS ? FieldType.STRING : storeField.type;
             value = isArray(value) ?
                 value.map(v => parseFieldValue(v, fieldType)) :
                 parseFieldValue(value, fieldType);
@@ -97,7 +107,7 @@ export class FieldFilter extends Filter {
         switch (op) {
             case '=':
                 return r => {
-                    if (doNotFilter(r)) return true; 
+                    if (doNotFilter(r)) return true;
                     let v = getVal(r);
                     if (isNil(v) || v === '') v = null;
                     return value.includes(v);
@@ -143,19 +153,31 @@ export class FieldFilter extends Filter {
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
                 return r => {
                     if (doNotFilter(r)) return true;
-                    regExps.every(re => !re.test(getVal(r)));
+                    return regExps.every(re => !re.test(getVal(r)));
                 };
             case 'begins':
                 regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
                 return r => {
                     if (doNotFilter(r)) return true;
-                    regExps.some(re => re.test(getVal(r)));
+                    return regExps.some(re => re.test(getVal(r)));
                 };
             case 'ends':
                 regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
                 return r => {
                     if (doNotFilter(r)) return true;
-                    regExps.some(re => re.test(getVal(r)));
+                    return regExps.some(re => re.test(getVal(r)));
+                };
+            case 'includes':
+                return r => {
+                    if (doNotFilter(r)) return true;
+                    const v = getVal(r);
+                    return !isNil(v) && v.some(it => value.includes(it));
+                };
+            case 'excludes':
+                return r => {
+                    if (doNotFilter(r)) return true;
+                    const v = getVal(r);
+                    return isNil(v) || !v.some(it => value.includes(it));
                 };
             default:
                 throw XH.exception(`Unknown operator: ${op}`);

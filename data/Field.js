@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
@@ -10,7 +10,7 @@ import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
 import {Rule} from '@xh/hoist/data';
 import equal from 'fast-deep-equal';
-import {isDate, isString, toNumber, isFinite, startCase, isFunction} from 'lodash';
+import {isDate, isString, toNumber, isFinite, startCase, isFunction, castArray} from 'lodash';
 import DOMPurify from 'dompurify';
 
 /**
@@ -84,13 +84,23 @@ export function parseFieldValue(val, type, defaultValue = null, disableXssProtec
     if (val === undefined || val === null) val = defaultValue;
     if (val === null) return val;
 
-    if (!disableXssProtection && isString(val)) val = DOMPurify.sanitize(val);
+    const sanitizeValue = (v) => {
+        if (disableXssProtection || !isString(v)) return v;
+        return DOMPurify.sanitize(v);
+    };
 
     const FT = FieldType;
     switch (type) {
+        case FT.TAGS:
+            val = castArray(val);
+            val = val.map(v => {
+                v = sanitizeValue(v);
+                return v.toString();
+            });
+            return val;
         case FT.AUTO:
         case FT.JSON:
-            return val;
+            return sanitizeValue(val);
         case FT.INT:
             val = toNumber(val);
             return isFinite(val) ? Math.trunc(val) : null;
@@ -100,6 +110,7 @@ export function parseFieldValue(val, type, defaultValue = null, disableXssProtec
             return !!val;
         case FT.PWD:
         case FT.STRING:
+            val = sanitizeValue(val);
             return val.toString();
         case FT.DATE:
             return isDate(val) ? val : new Date(val);
@@ -112,6 +123,7 @@ export function parseFieldValue(val, type, defaultValue = null, disableXssProtec
 
 /** @enum {string} - data types for Fields used within Hoist Store Records and Cubes. */
 export const FieldType = Object.freeze({
+    TAGS: 'tags',
     AUTO: 'auto',
     BOOL: 'bool',
     DATE: 'date',

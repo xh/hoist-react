@@ -2,16 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {ContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils';
-import {elementFromContent} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
-import {panel} from '../../../panel';
-import {button} from '../../../button';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
+import {elementFromContent} from '@xh/hoist/utils/react';
+import {button} from '../../../button';
+import {panel} from '../../../panel';
 import {DashCanvasViewModel} from '../DashCanvasViewModel';
 
 /**
@@ -29,13 +29,13 @@ export const dashCanvasView = hoistCmp.factory({
     className: 'xh-dash-tab',
     model: uses(DashCanvasViewModel, {publishMode: ModelPublishMode.LIMITED}),
     render({model, className}) {
-        const {viewSpec, ref, hidePanelHeader} = model,
+        const {viewSpec, ref, hidePanelHeader, headerItems} = model,
             headerProps = hidePanelHeader ? {} : {
                 compactHeader: true,
                 title: model.title,
                 icon: model.icon,
                 headerItems: [
-                    // TODO - Investigate why {model} must be passed explicitly here
+                    ...headerItems,
                     headerMenu({model})
                 ]
             };
@@ -53,7 +53,7 @@ const headerMenu = hoistCmp.factory(
         if (model.hideMenuButton) return null;
 
         const {viewState, viewSpec, id, containerModel, positionParams, title} = model,
-            {extraMenuItems, contentLocked, renameLocked} = containerModel,
+            {contentLocked, renameLocked} = containerModel,
 
             addMenuItems = createViewMenuItems({
                 dashCanvasModel: containerModel,
@@ -104,7 +104,9 @@ const headerMenu = hoistCmp.factory(
                             }).ensureVisible()
                     },
                     '-',
-                    ...(extraMenuItems ?? [])
+                    ...(model.extraMenuItems ?? []),
+                    '-',
+                    ...(containerModel.extraMenuItems ?? [])
                 ]
             });
 

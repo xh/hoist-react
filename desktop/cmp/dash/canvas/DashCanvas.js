@@ -1,12 +1,18 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2022 Extremely Heavy Industries Inc.
+ */
 import {ContextMenu} from '@blueprintjs/core';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {elemFactory, hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {Classes, overlay, popover} from '@xh/hoist/kit/blueprint';
 import classNames from 'classnames';
 import PT from 'prop-types';
-
 import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import './DashCanvas.scss';
@@ -15,13 +21,15 @@ import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
 
 /**
- * Display a "canvas" of child components in accordance with a DashCanvasModel
+ * Dashboard-style container that allows users to drag-and-drop child widgets into flexible layouts.
+ *
+ * Unlike its cousin {@see DashContainer}, this component scales the width only of its child
+ * widgets as its overall size changes, leaving heights unchanged and scrolling internally as
+ * necessary. This makes it a good candidate for report-style dashboards containing lots of content
+ * that is unlikely to fit or compress nicely on smaller screens. Consider DashContainer when
+ * a space-filling layout is a priority.
+ *
  * @see DashCanvasModel
- *
- * NOTE: This component is currently in BETA. Its API is under development
- * and subject to change in future versions.
- *
- * @Beta
  */
 export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
     displayName: 'DashCanvas',
@@ -53,6 +61,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
                     autoSize: true,
                     isBounded: true,
                     draggableHandle: '.xh-panel > .xh-panel__content > .xh-panel-header',
+                    draggableCancel: '.xh-button',
                     // Resizing always pins to the nw corner, so dragging from anywhere other than se sides/corner is unintuitive
                     resizeHandles: ['s', 'e', 'se'],
                     onLayoutChange: (layout) => model.setLayout(layout),

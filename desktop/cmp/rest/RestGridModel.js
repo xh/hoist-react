@@ -2,13 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {isFunction, isPlainObject} from 'lodash';
+
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {pluralize, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {isFunction, isPlainObject} from 'lodash';
 import {RestStore} from './data/RestStore';
 import {RestFormModel} from './impl/RestFormModel';
 

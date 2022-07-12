@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 @import '~sass-material-colors/sass/sass-material-colors';
@@ -211,6 +211,7 @@ body {
   --xh-appbar-title-color: var(--appbar-title-color, #{mc('blue-grey', '700')});
   --xh-appbar-title-font-size: var(--appbar-title-font-size, calc(var(--xh-font-size) * 1.9));
   --xh-appbar-title-font-size-px: calc(var(--xh-appbar-title-font-size) * 1px);
+  --xh-appbar-box-shadow: var(--appbar-box-shadow, #{0 0 0 1px rgb(17 20 24 / 10%), 0 1px 1px rgb(17 20 24 / 20%)});
 
   &.xh-dark {
     --xh-appbar-border-color: var(--appbar-border-color, #{mc('blue-grey', '700')});
@@ -611,6 +612,7 @@ body {
   //------------------------
   // Popups / dialogs
   //------------------------
+  --xh-popup-bg: var(--popup-bg, #ebf1f5);
   --xh-popup-border-color: var(--popup-border-color, var(--xh-popup-title-bg));
   --xh-popup-border-width: var(--popup-border-width, var(--xh-border-width));
   --xh-popup-border-width-px: calc(var(--xh-popup-border-width) * 1px);
@@ -619,6 +621,10 @@ body {
   --xh-popup-title-font-size: var(--popup-title-font-size, var(--xh-title-font-size));
   --xh-popup-title-font-size-px: calc(var(--xh-popup-title-font-size) * 1px);
   --xh-popup-title-text-color: var(--popup-title-text-color, var(--xh-title-text-color));
+
+  &.xh-dark {
+    --xh-popup-bg: var(--popup-bg, #293742);
+  }
 
   &.xh-mobile {
     --xh-popup-border-width: 2;
@@ -667,6 +673,7 @@ body {
   //------------------------
   // Tabs
   //------------------------
+  --xh-tab-text-color: var(--tab-text-color, var(--xh-text-color));
   --xh-tab-active-text-color: var(--tab-active-text-color, var(--xh-intent-primary));
   --xh-tab-border-width: var(--tab-border-width, var(--xh-border-width));
   --xh-tab-border-width-px: calc(var(--xh-tab-border-width) * 1px);

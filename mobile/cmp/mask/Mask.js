@@ -2,11 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {box, div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
-import {hoistCmp, HoistModel, useLocalModel, TaskObserver} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, TaskObserver, useLocalModel} from '@xh/hoist/core';
+import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 import './Mask.scss';

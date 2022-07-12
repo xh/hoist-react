@@ -2,11 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, ManagedRefreshContextModel} from '@xh/hoist/core';
+import '@xh/hoist/desktop/register';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
+import {action, observable} from 'mobx';
 
 /**
  * Model for a content item within a DashContainer. Supports state management,
@@ -30,6 +32,7 @@ export class DashViewModel extends HoistModel {
     @bindable title;
     @bindable.ref viewState;
     @bindable isActive;
+    @observable.ref extraMenuItems = [];
 
     @managed refreshContextModel;
 
@@ -79,4 +82,12 @@ export class DashViewModel extends HoistModel {
         this.setViewState({...this.viewState, [key]: value});
     }
 
+    /**
+     * Specify array with which to create additional panel menu items
+     * @param {Object[]} items
+     */
+    @action
+    setExtraMenuItems(items) {
+        this.extraMenuItems = items;
+    }
 }

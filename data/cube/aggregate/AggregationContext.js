@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 
@@ -18,7 +18,7 @@ export class AggregationContext {
     /** @member {View} - view being aggregated. */
     view;
 
-    /** @member {Record[]} - all records currently meeting the filter for this view.*/
+    /** @member {StoreRecord[]} - all records currently meeting the filter for this view.*/
     filteredRecords;
 
     /**

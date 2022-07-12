@@ -40,12 +40,25 @@ export class ColChooserModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
+
         this.gridModel = gridModel;
         this.commitOnChange = commitOnChange;
         this.showRestoreDefaults = showRestoreDefaults;
         this.autosizeOnCommit = autosizeOnCommit;
         this.width = width;
         this.height = height;
+
+        this.lrModel = new LeftRightChooserModel({
+            leftTitle: 'Available Columns',
+            leftEmptyText: 'No more columns to add.',
+            rightTitle: 'Displayed Columns',
+            rightEmptyText: 'No columns will be visible.',
+            leftSorted: true,
+            rightGroupingEnabled: false,
+            onChange: () => {
+                if (this.commitOnChange) this.commit();
+            }
+        });
     }
 
     @action

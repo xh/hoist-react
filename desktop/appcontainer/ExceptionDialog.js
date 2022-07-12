@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
@@ -35,6 +35,7 @@ export const exceptionDialog = hoistCmp.factory({
             dialog({
                 isOpen: true,
                 title: options.title,
+                className: 'xh-exception-dialog',
                 isCloseButtonShown: !options.requireReload,
                 onClose,
                 icon: Icon.warning(),

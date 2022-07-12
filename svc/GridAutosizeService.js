@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 import {HoistService} from '@xh/hoist/core';
@@ -34,6 +34,9 @@ export class GridAutosizeService extends HoistService {
      * @param {GridAutosizeOptions} options - options to use for this autosize.
      */
     async autosizeAsync(gridModel, colIds, options) {
+        await gridModel.whenReadyAsync();
+        if (!gridModel.isReady) return;
+
         // 1) Check columns exist
         colIds = colIds.filter(id => gridModel.getColumn(id));
         if (isEmpty(colIds)) return;
@@ -41,13 +44,22 @@ export class GridAutosizeService extends HoistService {
         // 2) Ensure order of passed colIds matches the current GridModel.columnState.
         // This is to prevent changing the column order when applying column state changes
         colIds = sortBy(colIds, id => gridModel.columnState.findIndex(col => col.colId === id));
-        runInAction(() => {
-            // 3) Shrink columns down to their required widths.
-            const requiredWidths = this.calcRequiredWidths(gridModel, colIds, options);
-            gridModel.applyColumnStateChanges(requiredWidths);
-            console.debug('Column widths autosized via GridAutosizeService', requiredWidths);
 
-            // 4) Grow columns to fill any remaining space, if enabled.
+        // 3) Perform computation.  This is async and expensive, and may become obsolete
+        const records = this.gatherRecordsToBeSized(gridModel, options),
+            requiredWidths = await this.calcRequiredWidthsAsync(gridModel, colIds, records, options);
+
+        if (!requiredWidths) {
+            console.debug('Autosize aborted, grid data is obsolete.');
+            return;
+        }
+
+        runInAction(() => {
+            // 4) Set columns to their required widths.
+            gridModel.applyColumnStateChanges(requiredWidths);
+            console.debug(`Column widths autosized via GridAutosizeService (${records.length} records)`, requiredWidths);
+
+            // 5) Grow columns to fill any remaining space, if enabled.
             const {fillMode} = options;
             if (fillMode && fillMode !== 'none') {
                 const fillWidths = this.calcFillWidths(gridModel, colIds, fillMode);
@@ -64,16 +76,20 @@ export class GridAutosizeService extends HoistService {
     /**
      * @param {GridModel} gridModel
      * @param {string[]} colIds
+     * @param {StoreRecord[]} records
      * @param {GridAutosizeOptions} options
-     * @return {Object[]} - {colId, width} objects to pass to GridModel.applyColumnStateChanges()
+     * @return {Promise<Object[]>} - {colId, width} objects to pass to GridModel.applyColumnStateChanges()
      */
-    calcRequiredWidths(gridModel, colIds, options) {
-        const records = this.gatherRecordsToBeSized(gridModel, options),
+    async calcRequiredWidthsAsync(gridModel, colIds, records, options) {
+        const startRecords = gridModel.store._filtered,
             ret = [];
 
         for (const colId of colIds) {
-            const width = this._columnWidthCalculator.calcWidth(gridModel, records, colId, options);
+            const width = await this._columnWidthCalculator.calcWidthAsync(gridModel, records, colId, options);
             if (isFinite(width)) ret.push({colId, width});
+
+            // Bail out if GridModel has moved on to new data.
+            if (startRecords !== gridModel.store._filtered) return null;
         }
 
         return ret;
@@ -83,20 +99,26 @@ export class GridAutosizeService extends HoistService {
     /**
      * @param {GridModel} gridModel
      * @param {GridAutosizeOptions} options
+     * @return {StoreRecord[]}
      */
     gatherRecordsToBeSized(gridModel, options) {
         let {store, agApi, treeMode, groupBy} = gridModel,
-            {includeCollapsedChildren} = options,
+            {includeCollapsedChildren, renderedRowsOnly} = options,
             ret = [];
 
-        if (agApi && !includeCollapsedChildren && (treeMode || groupBy)) {
+        if (renderedRowsOnly) {
+            agApi.getRenderedNodes().forEach(node => {
+                const record = store.getById(node.data?.id);
+                if (record) ret.push(record);
+            });
+        } else if (!includeCollapsedChildren && (treeMode || groupBy)) {
             // In tree/grouped grids, included expanded rows only by default.
             for (let idx = 0; idx < agApi.getDisplayedRowCount(); idx++) {
                 const node = agApi.getDisplayedRowAtIndex(idx),
                     record = store.getById(node.data?.id);
                 if (record) ret.push(record);
             }
-        } else if (agApi?.isAnyFilterPresent()) {
+        } else if (agApi.isAnyFilterPresent()) {
             // Respect "native" ag-Grid filtering, if in use.
             agApi.forEachNodeAfterFilter(node => {
                 const record = store.getById(node.data?.id);

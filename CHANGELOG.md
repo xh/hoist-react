@@ -2,11 +2,99 @@
 
 ## v50.0.0-SNAPSHOT - unreleased
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v49.0.0...develop)
+### 🎁 New Features
+
+* New `PanelModel.modalSupport` option allows the user to expand a panel into a configurable modal
+  dialog - without developers needing to write custom dialog implementations and without triggering
+  a remount/rerender of the panel's contents.
+* FilterChooser field suggestions now search within multi-word field names.
+* Autosize performance has been improved for very large grids.
+* New `@abstract` decorator now available for enforcing abstract methods / getters.
+* `MessageModel` now receives `dismissable` and `cancelOnDismiss` flags to control the behavior of a
+  popup message when clicking the background or hitting the escape key.
+
+### 💥 Breaking Changes
+* Hoist now requires ag-Grid v28.0.0 or higher - update your ag-Grid dependency in your app's
+  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
+* The data reactions between `GridModel` and the underlying Ag-Grid is now minimally debounced. This
+  avoids multiple data updates during a single event loop tick, which can corrupt Ag-Grid's
+  underlying state in the latest versions of that library.
+    * This change should not affect most apps, but code that queries grid state immediately after
+      loading or filtering a grid (e.g. selection, row visibility, or expansion state) should be
+      tested carefully and may require a call to `await whenGridReadyAsync()`.
+    * Note that this method is already incorporated in to several public methods on `GridModel`,
+      including `selectFirstAsync()` and `ensureSelectionVisibleAsync()`.
+* Blueprint has updated all of its CSS class names to use the `bp4-` prefix instead of the `bp3-`
+  prefix. Any apps styling these classes directly may need to be adjusted. See
+  https://github.com/palantir/blueprint/wiki/Blueprint-4.0 for more info.
+* Both `Panel.title` and `Panel.icon` props must be null or undefined to avoid rendering
+  a `PanelHeader`. Previously specifying any 'falsey' value for both (e.g. an empty string
+  title) would omit the header.
+* `XHClass` (top-level Singleton model for Hoist) no longer extends `HoistBase`
+* `DockView` component has been moved into the desktop-specific package `@xh/hoist/desktop/cmp`.
+Users of this component will need to adjust their imports accordingly.
+
+### 🐞 Bug Fixes
+
+* Fixes several issues introduced with Ag-Grid v27 where rows gaps and similar rendering issues
+  could appear after operating on it programmatically (see breaking changes above).
+* `ColumnHeaders` now properly respond to mouse events on tablets (e.g. when using a Bluetooth
+  trackpad on an iPad).
+* Fixed bug where `DashCanvasModel.removeView()` was not properly disposing of removed views
+* Fixed exception dialog getting overwhelmed by large messages.
+
+### ⚙️ Technical
+
+* Hoist will now throw if you import a desktop specific class to a mobile app or vice-versa.
+
+### 📚 Libraries
+
+* @blueprintjs `3.54 -> 4.5`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v49.2.0...develop)
+
+## v49.2.0 - 2022-06-14
+
+### 🎁 New Features
+
+* New `@enumerable` decorator for making class members `enumerable`
+* New `GridAutosizeOption` `renderedRowsOnly` supports more limited autosizing
+  for very large grids.
+
+### 🐞 Bug Fixes
+
+* Fix `FilterChooser` looping between old values if updated too rapidly.
+* Allow user to clear an unsupported `FilterChooser` value.
+* Fix bug where `Panel` would throw when `headerItems = null`
+* Fix column values filtering on `tags` fields if another filter is already present.
+* Fix bug where `SwitchInput` `labelSide` would render inappropriately if within `compact` `toolbar`
+* Fix bug where `SplitTreeMapModel.showSplitter` property wasn't being set in constructor
+
+### 📚 Libraries
+
+* mobx `6.5 -> 6.6`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v49.1.0...v49.2.0)
+
+## v49.1.0 - 2022-06-03
+
+### 🎁 New Features
+
+* A `DashCanvasViewModel` now supports `headerItems` and `extraMenuItems`
+* `Store` now supports a `tags` field type
+* `FieldFilter` supports `includes` and `excludes` operators for `tags` fields
+
+### 🐞 Bug Fixes
+
+* Fix regression with `begins`, `ends`, and `not like` filters.
+* Fix `DashCanvas` styling so drag-handles no longer cause horizontal scroll bar to appear
+* Fix bug where `DashCanvas` would not resize appropriately on scrollbar visibility change
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v49.0.0...v49.1.0)
 
 ## v49.0.0 - 2022-05-24
 
-### 🐞 New Features
+### 🎁 New Features
 
 * Improved desktop `NumberInput`:
     * Re-implemented `min` and `max` props to properly constrain the value entered and fix several
@@ -4566,7 +4654,7 @@ and ag-Grid upgrade, and more. 🚀
 
 ------------------------------------------
 
-Copyright © 2021 Extremely Heavy Industries Inc. - all rights reserved
+Copyright © 2022 Extremely Heavy Industries Inc. - all rights reserved
 
 ------------------------------------------
 

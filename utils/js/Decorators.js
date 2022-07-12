@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {XH} from '@xh/hoist/core';
 import {debounce, isFunction} from 'lodash';
-import {throwIf, getOrCreate} from './LangUtils';
+import {throwIf, getOrCreate, warnIf} from './LangUtils';
 import {withDebug} from './LogUtils';
 
 /**
@@ -61,6 +62,36 @@ export function logWithDebug(target, key, descriptor) {
         ...descriptor,
         value: function(...args) {
             return withDebug(key, () => value.apply(this, args), this);
+        }
+    };
+}
+
+/**
+ * Modify a member so that it is enumerable. Useful for getters, which default to enumerable = false
+ */
+export function enumerable(target, key, descriptor) {
+    warnIf(descriptor.enumerable, `Unnecessary use of @enumerable: ${key} is already enumerable.`);
+    return {...descriptor, enumerable: true};
+}
+
+/**
+ * Designate a method or getter as abstract so that it throws if it is called directly
+ */
+export function abstract(target, key, descriptor) {
+    const {value, get} = descriptor;
+    throwIf(!isFunction(value) && !isFunction(get),
+        '@abstract must be applied to a class method or getter.'
+    );
+
+    const isMethod = isFunction(value),
+        baseFnName = isMethod ? 'value' : 'get';
+
+    return {
+        ...descriptor,
+        [baseFnName]: function() {
+            throw XH.exception(
+                `${key} must be implemented by ${this.constructor.name}`
+            );
         }
     };
 }

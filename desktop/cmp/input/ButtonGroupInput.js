@@ -2,16 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {Button, ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
+import '@xh/hoist/desktop/register';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {filter} from 'lodash';
 import PT from 'prop-types';
-import {cloneElement, Children} from 'react';
+import {Children, cloneElement} from 'react';
 
 /**
  * A segmented group of buttons, one of which is depressed to indicate the input's current value.

@@ -1,3 +1,9 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2022 Extremely Heavy Industries Inc.
+ */
 import {ServerEnvModel} from '@xh/hoist/admin/tabs/server/environment/ServerEnvModel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, placeholder, span} from '@xh/hoist/cmp/layout';

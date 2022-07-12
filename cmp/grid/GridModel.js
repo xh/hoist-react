@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Column, ColumnGroup, GridAutosizeMode, TreeStyle} from '@xh/hoist/cmp/grid';
@@ -390,6 +390,7 @@ export class GridModel extends HoistModel {
             {...autosizeOptions},
             {
                 mode: GridModel.DEFAULT_AUTOSIZE_MODE,
+                renderedRowsOnly: false,
                 includeCollapsedChildren: false,
                 showMask: false,
                 // Larger buffer on mobile (perhaps counterintuitively) to minimize clipping due to
@@ -1192,10 +1193,16 @@ export class GridModel extends HoistModel {
      * TODO - see https://github.com/xh/hoist-react/issues/2551 and note that calls to this method
      *   within this class re-check `isReady` directly. We have observed this method returning
      *   to its caller as true when the ag-grid/API has in fact dismounted and is no longer ready.
+     *
+     * This method will introduce a minimal delay for all calls.  This is useful to ensure
+     * that the grid has had the opportunity to process any pending data updates, which are also
+     * subject to a minimal async debounce.
+     *
      * @param {number} [timeout] - timeout in ms
      * @return {Promise<boolean>} - latest ready state of grid
      */
     async whenReadyAsync(timeout = 3 * SECONDS) {
+        await wait();
         try {
             await when(() => this.isReady, {timeout});
         } catch (ignored) {
@@ -1209,17 +1216,15 @@ export class GridModel extends HoistModel {
     // Implementation
     //-----------------------
     async autosizeColsInternalAsync(colIds, options) {
-        const {agApi, empty} = this;
-        const showMask = options.showMask && agApi;
+        await this.whenReadyAsync();
+        if (!this.isReady) return;
+
+        const {agApi, empty} = this,
+            {showMask} = options;
 
         if (showMask) {
             agApi.showLoadingOverlay();
         }
-
-        // Always wait a tick to ensure `GridLocalModel.syncData()` reaction has run and ag-Grid
-        // has been asked to render the current recordset into visible rows for measuring. Also
-        // ensures that the mask overlay is rendered (if requested).
-        await wait();
 
         try {
             await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
@@ -1598,9 +1603,12 @@ export class GridModel extends HoistModel {
  *      override this value may specify `Column.autosizeBufferPx`. Default is 5.
  * @property {boolean} [showMask] - true to show mask over the grid during the autosize operation.
  *      Default is true.
+ * @property {boolean} [renderedRowsOnly] - true to limit operation to rendered rows only.
+ *      Default is false. Set to true for grids that contain many rows and columns, for which
+ *      full autosizing of all data would be too slow.
  * @property {boolean} [includeCollapsedChildren] - true to autosize all rows, even when hidden due
- *      to a collapsed ancestor row. Default is false. Note that setting this to true can
- *      have performance impacts for large tree grids with many cells.
+ *      to a collapsed ancestor row. Only has an effect when renderedRowsOnly is false. Default is false.
+ *      Note that setting this to true can have performance impacts for large tree grids with many cells.
  * @property {function|string|string[]} [columns] - columns ids to autosize, or a function for
  *      testing if the given column should be autosized. Typically used when calling
  *      autosizeAsync() manually. To generally exclude a column from autosizing, see the
