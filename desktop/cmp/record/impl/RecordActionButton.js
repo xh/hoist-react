@@ -6,7 +6,7 @@
  */
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
-import {StoreRecord, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
+import {RecordAction, StoreRecord, StoreSelectionModel} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import classNames from 'classnames';
 import {first} from 'lodash';

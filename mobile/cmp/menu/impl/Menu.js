@@ -4,18 +4,18 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {div, hspacer, vbox} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {listItem} from '@xh/hoist/kit/onsen';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {isFunction, isEmpty} from 'lodash';
-import {isValidElement} from 'react';
+import {isEmpty, isFunction} from 'lodash';
 import PT from 'prop-types';
+import {isValidElement} from 'react';
+import {MenuItem} from '../MenuItem';
 
 import './Menu.scss';
-import {MenuItem} from '../MenuItem';
 
 /**
  * Menu Component.

@@ -4,13 +4,13 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import composeRefs from '@seznam/compose-react-refs';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Children} from 'react';
 import {PanelModel} from '../PanelModel';
 import {dragger} from './dragger/Dragger';
 import {splitter} from './Splitter';
-import composeRefs from '@seznam/compose-react-refs';
 
 export const resizeContainer = hoistCmp.factory({
     displayName: 'ResizeContainer',

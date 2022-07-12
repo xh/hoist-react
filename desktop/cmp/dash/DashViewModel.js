@@ -5,6 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, ManagedRefreshContextModel} from '@xh/hoist/core';
+import '@xh/hoist/desktop/register';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {action, observable} from 'mobx';

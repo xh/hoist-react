@@ -4,13 +4,13 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {useImperativeHandle} from 'react';
-import classNames from 'classnames';
-import {isNil} from 'lodash';
 import {HoistModel, useLocalModel} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {createObservableRef} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
+import {isNil} from 'lodash';
+import {useImperativeHandle} from 'react';
 
 /**
  * Hook to render a component to be used for inline cell editing in ag-grid.

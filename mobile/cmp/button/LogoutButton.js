@@ -7,6 +7,7 @@
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from '@xh/hoist/mobile/cmp/button';
+import '@xh/hoist/mobile/register';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a logout operation.

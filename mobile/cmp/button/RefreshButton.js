@@ -4,9 +4,10 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, useContextModel, RefreshContextModel} from '@xh/hoist/core';
+import {hoistCmp, RefreshContextModel, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from '@xh/hoist/mobile/cmp/button';
+import '@xh/hoist/mobile/register';
 import {errorIf} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 

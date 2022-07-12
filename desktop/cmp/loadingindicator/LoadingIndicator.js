@@ -7,12 +7,13 @@
 import {hbox} from '@xh/hoist/cmp/layout';
 import {div} from '@xh/hoist/cmp/layout/Tags';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
-import {hoistCmp, useLocalModel, HoistModel, TaskObserver} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, TaskObserver, useLocalModel} from '@xh/hoist/core';
+import '@xh/hoist/desktop/register';
+import {withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {truncate} from 'lodash';
 import PT from 'prop-types';
 import './LoadingIndicator.scss';
-import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * A minimal / unobtrusive LoadingIndicator displaying an optional spinner and/or message to signal

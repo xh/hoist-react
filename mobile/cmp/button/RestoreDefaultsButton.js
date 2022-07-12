@@ -7,6 +7,7 @@
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from '@xh/hoist/mobile/cmp/button';
+import '@xh/hoist/mobile/register';
 import PT from 'prop-types';
 
 /**

@@ -6,6 +6,7 @@
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Button, button} from '@xh/hoist/desktop/cmp/button';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';

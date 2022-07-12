@@ -4,11 +4,12 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {DockViewModel} from '@xh/hoist/cmp/dock';
+import {DockViewModel} from '@xh/hoist/desktop/cmp/dock';
 import {div, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {modalSupport} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupport';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import classNames from 'classnames';

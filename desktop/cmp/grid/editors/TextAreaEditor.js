@@ -5,10 +5,11 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
+import '@xh/hoist/desktop/register';
 import {textArea} from '../../input';
-import {useInlineEditorModel} from './impl/InlineEditorModel';
 import {EditorPropTypes} from './EditorPropTypes';
 import './Editors.scss';
+import {useInlineEditorModel} from './impl/InlineEditorModel';
 
 export const [TextAreaEditor, textAreaEditor] = hoistCmp.withFactory({
     displayName: 'TextAreaEditor',

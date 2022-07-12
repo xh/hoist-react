@@ -4,12 +4,12 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, SizingMode} from '@xh/hoist/core';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
-import {checkbox} from '@xh/hoist/desktop/cmp/input';
-import {castArray, difference, isEmpty, partition, uniq, without} from 'lodash';
+import {HoistModel, managed, SizingMode} from '@xh/hoist/core';
 import {FieldType} from '@xh/hoist/data';
+import {checkbox} from '@xh/hoist/desktop/cmp/input';
+import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {castArray, difference, isEmpty, partition, uniq, without} from 'lodash';
 
 export class ValuesTabModel extends HoistModel {
     /** @member {ColumnHeaderFilterModel} */

@@ -6,6 +6,7 @@
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {button, Button} from '@xh/hoist/desktop/cmp/button';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 
 /**

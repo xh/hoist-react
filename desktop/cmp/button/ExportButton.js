@@ -6,6 +6,7 @@
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';

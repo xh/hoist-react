@@ -4,17 +4,18 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
+import '@xh/hoist/desktop/register';
 import {fmtNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
-import {withDefault, debounced, throwIf} from '@xh/hoist/utils/js';
+import {debounced, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-import {useLayoutEffect} from 'react';
-import composeRefs from '@seznam/compose-react-refs';
 import {isNaN, isNil, isNumber, round} from 'lodash';
 import PT from 'prop-types';
+import {useLayoutEffect} from 'react';
 
 /**
  * Number input, with optional support for formatting of display value, shorthand units, and more.

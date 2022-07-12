@@ -6,6 +6,7 @@
  */
 import {XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
+import '@xh/hoist/desktop/register';
 import {filter, keyBy, mapValues} from 'lodash';
 import {RestField} from './RestField';
 

@@ -4,18 +4,18 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, uses, HoistModel, useLocalModel, managed, lookup} from '@xh/hoist/core';
+import {form, FormModel} from '@xh/hoist/cmp/form';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
-import {required, parseFilter, withFilterByTypes} from '@xh/hoist/data';
 import {filler} from '@xh/hoist/cmp/layout';
-import {dialog} from '@xh/hoist/kit/blueprint';
-import {Icon} from '@xh/hoist/icon';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {FormModel, form} from '@xh/hoist/cmp/form';
+import {hoistCmp, HoistModel, lookup, managed, useLocalModel, uses} from '@xh/hoist/core';
+import {parseFilter, required, withFilterByTypes} from '@xh/hoist/data';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {Icon} from '@xh/hoist/icon';
+import {dialog} from '@xh/hoist/kit/blueprint';
 import {every} from 'lodash';
 
 import './GridFilterDialog.scss';

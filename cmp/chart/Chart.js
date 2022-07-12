@@ -8,7 +8,7 @@ import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {placeholder} from '../layout';
 import {lookup, hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
-import {useContextMenu} from '@xh/hoist/desktop/hooks';
+import {useContextMenu} from '@xh/hoist/dynamics/desktop';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {runInAction} from '@xh/hoist/mobx';
 import {
@@ -74,7 +74,9 @@ export const [Chart, chart] = hoistCmp.withFactory({
             })
         });
 
-        return useContextMenu(coreContents, impl.contextMenu);
+        return XH.isDesktop ?
+            useContextMenu(coreContents, impl.contextMenu) :
+            coreContents;
     }
 });
 

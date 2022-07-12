@@ -4,24 +4,25 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, useHoistInputModel, HoistInputPropTypes} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
+import '@xh/hoist/desktop/register';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {datePicker as bpDatePicker, popover} from '@xh/hoist/kit/blueprint';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
-import {warnIf, withDefault, consumeEvent} from '@xh/hoist/utils/js';
+import {consumeEvent, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {assign, castArray, clone, trim} from 'lodash';
 import moment from 'moment';
-import {createRef} from 'react';
 import PT from 'prop-types';
+import {createRef} from 'react';
 import './DateInput.scss';
 
 /**

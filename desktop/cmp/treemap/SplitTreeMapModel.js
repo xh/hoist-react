@@ -5,7 +5,8 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable, action, computed, makeObservable} from '@xh/hoist/mobx';
+import '@xh/hoist/desktop/register';
+import {action, bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {uniq} from 'lodash';
 

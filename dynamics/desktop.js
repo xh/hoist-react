@@ -27,6 +27,7 @@ export let pinPadImpl = null;
 export let StoreContextMenu = null;
 export let ColChooserModel = null;
 export let ColumnHeaderFilterModel = null;
+export let useContextMenu = null;
 
 /**
  * Provide implementations of functions and classes exported in this file.
@@ -45,4 +46,5 @@ export function installDesktopImpls(impls) {
     StoreContextMenu = impls.StoreContextMenu;
     ColChooserModel = impls.ColChooserModel;
     ColumnHeaderFilterModel = impls.ColumnHeaderFilterModel;
+    useContextMenu = impls.useContextMenu;
 }

@@ -4,12 +4,13 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, useHoistInputModel, HoistInputPropTypes} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {singleDatePicker} from '@xh/hoist/kit/react-dates';
+import '@xh/hoist/mobile/register';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';

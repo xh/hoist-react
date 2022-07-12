@@ -4,12 +4,13 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {div, frame, p} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
-import {frame, div, p} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {isString, isEmpty, isNil} from 'lodash';
-import {isValidElement} from 'react';
+import '@xh/hoist/desktop/register';
+import {isEmpty, isNil, isString} from 'lodash';
 import PT from 'prop-types';
+import {isValidElement} from 'react';
 
 import './ErrorMessage.scss';
 

@@ -6,7 +6,8 @@
  */
 import {HoistModel, managed, ManagedRefreshContextModel, XH} from '@xh/hoist/core';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
+import '@xh/hoist/desktop/register';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**

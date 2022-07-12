@@ -10,6 +10,7 @@ import {hoistCmp, uses} from '@xh/hoist/core';
 import {button, Button} from '@xh/hoist/desktop/cmp/button';
 import {select, Select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';

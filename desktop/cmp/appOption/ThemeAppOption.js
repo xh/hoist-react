@@ -7,6 +7,7 @@
 import {XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon/Icon';
 
 

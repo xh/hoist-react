@@ -14,11 +14,12 @@ import {
     RenderMode,
     XH
 } from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import '@xh/hoist/desktop/register';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
+import {throwIf} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 import {createRef} from 'react';
-import {throwIf} from '@xh/hoist/utils/js';
 import {ModalSupportModel} from '../modalsupport/ModalSupportModel';
 
 /**
