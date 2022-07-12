@@ -11,8 +11,8 @@ import {cloneDeep} from 'lodash';
 import PT from 'prop-types';
 import {chooserToolbar} from '../../../../leftrightchooser/impl/ChooserToolbar';
 import {description} from '../../../../leftrightchooser/impl/Description';
-import './LRChooser.scss';
 import {LRChooserModel} from './LRChooserModel';
+import './LRChooser.scss';
 
 
 /**

@@ -208,39 +208,32 @@ export class LRChooserModel extends HoistModel {
     }
 
     preprocessData(data) {
-        const traverse = data => {
-            return data.map(col => {
-                if (col.children) {
-                    return {
-                        side: 'left',
-                        ...col,
-                        children: traverse(col.children)
-                    };
-                }
-                if (!col.exclude) {
-                    return {
-                        side: 'left',
-                        ...col
-                    };
-                }
-            });
-        };
-        return traverse(data);
+        return data.map(col => {
+            if (col.children) {
+                return {
+                    side: 'left',
+                    ...col,
+                    children: this.preprocessData(col.children)
+                };
+            }
+            if (!col.exclude) {
+                return {
+                    side: 'left',
+                    ...col
+                };
+            }
+        });
     }
 
     countNested(rows) {
         let count = 0;
-        const traverse = children => {
-            children.forEach(child => {
-                count++;
-                if (child.children) traverse(child.children);
-            });
-        };
-        rows.forEach(row => {
-            count++;
-            if (row.raw.children) traverse(row.raw.children);
-        });
+        rows.forEach(row => row.forEachDescendant(() => count++));
         return count;
+    }
+
+    sortStore() {
+        let rightStore = sortBy(this.rightModel.store.allRecords, 'data.sortOrder')
+        console.log('right store:', rightStore);
     }
 
     nestedSort() {
@@ -261,6 +254,7 @@ export class LRChooserModel extends HoistModel {
     reorderData() {
         let sortOrder = 0,
             rightRaw = this.nestedSort();
+        this.sortStore();
         const traverse = rows => {
             rows.forEach(row => {
                 row.sortOrder = sortOrder;

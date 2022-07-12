@@ -48,7 +48,7 @@ export class ColChooserModel extends HoistModel {
         this.width = width;
         this.height = height;
 
-        this.lrModel = new LeftRightChooserModel({
+        this.lrModel = new LRChooserModel({
             leftTitle: 'Available Columns',
             leftEmptyText: 'No more columns to add.',
             rightTitle: 'Displayed Columns',
@@ -106,7 +106,7 @@ export class ColChooserModel extends HoistModel {
     // Implementation
     //------------------------
     createLRModel() {
-        XH.destroy(this.lrModel);
+        XH.safeDestroy(this.lrModel);
         this.lrModel = new LRChooserModel({
             leftTitle: 'Available Columns',
             leftEmptyText: 'No more columns to add.',
