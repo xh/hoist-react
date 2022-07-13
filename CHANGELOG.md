@@ -1,6 +1,8 @@
 # Changelog
 
-## v50.0.0-SNAPSHOT - unreleased
+## v51.0.0-SNAPSHOT - unreleased
+
+## v50.0.0 - 2022-07-12
 
 ### 🎁 New Features
 
@@ -33,6 +35,7 @@
 * `XHClass` (top-level Singleton model for Hoist) no longer extends `HoistBase`
 * `DockView` component has been moved into the desktop-specific package `@xh/hoist/desktop/cmp`.
 Users of this component will need to adjust their imports accordingly.
+* Requires `hoist-core >= 14.0`. Excel file exporting defaults to using column FieldType.
 
 ### 🐞 Bug Fixes
 
@@ -42,6 +45,7 @@ Users of this component will need to adjust their imports accordingly.
   trackpad on an iPad).
 * Fixed bug where `DashCanvasModel.removeView()` was not properly disposing of removed views
 * Fixed exception dialog getting overwhelmed by large messages.
+* Fixed exporting to Excel file erroneously coercing certain strings (like "1e10") into numbers.
 
 ### ⚙️ Technical
 
@@ -51,7 +55,7 @@ Users of this component will need to adjust their imports accordingly.
 
 * @blueprintjs `3.54 -> 4.5`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v49.2.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v49.2.0...v50.0.0)
 
 ## v49.2.0 - 2022-06-14
 
