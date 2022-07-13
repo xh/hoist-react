@@ -156,6 +156,13 @@
     }
   }
 
+  // Disable native AgGrid hover
+  .ag-row-hover:not(.ag-full-width-row)::before,
+  .ag-row-hover.ag-full-width-row.ag-row-group::before,
+  .ag-row-hover.ag-row-selected::before {
+    background: none;
+  }
+
   //------------------------
   // Core Cell Classes
   //------------------------
