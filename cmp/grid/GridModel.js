@@ -638,6 +638,56 @@ export class GridModel extends HoistModel {
         }
     }
 
+    /**
+     * Scroll to ensure the provided record or records are visible.
+     *
+     * If multiple records are specified, scroll to the first record and then the last. This will do
+     * the minimum scrolling necessary to display the start of the provided record and as much as
+     * possible of the rest.
+     *
+     * Any provided records that are hidden because their parent rows are collapsed will first
+     * be revealed by expanding their parent rows.
+     *
+     * @param {(StoreRecordOrId|StoreRecordOrId[])} records - one or more record(s) / ID(s) for
+     * which to ensure visibility.
+     */
+    async ensureRecordsVisibleAsync(records) {
+        await this.whenReadyAsync();
+        if(!this.isReady) return;
+
+        const {agApi} = this,
+            indices = [];
+
+        // 1) Expand any selected nodes that are collapsed
+        records.forEach(({agId}) => {
+            for (let row = agApi.getRowNode(agId)?.parent; row; row = row.parent) {
+                if (!row.expanded) {
+                    agId.setRowNodeExpanded(row, true);
+                }
+            }
+        });
+
+        await wait();
+
+        // 2) Scroll to all selected nodes
+        records.forEach(({agId}) => {
+            const rowIndex = agApi.getRowNode(agId)?.rowIndex;
+            if (!isNil(rowIndex)) indices.push(rowIndex);
+        });
+
+        const indexCount = indices.length;
+        if (indexCount !== records.length) {
+            console.warn('Grid row nodes not found for all provided records.');
+        }
+
+        if(indexCount === 1) {
+            agApi.ensureIndexVisible(indices[0]);
+        } else if (indexCount > 1) {
+            agApi.ensureIndexVisible(max(indices));
+            agApi.ensureIndexVisible(min(indices));
+        }
+    }
+
     /** @return {boolean} - true if any records are selected. */
     get hasSelection() {return !this.selModel.isEmpty}
 
