@@ -651,7 +651,7 @@ export class GridModel extends HoistModel {
      * @param {(StoreRecordOrId|StoreRecordOrId[])} records - one or more record(s) / ID(s) for
      * which to ensure visibility.
      */
-    async ensureRecordsVisibleAsync(records) {
+    async ensureRecordsVisibleAsync(...records) {
         await this.whenReadyAsync();
         if(!this.isReady) return;
 
