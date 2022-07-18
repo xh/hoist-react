@@ -227,13 +227,12 @@ export class LRChooserModel extends HoistModel {
 
     countNested(rows) {
         let count = 0;
-        rows.forEach(row => row.forEachDescendant(() => count++));
+        rows.forEach(row => row.forEachDescendant((desc) => count++));
         return count;
     }
 
     sortStore() {
-        let rightStore = sortBy(this.rightModel.store.allRecords, 'data.sortOrder')
-        console.log('right store:', rightStore);
+        let rightStore = sortBy(this.rightModel.store.allRecords, 'data.sortOrder');
     }
 
     nestedSort() {
