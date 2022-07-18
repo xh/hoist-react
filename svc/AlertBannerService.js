@@ -94,5 +94,5 @@ export class AlertBannerService extends HoistService {
 
     onClose = () => {
         XH.localStorageService.set('xhAlertBanner.lastDismissed', Date.now());
-    }
+    };
 }

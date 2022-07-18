@@ -195,7 +195,7 @@ class ColumnHeaderModel extends HoistModel {
     // Ag-Grid's filter callback
     onFilterChanged = () => {
         this.setIsAgFiltered(this.agColumn.isFilterActive());
-    }
+    };
 
     @computed
     get rootsWithChildren() {

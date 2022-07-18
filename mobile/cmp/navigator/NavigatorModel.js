@@ -258,13 +258,13 @@ export class NavigatorModel extends HoistModel {
         }
 
         return page({model, key});
-    }
+    };
 
     @action
     onPageChange = () => {
         this.disableAppRefreshButton = this.activePage?.disableAppRefreshButton;
         this.doCallback();
-    }
+    };
 
     doCallback() {
         if (this._callback) this._callback();

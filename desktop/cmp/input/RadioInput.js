@@ -83,7 +83,7 @@ class Model extends HoistInputModel {
     //-------------------------
     onChange = (e) => {
         this.noteValueChange(e.target.value);
-    }
+    };
 }
 
 const cmp = hoistCmp.factory(

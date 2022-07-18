@@ -138,7 +138,7 @@ class LocalModel extends HoistModel {
 
     getRowHeight = () => {
         return AgGrid.getRowHeightForSizingMode(this.model.sizingMode);
-    }
+    };
 
     destroy() {
         this.model?.handleGridUnmount();

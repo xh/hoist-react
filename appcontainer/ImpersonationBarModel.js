@@ -75,11 +75,11 @@ export class ImpersonationBarModel extends HoistModel {
             this.setPendingTarget('');
             XH.handleException(e, {logOnServer: false});  // likely to be an unknown user
         }
-    }
+    };
 
     onClose = () => {
         XH.identityService.isImpersonating ? XH.identityService.endImpersonateAsync() : this.hide();
-    }
+    };
 
 
     //--------------------

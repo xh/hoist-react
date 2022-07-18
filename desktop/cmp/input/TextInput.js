@@ -105,7 +105,7 @@ class Model extends HoistInputModel {
     onKeyDown = (ev) => {
         if (ev.key === 'Enter') this.doCommit();
         this.componentProps.onKeyDown?.(ev);
-    }
+    };
 
     onFocus = (ev) => {
         if (this.componentProps.selectOnFocus && ev.target.nodeName === 'INPUT') {
@@ -113,7 +113,7 @@ class Model extends HoistInputModel {
         }
 
         this.noteFocused();
-    }
+    };
 }
 
 const cmp = hoistCmp.factory(

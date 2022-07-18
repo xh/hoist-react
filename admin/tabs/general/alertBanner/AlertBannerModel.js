@@ -42,7 +42,7 @@ export class AlertBannerModel extends HoistModel {
             {name: 'updated', readonly: true},
             {name: 'updatedBy', readonly: true}
         ]
-    })
+    });
 
     @managed
     @observable.ref
