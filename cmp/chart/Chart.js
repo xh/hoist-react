@@ -368,9 +368,7 @@ class LocalModel extends HoistModel {
     //---------------------------
     // Handlers
     //---------------------------
-    onSetExtremes = () => {
-
-    }
+    onSetExtremes = () => {};
 
     getContextMenu() {
         if (!this.model.showContextMenu || !XH.isDesktop) return null;

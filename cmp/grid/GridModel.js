@@ -603,7 +603,7 @@ export class GridModel extends HoistModel {
     async ensureSelectionVisibleAsync() {
         await this.whenReadyAsync();
         if (!this.isReady) return;
-        
+
         return this.ensureRecordsVisibleAsync(this.selectedRecords);
     }
 
@@ -622,7 +622,7 @@ export class GridModel extends HoistModel {
      */
     async ensureRecordsVisibleAsync(records) {
         await this.whenReadyAsync();
-        if(!this.isReady) return;
+        if (!this.isReady) return;
 
         records = castArray(records);
 
@@ -651,7 +651,7 @@ export class GridModel extends HoistModel {
             console.warn('Grid row nodes not found for all provided records.');
         }
 
-        if(indexCount === 1) {
+        if (indexCount === 1) {
             agApi.ensureIndexVisible(indices[0]);
         } else if (indexCount > 1) {
             agApi.ensureIndexVisible(max(indices));
@@ -1199,13 +1199,13 @@ export class GridModel extends HoistModel {
     @action
     onCellEditingStarted = () => {
         this.isEditing = true;
-    }
+    };
 
     /** @package */
     @action
     onCellEditingStopped = () => {
         this.isEditing = false;
-    }
+    };
 
     /**
      * Returns true as soon as the underlying agGridModel is ready, waiting a limited period

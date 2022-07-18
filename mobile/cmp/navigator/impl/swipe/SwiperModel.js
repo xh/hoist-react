@@ -63,7 +63,7 @@ export class SwiperModel extends HoistModel {
             consumeEvent(e);
             return;
         }
-    }
+    };
 
     @action
     onDrag = (e) => {
@@ -92,7 +92,7 @@ export class SwiperModel extends HoistModel {
             consumeEvent(e);
             return;
         }
-    }
+    };
 
     @action
     onDragEnd = (e) => {
@@ -109,7 +109,7 @@ export class SwiperModel extends HoistModel {
             this.refreshEnd();
             consumeEvent(e);
         }
-    }
+    };
 
     isDraggingChild(e, dir) {
         // Loop through the touch targets to ensure it is safe to swipe

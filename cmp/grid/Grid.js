@@ -771,7 +771,7 @@ class GridLocalModel extends HoistModel {
             column: xhColumn,
             node
         });
-    }
+    };
 
     navigateToNextCell = (agParams) => {
         return this.rowKeyNavSupport?.navigateToNextCell(agParams);

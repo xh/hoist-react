@@ -7,6 +7,11 @@
 * New `GridModel` method `ensureRecordsVisibleAsync` accepts one or more store records or IDs and
   scrolls to make them visible in the grid.
 
+### 📚 Libraries
+
+* @blueprintjs/core `4.5 -> 4.6`
+* qs `6.10 -> 6.11`
+
 ## v50.0.0 - 2022-07-12
 
 ### 🎁 New Features

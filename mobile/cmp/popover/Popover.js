@@ -135,7 +135,7 @@ class LocalModel extends HoistModel {
     contentRef = createObservableRef();
     @observable isOpen;
 
-    _onInteraction
+    _onInteraction;
     _controlledMode = false;
 
     get targetEl() {

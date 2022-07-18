@@ -165,7 +165,7 @@ export class SplitTreeMapModel extends HoistModel {
     //-------------------------
     defaultMapFilter = (record) => {
         return record.get(this.primaryMapModel.valueField) >= 0;
-    }
+    };
 }
 
 /**

@@ -216,7 +216,7 @@ class LocalModel extends HoistModel {
         if (widthChange > threshold || heightChange > threshold) {
             model.setIsMasking(true);
         }
-    }
+    };
 
     onResizeAsync = async ({width, height}) => {
         const {chart, model} = this;
@@ -339,7 +339,7 @@ class LocalModel extends HoistModel {
         this.clickCount++;
         this.debouncedClickHandler(e.point.record, e);
         if (this.clickCount >= 2) this.debouncedClickHandler.flush();
-    }
+    };
 
     clickHandler(record, e) {
         try {
