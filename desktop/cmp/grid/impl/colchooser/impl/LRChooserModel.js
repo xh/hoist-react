@@ -105,6 +105,7 @@ export class LRChooserModel extends HoistModel {
         super();
         makeObservable(this);
         this.onChange = onChange;
+        window.lrModel = this;
         const store = {
             fields: [
                 {name: 'text', type: 'string'},
@@ -231,81 +232,52 @@ export class LRChooserModel extends HoistModel {
         return count;
     }
 
-    sortStore() {
-        let rightStore = sortBy(this.rightModel.store.allRecords, 'data.sortOrder');
-    }
-
-    nestedSort() {
-        let rightRaw = filter(this._data, {side: 'right'});
-        rightRaw = sortBy(rightRaw, 'sortOrder');
-        const traverse = rows => {
-            rows.forEach(row => {
-                if (row.children) {
-                    row.children = sortBy(row.children, 'sortOrder');
-                    traverse(row.children);
-                }
-            });
-        };
-        traverse(rightRaw);
-        return rightRaw;
-    }
-
     reorderData() {
         let sortOrder = 0,
-            rightRaw = this.nestedSort();
-        this.sortStore();
-        const traverse = rows => {
-            rows.forEach(row => {
-                row.sortOrder = sortOrder;
-                sortOrder++;
-                if (row.children) traverse(row.children);
-            });
+            rightRecords = sortBy(this.rightModel.store.allRecords, 'raw.sortOrder');
+        const reorder = rec => {
+            rec.raw.sortOrder = sortOrder;
+            sortOrder++;
         };
-        traverse(rightRaw);
+        rightRecords.forEach(reorder);
         this.refreshStores();
     }
 
-    append(rows) {
+    appendRows(rows) {
         const rightStore = this.rightModel.store.allRecords;
         let lastSortOrder = maxBy(rightStore, r => r.data.sortOrder).data.sortOrder;
-        const appendData = rows => {
-            rows.forEach(row => {
-                lastSortOrder++;
-                row.raw.sortOrder = lastSortOrder;
-                if (row.children) appendData(row.children);
-            });
+        const append = row => {
+            lastSortOrder++;
+            row.raw.sortOrder = lastSortOrder;
         };
-        appendData(rows);
+        rows.forEach(row => {
+            row.forEachDescendant(append);
+        });
     }
 
     shiftRows(rows, toIndex, rowDepth) {
-        const shift = (rec) => {
-            if ((toIndex <= rec.data.sortOrder) ) {
-                    rec.raw.sortOrder += rowDepth;
-                }
-            }
+        const shift = rec => {
+            if (toIndex <= rec.data.sortOrder) rec.raw.sortOrder += rowDepth;
+        };
         rows.forEach(row => row.forEachDescendant(shift));
     }
 
     insertRows(rows, toIndex) {
-        rows.forEach((row, idx) => {
-            if (row.raw.children) {
-                toIndex++;
-                row.raw.sortOrder = toIndex;
-                this.insertRows(row.children, toIndex);
-            } else {
-                row.raw.sortOrder = toIndex + idx;
-            }
-        });
+        let idx = toIndex;
+        const insert = rec => {
+            rec.raw.sortOrder = idx;
+            idx++;
+        };
+        rows.forEach(row => row.forEachDescendant(insert));
     };
 
     // accepts an array containing a single row or multiple rows
     rearrangeRows(rows, overRow = null) {
         if (!overRow) {
-            this.append(rows);
+            this.appendRows(rows);
         } else {
-            let toIndex = overRow.data.sortOrder;
-            let rightRoots = this.rightModel.store.rootRecords;
+            let toIndex = overRow.data.sortOrder,
+                rightRoots = this.rightModel.store.rootRecords;
             const rowDepth = this.countNested(rows);
             // shift rows by the number of rows being inserted, including nesting
             this.shiftRows(rightRoots, toIndex, rowDepth);
@@ -314,7 +286,7 @@ export class LRChooserModel extends HoistModel {
         }
     }
 
-    moveRows(rows) {
+    swapSides(rows) {
         rows.forEach(row => {
             const {locked, side} = row.raw;
             if (locked) return;
@@ -327,7 +299,7 @@ export class LRChooserModel extends HoistModel {
     onLeftDragEnd(e) {
         const rows = (e.nodes).map(r => r.data);
         if (rows[0].raw.side === 'right') {
-            this.moveRows(rows);
+            this.swapSides(rows);
             this.onChange?.();
         }
     }
@@ -342,14 +314,22 @@ export class LRChooserModel extends HoistModel {
             // 1) Reordering rows in the right grid
             this.rearrangeRows(rows, overRow);
             this.reorderData();
+
         } else {
             // 2) Moving row from left to right grid
-            this.moveRows(rows);
-            this.rearrangeRows(rows, overRow);
-            this.reorderData();
+            this.swapSides(rows);
+            const rightStore = this.rightModel.store.allRecords,
+                swapped = [];
+            rows.forEach(({agId}) => {
+                rightStore.forEach(row => {
+                    if (agId === row.agId) swapped.push(row);
+                });
+                this.rearrangeRows(swapped, overRow);
+                this.reorderData();
+            });
+            this._inRightGrid = false;
+            this.onChange?.();
         }
-        this._inRightGrid = false;
-        this.onChange?.();
     }
 
     onRowDragMove(e) {
@@ -381,7 +361,8 @@ export class LRChooserModel extends HoistModel {
 
     onRowDoubleClicked(e) {
         if (e.data) {
-            this.moveRows([e.data]);
+            this.swapSides([e.data]);
+            this.reorderData();
             this.onChange?.();
         }
     }
@@ -408,7 +389,6 @@ export class LRChooserModel extends HoistModel {
     refreshStores() {
         const data = this._data,
             {leftModel, rightModel} = this;
-
         const leftData = [{
             id: 'leftRoot',
             name: 'root',
