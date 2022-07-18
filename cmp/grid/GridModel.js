@@ -604,38 +604,9 @@ export class GridModel extends HoistModel {
         await this.whenReadyAsync();
         if (!this.isReady) return;
 
-        const {agApi, selModel} = this,
-            {selectedRecords} = selModel,
-            indices = [];
+        const {selectedRecords} = this.selModel;
 
-        // 1) Expand any selected nodes that are collapsed
-        selectedRecords.forEach(({agId}) => {
-            for (let row = agApi.getRowNode(agId)?.parent; row; row = row.parent) {
-                if (!row.expanded) {
-                    agApi.setRowNodeExpanded(row, true);
-                }
-            }
-        });
-
-        await wait();
-
-        // 2) Scroll to all selected nodes
-        selectedRecords.forEach(({agId}) => {
-            const rowIndex = agApi.getRowNode(agId)?.rowIndex;
-            if (!isNil(rowIndex)) indices.push(rowIndex);
-        });
-
-        const indexCount = indices.length;
-        if (indexCount !== selectedRecords.length) {
-            console.warn('Grid row nodes not found for all selected records.');
-        }
-
-        if (indexCount === 1) {
-            agApi.ensureIndexVisible(indices[0]);
-        } else if (indexCount > 1) {
-            agApi.ensureIndexVisible(max(indices));
-            agApi.ensureIndexVisible(min(indices));
-        }
+        await this.ensureRecordsVisibleAsync(selectedRecords);
     }
 
     /**
@@ -651,25 +622,27 @@ export class GridModel extends HoistModel {
      * @param {(StoreRecordOrId|StoreRecordOrId[])} records - one or more record(s) / ID(s) for
      * which to ensure visibility.
      */
-    async ensureRecordsVisibleAsync(...records) {
+    async ensureRecordsVisibleAsync(records) {
         await this.whenReadyAsync();
         if(!this.isReady) return;
+
+        records = castArray(records);
 
         const {agApi} = this,
             indices = [];
 
-        // 1) Expand any selected nodes that are collapsed
+        // 1) Expand any nodes that are collapsed
         records.forEach(({agId}) => {
             for (let row = agApi.getRowNode(agId)?.parent; row; row = row.parent) {
                 if (!row.expanded) {
-                    agId.setRowNodeExpanded(row, true);
+                    agApi.setRowNodeExpanded(row, true);
                 }
             }
         });
 
         await wait();
 
-        // 2) Scroll to all selected nodes
+        // 2) Scroll to all nodes
         records.forEach(({agId}) => {
             const rowIndex = agApi.getRowNode(agId)?.rowIndex;
             if (!isNil(rowIndex)) indices.push(rowIndex);
