@@ -278,41 +278,39 @@ export class LRChooserModel extends HoistModel {
         appendData(rows);
     }
 
+    shiftRows(rows, toIndex, rowDepth) {
+        const shift = (rec) => {
+            if ((toIndex <= rec.data.sortOrder) ) {
+                    rec.raw.sortOrder += rowDepth;
+                }
+            }
+        rows.forEach(row => row.forEachDescendant(shift));
+    }
+
+    insertRows(rows, toIndex) {
+        rows.forEach((row, idx) => {
+            if (row.raw.children) {
+                toIndex++;
+                row.raw.sortOrder = toIndex;
+                this.insertRows(row.children, toIndex);
+            } else {
+                row.raw.sortOrder = toIndex + idx;
+            }
+        });
+    };
+
     // accepts an array containing a single row or multiple rows
     rearrangeRows(rows, overRow = null) {
         if (!overRow) {
             this.append(rows);
         } else {
-            let toIndex = overRow.raw.sortOrder;
-            let rightRaw = filter(this._data, {side: 'right'});
+            let toIndex = overRow.data.sortOrder;
+            let rightRoots = this.rightModel.store.rootRecords;
             const rowDepth = this.countNested(rows);
             // shift rows by the number of rows being inserted, including nesting
-            const shiftRows = rows => {
-                    rows.forEach(row => {
-                        if ((toIndex <= row.sortOrder) || row.children) {
-                            if (toIndex <= row.sortOrder) {
-                                row.sortOrder += rowDepth;
-                            }
-                            if (row.children) {
-                                shiftRows(row.children);
-                            }
-                        }
-                    });
-                },
-                // update inserted row sortOrders to fit within the allotted space
-                insertRows = rows => {
-                    rows.forEach((row, idx) => {
-                        if (row.raw.children) {
-                            toIndex++;
-                            row.raw.sortOrder = toIndex;
-                            insertRows(row.children);
-                        } else {
-                            row.raw.sortOrder = toIndex + idx;
-                        }
-                    });
-                };
-            shiftRows(rightRaw);
-            insertRows(rows);
+            this.shiftRows(rightRoots, toIndex, rowDepth);
+            // update inserted row sortOrders to fit within the allotted space
+            this.insertRows(rows, toIndex);
         }
     }
 
