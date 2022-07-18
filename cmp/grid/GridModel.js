@@ -588,7 +588,7 @@ export class GridModel extends HoistModel {
     }
 
     /**
-     * Scroll to ensure the selected record is visible.
+     * Scroll to ensure the selected record or records are visible.
      *
      * If multiple records are selected, scroll to the first record and then the last. This will do
      * the minimum scrolling necessary to display the start of the selection and as much as
@@ -603,10 +603,8 @@ export class GridModel extends HoistModel {
     async ensureSelectionVisibleAsync() {
         await this.whenReadyAsync();
         if (!this.isReady) return;
-
-        const {selectedRecords} = this.selModel;
-
-        await this.ensureRecordsVisibleAsync(selectedRecords);
+        
+        return this.ensureRecordsVisibleAsync(this.selectedRecords);
     }
 
     /**
