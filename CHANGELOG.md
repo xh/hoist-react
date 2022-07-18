@@ -2,6 +2,11 @@
 
 ## v51.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* New `GridModel` method `ensureRecordsVisibleAsync` accepts one or more store records or IDs and
+  scrolls to make them visible in the grid.
+
 ## v50.0.0 - 2022-07-12
 
 ### 🎁 New Features
