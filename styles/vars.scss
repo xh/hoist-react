@@ -5,6 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+@use "sass:color";
 @import '~sass-material-colors/sass/sass-material-colors';
 
 // Functions to fetch Google material design colors (https://material.io/color/)
@@ -307,7 +308,7 @@ body {
   }
 
   &.xh-mobile {
-    --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '400'), mc('light-blue', '600'), 60%)});
+    --xh-button-active-bg: var(--button-active-bg, #{color.mix(mc('blue-grey', '400'), mc('light-blue', '600'), 60%)});
     --xh-button-active-text-color: var(--button-active-text-color, white);
     --xh-button-bg: var(--button-bg, #{mc('blue-grey', '600')});
     --xh-button-text-color: var(--button-text-color, white);
@@ -324,7 +325,7 @@ body {
     --xh-button-bg-lightest: var(--button-bg-lightest, #{mc('blue-grey', '400')});
 
     &.xh-dark {
-      --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '800'), mc('light-blue', '600'), 50%)});
+      --xh-button-active-bg: var(--button-active-bg, #{color.mix(mc('blue-grey', '800'), mc('light-blue', '600'), 50%)});
     }
   }
 
