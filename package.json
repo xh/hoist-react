@@ -11,7 +11,8 @@
     "lint": "yarn lint:all",
     "lint:all": "yarn lint:js && yarn lint:styles",
     "lint:js": "eslint --ext .js,.jsx .",
-    "lint:styles": "stylelint \"**/*.s?(a|c)ss\""
+    "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
+    "prepare": "husky install"
   },
   "sideEffects": [
     "./static/polyfills.js"
@@ -19,11 +20,6 @@
   "lint-staged": {
     "*.{js,jsx}": "eslint",
     "*.s?(a|c)ss": "stylelint"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   },
   "dependencies": {
     "@blueprintjs/core": "~4.6.0",
@@ -82,8 +78,8 @@
   },
   "devDependencies": {
     "@xh/hoist-dev-utils": "^6.0.0-SNAPSHOT",
-    "husky": "~4.3.8",
-    "lint-staged": "~10.5.3",
+    "husky": "^8.0.0",
+    "lint-staged": "~13.0.3",
     "postcss": "^8.0.0",
     "react": "~17.0.1",
     "react-dom": "~17.0.1",
