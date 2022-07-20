@@ -226,46 +226,43 @@ export class LRChooserModel extends HoistModel {
         });
     }
 
-    countNested(rows) {
+    countRows(rows) {
         let count = 0;
-        rows.forEach(row => row.forEachDescendant((desc) => count++));
+        rows.forEach(row => row.forEachDescendant(() => count++));
         return count;
     }
 
     reorderData() {
         let sortOrder = 0,
-            rightRecords = sortBy(this.rightModel.store.allRecords, 'raw.sortOrder');
-        const reorder = rec => {
+            rightStore = sortBy(this.rightModel.store.allRecords, 'raw.sortOrder');
+
+        rightStore.forEach(rec => {
             rec.raw.sortOrder = sortOrder;
             sortOrder++;
-        };
-        rightRecords.forEach(reorder);
+        });
+
         this.refreshStores();
     }
 
     appendRows(rows) {
         const rightStore = this.rightModel.store.allRecords;
-        let lastSortOrder = maxBy(rightStore, r => r.data.sortOrder).data.sortOrder;
+        let lastSortOrder = maxBy(rightStore, rec => rec.data.sortOrder).data.sortOrder;
         const append = row => {
             lastSortOrder++;
             row.raw.sortOrder = lastSortOrder;
         };
-        rows.forEach(row => {
-            row.forEachDescendant(append);
-        });
+        rows.forEach(row => {row.forEachDescendant(append)});
     }
 
     shiftRows(rows, toIndex, rowDepth) {
-        const shift = rec => {
-            if (toIndex <= rec.data.sortOrder) rec.raw.sortOrder += rowDepth;
-        };
+        const shift = row => {if (toIndex <= row.data.sortOrder) row.raw.sortOrder += rowDepth};
         rows.forEach(row => row.forEachDescendant(shift));
     }
 
     insertRows(rows, toIndex) {
         let idx = toIndex;
-        const insert = rec => {
-            rec.raw.sortOrder = idx;
+        const insert = row => {
+            row.raw.sortOrder = idx;
             idx++;
         };
         rows.forEach(row => row.forEachDescendant(insert));
@@ -278,7 +275,7 @@ export class LRChooserModel extends HoistModel {
         } else {
             let toIndex = overRow.data.sortOrder,
                 rightRoots = this.rightModel.store.rootRecords;
-            const rowDepth = this.countNested(rows);
+            const rowDepth = this.countRows(rows);
             // shift rows by the number of rows being inserted, including nesting
             this.shiftRows(rightRoots, toIndex, rowDepth);
             // update inserted row sortOrders to fit within the allotted space
@@ -295,7 +292,7 @@ export class LRChooserModel extends HoistModel {
         this.refreshStores();
     }
 
-// Row Drag Event Handlers
+    // Row Drag Event Handlers
     onLeftDragEnd(e) {
         const rows = (e.nodes).map(r => r.data);
         if (rows[0].raw.side === 'right') {
@@ -309,12 +306,12 @@ export class LRChooserModel extends HoistModel {
         this.rightModel.agApi.redrawRows();
         const rows = (e.nodes).map(r => r.data),
             overRow = e.overNode?.data;
+        console.log('rows:', rows);
+        console.log('overrow:', overRow);
         if (rows[0] === overRow) return;
         if (rows[0].raw.side === 'right') {
             // 1) Reordering rows in the right grid
             this.rearrangeRows(rows, overRow);
-            this.reorderData();
-
         } else {
             // 2) Moving row from left to right grid
             this.swapSides(rows);
@@ -324,12 +321,12 @@ export class LRChooserModel extends HoistModel {
                 rightStore.forEach(row => {
                     if (agId === row.agId) swapped.push(row);
                 });
-                this.rearrangeRows(swapped, overRow);
-                this.reorderData();
             });
-            this._inRightGrid = false;
-            this.onChange?.();
+            this.rearrangeRows(swapped, overRow);
         }
+        this.reorderData();
+        this._inRightGrid = false;
+        this.onChange?.();
     }
 
     onRowDragMove(e) {
@@ -342,7 +339,7 @@ export class LRChooserModel extends HoistModel {
                 this._dropEdge = 'above';
             } else {
                 const rightStore = this.rightModel.store.allRecords;
-                this._dropTargetId = maxBy(rightStore, r => r.data.sortOrder).id;
+                this._dropTargetId = maxBy(rightStore, rec => rec.data.sortOrder).id;
                 this._dropEdge = 'below';
             }
         }

@@ -40,7 +40,6 @@ export class ColChooserModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
-
         this.gridModel = gridModel;
         this.commitOnChange = commitOnChange;
         this.showRestoreDefaults = showRestoreDefaults;
@@ -129,13 +128,12 @@ export class ColChooserModel extends HoistModel {
         const {gridModel} = this,
             allColumns = gridModel.columns,
             colIds = gridModel.columnState.map(col => col.colId);
-
         const processColumns = (cols, path) => {
             const ret = [];
             cols.forEach((col) => {
                 if (col.children) {
                     // create a group node
-                    const id = `${path}>>${col.groupId}`;
+                    const id = XH.genId(); // (`${path}>>${col.groupId}`)
                     const children = processColumns(col.children, id);
                     if (!isEmpty(children)) {
                         // add the node if it has children
@@ -151,32 +149,24 @@ export class ColChooserModel extends HoistModel {
                 } else {
                     // create a leaf node
                     const visible = gridModel.isColumnVisible(col.colId),
-                        id = `${path}>>${col.colId}`;
+                        id = `${path}>>${col.colId}`,
+                        newNode = {
+                        id,
+                        value: col.colId,
+                        text: col.chooserName,
+                        description: col.chooserDescription,
+                        exclude: col.excludeFromChooser,
+                        locked: visible && !col.hideable,
+                        isLeaf: true,
+                        side
+                    };
                     if (side === 'right' && visible) {
                         // if we are constructing the right tree, we are looking for visible cols
-                        ret.push({
-                            id,
-                            value: col.colId,
-                            text: col.chooserName,
-                            description: col.chooserDescription,
-                            exclude: col.excludeFromChooser,
-                            locked: visible && !col.hideable,
-                            sortOrder: colIds.indexOf(col.colId),
-                            isLeaf: true,
-                            side
-                        });
+                        newNode.sortOrder = colIds.indexOf(col.colId);
+                        ret.push(newNode);
                     } else if (side === 'left' && !visible) {
                         // if we are constructing the left tree, we are looking for hidden cols
-                        ret.push({
-                            id,
-                            value: col.colId,
-                            text: col.chooserName,
-                            description: col.chooserDescription,
-                            exclude: col.excludeFromChooser,
-                            locked: visible && !col.hideable,
-                            isLeaf: true,
-                            side
-                        });
+                        ret.push(newNode);
                     }
                 }
             });
