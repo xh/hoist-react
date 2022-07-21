@@ -1,6 +1,6 @@
 # Changelog
 
-## v51.0.0-SNAPSHOT - unreleased
+## v50.1.0 - 2022-07-21
 
 ### 🎁 New Features
 
