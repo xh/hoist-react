@@ -224,7 +224,7 @@
 
   &--no-cell-borders {
     .ag-cell {
-      border-color: transparent;
+      border-color: transparent !important;
     }
   }
 
