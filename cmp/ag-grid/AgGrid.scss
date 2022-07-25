@@ -214,7 +214,7 @@
   // Cell borders
   &--cell-borders {
     .ag-cell {
-      border-right-color: var(--xh-grid-border-color) !important;
+      border-right-color: var(--xh-grid-border-color);
     }
 
     .ag-row {
