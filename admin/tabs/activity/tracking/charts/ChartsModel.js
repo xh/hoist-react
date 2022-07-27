@@ -14,7 +14,7 @@ import {sortBy, isEmpty} from 'lodash';
 import moment from 'moment';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
-import {ONE_DAY} from '@xh/hoist/utils/datetime/DateTimeUtils';
+import {ONE_HOUR, ONE_DAY} from '@xh/hoist/utils/datetime/DateTimeUtils';
 
 export class ChartsModel extends HoistModel {
     @managed panelModel = new PanelModel({
@@ -66,12 +66,15 @@ export class ChartsModel extends HoistModel {
                 title: {},
                 units: [['day', [1]], ['week', [2]], ['month', [1]]],
                 labels: {
-                    formatter: function() {return fmtDate(this.value, 'D MMM')}
+                    formatter: function () {
+                        return fmtDate(this.value, 'D MMM');
+                    }
                 }
             },
             yAxis: [{title: {text: null}, allowDecimals: false}]
         }
     });
+
 
     get showAsTimeseries() {
         return this.dimensions[0] === 'day';
@@ -133,15 +136,34 @@ export class ChartsModel extends HoistModel {
         chartModel.setSeries(series);
     }
 
+    sortData() {
+        const {data, primaryDim} = this;
+        return sortBy(data, aggRow => {
+            const {cubeLabel} = aggRow.data;
+            switch (primaryDim) {
+                case 'day':
+                    return LocalDate.from(cubeLabel).timestamp;
+                case 'month':
+                    return moment(cubeLabel, 'MMM YYYY').valueOf();
+                default:
+                    return cubeLabel;
+            }
+        });
+    }
+
     getSeriesData() {
         const {data, metric, primaryDim, showAsTimeseries} = this,
             metricLabel = this.getLabelForMetric(metric, false);
+        console.log(LocalDate.from(data[0].data.cubeLabel).timestamp);
         let sortedData = sortBy(data, aggRow => {
                 const {cubeLabel} = aggRow.data;
                 switch (primaryDim) {
-                    case 'day': return LocalDate.from(cubeLabel).timestamp;
-                    case 'month': return moment(cubeLabel, 'MMM YYYY').valueOf();
-                    default: return cubeLabel;
+                    case 'day':
+                        return LocalDate.from(cubeLabel).timestamp;
+                    case 'month':
+                        return moment(cubeLabel, 'MMM YYYY').valueOf();
+                    default:
+                        return cubeLabel;
                 }
             }),
             chartData = sortedData.map(aggRow => {
@@ -168,7 +190,35 @@ export class ChartsModel extends HoistModel {
                 chartData = sortBy(chartData, data => data[0]);
             }
         }
+        this.toggleWeekends();
         return [{name: metricLabel, data: chartData}];
+    }
+
+    toggleWeekends() {
+        const {timeseriesChartModel} = this;
+        let firstFriday;
+
+        let sortedData = this.sortData(),
+            timeStamps = sortedData.map(aggRow => {
+                const {cubeLabel} = aggRow.data;
+                return LocalDate.from(cubeLabel).timestamp;
+            });
+
+        for (let day of timeStamps) {
+            const dayNum = moment(day).day();
+            if (dayNum === 5) {
+                firstFriday = day + (12 * ONE_HOUR);
+                break;
+            }
+        }
+        timeseriesChartModel
+            .highchartsConfig
+            .xAxis
+            .breaks = [{
+            from: firstFriday,
+            to: firstFriday + (2 * ONE_DAY),
+            repeat: 7 * ONE_DAY
+        }];
     }
 
     getLabelForMetric(metric, multiline) {
