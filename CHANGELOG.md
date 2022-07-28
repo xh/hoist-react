@@ -1,5 +1,12 @@
 # Changelog
 
+## SNAPSHOT - unreleased
+
+### 🐞 Bug Fixes
+
+* Fix bug where components utilizing `ModalSupport` could render incorrectly when switching
+  between inline and modal views.
+
 ## v50.1.0 - 2022-07-21
 
 ### 🎁 New Features
