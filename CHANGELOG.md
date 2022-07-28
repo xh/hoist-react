@@ -2,10 +2,16 @@
 
 ## SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fix bug where components utilizing `ModalSupport` could render incorrectly when switching
+  between inline and modal views.
+*
 ### ⚙️ Technical
 
 * An empty `DashCanvas` / `DashContainer` 'Add View' button now only displays a menu of available
   views, without unnecessarily nesting them inside an 'Add' submenu
+* Update `AppMenuButton` and `ContextMenu` to support Blueprint4 `menuItem`'s
 
 ## v50.1.0 - 2022-07-21
 
