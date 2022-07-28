@@ -8,7 +8,7 @@ import {ChartModel} from '@xh/hoist/cmp/chart';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, lookup} from '@xh/hoist/core';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {find, sortBy, isEmpty} from 'lodash';
 import moment from 'moment';
@@ -22,6 +22,8 @@ export class ChartsModel extends HoistModel {
         side: 'bottom',
         defaultSize: 370
     });
+
+    @observable weekendsVisible
 
     /** @member {ActivityTrackingModel} */
     @lookup(ActivityTrackingModel) activityTrackingModel;
@@ -106,11 +108,11 @@ export class ChartsModel extends HoistModel {
     }
 
     constructor(
-        weekends = false
+        weekendsVisible = true
     ) {
         super();
         makeObservable(this);
-        this.weekends = weekends;
+        this.weekendsVisible = weekendsVisible;
     }
 
     selectRow(e) {
@@ -195,13 +197,10 @@ export class ChartsModel extends HoistModel {
         return [{name: metricLabel, data: chartData}];
     }
 
+    @action
     toggleWeekends() {
         this.weekends = !this.weekends;
-        if (this.weekends) {
-            this.hideWeekends();
-        } else {
-            this.showWeekends();
-        }
+        this.weekends ? this.hideWeekends() : this.showWeekends();
     }
 
     hideWeekends() {
@@ -211,8 +210,8 @@ export class ChartsModel extends HoistModel {
                 const {cubeLabel} = aggRow.data;
                 return LocalDate.from(cubeLabel).timestamp;
             }),
-            // Friday is the 5th day in a 0 indexed week,
-            firstFriday = find(timeStamps, day => moment(day).day() === 5) + (12 * ONE_HOUR);
+            // Friday is the 5th day in a 0 indexed week, add one hour to select
+            firstFriday = find(timeStamps, day => moment(day).day() === 5) + ONE_HOUR;
         chartModel.updateHighchartsConfig({
             xAxis: {
                 breaks: [{
