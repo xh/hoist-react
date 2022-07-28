@@ -27,6 +27,12 @@ export const chartsPanel = hoistCmp.factory({
                 model: chartModel,
                 key: chartModel.xhId
             }),
+            headerItems: [
+                button({
+                    text: model.weekendsVisible ? 'Hide Weekends' : 'Show Weekends',
+                    onClick: () => model.toggleWeekends()
+                })
+            ],
             bbar: [metricSwitcher({multiline: true})],
             height: '100%',
             ...props

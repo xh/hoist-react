@@ -23,7 +23,7 @@ export class ChartsModel extends HoistModel {
         defaultSize: 370
     });
 
-    @observable weekendsVisible
+    @observable weekendsVisible;
 
     /** @member {ActivityTrackingModel} */
     @lookup(ActivityTrackingModel) activityTrackingModel;
@@ -199,8 +199,8 @@ export class ChartsModel extends HoistModel {
 
     @action
     toggleWeekends() {
-        this.weekends = !this.weekends;
-        this.weekends ? this.hideWeekends() : this.showWeekends();
+        this.weekendsVisible ? this.hideWeekends() : this.showWeekends();
+        this.weekendsVisible = !this.weekendsVisible;
     }
 
     hideWeekends() {
