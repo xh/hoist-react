@@ -1,5 +1,12 @@
 # Changelog
 
+## SPAPSHOT - unreleased
+
+### ⚙️ Technical
+
+* An empty `DashCanvas` / `DashContainer` 'Add View' button now only displays a menu of available
+  views, without unnecessarily nesting them inside an 'Add' submenu
+
 ## v50.1.0 - 2022-07-21
 
 ### 🎁 New Features
