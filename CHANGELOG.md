@@ -1,6 +1,6 @@
 # Changelog
 
-## SPAPSHOT - unreleased
+## SNAPSHOT - unreleased
 
 ### ⚙️ Technical
 
