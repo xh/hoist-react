@@ -175,7 +175,7 @@ function parseMenuItems(items) {
         .map(it => {
             if (it === '-') return menuDivider();
             if (isValidElement(it)) {
-                return ['Blueprint3.MenuItem', 'Blueprint3.MenuDivider'].includes(it.type.displayName) ?
+                return ['Blueprint4.MenuItem', 'Blueprint4.MenuDivider'].includes(it.type.displayName) ?
                     it :
                     menuItem({text: it});
             }
