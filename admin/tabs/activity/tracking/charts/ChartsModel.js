@@ -10,7 +10,7 @@ import {HoistModel, managed, lookup} from '@xh/hoist/core';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {sortBy, isEmpty} from 'lodash';
+import {find, sortBy, isEmpty} from 'lodash';
 import moment from 'moment';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
@@ -105,9 +105,12 @@ export class ChartsModel extends HoistModel {
         return this.activityTrackingModel.dimensions;
     }
 
-    constructor() {
+    constructor(
+        weekends = false
+    ) {
         super();
         makeObservable(this);
+        this.weekends = weekends;
     }
 
     selectRow(e) {
@@ -154,7 +157,6 @@ export class ChartsModel extends HoistModel {
     getSeriesData() {
         const {data, metric, primaryDim, showAsTimeseries} = this,
             metricLabel = this.getLabelForMetric(metric, false);
-        console.log(LocalDate.from(data[0].data.cubeLabel).timestamp);
         let sortedData = sortBy(data, aggRow => {
                 const {cubeLabel} = aggRow.data;
                 switch (primaryDim) {
@@ -190,35 +192,43 @@ export class ChartsModel extends HoistModel {
                 chartData = sortBy(chartData, data => data[0]);
             }
         }
-        this.toggleWeekends();
         return [{name: metricLabel, data: chartData}];
     }
 
     toggleWeekends() {
-        const {timeseriesChartModel} = this;
-        let firstFriday;
+        this.weekends = !this.weekends;
+        if (this.weekends) {
+            this.hideWeekends();
+        } else {
+            this.showWeekends();
+        }
+    }
 
-        let sortedData = this.sortData(),
+    hideWeekends() {
+        const {chartModel} = this,
+            sortedData = this.sortData(),
             timeStamps = sortedData.map(aggRow => {
                 const {cubeLabel} = aggRow.data;
                 return LocalDate.from(cubeLabel).timestamp;
-            });
-
-        for (let day of timeStamps) {
-            const dayNum = moment(day).day();
-            if (dayNum === 5) {
-                firstFriday = day + (12 * ONE_HOUR);
-                break;
+            }),
+            // Friday is the 5th day in a 0 indexed week,
+            firstFriday = find(timeStamps, day => moment(day).day() === 5) + (12 * ONE_HOUR);
+        chartModel.updateHighchartsConfig({
+            xAxis: {
+                breaks: [{
+                    from: firstFriday,
+                    to: firstFriday + (2 * ONE_DAY),
+                    repeat: 7 * ONE_DAY
+                }]
             }
-        }
-        timeseriesChartModel
-            .highchartsConfig
-            .xAxis
-            .breaks = [{
-            from: firstFriday,
-            to: firstFriday + (2 * ONE_DAY),
-            repeat: 7 * ONE_DAY
-        }];
+        });
+    }
+
+    showWeekends() {
+        const {chartModel} = this;
+        chartModel.updateHighchartsConfig({
+            xAxis: {breaks: null}
+        });
     }
 
     getLabelForMetric(metric, multiline) {
