@@ -1,12 +1,16 @@
 # Changelog
 
-## SNAPSHOT - unreleased
+## v50.1.1 - 2022-07-29
 
 ### 🐞 Bug Fixes
 
 * Fix bug where components utilizing `ModalSupport` could render incorrectly when switching
   between inline and modal views.
-*
+
+* Improve behavior of `GridModel.whenReadyAsync()` to allow Grid more time to finish loading data.
+  This improves the behavior of related methods `preSelectFirstAsync`, `selectFirstAsync`, and
+  `ensureVisibleAsync`.
+
 ### ⚙️ Technical
 
 * An empty `DashCanvas` / `DashContainer` 'Add View' button now only displays a menu of available
@@ -48,7 +52,7 @@
   underlying state in the latest versions of that library.
     * This change should not affect most apps, but code that queries grid state immediately after
       loading or filtering a grid (e.g. selection, row visibility, or expansion state) should be
-      tested carefully and may require a call to `await whenGridReadyAsync()`.
+      tested carefully and may require a call to `await whenReadyAsync()`.
     * Note that this method is already incorporated in to several public methods on `GridModel`,
       including `selectFirstAsync()` and `ensureSelectionVisibleAsync()`.
 * Blueprint has updated all of its CSS class names to use the `bp4-` prefix instead of the `bp3-`
