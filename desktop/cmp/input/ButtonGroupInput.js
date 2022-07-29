@@ -4,13 +4,14 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {active} from '@xh/hoist/admin/columns';
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {Button, ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
-import {filter} from 'lodash';
+import {castArray, filter} from 'lodash';
 import PT from 'prop-types';
 import {Children, cloneElement} from 'react';
 
@@ -35,6 +36,9 @@ ButtonGroupInput.propTypes = {
     /** True to allow buttons to be unselected (aka inactivated). Defaults to false. */
     enableClear: PT.bool,
 
+    /** True to allow entry/selection of multiple values - "tag picker" style. */
+    enableMulti: PT.bool,
+
     /** Intent applied to each button. */
     intent: PT.oneOf(['primary', 'success', 'warning', 'danger']),
 
@@ -52,6 +56,9 @@ ButtonGroupInput.hasLayoutSupport = true;
 //----------------------------------
 class Model extends HoistInputModel {
 
+    get enableMulti() {return !!this.componentProps.enableMulti}
+    get enableClear() {return !!this.componentProps.enableClear}
+
     blur() {
         this.enabledButtons.forEach(it => it.blur());
     }
@@ -63,6 +70,25 @@ class Model extends HoistInputModel {
     get enabledButtons() {
         const btns = this.domEl?.querySelectorAll('button') ?? [];
         return filter(btns, {disabled: false});
+    }
+
+    active(value){
+        if (!this.enableMulti) return this.renderValue === value;
+        return this.renderValue?.includes(value)
+    }
+    onButtonClick(value){
+        if (!this.enableMulti) {
+            this.noteValueChange(this.enableClear && this.active(value) ? null : value);
+        } else {
+            this.internalValue = castArray(this.internalValue);
+            if(this.internalValue.includes(value)){
+                const filtered = this.internalValue.filter(it => it !== value)
+                this.noteValueChange(filtered)
+            } else {
+                this.noteValueChange([...this.internalValue,value])
+            }
+        }
+
     }
 }
 
@@ -79,6 +105,7 @@ const cmp = hoistCmp.factory(
             value,
             // ButtonGroupInput Props
             enableClear,
+            enableMulti,
             // Button props applied to each child button
             intent,
             minimal,
@@ -96,14 +123,14 @@ const cmp = hoistCmp.factory(
             throwIf(button.type !== Button, 'ButtonGroupInput child must be a Button.');
             throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
 
-            const active = (model.renderValue === value);
+
             return cloneElement(button, {
-                active,
+                active: model.active(value),
                 intent: btnIntent ?? intent,
                 minimal: withDefault(minimal, false),
                 outlined: withDefault(outlined, false),
                 disabled: withDefault(btnDisabled, false),
-                onClick: () => model.noteValueChange(enableClear && active ? null : value),
+                onClick: () => model.onButtonClick(value),
                 // Workaround for https://github.com/palantir/blueprint/issues/3971
                 key: `${active} ${value}`,
                 autoFocus: active && model.hasFocus
