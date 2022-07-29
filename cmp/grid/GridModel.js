@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Column, ColumnGroup, GridAutosizeMode, TreeStyle} from '@xh/hoist/cmp/grid';
@@ -588,7 +588,7 @@ export class GridModel extends HoistModel {
     }
 
     /**
-     * Scroll to ensure the selected record is visible.
+     * Scroll to ensure the selected record or records are visible.
      *
      * If multiple records are selected, scroll to the first record and then the last. This will do
      * the minimum scrolling necessary to display the start of the selection and as much as
@@ -604,12 +604,33 @@ export class GridModel extends HoistModel {
         await this.whenReadyAsync();
         if (!this.isReady) return;
 
-        const {agApi, selModel} = this,
-            {selectedRecords} = selModel,
+        return this.ensureRecordsVisibleAsync(this.selectedRecords);
+    }
+
+    /**
+     * Scroll to ensure the provided record or records are visible.
+     *
+     * If multiple records are specified, scroll to the first record and then the last. This will do
+     * the minimum scrolling necessary to display the start of the provided record and as much as
+     * possible of the rest.
+     *
+     * Any provided records that are hidden because their parent rows are collapsed will first
+     * be revealed by expanding their parent rows.
+     *
+     * @param {(StoreRecordOrId|StoreRecordOrId[])} records - one or more record(s) / ID(s) for
+     * which to ensure visibility.
+     */
+    async ensureRecordsVisibleAsync(records) {
+        await this.whenReadyAsync();
+        if (!this.isReady) return;
+
+        records = castArray(records);
+
+        const {agApi} = this,
             indices = [];
 
-        // 1) Expand any selected nodes that are collapsed
-        selectedRecords.forEach(({agId}) => {
+        // 1) Expand any nodes that are collapsed
+        records.forEach(({agId}) => {
             for (let row = agApi.getRowNode(agId)?.parent; row; row = row.parent) {
                 if (!row.expanded) {
                     agApi.setRowNodeExpanded(row, true);
@@ -619,15 +640,15 @@ export class GridModel extends HoistModel {
 
         await wait();
 
-        // 2) Scroll to all selected nodes
-        selectedRecords.forEach(({agId}) => {
+        // 2) Scroll to all nodes
+        records.forEach(({agId}) => {
             const rowIndex = agApi.getRowNode(agId)?.rowIndex;
             if (!isNil(rowIndex)) indices.push(rowIndex);
         });
 
         const indexCount = indices.length;
-        if (indexCount !== selectedRecords.length) {
-            console.warn('Grid row nodes not found for all selected records.');
+        if (indexCount !== records.length) {
+            console.warn('Grid row nodes not found for all provided records.');
         }
 
         if (indexCount === 1) {
@@ -1178,13 +1199,13 @@ export class GridModel extends HoistModel {
     @action
     onCellEditingStarted = () => {
         this.isEditing = true;
-    }
+    };
 
     /** @package */
     @action
     onCellEditingStopped = () => {
         this.isEditing = false;
-    }
+    };
 
     /**
      * Returns true as soon as the underlying agGridModel is ready, waiting a limited period

@@ -2,11 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
 import {Icon} from '@xh/hoist/icon';
+import {popover} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
 
 /**
@@ -23,6 +25,24 @@ export const dashContainerContextMenu = hoistCmp.factory({
     render(props) {
         const menuItems = createMenuItems(props);
         return contextMenu({menuItems});
+    }
+});
+
+/**
+ * 'Add View' menu button to display in an empty DashContainer.
+ *
+ * @see DashContainerModel
+ * @private
+ */
+export const dashContainerAddViewButton = hoistCmp.factory({
+    render({model}) {
+        const {viewState, addViewButtonText} = model,
+            menuItems = createAddMenuItems({dashContainerModel: model, stack: viewState[0]});
+        return popover({
+            interactionKind: 'click',
+            item: button({icon: Icon.add(), text: addViewButtonText}),
+            content: contextMenu({menuItems})
+        });
     }
 });
 

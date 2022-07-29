@@ -2,15 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {Button, buttonGroup} from '@xh/hoist/mobile/cmp/button';
+import '@xh/hoist/mobile/register';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
-import {cloneElement, Children} from 'react';
+import {Children, cloneElement} from 'react';
 import './ButtonGroupInput.scss';
 
 /**

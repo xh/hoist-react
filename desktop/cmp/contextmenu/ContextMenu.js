@@ -2,16 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
+import '@xh/hoist/desktop/register';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import {isEmpty} from 'lodash';
 import PT from 'prop-types';
 import {isValidElement} from 'react';
 import {ContextMenuItem} from './ContextMenuItem';
-import {isEmpty} from 'lodash';
 
 /**
  * ContextMenu
@@ -64,7 +65,7 @@ function parseMenuItems(items) {
         .map(item => {
             if (item === '-') return menuDivider();
             if (isValidElement(item)) {
-                return ['Blueprint3.MenuItem', 'Blueprint3.MenuDivider'].includes(item.type.displayName) ?
+                return ['Blueprint4.MenuItem', 'Blueprint4.MenuDivider'].includes(item.type.displayName) ?
                     item :
                     menuItem({text: item});
             }

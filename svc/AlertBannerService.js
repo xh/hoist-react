@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div, p} from '@xh/hoist/cmp/layout';
 import {HoistService, managed, XH} from '@xh/hoist/core';
@@ -94,5 +94,5 @@ export class AlertBannerService extends HoistService {
 
     onClose = () => {
         XH.localStorageService.set('xhAlertBanner.lastDismissed', Date.now());
-    }
+    };
 }

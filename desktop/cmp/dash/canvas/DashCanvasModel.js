@@ -1,11 +1,18 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2022 Extremely Heavy Industries Inc.
+ */
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {defaultsDeep, find, isEqual, times, without} from 'lodash';
+import {defaultsDeep, find, isEqual, some, times, without} from 'lodash';
 import {computed} from 'mobx';
 
 /**
@@ -224,9 +231,9 @@ export class DashCanvasModel extends HoistModel {
         const removeLayout = this.getLayout(id),
             removeView = this.getView(id);
 
-        this.layouts = without(this.layouts, removeLayout);
+        this.layout = without(this.layout, removeLayout);
         this.viewModels = without(this.viewModels, removeView);
-        XH.destroy(removeView);
+        XH.safeDestroy(removeView);
     }
 
     /**
@@ -347,7 +354,15 @@ export class DashCanvasModel extends HoistModel {
     @action
     loadState(state) {
         this.clear();
-        state.forEach(state => this.addViewInternal(state.viewSpecId, state));
+        state.forEach(state => {
+            // Fail gracefully on unknown viewSpecId - persisted state could ref. an obsolete widget.
+            const {viewSpecId} = state;
+            if (this.hasSpec(viewSpecId)) {
+                this.addViewInternal(viewSpecId, state);
+            } else {
+                console.warn(`Unknown viewSpecId [${viewSpecId}] found in state - skipping.`);
+            }
+        });
     }
 
     @action
@@ -397,6 +412,10 @@ export class DashCanvasModel extends HoistModel {
 
     getSpec(id) {
         return find(this.viewSpecs, {id});
+    }
+
+    hasSpec(id) {
+        return some(this.viewSpecs, {id});
     }
 
     getViewsBySpecId(id) {

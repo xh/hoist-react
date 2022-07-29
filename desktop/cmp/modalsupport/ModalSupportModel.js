@@ -7,7 +7,8 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {ModalSupportOptions} from '@xh/hoist/desktop/cmp/panel';
-import {makeObservable, bindable} from '@xh/hoist/mobx';
+import '@xh/hoist/desktop/register';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 
 /**
@@ -40,6 +41,7 @@ export class ModalSupportModel extends HoistModel {
             run: () => {
                 const dest = this.isModal ? modalRef : inlineRef;
                 dest.current?.appendChild(hostNode);
+                window.dispatchEvent(new Event('resize'));
             }
         });
     }

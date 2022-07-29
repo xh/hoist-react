@@ -2,22 +2,20 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {div, frame, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {ModelLookupContext} from '@xh/hoist/core/impl/ModelLookup';
-import {button} from '@xh/hoist/desktop/cmp/button';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {Icon} from '@xh/hoist/icon';
-import {Classes, overlay, popover} from '@xh/hoist/kit/blueprint';
+import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import {useOnMount, useOnResize} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
 import {useContext} from 'react';
 import './DashContainer.scss';
 import {DashContainerModel} from './DashContainerModel';
-import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
+import {dashContainerAddViewButton} from './impl/DashContainerContextMenu';
 
 /**
  * Display a set of child components in accordance with a DashContainerModel.
@@ -54,10 +52,9 @@ DashContainer.propTypes = {
 
 const emptyContainerOverlay = hoistCmp.factory(
     ({model}) => {
-        const {isEmpty, viewState, emptyText, addViewButtonText} = model;
+        const {isEmpty, emptyText} = model;
         if (!isEmpty) return null;
 
-        const stack = viewState[0];
         return overlay({
             className: `xh-dash-container--empty-overlay ${Classes.OVERLAY_SCROLL_CONTAINER}`,
             autoFocus: true,
@@ -70,17 +67,7 @@ const emptyContainerOverlay = hoistCmp.factory(
                 items: [
                     div(emptyText),
                     vspacer(10),
-                    popover({
-                        interactionKind: 'click',
-                        item: button({
-                            icon: Icon.add(),
-                            text: addViewButtonText
-                        }),
-                        content: dashContainerContextMenu({
-                            stack,
-                            dashContainerModel: model
-                        })
-                    })
+                    dashContainerAddViewButton()
                 ]
             })
         });

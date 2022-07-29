@@ -2,20 +2,26 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistModel, useLocalModel, uses, XH, lookup} from '@xh/hoist/core';
+import composeRefs from '@seznam/compose-react-refs';
 import {box, div, placeholder} from '@xh/hoist/cmp/layout';
-import {Highcharts} from '@xh/hoist/kit/highcharts';
+import {hoistCmp, HoistModel, lookup, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
+import '@xh/hoist/desktop/register';
+import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {wait} from '@xh/hoist/promise';
 import {logWithDebug, withDebug} from '@xh/hoist/utils/js';
-import {createObservableRef, getLayoutProps, useOnResize, useOnVisibleChange} from '@xh/hoist/utils/react';
-import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
+import {
+    createObservableRef,
+    getLayoutProps,
+    useOnResize,
+    useOnVisibleChange
+} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import composeRefs from '@seznam/compose-react-refs';
 import equal from 'fast-deep-equal';
+import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import PT from 'prop-types';
 
 import './TreeMap.scss';
@@ -210,7 +216,7 @@ class LocalModel extends HoistModel {
         if (widthChange > threshold || heightChange > threshold) {
             model.setIsMasking(true);
         }
-    }
+    };
 
     onResizeAsync = async ({width, height}) => {
         const {chart, model} = this;
@@ -333,7 +339,7 @@ class LocalModel extends HoistModel {
         this.clickCount++;
         this.debouncedClickHandler(e.point.record, e);
         if (this.clickCount >= 2) this.debouncedClickHandler.flush();
-    }
+    };
 
     clickHandler(record, e) {
         try {

@@ -2,18 +2,19 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
+import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
-import composeRefs from '@seznam/compose-react-refs';
 import PT from 'prop-types';
 
 /**
@@ -104,7 +105,7 @@ class Model extends HoistInputModel {
     onKeyDown = (ev) => {
         if (ev.key === 'Enter') this.doCommit();
         this.componentProps.onKeyDown?.(ev);
-    }
+    };
 
     onFocus = (ev) => {
         if (this.componentProps.selectOnFocus && ev.target.nodeName === 'INPUT') {
@@ -112,7 +113,7 @@ class Model extends HoistInputModel {
         }
 
         this.noteFocused();
-    }
+    };
 }
 
 const cmp = hoistCmp.factory(

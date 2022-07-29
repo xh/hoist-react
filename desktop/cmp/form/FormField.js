@@ -2,11 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import {FieldModel, FormContext} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, uses, XH} from '@xh/hoist/core';
+import '@xh/hoist/desktop/register';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -17,7 +19,6 @@ import classNames from 'classnames';
 import {isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
 import PT from 'prop-types';
 import React, {Children, cloneElement, useContext, useState} from 'react';
-import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import './FormField.scss';
 
 /**

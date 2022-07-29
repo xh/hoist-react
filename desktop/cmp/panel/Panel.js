@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {box, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {
@@ -10,21 +10,22 @@ import {
     ModelPublishMode,
     refreshContextView,
     RenderMode,
+    TaskObserver,
     useContextModel,
-    uses,
-    TaskObserver
+    uses
 } from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
+import '@xh/hoist/desktop/register';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, omitBy} from 'lodash';
 import PT from 'prop-types';
-import {isValidElement, useRef, Children} from 'react';
+import {Children, isValidElement, useRef} from 'react';
+import {modalSupport} from '../modalsupport/ModalSupport';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
-import {modalSupport} from '../modalsupport/ModalSupport';
 import './Panel.scss';
 import {PanelModel} from './PanelModel';
 
