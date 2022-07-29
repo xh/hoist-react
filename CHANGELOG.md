@@ -12,6 +12,7 @@
 * An empty `DashCanvas` / `DashContainer` 'Add View' button now only displays a menu of available
   views, without unnecessarily nesting them inside an 'Add' submenu
 * Update `AppMenuButton` and `ContextMenu` to support Blueprint4 `menuItem`'s
+* `Grid` `ContextMenu` is now disabled when a user is inline editing
 
 ## v50.1.0 - 2022-07-21
 
