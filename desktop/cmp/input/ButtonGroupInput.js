@@ -9,9 +9,9 @@ import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hois
 import {hoistCmp} from '@xh/hoist/core';
 import {Button, ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
-import {castArray, filter} from 'lodash';
+import { filter, without} from 'lodash';
 import PT from 'prop-types';
 import {Children, cloneElement} from 'react';
 
@@ -26,6 +26,10 @@ export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory({
     displayName: 'ButtonGroupInput',
     className: 'xh-button-group-input',
     render(props, ref) {
+        warnIf(
+            props.enableMulti && !props.enableClear,
+            'enableClear prop cannot be set to false when enableMulti is true.  Setting ignored.'
+        )
         return useHoistInputModel(cmp, props, ref, Model);
     }
 });
@@ -33,10 +37,13 @@ ButtonGroupInput.propTypes = {
     ...HoistInputPropTypes,
     ...ButtonGroup.propTypes,
 
-    /** True to allow buttons to be unselected (aka inactivated). Defaults to false. */
+    /**
+     * True to allow buttons to be unselected (aka inactivated). Used when enableMulti is false.
+     * Defaults to false.
+     */
     enableClear: PT.bool,
 
-    /** True to allow entry/selection of multiple values - "tag picker" style. */
+    /** True to allow entry/selection of multiple values - "tag picker" style. Defaults to false.*/
     enableMulti: PT.bool,
 
     /** Intent applied to each button. */
@@ -76,19 +83,17 @@ class Model extends HoistInputModel {
         if (!this.enableMulti) return this.renderValue === value;
         return this.renderValue?.includes(value)
     }
-    onButtonClick(value){
-        if (!this.enableMulti) {
-            this.noteValueChange(this.enableClear && this.active(value) ? null : value);
-        } else {
-            this.internalValue = castArray(this.internalValue);
-            if(this.internalValue.includes(value)){
-                const filtered = this.internalValue.filter(it => it !== value)
-                this.noteValueChange(filtered)
-            } else {
-                this.noteValueChange([...this.internalValue,value])
-            }
-        }
 
+    onButtonClick(value){
+        if (this.enableMulti){
+            const current = this.internalValue ?? [];
+            value = this.active(value) ?
+                current.length === 1 ? null : without(current, value) :
+                [...current, value];
+        } else {
+            value = this.enableClear && this.active(value) ? null : value;
+        }
+        this.noteValueChange(value);
     }
 }
 
