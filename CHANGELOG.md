@@ -2,6 +2,10 @@
 
 ## v51.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fix issue where `ModalSupport` would trigger `MobX` memo warning in console.
+
 ## v50.1.1 - 2022-07-29
 
 ### 🐞 Bug Fixes
