@@ -10,6 +10,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon/Icon';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 
 import {ChartsModel} from './ChartsModel';
 
@@ -27,18 +28,23 @@ export const chartsPanel = hoistCmp.factory({
                 model: chartModel,
                 key: chartModel.xhId
             }),
-            headerItems: [
-                button({
-                    text: model.weekendsVisible ? 'Hide Weekends' : 'Show Weekends',
-                    onClick: () => model.toggleWeekends()
-                })
-            ],
-            bbar: [metricSwitcher({multiline: true})],
+            bbar: bbar(),
             height: '100%',
             ...props
         });
     }
 });
+
+const bbar = hoistCmp.factory(
+    ({model}) => toolbar(
+        model.showAsTimeseries && button({
+            width: '20%',
+            text: model.weekendsVisible ? 'Hide Weekends' : 'Show Weekends',
+            onClick: () => model.toggleWeekends()
+        }),
+        metricSwitcher({multiline: true})
+    )
+);
 
 const metricSwitcher = hoistCmp.factory(
     ({model, multiline}) => {
