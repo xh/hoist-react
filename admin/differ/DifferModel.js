@@ -11,6 +11,7 @@ import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
+import {fragment} from '@xh/hoist/cmp/layout';
 import {cloneDeep, isEqual, isString, isNil, remove, trimEnd} from 'lodash';
 import React from 'react';
 
@@ -265,11 +266,16 @@ export class DifferModel extends HoistModel {
         const filteredRecords = records.filter(it => !this.isPwd(it)),
             hadPwd = records.length !== filteredRecords.length,
             willDelete = filteredRecords.some(it => !it.data.remoteValue),
-            confirmMsg = `Are you sure you want to apply remote values to ${pluralize(this.displayName, filteredRecords.length, true)}?`;
-
+            confirmMsg = `Are you sure you want to apply remote values to ${pluralize(this.displayName, filteredRecords.length, true)}?`,
+            prodWarning = fragment([
+                Icon.warning(),
+                'NOTE - you are currently in Production - any change will be applied to this environment'
+            ]),
+            productionMode = XH.environmentService.isProduction();
         const message = (
             <div>
                 <p>{confirmMsg}</p>
+                <p>{productionMode && prodWarning}</p>
                 <p hidden={!hadPwd}>Warning: No changes will be applied to password records. These must be changed manually.</p>
                 <p hidden={!willDelete}>Warning: Operation includes deletions.</p>
             </div>
