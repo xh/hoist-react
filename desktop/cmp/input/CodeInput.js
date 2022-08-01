@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
+import {box, div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, managed, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
@@ -17,6 +17,7 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {textArea} from '@xh/hoist/kit/blueprint';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {wait} from '@xh/hoist/promise';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -331,6 +332,13 @@ class Model extends HoistInputModel {
 
     toggleFullScreen() {
         this.modalSupportModel.toggleIsModal();
+
+        // 'Nudge' the mouse wheel to trigger CodeMirror to update scrollbar state
+        const scrollEvent = d => new window.WheelEvent('mousewheel', {deltaX: d, deltaY: d});
+        wait().then(() => {
+            this.editor.getScrollerElement().dispatchEvent(scrollEvent(2));
+            this.editor.getScrollerElement().dispatchEvent(scrollEvent(-2));
+        });
     }
 
     //------------------------
@@ -426,18 +434,20 @@ class Model extends HoistInputModel {
 
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
-        const childProps = {
+        return box({
             width: 300,
             height: 100,
             ...getLayoutProps(props),
-            className,
-            ref,
-            model
-        };
-
-        return modalSupport({
-            model: model.modalSupportModel,
-            item: inputCmp(childProps)
+            item: modalSupport({
+                model: model.modalSupportModel,
+                item: inputCmp({
+                    width: '100%',
+                    height: '100%',
+                    className,
+                    ref,
+                    model
+                })
+            })
         });
     }
 );

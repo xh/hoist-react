@@ -5,6 +5,14 @@
 ### 🐞 Bug Fixes
 
 * Fix issue where `ModalSupport` would trigger `MobX` memo warning in console.
+* Fix issues with `ModalSupport` implementation in `CodeInput`.
+
+### 💥 Breaking Changes
+
+* `CodeInput` is now rendered within an additional `div` element.  Unlikely to cause issues, unless
+  using targeted styling of this component.
+
+
 
 ## v50.1.1 - 2022-07-29
 
