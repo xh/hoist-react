@@ -178,7 +178,6 @@ class GridLocalModel extends HoistModel {
         this.addReaction(this.sizingModeReaction());
         this.addReaction(this.validationDisplayReaction());
 
-        // If ancestor of a modalSupport cmp:
         const modalReaction = this.modalReaction();
         if (modalReaction) this.addReaction(modalReaction);
 
@@ -562,13 +561,14 @@ class GridLocalModel extends HoistModel {
      * {@see modalSupport}
      */
     modalReaction() {
+        if (!ModalSupportModel) return null;
         const modalSupportModel = this.lookupModel(ModalSupportModel);
         if (!modalSupportModel) return null;
 
         return {
             track: () => modalSupportModel.isModal,
             run: () => this.model.agApi.redrawRows(),
-            delay: 1 // Wait one browser tick for grid to move to new part of DOM before redrawing
+            debounce: 0
         };
     }
 
