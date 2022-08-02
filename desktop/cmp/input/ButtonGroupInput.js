@@ -80,8 +80,8 @@ class Model extends HoistInputModel {
     }
 
     active(value){
-        if (!this.enableMulti) return this.renderValue === value;
-        return this.renderValue?.includes(value)
+        const {internalValue} = this;
+         return !this.enableMulti ? internalValue === value : internalValue?.includes(value);
     }
 
     onButtonClick(value){
