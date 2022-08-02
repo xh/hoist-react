@@ -47,7 +47,7 @@ export class HoistBase {
     #disposers = [];
 
     /**
-     * Add and start one or more managed reaction.
+     * Add and start one or more managed reactions.
      *
      * A reaction's run function will be executed on changes to any/all observables read in its
      * track function, regardless of whether they - or any other observables - are accessed in
@@ -98,7 +98,7 @@ export class HoistBase {
 
 
     /**
-     * Add and start one or more autoruns.
+     * Add and start one or more managed autoruns.
      *
      * An autorun function will be run on changes to any/all observables read during the last
      * execution of the function. This provides convenient and often very efficient dynamic
@@ -260,12 +260,12 @@ function bindAndDebounce(obj, fn, debounce) {
  * @typedef {Object} ReactionSpec - object containing options accepted by MobX 'reaction' API as
  *      well as arguments below.
  *
- * @param {function} [track] - function returning data to observe - first arg to the
+ * @property {function} [track] - function returning data to observe - first arg to the
  *      underlying reaction() call. Specify this or `when`.
- * @param {function} [when] - function returning data to observe - first arg to the
+ * @property {function} [when] - function returning data to observe - first arg to the
  *      underlying when() call. Specify this or `track`.
- * @param {function} run - function to run - second arg to underlying reaction()/when() call.
- * @param {(number|Object)} [debounce] - Specify to debounce run function with lodash.
+ * @property {function} run - function to run - second arg to underlying reaction()/when() call.
+ * @property {(number|Object)} [debounce] - Specify to debounce run function with lodash.
  *      When specified as object, should contain an 'interval' and other optional keys for
  *      lodash.  If specified as number the default lodash debounce will be used.
  */
@@ -273,10 +273,10 @@ function bindAndDebounce(obj, fn, debounce) {
 
 /**
  * @typedef {Object} AutorunSpec - object containing options accepted by MobX 'autorun' API as
- *      well as argument below.
+ *      well as arguments below.
  *
- * @param {function} [run] - function to run - first arg to underlying autorun() call.
- * @param {(number|Object)} [debounce] - Specify to debounce run function with lodash.
+ * @property {function} [run] - function to run - first arg to underlying autorun() call.
+ * @property {(number|Object)} [debounce] - Specify to debounce run function with lodash.
  *      When specified as Object, should contain an 'interval' and other optional keys for
  *      lodash debounce.  If specified as number the default lodash debounce will be used.
  */
