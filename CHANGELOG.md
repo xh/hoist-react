@@ -2,6 +2,10 @@
 
 ## v51.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* `HoistBase` `addReaction()` and `addAutorun()` now can create multiple reactions in one call, and
+ will ignore nullish inputs.
+
 ### 🐞 Bug Fixes
 
 * Fix issue where `ModalSupport` would trigger `MobX` memo warning in console.
