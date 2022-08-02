@@ -567,7 +567,8 @@ class GridLocalModel extends HoistModel {
 
         return {
             track: () => modalSupportModel.isModal,
-            run: () => wait().then(() => this.model.agApi.redrawRows())
+            run: () => this.model.agApi.redrawRows(),
+            delay: 1 // Wait one browser tick for grid to move to new part of DOM before redrawing
         };
     }
 
