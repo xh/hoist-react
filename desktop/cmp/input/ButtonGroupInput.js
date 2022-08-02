@@ -4,14 +4,13 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {active} from '@xh/hoist/admin/columns';
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {Button, ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
-import { filter, without} from 'lodash';
+import {isEmpty, filter, without} from 'lodash';
 import PT from 'prop-types';
 import {Children, cloneElement} from 'react';
 
@@ -29,7 +28,7 @@ export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory({
         warnIf(
             props.enableMulti && !props.enableClear,
             'enableClear prop cannot be set to false when enableMulti is true.  Setting ignored.'
-        )
+        );
         return useHoistInputModel(cmp, props, ref, Model);
     }
 });
@@ -79,19 +78,19 @@ class Model extends HoistInputModel {
         return filter(btns, {disabled: false});
     }
 
-    active(value){
+    isActive(value) {
         const {internalValue} = this;
-         return !this.enableMulti ? internalValue === value : internalValue?.includes(value);
+        return this.enableMulti ? internalValue?.includes(value) : internalValue === value;
     }
 
-    onButtonClick(value){
-        if (this.enableMulti){
+    onButtonClick(value) {
+        const isActive = this.isActive(value);
+        if (this.enableMulti) {
             const current = this.internalValue ?? [];
-            value = this.active(value) ?
-                current.length === 1 ? null : without(current, value) :
-                [...current, value];
+            value = isActive ? without(current, value) : [...current, value];
+            if (isEmpty(value)) value = null;
         } else {
-            value = this.enableClear && this.active(value) ? null : value;
+            value = this.enableClear && isActive ? null : value;
         }
         this.noteValueChange(value);
     }
@@ -128,17 +127,18 @@ const cmp = hoistCmp.factory(
             throwIf(button.type !== Button, 'ButtonGroupInput child must be a Button.');
             throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
 
+            const isActive = model.isActive(value);
 
             return cloneElement(button, {
-                active: model.active(value),
+                active: isActive,
                 intent: btnIntent ?? intent,
                 minimal: withDefault(minimal, false),
                 outlined: withDefault(outlined, false),
                 disabled: withDefault(btnDisabled, false),
                 onClick: () => model.onButtonClick(value),
                 // Workaround for https://github.com/palantir/blueprint/issues/3971
-                key: `${active} ${value}`,
-                autoFocus: active && model.hasFocus
+                key: `${isActive} ${value}`,
+                autoFocus: isActive && model.hasFocus
             });
         });
 

@@ -2,6 +2,9 @@
 
 ## v51.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* `ButtonGroupInput` supports new `enableMulti` prop.
+
 ## v50.1.1 - 2022-07-29
 
 ### 🐞 Bug Fixes
@@ -26,7 +29,6 @@
 
 * New `GridModel` method `ensureRecordsVisibleAsync` accepts one or more store records or IDs and
   scrolls to make them visible in the grid.
-* Added enableMulti option to ButtonGroupInput
 
 ### 📚 Libraries
 
