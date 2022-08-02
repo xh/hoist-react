@@ -79,14 +79,14 @@ class Model extends HoistInputModel {
     }
 
     isActive(value) {
-        const {internalValue} = this;
-        return this.enableMulti ? internalValue?.includes(value) : internalValue === value;
+        const {renderValue} = this;
+        return this.enableMulti ? renderValue?.includes(value) : renderValue === value;
     }
 
     onButtonClick(value) {
         const isActive = this.isActive(value);
         if (this.enableMulti) {
-            const current = this.internalValue ?? [];
+            const current = this.renderValue ?? [];
             value = isActive ? without(current, value) : [...current, value];
             if (isEmpty(value)) value = null;
         } else {
