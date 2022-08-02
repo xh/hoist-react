@@ -168,18 +168,18 @@ class GridLocalModel extends HoistModel {
 
     onLinked() {
         this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(this.model) : null;
-        this.addReaction(this.selectionReaction());
-        this.addReaction(this.sortReaction());
-        this.addReaction(this.columnsReaction());
-        this.addReaction(this.columnStateReaction());
-        this.addReaction(this.dataReaction());
-        this.addReaction(this.groupReaction());
-        this.addReaction(this.rowHeightReaction());
-        this.addReaction(this.sizingModeReaction());
-        this.addReaction(this.validationDisplayReaction());
-
-        const modalReaction = this.modalReaction();
-        if (modalReaction) this.addReaction(modalReaction);
+        this.addReaction(
+            this.selectionReaction(),
+            this.sortReaction(),
+            this.columnsReaction(),
+            this.columnStateReaction(),
+            this.dataReaction(),
+            this.groupReaction(),
+            this.rowHeightReaction(),
+            this.sizingModeReaction(),
+            this.validationDisplayReaction(),
+            this.modalReaction()
+        );
 
         this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
     }
@@ -556,13 +556,9 @@ class GridLocalModel extends HoistModel {
         };
     }
 
-    /**
-     * Force Grid to redraw rows when switching between inline and modal views
-     * {@see modalSupport}
-     */
     modalReaction() {
-        if (!ModalSupportModel) return null;
-        const modalSupportModel = this.lookupModel(ModalSupportModel);
+        // Force Grid to redraw rows when switching between inline and modal views
+        const modalSupportModel = ModalSupportModel ? this.lookupModel(ModalSupportModel) : null;
         if (!modalSupportModel) return null;
 
         return {
