@@ -10,7 +10,7 @@ import {Button, ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
-import {isEmpty, filter, without, isArray, castArray} from 'lodash';
+import {isEmpty, filter, without, castArray} from 'lodash';
 import PT from 'prop-types';
 import {Children, cloneElement} from 'react';
 
@@ -81,10 +81,6 @@ class Model extends HoistInputModel {
     isActive(value) {
         const {renderValue} = this;
         return this.enableMulti ? renderValue?.includes(value) : renderValue === value;
-    }
-
-    isValid(value) {
-        return this.enableMulti ? isArray(value) : true;
     }
 
     onButtonClick(value) {
