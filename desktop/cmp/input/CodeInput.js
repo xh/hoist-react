@@ -435,7 +435,7 @@ class Model extends HoistInputModel {
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
         return box({
-            className,
+            className: 'xh-code-input__outer-wrapper',
             width: 300,
             height: 100,
             ...getLayoutProps(props),
@@ -444,6 +444,7 @@ const cmp = hoistCmp.factory(
                 item: inputCmp({
                     width: '100%',
                     height: '100%',
+                    className,
                     ref,
                     model
                 })
