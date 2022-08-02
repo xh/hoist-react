@@ -5,6 +5,7 @@
 ### 🐞 Bug Fixes
 
 * Fix issue where `ModalSupport` would trigger `MobX` memo warning in console.
+* Fix `Grid` rendering glitches when used inside `Panel` with `ModalSupport`
 
 ## v50.1.1 - 2022-07-29
 
