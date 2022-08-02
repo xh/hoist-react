@@ -3,7 +3,16 @@
 ## v51.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
+* `HoistBase` `addReaction()` and `addAutorun()` now can create multiple reactions in one call, and
+ will ignore nullish inputs.
 * `ButtonGroupInput` supports new `enableMulti` prop.
+
+
+### 🐞 Bug Fixes
+
+* Fix issue where `ModalSupport` would trigger `MobX` memo warning in console.
+* Fix `Grid` rendering glitches when used inside `Panel` with `ModalSupport`.
+* Fix incorrect text color on desktop toasts with a warning intent.
 
 ## v50.1.1 - 2022-07-29
 

@@ -11,11 +11,13 @@
   }
 
   .xh-toast {
+    color: white !important;
+    padding-left: var(--xh-pad-half-px);
+
     &__title {
       margin-bottom: var(--xh-pad-half-px);
       display: block;
       font-size: var(--xh-font-size-large-px);
-      color: rgba(255, 255, 255, 0.7);
     }
 
     &__body {
@@ -27,8 +29,33 @@
       margin: 0 0 0 var(--xh-pad-half-px);
     }
 
-    .bp4-button {
+    &--primary {
+      background-color: var(--xh-intent-primary);
+    }
+
+    &--warning {
+      background-color: var(--xh-intent-warning);
+    }
+
+    &--danger {
+      background-color: var(--xh-intent-danger);
+    }
+
+    &--success {
+      background-color: var(--xh-intent-success);
+    }
+
+    .bp4-toast-message {
+      word-break: break-word;
+    }
+
+    // High level of specificity here required to override built-in BP styles
+    &.bp4-toast .bp4-button {
       background: none !important;
+
+      .bp4-icon {
+        color: white !important;
+      }
     }
   }
 }
