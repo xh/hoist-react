@@ -12,7 +12,8 @@ import {hoistCmp, HoistModel, lookup, useLocalModel, uses, XH} from '@xh/hoist/c
 import {
     colChooser as desktopColChooser,
     gridFilterDialog,
-    StoreContextMenu
+    StoreContextMenu,
+    ModalSupportModel
 } from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
@@ -176,6 +177,9 @@ class GridLocalModel extends HoistModel {
         this.addReaction(this.rowHeightReaction());
         this.addReaction(this.sizingModeReaction());
         this.addReaction(this.validationDisplayReaction());
+
+        const modalReaction = this.modalReaction();
+        if (modalReaction) this.addReaction(modalReaction);
 
         this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
     }
@@ -548,6 +552,22 @@ class GridLocalModel extends HoistModel {
                     agApi.refreshCells({columns: colIds, force: true});
                 }
             },
+            debounce: 0
+        };
+    }
+
+    /**
+     * Force Grid to redraw rows when switching between inline and modal views
+     * {@see modalSupport}
+     */
+    modalReaction() {
+        if (!ModalSupportModel) return null;
+        const modalSupportModel = this.lookupModel(ModalSupportModel);
+        if (!modalSupportModel) return null;
+
+        return {
+            track: () => modalSupportModel.isModal,
+            run: () => this.model.agApi.redrawRows(),
             debounce: 0
         };
     }

@@ -29,6 +29,8 @@ export let ColChooserModel = null;
 export let ColumnHeaderFilterModel = null;
 export let useContextMenu = null;
 
+export let ModalSupportModel = null;
+
 /**
  * Provide implementations of functions and classes exported in this file.
  *
@@ -47,4 +49,6 @@ export function installDesktopImpls(impls) {
     ColChooserModel = impls.ColChooserModel;
     ColumnHeaderFilterModel = impls.ColumnHeaderFilterModel;
     useContextMenu = impls.useContextMenu;
+
+    ModalSupportModel = impls.ModalSupportModel;
 }

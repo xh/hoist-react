@@ -18,6 +18,7 @@ import {columnHeaderFilter} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnH
 import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
 import {gridFilterDialog} from '@xh/hoist/desktop/cmp/grid/impl/filter/GridFilterDialog';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
 import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
@@ -50,7 +51,8 @@ installDesktopImpls({
     ColChooserModel,
     ColumnHeaderFilterModel,
     StoreContextMenu,
-    useContextMenu
+    useContextMenu,
+    ModalSupportModel
 });
 /**
  * Top-level wrapper for Desktop applications.
