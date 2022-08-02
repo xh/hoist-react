@@ -9,7 +9,8 @@
 ### 🐞 Bug Fixes
 
 * Fix issue where `ModalSupport` would trigger `MobX` memo warning in console.
-* Fix `Grid` rendering glitches when used inside `Panel` with `ModalSupport`
+* Fix `Grid` rendering glitches when used inside `Panel` with `ModalSupport`.
+* Fix incorrect text color on desktop toasts with a warning intent.
 
 ## v50.1.1 - 2022-07-29
 
