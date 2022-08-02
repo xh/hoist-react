@@ -39,7 +39,7 @@ const bbar = hoistCmp.factory(
     ({model}) => toolbar(
         model.showAsTimeseries && button({
             width: '20%',
-            text: model.weekendsVisible ? 'Hide Weekends' : 'Show Weekends',
+            text: model.hideWeekends ? 'Show Wknds' : 'Hide Wknds',
             onClick: () => model.toggleWeekends()
         }),
         metricSwitcher({multiline: true})

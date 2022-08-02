@@ -10,7 +10,7 @@ import {HoistModel, managed, lookup} from '@xh/hoist/core';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
 import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {find, sortBy, isEmpty} from 'lodash';
+import {find, filter, sortBy, isEmpty} from 'lodash';
 import moment from 'moment';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
@@ -23,7 +23,7 @@ export class ChartsModel extends HoistModel {
         defaultSize: 370
     });
 
-    @observable weekendsVisible;
+    @observable hideWeekends;
 
     /** @member {ActivityTrackingModel} */
     @lookup(ActivityTrackingModel) activityTrackingModel;
@@ -57,14 +57,16 @@ export class ChartsModel extends HoistModel {
                         click: (e) => this.selectRow(e)
                     },
                     width: 1,
-                    animation: false,
-                    step: 'left'
+                    animation: false
                 }
             },
             legend: {enabled: false},
             title: {text: null},
             xAxis: {
+                alignTicks: true,
+                startOnTick: true,
                 type: 'datetime',
+                ordinal: true,
                 title: {},
                 units: [['day', [1]], ['week', [2]], ['month', [1]]],
                 labels: {
@@ -108,11 +110,17 @@ export class ChartsModel extends HoistModel {
     }
 
     constructor(
-        weekendsVisible = true
+        hideWeekends = true
     ) {
         super();
         makeObservable(this);
-        this.weekendsVisible = weekendsVisible;
+        this.hideWeekends = hideWeekends;
+    }
+
+    @action
+    toggleWeekends() {
+        this.hideWeekends = !this.hideWeekends;
+        this.loadChart();
     }
 
     selectRow(e) {
@@ -141,23 +149,8 @@ export class ChartsModel extends HoistModel {
         chartModel.setSeries(series);
     }
 
-    sortData() {
-        const {data, primaryDim} = this;
-        return sortBy(data, aggRow => {
-            const {cubeLabel} = aggRow.data;
-            switch (primaryDim) {
-                case 'day':
-                    return LocalDate.from(cubeLabel).timestamp;
-                case 'month':
-                    return moment(cubeLabel, 'MMM YYYY').valueOf();
-                default:
-                    return cubeLabel;
-            }
-        });
-    }
-
     getSeriesData() {
-        const {data, metric, primaryDim, showAsTimeseries} = this,
+        const {data, metric, primaryDim, showAsTimeseries, chartModel} = this,
             metricLabel = this.getLabelForMetric(metric, false);
         let sortedData = sortBy(data, aggRow => {
                 const {cubeLabel} = aggRow.data;
@@ -193,41 +186,14 @@ export class ChartsModel extends HoistModel {
                 chartData.push(...fillData);
                 chartData = sortBy(chartData, data => data[0]);
             }
+
+            if(this.hideWeekends) {
+                chartData = filter(chartData, day => {
+                    return LocalDate.from(day[0]).isWeekday;
+                });
+            }
         }
         return [{name: metricLabel, data: chartData}];
-    }
-
-    @action
-    toggleWeekends() {
-        this.weekendsVisible ? this.hideWeekends() : this.showWeekends();
-        this.weekendsVisible = !this.weekendsVisible;
-    }
-
-    hideWeekends() {
-        const {chartModel} = this,
-            sortedData = this.sortData(),
-            timeStamps = sortedData.map(aggRow => {
-                const {cubeLabel} = aggRow.data;
-                return LocalDate.from(cubeLabel).timestamp;
-            }),
-            // Friday is the 5th day in a 0 indexed week, add one hour to select
-            firstFriday = find(timeStamps, day => moment(day).day() === 5) + ONE_HOUR;
-        chartModel.updateHighchartsConfig({
-            xAxis: {
-                breaks: [{
-                    from: firstFriday,
-                    to: firstFriday + (2 * ONE_DAY),
-                    repeat: 7 * ONE_DAY
-                }]
-            }
-        });
-    }
-
-    showWeekends() {
-        const {chartModel} = this;
-        chartModel.updateHighchartsConfig({
-            xAxis: {breaks: null}
-        });
     }
 
     getLabelForMetric(metric, multiline) {
