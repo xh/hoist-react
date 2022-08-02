@@ -257,8 +257,8 @@ function bindAndDebounce(obj, fn, debounce) {
 
 
 /**
- * @typedef ReactionSpec object containing options accepted by MobX reaction() API as well as
- *      argument below.
+ * @typedef {Object} ReactionSpec - object containing options accepted by MobX 'reaction' API as
+ *      well as arguments below.
  *
  * @param {function} [track] - function returning data to observe - first arg to the
  *      underlying reaction() call. Specify this or `when`.
@@ -272,8 +272,9 @@ function bindAndDebounce(obj, fn, debounce) {
 
 
 /**
- * @typedef AutorunSpec - object containing options accepted by MobX autorun() API as well as
- *      argument below.
+ * @typedef {Object} AutorunSpec - object containing options accepted by MobX 'autorun' API as
+ *      well as argument below.
+ *
  * @param {function} [run] - function to run - first arg to underlying autorun() call.
  * @param {(number|Object)} [debounce] - Specify to debounce run function with lodash.
  *      When specified as Object, should contain an 'interval' and other optional keys for
