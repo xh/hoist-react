@@ -167,33 +167,6 @@ $pt-transition-duration: 100ms !default;
 }
 
 //------------------------
-// Toasts
-//------------------------
-.bp4-toast {
-  padding-left: 5px;
-
-  &.bp4-intent-primary {
-    background-color: var(--xh-intent-primary);
-  }
-
-  &.bp4-intent-danger {
-    background-color: var(--xh-intent-danger);
-  }
-
-  &.bp4-intent-success {
-    background-color: var(--xh-intent-success);
-  }
-
-  &.bp4-intent-warning {
-    background-color: var(--xh-intent-warning);
-  }
-
-  .bp4-toast-message {
-    word-break: break-word;
-  }
-}
-
-//------------------------
 // Tooltips
 //------------------------
 .bp4-tooltip {
