@@ -9,8 +9,14 @@
 ### 🐞 Bug Fixes
 
 * Fix issue where `ModalSupport` would trigger `MobX` memo warning in console.
+* Fix issues with `ModalSupport` implementation in `CodeInput`.
 * Fix `Grid` rendering glitches when used inside `Panel` with `ModalSupport`.
 * Fix incorrect text color on desktop toasts with a warning intent.
+
+### 💥 Breaking Changes
+
+* `CodeInput` is now rendered within an additional `div` element.  Unlikely to cause issues, unless
+  using targeted styling of this component.
 
 ## v50.1.1 - 2022-07-29
 
