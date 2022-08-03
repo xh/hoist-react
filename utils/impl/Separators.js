@@ -14,7 +14,9 @@ import {filterConsecutive} from '../js';
  */
 export function filterConsecutiveMenuSeparators() {
     return filterConsecutive(it => {
-        return it === '-' || it === 'separator' || it?.type?.name === 'MenuDivider';
+        return it === '-' ||
+            it === 'separator' ||
+            (it?.type?.name === 'MenuDivider' && !it.props?.title);
     });
 }
 
