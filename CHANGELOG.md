@@ -5,6 +5,8 @@
 ### 🎁 New Features
 * `HoistBase` `addReaction()` and `addAutorun()` now can create multiple reactions in one call, and
  will ignore nullish inputs.
+* `ButtonGroupInput` supports new `enableMulti` prop.
+
 
 ### 🐞 Bug Fixes
 
