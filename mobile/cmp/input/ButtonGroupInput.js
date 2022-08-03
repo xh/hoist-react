@@ -36,9 +36,13 @@ export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory({
 ButtonGroupInput.propTypes = {
     ...HoistInputPropTypes,
 
-    /** True to allow buttons to be unselected (aka inactivated). Defaults to false. */
+    /**
+     * True to allow buttons to be unselected (aka inactivated). Used when enableMulti is false.
+     * Defaults to false.
+     */
     enableClear: PT.bool,
 
+    /** True to allow entry/selection of multiple values - "tag picker" style. Defaults to false.*/
     enableMulti: PT.bool
 };
 ButtonGroupInput.hasLayoutSupport = true;
@@ -79,7 +83,7 @@ class Model extends HoistInputModel {
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
 
-        const {children, disabled, enableClear,enableMulti, tabIndex = 0, ...rest} = getNonLayoutProps(props);
+        const {children, disabled, enableClear, enableMulti, tabIndex = 0, ...rest} = getNonLayoutProps(props);
 
         const buttons = Children.map(children, button => {
             if (!button) return null;
