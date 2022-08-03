@@ -20,6 +20,10 @@
 * `CodeInput` is now rendered within an additional `div` element.  Unlikely to cause issues, unless
   using targeted styling of this component.
 
+### ⚙️ Technical
+
+* Hoist-supported menus will no longer filter out a `MenuDivider` if it has a `title`.
+
 ## v50.1.1 - 2022-07-29
 
 ### 🐞 Bug Fixes
