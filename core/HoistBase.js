@@ -47,7 +47,7 @@ export class HoistBase {
     #disposers = [];
 
     /**
-     * Add and start a managed reaction.
+     * Add and start one or more managed reactions.
      *
      * A reaction's run function will be executed on changes to any/all observables read in its
      * track function, regardless of whether they - or any other observables - are accessed in
@@ -71,37 +71,34 @@ export class HoistBase {
      * (commonly) ignore. This helps to clarify that the track function is only enumerating
      * the observables to be watched, and not necessarily generating or transforming values.
      *
-     *  This reaction will be disposed of automatically when this object is destroyed. It can also be
-     *  ended/disposed of manually using the native MobX disposer function returned by this method.
+     *  Reactions created in this method will be disposed of automatically when this object is
+     *  destroyed. They can also be ended/disposed of manually using the native MobX disposer
+     *  functions returned by this method.
      *
-     * @param {Object} conf - configuration of reaction, containing options accepted by MobX
-     *      reaction() API, as well as arguments below.
-     * @param {function} [conf.track] - function returning data to observe - first arg to the
-     *      underlying reaction() call. Specify this or `when`.
-     * @param {function} [conf.when] - function returning data to observe - first arg to the
-     *      underlying when() call. Specify this or `track`.
-     * @param {function} conf.run - function to run - second arg to underlying reaction()/when() call.
-     * @param {(number|Object)} [conf.debounce] - Specify to debounce run function with lodash.
-     *      When specified as object, should contain an 'interval' and other optional keys for
-     *      lodash.  If specified as number the default lodash debounce will be used.
-     * @returns {function} - disposer to manually dispose of the created reaction.
+     * @param {...ReactionSpec} specs - one or more reactions to add
+     * @returns {function|function[]} - disposer(s) to manually dispose of each created reaction.
      */
-    addReaction({track, when, run, debounce, ...opts}) {
-        throwIf(
-            (track && when) || (!track && !when),
-            "Must specify either 'track' or 'when' in addReaction."
-        );
-        opts = parseReactionOptions(opts);
-        run = bindAndDebounce(this, run, debounce);
+    addReaction(...specs) {
+        const disposers = specs.map(s => {
+            if (!s) return null;
+            let {track, when, run, debounce, ...opts} = s;
+            throwIf(
+                (track && when) || (!track && !when),
+                "Must specify either 'track' or 'when' in addReaction."
+            );
+            opts = parseReactionOptions(opts);
+            run = bindAndDebounce(this, run, debounce);
 
-        const disposer = track ? mobxReaction(track, run, opts) : mobxWhen(when, run, opts);
-        this.#disposers.push(disposer);
-        return disposer;
+            const disposer = track ? mobxReaction(track, run, opts) : mobxWhen(when, run, opts);
+            this.#disposers.push(disposer);
+            return disposer;
+        });
+        return disposers.length === 1 ? disposers[0] : disposers;
     }
 
 
     /**
-     * Add and start an autorun.
+     * Add and start one or more managed autoruns.
      *
      * An autorun function will be run on changes to any/all observables read during the last
      * execution of the function. This provides convenient and often very efficient dynamic
@@ -110,28 +107,29 @@ export class HoistBase {
      *
      * In some cases, however, it is desirable or more clear to explicitly declare which
      * observables should be tracked and trigger a reaction, regardless of their use within
-     * the function itself. See addReaction() below for that functionality.
+     * the function itself. See addReaction() above for that functionality.
      *
-     * This autorun will be disposed of automatically when this object is destroyed. It can also be
-     * ended/disposed of manually using the native mobx disposer function returned by this method.
+     * Autoruns created in this method will be disposed of automatically when this object is
+     * destroyed. They can also be ended/disposed of manually using the native mobx disposer
+     * functions returned by this method.
      *
-     * @param {(Object|function)} conf - function to run, or a config object containing options
-     *      accepted by MobX autorun() API as well as argument below.
-     * @param {function} [conf.run] - function to run - first arg to underlying autorun() call.
-     * @param {(number|Object)} [conf.debounce] - Specify to debounce run function with lodash.
-     *      When specified as Object, should contain an 'interval' and other optional keys for
-     *      lodash debounce.  If specified as number the default lodash debounce will be used.
-     * @returns {function} - disposer to manually dispose of the created autorun.
+     * @param {...(AutorunSpec|function)} specs - one or more autoruns to add
+     * @returns {function|function[]} - disposer(s) to manually dispose of each created autorun.
      */
-    addAutorun(conf) {
-        if (isFunction(conf)) conf = {run: conf};
-        let {run, debounce, ...opts} = conf;
+    addAutorun(...specs) {
+        const disposers = specs.map(s => {
+            if (!s) return null;
+            if (isFunction(s)) s = {run: s};
+            let {run, debounce, ...opts} = s;
 
-        run = bindAndDebounce(this, run, debounce);
+            run = bindAndDebounce(this, run, debounce);
 
-        const disposer = mobxAutorun(run, opts);
-        this.#disposers.push(disposer);
-        return disposer;
+            const disposer = mobxAutorun(run, opts);
+            this.#disposers.push(disposer);
+            return disposer;
+        });
+
+        return disposers.length === 1 ? disposers[0] : disposers;
     }
 
     /**
@@ -256,3 +254,29 @@ function bindAndDebounce(obj, fn, debounce) {
     if (isPlainObject(debounce)) return lodashDebounce(action(ret), debounce.interval, debounce);
     return ret;
 }
+
+
+/**
+ * @typedef {Object} ReactionSpec - object containing options accepted by MobX 'reaction' API as
+ *      well as arguments below.
+ *
+ * @property {function} [track] - function returning data to observe - first arg to the
+ *      underlying reaction() call. Specify this or `when`.
+ * @property {function} [when] - function returning data to observe - first arg to the
+ *      underlying when() call. Specify this or `track`.
+ * @property {function} run - function to run - second arg to underlying reaction()/when() call.
+ * @property {(number|Object)} [debounce] - Specify to debounce run function with lodash.
+ *      When specified as object, should contain an 'interval' and other optional keys for
+ *      lodash.  If specified as number the default lodash debounce will be used.
+ */
+
+
+/**
+ * @typedef {Object} AutorunSpec - object containing options accepted by MobX 'autorun' API as
+ *      well as arguments below.
+ *
+ * @property {function} [run] - function to run - first arg to underlying autorun() call.
+ * @property {(number|Object)} [debounce] - Specify to debounce run function with lodash.
+ *      When specified as Object, should contain an 'interval' and other optional keys for
+ *      lodash debounce.  If specified as number the default lodash debounce will be used.
+ */
