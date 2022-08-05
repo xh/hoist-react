@@ -268,7 +268,7 @@ export class DifferModel extends HoistModel {
             willDelete = filteredRecords.some(it => !it.data.remoteValue),
             confirmMsg = `Are you sure you want to apply remote values to ${pluralize(this.displayName, filteredRecords.length, true)}?`,
             prodWarning = fragment([
-                Icon.warning(),
+                Icon.warning({intent: 'warning'}),
                 'NOTE - you are currently in Production - any change will be applied to this environment'
             ]),
             productionMode = XH.environmentService.isProduction();
