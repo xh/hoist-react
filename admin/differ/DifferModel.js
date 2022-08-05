@@ -267,15 +267,17 @@ export class DifferModel extends HoistModel {
             hadPwd = records.length !== filteredRecords.length,
             willDelete = filteredRecords.some(it => !it.data.remoteValue),
             confirmMsg = `Are you sure you want to apply remote values to ${pluralize(this.displayName, filteredRecords.length, true)}?`,
-            prodWarning = fragment([
-                Icon.warning({intent: 'warning'}),
-                'NOTE - you are currently in Production - any change will be applied to this environment'
-            ]),
-            productionMode = XH.environmentService.isProduction();
+            prodWarning = fragment({
+                omit: !XH.environmentService.isProduction(),
+                items: [
+                    Icon.warning({intent: 'warning'}),
+                    'NOTE - you are currently in Production - any change will be applied to this environment'
+                ]
+            });
         const message = (
             <div>
                 <p>{confirmMsg}</p>
-                <p>{productionMode && prodWarning}</p>
+                <p>{prodWarning}</p>
                 <p hidden={!hadPwd}>Warning: No changes will be applied to password records. These must be changed manually.</p>
                 <p hidden={!willDelete}>Warning: Operation includes deletions.</p>
             </div>
