@@ -58,8 +58,8 @@ export class ChartsModel extends HoistModel {
                         click: (e) => this.selectRow(e)
                     },
                     width: 1,
-                    step: 'left',
-                    animation: false
+                    animation: false,
+                    step: 'left'
                 }
             },
             legend: {enabled: false},
@@ -77,7 +77,6 @@ export class ChartsModel extends HoistModel {
             yAxis: [{title: {text: null}, allowDecimals: false}]
         }
     });
-
 
     get showAsTimeseries() {
         return this.dimensions[0] === 'day';
