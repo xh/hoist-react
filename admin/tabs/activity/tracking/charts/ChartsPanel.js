@@ -10,6 +10,9 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon/Icon';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {checkbox} from '@xh/hoist/desktop/cmp/input';
+import {hspacer} from '@xh/hoist/cmp/layout';
 
 import {ChartsModel} from './ChartsModel';
 
@@ -27,12 +30,27 @@ export const chartsPanel = hoistCmp.factory({
                 model: chartModel,
                 key: chartModel.xhId
             }),
-            bbar: [metricSwitcher({multiline: true})],
+            bbar: bbar(),
             height: '100%',
             ...props
         });
     }
 });
+
+const bbar = hoistCmp.factory(() => toolbar(
+        metricSwitcher({multiline: true}),
+        hspacer(),
+        incWeekendsCheckbox()
+    )
+);
+
+const incWeekendsCheckbox = hoistCmp.factory(
+    ({model}) => checkbox({
+        omit: !model.showAsTimeseries,
+        bind: 'incWeekends',
+        label: 'Inc Wknds'
+    })
+);
 
 const metricSwitcher = hoistCmp.factory(
     ({model, multiline}) => {

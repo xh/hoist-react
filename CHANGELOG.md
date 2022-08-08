@@ -6,7 +6,8 @@
 * `HoistBase` `addReaction()` and `addAutorun()` now can create multiple reactions in one call, and
  will ignore nullish inputs.
 * `ButtonGroupInput` supports new `enableMulti` prop.
-
+* Admin activity tracking chart now has a checkbox to toggle weekends when viewing a time
+  series.
 
 ### 🐞 Bug Fixes
 

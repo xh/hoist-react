@@ -10,7 +10,7 @@ import {HoistModel, managed, lookup} from '@xh/hoist/core';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {sortBy, isEmpty} from 'lodash';
+import {filter, sortBy, isEmpty} from 'lodash';
 import moment from 'moment';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
@@ -32,6 +32,9 @@ export class ChartsModel extends HoistModel {
      *      + elapsed - avg elapsed time in ms for the primary dim group.
      */
     @bindable metric = 'entryCount';
+
+    /** @member {boolean} - show weekends on the activity chart */
+    @bindable incWeekends = false;
 
     /** @member {ChartModel} */
     @managed categoryChartModel = new ChartModel({
@@ -66,7 +69,9 @@ export class ChartsModel extends HoistModel {
                 title: {},
                 units: [['day', [1]], ['week', [2]], ['month', [1]]],
                 labels: {
-                    formatter: function() {return fmtDate(this.value, 'D MMM')}
+                    formatter: function () {
+                        return fmtDate(this.value, 'D MMM');
+                    }
                 }
             },
             yAxis: [{title: {text: null}, allowDecimals: false}]
@@ -115,7 +120,7 @@ export class ChartsModel extends HoistModel {
 
     onLinked() {
         this.addReaction({
-            track: () => [this.data, this.metric],
+            track: () => [this.data, this.metric, this.incWeekends],
             run: () => this.loadChart()
         });
     }
@@ -139,9 +144,12 @@ export class ChartsModel extends HoistModel {
         let sortedData = sortBy(data, aggRow => {
                 const {cubeLabel} = aggRow.data;
                 switch (primaryDim) {
-                    case 'day': return LocalDate.from(cubeLabel).timestamp;
-                    case 'month': return moment(cubeLabel, 'MMM YYYY').valueOf();
-                    default: return cubeLabel;
+                    case 'day':
+                        return LocalDate.from(cubeLabel).timestamp;
+                    case 'month':
+                        return moment(cubeLabel, 'MMM YYYY').valueOf();
+                    default:
+                        return cubeLabel;
                 }
             }),
             chartData = sortedData.map(aggRow => {
@@ -166,6 +174,10 @@ export class ChartsModel extends HoistModel {
             if (!isEmpty(fillData)) {
                 chartData.push(...fillData);
                 chartData = sortBy(chartData, data => data[0]);
+            }
+
+            if (!this.incWeekends) {
+                chartData = filter(chartData, data => LocalDate.from(data[0]).isWeekday);
             }
         }
         return [{name: metricLabel, data: chartData}];
