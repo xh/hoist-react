@@ -23,7 +23,6 @@ export class ChartsModel extends HoistModel {
         defaultSize: 370
     });
 
-
     /** @member {ActivityTrackingModel} */
     @lookup(ActivityTrackingModel) activityTrackingModel;
 
