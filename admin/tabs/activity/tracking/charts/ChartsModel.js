@@ -59,14 +59,13 @@ export class ChartsModel extends HoistModel {
                         click: (e) => this.selectRow(e)
                     },
                     width: 1,
+                    step: 'left',
                     animation: false
                 }
             },
             legend: {enabled: false},
             title: {text: null},
             xAxis: {
-                alignTicks: true,
-                startOnTick: true,
                 type: 'datetime',
                 title: {},
                 units: [['day', [1]], ['week', [2]], ['month', [1]]],
