@@ -8,13 +8,13 @@ import {ChartModel} from '@xh/hoist/cmp/chart';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, lookup} from '@xh/hoist/core';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {find, filter, sortBy, isEmpty} from 'lodash';
+import {filter, sortBy, isEmpty} from 'lodash';
 import moment from 'moment';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
-import {ONE_HOUR, ONE_DAY} from '@xh/hoist/utils/datetime/DateTimeUtils';
+import {ONE_DAY} from '@xh/hoist/utils/datetime/DateTimeUtils';
 
 export class ChartsModel extends HoistModel {
     @managed panelModel = new PanelModel({
@@ -23,7 +23,6 @@ export class ChartsModel extends HoistModel {
         defaultSize: 370
     });
 
-    @observable hideWeekends;
 
     /** @member {ActivityTrackingModel} */
     @lookup(ActivityTrackingModel) activityTrackingModel;
@@ -34,6 +33,9 @@ export class ChartsModel extends HoistModel {
      *      + elapsed - avg elapsed time in ms for the primary dim group.
      */
     @bindable metric = 'entryCount';
+
+    /** @member {boolean} - show weekends on the activity chart */
+    @bindable incWeekends = false;
 
     /** @member {ChartModel} */
     @managed categoryChartModel = new ChartModel({
@@ -66,7 +68,6 @@ export class ChartsModel extends HoistModel {
                 alignTicks: true,
                 startOnTick: true,
                 type: 'datetime',
-                ordinal: true,
                 title: {},
                 units: [['day', [1]], ['week', [2]], ['month', [1]]],
                 labels: {
@@ -109,18 +110,9 @@ export class ChartsModel extends HoistModel {
         return this.activityTrackingModel.dimensions;
     }
 
-    constructor(
-        hideWeekends = true
-    ) {
+    constructor() {
         super();
         makeObservable(this);
-        this.hideWeekends = hideWeekends;
-    }
-
-    @action
-    toggleWeekends() {
-        this.hideWeekends = !this.hideWeekends;
-        this.loadChart();
     }
 
     selectRow(e) {
@@ -131,7 +123,7 @@ export class ChartsModel extends HoistModel {
 
     onLinked() {
         this.addReaction({
-            track: () => [this.data, this.metric],
+            track: () => [this.data, this.metric, this.incWeekends],
             run: () => this.loadChart()
         });
     }
@@ -150,7 +142,7 @@ export class ChartsModel extends HoistModel {
     }
 
     getSeriesData() {
-        const {data, metric, primaryDim, showAsTimeseries, chartModel} = this,
+        const {data, metric, primaryDim, showAsTimeseries} = this,
             metricLabel = this.getLabelForMetric(metric, false);
         let sortedData = sortBy(data, aggRow => {
                 const {cubeLabel} = aggRow.data;
@@ -187,10 +179,8 @@ export class ChartsModel extends HoistModel {
                 chartData = sortBy(chartData, data => data[0]);
             }
 
-            if(this.hideWeekends) {
-                chartData = filter(chartData, day => {
-                    return LocalDate.from(day[0]).isWeekday;
-                });
+            if (!this.incWeekends) {
+                chartData = filter(chartData, data => LocalDate.from(data[0]).isWeekday);
             }
         }
         return [{name: metricLabel, data: chartData}];
