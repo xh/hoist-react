@@ -37,7 +37,8 @@ export const chartsPanel = hoistCmp.factory({
     }
 });
 
-const bbar = hoistCmp.factory(() => toolbar(
+const bbar = hoistCmp.factory(
+    () => toolbar(
         metricSwitcher({multiline: true}),
         hspacer(),
         incWeekendsCheckbox()
