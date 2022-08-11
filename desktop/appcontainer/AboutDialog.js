@@ -15,8 +15,13 @@ import './AboutDialog.scss';
 
 /**
  * A dialog box showing basic metadata and version information about the Hoist application
- * and its plugins. Can also display the values of other soft-configuration entries as
- * specified by the xhAboutMenuConfigs configuration key.
+ * and its plugins
+ *
+ * To add custom entries, specify in xhAboutMenuConfigs a list of objects in the form of
+ * {"key": "configName", "label": "Display Name"}.
+ *
+ * Values for custom properties will be looked up via config key and fallback on AppModel.keyName
+ * if no config exists.
  *
  * @private
  */

@@ -8,6 +8,7 @@
 * `ButtonGroupInput` supports new `enableMulti` prop.
 * Admin activity tracking chart now has a checkbox to toggle weekends when viewing a time
   series.
+* `AboutDialog` can now display more dynamic custom properties.
 
 ### 🐞 Bug Fixes
 

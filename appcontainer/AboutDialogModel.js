@@ -8,6 +8,7 @@ import {table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {isNil} from 'lodash';
 
 /**
  * Support for About Dialog.
@@ -46,8 +47,8 @@ export class AboutDialogModel extends HoistModel {
             configRows = [];
 
         XH.getConf('xhAboutMenuConfigs', []).forEach(it => {
-            const confVal = XH.getConf(it.key, null);
-            if (confVal !== null) configRows.push(row(it.label, confVal));
+            const confVal = XH.getConf(it.key, null) ?? XH.appModel[it.key];
+            if (!isNil(confVal)) configRows.push(row(it.label, confVal));
         });
 
         return table({
