@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 .xh-dock-container {
@@ -78,7 +78,7 @@
     }
 
     // Extra specificity needed here to overcome the specificity in Button.scss.
-    .xh-button.bp3-button {
+    .xh-button.bp4-button {
       &.xh-button--minimal {
         &.xh-button--intent-none {
           &.xh-button--enabled {

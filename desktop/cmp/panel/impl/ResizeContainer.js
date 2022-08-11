@@ -2,8 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import composeRefs from '@seznam/compose-react-refs';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Children} from 'react';
@@ -34,6 +35,11 @@ export const resizeContainer = hoistCmp.factory({
 
         const cmp = vertical ? vbox : hbox,
             maxDim = vertical ? 'maxHeight' : 'maxWidth';
+
+
+        if (panelModel._resizeRef) {
+            ref = composeRefs(panelModel._resizeRef, ref);
+        }
 
         return cmp({
             ref,

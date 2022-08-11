@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
+import {isEmpty} from 'lodash';
 
 /**
  * Model for a single instance of a modal dialog.
@@ -28,6 +29,8 @@ export class MessageModel extends HoistModel {
     cancelAlign;
     onConfirm;
     onCancel;
+    dismissable;
+    cancelOnDismiss;
 
     // Promise to be resolved when user has clicked on choice and its internal resolver
     result;
@@ -46,7 +49,9 @@ export class MessageModel extends HoistModel {
         cancelProps = {},
         cancelAlign = 'right',
         onConfirm,
-        onCancel
+        onCancel,
+        dismissable = !isEmpty(cancelProps),
+        cancelOnDismiss = true
     }) {
         super();
         makeObservable(this);
@@ -56,6 +61,8 @@ export class MessageModel extends HoistModel {
         this.message = message;
         this.messageKey = messageKey;
         this.className = className;
+        this.dismissable = dismissable;
+        this.cancelOnDismiss = cancelOnDismiss;
 
         if (input) {
             this.input = input;
@@ -91,15 +98,26 @@ export class MessageModel extends HoistModel {
             resolvedVal = this.formModel.getData().value;
         }
 
-        if (this.onConfirm) this.onConfirm();
+        this.onConfirm?.();
         this._resolver(resolvedVal);
         this.close();
     }
 
     @action
     doCancel() {
-        if (this.onCancel) this.onCancel();
+        this.onCancel?.();
         this._resolver(false);
+        this.close();
+    }
+
+    @action
+    doEscape() {
+        if (!this.dismissable) return;
+        if (this.cancelOnDismiss) {
+            this.doCancel();
+            return;
+        }
+        this._resolver(null);
         this.close();
     }
 

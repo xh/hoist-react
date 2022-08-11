@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable, bindable, makeObservable} from '@xh/hoist/mobx';
@@ -75,11 +75,11 @@ export class ImpersonationBarModel extends HoistModel {
             this.setPendingTarget('');
             XH.handleException(e, {logOnServer: false});  // likely to be an unknown user
         }
-    }
+    };
 
     onClose = () => {
         XH.identityService.isImpersonating ? XH.identityService.endImpersonateAsync() : this.hide();
-    }
+    };
 
 
     //--------------------

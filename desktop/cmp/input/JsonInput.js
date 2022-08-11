@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
-import {CodeInput, codeInput} from './CodeInput';
+import '@xh/hoist/desktop/register';
 import * as codemirror from 'codemirror';
 import 'codemirror/mode/javascript/javascript';
+import {CodeInput, codeInput} from './CodeInput';
 import {jsonlint} from './impl/jsonlint';
 
 /**

@@ -2,23 +2,31 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, RefreshMode, RenderMode, XH, PersistenceProvider, TaskObserver} from '@xh/hoist/core';
+import {
+    HoistModel,
+    managed,
+    PersistenceProvider,
+    RefreshMode,
+    RenderMode,
+    TaskObserver,
+    XH
+} from '@xh/hoist/core';
+import {modelLookupContextProvider} from '@xh/hoist/core/impl/ModelLookup';
 import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {action, observable, bindable, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {cloneDeep, defaultsDeep, find, isFinite, isNil, reject} from 'lodash';
-import {modelLookupContextProvider} from '@xh/hoist/core/impl/ModelLookup';
 import {createRoot} from 'react-dom/client';
 import {DashViewModel} from '../DashViewModel';
 import {DashContainerViewSpec} from './DashContainerViewSpec';
-import {dashContainerMenuButton} from './impl/DashContainerMenuButton';
 import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
+import {dashContainerMenuButton} from './impl/DashContainerMenuButton';
 import {convertGLToState, convertStateToGL, getViewModelId} from './impl/DashContainerUtils';
 import {dashContainerView} from './impl/DashContainerView';
 

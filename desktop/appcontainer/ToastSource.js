@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, lookup} from '@xh/hoist/core';
 import {Toaster} from '@xh/hoist/kit/blueprint';
+import classNames from 'classnames';
 import {isElement, map} from 'lodash';
 import {wait} from '../../promise';
 import './Toast.scss';
@@ -46,7 +47,7 @@ class LocalModel extends HoistModel {
     /** @param {ToastModel[]} models */
     displayPendingToasts(models) {
         models.forEach(model => {
-            let {bpId, isOpen, icon, actionButtonProps, position, containerRef, ...rest} = model;
+            let {bpId, isOpen, icon, intent, actionButtonProps, position, containerRef, ...rest} = model;
 
             // 1) If toast is visible and sent to bp, or already obsolete -- nothing to do
             if ((!!bpId) === isOpen) return;
@@ -55,10 +56,11 @@ class LocalModel extends HoistModel {
             let toaster = this.getToaster(position, containerRef);
             if (!bpId) {
                 model.bpId = toaster.show({
-                    className: 'xh-toast',
+                    className: classNames('xh-toast', `xh-toast--${intent}`),
                     icon: div({className: 'xh-toast__icon', item: icon}),
                     action: actionButtonProps,
                     onDismiss: () => wait(0).then(() => model.dismiss()),
+                    intent,
                     ...rest
                 });
             } else {

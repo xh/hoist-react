@@ -2,16 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {agGridVersion} from '@xh/hoist/kit/ag-grid';
 import bpPkg from '@blueprintjs/core/package.json';
 import {HoistService, XH} from '@xh/hoist/core';
+import {agGridVersion} from '@xh/hoist/kit/ag-grid';
 import hoistPkg from '@xh/hoist/package.json';
 import {Timer} from '@xh/hoist/utils/async';
-import {SECONDS} from '@xh/hoist/utils/datetime';
+import {MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
 import {deepFreeze} from '@xh/hoist/utils/js';
-import {MINUTES} from '@xh/hoist/utils/datetime';
 import {defaults} from 'lodash';
 import mobxPkg from 'mobx/package.json';
 import {version as reactVersion} from 'react';
@@ -96,5 +95,5 @@ export class EnvironmentService extends HoistService {
         if (appVersion !== clientVersion) {
             console.warn(`Version mismatch detected between client and server - ${clientVersion} vs ${appVersion}`);
         }
-    }
+    };
 }

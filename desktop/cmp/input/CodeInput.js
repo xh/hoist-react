@@ -2,18 +2,22 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, XH} from '@xh/hoist/core';
+import {hoistCmp, managed, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
+import {modalSupport} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupport';
+import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {dialog, textArea} from '@xh/hoist/kit/blueprint';
+import {textArea} from '@xh/hoist/kit/blueprint';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {wait} from '@xh/hoist/promise';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -121,6 +125,8 @@ CodeInput.hasLayoutSupport = true;
 // Implementation
 //------------------------------
 class Model extends HoistInputModel {
+    /** @member {ModalSupportModel} */
+    @managed modalSupportModel = new ModalSupportModel();
 
     /** @member {CodeMirror} - a CodeMirror editor instance. */
     editor;
@@ -132,7 +138,9 @@ class Model extends HoistInputModel {
     @observable.ref matches = [];
     get matchCount() {return this.matches.length}
 
-    @observable fullScreen = false;
+    get fullScreen() {
+        return this.modalSupportModel.isModal;
+    }
 
     get commitOnChange() {return withDefault(this.componentProps.commitOnChange, true)}
 
@@ -202,6 +210,11 @@ class Model extends HoistInputModel {
     constructor() {
         super();
         makeObservable(this);
+        this.addReaction({
+            track: () => this.modalSupportModel.isModal,
+            run: () => this.focus(),
+            debounce: 1
+        });
     }
 
     onLinked() {
@@ -317,9 +330,15 @@ class Model extends HoistInputModel {
         }
     }
 
-    @action
     toggleFullScreen() {
-        this.fullScreen = !this.fullScreen;
+        this.modalSupportModel.toggleIsModal();
+
+        // 'Nudge' the mouse wheel to trigger CodeMirror to update scrollbar state
+        const scrollEvent = d => new window.WheelEvent('mousewheel', {deltaX: d, deltaY: d});
+        wait().then(() => {
+            this.editor.getScrollerElement().dispatchEvent(scrollEvent(2));
+            this.editor.getScrollerElement().dispatchEvent(scrollEvent(-2));
+        });
     }
 
     //------------------------
@@ -413,36 +432,25 @@ class Model extends HoistInputModel {
     }
 }
 
-
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
-        const childProps = {
+        return box({
+            className: 'xh-code-input__outer-wrapper',
             width: 300,
             height: 100,
             ...getLayoutProps(props),
-            className,
-            ref
-        };
-
-        return model.fullScreen ? fullscreenCmp(childProps) : inputCmp(childProps);
+            item: modalSupport({
+                model: model.modalSupportModel,
+                item: inputCmp({
+                    width: '100%',
+                    height: '100%',
+                    className,
+                    ref,
+                    model
+                })
+            })
+        });
     }
-);
-
-const fullscreenCmp = hoistCmp.factory(
-    ({model, ...props}, ref) => fragment(
-        dialog({
-            className: 'xh-code-input__dialog',
-            isOpen: true,
-            canOutsideClickClose: true,
-            item: inputCmp({flex: 1}),
-            onClose: () => model.toggleFullScreen()
-        }),
-        box({
-            ...props,
-            className: 'xh-code-input__placeholder',
-            ref
-        })
-    )
 );
 
 const inputCmp = hoistCmp.factory(
