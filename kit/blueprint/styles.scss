@@ -3,28 +3,28 @@
 //------------------------
 // Tabs
 //------------------------
-.bp3-tab-panel > div {
+.bp4-tab-panel > div {
   margin: 0 !important; // TODO - investigate this....
 }
 
-.bp3-tab > svg:first-child {
+.bp4-tab > svg:first-child {
   margin-right: var(--xh-pad-half-px);
 }
 
 // Vertical tab lists fill their width
-.bp3-tabs.bp3-vertical .bp3-tab-list {
+.bp4-tabs.bp4-vertical .bp4-tab-list {
   flex: 1;
 }
 
 //------------------------
 // Dialogs, Popovers, Masking
 //------------------------
-.bp3-dialog {
+.bp4-dialog {
   padding-bottom: 0;
   border-radius: var(--xh-border-radius-px);
   border: var(--xh-popup-border-width-px) solid var(--xh-popup-border-color);
 
-  .bp3-dialog-header {
+  .bp4-dialog-header {
     color: var(--xh-popup-title-text-color);
     background-color: var(--xh-popup-title-bg);
     font-family: var(--xh-popup-title-font-family);
@@ -33,8 +33,8 @@
     border-top-right-radius: var(--xh-border-radius-px);
     border-top-left-radius: var(--xh-border-radius-px);
 
-    .bp3-heading,
-    .bp3-icon {
+    .bp4-heading,
+    .bp4-icon {
       color: var(--xh-popup-title-text-color);
     }
 
@@ -43,14 +43,17 @@
     }
   }
 
-  .bp3-dialog-body {
+  .bp4-dialog-body {
+    margin: 0;
+    padding: var(--xh-pad-double-px);
+    background: var(--xh-popup-bg);
     word-break: break-word;
   }
 }
 
 // Customized here for backdrops behind dialogs.
 // Note that masks use their own CSS var, set in Mask.scss.
-.bp3-overlay-backdrop:not(.bp3-popover-backdrop) {
+.bp4-overlay-backdrop:not(.bp4-popover-backdrop) {
   background-color: var(--xh-backdrop-bg);
 }
 
@@ -63,9 +66,9 @@ $pt-transition-duration: 100ms !default;
 
 // This override is taken from the popover source SCSS - there it is scoped under the minimal class.
 // https://github.com/palantir/blueprint/blob/1bfd1e42303d2626bfc3923eec2195ab4dc696d2/packages/core/src/components/popover/_popover.scss#L54
-.bp3-popover {
+.bp4-popover {
   @include react-transition(
-    "bp3-popover",
+    "bp4-popover",
     (transform: scale(1) scale(1)),
     $duration: 0,
     $after: "> &"
@@ -75,66 +78,72 @@ $pt-transition-duration: 100ms !default;
 //------------------------
 // Menus
 //------------------------
-.bp3-dark .bp3-menu,
-.bp3-menu {
+.bp4-dark .bp4-menu,
+.bp4-menu {
   background-color: var(--xh-menu-bg);
   border: var(--xh-menu-border);
   color: var(--xh-menu-item-text-color);
   padding: 5px 0;
 
-  .bp3-menu-item {
+  .bp4-menu-item {
     // Default alignment of flex-start leaves Hoist icons shifted up - could target
     // more specifically if this is a problem in any other contexts.
     align-items: center;
     color: var(--xh-menu-item-text-color);
     padding: 5px 10px;
 
+    .bp4-menu-item-icon {
+      color: inherit;
+    }
+
     &:hover {
       background-color: var(--xh-menu-item-highlight-bg);
       border-radius: 0;
     }
 
-    &.bp3-intent-primary {
+    &.bp4-intent-primary {
       color: var(--xh-intent-primary);
     }
 
-    &.bp3-intent-success {
+    &.bp4-intent-success {
       color: var(--xh-intent-success);
     }
 
-    &.bp3-intent-warning {
+    &.bp4-intent-warning {
       color: var(--xh-intent-warning);
     }
 
-    &.bp3-intent-danger {
+    &.bp4-intent-danger {
       color: var(--xh-intent-danger);
     }
 
     .xh-dark & {
-      &.bp3-intent-primary {
+      &.bp4-intent-primary {
         color: var(--xh-intent-primary-lighter);
       }
 
-      &.bp3-intent-success {
+      &.bp4-intent-success {
         color: var(--xh-intent-success-lighter);
       }
 
-      &.bp3-intent-warning {
+      &.bp4-intent-warning {
         color: var(--xh-intent-warning-lighter);
       }
 
-      &.bp3-intent-danger {
+      &.bp4-intent-danger {
         color: var(--xh-intent-danger-lighter);
       }
     }
   }
 
-  .bp3-submenu {
+  .bp4-submenu {
     padding: 0;
   }
-
 }
 
+.bp4-dark .bp4-menu-divider {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
 
 //------------------------
 // Buttons
@@ -142,7 +151,7 @@ $pt-transition-duration: 100ms !default;
 // See desktop/cmp/button/Button.scss for button styles.
 // Rule below applies only to buttons within BP inputs to disable default hover background-color
 // (which looks weird) and instead tweak the icon color to indicate it's active.
-.xh-app .xh-input .bp3-input-group .xh-button {
+.xh-app .xh-input .bp4-input-group .xh-button {
   &.xh-button--minimal,
   &.xh-button--outlined {
     &.xh-button--enabled {
@@ -158,72 +167,45 @@ $pt-transition-duration: 100ms !default;
 }
 
 //------------------------
-// Toasts
-//------------------------
-.bp3-toast {
-  padding-left: 5px;
-
-  &.bp3-intent-primary {
-    background-color: var(--xh-intent-primary);
-  }
-
-  &.bp3-intent-danger {
-    background-color: var(--xh-intent-danger);
-  }
-
-  &.bp3-intent-success {
-    background-color: var(--xh-intent-success);
-  }
-
-  &.bp3-intent-warning {
-    background-color: var(--xh-intent-warning);
-  }
-
-  .bp3-toast-message {
-    word-break: break-word;
-  }
-}
-
-//------------------------
 // Tooltips
 //------------------------
-.bp3-tooltip {
-  &.bp3-intent-primary {
-    .bp3-popover-content {
+.bp4-tooltip {
+  &.bp4-intent-primary {
+    .bp4-popover-content {
       background-color: var(--xh-intent-primary);
     }
 
-    .bp3-popover-arrow-fill {
+    .bp4-popover-arrow-fill {
       fill: var(--xh-intent-primary);
     }
   }
 
-  &.bp3-intent-danger {
-    .bp3-popover-content {
+  &.bp4-intent-danger {
+    .bp4-popover-content {
       background-color: var(--xh-intent-danger);
     }
 
-    .bp3-popover-arrow-fill {
+    .bp4-popover-arrow-fill {
       fill: var(--xh-intent-danger);
     }
   }
 
-  &.bp3-intent-success {
-    .bp3-popover-content {
+  &.bp4-intent-success {
+    .bp4-popover-content {
       background-color: var(--xh-intent-success);
     }
 
-    .bp3-popover-arrow-fill {
+    .bp4-popover-arrow-fill {
       fill: var(--xh-intent-success);
     }
   }
 
-  &.bp3-intent-warning {
-    .bp3-popover-content {
+  &.bp4-intent-warning {
+    .bp4-popover-content {
       background-color: var(--xh-intent-warning);
     }
 
-    .bp3-popover-arrow-fill {
+    .bp4-popover-arrow-fill {
       fill: var(--xh-intent-warning);
     }
   }
@@ -232,11 +214,11 @@ $pt-transition-duration: 100ms !default;
 //------------------------
 // Forms + Inputs
 //------------------------
-.bp3-input,
-.bp3-dark .bp3-input,
-textarea.bp3-input,
-.bp3-dark textarea.bp3-input,
-.bp3-input-ghost {
+.bp4-input,
+.bp4-dark .bp4-input,
+textarea.bp4-input,
+.bp4-dark textarea.bp4-input,
+.bp4-input-ghost {
   color: var(--xh-input-text-color);
   background: var(--xh-input-bg);
   font-size: var(--xh-font-size);
@@ -247,7 +229,7 @@ textarea.bp3-input,
   }
 
   // Use Hoist theme vars for disabled input styles.
-  &.bp3-disabled,
+  &.bp4-disabled,
   &:disabled {
     background-color: var(--xh-input-disabled-bg);
     color: var(--xh-input-disabled-text-color);
@@ -255,44 +237,44 @@ textarea.bp3-input,
 }
 
 // Expose CSS var for box-shadow tweaking
-.bp3-input:not(.bp3-active):not(:focus) {
+.bp4-input:not(.bp4-active):not(:focus) {
   box-shadow: var(--xh-form-field-box-shadow);
 }
 
-.bp3-control,
-.bp3-dark .bp3-control {
-  input:focus ~ .bp3-control-indicator {
+.bp4-control,
+.bp4-dark .bp4-control {
+  input:focus ~ .bp4-control-indicator {
     outline: var(--xh-form-field-focused-border-color) solid 1px !important;
     outline-offset: 1px;
   }
 }
 
-.bp3-slider-handle:focus {
+.bp4-slider-handle:focus {
   outline: unset; // override browser default styles
   box-shadow: var(--xh-slider-handle-focused-box-shadow);
 }
 
-.bp3-input:focus,
-.bp3-dark .bp3-input:focus,
-.bp3-dark textarea.bp3-input:focus {
+.bp4-input:focus,
+.bp4-dark .bp4-input:focus,
+.bp4-dark textarea.bp4-input:focus {
   box-shadow: var(--xh-form-field-focused-box-shadow);
 }
 
 // Override Blueprint textarea and switch input dark theme
-.bp3-dark textarea.bp3-input {
+.bp4-dark textarea.bp4-input {
   box-shadow: var(--xh-form-field-box-shadow);
 }
 
-.bp3-dark .bp3-control.bp3-switch input ~ .bp3-control-indicator {
+.bp4-dark .bp4-control.bp4-switch input ~ .bp4-control-indicator {
   box-shadow: var(--xh-form-field-box-shadow) !important;
 }
 
-.bp3-dark .bp3-control.bp3-switch:hover input ~ .bp3-control-indicator {
+.bp4-dark .bp4-control.bp4-switch:hover input ~ .bp4-control-indicator {
   background-color: #202b33;
 }
 
 /* Apply blueprint styling to non-blueprint icons within input groups */
-.bp3-input-group {
+.bp4-input-group {
   .xh-icon {
     position: absolute;
     top: 0;
@@ -309,15 +291,15 @@ textarea.bp3-input,
 
   // Support direct use of a Hoist Icon as input `rightElement` prop - w/o the below, the icon SVG
   // will not be measured (clientWidth == 0) and the input's internal layout won't account for it.
-  .bp3-input-action > .xh-icon {
+  .bp4-input-action > .xh-icon {
     position: relative;
     display: block;
   }
 
-  .bp3-button-group {
+  .bp4-button-group {
     margin-right: 3px;
 
-    .bp3-button {
+    .bp4-button {
       margin-right: 0;
       margin-left: 0;
     }
@@ -329,18 +311,18 @@ textarea.bp3-input,
 }
 
 /* Apply blueprint's z-index of 16 for icons within a control group */
-.bp3-control-group .bp3-input-group svg:not(.bp3-icon) {
+.bp4-control-group .bp4-input-group svg:not(.bp4-icon) {
   z-index: 16;
 }
 
 // Controls ship with default bottom and (inline) right margins. We expose variables
 // to customize and default those to 0 to avoid adding margins by default.
 // Hoist theme text-color applied to elements not styled with a more specific selector.
-.bp3-control {
+.bp4-control {
   color: var(--xh-text-color);
   margin-bottom: var(--xh-form-field-margin-bottom);
 
-  &.bp3-inline {
+  &.bp4-inline {
     margin-right: var(--xh-form-field-margin-right);
   }
 }
@@ -348,10 +330,10 @@ textarea.bp3-input,
 //------------------------
 // Misc
 //------------------------
-.bp3-hotkey-column {
+.bp4-hotkey-column {
   padding: var(--xh-pad-double-px);
 
-  .bp3-heading {
+  .bp4-heading {
     font-weight: normal;
     margin-top: 0;
   }

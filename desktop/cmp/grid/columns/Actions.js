@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {RecordAction} from '@xh/hoist/data';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
+import '@xh/hoist/desktop/register';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEmpty} from 'lodash';
@@ -66,7 +67,7 @@ export const actionCol = {
                 tooltip,
                 intent,
                 className: classNames(
-                    'bp3-small',
+                    'bp4-small',
                     'xh-record-action-button',
                     className
                 ),

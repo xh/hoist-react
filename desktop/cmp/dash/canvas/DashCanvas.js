@@ -1,27 +1,33 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2022 Extremely Heavy Industries Inc.
+ */
 import {ContextMenu} from '@blueprintjs/core';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {elemFactory, hoistCmp, uses, XH} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {Icon} from '@xh/hoist/icon';
-import {Classes, overlay, popover} from '@xh/hoist/kit/blueprint';
+import '@xh/hoist/desktop/register';
+import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import classNames from 'classnames';
 import PT from 'prop-types';
-
 import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import './DashCanvas.scss';
 import {DashCanvasModel} from './DashCanvasModel';
-import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
+import {dashCanvasAddViewButton, dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
 
 /**
- * Display a "canvas" of child components in accordance with a DashCanvasModel
+ * Dashboard-style container that allows users to drag-and-drop child widgets into flexible layouts.
+ *
+ * Unlike its cousin {@see DashContainer}, this component scales the width only of its child
+ * widgets as its overall size changes, leaving heights unchanged and scrolling internally as
+ * necessary. This makes it a good candidate for report-style dashboards containing lots of content
+ * that is unlikely to fit or compress nicely on smaller screens. Consider DashContainer when
+ * a space-filling layout is a priority.
+ *
  * @see DashCanvasModel
- *
- * NOTE: This component is currently in BETA. Its API is under development
- * and subject to change in future versions.
- *
- * @Beta
  */
 export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
     displayName: 'DashCanvas',
@@ -74,7 +80,7 @@ DashCanvas.propTypes = {
 
 const emptyContainerOverlay = hoistCmp.factory(
     ({model}) => {
-        const {isEmpty, emptyText, addViewButtonText} = model;
+        const {isEmpty, emptyText} = model;
         if (!isEmpty) return null;
 
         return overlay({
@@ -89,16 +95,7 @@ const emptyContainerOverlay = hoistCmp.factory(
                 items: [
                     div(emptyText),
                     vspacer(10),
-                    popover({
-                        interactionKind: 'click',
-                        item: button({
-                            icon: Icon.add(),
-                            text: addViewButtonText
-                        }),
-                        content: dashCanvasContextMenu({
-                            dashCanvasModel: model
-                        })
-                    })
+                    dashCanvasAddViewButton()
                 ]
             })
         });

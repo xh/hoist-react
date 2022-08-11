@@ -2,82 +2,54 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {chart} from '@xh/hoist/cmp/chart';
-import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, creates} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {dialog} from '@xh/hoist/kit/blueprint';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {checkbox} from '@xh/hoist/desktop/cmp/input';
+import {hspacer} from '@xh/hoist/cmp/layout';
 
 import {ChartsModel} from './ChartsModel';
 
 export const chartsPanel = hoistCmp.factory({
     model: creates(ChartsModel),
     render({model, ...props}) {
-        const {chartModel} = model;
-
+        const {chartModel, activityTrackingModel, panelModel} = model,
+            {isModal} = panelModel;
         return panel({
-            title: 'Aggregate Activity Chart',
+            title: !isModal ? 'Aggregate Activity Chart' : activityTrackingModel.queryDisplayString,
             icon: Icon.chartBar(),
-            compactHeader: true,
-            items: [
-                chart({
-                    model: chartModel,
-                    key: chartModel.xhId
-                }),
-                chartDialog()
-            ],
-            headerItems: [
-                button({
-                    icon: Icon.openExternal(),
-                    onClick: () => model.toggleDialog()
-                })
-            ],
-            bbar: [metricSwitcher({multiline: true})],
-            model: {
-                side: 'bottom',
-                defaultSize: 370
-            },
+            model: panelModel,
+            compactHeader: !isModal,
+            item: chart({
+                model: chartModel,
+                key: chartModel.xhId
+            }),
+            bbar: bbar(),
+            height: '100%',
             ...props
         });
     }
 });
 
-const chartDialog = hoistCmp.factory(
-    ({model}) => {
-        const {chartModel, activityTrackingModel} = model;
-        if (!model.showDialog) return null;
+const bbar = hoistCmp.factory(() => toolbar(
+        metricSwitcher({multiline: true}),
+        hspacer(),
+        incWeekendsCheckbox()
+    )
+);
 
-        return dialog({
-            title: activityTrackingModel.queryDisplayString,
-            icon: Icon.chartBar(),
-            style: {
-                width: '90vw',
-                height: '60vh'
-            },
-            isOpen: true,
-            item: panel({
-                item: chart({
-                    model: chartModel,
-                    key: `${chartModel.xhId}-dialog`
-                }),
-                bbar: [
-                    filler(),
-                    metricSwitcher(),
-                    filler(),
-                    button({
-                        text: 'Close',
-                        onClick: () => model.toggleDialog()
-                    })
-                ]
-            }),
-            onClose: () => model.toggleDialog()
-        });
-    }
+const incWeekendsCheckbox = hoistCmp.factory(
+    ({model}) => checkbox({
+        omit: !model.showAsTimeseries,
+        bind: 'incWeekends',
+        label: 'Inc Wknds'
+    })
 );
 
 const metricSwitcher = hoistCmp.factory(

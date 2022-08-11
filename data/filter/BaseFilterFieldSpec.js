@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistBase} from '@xh/hoist/core';
 import {FieldFilter, FieldType, genDisplayName} from '@xh/hoist/data';
@@ -93,7 +93,7 @@ export class BaseFilterFieldSpec extends HoistBase {
     }
 
     /**
-     * @return {string} - 'range' or 'value' - determines operations supported by this field.
+     * @return {string} - 'range', 'value', or 'collection' - determines operations supported by this field.
      *      Type 'range' indicates the field should use mathematical / logical operations
      *      ('>', '>=', '<', '<=', '=', '!='). Type 'value' indicates the field should use equality
      *      operators ('=', '!=', 'like', 'not like', 'begins', 'ends') against a suggested
@@ -107,6 +107,8 @@ export class BaseFilterFieldSpec extends HoistBase {
             case FT.DATE:
             case FT.LOCAL_DATE:
                 return 'range';
+            case FT.TAGS:
+                return 'collection';
             default:
                 return 'value';
         }
@@ -114,6 +116,7 @@ export class BaseFilterFieldSpec extends HoistBase {
 
     get isRangeType() { return this.filterType === 'range' }
     get isValueType() { return this.filterType === 'value' }
+    get isCollectionType() { return this.filterType === 'collection' }
 
     get isDateBasedFieldType() {
         const {fieldType} = this;
@@ -151,7 +154,7 @@ export class BaseFilterFieldSpec extends HoistBase {
         return this.values &&
             this.enableValues &&
             this.supportsOperator(op) &&
-            (op === '=' || op === '!=');
+            (op === '=' || op === '!=' || op === 'includes' || op === 'excludes');
     }
 
     //------------------------
@@ -169,6 +172,7 @@ export class BaseFilterFieldSpec extends HoistBase {
 
     getDefaultOperators() {
         if (this.isBoolFieldType) return ['='];
+        if (this.isCollectionType) return ['includes', 'excludes'];
         return this.isValueType ?
             ['=', '!=', 'like', 'not like', 'begins', 'ends'] :
             ['>', '>=', '<', '<=', '=', '!='];

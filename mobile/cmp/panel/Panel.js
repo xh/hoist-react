@@ -2,13 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, useContextModel, TaskObserver} from '@xh/hoist/core';
+import {hoistCmp, TaskObserver, useContextModel} from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
+import '@xh/hoist/mobile/register';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {omitBy} from 'lodash';

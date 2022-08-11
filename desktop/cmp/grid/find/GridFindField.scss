@@ -1,5 +1,5 @@
 .xh-grid-find-field {
-  .bp3-input {
+  .bp4-input {
     border-radius: 3px 0 0 3px;
   }
 
@@ -13,8 +13,8 @@
     border-radius: 0 3px 3px 0;
 
     .xh-button {
-      max-height: calc(var(--xh-tbar-compact-item-height-px) * 0.5);
-      min-height: calc(var(--xh-tbar-compact-item-height-px) * 0.5);
+      max-height: calc(var(--xh-tbar-compact-item-height-px) * 0.5) !important;
+      min-height: calc(var(--xh-tbar-compact-item-height-px) * 0.5) !important;
       min-width: var(--xh-tbar-compact-item-height-px);
       max-width: var(--xh-tbar-compact-item-height-px);
       margin: 0 !important;
@@ -30,4 +30,8 @@
     min-width: 30px;
     text-align: right;
   }
+}
+
+.xh-toolbar--compact .xh-grid-find-field__controls {
+  border: none;
 }

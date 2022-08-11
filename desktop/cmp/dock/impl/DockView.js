@@ -2,14 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {DockViewModel} from '@xh/hoist/cmp/dock';
+import {DockViewModel} from '@xh/hoist/desktop/cmp/dock';
 import {div, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {modalSupport} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupport';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {dialog} from '@xh/hoist/kit/blueprint';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {useRef} from 'react';
@@ -37,38 +38,24 @@ export const dockView = hoistCmp.factory({
         );
 
         const header = headerCmp({compactHeaders}),
-            body = refreshContextView({
-                model: refreshContextModel,
-                item: div({className: 'xh-dock-view__body', item: elementFromContent(model.content)})
-            });
+            body = unmount && (collapsed || docked) ?
+                null :
+                refreshContextView({
+                    model: refreshContextModel,
+                    item: div({className: 'xh-dock-view__body', item: elementFromContent(model.content)})
+                });
 
-        // 1) Render collapsed
-        if (collapsed) {
-            return vbox({
-                width: collapsedWidth,
-                className: classNames(className, 'xh-dock-view--collapsed'),
-                items: [header, unmount ? null : body]
-            });
-        }
 
-        // 1) Render docked
-        if (docked) {
-            return vbox({
-                width,
-                height,
-                className: classNames(className, 'xh-dock-view--docked'),
-                items: [header, unmount ? null : body]
-            });
-        }
+        const suffix = collapsed ? 'collapsed' : docked ? 'docked' : 'dialog';
 
-        // 2) Render in Dialog
-        return dialog({
-            className: classNames(className, 'xh-dock-view--dialog'),
-            style: {width, height},
-            isOpen: true,
-            onClose: () => model.onClose(),
-            canOutsideClickClose: false,
-            items: [header, body]
+        return modalSupport({
+            model: model.modalSupportModel,
+            item: vbox({
+                width: collapsed ? collapsedWidth : width,
+                height: !collapsed ? height : undefined,
+                className: classNames(className, `xh-dock-view--${suffix}`),
+                items: [header, body]
+            })
         });
     }
 });

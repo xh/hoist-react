@@ -2,16 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {Button, ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import '@xh/hoist/desktop/register';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
-import {filter} from 'lodash';
+import {isEmpty, filter, without, castArray} from 'lodash';
 import PT from 'prop-types';
-import {cloneElement, Children} from 'react';
+import {Children, cloneElement} from 'react';
 
 /**
  * A segmented group of buttons, one of which is depressed to indicate the input's current value.
@@ -24,6 +25,10 @@ export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory({
     displayName: 'ButtonGroupInput',
     className: 'xh-button-group-input',
     render(props, ref) {
+        warnIf(
+            props.enableMulti && !props.enableClear,
+            'enableClear prop cannot be set to false when enableMulti is true.  Setting ignored.'
+        );
         return useHoistInputModel(cmp, props, ref, Model);
     }
 });
@@ -31,8 +36,14 @@ ButtonGroupInput.propTypes = {
     ...HoistInputPropTypes,
     ...ButtonGroup.propTypes,
 
-    /** True to allow buttons to be unselected (aka inactivated). Defaults to false. */
+    /**
+     * True to allow buttons to be unselected (aka inactivated). Used when enableMulti is false.
+     * Defaults to false.
+     */
     enableClear: PT.bool,
+
+    /** True to allow entry/selection of multiple values - "tag picker" style. Defaults to false.*/
+    enableMulti: PT.bool,
 
     /** Intent applied to each button. */
     intent: PT.oneOf(['primary', 'success', 'warning', 'danger']),
@@ -51,6 +62,9 @@ ButtonGroupInput.hasLayoutSupport = true;
 //----------------------------------
 class Model extends HoistInputModel {
 
+    get enableMulti() {return !!this.componentProps.enableMulti}
+    get enableClear() {return !!this.componentProps.enableClear}
+
     blur() {
         this.enabledButtons.forEach(it => it.blur());
     }
@@ -62,6 +76,23 @@ class Model extends HoistInputModel {
     get enabledButtons() {
         const btns = this.domEl?.querySelectorAll('button') ?? [];
         return filter(btns, {disabled: false});
+    }
+
+    isActive(value) {
+        const {renderValue} = this;
+        return this.enableMulti ? renderValue?.includes(value) : renderValue === value;
+    }
+
+    onButtonClick(value) {
+        const isActive = this.isActive(value);
+        if (this.enableMulti) {
+            const current = this.renderValue ? castArray(this.renderValue) : [];
+            value = isActive ? without(current, value) : [...current, value];
+            if (isEmpty(value)) value = null;
+        } else {
+            value = this.enableClear && isActive ? null : value;
+        }
+        this.noteValueChange(value);
     }
 }
 
@@ -78,6 +109,7 @@ const cmp = hoistCmp.factory(
             value,
             // ButtonGroupInput Props
             enableClear,
+            enableMulti,
             // Button props applied to each child button
             intent,
             minimal,
@@ -95,17 +127,18 @@ const cmp = hoistCmp.factory(
             throwIf(button.type !== Button, 'ButtonGroupInput child must be a Button.');
             throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
 
-            const active = (model.renderValue === value);
+            const isActive = model.isActive(value);
+
             return cloneElement(button, {
-                active,
+                active: isActive,
                 intent: btnIntent ?? intent,
                 minimal: withDefault(minimal, false),
                 outlined: withDefault(outlined, false),
                 disabled: withDefault(btnDisabled, false),
-                onClick: () => model.noteValueChange(enableClear && active ? null : value),
+                onClick: () => model.onButtonClick(value),
                 // Workaround for https://github.com/palantir/blueprint/issues/3971
-                key: `${active} ${value}`,
-                autoFocus: active && model.hasFocus
+                key: `${isActive} ${value}`,
+                autoFocus: isActive && model.hasFocus
             });
         });
 

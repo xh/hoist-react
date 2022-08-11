@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
@@ -36,6 +36,14 @@ export class ColumnHeaderFilterModel extends HoistModel {
         return this.fieldSpec.field;
     }
 
+    get store() {
+        return this.gridFilterModel.gridModel.store;
+    }
+
+    get fieldType() {
+        return this.store.getField(this.field).type;
+    }
+
     get currentGridFilter() {
         return this.gridFilterModel.filter;
     }
@@ -64,7 +72,7 @@ export class ColumnHeaderFilterModel extends HoistModel {
         const {columnCompoundFilter, columnFilters} = this;
         if (columnCompoundFilter) return true;
         if (isEmpty(columnFilters)) return false;
-        return columnFilters.some(it => !['=', '!='].includes(it.op));
+        return columnFilters.some(it => !['=', '!=', 'includes'].includes(it.op));
     }
 
     get commitOnChange() {

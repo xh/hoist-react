@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistInputPropTypes, HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
+import '@xh/hoist/desktop/register';
 import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
 import {computed, makeObservable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -82,7 +83,7 @@ class Model extends HoistInputModel {
     //-------------------------
     onChange = (e) => {
         this.noteValueChange(e.target.value);
-    }
+    };
 }
 
 const cmp = hoistCmp.factory(
