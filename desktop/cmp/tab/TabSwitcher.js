@@ -2,13 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div, hframe, span} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {
     menu,
@@ -296,7 +297,7 @@ class LocalModel extends HoistModel  {
 
     get tabEls() {
         if (!this.el) return [];
-        return Array.from(this.el.querySelectorAll('.bp3-tab'));
+        return Array.from(this.el.querySelectorAll('.bp4-tab'));
     }
 
     getTabDimensions(tab) {

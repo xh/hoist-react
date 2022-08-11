@@ -2,20 +2,26 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, lookup} from '@xh/hoist/core';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {sortBy} from 'lodash';
+import {filter, sortBy, isEmpty} from 'lodash';
 import moment from 'moment';
+import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
+import {ONE_DAY} from '@xh/hoist/utils/datetime/DateTimeUtils';
 
 export class ChartsModel extends HoistModel {
+    @managed panelModel = new PanelModel({
+        modalSupport: {width: '90vw', height: '60vh'},
+        side: 'bottom',
+        defaultSize: 370
+    });
 
     /** @member {ActivityTrackingModel} */
     @lookup(ActivityTrackingModel) activityTrackingModel;
@@ -25,7 +31,10 @@ export class ChartsModel extends HoistModel {
      *      + count - count of unique secondary dim values within the primary dim group.
      *      + elapsed - avg elapsed time in ms for the primary dim group.
      */
-    @bindable metric = 'entryCount'
+    @bindable metric = 'entryCount';
+
+    /** @member {boolean} - show weekends on the activity chart */
+    @bindable incWeekends = false;
 
     /** @member {ChartModel} */
     @managed categoryChartModel = new ChartModel({
@@ -45,6 +54,9 @@ export class ChartsModel extends HoistModel {
             chart: {type: 'line', animation: false},
             plotOptions: {
                 line: {
+                    events: {
+                        click: (e) => this.selectRow(e)
+                    },
                     width: 1,
                     animation: false,
                     step: 'left'
@@ -57,24 +69,14 @@ export class ChartsModel extends HoistModel {
                 title: {},
                 units: [['day', [1]], ['week', [2]], ['month', [1]]],
                 labels: {
-                    formatter: function() {return fmtDate(this.value, 'D MMM')}
+                    formatter: function() {
+                        return fmtDate(this.value, 'D MMM');
+                    }
                 }
             },
             yAxis: [{title: {text: null}, allowDecimals: false}]
         }
     });
-
-    @observable showDialog = false;
-
-    @action
-    async toggleDialog() {
-        this.showDialog = !this.showDialog;
-
-        // Hack to get primary, non-dialog chart to re-render once dialog is dismissed.
-        // Sharing chart models between chart component instances appears to be risky...
-        await wait();
-        this.chartModel.setHighchartsConfig({...this.chartModel.highchartsConfig});
-    }
 
     get showAsTimeseries() {
         return this.dimensions[0] === 'day';
@@ -110,9 +112,15 @@ export class ChartsModel extends HoistModel {
         makeObservable(this);
     }
 
+    selectRow(e) {
+        const date = moment(e.point.x).format('YYYY-MM-DD'),
+            id = `root>>day=[${date}]`;
+        this.activityTrackingModel.gridModel.selectAsync(id);
+    }
+
     onLinked() {
         this.addReaction({
-            track: () => [this.data, this.metric],
+            track: () => [this.data, this.metric, this.incWeekends],
             run: () => this.loadChart()
         });
     }
@@ -132,13 +140,16 @@ export class ChartsModel extends HoistModel {
 
     getSeriesData() {
         const {data, metric, primaryDim, showAsTimeseries} = this,
-            metricLabel = this.getLabelForMetric(metric, false),
-            sortedData = sortBy(data, aggRow => {
+            metricLabel = this.getLabelForMetric(metric, false);
+        let sortedData = sortBy(data, aggRow => {
                 const {cubeLabel} = aggRow.data;
                 switch (primaryDim) {
-                    case 'day': return LocalDate.from(cubeLabel).timestamp;
-                    case 'month': return moment(cubeLabel, 'MMM YYYY').valueOf();
-                    default: return cubeLabel;
+                    case 'day':
+                        return LocalDate.from(cubeLabel).timestamp;
+                    case 'month':
+                        return moment(cubeLabel, 'MMM YYYY').valueOf();
+                    default:
+                        return cubeLabel;
                 }
             }),
             chartData = sortedData.map(aggRow => {
@@ -148,6 +159,27 @@ export class ChartsModel extends HoistModel {
                 return [xVal, yVal];
             });
 
+        // Insert data where no activity was logged
+        if (showAsTimeseries) {
+            const fillData = [];
+            for (let i = 1; i < chartData.length; i++) {
+                const skippedDayCount = Math.floor((((chartData[i][0] - chartData[i - 1][0]) / ONE_DAY) - 1));
+                if (skippedDayCount > 0) {
+                    for (let j = 1; j <= skippedDayCount; j++) {
+                        const skippedDate = chartData[i - 1][0] + (j * ONE_DAY);
+                        fillData.push([skippedDate, 0]);
+                    }
+                }
+            }
+            if (!isEmpty(fillData)) {
+                chartData.push(...fillData);
+                chartData = sortBy(chartData, data => data[0]);
+            }
+
+            if (!this.incWeekends) {
+                chartData = filter(chartData, data => LocalDate.from(data[0]).isWeekday);
+            }
+        }
         return [{name: metricLabel, data: chartData}];
     }
 

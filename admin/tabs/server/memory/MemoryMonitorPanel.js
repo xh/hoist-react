@@ -1,3 +1,9 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2022 Extremely Heavy Industries Inc.
+ */
 import {MemoryMonitorModel} from '@xh/hoist/admin/tabs/server/memory/MemoryMonitorModel';
 import {chart} from '@xh/hoist/cmp/chart';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';

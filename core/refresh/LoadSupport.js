@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistBase, managed, TaskObserver} from '@xh/hoist/core';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';

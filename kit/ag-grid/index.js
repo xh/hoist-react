@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 import {checkVersion} from '@xh/hoist/utils/js/VersionUtils';
@@ -17,8 +17,8 @@ import {checkVersion} from '@xh/hoist/utils/js/VersionUtils';
 export let AgGridReact = null;
 export let agGridVersion = null;
 
-const MIN_VERSION = '27.2.0';
-const MAX_VERSION = '27.*.*';
+const MIN_VERSION = '28.1.0';
+const MAX_VERSION = '28.*.*';
 
 /**
  * Expose application versions of ag-Grid to Hoist.

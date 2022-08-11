@@ -2,11 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 import {parseFieldValue} from '@xh/hoist/data';
 import {isNil} from 'lodash';
+import {FieldType} from '../../../data';
 
 // ---------------------------------------------------------
 // Generate Options for FilterChooserModel query responses.
@@ -56,6 +57,7 @@ export function fieldFilterOption({filter, fieldSpec, isExact = false}) {
         displayValue = (filter.op === '!=' ? 'not blank' : 'blank');
     } else {
         displayOp = filter.op;
+        fieldType = fieldType === FieldType.TAGS ? FieldType.STRING : fieldType;
         displayValue = fieldSpec.renderValue(parseFieldValue(filter.value, fieldType, null));
     }
 

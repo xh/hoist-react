@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import '@xh/hoist/desktop/register';
 import {numberRenderer} from '@xh/hoist/format';
+import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {cloneDeep, get, isEmpty, isFinite, max, set, sortBy, sumBy, unset} from 'lodash';
 
 /**

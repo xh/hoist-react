@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {button, Button} from '@xh/hoist/desktop/cmp/button';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
 import copy from 'clipboard-copy';

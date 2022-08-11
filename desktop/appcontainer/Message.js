@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {MessageModel} from '@xh/hoist/appcontainer/MessageModel';
 import {form} from '@xh/hoist/cmp/form';
@@ -43,7 +43,7 @@ export const message = hoistCmp.factory({
                 ),
                 bbar()
             ],
-            onClose: () => {if (model.cancelProps) model.doCancel();},
+            onClose: () => model.doEscape(),
             ...props
         });
     }

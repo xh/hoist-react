@@ -2,9 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, ManagedRefreshContextModel, RenderMode} from '@xh/hoist/core';
+import '@xh/hoist/mobile/register';
 import {computed, makeObservable} from '@xh/hoist/mobx';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';

@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "50.0.0-SNAPSHOT",
+  "version": "51.0.0-SNAPSHOT",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:xh/hoist-react",
   "homepage": "https://xh.io",
@@ -11,7 +11,8 @@
     "lint": "yarn lint:all",
     "lint:all": "yarn lint:js && yarn lint:styles",
     "lint:js": "eslint --ext .js,.jsx .",
-    "lint:styles": "stylelint \"**/*.s?(a|c)ss\""
+    "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
+    "prepare": "husky install"
   },
   "sideEffects": [
     "./static/polyfills.js"
@@ -20,21 +21,16 @@
     "*.{js,jsx}": "eslint",
     "*.s?(a|c)ss": "stylelint"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
   "dependencies": {
-    "@blueprintjs/core": "~3.54.0",
-    "@blueprintjs/datetime": "~3.24.0",
+    "@blueprintjs/core": "^4.6.0",
+    "@blueprintjs/datetime": "^4.3.0",
     "@fortawesome/fontawesome-pro": "~6.1.1",
     "@fortawesome/fontawesome-svg-core": "~6.1.1",
     "@fortawesome/pro-light-svg-icons": "~6.1.1",
     "@fortawesome/pro-regular-svg-icons": "~6.1.1",
     "@fortawesome/pro-solid-svg-icons": "~6.1.1",
     "@fortawesome/pro-thin-svg-icons": "^6.1.1",
-    "@fortawesome/react-fontawesome": "~0.1.17",
+    "@fortawesome/react-fontawesome": "~0.2.0",
     "@onsenui/fastclick": "~1.1.1",
     "@popperjs/core": "~2.11.0",
     "@seznam/compose-react-refs": "~1.0.5",
@@ -52,19 +48,19 @@
     "inter-ui": "~3.19.3",
     "lodash": "~4.17.21",
     "lodash-inflection": "~1.5.0",
-    "mobx": "~6.5.0",
+    "mobx": "~6.6.0",
     "mobx-react-lite": "~3.4.0",
     "moment": "~2.29.1",
     "numbro": "~2.3.6",
     "onsenui": "~2.12.0",
     "prop-types": "^15.8.0",
-    "qs": "~6.10.2",
+    "qs": "~6.11.0",
     "react-beautiful-dnd": "~13.1.0",
     "react-dates": "~21.8.0",
     "react-dropzone": "~10.2.2",
     "react-grid-layout": "^1.3.4",
     "react-onsenui": "~1.12.0",
-    "react-popper": "~2.2.5",
+    "react-popper": "~2.3.0",
     "react-select": "~4.3.1",
     "react-transition-group": "~4.4.2",
     "react-windowed-select": "~3.1.2",
@@ -81,18 +77,16 @@
     "react-dom": "~17.0.1"
   },
   "devDependencies": {
-    "@xh/hoist-dev-utils": "^5.13.0",
-    "husky": "~4.3.8",
-    "lint-staged": "~10.5.3",
+    "@xh/hoist-dev-utils": "~6.0.0",
+    "husky": "^8.0.0",
+    "lint-staged": "~13.0.3",
+    "postcss": "^8.0.0",
     "react": "~17.0.1",
     "react-dom": "~17.0.1",
-    "stylelint": "~13.13.1",
-    "stylelint-config-standard": "~22.0.0",
-    "stylelint-scss": "~3.21.0"
+    "stylelint": "~14.9.1",
+    "stylelint-config-standard-scss": "~5.0.0"
   },
   "resolutions": {
-    "jimp": "^0.16.1",
-    "resize-img": "^2.0.0",
     "core-js": "^3.0.0"
   }
 }

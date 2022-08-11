@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, SizingMode} from '@xh/hoist/core';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
@@ -557,14 +557,14 @@ export class AgGridModel extends HoistModel {
     //------------------------
     @action
     handleGridReady({api, columnApi}) {
-        console.debug('AgGridModel Initializing!');
+        console.debug(`AgGridModel ${this.xhId} initializing`);
         this.agApi = api;
         this.agColumnApi = columnApi;
     }
 
     @action
     handleGridUnmount() {
-        console.debug('AgGridModel Uninitializing!');
+        console.debug(`AgGridModel ${this.xhId} un-initializing`);
         this.agApi = null;
         this.agColumnApi = null;
     }

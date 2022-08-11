@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {XH, hoistCmp, HoistModel, creates, managed} from '@xh/hoist/core';
 import {div, span} from '@xh/hoist/cmp/layout';
@@ -75,8 +75,8 @@ export const columnHeader = hoistCmp.factory({
             return div({
                 className: 'xh-grid-header-expand-collapse-icon',
                 item: icon,
-                onClick: isDesktop ? model.onExpandOrCollapse : null,
-                onTouchStart: !isDesktop ? model.onExpandOrCollapse : null
+                onClick: model.onExpandOrCollapse,
+                onTouchStart: model.onExpandOrCollapse
             });
         };
 
@@ -110,11 +110,11 @@ export const columnHeader = hoistCmp.factory({
 
         return div({
             className:      classNames(className, extraClasses),
-            onClick:        isDesktop  ? model.onClick : null,
-            onDoubleClick:  isDesktop  ? model.onDoubleClick : null,
-            onMouseDown:    isDesktop  ? model.onMouseDown : null,
-            onTouchStart:   !isDesktop ? model.onTouchStart : null,
-            onTouchEnd:     !isDesktop ? model.onTouchEnd : null,
+            onClick:        model.onClick,
+            onDoubleClick:  model.onDoubleClick,
+            onMouseDown:    model.onMouseDown,
+            onTouchStart:   model.onTouchStart,
+            onTouchEnd:     model.onTouchEnd,
 
             items: [
                 expandCollapseIcon(),
@@ -195,7 +195,7 @@ class ColumnHeaderModel extends HoistModel {
     // Ag-Grid's filter callback
     onFilterChanged = () => {
         this.setIsAgFiltered(this.agColumn.isFilterActive());
-    }
+    };
 
     @computed
     get rootsWithChildren() {
@@ -217,6 +217,7 @@ class ColumnHeaderModel extends HoistModel {
         const {gridModel, majorityIsExpanded} = this;
 
         e.stopPropagation();
+        e.preventDefault();
         if (majorityIsExpanded) {
             gridModel.collapseAll();
         } else {
@@ -236,11 +237,13 @@ class ColumnHeaderModel extends HoistModel {
     };
 
     // Mobile touch handling
-    onTouchStart = () => {
+    onTouchStart = (e) => {
+        e.preventDefault();
         this._lastTouchStart = Date.now();
     };
 
-    onTouchEnd = () => {
+    onTouchEnd = (e) => {
+        e.preventDefault();
         if (olderThan(this._lastTouchStart, 500)) return;  // avoid spurious reaction to drag end.
 
         if (!olderThan(this._lastTouch, 300)) {

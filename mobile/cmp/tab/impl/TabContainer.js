@@ -2,16 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, useLocalModel, XH} from '@xh/hoist/core';
 import {div, placeholder} from '@xh/hoist/cmp/layout';
-import {tab as onsenTab, tabbar as onsenTabbar, page} from '@xh/hoist/kit/onsen';
-import {throwIf, debounced} from '@xh/hoist/utils/js';
-import {isEmpty} from 'lodash';
+import {HoistModel, useLocalModel, XH} from '@xh/hoist/core';
+import {page, tab as onsenTab, tabbar as onsenTabbar} from '@xh/hoist/kit/onsen';
+import '@xh/hoist/mobile/register';
+import {debounced, throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import './Tabs.scss';
+import {isEmpty} from 'lodash';
 import {tab} from './Tab';
+import './Tabs.scss';
 
 /**
  * Mobile Implementation of TabContainer.

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
@@ -79,6 +79,6 @@ export class MessageSourceModel extends HoistModel {
         msgModels.push(model);
         const [keep, cull] = partition(msgModels, 'isOpen');
         this.msgModels = keep;
-        XH.destroy(cull);
+        XH.safeDestroy(cull);
     }
 }

@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {placeholder} from '../layout';
 import {lookup, hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
-import {useContextMenu} from '@xh/hoist/desktop/hooks';
+import {useContextMenu} from '@xh/hoist/dynamics/desktop';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {runInAction} from '@xh/hoist/mobx';
 import {
@@ -17,7 +17,7 @@ import {
     useOnResize,
     useOnVisibleChange
 } from '@xh/hoist/utils/react';
-import {assign, castArray, clone, cloneDeep, forOwn, isEqual, isPlainObject, merge, omit} from 'lodash';
+import {assign, castArray, cloneDeep, forOwn, isEqual, isPlainObject, merge, omit} from 'lodash';
 import {Icon} from '@xh/hoist/icon';
 import PT from 'prop-types';
 import {ChartModel} from './ChartModel';
@@ -74,7 +74,9 @@ export const [Chart, chart] = hoistCmp.withFactory({
             })
         });
 
-        return useContextMenu(coreContents, impl.contextMenu);
+        return XH.isDesktop ?
+            useContextMenu(coreContents, impl.contextMenu) :
+            coreContents;
     }
 });
 
@@ -353,7 +355,7 @@ class LocalModel extends HoistModel {
     }
 
     getThemeConfig() {
-        return XH.darkTheme ? clone(DarkTheme) : clone(LightTheme);
+        return XH.darkTheme ? cloneDeep(DarkTheme) : cloneDeep(LightTheme);
     }
 
     getModelConfig() {
@@ -366,9 +368,7 @@ class LocalModel extends HoistModel {
     //---------------------------
     // Handlers
     //---------------------------
-    onSetExtremes = () => {
-
-    }
+    onSetExtremes = () => {};
 
     getContextMenu() {
         if (!this.model.showContextMenu || !XH.isDesktop) return null;

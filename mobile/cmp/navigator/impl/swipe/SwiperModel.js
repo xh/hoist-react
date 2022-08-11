@@ -1,10 +1,11 @@
 import {HoistModel, lookup, XH} from '@xh/hoist/core';
-import {computed, observable, action, makeObservable} from '@xh/hoist/mobx';
-import {isFinite} from 'lodash';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {consumeEvent} from '@xh/hoist/utils/js';
+import {isFinite} from 'lodash';
+import {NavigatorModel} from '../../NavigatorModel';
 
 import './Swiper.scss';
-import {NavigatorModel} from '../../NavigatorModel';
+
 /**
  * @private
  */
@@ -62,7 +63,7 @@ export class SwiperModel extends HoistModel {
             consumeEvent(e);
             return;
         }
-    }
+    };
 
     @action
     onDrag = (e) => {
@@ -91,7 +92,7 @@ export class SwiperModel extends HoistModel {
             consumeEvent(e);
             return;
         }
-    }
+    };
 
     @action
     onDragEnd = (e) => {
@@ -108,7 +109,7 @@ export class SwiperModel extends HoistModel {
             this.refreshEnd();
             consumeEvent(e);
         }
-    }
+    };
 
     isDraggingChild(e, dir) {
         // Loop through the touch targets to ensure it is safe to swipe

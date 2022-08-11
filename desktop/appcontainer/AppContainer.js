@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
@@ -18,6 +18,7 @@ import {columnHeaderFilter} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnH
 import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
 import {gridFilterDialog} from '@xh/hoist/desktop/cmp/grid/impl/filter/GridFilterDialog';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
 import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
@@ -49,7 +50,9 @@ installDesktopImpls({
     gridFilterDialog,
     ColChooserModel,
     ColumnHeaderFilterModel,
-    StoreContextMenu
+    StoreContextMenu,
+    useContextMenu,
+    ModalSupportModel
 });
 /**
  * Top-level wrapper for Desktop applications.

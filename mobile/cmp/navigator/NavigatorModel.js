@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
+import '@xh/hoist/mobile/register';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {find, isEqual, keys, merge} from 'lodash';
 import {page} from './impl/Page';
@@ -245,13 +246,13 @@ export class NavigatorModel extends HoistModel {
         }
 
         return page({model, key});
-    }
+    };
 
     @action
     onPageChange = () => {
         this.disableAppRefreshButton = this.activePage?.disableAppRefreshButton;
         this.doCallback();
-    }
+    };
 
     doCallback() {
         if (this._callback) this._callback();
