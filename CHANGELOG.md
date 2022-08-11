@@ -25,6 +25,7 @@
 
 * Hoist-supported menus will no longer filter out a `MenuDivider` if it has a `title`.
 * The `filterText` field in `ColumnHeaderFilter` now gets autoFocused.
+* The default `FormField` read-only renderer now supports line breaks.
 
 ## v50.1.1 - 2022-07-29
 
