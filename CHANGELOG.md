@@ -8,6 +8,7 @@
 * `ButtonGroupInput` supports new `enableMulti` prop.
 * Admin activity tracking chart now has a checkbox to toggle weekends when viewing a time
   series.
+* `AboutDialog` can now display more dynamic custom properties.
 
 ### 🐞 Bug Fixes
 
@@ -20,6 +21,8 @@
 
 * `CodeInput` is now rendered within an additional `div` element.  Unlikely to cause issues, unless
   using targeted styling of this component.
+* `xhAboutMenuConfigs` soft-config is no longer supported.  To customize the `AboutDialog`, see
+  `HoistAppModel.getAboutDialogItems()`
 
 ### ⚙️ Technical
 

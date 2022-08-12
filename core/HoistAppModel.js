@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
 import {HoistModel} from './HoistModel';
 /**
  * Specialized base class for defining the central model for a Hoist app as specified by its
@@ -67,6 +68,31 @@ export class HoistAppModel extends HoistModel {
      */
     getAppOptions() {
         return [];
+    }
+
+    /**
+     * Provide a list of app-wide metadata and version information to be displayed in the
+     * App's built-in About dialog.
+     * @see AboutDialog
+     *
+     * @returns {{label: ReactElement, value: ReactElement, [omit]: boolean}[]} - AboutDialog cfgs.
+     *      An additional `omit` property is supported here that, if true, will skip construction of
+     *      that particular option and drop it out of the About dialog.
+     */
+    getAboutDialogItems() {
+        const svc = window.XH.environmentService;
+
+        return [
+            {label: 'App', value: `${svc.get('appName')} (${svc.get('appCode')})`},
+            {label: 'Current User', value: window.XH.identityService.username},
+            {label: 'Environment', value: svc.get('appEnvironment')},
+            {label: 'Server', value: `${svc.get('appVersion')} (build ${svc.get('appBuild')})`},
+            {label: 'Client', value: `${svc.get('clientVersion')} (build ${svc.get('clientBuild')})`},
+            {label: 'Hoist Core', value: svc.get('hoistCoreVersion')},
+            {label: 'Hoist React', value: svc.get('hoistReactVersion')},
+            {label: 'User Agent', value: window.navigator.userAgent},
+            {label: 'WebSockets', value: webSocketIndicator()}
+        ];
     }
 
     /**
