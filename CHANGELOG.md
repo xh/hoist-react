@@ -21,6 +21,8 @@
 
 * `CodeInput` is now rendered within an additional `div` element.  Unlikely to cause issues, unless
   using targeted styling of this component.
+* `xhAboutMenuConfigs` soft-config is no longer supported.  To customize the `AboutDialog`, see
+  `HoistAppModel.getAboutDialogItems()`
 
 ### ⚙️ Technical
 

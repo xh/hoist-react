@@ -28,6 +28,7 @@ export const versionBar = hoistCmp.factory({
             items: [
                 [XH.appName, env, versionAndBuild].join(' • '),
                 Icon.info({
+                    omit: !XH.acm.hasAboutDialog(),
                     onClick: () => XH.showAboutDialog()
                 })
             ]

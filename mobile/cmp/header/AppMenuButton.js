@@ -76,6 +76,7 @@ function buildMenuItems({
     hideAboutItem,
     extraItems = []
 }) {
+    hideAboutItem = hideAboutItem || !XH.acm.hasAboutDialog();
     hideOptionsItem = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
     hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);
