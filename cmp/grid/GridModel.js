@@ -1223,12 +1223,12 @@ export class GridModel extends HoistModel {
      * @return {Promise<boolean>} - latest ready state of grid
      */
     async whenReadyAsync(timeout = 3 * SECONDS) {
-        await wait();
         try {
             await when(() => this.isReady, {timeout});
         } catch (ignored) {
             withDebug(`Grid failed to enter ready state after waiting ${timeout}ms`, null, this);
         }
+        await wait();
 
         return this.isReady;
     }

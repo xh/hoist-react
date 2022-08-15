@@ -15,15 +15,17 @@ import download from 'downloadjs';
 import {StatusCodes} from 'http-status-codes';
 import {
     castArray,
+    countBy,
     isArray,
     isEmpty,
     isFunction,
     isNil,
     isString,
+    pickBy,
     sortBy,
-    uniq,
     compact,
-    findIndex
+    findIndex,
+    keys
 } from 'lodash';
 import {span, a} from '@xh/hoist/cmp/layout';
 import {wait} from '@xh/hoist/promise';
@@ -298,8 +300,10 @@ export class GridExportService extends HoistService {
 
         // Excel does not like duplicate (case-insensitive) header names in tables and will prompt
         // the user to "repair" the file when opened if present.
-        if (type === 'excelTable' && uniq(headers.map(it => it.toLowerCase())).length !== headers.length) {
-            console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers.');
+        const headerCounts = countBy(headers.map(it => it.toLowerCase())),
+            dupeHeaders = keys(pickBy(headerCounts, it => it > 1));
+        if (type === 'excelTable' && !isEmpty(dupeHeaders)) {
+            console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers. Duplicate headers: ', dupeHeaders);
         }
         return {data: headers, depth: 0};
     }

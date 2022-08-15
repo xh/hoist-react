@@ -3,6 +3,54 @@
 ## v51.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
+* `HoistBase` `addReaction()` and `addAutorun()` now can create multiple reactions in one call, and
+ will ignore nullish inputs.
+* `ButtonGroupInput` supports new `enableMulti` prop.
+* Admin activity tracking chart now has a checkbox to toggle weekends when viewing a time
+  series.
+* `AboutDialog` can now display more dynamic custom properties.
+
+### 🐞 Bug Fixes
+
+* Fix issue where `ModalSupport` would trigger `MobX` memo warning in console.
+* Fix issues with `ModalSupport` implementation in `CodeInput`.
+* Fix `Grid` rendering glitches when used inside `Panel` with `ModalSupport`.
+* Fix incorrect text color on desktop toasts with a warning intent.
+
+### 💥 Breaking Changes
+
+* `CodeInput` is now rendered within an additional `div` element.  Unlikely to cause issues, unless
+  using targeted styling of this component.
+* `xhAboutMenuConfigs` soft-config is no longer supported.  To customize the `AboutDialog`, see
+  `HoistAppModel.getAboutDialogItems()`
+
+### ⚙️ Technical
+
+* Hoist-supported menus will no longer filter out a `MenuDivider` if it has a `title`.
+* The `filterText` field in `ColumnHeaderFilter` now gets autoFocused.
+* The default `FormField` read-only renderer now supports line breaks.
+
+## v50.1.1 - 2022-07-29
+
+### 🐞 Bug Fixes
+
+* Fix bug where components utilizing `ModalSupport` could render incorrectly when switching
+  between inline and modal views.
+
+* Improve behavior of `GridModel.whenReadyAsync()` to allow Grid more time to finish loading data.
+  This improves the behavior of related methods `preSelectFirstAsync`, `selectFirstAsync`, and
+  `ensureVisibleAsync`.
+
+### ⚙️ Technical
+
+* An empty `DashCanvas` / `DashContainer` 'Add View' button now only displays a menu of available
+  views, without unnecessarily nesting them inside an 'Add' submenu
+* Update `AppMenuButton` and `ContextMenu` to support Blueprint4 `menuItem`'s
+* `Grid` `ContextMenu` is now disabled when a user is inline editing
+
+## v50.1.0 - 2022-07-21
+
+### 🎁 New Features
 
 * New `GridModel` method `ensureRecordsVisibleAsync` accepts one or more store records or IDs and
   scrolls to make them visible in the grid.
@@ -34,7 +82,7 @@
   underlying state in the latest versions of that library.
     * This change should not affect most apps, but code that queries grid state immediately after
       loading or filtering a grid (e.g. selection, row visibility, or expansion state) should be
-      tested carefully and may require a call to `await whenGridReadyAsync()`.
+      tested carefully and may require a call to `await whenReadyAsync()`.
     * Note that this method is already incorporated in to several public methods on `GridModel`,
       including `selectFirstAsync()` and `ensureSelectionVisibleAsync()`.
 * Blueprint has updated all of its CSS class names to use the `bp4-` prefix instead of the `bp3-`

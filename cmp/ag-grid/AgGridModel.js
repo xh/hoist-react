@@ -557,14 +557,14 @@ export class AgGridModel extends HoistModel {
     //------------------------
     @action
     handleGridReady({api, columnApi}) {
-        console.debug('AgGridModel Initializing!');
+        console.debug(`AgGridModel ${this.xhId} initializing`);
         this.agApi = api;
         this.agColumnApi = columnApi;
     }
 
     @action
     handleGridUnmount() {
-        console.debug('AgGridModel Uninitializing!');
+        console.debug(`AgGridModel ${this.xhId} un-initializing`);
         this.agApi = null;
         this.agColumnApi = null;
     }

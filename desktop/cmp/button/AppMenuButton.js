@@ -100,8 +100,9 @@ function buildMenuItems({
     hideThemeItem,
     extraItems = []
 }) {
+    hideAboutItem = hideAboutItem || !XH.acm.hasAboutDialog();
     hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdmin;
-    hideChangelogItem = hideChangelogItem || !XH.changelogService.enabled,
+    hideChangelogItem = hideChangelogItem || !XH.changelogService.enabled;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
     hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);
     hideOptionsItem = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions;
@@ -175,7 +176,7 @@ function parseMenuItems(items) {
         .map(it => {
             if (it === '-') return menuDivider();
             if (isValidElement(it)) {
-                return ['Blueprint3.MenuItem', 'Blueprint3.MenuDivider'].includes(it.type.displayName) ?
+                return ['Blueprint4.MenuItem', 'Blueprint4.MenuDivider'].includes(it.type.displayName) ?
                     it :
                     menuItem({text: it});
             }
