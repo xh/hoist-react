@@ -64,7 +64,7 @@ Select.propTypes = {
     autoFocus: PT.bool,
 
     /**
-     * Function to return a "create a new option" string prompt. Requires `allowCreate` true.
+     * Function to return a "create a new option" string prompt. Requires `enableCreate` true.
      * Passed current query input.
      */
     createMessageFn: PT.func,
