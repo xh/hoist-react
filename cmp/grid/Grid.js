@@ -390,7 +390,7 @@ class GridLocalModel extends HoistModel {
             run: () => {
                 if (model.isReady) this.syncData();
             },
-            debounce: 0
+            debounce: model.experimental.syncDataImmediately ? null : 0
         };
     }
 
