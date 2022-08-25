@@ -29,6 +29,7 @@
 * Hoist-supported menus will no longer filter out a `MenuDivider` if it has a `title`.
 * The `filterText` field in `ColumnHeaderFilter` now gets autoFocused.
 * The default `FormField` read-only renderer now supports line breaks.
+* `GridExportService` now handles per-cell data types for Excel exports.
 
 ## v50.1.1 - 2022-07-29
 
