@@ -15,6 +15,7 @@ import {hbox} from '@xh/hoist/cmp/layout';
 import {cloneDeep, isEqual, isString, isNil, remove, trimEnd} from 'lodash';
 import React from 'react';
 import {hspacer} from '../../cmp/layout';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 
 import {DifferDetailModel} from './DifferDetailModel';
 
@@ -182,6 +183,17 @@ export class DifferModel extends HoistModel {
             diffedRecords = this.diffRawRecords(local, remote),
             {store} = this.gridModel;
 
+        diffedRecords.map(rec => {
+            const localLast = rec.localValue?.lastUpdated,
+                remoteLast = rec.remoteValue?.lastUpdated;
+            if (localLast) {
+                rec.localValue.lastUpdated = LocalDate.from(localLast);
+            }
+            if (remoteLast) {
+                rec.remoteValue.lastUpdated = LocalDate.from(remoteLast);
+            }
+        });
+
         store.loadData(diffedRecords);
         this.setHasLoaded(true);
         if (store.empty) this.showNoDiffToast();
@@ -249,13 +261,16 @@ export class DifferModel extends HoistModel {
             remote.value = JSON.parse(remote.value);
         }
 
+        delete local?.lastUpdatedBy;
+        delete local?.lastUpdated;
+        delete remote?.lastUpdatedBy;
+        delete remote?.lastUpdated;
+
         return isEqual(local, remote);
     }
 
     cleanRawData(data) {
         data.forEach(it => {
-            delete it.lastUpdated;
-            delete it.lastUpdatedBy;
             delete it.dateCreated;
             delete it.id;
         });
