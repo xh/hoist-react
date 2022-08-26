@@ -203,7 +203,7 @@ export class GridExportService extends HoistService {
         value = value.toString();
 
         // Send format and/or type with the cell in an object only if it varies within the column
-        if (!cellSpecificType && !cellHasExcelFormat) return value;
+        if (!forExcel || (!cellSpecificType && !cellHasExcelFormat)) return value;
 
         const ret = {value};
         if (cellHasExcelFormat) ret.format = excelFormat;

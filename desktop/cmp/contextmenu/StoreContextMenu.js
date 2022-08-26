@@ -157,13 +157,13 @@ export class StoreContextMenu {
                     actionFn: ({record, column}) => {
                         if (record && column) {
                             const node = gridModel.agApi?.getRowNode(record.agId),
-                                exportValue = XH.gridExportService.getExportableValueForCell({
+                                value = XH.gridExportService.getExportableValueForCell({
                                     gridModel,
                                     record,
                                     column,
                                     node
                                 });
-                            copy(exportValue?.value ?? exportValue);
+                            copy(value);
                         }
                     }
                 });
