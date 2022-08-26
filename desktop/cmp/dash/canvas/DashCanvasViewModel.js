@@ -36,8 +36,6 @@ export class DashCanvasViewModel extends DashViewModel {
         this.hidePanelHeader = !!cfg.viewSpec.hidePanelHeader;
         this.hideMenuButton = !!cfg.viewSpec.hideMenuButton;
         this.autoHeight = !!cfg.viewSpec.autoHeight;
-
-        this.addReaction(this.autoHeightReaction());
     }
 
     get positionParams() {
@@ -85,20 +83,5 @@ export class DashCanvasViewModel extends DashViewModel {
         } finally {
             this.isAutoSizing = false;
         }
-    }
-
-    autoHeightReaction() {
-        return {
-            track: () => this.autoHeight,
-            run: autoHeight => {
-                const {id, containerModel} = this,
-                    newLayout = {...containerModel.getViewLayout(id)};
-
-                newLayout.resizeHandles = autoHeight ? ['e'] : ['e', 's', 'se'];
-
-                containerModel.setViewLayout(newLayout);
-            },
-            fireImmediately: true
-        };
     }
 }

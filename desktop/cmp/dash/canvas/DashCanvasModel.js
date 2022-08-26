@@ -12,7 +12,17 @@ import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {defaultsDeep, find, isEqualWith, uniqBy, times, without, some, sortBy, pick} from 'lodash';
+import {
+    defaultsDeep,
+    find,
+    uniqBy,
+    times,
+    without,
+    some,
+    sortBy,
+    pick,
+    isEqual
+} from 'lodash';
 import {computed} from 'mobx';
 
 /**
@@ -74,9 +84,18 @@ export class DashCanvasModel extends HoistModel {
     ref = createObservableRef();
     /** @member {boolean} */
     scrollbarVisible;
+    /** @returns {boolean} */
+    isLoadingState;
     /** @returns {boolean} - true if any viewModels are in the middle of auto-sizing */
     get isAutoSizing() {
         return some(this.viewModels, {isAutoSizing: true});
+    }
+    /** @returns {Object[]} */
+    @computed get rglLayout() {
+        return this.layout.map(it => ({
+            ...it,
+            resizeHandles: this.getView(it.i).autoHeight ? ['e'] : ['e', 's', 'se']
+        }));
     }
 
     /**
@@ -337,18 +356,15 @@ export class DashCanvasModel extends HoistModel {
 
     @action
     setLayout(layout) {
-        // 1- strip extra properties from react-grid
-        layout = layout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h', 'resizeHandles']));
+        // strip extra properties from react-grid-layout
+        layout = layout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h']));
 
-        // 2 - check if dimensions have changed
-        const dimsChanged = !isEqualWith(sortBy(this.layout, 'i'), sortBy(layout.map, 'i'),
-            (v1, v2, key) => key === 'resizeHandles' ? true : undefined);
+        const layoutChanged = !isEqual(sortBy(this.layout, 'i'), sortBy(layout, 'i'));
 
-        // 3 - update the canvas layout
-        this.layout = layout;
+        if (layoutChanged) {
+            this.layout = layout;
+            if (!this.isAutoSizing && !this.isLoadingState) this.publishState();
 
-        // 4 - additional operations if dimensions have changed
-        if (dimsChanged) {
             // Check if scrollbar visibility has changed, and force resize event if so
             const node = this.ref.current;
             if (!node) return;
@@ -357,23 +373,26 @@ export class DashCanvasModel extends HoistModel {
                 window.dispatchEvent(new Event('resize'));
                 this.scrollbarVisible = scrollbarVisible;
             }
-
-            if (!this.isAutoSizing) this.publishState();
         }
     }
 
     @action
     loadState(state) {
-        this.clear();
-        state.forEach(state => {
-            // Fail gracefully on unknown viewSpecId - persisted state could ref. an obsolete widget.
-            const {viewSpecId} = state;
-            if (this.hasSpec(viewSpecId)) {
-                this.addViewInternal(viewSpecId, state);
-            } else {
-                console.warn(`Unknown viewSpecId [${viewSpecId}] found in state - skipping.`);
-            }
-        });
+        this.isLoadingState = true;
+        try {
+            this.clear();
+            state.forEach(state => {
+                // Fail gracefully on unknown viewSpecId - persisted state could ref. an obsolete widget.
+                const {viewSpecId} = state;
+                if (this.hasSpec(viewSpecId)) {
+                    this.addViewInternal(viewSpecId, state);
+                } else {
+                    console.warn(`Unknown viewSpecId [${viewSpecId}] found in state - skipping.`);
+                }
+            });
+        } finally {
+            this.isLoadingState = false;
+        }
     }
 
     @debounced(1000)
@@ -387,11 +406,11 @@ export class DashCanvasModel extends HoistModel {
         const {viewState} = this;
 
         return this.layout.map(it => {
-            const {i: viewId, x, y, w, h, resizeHandles} = it,
+            const {i: viewId, x, y, w, h} = it,
                 state = viewState[viewId];
 
             return {
-                layout: {x, y, w, h, resizeHandles},
+                layout: {x, y, w, h},
                 ...state
             };
         });

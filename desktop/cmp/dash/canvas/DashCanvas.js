@@ -47,7 +47,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
             onContextMenu: (e) => onContextMenu(e, model),
             items: [
                 reactGridLayout({
-                    layout: model.layout,
+                    layout: model.rglLayout,
                     cols: model.columns,
                     rowHeight: model.rowHeight,
                     isDraggable,
