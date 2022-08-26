@@ -186,12 +186,8 @@ export class DifferModel extends HoistModel {
         diffedRecords.map(rec => {
             const localLast = rec.localValue?.lastUpdated,
                 remoteLast = rec.remoteValue?.lastUpdated;
-            if (localLast) {
-                rec.localValue.lastUpdated = LocalDate.from(localLast);
-            }
-            if (remoteLast) {
-                rec.remoteValue.lastUpdated = LocalDate.from(remoteLast);
-            }
+            if (localLast) rec.localValue.lastUpdated = LocalDate.from(localLast);
+            if (remoteLast) rec.remoteValue.lastUpdated = LocalDate.from(remoteLast);
         });
 
         store.loadData(diffedRecords);
