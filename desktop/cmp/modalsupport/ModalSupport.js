@@ -6,7 +6,8 @@
  */
 
 import {box, fragment} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
+import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
+import '@xh/hoist/desktop/register';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {Children} from 'react';
 import {createPortal} from 'react-dom';
@@ -27,7 +28,6 @@ import {ModalSupportModel} from './ModalSupportModel';
 export const modalSupport = hoistCmp.factory({
     displayName: 'ModalSupport',
     model: uses(ModalSupportModel, {fromContext: false, publishMode: ModelPublishMode.NONE}),
-    memo: false,
     render({model, children}) {
         return fragment(
             // Simple 'box' cmp, inside which to place the child cmp when `model.isModal = false`

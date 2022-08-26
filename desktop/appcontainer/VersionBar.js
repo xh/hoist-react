@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {box} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
@@ -28,6 +28,7 @@ export const versionBar = hoistCmp.factory({
             items: [
                 [XH.appName, env, versionAndBuild].join(' • '),
                 Icon.info({
+                    omit: !XH.acm.hasAboutDialog(),
                     onClick: () => XH.showAboutDialog()
                 })
             ]

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {placeholder, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, elem, XH, lookup} from '@xh/hoist/core';
@@ -138,7 +138,7 @@ class LocalModel extends HoistModel {
 
     getRowHeight = () => {
         return AgGrid.getRowHeightForSizingMode(this.model.sizingMode);
-    }
+    };
 
     destroy() {
         this.model?.handleGridUnmount();

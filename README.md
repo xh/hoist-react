@@ -401,4 +401,4 @@ will be filled in as soon as possible. These include planned notes on:
 
 📫☎️🌎 info@xh.io | <https://xh.io/contact>
 
-Copyright © 2021 Extremely Heavy Industries Inc.
+Copyright © 2022 Extremely Heavy Industries Inc.

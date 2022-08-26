@@ -2,15 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooser';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
-import {withDefault, stopPropagation} from '@xh/hoist/utils/js';
+import {stopPropagation, withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 import {button, Button} from './Button';
 

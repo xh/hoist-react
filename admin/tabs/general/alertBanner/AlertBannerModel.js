@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {FormModel} from '@xh/hoist/cmp/form';
@@ -42,7 +42,7 @@ export class AlertBannerModel extends HoistModel {
             {name: 'updated', readonly: true},
             {name: 'updatedBy', readonly: true}
         ]
-    })
+    });
 
     @managed
     @observable.ref

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
@@ -176,11 +176,11 @@ export class ColumnWidthCalculator {
     //------------------
     getHeaderWidth(gridModel, column, includeHeaderIcons, bufferPx) {
         const {colId, agOptions, sortable, filterable} = column,
-            {sizingMode} = gridModel,
+            {sizingMode, filterModel} = gridModel,
             headerHtml = this.getHeaderHtml(gridModel, column),
             headerClass = this.getHeaderClass(gridModel, column),
             showSort = sortable && (includeHeaderIcons || gridModel.sortBy.find(sorter => sorter.colId === colId)),
-            showMenu = (agOptions?.suppressMenu === false || filterable) && includeHeaderIcons;
+            showMenu = (agOptions?.suppressMenu === false || (filterable && filterModel)) && includeHeaderIcons;
 
         // Render to a hidden header cell to calculate the max displayed width
         const headerEl = this.getHeaderEl();

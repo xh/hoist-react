@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
@@ -12,7 +12,8 @@ import {hoistCmp, HoistModel, lookup, useLocalModel, uses, XH} from '@xh/hoist/c
 import {
     colChooser as desktopColChooser,
     gridFilterDialog,
-    StoreContextMenu
+    StoreContextMenu,
+    ModalSupportModel
 } from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
@@ -167,15 +168,18 @@ class GridLocalModel extends HoistModel {
 
     onLinked() {
         this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(this.model) : null;
-        this.addReaction(this.selectionReaction());
-        this.addReaction(this.sortReaction());
-        this.addReaction(this.columnsReaction());
-        this.addReaction(this.columnStateReaction());
-        this.addReaction(this.dataReaction());
-        this.addReaction(this.groupReaction());
-        this.addReaction(this.rowHeightReaction());
-        this.addReaction(this.sizingModeReaction());
-        this.addReaction(this.validationDisplayReaction());
+        this.addReaction(
+            this.selectionReaction(),
+            this.sortReaction(),
+            this.columnsReaction(),
+            this.columnStateReaction(),
+            this.dataReaction(),
+            this.groupReaction(),
+            this.rowHeightReaction(),
+            this.sizingModeReaction(),
+            this.validationDisplayReaction(),
+            this.modalReaction()
+        );
 
         this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
     }
@@ -289,7 +293,7 @@ class GridLocalModel extends HoistModel {
     getContextMenuItems = (params) => {
         const {model, agOptions} = this,
             {selModel, contextMenu} = model;
-        if (!contextMenu || XH.isMobileApp) return null;
+        if (!contextMenu || XH.isMobileApp || model.isEditing) return null;
 
         let menu = null;
         if (isFunction(contextMenu)) {
@@ -386,7 +390,7 @@ class GridLocalModel extends HoistModel {
             run: () => {
                 if (model.isReady) this.syncData();
             },
-            debounce: 0
+            debounce: model.experimental.syncDataImmediately ? null : 0
         };
     }
 
@@ -548,6 +552,18 @@ class GridLocalModel extends HoistModel {
                     agApi.refreshCells({columns: colIds, force: true});
                 }
             },
+            debounce: 0
+        };
+    }
+
+    modalReaction() {
+        // Force Grid to redraw rows when switching between inline and modal views
+        const modalSupportModel = ModalSupportModel ? this.lookupModel(ModalSupportModel) : null;
+        if (!modalSupportModel) return null;
+
+        return {
+            track: () => modalSupportModel.isModal,
+            run: () => this.model.agApi.redrawRows(),
             debounce: 0
         };
     }
@@ -771,7 +787,7 @@ class GridLocalModel extends HoistModel {
             column: xhColumn,
             node
         });
-    }
+    };
 
     navigateToNextCell = (agParams) => {
         return this.rowKeyNavSupport?.navigateToNextCell(agParams);

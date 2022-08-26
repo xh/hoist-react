@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, RootRefreshContextModel, TaskObserver, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {isEmpty} from 'lodash';
 import {AboutDialogModel} from './AboutDialogModel';
 import {BannerSourceModel} from './BannerSourceModel';
 import {ChangelogDialogModel} from './ChangelogDialogModel';
@@ -98,5 +99,9 @@ export class AppContainerModel extends HoistModel {
                 onClick: () => XH.reloadApp()
             }
         });
+    }
+
+    hasAboutDialog() {
+        return !isEmpty(this.aboutDialogModel.getItems());
     }
 }

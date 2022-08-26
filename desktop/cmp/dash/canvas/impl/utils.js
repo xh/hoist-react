@@ -17,6 +17,8 @@ export function createViewMenuItems({
     viewId = null,
     replaceExisting = false
 }) {
+    if (!dashCanvasModel.ref.current) return [];
+
     const groupedItems = {},
         ungroupedItems = [],
         x = position?.x ?? 0,

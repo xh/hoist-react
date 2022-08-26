@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {ExcelFormat} from '@xh/hoist/cmp/grid';
 import {HoistService, XH} from '@xh/hoist/core';
+import {FieldType} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -14,18 +15,22 @@ import download from 'downloadjs';
 import {StatusCodes} from 'http-status-codes';
 import {
     castArray,
+    countBy,
     isArray,
     isEmpty,
     isFunction,
     isNil,
     isString,
+    pickBy,
     sortBy,
-    uniq,
     compact,
-    findIndex
+    findIndex,
+    keys
 } from 'lodash';
 import {span, a} from '@xh/hoist/cmp/layout';
 import {wait} from '@xh/hoist/promise';
+
+const {AUTO, DATE, LOCAL_DATE} = FieldType;
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
@@ -61,7 +66,7 @@ export class GridExportService extends HoistService {
             exportColumns = this.getExportableColumns(gridModel, columns),
             summaryRecord = gridModel.store.summaryRecord,
             records = gridModel.store.rootRecords,
-            meta = this.getColumnMetadata(exportColumns);
+            meta = this.getColumnMetadata(exportColumns, gridModel);
 
         if (records.length === 0) {
             XH.warningToast('No data found to export.');
@@ -181,21 +186,20 @@ export class GridExportService extends HoistService {
             cellHasExcelFormat = isFunction(excelFormat);
 
         if (cellHasExcelFormat) {
-            excelFormat = excelFormat(value, {record, column, gridModel});
+            excelFormat = excelFormat(value, {record, column, gridModel}) ?? ExcelFormat.DEFAULT;
         }
 
-        // 2) Dates: Provide date data expected by server endpoint.
-        // Also, approximate formats for CSV and clipboard.
-        if (excelFormat === ExcelFormat.DATE_FMT) value = fmtDate(value);
-        if (excelFormat === ExcelFormat.DATETIME_FMT) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
+        // 2) Dates: Provide the date data string expected by the server endpoint
+        // Also functions as a consistent human-friendly date format for CSV and clipboard
+        if (this.getExportFieldType(column) === DATE) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
 
         value = value.toString();
 
+        // Send format and/or type with the cell in an object only if it varies within the column
         return forExcel && cellHasExcelFormat ?
             {value, format: excelFormat} :
             value;
     }
-
     //-----------------------
     // Implementation
     //-----------------------
@@ -240,19 +244,38 @@ export class GridExportService extends HoistService {
         });
     }
 
+    // Extract fieldtype from store for the column's export field (which may differ via exportValue)
+    // Default to 'AUTO' (for non-store fields like 'id')
+    getExportFieldType(column) {
+        const {field, exportValue, gridModel} = column,
+            typeField = isString(exportValue) ? exportValue : field;
+
+        return gridModel.store.getField(typeField)?.type ?? AUTO;
+    }
+
     getColumnMetadata(columns) {
         return columns.map(column => {
             let {field, excelWidth, excelFormat} = column,
-                type = null;
+                type = this.getExportFieldType(column);
+
+            // Set default excelFormat for dates and localDates on the client
+            if (isNil(excelFormat) || excelFormat === ExcelFormat.DEFAULT) {
+                switch (type) {
+                    case LOCAL_DATE:
+                        excelFormat = ExcelFormat.DATE_FMT;
+                        break;
+                    case DATE:
+                        excelFormat = ExcelFormat.DATETIME_FMT;
+                        break;
+                    default:
+                        excelFormat = ExcelFormat.DEFAULT;
+                }
+            }
 
             // If using the function form to support per-cell formats, replace with
             // ExcelFormat.DEFAULT as a placeholder at the column level. The cell-level data for
             // this column will be shipped with the calculated formats.
             if (isFunction(excelFormat)) excelFormat = ExcelFormat.DEFAULT;
-
-            if (excelFormat === ExcelFormat.DATE_FMT) type = 'date';
-            if (excelFormat === ExcelFormat.DATETIME_FMT) type = 'datetime';
-            if (excelFormat === ExcelFormat.LONG_TEXT) type = 'longText';
 
             return {field, type, format: excelFormat, width: excelWidth};
         });
@@ -277,8 +300,10 @@ export class GridExportService extends HoistService {
 
         // Excel does not like duplicate (case-insensitive) header names in tables and will prompt
         // the user to "repair" the file when opened if present.
-        if (type === 'excelTable' && uniq(headers.map(it => it.toLowerCase())).length !== headers.length) {
-            console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers.');
+        const headerCounts = countBy(headers.map(it => it.toLowerCase())),
+            dupeHeaders = keys(pickBy(headerCounts, it => it > 1));
+        if (type === 'excelTable' && !isEmpty(dupeHeaders)) {
+            console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers. Duplicate headers: ', dupeHeaders);
         }
         return {data: headers, depth: 0};
     }

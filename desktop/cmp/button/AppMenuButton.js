@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Button, button} from '@xh/hoist/desktop/cmp/button';
+import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
@@ -99,8 +100,9 @@ function buildMenuItems({
     hideThemeItem,
     extraItems = []
 }) {
+    hideAboutItem = hideAboutItem || !XH.acm.hasAboutDialog();
     hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdmin;
-    hideChangelogItem = hideChangelogItem || !XH.changelogService.enabled,
+    hideChangelogItem = hideChangelogItem || !XH.changelogService.enabled;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
     hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);
     hideOptionsItem = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions;
@@ -174,7 +176,7 @@ function parseMenuItems(items) {
         .map(it => {
             if (it === '-') return menuDivider();
             if (isValidElement(it)) {
-                return ['Blueprint3.MenuItem', 'Blueprint3.MenuDivider'].includes(it.type.displayName) ?
+                return ['Blueprint4.MenuItem', 'Blueprint4.MenuDivider'].includes(it.type.displayName) ?
                     it :
                     menuItem({text: it});
             }

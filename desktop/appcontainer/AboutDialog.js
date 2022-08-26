@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {AboutDialogModel} from '@xh/hoist/appcontainer/AboutDialogModel';
 import {filler, frame} from '@xh/hoist/cmp/layout';
@@ -15,8 +15,9 @@ import './AboutDialog.scss';
 
 /**
  * A dialog box showing basic metadata and version information about the Hoist application
- * and its plugins. Can also display the values of other soft-configuration entries as
- * specified by the xhAboutMenuConfigs configuration key.
+ * and its plugins
+ *
+ * To customize the entries shown, override HoistAppModel.getAboutDialogItems()
  *
  * @private
  */

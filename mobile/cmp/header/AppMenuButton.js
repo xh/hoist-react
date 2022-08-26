@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
-import {menuButton} from '@xh/hoist/mobile/cmp/menu';
-import {Button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {Button} from '@xh/hoist/mobile/cmp/button';
+import {menuButton} from '@xh/hoist/mobile/cmp/menu';
+import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 
@@ -75,6 +76,7 @@ function buildMenuItems({
     hideAboutItem,
     extraItems = []
 }) {
+    hideAboutItem = hideAboutItem || !XH.acm.hasAboutDialog();
     hideOptionsItem = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
     hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);

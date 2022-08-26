@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable, action, computed, makeObservable} from '@xh/hoist/mobx';
+import '@xh/hoist/desktop/register';
+import {action, bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {uniq} from 'lodash';
 
@@ -164,7 +165,7 @@ export class SplitTreeMapModel extends HoistModel {
     //-------------------------
     defaultMapFilter = (record) => {
         return record.get(this.primaryMapModel.valueField) >= 0;
-    }
+    };
 }
 
 /**

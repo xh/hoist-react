@@ -2,17 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
-import {observable, action, makeObservable} from '@xh/hoist/mobx';
 import {div, fragment} from '@xh/hoist/cmp/layout';
-import {elementFromContent, createObservableRef} from '@xh/hoist/utils/react';
-import {isNil, isFunction} from 'lodash';
-import {usePopper} from 'react-popper';
-import ReactDom from 'react-dom';
+import {hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
+import '@xh/hoist/mobile/register';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {createObservableRef, elementFromContent} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
+import {isFunction, isNil} from 'lodash';
 import PT from 'prop-types';
+import ReactDom from 'react-dom';
+import {usePopper} from 'react-popper';
 
 import './Popover.scss';
 
@@ -134,7 +135,7 @@ class LocalModel extends HoistModel {
     contentRef = createObservableRef();
     @observable isOpen;
 
-    _onInteraction
+    _onInteraction;
     _controlledMode = false;
 
     get targetEl() {

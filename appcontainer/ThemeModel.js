@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
@@ -35,7 +35,7 @@ export class ThemeModel extends HoistModel {
     }
 
     @action
-    setTheme(value, persist) {
+    setTheme(value, persist = true) {
         switch (value) {
             case 'system':
                 this.setDarkTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);

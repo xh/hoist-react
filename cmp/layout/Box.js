@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
@@ -24,7 +24,10 @@ export const [Box, box] = hoistCmp.withFactory({
     model: false, memo: false, observer: false,
 
     render(props, ref) {
-        let [layoutProps, {children, ...restProps}] = splitLayoutProps(props);
+        // Note `model` destructured off of non-layout props to avoid setting model as a bogus DOM
+        // attribute. This low-level component does not lookup a model from context, but it may
+        // easily be passed one from a parent that has not properly managed its own props.
+        let [layoutProps, {children, model, ...restProps}] = splitLayoutProps(props);
 
         restProps = merge(
             {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},

@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
-import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {warnIf} from '@xh/hoist/utils/js';
+import {isNull, reject} from 'lodash';
 
 /**
  * Support for About Dialog.
@@ -27,6 +28,9 @@ export class AboutDialogModel extends HoistModel {
             track: () => XH.routerState,
             run: () => this.hide()
         });
+
+        const legacyConf = XH.getConf('xhAboutMenuConfigs', null);
+        warnIf(!isNull(legacyConf), 'Config xhAboutMenuConfigs is no longer supported. To customize your `AboutDialog`, see HoistAppModel.getAboutDialogItems()');
     }
 
     @action
@@ -41,28 +45,11 @@ export class AboutDialogModel extends HoistModel {
     }
 
     getTable() {
-        const svc = XH.environmentService,
-            row = (label, data) => tr(th(label), td(data)),
-            configRows = [];
+        const rows = this.getItems().map(it => tr(th(it.label), td(it.value)));
+        return table(tbody(rows));
+    }
 
-        XH.getConf('xhAboutMenuConfigs', []).forEach(it => {
-            const confVal = XH.getConf(it.key, null);
-            if (confVal !== null) configRows.push(row(it.label, confVal));
-        });
-
-        return table({
-            item: tbody(
-                row('App', `${svc.get('appName')} (${svc.get('appCode')})`),
-                row('Current User', XH.identityService.username),
-                row('Environment', svc.get('appEnvironment')),
-                row('Server', `${svc.get('appVersion')} (build ${svc.get('appBuild')})`),
-                row('Client', `${svc.get('clientVersion')} (build ${svc.get('clientBuild')})`),
-                row('Hoist Core', svc.get('hoistCoreVersion')),
-                row('Hoist React', svc.get('hoistReactVersion')),
-                row('User Agent', window.navigator.userAgent),
-                ...configRows,
-                row('WebSockets', webSocketIndicator())
-            )
-        });
+    getItems() {
+        return reject(XH.appModel.getAboutDialogItems(), 'omit');
     }
 }

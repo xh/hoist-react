@@ -2,19 +2,19 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {div, filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {filler, div} from '@xh/hoist/cmp/layout';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
-import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {customRow} from './CustomRow';
 
 import './CustomTab.scss';
 import {CustomTabModel} from './CustomTabModel';
-import {customRow} from './CustomRow';
 
 /**
  * Tab for managing value based filters for Column.

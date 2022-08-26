@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
@@ -66,7 +66,7 @@ export class Column {
     /** @member {string} - name of backing Store Field, if any. */
     field;
     /** @member {boolean} */
-    enableDotSeparatedFieldPath
+    enableDotSeparatedFieldPath;
     /** @member {(string|string[])} */
     fieldPath;
     /** @member {string} */
@@ -88,14 +88,14 @@ export class Column {
     headerClass;
 
     /** @member {(Column~cellClassFn|string|string[])} */
-    cellClass
+    cellClass;
     /** @member {Object.<string, Column~cellClassRuleFn>} */
     cellClassRules;
     /** @member {string} */
     align;
 
     /** @member {boolean} */
-    hidden
+    hidden;
     /** @member {(boolean|number)} */
     flex;
     /** @member {number} */
@@ -111,7 +111,7 @@ export class Column {
     /** @member {{(string[]|Column~SortSpec[])}} */
     sortingOrder;
     /** @member {boolean} */
-    absSort
+    absSort;
     /** @member {(string|Column~sortValueFn)} */
     sortValue;
     /** @member {Column~comparatorFn} */
@@ -152,7 +152,7 @@ export class Column {
     excludeFromChooser;
 
     /** @member {string} */
-    exportName
+    exportName;
     /** @member {(string|Column~exportValueFn)} */
     exportValue;
     /** @member {boolean} */

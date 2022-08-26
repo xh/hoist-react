@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 // Ag-grid installs an outer div around itself.
@@ -156,6 +156,14 @@
     }
   }
 
+  // Disable native ag-grid hover and selection colors
+  .ag-row-hover:not(.ag-full-width-row)::before,
+  .ag-row-hover.ag-full-width-row.ag-row-group::before,
+  .ag-row-hover.ag-row-selected::before,
+  .ag-row-selected::before {
+    background: none;
+  }
+
   //------------------------
   // Core Cell Classes
   //------------------------
@@ -206,7 +214,7 @@
   // Cell borders
   &--cell-borders {
     .ag-cell {
-      border-right-color: var(--xh-grid-border-color) !important;
+      border-right-color: var(--xh-grid-border-color);
     }
 
     .ag-row {
@@ -215,7 +223,8 @@
   }
 
   &--no-cell-borders {
-    .ag-cell {
+    .ag-cell,
+    .ag-context-menu-open .ag-cell-focus:not(.ag-cell-range-selected) {
       border-color: transparent;
     }
   }
