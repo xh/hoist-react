@@ -188,6 +188,8 @@ export class Column {
     setValueFn;
     /** @member {Column~getValueFn} */
     getValueFn;
+    /** @member {boolean} */
+    hasCustomGetValueFn;
 
     /** @member {GridModel} */
     gridModel;
@@ -496,6 +498,7 @@ export class Column {
         this.editorIsPopup = editorIsPopup;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
+        this.hasCustomGetValueFn = !!getValueFn;
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};

@@ -16,6 +16,7 @@
 * Fix issues with `ModalSupport` implementation in `CodeInput`.
 * Fix `Grid` rendering glitches when used inside `Panel` with `ModalSupport`.
 * Fix incorrect text color on desktop toasts with a warning intent.
+* Fix bug in `Grid` clipboard functionality for cells with unique `excelFormat`
 
 ### 💥 Breaking Changes
 

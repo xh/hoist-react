@@ -781,12 +781,14 @@ class GridLocalModel extends HoistModel {
 
         if (!record || !xhColumn) return value;
 
-        return XH.gridExportService.getExportableValueForCell({
+        const exportValue = XH.gridExportService.getExportableValueForCell({
             gridModel: model,
             record,
             column: xhColumn,
             node
         });
+
+        return exportValue?.value ?? exportValue;
     };
 
     navigateToNextCell = (agParams) => {

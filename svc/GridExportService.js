@@ -25,7 +25,7 @@ import {
     sortBy,
     compact,
     findIndex,
-    keys, isBoolean, isDate, isInteger, isNumber, last, isObject
+    keys, isBoolean, isDate, isInteger, isNumber, isObject
 } from 'lodash';
 import {span, a} from '@xh/hoist/cmp/layout';
 import {wait} from '@xh/hoist/promise';
@@ -159,10 +159,10 @@ export class GridExportService extends HoistService {
      * @param {Object} [c.node] - rendered ag-Grid row, if available.  Necessary for
      *            exporting agGrid aggregates.
      * @param {boolean} [c.forExcel] - for posting to server-side excel export, default false.
-     * @return {String} - value suitable for export to excel, csv, or clipboard.
+     * @return {string|Object} - value suitable for export to excel, csv, or clipboard.
      */
     getExportableValueForCell({gridModel, record, column, node, forExcel = false}) {
-        const {field, exportValue, getValueFn} = column,
+        const {field, exportValue, getValueFn, hasCustomGetValueFn} = column,
             aggData = node && gridModel.treeMode && !isEmpty(record.children) ? node.aggData : null;
 
         // 0) Main processing
@@ -189,11 +189,16 @@ export class GridExportService extends HoistService {
             excelFormat = excelFormat(value, {record, column, gridModel}) ?? ExcelFormat.DEFAULT;
         }
 
-        const cellSpecificType = this.getTypeIfDifferent(value, this.getExportFieldType(column));
+        const exportFieldType = this.getExportFieldType(column);
+
+        let cellSpecificType = null;
+        if (exportFieldType === FieldType.AUTO || isFunction(exportValue) || hasCustomGetValueFn) {
+            cellSpecificType = this.getTypeIfDifferent(value, exportFieldType);
+        }
 
         // 2) Dates: Provide the date data string expected by the server endpoint
         // Also functions as a consistent human-friendly date format for CSV and clipboard
-        if (this.getExportFieldType(column) === DATE) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
+        if (exportFieldType === DATE) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
 
         value = value.toString();
 
@@ -389,17 +394,17 @@ export class GridExportService extends HoistService {
 
     // Return a value's data type if different from the type specified
     getTypeIfDifferent(v, type) {
-        const ifTypeNot = (...types) => types.includes(type) ? null : last(types),
+        const ifTypeNot = (allowedTypes, retType) => allowedTypes.includes(type) ? null : retType,
             {BOOL, INT, NUMBER, LOCAL_DATE, DATE, STRING, PWD, AUTO, TAGS, JSON} = FieldType;
 
-        if (isBoolean(v))   return ifTypeNot(BOOL);
-        if (isInteger(v))   return ifTypeNot(NUMBER, INT);
-        if (isNumber(v))    return ifTypeNot(NUMBER);
-        if (isLocalDate(v)) return ifTypeNot(LOCAL_DATE);
-        if (isDate(v))      return ifTypeNot(DATE);
-        if (isString(v))    return ifTypeNot(PWD, STRING, AUTO);
-        if (isArray(v))     return ifTypeNot(TAGS, JSON, AUTO);
-        if (isObject(v))    return ifTypeNot(JSON, AUTO);
+        if (isBoolean(v))   return ifTypeNot([BOOL], BOOL);
+        if (isInteger(v))   return ifTypeNot([NUMBER, INT], INT);
+        if (isNumber(v))    return ifTypeNot([NUMBER], NUMBER);
+        if (isLocalDate(v)) return ifTypeNot([LOCAL_DATE], LOCAL_DATE);
+        if (isDate(v))      return ifTypeNot([DATE], DATE);
+        if (isString(v))    return ifTypeNot([PWD, STRING, AUTO], AUTO);
+        if (isArray(v))     return ifTypeNot([TAGS, JSON, AUTO], AUTO);
+        if (isObject(v))    return ifTypeNot([JSON, AUTO], AUTO);
 
         return null;
     }
