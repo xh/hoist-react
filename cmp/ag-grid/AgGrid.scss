@@ -223,8 +223,9 @@
   }
 
   &--no-cell-borders {
-    .ag-cell {
-      border-color: transparent !important;
+    .ag-cell,
+    .ag-context-menu-open .ag-cell-focus:not(.ag-cell-range-selected) {
+      border-color: transparent;
     }
   }
 
