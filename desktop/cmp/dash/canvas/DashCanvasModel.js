@@ -10,7 +10,7 @@ import {DashCanvasViewModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/das
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
+import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     defaultsDeep,
@@ -88,7 +88,7 @@ export class DashCanvasModel extends HoistModel {
     isLoadingState;
     /** @returns {boolean} - true if any viewModels are in the middle of auto-sizing */
     get isAutoSizing() {
-        return some(this.viewModels, {isAutoSizing: true});
+        return some(this.viewModels, 'isAutoSizing');
     }
     /** @returns {Object[]} */
     @computed get rglLayout() {
@@ -395,7 +395,6 @@ export class DashCanvasModel extends HoistModel {
         }
     }
 
-    @debounced(1000)
     @action
     publishState() {
         this.state = this.buildState();
