@@ -10,6 +10,8 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
+import {dateTimeSecRenderer} from '@xh/hoist/format';
+import {div} from '@xh/hoist/cmp/layout';
 import {keys, toString} from 'lodash';
 import {DifferDetailModel} from './DifferDetailModel';
 import './Differ.scss';
@@ -53,6 +55,16 @@ const diffTable = hoistCmp.factory(
             remote = data.remoteValue,
             fields = keys(local || remote);
 
+        const localLastUpdated = local?.lastUpdated,
+            localLastUpdatedBy = local?.lastUpdatedBy,
+            remoteLastUpdated = remote?.lastUpdated,
+            remoteLastUpdatedBy = remote?.lastUpdatedBy;
+
+        const formattedLocal = dateTimeSecRenderer({})(localLastUpdated);
+        const formattedRemote = dateTimeSecRenderer({})(remoteLastUpdated);
+
+        fields.splice(-2, 2);
+
         const rows = fields.map(field => {
             const cls = model.createDiffClass(field, local, remote),
                 localCell = local ? toString(local[field]) : '',
@@ -64,8 +76,16 @@ const diffTable = hoistCmp.factory(
             tbody(
                 tr(
                     th(''),
-                    th('Local'),
-                    th('Remote')
+                    th(
+                        div('Local'),
+                        div(`${localLastUpdatedBy}`),
+                        div(`${formattedLocal}`)
+                    ),
+                    th(
+                        div('Remote'),
+                        div(`${remoteLastUpdatedBy}`),
+                        div(`${formattedRemote}`)
+                    )
                 ),
                 ...rows
             )
