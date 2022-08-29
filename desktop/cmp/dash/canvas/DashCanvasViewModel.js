@@ -72,10 +72,10 @@ export class DashCanvasViewModel extends DashViewModel {
             const {id, containerModel} = this,
                 {rowHeight, margin} = containerModel,
                 newLayout = {...containerModel.getViewLayout(id)},
-                HEADER_HEIGHT = 24;
+                HEADER_HEIGHT = 23;
 
             // Calculate new height in grid units
-            newLayout.h = Math.ceil((height + HEADER_HEIGHT + margin[1]) / (rowHeight + margin[1]));
+            newLayout.h = Math.round((height + HEADER_HEIGHT + margin[1]) / (rowHeight + margin[1]));
 
             // Send the new layout back to the parent model
             this.isAutoSizing = true;
