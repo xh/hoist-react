@@ -28,6 +28,11 @@
 
 ### ⚙️ Technical
 
+* Added missing `@computed` annotations to several `Store` getters that relay properties from
+  its internal recordsets, including `maxDepth` and getters returning counts and empty status.
+    * Avoids unnecessary internal render cycles within `Grid` when in tree mode.
+    * Could require adjustments for apps that unintentionally relied on these observable getters
+      triggering re-renders when records have changed in any way (but their output values have not).
 * Hoist-supported menus will no longer filter out a `MenuDivider` if it has a `title`.
 * The `filterText` field in `ColumnHeaderFilter` now gets autoFocused.
 * The default `FormField` read-only renderer now supports line breaks.
