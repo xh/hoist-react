@@ -8,7 +8,7 @@ import {CreatesSpec, elemFactory, ModelPublishMode, ModelSpec, uses, formatSelec
 import {useModelLinker} from '@xh/hoist/core/impl/ModelLinker';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {useOnMount, getLayoutProps} from '@xh/hoist/utils/react';
-import classNames from 'classnames';
+import classNames from 'classnames/dedupe';
 import {isFunction, isPlainObject, isObject} from 'lodash';
 import {observer} from '@xh/hoist/mobx';
 import {forwardRef, memo, useContext, useDebugValue, useState} from 'react';

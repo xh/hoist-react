@@ -3,25 +3,27 @@
 ## v51.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
+
 * `HoistBase` `addReaction()` and `addAutorun()` now can create multiple reactions in one call, and
- will ignore nullish inputs.
+  will ignore nullish inputs.
 * `ButtonGroupInput` supports new `enableMulti` prop.
-* Admin activity tracking chart now has a checkbox to toggle weekends when viewing a time
-  series.
 * `AboutDialog` can now display more dynamic custom properties.
+* New option on Admin Activity Tracking chart to toggle on/off weekends when viewing a time series.
 
 ### 🐞 Bug Fixes
 
-* Fix issue where `ModalSupport` would trigger `MobX` memo warning in console.
-* Fix issues with `ModalSupport` implementation in `CodeInput`.
-* Fix `Grid` rendering glitches when used inside `Panel` with `ModalSupport`.
-* Fix incorrect text color on desktop toasts with a warning intent.
+* Fixed issue where `ModalSupport` would trigger `MobX` memo warning in console.
+* Fixed issues with `ModalSupport` implementation in `CodeInput`.
+* Fixed `Grid` rendering glitches when used inside `Panel` with `ModalSupport`.
+* Fixed incorrect text color on desktop toasts with a warning intent.
+* Fixed potential for duplication of default Component `className` within list of CSS classes
+  rendered into the DOM.
 
 ### 💥 Breaking Changes
 
-* `CodeInput` is now rendered within an additional `div` element.  Unlikely to cause issues, unless
+* `CodeInput` is now rendered within an additional `div` element. Unlikely to cause issues, unless
   using targeted styling of this component.
-* `xhAboutMenuConfigs` soft-config is no longer supported.  To customize the `AboutDialog`, see
+* `xhAboutMenuConfigs` soft-config is no longer supported. To customize the `AboutDialog`, see
   `HoistAppModel.getAboutDialogItems()`
 
 ### ⚙️ Technical
@@ -34,10 +36,9 @@
 
 ### 🐞 Bug Fixes
 
-* Fix bug where components utilizing `ModalSupport` could render incorrectly when switching
+* Fixed bug where components utilizing `ModalSupport` could render incorrectly when switching
   between inline and modal views.
-
-* Improve behavior of `GridModel.whenReadyAsync()` to allow Grid more time to finish loading data.
+* Improved behavior of `GridModel.whenReadyAsync()` to allow Grid more time to finish loading data.
   This improves the behavior of related methods `preSelectFirstAsync`, `selectFirstAsync`, and
   `ensureVisibleAsync`.
 
@@ -75,6 +76,7 @@
   popup message when clicking the background or hitting the escape key.
 
 ### 💥 Breaking Changes
+
 * Hoist now requires ag-Grid v28.0.0 or higher - update your ag-Grid dependency in your app's
   `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
 * The data reactions between `GridModel` and the underlying Ag-Grid is now minimally debounced. This
@@ -93,12 +95,12 @@
   title) would omit the header.
 * `XHClass` (top-level Singleton model for Hoist) no longer extends `HoistBase`
 * `DockView` component has been moved into the desktop-specific package `@xh/hoist/desktop/cmp`.
-Users of this component will need to adjust their imports accordingly.
+  Users of this component will need to adjust their imports accordingly.
 * Requires `hoist-core >= 14.0`. Excel file exporting defaults to using column FieldType.
 
 ### 🐞 Bug Fixes
 
-* Fixes several issues introduced with Ag-Grid v27 where rows gaps and similar rendering issues
+* Fixed several issues introduced with Ag-Grid v27 where rows gaps and similar rendering issues
   could appear after operating on it programmatically (see breaking changes above).
 * `ColumnHeaders` now properly respond to mouse events on tablets (e.g. when using a Bluetooth
   trackpad on an iPad).
