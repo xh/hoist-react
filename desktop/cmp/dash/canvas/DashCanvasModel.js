@@ -91,7 +91,7 @@ export class DashCanvasModel extends HoistModel {
         return some(this.viewModels, 'isAutoSizing');
     }
     /** @returns {Object[]} */
-    @computed get rglLayout() {
+    @computed.struct get rglLayout() {
         return this.layout.map(it => ({
             ...it,
             resizeHandles: this.getView(it.i).autoHeight ? ['e'] : ['e', 's', 'se']
@@ -360,19 +360,18 @@ export class DashCanvasModel extends HoistModel {
         layout = layout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h']));
 
         const layoutChanged = !isEqual(sortBy(this.layout, 'i'), sortBy(layout, 'i'));
+        if (!layoutChanged) return;
 
-        if (layoutChanged) {
-            this.layout = layout;
-            if (!this.isAutoSizing && !this.isLoadingState) this.publishState();
+        this.layout = layout;
+        if (!this.isAutoSizing && !this.isLoadingState) this.publishState();
 
-            // Check if scrollbar visibility has changed, and force resize event if so
-            const node = this.ref.current;
-            if (!node) return;
-            const scrollbarVisible = node.offsetWidth > node.clientWidth;
-            if (scrollbarVisible !== this.scrollbarVisible) {
-                window.dispatchEvent(new Event('resize'));
-                this.scrollbarVisible = scrollbarVisible;
-            }
+        // Check if scrollbar visibility has changed, and force resize event if so
+        const node = this.ref.current;
+        if (!node) return;
+        const scrollbarVisible = node.offsetWidth > node.clientWidth;
+        if (scrollbarVisible !== this.scrollbarVisible) {
+            window.dispatchEvent(new Event('resize'));
+            this.scrollbarVisible = scrollbarVisible;
         }
     }
 
