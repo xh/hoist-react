@@ -2,6 +2,9 @@
 
 ## v52.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Admin detailed configuration comparison display now shows who updated each value and when.
 
 ## v51.0.0 - 2022-08-29
 
