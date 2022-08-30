@@ -11,7 +11,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {dateTimeSecRenderer} from '@xh/hoist/format';
-import {div} from '@xh/hoist/cmp/layout';
+import {div, vspacer} from '@xh/hoist/cmp/layout';
 import {keys, toString} from 'lodash';
 import {DifferDetailModel} from './DifferDetailModel';
 import './Differ.scss';
@@ -53,16 +53,13 @@ const diffTable = hoistCmp.factory(
         const {data} = model.record,
             local = data.localValue,
             remote = data.remoteValue,
-            fields = keys(local || remote);
-
-        const localLastUpdated = local?.lastUpdated,
+            fields = keys(local || remote),
             localLastUpdatedBy = local?.lastUpdatedBy,
-            remoteLastUpdated = remote?.lastUpdated,
-            remoteLastUpdatedBy = remote?.lastUpdatedBy;
+            remoteLastUpdatedBy = remote?.lastUpdatedBy,
+            remoteLastUpdated = dateTimeSecRenderer({})(remote?.lastUpdated),
+            localLastUpdated = dateTimeSecRenderer({})(local?.lastUpdated);
 
-        const formattedLocal = dateTimeSecRenderer({})(localLastUpdated);
-        const formattedRemote = dateTimeSecRenderer({})(remoteLastUpdated);
-
+        // remove lastUpdatedBy and lastUpdated
         fields.splice(-2, 2);
 
         const rows = fields.map(field => {
@@ -78,13 +75,27 @@ const diffTable = hoistCmp.factory(
                     th(''),
                     th(
                         div('Local'),
-                        div(`${localLastUpdatedBy}`),
-                        div(`${formattedLocal}`)
+                        vspacer(),
+                        div({
+                            omit: !localLastUpdatedBy,
+                            item: [`${localLastUpdatedBy}`]
+                        }),
+                        div({
+                            omit: !localLastUpdated,
+                            item: [`${localLastUpdated}`]
+                        })
                     ),
                     th(
                         div('Remote'),
-                        div(`${remoteLastUpdatedBy}`),
-                        div(`${formattedRemote}`)
+                        vspacer(),
+                        div({
+                            omit: !remoteLastUpdatedBy,
+                            item: [`${remoteLastUpdatedBy}`]
+                        }),
+                        div({
+                            omit: !remoteLastUpdated,
+                            item: [`${remoteLastUpdated}`]
+                        })
                     )
                 ),
                 ...rows
