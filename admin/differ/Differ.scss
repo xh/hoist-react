@@ -24,14 +24,6 @@
       padding: var(--xh-pad-px);
     }
 
-    div {
-      font-weight: normal;
-
-      &:first-child {
-        font-weight: bold;
-      }
-    }
-
     td {
       &:first-child {
         border-right: var(--xh-border-solid);
@@ -47,6 +39,14 @@
 
       &.diff {
         color: var(--xh-green);
+      }
+    }
+
+    div {
+      font-weight: normal;
+
+      &:first-child {
+        font-weight: bold;
       }
     }
   }

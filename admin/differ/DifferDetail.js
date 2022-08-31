@@ -10,8 +10,8 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {dateTimeSecRenderer} from '@xh/hoist/format';
-import {div, vspacer} from '@xh/hoist/cmp/layout';
+import {dateTimeRenderer} from '@xh/hoist/format';
+import {div} from '@xh/hoist/cmp/layout';
 import {keys, toString} from 'lodash';
 import {DifferDetailModel} from './DifferDetailModel';
 import './Differ.scss';
@@ -53,11 +53,16 @@ const diffTable = hoistCmp.factory(
         const {data} = model.record,
             local = data.localValue,
             remote = data.remoteValue,
-            fields = keys(local || remote),
-            localLastUpdatedBy = local?.lastUpdatedBy,
+            fields = keys(local || remote);
+
+        let localLastUpdatedBy = local?.lastUpdatedBy,
             remoteLastUpdatedBy = remote?.lastUpdatedBy,
-            remoteLastUpdated = dateTimeSecRenderer({})(remote?.lastUpdated),
-            localLastUpdated = dateTimeSecRenderer({})(local?.lastUpdated);
+            localLastUpdated = local?.lastUpdated,
+            remoteLastUpdated = remote?.lastUpdated;
+
+        localLastUpdated = (localLastUpdated ? dateTimeRenderer({})(localLastUpdated) : undefined);
+        remoteLastUpdated = (remoteLastUpdated ? dateTimeRenderer({})(remoteLastUpdated) : undefined);
+
 
         // remove lastUpdatedBy and lastUpdated
         fields.splice(-2, 2);
@@ -73,32 +78,29 @@ const diffTable = hoistCmp.factory(
             tbody(
                 tr(
                     th(''),
+                    th('Local'),
+                    th('Remote')
+                ),
+                ...rows,
+                tr(
+                    th(''),
                     th(
-                        div('Local'),
-                        vspacer(),
                         div({
-                            omit: !localLastUpdatedBy,
                             item: [`${localLastUpdatedBy}`]
                         }),
                         div({
-                            omit: !localLastUpdated,
                             item: [`${localLastUpdated}`]
                         })
                     ),
                     th(
-                        div('Remote'),
-                        vspacer(),
                         div({
-                            omit: !remoteLastUpdatedBy,
                             item: [`${remoteLastUpdatedBy}`]
                         }),
                         div({
-                            omit: !remoteLastUpdated,
                             item: [`${remoteLastUpdated}`]
                         })
                     )
-                ),
-                ...rows
+                )
             )
         );
     }
