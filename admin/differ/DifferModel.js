@@ -240,15 +240,17 @@ export class DifferModel extends HoistModel {
     }
 
     rawRecordsAreEqual(local, remote) {
-        // For JSON records, parse JSON to do an accurate value compare,
         // cloning to avoid disturbing the source data.
+        local = cloneDeep(local);
+        remote = cloneDeep(remote);
+
+        // For JSON records, parse JSON to do an accurate value compare,
         if (local?.valueType === 'json' && remote?.valueType === 'json') {
-            local = cloneDeep(local);
             local.value = JSON.parse(local.value);
-            remote = cloneDeep(remote);
             remote.value = JSON.parse(remote.value);
         }
 
+        // exclude last update data from equality check
         delete local?.lastUpdatedBy;
         delete local?.lastUpdated;
         delete remote?.lastUpdatedBy;
