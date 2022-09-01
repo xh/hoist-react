@@ -10,9 +10,10 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {dateTimeRenderer} from '@xh/hoist/format';
+import {fmtDateTime} from '@xh/hoist/format';
 import {div} from '@xh/hoist/cmp/layout';
-import {keys, toString} from 'lodash';
+import {keys, toString, filter, startsWith} from 'lodash';
+import {strong} from '../../cmp/layout';
 import {DifferDetailModel} from './DifferDetailModel';
 import './Differ.scss';
 
@@ -53,19 +54,11 @@ const diffTable = hoistCmp.factory(
         const {data} = model.record,
             local = data.localValue,
             remote = data.remoteValue,
-            fields = keys(local || remote);
-
-        let localLastUpdatedBy = local?.lastUpdatedBy,
+            fields = filter(keys(local || remote), key => !startsWith(key, 'lastUpdated')),
+            localLastUpdatedBy = local?.lastUpdatedBy,
             remoteLastUpdatedBy = remote?.lastUpdatedBy,
-            localLastUpdated = local?.lastUpdated,
-            remoteLastUpdated = remote?.lastUpdated;
-
-        localLastUpdated = (localLastUpdated ? dateTimeRenderer({})(localLastUpdated) : undefined);
-        remoteLastUpdated = (remoteLastUpdated ? dateTimeRenderer({})(remoteLastUpdated) : undefined);
-
-
-        // remove lastUpdatedBy and lastUpdated
-        fields.splice(-2, 2);
+            localLastUpdated = fmtDateTime(local?.lastUpdated),
+            remoteLastUpdated = fmtDateTime(remote?.lastUpdated);
 
         const rows = fields.map(field => {
             const cls = model.createDiffClass(field, local, remote),
@@ -83,22 +76,14 @@ const diffTable = hoistCmp.factory(
                 ),
                 ...rows,
                 tr(
-                    th(''),
-                    th(
-                        div({
-                            item: [`${localLastUpdatedBy}`]
-                        }),
-                        div({
-                            item: [`${localLastUpdated}`]
-                        })
+                    td(''),
+                    td(
+                        div(strong(localLastUpdatedBy)),
+                        div(localLastUpdated)
                     ),
-                    th(
-                        div({
-                            item: [`${remoteLastUpdatedBy}`]
-                        }),
-                        div({
-                            item: [`${remoteLastUpdated}`]
-                        })
+                    td(
+                        div(strong(remoteLastUpdatedBy)),
+                        div(remoteLastUpdated)
                     )
                 )
             )
