@@ -12,7 +12,7 @@ import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {hbox} from '@xh/hoist/cmp/layout';
-import {cloneDeep, isEqual, isString, isNil, remove, trimEnd} from 'lodash';
+import {cloneDeep, isEqual, isString, isNil, omit, remove, trimEnd} from 'lodash';
 import React from 'react';
 import {hspacer} from '../../cmp/layout';
 
@@ -310,7 +310,7 @@ export class DifferModel extends HoistModel {
 
     doApplyRemote(records) {
         const recsForPost = records.map(rec => {
-            const ret = {remoteValue: rec.data.remoteValue};
+            const ret = {remoteValue: omit(rec.data.remoteValue, 'lastUpdated', 'lastUpdatedBy')};
             this.matchFields.forEach(field => {
                 ret[field] = rec.data[field];
             });
