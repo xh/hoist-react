@@ -2,6 +2,10 @@
 
 ## v52.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+* Fixed an issue where `HoistComponents` were mutating the props object passed to them in React
+production mode. This was not causing noticeable application issues, but was manifesting itself in
+accumulating copies of the components base css class in its style attribute.
 
 ## v51.0.0 - 2022-08-29
 
