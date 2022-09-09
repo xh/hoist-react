@@ -88,7 +88,13 @@ export function hoistComponent(config) {
     if (className) {
         ret = wrapWithClassName(ret, className);
     }
-    // 2a) Apply display name to wrapped function.  This is the "pre-react" functional component.
+
+    // 2a) If we are applying model or class name, will be enhancing props, they need to be cloned
+    if (modelSpec || className) {
+        ret = wrapWithClonedProps(ret);
+    }
+
+    // 2b) Apply display name to wrapped function.  This is the "pre-react" functional component.
     // and React dev tools expect it to be named.
     ret.displayName = displayName;
 
@@ -140,8 +146,8 @@ hoistComponent.withFactory = (config) =>  {
 //------------------------------------
 function wrapWithClassName(render, baseName) {
     return (props, ref) => {
-        const className = classNames(baseName, props.className);
-        return render(propsWithClassName(props, className), ref);
+        props.className = classNames(baseName, props.className);
+        return render(props, ref);
     };
 }
 
@@ -149,6 +155,10 @@ function wrapWithModel(render, spec, displayName) {
     return spec.publishMode === ModelPublishMode.NONE ?
         wrapWithSimpleModel(render, spec, displayName) :
         wrapWithPublishedModel(render, spec, displayName);
+}
+
+function wrapWithClonedProps(render) {
+    return (props, ref) => render({...props}, ref);
 }
 
 
@@ -209,7 +219,7 @@ function callRender(render, spec, model, modelLookup, props, ref, displayName) {
     }
     const ctx = localModelContext;
     try {
-        props = propsWithModel(props, model);
+        props.model = model;
         ctx.props = props;
         ctx.modelLookup = modelLookup;
         return render(props, ref);
@@ -289,26 +299,6 @@ function lookupModel(spec, props, modelLookup, displayName) {
     }
 
     return {model: null, isLinked: false, fromContext: false};
-}
-
-//--------------------------
-// Other helpers
-//--------------------------
-function enhancedProps(props, name, value) {
-    // Clone frozen props object, but don't re-clone when done multiple times for single render
-    if (!Object.isExtensible(props)) {
-        props = {...props};
-    }
-    props[name] = value;
-    return props;
-}
-
-function propsWithModel(props, model) {
-    return (model && model !== props.model) ? enhancedProps(props, 'model', model) : props;
-}
-
-function propsWithClassName(props, className) {
-    return enhancedProps(props, 'className', className);
 }
 
 /**
