@@ -86,7 +86,7 @@ export function createViewMenuItems({
  * context menu is triggered
  * @param {number} x - clientX position
  * @param {number} y - clientY position
- * @param {DashCanvasModel}
+ * @param {DashCanvasModel} dashCanvasModel
  */
 const calcAddPosition = (x, y, dashCanvasModel) => {
     const calcXY = (positionParams, top, left, w=0, h=0) => {
