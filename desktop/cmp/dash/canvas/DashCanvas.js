@@ -60,7 +60,9 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
                     isBounded: true,
                     draggableHandle: '.xh-panel > .xh-panel__content > .xh-panel-header',
                     draggableCancel: '.xh-button',
-                    onLayoutChange: layout => model.setLayout(layout),
+                    onLayoutChange: layout => model.onRglLayoutChange(layout),
+                    onResizeStart: () => model.isResizing = true,
+                    onResizeStop: () => model.isResizing = false,
                     items: model.viewModels.map(vm => div({
                         key: vm.id,
                         item: dashCanvasView({model: vm})

@@ -25,11 +25,6 @@ export class DashCanvasViewModel extends DashViewModel {
     /** @member {boolean} */
     @observable autoHeight;
 
-    // Implementation properties:
-    /** @member {boolean} */
-    isAutoSizing = false;
-
-
     constructor(cfg) {
         super(cfg);
         makeObservable(this);
@@ -66,22 +61,18 @@ export class DashCanvasViewModel extends DashViewModel {
     //------------------------
 
     onContentsResized({height}) {
-        if (!this.autoHeight) return;
+        if (!this.autoHeight || this.containerModel.isResizing) return;
 
-        try {
-            const {id, containerModel} = this,
-                {rowHeight, margin} = containerModel,
-                newLayout = {...containerModel.getViewLayout(id)},
-                HEADER_HEIGHT = 23;
+        const {id, containerModel} = this,
+            {rowHeight, margin} = containerModel,
+            viewLayout = containerModel.getViewLayout(id),
+            HEADER_HEIGHT = 23;
 
-            // Calculate new height in grid units
-            newLayout.h = Math.round((height + HEADER_HEIGHT + margin[1]) / (rowHeight + margin[1]));
+        // Calculate new height in grid units
+        const h = Math.round((height + HEADER_HEIGHT + margin[1]) / (rowHeight + margin[1]));
+        if (h === viewLayout.h) return;
 
-            // Send the new layout back to the parent model
-            this.isAutoSizing = true;
-            containerModel.setViewLayout(newLayout);
-        } finally {
-            this.isAutoSizing = false;
-        }
+        // Send the new layout back to the parent model
+        containerModel.setViewLayout({...viewLayout, h});
     }
 }

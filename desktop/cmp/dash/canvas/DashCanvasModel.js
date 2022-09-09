@@ -86,12 +86,11 @@ export class DashCanvasModel extends HoistModel {
     scrollbarVisible;
     /** @returns {boolean} */
     isLoadingState;
-    /** @returns {boolean} - true if any viewModels are in the middle of auto-sizing */
-    get isAutoSizing() {
-        return some(this.viewModels, 'isAutoSizing');
-    }
+    /** @returns {boolean} */
+    isResizing;
+
     /** @returns {Object[]} */
-    @computed.struct get rglLayout() {
+    get rglLayout() {
         return this.layout.map(it => ({
             ...it,
             resizeHandles: this.getView(it.i).autoHeight ? ['e'] : ['e', 's', 'se']
@@ -354,16 +353,19 @@ export class DashCanvasModel extends HoistModel {
         return model;
     }
 
+    onRglLayoutChange(rglLayout) {
+        rglLayout = rglLayout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h']));
+        this.setLayout(rglLayout);
+    }
+
     @action
     setLayout(layout) {
-        // strip extra properties from react-grid-layout
-        layout = layout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h']));
-
-        const layoutChanged = !isEqual(sortBy(this.layout, 'i'), sortBy(layout, 'i'));
+        layout = sortBy(layout, 'i');
+        const layoutChanged = !isEqual(layout, this.layout);
         if (!layoutChanged) return;
 
         this.layout = layout;
-        if (!this.isAutoSizing && !this.isLoadingState) this.publishState();
+        if (!this.isLoadingState) this.publishState();
 
         // Check if scrollbar visibility has changed, and force resize event if so
         const node = this.ref.current;
@@ -418,7 +420,7 @@ export class DashCanvasModel extends HoistModel {
         return `${XH.genId()}_${Date.now()}`;
     }
 
-    @computed
+    @computed.struct
     get viewState() {
         const ret = {};
         this.viewModels.forEach(({id, viewSpec, title, viewState}) => {
