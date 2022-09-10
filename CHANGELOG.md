@@ -50,8 +50,8 @@ accumulating copies of the components base css class in its style attribute.
 
 ### 📚 Libraries
 
-* react `17.0.1 > 18.0.0`
-* react-dom `17.0.1 > 18.0.0`
+* react `17.0.1 > 18.2.0`
+* react-dom `17.0.1 > 18.2.0`
 
 ## v50.1.1 - 2022-07-29
 
