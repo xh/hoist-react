@@ -48,6 +48,11 @@ accumulating copies of the components base css class in its style attribute.
 * The `filterText` field in `ColumnHeaderFilter` now gets autoFocused.
 * The default `FormField` read-only renderer now supports line breaks.
 
+### 📚 Libraries
+
+* react `17.0.1 > 18.2.0`
+* react-dom `17.0.1 > 18.2.0`
+
 ## v50.1.1 - 2022-07-29
 
 ### 🐞 Bug Fixes

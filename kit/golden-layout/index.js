@@ -11,6 +11,7 @@ import 'golden-layout/src/css/goldenlayout-light-theme.css';
 import {uniqueId} from 'lodash';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {createRoot} from 'react-dom/client';
 import './styles.scss';
 
 // GoldenLayout looks for globally available React and ReactDOM.
@@ -25,11 +26,22 @@ window.ReactDOM = ReactDOM;
 const ReactComponentHandler = GoldenLayout['__lm'].utils.ReactComponentHandler;
 class ReactComponentHandlerPatched extends ReactComponentHandler {
 
+    // Keep reference to the root for unmounting.
+    _root = null;
+
     // Remove wiring up `componentWillUpdate` and `setState`. These methods don't work
     // with functional components.
     _render() {
         this._reactComponent = this._getReactComponent();
-        ReactDOM.render(this._reactComponent, this._container.getElement()[0]);
+        if (!this._root) this._root = createRoot(this._container.getElement()[0]);
+        this._root.render(this._reactComponent);
+    }
+
+    // Unmount the root rather than use outdated `ReactDOM.unmountComponentAtNode`
+    _destroy() {
+        this._root.unmount();
+        this._container.off('open', this._render, this);
+        this._container.off('destroy', this._destroy, this);
     }
 
     // Modify this to generate a unique id and pass it through.
