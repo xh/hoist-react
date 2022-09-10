@@ -12,7 +12,17 @@ import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {defaultsDeep, find, isEqual, some, times, without} from 'lodash';
+import {
+    defaultsDeep,
+    find,
+    uniqBy,
+    times,
+    without,
+    some,
+    sortBy,
+    pick,
+    isEqual
+} from 'lodash';
 import {computed} from 'mobx';
 
 /**
@@ -74,6 +84,18 @@ export class DashCanvasModel extends HoistModel {
     ref = createObservableRef();
     /** @member {boolean} */
     scrollbarVisible;
+    /** @returns {boolean} */
+    isLoadingState;
+    /** @returns {boolean} */
+    isResizing;
+
+    /** @returns {Object[]} */
+    get rglLayout() {
+        return this.layout.map(it => ({
+            ...it,
+            resizeHandles: this.getView(it.i).autoHeight ? ['e'] : ['e', 's', 'se']
+        }));
+    }
 
     /**
      * @param {Object} c - DashCanvasModel configuration.
@@ -160,7 +182,7 @@ export class DashCanvasModel extends HoistModel {
         this.state = this.buildState();
 
         this.addReaction({
-            track: () => [this.viewState, this.layout],
+            track: () => this.viewState,
             run: () => this.publishState()
         });
 
@@ -183,7 +205,7 @@ export class DashCanvasModel extends HoistModel {
     clear() {
         const {viewModels} = this;
         this.viewModels = [];
-        this.layout = [];
+        this.setLayout([]);
 
         XH.safeDestroy(viewModels);
     }
@@ -226,10 +248,10 @@ export class DashCanvasModel extends HoistModel {
      */
     @action
     removeView(id) {
-        const removeLayout = this.getLayout(id),
+        const removeLayout = this.getViewLayout(id),
             removeView = this.getView(id);
 
-        this.layout = without(this.layout, removeLayout);
+        this.setLayout(without(this.layout, removeLayout));
         this.viewModels = without(this.viewModels, removeView);
         XH.safeDestroy(removeView);
     }
@@ -241,7 +263,7 @@ export class DashCanvasModel extends HoistModel {
      */
     @action
     replaceView(id, newSpecId) {
-        const layout = this.getLayout(id);
+        const layout = this.getViewLayout(id);
         this.removeView(id);
         this.addViewInternal(newSpecId, {layout});
     }
@@ -320,47 +342,58 @@ export class DashCanvasModel extends HoistModel {
                 title: title ?? viewSpec.title,
                 containerModel: this
             }),
-            prevLayout = previousViewId ? this.getLayout(previousViewId) : null,
+            prevLayout = previousViewId ? this.getViewLayout(previousViewId) : null,
             x = prevLayout?.x ?? layout?.x ?? 0,
             y = prevLayout?.y ?? layout?.y ?? this.rows,
             h = layout?.h ?? viewSpec.height ?? 1,
             w = layout?.w ?? viewSpec.width ?? 1;
 
-        this.layout = [...this.layout, {i: id, x, y, h, w}];
+        this.setLayout([...this.layout, {i: id, x, y, h, w}]);
         this.viewModels = [...this.viewModels, model];
         return model;
     }
 
+    onRglLayoutChange(rglLayout) {
+        rglLayout = rglLayout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h']));
+        this.setLayout(rglLayout);
+    }
+
     @action
     setLayout(layout) {
-        // strip extra properties from react-grid
-        layout = layout.map(({i, x, y, w, h}) => ({i, x, y, w, h}));
-        if (!isEqual(this.layout, layout)) {
-            this.layout = layout;
+        layout = sortBy(layout, 'i');
+        const layoutChanged = !isEqual(layout, this.layout);
+        if (!layoutChanged) return;
 
-            // Check if scrollbar visibility has changed, and force resize event if so
-            const node = this.ref.current;
-            if (!node) return;
-            const scrollbarVisible = node.offsetWidth > node.clientWidth;
-            if (scrollbarVisible !== this.scrollbarVisible) {
-                window.dispatchEvent(new Event('resize'));
-                this.scrollbarVisible = scrollbarVisible;
-            }
+        this.layout = layout;
+        if (!this.isLoadingState) this.publishState();
+
+        // Check if scrollbar visibility has changed, and force resize event if so
+        const node = this.ref.current;
+        if (!node) return;
+        const scrollbarVisible = node.offsetWidth > node.clientWidth;
+        if (scrollbarVisible !== this.scrollbarVisible) {
+            window.dispatchEvent(new Event('resize'));
+            this.scrollbarVisible = scrollbarVisible;
         }
     }
 
     @action
     loadState(state) {
-        this.clear();
-        state.forEach(state => {
-            // Fail gracefully on unknown viewSpecId - persisted state could ref. an obsolete widget.
-            const {viewSpecId} = state;
-            if (this.hasSpec(viewSpecId)) {
-                this.addViewInternal(viewSpecId, state);
-            } else {
-                console.warn(`Unknown viewSpecId [${viewSpecId}] found in state - skipping.`);
-            }
-        });
+        this.isLoadingState = true;
+        try {
+            this.clear();
+            state.forEach(state => {
+                // Fail gracefully on unknown viewSpecId - persisted state could ref. an obsolete widget.
+                const {viewSpecId} = state;
+                if (this.hasSpec(viewSpecId)) {
+                    this.addViewInternal(viewSpecId, state);
+                } else {
+                    console.warn(`Unknown viewSpecId [${viewSpecId}] found in state - skipping.`);
+                }
+            });
+        } finally {
+            this.isLoadingState = false;
+        }
     }
 
     @action
@@ -387,7 +420,7 @@ export class DashCanvasModel extends HoistModel {
         return `${XH.genId()}_${Date.now()}`;
     }
 
-    @computed
+    @computed.struct
     get viewState() {
         const ret = {};
         this.viewModels.forEach(({id, viewSpec, title, viewState}) => {
@@ -404,8 +437,12 @@ export class DashCanvasModel extends HoistModel {
         return find(this.viewModels, {id});
     }
 
-    getLayout(id) {
+    getViewLayout(id) {
         return find(this.layout, {i: id});
+    }
+
+    setViewLayout(layout) {
+        this.setLayout(uniqBy([layout, ...this.layout], 'i'));
     }
 
     getSpec(id) {
