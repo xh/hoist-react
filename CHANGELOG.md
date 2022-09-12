@@ -12,6 +12,9 @@
 * Fixed an issue where `HoistComponents` were mutating the props object passed to them in React
 production mode. This was not causing noticeable application issues, but was manifesting itself in
 accumulating copies of the components base css class in its style attribute.
+* GridModel will once again immediately sync data with its underlying ag-Grid component.  This
+reverses a v50.0.0 change that introduced a minimal debounce in order to workaround an ag-Grid
+rendering bug.  The ag-Grid bug has been resolved, and this workaround is no longer needed.
 
 ## v51.0.0 - 2022-08-29
 

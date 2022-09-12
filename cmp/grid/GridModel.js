@@ -552,9 +552,6 @@ export class GridModel extends HoistModel {
      * will not change the selection if there is already a selection, which is what applications
      * typically want to do when loading/reloading a grid.
      *
-     * This method allows for a minimal delay to allow the underlying grid implementation to
-     * render all pending data changes.
-     *
      * @param {Object} [options]
      * @param {boolean} [options.ensureVisible] - true to make selection visible if it is within a
      *      collapsed node or outside of the visible scroll window. Default true.
@@ -596,9 +593,6 @@ export class GridModel extends HoistModel {
      *
      * Any selected records that are hidden because their parent rows are collapsed will first
      * be revealed by expanding their parent rows.
-     *
-     * This method imposes a minimal delay to allow the underlying grid implementation to
-     * render all pending data changes.
      */
     async ensureSelectionVisibleAsync() {
         await this.whenReadyAsync();
