@@ -42,6 +42,7 @@ import parser from 'ua-parser-js';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import '../styles/XH.scss';
 import {ExceptionHandler} from './ExceptionHandler';
+import {HoistModel} from './HoistModel';
 import {RouterModel} from './RouterModel';
 
 const MIN_HOIST_CORE_VERSION = '14.0';
@@ -184,6 +185,7 @@ class XHClass {
     get isTablet()              {return this.uaParser.getDevice().type === 'tablet'}
     get isDesktop()             {return this.uaParser.getDevice().type === undefined}
 
+    getActiveModels(selector)   {return HoistModel.getActiveModels(selector)}
 
     //---------------------------
     // Models

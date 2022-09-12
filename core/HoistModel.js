@@ -63,12 +63,33 @@ export class HoistModel extends HoistBase {
     _componentProps = {};
     _modelLookup = null;
 
+    // global registry of all active models
+    static _activeModels = new Set();
+
     constructor() {
         super();
         makeObservable(this);
         if (this.doLoadAsync !== HoistModel.prototype.doLoadAsync) {
             this.loadSupport = new LoadSupport(this);
         }
+        HoistModel._activeModels.add(this);
+    }
+
+    /**
+     * Return a collection of models currently 'active' in this applications.
+     *
+     * This will include all models that have not had the destroy() method
+     * called on them.  Models will be returned in creation order.
+     *
+     * @param {ModelSelector} [selector] - optional selector for filtering models.
+     * @returns {HoistModel[]}
+     */
+    static getActiveModels(selector = '*') {
+        const ret = [];
+        HoistModel._activeModels.forEach(m => {
+            if (m.matchesSelector(selector, true)) ret.push(m);
+        });
+        return ret;
     }
 
     //----------------
@@ -224,6 +245,11 @@ export class HoistModel extends HoistBase {
         return isFunction(result) && result.isHoistModel ?
             this instanceof result :
             !!result;
+    }
+
+    destroy() {
+        super.destroy();
+        HoistModel._activeModels.delete(this);
     }
 }
 
