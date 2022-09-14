@@ -92,16 +92,16 @@ export class LRChooserModel extends HoistModel {
      *      in the header
      */
     constructor({
-                    data = [],
-                    onChange,
-                    leftTitle = 'Available',
-                    leftSorted = false,
-                    leftEmptyText = null,
-                    rightTitle = 'Selected',
-                    rightSorted = false,
-                    rightEmptyText = null,
-                    showCounts = true
-                }) {
+        data = [],
+        onChange,
+        leftTitle = 'Available',
+        leftSorted = false,
+        leftEmptyText = null,
+        rightTitle = 'Selected',
+        rightSorted = false,
+        rightEmptyText = null,
+        showCounts = true
+    }) {
         super();
         makeObservable(this);
         this.onChange = onChange;
@@ -172,20 +172,12 @@ export class LRChooserModel extends HoistModel {
             }
         });
 
-        this.addReaction({
-            when: () => this.leftModel.isReady && this.rightModel.isReady,
-            run: () => {
-                const leftApi = this.leftModel.agApi,
-                    rightApi = this.rightModel.agApi;
-
-                leftApi.addRowDropZone(rightApi.getRowDropZoneParams());
-                rightApi.addRowDropZone(leftApi.getRowDropZoneParams());
-            }
-        });
-
         this.setData(data);
 
-        this.addReaction(this.syncSelectionReaction());
+        this.addReaction(
+            this.syncSelectionReaction(),
+            this.loadReaction()
+        );
     }
 
     setData(data) {
@@ -226,7 +218,7 @@ export class LRChooserModel extends HoistModel {
         });
     }
 
-    countRows(rows) {
+    getNestingDepth(rows) {
         let count = 0;
         rows.forEach(row => row.forEachDescendant(() => count++));
         return count;
@@ -254,8 +246,10 @@ export class LRChooserModel extends HoistModel {
         rows.forEach(row => {row.forEachDescendant(append)});
     }
 
-    shiftRows(rows, toIndex, rowDepth) {
-        const shift = row => {if (toIndex <= row.data.sortOrder) row.raw.sortOrder += rowDepth};
+    shiftRows(rows, toIndex, depth) {
+        const shift = row => {
+            if (toIndex <= row.data.sortOrder) row.raw.sortOrder += depth;
+        };
         rows.forEach(row => row.forEachDescendant(shift));
     }
 
@@ -266,7 +260,7 @@ export class LRChooserModel extends HoistModel {
             idx++;
         };
         rows.forEach(row => row.forEachDescendant(insert));
-    };
+    }
 
     // accepts an array containing a single row or multiple rows
     rearrangeRows(rows, overRow = null) {
@@ -275,9 +269,9 @@ export class LRChooserModel extends HoistModel {
         } else {
             let toIndex = overRow.data.sortOrder,
                 rightRoots = this.rightModel.store.rootRecords;
-            const rowDepth = this.countRows(rows);
+            const depth = this.getNestingDepth(rows);
             // shift rows by the number of rows being inserted, including nesting
-            this.shiftRows(rightRoots, toIndex, rowDepth);
+            this.shiftRows(rightRoots, toIndex, depth);
             // update inserted row sortOrders to fit within the allotted space
             this.insertRows(rows, toIndex);
         }
@@ -364,6 +358,19 @@ export class LRChooserModel extends HoistModel {
         }
     }
 
+    loadReaction() {
+        return {
+            when: () => this.leftModel.isReady && this.rightModel.isReady,
+            run: () => {
+                const leftApi = this.leftModel.agApi,
+                    rightApi = this.rightModel.agApi;
+
+                leftApi.addRowDropZone(rightApi.getRowDropZoneParams());
+                rightApi.addRowDropZone(leftApi.getRowDropZoneParams());
+            }
+        };
+    }
+
     syncSelectionReaction() {
         const leftSel = this.leftModel.selModel,
             rightSel = this.rightModel.selModel;
@@ -387,14 +394,14 @@ export class LRChooserModel extends HoistModel {
         const data = this._data,
             {leftModel, rightModel} = this;
         const leftData = [{
-            id: 'leftRoot',
-            name: 'root',
-            children: data.filter(it => it.side === 'left')
-        }], rightData = [{
-            id: 'rightRoot',
-            name: 'root',
-            children: data.filter(it => it.side === 'right')
-        }];
+                id: 'leftRoot',
+                name: 'root',
+                children: data.filter(it => it.side === 'left')
+            }], rightData = [{
+                id: 'rightRoot',
+                name: 'root',
+                children: data.filter(it => it.side === 'right')
+            }];
 
         leftModel.store.loadData(leftData);
         rightModel.store.loadData(rightData);

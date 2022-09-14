@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {LRChooserModel} from './impl';
 import {isEmpty} from 'lodash';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
@@ -84,11 +84,11 @@ export class ColChooserModel extends HoistModel {
             colChanges = [];
 
         leftLeaves.forEach(col => {
-                colChanges.push({colId: col, hidden: true});
-            });
+            colChanges.push({colId: col, hidden: true});
+        });
         rightLeaves.forEach(col => {
-                colChanges.push({colId: col, hidden: false});
-            });
+            colChanges.push({colId: col, hidden: false});
+        });
 
         gridModel.applyColumnStateChanges(colChanges);
         if (autosizeOnCommit && colChanges.length) gridModel.autosizeAsync({showMask: true});
@@ -130,7 +130,7 @@ export class ColChooserModel extends HoistModel {
             colIds = gridModel.columnState.map(col => col.colId);
         const processColumns = (cols, path) => {
             const ret = [];
-            cols.forEach((col) => {
+            cols.forEach(col => {
                 if (col.children) {
                     // create a group node
                     const id = XH.genId(); // (`${path}>>${col.groupId}`)
@@ -151,15 +151,15 @@ export class ColChooserModel extends HoistModel {
                     const visible = gridModel.isColumnVisible(col.colId),
                         id = `${path}>>${col.colId}`,
                         newNode = {
-                        id,
-                        value: col.colId,
-                        text: col.chooserName,
-                        description: col.chooserDescription,
-                        exclude: col.excludeFromChooser,
-                        locked: visible && !col.hideable,
-                        isLeaf: true,
-                        side
-                    };
+                            id,
+                            value: col.colId,
+                            text: col.chooserName,
+                            description: col.chooserDescription,
+                            exclude: col.excludeFromChooser,
+                            locked: visible && !col.hideable,
+                            isLeaf: true,
+                            side
+                        };
                     if (side === 'right' && visible) {
                         // if we are constructing the right tree, we are looking for visible cols
                         newNode.sortOrder = colIds.indexOf(col.colId);

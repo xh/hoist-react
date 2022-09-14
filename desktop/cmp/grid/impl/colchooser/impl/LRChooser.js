@@ -68,3 +68,5 @@ lrChooser.propTypes = {
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(LRChooserModel), PT.object])
 };
+
+
