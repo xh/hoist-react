@@ -115,7 +115,8 @@ export class LRChooserModel extends HoistModel {
                 {name: 'locked', type: 'bool'},
                 {name: 'exclude', type: 'bool'},
                 {name: 'sortOrder', type: 'int'}
-            ]
+            ],
+            loadRootAsSummary: true
         };
 
         const leftTextCol = {
@@ -142,9 +143,7 @@ export class LRChooserModel extends HoistModel {
 
         this.leftModel = new GridModel({
             treeMode: true,
-            store: {
-                loadRootAsSummary: true
-            },
+            store,
             selModel: 'multiple',
             sortBy: leftSorted ? 'text' : 'sortOrder',
             emptyText: leftEmptyText,
@@ -154,9 +153,7 @@ export class LRChooserModel extends HoistModel {
 
         this.rightModel = new GridModel({
             treeMode: true,
-            store: {
-                loadRootAsSummary: true
-            },
+            store,
             selModel: 'multiple',
             sortBy: rightSorted ? 'text' : 'sortOrder',
             emptyText: rightEmptyText,
