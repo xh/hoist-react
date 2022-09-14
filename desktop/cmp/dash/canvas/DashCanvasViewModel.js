@@ -22,12 +22,15 @@ export class DashCanvasViewModel extends DashViewModel {
     @observable hideMenuButton;
     /** @member {Array} */
     @observable.ref headerItems = [];
+    /** @member {boolean} */
+    @observable autoHeight;
 
     constructor(cfg) {
         super(cfg);
         makeObservable(this);
         this.hidePanelHeader = !!cfg.viewSpec.hidePanelHeader;
         this.hideMenuButton = !!cfg.viewSpec.hideMenuButton;
+        this.autoHeight = !!cfg.viewSpec.autoHeight;
     }
 
     get positionParams() {
@@ -51,5 +54,25 @@ export class DashCanvasViewModel extends DashViewModel {
     @action
     setHeaderItems(items) {
         this.headerItems = items;
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
+
+    onContentsResized({height}) {
+        if (!this.autoHeight || this.containerModel.isResizing) return;
+
+        const {id, containerModel} = this,
+            {rowHeight, margin} = containerModel,
+            viewLayout = containerModel.getViewLayout(id),
+            HEADER_HEIGHT = 23;
+
+        // Calculate new height in grid units
+        const h = Math.round((height + HEADER_HEIGHT + margin[1]) / (rowHeight + margin[1]));
+        if (h === viewLayout.h) return;
+
+        // Send the new layout back to the parent model
+        containerModel.setViewLayout({...viewLayout, h});
     }
 }

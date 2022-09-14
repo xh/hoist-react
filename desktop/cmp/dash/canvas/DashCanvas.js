@@ -47,7 +47,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
             onContextMenu: (e) => onContextMenu(e, model),
             items: [
                 reactGridLayout({
-                    layout: model.layout,
+                    layout: model.rglLayout,
                     cols: model.columns,
                     rowHeight: model.rowHeight,
                     isDraggable,
@@ -60,9 +60,9 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
                     isBounded: true,
                     draggableHandle: '.xh-panel > .xh-panel__content > .xh-panel-header',
                     draggableCancel: '.xh-button',
-                    // Resizing always pins to the nw corner, so dragging from anywhere other than se sides/corner is unintuitive
-                    resizeHandles: ['s', 'e', 'se'],
-                    onLayoutChange: (layout) => model.setLayout(layout),
+                    onLayoutChange: layout => model.onRglLayoutChange(layout),
+                    onResizeStart: () => model.isResizing = true,
+                    onResizeStop: () => model.isResizing = false,
                     items: model.viewModels.map(vm => div({
                         key: vm.id,
                         item: dashCanvasView({model: vm})

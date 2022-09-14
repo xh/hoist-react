@@ -37,7 +37,7 @@ import {
     withDebug
 } from '@xh/hoist/utils/js';
 import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
-import ReactDOM from 'react-dom';
+import {createRoot} from 'react-dom/client';
 import parser from 'ua-parser-js';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import '../styles/XH.scss';
@@ -236,8 +236,9 @@ class XHClass {
         if (spinner) spinner.style.display = 'none';
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
 
-        const rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
-        ReactDOM.render(rootView, document.getElementById('xh-root'));
+        const root = createRoot(document.getElementById('xh-root')),
+            rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
+        root.render(rootView);
     }
 
     /**
