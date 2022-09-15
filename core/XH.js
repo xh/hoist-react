@@ -185,8 +185,6 @@ class XHClass {
     get isTablet()              {return this.uaParser.getDevice().type === 'tablet'}
     get isDesktop()             {return this.uaParser.getDevice().type === undefined}
 
-    getActiveModels(selector)   {return HoistModel.getActiveModels(selector)}
-
     //---------------------------
     // Models
     //---------------------------
@@ -654,6 +652,23 @@ class XHClass {
     //---------------------------
     // Miscellaneous
     //---------------------------
+    /**
+     * Return a collection of models currently 'active' in this application.
+     *
+     * This will include all models that have not had the destroy() method
+     * called on them.  Models will be returned in creation order.
+     *
+     * @param {ModelSelector} [selector] - optional selector for filtering models.
+     * @returns {HoistModel[]}
+     */
+    getActiveModels(selector = '*') {
+        const ret = [];
+        HoistModel._activeModels.forEach(m => {
+            if (m.matchesSelector(selector, true)) ret.push(m);
+        });
+        return ret;
+    }
+
     /**
      * Resets user preferences and any persistent local application state, then reloads the app.
      */

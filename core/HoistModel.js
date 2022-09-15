@@ -75,23 +75,6 @@ export class HoistModel extends HoistBase {
         HoistModel._activeModels.add(this);
     }
 
-    /**
-     * Return a collection of models currently 'active' in this applications.
-     *
-     * This will include all models that have not had the destroy() method
-     * called on them.  Models will be returned in creation order.
-     *
-     * @param {ModelSelector} [selector] - optional selector for filtering models.
-     * @returns {HoistModel[]}
-     */
-    static getActiveModels(selector = '*') {
-        const ret = [];
-        HoistModel._activeModels.forEach(m => {
-            if (m.matchesSelector(selector, true)) ret.push(m);
-        });
-        return ret;
-    }
-
     //----------------
     // Load Support
     //---------------
