@@ -7,6 +7,9 @@
 * Admin detailed configuration comparison display now shows who updated each value and when.
 * `DashCanvasViewModel` now supports `autoHeight` to automatically resize a `DashCanvasView's`
     height to fit its contents
+* New method `XH.activeModels()`allows accessing all currently active models in the application.
+* `ModelSelector` used for model lookup/matching will now accept the class name of the model to
+ match.  Previously only a class reference could be provided.
 
 ### ⚙️ Technical
 * Fixed an issue where `HoistComponents` were mutating the props object passed to them in React
