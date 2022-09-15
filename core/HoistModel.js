@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {forOwn, has, isFunction} from 'lodash';
+import {forOwn, has, isBoolean, isFunction} from 'lodash';
 import {makeObservable} from 'mobx';
 import {throwIf, warnIf} from '../utils/js';
 import {HoistBase} from './HoistBase';
@@ -232,19 +232,15 @@ export class HoistModel extends HoistBase {
      * @package
      */
     matchesSelector(selector, acceptWildcard = false) {
-        if (selector === '*') return acceptWildcard;
-        if (!isFunction(selector)) return false;
+        if (selector.isHoistModel) return this instanceof selector;
 
-        // 1) selector is a constructor function/class
-        if (selector.isHoistModel) {
-            return this instanceof selector;
-        }
+        const result = isFunction(selector) ? selector(this) : selector;
 
-        // 2) selector is a callable function, call for either a boolean or a constructor function/class
-        const result = selector(this);
-        return isFunction(result) && result.isHoistModel ?
-            this instanceof result :
-            !!result;
+        if (result === '*') return acceptWildcard;
+        if (result?.isHoistModel) return this instanceof result;
+        if (this.constructor.name === result) return true;
+
+        return isBoolean(result)  ? result : false;
     }
 
     destroy() {
