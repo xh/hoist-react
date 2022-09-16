@@ -329,7 +329,7 @@ export class DashContainerModel extends HoistModel {
     }
 
     onResize() {
-        this.goldenLayout.updateSize();
+        this.goldenLayout?.updateSize();
     }
 
     setModelLookupContext(modelLookupContext) {

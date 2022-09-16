@@ -68,8 +68,8 @@ function convertGLToStateInner(configItems = [], contentItems = [], dashContaine
 export function convertStateToGL(state = [], dashContainerModel) {
     const {viewSpecs, containerRef} = dashContainerModel,
         containerSize = {
-            width: containerRef.current.offsetWidth,
-            height: containerRef.current.offsetHeight
+            width: containerRef.current?.offsetWidth,
+            height: containerRef.current?.offsetHeight
         };
 
     // Replace any completely empty state with an empty stack, to allow users to add views
