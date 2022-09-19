@@ -18,6 +18,8 @@ accumulating copies of the components base css class in its style attribute.
 * GridModel will once again immediately sync data with its underlying ag-Grid component.  This
 reverses a v50.0.0 change that introduced a minimal debounce in order to workaround an ag-Grid
 rendering bug.  The ag-Grid bug has been resolved, and this workaround is no longer needed.
+* `GridExportService` has improved support for columns of `FieldType.AUTO` and for columns with
+  multiple data types and custom export functions.  (Requires `hoist-core >= 14.3`)
 
 ## v51.0.0 - 2022-08-29
 

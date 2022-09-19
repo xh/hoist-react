@@ -9,7 +9,7 @@ import {HoistService, XH} from '@xh/hoist/core';
 import {FieldType} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {SECONDS} from '@xh/hoist/utils/datetime';
+import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
 import {StatusCodes} from 'http-status-codes';
@@ -25,12 +25,12 @@ import {
     sortBy,
     compact,
     findIndex,
-    keys
+    keys, isBoolean, isDate, isNumber
 } from 'lodash';
 import {span, a} from '@xh/hoist/cmp/layout';
 import {wait} from '@xh/hoist/promise';
 
-const {AUTO, DATE, LOCAL_DATE} = FieldType;
+const {AUTO, BOOL, DATE, INT, LOCAL_DATE, NUMBER, STRING, PWD} = FieldType;
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
@@ -159,11 +159,12 @@ export class GridExportService extends HoistService {
      * @param {Object} [c.node] - rendered ag-Grid row, if available.  Necessary for
      *            exporting agGrid aggregates.
      * @param {boolean} [c.forExcel] - for posting to server-side excel export, default false.
-     * @return {String} - value suitable for export to excel, csv, or clipboard.
+     * @return {string|Object} - value suitable for export to excel, csv, or clipboard.
      */
     getExportableValueForCell({gridModel, record, column, node, forExcel = false}) {
-        const {field, exportValue, getValueFn} = column,
-            aggData = node && gridModel.treeMode && !isEmpty(record.children) ? node.aggData : null;
+        const {field, exportValue, getValueFn, defaultGetValueFn} = column,
+            aggData = node && gridModel.treeMode && !isEmpty(record.children) ? node.aggData : null,
+            hasCustomGetValueFn = getValueFn !== defaultGetValueFn;
 
         // 0) Main processing
         let value = getValueFn({record, field, column, gridModel});
@@ -181,7 +182,7 @@ export class GridExportService extends HoistService {
 
         if (isNil(value)) return null;
 
-        // 1) Support per-cell excelFormat
+        // 1) Support per-cell excelFormat and data types
         let {excelFormat} = column,
             cellHasExcelFormat = isFunction(excelFormat);
 
@@ -189,16 +190,28 @@ export class GridExportService extends HoistService {
             excelFormat = excelFormat(value, {record, column, gridModel}) ?? ExcelFormat.DEFAULT;
         }
 
+        const exportFieldType = this.getExportFieldType(column);
+
+        let cellSpecificType = null;
+        if (exportFieldType === AUTO || isFunction(exportValue) || hasCustomGetValueFn) {
+            cellSpecificType = this.getCellSpecificType(value, exportFieldType);
+        }
+
         // 2) Dates: Provide the date data string expected by the server endpoint
         // Also functions as a consistent human-friendly date format for CSV and clipboard
-        if (this.getExportFieldType(column) === DATE) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
+        if (exportFieldType === DATE || cellSpecificType === DATE) {
+            value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
+        }
 
         value = value.toString();
 
         // Send format and/or type with the cell in an object only if it varies within the column
-        return forExcel && cellHasExcelFormat ?
-            {value, format: excelFormat} :
-            value;
+        if (!forExcel || (!cellSpecificType && !cellHasExcelFormat)) return value;
+
+        const ret = {value};
+        if (cellHasExcelFormat) ret.format = excelFormat;
+        if (cellSpecificType) ret.type = cellSpecificType;
+        return ret;
     }
     //-----------------------
     // Implementation
@@ -380,6 +393,19 @@ export class GridExportService extends HoistService {
             await minDelay;
             fn();
         };
+    }
+
+    // Return a value's data type if different from the type specified
+    getCellSpecificType(v, colType) {
+        const ifTypeNot = (allowedTypes, retType) => allowedTypes.includes(colType) ? null : retType;
+
+        if (isBoolean(v))   return ifTypeNot([BOOL], BOOL);
+        if (isNumber(v))    return ifTypeNot([NUMBER, INT], NUMBER);
+        if (isLocalDate(v)) return ifTypeNot([LOCAL_DATE], LOCAL_DATE);
+        if (isDate(v))      return ifTypeNot([DATE], DATE);
+        if (isString(v))    return ifTypeNot([PWD, STRING, AUTO], AUTO);
+
+        return null;
     }
 }
 
