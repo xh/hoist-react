@@ -855,13 +855,14 @@ export class Column {
 }
 
 /**
- * @param {Column} column
+ * @param {(Column|ColumnGroup)} column
  * @return {function(*): string[]}
  */
 export function getAgHeaderClassFn(column) {
     // Generate CSS classes for headers.
     // Default alignment classes are mixed in with any provided custom classes.
-    const {headerClass, headerAlign, gridModel} = column;
+    const {headerClass, headerAlign, gridModel, isTreeColumn, headerHasExpandCollapse} = column;
+
     return (agParams) => {
         let r = [];
         if (headerClass) {
@@ -874,6 +875,10 @@ export function getAgHeaderClassFn(column) {
 
         if (headerAlign === 'center' || headerAlign === 'right') {
             r.push('xh-column-header-align-' + headerAlign);
+        }
+
+        if (isTreeColumn && headerHasExpandCollapse) {
+            r.push('xh-column-header--with-expand-collapse');
         }
 
         return r;

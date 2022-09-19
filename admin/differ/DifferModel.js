@@ -12,7 +12,7 @@ import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {hbox} from '@xh/hoist/cmp/layout';
-import {cloneDeep, isEqual, isString, isNil, remove, trimEnd} from 'lodash';
+import {cloneDeep, isEqual, isString, isNil, omit, remove, trimEnd} from 'lodash';
 import React from 'react';
 import {hspacer} from '../../cmp/layout';
 
@@ -240,22 +240,27 @@ export class DifferModel extends HoistModel {
     }
 
     rawRecordsAreEqual(local, remote) {
-        // For JSON records, parse JSON to do an accurate value compare,
         // cloning to avoid disturbing the source data.
+        local = cloneDeep(local);
+        remote = cloneDeep(remote);
+
+        // For JSON records, parse JSON to do an accurate value compare,
         if (local?.valueType === 'json' && remote?.valueType === 'json') {
-            local = cloneDeep(local);
             local.value = JSON.parse(local.value);
-            remote = cloneDeep(remote);
             remote.value = JSON.parse(remote.value);
         }
+
+        // exclude last update data from equality check
+        delete local?.lastUpdatedBy;
+        delete local?.lastUpdated;
+        delete remote?.lastUpdatedBy;
+        delete remote?.lastUpdated;
 
         return isEqual(local, remote);
     }
 
     cleanRawData(data) {
         data.forEach(it => {
-            delete it.lastUpdated;
-            delete it.lastUpdatedBy;
             delete it.dateCreated;
             delete it.id;
         });
@@ -305,7 +310,7 @@ export class DifferModel extends HoistModel {
 
     doApplyRemote(records) {
         const recsForPost = records.map(rec => {
-            const ret = {remoteValue: rec.data.remoteValue};
+            const ret = {remoteValue: omit(rec.data.remoteValue, 'lastUpdated', 'lastUpdatedBy')};
             this.matchFields.forEach(field => {
                 ret[field] = rec.data[field];
             });

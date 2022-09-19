@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "51.0.0-SNAPSHOT",
+  "version": "52.0.0-SNAPSHOT",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:xh/hoist-react",
   "homepage": "https://xh.io",
@@ -48,7 +48,7 @@
     "inter-ui": "~3.19.3",
     "lodash": "~4.17.21",
     "lodash-inflection": "~1.5.0",
-    "mobx": "~6.6.0",
+    "mobx": "~6.6.2",
     "mobx-react-lite": "~3.4.0",
     "moment": "~2.29.1",
     "numbro": "~2.3.6",
@@ -73,16 +73,16 @@
     "ua-parser-js": "~1.0.2"
   },
   "peerDependencies": {
-    "react": "~17.0.1",
-    "react-dom": "~17.0.1"
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0"
   },
   "devDependencies": {
     "@xh/hoist-dev-utils": "~6.0.0",
     "husky": "^8.0.0",
     "lint-staged": "~13.0.3",
     "postcss": "^8.0.0",
-    "react": "~17.0.1",
-    "react-dom": "~17.0.1",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
     "stylelint": "~14.9.1",
     "stylelint-config-standard-scss": "~5.0.0"
   },

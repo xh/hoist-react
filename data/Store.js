@@ -6,8 +6,8 @@
  */
 
 import {HoistBase, managed, XH} from '@xh/hoist/core';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {throwIf, warnIf, logWithDebug} from '@xh/hoist/utils/js';
+import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {logWithDebug, throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -15,9 +15,9 @@ import {
     differenceBy,
     isArray,
     isEmpty,
+    isFunction,
     isNil,
     isString,
-    isFunction,
     remove as lodashRemove
 } from 'lodash';
 
@@ -591,6 +591,7 @@ export class Store extends HoistBase {
     }
 
     /** @returns {boolean} - true if the store has changes which need to be committed. */
+    @computed
     get isModified() {
         return this._current !== this._committed;
     }
@@ -643,36 +644,43 @@ export class Store extends HoistBase {
     }
 
     /** @returns {number} - the count of the filtered records in the store. */
+    @computed
     get count() {
         return this._filtered.count;
     }
 
     /** @returns {number} - the count of all records in the store. */
+    @computed
     get allCount() {
         return this._current.count;
     }
 
     /** @returns {number} - the count of the filtered root records in the store. */
+    @computed
     get rootCount() {
         return this._filtered.rootCount;
     }
 
     /** @returns {number} - the count of all root records in the store. */
+    @computed
     get allRootCount() {
         return this._current.rootCount;
     }
 
     /** @returns {boolean} - true if the store is empty after filters have been applied */
+    @computed
     get empty() {
         return this._filtered.empty;
     }
 
     /** @returns {boolean} - true if the store is empty before filters have been applied */
+    @computed
     get allEmpty() {
         return this._current.empty;
     }
 
     /** @returns {number} */
+    @computed
     get maxDepth() {
         return this._current.maxDepth;  // maxDepth should not be effected by filtering.
     }

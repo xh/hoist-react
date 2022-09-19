@@ -22,7 +22,7 @@ import {wait} from '@xh/hoist/promise';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {cloneDeep, defaultsDeep, find, isFinite, isNil, reject} from 'lodash';
-import ReactDOM from 'react-dom';
+import {createRoot} from 'react-dom/client';
 import {DashViewModel} from '../DashViewModel';
 import {DashContainerViewSpec} from './DashContainerViewSpec';
 import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
@@ -246,7 +246,8 @@ export class DashContainerModel extends HoistModel {
         return wait().thenAction(() => {
             this.destroyGoldenLayout();
             this.goldenLayout = this.createGoldenLayout(containerEl, state);
-
+        }).wait(100).then(() => {
+            // Since React v18, it's necessary to wait a short while for ViewModels to be available.
             this.refreshActiveViews();
             this.updateTabHeaders();
         }).linkTo(this.loadingStateTask);
@@ -328,7 +329,7 @@ export class DashContainerModel extends HoistModel {
     }
 
     onResize() {
-        this.goldenLayout.updateSize();
+        this.goldenLayout?.updateSize();
     }
 
     setModelLookupContext(modelLookupContext) {
@@ -402,7 +403,9 @@ export class DashContainerModel extends HoistModel {
             menuContainerEl = document.createElement('div');
 
         controlsContainerEl.appendChild(menuContainerEl);
-        ReactDOM.render(dashContainerMenuButton({dashContainerModel: this, stack}), menuContainerEl);
+
+        const menuRoot = createRoot(menuContainerEl);
+        menuRoot.render(dashContainerMenuButton({dashContainerModel: this, stack}));
 
         // Add context menu listener for adding components
         const $el = stack.header.element;

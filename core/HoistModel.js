@@ -63,12 +63,16 @@ export class HoistModel extends HoistBase {
     _componentProps = {};
     _modelLookup = null;
 
+    // global registry of all active models
+    static _activeModels = new Set();
+
     constructor() {
         super();
         makeObservable(this);
         if (this.doLoadAsync !== HoistModel.prototype.doLoadAsync) {
             this.loadSupport = new LoadSupport(this);
         }
+        HoistModel._activeModels.add(this);
     }
 
     //----------------
@@ -211,19 +215,24 @@ export class HoistModel extends HoistBase {
      * @package
      */
     matchesSelector(selector, acceptWildcard = false) {
+        // 1) check class ref first, it's a function, but distinct from callable function below
+        if (selector.isHoistModel) return this instanceof selector;
+
+        // 2) call any test or selector generator function
+        selector = isFunction(selector) ? selector(this) : selector;
+
+        // 3) main tests
+        if (selector === true) return true;
         if (selector === '*') return acceptWildcard;
-        if (!isFunction(selector)) return false;
+        if (selector === this.constructor.name) return true;
+        if (selector?.isHoistModel) return this instanceof selector;
 
-        // 1) selector is a constructor function/class
-        if (selector.isHoistModel) {
-            return this instanceof selector;
-        }
+        return false;
+    }
 
-        // 2) selector is a callable function, call for either a boolean or a constructor function/class
-        const result = selector(this);
-        return isFunction(result) && result.isHoistModel ?
-            this instanceof result :
-            !!result;
+    destroy() {
+        super.destroy();
+        HoistModel._activeModels.delete(this);
     }
 }
 

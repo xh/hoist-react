@@ -10,9 +10,9 @@ import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {isEqual} from 'lodash';
 import {useImperativeHandle} from 'react';
+import {findDOMNode} from 'react-dom';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import './HoistInput.scss';
-import ReactDOM from 'react-dom';
 
 
 /**
@@ -83,7 +83,7 @@ export class HoistInputModel extends HoistModel {
     get domEl() {
         const {current} = this.domRef;
         // eslint-disable-next-line no-undef
-        return (!current || current instanceof Element) ? current : ReactDOM.findDOMNode(current);
+        return (!current || current instanceof Element) ? current : findDOMNode(current);
     }
 
     /**

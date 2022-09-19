@@ -37,11 +37,12 @@ import {
     withDebug
 } from '@xh/hoist/utils/js';
 import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
-import ReactDOM from 'react-dom';
+import {createRoot} from 'react-dom/client';
 import parser from 'ua-parser-js';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import '../styles/XH.scss';
 import {ExceptionHandler} from './ExceptionHandler';
+import {HoistModel} from './HoistModel';
 import {RouterModel} from './RouterModel';
 
 const MIN_HOIST_CORE_VERSION = '14.0';
@@ -184,7 +185,6 @@ class XHClass {
     get isTablet()              {return this.uaParser.getDevice().type === 'tablet'}
     get isDesktop()             {return this.uaParser.getDevice().type === undefined}
 
-
     //---------------------------
     // Models
     //---------------------------
@@ -236,8 +236,9 @@ class XHClass {
         if (spinner) spinner.style.display = 'none';
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
 
-        const rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
-        ReactDOM.render(rootView, document.getElementById('xh-root'));
+        const root = createRoot(document.getElementById('xh-root')),
+            rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
+        root.render(rootView);
     }
 
     /**
@@ -651,6 +652,23 @@ class XHClass {
     //---------------------------
     // Miscellaneous
     //---------------------------
+    /**
+     * Return a collection of models currently 'active' in this application.
+     *
+     * This will include all models that have not had the destroy() method
+     * called on them.  Models will be returned in creation order.
+     *
+     * @param {ModelSelector} [selector] - optional selector for filtering models.
+     * @returns {HoistModel[]}
+     */
+    getActiveModels(selector = '*') {
+        const ret = [];
+        HoistModel._activeModels.forEach(m => {
+            if (m.matchesSelector(selector, true)) ret.push(m);
+        });
+        return ret;
+    }
+
     /**
      * Resets user preferences and any persistent local application state, then reloads the app.
      */
