@@ -10,6 +10,8 @@
 * New method `XH.activeModels()`allows accessing all currently active models in the application.
 * `ModelSelector` used for model lookup/matching will now accept the class name of the model to
  match.  Previously only a class reference could be provided.
+* Add `queryForDefaultOptions` prop to select inputs. When set to true, select inputs in async mode
+  will pre-populate a list of default options by immediately calling the queryFn.
 
 ### ⚙️ Technical
 * Fixed an issue where `HoistComponents` were mutating the props object passed to them in React
