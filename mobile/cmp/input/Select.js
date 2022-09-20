@@ -165,6 +165,13 @@ Select.propTypes = {
      */
     queryFn: PT.func,
 
+    /** True to immediately pre-populate options via queryFn prior to user input.
+     *
+     * User input will still trigger async call for external options.
+     * These fresh options may or may not be included in this initial population
+     */
+    queryForDefaultOptions: PT.bool,
+
     /**
      * Escape-hatch props passed directly to react-select. Use with care - not all props
      * in the react-select API are guaranteed to be supported by this Hoist component,
@@ -197,6 +204,7 @@ class Model extends HoistInputModel {
 
     // Prop-backed convenience getters
     get asyncMode() {return !!this.componentProps.queryFn}
+    get queryForDefaultOptions() {return this.asyncMode && this.componentProps.queryForDefaultOptions}
     get creatableMode() {return !!this.componentProps.enableCreate}
     get filterMode() {return !!this.componentProps.enableFilter}
     get fullscreenMode() {return !!this.componentProps.enableFullscreen}
@@ -614,7 +622,8 @@ const cmp = hoistCmp.factory(
         if (model.asyncMode) {
             rsProps.loadOptions = model.doQueryAsync;
             rsProps.loadingMessage = model.loadingMessageFn;
-            if (model.renderValue) rsProps.defaultOptions = [model.renderValue];
+            if (model.queryForDefaultOptions) rsProps.defaultOptions = true;
+            if (model.renderValue && !model.queryForDefaultOptions) rsProps.defaultOptions = [model.renderValue];
         } else {
             rsProps.options = model.internalOptions;
             rsProps.isSearchable = model.filterMode;
