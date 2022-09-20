@@ -62,6 +62,7 @@ export class HoistModel extends HoistBase {
     @observable
     _componentProps = {};
     _modelLookup = null;
+    _created = Date.now();
 
     // global registry of all active models
     static _activeModels = new Set();

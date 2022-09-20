@@ -262,6 +262,7 @@ export const Icon = {
     tag(p)              {return Icon.icon({...p,  iconName: 'tag'})},
     tags(p)             {return Icon.icon({...p,  iconName: 'tags'})},
     target(p)           {return Icon.icon({...p,  iconName: 'bullseye-arrow'})},
+    terminal(p)         {return Icon.icon({...p,  iconName: 'rectangle-terminal'})},
     thumbsDown(p)       {return Icon.icon({...p,  iconName: 'thumbs-down'})},
     thumbsUp(p)         {return Icon.icon({...p,  iconName: 'thumbs-up'})},
     toast(p)            {return Icon.icon({...p,  iconName: 'bread-slice'})},

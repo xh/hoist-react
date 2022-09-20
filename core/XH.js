@@ -21,6 +21,7 @@ import {
     GridExportService,
     IdentityService,
     IdleService,
+    InspectorService,
     JsonBlobService,
     LocalStorageService,
     PrefService,
@@ -115,6 +116,8 @@ class XHClass {
     identityService;
     /** @member {IdleService} */
     idleService;
+    /** @member {InspectorService} */
+    inspectorService;
     /** @member {JsonBlobService} */
     jsonBlobService;
     /** @member {LocalStorageService} */
@@ -827,7 +830,7 @@ class XHClass {
 
             await this.installServicesAsync(
                 AlertBannerService, AutoRefreshService, ChangelogService, IdleService,
-                GridAutosizeService, GridExportService, WebSocketService
+                InspectorService, GridAutosizeService, GridExportService, WebSocketService
             );
             this.acm.init();
 
