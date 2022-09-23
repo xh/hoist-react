@@ -106,7 +106,7 @@ export class UsesSpec extends ModelSpec {
 }
 
 /**
- * @typedef {(Class|function|string)} ModelSelector -- class (or superclass) to match,
- *      function taking a model and returning a boolean, function returning a class
- *      or '*' to accept any Model.
+ * @typedef {(Class|function|string)} ModelSelector -- class (or superclass) to match, class name
+ *      (as a string), '*' to accept any Model, boolean, or function taking a model and returning
+ *      any of the above.
  */
