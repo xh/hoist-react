@@ -201,13 +201,13 @@ class XHClass {
     /** @member {AppState} - current lifecycle state of the application. */
     @observable appState = AppState.PRE_AUTH;
 
-    /** @member {number} - milliseconds since user activity / interaction was last detected. */
+    /** milliseconds since user activity / interaction was last detected. */
     get lastActivityMs() {return this.#lastActivityMs}
 
     /** @member {boolean} - true if application initialized and running (observable). */
     get appIsRunning() {return this.appState === AppState.RUNNING}
 
-    /** @member {?string} - the currently authenticated user. */
+    /** The currently authenticated user. */
     @observable authUsername = null;
 
     /**
@@ -291,7 +291,7 @@ class XHClass {
     @action
     reloadApp() {
         never().linkTo(this.appLoadModel);
-        window.location.reload(true);
+        window.location.reload();
     }
 
     /**
