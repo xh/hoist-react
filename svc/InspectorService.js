@@ -31,6 +31,7 @@ export class InspectorService extends HoistService {
             fields: [
                 {name: 'className', type: STRING},
                 {name: 'created', type: DATE},
+                {name: 'isLinked', type: BOOL},
                 {name: 'hasLoadSupport', type: BOOL},
                 {name: 'lastLoadCompleted', type: DATE},
                 {name: 'lastLoadException', type: STRING}
@@ -77,6 +78,10 @@ export class InspectorService extends HoistService {
         XH.safeDestroy(syncTimer);
     }
 
+    clearStats() {
+        this.statsStore.clear();
+    }
+
     _prevModelCount;
     _lastStatsUpdate;
 
@@ -88,6 +93,7 @@ export class InspectorService extends HoistService {
                 id: model.xhId,
                 className: model.constructor.name,
                 created: model._created,
+                isLinked: model.isLinked,
                 hasLoadSupport: model.loadSupport != null,
                 lastLoadCompleted: model.lastLoadCompleted,
                 lastLoadException: model.lastLoadException

@@ -1,22 +1,15 @@
 import {ChartModel} from '@xh/hoist/cmp/chart';
-import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
+import {boolCheckCol, GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
-import {
-    modelInstancePanel
-} from '@xh/hoist/desktop/appcontainer/inspector/widgets/ModelInstancePanel';
-import {statsPanel} from '@xh/hoist/desktop/appcontainer/inspector/widgets/StatsPanel';
-import {DashContainerModel} from '@xh/hoist/desktop/cmp/dash';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
-import {dateRenderer, dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
+import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {bindable} from '@xh/hoist/mobx';
+import {snakeCase} from 'lodash';
 import {makeObservable} from 'mobx';
 
 export class InspectorModel extends HoistModel {
     persistWith = {localStorageKey: 'xhInspectorModel'};
-
-    /** @member {DashContainerModel} */
-    @managed dashContainerModel;
 
     /** @member {GridModel} */
     @managed modelInstanceGridModel;
@@ -32,34 +25,24 @@ export class InspectorModel extends HoistModel {
         return XH.inspectorService.enabled;
     }
 
+    /** @return {HoistModel} */
+    get selectedModel() {
+        const xhId = this.modelInstanceGridModel.selectedId;
+        return xhId ? XH.getActiveModels(it => it.xhId === xhId)[0] : null;
+    }
+
     constructor() {
         super();
         makeObservable(this);
 
-        this.dashContainerModel = new DashContainerModel({
-            showMenuButton: true,
-            persistWith: {...this.persistWith},
-            viewSpecDefaults: {unique: true},
-            viewSpecs: [
-                {
-                    id: 'stats',
-                    icon: Icon.chartLine(),
-                    content: statsPanel
-                },
-                {
-                    id: 'modelInstances',
-                    icon: Icon.cube(),
-                    content: modelInstancePanel
-                }
-            ]
-        });
-
         this.modelInstanceGridModel = new GridModel({
             persistWith: {...this.persistWith, path: 'modelInstanceGrid'},
+            autosizeOptions: {mode: GridAutosizeMode.MANAGED},
             store: XH.inspectorService.modelInstanceStore,
             sortBy: ['created|desc'],
             groupBy: this.groupModelInstancesByClass ? 'className' : null,
             filterModel: true,
+            colChooserModel: true,
             colDefaults: {filterable: true},
             columns: [
                 {
@@ -78,20 +61,26 @@ export class InspectorModel extends HoistModel {
                         }
                     ]
                 },
-                {field: 'id', displayName: 'Model xhId', width: 120},
-                {field: 'className', flex: 1},
-                {field: 'lastLoadCompleted', displayName: 'Last Loaded', width: 225, align: 'right', renderer: dateTimeSecRenderer()},
-                {field: 'created', width: 225, align: 'right', renderer: dateTimeSecRenderer()}
+                {field: 'id', displayName: 'Model xhId'},
+                {
+                    field: 'isLinked',
+                    ...boolCheckCol,
+                    tooltip: v => v ? 'Linked model' : '',
+                    renderer: (v) => v ? Icon.link() : null
+                },
+                {field: 'className', flex: 1, minWidth: 150},
+                {field: 'lastLoadCompleted', displayName: 'Last Loaded', align: 'right', highlightOnChange: true, renderer: timestampRenderer},
+                {field: 'created', align: 'right', renderer: timestampRenderer}
             ],
             onRowDoubleClicked: ({data: rec}) => this.logModelToConsole(rec)
         });
 
         this.statsGridModel = new GridModel({
-            store: XH.inspectorService.statsStore,
             autosizeOptions: {mode: GridAutosizeMode.MANAGED},
+            store: XH.inspectorService.statsStore,
             sortBy: ['timestamp|desc'],
             columns: [
-                {field: 'timestamp', renderer: dateRenderer({fmt: 'h:mm:ssa'})},
+                {field: 'timestamp', renderer: timestampRenderer},
                 {field: 'modelCount', renderer: numberRenderer()},
                 {field: 'totalJSHeapSize', renderer: numberRenderer()},
                 {field: 'usedJSHeapSize', renderer: numberRenderer()}
@@ -116,6 +105,11 @@ export class InspectorModel extends HoistModel {
 
         this.addReaction(
             {
+                track: () => this.modelInstanceGridModel.store.records,
+                run: () => this.modelInstanceGridModel.preSelectFirstAsync(),
+                fireImmediately: true
+            },
+            {
                 track: () => this.groupModelInstancesByClass,
                 run: (doGroupBy) => this.modelInstanceGridModel.setGroupBy(doGroupBy ? 'className' : null)
             },
@@ -127,12 +121,25 @@ export class InspectorModel extends HoistModel {
         );
     }
 
+    selectModel(xhId) {
+        const gridModel = this.modelInstanceGridModel,
+            {store} = gridModel,
+            rec = store.getById(xhId);
+
+        if (!rec) return;
+        if (store.recordIsFiltered(rec)) store.clearFilter();
+        gridModel.selectAsync(rec);
+    }
+
     logModelToConsole(rec) {
         const model = this.getModelInstance(rec.id);
-
-        model ?
-            console.log(model) :
+        if (!model) {
             console.warn(`Model with xhId ${rec.id} no longer alive - cannot be logged`);
+        } else {
+            const global = snakeCase(model.xhId);
+            window[global] = model;
+            console.log(`window.${global}`, model);
+        }
     }
 
     getModelInstance(xhId) {
@@ -158,3 +165,5 @@ export class InspectorModel extends HoistModel {
     }
 
 }
+
+const timestampRenderer = v => fmtDate(v, {fmt: 'hh:mm:ss'});

@@ -5,10 +5,10 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {ValidationState} from '@xh/hoist/data';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {flatMap, forOwn, map, mapValues, pickBy, some, values, forEach} from 'lodash';
+import {flatMap, forEach, forOwn, map, mapValues, pickBy, some, values} from 'lodash';
 import {FieldModel} from './field/FieldModel';
 import {SubformsFieldModel} from './field/SubformsFieldModel';
 
@@ -264,7 +264,9 @@ export class FormModel extends HoistModel {
             get(target, name, receiver) {
 
                 const field = me.fields[name];
-                if (field) return field.getDataOrProxy();
+                if (field?.isFieldModel) {
+                    return field.getDataOrProxy();
+                }
 
                 const parent = (name === 'parent' ? me.parent : null);
                 if (parent) return parent.values;

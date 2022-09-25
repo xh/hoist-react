@@ -251,6 +251,7 @@ export const Icon = {
     sigma(p)            {return Icon.icon({...p,  iconName: 'sigma'})},
     skull(p)            {return Icon.icon({...p,  iconName: 'skull'})},
     spinner(p)          {return Icon.icon({...p,  iconName: 'spinner'})},
+    star(p)             {return Icon.icon({...p,  iconName: 'star'})},
     stop(p)             {return Icon.icon({...p,  iconName: 'stop'})},
     stopCircle(p)       {return Icon.icon({...p,  iconName: 'stop-circle'})},
     stopwatch(p)        {return Icon.icon({...p,  iconName: 'stopwatch'})},
