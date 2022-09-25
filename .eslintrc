@@ -1,3 +1,5 @@
 {
-  "extends": ["@xh/eslint-config"]
+  "extends": [
+      "@xh/eslint-config"
+  ]
 }

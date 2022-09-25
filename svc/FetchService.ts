@@ -290,28 +290,63 @@ export class FetchService extends HoistService {
 
 }
 
+
 /**
- * @typedef {Object} FetchOptions
- *      Standard options to pass through to fetch, with some additions.
- *      [See MDN for available options]{@link https://developer.mozilla.org/en-US/docs/Web/API/Request}.
- * @property {string} url - url for the request. Relative urls will be appended to XH.baseUrl.
- * @property {Object} [body] - data to send in the request body (for POSTs/PUTs of JSON).
- * @property {Object} [params] - parameters to encode and append as a query string, or send
- *      with the request body (for POSTs/PUTs sending form-url-encoded).
- * @property {string} [method] - HTTP Request method to use for the request. If not specified,
- *      the method will be set to POST if there are params, otherwise GET.
- * @property {Object} [headers] - headers to send with this request. A Content-Type header will
- *      be set if not provided by the caller directly or via one of the xxxJson convenience methods.
- * @property {(number|Object)} [timeout] - ms to wait for response before rejecting with a timeout
- *      exception. Defaults to 30 seconds, but may be specified as null to specify no timeout.
- *      May also be specified as an object to customise the exception. See Promise.timeout().
- * @property {LoadSpec} [loadSpec] - optional metadata about the underlying request. Passed through
- *      for downstream processing by utils such as {@see ExceptionHandler}.
- * @property {Object} [fetchOpts] - options to pass to the underlying fetch request.
- *      @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
- * @property {Object} [qsOpts] - options to pass to the param converter library, qs.
- *      The default qsOpts are: `{arrayFormat: 'repeat', allowDots: true}`.
- *      @see https://www.npmjs.com/package/qs
- * @property {string} [autoAbortKey] - if set, any pending requests made with the same autoAbortKey
- *      will be immediately aborted in favor of the new request.
+ * Standard options to pass through to fetch, with some additions.
+ * [See MDN for available options]{@link https://developer.mozilla.org/en-US/docs/Web/API/Request}.
  */
+export interface FetchOptions {
+    /** url for the request. Relative urls will be appended to XH.baseUrl.*/
+    url: string;
+
+    /** data to send in the request body (for POSTs/PUTs of JSON).*/
+    body?: object;
+
+    /**
+     * parameters to encode and append as a query string, or send with the request body
+     * (for POSTs/PUTs sending form-url-encoded).
+     */
+    params?: object;
+
+    /**
+     * HTTP Request method to use for the request. If not specified,
+     * the method will be set to POST if there are params, otherwise GET.
+     */
+    method?: string;
+
+    /**
+     *  Headers to send with this request. A Content-Type header will be set if not provided by
+     *  the caller directly or via one of the xxxJson convenience methods.
+     */
+    headers?: object;
+
+    /**
+     * ms to wait for response before rejecting with a timeout
+     * exception. Defaults to 30 seconds, but may be specified as null to specify no timeout.
+     */
+    timeout?: number|object;
+
+    /**
+     * optional metadata about the underlying request. Passed through
+     * for downstream processing by utils such as {@see ExceptionHandler}.
+     */
+    loadSpec?: object;
+
+    /**
+     * options to pass to the underlying fetch request.
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
+     */
+    fetchOpts?: object;
+
+    /**
+     * options to pass to the param converter library, qs.  The default qsOpts are:
+     * `{arrayFormat: 'repeat', allowDots: true}`.
+     */
+    qsOpts?: object;
+
+    /**
+     * if set, any pending requests made with the same autoAbortKey will be immediately
+     * aborted in favor of the new request.
+     */
+    autoAbortKey?: string;
+}

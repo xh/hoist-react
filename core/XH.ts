@@ -5,12 +5,13 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {p} from '@xh/hoist/cmp/layout';
-import {AppSpec, AppState, elem} from '@xh/hoist/core';
+import {AppSpec, AppState, elem, SizingMode} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable, reaction as mobxReaction} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {
+    BaseService,
     AlertBannerService,
     AutoRefreshService,
     ChangelogService,
@@ -30,20 +31,25 @@ import {
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {
-    apiDeprecated,
     checkMinVersion,
     getClientDeviceInfo,
     throwIf,
     withDebug
 } from '@xh/hoist/utils/js';
+import {TaskObserver} from '@xh/hoist/utils/async';
 import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import {createRoot} from 'react-dom/client';
 import parser from 'ua-parser-js';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
+import {ToastModel} from '../appcontainer/ToastModel';
+import {BannerModel} from '../appcontainer/BannerModel';
 import '../styles/XH.scss';
 import {ExceptionHandler} from './ExceptionHandler';
-import {HoistModel} from './HoistModel';
+import {HoistModel, ModelSelector, HoistAppModel} from './HoistModel';
 import {RouterModel} from './RouterModel';
+import {FetchOptions} from '../svc';
+import {RefreshContextModel} from './refresh/RefreshContextModel';
+import {BannerConfig, ToastConfig, MessageConfig} from './Interfaces';
 
 const MIN_HOIST_CORE_VERSION = '14.0';
 
@@ -58,9 +64,9 @@ const MIN_HOIST_CORE_VERSION = '14.0';
  */
 class XHClass {
 
-    #initCalled = false;
-    #lastActivityMs = Date.now();
-    #uaParser = null;
+    private _initCalled: boolean = false;
+    private _lastActivityMs: number = Date.now();
+    private _uaParser: object = null;
 
     constructor() {
         makeObservable(this);
@@ -70,168 +76,173 @@ class XHClass {
     // Metadata - set via webpack.DefinePlugin at build time.
     // See @xh/hoist-dev-utils/configureWebpack.
     //----------------------------------------------------------------------------------------------
-    /** @member {string} - short internal code for the application. */
-    appCode = xhAppCode;
+    /** short internal code for the application. */
+    appCode: string = xhAppCode;
 
-    /** @member {string} - user-facing display name for the app. See also `XH.clientAppName`. */
-    appName = xhAppName;
+    /** user-facing display name for the app. See also `XH.clientAppName`. */
+    appName: string = xhAppName;
 
-    /** @member {string} - semVer or Snapshot version of the client build. */
-    appVersion = xhAppVersion;
+    /** semVer or Snapshot version of the client build. */
+    appVersion: string = xhAppVersion;
 
     /**
-     * @member {string} - optional identifier for the client build (e.g. a git commit hash or a
-     *      build ID from a CI system. Varies depending on how builds are configured.
+     * optional identifier for the client build (e.g. a git commit hash or a
+     * build ID from a CI system. Varies depending on how builds are configured.
      */
-    appBuild = xhAppBuild;
+    appBuild: string = xhAppBuild;
 
-    /** @member {string} - root URL context/path - prepended to all relative fetch requests. */
-    baseUrl = xhBaseUrl;
+    /** root URL context/path - prepended to all relative fetch requests. */
+    baseUrl: string = xhBaseUrl;
 
-    /** @member {boolean} - true if app is running in a local development environment. */
-    isDevelopmentMode = xhIsDevelopmentMode;
+    /** true if app is running in a local development environment. */
+    isDevelopmentMode: boolean = xhIsDevelopmentMode;
 
     //----------------------------------------------------------------------------------------------
     // Hoist Core Services
     // Singleton instances of each service are created and installed within initAsync() below.
     //----------------------------------------------------------------------------------------------
-    /** @member {AlertBannerService} */
-    alertBannerService;
-    /** @member {AutoRefreshService} */
-    autoRefreshService;
-    /** @member {ChangelogService} */
-    changelogService;
-    /** @member {ConfigService} */
-    configService;
-    /** @member {EnvironmentService} */
-    environmentService;
-    /** @member {FetchService} */
-    fetchService;
-    /** @member {GridAutosizeService} */
-    gridAutosizeService;
-    /** @member {GridExportService} */
-    gridExportService;
-    /** @member {IdentityService} */
-    identityService;
-    /** @member {IdleService} */
-    idleService;
-    /** @member {JsonBlobService} */
-    jsonBlobService;
-    /** @member {LocalStorageService} */
-    localStorageService;
-    /** @member {PrefService} */
-    prefService;
-    /** @member {TrackService} */
-    trackService;
-    /** @member {WebSocketService} */
-    webSocketService;
+    alertBannerService: AlertBannerService;
+    autoRefreshService: AutoRefreshService;
+    changelogService: ChangelogService;
+    configService: ConfigService;
+    environmentService: EnvironmentService;
+    fetchService: FetchService;
+    gridAutosizeService: GridAutosizeService;
+    gridExportService: GridExportService;
+    identityService: IdentityService;
+    idleService: IdleService;
+    jsonBlobService: JsonBlobService;
+    localStorageService: LocalStorageService;
+    prefService: PrefService;
+    trackService: TrackService;
+    webSocketService: WebSocketService;
 
     //----------------------------------------------------------------------------------------------
     // Aliased methods
     // Shortcuts to common core service methods and appSpec properties.
     //----------------------------------------------------------------------------------------------
-    /**
-     * @param {FetchOptions} opts
-     * @returns {Promise<Response>}
-     */
-    fetch(opts)                 {return this.fetchService.fetch(opts)}
+    fetch(opts: FetchOptions): Promise {
+        return this.fetchService.fetch(opts);
+    }
 
-    /**
-     * @param {FetchOptions} opts
-     * @returns {Promise}
-     */
-    fetchJson(opts)             {return this.fetchService.fetchJson(opts)}
+    fetchJson(opts: FetchOptions): Promise {
+        return this.fetchService.fetchJson(opts);
+    }
 
     /**
      * Primary convenience alias for reading soft configuration values.
-     * @param {string} key - identifier of the config to return.
-     * @param {*} [defaultVal] - value to return if there is no client-side config with this key.
-     * @returns {*} - the soft-configured value.
+     * @param key - identifier of the config to return.
+     * @param defaultVal - value to return if there is no client-side config with this key.
+     * @returns the soft-configured value.
      */
-    getConf(key, defaultVal)    {return this.configService.get(key, defaultVal)}
+    getConf(key: string, defaultVal?: any): any {
+        return this.configService.get(key, defaultVal);
+    }
 
     /**
      * Primary convenience alias for reading user preference values.
-     * @param {string} key - identifier of the pref to return.
-     * @param {*} [defaultVal] - value to return if there is no pref with this key.
-     * @returns {*} - the user's preference, or the data-driven default if pref not yet set by user.
+     * @param key - identifier of the pref to return.
+     * @param defaultVal - value to return if there is no pref with this key.
+     * @returns the user's preference, or the data-driven default if pref not yet set by user.
      */
-    getPref(key, defaultVal)    {return this.prefService.get(key, defaultVal)}
+    getPref(key: string, defaultVal?: any): any {
+        return this.prefService.get(key, defaultVal);
+    }
 
     /**
      * Primary convenience alias for setting user preference values.
-     * @param {string} key - identifier of the pref to set.
-     * @param {*} val - the new value to persist for the current user.
+     * @param key - identifier of the pref to set.
+     * @param val - the new value to persist for the current user.
      */
-    setPref(key, val)           {return this.prefService.set(key, val)}
+    setPref(key: string, val: any) {
+        return this.prefService.set(key, val);
+    }
 
-    // Make these robust, so they don't fail if called early in initialization sequence
-    track(opts)                 {return this.trackService?.track(opts)}
-    getEnv(key)                 {return this.environmentService?.get(key) ?? null}
+    track(opts: object) {
+        return this.trackService?.track(opts);
+    }
 
-    /** @returns {?HoistUser} */
-    getUser()                   {return this.identityService?.getUser() ?? null}
-    /** @returns {?string} */
-    getUsername()               {return this.identityService?.getUsername() ?? null}
+    getEnv(key: string) {
+        return this.environmentService?.get(key) ?? null;
+    }
 
-    /** @returns {boolean} */
-    get isMobileApp()           {return this.appSpec.isMobileApp}
-    /** @returns {string} */
-    get clientAppCode()         {return this.appSpec.clientAppCode}
-    /** @returns {string} */
-    get clientAppName()         {return this.appSpec.clientAppName}
+    getUser(): object {
+        return this.identityService?.getUser() ?? null;
+    }
 
-    get isPhone()               {return this.uaParser.getDevice().type === 'mobile'}
-    get isTablet()              {return this.uaParser.getDevice().type === 'tablet'}
-    get isDesktop()             {return this.uaParser.getDevice().type === undefined}
+    getUsername(): String {
+        return this.identityService?.getUsername() ?? null;
+    }
+
+    get isMobileApp(): boolean {
+        return this.appSpec.isMobileApp;
+    }
+
+    get clientAppCode(): string {
+        return this.appSpec.clientAppCode;
+    }
+
+    get clientAppName(): string {
+        return this.appSpec.clientAppName;
+    }
+
+    get isPhone(): boolean {
+        return this.uaParser.getDevice().type === 'mobile';
+    }
+
+    get isTablet(): boolean {
+        return this.uaParser.getDevice().type === 'tablet';
+    }
+
+    get isDesktop(): boolean {
+        return this.uaParser.getDevice().type === undefined;
+    }
 
     //---------------------------
     // Models
     //---------------------------
-    appContainerModel = new AppContainerModel();
-    routerModel = new RouterModel();
+    appContainerModel: AppContainerModel = new AppContainerModel();
+    routerModel: RouterModel = new RouterModel();
 
     //---------------------------
     // Other State
     //---------------------------
     suspendData = null;
-    accessDeniedMessage = null;
-    exceptionHandler = new ExceptionHandler();
+    accessDeniedMessage: string = null;
+    exceptionHandler: ExceptionHandler = new ExceptionHandler();
 
-    /** @member {AppState} - current lifecycle state of the application. */
-    @observable appState = AppState.PRE_AUTH;
+    /** current lifecycle state of the application. */
+    @observable appState: AppState = AppState.PRE_AUTH;
 
     /** milliseconds since user activity / interaction was last detected. */
-    get lastActivityMs() {return this.#lastActivityMs}
+    get lastActivityMs(): number {
+        return this._lastActivityMs;
+    }
 
-    /** @member {boolean} - true if application initialized and running (observable). */
-    get appIsRunning() {return this.appState === AppState.RUNNING}
+    /** true if application initialized and running (observable). */
+    get appIsRunning(): boolean {
+        return this.appState === AppState.RUNNING;
+    }
 
     /** The currently authenticated user. */
-    @observable authUsername = null;
+    @observable authUsername: string = null;
 
     /**
-     * @member {AppModel} - root level {@see HoistAppModel}. Documented as type `AppModel` to
-     *      match the common choice of class name used within applications. This must be a class
-     *      that extends `HoistAppModel`, but writing the jsDoc annotation this way allows for
-     *      better discovery and linking by IDEs to app-specific subclasses and any interesting
-     *      properties or APIs they might have.
+     *  Root level {@see HoistAppModel}. This must be a class that extends `HoistAppModel`.
      */
-    appModel = null;
+    appModel: HoistAppModel = null;
 
     /**
      * Specifications for this application, provided in call to `XH.renderApp()`.
-     * @member {AppSpec}
      */
-    appSpec = null;
+    appSpec: AppSpec = null;
 
     /**
      * Main entry point. Initialize and render application code.
      *
-     * @param {(AppSpec|Object)} appSpec - specifications for this application.
-     *      Should be an AppSpec, or a config for one.
+     * @param appSpec - specifications for this application. Should be an AppSpec, or a config for one.
      */
-    renderApp(appSpec) {
+    renderApp(appSpec: AppSpec) {
         const spinner = document.getElementById('xh-preload-spinner');
         if (spinner) spinner.style.display = 'none';
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
@@ -271,11 +282,9 @@ class XHClass {
     /**
      * Transition the application state.
      * Used by framework. Not intended for application use.
-     *
-     * @param {AppState} appState - state to transition to.
      */
     @action
-    setAppState(appState) {
+    setAppState(appState: AppState) {
         if (this.appState != appState) {
             this.appState = appState;
         }
@@ -311,14 +320,14 @@ class XHClass {
      * Tracks globally loading promises.
      * Apps should link any async operations that should mask the entire viewport to this model.
      */
-    get appLoadModel() {
+    get appLoadModel(): TaskObserver {
         return this.acm.appLoadModel;
     }
 
     /**
      * The global RefreshContextModel for this application.
      */
-    get refreshContextModel() {
+    get refreshContextModel(): RefreshContextModel {
         return this.acm.refreshContextModel;
     }
 
@@ -331,57 +340,45 @@ class XHClass {
     }
 
     /**
-     * Enable/disable the dark theme directly (useful for custom app option controls).
-     * @param {boolean} value
-     * @deprecated
-     */
-    setDarkTheme(value) {
-        apiDeprecated('setDarkTheme', {v: '50', msg: 'Use setTheme instead.'});
-        this.setTheme(value ? 'dark' : 'light');
-    }
-
-    /**
      * Sets the theme directly (useful for custom app option controls).
-     * @param {string} value - 'light', 'dark', or 'system'
-     * @param {boolean} persist - true (default) to persist with preference
+     * @param value - 'light', 'dark', or 'system'
+     * @param persist - true (default) to persist with preference
      */
-    setTheme(value, persist = true) {
+    setTheme(value: string, persist?: boolean = true) {
         return this.acm.themeModel.setTheme(value, persist);
     }
 
     /** Is the app currently rendering in dark theme? */
-    get darkTheme() {
+    get darkTheme(): boolean {
         return this.acm.themeModel.darkTheme;
     }
 
     //------------------------
     // Sizing Mode Support
     //------------------------
-    /** @param {SizingMode} sizingMode - new app-wide sizing mode to apply */
-    setSizingMode(sizingMode) {
+    setSizingMode(sizingMode: SizingMode) {
         return this.acm.sizingModeModel.setSizingMode(sizingMode);
     }
 
-    /** @return {SizingMode} - current app-wide sizing mode. */
-    get sizingMode() {
+    get sizingMode(): SizingMode {
         return this.acm.sizingModeModel.sizingMode;
     }
 
     //------------------------
     // Viewport Size
     //------------------------
-    /** @return {Object} - current viewport width / height. (observable) */
-    get viewportSize() {
+    /** Current viewport width / height. (observable) */
+    get viewportSize(): { width: number, height: number } {
         return this.acm.viewportSizeModel.size;
     }
 
-    /** @return {boolean} - is the viewport in portrait orientation? (observable) */
-    get isPortrait() {
+    /** Is the viewport in portrait orientation? (observable) */
+    get isPortrait(): boolean {
         return this.acm.viewportSizeModel.isPortrait;
     }
 
-    /** @return {boolean} - is the viewport in landscape orientation? (observable) */
-    get isLandscape() {
+    /** Is the viewport in landscape orientation? (observable) */
+    get isLandscape(): boolean {
         return this.acm.viewportSizeModel.isLandscape;
     }
 
@@ -424,34 +421,31 @@ class XHClass {
     //------------------------------
     /**
      * Show a modal message dialog.
-     * @param {MessageConfig} config
      *
      * Note that this method will auto focus the confirm button by default. To focus the cancel
      * button instead (e.g. for confirming risky operations), applications should specify a
      * `cancelProps` argument of the following form `cancelProps: {..., autoFocus: true}`.
      *
-     * @returns {Promise} - resolves to true if user confirms, false if user cancels.
-     *      If an input is provided, the Promise will resolve to the input value if user confirms.
+     * @returns true if user confirms, false if user cancels. If an input is provided, the
+     * Promise will resolve to the input value if user confirms.
      */
-    message(config) {
+    message(config: MessageConfig): Promise<any> {
         return this.acm.messageSourceModel.message(config);
     }
 
     /**
      * Show a modal 'alert' dialog with message and default 'OK' button.
-     * @param {MessageConfig} config
-     * @returns {Promise} - resolves to true when user acknowledges alert.
+     * @returns true when user acknowledges alert.
      */
-    alert(config) {
+    alert(config: MessageConfig): Promise<boolean> {
         return this.acm.messageSourceModel.alert(config);
     }
 
     /**
      * Show a modal 'confirm' dialog with message and default 'OK'/'Cancel' buttons.
-     * @param {MessageConfig} config
-     * @returns {Promise} - resolves to true if user confirms, false if user cancels.
+     * @returns true if user confirms, false if user cancels.
      */
-    confirm(config) {
+    confirm(config: MessageConfig): Promise<boolean> {
         return this.acm.messageSourceModel.confirm(config);
     }
 
@@ -464,89 +458,57 @@ class XHClass {
      *   3. onKeyDown handler to confirm on <enter> (same as clicking 'OK') (desktop only)
      * Applications may also provide a custom HoistInput, in which all props must be set.
      *
-     * @param {MessageConfig} config
-     * @returns {Promise} - resolves to value of input if user confirms, false if user cancels.
+     * @returns value of input if user confirms, false if user cancels.
      */
-    prompt(config) {
+    prompt(config: MessageConfig): Promise<any> {
         return this.acm.messageSourceModel.prompt(config);
     }
 
     /**
      * Show a non-modal "toast" notification that appears and then automatically dismisses.
-     *
-     * @param {(Object|string)} config - options for toast instance, or string message.
-     * @param {(ReactNode|string)} config.message - message to display within the Toast.
-     * @param {Element} [config.icon] - optional icon.
-     * @param {?number} [config.timeout] - time in ms (default 3000) to show before auto-dismissing
-     *      the toast, or null to keep toast visible until manually dismissed.
-     * @param {string} [config.intent] - one of [primary|success|warning|danger].
-     * @param {Object} [config.actionButtonProps] - if provided, will render a button within the
-     *      toast to enable the user to take some specific action right from the toast.
-     * @param {Object} [config.position] - Relative position at which to display toast, e.g.
-     *      "bottom-right" (default) or "top". (Desktop only.)
-     * @param {HTMLElement} [config.containerRef] - DOM element relative to which the toast should
-     *      be positioned. If null, Toast will show along edge of overall document. (Desktop only.)
-     * @returns {ToastModel} - model representing the toast. May be used for programmatic dismissal.
+     * @returns model representing the toast. May be used for programmatic dismissal.
      */
-    toast(config) {
+    toast(config: ToastConfig | string): ToastModel {
         return this.acm.toastSourceModel.show(config);
     }
 
     /**
      * Show a toast with default intent and icon indicating success.
-     * @returns {ToastModel}
      */
-    successToast(config) {
+    successToast(config: ToastConfig | string): ToastModel {
         if (isString(config)) config = {message: config};
         return this.toast({intent: 'success', icon: Icon.success(), ...config});
     }
 
     /**
      * Show a toast with default intent and icon indicating a warning.
-     * @returns {ToastModel}
      */
-    warningToast(config) {
+    warningToast(config: ToastConfig | string): ToastModel {
         if (isString(config)) config = {message: config};
         return this.toast({intent: 'warning', icon: Icon.warning(), ...config});
     }
 
     /**
      * Show a toast with intent and icon indicating a serious issue.
-     * @returns {ToastModel}
      */
-    dangerToast(config) {
+    dangerToast(config: ToastConfig | string): ToastModel {
         if (isString(config)) config = {message: config};
         return this.toast({intent: 'danger', icon: Icon.danger(), ...config});
     }
 
     /**
-     * Show a Banner across the top of the view port. Banners are unique by their
+     * Show a Banner across the top of the viewport. Banners are unique by their
      * category prop - showing a new banner with an existing category will replace it.
-     *
-     * @param {Object} config - options for banner.
-     * @param {string} [config.category] - the category for the banner. Defaults to 'default'.
-     * @param {Element} [config.icon] - icon to be displayed.
-     * @param {(ReactNode|string)} [config.message] - the message to show in the banner.
-     * @param {string} [config.intent] - intent for banner styling. Defaults to 'primary'.
-     * @param {string} [config.className] - CSS classname provided to the banner component.
-     * @param {boolean} [config.enableClose] - Show a close button. Default true.
-     * @param {Banner-onCloseFn} [config.onClose] - Callback function triggered when the user
-     *      clicks the close button. (Note, banners closed via `XH.hideBanner()` or when the max
-     *      number of banners shown is exceed will NOT trigger this callback.)
-     * @param {Object} [config.actionButtonProps] - if provided, will render a button within the
-     *      banner to enable the user to take some specific action right from the banner.
-     * @param {...*} [config.rest] - additional properties to pass to the banner component
-     * @returns {BannerModel}
      */
-    showBanner(config) {
+    showBanner(config: BannerConfig | string): BannerModel {
         if (isString(config)) config = {message: config};
         return this.acm.bannerSourceModel.show(config);
     }
 
     /**
-     * @param {string} category - category to identify the banner. Defaults to 'default'.
+     * Hide banner by category name.
      */
-    hideBanner(category = 'default') {
+    hideBanner(category: string = 'default') {
         return this.acm.bannerSourceModel.hide(category);
     }
 
@@ -557,32 +519,44 @@ class XHClass {
      * Handle an exception. This method is an alias for {@see ExceptionHandler.handleException}.
      *
      * This method may be called by applications in order to provide logging, reporting, and
-     * display of exceptions. It it typically called directly in catch() blocks.
+     * display of exceptions. It is typically called directly in catch() blocks.
      *
      * See also Promise.catchDefault(). That method will delegate its arguments to this method
      * and provides a more convenient interface for catching exceptions in Promise chains.
      *
-     * @param {(Error|Object|string)} exception - Error or thrown object - if not an Error, an
+     * @param exception - Error or thrown object - if not an Error, an
      *      Exception will be created via Exception.create().
-     * @param {Object} [options] - controls on how the exception should be shown and/or logged.
-     * @param {string} [options.message] - text (ideally user-friendly) describing the error.
-     * @param {string} [options.title] - title for an alert dialog, if shown.
-     * @param {boolean} [options.showAsError] - configure modal alert and logging to indicate that
+     * @param options - controls on how the exception should be shown and/or logged.
+     * @param options.message - text (ideally user-friendly) describing the error.
+     * @param options.title - title for an alert dialog, if shown.
+     * @param options.showAsError - configure modal alert and logging to indicate that
      *      this is an unexpected error. Default true for most exceptions, false for those marked
      *      as `isRoutine`.
-     * @param {boolean} [options.logOnServer] - send the exception to the server to be stored for
+     * @param options.logOnServer - send the exception to the server to be stored for
      *      review in the Hoist Admin Console. Default true when `showAsError` is true, excepting
      *      'isAutoRefresh' fetch exceptions.
-     * @param {boolean} [options.showAlert] - display an alert dialog to the user. Default true,
+     * @param options.showAlert - display an alert dialog to the user. Default true,
      *      excepting 'isAutoRefresh' and 'isFetchAborted' exceptions.
-     * @param {string} [options.alertType] - if `showAlert`, which type of alert to display.
-     *      Valid options are 'dialog'|'toast'. Defaults to ExceptionHandler.ALERT_TYPE.
-     * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
+     * @param options.alertType - if `showAlert`, which type of alert to display.
+     *      Defaults to ExceptionHandler.ALERT_TYPE.
+     * @param options.requireReload - force user to fully refresh the app in order to
      *      dismiss - default false, excepting session-related exceptions.
-     * @param {Array} [options.hideParams] - A list of parameters that should be hidden from
+     * @param options.hideParams - A list of parameters that should be hidden from
      *      the exception log and alert.
      */
-    handleException(exception, options) {
+    handleException(
+        exception: Error | object | string,
+        options?: {
+            message?: string
+            title?: string
+            showAsError?: boolean
+            logOnServer?: boolean
+            showAlert?: boolean
+            alertType?: 'dialog' | 'toast'
+            requireReload?: boolean
+            hideParams?: string[]
+        }
+    ) {
         this.exceptionHandler.handleException(exception, options);
     }
 
@@ -592,29 +566,35 @@ class XHClass {
      * Intended to be used for the deferred / user-initiated showing of exceptions that have
      * already been appropriately logged. Applications should typically prefer `handleException`.
      *
-     * @param {(Error|Object|string)} exception - Error or thrown object - if not an Error, an
+     * @param exception - Error or thrown object - if not an Error, an
      *      Exception will be created via `Exception.create()`.
-     * @param {Object} [options] - controls on how the exception should be shown and/or logged.
-     * @param {string} [options.message] - text (ideally user-friendly) describing the error.
-     * @param {string} [options.title] - title for an alert dialog, if shown.
-     * @param {boolean} [options.showAsError] - configure modal alert to indicate that this is an
+     * @param options - controls on how the exception should be shown and/or logged.
+     * @param options.message- text (ideally user-friendly) describing the error.
+     * @param options.title - title for an alert dialog, if shown.
+     * @param options.showAsError - configure modal alert to indicate that this is an
      *      unexpected error. Default true for most exceptions, false if marked as `isRoutine`.
-     * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
+     * @param options.requireReload - force user to fully refresh the app in order to
      *      dismiss - default false, excepting session-related exceptions.
-     * @param {string[]} [options.hideParams] - A list of parameters that should be hidden from
+     * @param options.hideParams - A list of parameters that should be hidden from
      *      the exception alert.
      */
-    showException(exception, options) {
+    showException(
+        exception: Error | Object | string,
+        options?: {
+            message?: string,
+            title?: string,
+            showAsError?: boolean,
+            requireReload?: boolean,
+            hideParams?: string[]
+        }) {
         this.exceptionHandler.showException(exception, options);
     }
 
     /**
      * Create a new exception - {@see Exception} for Hoist conventions / extensions to JS Errors.
-     * @param {(Object|string)} cfg - properties to add to the returned Error.
-     *      If a string, will become the 'message' value.
-     * @returns {Error}
+     * @param cfg - properties to add to the returned Error. If a string, will become the 'message' value.
      */
-    exception(cfg) {
+    exception(cfg: Object | string): Error {
         return Exception.create(cfg);
     }
 
@@ -657,11 +637,8 @@ class XHClass {
      *
      * This will include all models that have not had the destroy() method
      * called on them.  Models will be returned in creation order.
-     *
-     * @param {ModelSelector} [selector] - optional selector for filtering models.
-     * @returns {HoistModel[]}
      */
-    getActiveModels(selector = '*') {
+    getActiveModels(selector: ModelSelector = '*'): HoistModel[] {
         const ret = [];
         HoistModel._activeModels.forEach(m => {
             if (m.matchesSelector(selector, true)) ret.push(m);
@@ -700,9 +677,8 @@ class XHClass {
      * for local-to-client uses such as auto-generated store record identifiers.
      *
      * Deliberately *not* intended to be globally unique, suitable for reuse, or to appear as such.
-     * @returns {string}
      */
-    genId() {
+    genId(): string {
         return uniqueId('xh-id-');
     }
 
@@ -716,8 +692,8 @@ class XHClass {
      */
     async initAsync() {
         // Avoid multiple calls, which can occur if AppContainer remounted.
-        if (this.#initCalled) return;
-        this.#initCalled = true;
+        if (this._initCalled) return;
+        this._initCalled = true;
 
         const S = AppState,
             {appSpec, isMobileApp, isPhone, isTablet, isDesktop, baseUrl} = this;
@@ -865,27 +841,30 @@ class XHClass {
     //------------------------
     // Implementation
     //------------------------
-    checkAccess() {
+    private checkAccess() {
         const user = XH.getUser(),
             {checkAccess} = this.appSpec;
 
         if (isString(checkAccess)) {
             return user.hasRole(checkAccess) ?
                 {hasAccess: true} :
-                {hasAccess: false, message: `User needs the role "${checkAccess}" to access this application.`};
+                {
+                    hasAccess: false,
+                    message: `User needs the role "${checkAccess}" to access this application.`
+                };
         } else {
             const ret = checkAccess(user);
             return isBoolean(ret) ? {hasAccess: ret} : ret;
         }
     }
 
-    setDocTitle() {
+    private setDocTitle() {
         const env = XH.getEnv('appEnvironment'),
             {clientAppName} = this.appSpec;
         document.title = (env === 'Production' ? clientAppName : `${clientAppName} (${env})`);
     }
 
-    async getAuthStatusFromServerAsync() {
+    private async getAuthStatusFromServerAsync(): Promise<boolean> {
         return await this.fetchService
             .fetchJson({
                 url: 'xh/authStatus',
@@ -900,18 +879,20 @@ class XHClass {
             });
     }
 
-    startRouter() {
+    private startRouter() {
         this.routerModel.addRoutes(this.appModel.getRoutes());
         this.router.start();
     }
 
-    startOptionsDialog() {
+    private startOptionsDialog() {
         this.acm.optionsDialogModel.setOptions(this.appModel.getAppOptions());
     }
 
-    get acm() {return this.appContainerModel}
+    private get acm(): AppContainerModel {
+        return this.appContainerModel;
+    }
 
-    async initServicesInternalAsync(svcs) {
+    private async initServicesInternalAsync(svcs: BaseService[]) {
         const promises = svcs.map(it => {
             return withDebug(`Initializing ${it.constructor.name}`, () => {
                 return it.initAsync();
@@ -939,7 +920,7 @@ class XHClass {
         }
     }
 
-    trackLoad() {
+    private trackLoad() {
         let loadStarted = window._xhLoadTimestamp, // set in index.html
             loginStarted = null,
             loginElapsed = 0;
@@ -974,56 +955,25 @@ class XHClass {
         );
     }
 
-    createActivityListeners() {
+    private createActivityListeners() {
         ['keydown', 'mousemove', 'mousedown', 'scroll', 'touchmove', 'touchstart'].forEach(name => {
             window.addEventListener(name, () => {
-                this.#lastActivityMs = Date.now();
+                this._lastActivityMs = Date.now();
             });
         });
     }
 
-    get uaParser() {
-        if (!this.#uaParser) this.#uaParser = new parser();
-        return this.#uaParser;
+    private get uaParser() {
+        if (!this._uaParser) this._uaParser = new parser();
+        return this._uaParser;
     }
 }
 
-/** @type {XHClass} - app-wide singleton instance. */
-export const XH = new XHClass();
+/** app-wide singleton instance. */
+export const XH: XHClass = new XHClass();
 
 // Install reference to XH singleton on window (this is the one global Hoist adds directly).
 // Note that app code should still `import {XH} from '@xh/hoist/core'` to access this instance.
 window['XH'] = XH;
 
-/**
- * @typedef {Object} MessageConfig - configuration object for a modal alert, confirm, or prompt.
- * @property {(ReactNode|string)} message - message to be displayed.
- * @property {string} [title] - title of message box.
- * @property {Element} [icon] - icon to be displayed.
- * @property {string} [className] - class name to apply to rendered dialog.
- * @property {string} [messageKey] - unique key identifying the message. If subsequent messages
- *      are triggered with this key, they will replace this message. Useful for usages that may
- *      be producing messages recursively, or via timers and wish to avoid generating a large stack
- *      of duplicates.
- * @property {MessageInput} [input] - config for input to be displayed (as a prompt).
- * @property {Object} [confirmProps] - props for primary confirm button.
- *      Must provide either text or icon for button to be displayed, or use a preconfigured
- *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
- * @property {Object} [cancelProps] - props for secondary cancel button.
- *      Must provide either text or icon for button to be displayed, or use a preconfigured
- *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
- * @property {string} [cancelAlign] - specify 'left' to place the Cancel button (if shown) on the
- *      left edge of the dialog toolbar, with a filler between it and Confirm.
- * @property {function} [onConfirm] - Callback to execute when confirm is clicked.
- * @property {function} [onCancel] - Callback to execute when cancel is clicked.
- * @property {boolean} [dismissable] - flag to specify whether a popup can be clicked out of or
- *      escaped.
- * @property {boolean} [cancelOnDismiss] - flag to specify whether onCancel is executed when
- *      clicking out of or escaping a popup.
- */
-
-/**
- * @callback Banner-onCloseFn
- * @param {BannerModel} model - the backing model for the banner which was just closed.
- */
 

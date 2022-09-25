@@ -104,9 +104,3 @@ export class UsesSpec extends ModelSpec {
         this.createDefault = createDefault;
     }
 }
-
-/**
- * @typedef {(Class|function|string)} ModelSelector -- class (or superclass) to match, class name
- *      (as a string), '*' to accept any Model, boolean, or function taking a model and returning
- *      any of the above.
- */

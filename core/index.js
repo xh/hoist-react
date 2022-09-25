@@ -33,5 +33,7 @@ export * from './persist/DashViewProvider';
 export * from './persist/PrefProvider';
 export * from './persist/CustomProvider';
 
+export * from './Interfaces';
+
 // Explicitly exporting `XH` helps IntelliJ suggest the correct import from this core package.
 export {XH} from './XH';

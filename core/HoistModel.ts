@@ -12,6 +12,7 @@ import {managed} from './HoistBaseDecorators';
 import {ensureIsSelector} from './modelspec/uses';
 import {LoadSupport} from './refresh/LoadSupport';
 import {observable, action} from '@xh/hoist/mobx';
+import {LoadSpec} from './refresh/LoadSpec';
 
 /**
  * Core superclass for stateful Models in Hoist. Models are used throughout the toolkit and
@@ -55,16 +56,16 @@ import {observable, action} from '@xh/hoist/mobx';
  */
 export class HoistModel extends HoistBase {
 
-    static get isHoistModel() {return true}
-    get isHoistModel() {return true}
+    static get isHoistModel(): boolean {return true}
+    get isHoistModel(): boolean {return true}
 
     // Internal State
     @observable
-    _componentProps = {};
-    _modelLookup = null;
+    private _componentProps = {};
+    private _modelLookup = null;
 
     // global registry of all active models
-    static _activeModels = new Set();
+    private static _activeModels = new Set();
 
     constructor() {
         super();
@@ -79,7 +80,7 @@ export class HoistModel extends HoistBase {
     // Load Support
     //---------------
     /**
-     * @member {LoadSupport} - provides optional support for Hoist's approach to managed loading.
+     * Provides optional support for Hoist's approach to managed loading.
      *
      * Applications will not typically need to access this object directly. If a subclass
      * declares a concrete implementation of the `doLoadAsync()` template method, an instance of
@@ -88,19 +89,19 @@ export class HoistModel extends HoistBase {
      * See the class-level comments above for additional details.
      */
     @managed
-    loadSupport;
+    loadSupport: LoadSupport;
 
-    /** @member {TaskObserver} - {@see LoadSupport.loadModel} */
-    get loadModel() {return this.loadSupport?.loadModel}
+    /** @see LoadSupport.loadModel */
+    get loadModel(): LoadSupport {return this.loadSupport?.loadModel}
 
-    /** @member {Date} - {@see LoadSupport.lastLoadRequested} */
-    get lastLoadRequested() {return this.loadSupport?.lastLoadRequested}
+    /** @see LoadSupport.lastLoadRequested */
+    get lastLoadRequested(): Date {return this.loadSupport?.lastLoadRequested}
 
-    /** @member {Date} -  {@see LoadSupport.lastLoadCompleted} */
-    get lastLoadCompleted() {return this.loadSupport?.lastLoadCompleted}
+    /** @see LoadSupport.lastLoadCompleted */
+    get lastLoadCompleted(): Date {return this.loadSupport?.lastLoadCompleted}
 
-    /** @member {Error} - {@see LoadSupport.lastLoadException} */
-    get lastLoadException() {return this.loadSupport?.lastLoadException}
+    /** @see LoadSupport.lastLoadException */
+    get lastLoadException(): Error {return this.loadSupport?.lastLoadException}
 
     /**
      * Primary API to trigger a data load on any models with `loadSupport`.
@@ -112,27 +113,27 @@ export class HoistModel extends HoistBase {
      */
     async loadAsync(loadSpec) {return this.loadSupport?.loadAsync(loadSpec)}
 
-    /** Refresh this object - {@see LoadSupport.refreshAsync} */
-    async refreshAsync(meta) {return this.loadSupport?.refreshAsync(meta)}
+    /** Refresh this object - @see LoadSupport.refreshAsync */
+    async refreshAsync(meta?: object) {return this.loadSupport?.refreshAsync(meta)}
 
     /** Auto-refresh this object - {@see LoadSupport.autoRefreshAsync} */
-    async autoRefreshAsync(meta) {return this.loadSupport?.autoRefreshAsync(meta)}
+    async autoRefreshAsync(meta?: object) {return this.loadSupport?.autoRefreshAsync(meta)}
 
     /**
      * Implement this method to load data or other state from external data sources or services.
-     * @protected - callers should call `loadAsync()` or `refreshAsync()` instead.
+     * This is a template method -- callers should call `loadAsync()` or `refreshAsync()` instead.
      *
-     * @param {LoadSpec} loadSpec - metadata about the underlying request. Implementations should
+     * @param loadSpec - metadata about the underlying request. Implementations should
      *      take care to pass this parameter in calls to any delegates that support it, e.g.
      *      when calling the `loadAsync()` method of other services or child models with
      *      `loadSupport` or when making calls to the core {@see FetchService} APIs.
      */
-    async doLoadAsync(loadSpec) {}
+    protected async doLoadAsync(loadSpec: LoadSpec) {}
 
     //---------------------------
     // Linked model support
     //---------------------------
-    get isLinked() {
+    get isLinked(): boolean {
         return !!this._modelLookup;
     }
 
@@ -144,7 +145,7 @@ export class HoistModel extends HoistBase {
      * Observability is based on a shallow computation for each prop (i.e. a reference
      * change in any particular prop will trigger observers to be notified).
      */
-    get componentProps() {
+    get componentProps(): object {
         return this._componentProps;
     }
 
@@ -180,7 +181,7 @@ export class HoistModel extends HoistBase {
      * @param {ModelSelector} selector - type of model to lookup.
      * @returns {HoistModel} - model, or null if no matching model found.
      */
-    lookupModel(selector) {
+    lookupModel(selector: ModelSelector): HoistModel {
         warnIf(
             !this.isLinked,
             'Attempted to execute a lookup from a model that has not yet been linked. ' +
@@ -207,14 +208,9 @@ export class HoistModel extends HoistBase {
 
     /**
      * Does this model match a ModelSelector?
-     *
-     * @param {ModelSelector} selector
-     * @param {boolean} [acceptWildcard]
-     * @returns {boolean}
-     *
      * @package
      */
-    matchesSelector(selector, acceptWildcard = false) {
+    matchesSelector(selector: ModelSelector, acceptWildcard?: boolean = false): boolean {
         // 1) check class ref first, it's a function, but distinct from callable function below
         if (selector.isHoistModel) return this instanceof selector;
 
@@ -246,7 +242,7 @@ export class HoistModel extends HoistBase {
  *
  * @param {ModelSelector} selector - type/specification of model to lookup.
  */
-export function lookup(selector) {
+export function lookup(selector: ModelSelector) {
     ensureIsSelector(selector);
     return function(target, property, descriptor) {
         throwIf(!target.isHoistModel, '@lookup decorator should be applied to a subclass of HoistModel');
@@ -258,3 +254,14 @@ export function lookup(selector) {
         return descriptor;
     };
 }
+
+/**
+ * Type for use in identifying a model or set of models.  May be one of:
+ *
+ *  - class (or superclass) to match
+ *  - class name (as a string)
+ *  - '*' to accept any Model
+ *  - boolean
+ *  - function taking a model and returning any of the above.
+ */
+export type ModelSelector = (new () => ModelSelector)|string|boolean|((model: HoistModel) => any)

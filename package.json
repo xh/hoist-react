@@ -10,7 +10,7 @@
   "scripts": {
     "lint": "yarn lint:all",
     "lint:all": "yarn lint:js && yarn lint:styles",
-    "lint:js": "eslint --ext .js,.jsx .",
+    "lint:js": "eslint --ext .js,.jsx,.ts,.tsx .",
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
     "prepare": "husky install"
   },
@@ -18,7 +18,7 @@
     "./static/polyfills.js"
   ],
   "lint-staged": {
-    "*.{js,jsx}": "eslint",
+    "*.{js,jsx,ts,tsx}": "eslint",
     "*.s?(a|c)ss": "stylelint"
   },
   "dependencies": {
@@ -84,7 +84,10 @@
     "react": "~18.2.0",
     "react-dom": "~18.2.0",
     "stylelint": "~14.9.1",
-    "stylelint-config-standard-scss": "~5.0.0"
+    "stylelint-config-standard-scss": "~5.0.0",
+    "typescript": "4.8.3",
+    "@typescript-eslint/eslint-plugin": "^5.38.0",
+    "@typescript-eslint/parser": "^5.38.0"
   },
   "resolutions": {
     "core-js": "^3.0.0"
