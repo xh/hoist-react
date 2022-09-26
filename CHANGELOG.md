@@ -6,6 +6,7 @@
 
 * `DashCanvasViewModel` now supports `autoHeight` to automatically resize a `DashCanvasView's`
   height to fit its contents.
+* `DashCanvasAddViewButton` exported as a public component to support adding views to `DashCanvas`.
 * `ModelSelector` used for model lookup and matching will now accept the class name of the model to
   match. Previously only a class reference could be provided.
 * The Admin Console diff tool for Configs, Prefs, and JSONBlobs now displays who updated each value
