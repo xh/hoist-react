@@ -4,24 +4,26 @@
 
 ### 🎁 New Features
 
-* Admin detailed configuration comparison display now shows who updated each value and when.
 * `DashCanvasViewModel` now supports `autoHeight` to automatically resize a `DashCanvasView's`
-    height to fit its contents
-* `DashCanvasAddViewButton` is now available as a convenience menu button for adding views to a
-    `DashCanvas`.
-* New method `XH.activeModels()`allows accessing all currently active models in the application.
-* `ModelSelector` used for model lookup/matching will now accept the class name of the model to
- match.  Previously only a class reference could be provided.
+  height to fit its contents.
+* `DashCanvasAddViewButton` exported as a public component to support adding views to `DashCanvas`.
+* `ModelSelector` used for model lookup and matching will now accept the class name of the model to
+  match. Previously only a class reference could be provided.
+* The Admin Console diff tool for Configs, Prefs, and JSONBlobs now displays who updated each value
+  and when.
 
 ### ⚙️ Technical
-* Fixed an issue where `HoistComponents` were mutating the props object passed to them in React
-production mode. This was not causing noticeable application issues, but was manifesting itself in
-accumulating copies of the components base css class in its style attribute.
-* GridModel will once again immediately sync data with its underlying ag-Grid component.  This
-reverses a v50.0.0 change that introduced a minimal debounce in order to workaround an ag-Grid
-rendering bug.  The ag-Grid bug has been resolved, and this workaround is no longer needed.
+
+* New method `XH.activeModels()` supports listing and querying all models instantiated within a
+  running app. Intended for use by devs looking to inspect or troubleshoot their models.
+* `HoistComponents` no longer mutate the props object passed to them in React production mode. This
+  was not causing noticeable application issues, but could result in a component's base CSS class
+  being applied multiple times to its DOM element.
+* GridModel will once again immediately sync data with its underlying ag-Grid component. This
+  reverses a v50.0.0 change that introduced a minimal debounce in order to work around an ag-Grid
+  rendering bug. The ag-Grid bug has been resolved, and this workaround is no longer needed.
 * `GridExportService` has improved support for columns of `FieldType.AUTO` and for columns with
-  multiple data types and custom export functions.  (Requires `hoist-core >= 14.3`)
+  multiple data types and custom export functions. (Requires `hoist-core >= 14.3`)
 
 ## v51.0.0 - 2022-08-29
 
