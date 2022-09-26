@@ -26,7 +26,8 @@ export class ModelsModel extends HoistModel {
     @bindable @persist groupModelInstancesByClass = true;
     @bindable observablePropsOnly = false;
     @bindable showUnderscoreProps = false;
-    @bindable.ref watchlist = [];
+
+    @bindable.ref propsWatchlist = [];
 
     /** @return {HoistModel} */
     get selectedModel() {
@@ -95,13 +96,13 @@ export class ModelsModel extends HoistModel {
         }
     }
 
-    toggleWatchlistItem(xhId, property) {
-        const {watchlist} = this,
+    togglePropsWatchlistItem(xhId, property) {
+        const {propsWatchlist} = this,
             currItem = this.getWatchlistItem(xhId, property);
 
-        this.watchlist = currItem ?
-            without(watchlist, currItem) :
-            [...watchlist, {xhId, property}];
+        this.propsWatchlist = currItem ?
+            without(propsWatchlist, currItem) :
+            [...propsWatchlist, {xhId, property}];
     }
 
     getModelInstance(xhId) {
@@ -187,7 +188,7 @@ export class ModelsModel extends HoistModel {
                         {
                             icon: Icon.star(),
                             tooltip: 'Toggle Watchlist',
-                            actionFn: ({record}) => this.toggleWatchlistItem(record.data.xhId, record.data.property),
+                            actionFn: ({record}) => this.togglePropsWatchlistItem(record.data.xhId, record.data.property),
                             displayFn: ({record}) => ({
                                 icon: record.data.isWatchlistItem ?
                                     Icon.star({intent: 'warning', prefix: 'fas'}) :
@@ -242,7 +243,7 @@ export class ModelsModel extends HoistModel {
     autoLoadPropertiesGrid() {
         this.addAutorun({
             run: () => {
-                const {propertiesGridModel, selectedModel, watchlist} = this,
+                const {propertiesGridModel, selectedModel, propsWatchlist} = this,
                     data = [];
 
                 // Show own + prototype properties on selected model.
@@ -253,7 +254,7 @@ export class ModelsModel extends HoistModel {
                 }
 
                 // As well as any watchlist items.
-                watchlist.forEach(it => {
+                propsWatchlist.forEach(it => {
                     const wlModel = this.getModelInstance(it.xhId);
                     if (wlModel) {
                         data.push(this.getRecData(wlModel, it.property, true));
@@ -294,7 +295,7 @@ export class ModelsModel extends HoistModel {
     }
 
     getWatchlistItem(xhId, property) {
-        return find(this.watchlist, {xhId, property});
+        return find(this.propsWatchlist, {xhId, property});
     }
 }
 
