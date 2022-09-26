@@ -1,26 +1,22 @@
 import {hframe} from '@xh/hoist/cmp/layout';
-import {creates, hoistCmp, XH} from '@xh/hoist/core';
-import {InspectorModel} from '@xh/hoist/desktop/appcontainer/inspector/InspectorModel';
-import {
-    modelInstancePanel
-} from '@xh/hoist/desktop/appcontainer/inspector/widgets/ModelInstancePanel';
-import {statsPanel} from '@xh/hoist/desktop/appcontainer/inspector/widgets/StatsPanel';
+import {hoistCmp, XH} from '@xh/hoist/core';
+import {modelsPanel} from '@xh/hoist/desktop/appcontainer/inspector/models/ModelsPanel';
+import {statsPanel} from '@xh/hoist/desktop/appcontainer/inspector/stats/StatsPanel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
+import './Inspector.scss';
 
 export const inspectorPanel = hoistCmp.factory({
     displayName: 'InspectorPanel',
-    model: creates(InspectorModel),
 
-    /** @param {InspectorModel} model */
-    render({model}) {
-        if (!model.enabled) return null;
+    render() {
+        if (!XH.inspectorService.active) return null;
 
         return panel({
-            title: 'Hoist Inspector',
+            title: `Inspector - Hoist v${XH.environmentService.get('hoistReactVersion')}`,
             icon: Icon.search(),
-            className: 'xh-inspector-panel',
+            className: 'xh-inspector',
             model: {
                 defaultSize: 400,
                 side: 'bottom'
@@ -30,12 +26,12 @@ export const inspectorPanel = hoistCmp.factory({
                 button({
                     icon: Icon.x(),
                     text: 'Close Inspector',
-                    onClick: () => XH.inspectorService.disable()
+                    onClick: () => XH.inspectorService.deactivate()
                 })
             ],
             item: hframe(
                 statsPanel(),
-                modelInstancePanel()
+                modelsPanel()
             )
         });
     }

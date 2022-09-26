@@ -112,7 +112,7 @@ function buildMenuItems({
     hideAdminItem = hideAdminItem || !isHoistAdmin;
     hideChangelogItem = hideChangelogItem || !XH.changelogService.enabled;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
-    hideInspectorItem = hideInspectorItem || !isHoistAdmin;
+    hideInspectorItem = hideInspectorItem || !XH.inspectorService.enabled || !isHoistAdmin;
     hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);
     hideOptionsItem = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions;
 
@@ -150,9 +150,9 @@ function buildMenuItems({
         },
         {
             omit: hideInspectorItem,
-            text: XH.inspectorService.enabled ? 'Stop Inspecting' : 'Inspect',
+            text: XH.inspectorService.active ? 'Stop Inspecting' : 'Inspect',
             icon: Icon.detail(),
-            onClick: () => XH.inspectorService.toggleEnabled()
+            onClick: () => XH.inspectorService.toggleActive()
         },
         '-',
         {

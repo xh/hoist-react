@@ -15,10 +15,11 @@ export const versionBar = hoistCmp.factory({
     render() {
         if (!isShowing()) return null;
 
-        const env = XH.getEnv('appEnvironment'),
+        const inspectorSvc = XH.inspectorService,
+            env = XH.getEnv('appEnvironment'),
             version = XH.getEnv('clientVersion'),
             build = XH.getEnv('clientBuild'),
-            versionAndBuild = (!build || build == 'UNKNOWN') ? version : `${version} (build ${build})`;
+            versionAndBuild = (!build || build === 'UNKNOWN') ? version : `${version} (build ${build})`;
 
         return box({
             justifyContent: 'center',
@@ -30,6 +31,10 @@ export const versionBar = hoistCmp.factory({
                 Icon.info({
                     omit: !XH.acm.hasAboutDialog(),
                     onClick: () => XH.showAboutDialog()
+                }),
+                Icon.search({
+                    omit: !inspectorSvc.enabled || !XH.getUser().isHoistAdmin,
+                    onClick: () => inspectorSvc.toggleActive()
                 })
             ]
         });
