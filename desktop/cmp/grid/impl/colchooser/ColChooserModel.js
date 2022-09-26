@@ -133,7 +133,7 @@ export class ColChooserModel extends HoistModel {
             cols.forEach(col => {
                 if (col.children) {
                     // create a group node
-                    const id = XH.genId(); // (`${path}>>${col.groupId}`)
+                    const id = `${path}>>${XH.genId()}`; // (`${path}>>${col.groupId}`)
                     const children = processColumns(col.children, id);
                     if (!isEmpty(children)) {
                         // add the node if it has children
