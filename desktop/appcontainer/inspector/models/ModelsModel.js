@@ -31,8 +31,7 @@ export class ModelsModel extends HoistModel {
 
     /** @return {HoistModel} */
     get selectedModel() {
-        const xhId = this.instancesGridModel.selectedId;
-        return xhId ? XH.getActiveModels(it => it.xhId === xhId)[0] : null;
+        return this.getModelInstance(this.instancesGridModel.selectedId);
     }
 
     constructor() {
@@ -106,6 +105,7 @@ export class ModelsModel extends HoistModel {
     }
 
     getModelInstance(xhId) {
+        if (!xhId) return null;
         const matches = XH.getActiveModels(it => it.xhId === xhId);
         return matches.length ? matches[0] : null;
     }
