@@ -7,6 +7,9 @@
 import {HoistBase} from './HoistBase';
 import {managed} from './HoistBaseDecorators';
 import {LoadSupport} from './refresh/LoadSupport';
+import {TaskObserver} from './TaskObserver';
+import {LoadSpec} from './refresh/LoadSpec';
+
 
 /**
  * Core superclass for Services in Hoist. Services are special classes used in both Hoist and
@@ -34,8 +37,8 @@ import {LoadSupport} from './refresh/LoadSupport';
  */
 export class HoistService extends HoistBase {
 
-    static get isHoistService() {return true}
-    get isHoistService() {return true}
+    static get isHoistService(): boolean {return true}
+    get isHoistService(): boolean {return true}
 
     constructor() {
         super();
@@ -52,51 +55,51 @@ export class HoistService extends HoistBase {
     async initAsync() {}
 
     /**
-     * @member {LoadSupport} - provides optional support for Hoist's approach to managed loading.
+     * Provides optional support for Hoist's approach to managed loading.
      *
      * Applications will not typically need to access this object directly. If a subclass
      * declares a concrete implementation of the `doLoadAsync()` template method, an instance of
      * `LoadSupport` will automatically be created and installed to support the extensions below.
      */
     @managed
-    loadSupport;
+    loadSupport: LoadSupport;
 
-    /** @member {TaskObserver} - {@see LoadSupport.loadModel} */
-    get loadModel() {return this.loadSupport?.loadModel}
+    /** @see LoadSupport.loadModel */
+    get loadModel(): TaskObserver {return this.loadSupport?.loadModel}
 
-    /** @member {Date} - {@see LoadSupport.lastLoadRequested} */
-    get lastLoadRequested() {return this.loadSupport?.lastLoadRequested}
+    /** @see LoadSupport.lastLoadRequested */
+    get lastLoadRequested(): Date {return this.loadSupport?.lastLoadRequested}
 
-    /** @member {Date} -  {@see LoadSupport.lastLoadCompleted} */
-    get lastLoadCompleted() {return this.loadSupport?.lastLoadCompleted}
+    /** @see LoadSupport.lastLoadCompleted */
+    get lastLoadCompleted(): Date {return this.loadSupport?.lastLoadCompleted}
 
-    /** @member {Error} - {@see LoadSupport.lastLoadException} */
-    get lastLoadException() {return this.loadSupport?.lastLoadException}
+    /** @see LoadSupport.lastLoadException */
+    get lastLoadException(): any {return this.loadSupport?.lastLoadException}
 
     /**
      * Primary API to trigger a data load on any models with `loadSupport`.
      * @see LoadSupport.loadAsync()
      *
-     * @param {LoadSpec} [loadSpec] - optional metadata about the underlying request, commonly used
+     * @param [loadSpec] - optional metadata about the underlying request, commonly used
      *      within Hoist and app code to adjust related behaviors such as error handling and
      *      activity tracking.
      */
-    async loadAsync(loadSpec) {return this.loadSupport?.loadAsync(loadSpec)}
+    async loadAsync(loadSpec?: LoadSpec) {return this.loadSupport?.loadAsync(loadSpec)}
 
     /** Refresh this object - {@see LoadSupport.refreshAsync} */
-    async refreshAsync(meta) {return this.loadSupport?.refreshAsync(meta)}
+    async refreshAsync(meta: object) {return this.loadSupport?.refreshAsync(meta)}
 
     /** Auto-refresh this object - {@see LoadSupport.autoRefreshAsync} */
-    async autoRefreshAsync(meta) {return this.loadSupport?.autoRefreshAsync(meta)}
+    async autoRefreshAsync(meta: object) {return this.loadSupport?.autoRefreshAsync(meta)}
 
     /**
      * Implement this method to load data or other state from external data sources or services.
      * @protected - callers should call `loadAsync()` or `refreshAsync()` instead.
      *
-     * @param {LoadSpec} loadSpec - metadata about the underlying request. Implementations should
+     * @param loadSpec - metadata about the underlying request. Implementations should
      *      take care to pass this parameter in calls to any delegates that support it, e.g.
      *      when calling the `loadAsync()` method of other services or child models with
      *      `loadSupport` or when making calls to the core {@see FetchService} APIs.
      */
-    async doLoadAsync(loadSpec) {}
+    protected async doLoadAsync(loadSpec: LoadSpec) {}
 }

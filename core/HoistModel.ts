@@ -13,6 +13,8 @@ import {ensureIsSelector} from './modelspec/uses';
 import {LoadSupport} from './refresh/LoadSupport';
 import {observable, action} from '@xh/hoist/mobx';
 import {LoadSpec} from './refresh/LoadSpec';
+import {TaskObserver} from './TaskObserver';
+
 
 /**
  * Core superclass for stateful Models in Hoist. Models are used throughout the toolkit and
@@ -92,7 +94,7 @@ export class HoistModel extends HoistBase {
     loadSupport: LoadSupport;
 
     /** @see LoadSupport.loadModel */
-    get loadModel(): LoadSupport {return this.loadSupport?.loadModel}
+    get loadModel(): TaskObserver {return this.loadSupport?.loadModel}
 
     /** @see LoadSupport.lastLoadRequested */
     get lastLoadRequested(): Date {return this.loadSupport?.lastLoadRequested}
@@ -101,17 +103,17 @@ export class HoistModel extends HoistBase {
     get lastLoadCompleted(): Date {return this.loadSupport?.lastLoadCompleted}
 
     /** @see LoadSupport.lastLoadException */
-    get lastLoadException(): Error {return this.loadSupport?.lastLoadException}
+    get lastLoadException(): any {return this.loadSupport?.lastLoadException}
 
     /**
      * Primary API to trigger a data load on any models with `loadSupport`.
      * @see LoadSupport.loadAsync()
      *
-     * @param {LoadSpec} [loadSpec] - optional metadata about the underlying request, commonly used
+     * @param [loadSpec] - optional metadata about the underlying request, commonly used
      *      within Hoist and app code to adjust related behaviors such as error handling and
      *      activity tracking.
      */
-    async loadAsync(loadSpec) {return this.loadSupport?.loadAsync(loadSpec)}
+    async loadAsync(loadSpec?: LoadSpec) {return this.loadSupport?.loadAsync(loadSpec)}
 
     /** Refresh this object - @see LoadSupport.refreshAsync */
     async refreshAsync(meta?: object) {return this.loadSupport?.refreshAsync(meta)}
@@ -178,8 +180,8 @@ export class HoistModel extends HoistBase {
      *
      * Only available for linked models.
      *
-     * @param {ModelSelector} selector - type of model to lookup.
-     * @returns {HoistModel} - model, or null if no matching model found.
+     * @param selector - type of model to lookup.
+     * @returns model, or null if no matching model found.
      */
     lookupModel(selector: ModelSelector): HoistModel {
         warnIf(
@@ -240,7 +242,7 @@ export class HoistModel extends HoistBase {
  * Accessing properties decorated with @lookup should first be done in the onLinked(),
  * or afterLinked() handlers.
  *
- * @param {ModelSelector} selector - type/specification of model to lookup.
+ * @param selector - type/specification of model to lookup.
  */
 export function lookup(selector: ModelSelector) {
     ensureIsSelector(selector);

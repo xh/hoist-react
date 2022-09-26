@@ -4,16 +4,61 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {CreatesSpec, elemFactory, ModelPublishMode, ModelSpec, uses, formatSelector} from '@xh/hoist/core';
+import {CreatesSpec, elemFactory, ElemFactory, ModelPublishMode, ModelSpec, uses, formatSelector} from '@xh/hoist/core';
 import {useModelLinker} from '@xh/hoist/core/impl/ModelLinker';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {useOnMount, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isObject} from 'lodash';
 import {observer} from '@xh/hoist/mobx';
-import {forwardRef, memo, useContext, useDebugValue, useState} from 'react';
+import {
+    forwardRef,
+    FunctionComponent,
+    memo,
+    ReactNode,
+    useContext,
+    useDebugValue,
+    useState
+} from 'react';
 import {localModelContext} from './hooks/Models';
 import {ModelLookup, ModelLookupContext, modelLookupContextProvider} from './impl/ModelLookup';
+
+interface HoistComponentSpec {
+
+    /** Render function defining the component. */
+    render(props, ref?): ReactNode;
+
+    /**
+     * Spec defining the model to be rendered by this component.
+     * Specify as false for components that don't require a primary model. Otherwise,
+     * {@see uses()} and {@see creates()} - these two factory functions will create an appropriate
+     * spec for either externally-provided or internally-created models. Defaults to `uses('*')`.
+     */
+    model?: ModelSpec;
+
+    /**
+     * Base CSS class for this component. Will be combined with any className
+     * in props, with the combined string passed into render as a prop.
+     */
+    className?: string;
+
+    /** Component name for debugging/inspection. */
+    displayName?: string;
+
+    /**
+     * True (default) to wrap component in a call to `React.memo()`.
+     * Components that are known to be unable to make effective use of memo (e.g. container
+     * components) may set this to `false`. Not typically set by application code.
+     */
+    memo?: boolean,
+
+    /**
+     *  True (default) to enable MobX-powered reactivity via the
+     * `observer()` HOC from mobx-react. Components that are known to dereference no observable
+     *  state may set this to `false`, but this is not typically done by application code.
+     */
+    observer?: boolean
+}
 
 /**
  * Hoist utility for defining functional components. This is the primary method for creating
@@ -32,22 +77,8 @@ import {ModelLookup, ModelLookupContext, modelLookupContextProvider} from './imp
  * render function that accepts two arguments. In that case, the second arg will be considered a
  * ref, and this utility will apply `React.forwardRef` as required.
  *
- * @param {(Object|function)} config - config object, or a render function defining the component.
- * @param {function} [config.render] - render function defining the component.
- * @param {ModelSpec} [config.model] - spec defining the model to be rendered by this component.
- *      Specify as false for components that don't require a primary model. Otherwise,
- *      {@see uses()} and {@see creates()} - these two factory functions will create an appropriate
- *      spec for either externally-provided or internally-created models. Defaults to `uses('*')`.
- * @param {string} [config.className] - base CSS class for this component. Will be combined with any
- *      className in props, with the combined string passed into render as a prop.
- * @param {string} [config.displayName] - component name for debugging/inspection.
- * @param {boolean} [config.memo] - true (default) to wrap component in a call to `React.memo()`.
- *      Components that are known to be unable to make effective use of memo (e.g. container
- *      components) may set this to `false`. Not typically set by application code.
- * @param {boolean} [config.observer] - true (default) to enable MobX-powered reactivity via the
- *      `observer()` HOC from mobx-react. Components that are known to dereference no observable
- *      state may set this to `false`, but this is not typically done by application code.
- * @returns {function} - a functional React Component for use within Hoist apps.
+ * @param config - specification object, or a render function defining the component.
+ * @returns a functional React Component for use within Hoist apps.
  *
  * @see hoistCmp - a shorthand alias to this function.
  *
@@ -57,7 +88,9 @@ import {ModelLookup, ModelLookupContext, modelLookupContextProvider} from './imp
  *   - `hoistComponent.withFactory` - returns a 2-element list containing both the newly defined
  *          Component and an elemFactory for it.
  */
-export function hoistComponent(config) {
+export function hoistComponent(
+    config: HoistComponentSpec | ((props, ref?) => ReactNode)
+): FunctionComponent  {
     // 0) Pre-process/parse args.
     if (isFunction(config)) config = {render: config, displayName: config.name};
 
@@ -111,6 +144,7 @@ export function hoistComponent(config) {
     return ret;
 }
 
+
 /**
  * A (satisfyingly short) alias for {@see hoistComponent}.
  */
@@ -125,7 +159,9 @@ export const hoistCmp = hoistComponent;
  *
  * @returns {function} - an elementFactory function for use within parent comp render() functions.
  */
-hoistComponent.factory = (config) => {
+hoistComponent.factory = function(
+    config: HoistComponentSpec | ((props, ref?) => ReactNode)
+): ElemFactory {
     return elemFactory(hoistComponent(config));
 };
 
@@ -135,7 +171,9 @@ hoistComponent.factory = (config) => {
  * @returns {[]} - two-element Array, with the Component as the first element and its
  *      elementFactory function as the second.
  */
-hoistComponent.withFactory = (config) =>  {
+hoistComponent.withFactory = function(
+    config: HoistComponentSpec | ((props, ref?) => ReactNode)
+): [FunctionComponent, ElemFactory] {
     const ret = hoistComponent(config);
     return [ret, elemFactory(ret)];
 };

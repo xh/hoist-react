@@ -4,45 +4,45 @@ import {HTMLElement} from 'dom';
 /**
  * Options for showing a "toast" notification that appears and then automatically dismisses.
  */
-export interface ToastConfig {
-    message: ReactNode
-    icon?: ReactElement
-    intent?: 'primary'|'success'|'warning'|'danger'
+export interface ToastSpec {
+    message: ReactNode;
+    icon?: ReactElement;
+    intent?: 'primary'|'success'|'warning'|'danger',
 
     /**
      * Time in ms to show before auto-dismissing the toast, or null to keep toast
      * visible until manually dismissed.  Default 3000.
      */
-    timeout?: number
+    timeout?: number;
 
     /**
      * If provided, will render a button within the toast to enable the user to take some
      * specific action right from the toast.
      */
-    actionButtonProps?: object
+    actionButtonProps?: object;
 
     /**
      * Relative position at which to display toast, e.g. "bottom-right" (default) or "top".
      * (Desktop only.)
      */
-    position?: string
+    position?: string;
 
     /**
      * DOM element relative to which the toast should be positioned. If null, Toast will show
      * along edge of overall document. (Desktop only.)
      */
-    containerRef?: HTMLElement
+    containerRef?: HTMLElement;
 }
 
 /**
  * Options for showing a modal alert, confirm, or prompt.
  */
-export interface MessageConfig {
+export interface MessageSpec {
 
-    message: ReactNode
-    title?: string
-    icon?: ReactElement
-    className?: string
+    message: ReactNode;
+    title?: string;
+    icon?: ReactElement;
+    className?: string;
 
     /**
      * Unique key identifying the message. If subsequent messages.
@@ -50,49 +50,49 @@ export interface MessageConfig {
      * Useful for usages that may be producing messages recursively, or via timers and wish to
      * avoid generating a large stack of duplicates.
      */
-    messageKey?: string
+    messageKey?: string;
 
     /** Config for input to be displayed (as a prompt). */
-    input?: object
+    input?: object;
 
     /**
      * Props for primary confirm button.
      * Must provide either text or icon for button to be displayed, or use a preconfigured
      * helper such as `XH.alert()` or `XH.confirm()` for default buttons.
      */
-    confirmProps?: object
+    confirmProps?: object;
 
     /**
      * Props for secondary cancel button.
      * Must provide either text or icon for button to be displayed, or use a preconfigured
      * helper such as `XH.alert()` or `XH.confirm()` for default buttons.
      */
-    cancelProps?: object
+    cancelProps?: object;
 
     /**
      * Specify 'left' to place the Cancel button (if shown) on the
      * left edge of the dialog toolbar, with a filler between it and Confirm.
      */
-    cancelAlign?: string
+    cancelAlign?: string;
 
     /** Callback to execute when confirm is clicked.*/
-    onConfirm?: () => void
+    onConfirm?();
 
     /** Callback to execute when cancel is clicked.*/
-    onCancel?: () => void
+    onCancel?();
 
     /** Flag to specify whether a popup can be clicked out of or escaped.*/
-    dismissable?: boolean
+    dismissable?: boolean;
 
     /** flag to specify whether onCancel is executed when clicking out of or escaping a popup. */
-    cancelOnDismiss?: boolean
+    cancelOnDismiss?: boolean;
 }
 
 /**
  * Configuration object for an app-wide banner.
  * Additional properties passed to this object will be passed directly to the banner component.
  */
-export interface BannerConfig {
+export interface BannerSpec {
 
     message?: ReactNode;
     icon?: ReactElement;
@@ -107,7 +107,7 @@ export interface BannerConfig {
      *  (Note, banners closed via `XH.hideBanner()` or when the max
      *  number of banners shown is exceed will NOT trigger this callback.)
      */
-    onClose?: (model) => void;
+    onClose?(model);
 
     /**
      *   If provided, will render a button within the banner to enable the user to

@@ -49,7 +49,7 @@ import {HoistModel, ModelSelector, HoistAppModel} from './HoistModel';
 import {RouterModel} from './RouterModel';
 import {FetchOptions} from '../svc';
 import {RefreshContextModel} from './refresh/RefreshContextModel';
-import {BannerConfig, ToastConfig, MessageConfig} from './Interfaces';
+import {BannerSpec, ToastSpec, MessageSpec} from './Interfaces';
 
 const MIN_HOIST_CORE_VERSION = '14.0';
 
@@ -132,7 +132,7 @@ class XHClass {
     /**
      * Primary convenience alias for reading soft configuration values.
      * @param key - identifier of the config to return.
-     * @param defaultVal - value to return if there is no client-side config with this key.
+     * @param [defaultVal] - value to return if there is no client-side config with this key.
      * @returns the soft-configured value.
      */
     getConf(key: string, defaultVal?: any): any {
@@ -142,7 +142,7 @@ class XHClass {
     /**
      * Primary convenience alias for reading user preference values.
      * @param key - identifier of the pref to return.
-     * @param defaultVal - value to return if there is no pref with this key.
+     * @param [defaultVal] - value to return if there is no pref with this key.
      * @returns the user's preference, or the data-driven default if pref not yet set by user.
      */
     getPref(key: string, defaultVal?: any): any {
@@ -255,7 +255,7 @@ class XHClass {
     /**
      * Install HoistServices on this object.
      *
-     * @param {...Class} serviceClasses - Classes extending HoistService
+     * @param serviceClasses - Classes extending HoistService
      *
      * This method will create, initialize, and install the services classes listed on XH.
      * All services will be initialized concurrently. To guarantee execution order of service
@@ -265,7 +265,7 @@ class XHClass {
      * Therefore applications should choose a unique name of the form xxxService to avoid naming
      * collisions. If naming collisions are detected, an error will be thrown.
      */
-    async installServicesAsync(...serviceClasses) {
+    async installServicesAsync(...serviceClasses: (new () => BaseService)[]) {
         const svcs = serviceClasses.map(serviceClass => new serviceClass());
         await this.initServicesInternalAsync(svcs);
         svcs.forEach(svc => {
@@ -342,7 +342,7 @@ class XHClass {
     /**
      * Sets the theme directly (useful for custom app option controls).
      * @param value - 'light', 'dark', or 'system'
-     * @param persist - true (default) to persist with preference
+     * @param [persist] - true (default) to persist with preference
      */
     setTheme(value: string, persist?: boolean = true) {
         return this.acm.themeModel.setTheme(value, persist);
@@ -429,7 +429,7 @@ class XHClass {
      * @returns true if user confirms, false if user cancels. If an input is provided, the
      * Promise will resolve to the input value if user confirms.
      */
-    message(config: MessageConfig): Promise<any> {
+    message(config: MessageSpec): Promise<any> {
         return this.acm.messageSourceModel.message(config);
     }
 
@@ -437,7 +437,7 @@ class XHClass {
      * Show a modal 'alert' dialog with message and default 'OK' button.
      * @returns true when user acknowledges alert.
      */
-    alert(config: MessageConfig): Promise<boolean> {
+    alert(config: MessageSpec): Promise<boolean> {
         return this.acm.messageSourceModel.alert(config);
     }
 
@@ -445,7 +445,7 @@ class XHClass {
      * Show a modal 'confirm' dialog with message and default 'OK'/'Cancel' buttons.
      * @returns true if user confirms, false if user cancels.
      */
-    confirm(config: MessageConfig): Promise<boolean> {
+    confirm(config: MessageSpec): Promise<boolean> {
         return this.acm.messageSourceModel.confirm(config);
     }
 
@@ -460,7 +460,7 @@ class XHClass {
      *
      * @returns value of input if user confirms, false if user cancels.
      */
-    prompt(config: MessageConfig): Promise<any> {
+    prompt(config: MessageSpec): Promise<any> {
         return this.acm.messageSourceModel.prompt(config);
     }
 
@@ -468,14 +468,14 @@ class XHClass {
      * Show a non-modal "toast" notification that appears and then automatically dismisses.
      * @returns model representing the toast. May be used for programmatic dismissal.
      */
-    toast(config: ToastConfig | string): ToastModel {
+    toast(config: ToastSpec | string): ToastModel {
         return this.acm.toastSourceModel.show(config);
     }
 
     /**
      * Show a toast with default intent and icon indicating success.
      */
-    successToast(config: ToastConfig | string): ToastModel {
+    successToast(config: ToastSpec | string): ToastModel {
         if (isString(config)) config = {message: config};
         return this.toast({intent: 'success', icon: Icon.success(), ...config});
     }
@@ -483,7 +483,7 @@ class XHClass {
     /**
      * Show a toast with default intent and icon indicating a warning.
      */
-    warningToast(config: ToastConfig | string): ToastModel {
+    warningToast(config: ToastSpec | string): ToastModel {
         if (isString(config)) config = {message: config};
         return this.toast({intent: 'warning', icon: Icon.warning(), ...config});
     }
@@ -491,7 +491,7 @@ class XHClass {
     /**
      * Show a toast with intent and icon indicating a serious issue.
      */
-    dangerToast(config: ToastConfig | string): ToastModel {
+    dangerToast(config: ToastSpec | string): ToastModel {
         if (isString(config)) config = {message: config};
         return this.toast({intent: 'danger', icon: Icon.danger(), ...config});
     }
@@ -500,7 +500,7 @@ class XHClass {
      * Show a Banner across the top of the viewport. Banners are unique by their
      * category prop - showing a new banner with an existing category will replace it.
      */
-    showBanner(config: BannerConfig | string): BannerModel {
+    showBanner(config: BannerSpec | string): BannerModel {
         if (isString(config)) config = {message: config};
         return this.acm.bannerSourceModel.show(config);
     }
@@ -526,34 +526,34 @@ class XHClass {
      *
      * @param exception - Error or thrown object - if not an Error, an
      *      Exception will be created via Exception.create().
-     * @param options - controls on how the exception should be shown and/or logged.
-     * @param options.message - text (ideally user-friendly) describing the error.
-     * @param options.title - title for an alert dialog, if shown.
-     * @param options.showAsError - configure modal alert and logging to indicate that
+     * @param [options] - controls on how the exception should be shown and/or logged.
+     * @param [options.message] - text (ideally user-friendly) describing the error.
+     * @param [options.title] - title for an alert dialog, if shown.
+     * @param [options.showAsError] - configure modal alert and logging to indicate that
      *      this is an unexpected error. Default true for most exceptions, false for those marked
      *      as `isRoutine`.
-     * @param options.logOnServer - send the exception to the server to be stored for
+     * @param [options.logOnServer] - send the exception to the server to be stored for
      *      review in the Hoist Admin Console. Default true when `showAsError` is true, excepting
      *      'isAutoRefresh' fetch exceptions.
-     * @param options.showAlert - display an alert dialog to the user. Default true,
+     * @param [options.showAlert] - display an alert dialog to the user. Default true,
      *      excepting 'isAutoRefresh' and 'isFetchAborted' exceptions.
-     * @param options.alertType - if `showAlert`, which type of alert to display.
+     * @param [options.alertType] - if `showAlert`, which type of alert to display.
      *      Defaults to ExceptionHandler.ALERT_TYPE.
-     * @param options.requireReload - force user to fully refresh the app in order to
+     * @param [options.requireReload] - force user to fully refresh the app in order to
      *      dismiss - default false, excepting session-related exceptions.
-     * @param options.hideParams - A list of parameters that should be hidden from
+     * @param [options.hideParams] - A list of parameters that should be hidden from
      *      the exception log and alert.
      */
     handleException(
-        exception: Error | object | string,
+        exception: Error|object|string,
         options?: {
-            message?: string
-            title?: string
-            showAsError?: boolean
-            logOnServer?: boolean
-            showAlert?: boolean
-            alertType?: 'dialog' | 'toast'
-            requireReload?: boolean
+            message?: string,
+            title?: string,
+            showAsError?: boolean,
+            logOnServer?: boolean,
+            showAlert?: boolean,
+            alertType?: 'dialog'|'toast',
+            requireReload?: boolean,
             hideParams?: string[]
         }
     ) {
@@ -568,18 +568,18 @@ class XHClass {
      *
      * @param exception - Error or thrown object - if not an Error, an
      *      Exception will be created via `Exception.create()`.
-     * @param options - controls on how the exception should be shown and/or logged.
-     * @param options.message- text (ideally user-friendly) describing the error.
-     * @param options.title - title for an alert dialog, if shown.
-     * @param options.showAsError - configure modal alert to indicate that this is an
+     * @param [options] - controls on how the exception should be shown and/or logged.
+     * @param [options.message]- text (ideally user-friendly) describing the error.
+     * @param [options.title] - title for an alert dialog, if shown.
+     * @param [options.showAsError] - configure modal alert to indicate that this is an
      *      unexpected error. Default true for most exceptions, false if marked as `isRoutine`.
-     * @param options.requireReload - force user to fully refresh the app in order to
+     * @param [options.requireReload] - force user to fully refresh the app in order to
      *      dismiss - default false, excepting session-related exceptions.
-     * @param options.hideParams - A list of parameters that should be hidden from
+     * @param [options.hideParams] - A list of parameters that should be hidden from
      *      the exception alert.
      */
     showException(
-        exception: Error | Object | string,
+        exception: Error|Object|string,
         options?: {
             message?: string,
             title?: string,
@@ -594,7 +594,7 @@ class XHClass {
      * Create a new exception - {@see Exception} for Hoist conventions / extensions to JS Errors.
      * @param cfg - properties to add to the returned Error. If a string, will become the 'message' value.
      */
-    exception(cfg: Object | string): Error {
+    exception(cfg: Object|string): Error {
         return Exception.create(cfg);
     }
 
@@ -638,7 +638,7 @@ class XHClass {
      * This will include all models that have not had the destroy() method
      * called on them.  Models will be returned in creation order.
      */
-    getActiveModels(selector: ModelSelector = '*'): HoistModel[] {
+    getActiveModels(selector?: ModelSelector = '*'): HoistModel[] {
         const ret = [];
         HoistModel._activeModels.forEach(m => {
             if (m.matchesSelector(selector, true)) ret.push(m);
@@ -658,16 +658,14 @@ class XHClass {
      * Helper method to destroy resources safely (e.g. child HoistModels). Will quietly skip args
      * that are null / undefined or that do not implement destroy().
      *
-     * @param {...(Object|array)} args - objects to be destroyed. If any argument is an array,
+     * @param args - objects to be destroyed. If any argument is an array,
      *      each element in the array will be destroyed (this is *not* done recursively);.
      */
-    safeDestroy(...args) {
+    safeDestroy(...args: (object|object[])[]) {
         if (args) {
             args = flatten(args);
             args.forEach(it => {
-                if (it?.destroy) {
-                    it.destroy();
-                }
+                it?.destroy();
             });
         }
     }
