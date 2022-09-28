@@ -2,7 +2,7 @@ import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, hframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp} from '@xh/hoist/core';
-import {ModelsModel} from '@xh/hoist/desktop/appcontainer/inspector/models/ModelsModel';
+import {ModelsModel} from '@xh/hoist/inspector/models/ModelsModel';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';

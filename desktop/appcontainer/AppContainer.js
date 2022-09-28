@@ -9,14 +9,17 @@ import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {AppState, elem, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {errorBoundary} from '@xh/hoist/core/impl/ErrorBoundary';
 import {changelogDialog} from '@xh/hoist/desktop/appcontainer/ChangelogDialog';
-import {inspectorPanel} from '@xh/hoist/desktop/appcontainer/inspector/InspectorPanel';
 import {suspendPanel} from '@xh/hoist/desktop/appcontainer/SuspendPanel';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
-import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserDialog';
+import {
+    colChooserDialog as colChooser
+} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserDialog';
 import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserModel';
 import {columnHeaderFilter} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilter';
-import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
+import {
+    ColumnHeaderFilterModel
+} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
 import {gridFilterDialog} from '@xh/hoist/desktop/cmp/grid/impl/filter/GridFilterDialog';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
@@ -25,6 +28,7 @@ import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilter
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
+import {inspectorPanel} from '@xh/hoist/inspector/InspectorPanel';
 import {hotkeysProvider} from '@xh/hoist/kit/blueprint';
 import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';

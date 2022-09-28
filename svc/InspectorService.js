@@ -101,11 +101,7 @@ export class InspectorService extends HoistService {
     @action
     activate() {
         if (!this.enabled) {
-            XH.alert({
-                title: 'Cannot activate Inspector',
-                message: 'InspectorService disabled or not accessible to current user - review xhInspectorConfig.'
-            });
-            return;
+            throw XH.exception('InspectorService disabled or not accessible to current user - review xhInspectorConfig.');
         }
 
         this.active = true;
@@ -165,11 +161,12 @@ export class InspectorService extends HoistService {
     }
 
     get conf() {
-        return XH.getConf('xhInspectorConfig', {
+        return {
             enabled: true,
             statsUpdateInterval: 30 * SECONDS,
-            requiresRole: null
-        });
+            requiresRole: null,
+            ...XH.getConf('xhInspectorConfig', {})
+        };
     }
 
 }

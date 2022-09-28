@@ -2,7 +2,7 @@ import {chart} from '@xh/hoist/cmp/chart';
 import {grid} from '@xh/hoist/cmp/grid';
 import {div, filler, span} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
-import {StatsModel} from '@xh/hoist/desktop/appcontainer/inspector/stats/StatsModel';
+import {StatsModel} from '@xh/hoist/inspector/stats/StatsModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
