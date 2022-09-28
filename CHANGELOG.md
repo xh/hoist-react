@@ -24,6 +24,8 @@
   rendering bug. The ag-Grid bug has been resolved, and this workaround is no longer needed.
 * `GridExportService` has improved support for columns of `FieldType.AUTO` and for columns with
   multiple data types and custom export functions. (Requires `hoist-core >= 14.3`)
+* Change to `CompoundTaskObserver` to prioritize using specific messages from subtasks over the
+ overall task message.
 
 ## v51.0.0 - 2022-08-29
 
