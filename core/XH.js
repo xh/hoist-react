@@ -658,8 +658,8 @@ class XHClass {
     /**
      * Return a collection of models currently 'active' in this application.
      *
-     * This will include all models that have not had the destroy() method
-     * called on them.  Models will be returned in creation order.
+     * This will include all models that have not had their destroy() method called.
+     * Models will be returned in creation order.
      *
      * @param {ModelSelector} [selector] - optional selector for filtering models.
      * @returns {HoistModel[]}

@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {action, observable} from '@xh/hoist/mobx';
 import {forOwn, has, isFunction} from 'lodash';
 import {makeObservable} from 'mobx';
 import {throwIf, warnIf} from '../utils/js';
@@ -11,7 +12,6 @@ import {HoistBase} from './HoistBase';
 import {managed} from './HoistBaseDecorators';
 import {ensureIsSelector} from './modelspec/uses';
 import {LoadSupport} from './refresh/LoadSupport';
-import {observable, action} from '@xh/hoist/mobx';
 
 /**
  * Core superclass for stateful Models in Hoist. Models are used throughout the toolkit and
@@ -64,16 +64,15 @@ export class HoistModel extends HoistBase {
     _modelLookup = null;
     _created = Date.now();
 
-    // global registry of all active models
-    static _activeModels = new Set();
-
     constructor() {
         super();
         makeObservable(this);
+
         if (this.doLoadAsync !== HoistModel.prototype.doLoadAsync) {
             this.loadSupport = new LoadSupport(this);
         }
-        HoistModel._activeModels.add(this);
+
+        HoistModel._registerModelInstance(this);
     }
 
     //----------------
@@ -233,9 +232,20 @@ export class HoistModel extends HoistBase {
 
     destroy() {
         super.destroy();
-        HoistModel._activeModels.delete(this);
+        HoistModel._unregisterModelInstance(this);
     }
 }
+
+/**
+ * Static observable Set containing a registry of all currently active models. Models automatically
+ * add themselves to this set when created and remove themselves when destroyed.
+ * @type {ObservableSet<HoistModel>}
+ * @see {XH.getActiveModels}
+ * @package
+ */
+HoistModel._activeModels = observable.set(new Set(), {deep: false});
+HoistModel._registerModelInstance = action(instance => HoistModel._activeModels.add(instance));
+HoistModel._unregisterModelInstance = action(instance => HoistModel._activeModels.delete(instance));
 
 /**
  * Parameterized decorator to inject an instance of an ancestor model in the Model lookup

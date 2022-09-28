@@ -33,7 +33,7 @@ export const versionBar = hoistCmp.factory({
                     onClick: () => XH.showAboutDialog()
                 }),
                 Icon.search({
-                    omit: !inspectorSvc.enabled || !XH.getUser().isHoistAdmin,
+                    omit: !inspectorSvc.enabled,
                     onClick: () => inspectorSvc.toggleActive()
                 })
             ]

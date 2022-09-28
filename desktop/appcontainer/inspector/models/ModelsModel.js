@@ -8,7 +8,7 @@ import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {bindable} from '@xh/hoist/mobx';
 import {trimToDepth} from '@xh/hoist/utils/js';
-import {compact, find, forIn, isArray, isObject, snakeCase, without} from 'lodash';
+import {compact, find, forIn, snakeCase, without} from 'lodash';
 import {isObservableProp, makeObservable} from 'mobx';
 
 const {BOOL, STRING} = FieldType;
@@ -199,7 +199,7 @@ export class ModelsModel extends HoistModel {
                 },
                 {
                     field: {name: 'displayProperty', displayName: 'Property', type: STRING},
-                    width: 150,
+                    width: 200,
                     renderer: (v, {record}) => {
                         return record.data.displayGroup === 'Watchlist' ?
                             a({item: v, onClick: () => this.selectModel(record.data.xhId)}) :
@@ -228,11 +228,7 @@ export class ModelsModel extends HoistModel {
                         if (record.data.isHoistModel) {
                             return a({item: v, onClick: () => this.selectModel(v)});
                         }
-                        const trimmed = isArray(v) ?
-                            v.map(it => trimToDepth(it, 1)) :
-                            isObject(v) ? trimToDepth(v, 1) : v;
-
-                        return JSON.stringify(trimmed);
+                        return JSON.stringify(trimToDepth(v, 2));
                     }
                 },
                 {field: 'displayGroup', hidden: true}
@@ -262,7 +258,8 @@ export class ModelsModel extends HoistModel {
                 });
 
                 propertiesGridModel.loadData(compact(data));
-            }
+            },
+            delay: 300
         });
     }
 
