@@ -28,6 +28,8 @@
   rendering bug. The ag-Grid bug has been resolved, and this workaround is no longer needed.
 * `GridExportService` has improved support for columns of `FieldType.AUTO` and for columns with
   multiple data types and custom export functions. (Requires `hoist-core >= 14.3`)
+* The `trimToDepth` has been improved to return a depth-limited clone of its input that better
+  handles nested arrays and passes through primitive inputs unchanged.
 
 ## v51.0.0 - 2022-08-29
 
