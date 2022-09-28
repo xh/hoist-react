@@ -15,8 +15,8 @@
     * Powered by a new method `XH.activeModels()`, which supports listing and querying all models
       instantiated within a running app, and `XH.inspectorService`, which provides additional
       processing of that model data when active.
-    * Admin/dev-focused UI available on Desktop, activated via Admin-only options in the app menu
-      and version bar, or via `XH.inspectorService.activate()`.
+    * Admin/dev-focused UI available on Desktop, activated via discrete new toggle in the bottom
+      version bar (magnifying glass icon), or via console with `XH.inspectorService.activate()`.
 
 ### ⚙️ Technical
 
