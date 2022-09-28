@@ -75,12 +75,6 @@ AppMenuButton.propTypes = {
      */
     hideImpersonateItem: PT.bool,
 
-    /**
-     * True to hide the Inspector (Hoist debugging tool) Item.
-     * Always hidden for users w/o HOIST_ADMIN role.
-     */
-    hideInspectorItem: PT.bool,
-
     /** True to hide the Logout button. Defaulted to appSpec.isSSO. */
     hideLogoutItem: PT.bool,
 
@@ -101,18 +95,15 @@ function buildMenuItems({
     hideChangelogItem,
     hideFeedbackItem,
     hideImpersonateItem,
-    hideInspectorItem,
     hideLogoutItem,
     hideOptionsItem,
     hideThemeItem,
     extraItems = []
 }) {
-    const {isHoistAdmin} = XH.getUser();
     hideAboutItem = hideAboutItem || !XH.acm.hasAboutDialog();
-    hideAdminItem = hideAdminItem || !isHoistAdmin;
+    hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdmin;
     hideChangelogItem = hideChangelogItem || !XH.changelogService.enabled;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
-    hideInspectorItem = hideInspectorItem || !XH.inspectorService.enabled || !isHoistAdmin;
     hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);
     hideOptionsItem = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions;
 
@@ -147,12 +138,6 @@ function buildMenuItems({
             text: 'Impersonate',
             icon: Icon.impersonate(),
             onClick: () => XH.showImpersonationBar()
-        },
-        {
-            omit: hideInspectorItem,
-            text: XH.inspectorService.active ? 'Stop Inspecting' : 'Inspect',
-            icon: Icon.detail(),
-            onClick: () => XH.inspectorService.toggleActive()
         },
         '-',
         {
