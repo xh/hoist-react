@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {loadAllAsync, RefreshContextModel, RefreshMode} from '@xh/hoist/core';
+import {loadAllAsync, RefreshContextModel, RefreshMode, HoistModel, LoadSpec} from '@xh/hoist/core';
 
 /**
  * A refresh context model that consults a model's RefreshMode and active state to manage
@@ -16,9 +16,9 @@ import {loadAllAsync, RefreshContextModel, RefreshMode} from '@xh/hoist/core';
  */
 export class ManagedRefreshContextModel extends RefreshContextModel {
 
-    model;
+    model: HoistModel;
 
-    constructor(model)  {
+    constructor(model: HoistModel)  {
         super();
         this.model = model;
         this.addReaction({
@@ -27,7 +27,7 @@ export class ManagedRefreshContextModel extends RefreshContextModel {
         });
     }
 
-    async doLoadAsync(loadSpec) {
+    async doLoadAsync(loadSpec: LoadSpec) {
         const {model} = this,
             mode = model.refreshMode;
 
@@ -40,7 +40,7 @@ export class ManagedRefreshContextModel extends RefreshContextModel {
         }
     }
 
-    noteActiveChanged(isActive) {
+    noteActiveChanged(isActive: boolean) {
         if (isActive) {
             const mode = this.model.refreshMode;
             if (mode === RefreshMode.ON_SHOW_ALWAYS) {

@@ -11,7 +11,7 @@
  * @enum {string}
  * @see XHClass.appState
  */
-export const AppState = {
+export const AppState = Object.freeze({
     PRE_AUTH:       'PRE_AUTH',
     LOGIN_REQUIRED: 'LOGIN_REQUIRED',
     ACCESS_DENIED:  'ACCESS_DENIED',
@@ -19,4 +19,4 @@ export const AppState = {
     RUNNING:        'RUNNING',
     SUSPENDED:      'SUSPENDED',
     LOAD_FAILED:    'LOAD_FAILED'
-};
+});

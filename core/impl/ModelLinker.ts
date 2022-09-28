@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {XH, RefreshContextModel} from '@xh/hoist/core';
+import {XH, RefreshContextModel, HoistModel, ModelLookup} from '@xh/hoist/core';
 import {useOnUnmount} from '@xh/hoist/utils/react';
 import {each} from 'lodash';
 import {useEffect} from 'react';
@@ -19,7 +19,7 @@ import {formatSelector} from '../modelspec/uses';
  * No-op, if model is null.
  */
 /* eslint-disable react-hooks/exhaustive-deps */
-export function useModelLinker(model, modelLookup, props) {
+export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, props: object) {
     // 0) Are we executing the link now (i.e. is this the first render)
     const isLinking = model && !model.isLinked;
 

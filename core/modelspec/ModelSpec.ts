@@ -14,11 +14,11 @@
  * @private
  */
 export class ModelSpec {
-    fromContext;
-    publishMode;
-    optional;
+    fromContext: boolean;
+    publishMode: string;
+    optional: boolean;
 
-    constructor(fromContext, publishMode, optional) {
+    constructor(fromContext: boolean, publishMode: string, optional: boolean) {
         this.fromContext = fromContext;
         this.publishMode = publishMode;
         this.optional = optional;

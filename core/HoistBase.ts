@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {XH, PersistenceProvider} from '@xh/hoist/core';
+import {XH, PersistenceProvider, PersistOptions} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
     debounce as lodashDebounce,
@@ -26,6 +26,8 @@ import {
     when as mobxWhen
 } from '@xh/hoist/mobx';
 import {getOrCreate} from '../utils/js';
+import {IAutorunOptions, IReactionOptions} from 'mobx/dist/api/autorun';
+import {IReactionDisposer} from 'mobx/dist/internal';
 
 /**
  * Base class for objects in Hoist.
@@ -39,8 +41,8 @@ import {getOrCreate} from '../utils/js';
  */
 export class HoistBase {
 
-    static get isHoistBase() {return true}
-    get isHoistBase() {return true}
+    static get isHoistBase(): boolean {return true}
+    get isHoistBase(): boolean {return true}
 
     // Internal State
     #managedInstances = [];
@@ -75,10 +77,10 @@ export class HoistBase {
      *  destroyed. They can also be ended/disposed of manually using the native MobX disposer
      *  functions returned by this method.
      *
-     * @param {...ReactionSpec} specs - one or more reactions to add
-     * @returns {function|function[]} - disposer(s) to manually dispose of each created reaction.
+     * @param specs - one or more reactions to add
+     * @returns disposer(s) to manually dispose of each created reaction.
      */
-    addReaction(...specs) {
+    addReaction(...specs: (AutoRunSpec|(()=>any))[]): IReactionDisposer | IReactionDisposer[] {
         const disposers = specs.map(s => {
             if (!s) return null;
             let {track, when, run, debounce, ...opts} = s;
@@ -113,10 +115,10 @@ export class HoistBase {
      * destroyed. They can also be ended/disposed of manually using the native mobx disposer
      * functions returned by this method.
      *
-     * @param {...(AutorunSpec|function)} specs - one or more autoruns to add
+     * @param specs - one or more autoruns to add
      * @returns {function|function[]} - disposer(s) to manually dispose of each created autorun.
      */
-    addAutorun(...specs) {
+    addAutorun(...specs: (AutoRunSpec|(()=>any))[]) : IReactionDisposer | IReactionDisposer[] {
         const disposers = specs.map(s => {
             if (!s) return null;
             if (isFunction(s)) s = {run: s};
@@ -137,11 +139,8 @@ export class HoistBase {
      *
      * This method is a convenience method for calling the conventional setXXX method
      * for updating a mobx observable given the property name.
-     *
-     * @param {string} property
-     * @param {*} value
      */
-    setBindable(property, value) {
+    setBindable(property: string, value: any) {
         const setter = `set${upperFirst(property)}`;
         throwIf(!isFunction(this[setter]),
             `Required function '${setter}()' not found on bound model. ` +
@@ -152,9 +151,8 @@ export class HoistBase {
 
     /**
      * A unique id for this object within the lifetime of this document.
-     * @returns {string}
      */
-    get xhId() {
+    get xhId(): string {
         return getOrCreate(this, '_xhId', XH.genId);
     }
 
@@ -167,10 +165,10 @@ export class HoistBase {
      * See also {@see managed}, a decorator that can be used to mark any object held within
      * a given property as managed.
      *
-     * @param {object} obj - object to be destroyed
+     * @param obj - object to be managed
      * @returns object passed.
      */
-    markManaged(obj) {
+    markManaged(obj: object) {
         this.#managedInstances.push(obj);
         return obj;
     }
@@ -185,9 +183,9 @@ export class HoistBase {
      * to that Provider. If the Provider has not yet been populated with a value, or an
      * error occurs, it will use the value set in-code instead.
      *
-     * @param {string} property - name of property on this object to bind to a
+     * @param property - name of property on this object to bind to a
      *      persistence provider.
-     * @param {PersistOptions} [options] - options governing the persistence of this
+     * @param [options] - options governing the persistence of this
      *      object.  These will be applied on top of any default persistWith options defined
      *      on the instance itself.
      *
@@ -195,7 +193,7 @@ export class HoistBase {
      * directly on the property declaration itself.  Use this method in the general case,
      * when you need to control the timing.
      */
-    markPersist(property, options = {}) {
+    markPersist(property: string, options?: PersistOptions = {}) {
         // Read from and attach to Provider, failing gently
         try {
             const persistWith = {path: property, ...this.persistWith, ...options},
@@ -224,6 +222,52 @@ export class HoistBase {
         this.#managedInstances.forEach(i => XH.safeDestroy(i));
         this._xhManagedProperties?.forEach(p => XH.safeDestroy(this[p]));
     }
+}
+
+/**
+ * Object containing options accepted by MobX 'reaction' API as well as arguments below.
+ */
+export interface ReactionSpec<T> extends IReactionOptions {
+    /**
+     * Function returning data to observe - first arg to the underlying reaction() call.
+     * Specify this or `when`.
+     */
+    track?: () => T
+
+    /**
+     * Function returning data to observe - first arg to the underlying when() call.
+     * Specify this or `track`.
+     */
+    when?: () => T
+
+    /**
+     * Function to run - second arg to underlying reaction()/when() call.
+     */
+    run?: () => void;
+
+    /**
+     * Specify to debounce run function with lodash.
+     * When specified as object, should contain an 'interval' and other optional keys for
+     * lodash.  If specified as number the default lodash debounce will be used.
+     */
+    debounce?: number|object;
+}
+
+/**
+ * Object containing options accepted by MobX 'autorun' API as well as arguments below.
+ */
+export interface AutoRunSpec extends IAutorunOptions {
+    /**
+     * Function to run - first arg to underlying autorun() call.
+     */
+    run?: () => void;
+
+    /**
+     * Specify to debounce run function with lodash.
+     * When specified as object, should contain an 'interval' and other optional keys for
+     * lodash.  If specified as number the default lodash debounce will be used.
+     */
+    debounce?: number|object;
 }
 
 //--------------------------------------------------
@@ -255,28 +299,3 @@ function bindAndDebounce(obj, fn, debounce) {
     return ret;
 }
 
-
-/**
- * @typedef {Object} ReactionSpec - object containing options accepted by MobX 'reaction' API as
- *      well as arguments below.
- *
- * @property {function} [track] - function returning data to observe - first arg to the
- *      underlying reaction() call. Specify this or `when`.
- * @property {function} [when] - function returning data to observe - first arg to the
- *      underlying when() call. Specify this or `track`.
- * @property {function} run - function to run - second arg to underlying reaction()/when() call.
- * @property {(number|Object)} [debounce] - Specify to debounce run function with lodash.
- *      When specified as object, should contain an 'interval' and other optional keys for
- *      lodash.  If specified as number the default lodash debounce will be used.
- */
-
-
-/**
- * @typedef {Object} AutorunSpec - object containing options accepted by MobX 'autorun' API as
- *      well as arguments below.
- *
- * @property {function} [run] - function to run - first arg to underlying autorun() call.
- * @property {(number|Object)} [debounce] - Specify to debounce run function with lodash.
- *      When specified as Object, should contain an 'interval' and other optional keys for
- *      lodash debounce.  If specified as number the default lodash debounce will be used.
- */

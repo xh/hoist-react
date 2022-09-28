@@ -43,7 +43,7 @@ export interface ElemSpec {
     /**  Equivalent to `items`, offered for code clarity when only one child is needed. */
     item?: ReactNode|ReactNode[];
 
-    /** True to exclude the Element.  Useful for de */
+    /** True to exclude the Element. */
     omit?: boolean
 }
 
@@ -51,7 +51,7 @@ export interface ElemSpec {
 /**
  * Create a React Element from a Component type and an ElementSpec
  *
- * @param type - class extending Component or string representing an HTML element.
+ * @param type - React Component or string representing an HTML element.
  * @param spec - element spec.
  * @return ReactElement
  */
@@ -86,7 +86,7 @@ export function elem(type: Component|FunctionComponent|string, spec: ElemSpec): 
  * and is useful when no attributes need to be applied directly to the Element.
  */
 export type ElemFactory = (
-        (spec: ElemSpec) => ReactElement |
+        ((spec: ElemSpec) => ReactElement) |
         ((children: ReactNode[]) => ReactElement) |
         ((...children: ReactNode[]) => ReactElement)
     );

@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {elemFactory, ModelPublishMode} from '@xh/hoist/core';
+import {elemFactory, ModelSelector, HoistModel, ModelPublishMode} from '@xh/hoist/core';
 import {forOwn} from 'lodash';
 import {createContext} from 'react';
 
@@ -16,16 +16,11 @@ import {createContext} from 'react';
  * @private
  */
 export class ModelLookup {
-    model;
-    parent;
-    publishMode;
+    model: HoistModel;
+    parent: ModelLookup;
+    publishMode: string;
 
-    /**
-     * @param {Object} model -  model provided by this object.
-     * @param {ModelLookup} parent - parent instance of this class.
-     * @param {ModelPublishMode} publishMode - mode for publishing this model to context.
-     */
-    constructor(model, parent, publishMode) {
+    constructor(model: HoistModel, parent: ModelLookup, publishMode: string) {
         this.model = model;
         this.parent = parent;
         this.publishMode = publishMode;
@@ -33,11 +28,9 @@ export class ModelLookup {
 
     /**
      * Lookup a model in the context hierarchy
-     *
-     * @param {ModelSelector} selector - type of model to lookup.
-     * @returns {HoistModel} - model, or null if no matching model found.
+     * @returns model, or null if no matching model found.
      */
-    lookupModel(selector) {
+    lookupModel(selector: ModelSelector): HoistModel {
         const {model, publishMode, parent} = this,
             modeIsDefault = (publishMode === ModelPublishMode.DEFAULT);
 

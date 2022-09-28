@@ -7,7 +7,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {merge} from 'lodash';
-import createRouter from 'router5';
+import {createRouter, Router} from 'router5';
 import browserPlugin from 'router5-plugin-browser';
 
 /**
@@ -19,16 +19,16 @@ import browserPlugin from 'router5-plugin-browser';
 export class RouterModel extends HoistModel {
 
     /** Router5 state object representing the current state. */
-    @observable.ref currentState;
+    @observable.ref
+    currentState: object;
 
     /** Underlying Router5 Router object implementing the routing state. */
-    router = this.createRouter();
+    router: Router = this.createRouter();
 
     /**
      * Does the routing system already have a given route?
-     * @param {string} routeName
      */
-    hasRoute(routeName) {
+    hasRoute(routeName: string): boolean {
         const flatNames = this.getRouteNames(this.router.rootNode);
         return flatNames.includes(routeName);
     }
@@ -36,20 +36,20 @@ export class RouterModel extends HoistModel {
     /**
      * Add routes to the router.
      *
-     * @param {Object[]} routes - collection of router5 route spec.
+     * @param routes - collection of router5 route spec.
      *      This method supports an additional keyword 'omit' on each spec, in order to allow declarative
      *      exclusion.  Otherwise these are Router5 configs to be passed directly to the Router5 API.
      */
-    addRoutes(routes) {
+    addRoutes(routes: object[]) {
         this.router.add(this.preprocessRoutes(routes));
     }
 
     /**
      * Add a routeName to the current route, preserving params
-     * @param {string} routeName - the routeName to append
-     * @param {Object} newParams - additional params for this routeName to be merged with existing params.
+     * @param routeName - the routeName to append
+     * @param newParams - additional params for this routeName to be merged with existing params.
      */
-    appendRoute(routeName, newParams = {}) {
+    appendRoute(routeName: string, newParams?: object = {}) {
         const {name, params} = this.currentState;
         return this.router.navigate(`${name}.${routeName}`, merge({}, params, newParams));
     }
@@ -73,11 +73,11 @@ export class RouterModel extends HoistModel {
     // Implementation
     //-------------------------
     @action
-    setCurrentState(state) {
+    private setCurrentState(state) {
         this.currentState = state;
     }
 
-    getRouteNames(node) {
+    private getRouteNames(node) {
         const name = node.name,
             ret = [];
 
@@ -91,7 +91,7 @@ export class RouterModel extends HoistModel {
         return ret;
     }
 
-    createRouter() {
+    private createRouter() {
         const ret = createRouter([], {defaultRoute: 'default'});
 
         ret.usePlugin(browserPlugin());
@@ -100,7 +100,7 @@ export class RouterModel extends HoistModel {
         return ret;
     }
 
-    preprocessRoutes(routes) {
+    private preprocessRoutes(routes) {
         const ret = routes.filter(r => !r.omit);
         ret.forEach(r => {
             if (r.children) r.children = this.preprocessRoutes(r.children);

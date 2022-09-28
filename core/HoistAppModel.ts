@@ -53,7 +53,7 @@ export class HoistAppModel extends HoistModel {
     /**
      * Provide the initial set of Router5 Routes to be used by this application.
      */
-    getRoutes() {
+    getRoutes(): [] {
         return [];
     }
 
@@ -62,11 +62,11 @@ export class HoistAppModel extends HoistModel {
      * dialog, accessible from the default AppBar menu when this method returns non-empty.
      * @see AppOption
      *
-     * @returns {Object[]} - AppOption configs. An additional `omit` property is supported
+     * @returns AppOption configs. An additional `omit` property is supported
      *      here that, if true, will skip construction of that particular option and drop
      *      it out of the Options dialog.
      */
-    getAppOptions() {
+    getAppOptions(): object[] {
         return [];
     }
 
@@ -79,7 +79,7 @@ export class HoistAppModel extends HoistModel {
      *      An additional `omit` property is supported here that, if true, will skip construction of
      *      that particular option and drop it out of the About dialog.
      */
-    getAboutDialogItems() {
+    getAboutDialogItems(): object[] {
         const svc = window.XH.environmentService;
 
         return [

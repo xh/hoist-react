@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {PersistenceProvider} from '@xh/hoist/core';
+import {PersistenceProvider, PersistOptions} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -20,11 +20,7 @@ export class CustomProvider extends PersistenceProvider {
     getData;
     setData;
 
-    /**
-     * @param {function} getData - function returning blob of data to be used for reading state.
-     * @param {function} setData - function to be used to write blob of data representing state.
-     */
-    constructor({getData, setData, ...rest}) {
+    constructor({getData, setData, ...rest}: PersistOptions) {
         throwIf(!getData || !setData, `CustomProvider requires a 'getData' and a 'setData' function.`);
         super(rest);
         this.getData = getData;

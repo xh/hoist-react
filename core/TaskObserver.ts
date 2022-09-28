@@ -8,7 +8,7 @@
 import {isUndefined, sumBy} from 'lodash';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-
+import {ReactNode} from 'react';
 /**
  * Tracks the execution state of one or more asynchronous tasks.
  *
@@ -16,8 +16,6 @@ import {throwIf} from '@xh/hoist/utils/js';
  * track the progression of asynchronous tasks. It can be passed directly to a Panel
  * component via its `mask` property, providing a common and convenient
  * method for masking a section of a user interface while an operation is pending.
- *
- *
  */
 export class TaskObserver {
 
@@ -27,12 +25,8 @@ export class TaskObserver {
     /**
      * Create a new TaskObserver that will be pending if *any* linked
      * subtasks is still pending.
-     *
-     * @param {TaskObserver[]} [tasks]
-     * @param {string} [message]
-     * @returns {TaskObserver}
      */
-    static trackAll({tasks = [], message} = {}) {
+    static trackAll({tasks = [], message}: {tasks?: TaskObserver[], message?: string} = {}): TaskObserver {
         return new CompoundObserver('all',  tasks, message);
     }
 
@@ -42,12 +36,8 @@ export class TaskObserver {
      *
      * Useful for tracking repeated invocations of the same operation, such as
      * serially reloading of data from the server.
-     *
-     * @param {string} [message]
-     * @returns {TaskObserver}
-     *
      */
-    static trackLast({message} = {}) {
+    static trackLast({message}: {message?: string} = {}): TaskObserver {
         return new CompoundObserver('last', [], message);
     }
 
@@ -71,46 +61,40 @@ export class TaskObserver {
     //---------------
     // Instance API
     //----------------
-    get isTaskObserver() {
+    get isTaskObserver(): boolean {
         return true;
     }
 
     /**
      * Is the task considered to be executing/in-progress? Observable.
-     * @returns {boolean}
      */
-    get isPending() {
+    get isPending(): boolean {
         return false;
     }
 
     /**
      * The number of pending tasks. Observable.
-     * @returns {number}
      */
-    get pendingCount() {
+    get pendingCount(): number {
         return 0;
     }
 
     /**
      * The message describing the executing task. Observable.
-     * @returns {?ReactNode}
      */
-    get message() {
+    get message(): ReactNode {
         return null;
     }
 
     /**
      *  Set the message describing the executing task.
-     *  @param {?ReactNode} msg
      */
-    setMessage(msg) {}
+    setMessage(msg: ReactNode) {}
 
     /**
      * Link the task to a subtask.
-     *
-     * @param {TaskObserver} task
      */
-    linkTo(task) {}
+    linkTo(task: TaskObserver) {}
 
     /**
      * This class is abstract and should not be instantiated directly. To get an instance of this

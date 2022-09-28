@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {loadAllAsync, XH} from '@xh/hoist/core';
+import {loadAllAsync, XH, LoadSpec} from '@xh/hoist/core';
 import {RefreshContextModel} from './RefreshContextModel';
 
 /**
@@ -18,7 +18,7 @@ import {RefreshContextModel} from './RefreshContextModel';
  */
 export class RootRefreshContextModel extends RefreshContextModel {
 
-    async doLoadAsync(loadSpec) {
+    async doLoadAsync(loadSpec: LoadSpec) {
         const {appModel} = XH;
         if (appModel.loadSupport) {
             await appModel.loadAsync(loadSpec);

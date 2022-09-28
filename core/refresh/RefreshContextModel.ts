@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, loadAllAsync} from '@xh/hoist/core';
+import {HoistModel, loadAllAsync, LoadSpec} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {pull} from 'lodash';
 
@@ -37,12 +37,12 @@ import {pull} from 'lodash';
  */
 export class RefreshContextModel extends HoistModel {
 
-    get isRefreshContextModel() {return true}
+    get isRefreshContextModel(): boolean {return true}
 
     /** Targets registered for refresh. */
-    refreshTargets = [];
+    refreshTargets: object[] = [];
 
-    async doLoadAsync(loadSpec) {
+    async doLoadAsync(loadSpec: LoadSpec) {
         return loadAllAsync(this.refreshTargets, loadSpec);
     }
 
@@ -51,10 +51,8 @@ export class RefreshContextModel extends HoistModel {
      *
      * Not typically called directly by applications.  Hoist will automatically register
      * HoistModels that implement loading when their owning Component is first mounted.
-     *
-     * @param {Object} target
      */
-    register(target) {
+    register(target: object) {
         throwIf(
             !target.loadSupport,
             'Object must have implemented Loading to be registered with a RefreshContextModel.'
@@ -65,9 +63,8 @@ export class RefreshContextModel extends HoistModel {
 
     /**
      * Unregister a target from this model.
-     * @param {Object} target
      */
-    unregister(target) {
+    unregister(target: object) {
         pull(this.refreshTargets, target);
     }
 }

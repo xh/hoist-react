@@ -84,7 +84,7 @@ export interface MessageSpec {
     /** Flag to specify whether a popup can be clicked out of or escaped.*/
     dismissable?: boolean;
 
-    /** flag to specify whether onCancel is executed when clicking out of or escaping a popup. */
+    /** Flag to specify whether onCancel is executed when clicking out of or escaping a popup. */
     cancelOnDismiss?: boolean;
 }
 
@@ -110,8 +110,8 @@ export interface BannerSpec {
     onClose?(model);
 
     /**
-     *   If provided, will render a button within the banner to enable the user to
-     *   take some specific action right from the banner.
+     *  If provided, will render a button within the banner to enable the user to
+     *  take some specific action right from the banner.
      */
     actionButtonProps?: object;
 }

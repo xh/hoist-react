@@ -22,26 +22,29 @@ import {isPlainObject} from 'lodash';
  */
 export class LoadSupport extends HoistBase {
 
-    _lastRequested = null;
-    _lastSucceeded = null;
+    private _lastRequested = null;
+    private _lastSucceeded = null;
 
     /**
-     * @member {TaskObserver} - for tracking the loading of this object.
-     *      Note that this model will *not* track auto-refreshes.
+     * For tracking the loading of this object.
+     * Note that this model will *not* track auto-refreshes.
      */
     @managed
-    loadModel = TaskObserver.trackLast();
+    loadModel: TaskObserver = TaskObserver.trackLast();
 
-    /** @member {Date} - date when last load was initiated (observable) */
-    @observable.ref lastLoadRequested = null;
+    /** Date when last load was initiated. */
+    @observable.ref
+    lastLoadRequested: Date = null;
 
-    /** @member {Date} - date when last load completed (observable) */
-    @observable.ref lastLoadCompleted = null;
+    /** Date when last load completed. */
+    @observable.ref
+    lastLoadCompleted: Date = null;
 
-    /** @member {Error} - any exception that occurred during last load (observable) */
-    @observable.ref lastLoadException = null;
+    /** Any exception that occurred during last load. */
+    @observable.ref
+    lastLoadException: Error|object|string = null;
 
-    constructor(target) {
+    constructor(target: object) {
         super();
         throwIf(!target.doLoadAsync, `Target of LoadSupport must implement method doLoadAsync`);
         makeObservable(this);
@@ -55,14 +58,13 @@ export class LoadSupport extends HoistBase {
      * calling the objects `doLoadAsync()` implementation.  See also `refreshAsync()` and
      * `autoRefreshAsync()` for convenience variants of this method.
      *
-     * @param {(Object|LoadSpec)} [loadSpec] - LoadSpec, or a simple Object containing properties
-     *      to create one.
+     * @param [loadSpec] - LoadSpec, or a simple Object containing properties to create one.
      *
      *      Note that implementations of `doLoadAsync()` that delegate to loadAsync() calls of
      *      other objects should typically pass along the LoadSpec object the receive -- or an
      *      enriched version of it -- to their delegates.
      */
-    async loadAsync(loadSpec) {
+    async loadAsync(loadSpec?: LoadSpec|object) {
         throwIf(
             loadSpec && !(loadSpec.isLoadSpec || isPlainObject(loadSpec)),
             'Unexpected param passed to loadAsync().  If triggered via a reaction '  +
@@ -75,24 +77,24 @@ export class LoadSupport extends HoistBase {
 
     /**
      * Refresh the target.
-     * @param {Object} [meta] - optional metadata for the request.
+     * @param [meta] - optional metadata for the request.
      */
-    async refreshAsync(meta) {
+    async refreshAsync(meta?: object) {
         return this.loadAsync({meta, isRefresh: true});
     }
 
     /**
      * Auto-refresh the target.
-     * @param {Object} [meta] - optional metadata for the request.
+     * @param [meta] - optional metadata for the request.
      */
-    async autoRefreshAsync(meta) {
+    async autoRefreshAsync(meta?: object) {
         return this.loadAsync({meta, isAutoRefresh: true});
     }
 
     //--------------------------
     // Implementation
     //--------------------------
-    async internalLoadAsync(loadSpec) {
+    private async internalLoadAsync(loadSpec) {
         let {target, loadModel} = this;
 
         // Auto-refresh:
@@ -150,9 +152,9 @@ export class LoadSupport extends HoistBase {
  * will not cause the entire batch to throw.
  *
  * @param {Object[]} objs - list of objects to be loaded
- * @param {LoadSpec} [loadSpec] - metadata related to this request.
+ * @param [loadSpec] - metadata related to this request.
 */
-export async function loadAllAsync(objs, loadSpec) {
+export async function loadAllAsync(objs: object[], loadSpec?: LoadSpec|object) {
     const promises = objs.map(it => it.loadAsync(loadSpec)),
         ret = await Promise.allSettled(promises);
 

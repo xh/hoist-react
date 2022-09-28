@@ -5,6 +5,8 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+import {LoadSupport} from './LoadSupport';
+
 /**
  * Object describing a load/refresh request in Hoist.
  *
@@ -29,45 +31,40 @@
  */
 export class LoadSpec {
 
-    get isLoadSpec()    {return true}
+    get isLoadSpec(): boolean    {return true}
 
-    /** @member {number} - index of the associated load on this object. 0 for the first load. */
-    loadNumber;
+    /** index of the associated load on this object. 0 for the first load. */
+    loadNumber: number;
 
-    /** @member {boolean} - true if triggered by a refresh request (automatic or user). */
-    isRefresh;
+    /** True if triggered by a refresh request (automatic or user). */
+    isRefresh: boolean;
 
-    /** @member {boolean} - true if triggered by an automatic refresh process. */
-    isAutoRefresh;
+    /** true if triggered by an automatic refresh process. */
+    isAutoRefresh: boolean;
 
-    /** @member {Date} - time the load started. */
-    dateCreated;
+    /** Time the load started. */
+    dateCreated: Date;
 
-    /** @member {LoadSupport} - owner of this object. */
-    owner;
+    /** Owner of this object. */
+    owner: LoadSupport;
 
-    /** @member {Object} - application specific information about the load request */
-    meta;
+    /** Application specific information about the load request */
+    meta: object;
 
-    /**
-     * @member {boolean} - true if a more recent request to load this object's owner has started.
-     */
-    get isStale() {
+    /** True if a more recent request to load this object's owner has started. */
+    get isStale(): boolean {
         return this !== this.owner._lastRequested;
     }
 
-    /**
-     * @member {boolean} - true if a more recent request to load this object's owner has
-     *      successfully completed.
-     */
-    get isObsolete() {
+    /** True if a more recent request to load this object's owner has successfully completed.*/
+    get isObsolete(): boolean {
         return this.owner._lastSucceeded?.loadNumber > this.loadNumber;
     }
 
     /**
-     * @member {string} - display type of refresh for troubleshooting and logging.
+     * display type of refresh for troubleshooting and logging.
      */
-    get typeDisplay() {
+    get typeDisplay(): string {
         if (this.isAutoRefresh) return 'Auto-Refresh';
         if (this.isRefresh)     return 'Refresh';
         return 'Load';

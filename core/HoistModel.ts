@@ -267,3 +267,5 @@ export function lookup(selector: ModelSelector) {
  *  - function taking a model and returning any of the above.
  */
 export type ModelSelector = (new () => ModelSelector)|string|boolean|((model: HoistModel) => any)
+
+export type HoistModelClass = new () => HoistModel;

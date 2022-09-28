@@ -17,7 +17,7 @@ import {Component} from 'react';
  */
 export class ErrorBoundary extends Component {
 
-    constructor(props) {
+    constructor(props: object) {
         super(props);
         this.state = {caughtError: null, onError: props.onError};
     }

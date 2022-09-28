@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
 */
-import {PersistenceProvider} from '@xh/hoist/core';
+import {PersistenceProvider, PersistOptions} from '@xh/hoist/core';
 
 import {cloneDeep, isUndefined} from 'lodash';
 import {wait} from '@xh/hoist/promise';
@@ -16,7 +16,7 @@ import {throwIf} from '@xh/hoist/utils/js';
  *
  * @see HoistBase.markManaged
  */
-export function managed(target, property, descriptor) {
+export function managed(target: object, property: string, descriptor: object): object {
     throwIf(!target.isHoistBase, '@managed decorator should be applied to a subclass of HoistBase');
     // Be sure to create list for *this* particular class. Clone and include inherited values.
     if (!target.hasOwnProperty('_xhManagedProperties')) {
@@ -38,7 +38,7 @@ export function managed(target, property, descriptor) {
  * See also @persist.with, a higher-order version of this decorator that allows for setting
  * property-specific persistence options.
  */
-export function persist(target, property, descriptor) {
+export function persist(target: object, property: string, descriptor: object): object {
     return createPersistDescriptor(target, property, descriptor, null);
 }
 
@@ -50,7 +50,7 @@ export function persist(target, property, descriptor) {
  *
  * @param {PersistOptions} options
  */
-persist.with = function(options) {
+persist.with = function(options: PersistOptions): object {
     return function(target, property, descriptor) {
         return createPersistDescriptor(target, property, descriptor, options);
     };

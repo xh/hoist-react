@@ -11,6 +11,49 @@ import {Icon} from '@xh/hoist/icon';
 import {forOwn, has, isArray, isNil, isObject, omitBy, set} from 'lodash';
 import {XH} from './XH';
 
+export interface ExceptionHandlerOptions {
+    /** Text (ideally user-friendly) describing the error. */
+    message?: string;
+
+    /** Title for an alert dialog, if shown. */
+    title?: string;
+
+    /**
+     * Configure modal alert and logging to indicate that this is an unexpected error. Default
+     * true for most exceptions, false for those marked as `isRoutine`.
+     */
+    showAsError?: boolean;
+
+    /**
+     * Send the exception to the server to be stored for review in the Hoist Admin Console?
+     * Default true when `showAsError` is true, excepting 'isAutoRefresh' fetch exceptions.
+     */
+    logOnServer?: boolean;
+
+    /**
+     * Display an alert dialog to the user. Default true, excepting 'isAutoRefresh' and
+     * 'isFetchAborted' exceptions.
+     */
+    showAlert?: boolean;
+
+    /**
+     * If `showAlert`, which type of alert to display.
+     * Valid options are 'dialog'|'toast'. Defaults to ExceptionHandler.ALERT_TYPE.
+     */
+    alertType?: string;
+
+    /**
+     *  Force user to fully refresh the app in order to dismiss - default false, excepting
+     *  session-related exceptions.
+     */
+    requireReload?: boolean;
+
+    /**
+     *  A list of parameters that should be hidden from the exception log and alert.
+     */
+    hideParams?: string[];
+}
+
 /**
  * Provides Centralized Exception Handling for Hoist Application.
  * Manages the logging and display of exceptions.
@@ -19,24 +62,21 @@ export class ExceptionHandler {
 
     /**
      * Property paths within error details JSON to replace with '******'
-     * @type {string[]}
      */
-    static REDACT_PATHS = [
+    static REDACT_PATHS: string[] = [
         'fetchOptions.headers.Authorization'
     ];
 
     /**
      * Default type of alert to use to display exceptions with `showAlert`.
      * Valid options are 'dialog'|'toast'.
-     * @type {string}
      */
-    static ALERT_TYPE = 'dialog';
+    static ALERT_TYPE: string = 'dialog';
 
     /**
      * Default props provided to toast, when alert type is 'toast'
-     * @type {Object}
      */
-    static TOAST_PROPS = {
+    static TOAST_PROPS: object = {
         timeout: 10000
     };
 
@@ -63,27 +103,11 @@ export class ExceptionHandler {
      * course of "normal" app operation and do not represent unexpected errors. When true, this
      * handler will apply defaults that avoid overly alarming the user and skip server-side logging.
      *
-     * @param {(Error|Object|string)} exception - Error or thrown object - if not an Error, an
-     *      Exception will be created via `Exception.create()`.
-     * @param {Object} [options] - controls on how the exception should be shown and/or logged.
-     * @param {string} [options.message] - text (ideally user-friendly) describing the error.
-     * @param {string} [options.title] - title for an alert dialog, if shown.
-     * @param {boolean} [options.showAsError] - configure modal alert and logging to indicate that
-     *      this is an unexpected error. Default true for most exceptions, false for those marked
-     *      as `isRoutine`.
-     * @param {boolean} [options.logOnServer] - send the exception to the server to be stored for
-     *      review in the Hoist Admin Console. Default true when `showAsError` is true, excepting
-     *      'isAutoRefresh' fetch exceptions.
-     * @param {boolean} [options.showAlert] - display an alert dialog to the user. Default true,
-     *      excepting 'isAutoRefresh' and 'isFetchAborted' exceptions.
-     * @param {string} [options.alertType] - if `showAlert`, which type of alert to display.
-     *      Valid options are 'dialog'|'toast'. Defaults to ExceptionHandler.ALERT_TYPE.
-     * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
-     *      dismiss - default false, excepting session-related exceptions.
-     * @param {string[]} [options.hideParams] - A list of parameters that should be hidden from
-     *      the exception log and alert.
-     */
-    handleException(exception, options) {
+     * @param exception - Error or thrown object - if not an Error, an Exception will be created
+     *      via `Exception.create()`.
+     * @param [options] - controls on how the exception should be shown and/or logged.
+    */
+    handleException(exception: Error|object|string, options?: ExceptionHandlerOptions) {
         if (this.#isUnloading) return;
 
         ({exception, options} = this.parseArgs(exception, options));
@@ -119,19 +143,11 @@ export class ExceptionHandler {
      * Intended to be used for the deferred / user-initiated showing of exceptions that have
      * already been appropriately logged. Applications should typically prefer `handleException`.
      *
-     * @param {(Error|Object|string)} exception - Error or thrown object - if not an Error, an
+     * @param exception - Error or thrown object - if not an Error, an
      *      Exception will be created via `Exception.create()`.
-     * @param {Object} [options] - controls on how the exception should be shown and/or logged.
-     * @param {string} [options.message] - text (ideally user-friendly) describing the error.
-     * @param {string} [options.title] - title for an alert dialog, if shown.
-     * @param {boolean} [options.showAsError] - configure modal alert to indicate that this is an
-     *      unexpected error. Default true for most exceptions, false for those marked as `isRoutine`.
-     * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
-     *      dismiss - default false, excepting session-related exceptions.
-     * @param {string[]} [options.hideParams] - A list of parameters that should be hidden from
-     *      the exception alert.
+     * @param [options] - controls on how the exception should be shown and/or logged.
      */
-    showException(exception, options) {
+    showException(exception: Error|object|string, options?: ExceptionHandlerOptions) {
         if (this.#isUnloading) return;
         ({exception, options} = this.parseArgs(exception, options));
         XH.appContainerModel.exceptionDialogModel.show(exception, options);
@@ -147,13 +163,16 @@ export class ExceptionHandler {
      * actually running when the exception was generated.)
      *
      * @param {Object} options - an options object
-     * @param {Error} options.exception - an instance of the Javascript Error object.
-     * @param {boolean} options.userAlerted - true if the user was shown a modal alert.
-     * @param {string} [options.userMessage] - a user-provided message, if any, detailing what they
+     * @param options.exception - an instance of the Javascript Error object.
+     * @param options.userAlerted - true if the user was shown a modal alert.
+     * @param [options.userMessage] - a user-provided message, if any, detailing what they
      *      did to trigger the error, or any other details the user chooses to provide.
-     * @returns {boolean} - true if message was successfully sent to server.
+     * @returns true if message was successfully sent to server.
      */
-    async logOnServerAsync({exception, userAlerted, userMessage}) {
+    async logOnServerAsync(
+        {exception, userAlerted, userMessage}:
+        {exception: Error, userAlerted: boolean, userMessage?: string}
+    ): Promise<boolean>  {
         try {
             const error = this.stringifyErrorSafely(exception),
                 username = XH.getUsername();
@@ -184,11 +203,8 @@ export class ExceptionHandler {
     /**
      * Serialize an error object safely for submission to server, or user display.
      * This method will avoid circular references and will trim the depth of the object.
-     *
-     * @param {Error} error
-     * @return string
      */
-    stringifyErrorSafely(error) {
+    stringifyErrorSafely(error: Error|object|string): string {
         try {
             // 1) Create basic structure.
             // Raw Error does not have 'own' properties, so be explicit about core name/message/stack
@@ -238,7 +254,7 @@ export class ExceptionHandler {
     //--------------------------------
     // Implementation
     //--------------------------------
-    parseArgs(exception, options) {
+    private parseArgs(exception, options) {
         if (!(exception instanceof Error)) {
             exception = Exception.create(exception);
         }
@@ -254,7 +270,7 @@ export class ExceptionHandler {
         return {exception, options};
     }
 
-    hideParams(exception, options) {
+    private hideParams(exception, options) {
         const {fetchOptions} = exception,
             {hideParams} = options;
 
@@ -268,13 +284,13 @@ export class ExceptionHandler {
         });
     }
 
-    logException(exception, options) {
+    private logException(exception, options) {
         return options.showAsError ?
             console.error(options.message, exception) :
             console.debug(options.message);
     }
 
-    parseOptions(e, options) {
+    private parseOptions(e, options) {
         const ret = {...options},
             isAutoRefresh = e.fetchOptions?.loadSpec?.isAutoRefresh ?? false,
             isRoutine = e.isRoutine ?? false,
@@ -305,26 +321,26 @@ export class ExceptionHandler {
         return ret;
     }
 
-    sessionMismatch(exception) {
+    private sessionMismatch(exception) {
         return exception.name === 'SessionMismatchException';
     }
 
     // Detect an expired server session for special messaging, but only for requests back to the
     // app's own server on a relative URL (to avoid triggering w/auth failures on remote CORS URLs).
-    sessionExpired(exception) {
+    private sessionExpired(exception) {
         const {httpStatus, fetchOptions} = exception,
             relativeRequest = !fetchOptions?.url?.startsWith('http');
 
         return relativeRequest && httpStatus === 401;
     }
 
-    cleanStack(exception) {
+    private cleanStack(exception) {
         // statuses of 0, 4XX, 5XX are server errors, so the javascript stack
         // is irrelevant and potentially misleading
         if (/^[045]/.test(exception.httpStatus)) delete exception.stack;
     }
 
-    cloneAndTrim(obj, depth = 5) {
+    private cloneAndTrim(obj, depth = 5) {
         // Create a depth-constrained, deep copy of an object for safe-use in stringify
         //   - Skip private _XXXX properties.
         //   - Don't touch objects that implement toJSON()

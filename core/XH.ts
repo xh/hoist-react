@@ -44,7 +44,7 @@ import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import {ToastModel} from '../appcontainer/ToastModel';
 import {BannerModel} from '../appcontainer/BannerModel';
 import '../styles/XH.scss';
-import {ExceptionHandler} from './ExceptionHandler';
+import {ExceptionHandler, ExceptionHandlerOptions} from './ExceptionHandler';
 import {HoistModel, ModelSelector, HoistAppModel} from './HoistModel';
 import {RouterModel} from './RouterModel';
 import {FetchOptions} from '../svc';
@@ -468,14 +468,14 @@ class XHClass {
      * Show a non-modal "toast" notification that appears and then automatically dismisses.
      * @returns model representing the toast. May be used for programmatic dismissal.
      */
-    toast(config: ToastSpec | string): ToastModel {
+    toast(config: ToastSpec|string): ToastModel {
         return this.acm.toastSourceModel.show(config);
     }
 
     /**
      * Show a toast with default intent and icon indicating success.
      */
-    successToast(config: ToastSpec | string): ToastModel {
+    successToast(config: ToastSpec|string): ToastModel {
         if (isString(config)) config = {message: config};
         return this.toast({intent: 'success', icon: Icon.success(), ...config});
     }
@@ -483,7 +483,7 @@ class XHClass {
     /**
      * Show a toast with default intent and icon indicating a warning.
      */
-    warningToast(config: ToastSpec | string): ToastModel {
+    warningToast(config: ToastSpec|string): ToastModel {
         if (isString(config)) config = {message: config};
         return this.toast({intent: 'warning', icon: Icon.warning(), ...config});
     }
@@ -491,7 +491,7 @@ class XHClass {
     /**
      * Show a toast with intent and icon indicating a serious issue.
      */
-    dangerToast(config: ToastSpec | string): ToastModel {
+    dangerToast(config: ToastSpec|string): ToastModel {
         if (isString(config)) config = {message: config};
         return this.toast({intent: 'danger', icon: Icon.danger(), ...config});
     }
@@ -500,7 +500,7 @@ class XHClass {
      * Show a Banner across the top of the viewport. Banners are unique by their
      * category prop - showing a new banner with an existing category will replace it.
      */
-    showBanner(config: BannerSpec | string): BannerModel {
+    showBanner(config: BannerSpec|string): BannerModel {
         if (isString(config)) config = {message: config};
         return this.acm.bannerSourceModel.show(config);
     }
@@ -527,36 +527,8 @@ class XHClass {
      * @param exception - Error or thrown object - if not an Error, an
      *      Exception will be created via Exception.create().
      * @param [options] - controls on how the exception should be shown and/or logged.
-     * @param [options.message] - text (ideally user-friendly) describing the error.
-     * @param [options.title] - title for an alert dialog, if shown.
-     * @param [options.showAsError] - configure modal alert and logging to indicate that
-     *      this is an unexpected error. Default true for most exceptions, false for those marked
-     *      as `isRoutine`.
-     * @param [options.logOnServer] - send the exception to the server to be stored for
-     *      review in the Hoist Admin Console. Default true when `showAsError` is true, excepting
-     *      'isAutoRefresh' fetch exceptions.
-     * @param [options.showAlert] - display an alert dialog to the user. Default true,
-     *      excepting 'isAutoRefresh' and 'isFetchAborted' exceptions.
-     * @param [options.alertType] - if `showAlert`, which type of alert to display.
-     *      Defaults to ExceptionHandler.ALERT_TYPE.
-     * @param [options.requireReload] - force user to fully refresh the app in order to
-     *      dismiss - default false, excepting session-related exceptions.
-     * @param [options.hideParams] - A list of parameters that should be hidden from
-     *      the exception log and alert.
      */
-    handleException(
-        exception: Error|object|string,
-        options?: {
-            message?: string,
-            title?: string,
-            showAsError?: boolean,
-            logOnServer?: boolean,
-            showAlert?: boolean,
-            alertType?: 'dialog'|'toast',
-            requireReload?: boolean,
-            hideParams?: string[]
-        }
-    ) {
+    handleException(exception: Error|object|string, options?: ExceptionHandlerOptions) {
         this.exceptionHandler.handleException(exception, options);
     }
 
@@ -569,24 +541,8 @@ class XHClass {
      * @param exception - Error or thrown object - if not an Error, an
      *      Exception will be created via `Exception.create()`.
      * @param [options] - controls on how the exception should be shown and/or logged.
-     * @param [options.message]- text (ideally user-friendly) describing the error.
-     * @param [options.title] - title for an alert dialog, if shown.
-     * @param [options.showAsError] - configure modal alert to indicate that this is an
-     *      unexpected error. Default true for most exceptions, false if marked as `isRoutine`.
-     * @param [options.requireReload] - force user to fully refresh the app in order to
-     *      dismiss - default false, excepting session-related exceptions.
-     * @param [options.hideParams] - A list of parameters that should be hidden from
-     *      the exception alert.
      */
-    showException(
-        exception: Error|Object|string,
-        options?: {
-            message?: string,
-            title?: string,
-            showAsError?: boolean,
-            requireReload?: boolean,
-            hideParams?: string[]
-        }) {
+    showException(exception: Error|object|string, options?: ExceptionHandlerOptions) {
         this.exceptionHandler.showException(exception, options);
     }
 
@@ -965,6 +921,12 @@ class XHClass {
         if (!this._uaParser) this._uaParser = new parser();
         return this._uaParser;
     }
+
+    private parseAppSpec() {
+
+    }
+
+
 }
 
 /** app-wide singleton instance. */

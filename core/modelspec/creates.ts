@@ -7,6 +7,7 @@
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 import {ModelPublishMode, ModelSpec} from './ModelSpec';
+import {HoistModel, HoistModelClass} from '../HoistModel';
 
 /**
  * Returns a ModelSpec to define how a functional HoistComponent should create its primary backing
@@ -20,14 +21,14 @@ import {ModelPublishMode, ModelSpec} from './ModelSpec';
  * loading it will be loaded on component mount, and it will always be destroyed on
  * component unmount.
  *
- * @param {(Class|function)} spec - HoistModel Class to construct, or a function returning a
- *      concrete HoistModel instance.
+ * @param spec - HoistModel Class to construct, or a function returning a concrete HoistModel instance.
  * @param {Object} [flags]
  * @param {ModelPublishMode} [flags.publishMode] - mode for publishing this model to context.
- * @returns {ModelSpec}
  */
 export function creates(
-    spec, {publishMode = ModelPublishMode.DEFAULT} = {}) {
+    spec: HoistModelClass | (() => HoistModel),
+    {publishMode = ModelPublishMode.DEFAULT} = {}
+): ModelSpec {
     return new CreatesSpec(spec, publishMode);
 }
 

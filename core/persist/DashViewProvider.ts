@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {PersistenceProvider} from '@xh/hoist/core';
+import {PersistenceProvider, PersistOptions} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -15,8 +15,7 @@ export class DashViewProvider extends PersistenceProvider {
 
     dashViewModel;
 
-    /** @param {DashViewModel} dashViewModel */
-    constructor({dashViewModel, ...rest}) {
+    constructor({dashViewModel, ...rest}: PersistOptions) {
         throwIf(!dashViewModel, `DashViewProvider requires a 'dashViewModel'.`);
         super(rest);
         this.dashViewModel = dashViewModel;

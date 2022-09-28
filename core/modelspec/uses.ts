@@ -7,6 +7,7 @@
 import {throwIf} from '@xh/hoist/utils/js';
 import {ModelPublishMode, ModelSpec} from './ModelSpec';
 import {isFunction, isString} from 'lodash';
+import {ModelSelector} from '../HoistModel';
 
 /**
  * Returns a ModelSpec to define how a functional HoistComponent should source its primary backing
@@ -24,7 +25,7 @@ import {isFunction, isString} from 'lodash';
  * implements loading it will be loaded on component mount, and it will always be destroyed
  * on component unmount.
  *
- * @param {ModelSelector} selector - specification of Model to use, or '*' (default) to accept the
+ * @param selector - specification of Model to use, or '*' (default) to accept the
  *      closest context model, without specifying any particular class.
  * @param {Object} [flags]
  * @param {boolean} [flags.fromContext] - true (default) to look for a suitable model in context if
@@ -35,19 +36,19 @@ import {isFunction, isString} from 'lodash';
  * @param {(boolean|function)} [flags.createDefault] - true to create a model if none provided.
  *      Selector must be a HoistModel Class, or a custom function may be provided for this argument.
  * @param {boolean} [flags.optional] - true to specify a model that is optional.  Default false.
- * @returns {ModelSpec}
  */
 export function uses(
-    selector, {
+    selector: ModelSelector,
+    {
         fromContext = true,
         publishMode = ModelPublishMode.DEFAULT,
         createFromConfig = true,
         createDefault = false,
         optional = false
-    } = {}) {
+    } = {}
+): ModelSpec {
     return new UsesSpec(selector, fromContext, publishMode, createFromConfig, createDefault, optional);
 }
-
 
 /**
  * Ensure an object is a ModelSelector, or throw.
