@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {isUndefined, sumBy} from 'lodash';
+import {sumBy, head} from 'lodash';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {ReactNode} from 'react';
@@ -140,11 +140,8 @@ class CompoundObserver extends TaskObserver {
 
     @computed
     get message() {
-        const msg = this._message;
-        if (!isUndefined(msg)) return msg;
-
         const pending = this._subtasks.filter(t => t.isPending && t.message);
-        return pending.length === 1 ? pending[0].message : null;
+        return head(pending)?.message ?? this._message ?? null;
     }
 
     @action

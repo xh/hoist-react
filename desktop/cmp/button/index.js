@@ -4,6 +4,7 @@ export * from './AppMenuButton';
 export * from './ButtonGroup';
 export * from './ColAutosizeButton';
 export * from './ColChooserButton';
+export * from './DashCanvasAddViewButton';
 export * from './ExportButton';
 export * from './FeedbackButton';
 export * from './LaunchAdminButton';
