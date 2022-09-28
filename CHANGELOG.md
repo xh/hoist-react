@@ -27,6 +27,9 @@
 * Change to `CompoundTaskObserver` to prioritize using specific messages from subtasks over the
  overall task message.
 
+### 💥 Breaking Changes
+* The deprecated method `XH.setDarkTheme` has been removed.  Use `XH.setTheme` instead.
+
 ## v51.0.0 - 2022-08-29
 
 ### 🎁 New Features
