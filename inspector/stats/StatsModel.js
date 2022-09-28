@@ -40,6 +40,7 @@ export class StatsModel extends HoistModel {
 
         this.chartModel = new ChartModel({
             highchartsConfig: {
+                chart: {zoomType: 'x'},
                 legend: {enabled: false},
                 title: {text: null},
                 xAxis: {type: 'datetime'},
