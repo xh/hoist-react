@@ -14,7 +14,7 @@ import {isObservableProp, makeObservable} from 'mobx';
 const {BOOL, STRING} = FieldType;
 
 export class ModelsModel extends HoistModel {
-    persistWith = {localStorageKey: 'xhInspector.models'};
+    persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.models`};
 
     /** @member {GridModel} */
     instancesGridModel;
@@ -150,7 +150,7 @@ export class ModelsModel extends HoistModel {
                         }
                     ]
                 },
-                {field: 'id', displayName: 'Model xhId'},
+                {field: 'id', displayName: 'xhId'},
                 {
                     field: 'isLinked',
                     ...boolCheckCol,
@@ -216,12 +216,6 @@ export class ModelsModel extends HoistModel {
                     }
                 },
                 {
-                    field: {name: 'isHoistModel', type: BOOL},
-                    headerName: Icon.database(),
-                    ...iconCol,
-                    renderer: v => v ? Icon.database({title: 'Hoist Model'}) : ''
-                },
-                {
                     field: {name: 'isObservable', type: BOOL},
                     headerName: Icon.eye(),
                     ...iconCol,
@@ -234,6 +228,7 @@ export class ModelsModel extends HoistModel {
                     highlightOnChange: true,
                     flex: 1,
                     minWidth: 150,
+                    rendererIsComplex: true,
                     renderer: (v, {record}) => {
                         const {data} = record;
                         if (data.isGetter && !data.isLoadedGetter) {
@@ -309,14 +304,9 @@ export class ModelsModel extends HoistModel {
             v = (!isGetter || isLoadedGetter) ? model[property] : null,
             isHoistModel = v?.isHoistModel;
 
-        let valueType;
-        if (isGetter && !isLoadedGetter) {
-            valueType = 'get(?)';
-        } else {
-            const rawType = v?.constructor?.name ?? typeof v;
-            valueType = isGetter ? `get(${rawType})` : rawType;
-        }
-
+        const valueType = (isGetter && !isLoadedGetter) ?
+            'get(?)' :
+            v?.constructor?.name ?? typeof v;
 
         return {
             id: `${xhId}-${property}${fromWatchlistItem ? '-wl' : ''}`,

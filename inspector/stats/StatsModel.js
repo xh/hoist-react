@@ -5,7 +5,7 @@ import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate, millionsRenderer, numberRenderer} from '@xh/hoist/format';
 
 export class StatsModel extends HoistModel {
-    persistWith = {localStorageKey: 'xhInspector.stats'};
+    persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.stats`};
 
     /** @member {PanelModel} */
     panelModel;
