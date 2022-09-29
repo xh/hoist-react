@@ -31,7 +31,6 @@ import {
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {
-    apiDeprecated,
     checkMinVersion,
     getClientDeviceInfo,
     throwIf,
@@ -333,16 +332,6 @@ class XHClass {
     /** Toggle the theme between light and dark variants. */
     toggleTheme() {
         return this.acm.themeModel.toggleTheme();
-    }
-
-    /**
-     * Enable/disable the dark theme directly (useful for custom app option controls).
-     * @param {boolean} value
-     * @deprecated
-     */
-    setDarkTheme(value) {
-        apiDeprecated('setDarkTheme', {v: '50', msg: 'Use setTheme instead.'});
-        this.setTheme(value ? 'dark' : 'light');
     }
 
     /**

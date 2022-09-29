@@ -7,7 +7,7 @@
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
-import {apiRemoved, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {
     castArray,
@@ -449,7 +449,6 @@ export class Column {
         this.hideable = withDefault(hideable, !this.isTreeColumn);
         this.pinned = this.parsePinned(pinned);
 
-        apiRemoved('Column.elementRenderer', {test: rest.elementRenderer, msg: 'Use `renderer` instead', v: 48});
         this.renderer = managedRenderer(renderer, this.displayName);
         this.rendererIsComplex = rendererIsComplex;
         this.highlightOnChange = highlightOnChange;
@@ -477,8 +476,6 @@ export class Column {
         this.exportValue = exportValue;
         this.excludeFromExport = withDefault(excludeFromExport, !this.field);
 
-        apiRemoved('Column.exportFormat', {test: rest.exportFormat, msg: 'Use `excelFormat` instead', v: 47});
-        apiRemoved('Column.exportWidth', {test: rest.exportWidth, msg: 'Use `excelWidth` instead', v: 47});
         this.excelFormat = withDefault(excelFormat, ExcelFormat.DEFAULT);
         this.excelWidth = excelWidth ?? null;
 

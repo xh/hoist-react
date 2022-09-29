@@ -6,6 +6,7 @@
 
 * `DashCanvasViewModel` now supports `autoHeight` to automatically resize a `DashCanvasView's`
   height to fit its contents.
+* `DashCanvasAddViewButton` exported as a public component to support adding views to `DashCanvas`.
 * `ModelSelector` used for model lookup and matching will now accept the class name of the model to
   match. Previously only a class reference could be provided.
 * The Admin Console diff tool for Configs, Prefs, and JSONBlobs now displays who updated each value
@@ -28,8 +29,14 @@
   rendering bug. The ag-Grid bug has been resolved, and this workaround is no longer needed.
 * `GridExportService` has improved support for columns of `FieldType.AUTO` and for columns with
   multiple data types and custom export functions. (Requires `hoist-core >= 14.3`)
+* Change to `CompoundTaskObserver` to prioritize using specific messages from subtasks over the
+  overall task message.
 * The `trimToDepth` has been improved to return a depth-limited clone of its input that better
   handles nested arrays and passes through primitive inputs unchanged.
+
+### 💥 Breaking Changes
+
+* The deprecated method `XH.setDarkTheme` has been removed. Use `XH.setTheme` instead.
 
 ## v51.0.0 - 2022-08-29
 

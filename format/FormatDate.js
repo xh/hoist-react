@@ -8,7 +8,7 @@ import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {defaults, isString} from 'lodash';
 import moment from 'moment';
 import {fmtSpan} from './FormatMisc';
-import {asElementDeprecationWarning, createRenderer, saveOriginal} from './FormatUtils';
+import {createRenderer, saveOriginal} from './FormatUtils';
 
 export const DATE_FMT = 'YYYY-MM-DD',
     DATETIME_FMT = 'YYYY-MM-DD h:mma',
@@ -33,7 +33,6 @@ const INVALID_DATE = moment(null).format();
  *      Not typically used by applications.
  */
 export function fmtDate(v, opts) {
-    asElementDeprecationWarning(opts);
     if (v == null) return opts?.nullDisplay ?? '';
     opts = isString(opts) ? {fmt: opts} : {...opts};
 

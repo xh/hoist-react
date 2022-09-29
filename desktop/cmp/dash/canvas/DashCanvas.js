@@ -8,6 +8,7 @@ import {ContextMenu} from '@blueprintjs/core';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {elemFactory, hoistCmp, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
+import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import classNames from 'classnames';
 import PT from 'prop-types';
@@ -15,7 +16,7 @@ import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import './DashCanvas.scss';
 import {DashCanvasModel} from './DashCanvasModel';
-import {dashCanvasAddViewButton, dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
+import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
 
 /**
