@@ -3473,10 +3473,10 @@ file-selector@^0.1.12:
   dependencies:
     tslib "^2.0.1"
 
-filesize@~6.4.0:
-  version "6.4.0"
-  resolved "https://registry.yarnpkg.com/filesize/-/filesize-6.4.0.tgz#914f50471dd66fdca3cefe628bd0cde4ef769bcd"
-  integrity sha512-mjFIpOHC4jbfcTfoh4rkWpI31mF7viw9ikj/JyLoKzqlwG/YsefKfvYlYhdYdg/9mtK2z1AzgN/0LvVQ3zdlSQ==
+filesize@~10.0.3:
+  version "10.0.3"
+  resolved "https://registry.yarnpkg.com/filesize/-/filesize-10.0.3.tgz#6669cf85ace042df33685dfc13decd068c5f9873"
+  integrity sha512-IhHaxwBQQG64fM7mXLUR9pekBp1cpqk5KOUgt3ixwG5fylVfnPrvlFwfTv/IX/AOh5teY5Zobcgjwy0lO3Sz/Q==
 
 fill-range@^7.0.1:
   version "7.0.1"
