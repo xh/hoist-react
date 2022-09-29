@@ -19,6 +19,13 @@
     * Admin/dev-focused UI available on Desktop, activated via discrete new toggle in the bottom
       version bar (magnifying glass icon), or via console with `XH.inspectorService.activate()`.
 
+### 💥 Breaking Changes
+
+* This release moves Hoist to **React v18**. Update your app's `package.json` to require the latest
+  18.x versions of `react` and `react-dom`. Unless your app directly accesses certain react-dom
+  APIs (unlikely), no other changes should be required.
+* The deprecated method `XH.setDarkTheme` has been removed. Use `XH.setTheme` instead.
+
 ### ⚙️ Technical
 
 * `HoistComponents` no longer mutate the props object passed to them in React production mode. This
@@ -34,9 +41,12 @@
 * The `trimToDepth` has been improved to return a depth-limited clone of its input that better
   handles nested arrays and passes through primitive inputs unchanged.
 
-### 💥 Breaking Changes
+### 📚 Libraries
 
-* The deprecated method `XH.setDarkTheme` has been removed. Use `XH.setTheme` instead.
+* @fortawesome `6.1 -> 6.2`
+* dompurify `2.3 -> 2.4`
+* react `17.0.1 -> 18.2.0`
+* react-dom `17.0.1 -> 18.2.0`
 
 ## v51.0.0 - 2022-08-29
 
@@ -74,11 +84,6 @@
 * Hoist-supported menus will no longer filter out a `MenuDivider` if it has a `title`.
 * The `filterText` field in `ColumnHeaderFilter` now gets autoFocused.
 * The default `FormField` read-only renderer now supports line breaks.
-
-### 📚 Libraries
-
-* react `17.0.1 > 18.2.0`
-* react-dom `17.0.1 > 18.2.0`
 
 ## v50.1.1 - 2022-07-29
 
