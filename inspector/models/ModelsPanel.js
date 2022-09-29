@@ -51,11 +51,11 @@ const instanceGridBar = hoistCmp.factory(
             compact: true,
             items: [
                 switchInput({
-                    bind: 'groupModelInstancesByClass',
-                    label: 'Group by class'
+                    bind: 'showInGroups',
+                    label: 'Show in groups'
                 }),
                 filler(),
-                gridCountLabel({unit: 'model', gridModel: modelInstanceGridModel}),
+                gridCountLabel({unit: 'instance', gridModel: modelInstanceGridModel}),
                 '-',
                 storeFilterField({gridModel: modelInstanceGridModel, matchMode: 'any'})
             ]

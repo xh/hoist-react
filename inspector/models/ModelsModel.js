@@ -8,7 +8,7 @@ import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {bindable} from '@xh/hoist/mobx';
 import {trimToDepth} from '@xh/hoist/utils/js';
-import {compact, find, forIn, snakeCase, without} from 'lodash';
+import {compact, find, forIn, head, snakeCase, without} from 'lodash';
 import {isObservableProp, makeObservable} from 'mobx';
 
 const {BOOL, STRING} = FieldType;
@@ -23,15 +23,16 @@ export class ModelsModel extends HoistModel {
     /** @member {PanelModel} */
     propertiesPanelModel;
 
-    @bindable @persist groupModelInstancesByClass = true;
+    @bindable @persist showInGroups = true;
     @bindable observablePropsOnly = false;
     @bindable showUnderscoreProps = false;
 
     @bindable.ref propsWatchlist = [];
+    @bindable.ref loadedGetters = [];
 
-    /** @return {HoistModel} */
-    get selectedModel() {
-        return this.getModelInstance(this.instancesGridModel.selectedId);
+    /** @return {HoistModel|HoistService} */
+    get selectedInstance() {
+        return this.getInstance(this.instancesGridModel.selectedId);
     }
 
     constructor() {
@@ -55,8 +56,8 @@ export class ModelsModel extends HoistModel {
                 fireImmediately: true
             },
             {
-                track: () => this.groupModelInstancesByClass,
-                run: (doGroupBy) => this.instancesGridModel.setGroupBy(doGroupBy ? 'className' : null)
+                track: () => this.showInGroups,
+                run: (showInGroups) => this.instancesGridModel.setGroupBy(showInGroups ? 'displayGroup' : null)
             }
         );
     }
@@ -71,43 +72,45 @@ export class ModelsModel extends HoistModel {
         instancesGridModel.selectAsync(rec);
     }
 
-    logModelToConsole(rec) {
-        const xhId = rec.id,
-            model = this.getModelInstance(xhId);
+    logInstanceToConsole(rec) {
+        if (!rec) return;
 
-        if (!model) {
+        const xhId = rec.id,
+            instance = this.getInstance(xhId);
+
+        if (!instance) {
             console.warn(`Model with xhId ${xhId} no longer alive - cannot be logged`);
         } else {
-            const global = snakeCase(model.xhId);
-            window[global] = model;
-            console.log(`window.${global}`, model);
+            const global = snakeCase(instance.xhId);
+            window[global] = instance;
+            console.log(`window.${global}`, instance);
         }
     }
 
     logPropToConsole(rec) {
         const {xhId, property} = rec.data,
-            model = this.getModelInstance(xhId);
+            instance = this.getInstance(xhId);
 
-        if (!model) {
+        if (!instance) {
             console.warn(`Model with xhId ${xhId} no longer alive - cannot be logged`);
         } else {
-            console.log(`[${xhId}].${property}`, model[property]);
+            console.log(`[${xhId}].${property}`, instance[property]);
         }
     }
 
-    togglePropsWatchlistItem(xhId, property) {
-        const {propsWatchlist} = this,
+    togglePropsWatchlistItem(record) {
+        const {xhId, property, isGetter} = record.data,
+            {propsWatchlist} = this,
             currItem = this.getWatchlistItem(xhId, property);
 
         this.propsWatchlist = currItem ?
             without(propsWatchlist, currItem) :
-            [...propsWatchlist, {xhId, property}];
+            [...propsWatchlist, {xhId, property, isGetter}];
     }
 
-    getModelInstance(xhId) {
+    getInstance(xhId) {
         if (!xhId) return null;
-        const matches = XH.getActiveModels(it => it.xhId === xhId);
-        return matches.length ? matches[0] : null;
+        return head(XH.getActiveModels(it => it.xhId === xhId)) ?? XH.getServices().find(it => it.xhId === xhId);
     }
 
 
@@ -116,11 +119,16 @@ export class ModelsModel extends HoistModel {
     //------------------
     createInstancesGridModel() {
         return new GridModel({
-            persistWith: {...this.persistWith, path: 'instancesGrid'},
+            persistWith: {...this.persistWith, path: 'instancesGrid', persistGrouping: false},
             autosizeOptions: {mode: GridAutosizeMode.MANAGED},
             store: XH.inspectorService.modelInstanceStore,
-            sortBy: ['created|desc'],
-            groupBy: this.groupModelInstancesByClass ? 'className' : null,
+            sortBy: ['created'],
+            groupBy: this.showInGroups ? 'displayGroup' : null,
+            groupSortFn: (a, b) => {
+                a = a === 'Services' ? '!' : a;
+                b = b === 'Services' ? '!' : b;
+                return this.instancesGridModel.defaultGroupSortFn(a, b);
+            },
             filterModel: true,
             colChooserModel: true,
             colDefaults: {filterable: true},
@@ -132,12 +140,12 @@ export class ModelsModel extends HoistModel {
                         {
                             icon: Icon.terminal(),
                             tooltip: 'Log to console',
-                            actionFn: ({record}) => this.logModelToConsole(record)
+                            actionFn: ({record}) => this.logInstanceToConsole(record)
                         },
                         {
                             icon: Icon.refresh({intent: 'success'}),
                             tooltip: 'Call loadAsync()',
-                            actionFn: ({record}) => this.getModelInstance(record.id)?.loadAsync(),
+                            actionFn: ({record}) => this.getInstance(record.id)?.loadAsync(),
                             displayFn: ({record}) => ({hidden: !record.data.hasLoadSupport})
                         }
                     ]
@@ -149,6 +157,7 @@ export class ModelsModel extends HoistModel {
                     tooltip: v => v ? 'Linked model' : '',
                     renderer: (v) => v ? Icon.link() : null
                 },
+                {field: 'displayGroup', hidden: true},
                 {field: 'className', flex: 1, minWidth: 150},
                 {
                     field: 'lastLoadCompleted',
@@ -159,7 +168,7 @@ export class ModelsModel extends HoistModel {
                 },
                 {field: 'created', align: 'right', renderer: timestampRenderer}
             ],
-            onRowDoubleClicked: ({data: rec}) => this.logModelToConsole(rec)
+            onRowDoubleClicked: ({data: rec}) => this.logInstanceToConsole(rec)
         });
     }
 
@@ -174,7 +183,7 @@ export class ModelsModel extends HoistModel {
                 b = b === 'Watchlist' ? 0 : 1;
                 return a - b;
             },
-            store: {fields: ['xhId', 'property', 'isWatchlistItem']},
+            store: {fields: ['xhId', 'property', 'isWatchlistItem', 'isGetter', 'isLoadedGetter']},
             columns: [
                 {
                     ...actionCol,
@@ -188,7 +197,7 @@ export class ModelsModel extends HoistModel {
                         {
                             icon: Icon.star(),
                             tooltip: 'Toggle Watchlist',
-                            actionFn: ({record}) => this.togglePropsWatchlistItem(record.data.xhId, record.data.property),
+                            actionFn: ({record}) => this.togglePropsWatchlistItem(record),
                             displayFn: ({record}) => ({
                                 icon: record.data.isWatchlistItem ?
                                     Icon.star({intent: 'warning', prefix: 'fas'}) :
@@ -218,14 +227,19 @@ export class ModelsModel extends HoistModel {
                     ...iconCol,
                     renderer: v => v ? Icon.eye({title: 'Observable'}) : ''
                 },
-                {field: 'valueType', width: 130},
+                {field: 'valueType', width: 130, rendererIsComplex: true},
                 {
                     field: 'value',
+                    cellClass: 'xh-font-family-mono',
                     highlightOnChange: true,
                     flex: 1,
                     minWidth: 150,
                     renderer: (v, {record}) => {
-                        if (record.data.isHoistModel) {
+                        const {data} = record;
+                        if (data.isGetter && !data.isLoadedGetter) {
+                            return a({item: '(...)', onClick: () => this.loadGetter(record)});
+                        }
+                        if (data.isHoistModel) {
                             return a({item: v, onClick: () => this.selectModel(v)});
                         }
                         return JSON.stringify(trimToDepth(v, 2));
@@ -239,21 +253,38 @@ export class ModelsModel extends HoistModel {
     autoLoadPropertiesGrid() {
         this.addAutorun({
             run: () => {
-                const {propertiesGridModel, selectedModel, propsWatchlist} = this,
+                const {propertiesGridModel, selectedInstance, propsWatchlist} = this,
                     data = [];
 
-                // Show own + prototype properties on selected model.
-                if (selectedModel) {
-                    forIn(selectedModel, (v, prop) => {
-                        data.push(this.getRecData(selectedModel, prop));
+                // Read properties (included non-enumerated ones, like getters) off of the instance and its prototype.
+                if (selectedInstance) {
+                    const descriptors = {
+                        ...Object.getOwnPropertyDescriptors(selectedInstance),
+                        ...Object.getOwnPropertyDescriptors(Object.getPrototypeOf(selectedInstance))
+                    };
+
+                    forIn(descriptors, (descriptor, prop) => {
+                        // Extract data from enumerable props and getters.
+                        if (descriptor.enumerable || descriptor.get) {
+                            data.push(this.getRecData({
+                                model: selectedInstance,
+                                property: prop,
+                                isGetter: !!descriptor.get
+                            }));
+                        }
                     });
                 }
 
                 // As well as any watchlist items.
                 propsWatchlist.forEach(it => {
-                    const wlModel = this.getModelInstance(it.xhId);
+                    const wlModel = this.getInstance(it.xhId);
                     if (wlModel) {
-                        data.push(this.getRecData(wlModel, it.property, true));
+                        data.push(this.getRecData({
+                            model: wlModel,
+                            property: it.property,
+                            fromWatchlistItem: true,
+                            isGetter: it.isGetter
+                        }));
                     }
                 });
 
@@ -263,7 +294,7 @@ export class ModelsModel extends HoistModel {
         });
     }
 
-    getRecData(model, property, fromWatchlistItem = false) {
+    getRecData({model, property, fromWatchlistItem = false, isGetter = false}) {
         const {observablePropsOnly, showUnderscoreProps} = this,
             isObservable = isObservableProp(model, property);
 
@@ -272,23 +303,44 @@ export class ModelsModel extends HoistModel {
             (observablePropsOnly && !isObservable)
         ) return null;
 
-        const v = model[property],
+        const {xhId} = model,
             modelCtor = model.constructor.name,
-            {xhId} = model,
+            isLoadedGetter = isGetter && this.shouldLoadGetter(xhId, property),
+            v = (!isGetter || isLoadedGetter) ? model[property] : null,
             isHoistModel = v?.isHoistModel;
+
+        let valueType;
+        if (isGetter && !isLoadedGetter) {
+            valueType = 'get(?)';
+        } else {
+            const rawType = v?.constructor?.name ?? typeof v;
+            valueType = isGetter ? `get(${rawType})` : rawType;
+        }
+
 
         return {
             id: `${xhId}-${property}${fromWatchlistItem ? '-wl' : ''}`,
             xhId,
             property,
             value: isHoistModel ? v.xhId : v,
-            valueType: v?.constructor?.name ?? typeof v,
+            valueType,
             isObservable,
             isHoistModel,
+            isGetter,
+            isLoadedGetter,
             isWatchlistItem: !!this.getWatchlistItem(xhId, property),
             displayProperty: fromWatchlistItem ? `${modelCtor}[${xhId}].${property}` : property,
             displayGroup: fromWatchlistItem ? 'Watchlist' : modelCtor
         };
+    }
+
+    shouldLoadGetter(xhId, property) {
+        return !!find(this.loadedGetters, {xhId, property});
+    }
+
+    loadGetter(rec) {
+        const {xhId, property} = rec.data;
+        this.setLoadedGetters([...this.loadedGetters, {xhId, property}]);
     }
 
     getWatchlistItem(xhId, property) {

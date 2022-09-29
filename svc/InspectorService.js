@@ -53,6 +53,7 @@ export class InspectorService extends HoistService {
         this.modelInstanceStore = new Store({
             fields: [
                 {name: 'className', type: STRING},
+                {name: 'displayGroup', type: STRING},
                 {name: 'created', type: DATE},
                 {name: 'isLinked', type: BOOL},
                 {name: 'hasLoadSupport', type: BOOL},
@@ -124,10 +125,17 @@ export class InspectorService extends HoistService {
         // Explicit access to keys() here ensure we trigger this autorun on set composition change.
         HoistModel._activeModels.keys();
 
-        const modelData = XH.getActiveModels().map(model => {
+        const models = [
+            ...XH.getActiveModels(),
+            ...XH.getServices()
+        ];
+
+        const modelData = models.map(model => {
+            const className = model.constructor.name;
             return {
                 id: model.xhId,
-                className: model.constructor.name,
+                className,
+                displayGroup: model.isHoistModel ? className : 'Services',
                 created: model._created,
                 isLinked: model.isLinked,
                 hasLoadSupport: model.loadSupport != null,
@@ -158,6 +166,8 @@ export class InspectorService extends HoistService {
             totalJSHeapSize,
             usedJSHeapSize
         });
+
+        this._prevModelCount = modelCount;
     }
 
     get conf() {

@@ -62,6 +62,7 @@ class XHClass {
     #initCalled = false;
     #lastActivityMs = Date.now();
     #uaParser = null;
+    #services = [];
 
     constructor() {
         makeObservable(this);
@@ -268,6 +269,7 @@ class XHClass {
                 install the same service twice.`
             ));
             this[name] = svc;
+            this.#services.push(svc);
         });
     }
 
@@ -670,6 +672,11 @@ class XHClass {
             if (m.matchesSelector(selector, true)) ret.push(m);
         });
         return ret;
+    }
+
+    /** @return {HoistService[]} - all services registered with this application. */
+    getServices() {
+        return [...this.#services];
     }
 
     /**

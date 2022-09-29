@@ -35,9 +35,14 @@ export const statsPanel = hoistCmp.factory({
                 compact: true,
                 items: [
                     button({
-                        text: 'Reset stats',
+                        tooltip: 'Reset stats',
                         icon: Icon.reset(),
                         onClick: () => XH.inspectorService.clearStats()
+                    }),
+                    button({
+                        tooltip: 'Take stat snapshot now',
+                        icon: Icon.camera(),
+                        onClick: () => XH.inspectorService.updateStats()
                     }),
                     filler(),
                     popover({
