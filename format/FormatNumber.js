@@ -8,7 +8,7 @@ import {span} from '@xh/hoist/cmp/layout';
 import {defaults, isFinite, isFunction, isPlainObject, isString} from 'lodash';
 import numbro from 'numbro';
 import {fmtSpan} from './FormatMisc';
-import {asElementDeprecationWarning, createRenderer, saveOriginal} from './FormatUtils';
+import {createRenderer, saveOriginal} from './FormatUtils';
 
 const THOUSAND = 1000,
     MILLION  = 1000000,
@@ -71,10 +71,8 @@ export function fmtNumber(v, {
     colorSpec = false,
     tooltip = null,
     asHtml = false,
-    originalValue = v,
-    ...rest
+    originalValue = v
 } = {}) {
-    asElementDeprecationWarning(rest);
     if (isInvalidInput(v)) return nullDisplay;
 
     formatConfig = formatConfig || buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma);
