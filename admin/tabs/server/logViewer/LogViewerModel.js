@@ -164,7 +164,7 @@ export class LogViewerModel extends HoistModel {
                     omit: !supportFileAttrs
                 }
             ],
-            autosizeOptions: {mode: GridAutosizeMode.DISABLED},
+            autosizeOptions: {mode: GridAutosizeMode.MANAGED},
             contextMenu: [
                 this.downloadFileAction,
                 this.deleteFileAction,
@@ -177,7 +177,14 @@ export class LogViewerModel extends HoistModel {
 
 function fileSizeRenderer(v) {
     if (v == null) return '';
+
     const inMb = v > 1000000,
-        scale = v > 10000000 ? 1/1000000 : 1/1000;
-    return fmtNumber(v * scale, {precision: 1, label: inMb ? 'mb' : 'kb'});
+        scale = inMb ? 1/1000000 : 1/1000;
+
+    return fmtNumber(v * scale, {
+        precision: 1,
+        originalValue: v,
+        tooltip: true,
+        label: inMb ? 'mb' : 'kb'
+    });
 }
