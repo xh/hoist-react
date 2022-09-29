@@ -42,7 +42,7 @@
     "dompurify": "~2.4.0",
     "downloadjs": "~1.4.7",
     "fast-deep-equal": "~3.1.1",
-    "filesize": "~10.0.3",
+    "filesize": "~6.4.0",
     "golden-layout": "~1.5.9",
     "http-status-codes": "~2.2.0",
     "inter-ui": "~3.19.3",

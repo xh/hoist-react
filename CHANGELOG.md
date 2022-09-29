@@ -38,7 +38,6 @@
 
 * @fortawesome `6.1 -> 6.2`
 * dompurify `2.3 -> 2.4`
-* filesize `6.4 -> 10.0`
 * react `17.0.1 -> 18.2.0`
 * react-dom `17.0.1 -> 18.2.0`
 
