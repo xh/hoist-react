@@ -142,19 +142,11 @@ export class LogViewerModel extends HoistModel {
                 url: 'logViewerAdmin/listFiles',
                 idSpec: 'filename',
                 dataRoot: 'files',
-                fields: [{
-                    name: 'filename',
-                    type: 'string',
-                    displayName: 'Name'
-                }, {
-                    name: 'size',
-                    type: 'number',
-                    displayName: 'Size [kb]'
-                }, {
-                    name: 'lastModified',
-                    type: 'number',
-                    displayName: 'Modified'
-                }]
+                fields: [
+                    {name: 'filename', type: 'string', displayName: 'Name'},
+                    {name: 'size', type: 'number', displayName: 'Size'},
+                    {name: 'lastModified', type: 'number', displayName: 'Modified'}
+                ]
             }),
             sortBy: 'lastModified|desc',
             columns: [
@@ -167,7 +159,7 @@ export class LogViewerModel extends HoistModel {
                 },
                 {
                     field: 'lastModified',
-                    width: 100,
+                    width: 110,
                     renderer: compactDateRenderer({sameDayFmt: 'HH:mm:ss'}),
                     omit: !supportFileAttrs
                 }
@@ -185,5 +177,7 @@ export class LogViewerModel extends HoistModel {
 
 function fileSizeRenderer(v) {
     if (v == null) return '';
-    return fmtNumber(v/1000, {precision: 1});
+    const inMb = v > 1000000,
+        scale = v > 10000000 ? 1/1000000 : 1/1000;
+    return fmtNumber(v * scale, {precision: 1, label: inMb ? 'mb' : 'kb'});
 }
