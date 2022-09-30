@@ -993,6 +993,8 @@ function isChildDataObject(obj) {
  * @property {string} parentId - a pointer to the intended parent. Has to reference an already
  *     existing parent; to add both a parent and its children at the same time, include the
  *     children's rawData in their parent's `rawData.children` array.
+ *     NOTE: The parentId is only used when adding a child record, it may NOT be modified on an
+ *     already added/existing record.
  * @property {Object} rawData - can include a `children` property that will be processed into new
  *     child records, for creating multiple-nested children.
  */

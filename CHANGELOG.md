@@ -29,6 +29,9 @@
 ### 🐞 Bug Fixes
 
 * Boolean filterChooser fields with enableValues=false will no longer suggest true for 'false'.
+* Store.updateData() will now properly handle the {rawData, parentId} data format.
+  * The idSpec function will now work with the format.
+  * A previously created field can be updated using the format; but the parentId cannot be changed.
 
 ### ⚙️ Technical
 
