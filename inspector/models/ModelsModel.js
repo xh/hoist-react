@@ -6,13 +6,17 @@ import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {bindable} from '@xh/hoist/mobx';
+import {action, bindable} from '@xh/hoist/mobx';
 import {trimToDepth} from '@xh/hoist/utils/js';
-import {compact, find, forIn, head, snakeCase, without} from 'lodash';
+import {compact, find, forIn, head, without} from 'lodash';
 import {isObservableProp, makeObservable} from 'mobx';
 
 const {BOOL, STRING} = FieldType;
 
+/**
+ * Displays a list of current HoistModel and HoistService instances, with the ability to view
+ * properties (including reactive updates) for a selected instance.
+ */
 export class ModelsModel extends HoistModel {
     persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.models`};
 
@@ -81,9 +85,11 @@ export class ModelsModel extends HoistModel {
         if (!instance) {
             console.warn(`Model with xhId ${xhId} no longer alive - cannot be logged`);
         } else {
-            const global = snakeCase(instance.xhId);
-            window[global] = instance;
-            console.log(`window.${global}`, instance);
+            console.log(`[${xhId}]`, instance);
+            XH.toast({
+                icon: Icon.terminal(),
+                message: `Logged ${rec.data.className} ${xhId} to devtools console`
+            });
         }
     }
 
@@ -95,6 +101,10 @@ export class ModelsModel extends HoistModel {
             console.warn(`Model with xhId ${xhId} no longer alive - cannot be logged`);
         } else {
             console.log(`[${xhId}].${property}`, instance[property]);
+            XH.toast({
+                icon: Icon.terminal(),
+                message: `Logged [${xhId}].${property} to devtools console`
+            });
         }
     }
 
@@ -176,6 +186,8 @@ export class ModelsModel extends HoistModel {
         const iconCol = {width: 40, align: 'center', resizable: false};
         return new GridModel({
             persistWith: {...this.persistWith, path: 'propertiesGrid'},
+            autosizeOptions: {mode: GridAutosizeMode.MANAGED},
+            emptyText: 'No properties found.',
             sortBy: 'displayProperty',
             groupBy: 'displayGroup',
             groupSortFn: (a, b) => {
@@ -183,7 +195,7 @@ export class ModelsModel extends HoistModel {
                 b = b === 'Watchlist' ? 0 : 1;
                 return a - b;
             },
-            store: {fields: ['xhId', 'property', 'isWatchlistItem', 'isGetter', 'isLoadedGetter']},
+            store: {fields: ['xhId', 'property', 'isWatchlistItem', 'isHoistModel', 'isGetter', 'isLoadedGetter']},
             columns: [
                 {
                     ...actionCol,
@@ -221,13 +233,13 @@ export class ModelsModel extends HoistModel {
                     ...iconCol,
                     renderer: v => v ? Icon.eye({title: 'Observable'}) : ''
                 },
-                {field: 'valueType', width: 130, rendererIsComplex: true},
+                {field: 'valueType', width: 130},
                 {
                     field: 'value',
                     cellClass: 'xh-font-family-mono',
-                    highlightOnChange: true,
                     flex: 1,
                     minWidth: 150,
+                    highlightOnChange: true,
                     rendererIsComplex: true,
                     renderer: (v, {record}) => {
                         const {data} = record;
@@ -241,7 +253,8 @@ export class ModelsModel extends HoistModel {
                     }
                 },
                 {field: 'displayGroup', hidden: true}
-            ]
+            ],
+            onRowDoubleClicked: ({data: rec}) => this.logPropToConsole(rec)
         });
     }
 
@@ -330,7 +343,17 @@ export class ModelsModel extends HoistModel {
 
     loadGetter(rec) {
         const {xhId, property} = rec.data;
-        this.setLoadedGetters([...this.loadedGetters, {xhId, property}]);
+        if (!this.shouldLoadGetter(xhId, property)) {
+            this.setLoadedGetters([...this.loadedGetters, {xhId, property}]);
+        }
+    }
+
+    @action
+    loadAllCurrentGetters() {
+        this.propertiesGridModel.store.records.forEach(rec => {
+            const {isGetter, isLoadedGetter} = rec.data;
+            if (isGetter && !isLoadedGetter) this.loadGetter(rec);
+        });
     }
 
     getWatchlistItem(xhId, property) {

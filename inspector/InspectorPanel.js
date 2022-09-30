@@ -7,6 +7,9 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import './Inspector.scss';
 
+/**
+ * {@see InspectorService} for an explanation of the Hoist Inspector tool.
+ */
 export const inspectorPanel = hoistCmp.factory({
     displayName: 'InspectorPanel',
 

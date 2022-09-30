@@ -4,6 +4,9 @@ import {HoistModel, XH} from '@xh/hoist/core';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate, millionsRenderer, numberRenderer} from '@xh/hoist/format';
 
+/**
+ * Displays a small grid/chart combo with a timeseries of the app's model count and memory usage.
+ */
 export class StatsModel extends HoistModel {
     persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.stats`};
 
@@ -32,7 +35,7 @@ export class StatsModel extends HoistModel {
             columns: [
                 {field: 'timestamp', displayName: 'Time', renderer: timestampRenderer},
                 {field: 'modelCount', displayName: '# Models', renderer: numberRenderer({precision: 0})},
-                {field: 'modelCountChange', displayName: '#Δ', renderer: numberRenderer({precision: 0, ledger: true})},
+                {field: 'modelCountChange', displayName: '#Δ', renderer: numberRenderer({precision: 0, colorSpec: true, withSignGlyph: true})},
                 {field: 'totalJSHeapSize', displayName: 'JS Heap (mb)', renderer: millionsRenderer({precision: 0})},
                 {field: 'usedJSHeapSize', displayName: 'Used (mb)', renderer: millionsRenderer({precision: 0})}
             ]
@@ -47,7 +50,15 @@ export class StatsModel extends HoistModel {
                 yAxis: [
                     {title: {text: '# Models'}, allowDecimals: false, opposite: true, height: '70%'},
                     {title: {text: 'JS Heap'}, height: '70%'},
-                    {title: {text: '#Δ'}, height: '20%', top: '80%', offset: 0, opposite: true}
+                    {
+                        title: {text: '#Δ'}, height: '20%', top: '80%', offset: 0, opposite: true,
+                        plotLines: [
+                            {
+                                value: 0,
+                                color: XH.darkTheme ? '#37474f' : '#bdbdbd'
+                            }
+                        ]
+                    }
                 ]
             }
         });

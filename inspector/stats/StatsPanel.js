@@ -1,6 +1,6 @@
 import {chart} from '@xh/hoist/cmp/chart';
 import {grid} from '@xh/hoist/cmp/grid';
-import {div, filler, span} from '@xh/hoist/cmp/layout';
+import {code, div, filler, span} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {StatsModel} from '@xh/hoist/inspector/stats/StatsModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -50,7 +50,7 @@ export const statsPanel = hoistCmp.factory({
                         interactionKind: 'hover',
                         content: div({
                             className: 'xh-pad',
-                            item: 'Note that JS heap space is shared / reported across all browser tabs, not just the current application.'
+                            item: span('Note that JS heap space is as reported by the ', code('window.performance.memory'), ' API.')
                         })
                     })
                 ]
