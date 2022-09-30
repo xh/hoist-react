@@ -26,23 +26,24 @@ export class InspectorService extends HoistService {
     persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}`};
 
     /**
-     * @return {boolean} - true if Inspector is generally enabled via config.
-     *      If enabled but !active, this service won't do any work, but can be activated on demand.
+     * True if Inspector is generally enabled via config.
+     * If enabled but !active, this service won't do any work, but can be activated on demand.
      */
-    get enabled() {
+    get enabled(): boolean {
         const {conf} = this;
         return conf.enabled && (!conf.requiresRole || XH.getUser().hasRole(conf.requiresRole));
     }
 
-    /** @member {boolean} - true to start processing model stats and show the Inspector UI. */
-    @observable @persist active = false;
+    /** True to start processing model stats and show the Inspector UI. */
+    @observable
+    @persist
+    active: boolean = false;
 
-    /** @member {Store} - when active, holds lightly processed records for all active models. */
-    @managed modelInstanceStore;
-    /** @member {Store} - when active, holds timestamped stats on model count and memory usage. */
-    @managed statsStore;
-    /** @member {Timer} **/
-    @managed statsUpdateTimer;
+    /** When active, holds lightly processed records for all active models. */
+    @managed modelInstanceStore: Store;
+    /** When active, holds timestamped stats on model count and memory usage. */
+    @managed statsStore: Store;
+    @managed statsUpdateTimer: Timer;
 
     constructor() {
         super();
@@ -82,8 +83,7 @@ export class InspectorService extends HoistService {
         // set composition itself. Throttled via mobx-provided delay option.
         this.addAutorun({
             run: () => this.sync(),
-            delay: 300,
-            fireImmediately: true
+            delay: 300
         });
 
         // Stats are synced on model changes - this Timer also ensures regular updates to stats
@@ -130,7 +130,7 @@ export class InspectorService extends HoistService {
             ...XH.getServices()
         ];
 
-        const modelData = models.map(model => {
+        const modelData = models.map((model: any) => {
             const className = model.constructor.name;
             return {
                 id: model.xhId,
@@ -153,7 +153,7 @@ export class InspectorService extends HoistService {
     updateStats() {
         if (!this.active) return;
 
-        const {totalJSHeapSize, usedJSHeapSize} = (window.performance?.memory ?? {}),
+        const {totalJSHeapSize, usedJSHeapSize} = ((window.performance as any)?.memory ?? {}),
             modelCount = HoistModel._activeModels.size,
             prevModelCount = this._prevModelCount,
             now = Date.now();

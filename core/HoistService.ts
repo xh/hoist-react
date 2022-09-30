@@ -51,7 +51,7 @@ export class HoistService extends HoistBase {
      * Throwing an exception from this method will typically block startup.
      * Service writers should take care to stifle and manage all non-fatal exceptions.
      */
-    async initAsync() {}
+    initAsync() {}
 
     /**
      * Provides optional support for Hoist's approach to managed loading.
