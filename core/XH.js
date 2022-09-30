@@ -254,12 +254,18 @@ class XHClass {
      * initialization, make multiple calls to this method with await.
      *
      * Note that the instantiated services will be placed directly on the XH object for easy access.
-     * Therefore applications should choose a unique name of the form xxxService to avoid naming
-     * collisions. If naming collisions are detected, an error will be thrown.
+     * Applications must choose a unique name of the form xxxService to avoid naming collisions.
+     * If naming collisions are detected, an error will be thrown.
      */
     async installServicesAsync(...serviceClasses) {
+        const notARealService = serviceClasses.find(it => !it.isHoistService);
+        throwIf(notARealService, (
+            `Cannot initialize ${notARealService?.name} - does not extend HoistService`
+        ));
+
         const svcs = serviceClasses.map(serviceClass => new serviceClass());
         await this.initServicesInternalAsync(svcs);
+
         svcs.forEach(svc => {
             const name = camelCase(svc.constructor.name);
             throwIf(this[name], (
