@@ -4,11 +4,11 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
 */
-import {PersistenceProvider, PersistOptions} from '@xh/hoist/core';
+import {PersistenceProvider, PersistOptions, HoistBaseClass} from '@xh/hoist/core';
 
 import {cloneDeep, isUndefined} from 'lodash';
-import {wait} from '@xh/hoist/promise';
-import {throwIf} from '@xh/hoist/utils/js';
+import {wait} from 'promise';
+import {throwIf} from 'utils/js';
 
 /**
  * Decorator to make a property "managed". Managed properties are designed to hold objects that
@@ -16,15 +16,17 @@ import {throwIf} from '@xh/hoist/utils/js';
  *
  * @see HoistBase.markManaged
  */
-export function managed(target: object, property: string, descriptor: object): object {
+export const managed: any = (target: HoistBaseClass, property: string, descriptor: any) => {
     throwIf(!target.isHoistBase, '@managed decorator should be applied to a subclass of HoistBase');
     // Be sure to create list for *this* particular class. Clone and include inherited values.
-    if (!target.hasOwnProperty('_xhManagedProperties')) {
-        target._xhManagedProperties = [...(target._xhManagedProperties ?? [])];
+    const key = '_xhManagedProperties';
+    if (!target.hasOwnProperty(key)) {
+        target[key] = [...(target[key] ?? [])];
     }
-    target._xhManagedProperties.push(property);
+    target[key].push(property);
     return descriptor;
-}
+};
+
 
 /**
  * Decorator to make a class property persistent.
@@ -38,7 +40,7 @@ export function managed(target: object, property: string, descriptor: object): o
  * See also @persist.with, a higher-order version of this decorator that allows for setting
  * property-specific persistence options.
  */
-export function persist(target: object, property: string, descriptor: object): object {
+export const persist: any = (target: HoistBaseClass, property: string, descriptor: any) => {
     return createPersistDescriptor(target, property, descriptor, null);
 }
 
@@ -50,17 +52,16 @@ export function persist(target: object, property: string, descriptor: object): o
  *
  * @param {PersistOptions} options
  */
-persist.with = function(options: PersistOptions): object {
+persist.with = function(options: PersistOptions): any {
     return function(target, property, descriptor) {
         return createPersistDescriptor(target, property, descriptor, options);
     };
 };
 
-
 //---------------------
 // Implementation
 //---------------------
-function createPersistDescriptor(target, property, descriptor, options) {
+function createPersistDescriptor(target: HoistBaseClass, property: string, descriptor: any, options:PersistOptions) {
     throwIf(!target.isHoistBase, '@persist decorator should be applied to an instance of HoistBase');
     if (descriptor.get || descriptor.set) {
         console.error(

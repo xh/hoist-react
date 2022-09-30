@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {elemFactory} from '@xh/hoist/core';
+import {elemFactory, XH} from '@xh/hoist/core';
 import {Component} from 'react';
 
 /**
@@ -17,20 +17,18 @@ import {Component} from 'react';
  */
 export class ErrorBoundary extends Component {
 
-    constructor(props: object) {
+    constructor(props) {
         super(props);
         this.state = {caughtError: null, onError: props.onError};
     }
 
     render() {
-        return this.state.caughtError ?
-            'An error occurred while rendering this Component.' :
-            (this.props.children || null);
+        // @ts-ignore -- this is directly from react docs!
+        return this.state.caughtError ? 'An error occurred while rendering this Component.' : this.props.children ?? null;
     }
 
     componentDidCatch(e, info) {
-        const {onError} = this.state;
-        if (onError) onError(e);
+        XH.handleException(e, {requireReload: true})
     }
 
     static getDerivedStateFromError(e) {

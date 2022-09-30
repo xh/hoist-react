@@ -4,11 +4,12 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {XH, RefreshContextModel, HoistModel, ModelLookup} from '@xh/hoist/core';
+import {XH, RefreshContextModel, HoistModel} from '@xh/hoist/core';
 import {useOnUnmount} from '@xh/hoist/utils/react';
 import {each} from 'lodash';
 import {useEffect} from 'react';
-import {formatSelector} from '../modelspec/uses';
+import {formatSelector} from '../ModelSelector';
+import {ModelLookup} from './ModelLookup';
 
 /**
  * @private
@@ -26,7 +27,7 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
     // 1) Linking synchronous work: resolve lookups, initialize props, and call onLinked()
     if (isLinking) {
         model._modelLookup = modelLookup;
-        each(model._xhInjectedParentProperties, (selector, name) => {
+        each(model['_xhInjectedParentProperties'], (selector, name) => {
             const parentModel = modelLookup.lookupModel(selector);
             if (!parentModel) {
                 throw XH.exception(
@@ -46,7 +47,7 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
             model.afterLinked();
             if (model.loadSupport) {
                 model.loadAsync();
-                const refreshContext = modelLookup?.lookupModel(RefreshContextModel);
+                const refreshContext = modelLookup?.lookupModel(RefreshContextModel) as RefreshContextModel;
                 if (refreshContext) {
                     refreshContext.register(model);
                     return () => refreshContext.unregister(model);

@@ -15,25 +15,28 @@ import {HoistModel, HoistModelClass} from '../HoistModel';
  * *not* expect one to be provided via props or context.
  *
  * The constructed model instance will be provided to the component via props and placed in context
- * for access by all sub-components.
+ * for access by all subcomponents.
  *
  * The model created will be considered to be 'owned' by the receiving component. If it implements
  * loading it will be loaded on component mount, and it will always be destroyed on
  * component unmount.
  *
  * @param spec - HoistModel Class to construct, or a function returning a concrete HoistModel instance.
- * @param {Object} [flags]
- * @param {ModelPublishMode} [flags.publishMode] - mode for publishing this model to context.
+ * @param opts - additional options
  */
-export function creates(
-    spec: HoistModelClass | (() => HoistModel),
-    {publishMode = ModelPublishMode.DEFAULT} = {}
-): ModelSpec {
-    return new CreatesSpec(spec, publishMode);
+export function creates(spec: HoistModelClass | (() => HoistModel), opts: CreatesOptions): ModelSpec {
+    return new CreatesSpec(spec, opts?.publishMode ?? ModelPublishMode.DEFAULT);
 }
 
-/** @private */
-export class CreatesSpec extends ModelSpec {
+export interface CreatesOptions {
+    /** Mode for publishing this model to context. {@see ModelPublishMode}.*/
+    publishMode?: string;
+}
+
+//------------------
+// Implementation
+//------------------
+class CreatesSpec extends ModelSpec {
 
     createFn;
 

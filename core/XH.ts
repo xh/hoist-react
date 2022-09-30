@@ -45,11 +45,12 @@ import {ToastModel} from '../appcontainer/ToastModel';
 import {BannerModel} from '../appcontainer/BannerModel';
 import '../styles/XH.scss';
 import {ExceptionHandler, ExceptionHandlerOptions} from './ExceptionHandler';
-import {HoistModel, ModelSelector, HoistAppModel} from './HoistModel';
+import {HoistModel, ModelSelector} from './HoistModel';
+import {HoistAppModel} from "./HoistAppModel";
 import {RouterModel} from './RouterModel';
 import {FetchOptions} from '../svc';
 import {RefreshContextModel} from './refresh/RefreshContextModel';
-import {BannerSpec, ToastSpec, MessageSpec} from './Interfaces';
+import {BannerSpec, ToastSpec, MessageSpec, HoistUser} from './Interfaces';
 
 const MIN_HOIST_CORE_VERSION = '14.0';
 
@@ -66,7 +67,7 @@ class XHClass {
 
     private _initCalled: boolean = false;
     private _lastActivityMs: number = Date.now();
-    private _uaParser: object = null;
+    private _uaParser: any = null;
 
     constructor() {
         makeObservable(this);
@@ -77,24 +78,30 @@ class XHClass {
     // See @xh/hoist-dev-utils/configureWebpack.
     //----------------------------------------------------------------------------------------------
     /** short internal code for the application. */
+    // @ts-ignore
     appCode: string = xhAppCode;
 
     /** user-facing display name for the app. See also `XH.clientAppName`. */
+    // @ts-ignore
     appName: string = xhAppName;
 
     /** semVer or Snapshot version of the client build. */
+    // @ts-ignore
     appVersion: string = xhAppVersion;
 
     /**
      * optional identifier for the client build (e.g. a git commit hash or a
-     * build ID from a CI system. Varies depending on how builds are configured.
+     * build ID from a CI system). Varies depending on how builds are configured.
      */
+    // @ts-ignore
     appBuild: string = xhAppBuild;
 
     /** root URL context/path - prepended to all relative fetch requests. */
+    // @ts-ignore
     baseUrl: string = xhBaseUrl;
 
     /** true if app is running in a local development environment. */
+    // @ts-ignore
     isDevelopmentMode: boolean = xhIsDevelopmentMode;
 
     //----------------------------------------------------------------------------------------------
@@ -121,11 +128,11 @@ class XHClass {
     // Aliased methods
     // Shortcuts to common core service methods and appSpec properties.
     //----------------------------------------------------------------------------------------------
-    fetch(opts: FetchOptions): Promise {
+    fetch(opts: FetchOptions): Promise<void> {
         return this.fetchService.fetch(opts);
     }
 
-    fetchJson(opts: FetchOptions): Promise {
+    fetchJson(opts: FetchOptions): Promise<void> {
         return this.fetchService.fetchJson(opts);
     }
 
@@ -166,7 +173,7 @@ class XHClass {
         return this.environmentService?.get(key) ?? null;
     }
 
-    getUser(): object {
+    getUser(): HoistUser {
         return this.identityService?.getUser() ?? null;
     }
 
@@ -212,7 +219,7 @@ class XHClass {
     exceptionHandler: ExceptionHandler = new ExceptionHandler();
 
     /** current lifecycle state of the application. */
-    @observable appState: AppState = AppState.PRE_AUTH;
+    @observable appState: string = AppState.PRE_AUTH;
 
     /** milliseconds since user activity / interaction was last detected. */
     get lastActivityMs(): number {
@@ -262,7 +269,7 @@ class XHClass {
      * initialization, make multiple calls to this method with await.
      *
      * Note that the instantiated services will be placed directly on the XH object for easy access.
-     * Therefore applications should choose a unique name of the form xxxService to avoid naming
+     * Therefore, applications should choose a unique name of the form xxxService to avoid naming
      * collisions. If naming collisions are detected, an error will be thrown.
      */
     async installServicesAsync(...serviceClasses: (new () => BaseService)[]) {
@@ -284,7 +291,7 @@ class XHClass {
      * Used by framework. Not intended for application use.
      */
     @action
-    setAppState(appState: AppState) {
+    setAppState(appState: string) {
         if (this.appState != appState) {
             this.appState = appState;
         }
@@ -344,7 +351,7 @@ class XHClass {
      * @param value - 'light', 'dark', or 'system'
      * @param [persist] - true (default) to persist with preference
      */
-    setTheme(value: string, persist?: boolean = true) {
+    setTheme(value: string, persist: boolean = true) {
         return this.acm.themeModel.setTheme(value, persist);
     }
 
@@ -356,11 +363,11 @@ class XHClass {
     //------------------------
     // Sizing Mode Support
     //------------------------
-    setSizingMode(sizingMode: SizingMode) {
+    setSizingMode(sizingMode: string) {
         return this.acm.sizingModeModel.setSizingMode(sizingMode);
     }
 
-    get sizingMode(): SizingMode {
+    get sizingMode(): string {
         return this.acm.sizingModeModel.sizingMode;
     }
 
@@ -403,12 +410,13 @@ class XHClass {
 
     /** Route the app - shortcut to this.router.navigate. */
     navigate(...args) {
+        // @ts-ignore
         return this.router.navigate(...args);
     }
 
     /** Add a routeName to the current route, preserving params */
-    appendRoute(...args) {
-        return this.routerModel.appendRoute(...args);
+    appendRoute(routeName: string, newParams?: object) {
+        return this.routerModel.appendRoute(routeName, newParams);
     }
 
     /** Remove last routeName from the current route, preserving params */
@@ -422,7 +430,7 @@ class XHClass {
     /**
      * Show a modal message dialog.
      *
-     * Note that this method will auto focus the confirm button by default. To focus the cancel
+     * Note that this method will autofocus the confirm button by default. To focus the cancel
      * button instead (e.g. for confirming risky operations), applications should specify a
      * `cancelProps` argument of the following form `cancelProps: {..., autoFocus: true}`.
      *
@@ -569,9 +577,9 @@ class XHClass {
 
     /**
      * Show a dialog to elicit feedback from the user.
-     * @param {string} [message] - optional message to preset within the feedback dialog.
+     * @param [message] - optional message to preset within the feedback dialog.
      */
-    showFeedbackDialog({message} = {}) {
+    showFeedbackDialog({message}: {message?: string} = {}) {
         this.acm.feedbackDialogModel.show({message});
     }
 
@@ -594,7 +602,7 @@ class XHClass {
      * This will include all models that have not had the destroy() method
      * called on them.  Models will be returned in creation order.
      */
-    getActiveModels(selector?: ModelSelector = '*'): HoistModel[] {
+    getActiveModels(selector: ModelSelector = '*'): HoistModel[] {
         const ret = [];
         HoistModel._activeModels.forEach(m => {
             if (m.matchesSelector(selector, true)) ret.push(m);
@@ -617,7 +625,7 @@ class XHClass {
      * @param args - objects to be destroyed. If any argument is an array,
      *      each element in the array will be destroyed (this is *not* done recursively);.
      */
-    safeDestroy(...args: (object|object[])[]) {
+    safeDestroy(...args: (any|any[])[]) {
         if (args) {
             args = flatten(args);
             args.forEach(it => {
@@ -654,7 +662,7 @@ class XHClass {
 
         if (appSpec.trackAppLoad) this.trackLoad();
 
-        // Add xh css classes to to power Hoist CSS selectors.
+        // Add xh css classes to power Hoist CSS selectors.
         document.body.classList.add(...compact([
             'xh-app',
             (isMobileApp ? 'xh-mobile' : 'xh-standard'),
@@ -666,7 +674,7 @@ class XHClass {
         this.createActivityListeners();
 
         // Disable browser context menu on long-press, used to show (app) context menus and as an
-        // alternate gesture for tree grid drilldown.
+        // alternate gesture for tree grid drill-own.
         if (isMobileApp) {
             window.addEventListener('contextmenu', e => e.preventDefault(), {capture: true});
         }
@@ -694,8 +702,8 @@ class XHClass {
             this.setAppState(S.PRE_AUTH);
 
             // consult (optional) pre-auth init for app
-            this.appModelClass = this.appSpec.modelClass;
-            await this.appModelClass.preAuthAsync();
+            const modelClass: any  = this.appSpec.modelClass;
+            await modelClass.preAuthAsync();
 
             // Check if user has already been authenticated (prior login, OAuth, SSO)...
             const userIsAuthenticated = await this.getAuthStatusFromServerAsync();
@@ -766,7 +774,8 @@ class XHClass {
             // Delay to workaround hot-reload styling issues in dev.
             await wait(XH.isDevelopmentMode ? 300 : 1);
 
-            this.appModel = new this.appModelClass();
+            const modelClass:any  = this.appSpec.modelClass;
+            this.appModel = new modelClass();
             await this.appModel.initAsync();
             this.startRouter();
             this.startOptionsDialog();
@@ -853,7 +862,7 @@ class XHClass {
             }, 'XH');
         });
 
-        const results = await Promise.allSettled(promises),
+        const results: any[] = await Promise.allSettled(promises),
             errs = results.filter(it => it.status === 'rejected');
 
         if (errs.length === 1) throw errs[0].reason;
@@ -875,7 +884,7 @@ class XHClass {
     }
 
     private trackLoad() {
-        let loadStarted = window._xhLoadTimestamp, // set in index.html
+        let loadStarted = window['_xhLoadTimestamp'], // set in index.html
             loginStarted = null,
             loginElapsed = 0;
 

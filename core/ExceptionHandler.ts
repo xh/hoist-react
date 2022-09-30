@@ -107,7 +107,7 @@ export class ExceptionHandler {
      *      via `Exception.create()`.
      * @param [options] - controls on how the exception should be shown and/or logged.
     */
-    handleException(exception: Error|object|string, options?: ExceptionHandlerOptions) {
+    handleException(exception: any, options?: ExceptionHandlerOptions) {
         if (this.#isUnloading) return;
 
         ({exception, options} = this.parseArgs(exception, options));
@@ -147,7 +147,7 @@ export class ExceptionHandler {
      *      Exception will be created via `Exception.create()`.
      * @param [options] - controls on how the exception should be shown and/or logged.
      */
-    showException(exception: Error|object|string, options?: ExceptionHandlerOptions) {
+    showException(exception: any, options?: ExceptionHandlerOptions) {
         if (this.#isUnloading) return;
         ({exception, options} = this.parseArgs(exception, options));
         XH.appContainerModel.exceptionDialogModel.show(exception, options);
@@ -171,7 +171,7 @@ export class ExceptionHandler {
      */
     async logOnServerAsync(
         {exception, userAlerted, userMessage}:
-        {exception: Error, userAlerted: boolean, userMessage?: string}
+        {exception: any, userAlerted: boolean, userMessage?: string}
     ): Promise<boolean>  {
         try {
             const error = this.stringifyErrorSafely(exception),
@@ -204,12 +204,12 @@ export class ExceptionHandler {
      * Serialize an error object safely for submission to server, or user display.
      * This method will avoid circular references and will trim the depth of the object.
      */
-    stringifyErrorSafely(error: Error|object|string): string {
+    stringifyErrorSafely(error: Error): string {
         try {
             // 1) Create basic structure.
             // Raw Error does not have 'own' properties, so be explicit about core name/message/stack
             // Order here intentional for serialization
-            let ret = {
+            let ret:any = {
                 name: error.name,
                 message: error.message
             };

@@ -13,7 +13,7 @@ import {throwIf} from '@xh/hoist/utils/js';
  */
 export class LocalStorageProvider extends PersistenceProvider {
 
-    key;
+    key: string;
 
     constructor({localStorageKey: key, ...rest}: PersistOptions) {
         throwIf(!key, `LocalStorageProvider requires a 'localStorageKey'.`);

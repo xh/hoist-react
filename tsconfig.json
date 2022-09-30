@@ -1,7 +1,13 @@
 {
   "compilerOptions": {
-    "target": "ES5",
     "experimentalDecorators": true,
+    "target": "ES2015",
+    "moduleResolution": "Node",
+    "allowSyntheticDefaultImports":  true,
+    "baseUrl": ".",
+    "paths": {
+      "@xh/hoist/*": ["./*"]
+    },
     "lib": [
       "dom",
       "es5",

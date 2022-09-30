@@ -80,11 +80,12 @@ export class HoistAppModel extends HoistModel {
      *      that particular option and drop it out of the About dialog.
      */
     getAboutDialogItems(): object[] {
-        const svc = window.XH.environmentService;
+        const XH = window['XH'],
+            svc = XH.environmentService;
 
         return [
             {label: 'App', value: `${svc.get('appName')} (${svc.get('appCode')})`},
-            {label: 'Current User', value: window.XH.identityService.username},
+            {label: 'Current User', value: XH.identityService.username},
             {label: 'Environment', value: svc.get('appEnvironment')},
             {label: 'Server', value: `${svc.get('appVersion')} (build ${svc.get('appBuild')})`},
             {label: 'Client', value: `${svc.get('clientVersion')} (build ${svc.get('clientBuild')})`},
@@ -106,7 +107,8 @@ export class HoistAppModel extends HoistModel {
      * that is more targeted, and includes any additional app-specific state.
      */
     async restoreDefaultsAsync() {
-        await window.XH.prefService.clearAllAsync();
-        window.XH.localStorageService.clear();
+        const XH = window['XH'];
+        await XH.prefService.clearAllAsync();
+        XH.localStorageService.clear();
     }
 }

@@ -64,42 +64,12 @@ export class HoistService extends HoistBase {
     @managed
     loadSupport: LoadSupport;
 
-    /** @see LoadSupport.loadModel */
     get loadModel(): TaskObserver {return this.loadSupport?.loadModel}
-
-    /** @see LoadSupport.lastLoadRequested */
     get lastLoadRequested(): Date {return this.loadSupport?.lastLoadRequested}
-
-    /** @see LoadSupport.lastLoadCompleted */
     get lastLoadCompleted(): Date {return this.loadSupport?.lastLoadCompleted}
-
-    /** @see LoadSupport.lastLoadException */
-    get lastLoadException(): any {return this.loadSupport?.lastLoadException}
-
-    /**
-     * Primary API to trigger a data load on any models with `loadSupport`.
-     * @see LoadSupport.loadAsync()
-     *
-     * @param [loadSpec] - optional metadata about the underlying request, commonly used
-     *      within Hoist and app code to adjust related behaviors such as error handling and
-     *      activity tracking.
-     */
-    async loadAsync(loadSpec?: LoadSpec) {return this.loadSupport?.loadAsync(loadSpec)}
-
-    /** Refresh this object - {@see LoadSupport.refreshAsync} */
-    async refreshAsync(meta: object) {return this.loadSupport?.refreshAsync(meta)}
-
-    /** Auto-refresh this object - {@see LoadSupport.autoRefreshAsync} */
-    async autoRefreshAsync(meta: object) {return this.loadSupport?.autoRefreshAsync(meta)}
-
-    /**
-     * Implement this method to load data or other state from external data sources or services.
-     * @protected - callers should call `loadAsync()` or `refreshAsync()` instead.
-     *
-     * @param loadSpec - metadata about the underlying request. Implementations should
-     *      take care to pass this parameter in calls to any delegates that support it, e.g.
-     *      when calling the `loadAsync()` method of other services or child models with
-     *      `loadSupport` or when making calls to the core {@see FetchService} APIs.
-     */
-    protected async doLoadAsync(loadSpec: LoadSpec) {}
+    get lastLoadException(): any  {return this.loadSupport?.lastLoadException}
+    async loadAsync(loadSpec?: LoadSpec)    {return this.loadSupport?.loadAsync(loadSpec)}
+    async refreshAsync(meta: object)        {return this.loadSupport?.refreshAsync(meta)}
+    async autoRefreshAsync(meta: object)    {return this.loadSupport?.autoRefreshAsync(meta)}
+    async doLoadAsync(loadSpec: LoadSpec) {}
 }

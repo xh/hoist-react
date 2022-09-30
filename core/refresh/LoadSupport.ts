@@ -4,10 +4,18 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistBase, managed, TaskObserver} from '@xh/hoist/core';
+import {
+    HoistBase,
+    HoistModel,
+    HoistService,
+    managed,
+    RefreshContextModel,
+    TaskObserver
+} from '@xh/hoist/core';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {LoadSpec} from './LoadSpec';
+import {Loadable} from './Loadable'
 import {isPlainObject} from 'lodash';
 
 /**
@@ -20,51 +28,32 @@ import {isPlainObject} from 'lodash';
  *
  * Not typically created directly by applications.
  */
-export class LoadSupport extends HoistBase {
+export class LoadSupport extends HoistBase implements Loadable {
 
-    private _lastRequested = null;
-    private _lastSucceeded = null;
+    lastRequested: LoadSpec = null;
+    lastSucceeded: LoadSpec = null;
 
-    /**
-     * For tracking the loading of this object.
-     * Note that this model will *not* track auto-refreshes.
-     */
     @managed
     loadModel: TaskObserver = TaskObserver.trackLast();
 
-    /** Date when last load was initiated. */
     @observable.ref
     lastLoadRequested: Date = null;
 
-    /** Date when last load completed. */
     @observable.ref
     lastLoadCompleted: Date = null;
 
-    /** Any exception that occurred during last load. */
     @observable.ref
-    lastLoadException: Error|object|string = null;
+    lastLoadException: any = null;
 
-    constructor(target: object) {
+    target: Loadable;
+
+    constructor(target: Loadable) {
         super();
-        throwIf(!target.doLoadAsync, `Target of LoadSupport must implement method doLoadAsync`);
         makeObservable(this);
         this.target = target;
     }
 
-    /**
-     * Load the target.
-     *
-     * This method is the main public entry point for this interface and is responsible for
-     * calling the objects `doLoadAsync()` implementation.  See also `refreshAsync()` and
-     * `autoRefreshAsync()` for convenience variants of this method.
-     *
-     * @param [loadSpec] - LoadSpec, or a simple Object containing properties to create one.
-     *
-     *      Note that implementations of `doLoadAsync()` that delegate to loadAsync() calls of
-     *      other objects should typically pass along the LoadSpec object the receive -- or an
-     *      enriched version of it -- to their delegates.
-     */
-    async loadAsync(loadSpec?: LoadSpec|object) {
+    async loadAsync(loadSpec?: LoadSpec|any) {
         throwIf(
             loadSpec && !(loadSpec.isLoadSpec || isPlainObject(loadSpec)),
             'Unexpected param passed to loadAsync().  If triggered via a reaction '  +
@@ -72,29 +61,18 @@ export class LoadSupport extends HoistBase {
         );
         loadSpec = new LoadSpec({...loadSpec, owner: this});
 
-        return this.internalLoadAsync(loadSpec);
+        return this.doLoadAsync(loadSpec);
     }
 
-    /**
-     * Refresh the target.
-     * @param [meta] - optional metadata for the request.
-     */
     async refreshAsync(meta?: object) {
         return this.loadAsync({meta, isRefresh: true});
     }
 
-    /**
-     * Auto-refresh the target.
-     * @param [meta] - optional metadata for the request.
-     */
     async autoRefreshAsync(meta?: object) {
         return this.loadAsync({meta, isAutoRefresh: true});
     }
 
-    //--------------------------
-    // Implementation
-    //--------------------------
-    private async internalLoadAsync(loadSpec) {
+    async doLoadAsync(loadSpec: LoadSpec):Promise<any> {
         let {target, loadModel} = this;
 
         // Auto-refresh:
@@ -105,9 +83,10 @@ export class LoadSupport extends HoistBase {
         }
 
         runInAction(() => this.lastLoadRequested = new Date());
-        this._lastRequested = loadSpec;
+        this.lastRequested = loadSpec;
 
         let exception = null;
+
         return target
             .doLoadAsync(loadSpec)
             .linkTo(loadModel)
@@ -122,10 +101,10 @@ export class LoadSupport extends HoistBase {
                 });
 
                 if (!exception) {
-                    this._lastSucceeded = loadSpec;
+                    this.lastSucceeded = loadSpec;
                 }
 
-                if (target.isRefreshContextModel) return;
+                if (target instanceof RefreshContextModel) return;
 
                 const elapsed = this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime(),
                     msg = `[${target.constructor.name}] | ${loadSpec.typeDisplay} | ${exception ? 'failed | ' : ''}${elapsed}ms`;
@@ -141,9 +120,7 @@ export class LoadSupport extends HoistBase {
                 }
             });
     }
-
 }
-
 
 /**
  * Load a collection of objects concurrently.
@@ -151,15 +128,15 @@ export class LoadSupport extends HoistBase {
  * Note that this method uses 'allSettled' in its implementation, meaning a failure of any one call
  * will not cause the entire batch to throw.
  *
- * @param {Object[]} objs - list of objects to be loaded
+ * @param objs - list of objects to be loaded
  * @param [loadSpec] - metadata related to this request.
 */
-export async function loadAllAsync(objs: object[], loadSpec?: LoadSpec|object) {
+export async function loadAllAsync(objs: Loadable[], loadSpec?: LoadSpec|any) {
     const promises = objs.map(it => it.loadAsync(loadSpec)),
         ret = await Promise.allSettled(promises);
 
     ret.filter(it => it.status === 'rejected')
-        .forEach(err => console.error('Failed to Load Object', err.reason));
+        .forEach((err: any) => console.error('Failed to Load Object', err.reason));
 
     return ret;
 }

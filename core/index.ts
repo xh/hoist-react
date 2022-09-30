@@ -16,22 +16,28 @@ export * from './AppState';
 export * from './AppSpec';
 export * from './HoistComponent';
 export * from './HoistModel';
+export * from './ModelSelector';
 export * from './HoistService';
 export * from './HoistAppModel';
 
 export * from './TaskObserver';
 
+export * from './refresh/Loadable';
 export * from './refresh/LoadSupport';
+export * from './refresh/LoadSpec';
 export * from './refresh/RefreshContextModel';
 export * from './refresh/RefreshContextView';
 export * from './refresh/RootRefreshContextModel';
 export * from './refresh/ManagedRefreshContextModel';
 
+export * from './persist/PersistOptions';
 export * from './persist/PersistenceProvider';
 export * from './persist/LocalStorageProvider';
 export * from './persist/DashViewProvider';
 export * from './persist/PrefProvider';
 export * from './persist/CustomProvider';
+
+export * from './ExceptionHandler';
 
 export * from './Interfaces';
 

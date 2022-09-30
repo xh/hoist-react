@@ -1,5 +1,35 @@
 import {ReactElement, ReactNode} from 'react';
+// @ts-ignore
 import {HTMLElement} from 'dom';
+import {DebounceSettings} from "lodash";
+import {LoadSpec} from './refresh/LoadSpec';
+import {ExceptionHandlerOptions} from "@xh/hoist/core/ExceptionHandler";
+import {TaskObserver} from "@xh/hoist/core/TaskObserver";
+
+/**
+ * User of the application, as loaded from the server.
+ *
+ * Note that instances of this class may contain other custom properties serialize by an
+ * application.  Applications may wish to extend this interface
+ */
+export interface HoistUser {
+    username: string;
+    email: string;
+    displayName: string;
+    roles: string[];
+    isHoistAdmin: boolean;
+    hasRole(string): boolean;
+    hasGate(string): boolean;
+}
+
+
+/**
+ * Specification for debouncing in Hoist.
+ *
+ * When specified as object, should contain an 'interval' and other optional keys for
+ * lodash.  If specified as number the default lodash debounce will be used.
+ */
+export type DebounceSpec = number|(DebounceSettings & {interval: number});
 
 /**
  * Options for showing a "toast" notification that appears and then automatically dismisses.
@@ -105,7 +135,7 @@ export interface BannerSpec {
     /**
      *  Callback function triggered when the user clicks the close button.
      *  (Note, banners closed via `XH.hideBanner()` or when the max
-     *  number of banners shown is exceed will NOT trigger this callback.)
+     *  number of banners shown is exceeded will NOT trigger this callback.)
      */
     onClose?(model);
 
@@ -114,4 +144,18 @@ export interface BannerSpec {
      *  take some specific action right from the banner.
      */
     actionButtonProps?: object;
+}
+
+
+/**
+ * Options for tracking activity on the server via TrackService.
+ */
+export interface TrackOptions {
+    message?: string;
+    category?: string;
+    data?: object | object[];
+    severity?: string;
+    oncePerSession?: boolean;
+    loadSpec?: LoadSpec;
+    omit?: boolean;
 }

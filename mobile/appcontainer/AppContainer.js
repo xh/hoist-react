@@ -58,10 +58,7 @@ export const AppContainer = hoistCmp({
         useOnMount(() => XH.initAsync());
 
         return fragment(
-            errorBoundary({
-                item: viewForState(),
-                onError: (e) => XH.handleException(e, {requireReload: true})
-            }),
+            errorBoundary(viewForState()),
             // Modal component helpers rendered here at top-level to support display of messages
             // and exceptions at any point during the app lifecycle.
             exceptionDialog(),

@@ -5,20 +5,24 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {loadAllAsync, RefreshContextModel, RefreshMode, HoistModel, LoadSpec} from '@xh/hoist/core';
+import {Loadable} from './Loadable';
 
+
+export type ManagedRefreshTarget = Loadable & {isActive:boolean, refreshMode: string}
 /**
  * A refresh context model that consults a model's RefreshMode and active state to manage
  * refreshes of its target models.
  *
- * The associated model must have both:
+ * The associated Loadable must have both:
  *  a) An observable `isActive` property, that returns a boolean value.
  *  b) A `refreshMode` property, that returns a RefreshMode enum value.
  */
 export class ManagedRefreshContextModel extends RefreshContextModel {
 
-    model: HoistModel;
+    model: ManagedRefreshTarget;
+    refreshPending: boolean = false;
 
-    constructor(model: HoistModel)  {
+    constructor(model: ManagedRefreshTarget)  {
         super();
         this.model = model;
         this.addReaction({

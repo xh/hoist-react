@@ -7,7 +7,7 @@
 import {XH, HoistAppModel, ElemFactory} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil, isString} from 'lodash';
-import {Component, FunctionalComponent} from 'react';
+import {Component, ComponentClass, FunctionComponent} from 'react';
 
 /**
  * Specification for a client-side Hoist application.
@@ -41,20 +41,20 @@ export class AppSpec {
      * Root HoistComponent for the application. Despite the name,
      * functional components are fully supported and expected.
      */
-    componentClass: Component|FunctionalComponent;
+    componentClass: ComponentClass|FunctionComponent;
 
     /**
      * Container component to be used to host this application.
      * This class determines the platform used by Hoist. The value should be imported from
      * either `@xh/hoist/desktop/AppContainer` or `@xh/hoist/mobile/AppContainer`.
      */
-    containerClass: Component|FunctionalComponent;
+    containerClass: ComponentClass|FunctionComponent;
 
     /** True if the app should use the Hoist mobile toolkit.*/
     isMobileApp: boolean;
 
     /** True if SSO auth is enabled, as opposed to a login prompt. */
-    isSSOApp: boolean;
+    isSSO: boolean;
 
     /**
      * Method for determining if user may access the app.
@@ -78,14 +78,14 @@ export class AppSpec {
      * receive a single prop -- onReactivate -- a callback called when the user has acknowledged
      * the suspension and wishes to reload the app.
      */
-    idlePanel: ElemFactory|FunctionalComponent|Component;
+    idlePanel: ElemFactory|FunctionComponent|Component;
 
     /**
      * Optional custom Component to display when the user is denied access to app. Intended for
      * apps that implement custom auth flows. See also `lockoutMessage` for a more lightweight
      * customization option.
      */
-    lockoutPanel: ElemFactory|FunctionalComponent|Component;
+    lockoutPanel: ElemFactory|FunctionComponent|Component;
 
     /** Optional message to show on login form (for non-SSO apps). */
     loginMessage: string;

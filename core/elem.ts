@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {castArray, isArray, isNil, isPlainObject} from 'lodash';
-import {createElement, Component, FunctionComponent, isValidElement, ReactNode, ReactElement} from 'react';
+import {createElement, ComponentClass, FunctionComponent, isValidElement, ReactNode, ReactElement} from 'react';
 
 /**
  * Alternative format for specifying React Elements in render functions. This method is designed to
@@ -55,7 +55,7 @@ export interface ElemSpec {
  * @param spec - element spec.
  * @return ReactElement
  */
-export function elem(type: Component|FunctionComponent|string, spec: ElemSpec): ReactElement {
+export function elem(type: ComponentClass|FunctionComponent|string, spec: ElemSpec): ReactElement {
 
     const {omit, item, items, ...props} = spec;
 
@@ -85,12 +85,10 @@ export function elem(type: Component|FunctionComponent|string, spec: ElemSpec): 
  * passed to the new Element.  This latter case is fully equivalent to specifying `{items: [...]}`
  * and is useful when no attributes need to be applied directly to the Element.
  */
-export type ElemFactory = (
-        ((spec: ElemSpec) => ReactElement) |
-        ((children: ReactNode[]) => ReactElement) |
-        ((...children: ReactNode[]) => ReactElement)
-    );
-
+export type ElemFactory =
+        ((spec: ElemSpec) => ReactElement) &
+        ((children: ReactNode[]) => ReactElement) &
+        ((...children: ReactNode[]) => ReactElement);
 /**
  * Create an ElementFactory for a specific Component type.
  *
@@ -100,7 +98,7 @@ export type ElemFactory = (
  * HoistComponent -- `hoistCmp.withFactory` will generate and return the factory for you.
  * Use this function for generating factories for Components provided by external APIs.
  */
-export function elemFactory(type: FunctionComponent|Component|string): ElemFactory {
+export function elemFactory(type: FunctionComponent|ComponentClass|string): ElemFactory {
     const ret = function(...args) {
         return elem(type, normalizeArgs(args));
     };

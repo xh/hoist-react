@@ -5,8 +5,8 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
-import {LocalStorageProvider, PrefProvider, DashViewProvider, CustomProvider} from '../';
+import {DebounceSpec, XH} from 'core';
+import {LocalStorageProvider, PrefProvider, DashViewProvider, CustomProvider, PersistOptions} from '../';
 import {
     isUndefined,
     cloneDeep,
@@ -14,60 +14,11 @@ import {
     set,
     unset,
     isNumber,
-    debounce as lodashDebounce
+    debounce as lodashDebounce,
+    DebounceSettings
 } from 'lodash';
-import {throwIf} from '@xh/hoist/utils/js';
-
-/**
- * @typedef {Object} PersistOptions
- * @property {string} path - Dot delimited path to store state.
- * @property {(number|object)} [debounce] - Debounce interval in ms, or a lodash debounce config.
- * @property {string} [type] - Type of PersistenceProvider to create. If not provided, defaulted based
- *      on the presence of `prefKey`, `localStorageKey`, `dashViewModel`, `getData` and `setData`.
- * @property {string} [prefKey] - Predefined Hoist application Preference key used to store state.
- * @property {string} [localStorageKey] - Browser local storage key used to store state.
- * @property {DashViewModel} [dashViewModel] - DashViewModel used to read / write view state.
- * @property {function} [getData] - Function returning blob of data to be used for reading state.
- *      Ignored if `prefKey`, `localStorageKey` or `dashViewModel` are provided.
- * @property {function} [setData] - Function to be used to write blob of data representing state.
- *      Ignored if `prefKey`, `localStorageKey` or `dashViewModel` are provided.
- */
-export interface PersistOptions {
-
-    /** Dot delimited path to store state. */
-    path: string;
-
-    /** Debounce interval in ms, or a lodash debounce config. */
-    debounce?: number|object;
-
-    /**
-     * Type of PersistenceProvider to create. If not provided, defaulted based
-     * on the presence of `prefKey`, `localStorageKey`, `dashViewModel`, `getData` and `setData`.
-     */
-    type?: string;
-
-    /** Predefined Hoist application Preference key used to store state. */
-    prefKey?: string;
-
-    /** Browser local storage key used to store state. */
-    localStorageKey?: string;
-
-    /** DashViewModel used to read / write view state. */
-    dashViewModel?: string;
-
-    /**
-     *  Function returning blob of data to be used for reading state.
-     *  Ignored if `prefKey`, `localStorageKey` or `dashViewModel` are provided.
-     */
-    getData?: () => any;
-
-    /**
-     * Function to be used to write blob of data representing state.
-     * Ignored if `prefKey`, `localStorageKey` or `dashViewModel` are provided.
-     */
-    setData?: (data: object) => void;
-}
-
+import {throwIf} from 'utils/js';
+import {LodashDebounce} from "lodash/fp";
 
 /**
  * Abstract superclass for adaptor objects used by models and components to (re)store state to and
@@ -83,10 +34,10 @@ export interface PersistOptions {
  */
 export class PersistenceProvider {
 
-    get isPersistenceProvider() {return true}
+    get isPersistenceProvider(): boolean {return true}
 
-    path;
-    debounce;
+    path: string;
+    debounce: DebounceSpec;
 
     /**
      * Construct an instance of this class.
@@ -114,14 +65,9 @@ export class PersistenceProvider {
     }
 
     /**
-     * @private
-     *
      * Called by implementations only. See create.
-     *
-     * @param {string} path - dot delimited path
-     * @param {(number|object)} debounce - debounce interval in ms, or a lodash debounce config.
      */
-    private constructor({path, debounce = 250}) {
+    protected constructor({path, debounce = 250}: PersistOptions) {
         throwIf(isUndefined(path), 'Path not specified in PersistenceProvider.');
         this.path = path;
         this.debounce = debounce;
@@ -135,7 +81,7 @@ export class PersistenceProvider {
     /**
      * Read data at a path
      */
-    read() {
+    read(): any {
         return get(this.readRaw(), this.path);
     }
 
@@ -166,14 +112,14 @@ export class PersistenceProvider {
     //----------------
     // Implementation
     //----------------
-    protected writeInternal(data) {
+    protected writeInternal(data: object) {
         const obj = cloneDeep(this.readRaw());
         set(obj, this.path, data);
         this.writeRaw(obj);
     }
 
-    protected writeRaw(obj) {}
-    protected readRaw() {}
+    protected writeRaw(obj: object) {}
+    protected readRaw(): object {return null;}
     protected clearRaw() {}
 }
 

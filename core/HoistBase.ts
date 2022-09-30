@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {XH, PersistenceProvider, PersistOptions} from '@xh/hoist/core';
+import {XH, PersistenceProvider, PersistOptions, DebounceSpec} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
     debounce as lodashDebounce,
@@ -29,6 +29,12 @@ import {getOrCreate} from '../utils/js';
 import {IAutorunOptions, IReactionOptions} from 'mobx/dist/api/autorun';
 import {IReactionDisposer} from 'mobx/dist/internal';
 
+export interface HoistBaseClass {
+    new (...args: any[]): HoistBase;
+    isHoistBase: boolean;
+}
+
+
 /**
  * Base class for objects in Hoist.
  * Provides misc. support for Mobx integration, state persistence, and resource cleanup.
@@ -47,6 +53,9 @@ export class HoistBase {
     // Internal State
     #managedInstances = [];
     #disposers = [];
+
+    /** Default persistence options for this object. */
+    persistWith: PersistOptions = null;
 
     /**
      * Add and start one or more managed reactions.
@@ -80,7 +89,7 @@ export class HoistBase {
      * @param specs - one or more reactions to add
      * @returns disposer(s) to manually dispose of each created reaction.
      */
-    addReaction(...specs: (AutoRunSpec|(()=>any))[]): IReactionDisposer | IReactionDisposer[] {
+    addReaction<T>(...specs: ReactionSpec<T>[]): IReactionDisposer|IReactionDisposer[] {
         const disposers = specs.map(s => {
             if (!s) return null;
             let {track, when, run, debounce, ...opts} = s;
@@ -118,13 +127,13 @@ export class HoistBase {
      * @param specs - one or more autoruns to add
      * @returns {function|function[]} - disposer(s) to manually dispose of each created autorun.
      */
-    addAutorun(...specs: (AutoRunSpec|(()=>any))[]) : IReactionDisposer | IReactionDisposer[] {
+    addAutorun(...specs: (AutoRunSpec|(()=>any))[]) : IReactionDisposer|IReactionDisposer[] {
         const disposers = specs.map(s => {
             if (!s) return null;
             if (isFunction(s)) s = {run: s};
-            let {run, debounce, ...opts} = s;
+            let {run, ...opts} = s;
 
-            run = bindAndDebounce(this, run, debounce);
+            run = bindAndDebounce(this, run);
 
             const disposer = mobxAutorun(run, opts);
             this.#disposers.push(disposer);
@@ -168,7 +177,7 @@ export class HoistBase {
      * @param obj - object to be managed
      * @returns object passed.
      */
-    markManaged(obj: object) {
+    markManaged<T>(obj: T) {
         this.#managedInstances.push(obj);
         return obj;
     }
@@ -193,7 +202,7 @@ export class HoistBase {
      * directly on the property declaration itself.  Use this method in the general case,
      * when you need to control the timing.
      */
-    markPersist(property: string, options?: PersistOptions = {}) {
+    markPersist(property: string, options: PersistOptions = {}) {
         // Read from and attach to Provider, failing gently
         try {
             const persistWith = {path: property, ...this.persistWith, ...options},
@@ -220,14 +229,14 @@ export class HoistBase {
     destroy() {
         this.#disposers.forEach(f => f());
         this.#managedInstances.forEach(i => XH.safeDestroy(i));
-        this._xhManagedProperties?.forEach(p => XH.safeDestroy(this[p]));
+        this['_xhManagedProperties']?.forEach(p => XH.safeDestroy(this[p]));
     }
 }
 
 /**
  * Object containing options accepted by MobX 'reaction' API as well as arguments below.
  */
-export interface ReactionSpec<T> extends IReactionOptions {
+export interface ReactionSpec<T> extends IReactionOptions<T, any> {
     /**
      * Function returning data to observe - first arg to the underlying reaction() call.
      * Specify this or `when`.
@@ -235,22 +244,16 @@ export interface ReactionSpec<T> extends IReactionOptions {
     track?: () => T
 
     /**
-     * Function returning data to observe - first arg to the underlying when() call.
+     * Function determing when reaction should fire - first arg to the underlying when() call.
      * Specify this or `track`.
      */
-    when?: () => T
+    when?: () => boolean
 
-    /**
-     * Function to run - second arg to underlying reaction()/when() call.
-     */
-    run?: () => void;
+    /** Function to run - second arg to underlying reaction()/when() call. */
+    run?: (data?: T) => any
 
-    /**
-     * Specify to debounce run function with lodash.
-     * When specified as object, should contain an 'interval' and other optional keys for
-     * lodash.  If specified as number the default lodash debounce will be used.
-     */
-    debounce?: number|object;
+    /** Specify to debounce run function */
+    debounce?: DebounceSpec
 }
 
 /**
@@ -261,13 +264,6 @@ export interface AutoRunSpec extends IAutorunOptions {
      * Function to run - first arg to underlying autorun() call.
      */
     run?: () => void;
-
-    /**
-     * Specify to debounce run function with lodash.
-     * When specified as object, should contain an 'interval' and other optional keys for
-     * lodash.  If specified as number the default lodash debounce will be used.
-     */
-    debounce?: number|object;
 }
 
 //--------------------------------------------------
@@ -289,7 +285,7 @@ function parseReactionOptions(options) {
 }
 
 
-function bindAndDebounce(obj, fn, debounce) {
+function bindAndDebounce(obj, fn, debounce = null ) {
     let ret = fn.bind(obj);
 
     //  See https://github.com/mobxjs/mobx/issues/1956 and note we cannot use mobx scheduler.

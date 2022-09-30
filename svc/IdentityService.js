@@ -168,16 +168,5 @@ export class IdentityService extends HoistService {
         }
         return false;
     }
-
 }
 
-/**
- * @typedef {Object} HoistUser - may contain other custom properties serialized by an application.
- * @property {string} username
- * @property {string} email
- * @property {string} displayName
- * @property {string[]} roles
- * @property {boolean} isHoistAdmin
- * @property {function(string): boolean} hasRole
- * @property {function(string): boolean} hasGate
- */

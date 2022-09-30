@@ -13,7 +13,7 @@ import {throwIf} from '@xh/hoist/utils/js';
  */
 export class PrefProvider extends PersistenceProvider {
 
-    key;
+    key: string;
 
     constructor({prefKey: key, ...rest}: PersistOptions) {
         throwIf(!key, `PrefProvider requires a 'prefKey'.`);

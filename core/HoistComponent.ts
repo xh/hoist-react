@@ -4,13 +4,13 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {CreatesSpec, elemFactory, ElemFactory, ModelPublishMode, ModelSpec, uses, formatSelector} from '@xh/hoist/core';
+import {elemFactory, ElemFactory, ModelPublishMode, ModelSpec, uses, formatSelector} from '@xh/hoist/core';
 import {useModelLinker} from '@xh/hoist/core/impl/ModelLinker';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {useOnMount, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isObject} from 'lodash';
-import {observer} from '@xh/hoist/mobx';
+import {observer} from '../mobx';
 import {
     forwardRef,
     FunctionComponent,
@@ -67,7 +67,7 @@ interface HoistComponentSpec {
  *
  * The primary additional config option is `model`. It specifies how a backing HoistModel will be
  * provided to / created by this component and if the component should publish its model to any
- * sub-components via context.
+ * subcomponents via context.
  *
  * By default, this utility wraps the returned component in the MobX 'observer' HOC, enabling
  * MobX-powered reactivity and auto-re-rendering of observable properties read from models and
@@ -114,7 +114,7 @@ export function hoistComponent(
     );
 
     // 2) Decorate with function wrappers with behaviors.
-    let ret = render;
+    let ret:any  = render;
     if (modelSpec) {
         ret = wrapWithModel(ret,  modelSpec, displayName);
     }
@@ -274,7 +274,7 @@ function useResolvedModel(spec, props, modelLookup, displayName) {
     // fixed cache here creates the "immutable" model behavior in hoist components
     // (Need to force full remount with 'key' prop to resolve any new model)
     const [{model, isLinked, fromContext}] = useState(() => (
-        spec instanceof CreatesSpec ? createModel(spec) : lookupModel(spec, props, modelLookup, displayName)
+        spec.createFn ? createModel(spec) : lookupModel(spec, props, modelLookup, displayName)
     ));
 
     useModelLinker(isLinked ? model : null, modelLookup, props);
@@ -285,7 +285,7 @@ function useResolvedModel(spec, props, modelLookup, displayName) {
         if (isFunction(modelRef)) {
             modelRef(model);
         } else if (isObject(modelRef)) {
-            modelRef.current = model;
+            (modelRef as any).current = model;
         }
     });
 
@@ -296,7 +296,10 @@ function useResolvedModel(spec, props, modelLookup, displayName) {
 
 function createModel(spec) {
     let model = spec.createFn();
-    if (isFunction(model)) model = new model();
+    if (isFunction(model)) {
+        // @ts-ignore
+        model = new model();
+    }
 
     return {model, isLinked: true, fromContext: false};
 }

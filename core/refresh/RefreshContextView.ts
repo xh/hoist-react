@@ -22,7 +22,7 @@ export const [RefreshContextView, refreshContextView] = hoistCmp.withFactory({
     model: uses(RefreshContextModel, {publishMode: ModelPublishMode.LIMITED}),
 
     render({model, children}) {
-        const parent = useContextModel(m => m.isRefreshContextModel && m != model);
+        const parent = useContextModel(m => m instanceof RefreshContextModel && m != model) as RefreshContextModel;
 
         useEffect(() => {
             if (model && parent) {

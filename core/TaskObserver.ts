@@ -116,9 +116,13 @@ export class TaskObserver {
 // Implementation
 //------------------------------
 class CompoundObserver extends TaskObserver {
-    _mode;
-    @observable.ref _subtasks;
-    @observable.ref _message;
+    private _mode: 'last'|'all';
+
+    @observable.ref
+    private _subtasks: TaskObserver[];
+
+    @observable.ref
+    private _message: ReactNode;
 
     constructor(mode, subtasks, message) {
         super();
@@ -151,7 +155,7 @@ class CompoundObserver extends TaskObserver {
 
     @action
     linkTo(task) {
-        if (this.mode === 'last') {
+        if (this._mode === 'last') {
             this._subtasks = [task];
         } else {
             const keep = this._subtasks.filter(t => t.isPending || !(t instanceof PromiseObserver));
@@ -165,8 +169,9 @@ class PromiseObserver extends TaskObserver {
 
     // Keep simple as we create these in Promise.linkTo, without managing/destroying.  Could change
     // to create internally in this file in a method.
-    @observable _isPending = true;
-    _message;
+    @observable
+    private _isPending: boolean = true;
+    private _message: ReactNode;
 
     get isPromiseObserver()     {return true}
     get isPending()             {return this._isPending}

@@ -4,9 +4,11 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+
 import {useContext, useState} from 'react';
 import {throwIf} from '@xh/hoist/utils/js';
-import {HoistModel, ModelSelector, HoistModelClass} from '../HoistModel';
+import {HoistModel, HoistModelClass} from '../HoistModel';
+import {ModelSelector} from '../ModelSelector'
 import {ModelLookupContext} from '../impl/ModelLookup';
 import {useModelLinker} from '../impl/ModelLinker';
 
@@ -30,8 +32,9 @@ export function useContextModel(selector: ModelSelector = '*'): HoistModel {
  */
 export function useLocalModel(spec?: HoistModelClass | (() => HoistModel)): HoistModel {
     const [ret] = useState(() => {
-        if (!spec) return null;
-        return spec.isHoistModel ? new spec() : spec.call();
+        const s = spec as any;
+        if (!s) return null;
+        return s.isHoistModel ? new s() : s.call();
     });
     const {modelLookup, props} = localModelContext;
     throwIf(
