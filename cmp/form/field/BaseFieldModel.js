@@ -20,6 +20,8 @@ import {createObservableRef} from '@xh/hoist/utils/react';
  */
 export class BaseFieldModel extends HoistModel {
 
+    get isFieldModel() {return true}
+
     /** @member {*} */
     @observable.ref initialValue;
     /** @member {*} */

@@ -60,6 +60,7 @@ export class HoistModel extends HoistBase implements Loadable {
     @observable
     _componentProps = {};
     _modelLookup = null;
+    _created = Date.now;
 
     // global registry of all active models
     static _activeModels: Set<HoistModel> = new Set();
@@ -67,10 +68,12 @@ export class HoistModel extends HoistBase implements Loadable {
     constructor() {
         super();
         makeObservable(this);
+
         if (this.doLoadAsync !== HoistModel.prototype.doLoadAsync) {
             this.loadSupport = new LoadSupport(this);
         }
-        HoistModel._activeModels.add(this);
+
+        HoistModel._registerModelInstance(this);
     }
 
     //----------------
@@ -197,9 +200,20 @@ export class HoistModel extends HoistBase implements Loadable {
 
     destroy() {
         super.destroy();
-        HoistModel._activeModels.delete(this);
+        HoistModel._unregisterModelInstance(this);
     }
 }
+
+/**
+ * Static observable Set containing a registry of all currently active models. Models automatically
+ * add themselves to this set when created and remove themselves when destroyed.
+ * @type {ObservableSet<HoistModel>}
+ * @see {XH.getActiveModels}
+ * @package
+ */
+HoistModel._activeModels = observable.set(new Set(), {deep: false});
+HoistModel._registerModelInstance = action(instance => HoistModel._activeModels.add(instance));
+HoistModel._unregisterModelInstance = action(instance => HoistModel._activeModels.delete(instance));
 
 export interface HoistModelClass {
     new(...args: any[]): HoistModel;

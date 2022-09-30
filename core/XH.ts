@@ -29,6 +29,7 @@ import {
     GridExportService,
     IdentityService,
     IdleService,
+    InspectorService,
     JsonBlobService,
     LocalStorageService,
     PrefService,
@@ -70,6 +71,7 @@ class XHClass {
     private _initCalled: boolean = false;
     private _lastActivityMs: number = Date.now();
     private _uaParser: any = null;
+    private services = [];
 
     constructor() {
         makeObservable(this);
@@ -121,6 +123,7 @@ class XHClass {
     gridExportService: GridExportService;
     identityService: IdentityService;
     idleService: IdleService;
+    inspectorService: InspectorService;
     jsonBlobService: JsonBlobService;
     localStorageService: LocalStorageService;
     prefService: PrefService;
@@ -286,6 +289,7 @@ class XHClass {
                 install the same service twice.`
             ));
             this[name] = svc;
+            this.services.push(svc);
         });
     }
 
@@ -613,6 +617,11 @@ class XHClass {
         return ret;
     }
 
+    /** All services registered with this application. */
+    getServices(): HoistService[] {
+        return [...this.services];
+    }
+
     /**
      * Resets user preferences and any persistent local application state, then reloads the app.
      */
@@ -768,7 +777,7 @@ class XHClass {
 
             await this.installServicesAsync(
                 AlertBannerService, AutoRefreshService, ChangelogService, IdleService,
-                GridAutosizeService, GridExportService, WebSocketService
+                InspectorService, GridAutosizeService, GridExportService, WebSocketService
             );
             this.acm.init();
 

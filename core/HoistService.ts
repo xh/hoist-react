@@ -33,6 +33,9 @@ import {HoistBase, managed, LoadSupport, LoadSpec, TaskObserver} from './';
  */
 export class HoistService extends HoistBase {
 
+    // Internal State
+    _created = Date.now();
+
     static get isHoistService(): boolean {return true}
     get isHoistService(): boolean {return true}
 

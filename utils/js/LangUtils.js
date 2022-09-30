@@ -7,15 +7,15 @@
 import {Exception} from '@xh/hoist/core/exception/Exception';
 import {
     forOwn,
+    isArray,
     isEmpty,
     isFunction,
     isObject,
-    isArray,
     isObjectLike,
+    isUndefined,
     mixin,
     uniq,
-    uniqBy,
-    isUndefined
+    uniqBy
 } from 'lodash';
 import _inflection from 'lodash-inflection';
 
@@ -72,24 +72,30 @@ export function deepFreeze(obj) {
 }
 
 /**
- * Output a deep copy of an object up to a given depth, beyond which child objects will be
- * replaced by a placeholder string.
+ * Output a deep copy of an object or array up to a given depth, beyond which nested contents will
+ * be replaced by a placeholder string.
  *
- * @param {Object} obj
+ * @param {Object|Array} obj
  * @param {number} depth - maximum depth within the object tree that will be returned.
  */
-export function trimToDepth(obj, depth) {
-    if (depth < 1) return null;
+export function trimToDepth(obj, depth = 1) {
+    // Return primitives and nils directly - handles recursive calls below.
+    if (!isObject(obj)) return obj;
 
+    const isArr = isArray(obj);
+
+    // If we've reached our max depth, return placeholder string.
+    if (!depth) return isArr ? '[...]' : '{...}';
+
+    // Otherwise recurse into arrays via map...
+    if (isArr) {
+        return obj.map(it => trimToDepth(it, depth - 1));
+    }
+
+    // ...and objects via forOwn.
     const ret = {};
     forOwn(obj, (val, key) => {
-        if (isObject(val)) {
-            val = depth > 1 ? trimToDepth(val, depth - 1) : '{...}';
-        }
-        if (isArray(val)) {
-            val = depth > 1 ? val.map(it => trimToDepth(it, depth - 1)) : '[...]';
-        }
-        ret[key] = val;
+        ret[key] = trimToDepth(val, depth - 1);
     });
 
     return ret;
