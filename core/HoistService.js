@@ -34,6 +34,9 @@ import {LoadSupport} from './refresh/LoadSupport';
  */
 export class HoistService extends HoistBase {
 
+    // Internal State
+    _created = Date.now();
+
     static get isHoistService() {return true}
     get isHoistService() {return true}
 

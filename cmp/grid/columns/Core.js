@@ -13,7 +13,7 @@ export const boolCheck = {
     width: 34,
     align: 'center',
     resizable: false,
-    renderer: (v) => v ? Icon.check({prefix: 'fas', className: 'xh-green'}) : null
+    renderer: (v) => v ? Icon.check({prefix: 'fas', intent: 'success'}) : null
 };
 
 export const number = {
