@@ -23,7 +23,7 @@ const {STRING, DATE, NUMBER, BOOL} = FieldType;
  * Inspector can also be limited to users with a particular app role, using the same config.
  */
 export class InspectorService extends HoistService {
-    persistWith = {localStorageKey: 'xhInspector'};
+    persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}`};
 
     /**
      * @return {boolean} - true if Inspector is generally enabled via config.
