@@ -26,6 +26,10 @@
   APIs (unlikely), no other changes should be required.
 * The deprecated method `XH.setDarkTheme` has been removed. Use `XH.setTheme` instead.
 
+### 🐞 Bug Fixes
+
+* Boolean filterChooser fields with enableValues=false will no longer suggest true for 'false'.
+
 ### ⚙️ Technical
 
 * `HoistComponents` no longer mutate the props object passed to them in React production mode. This
