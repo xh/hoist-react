@@ -49,6 +49,7 @@
     margin-top: var(--xh-pad-px);
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: pre-wrap;
     width: calc(100% - 80px);
 
     @media only screen and (max-width: 1350px) {
