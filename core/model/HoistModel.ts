@@ -73,6 +73,7 @@ export class HoistModel extends HoistBase implements Loadable {
             this.loadSupport = new LoadSupport(this);
         }
 
+        // @ts-ignore
         HoistModel._registerModelInstance(this);
     }
 
@@ -200,6 +201,7 @@ export class HoistModel extends HoistBase implements Loadable {
 
     destroy() {
         super.destroy();
+        // @ts-ignore
         HoistModel._unregisterModelInstance(this);
     }
 }
@@ -212,7 +214,9 @@ export class HoistModel extends HoistBase implements Loadable {
  * @package
  */
 HoistModel._activeModels = observable.set(new Set(), {deep: false});
+// @ts-ignore
 HoistModel._registerModelInstance = action(instance => HoistModel._activeModels.add(instance));
+// @ts-ignore
 HoistModel._unregisterModelInstance = action(instance => HoistModel._activeModels.delete(instance));
 
 export interface HoistModelClass {
