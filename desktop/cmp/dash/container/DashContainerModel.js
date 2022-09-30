@@ -13,7 +13,7 @@ import {
     TaskObserver,
     XH
 } from '@xh/hoist/core';
-import {modelLookupContextProvider} from '@xh/hoist/core/impl/ModelLookup';
+import {modelLookupContextProvider} from '@xh/hoist/core';
 import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';

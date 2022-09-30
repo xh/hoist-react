@@ -4,8 +4,18 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {elemFactory, ElemFactory, ModelPublishMode, ModelSpec, uses, formatSelector} from '@xh/hoist/core';
-import {useModelLinker} from '@xh/hoist/core/impl/ModelLinker';
+import {elemFactory, ElemFactory} from './';
+import {
+    useModelLinker,
+    localModelContext,
+    ModelLookup,
+    ModelLookupContext,
+    modelLookupContextProvider,
+    ModelPublishMode,
+    ModelSpec,
+    uses,
+    formatSelector
+} from './model';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {useOnMount, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -20,8 +30,6 @@ import {
     useDebugValue,
     useState
 } from 'react';
-import {localModelContext} from './hooks/Models';
-import {ModelLookup, ModelLookupContext, modelLookupContextProvider} from './impl/ModelLookup';
 
 interface HoistComponentSpec {
 

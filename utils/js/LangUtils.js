@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {Exception} from '@xh/hoist/exception';
+import {Exception} from '@xh/hoist/core/exception/Exception';
 import {
     forOwn,
     isEmpty,

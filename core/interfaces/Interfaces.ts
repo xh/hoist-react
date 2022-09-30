@@ -1,10 +1,7 @@
 import {ReactElement, ReactNode} from 'react';
 // @ts-ignore
 import {HTMLElement} from 'dom';
-import {DebounceSettings} from "lodash";
-import {LoadSpec} from './refresh/LoadSpec';
-import {ExceptionHandlerOptions} from "@xh/hoist/core/ExceptionHandler";
-import {TaskObserver} from "@xh/hoist/core/TaskObserver";
+import {DebounceSettings} from 'lodash';
 
 /**
  * User of the application, as loaded from the server.
@@ -156,6 +153,6 @@ export interface TrackOptions {
     data?: object | object[];
     severity?: string;
     oncePerSession?: boolean;
-    loadSpec?: LoadSpec;
+    loadSpec?: object;
     omit?: boolean;
 }

@@ -4,8 +4,9 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {loadAllAsync, XH, LoadSpec} from '@xh/hoist/core';
-import {RefreshContextModel} from './RefreshContextModel';
+import {XH} from '../';
+import {LoadSpec, loadAllAsync} from '../load';
+import {RefreshContextModel} from './';
 
 /**
  * Top-level refresh context model - triggers a full refresh of the app via a call to `loadAsync()`

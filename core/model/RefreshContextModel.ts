@@ -4,8 +4,8 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, loadAllAsync, LoadSpec, Loadable} from '@xh/hoist/core';
-import {throwIf} from '@xh/hoist/utils/js';
+import {HoistModel} from './';
+import {loadAllAsync, LoadSpec, Loadable} from '../load';
 import {pull} from 'lodash';
 
 /**

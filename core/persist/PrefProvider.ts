@@ -5,7 +5,8 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {PersistenceProvider, PersistOptions, XH} from '@xh/hoist/core';
+import {XH} from '../';
+import {PersistenceProvider, PersistOptions} from './';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**

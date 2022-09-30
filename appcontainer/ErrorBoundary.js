@@ -23,12 +23,13 @@ export class ErrorBoundary extends Component {
     }
 
     render() {
-        // @ts-ignore -- this is directly from react docs!
-        return this.state.caughtError ? 'An error occurred while rendering this Component.' : this.props.children ?? null;
+        return this.state.caughtError ?
+            'An error occurred while rendering this Component.' :
+            this.props.children ?? null;
     }
 
     componentDidCatch(e, info) {
-        XH.handleException(e, {requireReload: true})
+        XH.handleException(e, {requireReload: true});
     }
 
     static getDerivedStateFromError(e) {

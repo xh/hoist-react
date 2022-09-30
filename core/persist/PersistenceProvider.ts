@@ -5,8 +5,8 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {DebounceSpec, XH} from 'core';
-import {LocalStorageProvider, PrefProvider, DashViewProvider, CustomProvider, PersistOptions} from '../';
+import {DebounceSpec, XH} from '../';
+import {LocalStorageProvider, PrefProvider, DashViewProvider, CustomProvider, PersistOptions} from './';
 import {
     isUndefined,
     cloneDeep,
@@ -14,11 +14,9 @@ import {
     set,
     unset,
     isNumber,
-    debounce as lodashDebounce,
-    DebounceSettings
+    debounce as lodashDebounce
 } from 'lodash';
-import {throwIf} from 'utils/js';
-import {LodashDebounce} from "lodash/fp";
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Abstract superclass for adaptor objects used by models and components to (re)store state to and
@@ -119,7 +117,7 @@ export class PersistenceProvider {
     }
 
     protected writeRaw(obj: object) {}
-    protected readRaw(): object {return null;}
+    protected readRaw(): object {return null}
     protected clearRaw() {}
 }
 

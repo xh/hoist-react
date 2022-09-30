@@ -6,8 +6,7 @@
  */
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
-import {ModelPublishMode, ModelSpec} from './ModelSpec';
-import {HoistModel, HoistModelClass} from '../HoistModel';
+import {HoistModel, HoistModelClass, ModelPublishMode, ModelSpec} from './';
 
 /**
  * Returns a ModelSpec to define how a functional HoistComponent should create its primary backing

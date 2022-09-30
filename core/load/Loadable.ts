@@ -4,9 +4,8 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {TaskObserver} from "@xh/hoist/core";
-import {LoadSpec} from "@xh/hoist/core/refresh/LoadSpec";
-import {IPromise} from '@xh/hoist/promise';
+import {TaskObserver} from '../';
+import {LoadSpec} from './';
 
 /**
  * Object that supports Hoist's loading/refresh lifecycle.
@@ -42,7 +41,7 @@ export interface Loadable {
      *      enriched version of it -- to their delegates.
      */
 
-    loadAsync(loadSpec?: LoadSpec|any): IPromise<any>
+    loadAsync(loadSpec?: LoadSpec|any);
 
     /**
      * Refresh the target.

@@ -4,11 +4,11 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
 */
-import {PersistenceProvider, PersistOptions, HoistBaseClass} from '@xh/hoist/core';
+import {PersistenceProvider, PersistOptions, HoistBaseClass} from './';
 
 import {cloneDeep, isUndefined} from 'lodash';
-import {wait} from 'promise';
-import {throwIf} from 'utils/js';
+import {wait} from '../promise';
+import {throwIf} from '../utils/js';
 
 /**
  * Decorator to make a property "managed". Managed properties are designed to hold objects that
@@ -42,7 +42,7 @@ export const managed: any = (target: HoistBaseClass, property: string, descripto
  */
 export const persist: any = (target: HoistBaseClass, property: string, descriptor: any) => {
     return createPersistDescriptor(target, property, descriptor, null);
-}
+};
 
 /**
  * Decorator to make a class property persistent.

@@ -5,9 +5,9 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
+import {errorBoundary} from '@xh/hoist/appcontainer/ErrorBoundary';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {AppState, elem, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
-import {errorBoundary} from '@xh/hoist/core/impl/ErrorBoundary';
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 import {colChooser} from '@xh/hoist/mobile/cmp/grid/impl/ColChooser';
 import {ColChooserModel} from '@xh/hoist/mobile/cmp/grid/impl/ColChooserModel';

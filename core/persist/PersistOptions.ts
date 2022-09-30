@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {DebounceSpec} from "@xh/hoist/core";
+import {DebounceSpec} from '../';
 
 /**
  * Options governing persistence.

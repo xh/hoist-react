@@ -5,8 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {p} from '@xh/hoist/cmp/layout';
-import {AppSpec, AppState, elem, SizingMode} from '@xh/hoist/core';
-import {Exception} from '@xh/hoist/exception';
+import {AppSpec, AppState, elem, Exception, ExceptionHandlerOptions, ExceptionHandler} from './';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable, reaction as mobxReaction} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
@@ -26,7 +25,7 @@ import {
     LocalStorageService,
     PrefService,
     TrackService,
-    WebSocketService
+    WebSocketService, FetchOptions
 } from '@xh/hoist/svc';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
@@ -44,13 +43,8 @@ import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import {ToastModel} from '../appcontainer/ToastModel';
 import {BannerModel} from '../appcontainer/BannerModel';
 import '../styles/XH.scss';
-import {ExceptionHandler, ExceptionHandlerOptions} from './ExceptionHandler';
-import {HoistModel, ModelSelector} from './HoistModel';
-import {HoistAppModel} from "./HoistAppModel";
-import {RouterModel} from './RouterModel';
-import {FetchOptions} from '../svc';
-import {RefreshContextModel} from './refresh/RefreshContextModel';
-import {BannerSpec, ToastSpec, MessageSpec, HoistUser} from './Interfaces';
+import {ModelSelector, HoistModel, RefreshContextModel} from './model';
+import {HoistAppModel, RouterModel, BannerSpec, ToastSpec, MessageSpec, HoistUser} from './';
 
 const MIN_HOIST_CORE_VERSION = '14.0';
 
@@ -71,6 +65,7 @@ class XHClass {
 
     constructor() {
         makeObservable(this);
+        this.exceptionHandler = new ExceptionHandler();
     }
 
     //----------------------------------------------------------------------------------------------
@@ -216,7 +211,7 @@ class XHClass {
     //---------------------------
     suspendData = null;
     accessDeniedMessage: string = null;
-    exceptionHandler: ExceptionHandler = new ExceptionHandler();
+    exceptionHandler: ExceptionHandler = null;
 
     /** current lifecycle state of the application. */
     @observable appState: string = AppState.PRE_AUTH;

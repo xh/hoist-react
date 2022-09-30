@@ -4,8 +4,8 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {XH, PersistenceProvider, PersistOptions, DebounceSpec} from '@xh/hoist/core';
-import {throwIf} from '@xh/hoist/utils/js';
+import {XH, PersistenceProvider, PersistOptions, DebounceSpec} from './';
+import {throwIf, getOrCreate} from '@xh/hoist/utils/js';
 import {
     debounce as lodashDebounce,
     cloneDeep,
@@ -25,7 +25,6 @@ import {
     reaction as mobxReaction,
     when as mobxWhen
 } from '@xh/hoist/mobx';
-import {getOrCreate} from '../utils/js';
 import {IAutorunOptions, IReactionOptions} from 'mobx/dist/api/autorun';
 import {IReactionDisposer} from 'mobx/dist/internal';
 
@@ -285,7 +284,7 @@ function parseReactionOptions(options) {
 }
 
 
-function bindAndDebounce(obj, fn, debounce = null ) {
+function bindAndDebounce(obj, fn, debounce = null) {
     let ret = fn.bind(obj);
 
     //  See https://github.com/mobxjs/mobx/issues/1956 and note we cannot use mobx scheduler.

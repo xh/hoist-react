@@ -7,7 +7,7 @@
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {AppState, elem, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
-import {errorBoundary} from '@xh/hoist/core/impl/ErrorBoundary';
+import {errorBoundary} from '@xh/hoist/appcontainer/ErrorBoundary';
 import {changelogDialog} from '@xh/hoist/desktop/appcontainer/ChangelogDialog';
 import {suspendPanel} from '@xh/hoist/desktop/appcontainer/SuspendPanel';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';

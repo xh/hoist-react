@@ -4,18 +4,10 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {
-    HoistBase,
-    HoistModel,
-    HoistService,
-    managed,
-    RefreshContextModel,
-    TaskObserver
-} from '@xh/hoist/core';
+import {HoistBase, managed, RefreshContextModel, TaskObserver} from '../';
+import {LoadSpec, Loadable} from './';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {LoadSpec} from './LoadSpec';
-import {Loadable} from './Loadable'
 import {isPlainObject} from 'lodash';
 
 /**

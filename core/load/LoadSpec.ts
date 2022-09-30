@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {LoadSupport} from './LoadSupport';
+import {LoadSupport} from './';
 
 /**
  * Object describing a load/refresh request in Hoist.

@@ -6,8 +6,7 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {div, frame, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
-import {ModelLookupContext} from '@xh/hoist/core/impl/ModelLookup';
+import {hoistCmp, uses, ModelLookupContext} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import {useOnMount, useOnResize} from '@xh/hoist/utils/react';

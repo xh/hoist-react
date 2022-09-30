@@ -4,11 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {throwIf} from '@xh/hoist/utils/js';
-import {ModelPublishMode, ModelSpec} from './ModelSpec';
-import {isFunction, isString} from 'lodash';
-import {ModelSelector, ensureIsSelector} from '../ModelSelector';
-import {HoistModel} from '../HoistModel';
+import {ModelPublishMode, ModelSpec, HoistModel, ModelSelector, ensureIsSelector} from './';
 
 /**
  * Returns a ModelSpec to define how a functional HoistComponent should source its primary backing

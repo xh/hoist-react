@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
+import {XH} from '../';
 import {isString} from 'lodash';
 
 /**
@@ -159,7 +159,7 @@ export class Exception {
     //-----------------------
     // Implementation
     //-----------------------
-    static createInternal(defaults, override) {
+    static createInternal(defaults, override={}) {
         if (isString(override)) {
             override = {message: override};
         }

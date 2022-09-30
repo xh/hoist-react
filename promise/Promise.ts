@@ -4,8 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {TaskObserver, TrackOptions, XH, ExceptionHandlerOptions} from '@xh/hoist/core';
-import {Exception} from '@xh/hoist/exception';
+import {TaskObserver, TrackOptions, XH, ExceptionHandlerOptions, Exception} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {castArray, isFunction, isNumber, isString} from 'lodash';
 

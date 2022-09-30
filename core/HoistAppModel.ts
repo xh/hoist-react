@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
-import {HoistModel} from './HoistModel';
+import {HoistModel} from './';
 /**
  * Specialized base class for defining the central model for a Hoist app as specified by its
  * {@see AppSpec.modelClass} config. That config should reference a concrete implementation class

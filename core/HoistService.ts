@@ -4,11 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistBase} from './HoistBase';
-import {managed} from './HoistBaseDecorators';
-import {LoadSupport} from './refresh/LoadSupport';
-import {TaskObserver} from './TaskObserver';
-import {LoadSpec} from './refresh/LoadSpec';
+import {HoistBase, managed, LoadSupport, LoadSpec, TaskObserver} from './';
 
 
 /**

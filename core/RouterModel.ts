@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
+import {HoistModel} from './';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {merge} from 'lodash';
 import {createRouter, Router, State} from 'router5';

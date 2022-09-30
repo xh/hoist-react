@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {elemFactory, ModelSelector, HoistModel, ModelPublishMode} from '@xh/hoist/core';
+import {elemFactory, ModelSelector, HoistModel, ModelPublishMode} from './..';
 import {forOwn} from 'lodash';
 import {createContext} from 'react';
 
@@ -58,7 +58,6 @@ export class ModelLookup {
 
 /**
  * Context used to publish a ModelLookup
- * @private
  */
 export const ModelLookupContext = createContext(null);
 

@@ -5,8 +5,9 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {PersistenceProvider, PersistOptions, XH} from '@xh/hoist/core';
+import {PersistenceProvider, PersistOptions} from './';
 import {throwIf} from '@xh/hoist/utils/js';
+import {XH} from '../';
 
 /**
  * PersistenceProvider that stores state within the Browser's LocalStorage.

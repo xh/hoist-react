@@ -4,8 +4,9 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {loadAllAsync, RefreshContextModel, RefreshMode, HoistModel, LoadSpec} from '@xh/hoist/core';
-import {Loadable} from './Loadable';
+import {loadAllAsync, Loadable, LoadSpec} from '../load';
+import {RefreshContextModel} from './';
+import {RefreshMode} from '../';
 
 
 export type ManagedRefreshTarget = Loadable & {isActive:boolean, refreshMode: string}

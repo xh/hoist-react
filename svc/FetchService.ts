@@ -4,8 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH, AppState} from '@xh/hoist/core';
-import {Exception} from '@xh/hoist/exception';
+import {HoistService, XH, AppState, Exception} from '@xh/hoist/core';
 import {isLocalDate, SECONDS, ONE_MINUTE, olderThan} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
@@ -233,12 +232,12 @@ export class FetchService extends HoistService {
             }
         }
 
-        const ret = await fetch(url, fetchOpts);
+        const ret:any = await fetch(url, fetchOpts);
 
         if (!ret.ok) {
             ret.responseText = await this.safeResponseTextAsync(ret);
             const e = Exception.fetchError(opts, ret);
-            if (!XH.isSSO && isRelativeUrl && e.httpStatus === 401) {
+            if (!XH.appSpec.isSSO && isRelativeUrl && e.httpStatus === 401) {
                 await this.maybeReloadForAuthAsync();
             }
             throw e;
