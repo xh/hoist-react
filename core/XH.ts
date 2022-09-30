@@ -15,6 +15,7 @@ import {
     ExceptionHandler,
     TrackOptions
 } from './';
+import {instanceManager} from './InstanceManager';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable, reaction as mobxReaction} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
@@ -71,7 +72,7 @@ class XHClass {
     private _initCalled: boolean = false;
     private _lastActivityMs: number = Date.now();
     private _uaParser: any = null;
-    private services = [];
+
 
     constructor() {
         makeObservable(this);
@@ -238,16 +239,13 @@ class XHClass {
     }
 
     /** The currently authenticated user. */
-    @observable authUsername: string = null;
+    @observable
+    authUsername: string = null;
 
-    /**
-     *  Root level {@see HoistAppModel}. This must be a class that extends `HoistAppModel`.
-     */
+    /** Root level application model {@see HoistAppModel}.*/
     appModel: HoistAppModel = null;
 
-    /**
-     * Specifications for this application, provided in call to `XH.renderApp()`.
-     */
+    /** Specifications for this application, provided in call to `XH.renderApp()`.*/
     appSpec: AppSpec = null;
 
     /**
@@ -289,7 +287,7 @@ class XHClass {
                 install the same service twice.`
             ));
             this[name] = svc;
-            this.services.push(svc);
+            instanceManager.registerService(svc);
         });
     }
 
@@ -611,15 +609,21 @@ class XHClass {
      */
     getActiveModels(selector: ModelSelector = '*'): HoistModel[] {
         const ret = [];
-        HoistModel._activeModels.forEach(m => {
+        // Iterating over keys needed for full observability?
+        for (let m of instanceManager.models.keys()) {
             if (m.matchesSelector(selector, true)) ret.push(m);
-        });
+        }
         return ret;
     }
 
     /** All services registered with this application. */
     getServices(): HoistService[] {
-        return [...this.services];
+        const ret = [];
+        // Iterating over keys needed for full observability?
+        for (let s of instanceManager.services.keys()) {
+            ret.push(s);
+        }
+        return ret;
     }
 
     /**
@@ -641,7 +645,7 @@ class XHClass {
         if (args) {
             args = flatten(args);
             args.forEach(it => {
-                it?.destroy();
+                it?.destroy?.();
             });
         }
     }
@@ -745,7 +749,7 @@ class XHClass {
      * @private - not intended for application use.
      */
     @action
-    async completeInitAsync() {
+    private async completeInitAsync() {
         const S = AppState;
 
         try {

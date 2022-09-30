@@ -1,8 +1,9 @@
-import {HoistModel, HoistService, managed, persist, XH} from '@xh/hoist/core';
+import {HoistService, managed, persist, XH} from '@xh/hoist/core';
 import {FieldType, Store} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
+import {instanceManager} from '@xh/hoist/core/InstanceManager';
 
 const {STRING, DATE, NUMBER, BOOL} = FieldType;
 
@@ -122,9 +123,6 @@ export class InspectorService extends HoistService {
     sync() {
         if (!this.active) return;
 
-        // Explicit access to keys() here ensure we trigger this autorun on set composition change.
-        HoistModel._activeModels.keys();
-
         const models = [
             ...XH.getActiveModels(),
             ...XH.getServices()
@@ -154,7 +152,7 @@ export class InspectorService extends HoistService {
         if (!this.active) return;
 
         const {totalJSHeapSize, usedJSHeapSize} = ((window.performance as any)?.memory ?? {}),
-            modelCount = HoistModel._activeModels.size,
+            modelCount = instanceManager.models.size,
             prevModelCount = this._prevModelCount,
             now = Date.now();
 

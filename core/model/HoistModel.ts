@@ -10,6 +10,7 @@ import {HoistBase, managed, TaskObserver} from '../';
 import {ModelSelector} from './';
 import {LoadSupport, LoadSpec, Loadable} from '../load';
 import {observable, action, makeObservable} from '@xh/hoist/mobx';
+import {instanceManager} from '../InstanceManager';
 
 /**
  * Core superclass for stateful Models in Hoist. Models are used throughout the toolkit and
@@ -62,9 +63,6 @@ export class HoistModel extends HoistBase implements Loadable {
     _modelLookup = null;
     _created = Date.now;
 
-    // global registry of all active models
-    static _activeModels: Set<HoistModel> = new Set();
-
     constructor() {
         super();
         makeObservable(this);
@@ -73,8 +71,7 @@ export class HoistModel extends HoistBase implements Loadable {
             this.loadSupport = new LoadSupport(this);
         }
 
-        // @ts-ignore
-        HoistModel._registerModelInstance(this);
+        instanceManager.registerModel(this);
     }
 
     //----------------
@@ -201,23 +198,9 @@ export class HoistModel extends HoistBase implements Loadable {
 
     destroy() {
         super.destroy();
-        // @ts-ignore
-        HoistModel._unregisterModelInstance(this);
+        instanceManager.unregisterModel(this);
     }
 }
-
-/**
- * Static observable Set containing a registry of all currently active models. Models automatically
- * add themselves to this set when created and remove themselves when destroyed.
- * @type {ObservableSet<HoistModel>}
- * @see {XH.getActiveModels}
- * @package
- */
-HoistModel._activeModels = observable.set(new Set(), {deep: false});
-// @ts-ignore
-HoistModel._registerModelInstance = action(instance => HoistModel._activeModels.add(instance));
-// @ts-ignore
-HoistModel._unregisterModelInstance = action(instance => HoistModel._activeModels.delete(instance));
 
 export interface HoistModelClass {
     new(...args: any[]): HoistModel;

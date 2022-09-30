@@ -50,8 +50,8 @@ export class HoistBase {
     get isHoistBase(): boolean {return true}
 
     // Internal State
-    #managedInstances = [];
-    #disposers = [];
+    private managedInstances = [];
+    private disposers = [];
 
     /** Default persistence options for this object. */
     persistWith: PersistOptions = null;
@@ -100,7 +100,7 @@ export class HoistBase {
             run = bindAndDebounce(this, run, debounce);
 
             const disposer = track ? mobxReaction(track, run, opts) : mobxWhen(when, run, opts);
-            this.#disposers.push(disposer);
+            this.disposers.push(disposer);
             return disposer;
         });
         return disposers.length === 1 ? disposers[0] : disposers;
@@ -135,7 +135,7 @@ export class HoistBase {
             run = bindAndDebounce(this, run);
 
             const disposer = mobxAutorun(run, opts);
-            this.#disposers.push(disposer);
+            this.disposers.push(disposer);
             return disposer;
         });
 
@@ -173,11 +173,10 @@ export class HoistBase {
      * See also {@see managed}, a decorator that can be used to mark any object held within
      * a given property as managed.
      *
-     * @param obj - object to be managed
      * @returns object passed.
      */
-    markManaged<T>(obj: T) {
-        this.#managedInstances.push(obj);
+    markManaged<T>(obj: T): T {
+        this.managedInstances.push(obj);
         return obj;
     }
 
@@ -226,8 +225,8 @@ export class HoistBase {
      * Clean up resources associated with this object
      */
     destroy() {
-        this.#disposers.forEach(f => f());
-        this.#managedInstances.forEach(i => XH.safeDestroy(i));
+        this.disposers.forEach(f => f());
+        this.managedInstances.forEach(i => XH.safeDestroy(i));
         this['_xhManagedProperties']?.forEach(p => XH.safeDestroy(this[p]));
     }
 }
