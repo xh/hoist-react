@@ -2,6 +2,7 @@ import {ReactElement, ReactNode} from 'react';
 // @ts-ignore
 import {HTMLElement} from 'dom';
 import {DebounceSettings} from 'lodash';
+import {LoadSpec} from '../load';
 
 /**
  * User of the application, as loaded from the server.
@@ -15,8 +16,8 @@ export interface HoistUser {
     displayName: string;
     roles: string[];
     isHoistAdmin: boolean;
-    hasRole(string): boolean;
-    hasGate(string): boolean;
+    hasRole(s: string): boolean;
+    hasGate(s: string): boolean;
 }
 
 
@@ -148,11 +149,37 @@ export interface BannerSpec {
  * Options for tracking activity on the server via TrackService.
  */
 export interface TrackOptions {
-    message?: string;
+
+    /** Short description of the activity being tracked. */
+    message: string;
+
+    /** App-supplied category.*/
     category?: string;
-    data?: object | object[];
+
+    /** App-supplied data to save along with track log.*/
+    data?: object|object[];
+
+    /**
+     * Flag to indicate relative importance of activity.
+     * Default 'INFO'. Note, errors should be tracked via `XH.handleException()`, which
+     * will post to the server for dedicated logging if requested. {@see ExceptionHandler}
+     */
     severity?: string;
+
+    /**
+     * Set to true to log this message only once during the current session.
+     * The unique key identifying this message for this purpose will be
+     * comprised of the category and the message.
+     */
     oncePerSession?: boolean;
-    loadSpec?: object;
+
+    /** Optional LoadSpec associated with this track.*/
+    loadSpec?: LoadSpec;
+
+    /** Elapsed time (ms) for action. */
+    elapsed?: number;
+
+    /** Optional flag to omit sending message. */
     omit?: boolean;
+
 }

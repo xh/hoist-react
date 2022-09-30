@@ -5,6 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
+// @ts-ignore
 import jsonFromMarkdown from '@xh/app-changelog.json';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {checkMinVersion} from '@xh/hoist/utils/js';
@@ -32,30 +33,30 @@ import {isEmpty, forOwn, includes} from 'lodash';
 export class ChangelogService extends HoistService {
 
     // Optional JSON AppConfig key to soft-configure this service - see this.config for shape.
-    SVC_CONFIG_KEY = 'xhChangelogConfig';
+    SVC_CONFIG_KEY: string = 'xhChangelogConfig';
     // Optional string Preference key to track last read log entry + enable unread notifications.
-    LAST_READ_PREF_KEY = 'xhLastReadChangelog';
+    LAST_READ_PREF_KEY: string = 'xhLastReadChangelog';
 
     /**
-     * @member {Changelog} - the complete changelog object, as produced by the app build or defined
-     *      in soft-config, or an empty placeholder if neither source is enabled/available.
+     * The complete changelog object, as produced by the app build or defined
+     * in soft-config, or an empty placeholder if neither source is enabled/available.
      */
-    changelog;
+    changelog: object;
 
     /**
-     * @member {ChangelogVersion[]} - parsed and cleaned versions, if any, with any versions or
-     *      nested categories marked for exclusion via config already omitted.
+     * Parsed and cleaned versions, if any, with any versions or
+     * nested categories marked for exclusion via config already omitted.
      */
-    versions;
+    versions: ChangelogVersion[];
 
     /**
-     * @member {boolean} - true if an entry exists for the current app version which the user has
-     *      yet to view (and the required user preference has been created).
+     * True if an entry exists for the current app version which the user has
+     * yet to view (and the required user preference has been created).
      */
-    @observable currentVersionIsUnread;
+    @observable
+    currentVersionIsUnread: boolean;
 
-    /** @return {boolean} */
-    get enabled() {
+    get enabled(): boolean {
         const {config, versions} = this,
             {enabled, limitToRoles} = config,
             userHasAccess = isEmpty(limitToRoles) || limitToRoles.some(it => XH.getUser().hasRole(it));
@@ -63,14 +64,12 @@ export class ChangelogService extends HoistService {
         return XH.isDesktop && enabled && userHasAccess && !isEmpty(versions);
     }
 
-    /** @return {?string} */
-    get latestAvailableVersion() {
+    get latestAvailableVersion(): string {
         if (!this.enabled) return null;
         return this.versions[0].version;
     }
 
-    /** @return {?Object} */
-    get latestNonEmptyVersion() {
+    get latestNonEmptyVersion(): string {
         if (!this.enabled) return null;
         return this.versions.find(it => !isEmpty(it.categories))?.version;
     }
@@ -110,7 +109,7 @@ export class ChangelogService extends HoistService {
     //------------------------
     // Implementation
     //------------------------
-    get config() {
+    private get config() {
         return XH.getConf(this.SVC_CONFIG_KEY, {
             enabled: true,
             excludedVersions: [],
@@ -119,7 +118,7 @@ export class ChangelogService extends HoistService {
         });
     }
 
-    parseVersions(changelog) {
+    private parseVersions(changelog): ChangelogVersion[] {
         try {
             const versions = [];
             (changelog.versions ?? [])
@@ -148,17 +147,17 @@ export class ChangelogService extends HoistService {
         }
     }
 
-    includeVersion(versionStr) {
+    private includeVersion(versionStr) {
         return versionStr && !this.config.excludedVersions.includes(versionStr);
     }
 
-    includeCategory(catTitle) {
+    private includeCategory(catTitle) {
         // Check against '_' is due to catch-all category created by changelog-parser lib.
         return catTitle !== '_' && !this.config.excludedCategories.find(it => catTitle.includes(it));
     }
 
     @action
-    updateUnreadStatus() {
+    private updateUnreadStatus() {
         const {enabled, latestNonEmptyVersion} = this,
             lastReadVersion = XH.getPref(this.LAST_READ_PREF_KEY, null);
         this.currentVersionIsUnread = (
@@ -170,22 +169,16 @@ export class ChangelogService extends HoistService {
     }
 }
 
-/**
- * @typedef {Object} Changelog
- * @property {ChangelogVersion[]} versions
- */
 
-/**
- * @typedef {Object} ChangelogVersion
- * @property {string} version
- * @property {string} title
- * @property {boolean} isCurrentVersion
- * @property {ChangelogCategory[]} categories
- */
+export interface ChangelogVersion {
+    version: string;
+    title: string;
+    isCurrentVersion: boolean;
+    categories: ChangelogCategory[];
+}
 
-/**
- * @typedef {Object} ChangelogCategory
- * @property {string} title
- * @property {string[]} items
- */
+export interface ChangelogCategory {
+    title: string;
+    items: string[];
+}
 

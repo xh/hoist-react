@@ -29,9 +29,10 @@ import {withDefault, logDebug} from '@xh/hoist/utils/js';
 export class AutoRefreshService extends HoistService {
 
     @managed
-    timer;
+    private timer: Timer;
+    private initTime: number;
 
-    get enabled() {
+    get enabled(): boolean {
         return (
             this.interval > 0 &&
             XH.appIsRunning &&
@@ -39,7 +40,7 @@ export class AutoRefreshService extends HoistService {
         );
     }
 
-    get interval() {
+    get interval(): number {
         const conf = XH.getConf('xhAutoRefreshIntervals', {});
         return withDefault(conf[XH.clientAppCode], -1);
     }
@@ -58,7 +59,7 @@ export class AutoRefreshService extends HoistService {
     //------------------------
     // Implementation
     //------------------------
-    async onTimerAsync() {
+    private async onTimerAsync() {
         if (!this.enabled || document.hidden) return;
 
         // Wait interval after lastCompleted -- this prevents extra refreshes if user refreshes
@@ -74,5 +75,4 @@ export class AutoRefreshService extends HoistService {
             await ctx.autoRefreshAsync();
         }
     }
-
 }

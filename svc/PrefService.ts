@@ -29,9 +29,10 @@ import {cloneDeep, debounce, forEach, isEmpty, isEqual, isNil, pickBy} from 'lod
  */
 export class PrefService extends HoistService {
 
-    _data = {};
-    _updates = {};
-    _localStorageKey = 'localPrefs';
+    private _data = {};
+    private _updates = {};
+    private _localStorageKey = 'localPrefs';
+    private pushPendingBuffered: any;
 
     constructor() {
         super();
@@ -46,9 +47,8 @@ export class PrefService extends HoistService {
 
     /**
      * Check to see if a given preference has been *defined*.
-     * @param key
      */
-    hasKey(key) {
+    hasKey(key: string): boolean {
         return this._data.hasOwnProperty(key);
     }
 
@@ -56,13 +56,12 @@ export class PrefService extends HoistService {
      * Get the value for a given key, either the user-specific value (if set) or the default.
      * Typically accessed via convenience alias `XH.getPref()`.
      *
-     * @param {string} key
-     * @param {*} [defaultValue] - value to return if the preference key is not found - i.e.
+     * @param [defaultValue] - value to return if the preference key is not found - i.e.
      *      the config has not been created on the server - instead of throwing. Use sparingly!
      *      In general it's better to not provide defaults here, but instead keep entries up-to-date
      *      via the Admin client and have it be obvious when one is missing.
      */
-    get(key, defaultValue) {
+    get(key: string, defaultValue?: any) {
         const data = this._data;
         let ret = defaultValue;
 
@@ -82,11 +81,8 @@ export class PrefService extends HoistService {
      *
      * Values are saved to the server (or local storage) in an asynchronous and debounced manner.
      * See pushAsync() and pushPendingAsync()
-     *
-     * @param {string} key
-     * @param {*} value - the new value to save.
      */
-    set(key, value) {
+    set(key: string, value: any) {
         this.validateBeforeSet(key, value);
 
         const oldValue = this.get(key);
@@ -103,9 +99,8 @@ export class PrefService extends HoistService {
 
     /**
      * Restore a preference to its default value.
-     * @param key
      */
-    unset(key) {
+    unset(key: string) {
         // TODO: round-trip this to the server as a proper unset?
         this.set(key, this._data[key]?.defaultValue);
     }
@@ -116,12 +111,8 @@ export class PrefService extends HoistService {
      *
      * Useful when important to verify that the preference has been fully round-tripped - e.g.
      * before making another call that relies on its updated value being read on the server.
-     *
-     * @param key
-     * @param value
-     * @returns {Promise}
      */
-    async pushAsync(key, value) {
+    async pushAsync(key: string, value: any) {
         this.validateBeforeSet(key, value);
         this.set(key, value);
         return this.pushPendingAsync();
@@ -183,7 +174,7 @@ export class PrefService extends HoistService {
     //-------------------
     //  Implementation
     //-------------------
-    async loadPrefsAsync() {
+    private async loadPrefsAsync() {
         const data = await XH.fetchJson({
             url: 'xh/getPrefs',
             params: {clientUsername: XH.getUsername()}
@@ -196,7 +187,7 @@ export class PrefService extends HoistService {
         this.syncLocalPrefs();
     }
 
-    syncLocalPrefs() {
+    private syncLocalPrefs() {
         const localPrefs = XH.localStorageService.get(this._localStorageKey, {}),
             data = this._data;
 
@@ -211,7 +202,7 @@ export class PrefService extends HoistService {
         }
     }
 
-    cleanLocalPrefs(localPrefs) {
+    private cleanLocalPrefs(localPrefs) {
         const data = this._data;
 
         for (let pref in localPrefs) {
@@ -219,7 +210,7 @@ export class PrefService extends HoistService {
         }
     }
 
-    removeLocalValue(key) {
+    private removeLocalValue(key) {
         const hasRemoveValue = this._data.hasOwnProperty(key);
 
         throwIf(
@@ -236,12 +227,12 @@ export class PrefService extends HoistService {
         XH.localStorageService.set(this._localStorageKey, localPrefs);
     }
 
-    isLocalPreference(key) {
+    private isLocalPreference(key) {
         const pref = this._data[key];
         return pref && pref.local;
     }
 
-    validateBeforeSet(key, value) {
+    private validateBeforeSet(key, value) {
         const pref = this._data[key];
         throwIf(!pref, `Cannot set preference ${key}: not found`);
         throwIf(value === undefined, `Cannot set preference ${key}: value not defined`);
@@ -251,7 +242,7 @@ export class PrefService extends HoistService {
         );
     }
 
-    valueIsOfType(value, type) {
+    private valueIsOfType(value, type) {
         const valueType = typeof value;
 
         switch (type) {

@@ -41,24 +41,27 @@ export class WebSocketService extends HoistService {
     REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
     FORCE_APP_SUSPEND_TOPIC = 'xhForceAppSuspend';
 
-    /** @property {string} - unique channel assigned by server upon successful connection. */
-    @observable channelKey = null;
+    /** Unique channel assigned by server upon successful connection. */
+    @observable
+    channelKey: string = null;
 
-    /** @property {Date} - Last time a message was received, including heartbeat messages. */
-    @observable lastMessageTime = null;
+    /** Last time a message was received, including heartbeat messages. */
+    @observable
+    lastMessageTime: Date = null;
 
-    /** @property {boolean} - Observable flag indicating service is connected and available for use. */
-    get connected() {return !!this.channelKey}
+    /** Observable flag indicating service is connected and available for use. */
+    get connected(): boolean {
+        return !!this.channelKey;
+    }
 
-    /** @property {boolean} - set to true to log all sent/received messages - very chatty. */
-    logMessages = false;
+    /** set to true to log all sent/received messages - very chatty. */
+    logMessages: boolean = false;
 
-    _timer;
-    _socket;
-    _subsByTopic = {};
+    private _timer;
+    private _socket;
+    private _subsByTopic = {};
 
-    /** @property {boolean} **/
-    enabled = XH.appSpec.webSocketsEnabled;
+    enabled: boolean = XH.appSpec.webSocketsEnabled;
 
     constructor() {
         super();
@@ -89,14 +92,13 @@ export class WebSocketService extends HoistService {
     /**
      * Subscribe a callback to receive inbound messages for a given topic on a going-forward basis.
      *
-     * @param {string} topic - application-specific topic of interest.
-     * @param {function} fn - handler to call for each incoming message on the requested topic.
-     *      Will be called with a object of the form {@see WebSocketMessage}.
-     * @returns {WebSocketSubscription} - subscription reference that can be used to unsubscribe
+     * @param topic - application-specific topic of interest.
+     * @param handler to call for each incoming message on the requested topic.
+     * @returns subscription reference that can be used to unsubscribe
      *      to future messages for the same topic/handler. Callers should take care to save this
      *      reference and use it to cleanup their subs on destroy.
      */
-    subscribe(topic, fn) {
+    subscribe(topic: string, fn: (msg: WebSocketMessage) => any): WebSocketSubscription {
         const subs = this.getSubsForTopic(topic),
             existingSub = find(subs, {fn});
 
@@ -235,7 +237,7 @@ export class WebSocketService extends HoistService {
         });
     }
 
-    getSubsForTopic(topic) {
+    getSubsForTopic(topic): WebSocketSubscription[] {
         let ret = this._subsByTopic[topic];
         if (!ret) {
             ret = this._subsByTopic[topic] = [];
@@ -290,9 +292,9 @@ export class WebSocketService extends HoistService {
  * Wrapper class to encapsulate and manage a subscription to messages for a given topic + handler.
  * Returned from `WebSocketService.subscribe()` and used to `unsubscribe()`.
  */
-class WebSocketSubscription {
-    topic;
-    fn;
+export class WebSocketSubscription {
+    topic: string;
+    fn: (msg: WebSocketMessage) => any;
 
     constructor(topic, fn) {
         this.topic = topic;
@@ -304,8 +306,7 @@ class WebSocketSubscription {
     }
 }
 
-/**
- * @typedef {Object} WebSocketMessage
- * @property {string} topic
- * @property {*} message
- */
+interface WebSocketMessage {
+    topic: string;
+    message: any;
+}

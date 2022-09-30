@@ -20,8 +20,9 @@ import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
  */
 export class IdleService extends HoistService {
 
-    @managed timer = null;
-    timeout = null;
+    @managed
+    private timer: Timer = null;
+    private timeout = null;
 
     constructor() {
         super();
@@ -34,7 +35,7 @@ export class IdleService extends HoistService {
     //------------------------
     // Implementation
     //------------------------
-    startMonitoring() {
+    private startMonitoring() {
         const idleConfig = XH.getConf('xhIdleConfig', {}),
             {appTimeouts = {}, timeout} = idleConfig,
             configTimeout = (appTimeouts[XH.clientAppCode] ?? timeout ?? -1) * MINUTES,
@@ -47,14 +48,14 @@ export class IdleService extends HoistService {
         }
     }
 
-    createTimer() {
+    private createTimer() {
         this.timer = Timer.create({
             runFn: () => this.checkInactivityTimeout(),
             interval: 500
         });
     }
 
-    checkInactivityTimeout() {
+    private checkInactivityTimeout() {
         if (olderThan(XH.lastActivityMs, this.timeout)) {
             XH.suspendApp({reason: 'IDLE'});
         }

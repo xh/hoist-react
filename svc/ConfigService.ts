@@ -25,7 +25,7 @@ import {keys} from 'lodash';
  */
 export class ConfigService extends HoistService {
 
-    _data = {};
+    private _data = {};
 
     async initAsync() {
         this._data = await XH.fetchJson({url: 'xh/getConfig'});
@@ -35,21 +35,21 @@ export class ConfigService extends HoistService {
     /**
      * Get the list of available keys.
      */
-    get list() {
+    get list(): string[] {
         return keys(this._data);
     }
 
     /**
      * Get the configured value for a given key. Typically accessed via `XH.getConf()` alias.
      *
-     * @param {string} key - identifier of the config to return.
-     * @param {*} [defaultValue] - value to return if the configuration key is not found - i.e.
+     * @param key - identifier of the config to return.
+     * @param [defaultValue] - value to return if the configuration key is not found - i.e.
      *      the config has not been created on the server - instead of throwing. Use sparingly!
-     *      In general it's better to not provide defaults here, but instead keep entries up-to-date
+     *      In general, it's better to not provide defaults here, but instead keep entries up-to-date
      *      via the Admin client and have it be obvious when one is missing.
-     * @return {*} - the soft-configured value.
+     * @return the soft-configured value.
      */
-    get(key, defaultValue) {
+    get(key: string, defaultValue?: any): any {
         const data = this._data;
 
         if (data.hasOwnProperty(key)) {
@@ -59,5 +59,4 @@ export class ConfigService extends HoistService {
         throwIf(defaultValue === undefined, `Config key not found: '${key}'`);
         return defaultValue;
     }
-
 }

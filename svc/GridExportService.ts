@@ -29,6 +29,8 @@ import {
 } from 'lodash';
 import {span, a} from '@xh/hoist/cmp/layout';
 import {wait} from '@xh/hoist/promise';
+import {GridModel, Column} from '@xh/hoist/cmp/grid';
+import {StoreRecord} from '@xh/hoist/data';
 
 const {AUTO, BOOL, DATE, INT, LOCAL_DATE, NUMBER, STRING, PWD} = FieldType;
 
@@ -40,16 +42,16 @@ export class GridExportService extends HoistService {
 
     /**
      * Export a GridModel to a file. Typically called via `GridModel.exportAsync()`.
-     *
-     * @param {GridModel} gridModel - GridModel to export.
-     * @param {ExportOptions} [options] - Export options.
      */
-    async exportAsync(gridModel, {
-        filename = 'export',
-        type = 'excelTable',
-        columns = 'VISIBLE',
-        timeout = 30 * SECONDS
-    } = {}) {
+    async exportAsync(
+        gridModel: GridModel,
+        {
+            filename = 'export',
+            type = 'excelTable',
+            columns = 'VISIBLE',
+            timeout = 30 * SECONDS
+        }: ExportOptions = {}
+    ) {
         throwIf(!gridModel,
             'GridModel required for export');
         throwIf(!isString(filename) && !isFunction(filename),
@@ -66,7 +68,7 @@ export class GridExportService extends HoistService {
             exportColumns = this.getExportableColumns(gridModel, columns),
             summaryRecord = gridModel.store.summaryRecord,
             records = gridModel.store.rootRecords,
-            meta = this.getColumnMetadata(exportColumns, gridModel);
+            meta = this.getColumnMetadata(exportColumns);
 
         if (records.length === 0) {
             XH.warningToast('No data found to export.');
@@ -152,16 +154,14 @@ export class GridExportService extends HoistService {
      * This method is used internally by this service, but also made available
      * publicly for use by grid clipboard functionality.
      *
-     * @param {Object} c
-     * @param {GridModel} c.gridModel
-     * @param {StoreRecord} c.record
-     * @param {Column} c.column
-     * @param {Object} [c.node] - rendered ag-Grid row, if available.  Necessary for
-     *            exporting agGrid aggregates.
-     * @param {boolean} [c.forExcel] - for posting to server-side excel export, default false.
-     * @return {string|Object} - value suitable for export to excel, csv, or clipboard.
+     * @param [c.node] - rendered ag-Grid row, if available.  Necessary for exporting agGrid aggregates.
+     * @param [c.forExcel] - for posting to server-side excel export, default false.
+     * @return value suitable for export to excel, csv, or clipboard.
      */
-    getExportableValueForCell({gridModel, record, column, node, forExcel = false}) {
+    getExportableValueForCell(
+        {gridModel, record, column, node, forExcel = false}:
+            {gridModel: GridModel, record: StoreRecord, column: Column, node?: any, forExcel?: boolean}
+    ): any {
         const {field, exportValue, getValueFn, defaultGetValueFn} = column,
             aggData = node && gridModel.treeMode && !isEmpty(record.children) ? node.aggData : null,
             hasCustomGetValueFn = getValueFn !== defaultGetValueFn;
@@ -208,7 +208,7 @@ export class GridExportService extends HoistService {
         // Send format and/or type with the cell in an object only if it varies within the column
         if (!forExcel || (!cellSpecificType && !cellHasExcelFormat)) return value;
 
-        const ret = {value};
+        const ret: any = {value};
         if (cellHasExcelFormat) ret.format = excelFormat;
         if (cellSpecificType) ret.type = cellSpecificType;
         return ret;
@@ -216,7 +216,7 @@ export class GridExportService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
-    showFailToast(e) {
+    private showFailToast(e) {
         const failToast = XH.dangerToast({
             message: span(
                 'Export failed ',
@@ -232,7 +232,7 @@ export class GridExportService extends HoistService {
         });
     }
 
-    getExportableColumns(gridModel, columns) {
+    private getExportableColumns(gridModel, columns) {
         if (isFunction(columns)) {
             return compact(
                 columns(gridModel).map(it => gridModel.getColumn(it))
@@ -259,14 +259,14 @@ export class GridExportService extends HoistService {
 
     // Extract fieldtype from store for the column's export field (which may differ via exportValue)
     // Default to 'AUTO' (for non-store fields like 'id')
-    getExportFieldType(column) {
+    private getExportFieldType(column) {
         const {field, exportValue, gridModel} = column,
             typeField = isString(exportValue) ? exportValue : field;
 
         return gridModel.store.getField(typeField)?.type ?? AUTO;
     }
 
-    getColumnMetadata(columns) {
+    private getColumnMetadata(columns) {
         return columns.map(column => {
             let {field, excelWidth, excelFormat} = column,
                 type = this.getExportFieldType(column);
@@ -294,7 +294,7 @@ export class GridExportService extends HoistService {
         });
     }
 
-    getHeaderRow(columns, type, gridModel) {
+    private getHeaderRow(columns, type, gridModel) {
         const headers = columns.map(it => {
             let ret = isFunction(it.exportName) ?
                 it.exportName({column: it, gridModel}) :
@@ -321,7 +321,7 @@ export class GridExportService extends HoistService {
         return {data: headers, depth: 0};
     }
 
-    getRecordRowsRecursive(gridModel, records, columns, type, depth) {
+    private getRecordRowsRecursive(gridModel, records, columns, type, depth) {
         const {sortBy, treeMode, agApi} = gridModel,
             ret = [];
 
@@ -357,7 +357,7 @@ export class GridExportService extends HoistService {
         return ret;
     }
 
-    getRecordRow(gridModel, record, columns, type, depth) {
+    private getRecordRow(gridModel, record, columns, type, depth) {
         const node = gridModel.agApi?.getRowNode(record.agId),
             forExcel = type !== 'csv',
             data = columns.map(column => {
@@ -366,7 +366,7 @@ export class GridExportService extends HoistService {
         return {data, depth};
     }
 
-    getContentType(type) {
+    private getContentType(type) {
         switch (type) {
             case 'excelTable':
             case 'excel':
@@ -376,7 +376,7 @@ export class GridExportService extends HoistService {
         }
     }
 
-    getFileExtension(type) {
+    private getFileExtension(type) {
         switch (type) {
             case 'excelTable':
             case 'excel':
@@ -387,7 +387,7 @@ export class GridExportService extends HoistService {
     }
 
     // Return an async function that will block until a minimum time has passed.
-    minWait(time, fn) {
+    private minWait(time, fn) {
         const minDelay = wait(time);
         return async () => {
             await minDelay;
@@ -396,7 +396,7 @@ export class GridExportService extends HoistService {
     }
 
     // Return a value's data type if different from the type specified
-    getCellSpecificType(v, colType) {
+    private getCellSpecificType(v, colType) {
         const ifTypeNot = (allowedTypes, retType) => allowedTypes.includes(colType) ? null : retType;
 
         if (isBoolean(v))   return ifTypeNot([BOOL], BOOL);
@@ -409,15 +409,24 @@ export class GridExportService extends HoistService {
     }
 }
 
-/**
- * @typedef {Object} ExportOptions - options for exporting grid records to a file.
- * @property {(string|function)} [options.filename] - name for export file, or closure to generate.
- *      Do not include the file extension - that will be appended based on the specified type.
- * @property {string} [options.type] - type of export - one of ['excel', 'excelTable', 'csv'].
- * @property {(string|string[]|function)} [options.columns] - columns to include in export. Supports
- *      tokens 'VISIBLE' (default - all currently visible cols), 'ALL' (all columns), or specific
- *      column IDs to include (can be used in conjunction with VISIBLE to export all visible and
- *      enumerated columns). Also supports a function taking the GridModel, and returning an array
- *      of column IDs to include.
- * @property {number} [options.timeout] - timeout (in ms) for export request - defaults to 30 seconds
- */
+export interface ExportOptions {
+
+    /**
+     * Name for export file, or closure to generate.
+     * Do not include the file extension - that will be appended based on the specified type.
+     */
+    filename?: string|((g: GridModel) => string);
+
+    /** Type of export. */
+    type?: 'excel'|'excelTable'|'csv';
+
+    /**
+     *  Columns to include in export. Supports tokens 'VISIBLE' (default - all currently visible cols),
+     *  'ALL', or specific column IDs to include (can be used in conjunction with VISIBLE to export
+     *  all visible and enumerated columns). Also supports a function returning column IDs to include.
+     */
+    columns?: 'VISIBLE'|'ALL'|string[]|((g: GridModel) => string[])
+
+    /** Timeout (in ms) for export request - defaults to 30 seconds. */
+    timeout?: number;
+}

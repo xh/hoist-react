@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH} from '@xh/hoist/core';
+import {HoistService, HoistUser, XH} from '@xh/hoist/core';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -16,8 +16,8 @@ import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
  */
 export class IdentityService extends HoistService {
 
-    _authUser;
-    _apparentUser;
+    private _authUser: HoistUser;
+    private _apparentUser: HoistUser;
 
     async initAsync() {
         const data = await XH.fetchJson({url: 'xh/getIdentity'});
@@ -29,38 +29,27 @@ export class IdentityService extends HoistService {
         }
     }
 
-    /** @return {HoistUser} - current acting user (see authUser for notes on impersonation) */
-    get user() {
+    /** Current acting user (see authUser for notes on impersonation) */
+    get user(): HoistUser {
         return this._apparentUser;
     }
 
-    /** @return {string} - current acting user's username. */
-    get username() {
+    /** Current acting user's username. */
+    get username(): string {
         return this.user?.username ?? null;
     }
 
-    /** @return {HoistUser} - current acting user - method form for aliasing by XH. */
-    getUser() {
-        return this.user;
-    }
-
-    /** @return {string} - current acting user's username - method form for aliasing by XH. */
-    getUsername() {
-        return this.username;
-    }
-
     /**
-     * @return {HoistUser} - actual user who authenticated to the web application.
-     *      This will be the same as the user except when an administrator is impersonation another
-     *      user for troubleshooting or testing. In those cases, this getter will return the actual
-     *      administrator, whereas `this.user` will return the user they are impersonating.
+     * Actual user who authenticated to the web application.
+     * This will be the same as the user except when an administrator is impersonation another
+     * user for troubleshooting or testing. In those cases, this getter will return the actual
+     * administrator, whereas `this.user` will return the user they are impersonating.
      */
-    get authUser() {
+    get authUser(): HoistUser {
         return this._authUser;
     }
 
-    /** @return {string} */
-    get authUsername() {
+    get authUsername(): string {
         return this.authUser?.username ?? null;
     }
 
@@ -84,7 +73,7 @@ export class IdentityService extends HoistService {
     // Impersonation
     //------------------------
     /** Is an impersonation session currently active? */
-    get isImpersonating() {
+    get isImpersonating(): boolean {
         return this._authUser !== this._apparentUser;
     }
 
@@ -94,7 +83,7 @@ export class IdentityService extends HoistService {
      * See also canAuthUserImpersonate() which should be consulted before actually
      * triggering any impersonation attempts.
      */
-    get canImpersonate() {
+    get canImpersonate(): boolean {
         return this.user.isHoistAdmin && XH.getConf('xhEnableImpersonation', false);
     }
 
@@ -104,7 +93,7 @@ export class IdentityService extends HoistService {
      * Use this getter to determine if Hoist should allow the client to show impersonation
      * affordances and to trigger impersonation actions.
      */
-    get canAuthUserImpersonate() {
+    get canAuthUserImpersonate(): boolean {
         return this._authUser.isHoistAdmin && XH.getConf('xhEnableImpersonation', false);
     }
 
@@ -114,9 +103,9 @@ export class IdentityService extends HoistService {
      * a known user who has permission to and has accessed the app themselves. If successful,
      * the application will reload and the admin will now be acting as the other user.
      *
-     * @param {string} username - the end-user to impersonate
+     * @param username - the end-user to impersonate
      */
-    async impersonateAsync(username) {
+    async impersonateAsync(username: string) {
         throwIf(
             !this.canAuthUserImpersonate,
             'User does not have right to impersonate or impersonation is disabled.'
@@ -145,7 +134,7 @@ export class IdentityService extends HoistService {
     //------------------------
     // Implementation
     //------------------------
-    createUser(user, roles) {
+    private createUser(user, roles): HoistUser {
         if (!user) return null;
         user.roles = roles;
         user.hasRole = (role) => user.roles.includes(role);
@@ -154,7 +143,7 @@ export class IdentityService extends HoistService {
         return deepFreeze(user);
     }
 
-    hasGate(gate, user) {
+    private hasGate(gate, user): boolean {
         const gateUsers =  XH.getConf(gate, '').trim(),
             tokens = gateUsers.split(',').map(it => it.trim()),
             groupPattern = /\[([\w-]+)\]/;

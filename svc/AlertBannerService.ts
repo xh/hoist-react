@@ -20,18 +20,18 @@ import {compact, map, trim} from 'lodash';
 export class AlertBannerService extends HoistService {
 
     @managed
-    timer;
+    private timer: Timer;
 
-    get interval() {
+    get interval(): number {
         const conf = XH.getConf('xhAlertBannerConfig', {});
         return (conf.enabled && conf.interval) ? conf.interval * SECONDS : -1;
     }
 
-    get enabled() {
+    get enabled(): boolean {
         return this.interval > 0;
     }
 
-    get lastDismissed() {
+    get lastDismissed(): number {
         return XH.localStorageService.get('xhAlertBanner.lastDismissed');
     }
 
@@ -92,7 +92,7 @@ export class AlertBannerService extends HoistService {
         };
     }
 
-    onClose = () => {
+    private onClose = () => {
         XH.localStorageService.set('xhAlertBanner.lastDismissed', Date.now());
     };
 }

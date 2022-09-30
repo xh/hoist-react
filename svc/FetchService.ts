@@ -36,16 +36,15 @@ export class FetchService extends HoistService {
 
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
 
-    autoAborters = {};
+    private autoAborters = {};
     defaultHeaders = {};
-    defaultTimeout = 30 * SECONDS;
+    defaultTimeout = 30 * SECONDS as any;
 
     /**
      * Set default headers to be sent with all subsequent requests.
-     * @param {(Object|function)} headers - Headers to be sent with all fetch requests,
-     *      or a function to generate.
+     * @param Headers to be sent with all fetch requests, or a function to generate.
      */
-    setDefaultHeaders(headers) {
+    setDefaultHeaders(headers: object|(()=>object)) {
         this.defaultHeaders = headers;
     }
 
@@ -53,19 +52,18 @@ export class FetchService extends HoistService {
      * Set the default timeout for all requests on this service.
      * If not set this value is 30 SECONDS.
      *
-     * @param {(number|Object)} timeout - ms to wait for response before rejecting with a timeout
+     * @param timeout - ms to wait for response before rejecting with a timeout
      *      exception. May also be specified an Object or null. See {@see FetchOptions}.
      */
-    setDefaultTimeout(timeout) {
+    setDefaultTimeout(timeout: number|object) {
         this.defaultTimeout = timeout;
     }
 
     /**
      * Send a request via the underlying fetch API.
-     * @param {FetchOptions} opts
      * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
      */
-    async fetch(opts) {
+    fetch(opts: FetchOptions) {
         return this.managedFetchAsync(
             opts,
             (aborter) => this.fetchInternalAsync(opts, aborter)
@@ -74,10 +72,9 @@ export class FetchService extends HoistService {
 
     /**
      * Send an HTTP request and decode the response as JSON.
-     * @param {FetchOptions} opts
-     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     * @returns {Promise<any>} the decoded JSON object, or null if the response had no content.
      */
-    async fetchJson(opts) {
+    fetchJson(opts: FetchOptions) {
         return this.managedFetchAsync(
             opts,
             async (aborter) => {
@@ -92,46 +89,41 @@ export class FetchService extends HoistService {
 
     /**
      * Send a GET request and decode the response as JSON.
-     * @param {FetchOptions} opts
-     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     * @returns {Promise<any>} the decoded JSON object, or null if the response had no content.
      */
-    async getJson(opts) {
+    getJson(opts: FetchOptions) {
         return this.fetchJson({method: 'GET', ...opts});
     }
 
     /**
      * Send a POST request with a JSON body and decode the response as JSON.
-     * @param {FetchOptions} opts
-     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     * @returns {Promise<any>} the decoded JSON object, or null if the response had no content.
      */
-    async postJson(opts) {
+    postJson(opts: FetchOptions) {
         return this.sendJsonInternalAsync({method: 'POST', ...opts});
     }
 
     /**
      * Send a PUT request with a JSON body and decode the response as JSON.
-     * @param {FetchOptions} opts
-     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     * @returns {Promise<any>} the decoded JSON object, or null if the response had no content.
      */
-    async putJson(opts) {
+    putJson(opts: FetchOptions) {
         return this.sendJsonInternalAsync({method: 'PUT', ...opts});
     }
 
     /**
      * Send a PATCH request with a JSON body and decode the response as JSON.
-     * @param {FetchOptions} opts
-     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     * @returns {Promise<any>} the decoded JSON object, or null if the response had no content.
      */
-    async patchJson(opts) {
+    patchJson(opts: FetchOptions) {
         return this.sendJsonInternalAsync({method: 'PATCH', ...opts});
     }
 
     /**
      * Send a DELETE request with optional JSON body and decode the optional response as JSON.
-     * @param {FetchOptions} opts
-     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     * @returns {Promise<any>} the decoded JSON object, or null if the response had no content.
      */
-    async deleteJson(opts) {
+    deleteJson(opts: FetchOptions) {
         return this.sendJsonInternalAsync({method: 'DELETE', ...opts});
     }
 
@@ -144,11 +136,9 @@ export class FetchService extends HoistService {
      *
      * The fetch may be aborted due to timeout, or a repeated call with the same `autoAbortKey`.
      *
-     * @private
-     * @param {FetchOptions} opts
-     * @param fn - function receiving an abort controller, and returning a Promise<FetchResponse>
+     * @param fn - function receiving an abort controller, and returning a Promise
      */
-    async managedFetchAsync(opts, fn) {
+    private async managedFetchAsync(opts: FetchOptions, fn: (ctl: AbortController)=>any) {
         const {autoAborters, defaultTimeout} = this,
             {autoAbortKey, timeout = defaultTimeout} = opts,
             aborter = new AbortController();
@@ -179,7 +169,7 @@ export class FetchService extends HoistService {
     }
 
 
-    async fetchInternalAsync(opts, aborter) {
+    private async fetchInternalAsync(opts, aborter) {
         const {defaultHeaders} = this;
         let {url, method, headers, body, params} = opts;
         throwIf(!url, 'No url specified in call to fetchService.');
@@ -246,7 +236,7 @@ export class FetchService extends HoistService {
         return ret;
     }
 
-    async maybeReloadForAuthAsync() {
+    private async maybeReloadForAuthAsync() {
         const {appState, configService, localStorageService} = XH;
 
         // Don't interfere with initialization, avoid tight loops, and provide kill switch
@@ -262,7 +252,7 @@ export class FetchService extends HoistService {
         }
     }
 
-    async sendJsonInternalAsync(opts) {
+    private async sendJsonInternalAsync(opts) {
         return this.fetchJson({
             ...opts,
             body: JSON.stringify(opts.body),
@@ -273,7 +263,7 @@ export class FetchService extends HoistService {
         });
     }
 
-    async safeResponseTextAsync(response) {
+    private async safeResponseTextAsync(response) {
         try {
             return await response.text();
         } catch (ignore) {
@@ -281,12 +271,11 @@ export class FetchService extends HoistService {
         }
     }
 
-    qsFilterFn = (prefix, value) => {
+    private qsFilterFn = (prefix, value) => {
         if (isDate(value))      return value.getTime();
         if (isLocalDate(value)) return value.isoString;
         return value;
     };
-
 }
 
 

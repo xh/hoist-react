@@ -17,7 +17,7 @@ import {version as reactVersion} from 'react';
 
 export class EnvironmentService extends HoistService {
 
-    _data = {};
+    private _data: object = {};
 
     async initAsync() {
         const serverEnv = await XH.fetchJson({url: 'xh/environment'}),
@@ -48,22 +48,22 @@ export class EnvironmentService extends HoistService {
         });
     }
 
-    get(key) {
+    get(key: string): any {
         return this._data[key];
     }
 
-    isProduction() {
+    isProduction(): boolean {
         return this.get('appEnvironment') === 'Production';
     }
 
-    isTest() {
+    isTest(): boolean {
         return this.get('appEnvironment') === 'Test';
     }
 
     //------------------------------
     // Implementation
     //------------------------------
-    startVersionChecking() {
+    private startVersionChecking() {
         Timer.create({
             runFn: this.checkAppVersionAsync,
             interval: 'xhAppVersionCheckSecs',
@@ -71,7 +71,7 @@ export class EnvironmentService extends HoistService {
         });
     }
 
-    checkAppVersionAsync = async () => {
+    private checkAppVersionAsync = async () => {
         const data = await XH.fetchJson({url: 'xh/version'}),
             {appVersion, appBuild, shouldUpdate} = data;
 

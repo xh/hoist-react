@@ -32,7 +32,7 @@ export class LocalStorageService extends HoistService {
         }
     }
 
-    get(key, defaultValue) {
+    get(key: string, defaultValue?: any): any {
         const storage = this.getInstance(),
             val = storage.get(key, defaultValue);
 
@@ -40,22 +40,22 @@ export class LocalStorageService extends HoistService {
         return val;
     }
 
-    set(key, value) {
+    set(key: string, value: any) {
         this.getInstance().set(key, value, true);
     }
 
-    apply(key, newProps) {
+    apply(key: string, newProps: object) {
         const val = this.get(key, {}),
             newVal = Object.assign(val, newProps);
 
-        this.set(key, newVal, true);
+        this.set(key, newVal);
     }
 
-    remove(key) {
+    remove(key: string) {
         this.getInstance().remove(key);
     }
 
-    removeIf(predicateFn) {
+    removeIf(predicateFn: (s:string) => boolean) {
         this.keys().forEach(key => {
             if (predicateFn(key)) this.remove(key);
         });
@@ -65,22 +65,22 @@ export class LocalStorageService extends HoistService {
         this.getInstance().clear();
     }
 
-    keys() {
+    keys(): string[] {
         return this.getInstance().keys();
     }
 
-    get isFake() {
+    get isFake(): boolean {
         return store.isFake();
     }
 
     //------------------
     //  Implementation
     //------------------
-    getInstance() {
+    private getInstance() {
         return store.namespace(this.getNamespace());
     }
 
-    getNamespace() {
+    private getNamespace() {
         return `${XH.appCode}.${XH.getUsername()}`;
     }
 }

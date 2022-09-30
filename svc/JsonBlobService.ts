@@ -23,13 +23,12 @@ export class JsonBlobService extends HoistService {
     /**
      * Return the list of blobs visible to the current user.
      *
-     * @param {string} type - reference key for which type of data to list.
-     * @param {boolean} [includeValue] - true to include the full value string for each blob.
+     * @param type - reference key for which type of data to list.
+     * @param [includeValue] - true to include the full value string for each blob.
      */
-    async listAsync({
-        type,
-        includeValue
-    }) {
+    async listAsync(
+        {type, includeValue}: { type: string, includeValue?: boolean }
+    ) {
         return XH.fetchJson({
             url: 'xh/listJsonBlobs',
             params: {type, includeValue}
@@ -37,21 +36,11 @@ export class JsonBlobService extends HoistService {
     }
 
     /**
-     * Saves a new json blob to the server
-     *
-     * @param {string} type - reference key for which type of data this is.
-     * @param {string} name.
-     * @param {(Object|Array)} value - json serializable data to saved.
-     * @param {(Object|Array)} [meta] - json serializable metadata.
-     * @param {string} [description] - optional description.
+     * Saves a new json blob to the server.
      */
-    async createAsync({
-        type,
-        name,
-        value,
-        meta,
-        description
-    }) {
+    async createAsync(
+        {type, name, value, meta, description}: {type: string, name: string, description?: string, value: any, meta?: any}
+    ) {
         return XH.fetchJson({
             url: 'xh/createJsonBlob',
             params: {
@@ -62,15 +51,11 @@ export class JsonBlobService extends HoistService {
 
     /**
      * Modifies an existing json blob
-     *
-     * @param {string} token.
-     * @param {Object} data - modifications to make.
-     * @param {string} [data.name]
-     * @param {(Object|Array)} [data.value]
-     * @param {(Object|Array)} [data.meta]
-     * @param {string} [data.description]
      */
-    async updateAsync(token, {name, value, meta, description}) {
+    async updateAsync(
+        token: string,
+        {name, value, meta, description}: {name?: string, value?: any, meta?: any, description?: string}
+    ) {
         return XH.fetchJson({
             url: 'xh/updateJsonBlob',
             params: {
@@ -82,13 +67,12 @@ export class JsonBlobService extends HoistService {
 
     /**
      * Archives a json blob
-     * @param {string} token.
      */
-    async archiveAsync(token) {
+    async archiveAsync(token: string) {
         return XH.fetchJson({
             url: 'xh/archiveJsonBlob',
             params: {token}
         });
     }
-
 }
+

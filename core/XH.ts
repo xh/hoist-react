@@ -5,12 +5,20 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {p} from '@xh/hoist/cmp/layout';
-import {AppSpec, AppState, elem, Exception, ExceptionHandlerOptions, ExceptionHandler} from './';
+import {
+    HoistService,
+    AppSpec,
+    AppState,
+    elem,
+    Exception,
+    ExceptionHandlerOptions,
+    ExceptionHandler,
+    TrackOptions
+} from './';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable, reaction as mobxReaction} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {
-    BaseService,
     AlertBannerService,
     AutoRefreshService,
     ChangelogService,
@@ -123,11 +131,11 @@ class XHClass {
     // Aliased methods
     // Shortcuts to common core service methods and appSpec properties.
     //----------------------------------------------------------------------------------------------
-    fetch(opts: FetchOptions): Promise<void> {
+    fetch(opts: FetchOptions) {
         return this.fetchService.fetch(opts);
     }
 
-    fetchJson(opts: FetchOptions): Promise<void> {
+    fetchJson(opts: FetchOptions) {
         return this.fetchService.fetchJson(opts);
     }
 
@@ -160,7 +168,7 @@ class XHClass {
         return this.prefService.set(key, val);
     }
 
-    track(opts: object) {
+    track(opts: string|TrackOptions) {
         return this.trackService?.track(opts);
     }
 
@@ -169,11 +177,11 @@ class XHClass {
     }
 
     getUser(): HoistUser {
-        return this.identityService?.getUser() ?? null;
+        return this.identityService?.user ?? null;
     }
 
     getUsername(): String {
-        return this.identityService?.getUsername() ?? null;
+        return this.identityService?.username ?? null;
     }
 
     get isMobileApp(): boolean {
@@ -267,7 +275,7 @@ class XHClass {
      * Therefore, applications should choose a unique name of the form xxxService to avoid naming
      * collisions. If naming collisions are detected, an error will be thrown.
      */
-    async installServicesAsync(...serviceClasses: (new () => BaseService)[]) {
+    async installServicesAsync(...serviceClasses: (new () => HoistService)[]) {
         const svcs = serviceClasses.map(serviceClass => new serviceClass());
         await this.initServicesInternalAsync(svcs);
         svcs.forEach(svc => {
@@ -594,7 +602,7 @@ class XHClass {
     /**
      * Return a collection of models currently 'active' in this application.
      *
-     * This will include all models that have not had the destroy() method
+     * This will include all models that have not had `destroy()`
      * called on them.  Models will be returned in creation order.
      */
     getActiveModels(selector: ModelSelector = '*'): HoistModel[] {
@@ -850,7 +858,7 @@ class XHClass {
         return this.appContainerModel;
     }
 
-    private async initServicesInternalAsync(svcs: BaseService[]) {
+    private async initServicesInternalAsync(svcs: HoistService[]) {
         const promises = svcs.map(it => {
             return withDebug(`Initializing ${it.constructor.name}`, () => {
                 return it.initAsync();
@@ -891,7 +899,7 @@ class XHClass {
                     case AppState.RUNNING:
                         XH.track({
                             category: 'App',
-                            msg: `Loaded ${this.clientAppCode}`,
+                            message: `Loaded ${this.clientAppCode}`,
                             elapsed: now - loadStarted - loginElapsed,
                             data: {
                                 appVersion: this.appVersion,

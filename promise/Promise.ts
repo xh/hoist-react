@@ -95,7 +95,7 @@ export interface IPromise<T> extends Promise<T>{
     /**
      * Track a Promise (with timing) via Hoist activity tracking.
      */
-    track(options: TrackOptions): IPromise<T>;
+    track(options: TrackOptions|string): IPromise<T>;
 }
 
 /**
