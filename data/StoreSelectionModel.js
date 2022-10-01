@@ -31,12 +31,19 @@ export class StoreSelectionModel extends HoistModel {
      * @param {Store} c.store - Store containing the data.
      * @param {string} [c.mode] - one of ['single', 'multiple', 'disabled'].
      */
-    constructor({store, mode = 'single'}) {
+    constructor({
+        store,
+        mode = 'single',
+        xhImpl = false
+    }) {
         super();
         makeObservable(this);
+
         this.store = store;
         this.mode = mode;
         this.addReaction(this.cullSelectionReaction());
+
+        this.xhImpl = xhImpl;
     }
 
     /** @return {StoreRecord[]} - currently selected records. */

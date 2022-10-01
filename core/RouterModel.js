@@ -17,6 +17,7 @@ import browserPlugin from 'router5-plugin-browser';
  * underlying routes, presenting them to the application as a set of MobX observables.
  */
 export class RouterModel extends HoistModel {
+    xhImpl = true;
 
     /** Router5 state object representing the current state. */
     @observable.ref currentState;

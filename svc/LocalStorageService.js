@@ -18,6 +18,7 @@ import store from 'store2';
  * Relied upon by Hoist features such as local preference values and grid state.
  */
 export class LocalStorageService extends HoistService {
+    xhImpl = true;
 
     constructor() {
         super();

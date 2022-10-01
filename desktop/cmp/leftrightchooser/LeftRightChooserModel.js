@@ -98,7 +98,8 @@ export class LeftRightChooserModel extends HoistModel {
         rightGroupingEnabled = true,
         rightGroupingExpanded = true,
         rightEmptyText = null,
-        showCounts = true
+        showCounts = true,
+        xhImpl = false
     }) {
         super();
         makeObservable(this);
@@ -145,7 +146,8 @@ export class LeftRightChooserModel extends HoistModel {
             sortBy: leftSorted ? 'text' : null,
             emptyText: leftEmptyText,
             onRowDoubleClicked: (e) => this.onRowDoubleClicked(e),
-            columns: [leftTextCol, groupCol]
+            columns: [leftTextCol, groupCol],
+            xhImpl: true
         });
 
         this.rightModel = new GridModel({
@@ -154,12 +156,15 @@ export class LeftRightChooserModel extends HoistModel {
             sortBy: rightSorted ? 'text' : null,
             emptyText: rightEmptyText,
             onRowDoubleClicked: (e) => this.onRowDoubleClicked(e),
-            columns: [rightTextCol, groupCol]
+            columns: [rightTextCol, groupCol],
+            xhImpl: true
         });
 
         this.setData(data);
 
         this.addReaction(this.syncSelectionReaction());
+
+        this.xhImpl = xhImpl;
     }
 
     setData(data) {

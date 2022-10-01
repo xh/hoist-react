@@ -21,7 +21,7 @@ export const [RadioInput, radioInput] = hoistCmp.withFactory({
     displayName: 'RadioInput',
     className: 'xh-radio-input',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, Model);
+        return useHoistInputModel(cmp, props, ref, RadioInputModel);
     }
 });
 RadioInput.propTypes = {
@@ -45,7 +45,8 @@ RadioInput.propTypes = {
 //-----------------------
 // Implementation
 //-----------------------
-class Model extends HoistInputModel {
+class RadioInputModel extends HoistInputModel {
+    xhImpl = true;
 
     blur() {
         this.enabledInputs.forEach(it => it.blur());

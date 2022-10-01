@@ -34,6 +34,7 @@ import {never} from '@xh/hoist/promise';
  * via config if needed.
  */
 export class FetchService extends HoistService {
+    xhImpl = true;
 
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
 

@@ -365,6 +365,7 @@ export class GridModel extends HoistModel {
         clicksToEdit = 2,
         highlightRowOnClick = XH.isMobileApp,
         experimental,
+        xhImpl,
         ...rest
     }) {
         super();
@@ -433,7 +434,8 @@ export class GridModel extends HoistModel {
             stripeRows,
             cellBorders,
             showCellFocus,
-            hideHeaders
+            hideHeaders,
+            xhImpl: true
         });
 
         this.colChooserModel = this.parseChooserModel(colChooserModel);
@@ -453,6 +455,8 @@ export class GridModel extends HoistModel {
             run: (isEditing) => this.isInEditingMode = isEditing,
             debounce: 500
         });
+
+        this.xhImpl = xhImpl;
     }
 
     /**
@@ -1490,7 +1494,7 @@ export class GridModel extends HoistModel {
         }
 
         if (isPlainObject(selModel)) {
-            return this.markManaged(new StoreSelectionModel({...selModel, store}));
+            return this.markManaged(new StoreSelectionModel({...selModel, store, xhImpl: true}));
         }
 
         // Assume its just the mode...
@@ -1500,7 +1504,7 @@ export class GridModel extends HoistModel {
         } else if (selModel === null) {
             mode = 'disabled';
         }
-        return this.markManaged(new StoreSelectionModel({mode, store}));
+        return this.markManaged(new StoreSelectionModel({mode, store, xhImpl: true}));
     }
 
     parseFilterModel(filterModel) {

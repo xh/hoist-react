@@ -11,13 +11,15 @@ import {trimToDepth} from '@xh/hoist/utils/js';
 import {compact, find, forIn, head, without} from 'lodash';
 import {isObservableProp, makeObservable} from 'mobx';
 
-const {BOOL, STRING} = FieldType;
+const {AUTO, BOOL, DATE, STRING} = FieldType;
 
 /**
  * Displays a list of current HoistModel and HoistService instances, with the ability to view
  * properties (including reactive updates) for a selected instance.
  */
-export class ModelsModel extends HoistModel {
+export class InstancesModel extends HoistModel {
+    xhImpl = true;
+
     persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.models`};
 
     /** @member {GridModel} */
@@ -28,8 +30,9 @@ export class ModelsModel extends HoistModel {
     propertiesPanelModel;
 
     @bindable @persist showInGroups = true;
-    @bindable observablePropsOnly = false;
-    @bindable showUnderscoreProps = false;
+    @bindable @persist showXhImp = false;
+    @bindable @persist observablePropsOnly = false;
+    @bindable @persist showUnderscoreProps = false;
 
     @bindable.ref propsWatchlist = [];
     @bindable.ref loadedGetters = [];
@@ -48,25 +51,34 @@ export class ModelsModel extends HoistModel {
         this.propertiesPanelModel = new PanelModel({
             defaultSize: 500,
             side: 'right',
-            persistWith: {...this.persistWith, path: 'propertiesPanel'}
+            persistWith: {...this.persistWith, path: 'propertiesPanel'},
+            xhImpl: true
         });
-
-        this.autoLoadPropertiesGrid();
 
         this.addReaction(
             {
                 track: () => this.instancesGridModel.store.records,
-                run: () => this.instancesGridModel.preSelectFirstAsync(),
-                fireImmediately: true
+                run: () => this.instancesGridModel.preSelectFirstAsync()
             },
             {
                 track: () => this.showInGroups,
                 run: (showInGroups) => this.instancesGridModel.setGroupBy(showInGroups ? 'displayGroup' : null)
+            },
+            {
+                track: () => [XH.inspectorService.activeInstances, this.showXhImp],
+                run: ([activeInstances, showXhImpl]) => {
+                    const data = showXhImpl ? activeInstances : activeInstances.filter(it => !it.isXhImpl);
+                    this.instancesGridModel.loadData(data);
+                },
+                fireImmediately: true
             }
         );
+
+        this.autoLoadPropertiesGrid();
     }
 
-    selectModel(xhId) {
+    // TODO - handle request to select xhImpl model if not shown.
+    selectInstance(xhId) {
         const {instancesGridModel} = this,
             {store} = instancesGridModel,
             rec = store.getById(xhId);
@@ -131,7 +143,18 @@ export class ModelsModel extends HoistModel {
         return new GridModel({
             persistWith: {...this.persistWith, path: 'instancesGrid', persistGrouping: false},
             autosizeOptions: {mode: GridAutosizeMode.MANAGED},
-            store: XH.inspectorService.modelInstanceStore,
+            store: {
+                fields: [
+                    {name: 'className', type: STRING},
+                    {name: 'displayGroup', type: STRING},
+                    {name: 'created', type: DATE},
+                    {name: 'isLinked', type: BOOL},
+                    {name: 'isXhImpl', type: BOOL},
+                    {name: 'hasLoadSupport', type: BOOL},
+                    {name: 'lastLoadCompleted', type: DATE},
+                    {name: 'lastLoadException', type: AUTO}
+                ]
+            },
             sortBy: ['created'],
             groupBy: this.showInGroups ? 'displayGroup' : null,
             groupSortFn: (a, b) => {
@@ -178,7 +201,11 @@ export class ModelsModel extends HoistModel {
                 },
                 {field: 'created', align: 'right', renderer: timestampRenderer}
             ],
-            onRowDoubleClicked: ({data: rec}) => this.logInstanceToConsole(rec)
+            rowClassFn: (rec) => {
+                return rec?.data.isXhImpl ? 'xh-impl-row' : null;
+            },
+            onRowDoubleClicked: ({data: rec}) => this.logInstanceToConsole(rec),
+            xhImpl: true
         });
     }
 
@@ -195,7 +222,21 @@ export class ModelsModel extends HoistModel {
                 b = b === 'Watchlist' ? 0 : 1;
                 return a - b;
             },
-            store: {fields: ['xhId', 'property', 'isWatchlistItem', 'isHoistModel', 'isGetter', 'isLoadedGetter']},
+            store: {
+                fields: [
+                    {name: 'xhId', type: STRING},
+                    {name: 'property', type: STRING},
+                    {name: 'displayProperty', displayName: 'Property', type: STRING},
+                    {name: 'displayGroup', type: STRING},
+                    {name: 'valueType', type: STRING},
+                    {name: 'value', type: AUTO},
+                    {name: 'isWatchlistItem', type: BOOL},
+                    {name: 'isObservable', type: BOOL},
+                    {name: 'isHoistModel', type: BOOL},
+                    {name: 'isGetter', type: BOOL},
+                    {name: 'isLoadedGetter', type: BOOL}
+                ]
+            },
             columns: [
                 {
                     ...actionCol,
@@ -219,16 +260,16 @@ export class ModelsModel extends HoistModel {
                     ]
                 },
                 {
-                    field: {name: 'displayProperty', displayName: 'Property', type: STRING},
+                    field: 'displayProperty',
                     width: 200,
                     renderer: (v, {record}) => {
                         return record.data.displayGroup === 'Watchlist' ?
-                            a({item: v, onClick: () => this.selectModel(record.data.xhId)}) :
+                            a({item: v, onClick: () => this.selectInstance(record.data.xhId)}) :
                             v;
                     }
                 },
                 {
-                    field: {name: 'isObservable', type: BOOL},
+                    field: 'isObservable',
                     headerName: Icon.eye(),
                     ...iconCol,
                     renderer: v => v ? Icon.eye({title: 'Observable'}) : ''
@@ -247,14 +288,15 @@ export class ModelsModel extends HoistModel {
                             return a({item: '(...)', onClick: () => this.loadGetter(record)});
                         }
                         if (data.isHoistModel) {
-                            return a({item: v, onClick: () => this.selectModel(v)});
+                            return a({item: v, onClick: () => this.selectInstance(v)});
                         }
                         return JSON.stringify(trimToDepth(v, 2));
                     }
                 },
                 {field: 'displayGroup', hidden: true}
             ],
-            onRowDoubleClicked: ({data: rec}) => this.logPropToConsole(rec)
+            onRowDoubleClicked: ({data: rec}) => this.logPropToConsole(rec),
+            xhImpl: true
         });
     }
 

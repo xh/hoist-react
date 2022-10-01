@@ -55,6 +55,7 @@ export const columnGroupHeader = hoistCmp.factory({
 });
 
 class ColumnGroupHeaderModel extends HoistModel {
+    xhImpl = true;
 
     @bindable isExpanded = true;
 

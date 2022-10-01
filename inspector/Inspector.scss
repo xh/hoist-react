@@ -6,4 +6,8 @@
   .xh-font-family-mono {
     font-size: 0.9em;
   }
+
+  .xh-impl-row .xh-cell-inner-wrapper {
+    color: var(--xh-text-color-muted);
+  }
 }

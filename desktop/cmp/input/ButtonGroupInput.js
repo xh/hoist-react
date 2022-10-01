@@ -29,7 +29,7 @@ export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory({
             props.enableMulti && !props.enableClear,
             'enableClear prop cannot be set to false when enableMulti is true.  Setting ignored.'
         );
-        return useHoistInputModel(cmp, props, ref, Model);
+        return useHoistInputModel(cmp, props, ref, ButtonGroupInputModel);
     }
 });
 ButtonGroupInput.propTypes = {
@@ -60,7 +60,8 @@ ButtonGroupInput.hasLayoutSupport = true;
 //----------------------------------
 // Implementation
 //----------------------------------
-class Model extends HoistInputModel {
+class ButtonGroupInputModel extends HoistInputModel {
+    xhImpl = true;
 
     get enableMulti() {return !!this.componentProps.enableMulti}
     get enableClear() {return !!this.componentProps.enableClear}

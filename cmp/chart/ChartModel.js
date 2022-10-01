@@ -32,12 +32,19 @@ export class ChartModel extends HoistModel {
      * @param {(Object|Object[])} c.series - The initial data series to be displayed.
      * @param {boolean} [c.showContextMenu] - true to showContextMenu.  Defaults to true.  Desktop only.
      */
-    constructor({highchartsConfig, series = [], showContextMenu = true} = {}) {
+    constructor({
+        highchartsConfig,
+        series = [],
+        showContextMenu = true,
+        xhImpl = false
+    } = {}) {
         super();
         makeObservable(this);
+
         this.highchartsConfig = highchartsConfig;
         this.series = castArray(series);
         this.showContextMenu = showContextMenu;
+        this.xhImpl = xhImpl;
     }
 
     /**

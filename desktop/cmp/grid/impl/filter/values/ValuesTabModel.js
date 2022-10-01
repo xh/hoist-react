@@ -12,6 +12,8 @@ import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/
 import {castArray, difference, isEmpty, partition, uniq, without} from 'lodash';
 
 export class ValuesTabModel extends HoistModel {
+    xhImpl = true;
+
     /** @member {ColumnHeaderFilterModel} */
     headerFilterModel;
 
@@ -242,7 +244,8 @@ export class ValuesTabModel extends HoistModel {
                         return renderer ? renderer(value, context) : value;
                     }
                 }
-            ]
+            ],
+            xhImpl: true
         });
     }
 }

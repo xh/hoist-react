@@ -4,14 +4,14 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, lookup, XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {clamp, throttle} from 'lodash';
-import {lookup} from '../../../../../core';
 import {PanelModel} from '../../PanelModel';
 
 export class DraggerModel extends HoistModel {
+    xhImpl = true;
 
     /** @member {PanelModel} */
     @lookup(PanelModel) panelModel;

@@ -124,7 +124,7 @@ export class PanelModel extends HoistModel {
         showSplitterCollapseButton = showSplitter && collapsible,
         showHeaderCollapseButton = true,
         showModalToggleButton = true,
-        ...rest
+        xhImpl = false
     }) {
         super();
         makeObservable(this);
@@ -201,6 +201,8 @@ export class PanelModel extends HoistModel {
                 run: (state) => this.provider.write(state)
             });
         }
+
+        this.xhImpl = xhImpl;
     }
 
     //----------------------

@@ -21,7 +21,7 @@ export const [TextArea, textArea] = hoistCmp.withFactory({
     displayName: 'TextArea',
     className: 'xh-text-area',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, Model);
+        return useHoistInputModel(cmp, props, ref, TextAreaInputModel);
     }
 });
 TextArea.propTypes = {
@@ -57,8 +57,8 @@ TextArea.hasLayoutSupport = true;
 //-----------------------
 // Implementation
 //-----------------------
-
-class Model extends HoistInputModel {
+class TextAreaInputModel extends HoistInputModel {
+    xhImpl = true;
 
     get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);

@@ -128,6 +128,7 @@ export const columnHeader = hoistCmp.factory({
 
 
 class ColumnHeaderModel extends HoistModel {
+    xhImpl = true;
 
     get gridModel()     {return this.componentProps.gridModel}
     get xhColumn()      {return this.componentProps.xhColumn}

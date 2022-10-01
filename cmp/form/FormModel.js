@@ -82,7 +82,8 @@ export class FormModel extends HoistModel {
             fields = [],
             initialValues = {},
             disabled = false,
-            readonly = false
+            readonly = false,
+            xhImpl = false
         } = {}) {
         super();
         makeObservable(this);
@@ -101,7 +102,12 @@ export class FormModel extends HoistModel {
 
         // Set the owning formModel *last* after all fields in place with data.
         // This (currently) kicks off the validation and other reactivity.
-        forOwn(this.fields, f => f.formModel = this);
+        forOwn(this.fields, f => {
+            f.formModel = this;
+            f.xhImpl = xhImpl;
+        });
+
+        this.xhImpl = xhImpl;
     }
 
     /**

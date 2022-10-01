@@ -62,7 +62,8 @@ export class TabModel extends HoistModel {
         showRemoveAction = false,
         content,
         refreshMode,
-        renderMode
+        renderMode,
+        xhImpl = false
     }) {
         super();
         makeObservable(this);
@@ -82,6 +83,8 @@ export class TabModel extends HoistModel {
         this._refreshMode = refreshMode;
 
         this.refreshContextModel = new ManagedRefreshContextModel(this);
+        this.refreshContextModel.xhImpl = true;
+        this.xhImpl = xhImpl;
     }
 
     activate() {

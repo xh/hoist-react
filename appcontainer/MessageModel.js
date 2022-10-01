@@ -16,6 +16,7 @@ import {isEmpty} from 'lodash';
  * @private
  */
 export class MessageModel extends HoistModel {
+    xhImpl = true;
 
     // Immutable properties
     title;

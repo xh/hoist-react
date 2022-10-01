@@ -28,6 +28,7 @@ import {cloneDeep, debounce, forEach, isEmpty, isEqual, isNil, pickBy} from 'lod
  * associate with a particular machine or browser (e.g. sizing or layout related options).
  */
 export class PrefService extends HoistService {
+    xhImpl = true;
 
     _data = {};
     _updates = {};

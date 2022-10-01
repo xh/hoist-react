@@ -56,6 +56,7 @@ import './HoistInput.scss';
  * {@see useHoistInputModel}.
  */
 export class HoistInputModel extends HoistModel {
+    xhImpl = true;
 
     /**
      * Does this input have the focus?

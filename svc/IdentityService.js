@@ -15,6 +15,7 @@ import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
  * actual underlying user.
  */
 export class IdentityService extends HoistService {
+    xhImpl = true;
 
     _authUser;
     _apparentUser;

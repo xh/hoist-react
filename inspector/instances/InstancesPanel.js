@@ -1,19 +1,20 @@
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler, hframe} from '@xh/hoist/cmp/layout';
+import {div, filler, hframe, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {ModelsModel} from '@xh/hoist/inspector/models/ModelsModel';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
+import {InstancesModel} from '@xh/hoist/inspector/instances/InstancesModel';
+import {popover} from '@xh/hoist/kit/blueprint';
 
 
-export const modelsPanel = hoistCmp.factory({
-    model: creates(ModelsModel),
+export const instancesPanel = hoistCmp.factory({
+    model: creates(InstancesModel),
 
-    /** @param {ModelsModel} model */
+    /** @param {InstancesModel} model */
     render({model}) {
         const {propertiesPanelModel} = model,
             {collapsed} = propertiesPanelModel;
@@ -45,7 +46,7 @@ export const modelsPanel = hoistCmp.factory({
 });
 
 const instanceGridBar = hoistCmp.factory(
-    /** @param {ModelsModel} */
+    /** @param {InstancesModel} */
     ({model}) => {
         const {modelInstanceGridModel} = model;
         return toolbar({
@@ -53,7 +54,20 @@ const instanceGridBar = hoistCmp.factory(
             items: [
                 switchInput({
                     bind: 'showInGroups',
-                    label: 'Show in groups'
+                    label: 'Grouped'
+                }),
+                '-',
+                switchInput({
+                    bind: 'showXhImp',
+                    label: 'xhImpl'
+                }),
+                popover({
+                    target: Icon.info(),
+                    interactionKind: 'hover',
+                    content: div({
+                        className: 'xh-pad',
+                        item: span('Enable to show instances created as part of internal Hoist model/component implementations.')
+                    })
                 }),
                 filler(),
                 gridCountLabel({unit: 'instance', gridModel: modelInstanceGridModel}),
@@ -65,7 +79,7 @@ const instanceGridBar = hoistCmp.factory(
 );
 
 const propertiesGridBar = hoistCmp.factory(
-    /** @param {ModelsModel} */
+    /** @param {InstancesModel} */
     ({model}) => {
         const {propertiesGridModel} = model;
         return toolbar({

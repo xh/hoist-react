@@ -36,7 +36,7 @@ export const [NumberInput, numberInput] = hoistCmp.withFactory({
     displayName: 'NumberInput',
     className: 'xh-number-input',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, Model);
+        return useHoistInputModel(cmp, props, ref, NumberInputModel);
     }
 });
 NumberInput.propTypes = {
@@ -125,7 +125,8 @@ NumberInput.hasLayoutSupport = true;
 //-----------------------
 // Implementation
 //-----------------------
-class Model extends HoistInputModel {
+class NumberInputModel extends HoistInputModel {
+    xhImpl = true;
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
@@ -218,7 +219,7 @@ class Model extends HoistInputModel {
         value = value.toString();
         value = value.replace(/,/g, '');
 
-        if (Model.shorthandValidator.test(value)) {
+        if (NumberInputModel.shorthandValidator.test(value)) {
             const num = +value.substring(0, value.length - 1),
                 lastChar = value.charAt(value.length - 1).toLowerCase();
 

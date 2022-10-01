@@ -53,7 +53,7 @@ export const [Select, select] = hoistCmp.withFactory({
     displayName: 'Select',
     className: 'xh-select',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, Model);
+        return useHoistInputModel(cmp, props, ref, SelectInputModel);
     }
 });
 
@@ -209,7 +209,8 @@ Select.hasLayoutSupport = true;
 //-----------------------
 // Implementation
 //-----------------------
-class Model extends HoistInputModel {
+class SelectInputModel extends HoistInputModel {
+    xhImpl = true;
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.

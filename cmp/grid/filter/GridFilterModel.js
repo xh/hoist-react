@@ -15,8 +15,10 @@ import {GridFilterFieldSpec} from './GridFilterFieldSpec';
 
 /**
  * Model for managing a Grid's column filters.
+ * @package
  */
 export class GridFilterModel extends HoistModel {
+    xhImpl = true;
 
     /** @member {GridModel} */
     gridModel;

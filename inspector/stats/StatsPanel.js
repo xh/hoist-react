@@ -2,11 +2,11 @@ import {chart} from '@xh/hoist/cmp/chart';
 import {grid} from '@xh/hoist/cmp/grid';
 import {code, div, filler, span} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
-import {StatsModel} from '@xh/hoist/inspector/stats/StatsModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
+import {StatsModel} from '@xh/hoist/inspector/stats/StatsModel';
 import {popover} from '@xh/hoist/kit/blueprint';
 
 export const statsPanel = hoistCmp.factory({
@@ -27,7 +27,8 @@ export const statsPanel = hoistCmp.factory({
                     item: chart(),
                     model: {
                         side: 'bottom',
-                        defaultSize: 200
+                        defaultSize: 200,
+                        xhImpl: true
                     }
                 })
             ],

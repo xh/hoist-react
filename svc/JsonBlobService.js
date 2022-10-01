@@ -12,6 +12,7 @@ import {XH, HoistService} from '@xh/hoist/core';
  * Server-side support is provided by hoist-core.
  */
 export class JsonBlobService extends HoistService {
+    xhImpl = true;
 
     async getAsync(token) {
         return XH.fetchJson({
