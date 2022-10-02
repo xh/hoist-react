@@ -37,9 +37,9 @@ export class InspectorService extends HoistService {
     /** @member {boolean} - true to start processing model stats and show the Inspector UI. */
     @observable @persist active = false;
 
-    /** @member {InstanceData[]} - when active, holds lightly processed data on all active models. */
+    /** @member {InspectorInstanceData[]} - info on active services and models (when active). */
     @observable.ref activeInstances = [];
-    /** @member {InspectorStat[]} - when active, holds timestamped model counts w/memory usage. */
+    /** @member {InspectorStat[]} - timestamped model counts w/memory usage (when active). */
     @observable.ref stats = [];
 
     /** @member {Timer} **/
@@ -166,7 +166,7 @@ export class InspectorService extends HoistService {
 }
 
 /**
- * @typedef {Object} InstanceData
+ * @typedef {Object} InspectorInstanceData
  * @property {string} className
  * @property {string} displayGroup
  * @property {Date} created
