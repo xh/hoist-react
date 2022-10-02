@@ -100,6 +100,7 @@ export class InspectorService extends HoistService {
         this.clearStats();
     }
 
+    @action
     clearStats() {
         this.stats = [];
     }
