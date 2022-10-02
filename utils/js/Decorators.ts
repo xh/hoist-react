@@ -13,9 +13,9 @@ import {withDebug} from './LogUtils';
  * Decorates a class method so that it is debounced by the specified duration.
  * Based on https://github.com/bvaughn/debounce-decorator.
  *
- * @param {number} duration - milliseconds to debounce.
+ * @param duration - milliseconds to debounce.
  */
-export function debounced(duration) {
+export function debounced(duration: number) {
     return function(target, key, descriptor) {
         const baseFn = descriptor.value;
         throwIf(!isFunction(baseFn), '@debounced must be applied to a class method.');

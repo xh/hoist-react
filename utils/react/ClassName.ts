@@ -14,12 +14,12 @@ import classNames from 'classnames';
  * Components should call this to produce a combined class list and apply it to their outermost
  * (or otherwise most appropriate) rendered component.
  *
- * @param {string} baseName - base class name for the component.
- * @param {Array} props - component props
- * @param {string[]} [extraNames] - optional, additional class names to append.
+ * @param baseName - base class name for the component.
+ * @param props - component props
+ * @param [extraNames] - optional, additional class names to append.
  *
- * @returns {string} - Concatenated space-delimited class name appropriate for html className attribute
+ * @returns Concatenated space-delimited class name appropriate for html className attribute
  */
-export function getClassName(baseName, props, ...extraNames) {
+export function getClassName(baseName: string, props: any, ...extraNames: string[]): string {
     return classNames(baseName, props.className, ...extraNames);
 }

@@ -9,7 +9,7 @@ import {filterConsecutive} from '../js';
 /**
  * @private
  *
- * A function to be passed to `array.filter()`, than excludes consecutive separators
+ * A function to be passed to `array.filter()`, that excludes consecutive separators
  * for both Blueprint and AgGrid menus.
  */
 export function filterConsecutiveMenuSeparators() {
@@ -23,7 +23,7 @@ export function filterConsecutiveMenuSeparators() {
 /**
  * @private
  *
- * A function to be passed to `array.filter()`, than excludes consecutive separators
+ * A function to be passed to `array.filter()`, that excludes consecutive separators
  * for both toolbars.
  */
 export function filterConsecutiveToolbarSeparators() {

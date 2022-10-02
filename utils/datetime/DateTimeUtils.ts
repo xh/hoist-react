@@ -21,16 +21,16 @@ export const
  * Is a Date or UTC time stamp older than a certain amount?
  * Returns true if input time is null.
  */
-export function olderThan(t, millis) {
+export function olderThan(t: Date|number, millis: number) {
     return !t || t < Date.now() - millis;
 }
 
 /** Returns midnight browser local time for the provided date, or current date. */
-export function startOfDay(date = new Date()) {
+export function startOfDay(date: Date = new Date()) {
     return moment(date).startOf('day').toDate();
 }
 
 /** Returns 11:59:59pm browser local time for the provided date, or current date. */
-export function endOfDay(date = new Date()) {
+export function endOfDay(date: Date = new Date()) {
     return moment(date).endOf('day').toDate();
 }

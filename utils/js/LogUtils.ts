@@ -16,43 +16,37 @@ import {castArray, isString} from 'lodash';
  * or completes to finish its logging. The actual object returned by the tracked function will
  * always be returned directly to the caller.
  *
- * @param {(string[]|string)} msgs
- * @param {function} fn
- * @param {(Object|string)} [source] - class, function or string to label the source of the message
+ * @param msgs - message(s) to output after the execution "completes"
+ * @param fn - function to execute
+ * @param [source] - class, function or string to label the source of the message
  */
-export function withInfo(msgs, fn, source) {
+export function withInfo<T>(msgs: string[]|string, fn: () => T, source?: any): T {
     return loggedDo(msgs, fn, source, 'info');
 }
 
 /**
  * Track a function execution with console.debug.
  * @see withInfo
- *
- * @param {(string[]|string)} msgs
- * @param {function} fn
- * @param {(Object|string)} [source] - class, function or string to label the source of the message
  */
-export function withDebug(msgs, fn, source) {
+export function withDebug<T>(msgs: string[]|string, fn: () => T, source?: any): T {
     return loggedDo(msgs, fn, source, 'debug');
 }
 
 /**
  * Log a message with console.log.
  *
- * @param {(string[]|string)} msgs
- * @param {(Object|string)} [source] - class, function or string to label the source of the message
+ * @param msgs - message(s) to output
+ * @param [source] - class, function or string to label the source of the message
  */
-export function logInfo(msgs, source) {
+export function logInfo(msgs: string[]|string, source?: any) {
     return loggedDo(msgs, null, source, 'info');
 }
 
 /**
  * Log a message with console.debug.
- *
- * @param {(string[]|string)} msgs
- * @param {(Object|string)} [source] - class, function or string to label the source of the message
+ * @see logInfo
  */
-export function logDebug(msgs, source) {
+export function logDebug(msgs: string[]|string, source?: any) {
     return loggedDo(msgs, null, source, 'debug');
 }
 

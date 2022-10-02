@@ -7,12 +7,13 @@
 import {observeResize, observeVisibleChange} from '@xh/hoist/utils/js';
 /* eslint-disable react-hooks/exhaustive-deps */
 import {useCallback, useEffect, useRef} from 'react';
+// @ts-ignore
+import {DOMRect} from 'dom';
 
 /**
  * Hook to run a function once after component has been mounted.
- * @param {function} fn
  */
-export function useOnMount(fn) {
+export function useOnMount(fn:() => void) {
     useEffect(
         () => {fn(); return undefined},
         []
@@ -21,9 +22,8 @@ export function useOnMount(fn) {
 
 /**
  * Hook to run a function once after component has been unmounted.
- * @param {function} fn
  */
-export function useOnUnmount(fn) {
+export function useOnUnmount(fn: () => void) {
     useEffect(
         () => fn,
         []
@@ -35,19 +35,21 @@ export function useOnUnmount(fn) {
  *
  * @see observeResize() for more details.
  *
- * @param {function} fn - receives a DOMRect containing the dimensions of the DOM element.
- * @param {Object} [c] - configuration object
- * @param {number} [c.debounce] - milliseconds to debounce
- * @returns {function} - callback ref to be placed on target component
+ * @param fn - receives a DOMRect containing the dimensions of the DOM element.
+ * @param [opts.debounce] - milliseconds to debounce
+ * @returns callback ref to be placed on target component
  */
-export function useOnResize(fn, {debounce} = {}) {
+export function useOnResize(
+    fn: (rect: DOMRect) => any,
+    opts: {debounce?: number} = {}
+): (node: any) => void {
     const observer = useRef(null);
     useOnUnmount(() => observer.current?.disconnect());
 
     return useCallback(node => {
         observer.current?.disconnect();
-        if (node) observer.current = observeResize(fn, node, {debounce});
-    }, [debounce]);
+        if (node) observer.current = observeResize(fn, node, opts);
+    }, [opts.debounce]);
 }
 
 /**
@@ -55,10 +57,10 @@ export function useOnResize(fn, {debounce} = {}) {
  *
  * @see observeVisibleChange() for more details.
  *
- * @param {function} fn - receives a boolean signifying if visible.
- * @returns {function} - callback ref to be placed on target component
+ * @param fn - receives a boolean signifying if visible.
+ * @returns callback ref to be placed on target component
  */
-export function useOnVisibleChange(fn) {
+export function useOnVisibleChange(fn: (visible: boolean) => any): (node: any) => void {
     const observer = useRef(null);
     useOnUnmount(() => observer.current?.disconnect());
 
@@ -71,12 +73,12 @@ export function useOnVisibleChange(fn) {
 /**
  * Hook to run a function when a DOM element scrolls.
  *
- * @param {function} fn - receives the scroll event.
- * @returns {function} - callback ref to be placed on target component
+ * @param fn - receives the scroll event.
+ * @returns callback ref to be placed on target component
  */
-export function useOnScroll(fn) {
+export function useOnScroll(fn: (ev: Event) => any): (node: any) => void {
     return useCallback(node => {
-        if (node) node.addEventListener('scroll', fn);
+        node?.addEventListener('scroll', fn);
     }, []);
 }
 
@@ -92,7 +94,7 @@ export function useOnScroll(fn) {
  *      presented value.  If evaluates to true, the cached value will be returned rather
  *      than the presented value.  If null, any cached value will always be returned.
  */
-export function useCached(value, equalsFn) {
+export function useCached<T>(value: T, equalsFn: (prev: T, curr: T) => boolean): T {
     const cache = useRef(value),
         cachedVal = cache.current;
     if (cachedVal !== value && equalsFn && !equalsFn(cachedVal, value)) {

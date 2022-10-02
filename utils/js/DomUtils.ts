@@ -6,12 +6,14 @@
  */
 import {debounce as lodashDebounce, isFinite} from 'lodash';
 import ResizeObserver from 'resize-observer-polyfill';
+// @ts-ignore
+import {DOMRect, Element, Event} from 'dom';
 
 /**
  * Is this element visible and not within a hidden sub-tree (e.g. hidden tab)?
  * Based on the underlying css 'display' property of all ancestor properties.
  */
-export function isDisplayed(elem) {
+export function isDisplayed(elem: Element): boolean {
     if (!elem) return false;
     while (elem) {
         if (elem.style.display === 'none') return false;
@@ -23,12 +25,12 @@ export function isDisplayed(elem) {
 /**
  * Observe when a dom node's size changes.
  *
- * @param {function} fn - function to be called with the co-ordinates of the node.
- * @param {Object} node - The DOM node to observe
- * @param {Object} [c] - configuration object
- * @param {number} [c.debounce] - milliseconds to debounce
- * @returns {ResizeObserver} - ResizeObserver used to implement this function.
- *      be sure to call disconnect() on this when finished.
+ * @param fn - function to be called with the co-ordinates of the node.
+ * @param node - The DOM node to observe
+ * @param [c] - configuration object
+ * @param  [c.debounce] - milliseconds to debounce
+ * @returns ResizeObserver used to implement this function. Be sure to call disconnect()
+ *      on this when finished.
  *
  * Unlike the raw ResizeObserver implementation, this function will not run the
  * callback when the dimensions are both changed to 0 or is changed back from 0
@@ -37,7 +39,11 @@ export function isDisplayed(elem) {
  *
  *  For a hook that conveniently wraps this function see useOnResize().
  */
-export function observeResize(fn, node, {debounce}) {
+export function observeResize(
+    fn: (size: DOMRect) => any,
+    node: Element,
+    opts: {debounce?: number} = {}
+): ResizeObserver {
     let prevWidth = null, prevHeight = null;
     let wrappedFn = (e) => {
         const {contentRect} = e[0],
@@ -51,8 +57,8 @@ export function observeResize(fn, node, {debounce}) {
             fn(contentRect);
         }
     };
-    if (isFinite(debounce) && debounce >= 0) {
-        wrappedFn = lodashDebounce(wrappedFn, debounce);
+    if (isFinite(opts.debounce) && opts.debounce >= 0) {
+        wrappedFn = lodashDebounce(wrappedFn, opts.debounce);
     }
 
     const ret = new ResizeObserver(wrappedFn);
@@ -63,15 +69,14 @@ export function observeResize(fn, node, {debounce}) {
 /**
  * Observe when a dom node's visibility changes.
  *
- * @param {function} fn - function that takes a single argument with visibility.
- * @param {Object} node - The DOM node to observe
- * @returns {ResizeObserver} - ResizeObserver used to implement this function.
- *      be sure to call disconnect() on this when finished.
+ * @param fn - function that takes a single argument with visibility.
+ * @param node - The DOM node to observe
+ * @returns ResizeObserver used to implement this function. Be sure to call disconnect() on this
+ *      when finished.
  *
  * For a hook that conveniently wraps this function see useOnVisibleChange().
- *
  */
-export function observeVisibleChange(fn, node) {
+export function observeVisibleChange(fn: (visible: boolean) => any, node: Element): ResizeObserver {
     let prevVisible = null;
     const ret = new ResizeObserver(e => {
         const {width, height} = e[0].contentRect,
@@ -90,19 +95,15 @@ export function observeVisibleChange(fn, node) {
 /**
  * A convenience handler that will call 'stopPropagation'
  * and 'preventDefault' on an event.
- *
- * @param {Event} e
  */
-export function consumeEvent(e) {
+export function consumeEvent(e: Event) {
     e.stopPropagation();
     e.preventDefault();
 }
 
 /**
  * A convenience handler that will 'stopPropagation' on an event.
- *
- * @param {Event} e
  */
-export function stopPropagation(e) {
+export function stopPropagation(e: Event) {
     e.stopPropagation();
 }

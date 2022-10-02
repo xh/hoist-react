@@ -24,12 +24,12 @@ mixin(_inflection);
 /**
  * Get a cached value on an object, creating it if it does not yet exist.
  *
- * @param {Object} obj - object of interest. Must have writable properties.
- * @param {string} key - key (property name) to cache value at in object.
- * @param {function} fn - function to generate value if missing.
- * @returns {*} value stored at key
+ * @param obj - object of interest. Must have writable properties.
+ * @param key - key (property name) to cache value at in object.
+ * @param fn - function to generate value if missing.
+ * @returns value stored at key
  */
-export function getOrCreate(obj, key, fn) {
+export function getOrCreate<V>(obj: any, key: any, fn: () => V): V {
     if (obj instanceof Map || obj instanceof WeakMap) {
         const val = obj.get(key);
         if (!isUndefined(val)) return val;
@@ -48,7 +48,7 @@ export function getOrCreate(obj, key, fn) {
  * Return the first defined argument - intended to allow for multiple levels of fallback values or
  * expressions when evaluating function parameters or configuration object properties.
  */
-export function withDefault(...args) {
+export function withDefault<T>(...args: T[]): T {
     return args.find(it => it !== undefined);
 }
 
@@ -59,8 +59,8 @@ export function withDefault(...args) {
  * could be problematic - e.g. application or library classes (such as `moment`!) which rely on
  * their internal state remaining mutable to function.
  */
-const FREEZABLE_TYPES = new Set(['Object', 'Array', 'Map', 'Set']);
-export function deepFreeze(obj) {
+const FREEZABLE_TYPES: Set<String> = new Set(['Object', 'Array', 'Map', 'Set']);
+export function deepFreeze(obj: object) {
     if (!isObjectLike(obj) || !FREEZABLE_TYPES.has(obj.constructor.name)) return obj;
 
     const propNames = Object.getOwnPropertyNames(obj);
@@ -75,10 +75,9 @@ export function deepFreeze(obj) {
  * Output a deep copy of an object or array up to a given depth, beyond which nested contents will
  * be replaced by a placeholder string.
  *
- * @param {Object|Array} obj
- * @param {number} depth - maximum depth within the object tree that will be returned.
+ * @param [depth] - maximum depth within the object tree that will be returned.
  */
-export function trimToDepth(obj, depth = 1) {
+export function trimToDepth(obj: any, depth: number = 1): any {
     // Return primitives and nils directly - handles recursive calls below.
     if (!isObject(obj)) return obj;
 
@@ -103,10 +102,8 @@ export function trimToDepth(obj, depth = 1) {
 
 /**
  * Determine if an object/value can be parsed successfully into JSON.
- * @param {*} obj
- * @returns {boolean}
  */
-export function isJSON(obj) {
+export function isJSON(obj: any): boolean {
     try {
         JSON.parse(obj);
         return true;
@@ -117,10 +114,8 @@ export function isJSON(obj) {
 
 /**
  * Throw an exception if a condition evaluates as truthy.
- * @param {*} condition
- * @param {string} message
  */
-export function throwIf(condition, message) {
+export function throwIf(condition: any, message: string) {
     if (condition) {
         throw Exception.create(message);
     }
@@ -128,10 +123,8 @@ export function throwIf(condition, message) {
 
 /**
  * Log a warning to the console if a condition evaluates as truthy.
- * @param {*} condition
- * @param {string} message
  */
-export function warnIf(condition, message) {
+export function warnIf(condition: any, message: string) {
     if (condition) {
         console.warn(message);
     }
@@ -139,26 +132,33 @@ export function warnIf(condition, message) {
 
 /**
  * Log an error to the console if a condition evaluates as truthy.
- * @param {*} condition
- * @param {string} message
  */
-export function errorIf(condition, message) {
+export function errorIf(condition: any, message: string) {
     if (condition) {
         console.error(message);
     }
 }
 
+export interface APIWarnOptions {
+    /**
+     * If provided and undefined, this method will be a no-op.
+     * Useful for testing if a parameter has been provided in caller.
+     */
+    test?: boolean;
+
+    /** Version when this API will no longer be supported or this warning should be removed. */
+    v?: string;
+
+    /** An additional message. Can contain suggestions for alternatives. */
+    msg?: string;
+}
+
 /**
  * Document and prevent usage of a removed parameter.
  *
- * @param {string} name - the name of the removed parameter
- * @param {Object} opts
- * @param {*} [opts.test] -  If provided and undefined, this method will be a no-op.
- *      Useful for testing if a parameter has been provided in caller.
- * @param {string} [opts.v] - version when this exception should be removed.
- * @param {string} [opts.msg] - an additional message.  Can contain suggestions for alternatives.
+ * @param name - the name of the removed parameter
  */
-export function apiRemoved(name, opts) {
+export function apiRemoved(name: string, opts: APIWarnOptions = {}) {
     if ('test' in opts && isUndefined(opts.test)) return;
 
     const msg = opts.msg ? ` ${opts.msg}.`: '';
@@ -168,15 +168,10 @@ export function apiRemoved(name, opts) {
 /**
  * Document and warn on usage of a deprecated API
  *
- * @param {string} name - the name of the removed parameter
- * @param {Object} opts
- * @param {*} [opts.test] -  If provided and undefined, this method will be a no-op.
- *      Useful for testing if a parameter has been provided to caller.
- * @param {string} [opts.v] - version when this support will be removed.
- * @param {string} [opts.msg] - an additional message, e.g. suggestions for alternatives.
+ * @param name - the name of the deprecated parameter
  */
 const _seenWarnings  = {};
-export function apiDeprecated(name, opts) {
+export function apiDeprecated(name: string, opts: APIWarnOptions = {}) {
     if ('test' in opts && isUndefined(opts.test)) return;
 
     const v = opts.v ?? 'a future release',
@@ -192,66 +187,59 @@ export function apiDeprecated(name, opts) {
  * Throw an exception if the provided object or collection is empty, as per lodash isEmpty().
  * @link https://lodash.com/docs/latest#isEmpty
  *
- * @param {*} obj - object or array to test.
- * @param {string} [exceptionMessage] - error to throw if empty.
+ * @param obj - object or array to test.
+ * @param [exceptionMessage] - error to throw if empty.
  */
-export function ensureNotEmpty(obj, exceptionMessage) {
-    exceptionMessage = withDefault(exceptionMessage,
-        'The provided object or collection cannot be empty.');
+export function ensureNotEmpty(obj: any, exceptionMessage?: string) {
+    exceptionMessage = exceptionMessage ?? 'The provided object or collection cannot be empty.';
     throwIf(isEmpty(obj), exceptionMessage);
 }
 
 /**
  * Throw an exception if an array contains any duplicate, non-unique items.
  *
- * @param {Array} arr - the array to test.
- * @param {string} [exceptionMessage] - error to throw if non-unique values found.
+ * @param arr - the array to test.
+ * @param [exceptionMessage] - error to throw if non-unique values found.
  */
-export function ensureUnique(arr, exceptionMessage) {
-    exceptionMessage = withDefault(exceptionMessage,
-        'All items in the provided array must be unique.');
+export function ensureUnique(arr: [], exceptionMessage?: string) {
+    exceptionMessage = exceptionMessage ?? 'All items in the provided array must be unique.';
     throwIf(arr.length != uniq(arr).length, exceptionMessage);
 }
 
 /**
  * Throw an exception if an array contains any items with non-unique values for the provided key.
  *
- * @param {Array} arr - the array to test.
- * @param {string} uniqueKey - the property that must hold a unique value for each item.
- * @param {string} [exceptionMessage] - error to throw if non-unique values found.
+ * @param arr - the array to test.
+ * @param uniqueKey - the property that must hold a unique value for each item.
+ * @param [exceptionMessage] - error to throw if non-unique values found.
  */
-export function ensureUniqueBy(arr, uniqueKey, exceptionMessage) {
-    exceptionMessage = withDefault(exceptionMessage,
-        `Multiple items in the provided array have the same ${uniqueKey} - must be unique.`);
+export function ensureUniqueBy(arr: [], uniqueKey: string, exceptionMessage?: string) {
+    exceptionMessage = exceptionMessage ?? `Multiple items in the provided array have the same ${uniqueKey} - must be unique.`;
     throwIf(arr.length != uniqBy(arr, uniqueKey).length, exceptionMessage);
 }
 
 /**
  * Returns the singular version of the plural word passed to it.
- *
- * @param {string} string - the string to singularize.
  */
-export function singularize(string) {
-    return _inflection.singularize(string);
+export function singularize(s: string) {
+    return _inflection.singularize(s);
 }
 
 /**
  * Returns the plural version of the singular word passed to it.
  *
- * @param {string} string - the string to pluralize.
- * @param {int} [count] - if provided, will pluralize to match this number
- * @param {boolean} [includeCount] - include count in the output
+ * @param string - the string to pluralize.
+ * @param [count] - if provided, will pluralize to match this number
+ * @param [includeCount] - include count in the output
  */
-export function pluralize(string, count, includeCount) {
-    return _inflection.pluralize(string, count, includeCount);
+export function pluralize(s: string, count?: number, includeCount?: boolean) {
+    return _inflection.pluralize(s, count, includeCount);
 }
 
 /**
- * Remove when lodash adds Set/Map support
- * @param {Set|Map} collection
- * @param {function} fn
+ * Remove when lodash adds Set/Map support.
  */
-export function findIn(collection, fn) {
+export function findIn<T>(collection: Set<T>|Map<string, T>, fn: (it: T) => boolean): T {
     for (let it of collection.values()) {
         if (fn(it)) return it;
     }
@@ -266,10 +254,10 @@ export function findIn(collection, fn) {
  *
  * Useful for removing separators that have become extraneous when the items they were separating
  * have been removed.
- *
- * @returns {Function}
  */
-export function filterConsecutive(predicate) {
+export function filterConsecutive<T>(
+    predicate: (it: T) => boolean
+): (it: T, idx: number, arr: T[]) => boolean {
     return (it, idx, arr) => {
         if (predicate(it)) {
 
@@ -290,9 +278,7 @@ export function filterConsecutive(predicate) {
 
 /**
  * Return value passed or the result of executing it, if it is a function.
- *
- * @param {(*|function)} v
  */
-export function executeIfFunction(v) {
+export function executeIfFunction(v: any) {
     return isFunction(v) ? v() : v;
 }

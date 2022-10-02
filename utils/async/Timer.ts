@@ -28,36 +28,22 @@ import {isBoolean, isFinite, isFunction, isNil, isString, pull} from 'lodash';
  */
 export class Timer {
 
-    static _timers = [];
+    static _timers: Timer[] = [];
 
-    runFn = null;
-    interval = null;
-    timeout = null;
-    delay = null;
-    scope = null;
+    runFn: () => any = null;
+    interval: number|(() => number) = null;
+    timeout: number|(() => number) = null;
+    delay: number|boolean = null;
+    scope: any = null;
+    intervalUnits: number = null;
+    timeoutUnits: number = null;
 
-    cancelled = false;
-    isRunning = false;
-    lastRun = null;
+    cancelled: boolean = false;
+    isRunning: boolean = false;
+    lastRun: Date = null;
 
     /**
      * Create a new Timer.
-     *
-     * Main entry point, to get a new, managed timer.
-     *
-     * @param {function} runFn - return a promise to allow timer to prevent overlapping runs.
-     * @param {(number|function|string)} interval - interval between runs, in milliseconds.
-     *      if <=0 job will not run.  If specified as a function, will be re-evaluated after every
-     *      timer run.  If specified as a string, value will be assumed to be a config, and will be
-     *      looked up before every run.
-     * @param {(number|function|string)} [timeout] - timeout for action in milliseconds.
-     *      Like interval, this value may be specified as a function or a config key.
-     *      Set to null for no timeout.
-     * @param {number} intervalUnits -- units that the interval arg is specified in. Default is ms.
-     * @param {number} timeoutUnits -- units that the timeout arg is specified in. Default is ms.
-     * @param {(number|boolean)} [delay] - initial delay, in milliseconds.  If specified as true,
-     *      the value of the delay will be the same as interval.  Default to false.
-     * @param {Object} [scope] - scope to run callback in
      */
     static create({
         runFn,
@@ -67,12 +53,10 @@ export class Timer {
         timeoutUnits = MILLISECONDS,
         delay = false,
         scope = this
-    }) {
-        const ret = new Timer({
-            runFn, interval, timeout, intervalUnits, timeoutUnits, delay, scope
-        });
-        this._timers.push(ret);
-        return ret;
+    }: TimerSpec) {
+        const t = new Timer({runFn, interval, timeout, intervalUnits, timeoutUnits, delay, scope});
+        this._timers.push(t);
+        return t;
     }
 
 
@@ -98,9 +82,9 @@ export class Timer {
     /**
      * Change the interval of this timer.
      *
-     * @param {number} interval between runs, in milliseconds. if <=0 job will not run.
+     * @param interval between runs, in milliseconds. if <=0 job will not run.
      */
-    setInterval(interval) {
+    setInterval(interval: number) {
         this.interval = this.parseDynamicVal(interval);
     }
 
@@ -119,12 +103,12 @@ export class Timer {
         wait(this.delay).then(() => this.heartbeatAsync());
     }
 
-    cancelInternal() {
+    private cancelInternal() {
         this.cancelled = true;
         this.runFn = null;
     }
 
-    async heartbeatAsync() {
+    private async heartbeatAsync() {
         const {cancelled, isRunning, intervalMs, lastRun} = this;
         if (!cancelled && !isRunning && intervalMs > 0 && olderThan(lastRun, intervalMs)) {
             await this.doRunAsync();
@@ -134,10 +118,10 @@ export class Timer {
         this.heartbeatAsync();
     }
 
-    async doRunAsync() {
+    private async doRunAsync() {
         this.isRunning = true;
         try {
-            await this.internalRunFn().timeout(this.timeoutMs);
+            await (this.internalRunFn() as any).timeout(this.timeoutMs);
         } catch (e) {
             console.error('Error executing timer:', e);
         }
@@ -145,20 +129,20 @@ export class Timer {
         this.lastRun = new Date();
     }
 
-    async internalRunFn() {
+    private async internalRunFn() {
         return this.runFn(); // Wrap to ensure we return a promise.
     }
 
-    parseDynamicVal(val) {
+    private parseDynamicVal(val) {
         return isString(val) ? () => XH.configService.get(val) : val;
     }
 
-    parseDelay(val) {
+    private parseDelay(val) {
         if (isBoolean(val)) return val ? this.intervalMs : 0;
         return isFinite(val) ? val : 0;
     }
 
-    get intervalMs() {
+    private get intervalMs() {
         const {interval, intervalUnits} = this;
         if (isNil(interval)) return null;
         let ret = (isFunction(interval) ? interval() : interval) * intervalUnits;
@@ -169,7 +153,7 @@ export class Timer {
         return ret;
     }
 
-    get timeoutMs() {
+    private get timeoutMs() {
         const {timeout, timeoutUnits} = this;
         if (isNil(timeout)) return null;
         return (isFunction(timeout) ? timeout() : timeout) * timeoutUnits;
@@ -178,4 +162,44 @@ export class Timer {
     destroy() {
         this.cancel();
     }
+}
+
+
+export interface TimerSpec {
+
+    /**
+     * Function to run.
+     * For async activity, return a promise to allow timer to prevent overlapping runs.
+     */
+    runFn: () => any;
+
+    /**
+     * Interval between runs, in milliseconds.
+     * If <=0 job will not run.  If specified as a function, will be re-evaluated after every
+     * timer run.  If specified as a string, value will be assumed to be a config, and will be
+     * looked up before every run.
+     */
+    interval: number|(() => number)|string;
+
+    /**
+     * Timeout for action in milliseconds.
+     * Like interval, this value may also be specified as a function or a config key.
+     * Set to null for no timeout.
+     */
+    timeout?: number|(() => number)|string;
+
+    /** Units that the interval arg is specified in. Default is ms. */
+    intervalUnits?: number;
+
+    /** Units that the timeout arg is specified in. Default is ms. */
+    timeoutUnits?: number;
+
+    /**
+     * Initial delay, in milliseconds.
+     * If specified as true, the value of the delay will be the same as interval.  Default to false.
+     */
+    delay?: number|boolean;
+
+    /** Scope to run runFn in. */
+    scope?: any;
 }

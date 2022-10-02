@@ -40,7 +40,7 @@ import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
  * that afforded by the underlying flexbox styles. In particular, it accepts flex and sizing props
  * as raw numbers rather than strings.
  */
-export function getLayoutProps(props) {
+export function getLayoutProps(props: any): any {
 
     // Harvest all keys of interest
     const ret = pick(props, allKeys);
@@ -67,7 +67,7 @@ export function getLayoutProps(props) {
 /**
  * Return all non-layout related props found in props.
  */
-export function getNonLayoutProps(props) {
+export function getNonLayoutProps(props: any): any {
     return omit(props, allKeys);
 }
 
@@ -75,7 +75,7 @@ export function getNonLayoutProps(props) {
 /**
  * Split a set of props into layout and non-layout props.
  */
-export function splitLayoutProps(props) {
+export function splitLayoutProps(props: any): any {
     const layoutProps = getLayoutProps(props);
     return [
         layoutProps,

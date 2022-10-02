@@ -8,17 +8,15 @@ import semver from 'semver';
 
 /**
  * Check if a version string falls within a range
- * @return boolean
  */
-export function checkVersion(version, minVersion, maxVersion) {
+export function checkVersion(version: string, minVersion: string, maxVersion: string): boolean {
     return checkMinVersion(version, minVersion) && checkMaxVersion(version, maxVersion);
 }
 
 /**
  * Check if a version string meets a minimum version
- * @return boolean
  */
-export function checkMinVersion(version, minVersion) {
+export function checkMinVersion(version: string, minVersion: string): boolean {
     return (
         version &&
         minVersion &&
@@ -32,9 +30,8 @@ export function checkMinVersion(version, minVersion) {
 
 /**
  * Check if a version string meets a maximum version
- * @return boolean
  */
-export function checkMaxVersion(version, maxVersion) {
+export function checkMaxVersion(version: string, maxVersion: string): boolean {
     return (
         version &&
         maxVersion &&
@@ -48,10 +45,10 @@ export function checkMaxVersion(version, maxVersion) {
 
 /**
  * Normalizes a Java/Maven style x.0-SNAPSHOT version to a semver compatible x.0.0-SNAPSHOT string.
- * @param {string} version
- * @return {string} - normalized version, if input matched as above, or input version unmodified.
+ * @param version
+ * @return normalized version, if input matched as above, or input version unmodified.
  */
-export function normalizeVersion(version) {
+export function normalizeVersion(version: string): string {
     const isTwoDigitSnap = /^\d+\.0-SNAPSHOT$/.test(version);
     return isTwoDigitSnap ? version.replace('-SNAPSHOT', '.0-SNAPSHOT') : version;
 }

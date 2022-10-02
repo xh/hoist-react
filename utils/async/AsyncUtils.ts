@@ -24,16 +24,16 @@ import {wait} from '@xh/hoist/promise';
  * call to `fn` and is instead for the opposite use case, where fn is *synchronous*. If looking to
  * run an async operation over a collection, consider a simple and blocking for...of loop.
  *
- * @param {Iterable} collection - items to iterate over
- * @param {function} fn - called with each item.
- * @param {Object} [opts] - additional options.
- * @param {number} [opts.waitAfter] - interval in ms after which the loop should pause and wait.
- *      If the loop completes before this interval has passed, no waits will be inserted. Default 50ms.
- * @param {number} [opts.waitFor] - wait time in ms for each pause. The default of 0ms should be
- *      sufficient to allow an event loop cycle to run.
+ * @param collection - items to iterate over
+ * @param fn - called with each item.
+ * @param [opts] - additional options.
  * @returns {Promise<void>}
  */
-export async function forEachAsync(collection, fn, opts) {
+export async function forEachAsync<T>(
+    collection: Iterable<T>,
+    fn: (val: T, idx: number, collection: Iterable<T>) => void,
+    opts?: {waitAfter?: number, waitFor?: number}
+) {
     const iterator = collection[Symbol.iterator]();
     let curr = iterator.next(), idx = 0;
     return whileAsync(
@@ -48,16 +48,18 @@ export async function forEachAsync(collection, fn, opts) {
 
 /**
  * As with `forEachAsync()` above, but in the form of a `while` loop.
- * @param {function} conditionFn - called before each iteration; return true to continue loop.
- * @param {function} fn - called without arguments for each iteration.
- * @param {Object} [opts] - additional options.
- * @param {number} [opts.waitAfter] - interval in ms after which the loop should pause and wait.
- *      If the loop completes before this interval has passed, no waits will be inserted. Default 50ms
- * @param {number} [opts.waitFor] - wait time in ms for each pause. The default of 0ms should be
- *      sufficient to allow an event loop cycle to run.
+ * @param conditionFn - called before each iteration; return true to continue loop.
+ * @param fn - called without arguments for each iteration.
+ * @param [opts] - additional options.
  * @returns {Promise<void>}
  */
-export async function whileAsync(conditionFn, fn, {waitAfter = 50, waitFor = 0} = {}) {
+export async function whileAsync(
+    conditionFn: () => boolean,
+    fn: () => void,
+    opts?: AsyncLoopOptions
+) {
+
+    const {waitAfter = 50, waitFor = 0} = opts ?? {};
 
     // Fallback to basic loop when doc hidden: no user benefit, and throttling causes outsize waits
     if (document.hidden) {
@@ -76,3 +78,16 @@ export async function whileAsync(conditionFn, fn, {waitAfter = 50, waitFor = 0} 
     }
 }
 
+export interface AsyncLoopOptions {
+    /**
+     * Interval in ms after which the loop should pause and wait. If the loop completes before
+     * this interval has passed, no waits will be inserted. Default 50ms.
+     */
+    waitAfter?: number;
+
+    /**
+     * Wait time in ms for each pause. The default of 0ms should be sufficient to allow an event
+     * loop cycle to run.
+     */
+    waitFor?: number;
+}

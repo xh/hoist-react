@@ -45,7 +45,6 @@ import {
     throwIf,
     withDebug
 } from '@xh/hoist/utils/js';
-import {TaskObserver} from '@xh/hoist/utils/async';
 import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import {createRoot} from 'react-dom/client';
 import parser from 'ua-parser-js';
@@ -54,7 +53,7 @@ import {ToastModel} from '../appcontainer/ToastModel';
 import {BannerModel} from '../appcontainer/BannerModel';
 import '../styles/XH.scss';
 import {ModelSelector, HoistModel, RefreshContextModel} from './model';
-import {HoistAppModel, RouterModel, BannerSpec, ToastSpec, MessageSpec, HoistUser} from './';
+import {HoistAppModel, RouterModel, BannerSpec, ToastSpec, MessageSpec, HoistUser, TaskObserver} from './';
 
 const MIN_HOIST_CORE_VERSION = '14.0';
 
