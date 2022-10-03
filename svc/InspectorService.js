@@ -105,6 +105,7 @@ export class InspectorService extends HoistService {
         this.stats = [];
     }
 
+    @action
     sync() {
         if (!this.active) return;
 
@@ -134,6 +135,7 @@ export class InspectorService extends HoistService {
 
     _prevModelCount = 0;
 
+    @action
     updateStats() {
         if (!this.active) return;
 
