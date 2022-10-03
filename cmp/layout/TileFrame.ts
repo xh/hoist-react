@@ -4,13 +4,12 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, HoistModel, WithLayoutProps} from '@xh/hoist/core';
 import {frame, box} from '@xh/hoist/cmp/layout';
 import {useOnResize} from '@xh/hoist/utils/react';
 import {useState, useLayoutEffect} from 'react';
 import {minBy, isEqual} from 'lodash';
 import composeRefs from '@seznam/compose-react-refs';
-import PT from 'prop-types';
 import {Children} from 'react';
 
 import './TileFrame.scss';
@@ -39,7 +38,7 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
         maxTileHeight,
         onLayoutChange,
         ...props
-    }, ref) {
+    }: TileFrameProps, ref) {
         const localModel = useLocalModel(LocalModel),
             [width, setWidth] = useState(),
             [height, setHeight] = useState();
@@ -83,35 +82,33 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
     }
 });
 
-TileFrame.propTypes = {
+export interface TileFrameProps extends WithLayoutProps {
+
     /**
      * Desired tile width / height ratio (i.e. desiredRatio: 2 == twice as wide as tall).
      * The container will strive to meet this ratio, but the final ratio may vary.
      * Defaults to 1 (i.e. square tiles)
      */
-    desiredRatio: PT.number,
+    desiredRatio: number;
 
     /** The space between tiles (in px) */
-    spacing: PT.number,
+    spacing: number;
 
     /** Min tile width (in px). */
-    minTileWidth: PT.number,
+    minTileWidth: number;
 
     /** Max tile width (in px). */
-    maxTileWidth: PT.number,
+    maxTileWidth: number;
 
     /** Min tile height (in px).*/
-    minTileHeight: PT.number,
+    minTileHeight: number;
 
     /** Max tile height (in px).*/
-    maxTileHeight: PT.number,
+    maxTileHeight: number;
 
-    /**
-     * Callback triggered when the layout configuration changes.
-     * Receives the layout object {rows, cols, tileWidth, tileHeight} as its sole argument.
-     */
-    onLayoutChange: PT.func
-};
+    /** Callback triggered when the layout configuration changes.*/
+    onLayoutChange: (layout: {rows: number, cols: number, tileWidth: number, tileHeight: number}) => any;
+}
 
 class LocalModel extends HoistModel {
 

@@ -27,7 +27,7 @@ import {each} from 'lodash';
  * @param [selector] - selector to identify model to be returned.
  * @returns model or null if no matching model found.
  */
-export function useContextModel(selector: ModelSelector = '*'): HoistModel {
+export function useContextModel<T extends HoistModel>(selector: ModelSelector<T> = '*'): T {
     const modelLookup = useContext(ModelLookupContext),
         [ret] = useState(() => modelLookup?.lookupModel(selector) ?? null);
     return ret;
@@ -39,7 +39,7 @@ export function useContextModel(selector: ModelSelector = '*'): HoistModel {
  *
  * @param [spec] - class of HoistModel to create, or a function to call to generate one.
  */
-export function useLocalModel(spec?: HoistModelClass | (() => HoistModel)): HoistModel {
+export function useLocalModel<T extends HoistModel>(spec?: HoistModelClass<T> | (() => T)): T {
     const [ret] = useState(() => {
         const s = spec as any;
         if (!s) return null;

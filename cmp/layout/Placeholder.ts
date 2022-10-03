@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, WithLayoutProps} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
 
 import './Placeholder.scss';
@@ -20,8 +20,11 @@ export const [Placeholder, placeholder] = hoistCmp.withFactory({
     model: false, memo: false, observer: false,
     className: 'xh-placeholder',
 
-    render(props, ref) {
-        return box({...props, ref});
+    render(props: WithLayoutProps, ref) {
+        return box({
+            ...props,
+            ref
+        });
     }
 });
 hoistCmp._errorCmp = placeholder;

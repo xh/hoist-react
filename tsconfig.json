@@ -5,7 +5,7 @@
     "moduleResolution": "Node",
     "allowSyntheticDefaultImports":  true,
     "resolveJsonModule":  true,
-    "baseUrl": ".",
+    "jsx": "react";
     "paths": {
       "@xh/hoist/*": ["./*"]
     },

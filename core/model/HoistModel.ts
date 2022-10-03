@@ -202,6 +202,6 @@ export class HoistModel extends HoistBase implements Loadable {
     }
 }
 
-export interface HoistModelClass {
-    new(...args: any[]): HoistModel;
+export interface HoistModelClass<T extends HoistModel> {
+    new(...args: any[]): T;
 }

@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, WithLayoutProps} from '@xh/hoist/core';
 import {box} from './Box';
 
 /**
@@ -17,7 +17,7 @@ export const [Viewport, viewport] = hoistCmp.withFactory({
 
     className: 'xh-viewport',
 
-    render(props) {
+    render(props: WithLayoutProps) {
         return box({
             ...props,
             top: 0,

@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, WithLayoutProps} from '@xh/hoist/core';
 import {box} from './Box';
 
 /**
@@ -17,7 +17,7 @@ export const [Spacer, spacer] = hoistCmp.withFactory({
 
     className: 'xh-spacer',
 
-    render(props) {
+    render(props: WithLayoutProps) {
         return box({
             ...props,
             flex: 'none'
@@ -33,7 +33,7 @@ export const [Filler, filler] = hoistCmp.withFactory({
     model: false, observer: false,
     className: 'xh-filler',
 
-    render(props) {
+    render(props: WithLayoutProps) {
         return box({
             ...props,
             flex: 'auto'

@@ -26,8 +26,8 @@ import {ModelPublishMode, ModelSpec, HoistModel, ModelSelector, ensureIsSelector
  *      closest context model, without specifying any particular class.
  * @param opts - additional options
  */
-export function uses(
-    selector: ModelSelector,
+export function uses<T extends HoistModel>(
+    selector: ModelSelector<T>,
     {
         fromContext = true,
         publishMode = ModelPublishMode.DEFAULT,
@@ -67,11 +67,11 @@ export interface UsesOptions {
 //------------------
 // Implementation
 //------------------
-class UsesSpec extends ModelSpec {
+class UsesSpec<T extends HoistModel> extends ModelSpec {
 
-    selector;
-    createFromConfig;
-    createDefault;
+    selector: ModelSelector<T>;
+    createFromConfig: boolean;
+    createDefault: boolean;
 
     constructor(selector, fromContext, publishMode, createFromConfig, createDefault, optional) {
         super(fromContext, publishMode, optional);

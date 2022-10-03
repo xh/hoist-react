@@ -18,12 +18,12 @@ import {throwIf} from '@xh/hoist/utils/js';
  *  - boolean
  *  - function taking a model and returning any of the above.
  */
-export type ModelSelector = (HoistModelClass|string|boolean|((model: HoistModel) => any));
+export type ModelSelector<T extends HoistModel = HoistModel> = (HoistModelClass<T>|string|boolean|((model: HoistModel) => any));
 
 /**
  * Ensure an object is a ModelSelector, or throw.
  */
-export function ensureIsSelector(s: ModelSelector) {
+export function ensureIsSelector(s: any) {
     const isFunc = isFunction(s),
         msg = 'A valid subclass of HoistModel, a function, or "*" is required as a selector.' +
             'Functional form may take a HoistModel and return a boolean, or take no arguments and ' +
@@ -39,7 +39,7 @@ export function ensureIsSelector(s: ModelSelector) {
 /**
  * Format a ModelSelector for debugging purposes.
  */
-export function formatSelector(selector: ModelSelector) {
+export function formatSelector(selector: ModelSelector): string {
     if (isString(selector)) return selector;
     if (isFunction(selector)) {
         let sel:any = selector;

@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, WithLayoutProps} from '@xh/hoist/core';
 import {box} from './Box';
 
 /**
@@ -19,7 +19,7 @@ export const [Frame, frame] = hoistCmp.withFactory({
     displayName: 'Frame',
     model: false, memo: false, observer: false,
 
-    render(props, ref) {
+    render(props: WithLayoutProps, ref) {
         return box({ref, ...props, flex: 'auto'});
     }
 });
@@ -29,7 +29,7 @@ export const [VFrame, vframe] = hoistCmp.withFactory({
     model: false, memo: false, observer: false,
     className: 'xh-vframe',
 
-    render(props, ref) {
+    render(props: WithLayoutProps, ref) {
         return box({
             ref,
             ...props,
@@ -44,7 +44,7 @@ export const [HFrame, hframe] = hoistCmp.withFactory({
     model: false, memo: false, observer: false,
     className: 'xh-hframe',
 
-    render(props, ref) {
+    render(props: WithLayoutProps, ref) {
         return box({
             ref,
             ...props,

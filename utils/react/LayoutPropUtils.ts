@@ -7,6 +7,52 @@
 import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
 
 
+export interface LayoutProps {
+
+    margin?: string|number;
+    marginTop?: string|number;
+    marginRight?: string|number;
+    marginBottom?: string|number;
+    marginLeft?: string|number;
+
+    padding?: string|number;
+    paddingTop?: string|number;
+    paddingRight?: string|number;
+    paddingBottom?: string|number;
+    paddingLeft?: string|number;
+
+    height?: string|number;
+    minHeight?: string|number;
+    maxHeight?: string|number;
+    width?: string|number;
+    minWidth?: string|number;
+    maxWidth?: string|number;
+
+    flex?: string|number;
+    flexBasis?: string|number;
+    flexDirection?: string|number;
+    flexGrow?: string|number;
+    flexShrink?: string|number;
+    flexWrap?: string|number;
+
+    alignItems?: string;
+    alignSelf?: string;
+    alignContent?: string;
+    justifyContent?: string;
+
+    overflow?: string;
+    overflowX?: string;
+    overflowY?: string;
+
+    top?: string|number;
+    left?: string|number;
+    position?: string;
+    display?: string
+}
+
+// TODO: Define this as the inverse of object above
+export type NonLayoutProps = any;
+
 /**
  * These utils support accepting the CSS styles enumerated below as top-level props of a Component,
  * and are typically accessed via the `@LayoutSupport` mixin (for class-based components) or the
@@ -40,10 +86,10 @@ import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
  * that afforded by the underlying flexbox styles. In particular, it accepts flex and sizing props
  * as raw numbers rather than strings.
  */
-export function getLayoutProps(props: any): any {
+export function getLayoutProps(props: any): LayoutProps {
 
     // Harvest all keys of interest
-    const ret = pick(props, allKeys);
+    const ret: LayoutProps = pick(props, allKeys);
 
     // flexXXX: convert raw number to string
     const flexConfig = pick(ret, flexKeys);
@@ -67,19 +113,18 @@ export function getLayoutProps(props: any): any {
 /**
  * Return all non-layout related props found in props.
  */
-export function getNonLayoutProps(props: any): any {
-    return omit(props, allKeys);
+export function getNonLayoutProps(props: any): NonLayoutProps {
+    return omit(props, allKeys) as NonLayoutProps;
 }
-
 
 /**
  * Split a set of props into layout and non-layout props.
  */
-export function splitLayoutProps(props: any): any {
+export function splitLayoutProps(props: any): [LayoutProps, NonLayoutProps] {
     const layoutProps = getLayoutProps(props);
     return [
         layoutProps,
-        isEmpty(layoutProps) ? props : getNonLayoutProps(props)
+        (isEmpty(layoutProps) ? props : getNonLayoutProps(props)) as NonLayoutProps
     ];
 }
 

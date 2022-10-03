@@ -4,8 +4,8 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {hoistCmp, WithLayoutProps} from '@xh/hoist/core';
+import {splitLayoutProps, LayoutProps} from '@xh/hoist/utils/react';
 import {merge} from 'lodash';
 import {div} from './Tags';
 
@@ -23,7 +23,7 @@ export const [Box, box] = hoistCmp.withFactory({
     displayName: 'Box',
     model: false, memo: false, observer: false,
 
-    render(props, ref) {
+    render(props: WithLayoutProps, ref) {
         // Note `model` destructured off of non-layout props to avoid setting model as a bogus DOM
         // attribute. This low-level component does not lookup a model from context, but it may
         // easily be passed one from a parent that has not properly managed its own props.
@@ -48,7 +48,7 @@ export const [VBox, vbox] = hoistCmp.withFactory({
     model: false, memo: false, observer: false,
     className: 'xh-vbox',
 
-    render(props, ref) {
+    render(props: LayoutProps, ref) {
         return box({
             ref,
             ...props,
@@ -62,7 +62,7 @@ export const [HBox, hbox] = hoistCmp.withFactory({
     model: false, memo: false, observer: false,
     className: 'xh-hbox',
 
-    render(props, ref) {
+    render(props: LayoutProps, ref) {
         return box({
             ref,
             ...props,

@@ -32,10 +32,7 @@ import {createElement, ComponentClass, FunctionComponent, isValidElement, ReactN
  *
  * {@see elem} for a generic function that will consume this format as well.
  */
-export interface ElemSpec {
-
-    /** Standard React Props for this object*/
-    [prop: string]: unknown;
+export type ElemSpec<P> = P & {
 
     /** Child Element(s). Equivalent provided as Rest Arguments to React.createElement.*/
     items?: ReactNode|ReactNode[];
@@ -53,10 +50,11 @@ export interface ElemSpec {
  *
  * @param type - React Component or string representing an HTML element.
  * @param spec - element spec.
- * @return ReactElement
  */
-export function elem(type: ComponentClass|FunctionComponent|string, spec: ElemSpec): ReactElement {
-
+export function elem<P>(
+    type: ComponentClass<P>|FunctionComponent<P>|string,
+    spec: ElemSpec<P>
+): ReactElement<P> {
     const {omit, item, items, ...props} = spec;
 
     // 1) Convenience omission syntax.
@@ -74,7 +72,7 @@ export function elem(type: ComponentClass|FunctionComponent|string, spec: ElemSp
         }
     });
 
-    return createElement(type, props, ...children);
+    return createElement(type, props as P, ...children);
 }
 
 /**
@@ -85,10 +83,10 @@ export function elem(type: ComponentClass|FunctionComponent|string, spec: ElemSp
  * passed to the new Element.  This latter case is fully equivalent to specifying `{items: [...]}`
  * and is useful when no attributes need to be applied directly to the Element.
  */
-export type ElemFactory =
-        ((spec: ElemSpec) => ReactElement) &
-        ((children: ReactNode[]) => ReactElement) &
-        ((...children: ReactNode[]) => ReactElement);
+export type ElemFactory<P={}> =
+        ((spec: ElemSpec<P>) => ReactElement<P>) &
+        ((children: ReactNode[]) => ReactElement<P>) &
+        ((...children: ReactNode[]) => ReactElement<P>);
 /**
  * Create an ElementFactory for a specific Component type.
  *
@@ -98,7 +96,7 @@ export type ElemFactory =
  * HoistComponent -- `hoistCmp.withFactory` will generate and return the factory for you.
  * Use this function for generating factories for Components provided by external APIs.
  */
-export function elemFactory(type: FunctionComponent|ComponentClass|string): ElemFactory {
+export function elemFactory<P>(type: FunctionComponent<P>|ComponentClass<P>|string): ElemFactory<P> {
     const ret = function(...args) {
         return elem(type, normalizeArgs(args));
     };

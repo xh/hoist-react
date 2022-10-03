@@ -23,7 +23,10 @@ import {HoistModel, HoistModelClass, ModelPublishMode, ModelSpec} from './';
  * @param spec - HoistModel Class to construct, or a function returning a concrete HoistModel instance.
  * @param opts - additional options
  */
-export function creates(spec: HoistModelClass | (() => HoistModel), opts: CreatesOptions): ModelSpec {
+export function creates<T extends HoistModel>(
+    spec: HoistModelClass<T> | (() => T),
+    opts: CreatesOptions
+): ModelSpec {
     return new CreatesSpec(spec, opts?.publishMode ?? ModelPublishMode.DEFAULT);
 }
 
@@ -32,12 +35,13 @@ export interface CreatesOptions {
     publishMode?: string;
 }
 
+
 //------------------
 // Implementation
 //------------------
-class CreatesSpec extends ModelSpec {
+class CreatesSpec<T extends HoistModel> extends ModelSpec {
 
-    createFn;
+    createFn: () => T;
 
     constructor(spec, publishMode) {
         super(false, publishMode, false);

@@ -28,8 +28,8 @@ export function getReactElementName(obj: any): string {
  * @param [addProps] -- optional additional props to apply to the element.  These will override
  *      any existing props placed on the element, and should be used with care.
  */
-export function elementFromContent(
-    content: ReactElement|FunctionComponent|ElemFactory|(() => ReactElement),
+export function elementFromContent<P>(
+    content: ReactElement<P>|FunctionComponent<P>|ElemFactory<P>|(() => ReactElement<P>),
     addProps?: object
 ): ReactElement {
     let c = content as any;
