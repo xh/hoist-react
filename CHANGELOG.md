@@ -26,12 +26,18 @@
   APIs (unlikely), no other changes should be required.
 * The deprecated method `XH.setDarkTheme` has been removed. Use `XH.setTheme` instead.
 
+### 🐞 Bug Fixes
+
+* Boolean filterChooser fields with enableValues=false will no longer suggest true for 'false'.
+
 ### ⚙️ Technical
 
 * `HoistComponents` no longer mutate the props object passed to them in React production mode. This
   was not causing noticeable application issues, but could result in a component's base CSS class
   being applied multiple times to its DOM element.
-* GridModel will once again immediately sync data with its underlying ag-Grid component. This
+* New check within service initialization to ensure that app service classes extend `HoistService`
+  as required. (Has always been the expectation, but was not previously enforced.)
+* `GridModel` will once again immediately sync data with its underlying ag-Grid component. This
   reverses a v50.0.0 change that introduced a minimal debounce in order to work around an ag-Grid
   rendering bug. The ag-Grid bug has been resolved, and this workaround is no longer needed.
 * `GridExportService` has improved support for columns of `FieldType.AUTO` and for columns with

@@ -54,12 +54,12 @@ export class BaseFilterFieldSpec extends HoistBase {
      *      a supported set based on the fieldType.
      * @param {(Store|View)} [c.source] - Used to source matching data `Field` and extract
      *      values if configured.
-     * @param {boolean} [c.enableValues] - true to provide interfaces and auto-complete options
-     *      with enumerated matches for creating '=' or '!=' filters. Defaults to true for
-     *      enumerable fieldTypes.
      * @param {boolean} [c.forceSelection] - true to require value entered to be an available value
      *      for '=' and '!=' operators. Defaults to false.
      * @param {*[]} [c.values] - explicit list of available values for this field.
+     * @param {boolean} [c.enableValues] - true to provide interfaces and auto-complete options
+     *      with enumerated matches for creating '=' or '!=' filters. Defaults to true for
+     *      enumerable fieldTypes. Always true if 'values' provided or if fieldType is BOOL.
      */
     constructor({
         field,
@@ -79,10 +79,10 @@ export class BaseFilterFieldSpec extends HoistBase {
         this.fieldType = fieldType ?? sourceField?.type ?? FieldType.AUTO;
         this.displayName = displayName ?? sourceField?.displayName ?? genDisplayName(field);
         this.ops = this.parseOperators(ops);
-        this.enableValues = enableValues ?? this.isEnumerableByDefault;
         this.forceSelection = forceSelection ?? false;
         this.values = values ?? (this.isBoolFieldType ? [true, false] : null);
         this.hasExplicitValues = !isEmpty(this.values);
+        this.enableValues = this.hasExplicitValues || (enableValues ?? this.isEnumerableByDefault);
     }
 
     /**
