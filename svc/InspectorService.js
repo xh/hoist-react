@@ -105,19 +105,15 @@ export class InspectorService extends HoistService {
         this.stats = [];
     }
 
-    @action
     sync() {
         if (!this.active) return;
-
-        // Explicit access to keys() here ensure we trigger this autorun on set composition change.
-        HoistModel._activeModels.keys();
 
         const models = [
             ...XH.getActiveModels(),
             ...XH.getServices()
         ];
 
-        this.activeInstances = models.map(model => {
+        this.setActiveInstances(models.map(model => {
             const className = model.constructor.name;
             return {
                 id: model.xhId,
@@ -130,7 +126,12 @@ export class InspectorService extends HoistService {
                 lastLoadCompleted: model.lastLoadCompleted,
                 lastLoadException: model.lastLoadException
             };
-        });
+        }));
+    }
+
+    @action
+    setActiveInstances(ai) {
+        this.activeInstances = ai;
     }
 
     _prevModelCount = 0;
