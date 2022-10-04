@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {ModelPublishMode, ModelSpec, HoistModel, ModelSelector, ensureIsSelector} from './';
+import {ModelPublishMode, HoistModel, ModelSelector, ensureIsSelector} from './';
 
 /**
  * Returns a ModelSpec to define how a functional HoistComponent should source its primary backing
@@ -35,7 +35,7 @@ export function uses<T extends HoistModel>(
         createDefault = false,
         optional = false
     }: UsesOptions = {}
-): ModelSpec {
+): UsesSpec<T> {
     return new UsesSpec(selector, fromContext, publishMode, createFromConfig, createDefault, optional);
 }
 
@@ -64,20 +64,20 @@ export interface UsesOptions {
     optional?: boolean;
 }
 
-//------------------
-// Implementation
-//------------------
-class UsesSpec<T extends HoistModel> extends ModelSpec {
+export class UsesSpec<T extends HoistModel> {
 
+    fromContext: boolean;
+    publishMode: string;
+    optional: boolean;
     selector: ModelSelector<T>;
     createFromConfig: boolean;
     createDefault: boolean;
 
     constructor(selector, fromContext, publishMode, createFromConfig, createDefault, optional) {
-        super(fromContext, publishMode, optional);
-
         ensureIsSelector(selector);
-
+        this.fromContext = fromContext;
+        this.publishMode = publishMode;
+        this.optional = optional;
         this.selector = selector;
         this.createFromConfig = createFromConfig;
         this.createDefault = createDefault;

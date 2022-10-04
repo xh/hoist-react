@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, WithLayoutProps} from '@xh/hoist/core';
+import {hoistCmp, BoxProps} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
 
 import './Placeholder.scss';
@@ -15,12 +15,12 @@ import './Placeholder.scss';
  * Intended as an alternative to masking or other approaches when a portion of an application's
  * layout is not yet ready to be rendered - e.g. a detail panel without a current record selection.
  */
-export const [Placeholder, placeholder] = hoistCmp.withFactory({
+export const [Placeholder, placeholder] = hoistCmp.withFactory<BoxProps>({
     displayName: 'Placeholder',
     model: false, memo: false, observer: false,
     className: 'xh-placeholder',
 
-    render(props: WithLayoutProps, ref) {
+    render(props, ref) {
         return box({
             ...props,
             ref

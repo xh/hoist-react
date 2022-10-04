@@ -5,32 +5,18 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+import {CreatesSpec, UsesSpec, HoistModel} from './';
 /**
- * Specification for model to be rendered by a functional HoistComponent.
+ * Specification for model to be rendered by a HoistComponent.
  *
- * Applications should not instantiate this class directly. Instead, {@see uses()} and
- * {@see creates()} for standard factories that produce instances of this class.
+ * {@see uses()} and {@see creates()} for standard factories that produce instances of this type.
  *
  * @private
  */
-export class ModelSpec {
-    fromContext: boolean;
-    publishMode: string;
-    optional: boolean;
-
-    constructor(fromContext: boolean, publishMode: string, optional: boolean) {
-        this.fromContext = fromContext;
-        this.publishMode = publishMode;
-        this.optional = optional;
-    }
-}
+export type ModelSpec<T extends HoistModel=HoistModel> = CreatesSpec<T> | UsesSpec<T>;
 
 /**
  * Options for how a Model should be published to context.
- *
- * @enum {string}
- * @see {uses}
- * @see {creates}
  */
 export const ModelPublishMode = Object.freeze({
 

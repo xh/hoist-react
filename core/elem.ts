@@ -6,6 +6,8 @@
  */
 import {castArray, isArray, isNil, isPlainObject} from 'lodash';
 import {createElement, ComponentClass, FunctionComponent, isValidElement, ReactNode, ReactElement} from 'react';
+import {HoistProps} from './';
+
 
 /**
  * Alternative format for specifying React Elements in render functions. This method is designed to
@@ -46,12 +48,26 @@ export type ElemSpec<P> = P & {
 
 
 /**
+ * A factory function that can create a ReactElement using native JS (i.e. not JSX).
+ *
+ * One critical aspect of this function is that its arguments may be *either* a single
+ * ElementSpec or either an array or rest arguments representing just the children to be
+ * passed to the new Element.  This latter case is fully equivalent to specifying `{items: [...]}`
+ * and is useful when no attributes need to be applied directly to the Element.
+ */
+export type ElemFactory<P=HoistProps> =
+    ((spec: ElemSpec<P>) => ReactElement<P>) &
+    ((children: ReactNode[]) => ReactElement<P>) &
+    ((...children: ReactNode[]) => ReactElement<P>);
+
+
+/**
  * Create a React Element from a Component type and an ElementSpec
  *
  * @param type - React Component or string representing an HTML element.
  * @param spec - element spec.
  */
-export function elem<P>(
+export function elem<P=HoistProps>(
     type: ComponentClass<P>|FunctionComponent<P>|string,
     spec: ElemSpec<P>
 ): ReactElement<P> {
@@ -76,18 +92,6 @@ export function elem<P>(
 }
 
 /**
- * A factory function that can create a ReactElement using native JS (i.e. not JSX).
- *
- * One critical aspect of this function is that its arguments may be *either* a single
- * ElementSpec or either an array or rest arguments representing just the children to be
- * passed to the new Element.  This latter case is fully equivalent to specifying `{items: [...]}`
- * and is useful when no attributes need to be applied directly to the Element.
- */
-export type ElemFactory<P={}> =
-        ((spec: ElemSpec<P>) => ReactElement<P>) &
-        ((children: ReactNode[]) => ReactElement<P>) &
-        ((...children: ReactNode[]) => ReactElement<P>);
-/**
  * Create an ElementFactory for a specific Component type.
  *
  * This is a 'curried' version of the raw elem() method.
@@ -96,7 +100,7 @@ export type ElemFactory<P={}> =
  * HoistComponent -- `hoistCmp.withFactory` will generate and return the factory for you.
  * Use this function for generating factories for Components provided by external APIs.
  */
-export function elemFactory<P>(type: FunctionComponent<P>|ComponentClass<P>|string): ElemFactory<P> {
+export function elemFactory<P=HoistProps>(type: FunctionComponent<P>|ComponentClass<P>|string): ElemFactory<P> {
     const ret = function(...args) {
         return elem(type, normalizeArgs(args));
     };

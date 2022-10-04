@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, WithLayoutProps} from '@xh/hoist/core';
+import {hoistCmp, BoxProps} from '@xh/hoist/core';
 import {box} from './Box';
 
 /**
@@ -17,7 +17,7 @@ export const [Spacer, spacer] = hoistCmp.withFactory({
 
     className: 'xh-spacer',
 
-    render(props: WithLayoutProps) {
+    render(props) {
         return box({
             ...props,
             flex: 'none'
@@ -28,12 +28,12 @@ export const [Spacer, spacer] = hoistCmp.withFactory({
 /**
  * A component that stretches to soak up space along the main axis of its parent container.
  */
-export const [Filler, filler] = hoistCmp.withFactory({
+export const [Filler, filler] = hoistCmp.withFactory<BoxProps>({
     displayName: 'Filler',
     model: false, observer: false,
     className: 'xh-filler',
 
-    render(props: WithLayoutProps) {
+    render(props) {
         return box({
             ...props,
             flex: 'auto'

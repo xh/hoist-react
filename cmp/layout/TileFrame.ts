@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, useLocalModel, HoistModel, WithLayoutProps} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, HoistModel, BoxProps} from '@xh/hoist/core';
 import {frame, box} from '@xh/hoist/cmp/layout';
 import {useOnResize} from '@xh/hoist/utils/react';
 import {useState, useLayoutEffect} from 'react';
@@ -82,32 +82,32 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
     }
 });
 
-export interface TileFrameProps extends WithLayoutProps {
+export interface TileFrameProps extends BoxProps {
 
     /**
      * Desired tile width / height ratio (i.e. desiredRatio: 2 == twice as wide as tall).
      * The container will strive to meet this ratio, but the final ratio may vary.
      * Defaults to 1 (i.e. square tiles)
      */
-    desiredRatio: number;
+    desiredRatio?: number;
 
     /** The space between tiles (in px) */
-    spacing: number;
+    spacing?: number;
 
     /** Min tile width (in px). */
-    minTileWidth: number;
+    minTileWidth?: number;
 
     /** Max tile width (in px). */
-    maxTileWidth: number;
+    maxTileWidth?: number;
 
     /** Min tile height (in px).*/
-    minTileHeight: number;
+    minTileHeight?: number;
 
     /** Max tile height (in px).*/
-    maxTileHeight: number;
+    maxTileHeight?: number;
 
     /** Callback triggered when the layout configuration changes.*/
-    onLayoutChange: (layout: {rows: number, cols: number, tileWidth: number, tileHeight: number}) => any;
+    onLayoutChange?: (layout: {rows: number, cols: number, tileWidth: number, tileHeight: number}) => any;
 }
 
 class LocalModel extends HoistModel {

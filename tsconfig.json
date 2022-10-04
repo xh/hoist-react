@@ -5,16 +5,13 @@
     "moduleResolution": "Node",
     "allowSyntheticDefaultImports":  true,
     "resolveJsonModule":  true,
-    "jsx": "react";
+    "jsx": "react",
     "paths": {
       "@xh/hoist/*": ["./*"]
     },
     "lib": [
       "dom",
-      "es5",
-      "scripthost",
-      "es2015.promise",
-      "es2016"
+      "es2021"
     ]
   }
 }

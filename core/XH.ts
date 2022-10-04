@@ -72,7 +72,6 @@ class XHClass {
     private _lastActivityMs: number = Date.now();
     private _uaParser: any = null;
 
-
     constructor() {
         makeObservable(this);
         this.exceptionHandler = new ExceptionHandler();
@@ -819,7 +818,7 @@ class XHClass {
     //------------------------
     // Implementation
     //------------------------
-    private checkAccess() {
+    private checkAccess(): any {
         const user = XH.getUser(),
             {checkAccess} = this.appSpec;
 

@@ -6,14 +6,12 @@
  */
 import {debounce as lodashDebounce, isFinite} from 'lodash';
 import ResizeObserver from 'resize-observer-polyfill';
-// @ts-ignore
-import {DOMRect, Element, Event} from 'dom';
 
 /**
  * Is this element visible and not within a hidden sub-tree (e.g. hidden tab)?
  * Based on the underlying css 'display' property of all ancestor properties.
  */
-export function isDisplayed(elem: Element): boolean {
+export function isDisplayed(elem: HTMLElement): boolean {
     if (!elem) return false;
     while (elem) {
         if (elem.style.display === 'none') return false;

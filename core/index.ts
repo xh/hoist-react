@@ -14,6 +14,7 @@ export * from './HoistService';
 
 export * from './AppState';
 export * from './AppSpec';
+export * from './HoistProps';
 export * from './HoistComponent';
 export * from './RefreshContextView';
 export * from './RouterModel';

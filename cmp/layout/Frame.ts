@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, WithLayoutProps} from '@xh/hoist/core';
+import {hoistCmp, BoxProps} from '@xh/hoist/core';
 import {box} from './Box';
 
 /**
@@ -15,21 +15,21 @@ import {box} from './Box';
  *
  * VFrame and HFrame variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-export const [Frame, frame] = hoistCmp.withFactory({
+export const [Frame, frame] = hoistCmp.withFactory<BoxProps>({
     displayName: 'Frame',
     model: false, memo: false, observer: false,
 
-    render(props: WithLayoutProps, ref) {
+    render(props, ref) {
         return box({ref, ...props, flex: 'auto'});
     }
 });
 
-export const [VFrame, vframe] = hoistCmp.withFactory({
+export const [VFrame, vframe] = hoistCmp.withFactory<BoxProps>({
     displayName: 'VFrame',
     model: false, memo: false, observer: false,
     className: 'xh-vframe',
 
-    render(props: WithLayoutProps, ref) {
+    render(props, ref) {
         return box({
             ref,
             ...props,
@@ -39,12 +39,12 @@ export const [VFrame, vframe] = hoistCmp.withFactory({
     }
 });
 
-export const [HFrame, hframe] = hoistCmp.withFactory({
+export const [HFrame, hframe] = hoistCmp.withFactory<BoxProps>({
     displayName: 'HFrame',
     model: false, memo: false, observer: false,
     className: 'xh-hframe',
 
-    render(props: WithLayoutProps, ref) {
+    render(props, ref) {
         return box({
             ref,
             ...props,

@@ -7,7 +7,7 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {placeholder} from '../layout';
-import {lookup, hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
+import {lookup, hoistCmp, HoistModel, useLocalModel, uses, XH, BoxProps} from '@xh/hoist/core';
 import {useContextMenu} from '@xh/hoist/dynamics/desktop';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {runInAction} from '@xh/hoist/mobx';
@@ -19,7 +19,6 @@ import {
 } from '@xh/hoist/utils/react';
 import {assign, castArray, cloneDeep, forOwn, isEqual, isPlainObject, merge, omit} from 'lodash';
 import {Icon} from '@xh/hoist/icon';
-import PT from 'prop-types';
 import {ChartModel} from './ChartModel';
 import {installZoomoutGesture} from './impl/zoomout';
 import {installCopyToClipboard} from './impl/copyToClipboard';
@@ -35,12 +34,12 @@ installCopyToClipboard(Highcharts);
  * as well as configuration and theme defaults. The chart's core configuration should be sourced
  * from a ChartModel prop passed to this component.
  */
-export const [Chart, chart] = hoistCmp.withFactory({
+export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
     displayName: 'Chart',
     model: uses(ChartModel),
     className: 'xh-chart',
 
-    render({model, className, aspectRatio, ...props}, ref) {
+    render({model, className, aspectRatio, ...props}: ChartProps, ref) {
         if (!Highcharts) {
             console.error(
                 'Highcharts has not been imported in to this application. Please import and ' +
@@ -80,22 +79,22 @@ export const [Chart, chart] = hoistCmp.withFactory({
     }
 });
 
-Chart.propTypes = {
+export interface ChartProps extends BoxProps {
+
+    model?: ChartModel;
+
     /**
      * Ratio of width-to-height of displayed chart.  If defined and greater than 0, the chart will
      * respect this ratio within the available space.  Otherwise, the chart will stretch on both
      * dimensions to take up all available space.
      */
-    aspectRatio: PT.number,
-
-    /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object])
-};
+    aspectRatio?: number;
+}
 
 class LocalModel extends HoistModel {
 
-    /** @member {ChartModel} */
-    @lookup(ChartModel) model;
+    @lookup(ChartModel)
+    model: ChartModel;
 
     chartRef = createObservableRef();
     contextMenu;

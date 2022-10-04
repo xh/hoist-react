@@ -1,6 +1,4 @@
 import {ReactElement, ReactNode} from 'react';
-// @ts-ignore
-import {HTMLElement} from 'dom';
 import {DebounceSettings} from 'lodash';
 import {LoadSpec} from '../load';
 

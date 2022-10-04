@@ -6,7 +6,7 @@
  */
 import {forOwn, has, isFunction} from 'lodash';
 import {warnIf} from '@xh/hoist/utils/js';
-import {HoistBase, managed, TaskObserver} from '../';
+import {HoistBase, HoistProps, managed, TaskObserver} from '../';
 import {ModelSelector} from './';
 import {LoadSupport, LoadSpec, Loadable} from '../load';
 import {observable, action, makeObservable} from '@xh/hoist/mobx';
@@ -114,7 +114,7 @@ export class HoistModel extends HoistBase implements Loadable {
      * Observability is based on a shallow computation for each prop (i.e. a reference
      * change in any particular prop will trigger observers to be notified).
      */
-    get componentProps(): object {
+    get componentProps(): HoistProps {
         return this._componentProps;
     }
 

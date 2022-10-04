@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistBase, managed, LoadSupport, LoadSpec, TaskObserver} from './';
+import {HoistBase, managed, LoadSupport, LoadSpec, TaskObserver, Loadable} from './';
 
 
 /**
@@ -31,7 +31,7 @@ import {HoistBase, managed, LoadSupport, LoadSpec, TaskObserver} from './';
  * so desired. And while components should typically source their state from backing models, they
  * can also read and react to service state and call service APIs.
  */
-export class HoistService extends HoistBase {
+export class HoistService extends HoistBase implements Loadable {
 
     // Internal State
     _created = Date.now();

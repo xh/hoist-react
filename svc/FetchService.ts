@@ -67,7 +67,7 @@ export class FetchService extends HoistService {
         return this.managedFetchAsync(
             opts,
             (aborter) => this.fetchInternalAsync(opts, aborter)
-        );
+        ) as any;
     }
 
     /**
@@ -84,7 +84,7 @@ export class FetchService extends HoistService {
                 }, aborter);
                 return this.NO_JSON_RESPONSES.includes(r.status) ? null : r.json();
             }
-        );
+        ) as any;
     }
 
     /**

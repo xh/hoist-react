@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {elemFactory, ElemFactory} from './';
+import {CreatesSpec, UsesSpec, elemFactory, ElemFactory, HoistProps} from './';
 import {
     useModelLinker,
     localModelContext,
@@ -18,7 +18,7 @@ import {
     HoistModel
 } from './model';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {useOnMount, getLayoutProps, LayoutProps} from '@xh/hoist/utils/react';
+import {useOnMount, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isObject} from 'lodash';
 import {observer} from '../mobx';
@@ -33,22 +33,13 @@ import {
     useState
 } from 'react';
 
-export interface HoistProps<M extends HoistModel = null> {
-
-    ref?: ForwardedRef<any>,
-    model?: M,
-    className?: string,
-
-    // All other props
-    [x:string]: any;
-}
-
-export interface WithLayoutProps<M extends HoistModel = null> extends HoistProps<M>, LayoutProps {
-
-}
-
-
-export interface HoistComponentSpec<P extends HoistProps<M>, M extends HoistModel> {
+/**
+ * Configuration for creating a Component.  May be specifed either as a render function,
+ * or an object containing a render function and associated metadata.
+ */
+export type ComponentConfig<P extends HoistProps, M extends HoistModel> =
+    ((props: P, ref?: ForwardedRef<any>) => ReactNode) |
+    {
 
     /** Render function defining the component. */
     render(props: P, ref?: ForwardedRef<any>): ReactNode;
@@ -59,7 +50,7 @@ export interface HoistComponentSpec<P extends HoistProps<M>, M extends HoistMode
      * {@see uses()} and {@see creates()} - these two factory functions will create an appropriate
      * spec for either externally-provided or internally-created models. Defaults to `uses('*')`.
      */
-    model?: ModelSpec | boolean;
+    model?: ModelSpec<M>|boolean|null;
 
     /**
      * Base CSS class for this component. Will be combined with any className
@@ -85,8 +76,6 @@ export interface HoistComponentSpec<P extends HoistProps<M>, M extends HoistMode
     observer?: boolean
 }
 
-export type HoistComponentConfig<P extends HoistProps<M>, M extends HoistModel> =
-    HoistComponentSpec<P, M> | ((props: P, ref?: ForwardedRef<any>) => ReactNode);
 
 /**
  * Hoist utility for defining functional components. This is the primary method for creating
@@ -116,8 +105,8 @@ export type HoistComponentConfig<P extends HoistProps<M>, M extends HoistModel> 
  *   - `hoistComponent.withFactory` - returns a 2-element list containing both the newly defined
  *          Component and an elemFactory for it.
  */
-export function hoistComponent<P extends HoistProps<M>, M extends HoistModel>(
-    config: HoistComponentConfig<P, M>
+export function hoistComponent<P extends HoistProps=HoistProps, M extends HoistModel=HoistModel>(
+    config: ComponentConfig<P, M>
 ): FunctionComponent<P>  {
     // 0) Pre-process/parse args.
     if (isFunction(config)) config = {render: config, displayName: config.name};
@@ -132,7 +121,7 @@ export function hoistComponent<P extends HoistProps<M>, M extends HoistModel>(
     // 1) Default and validate the modelSpec.
     const modelSpec = withDefault(config.model, uses('*'));
     throwIf(
-        modelSpec && !(modelSpec instanceof ModelSpec),
+        modelSpec && !(modelSpec instanceof UsesSpec) && !(modelSpec instanceof CreatesSpec),
         "The 'model' config passed to hoistComponent() is incorrectly specified: provide a spec returned by either uses() or creates()."
     );
 
@@ -185,10 +174,10 @@ export const hoistCmp = hoistComponent;
  * apps written using elemFactory (vs. JSX) that do not need to export any direct references to the
  * Component itself.
  *
- * @returns {function} - an elementFactory function for use within parent comp render() functions.
+ * @returns an elementFactory function for use within parent comp render() functions.
  */
-hoistComponent.factory = function<P extends HoistProps<M>, M extends HoistModel>(
-    config: HoistComponentConfig<P, M>
+hoistComponent.factory = function<P extends HoistProps=HoistProps, M extends HoistModel=HoistModel>(
+    config: ComponentConfig<P, M>
 ): ElemFactory<P> {
     return elemFactory(hoistComponent<P, M>(config));
 };
@@ -198,8 +187,8 @@ hoistComponent.factory = function<P extends HoistProps<M>, M extends HoistModel>
  *
  * @returns Array, with the Component as the first element and its elemFactory as the second.
  */
-hoistComponent.withFactory = function<P extends HoistProps<M>, M extends HoistModel>(
-    config: HoistComponentConfig<P, M>
+hoistComponent.withFactory = function<P extends HoistProps=HoistProps, M extends HoistModel=HoistModel>(
+    config: ComponentConfig<P, M>
 ): [FunctionComponent<P>, ElemFactory<P>] {
     const ret = hoistComponent(config);
     return [ret, elemFactory(ret)];

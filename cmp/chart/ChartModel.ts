@@ -16,8 +16,7 @@ export class ChartModel extends HoistModel {
     @observable.ref highchartsConfig = {};
     @observable.ref series = [];
 
-    /** @member {boolean} */
-    showContextMenu;
+    showContextMenu: boolean;
 
     /**
      * The HighCharts instance currently being displayed. This may be used for reading
@@ -27,12 +26,14 @@ export class ChartModel extends HoistModel {
     @observable.ref highchart;
 
     /**
-     * @param {Object} c - ChartModel configuration.
-     * @param {Object} c.highchartsConfig - The initial highchartsConfig for this chart.
-     * @param {(Object|Object[])} c.series - The initial data series to be displayed.
-     * @param {boolean} [c.showContextMenu] - true to showContextMenu.  Defaults to true.  Desktop only.
+     * @param highchartsConfig - The initial highchartsConfig for this chart.
+     * @param series - The initial data series to be displayed.
+     * @param showContextMenu - true to showContextMenu.  Defaults to true.  Desktop only.
      */
-    constructor({highchartsConfig, series = [], showContextMenu = true} = {}) {
+    constructor(
+        {highchartsConfig, series = [], showContextMenu = true}:
+        {highchartsConfig?: any, series?: any|any[], showContextMenu?: boolean} = {}
+    ) {
         super();
         makeObservable(this);
         this.highchartsConfig = highchartsConfig;
@@ -43,14 +44,14 @@ export class ChartModel extends HoistModel {
     /**
      * Set the Highcharts configuration.
      *
-     * @param {Object} config - Highcharts configuration object. May include any
+     * @param config - Highcharts configuration object. May include any
      *      Highcharts options other than `series`, which should be set via `setSeries()`.
      *
      *  See also {@see updateHighChartsConfig} for a method that will allow updating individual
      *  properties in this object.
      */
     @action
-    setHighchartsConfig(config) {
+    setHighchartsConfig(config: any) {
         this.highchartsConfig = config;
     }
 
@@ -58,17 +59,17 @@ export class ChartModel extends HoistModel {
     /**
      *  Merge new properties settings into the Highcharts configuration (Deep merge)
      *
-     * @param {Object} update - Updates to Highcharts configuration settings.  May include any
+     * @param update - Updates to Highcharts configuration settings.  May include any
      *      Highcharts options other than `series`, which should be set via `setSeries()`.
      */
     @action
-    updateHighchartsConfig(update) {
+    updateHighchartsConfig(update: any) {
         this.highchartsConfig = merge(cloneDeep(this.highchartsConfig), update);
     }
 
-    /** @param {(Object|Object[])} series - one or more data series to be charted. */
+    /** @param series - one or more data series to be charted. */
     @action
-    setSeries(series) {
+    setSeries(series: any|any[]) {
         this.series = series ? castArray(series) : [];
     }
 

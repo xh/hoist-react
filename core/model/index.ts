@@ -5,7 +5,7 @@ export * from './RootRefreshContextModel';
 export * from './ModelSelector';
 export * from './ModelLookup';
 export * from './ModelSpec';
-export * from './creates';
-export * from './uses';
+export * from './CreatesSpec';
+export * from './UsesSpec';
 export * from './Hooks';
 

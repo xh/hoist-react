@@ -4,8 +4,8 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, WithLayoutProps} from '@xh/hoist/core';
-import {splitLayoutProps, LayoutProps} from '@xh/hoist/utils/react';
+import {hoistCmp, BoxProps} from '@xh/hoist/core';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {merge} from 'lodash';
 import {div} from './Tags';
 
@@ -19,11 +19,11 @@ import {div} from './Tags';
  *
  * VBox and HBox variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-export const [Box, box] = hoistCmp.withFactory({
+export const [Box, box] = hoistCmp.withFactory<BoxProps>({
     displayName: 'Box',
     model: false, memo: false, observer: false,
 
-    render(props: WithLayoutProps, ref) {
+    render(props, ref) {
         // Note `model` destructured off of non-layout props to avoid setting model as a bogus DOM
         // attribute. This low-level component does not lookup a model from context, but it may
         // easily be passed one from a parent that has not properly managed its own props.
@@ -43,12 +43,12 @@ export const [Box, box] = hoistCmp.withFactory({
     }
 });
 
-export const [VBox, vbox] = hoistCmp.withFactory({
+export const [VBox, vbox] = hoistCmp.withFactory<BoxProps>({
     displayName: 'VBox',
     model: false, memo: false, observer: false,
     className: 'xh-vbox',
 
-    render(props: LayoutProps, ref) {
+    render(props, ref) {
         return box({
             ref,
             ...props,
@@ -57,12 +57,12 @@ export const [VBox, vbox] = hoistCmp.withFactory({
     }
 });
 
-export const [HBox, hbox] = hoistCmp.withFactory({
+export const [HBox, hbox] = hoistCmp.withFactory<BoxProps>({
     displayName: 'HBox',
     model: false, memo: false, observer: false,
     className: 'xh-hbox',
 
-    render(props: LayoutProps, ref) {
+    render(props, ref) {
         return box({
             ref,
             ...props,

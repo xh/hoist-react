@@ -13,7 +13,7 @@ import {filterConsecutive} from '../js';
  * for both Blueprint and AgGrid menus.
  */
 export function filterConsecutiveMenuSeparators() {
-    return filterConsecutive(it => {
+    return filterConsecutive((it: any) => {
         return it === '-' ||
             it === 'separator' ||
             (it?.type?.name === 'MenuDivider' && !it.props?.title);
@@ -27,7 +27,7 @@ export function filterConsecutiveMenuSeparators() {
  * for both toolbars.
  */
 export function filterConsecutiveToolbarSeparators() {
-    return filterConsecutive(it => {
+    return filterConsecutive((it: any) => {
         return it === '-' || it?.type?.displayName === 'ToolbarSeparator';
     });
 }

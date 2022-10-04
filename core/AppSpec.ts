@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {XH, HoistAppModel, ElemFactory} from '@xh/hoist/core';
+import {XH, HoistAppModel, ElemFactory, HoistProps} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil, isString} from 'lodash';
 import {Component, ComponentClass, FunctionComponent} from 'react';
@@ -41,14 +41,14 @@ export class AppSpec {
      * Root HoistComponent for the application. Despite the name,
      * functional components are fully supported and expected.
      */
-    componentClass: ComponentClass|FunctionComponent;
+    componentClass: ComponentClass<HoistProps>|FunctionComponent<HoistProps>;
 
     /**
      * Container component to be used to host this application.
      * This class determines the platform used by Hoist. The value should be imported from
      * either `@xh/hoist/desktop/AppContainer` or `@xh/hoist/mobile/AppContainer`.
      */
-    containerClass: ComponentClass|FunctionComponent;
+    containerClass: ComponentClass<HoistProps>|FunctionComponent<HoistProps>;
 
     /** True if the app should use the Hoist mobile toolkit.*/
     isMobileApp: boolean;

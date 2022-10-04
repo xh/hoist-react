@@ -61,7 +61,7 @@ export function formatSelector(selector: ModelSelector): string {
  * Accessing properties decorated with @lookup should first be done in the onLinked(),
  * or afterLinked() handlers.
  */
-export function lookup(selector: ModelSelector) {
+export const lookup: any = (selector: ModelSelector) => {
     ensureIsSelector(selector);
     return function(target, property, descriptor) {
         throwIf(!target.isHoistModel, '@lookup decorator should be applied to a subclass of HoistModel');
@@ -73,4 +73,4 @@ export function lookup(selector: ModelSelector) {
         target[key][property] = selector;
         return descriptor;
     };
-}
+};

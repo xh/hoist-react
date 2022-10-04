@@ -6,7 +6,7 @@
  */
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
-import {HoistModel, HoistModelClass, ModelPublishMode, ModelSpec} from './';
+import {HoistModel, HoistModelClass, ModelPublishMode} from './';
 
 /**
  * Returns a ModelSpec to define how a functional HoistComponent should create its primary backing
@@ -26,7 +26,7 @@ import {HoistModel, HoistModelClass, ModelPublishMode, ModelSpec} from './';
 export function creates<T extends HoistModel>(
     spec: HoistModelClass<T> | (() => T),
     opts: CreatesOptions
-): ModelSpec {
+): CreatesSpec<T> {
     return new CreatesSpec(spec, opts?.publishMode ?? ModelPublishMode.DEFAULT);
 }
 
@@ -36,15 +36,15 @@ export interface CreatesOptions {
 }
 
 
-//------------------
-// Implementation
-//------------------
-class CreatesSpec<T extends HoistModel> extends ModelSpec {
+export class CreatesSpec<T extends HoistModel> {
 
+    fromContext: boolean = false;
+    optional: boolean = false;
+    publishMode: string;
     createFn: () => T;
 
     constructor(spec, publishMode) {
-        super(false, publishMode, false);
+        this.publishMode = publishMode;
         if (spec.isHoistModel) {
             throwIf(spec.lookupModel, 'Specified model type must *not* be an instance. Specify a class name instead.');
             this.createFn = () => spec;
