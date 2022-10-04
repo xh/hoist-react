@@ -43,13 +43,17 @@ export class HoistBase {
     get isHoistBase() {return true}
 
     /**
-     * @member {boolean} - for XH internal use only - marks this instance as created by and for
-     *      Hoist as part of its own implementation. Does *not* imply that the instance is private
-     *      or protected. Used as a filter within Hoist Inspector to distinguish instances created
-     *      by an app from those created by Hoist itself.
+     * @return {boolean} - for XH internal use only - marks this instance as created by and for
+     *      Hoist as part of its own implementation. Used as a filter within Hoist Inspector to
+     *      distinguish services and models that are either:
+     *          a) created directly by the app developer -or-
+     *          b) important/public parts of the Hoist API
+     *      from those that are not.
      * @package
      */
-    xhImpl = false;
+    get xhImpl() {return this._xhImpl}
+    set xhImpl(xhImpl) {this._xhImpl = xhImpl}
+    _xhImpl;
 
     // Internal State
     #managedInstances = [];

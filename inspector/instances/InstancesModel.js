@@ -7,6 +7,7 @@ import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable} from '@xh/hoist/mobx';
+import {wait} from '@xh/hoist/promise';
 import {trimToDepth} from '@xh/hoist/utils/js';
 import {compact, find, forIn, head, without} from 'lodash';
 import {isObservableProp, makeObservable} from 'mobx';
@@ -30,9 +31,10 @@ export class InstancesModel extends HoistModel {
     propertiesPanelModel;
 
     @bindable @persist showInGroups = true;
-    @bindable @persist showXhImp = false;
-    @bindable @persist observablePropsOnly = false;
+    @bindable @persist showXhImpl = false;
     @bindable @persist showUnderscoreProps = false;
+    @bindable @persist observablePropsOnly = false;
+    @bindable @persist ownPropsOnly = true;
 
     @bindable.ref propsWatchlist = [];
     @bindable.ref loadedGetters = [];
@@ -65,7 +67,7 @@ export class InstancesModel extends HoistModel {
                 run: (showInGroups) => this.instancesGridModel.setGroupBy(showInGroups ? 'displayGroup' : null)
             },
             {
-                track: () => [XH.inspectorService.activeInstances, this.showXhImp],
+                track: () => [XH.inspectorService.activeInstances, this.showXhImpl],
                 run: ([activeInstances, showXhImpl]) => {
                     const data = showXhImpl ? activeInstances : activeInstances.filter(it => !it.isXhImpl);
                     this.instancesGridModel.loadData(data);
@@ -77,15 +79,21 @@ export class InstancesModel extends HoistModel {
         this.autoLoadPropertiesGrid();
     }
 
-    // TODO - handle request to select xhImpl model if not shown.
-    selectInstance(xhId) {
+    async selectInstanceAsync(xhId) {
+        const inst = this.getInstance(xhId);
+
+        if (inst.xhImpl && !this.showXhImpl) {
+            this.setShowXhImpl(true);
+            await wait();
+        }
+
         const {instancesGridModel} = this,
             {store} = instancesGridModel,
             rec = store.getById(xhId);
 
         if (!rec) return;
         if (store.recordIsFiltered(rec)) store.clearFilter();
-        instancesGridModel.selectAsync(rec);
+        await instancesGridModel.selectAsync(rec);
     }
 
     logInstanceToConsole(rec) {
@@ -264,7 +272,7 @@ export class InstancesModel extends HoistModel {
                     width: 200,
                     renderer: (v, {record}) => {
                         return record.data.displayGroup === 'Watchlist' ?
-                            a({item: v, onClick: () => this.selectInstance(record.data.xhId)}) :
+                            a({item: v, onClick: () => this.selectInstanceAsync(record.data.xhId)}) :
                             v;
                     }
                 },
@@ -288,7 +296,7 @@ export class InstancesModel extends HoistModel {
                             return a({item: '(...)', onClick: () => this.loadGetter(record)});
                         }
                         if (data.isHoistModel) {
-                            return a({item: v, onClick: () => this.selectInstance(v)});
+                            return a({item: v, onClick: () => this.selectInstanceAsync(v)});
                         }
                         return JSON.stringify(trimToDepth(v, 2));
                     }
@@ -308,16 +316,13 @@ export class InstancesModel extends HoistModel {
 
                 // Read properties (included non-enumerated ones, like getters) off of the instance and its prototype.
                 if (selectedInstance) {
-                    const descriptors = {
-                        ...Object.getOwnPropertyDescriptors(selectedInstance),
-                        ...Object.getOwnPropertyDescriptors(Object.getPrototypeOf(selectedInstance))
-                    };
+                    const descriptors = this.getDescriptors(selectedInstance);
 
                     forIn(descriptors, (descriptor, prop) => {
                         // Extract data from enumerable props and getters.
                         if (descriptor.enumerable || descriptor.get) {
                             data.push(this.getRecData({
-                                model: selectedInstance,
+                                instance: selectedInstance,
                                 property: prop,
                                 isGetter: !!descriptor.get
                             }));
@@ -327,10 +332,10 @@ export class InstancesModel extends HoistModel {
 
                 // As well as any watchlist items.
                 propsWatchlist.forEach(it => {
-                    const wlModel = this.getInstance(it.xhId);
-                    if (wlModel) {
+                    const wlInstance = this.getInstance(it.xhId);
+                    if (wlInstance) {
                         data.push(this.getRecData({
-                            model: wlModel,
+                            instance: wlInstance,
                             property: it.property,
                             fromWatchlistItem: true,
                             isGetter: it.isGetter
@@ -344,20 +349,34 @@ export class InstancesModel extends HoistModel {
         });
     }
 
-    getRecData({model, property, fromWatchlistItem = false, isGetter = false}) {
-        const {observablePropsOnly, showUnderscoreProps} = this,
-            isObservable = isObservableProp(model, property);
+    getDescriptors(instance) {
+        let ret = Object.getOwnPropertyDescriptors(instance),
+            proto = Object.getPrototypeOf(instance);
+
+        if (proto) {
+            ret = {...ret, ...this.getDescriptors(proto)};
+        }
+
+        return ret;
+    }
+
+    getRecData({instance, property, fromWatchlistItem = false, isGetter = false}) {
+        const {ownPropsOnly, observablePropsOnly, showUnderscoreProps} = this,
+            isOwnProperty = Object.hasOwn(instance, property),
+            isObservable = isObservableProp(instance, property);
 
         if (
-            (!showUnderscoreProps && property.startsWith('_')) ||
-            (observablePropsOnly && !isObservable)
+            (ownPropsOnly && !isOwnProperty) ||
+            (observablePropsOnly && !isObservable) ||
+            (!showUnderscoreProps && property.startsWith('_'))
         ) return null;
 
-        const {xhId} = model,
-            modelCtor = model.constructor.name,
+        const {xhId} = instance,
+            ctorName = instance.constructor.name,
             isLoadedGetter = isGetter && this.shouldLoadGetter(xhId, property),
-            v = (!isGetter || isLoadedGetter) ? model[property] : null,
-            isHoistModel = v?.isHoistModel;
+            v = (!isGetter || isLoadedGetter) ? instance[property] : null,
+            isHoistModel = v?.isHoistModel,
+            isHoistService = v?.isHoistService;
 
         const valueType = (isGetter && !isLoadedGetter) ?
             'get(?)' :
@@ -367,15 +386,17 @@ export class InstancesModel extends HoistModel {
             id: `${xhId}-${property}${fromWatchlistItem ? '-wl' : ''}`,
             xhId,
             property,
-            value: isHoistModel ? v.xhId : v,
+            value: (isHoistModel || isHoistService) ? v.xhId : v,
             valueType,
+            isOwnProperty,
             isObservable,
             isHoistModel,
+            isHoistService,
             isGetter,
             isLoadedGetter,
             isWatchlistItem: !!this.getWatchlistItem(xhId, property),
-            displayProperty: fromWatchlistItem ? `${modelCtor}[${xhId}].${property}` : property,
-            displayGroup: fromWatchlistItem ? 'Watchlist' : modelCtor
+            displayProperty: fromWatchlistItem ? `${ctorName}[${xhId}].${property}` : property,
+            displayGroup: fromWatchlistItem ? 'Watchlist' : ctorName
         };
     }
 

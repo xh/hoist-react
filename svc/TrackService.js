@@ -9,7 +9,6 @@ import {stripTags, withDefault} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
 
 export class TrackService extends HoistService {
-    xhImpl = true;
 
     _oncePerSessionSent = {};
 

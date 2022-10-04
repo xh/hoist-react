@@ -16,7 +16,6 @@ import mobxPkg from 'mobx/package.json';
 import {version as reactVersion} from 'react';
 
 export class EnvironmentService extends HoistService {
-    xhImpl = true;
 
     _data = {};
 

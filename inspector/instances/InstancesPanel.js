@@ -58,7 +58,7 @@ const instanceGridBar = hoistCmp.factory(
                 }),
                 '-',
                 switchInput({
-                    bind: 'showXhImp',
+                    bind: 'showXhImpl',
                     label: 'xhImpl'
                 }),
                 popover({
@@ -85,6 +85,12 @@ const propertiesGridBar = hoistCmp.factory(
         return toolbar({
             compact: true,
             items: [
+                switchInput({
+                    bind: 'ownPropsOnly',
+                    label: 'Own props only',
+                    labelSide: 'right'
+                }),
+                '-',
                 switchInput({
                     bind: 'observablePropsOnly',
                     label: 'Observables only',
