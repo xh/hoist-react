@@ -23,21 +23,23 @@ export class ChartsModel extends HoistModel {
         defaultSize: 370
     });
 
-    /** @member {ActivityTrackingModel} */
-    @lookup(ActivityTrackingModel) activityTrackingModel;
+    @lookup(ActivityTrackingModel)
+    activityTrackingModel: ActivityTrackingModel;
 
-    /** @member {string} - metric to chart on Y axis - one of:
+    /** metric to chart on Y axis - one of:
      *      + entryCount - count of total track log entries within the primary dim group.
      *      + count - count of unique secondary dim values within the primary dim group.
      *      + elapsed - avg elapsed time in ms for the primary dim group.
      */
-    @bindable metric = 'entryCount';
+    @bindable
+    metric: 'entryCount'|'count'|'elapsed' = 'entryCount';
 
-    /** @member {boolean} - show weekends on the activity chart */
-    @bindable incWeekends = false;
+    /** show weekends on the activity chart */
+    @bindable
+    incWeekends: boolean = false;
 
-    /** @member {ChartModel} */
-    @managed categoryChartModel = new ChartModel({
+    @managed
+    categoryChartModel: ChartModel = new ChartModel({
         highchartsConfig: {
             chart: {type: 'column', animation: false},
             plotOptions: {column: {animation: false}},
@@ -48,8 +50,8 @@ export class ChartsModel extends HoistModel {
         }
     });
 
-    /** @member {ChartModel} */
-    @managed timeseriesChartModel = new ChartModel({
+    @managed
+    timeseriesChartModel: ChartModel = new ChartModel({
         highchartsConfig: {
             chart: {type: 'line', animation: false},
             plotOptions: {
@@ -78,22 +80,19 @@ export class ChartsModel extends HoistModel {
         }
     });
 
-    get showAsTimeseries() {
+    get showAsTimeseries(): boolean {
         return this.dimensions[0] === 'day';
     }
 
-    /** @returns {ChartModel} */
-    get chartModel() {
+    get chartModel(): ChartModel {
         return this.showAsTimeseries ? this.timeseriesChartModel : this.categoryChartModel;
     }
 
-    /** @returns {string} */
-    get primaryDim() {
+    get primaryDim(): string {
         return this.dimensions[0];
     }
 
-    /** @returns {string} */
-    get secondaryDim() {
+    get secondaryDim(): string {
         const {dimensions} = this;
         return (dimensions.length >= 2) ? dimensions[1] : null;
     }

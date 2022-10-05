@@ -4,9 +4,8 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, BoxProps} from '@xh/hoist/core';
+import {hoistCmp, BoxProps, setCmpErrorDisplay} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
-
 import './Placeholder.scss';
 
 /**
@@ -27,4 +26,4 @@ export const [Placeholder, placeholder] = hoistCmp.withFactory<BoxProps>({
         });
     }
 });
-hoistCmp._errorCmp = placeholder;
+setCmpErrorDisplay(placeholder);

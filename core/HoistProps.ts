@@ -8,18 +8,20 @@ import {HoistModel} from '@xh/hoist/core/model';
 import {LayoutProps} from '@xh/hoist/utils/react';
 
 /**
- * Enhanced Props, as delivered to the render function of a HoistComponent.
+ * Props interface for Hoist Components.
  *
  * This interface brings in additional properties that are added to the props
  * collection by HoistComponent.
  */
-export interface HoistProps {
+export interface HoistProps<M=HoistModel> {
 
     /**
-     * Associated HoistModel for this Component.  May be either the linked model, or
-     * the model received via context.
+     * Associated HoistModel for this Component.  Depending on the component, may be specified as
+     * an instance of a HoistModel, or a configuration object to create one, or left undefined.
+     * HoistComponent will resolve (i.e. lookup in context or create if needed) a concrete Model
+     * instance and provide it to the Render method of the component.
      */
-    model?: HoistModel;
+    model?: M;
 
     /**
      * ClassName for the component.  Includes the classname as provided in props, enhanced with
@@ -39,4 +41,4 @@ export interface HoistProps {
  * Most component will typically separate these props out and pass them along to another component
  * which also supports this interface.  Eventually, they should be passed to a Box class.
  */
-export interface BoxProps extends HoistProps, LayoutProps {}
+export interface BoxProps<M=HoistModel> extends HoistProps<M>, LayoutProps {}

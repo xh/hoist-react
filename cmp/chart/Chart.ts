@@ -79,9 +79,7 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
     }
 });
 
-export interface ChartProps extends BoxProps {
-
-    model?: ChartModel;
+export interface ChartProps extends BoxProps<ChartModel> {
 
     /**
      * Ratio of width-to-height of displayed chart.  If defined and greater than 0, the chart will

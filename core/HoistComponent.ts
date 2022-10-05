@@ -34,7 +34,7 @@ import {
 } from 'react';
 
 /**
- * Configuration for creating a Component.  May be specifed either as a render function,
+ * Configuration for creating a Component.  May be specified either as a render function,
  * or an object containing a render function and associated metadata.
  */
 export type ComponentConfig<P extends HoistProps, M extends HoistModel> =
@@ -50,7 +50,7 @@ export type ComponentConfig<P extends HoistProps, M extends HoistModel> =
      * {@see uses()} and {@see creates()} - these two factory functions will create an appropriate
      * spec for either externally-provided or internally-created models. Defaults to `uses('*')`.
      */
-    model?: ModelSpec<M>|boolean|null;
+    model?: ModelSpec<M>|boolean;
 
     /**
      * Base CSS class for this component. Will be combined with any className
@@ -105,9 +105,9 @@ export type ComponentConfig<P extends HoistProps, M extends HoistModel> =
  *   - `hoistComponent.withFactory` - returns a 2-element list containing both the newly defined
  *          Component and an elemFactory for it.
  */
-export function hoistComponent<P extends HoistProps=HoistProps, M extends HoistModel=HoistModel>(
-    config: ComponentConfig<P, M>
-): FunctionComponent<P>  {
+export function hoistComponent<A extends HoistModel|HoistProps = HoistModel, B extends HoistModel = HoistModel>(
+    config: ComponentConfig<A extends HoistModel ? HoistProps<A>: A, A extends HoistModel ? A : B>
+): FunctionComponent<A extends HoistModel ? HoistProps<A> : A>  {
     // 0) Pre-process/parse args.
     if (isFunction(config)) config = {render: config, displayName: config.name};
 
@@ -176,10 +176,10 @@ export const hoistCmp = hoistComponent;
  *
  * @returns an elementFactory function for use within parent comp render() functions.
  */
-hoistComponent.factory = function<P extends HoistProps=HoistProps, M extends HoistModel=HoistModel>(
-    config: ComponentConfig<P, M>
-): ElemFactory<P> {
-    return elemFactory(hoistComponent<P, M>(config));
+hoistComponent.factory = function<A extends HoistModel|HoistProps = HoistModel, B extends HoistModel = HoistModel>(
+    config: ComponentConfig<A extends HoistModel ? HoistProps<A>: A, A extends HoistModel ? A : B>
+): ElemFactory<A extends HoistModel ? HoistProps<A> : A> {
+    return elemFactory(hoistComponent(config));
 };
 
 /**
@@ -187,9 +187,12 @@ hoistComponent.factory = function<P extends HoistProps=HoistProps, M extends Hoi
  *
  * @returns Array, with the Component as the first element and its elemFactory as the second.
  */
-hoistComponent.withFactory = function<P extends HoistProps=HoistProps, M extends HoistModel=HoistModel>(
-    config: ComponentConfig<P, M>
-): [FunctionComponent<P>, ElemFactory<P>] {
+hoistComponent.withFactory = function<A extends HoistModel|HoistProps = HoistModel, B extends HoistModel = HoistModel>(
+    config: ComponentConfig<A extends HoistModel ? HoistProps<A>: A, A extends HoistModel ? A : B>
+): [
+    FunctionComponent<A extends HoistModel ? HoistProps<A> : A>,
+    ElemFactory<A extends HoistModel ? HoistProps<A> : A>
+] {
     const ret = hoistComponent(config);
     return [ret, elemFactory(ret)];
 };
@@ -269,7 +272,7 @@ function callRender(render, spec, model, modelLookup, props, ref, displayName) {
             component '${displayName}'.  Ensure the proper model is available via context, or
             specify explicitly using the 'model' prop.
         `);
-        return hoistCmp._errorCmp({...getLayoutProps(props), item: 'No model found'});
+        return cmpErrorDisplay({...getLayoutProps(props), item: 'No model found'});
     }
     const ctx = localModelContext;
     try {
@@ -361,6 +364,10 @@ function lookupModel(spec, props, modelLookup, displayName) {
 /**
  * @package -- Not for application use.
  *
- * Alternative component to render certain errors caught within hoistComponent.
+ * Component to render certain errors caught within hoistComponent.
  */
-hoistComponent._errorCmp = null;
+export function setCmpErrorDisplay(ef: ElemFactory) {
+    cmpErrorDisplay = ef;
+}
+
+let cmpErrorDisplay: ElemFactory = null;

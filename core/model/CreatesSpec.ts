@@ -25,7 +25,7 @@ import {HoistModel, HoistModelClass, ModelPublishMode} from './';
  */
 export function creates<T extends HoistModel>(
     spec: HoistModelClass<T> | (() => T),
-    opts: CreatesOptions
+    opts: CreatesOptions = {}
 ): CreatesSpec<T> {
     return new CreatesSpec(spec, opts?.publishMode ?? ModelPublishMode.DEFAULT);
 }

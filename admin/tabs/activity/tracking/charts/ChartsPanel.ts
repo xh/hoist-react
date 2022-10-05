@@ -13,7 +13,6 @@ import {Icon} from '@xh/hoist/icon/Icon';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {hspacer} from '@xh/hoist/cmp/layout';
-
 import {ChartsModel} from './ChartsModel';
 
 export const chartsPanel = hoistCmp.factory({
@@ -37,7 +36,7 @@ export const chartsPanel = hoistCmp.factory({
     }
 });
 
-const bbar = hoistCmp.factory(
+const bbar = hoistCmp.factory<ChartsModel>(
     () => toolbar(
         metricSwitcher({multiline: true}),
         hspacer(),
@@ -45,7 +44,7 @@ const bbar = hoistCmp.factory(
     )
 );
 
-const incWeekendsCheckbox = hoistCmp.factory(
+const incWeekendsCheckbox = hoistCmp.factory<ChartsModel>(
     ({model}) => checkbox({
         omit: !model.showAsTimeseries,
         bind: 'incWeekends',
@@ -53,7 +52,7 @@ const incWeekendsCheckbox = hoistCmp.factory(
     })
 );
 
-const metricSwitcher = hoistCmp.factory(
+const metricSwitcher = hoistCmp.factory<ChartsModel>(
     ({model, multiline}) => {
         return buttonGroupInput({
             className: 'xh-admin-activity-panel__metric-switcher',
