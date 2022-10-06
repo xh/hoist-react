@@ -113,6 +113,7 @@ const propertiesGridBar = hoistCmp.factory(
                 '-',
                 button({
                     text: 'Load getters',
+                    icon: Icon.ellipsisHorizontal(),
                     outlined: true,
                     onClick: () => model.loadAllCurrentGetters()
                 }),
