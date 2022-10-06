@@ -74,7 +74,6 @@ export class DashViewModel extends HoistModel {
         this.containerModel = containerModel;
 
         this.refreshContextModel = new ManagedRefreshContextModel(this);
-        this.refreshContextModel.xhImpl = true;
     }
 
     /**

@@ -64,7 +64,6 @@ Slider.hasLayoutSupport = true;
 // Implementation
 //-----------------------
 class SliderInputModel extends HoistInputModel {
-    xhImpl = true;
 
     blur() {
         this.sliderHandle?.blur();

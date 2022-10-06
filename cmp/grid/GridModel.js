@@ -435,7 +435,7 @@ export class GridModel extends HoistModel {
             cellBorders,
             showCellFocus,
             hideHeaders,
-            xhImpl: true
+            xhImpl
         });
 
         this.colChooserModel = this.parseChooserModel(colChooserModel);

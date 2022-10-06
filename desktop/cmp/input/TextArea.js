@@ -58,7 +58,6 @@ TextArea.hasLayoutSupport = true;
 // Implementation
 //-----------------------
 class TextAreaInputModel extends HoistInputModel {
-    xhImpl = true;
 
     get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);

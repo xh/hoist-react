@@ -126,7 +126,6 @@ NumberInput.hasLayoutSupport = true;
 // Implementation
 //-----------------------
 class NumberInputModel extends HoistInputModel {
-    xhImpl = true;
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 

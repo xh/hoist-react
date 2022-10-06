@@ -1,5 +1,5 @@
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {div, filler, hframe, span} from '@xh/hoist/cmp/layout';
+import {div, filler, fragment, hframe, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -16,13 +16,14 @@ export const instancesPanel = hoistCmp.factory({
 
     /** @param {InstancesModel} model */
     render({model}) {
-        const {propertiesPanelModel} = model,
-            {collapsed} = propertiesPanelModel;
+        const {instancesPanelModel} = model;
 
         return panel({
             item: hframe(
                 panel({
-                    flex: 1,
+                    title: 'Model + Service Instances',
+                    icon: Icon.cube(),
+                    compactHeader: true,
                     item: grid({
                         model: model.instancesGridModel,
                         agOptions: {
@@ -30,13 +31,13 @@ export const instancesPanel = hoistCmp.factory({
                             suppressMakeColumnVisibleAfterUnGroup: true
                         }
                     }),
-                    bbar: instanceGridBar()
+                    bbar: instanceGridBar(),
+                    model: instancesPanelModel
                 }),
                 panel({
-                    title: collapsed ? 'Properties' : null,
-                    icon: collapsed ? Icon.fileText() : null,
+                    title: 'Properties',
+                    icon: Icon.fileText(),
                     compactHeader: true,
-                    model: propertiesPanelModel,
                     item: grid({model: model.propertiesGridModel}),
                     bbar: propertiesGridBar()
                 })
@@ -50,7 +51,6 @@ const instanceGridBar = hoistCmp.factory(
     ({model}) => {
         const {modelInstanceGridModel} = model;
         return toolbar({
-            compact: true,
             items: [
                 switchInput({
                     bind: 'showInGroups',
@@ -59,20 +59,23 @@ const instanceGridBar = hoistCmp.factory(
                 '-',
                 switchInput({
                     bind: 'showXhImpl',
-                    label: 'xhImpl'
-                }),
-                popover({
-                    target: Icon.info(),
-                    interactionKind: 'hover',
-                    content: div({
-                        className: 'xh-pad',
-                        item: span('Enable to show instances created as part of internal Hoist model/component implementations.')
+                    label: popover({
+                        target: span('xhImpl ', Icon.info()),
+                        interactionKind: 'hover',
+                        content: div({
+                            className: 'xh-popup--framed',
+                            item: span('Enable to show instances created as part of internal Hoist model/component implementations.')
+                        })
                     })
                 }),
                 filler(),
                 gridCountLabel({unit: 'instance', gridModel: modelInstanceGridModel}),
                 '-',
-                storeFilterField({gridModel: modelInstanceGridModel, matchMode: 'any'})
+                storeFilterField({
+                    gridModel: modelInstanceGridModel,
+                    bind: 'instancesStoreFilter',
+                    matchMode: 'any'
+                })
             ]
         });
     }
@@ -83,32 +86,31 @@ const propertiesGridBar = hoistCmp.factory(
     ({model}) => {
         const {propertiesGridModel} = model;
         return toolbar({
-            compact: true,
             items: [
                 switchInput({
                     bind: 'ownPropsOnly',
-                    label: 'Own props only',
+                    label: 'Own only',
                     labelSide: 'right'
                 }),
                 '-',
                 switchInput({
                     bind: 'observablePropsOnly',
-                    label: 'Observables only',
+                    label: fragment(Icon.eye(), ' only'),
                     labelSide: 'right'
                 }),
                 '-',
                 switchInput({
                     bind: 'showUnderscoreProps',
-                    label: '_props',
+                    label: '_ props',
                     labelSide: 'right'
                 }),
                 '-',
                 button({
-                    text: 'Load all getters',
+                    text: 'Load getters',
                     onClick: () => model.loadAllCurrentGetters()
                 }),
                 filler(),
-                gridCountLabel({unit: 'properties', gridModel: propertiesGridModel}),
+                gridCountLabel({unit: 'props', gridModel: propertiesGridModel}),
                 '-',
                 storeFilterField({gridModel: propertiesGridModel, matchMode: 'any'})
             ]

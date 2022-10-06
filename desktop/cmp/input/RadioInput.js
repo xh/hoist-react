@@ -46,7 +46,6 @@ RadioInput.propTypes = {
 // Implementation
 //-----------------------
 class RadioInputModel extends HoistInputModel {
-    xhImpl = true;
 
     blur() {
         this.enabledInputs.forEach(it => it.blur());

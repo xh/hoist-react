@@ -230,12 +230,13 @@ export class HoistModel extends HoistBase {
         return false;
     }
 
-    /** @override */
+    /** @override - linked models take nearest context model value if not otherwise set. */
     get xhImpl() {
         if (this._xhImpl !== undefined) return this._xhImpl;
         if (this.isLinked) return this.lookupModel('*')?.xhImpl ?? false;
         return false;
     }
+    set xhImpl(v) {super.xhImpl = v}
 
     destroy() {
         super.destroy();

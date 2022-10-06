@@ -268,6 +268,8 @@ export class FormModel extends HoistModel {
         const me = this;
         return new Proxy({}, {
             get(target, name, receiver) {
+                // Allows Inspector to detect this as a proxy.
+                if (name === '_xhIsProxy') return true;
 
                 const field = me.fields[name];
                 if (field?.isFieldModel) {

@@ -15,6 +15,7 @@ import {loadAllAsync, RefreshContextModel, RefreshMode} from '@xh/hoist/core';
  *  b) A `refreshMode` property, that returns a RefreshMode enum value.
  */
 export class ManagedRefreshContextModel extends RefreshContextModel {
+    xhImpl = true;
 
     model;
 

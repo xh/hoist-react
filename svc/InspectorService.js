@@ -108,23 +108,24 @@ export class InspectorService extends HoistService {
     sync() {
         if (!this.active) return;
 
-        const models = [
+        const instances = [
             ...XH.getActiveModels(),
             ...XH.getServices()
         ];
 
-        this.setActiveInstances(models.map(model => {
-            const className = model.constructor.name;
+        this.setActiveInstances(instances.map(inst => {
+            const className = inst.constructor.name,
+                {xhId} = inst;
             return {
-                id: model.xhId,
+                id: xhId,
                 className,
-                displayGroup: model.isHoistModel ? className : 'Services',
-                created: model._created,
-                isLinked: model.isLinked,
-                isXhImpl: model.xhImpl,
-                hasLoadSupport: model.loadSupport != null,
-                lastLoadCompleted: model.lastLoadCompleted,
-                lastLoadException: model.lastLoadException
+                displayGroup: inst.isHoistModel ? className : 'Services',
+                created: inst._created,
+                isLinked: inst.isLinked,
+                isXhImpl: inst.xhImpl,
+                hasLoadSupport: inst.loadSupport != null,
+                lastLoadCompleted: inst.lastLoadCompleted,
+                lastLoadException: inst.lastLoadException
             };
         }));
     }

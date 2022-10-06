@@ -14,11 +14,9 @@ export const statsPanel = hoistCmp.factory({
 
     /** @param {StatsModel} model */
     render({model}) {
-        const {panelModel} = model,
-            {collapsed} = panelModel;
         return panel({
-            title: collapsed ? 'Stats' : null,
-            icon: collapsed ? Icon.chartArea() : null,
+            title: 'Stats',
+            icon: Icon.chartArea(),
             compactHeader: true,
             model: model.panelModel,
             items: [
@@ -33,8 +31,16 @@ export const statsPanel = hoistCmp.factory({
                 })
             ],
             bbar: toolbar({
-                compact: true,
                 items: [
+                    popover({
+                        target: span('JS Heap ', Icon.info()),
+                        interactionKind: 'hover',
+                        content: div({
+                            className: 'xh-pad',
+                            item: span('Note that JS heap space is as reported by the ', code('window.performance.memory'), ' API.')
+                        })
+                    }),
+                    filler(),
                     button({
                         tooltip: 'Reset stats',
                         icon: Icon.reset(),
@@ -44,15 +50,6 @@ export const statsPanel = hoistCmp.factory({
                         tooltip: 'Take stat snapshot now',
                         icon: Icon.camera(),
                         onClick: () => XH.inspectorService.updateStats()
-                    }),
-                    filler(),
-                    popover({
-                        target: span(Icon.info(), ' JS Heap'),
-                        interactionKind: 'hover',
-                        content: div({
-                            className: 'xh-pad',
-                            item: span('Note that JS heap space is as reported by the ', code('window.performance.memory'), ' API.')
-                        })
                     })
                 ]
             })

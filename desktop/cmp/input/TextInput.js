@@ -90,7 +90,6 @@ TextInput.hasLayoutSupport = true;
 // Implementation
 //-----------------------
 class TextInputModel extends HoistInputModel {
-    xhImpl = true;
 
     get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
