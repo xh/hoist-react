@@ -26,8 +26,8 @@ export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory({
     className: 'xh-button-group-input',
     render(props, ref) {
         warnIf(
-            props.enableMulti && !props.enableClear,
-            'enableClear prop cannot be set to false when enableMulti is true.  Setting ignored.'
+            props.enableMulti && props.enableClear === false,
+            'enableClear prop cannot be set to false when enableMulti is true - setting ignored.'
         );
         return useHoistInputModel(cmp, props, ref, ButtonGroupInputModel);
     }
@@ -37,8 +37,8 @@ ButtonGroupInput.propTypes = {
     ...ButtonGroup.propTypes,
 
     /**
-     * True to allow buttons to be unselected (aka inactivated). Used when enableMulti is false.
-     * Defaults to false.
+     * True to allow buttons to be unselected (aka inactivated). Defaults to false.
+     * Does not apply when enableMulti: true.
      */
     enableClear: PT.bool,
 
