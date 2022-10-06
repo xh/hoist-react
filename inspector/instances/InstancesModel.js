@@ -15,13 +15,13 @@ import {isObservableProp, makeObservable} from 'mobx';
 const {AUTO, BOOL, DATE, STRING} = FieldType;
 
 /**
- * Displays a list of current HoistModel and HoistService instances, with the ability to view
- * properties (including reactive updates) for a selected instance.
+ * Displays a list of current HoistModel, HoistService, and Store instances, with the ability to
+ * view properties (including reactive updates) for a selected instance.
  */
 export class InstancesModel extends HoistModel {
     xhImpl = true;
 
-    persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.models`};
+    persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.instances`};
 
     /** @member {GridModel} */
     instancesGridModel;
@@ -30,18 +30,21 @@ export class InstancesModel extends HoistModel {
     /** @member {PanelModel} */
     instancesPanelModel;
 
-    @bindable @persist showInGroups = true;
-    @bindable @persist showXhImpl = false;
-    @bindable @persist showUnderscoreProps = false;
-    @bindable @persist observablePropsOnly = false;
-    @bindable @persist ownPropsOnly = true;
-
     @bindable.ref propsWatchlist = [];
     @bindable.ref loadedGetters = [];
 
     // Persisted storeFilterFields (convenient across frequent page refreshes when developing)
     @bindable @persist instancesStoreFilter;
     @bindable @persist propertiesStoreFilter;
+
+    @bindable @persist instQuickFilters = ['showInGroups'];
+    get showInGroups() {return this.instQuickFilters?.includes('showInGroups')}
+    get showXhImpl() {return this.instQuickFilters?.includes('showXhImpl')}
+
+    @bindable @persist propQuickFilters = [];
+    get showUnderscoreProps() {return this.propQuickFilters?.includes('showUnderscoreProps')}
+    get observablePropsOnly() {return this.propQuickFilters?.includes('observablePropsOnly')}
+    get ownPropsOnly() {return this.propQuickFilters?.includes('ownPropsOnly')}
 
     /** @return {HoistBase[]} */
     get selectedInstances() {
@@ -69,17 +72,10 @@ export class InstancesModel extends HoistModel {
             {
                 track: () => this.showInGroups,
                 run: (showInGroups) => this.instancesGridModel.setGroupBy(showInGroups ? 'displayGroup' : null)
-            },
-            {
-                track: () => [XH.inspectorService.activeInstances, this.showXhImpl],
-                run: ([activeInstances, showXhImpl]) => {
-                    const data = showXhImpl ? activeInstances : activeInstances.filter(it => !it.isXhImpl);
-                    this.instancesGridModel.loadData(data);
-                },
-                fireImmediately: true
             }
         );
 
+        this.autoLoadInstancesGrid();
         this.autoLoadPropertiesGrid();
     }
 
@@ -146,7 +142,9 @@ export class InstancesModel extends HoistModel {
 
     getInstance(xhId) {
         if (!xhId) return null;
-        return head(XH.getActiveModels(it => it.xhId === xhId)) ?? XH.getServices().find(it => it.xhId === xhId);
+        return head(XH.getActiveModels(it => it.xhId === xhId)) ??
+            XH.getServices().find(it => it.xhId === xhId) ??
+            XH.getStores().find(it => it.xhId === xhId);
     }
 
 
@@ -163,6 +161,9 @@ export class InstancesModel extends HoistModel {
                     {name: 'className', type: STRING},
                     {name: 'displayGroup', type: STRING},
                     {name: 'created', type: DATE},
+                    {name: 'isHoistService', type: BOOL},
+                    {name: 'isHoistModel', type: BOOL},
+                    {name: 'isStore', type: BOOL},
                     {name: 'isLinked', type: BOOL},
                     {name: 'isXhImpl', type: BOOL},
                     {name: 'hasLoadSupport', type: BOOL},
@@ -172,11 +173,6 @@ export class InstancesModel extends HoistModel {
             },
             sortBy: ['created'],
             groupBy: this.showInGroups ? 'displayGroup' : null,
-            groupSortFn: (a, b) => {
-                a = a === 'Services' ? '!' : a;
-                b = b === 'Services' ? '!' : b;
-                return this.instancesGridModel.defaultGroupSortFn(a, b);
-            },
             selModel: {mode: 'multiple'},
             colChooserModel: true,
             columns: [
@@ -254,6 +250,8 @@ export class InstancesModel extends HoistModel {
                     {name: 'isWatchlistItem', type: BOOL},
                     {name: 'isObservable', type: BOOL},
                     {name: 'isHoistModel', type: BOOL},
+                    {name: 'isHoistService', type: BOOL},
+                    {name: 'isStore', type: BOOL},
                     {name: 'isGetter', type: BOOL},
                     {name: 'isLoadedGetter', type: BOOL}
                 ]
@@ -308,7 +306,7 @@ export class InstancesModel extends HoistModel {
                         if (data.isGetter && !data.isLoadedGetter) {
                             return a({item: '(...)', onClick: () => this.loadGetter(record)});
                         }
-                        if (data.isHoistModel || data.isHoistService) {
+                        if (data.isHoistModel || data.isHoistService || data.isStore) {
                             return a({item: v, onClick: () => this.selectInstanceAsync(v)});
                         }
                         return JSON.stringify(trimToDepth(v, 2));
@@ -322,6 +320,24 @@ export class InstancesModel extends HoistModel {
                 this.logPropToConsole(rec);
             },
             xhImpl: true
+        });
+    }
+
+    autoLoadInstancesGrid() {
+        this.addAutorun({
+            run: () => {
+                const {showXhImpl, instancesGridModel} = this,
+                    data = [];
+
+                XH.inspectorService.activeInstances.forEach(inst => {
+                    if (!showXhImpl && inst.isXhImpl) return;
+
+                    const displayGroup = inst.isHoistService ? 'Services' : inst.isStore ? 'Stores' : 'Models';
+                    data.push({...inst, displayGroup});
+                });
+
+                instancesGridModel.loadData(data);
+            }
         });
     }
 
@@ -398,7 +414,8 @@ export class InstancesModel extends HoistModel {
             // Detect FormModel.values Proxy object - throws otherwise on attempt to render in grid.
             isProxy = !!v?._xhIsProxy,
             isHoistModel = v?.isHoistModel,
-            isHoistService = v?.isHoistService;
+            isHoistService = v?.isHoistService,
+            isStore = v?.isStore;
 
         const valueType = (isGetter && !isLoadedGetter) ?
             'get(?)' :
@@ -412,12 +429,13 @@ export class InstancesModel extends HoistModel {
             // Watchlist items are shown under a single group - differentiate by prepending instDisplayName
             displayProperty: fromWatchlistItem ? `${instanceDisplayName}.${property}` : property,
             displayGroup: fromWatchlistItem ? 'Watchlist' : instanceDisplayName,
-            value: (isHoistModel || isHoistService) ? v.xhId : isProxy ? '[cannot render]' : v,
+            value: (isHoistModel || isHoistService || isStore) ? v.xhId : isProxy ? '[cannot render]' : v,
             valueType,
             isOwnProperty,
             isObservable,
             isHoistModel,
             isHoistService,
+            isStore,
             isGetter,
             isLoadedGetter,
             isWatchlistItem: !!this.getWatchlistItem(xhId, property)

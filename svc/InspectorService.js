@@ -6,19 +6,19 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 
 /**
  * Developer/Admin focused service to provide additional processing and stats related to the
- * running application, specifically its active models as returned by `XH.getActiveModels()`.
+ * running application, specifically its current HoistModel, HoistService, and Store instances.
  *
- * Activating this service will cause it to maintain a Store of active model instances, synced
- * (with a minimal throttle) on each change to the Hoist model registry, as well as a Store of model
- * counts + heap usage snapshots, also updated on model changes and periodically in the background.
+ * Activating this service will cause it to maintain an observable array of summary data synced
+ * (with a minimal throttle) on each change to the Hoist registry, as well as an array of model
+ * count / memory usage stats, also updated on model changes and periodically in the background.
  *
  * When running in a Desktop application, activating this service will trigger the display of the
  * Hoist Inspector UI - {@see inspectorPanel}. A built-in control to activate/deactivate this
  * service is provided within the Desktop versionBar component.
  *
  * This service may be completely disabled via an optional `xhInspectorConfig` appConfig, although
- * note that this config does *not* disable the backing model registry within XH. Access to
- * Inspector can also be limited to users with a particular app role, using the same config.
+ * note that this config does *not* disable the backing registry within XH. Access to Inspector can
+ * also be limited to users with a particular app role, using the same config.
  */
 export class InspectorService extends HoistService {
     xhImpl = true;
@@ -37,7 +37,7 @@ export class InspectorService extends HoistService {
     /** @member {boolean} - true to start processing model stats and show the Inspector UI. */
     @observable @persist active = false;
 
-    /** @member {InspectorInstanceData[]} - info on active services and models (when active). */
+    /** @member {InspectorInstanceData[]} - info on current services/models/stores (when active). */
     @observable.ref activeInstances = [];
     /** @member {InspectorStat[]} - timestamped model counts w/memory usage (when active). */
     @observable.ref stats = [];
@@ -110,17 +110,18 @@ export class InspectorService extends HoistService {
 
         const instances = [
             ...XH.getActiveModels(),
-            ...XH.getServices()
+            ...XH.getServices(),
+            ...XH.getStores()
         ];
 
         this.setActiveInstances(instances.map(inst => {
-            const className = inst.constructor.name,
-                {xhId} = inst;
             return {
-                id: xhId,
-                className,
-                displayGroup: inst.isHoistModel ? className : 'Services',
+                id: inst.xhId,
+                className: inst.constructor.name,
                 created: inst._created,
+                isHoistService: inst.isHoistService,
+                isHoistModel: inst.isHoistModel,
+                isStore: inst.isStore,
                 isLinked: inst.isLinked,
                 isXhImpl: inst.xhImpl,
                 hasLoadSupport: inst.loadSupport != null,
@@ -172,8 +173,10 @@ export class InspectorService extends HoistService {
 /**
  * @typedef {Object} InspectorInstanceData
  * @property {string} className
- * @property {string} displayGroup
  * @property {Date} created
+ * @property {boolean} isHoistModel
+ * @property {boolean} isHoistService
+ * @property {boolean} isStore
  * @property {boolean} isLinked
  * @property {boolean} isXhImpl
  * @property {Date} lastLoadCompleted

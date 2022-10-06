@@ -370,6 +370,8 @@ export class GridModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
+        this.xhImpl = xhImpl;
+
         this._defaultState = {columns, sortBy, groupBy};
 
         this.treeMode = treeMode;
@@ -455,8 +457,6 @@ export class GridModel extends HoistModel {
             run: (isEditing) => this.isInEditingMode = isEditing,
             debounce: 500
         });
-
-        this.xhImpl = xhImpl;
     }
 
     /**
@@ -1313,6 +1313,7 @@ export class GridModel extends HoistModel {
         if (isPlainObject(store)) {
             store = this.enhanceStoreConfigFromColumns(store);
             store = new Store({loadTreeData: this.treeMode, ...store});
+            store.xhImpl = this.xhImpl;
             this.markManaged(store);
         }
 

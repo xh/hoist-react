@@ -20,7 +20,6 @@ import {
     isString,
     remove as lodashRemove
 } from 'lodash';
-
 import {Field} from './Field';
 import {parseFilter} from './filter/Utils';
 import {RecordSet} from './impl/RecordSet';
@@ -90,6 +89,7 @@ export class Store extends HoistBase {
     @observable.ref _filtered;
 
     _dataDefaults = null;
+    _created = Date.now();
 
     /**
      * @param {Object} c - Store configuration.
@@ -169,6 +169,8 @@ export class Store extends HoistBase {
         this._dataDefaults = this.createDataDefaults();
         this._fieldMap = this.createFieldMap();
         if (data) this.loadData(data);
+
+        Store._registerInstance(this);
     }
 
     /** Remove all records from the store. Equivalent to calling `loadData([])`. */
@@ -766,7 +768,9 @@ export class Store extends HoistBase {
     }
 
     /** Destroy this store, cleaning up any resources used. */
-    destroy() {}
+    destroy() {
+        Store._unregisterInstance(this);
+    }
 
     //--------------------
     // For Implementations
@@ -944,6 +948,15 @@ export class Store extends HoistBase {
         );
     }
 }
+
+/**
+ * @type {ObservableSet<Store>} - As with HoistModel - soon to be improved in TS world with more centralized registry.
+ * @package
+ */
+Store._instances = observable.set(new Set(), {deep: false});
+Store._registerInstance = action(instance => Store._instances.add(instance));
+Store._unregisterInstance = action(instance => Store._instances.delete(instance));
+
 
 //---------------------------------------------------------------------
 // Iterate over the properties of a raw data/update  object.
