@@ -4,8 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {loadAllAsync, XH} from '@xh/hoist/core';
-import {RefreshContextModel} from './RefreshContextModel';
+import {loadAllAsync, RefreshContextModel, XH} from '@xh/hoist/core';
 
 /**
  * Top-level refresh context model - triggers a full refresh of the app via a call to `loadAsync()`
@@ -17,8 +16,6 @@ import {RefreshContextModel} from './RefreshContextModel';
  * The `XH.refreshAppAsync()` convenience method is the recommended entry-point for apps to call.
  */
 export class RootRefreshContextModel extends RefreshContextModel {
-    xhImpl = true;
-
     async doLoadAsync(loadSpec) {
         const {appModel} = XH;
         if (appModel.loadSupport) {

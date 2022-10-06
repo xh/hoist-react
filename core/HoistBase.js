@@ -51,7 +51,7 @@ export class HoistBase {
      *      from those that are not.
      * @package
      */
-    get xhImpl() {return this._xhImpl}
+    get xhImpl() {return this._xhImpl ?? false}
     set xhImpl(xhImpl) {this._xhImpl = xhImpl}
     _xhImpl;
 

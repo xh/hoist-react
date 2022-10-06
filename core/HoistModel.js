@@ -230,6 +230,13 @@ export class HoistModel extends HoistBase {
         return false;
     }
 
+    /** @override */
+    get xhImpl() {
+        if (this._xhImpl !== undefined) return this._xhImpl;
+        if (this.isLinked) return this.lookupModel('*')?.xhImpl ?? false;
+        return false;
+    }
+
     destroy() {
         super.destroy();
         HoistModel._unregisterModelInstance(this);
