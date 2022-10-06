@@ -10,7 +10,7 @@ import {action, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {trimToDepth} from '@xh/hoist/utils/js';
 import {compact, find, forIn, head, without} from 'lodash';
-import {isObservableProp, makeObservable} from 'mobx';
+import {isObservableProp, makeObservable, runInAction} from 'mobx';
 
 const {AUTO, BOOL, DATE, STRING} = FieldType;
 
@@ -66,8 +66,10 @@ export class InstancesModel extends HoistModel {
 
         this.addReaction(
             {
-                track: () => this.instancesGridModel.store.records,
-                run: () => this.instancesGridModel.preSelectFirstAsync()
+                track: () => this.instancesGridModel.selectedIds,
+                run: (ids) => {this.propertiesGridModel.setEmptyText(ids.length ? 'No matching properties found' : 'Select an instance to view properties')},
+                delay: 300,
+                fireImmediately: true
             },
             {
                 track: () => this.showInGroups,
@@ -83,7 +85,9 @@ export class InstancesModel extends HoistModel {
         const inst = this.getInstance(xhId);
 
         if (inst.xhImpl && !this.showXhImpl) {
-            this.setShowXhImpl(true);
+            runInAction(() => {
+                this.instQuickFilters = [...this.instQuickFilters, 'showXhImpl'];
+            });
             await wait();
         }
 
@@ -228,7 +232,6 @@ export class InstancesModel extends HoistModel {
         return new GridModel({
             persistWith: {...this.persistWith, path: 'propertiesGrid'},
             autosizeOptions: {mode: GridAutosizeMode.MANAGED},
-            emptyText: 'No matching properties found',
             sortBy: 'displayProperty',
             groupBy: 'displayGroup',
             showGroupRowCounts: false,
@@ -283,7 +286,7 @@ export class InstancesModel extends HoistModel {
                     width: 200,
                     renderer: (v, {record}) => {
                         return record.data.displayGroup === 'Watchlist' ?
-                            a({item: v, onClick: () => this.selectInstanceAsync(record.data.xhId)}) :
+                            a({item: v, onClick: () => this.selectInstanceAsync(record.data.instanceXhId)}) :
                             v;
                     }
                 },

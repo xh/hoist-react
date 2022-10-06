@@ -11,14 +11,14 @@
   match. Previously only a class reference could be provided.
 * The Admin Console diff tool for Configs, Prefs, and JSONBlobs now displays who updated each value
   and when.
-* New "Hoist Inspector" tool available in Desktop apps for displaying and querying Models and
-  Services within the application.
+* New "Hoist Inspector" tool available in Desktop apps for displaying and querying Models,
+  Services, and Stores within a running application.
     * Powered by a new method `XH.activeModels()`, which supports listing and querying all models
       instantiated within a running app, and `XH.inspectorService`, which provides additional
       processing of that model data when active.
     * Admin/dev-focused UI available on Desktop, activated via discrete new toggle in the bottom
       version bar (magnifying glass icon), or via console with `XH.inspectorService.activate()`.
-    * Selecting a model or service instance allows a quick view at its properties, including
+    * Selecting a model/service/store instance allows a quick view at its properties, including
       reactively updated observables. Useful for troubleshooting application state in realtime.
 
 ### 💥 Breaking Changes

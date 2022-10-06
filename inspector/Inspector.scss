@@ -1,6 +1,7 @@
 .xh-inspector {
   > div > .xh-panel__content > .xh-panel-header {
     background-color: hsl(33, 93%, 40%);
+    color: white;
   }
 
   .xh-font-family-mono {
@@ -9,5 +10,9 @@
 
   .xh-impl-row .xh-cell-inner-wrapper {
     color: var(--xh-text-color-muted);
+  }
+
+  .xh-toolbar {
+    background-color: var(--xh-bg);
   }
 }
