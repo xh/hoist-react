@@ -9,6 +9,8 @@ import {FieldType, parseFieldValue} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
+import {isValidElement} from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
 
 /**
  * Filter field specification class for the typeahead `FilterChooser` component. Manages additional
@@ -77,6 +79,10 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         let ret;
         if (isFunction(this.valueRenderer)) {
             ret = this.valueRenderer(value, op);
+            if (isValidElement(ret)) {
+                // Prevents [object Object] rendering
+                ret = renderToStaticMarkup(ret);
+            }
         } else if (this.isDateBasedFieldType) {
             ret = fmtDate(value);
         } else {
