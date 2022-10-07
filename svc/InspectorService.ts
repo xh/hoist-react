@@ -23,7 +23,7 @@ import {instanceManager} from '@xh/hoist/core/InstanceManager';
  */
 export class InspectorService extends HoistService {
 
-    get xhImpl():boolean {return true}
+    xhImpl = true;
 
     persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}`};
 

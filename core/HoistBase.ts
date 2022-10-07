@@ -58,8 +58,7 @@ export class HoistBase {
      * from those that are not.
      * @package
      */
-    get xhImpl():boolean {return this._xhImpl ?? false}
-    set xhImpl(xhImpl:boolean) {this._xhImpl = xhImpl}
+    xhImpl: boolean = undefined;
 
     // Internal State
     private managedInstances = [];

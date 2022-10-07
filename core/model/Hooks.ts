@@ -19,7 +19,7 @@ import {
 
 import {XH} from '../';
 import {useOnUnmount} from '@xh/hoist/utils/react';
-import {each} from 'lodash';
+import {each, isUndefined} from 'lodash';
 
 /**
  * Hook to allow a component to access a HoistModel provided in context by an ancestor component.
@@ -82,8 +82,18 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
             }
             model[name] = parentModel;
         });
+
+        // Linked models with an impl parent that are not explicitly marked should be marked as impl.
+        if (model && isUndefined(model.xhImpl)) {
+            const parentModel = modelLookup.lookupModel('*');
+            if (parentModel?.xhImpl === true) {
+                model.xhImpl = true;
+            }
+        }
+
         model.setComponentProps(props);
         model.onLinked();
+
     }
 
     // 2) Linking async work: call afterLinked(), and wire up loadSupport
