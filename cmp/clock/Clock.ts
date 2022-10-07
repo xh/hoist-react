@@ -25,7 +25,7 @@ export const [Clock, clock] = hoistCmp.withFactory<ClockProps>({
     model: false,
 
     render({className, ...props}, ref) {
-        const impl = useLocalModel(LocalModel);
+        const impl = useLocalModel(ClockLocalModel);
         return box({
             className,
             ...getLayoutProps(props),
@@ -59,7 +59,8 @@ export interface ClockProps extends BoxProps {
     updateInterval?: number
 }
 
-class LocalModel extends HoistModel {
+class ClockLocalModel extends HoistModel {
+    xhImpl = true;
 
     offset;
     offsetException;

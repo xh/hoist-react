@@ -27,6 +27,7 @@ import {withDefault, logDebug} from '@xh/hoist/utils/js';
  * @see RefreshContextModel - the underlying mechanism used to implement the refresh.
  */
 export class AutoRefreshService extends HoistService {
+    xhImpl = true;
 
     @managed
     private timer: Timer;

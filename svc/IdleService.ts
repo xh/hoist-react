@@ -19,6 +19,7 @@ import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
  * user preference to determine if and when it should suspend the app.
  */
 export class IdleService extends HoistService {
+    xhImpl = true;
 
     @managed
     private timer: Timer = null;

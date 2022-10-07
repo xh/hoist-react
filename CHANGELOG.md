@@ -11,13 +11,15 @@
   match. Previously only a class reference could be provided.
 * The Admin Console diff tool for Configs, Prefs, and JSONBlobs now displays who updated each value
   and when.
-* New "Hoist Inspector" tool available in Desktop apps for displaying and querying models running in
-  an application and their properties (especially observables).
+* New "Hoist Inspector" tool available in Desktop apps for displaying and querying Models,
+  Services, and Stores within a running application.
     * Powered by a new method `XH.activeModels()`, which supports listing and querying all models
       instantiated within a running app, and `XH.inspectorService`, which provides additional
       processing of that model data when active.
     * Admin/dev-focused UI available on Desktop, activated via discrete new toggle in the bottom
       version bar (magnifying glass icon), or via console with `XH.inspectorService.activate()`.
+    * Selecting a model/service/store instance allows a quick view at its properties, including
+      reactively updated observables. Useful for troubleshooting application state in realtime.
 
 ### 💥 Breaking Changes
 
@@ -26,18 +28,24 @@
   APIs (unlikely), no other changes should be required.
 * The deprecated method `XH.setDarkTheme` has been removed. Use `XH.setTheme` instead.
 
+### 🐞 Bug Fixes
+
+* Boolean filterChooser fields with enableValues=false will no longer suggest true for 'false'.
+* Change to `CompoundTaskObserver` to prioritize using specific messages from subtasks over the
+  overall task message.
+
 ### ⚙️ Technical
 
 * `HoistComponents` no longer mutate the props object passed to them in React production mode. This
   was not causing noticeable application issues, but could result in a component's base CSS class
   being applied multiple times to its DOM element.
-* GridModel will once again immediately sync data with its underlying ag-Grid component. This
+* New check within service initialization to ensure that app service classes extend `HoistService`
+  as required. (Has always been the expectation, but was not previously enforced.)
+* `GridModel` will once again immediately sync data with its underlying ag-Grid component. This
   reverses a v50.0.0 change that introduced a minimal debounce in order to work around an ag-Grid
   rendering bug. The ag-Grid bug has been resolved, and this workaround is no longer needed.
 * `GridExportService` has improved support for columns of `FieldType.AUTO` and for columns with
   multiple data types and custom export functions. (Requires `hoist-core >= 14.3`)
-* Change to `CompoundTaskObserver` to prioritize using specific messages from subtasks over the
-  overall task message.
 * The `trimToDepth` has been improved to return a depth-limited clone of its input that better
   handles nested arrays and passes through primitive inputs unchanged.
 
@@ -52,11 +60,18 @@
 
 ### 🎁 New Features
 
-* `HoistBase` `addReaction()` and `addAutorun()` now can create multiple reactions in one call, and
-  will ignore nullish inputs.
 * `ButtonGroupInput` supports new `enableMulti` prop.
 * `AboutDialog` can now display more dynamic custom properties.
-* New option on Admin Activity Tracking chart to toggle on/off weekends when viewing a time series.
+* New option added to the Admin Activity Tracking chart to toggle on/off weekends when viewing a
+  time series.
+* The `filterText` field in `ColumnHeaderFilter` now gets autoFocused.
+
+### 💥 Breaking Changes
+
+* `CodeInput` is now rendered within an additional `div` element. Unlikely to cause issues, unless
+  using targeted styling of this component.
+* `xhAboutMenuConfigs` soft-config is no longer supported. To customize the `AboutDialog`, see
+  `HoistAppModel.getAboutDialogItems()`
 
 ### 🐞 Bug Fixes
 
@@ -66,24 +81,18 @@
 * Fixed incorrect text color on desktop toasts with a warning intent.
 * Fixed potential for duplication of default Component `className` within list of CSS classes
   rendered into the DOM.
-
-### 💥 Breaking Changes
-
-* `CodeInput` is now rendered within an additional `div` element. Unlikely to cause issues, unless
-  using targeted styling of this component.
-* `xhAboutMenuConfigs` soft-config is no longer supported. To customize the `AboutDialog`, see
-  `HoistAppModel.getAboutDialogItems()`
-
-### ⚙️ Technical
-
 * Added missing `@computed` annotations to several `Store` getters that relay properties from
   its internal recordsets, including `maxDepth` and getters returning counts and empty status.
     * Avoids unnecessary internal render cycles within `Grid` when in tree mode.
     * Could require adjustments for apps that unintentionally relied on these observable getters
       triggering re-renders when records have changed in any way (but their output values have not).
 * Hoist-supported menus will no longer filter out a `MenuDivider` if it has a `title`.
-* The `filterText` field in `ColumnHeaderFilter` now gets autoFocused.
 * The default `FormField` read-only renderer now supports line breaks.
+
+### ⚙️ Technical
+
+* The `addReaction()` and `addAutorun()` methods on `HoistBase` (i.e. models and services) now
+  support passing multiple reactions in a single call and will ignore nullish inputs.
 
 ## v50.1.1 - 2022-07-29
 
@@ -94,13 +103,10 @@
 * Improved behavior of `GridModel.whenReadyAsync()` to allow Grid more time to finish loading data.
   This improves the behavior of related methods `preSelectFirstAsync`, `selectFirstAsync`, and
   `ensureVisibleAsync`.
-
-### ⚙️ Technical
-
+* `Grid` context menus are now disabled when a user is inline editing.
 * An empty `DashCanvas` / `DashContainer` 'Add View' button now only displays a menu of available
-  views, without unnecessarily nesting them inside an 'Add' submenu
-* Update `AppMenuButton` and `ContextMenu` to support Blueprint4 `menuItem`'s
-* `Grid` `ContextMenu` is now disabled when a user is inline editing
+  views, without unnecessarily nesting them inside an 'Add' submenu.
+* Update `AppMenuButton` and `ContextMenu` to support Blueprint4 `menuItem`.
 
 ## v50.1.0 - 2022-07-21
 
@@ -140,6 +146,7 @@
       tested carefully and may require a call to `await whenReadyAsync()`.
     * Note that this method is already incorporated in to several public methods on `GridModel`,
       including `selectFirstAsync()` and `ensureSelectionVisibleAsync()`.
+    * ⚠ NOTE - this change has been reverted as of v52 (see above).
 * Blueprint has updated all of its CSS class names to use the `bp4-` prefix instead of the `bp3-`
   prefix. Any apps styling these classes directly may need to be adjusted. See
   https://github.com/palantir/blueprint/wiki/Blueprint-4.0 for more info.

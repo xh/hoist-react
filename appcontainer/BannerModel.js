@@ -11,6 +11,7 @@ import {HoistModel} from '@xh/hoist/core';
  * @private
  */
 export class BannerModel extends HoistModel {
+    xhImpl = true;
 
     // Immutable public properties
     category;

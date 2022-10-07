@@ -49,9 +49,23 @@ export class HoistBase {
     static get isHoistBase(): boolean {return true}
     get isHoistBase(): boolean {return true}
 
+    /**
+     * For XH internal use only - marks this instance as created by and for
+     * Hoist as part of its own implementation. Used as a filter within Hoist Inspector to
+     * distinguish services and models that are either:
+     *    a) created directly by the app developer -or-
+     *    b) important/public parts of the Hoist API
+     * from those that are not.
+     * @package
+     */
+    get xhImpl():boolean {return this._xhImpl ?? false}
+    set xhImpl(xhImpl:boolean) {this._xhImpl = xhImpl}
+
     // Internal State
     private managedInstances = [];
     private disposers = [];
+    private _destroyed = false;
+    private _xhImpl: boolean;
 
     /** Default persistence options for this object. */
     persistWith: PersistOptions = null;
@@ -173,10 +187,17 @@ export class HoistBase {
      * See also {@see managed}, a decorator that can be used to mark any object held within
      * a given property as managed.
      *
+     * @param obj - object to be destroyed
      * @returns object passed.
      */
     markManaged<T>(obj: T): T {
-        this.managedInstances.push(obj);
+        // If markManaged is unexpectedly called on an object after this instance has been
+        // destroyed - e.g. in an async callback - destroy it immediately.
+        if (this.isDestroyed) {
+            XH.safeDestroy(obj);
+        } else {
+            this.managedInstances.push(obj);
+        }
         return obj;
     }
 
@@ -221,10 +242,14 @@ export class HoistBase {
         }
     }
 
+    /** @return {boolean} - true if this instance has been destroyed. */
+    get isDestroyed() {return this._destroyed}
+
     /**
      * Clean up resources associated with this object
      */
     destroy() {
+        this._destroyed = true;
         this.disposers.forEach(f => f());
         this.managedInstances.forEach(i => XH.safeDestroy(i));
         this['_xhManagedProperties']?.forEach(p => XH.safeDestroy(this[p]));

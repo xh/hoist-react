@@ -8,13 +8,31 @@ import {HoistModel} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {castArray, cloneDeep, merge} from 'lodash';
 
+interface ChartModelConfig {
+
+    /** The initial highchartsConfig for this chart. */
+    highchartsConfig: any;
+
+    /** The initial data series to be displayed. */
+    series?: any|any[];
+
+    /** True to showContextMenu.  Defaults to true.  Desktop only. */
+    showContextMenu?: boolean;
+
+    /** @package - for internal Hoist use only.*/
+    xhImpl?: boolean;
+}
+
 /**
  * Model to hold and maintain the configuration and data series for a Highcharts chart.
  */
 export class ChartModel extends HoistModel {
 
-    @observable.ref highchartsConfig = {};
-    @observable.ref series = [];
+    @observable.ref
+    highchartsConfig = {};
+
+    @observable.ref
+    series = [];
 
     showContextMenu: boolean;
 
@@ -23,19 +41,19 @@ export class ChartModel extends HoistModel {
      * information about the chart, but any mutations to the chart should
      * be done via {@see ChartModel.setHighchartsConfig} or {@see ChartModel.setSeries}.
      */
-    @observable.ref highchart;
+    @observable.ref
+    highchart: any;
 
-    /**
-     * @param highchartsConfig - The initial highchartsConfig for this chart.
-     * @param series - The initial data series to be displayed.
-     * @param showContextMenu - true to showContextMenu.  Defaults to true.  Desktop only.
-     */
-    constructor(
-        {highchartsConfig, series = [], showContextMenu = true}:
-        {highchartsConfig?: any, series?: any|any[], showContextMenu?: boolean} = {}
-    ) {
+    constructor({
+        highchartsConfig,
+        series = [],
+        showContextMenu = true,
+        xhImpl = false
+    }: ChartModelConfig) {
         super();
         makeObservable(this);
+        this.xhImpl = xhImpl;
+
         this.highchartsConfig = highchartsConfig;
         this.series = castArray(series);
         this.showContextMenu = showContextMenu;

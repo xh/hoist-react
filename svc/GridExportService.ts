@@ -39,6 +39,7 @@ const {AUTO, BOOL, DATE, INT, LOCAL_DATE, NUMBER, STRING, PWD} = FieldType;
  * @see Column API for options to control exported values and formats.
  */
 export class GridExportService extends HoistService {
+    xhImpl = true;
 
     /**
      * Export a GridModel to a file. Typically called via `GridModel.exportAsync()`.

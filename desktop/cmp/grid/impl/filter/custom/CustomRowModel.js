@@ -12,6 +12,8 @@ import {isArray, isNil} from 'lodash';
  * @private
  */
 export class CustomRowModel extends HoistModel {
+    xhImpl = true;
+
     /** @member {CustomTabModel} */
     parentModel;
 

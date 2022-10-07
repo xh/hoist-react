@@ -15,6 +15,7 @@ import {
     ExceptionHandler,
     TrackOptions
 } from './';
+import {Store} from '@xh/hoist/data';
 import {instanceManager} from './InstanceManager';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable, reaction as mobxReaction} from '@xh/hoist/mobx';
@@ -35,7 +36,8 @@ import {
     LocalStorageService,
     PrefService,
     TrackService,
-    WebSocketService, FetchOptions
+    WebSocketService,
+    FetchOptions
 } from '@xh/hoist/svc';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
@@ -271,12 +273,16 @@ class XHClass {
      * initialization, make multiple calls to this method with await.
      *
      * Note that the instantiated services will be placed directly on the XH object for easy access.
-     * Therefore, applications should choose a unique name of the form xxxService to avoid naming
-     * collisions. If naming collisions are detected, an error will be thrown.
+     * Applications must choose a unique name of the form xxxService to avoid naming collisions.
+     * If naming collisions are detected, an error will be thrown.
      */
     async installServicesAsync(...serviceClasses: (new () => HoistService)[]) {
+        const notSvc = serviceClasses.find((it: any) => !it.isHoistService);
+        throwIf(notSvc, `Cannot initialize ${notSvc?.name} - does not extend HoistService`);
+
         const svcs = serviceClasses.map(serviceClass => new serviceClass());
         await this.initServicesInternalAsync(svcs);
+
         svcs.forEach(svc => {
             const name = camelCase(svc.constructor.name);
             throwIf(this[name], (
@@ -378,7 +384,7 @@ class XHClass {
     // Viewport Size
     //------------------------
     /** Current viewport width / height. (observable) */
-    get viewportSize(): { width: number, height: number } {
+    get viewportSize(): {width: number, height: number} {
         return this.acm.viewportSizeModel.size;
     }
 
@@ -561,7 +567,7 @@ class XHClass {
      * Create a new exception - {@see Exception} for Hoist conventions / extensions to JS Errors.
      * @param cfg - properties to add to the returned Error. If a string, will become the 'message' value.
      */
-    exception(cfg: Object|string): Error {
+    exception(cfg: object|string): Error {
         return Exception.create(cfg);
     }
 
@@ -600,28 +606,27 @@ class XHClass {
     // Miscellaneous
     //---------------------------
     /**
-     * Return a collection of models currently 'active' in this application.
+     * Return a collection of Models currently 'active' in this application.
      *
      * This will include all models that have not had `destroy()`
      * called on them.  Models will be returned in creation order.
      */
     getActiveModels(selector: ModelSelector = '*'): HoistModel[] {
         const ret = [];
-        // Iterating over keys needed for full observability?
-        for (let m of instanceManager.models.keys()) {
+        instanceManager.models.forEach(m => {
             if (m.matchesSelector(selector, true)) ret.push(m);
-        }
+        });
         return ret;
     }
 
     /** All services registered with this application. */
     getServices(): HoistService[] {
-        const ret = [];
-        // Iterating over keys needed for full observability?
-        for (let s of instanceManager.services.keys()) {
-            ret.push(s);
-        }
-        return ret;
+        return Array.from(instanceManager.services);
+    }
+
+    /** All Stores registered with this application. */
+    getStores(): Store[] {
+        return Array.from(instanceManager.stores);
     }
 
     /**

@@ -8,11 +8,11 @@ import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 
 /**
- *  Manage Theme.
- *
- *  @private
+ * @private
  */
 export class ThemeModel extends HoistModel {
+    xhImpl = true;
+
     /** @member {boolean} */
     @observable darkTheme;
 

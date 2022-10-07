@@ -48,7 +48,7 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
             return placeholder('Highcharts library not available.');
         }
 
-        const impl = useLocalModel(LocalModel);
+        const impl = useLocalModel(ChartLocalModel);
         ref = composeRefs(
             ref,
             useOnResize(impl.onResize),
@@ -89,7 +89,8 @@ export interface ChartProps extends BoxProps<ChartModel> {
     aspectRatio?: number;
 }
 
-class LocalModel extends HoistModel {
+class ChartLocalModel extends HoistModel {
+    xhImpl = true;
 
     @lookup(ChartModel)
     model: ChartModel;

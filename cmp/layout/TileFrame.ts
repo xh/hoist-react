@@ -39,7 +39,7 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
         onLayoutChange,
         ...props
     }: TileFrameProps, ref) {
-        const localModel = useLocalModel(LocalModel),
+        const localModel = useLocalModel(TileFrameLocalModel),
             [width, setWidth] = useState(),
             [height, setHeight] = useState();
 
@@ -110,7 +110,8 @@ export interface TileFrameProps extends BoxProps {
     onLayoutChange?: (layout: {rows: number, cols: number, tileWidth: number, tileHeight: number}) => any;
 }
 
-class LocalModel extends HoistModel {
+class TileFrameLocalModel extends HoistModel {
+    xhImpl = true;
 
     params;
     layout;

@@ -51,7 +51,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
             {sizingMode, showHover, rowBorders, stripeRows, cellBorders, showCellFocus} = model,
             {darkTheme, isDesktop} = XH;
 
-        const impl = useLocalModel(LocalModel);
+        const impl = useLocalModel(AgGridLocalModel);
 
         return frame({
             ref,
@@ -104,7 +104,8 @@ AgGrid.HEADER_HEIGHTS = {large: 28, standard: 24, compact: 22, tiny: 20};
 AgGrid.HEADER_HEIGHTS_MOBILE = {large: 42, standard: 38, compact: 34, tiny: 30};
 AgGrid.getHeaderHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS)[mode];
 
-class LocalModel extends HoistModel {
+class AgGridLocalModel extends HoistModel {
+    xhImpl = true;
 
     /** @member {AgGridModel} */
     @lookup(AgGridModel) model;

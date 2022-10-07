@@ -31,6 +31,7 @@ import {isEmpty, forOwn, includes} from 'lodash';
  *      the currently deployed app version. Installed by default in desktop appBar.
  */
 export class ChangelogService extends HoistService {
+    xhImpl = true;
 
     // Optional JSON AppConfig key to soft-configure this service - see this.config for shape.
     SVC_CONFIG_KEY: string = 'xhChangelogConfig';

@@ -20,12 +20,12 @@ import {
     isString,
     remove as lodashRemove
 } from 'lodash';
-
 import {Field} from './Field';
 import {parseFilter} from './filter/Utils';
 import {RecordSet} from './impl/RecordSet';
 import {StoreValidator} from './impl/StoreValidator';
 import {StoreRecord} from './StoreRecord';
+import {instanceManager} from '../core/InstanceManager';
 
 /**
  * A managed and observable set of local, in-memory Records.
@@ -90,6 +90,7 @@ export class Store extends HoistBase {
     @observable.ref _filtered;
 
     _dataDefaults = null;
+    _created = Date.now();
 
     /**
      * @param {Object} c - Store configuration.
@@ -169,6 +170,8 @@ export class Store extends HoistBase {
         this._dataDefaults = this.createDataDefaults();
         this._fieldMap = this.createFieldMap();
         if (data) this.loadData(data);
+
+        instanceManager.registerStore(this);
     }
 
     /** Remove all records from the store. Equivalent to calling `loadData([])`. */
@@ -766,7 +769,9 @@ export class Store extends HoistBase {
     }
 
     /** Destroy this store, cleaning up any resources used. */
-    destroy() {}
+    destroy() {
+        instanceManager.unregisterStore(this);
+    }
 
     //--------------------
     // For Implementations

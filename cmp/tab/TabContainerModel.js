@@ -80,10 +80,11 @@ export class TabContainerModel extends HoistModel {
         refreshMode = RefreshMode.ON_SHOW_LAZY,
         persistWith,
         emptyText = 'No tabs to display.',
-        switcherPosition
+        xhImpl = false
     }) {
         super();
         makeObservable(this);
+        this.xhImpl = xhImpl;
 
         // Create default switcher props
         if (switcher === true) {
@@ -160,7 +161,11 @@ export class TabContainerModel extends HoistModel {
         if (!activeTabId || !tabs.find(t => t.id === activeTabId && !t.disabled)) {
             this.activeTabId = this.calculateActiveTabId(tabs);
         }
-        this.tabs = tabs.map(t => t.isTabModel ? t : new TabModel({...t, containerModel: this}));
+        this.tabs = tabs.map(t => t.isTabModel ? t : new TabModel({
+            ...t,
+            containerModel: this,
+            xhImpl: this.xhImpl
+        }));
 
         if (oldTabs) {
             XH.safeDestroy(difference(oldTabs, this.tabs));
