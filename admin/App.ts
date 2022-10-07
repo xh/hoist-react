@@ -28,7 +28,7 @@ export const App = hoistCmp({
 });
 
 
-const tbar = hoistCmp.factory(
+const tbar = hoistCmp.factory<AppModel>(
     ({model}) => appBar({
         icon: Icon.gears({size: '2x', prefix: 'fal'}),
         leftItems: [

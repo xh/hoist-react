@@ -8,6 +8,7 @@ import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistAppModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {Route} from 'router5';
 import {activityTab} from './tabs/activity/ActivityTab';
 import {generalTab} from './tabs/general/GeneralTab';
 import {monitorTab} from './tabs/monitor/MonitorTab';
@@ -17,7 +18,7 @@ import {userDataTab} from './tabs/userData/UserDataTab';
 export class AppModel extends HoistAppModel {
 
     @managed
-    tabModel;
+    tabModel: TabContainerModel;
 
     constructor() {
         super();
@@ -32,7 +33,7 @@ export class AppModel extends HoistAppModel {
         GridModel.DEFAULT_AUTOSIZE_MODE = GridAutosizeMode.MANAGED;
     }
 
-    getRoutes() {
+    getRoutes(): Route[] {
         return [
             {
                 name: 'default',
@@ -49,7 +50,7 @@ export class AppModel extends HoistAppModel {
         return [];
     }
 
-    getTabRoutes() {
+    getTabRoutes(): Route[] {
         return [
             {
                 name: 'general',

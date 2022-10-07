@@ -6,6 +6,7 @@
  */
 import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
 import {HoistModel} from './';
+import {Route} from 'router5';
 /**
  * Specialized base class for defining the central model for a Hoist app as specified by its
  * {@see AppSpec.modelClass} config. That config should reference a concrete implementation class
@@ -53,7 +54,7 @@ export class HoistAppModel extends HoistModel {
     /**
      * Provide the initial set of Router5 Routes to be used by this application.
      */
-    getRoutes(): [] {
+    getRoutes(): Route[] {
         return [];
     }
 
