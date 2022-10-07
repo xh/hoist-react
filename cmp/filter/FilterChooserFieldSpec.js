@@ -6,9 +6,13 @@
  */
 import {BaseFilterFieldSpec} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
 import {FieldType, parseFieldValue} from '@xh/hoist/data';
-import {fmtDate} from '@xh/hoist/format';
+import {fmtDate, parseNumber} from '@xh/hoist/format';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
+import {isValidElement} from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+
+const {INT, NUMBER} = FieldType;
 
 /**
  * Filter field specification class for the typeahead `FilterChooser` component. Manages additional
@@ -47,7 +51,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         super(rest);
 
         this.valueRenderer = valueRenderer;
-        this.valueParser = valueParser;
+        this.valueParser = this.parseValueParser(valueParser);
         this.example = this.parseExample(example);
 
         if (!this.hasExplicitValues &&
@@ -77,6 +81,10 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         let ret;
         if (isFunction(this.valueRenderer)) {
             ret = this.valueRenderer(value, op);
+            if (isValidElement(ret)) {
+                // Prevents [object Object] rendering
+                ret = renderToStaticMarkup(ret);
+            }
         } else if (this.isDateBasedFieldType) {
             ret = fmtDate(value);
         } else {
@@ -107,6 +115,14 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         if (this.isDateBasedFieldType) return 'YYYY-MM-DD';
         if (this.isNumericFieldType) return this.renderValue(1234);
         return 'value';
+    }
+
+    parseValueParser(valueParser) {
+        // Default numeric parser
+        if (!valueParser && (this.fieldType === INT || this.fieldType === NUMBER)) {
+            return (input, op) => parseNumber(input);
+        }
+        return valueParser;
     }
 
     loadValuesFromSource() {

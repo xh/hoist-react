@@ -36,6 +36,7 @@
 
 ### 🐞 Bug Fixes
 
+* FilterChooserModel now accepts numeric shorthand for numeric fields. (ie, '1,337k' => 1337000.0)
 * Boolean filterChooser fields with enableValues=false will no longer suggest true for 'false'.
 * Change to `CompoundTaskObserver` to prioritize using specific messages from subtasks over the
   overall task message.
