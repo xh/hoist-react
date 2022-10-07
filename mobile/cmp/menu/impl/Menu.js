@@ -83,6 +83,9 @@ class LocalModel extends HoistModel {
             .filter(it => !it.omit)
             .map(item => {
                 if (item === '-' || isValidElement(item)) return item;
+                if (item.displayFn) {
+                    item = {...item, ...item.displayFn()};
+                }
                 if (!(item instanceof MenuItem)) {
                     item = new MenuItem(item);
                 }

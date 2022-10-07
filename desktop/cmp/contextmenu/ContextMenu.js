@@ -49,7 +49,9 @@ ContextMenu.propTypes = {
 function parseMenuItems(items) {
     items = items.map(item => {
         if (item === '-' || isValidElement(item)) return item;
-
+        if (item.displayFn) {
+            item = {...item, ...item.displayFn()};
+        }
         if (!(item instanceof ContextMenuItem)) {
             item = new ContextMenuItem(item);
         }

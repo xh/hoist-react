@@ -30,6 +30,12 @@
   APIs (unlikely), no other changes should be required.
 * The deprecated method `XH.setDarkTheme` has been removed. Use `XH.setTheme` instead.
 
+### 🎁 New Features
+
+* `DashCanvas.extraMenuItems` and `DashContainer.extraMenuItems` are now observable properties
+* `ContextMenuItem` and `MenuItem` now accept a `displayFn` callback for dynamic overriding
+  of an individual item's display configs upon render
+
 ### 🐞 Bug Fixes
 
 * Boolean filterChooser fields with enableValues=false will no longer suggest true for 'false'.
