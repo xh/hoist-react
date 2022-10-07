@@ -84,7 +84,7 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
         });
 
         // Linked models with an impl parent that are not explicitly marked should be marked as impl.
-        if (model && isUndefined(model.xhImpl)) {
+        if (isUndefined(model.xhImpl)) {
             const parentModel = modelLookup.lookupModel('*');
             if (parentModel?.xhImpl === true) {
                 model.xhImpl = true;
