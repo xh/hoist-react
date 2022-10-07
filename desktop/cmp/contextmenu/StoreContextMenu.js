@@ -92,7 +92,10 @@ export class StoreContextMenu {
 
                     const renderer = fieldSpec.renderer ?? column.renderer,
                         elem = renderer ? renderer(values[0], {record, column, gridModel}) : values[0] ?? '[blank]',
-                        // NOTE: isValidElement('string') === false
+                        // Grid col renderers will very typically return elements, but we need this to be a string.
+                        // That's the contract for `RecordAction.text`, but even more importantly, we end up piping
+                        // those actions into Ag-Grid context menus, which *only* accept strings / HTML markup
+                        // and *not* ReactElements (as of AG v28.2).
                         text = isValidElement(elem) ? renderToStaticMarkup(elem) : elem;
 
                     return {text};
