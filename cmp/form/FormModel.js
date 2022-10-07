@@ -5,10 +5,10 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {ValidationState} from '@xh/hoist/data';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {flatMap, forOwn, map, mapValues, pickBy, some, values, forEach} from 'lodash';
+import {flatMap, forEach, forOwn, map, mapValues, pickBy, some, values} from 'lodash';
 import {FieldModel} from './field/FieldModel';
 import {SubformsFieldModel} from './field/SubformsFieldModel';
 
@@ -82,10 +82,13 @@ export class FormModel extends HoistModel {
             fields = [],
             initialValues = {},
             disabled = false,
-            readonly = false
+            readonly = false,
+            xhImpl = false
         } = {}) {
         super();
         makeObservable(this);
+        this.xhImpl = xhImpl;
+
         this.disabled = disabled;
         this.readonly = readonly;
         const models = {};
@@ -101,7 +104,10 @@ export class FormModel extends HoistModel {
 
         // Set the owning formModel *last* after all fields in place with data.
         // This (currently) kicks off the validation and other reactivity.
-        forOwn(this.fields, f => f.formModel = this);
+        forOwn(this.fields, f => {
+            f.formModel = this;
+            f.xhImpl = xhImpl;
+        });
     }
 
     /**
@@ -262,9 +268,13 @@ export class FormModel extends HoistModel {
         const me = this;
         return new Proxy({}, {
             get(target, name, receiver) {
+                // Allows Inspector to detect this as a proxy.
+                if (name === '_xhIsProxy') return true;
 
                 const field = me.fields[name];
-                if (field) return field.getDataOrProxy();
+                if (field?.isFieldModel) {
+                    return field.getDataOrProxy();
+                }
 
                 const parent = (name === 'parent' ? me.parent : null);
                 if (parent) return parent.values;

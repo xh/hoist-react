@@ -1,48 +1,114 @@
 # Changelog
 
-## v51.0.0-SNAPSHOT - unreleased
+## v52.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-* `HoistBase` `addReaction()` and `addAutorun()` now can create multiple reactions in one call, and
- will ignore nullish inputs.
-* `ButtonGroupInput` supports new `enableMulti` prop.
-* Admin activity tracking chart now has a checkbox to toggle weekends when viewing a time
-  series.
-* Added `TabContainerModel.refreshContextModel`, allowing apps to programmatically load a TabContainer.
 
-### 🐞 Bug Fixes
-
-* Fix issue where `ModalSupport` would trigger `MobX` memo warning in console.
-* Fix issues with `ModalSupport` implementation in `CodeInput`.
-* Fix `Grid` rendering glitches when used inside `Panel` with `ModalSupport`.
-* Fix incorrect text color on desktop toasts with a warning intent.
+* `DashCanvasViewModel` now supports `autoHeight` to automatically resize a `DashCanvasView's`
+  height to fit its contents.
+* `DashCanvasAddViewButton` exported as a public component to support adding views to `DashCanvas`.
+* `ModelSelector` used for model lookup and matching will now accept the class name of the model to
+  match. Previously only a class reference could be provided.
+* Added `TabContainerModel.refreshContextModel`, allowing apps to programmatically load a
+  TabContainer.
+* The Admin Console diff tool for Configs, Prefs, and JSONBlobs now displays who updated each value
+  and when.
+* New "Hoist Inspector" tool available in Desktop apps for displaying and querying Models,
+  Services, and Stores within a running application.
+    * Powered by a new method `XH.activeModels()`, which supports listing and querying all models
+      instantiated within a running app, and `XH.inspectorService`, which provides additional
+      processing of that model data when active.
+    * Admin/dev-focused UI available on Desktop, activated via discrete new toggle in the bottom
+      version bar (magnifying glass icon), or via console with `XH.inspectorService.activate()`.
+    * Selecting a model/service/store instance allows a quick view at its properties, including
+      reactively updated observables. Useful for troubleshooting application state in realtime.
 
 ### 💥 Breaking Changes
 
-* `CodeInput` is now rendered within an additional `div` element.  Unlikely to cause issues, unless
-  using targeted styling of this component.
+* This release moves Hoist to **React v18**. Update your app's `package.json` to require the latest
+  18.x versions of `react` and `react-dom`. Unless your app directly accesses certain react-dom
+  APIs (unlikely), no other changes should be required.
+* The deprecated method `XH.setDarkTheme` has been removed. Use `XH.setTheme` instead.
+
+### 🐞 Bug Fixes
+
+* Boolean filterChooser fields with enableValues=false will no longer suggest true for 'false'.
+* Change to `CompoundTaskObserver` to prioritize using specific messages from subtasks over the
+  overall task message.
 
 ### ⚙️ Technical
 
+* `HoistComponents` no longer mutate the props object passed to them in React production mode. This
+  was not causing noticeable application issues, but could result in a component's base CSS class
+  being applied multiple times to its DOM element.
+* New check within service initialization to ensure that app service classes extend `HoistService`
+  as required. (Has always been the expectation, but was not previously enforced.)
+* `GridModel` will once again immediately sync data with its underlying ag-Grid component. This
+  reverses a v50.0.0 change that introduced a minimal debounce in order to work around an ag-Grid
+  rendering bug. The ag-Grid bug has been resolved, and this workaround is no longer needed.
+* `GridExportService` has improved support for columns of `FieldType.AUTO` and for columns with
+  multiple data types and custom export functions. (Requires `hoist-core >= 14.3`)
+* The `trimToDepth` has been improved to return a depth-limited clone of its input that better
+  handles nested arrays and passes through primitive inputs unchanged.
+
+### 📚 Libraries
+
+* @fortawesome `6.1 -> 6.2`
+* dompurify `2.3 -> 2.4`
+* react `17.0.1 -> 18.2.0`
+* react-dom `17.0.1 -> 18.2.0`
+
+## v51.0.0 - 2022-08-29
+
+### 🎁 New Features
+
+* `ButtonGroupInput` supports new `enableMulti` prop.
+* `AboutDialog` can now display more dynamic custom properties.
+* New option added to the Admin Activity Tracking chart to toggle on/off weekends when viewing a
+  time series.
+* The `filterText` field in `ColumnHeaderFilter` now gets autoFocused.
+
+### 💥 Breaking Changes
+
+* `CodeInput` is now rendered within an additional `div` element. Unlikely to cause issues, unless
+  using targeted styling of this component.
+* `xhAboutMenuConfigs` soft-config is no longer supported. To customize the `AboutDialog`, see
+  `HoistAppModel.getAboutDialogItems()`
+
+### 🐞 Bug Fixes
+
+* Fixed issue where `ModalSupport` would trigger `MobX` memo warning in console.
+* Fixed issues with `ModalSupport` implementation in `CodeInput`.
+* Fixed `Grid` rendering glitches when used inside `Panel` with `ModalSupport`.
+* Fixed incorrect text color on desktop toasts with a warning intent.
+* Fixed potential for duplication of default Component `className` within list of CSS classes
+  rendered into the DOM.
+* Added missing `@computed` annotations to several `Store` getters that relay properties from
+  its internal recordsets, including `maxDepth` and getters returning counts and empty status.
+    * Avoids unnecessary internal render cycles within `Grid` when in tree mode.
+    * Could require adjustments for apps that unintentionally relied on these observable getters
+      triggering re-renders when records have changed in any way (but their output values have not).
 * Hoist-supported menus will no longer filter out a `MenuDivider` if it has a `title`.
+* The default `FormField` read-only renderer now supports line breaks.
+
+### ⚙️ Technical
+
+* The `addReaction()` and `addAutorun()` methods on `HoistBase` (i.e. models and services) now
+  support passing multiple reactions in a single call and will ignore nullish inputs.
 
 ## v50.1.1 - 2022-07-29
 
 ### 🐞 Bug Fixes
 
-* Fix bug where components utilizing `ModalSupport` could render incorrectly when switching
+* Fixed bug where components utilizing `ModalSupport` could render incorrectly when switching
   between inline and modal views.
-
-* Improve behavior of `GridModel.whenReadyAsync()` to allow Grid more time to finish loading data.
+* Improved behavior of `GridModel.whenReadyAsync()` to allow Grid more time to finish loading data.
   This improves the behavior of related methods `preSelectFirstAsync`, `selectFirstAsync`, and
   `ensureVisibleAsync`.
-
-### ⚙️ Technical
-
+* `Grid` context menus are now disabled when a user is inline editing.
 * An empty `DashCanvas` / `DashContainer` 'Add View' button now only displays a menu of available
-  views, without unnecessarily nesting them inside an 'Add' submenu
-* Update `AppMenuButton` and `ContextMenu` to support Blueprint4 `menuItem`'s
-* `Grid` `ContextMenu` is now disabled when a user is inline editing
+  views, without unnecessarily nesting them inside an 'Add' submenu.
+* Update `AppMenuButton` and `ContextMenu` to support Blueprint4 `menuItem`.
 
 ## v50.1.0 - 2022-07-21
 
@@ -71,6 +137,7 @@
   popup message when clicking the background or hitting the escape key.
 
 ### 💥 Breaking Changes
+
 * Hoist now requires ag-Grid v28.0.0 or higher - update your ag-Grid dependency in your app's
   `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
 * The data reactions between `GridModel` and the underlying Ag-Grid is now minimally debounced. This
@@ -81,6 +148,7 @@
       tested carefully and may require a call to `await whenReadyAsync()`.
     * Note that this method is already incorporated in to several public methods on `GridModel`,
       including `selectFirstAsync()` and `ensureSelectionVisibleAsync()`.
+    * ⚠ NOTE - this change has been reverted as of v52 (see above).
 * Blueprint has updated all of its CSS class names to use the `bp4-` prefix instead of the `bp3-`
   prefix. Any apps styling these classes directly may need to be adjusted. See
   https://github.com/palantir/blueprint/wiki/Blueprint-4.0 for more info.
@@ -89,12 +157,12 @@
   title) would omit the header.
 * `XHClass` (top-level Singleton model for Hoist) no longer extends `HoistBase`
 * `DockView` component has been moved into the desktop-specific package `@xh/hoist/desktop/cmp`.
-Users of this component will need to adjust their imports accordingly.
+  Users of this component will need to adjust their imports accordingly.
 * Requires `hoist-core >= 14.0`. Excel file exporting defaults to using column FieldType.
 
 ### 🐞 Bug Fixes
 
-* Fixes several issues introduced with Ag-Grid v27 where rows gaps and similar rendering issues
+* Fixed several issues introduced with Ag-Grid v27 where rows gaps and similar rendering issues
   could appear after operating on it programmatically (see breaking changes above).
 * `ColumnHeaders` now properly respond to mouse events on tablets (e.g. when using a Bluetooth
   trackpad on an iPad).

@@ -13,6 +13,7 @@ import {stripTags} from '@xh/hoist/utils/js';
  * @private
  */
 export class FeedbackDialogModel extends HoistModel {
+    xhImpl = true;
 
     @observable isOpen = false;
     @observable message = null;

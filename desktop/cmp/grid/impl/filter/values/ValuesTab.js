@@ -38,7 +38,8 @@ const tbar = hoistCmp.factory(
                 bind: 'filterText',
                 leftIcon: Icon.search(),
                 placeholder: 'Search...',
-                flex: 1
+                flex: 1,
+                autoFocus: true
             })
         );
     }

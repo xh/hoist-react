@@ -8,6 +8,7 @@ import {ContextMenu} from '@blueprintjs/core';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {elemFactory, hoistCmp, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
+import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import classNames from 'classnames';
 import PT from 'prop-types';
@@ -15,7 +16,7 @@ import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import './DashCanvas.scss';
 import {DashCanvasModel} from './DashCanvasModel';
-import {dashCanvasAddViewButton, dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
+import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
 
 /**
@@ -47,7 +48,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
             onContextMenu: (e) => onContextMenu(e, model),
             items: [
                 reactGridLayout({
-                    layout: model.layout,
+                    layout: model.rglLayout,
                     cols: model.columns,
                     rowHeight: model.rowHeight,
                     isDraggable,
@@ -60,9 +61,9 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
                     isBounded: true,
                     draggableHandle: '.xh-panel > .xh-panel__content > .xh-panel-header',
                     draggableCancel: '.xh-button',
-                    // Resizing always pins to the nw corner, so dragging from anywhere other than se sides/corner is unintuitive
-                    resizeHandles: ['s', 'e', 'se'],
-                    onLayoutChange: (layout) => model.setLayout(layout),
+                    onLayoutChange: layout => model.onRglLayoutChange(layout),
+                    onResizeStart: () => model.isResizing = true,
+                    onResizeStop: () => model.isResizing = false,
                     items: model.viewModels.map(vm => div({
                         key: vm.id,
                         item: dashCanvasView({model: vm})

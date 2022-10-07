@@ -365,10 +365,13 @@ export class GridModel extends HoistModel {
         clicksToEdit = 2,
         highlightRowOnClick = XH.isMobileApp,
         experimental,
+        xhImpl,
         ...rest
     }) {
         super();
         makeObservable(this);
+        this.xhImpl = xhImpl;
+
         this._defaultState = {columns, sortBy, groupBy};
 
         this.treeMode = treeMode;
@@ -433,7 +436,8 @@ export class GridModel extends HoistModel {
             stripeRows,
             cellBorders,
             showCellFocus,
-            hideHeaders
+            hideHeaders,
+            xhImpl
         });
 
         this.colChooserModel = this.parseChooserModel(colChooserModel);
@@ -552,9 +556,6 @@ export class GridModel extends HoistModel {
      * will not change the selection if there is already a selection, which is what applications
      * typically want to do when loading/reloading a grid.
      *
-     * This method allows for a minimal delay to allow the underlying grid implementation to
-     * render all pending data changes.
-     *
      * @param {Object} [options]
      * @param {boolean} [options.ensureVisible] - true to make selection visible if it is within a
      *      collapsed node or outside of the visible scroll window. Default true.
@@ -596,9 +597,6 @@ export class GridModel extends HoistModel {
      *
      * Any selected records that are hidden because their parent rows are collapsed will first
      * be revealed by expanding their parent rows.
-     *
-     * This method imposes a minimal delay to allow the underlying grid implementation to
-     * render all pending data changes.
      */
     async ensureSelectionVisibleAsync() {
         await this.whenReadyAsync();
@@ -1315,6 +1313,7 @@ export class GridModel extends HoistModel {
         if (isPlainObject(store)) {
             store = this.enhanceStoreConfigFromColumns(store);
             store = new Store({loadTreeData: this.treeMode, ...store});
+            store.xhImpl = this.xhImpl;
             this.markManaged(store);
         }
 
@@ -1496,7 +1495,7 @@ export class GridModel extends HoistModel {
         }
 
         if (isPlainObject(selModel)) {
-            return this.markManaged(new StoreSelectionModel({...selModel, store}));
+            return this.markManaged(new StoreSelectionModel({...selModel, store, xhImpl: true}));
         }
 
         // Assume its just the mode...
@@ -1506,7 +1505,7 @@ export class GridModel extends HoistModel {
         } else if (selModel === null) {
             mode = 'disabled';
         }
-        return this.markManaged(new StoreSelectionModel({mode, store}));
+        return this.markManaged(new StoreSelectionModel({mode, store, xhImpl: true}));
     }
 
     parseFilterModel(filterModel) {

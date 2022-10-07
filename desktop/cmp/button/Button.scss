@@ -145,12 +145,20 @@
         }
       }
 
+      // Extra color:white rules added to warning to overcome (mysteriously) more specific BP styles.
+      // Without these, warning buttons get incorrect dark text in light mode when active or hovered.
       &.xh-button--intent-warning {
         color: white;
         background-color: var(--xh-intent-warning);
-        &.xh-button--active {background-color: var(--xh-intent-warning-darkest)}
+        &.xh-button--active {
+          color: white;
+          background-color: var(--xh-intent-warning-darkest)
+        }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-intent-warning-darker)}
+          &:hover:not(:active):not(.xh-button--active) {
+            color: white;
+            background-color: var(--xh-intent-warning-darker)
+          }
           &:active {background-color: var(--xh-intent-warning-darkest)}
         }
       }

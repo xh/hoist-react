@@ -14,6 +14,7 @@ export * from './GridAutosizeService';
 export * from './GridExportService';
 export * from './IdentityService';
 export * from './IdleService';
+export * from './InspectorService';
 export * from './JsonBlobService';
 export * from './LocalStorageService';
 export * from './PrefService';

@@ -14,6 +14,7 @@ import {isUndefined} from 'lodash';
  * @private
  */
 export class GridPersistenceModel extends HoistModel {
+    xhImpl = true;
 
     VERSION = 1;  // Increment to abandon state.
 

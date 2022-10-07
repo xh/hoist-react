@@ -126,6 +126,7 @@ Grid.propTypes = {
 // Implementation
 //------------------------
 class GridLocalModel extends HoistModel {
+    xhImpl = true;
 
     /** @member {GridModel} */
     @lookup(GridModel) model;
@@ -390,7 +391,8 @@ class GridLocalModel extends HoistModel {
             run: () => {
                 if (model.isReady) this.syncData();
             },
-            debounce: 0
+            // TODO:  Remove after we are sure we don't need debounce workaround
+            debounce: model.experimental.syncDataImmediately === false ? 0 : null
         };
     }
 

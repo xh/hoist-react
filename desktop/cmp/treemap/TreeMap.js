@@ -49,7 +49,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
             return 'Highcharts not available';
         }
 
-        const impl = useLocalModel(LocalModel);
+        const impl = useLocalModel(TreeMapLocalModel);
         ref = composeRefs(
             ref,
             useOnResize(impl.startResize),
@@ -102,7 +102,8 @@ TreeMap.propTypes = {
     model: PT.oneOfType([PT.instanceOf(TreeMapModel), PT.object])
 };
 
-class LocalModel extends HoistModel {
+class TreeMapLocalModel extends HoistModel {
+    xhImpl = true;
 
     /** @member {TreeMapModel} */
     @lookup(TreeMapModel) model;

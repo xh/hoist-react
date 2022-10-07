@@ -26,7 +26,7 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
     className: 'xh-relative-timestamp',
 
     render({className, ...props}, ref) {
-        const impl = useLocalModel(LocalModel);
+        const impl = useLocalModel(RelativeTimestampLocalModel);
 
         return box({
             className,
@@ -54,7 +54,8 @@ RelativeTimestamp.propTypes = {
     options: PT.object
 };
 
-class LocalModel extends HoistModel {
+class RelativeTimestampLocalModel extends HoistModel {
+    xhImpl = true;
 
     @observable display = '';
     @lookup('*') model;

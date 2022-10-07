@@ -6,6 +6,7 @@
  */
 import {p} from '@xh/hoist/cmp/layout';
 import {AppSpec, AppState, elem} from '@xh/hoist/core';
+import {Store} from '@xh/hoist/data';
 import {Exception} from '@xh/hoist/exception';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable, reaction as mobxReaction} from '@xh/hoist/mobx';
@@ -21,6 +22,7 @@ import {
     GridExportService,
     IdentityService,
     IdleService,
+    InspectorService,
     JsonBlobService,
     LocalStorageService,
     PrefService,
@@ -30,18 +32,18 @@ import {
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {
-    apiDeprecated,
     checkMinVersion,
     getClientDeviceInfo,
     throwIf,
     withDebug
 } from '@xh/hoist/utils/js';
 import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
-import ReactDOM from 'react-dom';
+import {createRoot} from 'react-dom/client';
 import parser from 'ua-parser-js';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import '../styles/XH.scss';
 import {ExceptionHandler} from './ExceptionHandler';
+import {HoistModel} from './HoistModel';
 import {RouterModel} from './RouterModel';
 
 const MIN_HOIST_CORE_VERSION = '14.0';
@@ -60,6 +62,7 @@ class XHClass {
     #initCalled = false;
     #lastActivityMs = Date.now();
     #uaParser = null;
+    #services = [];
 
     constructor() {
         makeObservable(this);
@@ -114,6 +117,8 @@ class XHClass {
     identityService;
     /** @member {IdleService} */
     idleService;
+    /** @member {InspectorService} */
+    inspectorService;
     /** @member {JsonBlobService} */
     jsonBlobService;
     /** @member {LocalStorageService} */
@@ -184,7 +189,6 @@ class XHClass {
     get isTablet()              {return this.uaParser.getDevice().type === 'tablet'}
     get isDesktop()             {return this.uaParser.getDevice().type === undefined}
 
-
     //---------------------------
     // Models
     //---------------------------
@@ -236,8 +240,9 @@ class XHClass {
         if (spinner) spinner.style.display = 'none';
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
 
-        const rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
-        ReactDOM.render(rootView, document.getElementById('xh-root'));
+        const root = createRoot(document.getElementById('xh-root')),
+            rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
+        root.render(rootView);
     }
 
     /**
@@ -250,12 +255,18 @@ class XHClass {
      * initialization, make multiple calls to this method with await.
      *
      * Note that the instantiated services will be placed directly on the XH object for easy access.
-     * Therefore applications should choose a unique name of the form xxxService to avoid naming
-     * collisions. If naming collisions are detected, an error will be thrown.
+     * Applications must choose a unique name of the form xxxService to avoid naming collisions.
+     * If naming collisions are detected, an error will be thrown.
      */
     async installServicesAsync(...serviceClasses) {
+        const notARealService = serviceClasses.find(it => !it.isHoistService);
+        throwIf(notARealService, (
+            `Cannot initialize ${notARealService?.name} - does not extend HoistService`
+        ));
+
         const svcs = serviceClasses.map(serviceClass => new serviceClass());
         await this.initServicesInternalAsync(svcs);
+
         svcs.forEach(svc => {
             const name = camelCase(svc.constructor.name);
             throwIf(this[name], (
@@ -264,6 +275,7 @@ class XHClass {
                 install the same service twice.`
             ));
             this[name] = svc;
+            this.#services.push(svc);
         });
     }
 
@@ -327,16 +339,6 @@ class XHClass {
     /** Toggle the theme between light and dark variants. */
     toggleTheme() {
         return this.acm.themeModel.toggleTheme();
-    }
-
-    /**
-     * Enable/disable the dark theme directly (useful for custom app option controls).
-     * @param {boolean} value
-     * @deprecated
-     */
-    setDarkTheme(value) {
-        apiDeprecated('setDarkTheme', {v: '50', msg: 'Use setTheme instead.'});
-        this.setTheme(value ? 'dark' : 'light');
     }
 
     /**
@@ -652,6 +654,33 @@ class XHClass {
     // Miscellaneous
     //---------------------------
     /**
+     * Return a collection of Models currently 'active' in this application.
+     *
+     * This will include all models that have not had their destroy() method called.
+     * Models will be returned in creation order.
+     *
+     * @param {ModelSelector} [selector] - optional selector for filtering models.
+     * @returns {HoistModel[]}
+     */
+    getActiveModels(selector = '*') {
+        const ret = [];
+        HoistModel._activeModels.forEach(m => {
+            if (m.matchesSelector(selector, true)) ret.push(m);
+        });
+        return ret;
+    }
+
+    /** @return {HoistService[]} - all Services registered with this application. */
+    getServices() {
+        return [...this.#services];
+    }
+
+    /** @return {Store[]} - all Stores registered with this application. */
+    getStores() {
+        return Array.from(Store._instances);
+    }
+
+    /**
      * Resets user preferences and any persistent local application state, then reloads the app.
      */
     async restoreDefaultsAsync() {
@@ -809,7 +838,7 @@ class XHClass {
 
             await this.installServicesAsync(
                 AlertBannerService, AutoRefreshService, ChangelogService, IdleService,
-                GridAutosizeService, GridExportService, WebSocketService
+                InspectorService, GridAutosizeService, GridExportService, WebSocketService
             );
             this.acm.init();
 

@@ -4,12 +4,13 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {box} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {ContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils';
+import {elementFromContent, useOnResize} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
-import {elementFromContent} from '@xh/hoist/utils/react';
 import {button} from '../../../button';
 import {panel} from '../../../panel';
 import {DashCanvasViewModel} from '../DashCanvasViewModel';
@@ -25,11 +26,11 @@ import {DashCanvasViewModel} from '../DashCanvasViewModel';
  * @private
  */
 export const dashCanvasView = hoistCmp.factory({
-    displayName: 'DashGridLayoutView',
+    displayName: 'DashCanvasView',
     className: 'xh-dash-tab',
     model: uses(DashCanvasViewModel, {publishMode: ModelPublishMode.LIMITED}),
     render({model, className}) {
-        const {viewSpec, ref, hidePanelHeader, headerItems} = model,
+        const {viewSpec, ref, hidePanelHeader, headerItems, autoHeight} = model,
             headerProps = hidePanelHeader ? {} : {
                 compactHeader: true,
                 title: model.title,
@@ -43,7 +44,11 @@ export const dashCanvasView = hoistCmp.factory({
             className,
             ref,
             ...headerProps,
-            item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
+            item: box({
+                ref: useOnResize(dims => model.onContentsResized(dims), {debounce: 100}),
+                item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model}),
+                flex: autoHeight ? 'none' : 'auto'
+            })
         });
     }
 });

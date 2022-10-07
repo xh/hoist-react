@@ -6,7 +6,6 @@
  */
 import {span} from '@xh/hoist/cmp/layout';
 import {capitalize} from 'lodash';
-import {asElementDeprecationWarning} from './FormatUtils';
 
 /**
  * Basic util for splitting a string (via ' ') and capitalizing each word - e.g. for names.
@@ -36,10 +35,8 @@ export function fmtSpan(v, {
     title = null,
     leadSpc = false,
     trailSpc = false,
-    asHtml = false,
-    ...rest
+    asHtml = false
 } = {}) {
-    asElementDeprecationWarning(rest);
     if (v == null) return '';
     const opts = {className, title, leadSpc, trailSpc};
     return asHtml ? fmtSpanHtml(v, opts) : fmtSpanElement(v, opts);

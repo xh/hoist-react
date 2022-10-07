@@ -17,6 +17,7 @@ import {runInAction} from 'mobx';
  * @private
  */
 export class ViewportSizeModel extends HoistModel {
+    xhImpl = true;
 
     /** @member {Object} - contains `width` and `height` in pixels */
     @observable.ref size;

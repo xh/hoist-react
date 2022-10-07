@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {action, observable} from '@xh/hoist/mobx';
 import {forOwn, has, isFunction} from 'lodash';
 import {makeObservable} from 'mobx';
 import {throwIf, warnIf} from '../utils/js';
@@ -11,7 +12,6 @@ import {HoistBase} from './HoistBase';
 import {managed} from './HoistBaseDecorators';
 import {ensureIsSelector} from './modelspec/uses';
 import {LoadSupport} from './refresh/LoadSupport';
-import {observable, action} from '@xh/hoist/mobx';
 
 /**
  * Core superclass for stateful Models in Hoist. Models are used throughout the toolkit and
@@ -62,13 +62,17 @@ export class HoistModel extends HoistBase {
     @observable
     _componentProps = {};
     _modelLookup = null;
+    _created = Date.now();
 
     constructor() {
         super();
         makeObservable(this);
+
         if (this.doLoadAsync !== HoistModel.prototype.doLoadAsync) {
             this.loadSupport = new LoadSupport(this);
         }
+
+        HoistModel._registerModelInstance(this);
     }
 
     //----------------
@@ -211,21 +215,45 @@ export class HoistModel extends HoistBase {
      * @package
      */
     matchesSelector(selector, acceptWildcard = false) {
+        // 1) check class ref first, it's a function, but distinct from callable function below
+        if (selector.isHoistModel) return this instanceof selector;
+
+        // 2) call any test or selector generator function
+        selector = isFunction(selector) ? selector(this) : selector;
+
+        // 3) main tests
+        if (selector === true) return true;
         if (selector === '*') return acceptWildcard;
-        if (!isFunction(selector)) return false;
+        if (selector === this.constructor.name) return true;
+        if (selector?.isHoistModel) return this instanceof selector;
 
-        // 1) selector is a constructor function/class
-        if (selector.isHoistModel) {
-            return this instanceof selector;
-        }
+        return false;
+    }
 
-        // 2) selector is a callable function, call for either a boolean or a constructor function/class
-        const result = selector(this);
-        return isFunction(result) && result.isHoistModel ?
-            this instanceof result :
-            !!result;
+    /** @override - linked models take nearest context model value if not otherwise set. */
+    get xhImpl() {
+        if (this._xhImpl !== undefined) return this._xhImpl;
+        if (this.isLinked) return this.lookupModel('*')?.xhImpl ?? false;
+        return false;
+    }
+    set xhImpl(v) {super.xhImpl = v}
+
+    destroy() {
+        super.destroy();
+        HoistModel._unregisterModelInstance(this);
     }
 }
+
+/**
+ * Static observable Set containing a registry of all currently active models. Models automatically
+ * add themselves to this set when created and remove themselves when destroyed.
+ * @type {ObservableSet<HoistModel>}
+ * @see {XH.getActiveModels}
+ * @package
+ */
+HoistModel._activeModels = observable.set(new Set(), {deep: false});
+HoistModel._registerModelInstance = action(instance => HoistModel._activeModels.add(instance));
+HoistModel._unregisterModelInstance = action(instance => HoistModel._activeModels.delete(instance));
 
 /**
  * Parameterized decorator to inject an instance of an ancestor model in the Model lookup

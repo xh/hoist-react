@@ -25,7 +25,7 @@ export const [DataView, dataView] = hoistCmp.withFactory({
 
     render({model, className, ...props}, ref) {
         const [layoutProps] = splitLayoutProps(props),
-            impl = useLocalModel(LocalModel);
+            impl = useLocalModel(DataViewLocalModel);
 
         return grid({
             ...layoutProps,
@@ -42,7 +42,8 @@ DataView.propTypes = {
     model: PT.oneOfType([PT.instanceOf(DataViewModel), PT.object])
 };
 
-class LocalModel extends HoistModel {
+class DataViewLocalModel extends HoistModel {
+    xhImpl = true;
 
     /** @member {DataViewModel} */
     @lookup(DataViewModel) model;

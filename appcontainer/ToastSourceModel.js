@@ -14,6 +14,7 @@ import {ToastModel} from './ToastModel';
  *  @private
  */
 export class ToastSourceModel extends HoistModel {
+    xhImpl = true;
 
     /** @member {ToastModel[]} */
     @managed

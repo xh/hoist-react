@@ -70,36 +70,17 @@
   }
 
   .xh-column-header-align-right {
-    .xh-grid-header,
-    .xh-grid-group-header {
-      text-align: right;
+      .xh-grid-header,
+      .xh-grid-group-header {
+        text-align: right;
+      }
     }
-  }
 
   .xh-column-header-align-center {
-    .xh-grid-header,
-    .xh-grid-group-header {
-      text-align: center;
-    }
-  }
-
-  // Positioning for column header expand collapse affordance
-  .xh-ag-grid {
-    &--large .xh-grid-header-expand-collapse-icon {
-      margin: 0 2px 0 -11px;
-    }
-
-    &--standard .xh-grid-header-expand-collapse-icon {
-      margin: 0 1px 0 -10px;
-    }
-
-    &--compact .xh-grid-header-expand-collapse-icon {
-      margin: 0 1px 0 -6px;
-    }
-
-    &--tiny .xh-grid-header-expand-collapse-icon {
-      margin: 0 1px 0 -4px;
-    }
+      .xh-grid-header,
+      .xh-grid-group-header {
+        text-align: center;
+      }
   }
 
   // Floating viewports host total rows.
@@ -198,6 +179,13 @@
   .ag-cell.xh-tree-column {
     padding-left: calc(var(--xh-grid-tree-indent) - var(--xh-grid-tree-icon-px));
   }
+
+  // Suppress (almost all) left padding in tree column header when actively showing expand/collapse
+  // affordance - this allows space for the icon without clipping.
+  .ag-header-cell.xh-column-header--with-expand-collapse {
+    padding-left: 2px;
+  }
+
 
   //------------------------
   // Tree grid styling modes

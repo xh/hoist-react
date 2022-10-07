@@ -53,7 +53,7 @@ export const [Select, select] = hoistCmp.withFactory({
     displayName: 'Select',
     className: 'xh-select',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, Model);
+        return useHoistInputModel(cmp, props, ref, SelectInputModel);
     }
 });
 
@@ -64,7 +64,7 @@ Select.propTypes = {
     autoFocus: PT.bool,
 
     /**
-     * Function to return a "create a new option" string prompt. Requires `allowCreate` true.
+     * Function to return a "create a new option" string prompt. Requires `enableCreate` true.
      * Passed current query input.
      */
     createMessageFn: PT.func,
@@ -209,7 +209,7 @@ Select.hasLayoutSupport = true;
 //-----------------------
 // Implementation
 //-----------------------
-class Model extends HoistInputModel {
+class SelectInputModel extends HoistInputModel {
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.

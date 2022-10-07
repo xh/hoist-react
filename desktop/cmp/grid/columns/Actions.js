@@ -45,6 +45,7 @@ export const actionCol = {
     align: 'center',
     sortable: false,
     resizable: false,
+    filterable: false,
     excludeFromExport: true,
     rendererIsComplex: true,
     renderer: (value, {record, column, agParams}) => {

@@ -22,7 +22,7 @@ export const [LeftRightChooserFilter, leftRightChooserFilter] = hoistCmp.withFac
     model: uses(LeftRightChooserModel),
 
     render() {
-        const impl = useLocalModel(LocalModel);
+        const impl = useLocalModel(LeftRightChooserFilterLocalModel);
         return textInput({
             placeholder: 'Quick filter...',
             bind: 'value',
@@ -47,7 +47,8 @@ LeftRightChooserFilter.propTypes = {
 };
 
 
-class LocalModel extends HoistModel {
+class LeftRightChooserFilterLocalModel extends HoistModel {
+    xhImpl = true;
 
     /** @member {LeftRightChooserModel} */
     @lookup(LeftRightChooserModel) model;

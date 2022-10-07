@@ -86,7 +86,7 @@ export function createViewMenuItems({
  * context menu is triggered
  * @param {number} x - clientX position
  * @param {number} y - clientY position
- * @param {DashCanvasModel}
+ * @param {DashCanvasModel} dashCanvasModel
  */
 const calcAddPosition = (x, y, dashCanvasModel) => {
     const calcXY = (positionParams, top, left, w=0, h=0) => {
@@ -102,8 +102,8 @@ const calcAddPosition = (x, y, dashCanvasModel) => {
 
         const {margin, cols, rowHeight, maxRows} = positionParams;
         const colWidth = calcGridColWidth(positionParams);
-        let x = Math.round((left - margin[0]) / (colWidth + margin[0]));
-        let y = Math.round((top - margin[1]) / (rowHeight + margin[1]));
+        let x = Math.floor((left - margin[0]) / (colWidth + margin[0]));
+        let y = Math.floor((top - margin[1]) / (rowHeight + margin[1]));
 
         x = clamp(x, 0, cols - w);
         y = clamp(y, 0, maxRows - h);

@@ -66,6 +66,7 @@ export class ContextMenuItem {
         return assign({
             text: 'About',
             icon: Icon.info(),
+            hidden: !XH.acm.hasAboutDialog(),
             actionFn: () => XH.showAboutDialog()
         }, defs);
     }
