@@ -128,6 +128,8 @@ export class PanelModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
+        this.xhImpl = xhImpl;
+
         if ((collapsible || resizable) && (isNil(defaultSize) || isNil(side))) {
             console.error(
                 "Must specify 'defaultSize' and 'side' for a collapsible or resizable PanelModel. Panel sizing disabled."
@@ -201,8 +203,6 @@ export class PanelModel extends HoistModel {
                 run: (state) => this.provider.write(state)
             });
         }
-
-        this.xhImpl = xhImpl;
     }
 
     //----------------------

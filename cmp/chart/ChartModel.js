@@ -40,11 +40,11 @@ export class ChartModel extends HoistModel {
     } = {}) {
         super();
         makeObservable(this);
+        this.xhImpl = xhImpl;
 
         this.highchartsConfig = highchartsConfig;
         this.series = castArray(series);
         this.showContextMenu = showContextMenu;
-        this.xhImpl = xhImpl;
     }
 
     /**

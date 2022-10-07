@@ -77,6 +77,7 @@ export class AgGridModel extends HoistModel {
     } = {}) {
         super();
         makeObservable(this);
+        this.xhImpl = xhImpl;
 
         this.sizingMode = sizingMode;
         this.showHover = showHover;
@@ -85,7 +86,6 @@ export class AgGridModel extends HoistModel {
         this.stripeRows = stripeRows;
         this.showCellFocus = showCellFocus;
         this.hideHeaders = hideHeaders;
-        this.xhImpl = xhImpl;
 
         this.addReaction({
             track: () => this.sizingMode,

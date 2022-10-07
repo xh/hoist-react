@@ -38,12 +38,11 @@ export class StoreSelectionModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
+        this.xhImpl = xhImpl;
 
         this.store = store;
         this.mode = mode;
         this.addReaction(this.cullSelectionReaction());
-
-        this.xhImpl = xhImpl;
     }
 
     /** @return {StoreRecord[]} - currently selected records. */

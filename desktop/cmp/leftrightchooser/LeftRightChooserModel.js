@@ -103,6 +103,8 @@ export class LeftRightChooserModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
+        this.xhImpl = xhImpl;
+
         this.onChange = onChange;
         this._ungroupedName = ungroupedName;
         this.leftGroupingEnabled = leftGroupingEnabled;
@@ -163,8 +165,6 @@ export class LeftRightChooserModel extends HoistModel {
         this.setData(data);
 
         this.addReaction(this.syncSelectionReaction());
-
-        this.xhImpl = xhImpl;
     }
 
     setData(data) {

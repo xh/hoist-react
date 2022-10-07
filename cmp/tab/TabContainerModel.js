@@ -84,6 +84,7 @@ export class TabContainerModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
+        this.xhImpl = xhImpl;
 
         // Create default switcher props
         if (switcher === true) {
@@ -134,8 +135,6 @@ export class TabContainerModel extends HoistModel {
                 }
             });
         }
-
-        this.xhImpl = xhImpl;
     }
 
     //-----------------------------

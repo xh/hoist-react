@@ -87,6 +87,8 @@ export class FormModel extends HoistModel {
         } = {}) {
         super();
         makeObservable(this);
+        this.xhImpl = xhImpl;
+
         this.disabled = disabled;
         this.readonly = readonly;
         const models = {};
@@ -106,8 +108,6 @@ export class FormModel extends HoistModel {
             f.formModel = this;
             f.xhImpl = xhImpl;
         });
-
-        this.xhImpl = xhImpl;
     }
 
     /**

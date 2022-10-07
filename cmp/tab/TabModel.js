@@ -67,6 +67,8 @@ export class TabModel extends HoistModel {
     }) {
         super();
         makeObservable(this);
+        this.xhImpl = xhImpl;
+
         throwIf(showRemoveAction && XH.isMobileApp, 'Removable Tabs not supported in Mobile toolkit.');
 
         this.id = id.toString();
@@ -84,7 +86,6 @@ export class TabModel extends HoistModel {
 
         this.refreshContextModel = new ManagedRefreshContextModel(this);
         this.refreshContextModel.xhImpl = true;
-        this.xhImpl = xhImpl;
     }
 
     activate() {
