@@ -26,6 +26,7 @@ import {
  * @private
  */
 export class StoreFilterFieldImplModel extends HoistModel {
+    xhImpl = true;
 
     @lookup('*') model;
 

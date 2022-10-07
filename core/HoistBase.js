@@ -42,9 +42,23 @@ export class HoistBase {
     static get isHoistBase() {return true}
     get isHoistBase() {return true}
 
+    /**
+     * @return {boolean} - for XH internal use only - marks this instance as created by and for
+     *      Hoist as part of its own implementation. Used as a filter within Hoist Inspector to
+     *      distinguish services and models that are either:
+     *          a) created directly by the app developer -or-
+     *          b) important/public parts of the Hoist API
+     *      from those that are not.
+     * @package
+     */
+    get xhImpl() {return this._xhImpl ?? false}
+    set xhImpl(xhImpl) {this._xhImpl = xhImpl}
+    _xhImpl;
+
     // Internal State
     #managedInstances = [];
     #disposers = [];
+    #destroyed = false;
 
     /**
      * Add and start one or more managed reactions.
@@ -167,11 +181,17 @@ export class HoistBase {
      * See also {@see managed}, a decorator that can be used to mark any object held within
      * a given property as managed.
      *
-     * @param {object} obj - object to be destroyed
+     * @param {Object} obj - object to be destroyed
      * @returns object passed.
      */
     markManaged(obj) {
-        this.#managedInstances.push(obj);
+        // If markManaged is unexpectedly called on an object after this instance has been
+        // destroyed - e.g. in an async callback - destroy it immediately.
+        if (this.isDestroyed) {
+            XH.safeDestroy(obj);
+        } else {
+            this.#managedInstances.push(obj);
+        }
         return obj;
     }
 
@@ -216,10 +236,14 @@ export class HoistBase {
         }
     }
 
+    /** @return {boolean} - true if this instance has been destroyed. */
+    get isDestroyed() {return this.#destroyed}
+
     /**
      * Clean up resources associated with this object
      */
     destroy() {
+        this.#destroyed = true;
         this.#disposers.forEach(f => f());
         this.#managedInstances.forEach(i => XH.safeDestroy(i));
         this._xhManagedProperties?.forEach(p => XH.safeDestroy(this[p]));

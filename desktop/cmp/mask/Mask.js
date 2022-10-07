@@ -33,7 +33,7 @@ export const [Mask, mask] = hoistCmp.withFactory({
         spinner = false,
         className
     }) {
-        const impl = useLocalModel(LocalMaskModel);
+        const impl = useLocalModel(MaskLocalModel);
 
         isDisplayed = withDefault(isDisplayed, impl.task?.isPending);
         message = withDefault(message, impl.task?.message);
@@ -79,7 +79,9 @@ Mask.propTypes = {
     onClick: PT.func
 };
 
-class LocalMaskModel extends HoistModel {
+class MaskLocalModel extends HoistModel {
+    xhImpl = true;
+
     task;
 
     onLinked() {

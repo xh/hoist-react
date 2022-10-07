@@ -16,6 +16,8 @@ import {valuesTab} from './values/ValuesTab';
 import {ValuesTabModel} from './values/ValuesTabModel';
 
 export class ColumnHeaderFilterModel extends HoistModel {
+    xhImpl = true;
+
     /** @member {GridFilterModel} */
     gridFilterModel;
     /** @member {Column} */
@@ -104,7 +106,8 @@ export class ColumnHeaderFilterModel extends HoistModel {
                     title: 'Custom',
                     content: customTab
                 }
-            ]
+            ],
+            xhImpl: true
         });
 
         this.addReaction({

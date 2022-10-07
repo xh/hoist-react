@@ -22,7 +22,7 @@ export const [Slider, slider] = hoistCmp.withFactory({
     displayName: 'Slider',
     className: 'xh-slider',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, Model);
+        return useHoistInputModel(cmp, props, ref, SliderInputModel);
     }
 });
 Slider.propTypes = {
@@ -63,7 +63,7 @@ Slider.hasLayoutSupport = true;
 //-----------------------
 // Implementation
 //-----------------------
-class Model extends HoistInputModel {
+class SliderInputModel extends HoistInputModel {
 
     blur() {
         this.sliderHandle?.blur();

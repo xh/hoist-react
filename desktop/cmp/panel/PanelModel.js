@@ -124,10 +124,12 @@ export class PanelModel extends HoistModel {
         showSplitterCollapseButton = showSplitter && collapsible,
         showHeaderCollapseButton = true,
         showModalToggleButton = true,
-        ...rest
+        xhImpl = false
     }) {
         super();
         makeObservable(this);
+        this.xhImpl = xhImpl;
+
         if ((collapsible || resizable) && (isNil(defaultSize) || isNil(side))) {
             console.error(
                 "Must specify 'defaultSize' and 'side' for a collapsible or resizable PanelModel. Panel sizing disabled."

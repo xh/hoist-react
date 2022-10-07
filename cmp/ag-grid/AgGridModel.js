@@ -72,10 +72,12 @@ export class AgGridModel extends HoistModel {
         cellBorders = false,
         stripeRows = true,
         showCellFocus = false,
-        hideHeaders = false
+        hideHeaders = false,
+        xhImpl = false
     } = {}) {
         super();
         makeObservable(this);
+        this.xhImpl = xhImpl;
 
         this.sizingMode = sizingMode;
         this.showHover = showHover;

@@ -53,7 +53,7 @@ export const [CodeInput, codeInput] = hoistCmp.withFactory({
     displayName: 'CodeInput',
     className: 'xh-code-input',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, Model);
+        return useHoistInputModel(cmp, props, ref, CodeInputModel);
     }
 });
 CodeInput.propTypes = {
@@ -124,7 +124,9 @@ CodeInput.hasLayoutSupport = true;
 //------------------------------
 // Implementation
 //------------------------------
-class Model extends HoistInputModel {
+class CodeInputModel extends HoistInputModel {
+    xhImpl = true;
+
     /** @member {ModalSupportModel} */
     @managed modalSupportModel = new ModalSupportModel();
 

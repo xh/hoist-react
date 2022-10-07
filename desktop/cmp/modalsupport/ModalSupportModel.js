@@ -17,6 +17,7 @@ import {createObservableRef} from '@xh/hoist/utils/react';
  * @private
  */
 export class ModalSupportModel extends HoistModel {
+    xhImpl = true;
 
     @bindable isModal = false;
 

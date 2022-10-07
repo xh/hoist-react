@@ -15,6 +15,7 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
  * @private
  */
 export class ColChooserModel extends HoistModel {
+    xhImpl = true;
 
     gridModel;
     @managed lrModel;
@@ -56,7 +57,8 @@ export class ColChooserModel extends HoistModel {
             rightGroupingEnabled: false,
             onChange: () => {
                 if (this.commitOnChange) this.commit();
-            }
+            },
+            xhImpl: true
         });
     }
 
