@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {span} from '@xh/hoist/cmp/layout';
-import {defaults, isFinite, isFunction, isPlainObject, isString} from 'lodash';
+import {defaults, isFinite, isFunction, isNil, isPlainObject, isString} from 'lodash';
 import numbro from 'numbro';
 import {fmtSpan} from './FormatMisc';
 import {createRenderer, saveOriginal} from './FormatUtils';
@@ -368,6 +368,34 @@ export const numberRenderer = createRenderer(fmtNumber),
     quantityRenderer = createRenderer(fmtQuantity),
     priceRenderer = createRenderer(fmtPrice),
     percentRenderer = createRenderer(fmtPercent);
+
+
+const shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
+
+export function parseNumber(value) {
+    if (isNil(value) || value === '') return null;
+
+    value = value.toString();
+    value = value.replace(/,/g, '');
+
+    if (shorthandValidator.test(value)) {
+        const num = +value.substring(0, value.length - 1),
+            lastChar = value.charAt(value.length - 1).toLowerCase();
+
+        switch (lastChar) {
+            case 'k':
+                return num * 1000;
+            case 'm':
+                return num * 1000000;
+            case 'b':
+                return num * 1000000000;
+            default:
+                return NaN;
+        }
+    }
+
+    return parseFloat(value);
+}
 
 /**
  * @callback fmtNumber~tooltipFn - renderer for a custom tooltip.

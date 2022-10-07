@@ -6,11 +6,13 @@
  */
 import {BaseFilterFieldSpec} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
 import {FieldType, parseFieldValue} from '@xh/hoist/data';
-import {fmtDate} from '@xh/hoist/format';
+import {fmtDate, parseNumber} from '@xh/hoist/format';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
 import {isValidElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
+
+const {INT, NUMBER} = FieldType;
 
 /**
  * Filter field specification class for the typeahead `FilterChooser` component. Manages additional
@@ -49,7 +51,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         super(rest);
 
         this.valueRenderer = valueRenderer;
-        this.valueParser = valueParser;
+        this.valueParser = valueParser ?? (this.fieldType === INT || this.fieldType === NUMBER) ? (input, op) => parseNumber(input) : undefined;
         this.example = this.parseExample(example);
 
         if (!this.hasExplicitValues &&
