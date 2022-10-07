@@ -51,7 +51,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         super(rest);
 
         this.valueRenderer = valueRenderer;
-        this.valueParser = valueParser ?? (this.fieldType === INT || this.fieldType === NUMBER) ? (input, op) => parseNumber(input) : undefined;
+        this.valueParser = this.parseValueParser(valueParser);
         this.example = this.parseExample(example);
 
         if (!this.hasExplicitValues &&
@@ -115,6 +115,14 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         if (this.isDateBasedFieldType) return 'YYYY-MM-DD';
         if (this.isNumericFieldType) return this.renderValue(1234);
         return 'value';
+    }
+
+    parseValueParser(valueParser) {
+        // Default numeric parser
+        if (!valueParser && (this.fieldType === INT || this.fieldType === NUMBER)) {
+            return (input, op) => parseNumber(input);
+        }
+        return valueParser;
     }
 
     loadValuesFromSource() {

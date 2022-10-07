@@ -372,6 +372,10 @@ export const numberRenderer = createRenderer(fmtNumber),
 
 const shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
+/**
+ * @param {string} value - A string that represents a shorthand numerical value
+ * @returns {number} - The number represented by the shorthand string, or NaN
+ */
 export function parseNumber(value) {
     if (isNil(value) || value === '') return null;
 
