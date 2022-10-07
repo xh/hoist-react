@@ -13,6 +13,10 @@
   TabContainer.
 * The Admin Console diff tool for Configs, Prefs, and JSONBlobs now displays who updated each value
   and when.
+* Added new observable `XH.environmentService.serverVersion` property. Regularly updated via
+  pre-existing `xhAppVersionCheckSecs` config. Note this does not replace or change the built-in
+  upgrade prompt banner, but allows apps to take their own actions (e.g. reload immediately) when
+  they detect an update on the server.
 * New "Hoist Inspector" tool available in Desktop apps for displaying and querying Models,
   Services, and Stores within a running application.
     * Powered by a new method `XH.activeModels()`, which supports listing and querying all models
@@ -32,6 +36,7 @@
 
 ### 🐞 Bug Fixes
 
+* FilterChooserModel now accepts numeric shorthand for numeric fields. (ie, '1,337k' => 1337000.0)
 * Boolean filterChooser fields with enableValues=false will no longer suggest true for 'false'.
 * Change to `CompoundTaskObserver` to prioritize using specific messages from subtasks over the
   overall task message.

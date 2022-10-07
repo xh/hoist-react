@@ -8,7 +8,7 @@ import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {fmtNumber} from '@xh/hoist/format';
+import {fmtNumber, parseNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {debounced, throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -127,8 +127,6 @@ NumberInput.hasLayoutSupport = true;
 //-----------------------
 class NumberInputModel extends HoistInputModel {
 
-    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
-
     constructor() {
         super();
         throwIf(Math.log10(this.scaleFactor) % 1 !== 0, 'scaleFactor must be a factor of 10');
@@ -213,28 +211,7 @@ class NumberInputModel extends HoistInputModel {
     }
 
     parseValue(value) {
-        if (isNil(value) || value === '') return null;
-
-        value = value.toString();
-        value = value.replace(/,/g, '');
-
-        if (NumberInputModel.shorthandValidator.test(value)) {
-            const num = +value.substring(0, value.length - 1),
-                lastChar = value.charAt(value.length - 1).toLowerCase();
-
-            switch (lastChar) {
-                case 'k':
-                    return num * 1000;
-                case 'm':
-                    return num * 1000000;
-                case 'b':
-                    return num * 1000000000;
-                default:
-                    return NaN;
-            }
-        }
-
-        return parseFloat(value);
+        return parseNumber(value);
     }
 
     noteFocused() {
