@@ -229,9 +229,8 @@ export class Store extends HoistBase {
      * i.e. they should be in the same form as when passed to `loadData()`. The added/updated
      * source data will be run through this Store's `idSpec` and `processRawData` functions.
      *
-     * Adds can also be provided as an {@see ChildData} object, of the form `{rawData, parentId}`,
+     * Adds can also be provided as a {@see ChildData} object of the form `{rawData, parentId}`
      * to add new Records under a known, pre-existing parent StoreRecord.
-     * {@see StoreTransaction.add} for more details.
      *
      * Unlike `loadData()`, existing Records that are *not* included in this update transaction
      * will be left in place and as is.
@@ -975,8 +974,8 @@ function forIn(obj, fn) {
 }
 
 /**
- * @param {ChildData|*} obj - Object to be tested
- * @return {boolean} - returns if the parameter is a {@see ChildData} object.
+ * @param {Object} obj
+ * @return {boolean} - true if obj satisfies the {@see ChildData} interface.
  */
 function isChildDataObject(obj) {
     return obj.hasOwnProperty('rawData') && obj.hasOwnProperty('parentId');
@@ -1002,12 +1001,8 @@ function isChildDataObject(obj) {
  */
 
 /**
- * @typedef {Object} ChildData - a wrapped object for adding new children to existing store records
- * @property {string} parentId - a pointer to the intended parent. Has to reference an already
- *     existing parent; to add both a parent and its children at the same time, include the
- *     children's rawData in their parent's `rawData.children` array.
- *     NOTE: The parentId is only used when adding a child record, it may NOT be modified on an
- *     already added/existing record.
- * @property {Object} rawData - can include a `children` property that will be processed into new
- *     child records, for creating multiple-nested children.
+ * @typedef {Object} ChildData - format for adding new children to existing parent Records.
+ * @property {string} parentId - id of the pre-existing parent record.
+ * @property {Object} rawData - data for the child records to be added. Can include a `children`
+ *      property that will be processed into new (grand)child records.
  */
