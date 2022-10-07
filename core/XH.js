@@ -6,6 +6,7 @@
  */
 import {p} from '@xh/hoist/cmp/layout';
 import {AppSpec, AppState, elem} from '@xh/hoist/core';
+import {Store} from '@xh/hoist/data';
 import {Exception} from '@xh/hoist/exception';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable, reaction as mobxReaction} from '@xh/hoist/mobx';
@@ -653,7 +654,7 @@ class XHClass {
     // Miscellaneous
     //---------------------------
     /**
-     * Return a collection of models currently 'active' in this application.
+     * Return a collection of Models currently 'active' in this application.
      *
      * This will include all models that have not had their destroy() method called.
      * Models will be returned in creation order.
@@ -669,9 +670,14 @@ class XHClass {
         return ret;
     }
 
-    /** @return {HoistService[]} - all services registered with this application. */
+    /** @return {HoistService[]} - all Services registered with this application. */
     getServices() {
         return [...this.#services];
+    }
+
+    /** @return {Store[]} - all Stores registered with this application. */
+    getStores() {
+        return Array.from(Store._instances);
     }
 
     /**

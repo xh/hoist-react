@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, PersistenceProvider, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
+import {HoistModel, managed, RefreshContextModel, PersistenceProvider, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {find, isString, isUndefined, without, difference} from 'lodash';
@@ -46,6 +46,10 @@ export class TabContainerModel extends HoistModel {
     /** @member {(string|ReactNode)} */
     emptyText;
 
+    /** @member {RefreshContextModel} */
+    @managed
+    refreshContextModel;
+
     _lastActiveTabId;
 
     /**
@@ -80,10 +84,11 @@ export class TabContainerModel extends HoistModel {
         refreshMode = RefreshMode.ON_SHOW_LAZY,
         persistWith,
         emptyText = 'No tabs to display.',
-        switcherPosition
+        xhImpl = false
     }) {
         super();
         makeObservable(this);
+        this.xhImpl = xhImpl;
 
         // Create default switcher props
         if (switcher === true) {
@@ -101,6 +106,7 @@ export class TabContainerModel extends HoistModel {
         this.route = route;
         this.track = track;
         this.setTabs(tabs);
+        this.refreshContextModel = new RefreshContextModel();
 
         if (route) {
             if (XH.isMobileApp) {
@@ -160,7 +166,11 @@ export class TabContainerModel extends HoistModel {
         if (!activeTabId || !tabs.find(t => t.id === activeTabId && !t.disabled)) {
             this.activeTabId = this.calculateActiveTabId(tabs);
         }
-        this.tabs = tabs.map(t => t.isTabModel ? t : new TabModel({...t, containerModel: this}));
+        this.tabs = tabs.map(t => t.isTabModel ? t : new TabModel({
+            ...t,
+            containerModel: this,
+            xhImpl: this.xhImpl
+        }));
 
         if (oldTabs) {
             XH.safeDestroy(difference(oldTabs, this.tabs));

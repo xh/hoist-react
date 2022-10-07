@@ -37,7 +37,7 @@ export const [DateInput, dateInput] = hoistCmp.withFactory({
     displayName: 'DateInput',
     className: 'xh-date-input',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, Model);
+        return useHoistInputModel(cmp, props, ref, DateInputModel);
     }
 });
 DateInput.propTypes = {
@@ -176,7 +176,8 @@ DateInput.hasLayoutSupport = true;
 //---------------------------------
 // Implementation
 //---------------------------------
-class Model extends HoistInputModel {
+class DateInputModel extends HoistInputModel {
+    xhImpl = true;
 
     @bindable popoverOpen = false;
 

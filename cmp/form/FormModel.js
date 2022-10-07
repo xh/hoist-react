@@ -82,10 +82,13 @@ export class FormModel extends HoistModel {
             fields = [],
             initialValues = {},
             disabled = false,
-            readonly = false
+            readonly = false,
+            xhImpl = false
         } = {}) {
         super();
         makeObservable(this);
+        this.xhImpl = xhImpl;
+
         this.disabled = disabled;
         this.readonly = readonly;
         const models = {};
@@ -101,7 +104,10 @@ export class FormModel extends HoistModel {
 
         // Set the owning formModel *last* after all fields in place with data.
         // This (currently) kicks off the validation and other reactivity.
-        forOwn(this.fields, f => f.formModel = this);
+        forOwn(this.fields, f => {
+            f.formModel = this;
+            f.xhImpl = xhImpl;
+        });
     }
 
     /**
@@ -262,6 +268,8 @@ export class FormModel extends HoistModel {
         const me = this;
         return new Proxy({}, {
             get(target, name, receiver) {
+                // Allows Inspector to detect this as a proxy.
+                if (name === '_xhIsProxy') return true;
 
                 const field = me.fields[name];
                 if (field?.isFieldModel) {

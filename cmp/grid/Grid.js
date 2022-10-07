@@ -126,6 +126,7 @@ Grid.propTypes = {
 // Implementation
 //------------------------
 class GridLocalModel extends HoistModel {
+    xhImpl = true;
 
     /** @member {GridModel} */
     @lookup(GridModel) model;

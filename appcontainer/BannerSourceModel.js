@@ -16,6 +16,7 @@ import {BannerModel} from './BannerModel';
  * @private
  */
 export class BannerSourceModel extends HoistModel {
+    xhImpl = true;
 
     @managed
     @observable.ref

@@ -11,6 +11,8 @@ import {compact, isEmpty} from 'lodash';
 import {CustomRowModel} from './CustomRowModel';
 
 export class CustomTabModel extends HoistModel {
+    xhImpl = true;
+
     /** @member {ColumnHeaderFilterModel} */
     headerFilterModel;
 

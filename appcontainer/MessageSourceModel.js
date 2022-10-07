@@ -15,6 +15,7 @@ import {MessageModel} from './MessageModel';
  * @private
  */
 export class MessageSourceModel extends HoistModel {
+    xhImpl = true;
 
     @managed
     @observable.ref

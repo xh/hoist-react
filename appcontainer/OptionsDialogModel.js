@@ -15,6 +15,7 @@ import {AppOption} from './AppOption';
  * @private
  */
 export class OptionsDialogModel extends HoistModel {
+    xhImpl = true;
 
     @observable isOpen = false;
     @observable.ref options = [];
@@ -43,7 +44,7 @@ export class OptionsDialogModel extends HoistModel {
     setOptions(options) {
         this.options = options.filter(o => !o.omit).map(o => new AppOption(o));
         const fields = this.options.map(o => assign({name: o.name}, o.fieldModel));
-        this.formModel = new FormModel({fields});
+        this.formModel = new FormModel({fields, xhImpl: true});
     }
 
     get hasOptions() {

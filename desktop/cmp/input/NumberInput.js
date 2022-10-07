@@ -8,7 +8,7 @@ import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {fmtNumber} from '@xh/hoist/format';
+import {fmtNumber, parseNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {debounced, throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -36,7 +36,7 @@ export const [NumberInput, numberInput] = hoistCmp.withFactory({
     displayName: 'NumberInput',
     className: 'xh-number-input',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, Model);
+        return useHoistInputModel(cmp, props, ref, NumberInputModel);
     }
 });
 NumberInput.propTypes = {
@@ -125,9 +125,7 @@ NumberInput.hasLayoutSupport = true;
 //-----------------------
 // Implementation
 //-----------------------
-class Model extends HoistInputModel {
-
-    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
+class NumberInputModel extends HoistInputModel {
 
     constructor() {
         super();
@@ -213,28 +211,7 @@ class Model extends HoistInputModel {
     }
 
     parseValue(value) {
-        if (isNil(value) || value === '') return null;
-
-        value = value.toString();
-        value = value.replace(/,/g, '');
-
-        if (Model.shorthandValidator.test(value)) {
-            const num = +value.substring(0, value.length - 1),
-                lastChar = value.charAt(value.length - 1).toLowerCase();
-
-            switch (lastChar) {
-                case 'k':
-                    return num * 1000;
-                case 'm':
-                    return num * 1000000;
-                case 'b':
-                    return num * 1000000000;
-                default:
-                    return NaN;
-            }
-        }
-
-        return parseFloat(value);
+        return parseNumber(value);
     }
 
     noteFocused() {

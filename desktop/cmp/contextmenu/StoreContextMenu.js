@@ -10,6 +10,8 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import copy from 'clipboard-copy';
 import {flatten, isEmpty, isString, uniq} from 'lodash';
+import {isValidElement} from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
 
 /**
  * Model for ContextMenus interacting with data provided by Hoist data stores, typically via a Grid.
@@ -89,9 +91,13 @@ export class StoreContextMenu {
                     if (values.length > 1) return {text: `${values.length} values`};
 
                     const renderer = fieldSpec.renderer ?? column.renderer,
-                        text = renderer ?
-                            renderer(values[0], {record, column, gridModel}) :
-                            values[0] ?? '[blank]';
+                        elem = renderer ? renderer(values[0], {record, column, gridModel}) : values[0] ?? '[blank]',
+                        // Grid col renderers will very typically return elements, but we need this to be a string.
+                        // That's the contract for `RecordAction.text`, but even more importantly, we end up piping
+                        // those actions into Ag-Grid context menus, which *only* accept strings / HTML markup
+                        // and *not* ReactElements (as of AG v28.2).
+                        text = isValidElement(elem) ? renderToStaticMarkup(elem) : elem;
+
                     return {text};
                 };
 
