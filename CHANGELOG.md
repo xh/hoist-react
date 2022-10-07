@@ -35,6 +35,7 @@
 * Boolean filterChooser fields with enableValues=false will no longer suggest true for 'false'.
 * Change to `CompoundTaskObserver` to prioritize using specific messages from subtasks over the
   overall task message.
+* Context menu filtering no longer shows `[object Object]` for numerics and other formatted fields.
 
 ### ⚙️ Technical
 
