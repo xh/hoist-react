@@ -3,7 +3,7 @@ import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, XH} from '@xh/hoist/core';
 import {FieldType} from '@xh/hoist/data';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
-import {fmtDate, millionsRenderer, numberRenderer} from '@xh/hoist/format';
+import {fmtDate, numberRenderer} from '@xh/hoist/format';
 
 const {NUMBER} = FieldType;
 
@@ -39,19 +39,24 @@ export class StatsModel extends HoistModel {
             store: {
                 fields: [
                     {name: 'timestamp', displayName: 'Time', type: NUMBER},
+                    {name: 'syncRun', displayName: 'Sync', type: NUMBER},
                     {name: 'modelCount', displayName: '# Models', type: NUMBER},
                     {name: 'modelCountChange', displayName: '#Δ', type: NUMBER},
-                    {name: 'totalJSHeapSize', displayName: 'JS Heap (mb)', type: NUMBER},
-                    {name: 'usedJSHeapSize', displayName: 'Used (mb)', type: NUMBER}
+                    {name: 'totalJSHeapSize', type: NUMBER},
+                    {name: 'usedJSHeapSize', type: NUMBER}
                 ]
             },
             sortBy: ['timestamp|desc'],
             columns: [
                 {field: 'timestamp', renderer: timestampRenderer},
                 {field: 'modelCount', renderer: numberRenderer({precision: 0})},
+                {field: 'syncRun', renderer: numberRenderer({precision: 0})},
                 {field: 'modelCountChange', renderer: numberRenderer({precision: 0, colorSpec: true, withSignGlyph: true})},
-                {field: 'totalJSHeapSize', renderer: millionsRenderer({precision: 0})},
-                {field: 'usedJSHeapSize', renderer: millionsRenderer({precision: 0})}
+                {field: 'usedJSHeapSize', displayName: 'Heap used/total', rendererIsComplex: true, renderer: (v, {record}) => {
+                    const used = Math.round(v/1000000),
+                        total = Math.round(record.data.totalJSHeapSize/1000000);
+                    return `${used}/${total}mb`;
+                }}
             ],
             xhImpl: true
         });
@@ -64,7 +69,7 @@ export class StatsModel extends HoistModel {
                 xAxis: {type: 'datetime'},
                 yAxis: [
                     {title: {text: '# Models'}, allowDecimals: false, opposite: true, height: '70%'},
-                    {title: {text: 'JS Heap'}, height: '70%'},
+                    {title: {text: 'Used JS Heap (mb)'}, height: '70%'},
                     {
                         title: {text: '#Δ'}, height: '20%', top: '80%', offset: 0, opposite: true,
                         plotLines: [

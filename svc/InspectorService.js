@@ -1,5 +1,6 @@
 import {HoistModel, HoistService, managed, persist, XH} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {wait} from '@xh/hoist/promise';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 
@@ -45,12 +46,15 @@ export class InspectorService extends HoistService {
     /** @member {Timer} **/
     @managed statsUpdateTimer;
 
+    _syncRun = 0;
+    _idToSyncRun = new Map();
+
     constructor() {
         super();
         makeObservable(this);
     }
 
-    initAsync() {
+    async initAsync() {
         // Ensure deactivated if not enabled - active could be persisted to true.
         if (!this.enabled) {
             this.deactivate();
@@ -61,8 +65,7 @@ export class InspectorService extends HoistService {
         // set composition itself. Throttled via mobx-provided delay option.
         this.addAutorun({
             run: () => this.sync(),
-            delay: 300,
-            fireImmediately: true
+            delay: 500
         });
 
         // Update stats whenever activeInstances change. Note this cannot be called directly within
@@ -78,6 +81,10 @@ export class InspectorService extends HoistService {
             interval: () => this.conf.statsUpdateInterval,
             delay: true // model update reaction will eagerly populate on startup
         });
+
+        if (this.active) {
+            wait(500).then(() => this.sync());
+        }
     }
 
     toggleActive() {
@@ -114,9 +121,22 @@ export class InspectorService extends HoistService {
             ...XH.getStores()
         ];
 
+        const {_idToSyncRun, _syncRun} = this,
+            newSyncRun = _syncRun + 1;
+
+        let hadNewInstances = false;
         this.setActiveInstances(instances.map(inst => {
+            const {xhId} = inst;
+            let syncRun = _idToSyncRun.get(xhId);
+
+            if (!syncRun) {
+                syncRun = newSyncRun;
+                _idToSyncRun.set(xhId, syncRun);
+                hadNewInstances = true;
+            }
+
             return {
-                id: inst.xhId,
+                id: xhId,
                 className: inst.constructor.name,
                 created: inst._created,
                 isHoistService: inst.isHoistService,
@@ -126,9 +146,12 @@ export class InspectorService extends HoistService {
                 isXhImpl: inst.xhImpl,
                 hasLoadSupport: inst.loadSupport != null,
                 lastLoadCompleted: inst.lastLoadCompleted,
-                lastLoadException: inst.lastLoadException
+                lastLoadException: inst.lastLoadException,
+                syncRun
             };
         }));
+
+        if (hadNewInstances) this._syncRun = newSyncRun;
     }
 
     @action
@@ -153,7 +176,8 @@ export class InspectorService extends HoistService {
             modelCount,
             modelCountChange: modelCount - prevModelCount,
             totalJSHeapSize,
-            usedJSHeapSize
+            usedJSHeapSize,
+            syncRun: this._syncRun
         }];
 
         this._prevModelCount = modelCount;
@@ -179,8 +203,10 @@ export class InspectorService extends HoistService {
  * @property {boolean} isStore
  * @property {boolean} isLinked
  * @property {boolean} isXhImpl
+ * @property {boolean} hasLoadSupport
  * @property {Date} lastLoadCompleted
  * @property {Error} lastLoadException
+ * @property {number} syncRun
  */
 
 /**

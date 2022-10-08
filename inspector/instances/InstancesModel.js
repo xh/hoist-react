@@ -12,7 +12,7 @@ import {trimToDepth} from '@xh/hoist/utils/js';
 import {compact, find, forIn, head, without} from 'lodash';
 import {isObservableProp, makeObservable, runInAction} from 'mobx';
 
-const {AUTO, BOOL, DATE, STRING} = FieldType;
+const {AUTO, BOOL, DATE, NUMBER, STRING} = FieldType;
 
 /**
  * Displays a list of current HoistModel, HoistService, and Store instances, with the ability to
@@ -165,6 +165,7 @@ export class InstancesModel extends HoistModel {
                     {name: 'className', type: STRING},
                     {name: 'displayGroup', type: STRING},
                     {name: 'created', type: DATE},
+                    {name: 'syncRun', type: NUMBER},
                     {name: 'isHoistService', type: BOOL},
                     {name: 'isHoistModel', type: BOOL},
                     {name: 'isStore', type: BOOL},
@@ -175,7 +176,7 @@ export class InstancesModel extends HoistModel {
                     {name: 'lastLoadException', type: AUTO}
                 ]
             },
-            sortBy: ['created'],
+            sortBy: ['created|desc'],
             groupBy: this.showInGroups ? 'displayGroup' : null,
             selModel: {mode: 'multiple'},
             colChooserModel: true,
@@ -198,6 +199,7 @@ export class InstancesModel extends HoistModel {
                     ]
                 },
                 {field: 'id', displayName: 'xhId'},
+                {field: 'syncRun', displayName: 'Sync'},
                 {
                     field: 'isLinked',
                     headerName: Icon.link(),
