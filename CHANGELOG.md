@@ -36,6 +36,7 @@
   overall task message.
 * The Grid's built in context-menu option for filtering no longer shows `[object Object]` for
   columns that render React elements.
+* `Store.updateData()` properly handles data in the `{rawData, parentId}` format, as documented.
 
 ### ⚙️ Technical
 
