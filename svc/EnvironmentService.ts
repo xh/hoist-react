@@ -19,7 +19,7 @@ export class EnvironmentService extends HoistService {
 
     private _data: object = {};
 
-    async initAsync() {
+    override async initAsync() {
         const serverEnv = await XH.fetchJson({url: 'xh/environment'}),
             clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
             clientTimeZoneOffset = (new Date()).getTimezoneOffset() * -1 * MINUTES;

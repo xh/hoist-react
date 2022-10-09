@@ -68,7 +68,7 @@ export class WebSocketService extends HoistService {
         makeObservable(this);
     }
 
-    async initAsync() {
+    override async initAsync() {
         if (!this.enabled) return;
         if (XH.environmentService.get('webSocketsEnabled') === false) {
             console.error(

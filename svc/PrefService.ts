@@ -41,7 +41,7 @@ export class PrefService extends HoistService {
         this.pushPendingBuffered = debounce(pushFn, 5 * SECONDS);
     }
 
-    async initAsync() {
+    override async initAsync() {
         return this.loadPrefsAsync();
     }
 

@@ -19,7 +19,7 @@ export class IdentityService extends HoistService {
     private _authUser: HoistUser;
     private _apparentUser: HoistUser;
 
-    async initAsync() {
+    override async initAsync() {
         const data = await XH.fetchJson({url: 'xh/getIdentity'});
         if (data.user) {
             this._apparentUser = this._authUser = this.createUser(data.user, data.roles);

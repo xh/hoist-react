@@ -46,7 +46,7 @@ export class AutoRefreshService extends HoistService {
         return withDefault(conf[XH.clientAppCode], -1);
     }
 
-    async initAsync() {
+    override async initAsync() {
         this.initTime = Date.now();
 
         this.timer = Timer.create({

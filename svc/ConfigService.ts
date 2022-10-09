@@ -27,7 +27,7 @@ export class ConfigService extends HoistService {
 
     private _data = {};
 
-    async initAsync() {
+    override async initAsync() {
         this._data = await XH.fetchJson({url: 'xh/getConfig'});
         deepFreeze(this._data);
     }

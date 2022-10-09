@@ -80,7 +80,7 @@ export class ChangelogService extends HoistService {
         makeObservable(this);
     }
 
-    async initAsync() {
+    override async initAsync() {
         this.changelog = !isEmpty(jsonFromMarkdown?.versions) ?
             jsonFromMarkdown :
             {title: null, versions: []};
