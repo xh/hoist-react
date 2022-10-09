@@ -17,7 +17,7 @@ import {isNull, reject} from 'lodash';
 export class AboutDialogModel extends HoistModel {
     xhImpl = true;
 
-    @observable isOpen = false;
+    @observable isOpen: boolean = false;
 
     constructor() {
         super();

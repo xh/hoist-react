@@ -39,7 +39,7 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
     model: uses(ChartModel),
     className: 'xh-chart',
 
-    render({model, className, aspectRatio, ...props}: ChartProps, ref) {
+    render({model, className, aspectRatio, ...props}, ref) {
         if (!Highcharts) {
             console.error(
                 'Highcharts has not been imported in to this application. Please import and ' +

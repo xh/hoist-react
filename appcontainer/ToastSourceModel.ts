@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, ToastSpec, XH} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isString, partition} from 'lodash';
 import {ToastModel} from './ToastModel';
@@ -16,17 +16,16 @@ import {ToastModel} from './ToastModel';
 export class ToastSourceModel extends HoistModel {
     xhImpl = true;
 
-    /** @member {ToastModel[]} */
     @managed
     @observable.ref
-    toastModels = [];
+    toastModels: ToastModel[] = [];
 
     constructor() {
         super();
         makeObservable(this);
     }
 
-    show(config) {
+    show(config: ToastSpec|string) {
         if (isString(config)) config = {message: config};
         const ret = new ToastModel(config);
         this.addModel(ret);
@@ -37,7 +36,7 @@ export class ToastSourceModel extends HoistModel {
     // Implementation
     //------------------------------------
     @action
-    addModel(model) {
+    private addModel(model) {
         this.toastModels.push(model);
 
         // Cull and install new reference.

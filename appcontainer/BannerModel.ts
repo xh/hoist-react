@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
+import {BannerSpec, HoistModel} from '@xh/hoist/core';
 
 /**
  * Model for a single instance of a banner. Immutable.
@@ -36,7 +36,7 @@ export class BannerModel extends HoistModel {
         onClick,
         actionButtonProps,
         ...props
-    }) {
+    }: BannerSpec) {
         super();
 
         this.category = category;

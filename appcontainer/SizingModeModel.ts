@@ -15,18 +15,16 @@ import {values, isPlainObject} from 'lodash';
 export class SizingModeModel extends HoistModel {
     xhImpl = true;
 
-    /** @member {SizingMode} */
-    @observable sizingMode = null;
+    @observable sizingMode: string = null;
 
     constructor() {
         super();
         makeObservable(this);
     }
 
-    /** @param {SizingMode} sizingMode */
     @action
-    setSizingMode(sizingMode) {
-        throwIf(!values(SizingMode).includes(sizingMode), `Sizing mode "${sizingMode}" not recognised.`);
+    setSizingMode(sizingMode: string) {
+        throwIf(!values(SizingMode).includes(sizingMode as any), `Sizing mode "${sizingMode}" not recognised.`);
 
         const classList = document.body.classList;
         values(SizingMode).forEach(it => classList.toggle(`xh-${it}`, it === sizingMode));
@@ -59,11 +57,11 @@ export class SizingModeModel extends HoistModel {
     //---------------------
     // Implementation
     //---------------------
-    getPref() {
+    private getPref() {
         return XH.getPref('xhSizingMode', {});
     }
 
-    getPlatform() {
+    private getPlatform() {
         if (XH.isMobileApp) return 'mobile';
         if (XH.isTablet) return 'tablet';
         return 'desktop';

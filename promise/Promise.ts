@@ -8,94 +8,93 @@ import {TaskObserver, TrackOptions, XH, ExceptionHandlerOptions, Exception} from
 import {action} from '@xh/hoist/mobx';
 import {castArray, isFunction, isNumber, isString} from 'lodash';
 
-/**
- * Hoist Specific extension to native Promise.
- */
-export interface IPromise<T> extends Promise<T>{
+//---------------------------------------------
+// Enhancement to the Global Promise object.
+// Merged in to definition here and implemented
+// on the prototype below.
+//----------------------------------------------
+declare global {
 
-    /**
-     * Version of `then()` that wraps the callback in a MobX action, for use in a Promise chain
-     * that modifies MobX observables.
-     */
-    thenAction(onFulfilled?: (value: T) => any, onRejected?: (reason: any) => any): IPromise<any>;
+    interface Promise<T> {
 
-    /**
-     * Version of `catch()` that will only catch certain exceptions.
-     *
-     * @param selector - closure that takes an exception and
-     *      returns a boolean. May also be specified as an exception name or list of names.
-     *      Only exceptions passing this selector will be handled by this method.
-     * @param {function} [fn]
-     */
-    catchWhen(selector: ((e: any) => boolean) | string | string[], fn?: (reason: any) => any): IPromise<any>;
+        /**
+         * Version of `then()` that wraps the callback in a MobX action, for use in a Promise chain
+         * that modifies MobX observables.
+         */
+        thenAction(onFulfilled?: (value: T) => any, onRejected?: (reason: any) => any): Promise<any>;
 
-    /**
-     * Version of `catch()` that passes the error onto Hoist's default exception handler for
-     * convention-driven logging and alerting. Typically called last in a Promise chain.
-     *
-     * @param [options] - valid options for {@see XH.handleException()}.
-     */
-    catchDefault(options: ExceptionHandlerOptions): IPromise<any>;
+        /**
+         * Version of `catch()` that will only catch certain exceptions.
+         *
+         * @param selector - closure that takes an exception and
+         *      returns a boolean. May also be specified as an exception name or list of names.
+         *      Only exceptions passing this selector will be handled by this method.
+         * @param {function} [fn]
+         */
+        catchWhen(selector: ((e: any) => boolean) | string | string[], fn?: (reason: any) => any): Promise<any>;
 
-    /**
-     * Version of `catchDefault()` that will only catch certain exceptions.
-     *
-     * @memberOf Promise.prototype
-     * @param selector - see catchWhen().
-     * @param {Object} [options] - valid options for {@see XH.handleException()}.
-     */
-    catchDefaultWhen(selector: ((e: any) => boolean) | string | string[], options: ExceptionHandlerOptions): IPromise<any>;
+        /**
+         * Version of `catch()` that passes the error onto Hoist's default exception handler for
+         * convention-driven logging and alerting. Typically called last in a Promise chain.
+         */
+        catchDefault(options?: ExceptionHandlerOptions): Promise<any>;
 
-    /**
-     * Wait on a potentially async function before passing on the original value.
-     * Useful when we want to block and do something on the promise chain, but do not want to
-     * manipulate the values being passed through.
-     *
-     * @param onFulfillment - function to receive the pass-through value when ready.
-     */
-    tap(onFulfillment: (value: T) => any): IPromise<T>;
+        /**
+         * Version of `catchDefault()` that will only catch certain exceptions.
+         */
+        catchDefaultWhen(selector: ((e: any) => boolean) | string | string[], options: ExceptionHandlerOptions): Promise<any>;
+
+        /**
+         * Wait on a potentially async function before passing on the original value.
+         * Useful when we want to block and do something on the promise chain, but do not want to
+         * manipulate the values being passed through.
+         *
+         * @param onFulfillment - function to receive the pass-through value when ready.
+         */
+        tap(onFulfillment: (value: T) => any): Promise<T>;
 
 
-    /**
-     * Return a promise that will resolve a specified delay after this promise resolves.
-     *
-     * @param {number} interval - delay in milliseconds.
-     */
-    wait(interval: number): IPromise<T>;
+        /**
+         * Return a promise that will resolve a specified delay after this promise resolves.
+         *
+         * @param interval - delay in milliseconds.
+         */
+        wait(interval: number): Promise<T>;
 
 
-    /**
-     * Return a promise that will reject if this promise has not been settled after the
-     * specified interval has passed.
-     *
-     * @memberOf Promise.prototype
-     * @param [config] - object as per below, or interval in ms (if number).
-     *      If null, no timeout enforced.
-     * @param [config.interval] - interval value in ms.
-     * @param [config.message] - custom message for Exception thrown on timeout.
-     */
-    timeout(config: number|{interval: number, message?: string}): IPromise<T>;
+        /**
+         * Return a promise that will reject if this promise has not been settled after the
+         * specified interval has passed.
+         *
+         * @memberOf Promise.prototype
+         * @param [config] - object as per below, or interval in ms (if number).
+         *      If null, no timeout enforced.
+         * @param [config.interval] - interval value in ms.
+         * @param [config.message] - custom message for Exception thrown on timeout.
+         */
+        timeout(config: number|{interval: number, message?: string}): Promise<T>;
 
 
-    /**
-     * Link this promise to an instance of a {@see TaskObserver}. See that class for details
-     * on what it provides and how it can be used to coordinate masking and progress messages
-     * on one or more async operations.
-     *
-     * @param cfg - TaskObserver to use to track execution of this
-     *      Promise, or a config with observer + additional options.
-     * @param cfg.observer
-     * @param [cfg.message] - optional message to display while pending.
-     * @param [cfg.omit] - optional flag to indicate linkage should be skipped
-     *      If true, this method is no-op.  Provided as convenience for conditional masking.
-     */
-    linkTo(cfg: TaskObserver | { observer: TaskObserver, message?: string, omit?: boolean}): IPromise<T>;
+        /**
+         * Link this promise to an instance of a {@see TaskObserver}. See that class for details
+         * on what it provides and how it can be used to coordinate masking and progress messages
+         * on one or more async operations.
+         *
+         * @param cfg - TaskObserver to use to track execution of this
+         *      Promise, or a config with observer + additional options.
+         * @param cfg.observer
+         * @param [cfg.message] - optional message to display while pending.
+         * @param [cfg.omit] - optional flag to indicate linkage should be skipped
+         *      If true, this method is no-op.  Provided as convenience for conditional masking.
+         */
+        linkTo(cfg: TaskObserver | { observer: TaskObserver, message?: string, omit?: boolean}): Promise<T>;
 
 
-    /**
-     * Track a Promise (with timing) via Hoist activity tracking.
-     */
-    track(options: TrackOptions|string): IPromise<T>;
+        /**
+         * Track a Promise (with timing) via Hoist activity tracking.
+         */
+        track(options: TrackOptions|string): Promise<T>;
+    }
 }
 
 /**
@@ -106,24 +105,24 @@ export interface IPromise<T> extends Promise<T>{
  * @param [interval] - milliseconds to delay. Defaults to 0.  Note that the actual
  *      delay will be subject to the minimum delay for setTimeout() in the browser.
  */
-export function wait<T>(interval:number = 0): IPromise<T> {
-    return new Promise(resolve => setTimeout(resolve, interval)) as IPromise<T>;
+export function wait<T>(interval:number = 0): Promise<T> {
+    return new Promise(resolve => setTimeout(resolve, interval)) as Promise<T>;
 }
 
 /**
  * Return a promise that resolves immediately.
  *
- * @param {*} value - the value to be returned by the resulting Promise.
+ * @param value - the value to be returned by the resulting Promise.
  */
-export function resolve<T>(value): IPromise<T> {
-    return Promise.resolve(value) as IPromise<T>;
+export function resolve<T>(value: T = undefined): Promise<T> {
+    return Promise.resolve(value) as Promise<T>;
 }
 
 /**
  * Return a promise that never resolves.
  */
-export function never<T>(): IPromise<T> {
-    return new Promise(() => {}) as IPromise<T>;
+export function never<T>(): Promise<T> {
+    return new Promise(() => {}) as Promise<T>;
 }
 
 //--------------------------------

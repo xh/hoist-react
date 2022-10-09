@@ -11,7 +11,7 @@ import {throwIf} from '@xh/hoist/utils/js';
 export class ChangelogDialogModel extends HoistModel {
     xhImpl = true;
 
-    @observable isOpen = false;
+    @observable isOpen: boolean = false;
 
     constructor() {
         super();

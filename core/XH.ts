@@ -184,7 +184,7 @@ class XHClass {
         return this.identityService?.user ?? null;
     }
 
-    getUsername(): String {
+    getUsername(): string {
         return this.identityService?.username ?? null;
     }
 
@@ -357,10 +357,8 @@ class XHClass {
 
     /**
      * Sets the theme directly (useful for custom app option controls).
-     * @param value - 'light', 'dark', or 'system'
-     * @param [persist] - true (default) to persist with preference
      */
-    setTheme(value: string, persist: boolean = true) {
+    setTheme(value: 'light'|'dark'|'system', persist: boolean = true) {
         return this.acm.themeModel.setTheme(value, persist);
     }
 

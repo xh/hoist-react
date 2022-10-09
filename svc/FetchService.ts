@@ -61,9 +61,9 @@ export class FetchService extends HoistService {
 
     /**
      * Send a request via the underlying fetch API.
-     * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
+     * @returns Promise which resolves to a Fetch Response.
      */
-    fetch(opts: FetchOptions) {
+    fetch(opts: FetchOptions): Promise<any> {
         return this.managedFetchAsync(
             opts,
             (aborter) => this.fetchInternalAsync(opts, aborter)
@@ -74,7 +74,7 @@ export class FetchService extends HoistService {
      * Send an HTTP request and decode the response as JSON.
      * @returns {Promise<any>} the decoded JSON object, or null if the response had no content.
      */
-    fetchJson(opts: FetchOptions) {
+    fetchJson(opts: FetchOptions): Promise<any> {
         return this.managedFetchAsync(
             opts,
             async (aborter) => {

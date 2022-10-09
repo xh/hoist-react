@@ -18,21 +18,25 @@ import {action, observable, makeObservable} from '@xh/hoist/mobx';
 export class ExceptionDialogModel extends HoistModel {
     xhImpl = true;
 
-    @observable.ref displayData;
-    @observable detailsIsOpen = false;
+    @observable.ref
+    displayData: {exception: any, options: any};
+
+    @observable
+    detailsIsOpen = false;
 
     /** Exception currently being displayed */
-    get exception() {
+    get exception(): any {
         return this.displayData?.exception ?? null;
     }
 
     /** Options for exception currently being displayed */
-    get options() {
+    get options(): any {
         return this.displayData?.options ?? {};
     }
 
     /** Optional user supplied message */
-    @observable userMessage = '';
+    @observable
+    userMessage: string = '';
 
     constructor() {
         super();
@@ -40,7 +44,7 @@ export class ExceptionDialogModel extends HoistModel {
     }
 
     @action
-    show(exception, options) {
+    show(exception: any, options: any) {
         if (this.displayData?.options.requireReload) return;
         this.displayData = {exception, options};
     }
@@ -58,7 +62,7 @@ export class ExceptionDialogModel extends HoistModel {
     }
 
     @action
-    setUserMessage(userMessage) {
+    setUserMessage(userMessage: string) {
         this.userMessage = userMessage;
     }
 

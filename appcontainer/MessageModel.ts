@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {FormModel} from '@xh/hoist/cmp/form';
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, XH, MessageSpec, managed} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
@@ -37,6 +37,9 @@ export class MessageModel extends HoistModel {
     result;
     _resolver;
 
+    @managed
+    formModel: FormModel;
+
     @observable isOpen = true;
 
     constructor({
@@ -53,7 +56,7 @@ export class MessageModel extends HoistModel {
         onCancel,
         dismissable = !isEmpty(cancelProps),
         cancelOnDismiss = true
-    }) {
+    }: MessageSpec) {
         super();
         makeObservable(this);
 
@@ -68,9 +71,7 @@ export class MessageModel extends HoistModel {
         if (input) {
             this.input = input;
             const {initialValue, rules} = input;
-            this.formModel = this.markManaged(
-                new FormModel({fields: [{name: 'value', initialValue, rules}]})
-            );
+            this.formModel = new FormModel({fields: [{name: 'value', initialValue, rules}]});
         }
 
         this.confirmProps = this.parseButtonProps(confirmProps, () => this.doConfirmAsync());
@@ -122,14 +123,14 @@ export class MessageModel extends HoistModel {
         this.close();
     }
 
-    //-----------------------
-    // Implementation
-    //-----------------------
     @action
     close() {
         this.isOpen = false;
     }
 
+    //-----------------------
+    // Implementation
+    //-----------------------
     destroy() {
         this.close();
         super.destroy();
@@ -137,18 +138,10 @@ export class MessageModel extends HoistModel {
 
     // Merge handler and deprecated props into consolidated object.
     // Return null if neither text nor icon provided - button should not be displayed.
-    parseButtonProps(props, handler) {
+    private parseButtonProps(props, handler) {
         warnIf(props.onClick, 'Cannot specify "onClick" callback for default Message buttons - callback will be ignored.');
 
         const ret = {...props, onClick: handler};
         return (ret.text || ret.icon) ? ret : null;
     }
 }
-
-/**
- * @typedef {Object} MessageInput
- * @property {Element} [item] - the React element to render; should be a HoistInput, defaults to a
- *      platform appropriate TextInput.
- * @property {Rule[]} [rules] - validation constraints to apply.
- * @property {*} [initialValue] - initial value for the input.
- */

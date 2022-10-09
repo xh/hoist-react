@@ -112,19 +112,18 @@ export class WebSocketService extends HoistService {
     /**
      * Cancel a subscription for a given topic/handler.
      *
-     * @param {WebSocketSubscription} subscription - the object returned by `subscribe()` when the
+     *  @param subscription - the object returned by `subscribe()` when the
      *      subscription was initially established.
      */
-    unsubscribe(subscription) {
+    unsubscribe(subscription: WebSocketSubscription) {
         const subs = this.getSubsForTopic(subscription.topic);
         pull(subs, subscription);
     }
 
     /**
      * Send a message back to the server via the connected websocket.
-     * @param {WebSocketMessage} message
      */
-    sendMessage(message) {
+    sendMessage(message: WebSocketMessage) {
         this.updateConnectedStatus();
         throwIf(!this.connected, 'Unable to send message via websocket - not connected.');
 
@@ -308,5 +307,5 @@ export class WebSocketSubscription {
 
 interface WebSocketMessage {
     topic: string;
-    message: any;
+    data: any;
 }

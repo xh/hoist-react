@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH, MessageSpec} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {isUndefined, partition, filter} from 'lodash';
 import {MessageModel} from './MessageModel';
@@ -19,14 +19,14 @@ export class MessageSourceModel extends HoistModel {
 
     @managed
     @observable.ref
-    msgModels = [];
+    msgModels: MessageModel[] = [];
 
     constructor() {
         super();
         makeObservable(this);
     }
 
-    message(config) {
+    message(config: MessageSpec) {
 
         // Default autoFocus on any confirm button, if no input control and developer has made no explicit request
         const {confirmProps, cancelProps, input} = config;

@@ -15,8 +15,8 @@ import {stripTags} from '@xh/hoist/utils/js';
 export class FeedbackDialogModel extends HoistModel {
     xhImpl = true;
 
-    @observable isOpen = false;
-    @observable message = null;
+    @observable isOpen: boolean = false;
+    @observable message: string = null;
 
     constructor() {
         super();
@@ -43,7 +43,7 @@ export class FeedbackDialogModel extends HoistModel {
     }
 
     @action
-    setMessage(message) {
+    setMessage(message: string) {
         this.message = stripTags(message);
     }
 

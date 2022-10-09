@@ -1,6 +1,7 @@
 import {ReactElement, ReactNode} from 'react';
 import {DebounceSettings} from 'lodash';
 import {LoadSpec} from '../load';
+import {Rule} from '@xh/hoist/data';
 
 /**
  * User of the application, as loaded from the server.
@@ -45,7 +46,7 @@ export interface ToastSpec {
      * If provided, will render a button within the toast to enable the user to take some
      * specific action right from the toast.
      */
-    actionButtonProps?: object;
+    actionButtonProps?: any;
 
     /**
      * Relative position at which to display toast, e.g. "bottom-right" (default) or "top".
@@ -79,27 +80,38 @@ export interface MessageSpec {
     messageKey?: string;
 
     /** Config for input to be displayed (as a prompt). */
-    input?: object;
+    input?: {
+        /**
+         * An element specifying a HoistInput, defaults to a platform appropriate TextInput.
+         */
+        item?: ReactElement,
+
+        /** Validation constraints to apply. */
+        rules?: Rule[];
+
+        /** Initial value for the input. */
+        initialValue?: any;
+    }
 
     /**
      * Props for primary confirm button.
      * Must provide either text or icon for button to be displayed, or use a preconfigured
      * helper such as `XH.alert()` or `XH.confirm()` for default buttons.
      */
-    confirmProps?: object;
+    confirmProps?: any;
 
     /**
      * Props for secondary cancel button.
      * Must provide either text or icon for button to be displayed, or use a preconfigured
      * helper such as `XH.alert()` or `XH.confirm()` for default buttons.
      */
-    cancelProps?: object;
+    cancelProps?: any;
 
     /**
      * Specify 'left' to place the Cancel button (if shown) on the
      * left edge of the dialog toolbar, with a filler between it and Confirm.
      */
-    cancelAlign?: string;
+    cancelAlign?: any;
 
     /** Callback to execute when confirm is clicked.*/
     onConfirm?();
@@ -122,7 +134,7 @@ export interface BannerSpec {
 
     message?: ReactNode;
     icon?: ReactElement;
-    intent?: string;
+    intent?: 'primary'|'success'|'warning'|'danger',
     className?: string;
 
     /** The category for the banner. Defaults to 'default'.*/
@@ -133,15 +145,48 @@ export interface BannerSpec {
      *  (Note, banners closed via `XH.hideBanner()` or when the max
      *  number of banners shown is exceeded will NOT trigger this callback.)
      */
-    onClose?(model);
+    onClose?(model: any);
+
+    /**
+     * Callback function triggered when the user clicks on the banner.
+     */
+    onClick?(model: any)
 
     /**
      *  If provided, will render a button within the banner to enable the user to
      *  take some specific action right from the banner.
      */
     actionButtonProps?: object;
+
+    /** Enable the Banner to be closed? Defaults to true. */
+    enableClose?: boolean;
 }
 
+/**
+ * Option for Application option in the application.
+ */
+export interface AppOptionSpec {
+    name: string;
+    prefName?: string;
+
+    /** Config for FormField for this option. */
+    formField: any;
+
+    /** Config for FieldModel for the option.*/
+    fieldModel?: any;
+
+    /** Function, possibly async, which returns the value. */
+    valueGetter?: () => any;
+
+    /** Function, possibly async, which sets the value. */
+    valueSetter?: (s: any) => any;
+
+    /** True to reload the app after changing this option.  Default false. */
+    reloadRequired?: boolean;
+
+    /** Optional flag to omit displaying option. */
+    omit?: boolean;
+}
 
 /**
  * Options for tracking activity on the server via TrackService.

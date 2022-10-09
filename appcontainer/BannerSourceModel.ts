@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, managed, BannerSpec} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {find, reject} from 'lodash';
 
@@ -20,7 +20,7 @@ export class BannerSourceModel extends HoistModel {
 
     @managed
     @observable.ref
-    bannerModels = [];
+    bannerModels: BannerModel[] = [];
 
     MAX_BANNERS = 4;
 
@@ -30,14 +30,14 @@ export class BannerSourceModel extends HoistModel {
     }
 
     @action
-    show(config) {
+    show(config: BannerSpec): BannerModel {
         const ret = new BannerModel(config);
         this.addModel(ret);
         return ret;
     }
 
     @action
-    hide(category) {
+    hide(category: string) {
         const bannerModel = this.getBanner(category);
         XH.safeDestroy(bannerModel);
         this.bannerModels = reject(this.bannerModels, {category});
@@ -47,7 +47,7 @@ export class BannerSourceModel extends HoistModel {
     // Implementation
     //------------------------------------
     @action
-    addModel(model) {
+    addModel(model: BannerModel) {
         // Remove existing banner for category
         this.hide(model.category);
 
@@ -60,7 +60,7 @@ export class BannerSourceModel extends HoistModel {
         this.bannerModels = models;
     }
 
-    getBanner(category) {
+    getBanner(category: string): BannerModel {
         return find(this.bannerModels, {category});
     }
 }

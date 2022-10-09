@@ -13,8 +13,8 @@ import {action, observable, makeObservable} from '@xh/hoist/mobx';
 export class ThemeModel extends HoistModel {
     xhImpl = true;
 
-    /** @member {boolean} */
-    @observable darkTheme;
+    @observable
+    darkTheme: boolean;
 
     constructor() {
         super();
@@ -27,7 +27,7 @@ export class ThemeModel extends HoistModel {
     }
 
     @action
-    setDarkTheme(value) {
+    setDarkTheme(value: boolean) {
         const classList = document.body.classList;
         classList.toggle('xh-dark', value);
         classList.toggle('bp4-dark', value);
@@ -35,7 +35,7 @@ export class ThemeModel extends HoistModel {
     }
 
     @action
-    setTheme(value, persist = true) {
+    setTheme(value: 'system'|'dark'|'light', persist = true) {
         switch (value) {
             case 'system':
                 this.setDarkTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);

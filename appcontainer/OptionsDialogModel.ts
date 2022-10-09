@@ -5,9 +5,10 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {FormModel} from '@xh/hoist/cmp/form';
-import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
+import {AppOptionSpec, HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {assign, mapValues, pickBy} from 'lodash';
+import { resolve } from '../promise/Promise';
 import {AppOption} from './AppOption';
 
 /**
@@ -21,13 +22,10 @@ export class OptionsDialogModel extends HoistModel {
     @observable.ref options = [];
 
     @managed
-    loadModel = TaskObserver.trackLast();
-
-    @managed
     formModel = null;
 
-    constructor(props) {
-        super(props);
+    constructor() {
+        super();
         makeObservable(this);
     }
 
@@ -41,18 +39,18 @@ export class OptionsDialogModel extends HoistModel {
     //-------------------
     // Setting options
     //-------------------
-    setOptions(options) {
+    setOptions(options: AppOptionSpec[]) {
         this.options = options.filter(o => !o.omit).map(o => new AppOption(o));
         const fields = this.options.map(o => assign({name: o.name}, o.fieldModel));
         this.formModel = new FormModel({fields, xhImpl: true});
     }
 
-    get hasOptions() {
+    get hasOptions(): boolean {
         return !!this.options.length;
     }
 
     @computed
-    get reloadRequired() {
+    get reloadRequired(): boolean {
         const {formModel} = this;
         return formModel && this.options.some(o => formModel.fields[o.name].isDirty && o.reloadRequired);
     }
@@ -87,9 +85,10 @@ export class OptionsDialogModel extends HoistModel {
             return option.getValueAsync().then(v => formModel.fields[option.name].init(v));
         });
         await Promise.allSettled(promises).linkTo(this.loadModel);
+
     }
 
-    async saveAsync() {
+    async saveAsync(): Promise<void> {
         await this.formModel.validateAsync();
         if (!this.formModel.isValid) return;
 
@@ -99,7 +98,8 @@ export class OptionsDialogModel extends HoistModel {
             this.loadModel.setMessage('Reloading app to apply changes...');
         }
 
-        this.doSaveAsync()
+        resolve()
+            .then(() => this.doSaveAsync())
             .wait(1000)
             .then(() => {
                 this.hide();
@@ -113,7 +113,7 @@ export class OptionsDialogModel extends HoistModel {
             .catchDefault();
     }
 
-    async doSaveAsync() {
+    async doSaveAsync(): Promise<void> {
         const {formModel} = this,
             dirtyFields = pickBy(formModel.fields, {isDirty: true}),
             promises = this.options

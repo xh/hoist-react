@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
+import {XH, AppOptionSpec} from '@xh/hoist/core';
 import {warnIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 
@@ -28,16 +28,6 @@ export class AppOption {
     valueSetter;
     reloadRequired;
 
-    /**
-     * @param {Object} c - AppOption configuration.
-     * @param {string} c.name - name for the option
-     * @param {string} [c.prefName] - prefName to bind to the option to.
-     * @param {Object} c.formField - config for FormField for the option.
-     * @param {Object} [c.fieldModel] - config for FieldModel for the option.
-     * @param {function} [c.valueGetter] - async function which returns the external value.
-     * @param {function} [c.valueSetter] - async function which sets the external value. Receives (value).
-     * @param {boolean}  [c.reloadRequired] - true to reload the app after changing this option.
-     */
     constructor({
         name,
         prefName,
@@ -46,7 +36,7 @@ export class AppOption {
         valueGetter,
         valueSetter,
         reloadRequired = false
-    }) {
+    }: AppOptionSpec) {
 
         warnIf(
             !(prefName && XH.prefService.hasKey(prefName)) && !(valueGetter && valueSetter),

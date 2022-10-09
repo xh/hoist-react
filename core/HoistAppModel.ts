@@ -5,8 +5,9 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
-import {HoistModel} from './';
+import {AppOptionSpec, HoistModel} from './';
 import {Route} from 'router5';
+import { ReactNode } from 'react';
 /**
  * Specialized base class for defining the central model for a Hoist app as specified by its
  * {@see AppSpec.modelClass} config. That config should reference a concrete implementation class
@@ -62,12 +63,8 @@ export class HoistAppModel extends HoistModel {
      * Provide a list of app-wide options to be displayed in the App's built-in Options
      * dialog, accessible from the default AppBar menu when this method returns non-empty.
      * @see AppOption
-     *
-     * @returns AppOption configs. An additional `omit` property is supported
-     *      here that, if true, will skip construction of that particular option and drop
-     *      it out of the Options dialog.
      */
-    getAppOptions(): object[] {
+    getAppOptions(): AppOptionSpec[] {
         return [];
     }
 
@@ -76,11 +73,8 @@ export class HoistAppModel extends HoistModel {
      * App's built-in About dialog.
      * @see AboutDialog
      *
-     * @returns {{label: ReactElement, value: ReactElement, [omit]: boolean}[]} - AboutDialog cfgs.
-     *      An additional `omit` property is supported here that, if true, will skip construction of
-     *      that particular option and drop it out of the About dialog.
      */
-    getAboutDialogItems(): object[] {
+    getAboutDialogItems(): AboutDialogItem[] {
         const XH = window['XH'],
             svc = XH.environmentService;
 
@@ -112,4 +106,12 @@ export class HoistAppModel extends HoistModel {
         await XH.prefService.clearAllAsync();
         XH.localStorageService.clear();
     }
+}
+
+
+/** Object Describing an entry in the AboutDialog. */
+interface AboutDialogItem {
+    label: ReactNode;
+    value: ReactNode;
+    omit?: boolean;
 }

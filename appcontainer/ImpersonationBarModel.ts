@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, observable, bindable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -16,9 +16,14 @@ import {throwIf} from '@xh/hoist/utils/js';
 export class ImpersonationBarModel extends HoistModel {
     xhImpl = true;
 
-    @observable showRequested = false;
-    @observable.ref targets = [];
-    @bindable pendingTarget = null;
+    @observable showRequested: boolean = false;
+    @observable.ref targets: string[] = [];
+    @observable pendingTarget: string = null;
+
+    @action
+    setPendingTarget(s: string) {
+        this.pendingTarget = s;
+    }
 
     constructor() {
         super();
@@ -39,7 +44,7 @@ export class ImpersonationBarModel extends HoistModel {
         });
     }
 
-    get isOpen() {
+    get isOpen(): boolean {
         return this.showRequested || XH.identityService.isImpersonating;
     }
 
@@ -67,7 +72,7 @@ export class ImpersonationBarModel extends HoistModel {
     //---------------------
     // Handlers
     //---------------------
-    onCommit = async () => {
+    readonly onCommit = async () => {
         const {pendingTarget} = this;
         if (!pendingTarget) return;
         try {
@@ -78,7 +83,7 @@ export class ImpersonationBarModel extends HoistModel {
         }
     };
 
-    onClose = () => {
+    readonly onClose = () => {
         XH.identityService.isImpersonating ? XH.identityService.endImpersonateAsync() : this.hide();
     };
 
@@ -86,7 +91,7 @@ export class ImpersonationBarModel extends HoistModel {
     //--------------------
     // Implementation
     //--------------------
-    ensureTargetsLoaded() {
+    private ensureTargetsLoaded() {
         if (this.targets.length) return;
 
         XH.fetchJson({
@@ -97,7 +102,7 @@ export class ImpersonationBarModel extends HoistModel {
     }
 
     @action
-    setTargets(targets) {
+    private setTargets(targets) {
         this.targets = targets
             .map(t => t.username)
             .filter(t => t !== XH.getUsername())

@@ -137,7 +137,7 @@ export class Timer {
         return isString(val) ? () => XH.configService.get(val) : val;
     }
 
-    private parseDelay(val) {
+    private parseDelay(val): number {
         if (isBoolean(val)) return val ? this.intervalMs : 0;
         return isFinite(val) ? val : 0;
     }

@@ -19,14 +19,13 @@ import {runInAction} from 'mobx';
 export class ViewportSizeModel extends HoistModel {
     xhImpl = true;
 
-    /** @member {Object} - contains `width` and `height` in pixels */
-    @observable.ref size;
+    @observable.ref
+    size: {width: number, height: number};
 
-    /** @member {boolean} */
-    @observable isPortrait;
+    @observable isPortrait: boolean;
 
-    /** @returns {boolean} - observable inverse of isPortrait. */
-    get isLandscape() {
+    /** Observable inverse of isPortrait. */
+    get isLandscape(): boolean {
         return !this.isPortrait;
     }
 
@@ -65,7 +64,7 @@ export class ViewportSizeModel extends HoistModel {
     // Debounced to account for slow inner window resize on mobile. A single 100ms debounce does
     // appear to reliably catch resize events even on problematic mobile browsers (see above).
     @debounced(100)
-    setViewportSize() {
+    private setViewportSize() {
         runInAction(() => this.size = {
             width: window.innerWidth,
             height: window.innerHeight
@@ -73,7 +72,7 @@ export class ViewportSizeModel extends HoistModel {
     }
 
     @action
-    updateOrientation() {
+    private updateOrientation() {
         if (isString(window.screen?.orientation?.type)) {
             // First check modern API.
             this.isPortrait = window.screen.orientation.type.startsWith('portrait');
@@ -86,5 +85,4 @@ export class ViewportSizeModel extends HoistModel {
             this.isPortrait = width < height;
         }
     }
-
 }

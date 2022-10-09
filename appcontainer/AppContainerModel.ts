@@ -64,9 +64,7 @@ export class AppContainerModel extends HoistModel {
             this.viewportSizeModel,
             this.themeModel
         ];
-        models.forEach(it => {
-            if (it.init) it.init();
-        });
+        models.forEach(m => m.init?.());
     }
 
     /**
