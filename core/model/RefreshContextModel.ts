@@ -58,7 +58,7 @@ export class RefreshContextModel extends HoistModel {
         pull(this.refreshTargets, target);
     }
 
-    async doLoadAsync(loadSpec: LoadSpec): Promise<any> {
-        return loadAllAsync(this.refreshTargets, loadSpec);
+    override async doLoadAsync(loadSpec: LoadSpec) {
+        await loadAllAsync(this.refreshTargets, loadSpec);
     }
 }

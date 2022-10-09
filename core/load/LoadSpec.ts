@@ -75,13 +75,13 @@ export class LoadSpec {
      *
      * Not for direct application use -- LoadSpecs are constructed by Hoist internally.
      */
-    constructor({isRefresh, isAutoRefresh, meta, owner}) {
+    constructor({isRefresh, isAutoRefresh, meta, owner}: Partial<LoadSpec>) {
         this.isRefresh = !!(isRefresh || isAutoRefresh);
         this.isAutoRefresh = !!isAutoRefresh;
         this.meta = meta ?? {};
         this.owner = owner;
 
-        const last = owner._lastRequested;
+        const last = owner.lastRequested;
         this.loadNumber = last ? last.loadNumber + 1 : 0;
         this.dateCreated = new Date();
 

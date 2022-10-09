@@ -6,7 +6,7 @@
  */
 import {forOwn, has, isFunction} from 'lodash';
 import {warnIf} from '@xh/hoist/utils/js';
-import {HoistBase, HoistProps, managed, TaskObserver} from '../';
+import {HoistBase, HoistProps, managed} from '../';
 import {ModelSelector} from './';
 import {LoadSupport, LoadSpec, Loadable} from '../load';
 import {observable, action, makeObservable} from '@xh/hoist/mobx';
@@ -52,7 +52,7 @@ import {instanceManager} from '../InstanceManager';
  * on the model and enable several extensions to help track and manage async loads via the model's
  * public `loadAsync()` entry point.
  */
-export class HoistModel extends HoistBase implements Loadable {
+export abstract class HoistModel extends HoistBase implements Loadable {
 
     static get isHoistModel(): boolean {return true}
     get isHoistModel(): boolean {return true}
@@ -89,15 +89,16 @@ export class HoistModel extends HoistBase implements Loadable {
     @managed
     loadSupport: LoadSupport;
 
-    get loadModel(): TaskObserver   {return this.loadSupport?.loadModel}
-    get lastLoadRequested(): Date   {return this.loadSupport?.lastLoadRequested}
-    get lastLoadCompleted(): Date   {return this.loadSupport?.lastLoadCompleted}
-    get lastLoadException(): any    {return this.loadSupport?.lastLoadException}
-    async loadAsync(loadSpec?: LoadSpec)    {return this.loadSupport?.loadAsync(loadSpec)}
+    get loadModel()                         {return this.loadSupport?.loadModel}
+    get lastLoadRequested()                 {return this.loadSupport?.lastLoadRequested}
+    get lastLoadCompleted()                 {return this.loadSupport?.lastLoadCompleted}
+    get lastLoadException()                 {return this.loadSupport?.lastLoadException}
     async refreshAsync(meta?: object)       {return this.loadSupport?.refreshAsync(meta)}
     async autoRefreshAsync(meta?: object)   {return this.loadSupport?.autoRefreshAsync(meta)}
-
     async doLoadAsync(loadSpec: LoadSpec) {}
+    async loadAsync(loadSpec?: LoadSpec|Partial<LoadSpec>) {
+        return this.loadSupport?.loadAsync(loadSpec);
+    }
 
     //---------------------------
     // Linked model support

@@ -36,7 +36,7 @@ export class AlertBannerService extends HoistService {
         return XH.localStorageService.get('xhAlertBanner.lastDismissed');
     }
 
-    async initAsync() {
+    override async initAsync() {
         this.timer = Timer.create({
             runFn: () => this.checkForBannerAsync(),
             interval: this.interval

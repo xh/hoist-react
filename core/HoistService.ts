@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistBase, managed, LoadSupport, LoadSpec, TaskObserver, Loadable} from './';
+import {HoistBase, managed, LoadSupport, LoadSpec, Loadable} from './';
 
 
 /**
@@ -51,7 +51,9 @@ export class HoistService extends HoistBase implements Loadable {
      * Throwing an exception from this method will typically block startup.
      * Service writers should take care to stifle and manage all non-fatal exceptions.
      */
-    initAsync() {}
+    async initAsync(): Promise<void> {
+
+    }
 
     /**
      * Provides optional support for Hoist's approach to managed loading.
@@ -63,12 +65,14 @@ export class HoistService extends HoistBase implements Loadable {
     @managed
     loadSupport: LoadSupport;
 
-    get loadModel(): TaskObserver {return this.loadSupport?.loadModel}
-    get lastLoadRequested(): Date {return this.loadSupport?.lastLoadRequested}
-    get lastLoadCompleted(): Date {return this.loadSupport?.lastLoadCompleted}
-    get lastLoadException(): any  {return this.loadSupport?.lastLoadException}
-    async loadAsync(loadSpec?: LoadSpec)    {return this.loadSupport?.loadAsync(loadSpec)}
-    async refreshAsync(meta: object)        {return this.loadSupport?.refreshAsync(meta)}
-    async autoRefreshAsync(meta: object)    {return this.loadSupport?.autoRefreshAsync(meta)}
+    get loadModel()                         {return this.loadSupport?.loadModel}
+    get lastLoadRequested()                 {return this.loadSupport?.lastLoadRequested}
+    get lastLoadCompleted()                 {return this.loadSupport?.lastLoadCompleted}
+    get lastLoadException()                 {return this.loadSupport?.lastLoadException}
+    async refreshAsync(meta?: object)       {return this.loadSupport?.refreshAsync(meta)}
+    async autoRefreshAsync(meta?: object)   {return this.loadSupport?.autoRefreshAsync(meta)}
     async doLoadAsync(loadSpec: LoadSpec) {}
+    async loadAsync(loadSpec?: LoadSpec|Partial<LoadSpec>) {
+        return this.loadSupport?.loadAsync(loadSpec);
+    }
 }

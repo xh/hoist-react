@@ -57,7 +57,7 @@ export class InspectorService extends HoistService {
         makeObservable(this);
     }
 
-    initAsync() {
+    override async initAsync() {
         // Ensure deactivated if not enabled - active could be persisted to true.
         if (!this.enabled) {
             this.deactivate();

@@ -19,7 +19,7 @@ import {RefreshContextModel} from './';
  */
 export class RootRefreshContextModel extends RefreshContextModel {
 
-    async doLoadAsync(loadSpec: LoadSpec) {
+    override async doLoadAsync(loadSpec: LoadSpec) {
         const {appModel} = XH;
         if (appModel.loadSupport) {
             await appModel.loadAsync(loadSpec);

@@ -44,7 +44,7 @@ export interface HoistBaseClass {
  * @see HoistService
  * @see Store
  */
-export class HoistBase {
+export abstract class HoistBase {
 
     static get isHoistBase(): boolean {return true}
     get isHoistBase(): boolean {return true}

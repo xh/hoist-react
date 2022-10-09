@@ -33,12 +33,13 @@ export class ManagedRefreshContextModel extends RefreshContextModel {
         });
     }
 
-    async doLoadAsync(loadSpec: LoadSpec) {
+    override async doLoadAsync(loadSpec: LoadSpec) {
         const {model} = this,
             mode = model.refreshMode;
 
         if (model.isActive || mode === RefreshMode.ALWAYS) {
-            return await loadAllAsync(this.refreshTargets, loadSpec);
+            await loadAllAsync(this.refreshTargets, loadSpec);
+            return;
         }
 
         if (mode === RefreshMode.ON_SHOW_LAZY) {

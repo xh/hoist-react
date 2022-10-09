@@ -45,15 +45,15 @@ export class LoadSupport extends HoistBase implements Loadable {
         this.target = target;
     }
 
-    async loadAsync(loadSpec?: LoadSpec|any) {
+    async loadAsync(loadSpec?: LoadSpec|Partial<LoadSpec>) {
         throwIf(
             loadSpec && !(loadSpec.isLoadSpec || isPlainObject(loadSpec)),
             'Unexpected param passed to loadAsync().  If triggered via a reaction '  +
             'ensure call is wrapped in a closure.'
         );
-        loadSpec = new LoadSpec({...loadSpec, owner: this});
+        const newSpec = new LoadSpec({...loadSpec, owner: this});
 
-        return this.doLoadAsync(loadSpec);
+        return this.doLoadAsync(newSpec);
     }
 
     async refreshAsync(meta?: object) {
@@ -64,7 +64,7 @@ export class LoadSupport extends HoistBase implements Loadable {
         return this.loadAsync({meta, isAutoRefresh: true});
     }
 
-    async doLoadAsync(loadSpec: LoadSpec):Promise<any> {
+    async doLoadAsync(loadSpec: LoadSpec) {
         let {target, loadModel} = this;
 
         // Auto-refresh:

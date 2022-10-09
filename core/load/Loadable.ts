@@ -41,19 +41,19 @@ export interface Loadable {
      *      enriched version of it -- to their delegates.
      */
 
-    loadAsync(loadSpec?: LoadSpec|any);
+    loadAsync(loadSpec?: LoadSpec|Partial<LoadSpec>): Promise<void>;
 
     /**
      * Refresh the target.
      * @param [meta] - optional metadata for the request.
      */
-    refreshAsync(meta?: object)
+    refreshAsync(meta?: object): Promise<void>;
 
     /**
      * Auto-refresh the target.
      * @param [meta] - optional metadata for the request.
      */
-    autoRefreshAsync(meta?: object)
+    autoRefreshAsync(meta?: object): Promise<void>;
 
     /**
      * Implement this method to load data or other state from external data sources or services.
@@ -64,5 +64,5 @@ export interface Loadable {
      *      when calling the `loadAsync()` method of other services or child models with
      *      `loadSupport` or when making calls to the core {@see FetchService} APIs.
      */
-    doLoadAsync(loadSpec: LoadSpec)
+    doLoadAsync(loadSpec: LoadSpec): Promise<void>;
 }
