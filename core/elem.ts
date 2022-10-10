@@ -56,8 +56,7 @@ export type ElemSpec<P> = P & {
  * and is useful when no attributes need to be applied directly to the Element.
  */
 export type ElemFactory<P=HoistProps> =
-    ((spec: ElemSpec<P>) => ReactElement<P>) &
-    ((children: ReactNode[]) => ReactElement<P>) &
+    ((a: ElemSpec<P>|ReactNode|ReactNode[]) => ReactElement<P>) &
     ((...children: ReactNode[]) => ReactElement<P>);
 
 

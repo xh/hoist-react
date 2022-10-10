@@ -111,20 +111,41 @@ export class ChartsModel extends HoistModel {
         makeObservable(this);
     }
 
-    selectRow(e) {
+    getLabelForMetric(metric, multiline) {
+        switch (metric) {
+            case 'count':
+                return multiline ?
+                    fragment(`Unique`, br(), `${this.getUnitsForDim(this.secondaryDim)} Count`) :
+                    `Unique ${this.getUnitsForDim(this.secondaryDim)} Count`;
+            case 'entryCount':
+                return multiline ?
+                    fragment('Total', br(), 'Entry Count') :
+                    'Total Entry Count';
+            case 'elapsed':
+                return 'Elapsed ms';
+            default:
+                return '???';
+        }
+    }
+
+    //-----------------
+    // Implementation
+    //-----------------
+
+    private selectRow(e) {
         const date = moment(e.point.x).format('YYYY-MM-DD'),
             id = `root>>day=[${date}]`;
         this.activityTrackingModel.gridModel.selectAsync(id);
     }
 
-    onLinked() {
+    override onLinked() {
         this.addReaction({
             track: () => [this.data, this.metric, this.incWeekends],
             run: () => this.loadChart()
         });
     }
 
-    loadChart() {
+    private loadChart() {
         const {showAsTimeseries, chartModel, primaryDim} = this,
             series = this.getSeriesData();
 
@@ -137,7 +158,7 @@ export class ChartsModel extends HoistModel {
         chartModel.setSeries(series);
     }
 
-    getSeriesData() {
+    private getSeriesData() {
         const {data, metric, primaryDim, showAsTimeseries} = this,
             metricLabel = this.getLabelForMetric(metric, false);
         let sortedData = sortBy(data, aggRow => {
@@ -182,28 +203,10 @@ export class ChartsModel extends HoistModel {
         return [{name: metricLabel, data: chartData}];
     }
 
-    getLabelForMetric(metric, multiline) {
-        switch (metric) {
-            case 'count':
-                return multiline ?
-                    fragment(`Unique`, br(), `${this.getUnitsForDim(this.secondaryDim)} Count`) :
-                    `Unique ${this.getUnitsForDim(this.secondaryDim)} Count`;
-            case 'entryCount':
-                return multiline ?
-                    fragment('Total', br(), 'Entry Count') :
-                    'Total Entry Count';
-            case 'elapsed':
-                return 'Elapsed ms';
-            default:
-                return '???';
-        }
-    }
-
-    getUnitsForDim(dim) {
+    private getUnitsForDim(dim) {
         return {
             username: 'User',
             msg: 'Message'
         }[dim] ?? capitalizeWords(dim);
     }
-
 }

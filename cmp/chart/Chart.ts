@@ -95,7 +95,7 @@ class ChartLocalModel extends HoistModel {
     @lookup(ChartModel)
     model: ChartModel;
 
-    chartRef = createObservableRef();
+    chartRef = createObservableRef<HTMLElement>();
     contextMenu;
     prevSeriesConfig;
 

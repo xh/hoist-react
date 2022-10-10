@@ -33,7 +33,7 @@ export class AppModel extends HoistAppModel {
         GridModel.DEFAULT_AUTOSIZE_MODE = GridAutosizeMode.MANAGED;
     }
 
-    getRoutes(): Route[] {
+    override getRoutes(): Route[] {
         return [
             {
                 name: 'default',

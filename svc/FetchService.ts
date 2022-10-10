@@ -72,7 +72,7 @@ export class FetchService extends HoistService {
 
     /**
      * Send an HTTP request and decode the response as JSON.
-     * @returns {Promise<any>} the decoded JSON object, or null if the response had no content.
+     * @returns the decoded JSON object, or null if the response had no content.
      */
     fetchJson(opts: FetchOptions): Promise<any> {
         return this.managedFetchAsync(
@@ -89,41 +89,41 @@ export class FetchService extends HoistService {
 
     /**
      * Send a GET request and decode the response as JSON.
-     * @returns {Promise<any>} the decoded JSON object, or null if the response had no content.
+     * @returns the decoded JSON object, or null if the response had no content.
      */
-    getJson(opts: FetchOptions) {
+    getJson(opts: FetchOptions): Promise<any> {
         return this.fetchJson({method: 'GET', ...opts});
     }
 
     /**
      * Send a POST request with a JSON body and decode the response as JSON.
-     * @returns {Promise<any>} the decoded JSON object, or null if the response had no content.
+     * @returns the decoded JSON object, or null if the response had no content.
      */
-    postJson(opts: FetchOptions) {
+    postJson(opts: FetchOptions): Promise<any> {
         return this.sendJsonInternalAsync({method: 'POST', ...opts});
     }
 
     /**
      * Send a PUT request with a JSON body and decode the response as JSON.
-     * @returns {Promise<any>} the decoded JSON object, or null if the response had no content.
+     * @returns the decoded JSON object, or null if the response had no content.
      */
-    putJson(opts: FetchOptions) {
+    putJson(opts: FetchOptions): Promise<any> {
         return this.sendJsonInternalAsync({method: 'PUT', ...opts});
     }
 
     /**
      * Send a PATCH request with a JSON body and decode the response as JSON.
-     * @returns {Promise<any>} the decoded JSON object, or null if the response had no content.
+     * @returns the decoded JSON object, or null if the response had no content.
      */
-    patchJson(opts: FetchOptions) {
+    patchJson(opts: FetchOptions): Promise<any> {
         return this.sendJsonInternalAsync({method: 'PATCH', ...opts});
     }
 
     /**
      * Send a DELETE request with optional JSON body and decode the optional response as JSON.
-     * @returns {Promise<any>} the decoded JSON object, or null if the response had no content.
+     * @returns the decoded JSON object, or null if the response had no content.
      */
-    deleteJson(opts: FetchOptions) {
+    deleteJson(opts: FetchOptions): Promise<any> {
         return this.sendJsonInternalAsync({method: 'DELETE', ...opts});
     }
 
@@ -169,7 +169,7 @@ export class FetchService extends HoistService {
     }
 
 
-    private async fetchInternalAsync(opts, aborter) {
+    private async fetchInternalAsync(opts, aborter): Promise<any> {
         const {defaultHeaders} = this;
         let {url, method, headers, body, params} = opts;
         throwIf(!url, 'No url specified in call to fetchService.');
