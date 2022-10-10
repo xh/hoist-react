@@ -22,7 +22,6 @@ import {getLayoutProps} from '../../utils/react';
 export const [Clock, clock] = hoistCmp.withFactory<ClockProps>({
     displayName: 'Clock',
     className: 'xh-clock',
-    model: false,
 
     render({className, ...props}, ref) {
         const impl = useLocalModel(ClockLocalModel);
