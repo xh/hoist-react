@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {switchControl} from '@xh/hoist/kit/blueprint';
@@ -19,7 +19,7 @@ export const [SwitchInput, switchInput] = hoistCmp.withFactory({
     displayName: 'SwitchInput',
     className: 'xh-switch-input',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref);
+        return useHoistInputModel(cmp, props, ref, SwitchInputModel);
     }
 });
 SwitchInput.propTypes = {
@@ -43,6 +43,10 @@ SwitchInput.propTypes = {
 //-----------------------
 // Implementation
 //-----------------------
+class SwitchInputModel extends HoistInputModel {
+    // Class defined for debug / labelling purposes - no overrides needed.
+}
+
 const cmp = hoistCmp.factory(
     ({model, className, ...props}, ref) => {
         const labelSide = withDefault(props.labelSide, 'right');

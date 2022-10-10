@@ -31,8 +31,9 @@ import './GridFilterDialog.scss';
 export const gridFilterDialog = hoistCmp.factory({
     model: uses(GridFilterModel),
     className: 'xh-grid-filter-dialog',
+
     render({model, className}) {
-        const impl = useLocalModel(LocalModel);
+        const impl = useLocalModel(GridFilterDialogLocalModel);
         if (!model.dialogOpen) return null;
         return dialog({
             className,
@@ -87,7 +88,8 @@ const bbar = hoistCmp.factory(
     }
 );
 
-class LocalModel extends HoistModel {
+class GridFilterDialogLocalModel extends HoistModel {
+    xhImpl = true;
 
     /** @member {GridFilterModel} */
     @lookup(GridFilterModel) model;

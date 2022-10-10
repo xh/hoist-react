@@ -1,28 +1,29 @@
 import {HoistModel, HoistService, managed, persist, XH} from '@xh/hoist/core';
-import {FieldType, Store} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {wait} from '@xh/hoist/promise';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 
-const {STRING, DATE, NUMBER, BOOL} = FieldType;
 
 /**
  * Developer/Admin focused service to provide additional processing and stats related to the
- * running application, specifically its active models as returned by `XH.getActiveModels()`.
+ * running application, specifically its current HoistModel, HoistService, and Store instances.
  *
- * Activating this service will cause it to maintain a Store of active model instances, synced
- * (with a minimal throttle) on each change to the Hoist model registry, as well as a Store of model
- * counts + heap usage snapshots, also updated on model changes and periodically in the background.
+ * Activating this service will cause it to maintain an observable array of summary data synced
+ * (with a minimal throttle) on each change to the Hoist registry, as well as an array of model
+ * count / memory usage stats, also updated on model changes and periodically in the background.
  *
  * When running in a Desktop application, activating this service will trigger the display of the
  * Hoist Inspector UI - {@see inspectorPanel}. A built-in control to activate/deactivate this
  * service is provided within the Desktop versionBar component.
  *
  * This service may be completely disabled via an optional `xhInspectorConfig` appConfig, although
- * note that this config does *not* disable the backing model registry within XH. Access to
- * Inspector can also be limited to users with a particular app role, using the same config.
+ * note that this config does *not* disable the backing registry within XH. Access to Inspector can
+ * also be limited to users with a particular app role, using the same config.
  */
 export class InspectorService extends HoistService {
+    xhImpl = true;
+
     persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}`};
 
     /**
@@ -37,61 +38,51 @@ export class InspectorService extends HoistService {
     /** @member {boolean} - true to start processing model stats and show the Inspector UI. */
     @observable @persist active = false;
 
-    /** @member {Store} - when active, holds lightly processed records for all active models. */
-    @managed modelInstanceStore;
-    /** @member {Store} - when active, holds timestamped stats on model count and memory usage. */
-    @managed statsStore;
+    /** @member {InspectorInstanceData[]} - info on current services/models/stores (when active). */
+    @observable.ref activeInstances = [];
+    /** @member {InspectorStat[]} - timestamped model counts w/memory usage (when active). */
+    @observable.ref stats = [];
+
     /** @member {Timer} **/
     @managed statsUpdateTimer;
+
+    _syncRun = 0;
+    _idToSyncRun = new Map();
 
     constructor() {
         super();
         makeObservable(this);
     }
 
-    initAsync() {
-        this.modelInstanceStore = new Store({
-            fields: [
-                {name: 'className', type: STRING},
-                {name: 'displayGroup', type: STRING},
-                {name: 'created', type: DATE},
-                {name: 'isLinked', type: BOOL},
-                {name: 'hasLoadSupport', type: BOOL},
-                {name: 'lastLoadCompleted', type: DATE},
-                {name: 'lastLoadException', type: STRING}
-            ]
-        });
-
-        this.statsStore = new Store({
-            fields: [
-                {name: 'timestamp', type: NUMBER},
-                {name: 'modelCount', type: NUMBER},
-                {name: 'modelCountChange', type: NUMBER},
-                {name: 'totalJSHeapSize', type: NUMBER},
-                {name: 'usedJSHeapSize', type: NUMBER}
-            ]
-        });
-
+    async initAsync() {
         // Ensure deactivated if not enabled - active could be persisted to true.
         if (!this.enabled) {
             this.deactivate();
         }
 
-        // Using an autorun here to trigger re-run when any active model's observable
-        // lastLoadCompleted/lastLoadException properties change, in addition to changes to the
-        // set composition itself. Throttled via mobx-provided delay option.
-        this.addAutorun({
-            run: () => this.sync(),
-            delay: 300,
-            fireImmediately: true
+        // Update stats whenever activeInstances change. Note this cannot be called directly within
+        // the autorun above as it reads + replaces the observable stats array (and would loop).
+        this.addReaction({
+            track: () => this.activeInstances,
+            run: () => this.updateStats()
         });
 
-        // Stats are synced on model changes - this Timer also ensures regular updates to stats
-        // when models themselves might not be changing.
+        // Timer continues to update memory stats when instances themselves are not changing.
         this.statsUpdateTimer = Timer.create({
             runFn: () => this.updateStats(),
             interval: () => this.conf.statsUpdateInterval,
             delay: true // model update reaction will eagerly populate on startup
+        });
+
+        // Using an autorun here to trigger re-run when any active model's observable
+        // lastLoadCompleted/lastLoadException properties change, in addition to changes to the
+        // set composition itself. Throttled via mobx-provided delay option.
+        // Initial wait allows app init to settle before we start syncing more eagerly.
+        wait(1000).then(() => {
+            this.addAutorun({
+                run: () => this.sync(),
+                delay: 300
+            });
         });
     }
 
@@ -111,45 +102,11 @@ export class InspectorService extends HoistService {
     @action
     deactivate() {
         this.active = false;
-        this.modelInstanceStore.clear();
+        this.activeInstances = [];
         this.clearStats();
     }
 
-    clearStats() {
-        this.statsStore.clear();
-    }
-
-    sync() {
-        if (!this.active) return;
-
-        // Explicit access to keys() here ensure we trigger this autorun on set composition change.
-        HoistModel._activeModels.keys();
-
-        const models = [
-            ...XH.getActiveModels(),
-            ...XH.getServices()
-        ];
-
-        const modelData = models.map(model => {
-            const className = model.constructor.name;
-            return {
-                id: model.xhId,
-                className,
-                displayGroup: model.isHoistModel ? className : 'Services',
-                created: model._created,
-                isLinked: model.isLinked,
-                hasLoadSupport: model.loadSupport != null,
-                lastLoadCompleted: model.lastLoadCompleted,
-                lastLoadException: model.lastLoadException
-            };
-        });
-
-        this.modelInstanceStore.loadData(modelData);
-        this.updateStats();
-    }
-
-    _prevModelCount = 0;
-
+    @action
     updateStats() {
         if (!this.active) return;
 
@@ -158,17 +115,87 @@ export class InspectorService extends HoistService {
             prevModelCount = this._prevModelCount,
             now = Date.now();
 
-        this.statsStore.addRecords({
+        this.stats = [...this.stats, {
             id: now,
             timestamp: now,
             modelCount,
             modelCountChange: modelCount - prevModelCount,
             totalJSHeapSize,
-            usedJSHeapSize
-        });
+            usedJSHeapSize,
+            syncRun: this._syncRun
+        }];
 
         this._prevModelCount = modelCount;
     }
+
+    @action
+    clearStats() {
+        this.stats = [];
+    }
+
+    async restoreDefaultsAsync() {
+        if (!await XH.confirm({
+            message: 'Reset Inspector\'s layout and options to their defaults?'
+        })) return;
+
+        XH.localStorageService.removeIf(it => it.startsWith(`xhInspector.${XH.clientAppCode}`));
+        this.deactivate();
+        await wait();
+        this.activate();
+    }
+
+
+    //------------------
+    // Implementation
+    //------------------
+    sync() {
+        if (!this.active) return;
+
+        const instances = [
+            ...XH.getActiveModels(),
+            ...XH.getServices(),
+            ...XH.getStores()
+        ];
+
+        const {_idToSyncRun, _syncRun} = this,
+            newSyncRun = _syncRun + 1;
+
+        let hadNewInstances = false;
+        this.setActiveInstances(instances.map(inst => {
+            const {xhId} = inst;
+            let syncRun = _idToSyncRun.get(xhId);
+
+            if (!syncRun) {
+                syncRun = newSyncRun;
+                _idToSyncRun.set(xhId, syncRun);
+                hadNewInstances = true;
+            }
+
+            return {
+                id: xhId,
+                className: inst.constructor.name,
+                created: inst._created,
+                isHoistService: inst.isHoistService,
+                isHoistModel: inst.isHoistModel,
+                isStore: inst.isStore,
+                isLinked: inst.isLinked,
+                isXhImpl: inst.xhImpl,
+                hasLoadSupport: inst.loadSupport != null,
+                lastLoadCompleted: inst.lastLoadCompleted,
+                lastLoadException: inst.lastLoadException,
+                syncRun
+            };
+        }));
+
+        if (hadNewInstances) this._syncRun = newSyncRun;
+    }
+
+    @action
+    setActiveInstances(ai) {
+        this.activeInstances = ai;
+    }
+
+    _prevModelCount = 0;
 
     get conf() {
         return {
@@ -180,3 +207,27 @@ export class InspectorService extends HoistService {
     }
 
 }
+
+/**
+ * @typedef {Object} InspectorInstanceData
+ * @property {string} className
+ * @property {Date} created
+ * @property {boolean} isHoistModel
+ * @property {boolean} isHoistService
+ * @property {boolean} isStore
+ * @property {boolean} isLinked
+ * @property {boolean} isXhImpl
+ * @property {boolean} hasLoadSupport
+ * @property {Date} lastLoadCompleted
+ * @property {Error} lastLoadException
+ * @property {number} syncRun
+ */
+
+/**
+ * @typedef {Object} InspectorStat
+ * @property {number} timestamp
+ * @property {number} modelCount
+ * @property {number} modelCountChange
+ * @property {number} totalJSHeapSize
+ * @property {number} usedJSHeapSize
+ */

@@ -24,7 +24,7 @@ export const [TextInput, textInput] = hoistCmp.withFactory({
     displayName: 'TextInput',
     className: 'xh-text-input',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, Model);
+        return useHoistInputModel(cmp, props, ref, TextInputModel);
     }
 });
 TextInput.propTypes = {
@@ -89,8 +89,7 @@ TextInput.hasLayoutSupport = true;
 //-----------------------
 // Implementation
 //-----------------------
-
-class Model extends HoistInputModel {
+class TextInputModel extends HoistInputModel {
 
     get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);

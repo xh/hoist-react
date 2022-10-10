@@ -1,13 +1,18 @@
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, XH} from '@xh/hoist/core';
+import {FieldType} from '@xh/hoist/data';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
-import {fmtDate, millionsRenderer, numberRenderer} from '@xh/hoist/format';
+import {fmtDate, numberRenderer} from '@xh/hoist/format';
+
+const {NUMBER} = FieldType;
 
 /**
  * Displays a small grid/chart combo with a timeseries of the app's model count and memory usage.
  */
 export class StatsModel extends HoistModel {
+    xhImpl = true;
+
     persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.stats`};
 
     /** @member {PanelModel} */
@@ -17,28 +22,49 @@ export class StatsModel extends HoistModel {
     /** @member {ChartModel} */
     chartModel;
 
+    /** @return {number} */
+    get selectedSyncRun() {
+        return this.gridModel.selectedRecord?.data.syncRun;
+    }
+
     constructor() {
         super();
 
         this.panelModel = new PanelModel({
             side: 'left',
-            defaultSize: 500,
-            persistWith: this.persistWith
+            defaultSize: 450,
+            persistWith: this.persistWith,
+            xhImpl: true
         });
 
         this.gridModel = new GridModel({
             colChooser: true,
             persistWith: this.persistWith,
             autosizeOptions: {mode: GridAutosizeMode.MANAGED},
-            store: XH.inspectorService.statsStore,
+            store: {
+                fields: [
+                    {name: 'timestamp', displayName: 'Time', type: NUMBER},
+                    {name: 'syncRun', displayName: 'Sync', type: NUMBER},
+                    {name: 'modelCount', displayName: '# Models', type: NUMBER},
+                    {name: 'modelCountChange', displayName: '#Δ', type: NUMBER},
+                    {name: 'totalJSHeapSize', type: NUMBER},
+                    {name: 'usedJSHeapSize', type: NUMBER}
+                ]
+            },
             sortBy: ['timestamp|desc'],
+            colDefaults: {autosizeIncludeHeaderIcons: false},
             columns: [
-                {field: 'timestamp', displayName: 'Time', renderer: timestampRenderer},
-                {field: 'modelCount', displayName: '# Models', renderer: numberRenderer({precision: 0})},
-                {field: 'modelCountChange', displayName: '#Δ', renderer: numberRenderer({precision: 0, colorSpec: true, withSignGlyph: true})},
-                {field: 'totalJSHeapSize', displayName: 'JS Heap (mb)', renderer: millionsRenderer({precision: 0})},
-                {field: 'usedJSHeapSize', displayName: 'Used (mb)', renderer: millionsRenderer({precision: 0})}
-            ]
+                {field: 'timestamp', renderer: timestampRenderer},
+                {field: 'modelCount', renderer: numberRenderer({precision: 0})},
+                {field: 'syncRun', renderer: numberRenderer({precision: 0})},
+                {field: 'modelCountChange', renderer: numberRenderer({precision: 0, colorSpec: true, withSignGlyph: true})},
+                {field: 'usedJSHeapSize', displayName: 'Heap used/total', rendererIsComplex: true, renderer: (v, {record}) => {
+                    const used = Math.round(v/1000000),
+                        total = Math.round(record.data.totalJSHeapSize/1000000);
+                    return `${used}/${total}mb`;
+                }}
+            ],
+            xhImpl: true
         });
 
         this.chartModel = new ChartModel({
@@ -49,7 +75,7 @@ export class StatsModel extends HoistModel {
                 xAxis: {type: 'datetime'},
                 yAxis: [
                     {title: {text: '# Models'}, allowDecimals: false, opposite: true, height: '70%'},
-                    {title: {text: 'JS Heap'}, height: '70%'},
+                    {title: {text: 'Used JS Heap (mb)'}, height: '70%'},
                     {
                         title: {text: '#Δ'}, height: '20%', top: '80%', offset: 0, opposite: true,
                         plotLines: [
@@ -60,26 +86,30 @@ export class StatsModel extends HoistModel {
                         ]
                     }
                 ]
-            }
+            },
+            xhImpl: true
         });
 
         this.addReaction(
             {
-                track: () => this.gridModel.store.allRecords,
-                run: () => this.updateChartModel(),
+                track: () => XH.inspectorService.stats,
+                run: (stats) => {
+                    this.gridModel.loadData(stats);
+                    this.updateChartModel();
+                },
                 fireImmediately: true
             }
         );
     }
 
     updateChartModel() {
-        const {allRecords} = XH.inspectorService.statsStore,
+        const {stats} = XH.inspectorService,
             modelCountData = [],
             modelCountChangeData = [],
             usedHeapData = [];
 
-        allRecords.forEach(rec => {
-            const {timestamp, modelCount, modelCountChange, usedJSHeapSize} = rec.data;
+        stats.forEach(stat => {
+            const {timestamp, modelCount, modelCountChange, usedJSHeapSize} = stat;
             modelCountData.push([timestamp, modelCount]);
             modelCountChangeData.push({
                 x: timestamp,

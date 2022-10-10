@@ -23,13 +23,14 @@ export const toastSource = hoistCmp.factory({
     model: uses(ToastSourceModel),
 
     render() {
-        useLocalModel(LocalModel);
+        useLocalModel(ToastSourceLocalModel);
         return null;
     }
 });
 
 
-class LocalModel extends HoistModel {
+class ToastSourceLocalModel extends HoistModel {
+    xhImpl = true;
 
     /** @member {ToastSourceModel} */
     @lookup(ToastSourceModel) sourceModel;

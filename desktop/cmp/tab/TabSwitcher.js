@@ -67,7 +67,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
         const {id, tabs, activeTabId} = model,
             layoutProps = getLayoutProps(props),
             vertical = ['left', 'right'].includes(orientation),
-            impl = useLocalModel(() => new LocalModel(model, enableOverflow, vertical));
+            impl = useLocalModel(() => new TabSwitcherLocalModel(model, enableOverflow, vertical));
 
         // Implement overflow
         ref = impl.enableOverflow ?
@@ -209,7 +209,9 @@ const overflowMenu = hoistCmp.factory({
     }
 });
 
-class LocalModel extends HoistModel  {
+class TabSwitcherLocalModel extends HoistModel  {
+    xhImpl = true;
+
     @bindable.ref overflowIds = [];
     switcherRef = createObservableRef();
     model;

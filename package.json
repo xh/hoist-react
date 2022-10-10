@@ -22,8 +22,8 @@
     "*.s?(a|c)ss": "stylelint"
   },
   "dependencies": {
-    "@blueprintjs/core": "^4.10.2",
-    "@blueprintjs/datetime": "^4.3.13",
+    "@blueprintjs/core": "^4.11.2",
+    "@blueprintjs/datetime": "^4.4.2",
     "@fortawesome/fontawesome-pro": "^6.2.0",
     "@fortawesome/fontawesome-svg-core": "^6.2.0",
     "@fortawesome/pro-light-svg-icons": "^6.2.0",

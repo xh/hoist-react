@@ -14,6 +14,7 @@ import {throwIf} from '@xh/hoist/utils/js';
  *  @private
  */
 export class ImpersonationBarModel extends HoistModel {
+    xhImpl = true;
 
     @observable showRequested = false;
     @observable.ref targets = [];

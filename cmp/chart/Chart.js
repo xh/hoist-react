@@ -49,7 +49,7 @@ export const [Chart, chart] = hoistCmp.withFactory({
             return placeholder('Highcharts library not available.');
         }
 
-        const impl = useLocalModel(LocalModel);
+        const impl = useLocalModel(ChartLocalModel);
         ref = composeRefs(
             ref,
             useOnResize(impl.onResize),
@@ -92,7 +92,8 @@ Chart.propTypes = {
     model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object])
 };
 
-class LocalModel extends HoistModel {
+class ChartLocalModel extends HoistModel {
+    xhImpl = true;
 
     /** @member {ChartModel} */
     @lookup(ChartModel) model;

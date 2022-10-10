@@ -20,7 +20,6 @@ import {
     isString,
     remove as lodashRemove
 } from 'lodash';
-
 import {Field} from './Field';
 import {parseFilter} from './filter/Utils';
 import {RecordSet} from './impl/RecordSet';
@@ -90,6 +89,7 @@ export class Store extends HoistBase {
     @observable.ref _filtered;
 
     _dataDefaults = null;
+    _created = Date.now();
 
     /**
      * @param {Object} c - Store configuration.
@@ -169,6 +169,8 @@ export class Store extends HoistBase {
         this._dataDefaults = this.createDataDefaults();
         this._fieldMap = this.createFieldMap();
         if (data) this.loadData(data);
+
+        Store._registerInstance(this);
     }
 
     /** Remove all records from the store. Equivalent to calling `loadData([])`. */
@@ -227,8 +229,8 @@ export class Store extends HoistBase {
      * i.e. they should be in the same form as when passed to `loadData()`. The added/updated
      * source data will be run through this Store's `idSpec` and `processRawData` functions.
      *
-     * Adds can also be provided as an object of the form `{rawData, parentId}` to add new Records
-     * under a known, pre-existing parent StoreRecord. {@see StoreTransaction} for more details.
+     * Adds can also be provided as a {@see ChildData} object of the form `{rawData, parentId}`
+     * to add new Records under a known, pre-existing parent StoreRecord.
      *
      * Unlike `loadData()`, existing Records that are *not* included in this update transaction
      * will be left in place and as is.
@@ -256,9 +258,14 @@ export class Store extends HoistBase {
         if (isArray(rawData)) {
             const update = [], add = [];
             rawData.forEach(it => {
-                const recId = this.idSpec(it);
+                const isChildData = isChildDataObject(it),
+                    recId = isChildData ?
+                        // The idSpec function does not support the {rawData,parentId} format
+                        this.idSpec(it.rawData) :
+                        this.idSpec(it);
                 if (this.getById(recId)) {
-                    update.push(it);
+                    // The update array does not support the {rawData,parentId} format
+                    update.push(isChildData ? it.rawData : it);
                 } else {
                     add.push(it);
                 }
@@ -289,7 +296,7 @@ export class Store extends HoistBase {
         if (add) {
             addRecs = new Map();
             add.forEach(it => {
-                if (it.hasOwnProperty('rawData') && it.hasOwnProperty('parentId')) {
+                if (isChildDataObject(it)) {
                     const parent = this.getOrThrow(it.parentId);
                     this.createRecords([it.rawData], parent, addRecs);
                 } else {
@@ -766,7 +773,9 @@ export class Store extends HoistBase {
     }
 
     /** Destroy this store, cleaning up any resources used. */
-    destroy() {}
+    destroy() {
+        Store._unregisterInstance(this);
+    }
 
     //--------------------
     // For Implementations
@@ -945,6 +954,15 @@ export class Store extends HoistBase {
     }
 }
 
+/**
+ * @type {ObservableSet<Store>} - As with HoistModel - soon to be improved in TS world with more centralized registry.
+ * @package
+ */
+Store._instances = observable.set(new Set(), {deep: false});
+Store._registerInstance = action(instance => Store._instances.add(instance));
+Store._unregisterInstance = action(instance => Store._instances.delete(instance));
+
+
 //---------------------------------------------------------------------
 // Iterate over the properties of a raw data/update  object.
 // Does *not* do ownProperty check, faster than lodash forIn/forOwn
@@ -953,6 +971,14 @@ function forIn(obj, fn) {
     for (let key in obj) {
         fn(obj[key], key);
     }
+}
+
+/**
+ * @param {Object} obj
+ * @return {boolean} - true if obj satisfies the {@see ChildData} interface.
+ */
+function isChildDataObject(obj) {
+    return obj.hasOwnProperty('rawData') && obj.hasOwnProperty('parentId');
 }
 
 /**
@@ -965,14 +991,18 @@ function forIn(obj, fn) {
  *      will be preserved. If the record is a child, the new updated instance will be assigned to
  *      the same parent. (Meaning: parent/child relationships *cannot* be modified via updates.)
  * @property {Object[]} [add] - list of raw data representing records to be added, Each top-level
- *      item in the array must be either a rawData object of the form passed to loadData or
- *      a wrapper object of the form `{parentId: x, rawData: {}}`, where `parentId` provides
- *      a pointer to the intended parent if the record is not to be added to the root. The rawData
- *      *can* include a children property that will be processed into new child records.
- *      (Meaning: adds can be used to add new branches to the tree.)
+ *      item in the array must be either a rawData object of the form passed to loadData or a
+ *      wrapped form {@see ChildData}.
  * @property {StoreRecordId[]} [remove] - list of ids representing records to be removed.
  *      Any descendents of these records will also be removed.
  * @property {Object} [rawSummaryData] - update to the dedicated summary row for this store.
  *      If the store has its `loadRootAsSummary` flag set to true, the summary record should
  *      instead be provided via the `update` property.
+ */
+
+/**
+ * @typedef {Object} ChildData - format for adding new children to existing parent Records.
+ * @property {string} parentId - id of the pre-existing parent record.
+ * @property {Object} rawData - data for the child records to be added. Can include a `children`
+ *      property that will be processed into new (grand)child records.
  */

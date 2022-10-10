@@ -246,7 +246,7 @@ export class DashContainerModel extends HoistModel {
         return wait().thenAction(() => {
             this.destroyGoldenLayout();
             this.goldenLayout = this.createGoldenLayout(containerEl, state);
-        }).wait(100).then(() => {
+        }).wait(500).then(() => {
             // Since React v18, it's necessary to wait a short while for ViewModels to be available.
             this.refreshActiveViews();
             this.updateTabHeaders();
@@ -275,6 +275,7 @@ export class DashContainerModel extends HoistModel {
 
         if (!isFinite(index)) index = container.contentItems.length;
         container.addChild(viewSpec.goldenLayoutConfig, index);
+        wait(1).then(() => this.onStackActiveItemChange(container));
     }
 
     /**

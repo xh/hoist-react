@@ -1,10 +1,10 @@
 import {hframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
-import {modelsPanel} from '@xh/hoist/inspector/models/ModelsPanel';
-import {statsPanel} from '@xh/hoist/inspector/stats/StatsPanel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
+import {instancesPanel} from '@xh/hoist/inspector/instances/InstancesPanel';
+import {statsPanel} from '@xh/hoist/inspector/stats/StatsPanel';
 import './Inspector.scss';
 
 /**
@@ -22,7 +22,12 @@ export const inspectorPanel = hoistCmp.factory({
             className: 'xh-inspector',
             model: {
                 defaultSize: 400,
-                side: 'bottom'
+                side: 'bottom',
+                persistWith: XH.inspectorService.persistWith,
+                modalSupport: true,
+                showModalToggleButton: true,
+                showHeaderCollapseButton: false,
+                xhImpl: true
             },
             compactHeader: true,
             headerItems: [
@@ -30,11 +35,16 @@ export const inspectorPanel = hoistCmp.factory({
                     icon: Icon.x(),
                     text: 'Close Inspector',
                     onClick: () => XH.inspectorService.deactivate()
+                }),
+                button({
+                    icon: Icon.reset(),
+                    tooltip: 'Restore Defaults',
+                    onClick: () => XH.inspectorService.restoreDefaultsAsync()
                 })
             ],
             item: hframe(
                 statsPanel(),
-                modelsPanel()
+                instancesPanel()
             )
         });
     }

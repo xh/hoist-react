@@ -20,6 +20,7 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
  * will have no effect.
  */
 export class ToastModel extends HoistModel {
+    xhImpl = true;
 
     /** @member {string} */
     message;
