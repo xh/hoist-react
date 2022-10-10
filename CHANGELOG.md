@@ -58,6 +58,8 @@
 
 ### 📚 Libraries
 
+* @blueprintjs/core `4.6 -> 4.11`
+* @blueprintjs/datetime `4.3 -> 4.4`
 * @fortawesome `6.1 -> 6.2`
 * dompurify `2.3 -> 2.4`
 * react `17.0.1 -> 18.2.0`
