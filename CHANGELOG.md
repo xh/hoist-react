@@ -8,14 +8,14 @@
   Stores within a running application.
     * Admin/dev-focused UI is built into all Desktop apps, activated via discrete new toggle in the
       bottom version bar (look for the 🔍 icon), or by running `XH.inspectorService.activate()`.
-    * Selecting a model/service/store instance allows a quick view at its properties, including
-      reactively updated observables. Useful for troubleshooting application state in realtime.
-    * Includes auto-updated stats on total application model count and memory usage, to aid in
+    * Selecting a model/service/store instance provides a quick view of its properties, including
+      reactively updated observables. Useful for realtime troubleshooting of application state.
+    * Includes auto-updated stats on total application model count and memory usage. Can aid in
       detecting and debugging memory leaks due to missing `@managed` annotations and other issues.
 * New `DashCanvasViewModel.autoHeight` option fits the view's height to its rendered contents.
 * New `DashCanvasAddViewButton` component supports adding views to `DashCanvas`.
 * New `TabContainerModel.refreshContextModel` allows apps to programmatically load a `TabContainer`.
-* `FilterChooserModel` now accepts shorthand inputs for numeric fields.
+* `FilterChooserModel` now accepts shorthand inputs for numeric fields (e.g. "2m").
 * Admin Console Config/Pref/Blob differ now displays the last updated time and user for each value.
 * New observable `XH.environmentService.serverVersion` property, updated in the background via
   pre-existing `xhAppVersionCheckSecs` config. Note this does not replace or change the built-in
@@ -25,18 +25,20 @@
 ### 💥 Breaking Changes
 
 * This release moves Hoist to **React v18**. Update your app's `package.json` to require the latest
-  18.x versions of `react` and `react-dom`. Unless your app directly accesses certain react-dom
-  APIs (unlikely), no other changes should be required.
-* Removed deprecated method `XH.setDarkTheme()` - use `XH.setTheme()` instead to select from our
-  wide range of (two) theme options...
+  18.x versions of `react` and `react-dom`. Unless your app uses certain react-dom APIs directly, no
+  other changes should be required.
+* Removed deprecated method `XH.setDarkTheme()`. Use `XH.setTheme()` instead to select from our
+  wide range of (two) theme options.
 
 ### 🐞 Bug Fixes
 
 * `CompoundTaskObserver` improved to prioritize using specific messages from subtasks over the
   overall task message.
-* The Grid's built in context-menu option for filtering no longer shows `[object Object]` for
-  columns that render React elements.
+* Grid's built in context-menu option for filtering no longer shows `[object Object]` for columns
+  that render React elements.
 * `Store.updateData()` properly handles data in the `{rawData, parentId}` format, as documented.
+* Disabled tabs now render with a muted text color on both light and dark themes, with
+  new `--tab-disabled-text-color` CSS var added to customize.
 
 ### ⚙️ Technical
 
