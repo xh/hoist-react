@@ -774,6 +774,7 @@ export class Store extends HoistBase {
 
     /** Destroy this store, cleaning up any resources used. */
     destroy() {
+        super.destroy();
         Store._unregisterInstance(this);
     }
 
