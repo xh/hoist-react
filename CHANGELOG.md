@@ -1,56 +1,67 @@
 # Changelog
 
-## v52.0.0-SNAPSHOT - unreleased
+## v52.0.0 - 2022-10-10
 
 ### 🎁 New Features
 
-* `DashCanvasViewModel` now supports `autoHeight` to automatically resize a `DashCanvasView's`
-  height to fit its contents.
-* `DashCanvasAddViewButton` exported as a public component to support adding views to `DashCanvas`.
-* `ModelSelector` used for model lookup and matching will now accept the class name of the model to
-  match. Previously only a class reference could be provided.
-* The Admin Console diff tool for Configs, Prefs, and JSONBlobs now displays who updated each value
-  and when.
-* New "Hoist Inspector" tool available in Desktop apps for displaying and querying Models,
-  Services, and Stores within a running application.
-    * Powered by a new method `XH.activeModels()`, which supports listing and querying all models
-      instantiated within a running app, and `XH.inspectorService`, which provides additional
-      processing of that model data when active.
-    * Admin/dev-focused UI available on Desktop, activated via discrete new toggle in the bottom
-      version bar (magnifying glass icon), or via console with `XH.inspectorService.activate()`.
-    * Selecting a model/service/store instance allows a quick view at its properties, including
-      reactively updated observables. Useful for troubleshooting application state in realtime.
+* New "Hoist Inspector" tool supports displaying and querying all of the Models, Services, and
+  Stores within a running application.
+    * Admin/dev-focused UI is built into all Desktop apps, activated via discrete new toggle in the
+      bottom version bar (look for the 🔍 icon), or by running `XH.inspectorService.activate()`.
+    * Selecting a model/service/store instance provides a quick view of its properties, including
+      reactively updated observables. Useful for realtime troubleshooting of application state.
+    * Includes auto-updated stats on total application model count and memory usage. Can aid in
+      detecting and debugging memory leaks due to missing `@managed` annotations and other issues.
+* New `DashCanvasViewModel.autoHeight` option fits the view's height to its rendered contents.
+* New `DashCanvasAddViewButton` component supports adding views to `DashCanvas`.
+* New `TabContainerModel.refreshContextModel` allows apps to programmatically load a `TabContainer`.
+* `FilterChooserModel` now accepts shorthand inputs for numeric fields (e.g. "2m").
+* Admin Console Config/Pref/Blob differ now displays the last updated time and user for each value.
+* New observable `XH.environmentService.serverVersion` property, updated in the background via
+  pre-existing `xhAppVersionCheckSecs` config. Note this does not replace or change the built-in
+  upgrade prompt banner, but allows apps to take their own actions (e.g. reload immediately) when
+  they detect an update on the server.
 
 ### 💥 Breaking Changes
 
 * This release moves Hoist to **React v18**. Update your app's `package.json` to require the latest
-  18.x versions of `react` and `react-dom`. Unless your app directly accesses certain react-dom
-  APIs (unlikely), no other changes should be required.
-* The deprecated method `XH.setDarkTheme` has been removed. Use `XH.setTheme` instead.
+  18.x versions of `react` and `react-dom`. Unless your app uses certain react-dom APIs directly, no
+  other changes should be required.
+* Removed deprecated method `XH.setDarkTheme()`. Use `XH.setTheme()` instead to select from our
+  wide range of (two) theme options.
 
 ### 🐞 Bug Fixes
 
-* Boolean filterChooser fields with enableValues=false will no longer suggest true for 'false'.
-* Change to `CompoundTaskObserver` to prioritize using specific messages from subtasks over the
+* `CompoundTaskObserver` improved to prioritize using specific messages from subtasks over the
   overall task message.
+* Grid's built in context-menu option for filtering no longer shows `[object Object]` for columns
+  that render React elements.
+* `Store.updateData()` properly handles data in the `{rawData, parentId}` format, as documented.
+* Disabled tabs now render with a muted text color on both light and dark themes, with
+  new `--tab-disabled-text-color` CSS var added to customize.
 
 ### ⚙️ Technical
 
 * `HoistComponents` no longer mutate the props object passed to them in React production mode. This
   was not causing noticeable application issues, but could result in a component's base CSS class
   being applied multiple times to its DOM element.
+* `ModelSelector` used for model lookup and matching will now accept the class name of the model to
+  match. Previously only a class reference could be provided.
 * New check within service initialization to ensure that app service classes extend `HoistService`
   as required. (Has always been the expectation, but was not previously enforced.)
 * `GridModel` will once again immediately sync data with its underlying ag-Grid component. This
   reverses a v50.0.0 change that introduced a minimal debounce in order to work around an ag-Grid
   rendering bug. The ag-Grid bug has been resolved, and this workaround is no longer needed.
 * `GridExportService` has improved support for columns of `FieldType.AUTO` and for columns with
-  multiple data types and custom export functions. (Requires `hoist-core >= 14.3`)
+  multiple data types and custom export functions. (`hoist-core >= 14.3` required for these
+  particular improvements, but not for this Hoist React version in general.)
 * The `trimToDepth` has been improved to return a depth-limited clone of its input that better
   handles nested arrays and passes through primitive inputs unchanged.
 
 ### 📚 Libraries
 
+* @blueprintjs/core `4.6 -> 4.11`
+* @blueprintjs/datetime `4.3 -> 4.4`
 * @fortawesome `6.1 -> 6.2`
 * dompurify `2.3 -> 2.4`
 * react `17.0.1 -> 18.2.0`

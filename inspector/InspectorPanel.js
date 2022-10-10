@@ -24,6 +24,9 @@ export const inspectorPanel = hoistCmp.factory({
                 defaultSize: 400,
                 side: 'bottom',
                 persistWith: XH.inspectorService.persistWith,
+                modalSupport: true,
+                showModalToggleButton: true,
+                showHeaderCollapseButton: false,
                 xhImpl: true
             },
             compactHeader: true,
@@ -32,6 +35,11 @@ export const inspectorPanel = hoistCmp.factory({
                     icon: Icon.x(),
                     text: 'Close Inspector',
                     onClick: () => XH.inspectorService.deactivate()
+                }),
+                button({
+                    icon: Icon.reset(),
+                    tooltip: 'Restore Defaults',
+                    onClick: () => XH.inspectorService.restoreDefaultsAsync()
                 })
             ],
             item: hframe(

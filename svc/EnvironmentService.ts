@@ -7,6 +7,7 @@
 import bpPkg from '@blueprintjs/core/package.json';
 import {HoistService, XH} from '@xh/hoist/core';
 import {agGridVersion} from '@xh/hoist/kit/ag-grid';
+import {observable, action, makeObservable} from '@xh/hoist/mobx';
 import hoistPkg from '@xh/hoist/package.json';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
@@ -17,7 +18,20 @@ import {version as reactVersion} from 'react';
 
 export class EnvironmentService extends HoistService {
 
-    private _data: object = {};
+    /**
+     * Version of this application currently running on the Hoist UI server.
+     * Unlike all other EnvironmentService state, this is refreshed by default on a configured
+     * interval and is observable to allow apps to take actions (e.g. reload immediately) when
+     * they detect an update on the server.
+     */
+    @observable
+    serverVersion: string;
+
+    /** Build of this application currently running on the Hoist UI server. */
+    @observable
+    serverBuild: string;
+
+    private _data = {};
 
     override async initAsync() {
         const serverEnv = await XH.fetchJson({url: 'xh/environment'}),
@@ -42,6 +56,8 @@ export class EnvironmentService extends HoistService {
 
         deepFreeze(this._data);
 
+        this.setServerVersion(serverEnv.appVersion, serverEnv.appBuild);
+
         this.addReaction({
             when: () => XH.appIsRunning,
             run: this.startVersionChecking
@@ -63,15 +79,20 @@ export class EnvironmentService extends HoistService {
     //------------------------------
     // Implementation
     //------------------------------
+    constructor() {
+        super();
+        makeObservable(this);
+    }
+
     private startVersionChecking() {
         Timer.create({
-            runFn: this.checkAppVersionAsync,
+            runFn: this.checkServerVersionAsync,
             interval: 'xhAppVersionCheckSecs',
             intervalUnits: SECONDS
         });
     }
 
-    private checkAppVersionAsync = async () => {
+    private checkServerVersionAsync = async () => {
         const data = await XH.fetchJson({url: 'xh/version'}),
             {appVersion, appBuild, shouldUpdate} = data;
 
@@ -95,5 +116,13 @@ export class EnvironmentService extends HoistService {
         if (appVersion !== clientVersion) {
             console.warn(`Version mismatch detected between client and server - ${clientVersion} vs ${appVersion}`);
         }
+
+        this.setServerVersion(appVersion, appBuild);
     };
+
+    @action
+    private setServerVersion(serverVersion, serverBuild) {
+        this.serverVersion = serverVersion;
+        this.serverBuild = serverBuild;
+    }
 }

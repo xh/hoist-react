@@ -1,5 +1,5 @@
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler, hframe} from '@xh/hoist/cmp/layout';
+import {a, div, filler, hframe, hspacer, p, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -8,6 +8,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {InstancesModel} from '@xh/hoist/inspector/instances/InstancesModel';
+import {popover} from '@xh/hoist/kit/blueprint';
 
 
 export const instancesPanel = hoistCmp.factory({
@@ -15,12 +16,31 @@ export const instancesPanel = hoistCmp.factory({
 
     /** @param {InstancesModel} model */
     render({model}) {
-        const {instancesPanelModel} = model;
+        const {instancesPanelModel, selectedSyncRun} = model,
+            headerItems = [];
+
+        if (selectedSyncRun) {
+            headerItems.push(popover({
+                interactionKind: 'hover',
+                target: span(Icon.filter(), ` registered @ sync run ${selectedSyncRun}`),
+                content: div({
+                    className: 'xh-pad',
+                    style: {width: '300px'},
+                    items: [
+                        p('Triggered by your selection in the Stats grid.'),
+                        p('Focuses this grid on instances created around the same time, in-between batched updates to stats.'),
+                        p('Useful for isolating clusters of models created together as part of an interaction or handler.'),
+                        p(a({item: '(click to clear)', onClick: () => model.statsModel.gridModel.clearSelection()}))
+                    ]
+                })
+            }), hspacer());
+        }
 
         return panel({
             item: hframe(
                 panel({
-                    title: 'Models · Services · Stores',
+                    title: `Models · Services · Stores`,
+                    headerItems,
                     icon: Icon.cube(),
                     compactHeader: true,
                     item: grid({

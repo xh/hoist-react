@@ -676,6 +676,7 @@ body {
   //------------------------
   --xh-tab-text-color: var(--tab-text-color, var(--xh-text-color));
   --xh-tab-active-text-color: var(--tab-active-text-color, var(--xh-intent-primary));
+  --xh-tab-disabled-text-color: var(--tab-disabled-text-color, var(--xh-text-color-muted));
   --xh-tab-border-width: var(--tab-border-width, var(--xh-border-width));
   --xh-tab-border-width-px: calc(var(--xh-tab-border-width) * 1px);
   --xh-tab-font-family: var(--tab-font-family, var(--xh-font-family));

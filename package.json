@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "52.0.0-SNAPSHOT",
+  "version": "53.0.0-SNAPSHOT",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:xh/hoist-react",
   "homepage": "https://xh.io",
@@ -22,8 +22,8 @@
     "*.s?(a|c)ss": "stylelint"
   },
   "dependencies": {
-    "@blueprintjs/core": "^4.10.2",
-    "@blueprintjs/datetime": "^4.3.13",
+    "@blueprintjs/core": "^4.11.2",
+    "@blueprintjs/datetime": "^4.4.2",
     "@fortawesome/fontawesome-pro": "^6.2.0",
     "@fortawesome/fontawesome-svg-core": "^6.2.0",
     "@fortawesome/pro-light-svg-icons": "^6.2.0",
