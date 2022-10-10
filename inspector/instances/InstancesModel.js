@@ -12,7 +12,7 @@ import {trimToDepth} from '@xh/hoist/utils/js';
 import {compact, find, forIn, head, without} from 'lodash';
 import {isObservableProp, makeObservable, runInAction} from 'mobx';
 
-const {AUTO, BOOL, DATE, STRING} = FieldType;
+const {AUTO, BOOL, DATE, NUMBER, STRING} = FieldType;
 
 /**
  * Displays a list of current HoistModel, HoistService, and Store instances, with the ability to
@@ -29,6 +29,15 @@ export class InstancesModel extends HoistModel {
     propertiesGridModel;
     /** @member {PanelModel} */
     instancesPanelModel;
+
+    /** @return {StatsModel} */
+    get statsModel() {
+        return XH.getActiveModels(it => it.constructor.name === 'StatsModel' && it.xhImpl)[0];
+    }
+
+    get selectedSyncRun() {
+        return this.statsModel?.selectedSyncRun;
+    }
 
     @bindable.ref propsWatchlist = [];
     @bindable.ref loadedGetters = [];
@@ -67,7 +76,7 @@ export class InstancesModel extends HoistModel {
         this.addReaction(
             {
                 track: () => this.instancesGridModel.selectedIds,
-                run: (ids) => {this.propertiesGridModel.setEmptyText(ids.length ? 'No matching properties found' : 'Select an instance to view properties')},
+                run: (ids) => {this.propertiesGridModel.setEmptyText(ids.length ? 'No matching properties found.' : 'Select an instance to view properties.')},
                 delay: 300,
                 fireImmediately: true
             },
@@ -159,12 +168,13 @@ export class InstancesModel extends HoistModel {
         return new GridModel({
             persistWith: {...this.persistWith, path: 'instancesGrid', persistGrouping: false},
             autosizeOptions: {mode: GridAutosizeMode.MANAGED},
-            emptyText: 'No matching instances found',
+            emptyText: 'No matching (and alive) instances found.',
             store: {
                 fields: [
                     {name: 'className', type: STRING},
                     {name: 'displayGroup', type: STRING},
                     {name: 'created', type: DATE},
+                    {name: 'syncRun', type: NUMBER},
                     {name: 'isHoistService', type: BOOL},
                     {name: 'isHoistModel', type: BOOL},
                     {name: 'isStore', type: BOOL},
@@ -175,7 +185,7 @@ export class InstancesModel extends HoistModel {
                     {name: 'lastLoadException', type: AUTO}
                 ]
             },
-            sortBy: ['created'],
+            sortBy: ['created|desc'],
             groupBy: this.showInGroups ? 'displayGroup' : null,
             selModel: {mode: 'multiple'},
             colChooserModel: true,
@@ -198,6 +208,7 @@ export class InstancesModel extends HoistModel {
                     ]
                 },
                 {field: 'id', displayName: 'xhId'},
+                {field: 'syncRun', displayName: 'Sync', autosizeIncludeHeaderIcons: false},
                 {
                     field: 'isLinked',
                     headerName: Icon.link(),
@@ -329,11 +340,12 @@ export class InstancesModel extends HoistModel {
     autoLoadInstancesGrid() {
         this.addAutorun({
             run: () => {
-                const {showXhImpl, instancesGridModel} = this,
+                const {showXhImpl, instancesGridModel, selectedSyncRun} = this,
                     data = [];
 
                 XH.inspectorService.activeInstances.forEach(inst => {
                     if (!showXhImpl && inst.isXhImpl) return;
+                    if (selectedSyncRun && inst.syncRun !== selectedSyncRun) return;
 
                     const displayGroup = inst.isHoistService ? 'Services' : inst.isStore ? 'Stores' : 'Models';
                     data.push({...inst, displayGroup});
