@@ -319,6 +319,8 @@ export class DashContainerModel extends HoistModel {
     @action
     publishState() {
         const {goldenLayout} = this;
+        if (!goldenLayout) return;
+
         this.state = convertGLToState(goldenLayout, this);
         this.provider?.write({state: this.state});
     }
