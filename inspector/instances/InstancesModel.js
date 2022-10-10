@@ -30,6 +30,15 @@ export class InstancesModel extends HoistModel {
     /** @member {PanelModel} */
     instancesPanelModel;
 
+    /** @return {StatsModel} */
+    get statsModel() {
+        return XH.getActiveModels(it => it.constructor.name === 'StatsModel' && it.xhImpl)[0];
+    }
+
+    get selectedSyncRun() {
+        return this.statsModel?.selectedSyncRun;
+    }
+
     @bindable.ref propsWatchlist = [];
     @bindable.ref loadedGetters = [];
 
@@ -67,7 +76,7 @@ export class InstancesModel extends HoistModel {
         this.addReaction(
             {
                 track: () => this.instancesGridModel.selectedIds,
-                run: (ids) => {this.propertiesGridModel.setEmptyText(ids.length ? 'No matching properties found' : 'Select an instance to view properties')},
+                run: (ids) => {this.propertiesGridModel.setEmptyText(ids.length ? 'No matching properties found.' : 'Select an instance to view properties.')},
                 delay: 300,
                 fireImmediately: true
             },
@@ -159,7 +168,7 @@ export class InstancesModel extends HoistModel {
         return new GridModel({
             persistWith: {...this.persistWith, path: 'instancesGrid', persistGrouping: false},
             autosizeOptions: {mode: GridAutosizeMode.MANAGED},
-            emptyText: 'No matching instances found',
+            emptyText: 'No matching (and alive) instances found.',
             store: {
                 fields: [
                     {name: 'className', type: STRING},
@@ -199,7 +208,7 @@ export class InstancesModel extends HoistModel {
                     ]
                 },
                 {field: 'id', displayName: 'xhId'},
-                {field: 'syncRun', displayName: 'Sync'},
+                {field: 'syncRun', displayName: 'Sync', autosizeIncludeHeaderIcons: false},
                 {
                     field: 'isLinked',
                     headerName: Icon.link(),
@@ -331,11 +340,12 @@ export class InstancesModel extends HoistModel {
     autoLoadInstancesGrid() {
         this.addAutorun({
             run: () => {
-                const {showXhImpl, instancesGridModel} = this,
+                const {showXhImpl, instancesGridModel, selectedSyncRun} = this,
                     data = [];
 
                 XH.inspectorService.activeInstances.forEach(inst => {
                     if (!showXhImpl && inst.isXhImpl) return;
+                    if (selectedSyncRun && inst.syncRun !== selectedSyncRun) return;
 
                     const displayGroup = inst.isHoistService ? 'Services' : inst.isStore ? 'Stores' : 'Models';
                     data.push({...inst, displayGroup});

@@ -60,14 +60,6 @@ export class InspectorService extends HoistService {
             this.deactivate();
         }
 
-        // Using an autorun here to trigger re-run when any active model's observable
-        // lastLoadCompleted/lastLoadException properties change, in addition to changes to the
-        // set composition itself. Throttled via mobx-provided delay option.
-        this.addAutorun({
-            run: () => this.sync(),
-            delay: 500
-        });
-
         // Update stats whenever activeInstances change. Note this cannot be called directly within
         // the autorun above as it reads + replaces the observable stats array (and would loop).
         this.addReaction({
@@ -82,9 +74,16 @@ export class InspectorService extends HoistService {
             delay: true // model update reaction will eagerly populate on startup
         });
 
-        if (this.active) {
-            wait(500).then(() => this.sync());
-        }
+        // Using an autorun here to trigger re-run when any active model's observable
+        // lastLoadCompleted/lastLoadException properties change, in addition to changes to the
+        // set composition itself. Throttled via mobx-provided delay option.
+        // Initial wait allows app init to settle before we start syncing more eagerly.
+        wait(1000).then(() => {
+            this.addAutorun({
+                run: () => this.sync(),
+                delay: 300
+            });
+        });
     }
 
     toggleActive() {
@@ -108,10 +107,47 @@ export class InspectorService extends HoistService {
     }
 
     @action
+    updateStats() {
+        if (!this.active) return;
+
+        const {totalJSHeapSize, usedJSHeapSize} = (window.performance?.memory ?? {}),
+            modelCount = HoistModel._activeModels.size,
+            prevModelCount = this._prevModelCount,
+            now = Date.now();
+
+        this.stats = [...this.stats, {
+            id: now,
+            timestamp: now,
+            modelCount,
+            modelCountChange: modelCount - prevModelCount,
+            totalJSHeapSize,
+            usedJSHeapSize,
+            syncRun: this._syncRun
+        }];
+
+        this._prevModelCount = modelCount;
+    }
+
+    @action
     clearStats() {
         this.stats = [];
     }
 
+    async restoreDefaultsAsync() {
+        if (!await XH.confirm({
+            message: 'Reset Inspector\'s layout and options to their defaults?'
+        })) return;
+
+        XH.localStorageService.removeIf(it => it.startsWith(`xhInspector.${XH.clientAppCode}`));
+        this.deactivate();
+        await wait();
+        this.activate();
+    }
+
+
+    //------------------
+    // Implementation
+    //------------------
     sync() {
         if (!this.active) return;
 
@@ -160,28 +196,6 @@ export class InspectorService extends HoistService {
     }
 
     _prevModelCount = 0;
-
-    @action
-    updateStats() {
-        if (!this.active) return;
-
-        const {totalJSHeapSize, usedJSHeapSize} = (window.performance?.memory ?? {}),
-            modelCount = HoistModel._activeModels.size,
-            prevModelCount = this._prevModelCount,
-            now = Date.now();
-
-        this.stats = [...this.stats, {
-            id: now,
-            timestamp: now,
-            modelCount,
-            modelCountChange: modelCount - prevModelCount,
-            totalJSHeapSize,
-            usedJSHeapSize,
-            syncRun: this._syncRun
-        }];
-
-        this._prevModelCount = modelCount;
-    }
 
     get conf() {
         return {

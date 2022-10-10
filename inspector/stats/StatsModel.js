@@ -22,12 +22,17 @@ export class StatsModel extends HoistModel {
     /** @member {ChartModel} */
     chartModel;
 
+    /** @return {number} */
+    get selectedSyncRun() {
+        return this.gridModel.selectedRecord?.data.syncRun;
+    }
+
     constructor() {
         super();
 
         this.panelModel = new PanelModel({
             side: 'left',
-            defaultSize: 500,
+            defaultSize: 450,
             persistWith: this.persistWith,
             xhImpl: true
         });
@@ -47,6 +52,7 @@ export class StatsModel extends HoistModel {
                 ]
             },
             sortBy: ['timestamp|desc'],
+            colDefaults: {autosizeIncludeHeaderIcons: false},
             columns: [
                 {field: 'timestamp', renderer: timestampRenderer},
                 {field: 'modelCount', renderer: numberRenderer({precision: 0})},
