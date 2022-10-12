@@ -1,5 +1,5 @@
 import {HoistService, HoistModel} from './';
-import {HoistStore} from '@xh/hoist/data';
+import {Store} from '@xh/hoist/data';
 import {observable, action, makeObservable} from '@xh/hoist/mobx';
 
 /**
@@ -18,7 +18,7 @@ export class InstanceManager {
 
 
     @observable.shallow
-    stores: Set<HoistModel> = new Set();
+    stores: Set<Store> = new Set();
 
     @action
     registerModel(m: HoistModel) {
@@ -36,12 +36,12 @@ export class InstanceManager {
     }
 
     @action
-    registerStore(s: HoistStore) {
+    registerStore(s: Store) {
         this.stores.add(s);
     }
 
     @action
-    unregisterStore(s: HoistStore) {
+    unregisterStore(s: Store) {
         this.stores.delete(s);
     }
 

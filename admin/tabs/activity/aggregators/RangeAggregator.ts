@@ -10,18 +10,18 @@ import {min, max} from 'lodash';
 
 export class RangeAggregator extends Aggregator {
 
-    aggregate(rows, fieldName) {
+    override aggregate(rows, fieldName) {
         const minVals = rows.map(row => row.isLeaf ? row.data[fieldName] : row.data[fieldName].min),
             maxVals = rows.map(row => row.isLeaf ? row.data[fieldName] : row.data[fieldName].max);
 
         return {min: min(minVals), max: max(maxVals)};
     }
 
-    replace(rows, currAgg, update) {
+    override replace(rows, currAgg, update, context) {
         const {oldValue, newValue} = update;
 
         if ((oldValue == currAgg.min || oldValue == currAgg.max)) {
-            return super.replace(rows, currAgg, update);
+            return super.replace(rows, currAgg, update, context);
         }
 
         if (newValue == null) return currAgg;
