@@ -405,6 +405,7 @@ export class View extends HoistBase {
 
     destroy() {
         this.disconnect();
+        super.destroy();
     }
 }
 
