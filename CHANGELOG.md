@@ -1,6 +1,6 @@
 # Changelog
 
-## v53.0.0-SNAPSHOT
+## v52.0.2 - 2022-10-13
 
 ### 🐞 Bug Fixes
 
