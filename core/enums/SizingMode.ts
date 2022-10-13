@@ -15,3 +15,5 @@ export const SizingMode = Object.freeze({
     STANDARD: 'standard',
     LARGE: 'large'
 });
+
+export type TSizingMode = typeof SizingMode[keyof typeof SizingMode];

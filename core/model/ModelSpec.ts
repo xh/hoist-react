@@ -6,6 +6,7 @@
  */
 
 import {CreatesSpec, UsesSpec, HoistModel} from './';
+
 /**
  * Specification for model to be rendered by a HoistComponent.
  *
@@ -40,3 +41,5 @@ export const ModelPublishMode = Object.freeze({
      */
     NONE: 'none'
 });
+
+export type TModelPublishMode = typeof ModelPublishMode[keyof typeof ModelPublishMode];

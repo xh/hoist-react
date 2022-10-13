@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {elemFactory, ModelSelector, HoistModel, ModelPublishMode} from './..';
+import {elemFactory, ModelSelector, HoistModel, TModelPublishMode} from './..';
 import {forOwn} from 'lodash';
 import {createContext} from 'react';
 
@@ -18,9 +18,9 @@ import {createContext} from 'react';
 export class ModelLookup {
     model: HoistModel;
     parent: ModelLookup;
-    publishMode: string;
+    publishMode: TModelPublishMode;
 
-    constructor(model: HoistModel, parent: ModelLookup, publishMode: string) {
+    constructor(model: HoistModel, parent: ModelLookup, publishMode: TModelPublishMode) {
         this.model = model;
         this.parent = parent;
         this.publishMode = publishMode;
@@ -32,7 +32,7 @@ export class ModelLookup {
      */
     lookupModel(selector: ModelSelector): HoistModel {
         const {model, publishMode, parent} = this,
-            modeIsDefault = (publishMode === ModelPublishMode.DEFAULT);
+            modeIsDefault = (publishMode === 'default');
 
         if (model.matchesSelector(selector, modeIsDefault)) {
             return model;

@@ -8,8 +8,6 @@
 
 /**
  * Enumeration of possible App States
- * @enum {string}
- * @see XHClass.appState
  */
 export const AppState = Object.freeze({
     PRE_AUTH:       'PRE_AUTH',
@@ -20,3 +18,5 @@ export const AppState = Object.freeze({
     SUSPENDED:      'SUSPENDED',
     LOAD_FAILED:    'LOAD_FAILED'
 });
+
+export type TAppState = typeof AppState[keyof typeof AppState];

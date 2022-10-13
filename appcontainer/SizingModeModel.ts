@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH, SizingMode} from '@xh/hoist/core';
+import {HoistModel, XH, SizingMode, TSizingMode} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {values, isPlainObject} from 'lodash';
@@ -15,7 +15,8 @@ import {values, isPlainObject} from 'lodash';
 export class SizingModeModel extends HoistModel {
     xhImpl = true;
 
-    @observable sizingMode: string = null;
+    @observable
+    sizingMode: TSizingMode = null;
 
     constructor() {
         super();
@@ -23,8 +24,8 @@ export class SizingModeModel extends HoistModel {
     }
 
     @action
-    setSizingMode(sizingMode: string) {
-        throwIf(!values(SizingMode).includes(sizingMode as any), `Sizing mode "${sizingMode}" not recognised.`);
+    setSizingMode(sizingMode: TSizingMode) {
+        throwIf(!values(SizingMode).includes(sizingMode), `Sizing mode "${sizingMode}" not recognised.`);
 
         const classList = document.body.classList;
         values(SizingMode).forEach(it => classList.toggle(`xh-${it}`, it === sizingMode));

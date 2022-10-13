@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH, AppState, Exception} from '@xh/hoist/core';
+import {HoistService, XH, Exception} from '@xh/hoist/core';
 import {isLocalDate, SECONDS, ONE_MINUTE, olderThan} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
@@ -241,7 +241,7 @@ export class FetchService extends HoistService {
 
         // Don't interfere with initialization, avoid tight loops, and provide kill switch
         if (
-            appState === AppState.RUNNING &&
+            appState === 'RUNNING' &&
             configService.get('xhReloadOnFailedAuth', true) &&
             !localStorageService.isFake &&
             olderThan(localStorageService.get('xhLastFailedAuthReload', null), ONE_MINUTE)

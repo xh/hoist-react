@@ -6,10 +6,10 @@
  */
 import {loadAllAsync, Loadable, LoadSpec} from '../load';
 import {RefreshContextModel} from './';
-import {RefreshMode} from '../';
+import {TRefreshMode} from '../';
 
 
-export type ManagedRefreshTarget = Loadable & {isActive:boolean, refreshMode: string}
+export type ManagedRefreshTarget = Loadable & {isActive: boolean, refreshMode: TRefreshMode}
 /**
  * A refresh context model that consults a model's RefreshMode and active state to manage
  * refreshes of its target models.
@@ -37,12 +37,12 @@ export class ManagedRefreshContextModel extends RefreshContextModel {
         const {model} = this,
             mode = model.refreshMode;
 
-        if (model.isActive || mode === RefreshMode.ALWAYS) {
+        if (model.isActive || mode === 'always') {
             await loadAllAsync(this.refreshTargets, loadSpec);
             return;
         }
 
-        if (mode === RefreshMode.ON_SHOW_LAZY) {
+        if (mode === 'onShowLazy') {
             this.refreshPending = true;
         }
     }
@@ -50,9 +50,9 @@ export class ManagedRefreshContextModel extends RefreshContextModel {
     noteActiveChanged(isActive: boolean) {
         if (isActive) {
             const mode = this.model.refreshMode;
-            if (mode === RefreshMode.ON_SHOW_ALWAYS) {
+            if (mode === 'onShowAlways') {
                 this.refreshAsync();
-            } else if (mode === RefreshMode.ON_SHOW_LAZY && this.refreshPending) {
+            } else if (mode === 'onShowLazy' && this.refreshPending) {
                 this.refreshPending = false;
                 this.refreshAsync();
             }

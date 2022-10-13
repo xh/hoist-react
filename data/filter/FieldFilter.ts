@@ -17,7 +17,7 @@ import {
     isUndefined,
     uniq
 } from 'lodash';
-import {FieldType, parseFieldValue} from '../Field';
+import {parseFieldValue} from '../Field';
 import {Store} from '../Store';
 import {Filter} from './Filter';
 import {FieldFilterOperator, FieldFilterSpec, FilterTestFn} from './Types';
@@ -80,7 +80,7 @@ export class FieldFilter extends Filter {
             const storeField = store.getField(field);
             if (!storeField) return () => true; // Ignore (do not filter out) if field not in store
 
-            const fieldType = storeField.type === FieldType.TAGS ? FieldType.STRING : storeField.type;
+            const fieldType = storeField.type === 'tags' ? 'string' : storeField.type;
             value = isArray(value) ?
                 value.map(v => parseFieldValue(v, fieldType)) :
                 parseFieldValue(value, fieldType);

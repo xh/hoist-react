@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
-import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
+import {observable, bindable, computed, makeObservable, action} from '@xh/hoist/mobx';
 import {debounced} from '@xh/hoist/utils/js';
 
 /**
@@ -16,14 +16,25 @@ export class LoginPanelModel extends HoistModel {
 
     @bindable username = '';
     @bindable password = '';
-    @bindable warning = '';
-    @bindable loginInProgress = false;
 
-    @managed loadModel = TaskObserver.trackLast();
+    @observable warning = '';
+    @action
+    setWarning(s: string) {
+        this.warning = s;
+    }
+
+    @observable loginInProgress = false;
+    @action
+    setLoginInProgress(b: boolean) {
+        this.loginInProgress = b;
+    }
+
+    @managed
+    loginTask = TaskObserver.trackLast();
 
     @computed
-    get isValid() {
-        return this.username && this.password;
+    get isValid(): boolean {
+        return !!(this.username && this.password);
     }
 
     constructor() {
@@ -34,7 +45,7 @@ export class LoginPanelModel extends HoistModel {
     // Debounce to defend against double-click fast enough to get through masking + button disable.
     @debounced(300)
     async submitAsync() {
-        const {username, password, loadModel, isValid} = this;
+        const {username, password, loginTask, isValid} = this;
         if (!isValid) return;
 
         try {
@@ -43,7 +54,7 @@ export class LoginPanelModel extends HoistModel {
                 url: 'xh/login',
                 params: {username, password}
             }).linkTo(
-                loadModel
+                loginTask
             ).catchDefault({
                 hideParams: ['password']
             });

@@ -21,7 +21,7 @@ export class Field {
     get isField() {return true}
 
     name: string;
-    type: FieldType;
+    type: TFieldType;
     displayName: string;
     defaultValue: any;
     rules: Rule[];
@@ -29,7 +29,7 @@ export class Field {
 
     constructor({
         name,
-        type = FieldType.AUTO,
+        type = 'auto',
         displayName,
         defaultValue = null,
         rules = [],
@@ -75,7 +75,7 @@ export class Field {
  */
 export function parseFieldValue(
     val: any,
-    type: FieldType,
+    type: TFieldType,
     defaultValue: any = null,
     disableXssProtection = XH.appSpec.disableXssProtection
 ): any {
@@ -132,8 +132,8 @@ export const FieldType = Object.freeze({
     PWD: 'pwd',
     STRING: 'string'
 });
-// eslint-disable-next-line
-export type FieldType = typeof FieldType[keyof typeof FieldType];
+
+export type TFieldType = typeof FieldType[keyof typeof FieldType];
 
 /**
  * @param fieldName - short name / code for a field.
@@ -151,8 +151,8 @@ export interface FieldConfig {
     /** Unique key representing this field. */
     name: string;
 
-    /** default `FieldType.AUTO` indicates no conversion.*/
-    type?: FieldType;
+    /** default `'auto` indicates no conversion.*/
+    type?: TFieldType;
 
     /**
      *  User-facing / longer name for display, defaults to `name`

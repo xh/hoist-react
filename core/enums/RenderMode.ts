@@ -20,5 +20,7 @@ export const RenderMode = Object.freeze({
 
     /** Render lazily, and actively unmount the contents if/when de-activated. */
     UNMOUNT_ON_HIDE: 'unmountOnHide'
-
 });
+
+export type TRenderMode = typeof RenderMode[keyof typeof RenderMode];
+

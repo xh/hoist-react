@@ -26,3 +26,8 @@ export const RefreshMode = Object.freeze({
     SKIP_HIDDEN: 'skipHidden'
 
 });
+
+
+export type TRefreshMode = typeof RefreshMode[keyof typeof RefreshMode];
+
+

@@ -5,8 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, persist, SizingMode, XH} from '@xh/hoist/core';
-import {FieldType} from '@xh/hoist/data';
+import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
@@ -115,14 +114,14 @@ export class LogDisplayModel extends HoistModel {
             selModel: 'multiple',
             hideHeaders: true,
             rowBorders: false,
-            sizingMode: SizingMode.TINY,
+            sizingMode: 'tiny',
             sortBy: 'rowNum|asc',
             store: {
                 idSpec: 'rowNum'
             },
             columns: [
                 {
-                    field: {name: 'rowNum', type: FieldType.NUMBER},
+                    field: {name: 'rowNum', type: 'number'},
                     width: 4,
                     cellClass: 'xh-log-display__row-number'
                 },

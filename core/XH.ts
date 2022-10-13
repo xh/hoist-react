@@ -8,12 +8,13 @@ import {p} from '@xh/hoist/cmp/layout';
 import {
     HoistService,
     AppSpec,
-    AppState,
+    TAppState,
     elem,
     Exception,
     ExceptionHandlerOptions,
     ExceptionHandler,
-    TrackOptions
+    TrackOptions,
+    TSizingMode
 } from './';
 import {Store} from '@xh/hoist/data';
 import {instanceManager} from './InstanceManager';
@@ -226,7 +227,8 @@ class XHClass {
     exceptionHandler: ExceptionHandler = null;
 
     /** current lifecycle state of the application. */
-    @observable appState: string = AppState.PRE_AUTH;
+    @observable
+    appState: TAppState = 'PRE_AUTH';
 
     /** milliseconds since user activity / interaction was last detected. */
     get lastActivityMs(): number {
@@ -235,7 +237,7 @@ class XHClass {
 
     /** true if application initialized and running (observable). */
     get appIsRunning(): boolean {
-        return this.appState === AppState.RUNNING;
+        return this.appState === 'RUNNING';
     }
 
     /** The currently authenticated user. */
@@ -300,7 +302,7 @@ class XHClass {
      * Used by framework. Not intended for application use.
      */
     @action
-    setAppState(appState: string) {
+    setAppState(appState: TAppState) {
         if (this.appState != appState) {
             this.appState = appState;
         }
@@ -370,7 +372,7 @@ class XHClass {
     //------------------------
     // Sizing Mode Support
     //------------------------
-    setSizingMode(sizingMode: string) {
+    setSizingMode(sizingMode: TSizingMode) {
         return this.acm.sizingModeModel.setSizingMode(sizingMode);
     }
 
@@ -674,8 +676,7 @@ class XHClass {
         if (this._initCalled) return;
         this._initCalled = true;
 
-        const S = AppState,
-            {appSpec, isMobileApp, isPhone, isTablet, isDesktop, baseUrl} = this;
+        const {appSpec, isMobileApp, isPhone, isTablet, isDesktop, baseUrl} = this;
 
         if (appSpec.trackAppLoad) this.trackLoad();
 
@@ -716,7 +717,7 @@ class XHClass {
                 });
             }
 
-            this.setAppState(S.PRE_AUTH);
+            this.setAppState('PRE_AUTH');
 
             // consult (optional) pre-auth init for app
             const modelClass: any  = this.appSpec.modelClass;
@@ -731,7 +732,7 @@ class XHClass {
                     appSpec.isSSO,
                     'Unable to complete required authentication (SSO/Oauth failure).'
                 );
-                this.setAppState(S.LOGIN_REQUIRED);
+                this.setAppState('LOGIN_REQUIRED');
                 return;
             }
 
@@ -739,7 +740,7 @@ class XHClass {
             await this.completeInitAsync();
 
         } catch (e) {
-            this.setAppState(S.LOAD_FAILED);
+            this.setAppState('LOAD_FAILED');
             this.handleException(e, {requireReload: true});
         }
     }
@@ -750,9 +751,7 @@ class XHClass {
      * @private - not intended for application use.
      */
     @action
-    private async completeInitAsync() {
-        const S = AppState;
-
+    async completeInitAsync() {
         try {
 
             // Install identity service and confirm access
@@ -760,12 +759,12 @@ class XHClass {
             const access = this.checkAccess();
             if (!access.hasAccess) {
                 this.accessDeniedMessage = access.message || 'Access denied.';
-                this.setAppState(S.ACCESS_DENIED);
+                this.setAppState('ACCESS_DENIED');
                 return;
             }
 
             // Complete initialization process
-            this.setAppState(S.INITIALIZING);
+            this.setAppState('INITIALIZING');
             await this.installServicesAsync(LocalStorageService);
             await this.installServicesAsync(
                 EnvironmentService, PrefService, ConfigService, JsonBlobService
@@ -796,9 +795,9 @@ class XHClass {
             await this.appModel.initAsync();
             this.startRouter();
             this.startOptionsDialog();
-            this.setAppState(S.RUNNING);
+            this.setAppState('RUNNING');
         } catch (e) {
-            this.setAppState(S.LOAD_FAILED);
+            this.setAppState('LOAD_FAILED');
             this.handleException(e, {requireReload: true});
         }
     }
@@ -811,9 +810,9 @@ class XHClass {
      * @package - not intended for application use.
      */
     suspendApp(suspendData) {
-        if (XH.appState === AppState.SUSPENDED) return;
+        if (XH.appState === 'SUSPENDED') return;
         this.suspendData = suspendData;
-        XH.setAppState(AppState.SUSPENDED);
+        XH.setAppState('SUSPENDED');
         XH.webSocketService.shutdown();
         Timer.cancelAll();
     }
@@ -910,7 +909,7 @@ class XHClass {
             (state) => {
                 const now = Date.now();
                 switch (state) {
-                    case AppState.RUNNING:
+                    case 'RUNNING':
                         XH.track({
                             category: 'App',
                             message: `Loaded ${this.clientAppCode}`,
@@ -925,7 +924,7 @@ class XHClass {
                         disposer();
                         break;
 
-                    case AppState.LOGIN_REQUIRED:
+                    case 'LOGIN_REQUIRED':
                         loginStarted = now;
                         break;
                     default:

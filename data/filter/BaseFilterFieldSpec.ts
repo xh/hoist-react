@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistBase} from '@xh/hoist/core';
-import {Field, Store, FieldFilter, FieldType, genDisplayName, View} from '@xh/hoist/data';
+import {Field, Store, FieldFilter, TFieldType, genDisplayName, View} from '@xh/hoist/data';
 import {isEmpty} from 'lodash';
 import {FieldFilterOperator} from './Types';
 
@@ -24,7 +24,7 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
     field: string;
 
     /** Type of field, will default from related field on source if provided, or 'auto'. */
-    fieldType: FieldType;
+    fieldType: TFieldType;
 
     /** DisplayName, will default from related field on source if provided */
     displayName: string;
@@ -68,7 +68,7 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
         this.source = source;
 
         const sourceField = this.sourceField;
-        this.fieldType = fieldType ?? sourceField?.type ?? FieldType.AUTO;
+        this.fieldType = fieldType ?? sourceField?.type ?? 'auto';
         this.displayName = displayName ?? sourceField?.displayName ?? genDisplayName(field);
         this.ops = this.parseOperators(ops);
         this.forceSelection = forceSelection ?? false;
@@ -93,14 +93,13 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
      * user-provided input.
      */
     get filterType(): 'range'|'value'|'collection' {
-        const FT = FieldType;
         switch (this.fieldType) {
-            case FT.INT:
-            case FT.NUMBER:
-            case FT.DATE:
-            case FT.LOCAL_DATE:
+            case 'int':
+            case 'number':
+            case 'date':
+            case 'localDate':
                 return 'range';
-            case FT.TAGS:
+            case 'tags':
                 return 'collection';
             default:
                 return 'value';
@@ -113,16 +112,16 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
 
     get isDateBasedFieldType(): boolean {
         const {fieldType} = this;
-        return fieldType === FieldType.DATE || fieldType === FieldType.LOCAL_DATE;
+        return fieldType === 'date' || fieldType === 'localDate';
     }
 
     get isNumericFieldType(): boolean {
         const {fieldType} = this;
-        return fieldType === FieldType.INT || fieldType === FieldType.NUMBER;
+        return fieldType === 'int' || fieldType === 'number';
     }
 
     get isBoolFieldType(): boolean {
-        return this.fieldType === FieldType.BOOL;
+        return this.fieldType === 'bool';
     }
 
     loadValues() {
@@ -164,11 +163,10 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
     }
 
     private get isEnumerableByDefault(): boolean {
-        const FT = FieldType;
         switch (this.fieldType) {
-            case FT.INT:
-            case FT.NUMBER:
-            case FT.DATE:
+            case 'int':
+            case 'number':
+            case 'date':
                 return false;
             default:
                 return true;

@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from './';
-import {RefreshContextModel, ModelPublishMode, uses, useContextModel} from './model';
+import {RefreshContextModel, uses, useContextModel} from './model';
 import {useEffect} from 'react';
 
 /**
@@ -18,7 +18,7 @@ import {useEffect} from 'react';
  */
 export const [RefreshContextView, refreshContextView] = hoistCmp.withFactory({
     displayName: 'RefreshContextView',
-    model: uses(RefreshContextModel, {publishMode: ModelPublishMode.LIMITED}),
+    model: uses(RefreshContextModel, {publishMode: 'limited'}),
 
     render({model, children}) {
         const parent = useContextModel(m => m instanceof RefreshContextModel && m != model) as RefreshContextModel;
