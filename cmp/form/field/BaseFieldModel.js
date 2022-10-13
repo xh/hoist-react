@@ -4,13 +4,13 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {managed, HoistModel, TaskObserver} from '@xh/hoist/core';
-import {Rule, ValidationState, genDisplayName, required} from '@xh/hoist/data';
-import {action, computed, observable, runInAction, makeObservable} from '@xh/hoist/mobx';
+import {HoistModel, managed, TaskObserver} from '@xh/hoist/core';
+import {genDisplayName, required, Rule, ValidationState} from '@xh/hoist/data';
+import {action, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {withDefault, executeIfFunction} from '@xh/hoist/utils/js';
-import {compact, flatten, isEmpty, isFunction, isNil} from 'lodash';
+import {executeIfFunction, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
+import {compact, flatten, isEmpty, isEqual, isFunction, isNil} from 'lodash';
 
 /**
  * Abstract Base class for FieldModels.
@@ -210,7 +210,7 @@ export class BaseFieldModel extends HoistModel {
 
     /** @member {boolean} - true if value has been changed since last reset/init. */
     get isDirty() {
-        return this.value !== this.initialValue;
+        return !isEqual(this.value, this.initialValue);
     }
 
     //-------------------------
