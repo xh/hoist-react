@@ -3,7 +3,7 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {instanceManager} from '@xh/hoist/core/InstanceManager';
+import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 
 
 /**

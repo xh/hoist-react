@@ -6,7 +6,8 @@
  */
 import {useHotkeys as useHotkeysBp} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
-import {cloneElement, useMemo} from 'react';
+import {cloneElement, ReactElement, useMemo} from 'react';
+import {HotkeyConfig} from '@blueprintjs/core/src/hooks/hotkeys/hotkeyConfig';
 
 /* eslint-disable react-hooks/exhaustive-deps */
 
@@ -18,10 +19,10 @@ import {cloneElement, useMemo} from 'react';
  *
  * @param {element} [child] - element to be given hotkey support.  Must specify Component
  *      that takes react key events as props (e.g. boxes, panel, div, etc).
- * @param {(Array|element)} [hotkeys] - An array of hotkeys, or configs for hotkeys,
+ * @param [hotkeys] - An array of hotkeys, or configs for hotkeys,
  *      as prescribed by blueprint. A Hotkeys element may also be provided.
  */
-export function useHotkeys(child, hotkeys) {
+export function useHotkeys(child?: ReactElement, hotkeys?: HotkeyConfig[]) {
     if (!child || isEmpty(hotkeys)) return child;
 
     const memoHotkeys = useMemo(() => hotkeys, []),

@@ -18,7 +18,6 @@ export const changelogDialog = hoistCmp.factory({
     displayName: 'ChangelogDialog',
     model: uses(ChangelogDialogModel),
 
-    /** @param {ChangelogDialogModel} model */
     render({model}) {
         if (!model.isOpen) return null;
 
@@ -33,7 +32,7 @@ export const changelogDialog = hoistCmp.factory({
     }
 });
 
-const changelogContents = hoistCmp.factory(
+const changelogContents = hoistCmp.factory<ChangelogDialogModel>(
     ({model}) => {
         const {versions} = XH.changelogService;
         return panel({
@@ -54,9 +53,7 @@ const changelogContents = hoistCmp.factory(
 );
 
 const version = hoistCmp.factory(
-    /** @param {ChangelogVersion} version */
     ({version}) => {
-
         const categories = !isEmpty(version.categories) ?
             version.categories.map(cat => {
                 const catClassName = categoryClassNames[lowerCase(cat.title)] ?? '';

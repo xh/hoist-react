@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import { ExceptionDialogModel } from '@xh/hoist/appcontainer/ExceptionDialogModel';
 import {filler, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -21,7 +22,7 @@ import {dismissButton} from './ExceptionDialog';
  *
  * @private
  */
-export const exceptionDialogDetails = hoistCmp.factory(
+export const exceptionDialogDetails = hoistCmp.factory<ExceptionDialogModel>(
     ({model}) => {
         const {detailsIsOpen, exception, options} = model,
             {requireReload} = options,

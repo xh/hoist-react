@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {FunctionComponent, ReactElement, cloneElement, createElement, isValidElement} from 'react';
+import {FunctionComponent, ReactElement, cloneElement, createElement, isValidElement, Component} from 'react';
 import {throwIf} from '../js';
 import {isFunction, isNil} from 'lodash';
 import {ElemFactory} from '@xh/hoist/core';
@@ -28,8 +28,8 @@ export function getReactElementName(obj: any): string {
  * @param [addProps] -- optional additional props to apply to the element.  These will override
  *      any existing props placed on the element, and should be used with care.
  */
-export function elementFromContent<P>(
-    content: ReactElement<P>|FunctionComponent<P>|ElemFactory<P>|(() => ReactElement<P>),
+export function elementFromContent(
+    content: ReactElement|FunctionComponent|Component|ElemFactory|(() => ReactElement),
     addProps?: object
 ): ReactElement {
     let c = content as any;

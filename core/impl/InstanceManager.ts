@@ -1,4 +1,11 @@
-import {HoistService, HoistModel} from './';
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2022 Extremely Heavy Industries Inc.
+ */
+
+import {HoistService, HoistModel} from './..';
 import {Store} from '@xh/hoist/data';
 import {observable, action, makeObservable} from '@xh/hoist/mobx';
 
@@ -8,7 +15,7 @@ import {observable, action, makeObservable} from '@xh/hoist/mobx';
  * Not intended for application use.
  * @package
  */
-export class InstanceManager {
+class InstanceManager {
 
     @observable.shallow
     services: Set<HoistService> = new Set();

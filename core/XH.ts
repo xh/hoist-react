@@ -17,7 +17,7 @@ import {
     TSizingMode
 } from './';
 import {Store} from '@xh/hoist/data';
-import {instanceManager} from './InstanceManager';
+import {instanceManager} from './impl/InstanceManager';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable, reaction as mobxReaction} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';

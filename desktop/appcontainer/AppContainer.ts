@@ -6,7 +6,7 @@
  */
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
-import {AppState, elem, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
+import {elem, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {errorBoundary} from '@xh/hoist/appcontainer/ErrorBoundary';
 import {changelogDialog} from '@xh/hoist/desktop/appcontainer/ChangelogDialog';
 import {suspendPanel} from '@xh/hoist/desktop/appcontainer/SuspendPanel';
@@ -93,20 +93,19 @@ export const AppContainer = hoistCmp({
 // Implementation
 //-----------------------------------------
 function viewForState() {
-    const S = AppState;
     switch (XH.appState) {
-        case S.PRE_AUTH:
-        case S.INITIALIZING:
+        case 'PRE_AUTH':
+        case 'INITIALIZING':
             return viewport(mask({isDisplayed: true, spinner: true}));
-        case S.LOGIN_REQUIRED:
+        case 'LOGIN_REQUIRED':
             return loginPanel();
-        case S.ACCESS_DENIED:
+        case 'ACCESS_DENIED':
             return lockoutView();
-        case S.RUNNING:
+        case 'RUNNING':
             return appContainerView();
-        case S.SUSPENDED:
+        case 'SUSPENDED':
             return suspendedView();
-        case S.LOAD_FAILED:
+        case 'LOAD_FAILED':
         default:
             return null;
     }
@@ -122,6 +121,7 @@ const lockoutView = hoistCmp.factory({
 
 const appContainerView = hoistCmp.factory({
     displayName: 'AppContainerView',
+    model: uses(AppContainerModel),
 
     render({model}) {
         const {appSpec, appModel} = XH;
@@ -164,7 +164,7 @@ const suspendedView = hoistCmp.factory({
 });
 
 
-const bannerList = hoistCmp.factory({
+const bannerList = hoistCmp.factory<AppContainerModel>({
     render({model}) {
         const {bannerModels} = model.bannerSourceModel;
         if (isEmpty(bannerModels)) return null;

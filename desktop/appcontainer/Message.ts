@@ -49,7 +49,7 @@ export const message = hoistCmp.factory({
     }
 });
 
-const inputCmp = hoistCmp.factory(
+const inputCmp = hoistCmp.factory<MessageModel>(
     ({model}) => {
         const {formModel, input} = model;
         if (!formModel) return null;
@@ -68,7 +68,7 @@ const inputCmp = hoistCmp.factory(
     }
 );
 
-const bbar = hoistCmp.factory(
+const bbar = hoistCmp.factory<MessageModel>(
     ({model}) => {
         const {confirmProps, cancelProps, cancelAlign, formModel} = model,
             ret = [];

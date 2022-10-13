@@ -25,7 +25,7 @@ import {parseFilter} from './filter/Utils';
 import {RecordSet} from './impl/RecordSet';
 import {StoreValidator} from './impl/StoreValidator';
 import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
-import {instanceManager} from '../core/InstanceManager';
+import {instanceManager} from '../core/impl/InstanceManager';
 import {Filter} from './filter/Filter';
 import { FilterLike } from './filter/Types';
 

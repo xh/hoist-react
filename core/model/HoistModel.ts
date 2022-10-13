@@ -10,7 +10,7 @@ import {HoistBase, HoistProps, managed} from '../';
 import {ModelSelector} from './';
 import {LoadSupport, LoadSpec, Loadable} from '../load';
 import {observable, action, makeObservable} from '@xh/hoist/mobx';
-import {instanceManager} from '../InstanceManager';
+import {instanceManager} from '../impl/InstanceManager';
 
 /**
  * Core superclass for stateful Models in Hoist. Models are used throughout the toolkit and

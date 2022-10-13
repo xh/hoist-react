@@ -29,7 +29,7 @@ export const versionBar = hoistCmp.factory({
             items: [
                 [XH.appName, env, versionAndBuild].join(' • '),
                 Icon.info({
-                    omit: !XH.acm.hasAboutDialog(),
+                    omit: !XH.appContainerModel.hasAboutDialog(),
                     onClick: () => XH.showAboutDialog()
                 }),
                 Icon.search({

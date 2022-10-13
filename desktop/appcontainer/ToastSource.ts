@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import { ToastModel } from '@xh/hoist/appcontainer/ToastModel';
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, lookup} from '@xh/hoist/core';
@@ -32,22 +33,21 @@ export const toastSource = hoistCmp.factory({
 class ToastSourceLocalModel extends HoistModel {
     xhImpl = true;
 
-    /** @member {ToastSourceModel} */
-    @lookup(ToastSourceModel) sourceModel;
+    @lookup(ToastSourceModel)
+    sourceModel: ToastSourceModel;
 
     _toasterMap = new Map();
 
     onLinked() {
         const {sourceModel} = this;
         this.addReaction({
-            track: () => [sourceModel.toastModels, map(sourceModel.toastModels, 'isOpen')],
+            track: () => [sourceModel.toastModels, map(sourceModel.toastModels, 'isOpen')] as const,
             run: ([models]) => this.displayPendingToasts(models)
         });
     }
 
-    /** @param {ToastModel[]} models */
-    displayPendingToasts(models) {
-        models.forEach(model => {
+    displayPendingToasts(models: ToastModel[]) {
+        models.forEach((model: ToastModel&{bpId}) => {
             let {bpId, isOpen, icon, intent, actionButtonProps, position, containerRef, ...rest} = model;
 
             // 1) If toast is visible and sent to bp, or already obsolete -- nothing to do

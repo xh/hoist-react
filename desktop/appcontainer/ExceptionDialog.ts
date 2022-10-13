@@ -52,7 +52,7 @@ export const exceptionDialog = hoistCmp.factory({
 //--------------------------------
 // Implementation
 //--------------------------------
-const bbar = hoistCmp.factory(
+const bbar = hoistCmp.factory<ExceptionDialogModel>(
     ({model}) => toolbar(
         button({
             omit: !XH.identityService?.isImpersonating,
@@ -76,7 +76,7 @@ const bbar = hoistCmp.factory(
  * A Dismiss button that either forces reload, or allows close.
  * @private
  */
-export const dismissButton = hoistCmp.factory(
+export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(
     ({model}) => {
         const reloadRequired = model.options.requireReload,
             loginRequired = isSessionExpired(model.exception);
