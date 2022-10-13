@@ -4,10 +4,10 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isArray, isEmpty, isFinite, isNil, isString} from 'lodash';
 import moment from 'moment';
-import {ConstraintCb} from './Rule';
+import {Constraint} from './Rule';
 /**
  * A set of validation functions to assist in form field validation.
  */
@@ -17,7 +17,7 @@ import {ConstraintCb} from './Rule';
  * For strings this validation will fail if empty or containing only whitespace.
  * For arrays (e.g. Select w/multiple values) this validation will fail if empty.
  */
-export const required: ConstraintCb = ({value, displayName}, foo) => {
+export const required: Constraint = ({value, displayName}, foo) => {
     if (
         isNil(value) ||
         (isString(value) && value.trim().length === 0) ||
@@ -29,7 +29,7 @@ export const required: ConstraintCb = ({value, displayName}, foo) => {
  * Validate an email address.
  * https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript/46181#46181.
  */
-export const validEmail: ConstraintCb = ({value, displayName}) => {
+export const validEmail: Constraint<string> = ({value, displayName}) => {
     if (isNil(value)) return null;
 
     // eslint-disable-next-line no-useless-escape
@@ -41,7 +41,7 @@ export const validEmail: ConstraintCb = ({value, displayName}) => {
 /**
  * Validate length of a string.
  */
-export function lengthIs(c: {min?: number, max?: number}): ConstraintCb {
+export function lengthIs(c: {min?: number, max?: number}): Constraint<string> {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
 
@@ -62,7 +62,7 @@ export function lengthIs(c: {min?: number, max?: number}): ConstraintCb {
  */
 export function numberIs(
     c: {min?: number, max?: number, gt?: number, lt?: number, notZero?: boolean}
-): ConstraintCb {
+): Constraint<number> {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
 
@@ -88,11 +88,12 @@ export function dateIs(c: {
     min?: Date|LocalDate|'now'|'today',
     max?: Date|LocalDate|'now'|'today',
     fmt?: string
-}): ConstraintCb {
+}): Constraint<Date|LocalDate> {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
 
-        if (isLocalDate(value)) value = value.moment;
+        let val = value as any;
+        if (val instanceof LocalDate) val = val.moment;
 
         const {min, max, fmt = 'YYYY-MM-DD'} = c;
         let minMoment = null;
@@ -118,13 +119,13 @@ export function dateIs(c: {
         }
 
         let error = null;
-        if (minMoment?.isAfter(value)) {
+        if (minMoment?.isAfter(val)) {
             switch (min) {
                 case 'now': error = 'in the past.'; break;
                 case 'today': error = 'before today.'; break;
                 default: error = `before ${minMoment.format(fmt)}`;
             }
-        } else if (maxMoment?.isBefore(value)) {
+        } else if (maxMoment?.isBefore(val)) {
             switch (max) {
                 case 'now': error = 'in the future.'; break;
                 case 'today': error = 'after today.'; break;
@@ -138,15 +139,17 @@ export function dateIs(c: {
 /**
 * Apply a constraint to an array of values, e.g values coming from a tag picker.
 *
-* @param {function} constraint - the executed constraint function to use on the array of values
+* @param constraint - the executed constraint function to use on each individual value.
+* @return a constraint appropriate for an array of values.
 */
-// TODO: What is this type?
-export function constrainAll(constraint: any): any {
-    return ({values, displayName}) => {
-        if (isNil(values) || isEmpty(values)) return null;
+export function constrainAll<T>(constraint: Constraint<T>): Constraint<T[]> {
+    return (fieldState, map) => {
 
-        for (let value in values) {
-            const fail = constraint({value, displayName});
+        const {value} = fieldState;
+        if (!isArray(value)|| isNil(value) || isEmpty(value)) return null;
+
+        for (let v of value) {
+            const fail = constraint({...fieldState, value: v}, map);
             if (fail) return fail;
         }
 
@@ -159,7 +162,7 @@ export function constrainAll(constraint: any): any {
 *
 * @param excludeVals - one or more strings to exclude
 */
-export function stringExcludes(...excludeVals: string[]): ConstraintCb {
+export function stringExcludes(...excludeVals: string[]): Constraint<string> {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
         const fail = excludeVals.find(s => value.includes(s));
@@ -170,7 +173,7 @@ export function stringExcludes(...excludeVals: string[]): ConstraintCb {
 /**
  * Validate that a value is JSON
  */
-export const isValidJson: ConstraintCb = ({value, displayName}) => {
+export const isValidJson: Constraint = ({value, displayName}) => {
     try {
         JSON.parse(value);
     } catch {

@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
-import {Rule} from './validation/Rule';
+import {Rule, RuleLike} from './validation/Rule';
 import equal from 'fast-deep-equal';
 import {isDate, isString, toNumber, isFinite, startCase, isFunction, castArray} from 'lodash';
 import DOMPurify from 'dompurify';
@@ -55,7 +55,7 @@ export class Field {
     //------------------------
     // Implementation
     //------------------------
-    private processRuleSpecs(ruleSpecs) {
+    private processRuleSpecs(ruleSpecs: RuleLike[]): Rule[] {
         return ruleSpecs.map(spec => {
             if (spec instanceof Rule) return spec;
             if (isFunction(spec)) return new Rule({check: spec});
@@ -163,8 +163,8 @@ export interface FieldConfig {
     /** Value to be used for records with a null, or non-existent value. */
     defaultValue?: any;
 
-    /** Rules, rule configs, or validation functions to apply to this field. */
-    rules?: any[];
+    /** Rules to apply to this field. */
+    rules?: RuleLike[];
 
     /**
      * True to disable built-in XSS (cross-site scripting) protection, applied by default to all

@@ -6,50 +6,46 @@
  */
 import {castArray} from 'lodash';
 import {StoreRecord} from '../StoreRecord';
-import {FieldModel} from '../../cmp/form/field/FieldModel';
+import {BaseFieldModel} from '../../cmp/form/field/FieldModel';
+import {Field} from '../Field';
 
 /**
  * Immutable object representing a validation rule.
  */
 export class Rule {
 
-    check: ConstraintCb[];
-    when: WhenCb;
+    check: Constraint[];
+    when: When;
 
-    /**
-     * @param config - Rule configuration.
-     * @param config.check - function(s) to perform validation.
-     * @param [config.when] - function to determine when this rule is active.
-     *      If not specified rule is considered to be always active.
-     */
-    constructor(config: {check: ConstraintCb|ConstraintCb[], when?: WhenCb}) {
-        this.check = castArray(config.check);
-        this.when = config.when;
+    constructor(spec: RuleSpec) {
+        this.check = castArray(spec.check);
+        this.when = spec.when;
     }
 }
 
 /**
- * @callback ConstraintCb
+ * Function to validate a value.
+ *
  * @param fieldState
- * @param map  - current values for all fields in form, keyed by field name.
+ * @param allValues - current values for all fields in form, keyed by field name.
  * @returns String or array of strings describing errors, or null or undefined if rule passes successfully.
  */
-export type ConstraintCb = ((fieldState: FieldState, map: Record<string, any>) => string|string[]|undefined|null);
+export type Constraint<T=any> = (fieldState: FieldState<T>, allValues: Record<string, any>) => string|string[];
 
 
 /**
- * @callback WhenCb
- * @param fieldState
- * @param map - current values for all fields in form, keyed by field name.
+ * Function to determine when to perform validation on a value.
+ *
+ * @param field - the field (for a StoreRecord) or BaseFieldModel (for a Form) being evaluated.
+ * @param allValues - current values for all fields in form, keyed by field name.
  * @returns true if this rule is currently active.
  */
-export type WhenCb = ((fieldState: FieldState, map: Record<string, any>) => boolean);
+export type When = (field: Field|BaseFieldModel, allValues: Record<string, any>) => boolean;
 
 
-/** Current values for all fields in form, keyed by field name. */
-export interface FieldState {
+export interface FieldState<T=any> {
     /** Current value of the field */
-    value: any;
+    value: T;
 
     /** Name of the field */
     name: string;
@@ -61,5 +57,20 @@ export interface FieldState {
     record?: StoreRecord;
 
     /** FieldModel being validated, if validating Form data. */
-    fieldModel?: FieldModel
+    fieldModel?: BaseFieldModel;
 }
+
+
+export interface RuleSpec {
+
+    /** Function(s) to perform validation. */
+    check: Constraint|Constraint[];
+
+    /**
+     *  Function to determine when this rule is active.
+     *  If not specified rule is considered to be always active.
+     */
+    when?: When;
+}
+
+export type RuleLike = RuleSpec|Constraint|Rule;
