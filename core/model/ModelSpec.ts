@@ -42,4 +42,5 @@ export const ModelPublishMode = Object.freeze({
     NONE: 'none'
 });
 
-export type TModelPublishMode = typeof ModelPublishMode[keyof typeof ModelPublishMode];
+// eslint-disable-next-line
+export type ModelPublishMode = typeof ModelPublishMode[keyof typeof ModelPublishMode];

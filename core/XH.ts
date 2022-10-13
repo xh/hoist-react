@@ -8,13 +8,13 @@ import {p} from '@xh/hoist/cmp/layout';
 import {
     HoistService,
     AppSpec,
-    TAppState,
+    AppState,
     elem,
     Exception,
     ExceptionHandlerOptions,
     ExceptionHandler,
     TrackOptions,
-    TSizingMode
+    SizingMode
 } from './';
 import {Store} from '@xh/hoist/data';
 import {instanceManager} from './impl/InstanceManager';
@@ -228,7 +228,7 @@ class XHClass {
 
     /** current lifecycle state of the application. */
     @observable
-    appState: TAppState = 'PRE_AUTH';
+    appState: AppState = 'PRE_AUTH';
 
     /** milliseconds since user activity / interaction was last detected. */
     get lastActivityMs(): number {
@@ -302,7 +302,7 @@ class XHClass {
      * Used by framework. Not intended for application use.
      */
     @action
-    setAppState(appState: TAppState) {
+    setAppState(appState: AppState) {
         if (this.appState != appState) {
             this.appState = appState;
         }
@@ -372,7 +372,7 @@ class XHClass {
     //------------------------
     // Sizing Mode Support
     //------------------------
-    setSizingMode(sizingMode: TSizingMode) {
+    setSizingMode(sizingMode: SizingMode) {
         return this.acm.sizingModeModel.setSizingMode(sizingMode);
     }
 

@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistBase} from '@xh/hoist/core';
-import {Field, Store, FieldFilter, TFieldType, genDisplayName, View} from '@xh/hoist/data';
+import {Field, Store, FieldFilter, FieldType, genDisplayName, View} from '@xh/hoist/data';
 import {isEmpty} from 'lodash';
 import {FieldFilterOperator} from './Types';
 
@@ -24,7 +24,7 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
     field: string;
 
     /** Type of field, will default from related field on source if provided, or 'auto'. */
-    fieldType: TFieldType;
+    fieldType: FieldType;
 
     /** DisplayName, will default from related field on source if provided */
     displayName: string;

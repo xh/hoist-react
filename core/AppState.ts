@@ -19,4 +19,5 @@ export const AppState = Object.freeze({
     LOAD_FAILED:    'LOAD_FAILED'
 });
 
-export type TAppState = typeof AppState[keyof typeof AppState];
+// eslint-disable-next-line
+export type AppState = typeof AppState[keyof typeof AppState];

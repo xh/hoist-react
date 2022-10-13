@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {elemFactory, ModelSelector, HoistModel, TModelPublishMode} from './..';
+import {elemFactory, ModelSelector, HoistModel, ModelPublishMode} from './..';
 import {forOwn} from 'lodash';
 import {createContext} from 'react';
 
@@ -18,9 +18,9 @@ import {createContext} from 'react';
 export class ModelLookup {
     model: HoistModel;
     parent: ModelLookup;
-    publishMode: TModelPublishMode;
+    publishMode: ModelPublishMode;
 
-    constructor(model: HoistModel, parent: ModelLookup, publishMode: TModelPublishMode) {
+    constructor(model: HoistModel, parent: ModelLookup, publishMode: ModelPublishMode) {
         this.model = model;
         this.parent = parent;
         this.publishMode = publishMode;

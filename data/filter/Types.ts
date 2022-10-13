@@ -44,8 +44,8 @@ export interface FunctionFilterSpec {
 export type FilterTestFn = (candidate: RawData|StoreRecord) => boolean;
 
 export type FilterLike = Filter |
-    Partial<CompoundFilterSpec> |
-    Partial<FieldFilterSpec> |
-    Partial<FunctionFilterSpec> |
+    CompoundFilterSpec |
+    FieldFilterSpec |
+    FunctionFilterSpec |
     FilterTestFn |
     FilterLike[];

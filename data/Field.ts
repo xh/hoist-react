@@ -21,7 +21,7 @@ export class Field {
     get isField() {return true}
 
     name: string;
-    type: TFieldType;
+    type: FieldType;
     displayName: string;
     defaultValue: any;
     rules: Rule[];
@@ -75,7 +75,7 @@ export class Field {
  */
 export function parseFieldValue(
     val: any,
-    type: TFieldType,
+    type: FieldType,
     defaultValue: any = null,
     disableXssProtection = XH.appSpec.disableXssProtection
 ): any {
@@ -133,7 +133,8 @@ export const FieldType = Object.freeze({
     STRING: 'string'
 });
 
-export type TFieldType = typeof FieldType[keyof typeof FieldType];
+// eslint-disable-next-line
+export type FieldType = typeof FieldType[keyof typeof FieldType];
 
 /**
  * @param fieldName - short name / code for a field.
@@ -152,7 +153,7 @@ export interface FieldConfig {
     name: string;
 
     /** default `'auto` indicates no conversion.*/
-    type?: TFieldType;
+    type?: FieldType;
 
     /**
      *  User-facing / longer name for display, defaults to `name`

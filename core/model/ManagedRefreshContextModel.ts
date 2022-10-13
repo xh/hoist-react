@@ -6,10 +6,10 @@
  */
 import {loadAllAsync, Loadable, LoadSpec} from '../load';
 import {RefreshContextModel} from './';
-import {TRefreshMode} from '../';
+import {RefreshMode} from '../';
 
 
-export type ManagedRefreshTarget = Loadable & {isActive: boolean, refreshMode: TRefreshMode}
+export type ManagedRefreshTarget = Loadable & {isActive: boolean, refreshMode: RefreshMode}
 /**
  * A refresh context model that consults a model's RefreshMode and active state to manage
  * refreshes of its target models.

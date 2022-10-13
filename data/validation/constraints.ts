@@ -146,7 +146,7 @@ export function constrainAll<T>(constraint: Constraint<T>): Constraint<T[]> {
     return (fieldState, map) => {
 
         const {value} = fieldState;
-        if (!isArray(value)|| isNil(value) || isEmpty(value)) return null;
+        if (!isArray(value) || isNil(value) || isEmpty(value)) return null;
 
         for (let v of value) {
             const fail = constraint({...fieldState, value: v}, map);

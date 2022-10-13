@@ -27,7 +27,6 @@ export const RefreshMode = Object.freeze({
 
 });
 
-
-export type TRefreshMode = typeof RefreshMode[keyof typeof RefreshMode];
-
+// eslint-disable-next-line
+export type RefreshMode = typeof RefreshMode[keyof typeof RefreshMode];
 

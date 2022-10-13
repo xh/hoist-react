@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, ModelSelector, ensureIsSelector, TModelPublishMode} from './';
+import {HoistModel, ModelSelector, ensureIsSelector, ModelPublishMode} from './';
 
 /**
  * Returns a ModelSpec to define how a functional HoistComponent should source its primary backing
@@ -46,7 +46,7 @@ export interface UsesOptions {
     fromContext?: boolean;
 
     /** Mode for publishing this model to context.*/
-    publishMode?: TModelPublishMode;
+    publishMode?: ModelPublishMode;
 
     /**
      * True (default) to accept model config from props and construct an instance on-demand.
@@ -67,7 +67,7 @@ export interface UsesOptions {
 export class UsesSpec<T extends HoistModel> {
 
     fromContext: boolean;
-    publishMode: TModelPublishMode;
+    publishMode: ModelPublishMode;
     optional: boolean;
     selector: ModelSelector<T>;
     createFromConfig: boolean;

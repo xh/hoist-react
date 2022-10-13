@@ -22,5 +22,6 @@ export const RenderMode = Object.freeze({
     UNMOUNT_ON_HIDE: 'unmountOnHide'
 });
 
-export type TRenderMode = typeof RenderMode[keyof typeof RenderMode];
+// eslint-disable-next-line
+export type RenderMode = typeof RenderMode[keyof typeof RenderMode];
 

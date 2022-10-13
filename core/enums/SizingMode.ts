@@ -16,4 +16,5 @@ export const SizingMode = Object.freeze({
     LARGE: 'large'
 });
 
-export type TSizingMode = typeof SizingMode[keyof typeof SizingMode];
+// eslint-disable-next-line
+export type SizingMode = typeof SizingMode[keyof typeof SizingMode];

@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH, SizingMode, TSizingMode} from '@xh/hoist/core';
+import {HoistModel, XH, SizingMode} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {values, isPlainObject} from 'lodash';
@@ -16,7 +16,7 @@ export class SizingModeModel extends HoistModel {
     xhImpl = true;
 
     @observable
-    sizingMode: TSizingMode = null;
+    sizingMode: SizingMode = null;
 
     constructor() {
         super();
@@ -24,7 +24,7 @@ export class SizingModeModel extends HoistModel {
     }
 
     @action
-    setSizingMode(sizingMode: TSizingMode) {
+    setSizingMode(sizingMode: SizingMode) {
         throwIf(!values(SizingMode).includes(sizingMode), `Sizing mode "${sizingMode}" not recognised.`);
 
         const classList = document.body.classList;
