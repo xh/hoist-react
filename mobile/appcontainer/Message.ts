@@ -68,7 +68,7 @@ export const message = hoistCmp.factory({
 });
 
 
-const inputCmp = hoistCmp.factory(
+const inputCmp = hoistCmp.factory<MessageModel>(
     ({model}) => {
         const {formModel, input} = model;
         if (!formModel) return null;

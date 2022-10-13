@@ -63,7 +63,7 @@ export const exceptionDialog = hoistCmp.factory({
  * A Dismiss button that either forces reload, or allows close.
  * @private
  */
-export const dismissButton = hoistCmp.factory(
+export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(
     ({model}) => {
         return model.options.requireReload ?
             button({

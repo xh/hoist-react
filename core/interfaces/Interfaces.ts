@@ -1,7 +1,7 @@
 import {ReactElement, ReactNode} from 'react';
 import {DebounceSettings} from 'lodash';
 import {LoadSpec} from '../load';
-import {Rule} from '@xh/hoist/data';
+import {RuleLike} from '@xh/hoist/data';
 
 /**
  * User of the application, as loaded from the server.
@@ -87,7 +87,7 @@ export interface MessageSpec {
         item?: ReactElement,
 
         /** Validation constraints to apply. */
-        rules?: Rule[];
+        rules?: RuleLike[];
 
         /** Initial value for the input. */
         initialValue?: any;

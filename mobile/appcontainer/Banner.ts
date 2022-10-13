@@ -61,7 +61,7 @@ export const banner = hoistCmp.factory({
     }
 });
 
-const actionButton = hoistCmp.factory(
+const actionButton = hoistCmp.factory<BannerModel>(
     ({model}) => {
         const {actionButtonProps} = model;
         if (isEmpty(actionButtonProps)) return null;
@@ -74,7 +74,7 @@ const actionButton = hoistCmp.factory(
     }
 );
 
-const dismissButton = hoistCmp.factory(
+const dismissButton = hoistCmp.factory<BannerModel>(
     ({model}) => {
         const {enableClose, category, onClose} = model;
         if (!enableClose) return null;

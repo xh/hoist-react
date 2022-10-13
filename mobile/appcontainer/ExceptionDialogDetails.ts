@@ -57,6 +57,7 @@ export const exceptionDialogDetails = hoistCmp.factory({
                     onClick: () => {
                         XH.prompt({
                             title: 'Send Message',
+                            message: null,
                             input: {
                                 item: textArea({
                                     placeholder: 'Add message here...',

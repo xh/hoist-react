@@ -12,6 +12,8 @@ import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 
 import './IdlePanel.scss';
+
+// @ts-ignore
 import idleImage from './IdlePanelImage.png';
 
 /**

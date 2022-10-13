@@ -28,9 +28,9 @@ export const toastSource = hoistCmp.factory({
 
         if (!next) return null;
 
-        if (!next.dismissIsPending) {
+        if (!(next as any).dismissIsPending) {
             wait(next.timeout).then(() => next.dismiss());
-            next.dismissIsPending = true;
+            (next as any).dismissIsPending = true;
         }
         return toast({model: next, key: next.xhId});
     }

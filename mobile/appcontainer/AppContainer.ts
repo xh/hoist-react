@@ -7,7 +7,7 @@
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {errorBoundary} from '@xh/hoist/appcontainer/ErrorBoundary';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
-import {AppState, elem, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
+import {elem, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 import {colChooser} from '@xh/hoist/mobile/cmp/grid/impl/ColChooser';
 import {ColChooserModel} from '@xh/hoist/mobile/cmp/grid/impl/ColChooserModel';
@@ -73,20 +73,19 @@ export const AppContainer = hoistCmp({
 // Implementation
 //-------------------
 function viewForState() {
-    const S = AppState;
     switch (XH.appState) {
-        case S.PRE_AUTH:
-        case S.INITIALIZING:
+        case 'PRE_AUTH':
+        case 'INITIALIZING':
             return viewport(mask({isDisplayed: true, spinner: true}));
-        case S.LOGIN_REQUIRED:
+        case 'LOGIN_REQUIRED':
             return loginPanel();
-        case S.ACCESS_DENIED:
+        case 'ACCESS_DENIED':
             return lockoutView();
-        case S.RUNNING:
+        case 'RUNNING':
             return appContainerView();
-        case S.SUSPENDED:
+        case 'SUSPENDED':
             return suspendedView();
-        case S.LOAD_FAILED:
+        case 'LOAD_FAILED':
         default:
             return null;
     }
@@ -100,11 +99,10 @@ const lockoutView = hoistCmp.factory({
     }
 });
 
-const appContainerView = hoistCmp.factory({
+const appContainerView = hoistCmp.factory<AppContainerModel>({
     displayName: 'AppContainerView',
 
     render({model}) {
-        if (model.caughtException) return null;
         return viewport(
             vframe(
                 impersonationBar(),
@@ -123,7 +121,7 @@ const appContainerView = hoistCmp.factory({
     }
 });
 
-const bannerList = hoistCmp.factory({
+const bannerList = hoistCmp.factory<AppContainerModel>({
     render({model}) {
         const {bannerModels} = model.bannerSourceModel;
         if (isEmpty(bannerModels)) return null;

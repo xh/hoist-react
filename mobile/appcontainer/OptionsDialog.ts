@@ -37,13 +37,13 @@ export const optionsDialog = hoistCmp.factory({
             onCancel: () => model.hide(),
             content: [
                 mask({bind: loadModel, spinner: true}),
-                form({
-                    item: vframe(
-                        ...model.options.map(option => {
+                form(
+                    vframe(
+                        model.options.map(option => {
                             return formField({field: option.name, ...option.formField});
                         })
                     )
-                })
+                )
             ],
             buttons: [
                 restoreDefaultsButton(),
