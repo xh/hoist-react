@@ -6,7 +6,7 @@
  */
 
 import {HoistBase} from '@xh/hoist/core';
-import {Cube, CubeField, Filter, Query, Store, StoreRecordId} from '@xh/hoist/data';
+import {Cube, CubeField, Filter, Query, RawData, Store, StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf, logWithDebug} from '@xh/hoist/utils/js';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
@@ -35,7 +35,7 @@ export class View extends HoistBase {
      * containing an array of hierarchical data objects.
      */
     @observable.ref
-    result: {rows: any, leafMap: Map<StoreRecordId, LeafRow>} = null;
+    result: {rows: RawData[], leafMap: Map<StoreRecordId, LeafRow>} = null;
 
     /** Stores to which results of this view should be (re)loaded. */
     stores: Store[] = null;
@@ -49,11 +49,11 @@ export class View extends HoistBase {
     lastUpdated: number;
 
     // Implementation
-    private _rows = null;
-    private _rowCache = null;
-    private _leafMap = null; // Leaves, by source record id.
-    private _recordMap = null; // Records, by source record id
-    private _aggContext = null;
+    private _rows: RawData[] = null;
+    private _rowCache: Map<StoreRecordId, BaseRow> = null;
+    private _leafMap: Map<StoreRecordId, LeafRow> = null;
+    private _recordMap: Map<StoreRecordId, StoreRecord> = null;
+    private _aggContext: AggregationContext = null;
 
     /**
      * @private - applications should use `Cube.createView()`.
