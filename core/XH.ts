@@ -69,7 +69,7 @@ const MIN_HOIST_CORE_VERSION = '14.0';
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
-class XHClass {
+export class XHClass {
 
     private _initCalled: boolean = false;
     private _lastActivityMs: number = Date.now();
