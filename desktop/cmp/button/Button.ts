@@ -5,13 +5,14 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
-import {hoistCmp} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, Intent} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import PT from 'prop-types';
+import {ReactNode, ReactElement} from 'react';
+import type * as CSS from 'csstype';
 import './Button.scss';
 
 /**
@@ -20,7 +21,7 @@ import './Button.scss';
  *
  * Relays all other props supported by Blueprint's button.
  */
-export const [Button, button] = hoistCmp.withFactory({
+export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
     displayName: 'Button',
     model: false,
     className: 'xh-button',
@@ -28,6 +29,7 @@ export const [Button, button] = hoistCmp.withFactory({
     render(props, ref) {
         const [layoutProps, nonLayoutProps] = splitLayoutProps(props),
             classes = [];
+
         const {
             autoFocus,
             className,
@@ -89,21 +91,18 @@ export const [Button, button] = hoistCmp.withFactory({
     }
 });
 
-Button.propTypes = {
-    active: PT.bool,
-    autoFocus: PT.bool,
-    className: PT.string,
-    disabled: PT.bool,
-    icon: PT.element,
-    intent: PT.oneOf(['primary', 'success', 'warning', 'danger']),
-    minimal: PT.bool,
-    onClick: PT.func,
-    outlined: PT.bool,
-    rightIcon: PT.element,
-    style: PT.object,
-    text: PT.node,
-    title: PT.string,
-    /** Alias for title. */
-    tooltip: PT.string
-};
-
+export interface ButtonProps extends BoxProps {
+    active?: boolean,
+    autoFocus?: boolean,
+    disabled?: boolean,
+    icon?: ReactElement;
+    intent?: Intent,
+    minimal?: boolean,
+    onClick?: () => void,
+    outlined?: boolean,
+    rightIcon?: ReactElement;
+    style?: CSS.Properties,
+    text?: ReactNode,
+    title?: string,
+    tooltip?: string /** Alias for title. */
+}

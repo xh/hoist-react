@@ -7,12 +7,12 @@
 import {hoistCmp, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {button, Button} from './Button';
+import {button, ButtonProps} from './Button';
 
 /**
  * Convenience Button preconfigured for use as a trigger for light/dark theme toggling.
  */
-export const [ThemeToggleButton, themeToggleButton] = hoistCmp.withFactory({
+export const [ThemeToggleButton, themeToggleButton] = hoistCmp.withFactory<ButtonProps>({
     displayName: 'ThemeToggleButton',
     model: false,
 
@@ -26,6 +26,3 @@ export const [ThemeToggleButton, themeToggleButton] = hoistCmp.withFactory({
         });
     }
 });
-
-ThemeToggleButton.propTypes = {...Button.propTypes};
-

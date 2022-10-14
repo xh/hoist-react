@@ -5,17 +5,16 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
-import {Button, button} from '@xh/hoist/desktop/cmp/button';
+import {ButtonProps, button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
+import {menu, menuDivider, MenuDivider, MenuItem, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {withDefault} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import PT from 'prop-types';
-import {isValidElement} from 'react';
+import {ReactElement, isValidElement} from 'react';
 
-export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
+export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButtonProps>({
     displayName: 'AppMenuButton',
     model: false,
     className: 'xh-app-menu',
@@ -41,71 +40,68 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     }
 });
 
-AppMenuButton.propTypes = {
-    ...Button.propTypes,
-
-    className: PT.string,
-
+export interface AppMenuButtonProps extends ButtonProps {
     /**
      * Array of extra menu items. Can contain:
      *  + `MenuItems` or configs to create them.
      *  + `MenuDividers` or the special string token '-'.
      *  + React Elements or strings, which will be interpreted as the `text` property for a MenuItem.
      */
-    extraItems: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.element])),
+    extraItems?: (Record<string, any>|string|ReactElement)[] // Todo: Use MenuItemSpec type rather than Record<string,any>
 
     /** True to hide the About button */
-    hideAboutItem: PT.bool,
+    hideAboutItem?: boolean,
 
     /** True to hide the Admin Item. Always hidden for users w/o HOIST_ADMIN role. */
-    hideAdminItem: PT.bool,
+    hideAdminItem?: boolean,
 
     /**
      * True to hide the Changelog (release notes) item.
      * Always hidden when ChangelogService not enabled / populated.
      */
-    hideChangelogItem: PT.bool,
+    hideChangelogItem?: boolean,
 
     /** True to hide the Feedback Item. */
-    hideFeedbackItem: PT.bool,
+    hideFeedbackItem?: boolean,
 
     /**
      * True to hide the Impersonate Item.
      * Always hidden for users w/o HOIST_ADMIN role or if impersonation is disabled.
      */
-    hideImpersonateItem: PT.bool,
+    hideImpersonateItem?: boolean,
 
     /** True to hide the Logout button. Defaulted to appSpec.isSSO. */
-    hideLogoutItem: PT.bool,
+    hideLogoutItem?: boolean,
 
     /** True to hide the Options button. */
-    hideOptionsItem: PT.bool,
+    hideOptionsItem?: boolean,
 
     /** True to hide the Theme Toggle button. */
-    hideThemeItem: PT.bool
-
-};
+    hideThemeItem?: boolean,
+}
 
 //---------------------------
 // Implementation
 //---------------------------
-function buildMenuItems({
-    hideAboutItem,
-    hideAdminItem,
-    hideChangelogItem,
-    hideFeedbackItem,
-    hideImpersonateItem,
-    hideLogoutItem,
-    hideOptionsItem,
-    hideThemeItem,
-    extraItems = []
-}) {
-    hideAboutItem = hideAboutItem || !XH.acm.hasAboutDialog();
+function buildMenuItems(props: AppMenuButtonProps) {
+    let {
+        hideAboutItem,
+        hideAdminItem,
+        hideChangelogItem,
+        hideFeedbackItem,
+        hideImpersonateItem,
+        hideLogoutItem,
+        hideOptionsItem,
+        hideThemeItem,
+        extraItems = []
+    } = props;
+
+    hideAboutItem = hideAboutItem || !XH.appContainerModel.hasAboutDialog();
     hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdmin;
     hideChangelogItem = hideChangelogItem || !XH.changelogService.enabled;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
     hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);
-    hideOptionsItem = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions;
+    hideOptionsItem = hideOptionsItem || !XH.appContainerModel.optionsDialogModel.hasOptions;
 
     const defaultItems = [
         {
@@ -169,16 +165,16 @@ function buildMenuItems({
     ]);
 }
 
-function parseMenuItems(items) {
-    return items
-        .filter(it => !it.omit)
+// Todo: Use MenuItemSpec type rather than Record<string,any>
+function parseMenuItems(items: (Record<string, any>|string|ReactElement)[]) {
+    const i = items as any;
+    return i.filter(it => !it.omit)
         .filter(filterConsecutiveMenuSeparators())
         .map(it => {
             if (it === '-') return menuDivider();
             if (isValidElement(it)) {
-                return ['Blueprint4.MenuItem', 'Blueprint4.MenuDivider'].includes(it.type.displayName) ?
-                    it :
-                    menuItem({text: it});
+                if (it instanceof MenuItem || it instanceof MenuDivider) return it;
+                return menuItem({text: it});
             }
 
             // Create menuItem from config, recursively parsing any submenus

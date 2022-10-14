@@ -7,7 +7,7 @@
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, XH, Intent} from '@xh/hoist/core';
 import {dateIs, required} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 
@@ -48,7 +48,7 @@ export class AlertBannerModel extends HoistModel {
     @observable.ref
     bannerModel = null;
 
-    get intentOptions() {
+    get intentOptions() : Intent[] {
         return [
             'primary',
             'success',

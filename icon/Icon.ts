@@ -11,7 +11,7 @@ import {last, pickBy, split, toLower} from 'lodash';
 import {iconCmp} from './impl/IconCmp';
 import {enhanceFaClasses, iconHtml} from './impl/IconHtml';
 import {ReactElement} from 'react';
-import {BoxProps} from '@xh/hoist/core';
+import {BoxProps, Intent} from '@xh/hoist/core';
 
 export interface IconSpec extends BoxProps {
 
@@ -28,7 +28,7 @@ export interface IconSpec extends BoxProps {
     /** Additional css class(es) to apply. */
     className?: string;
 
-    intent?: 'primary'|'success'|'warning'|'danger';
+    intent?: Intent;
 
     /** Optional tooltip string. */
     title?: string;

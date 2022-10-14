@@ -19,6 +19,10 @@ export interface HoistUser {
     hasGate(s: string): boolean;
 }
 
+/**
+ * Values available for intents
+ */
+export type Intent = 'primary'|'success'|'warning'|'danger';
 
 /**
  * Specification for debouncing in Hoist.
@@ -34,7 +38,7 @@ export type DebounceSpec = number|(DebounceSettings & {interval: number});
 export interface ToastSpec {
     message: ReactNode;
     icon?: ReactElement;
-    intent?: 'primary'|'success'|'warning'|'danger',
+    intent?: Intent,
 
     /**
      * Time in ms to show before auto-dismissing the toast, or null to keep toast
@@ -134,7 +138,7 @@ export interface BannerSpec {
 
     message?: ReactNode;
     icon?: ReactElement;
-    intent?: 'primary'|'success'|'warning'|'danger',
+    intent?: Intent,
     className?: string;
 
     /** The category for the banner. Defaults to 'default'.*/

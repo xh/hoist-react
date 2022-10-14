@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button/Button';
+import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button/Button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 
@@ -15,13 +15,11 @@ import {Icon} from '@xh/hoist/icon';
  *
  * {@see ChangelogService} for details on how to enable this overall system.
  */
-export const [WhatsNewButton, whatsNewButton] = hoistCmp.withFactory({
+export const [WhatsNewButton, whatsNewButton] = hoistCmp.withFactory<ButtonProps>({
     displayName: 'WhatsNewButton',
     model: false,
-
     render(props) {
         if (!XH.changelogService.currentVersionIsUnread) return null;
-
         return button({
             icon: Icon.gift(),
             title: `What's New?`,

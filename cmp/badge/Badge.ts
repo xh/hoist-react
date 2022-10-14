@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {BoxProps, hoistCmp} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, Intent} from '@xh/hoist/core';
 import classNames from 'classnames';
 import {div} from '@xh/hoist/cmp/layout';
 import './Badge.scss';
@@ -41,5 +41,5 @@ export interface BadgeProps extends BoxProps {
     /** Sets fontsize to half that of parent element (default false). */
     compact?: boolean;
 
-    intent?: 'primary' | 'success' | 'warning' | 'danger'
+    intent?: Intent
 }

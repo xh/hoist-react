@@ -4,18 +4,17 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel, GridAutosizeOptions} from '@xh/hoist/cmp/grid';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
-import PT from 'prop-types';
-import {button, Button} from './Button';
+import {button, ButtonProps} from './Button';
 
 /**
  * A convenience button to autosize visible Grid columns.
  */
-export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory({
+export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory<ColAutosizeButtonProps>({
     displayName: 'ColAutosizeButton',
     model: false,
 
@@ -44,14 +43,11 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory({
         });
     }
 });
-ColAutosizeButton.propTypes = {
-    ...Button.propTypes,
 
+export interface ColAutosizeButtonProps extends ButtonProps {
     /** GridModel of the grid for which this button should autosize columns. */
-    gridModel: PT.instanceOf(GridModel),
+    gridModel?: GridModel,
 
     /** Options for the grid autosize. {@see GridModel#autosizeAsync()} */
-    autosizeOptions: PT.object
-};
-
-
+    autosizeOptions?: GridAutosizeOptions
+}

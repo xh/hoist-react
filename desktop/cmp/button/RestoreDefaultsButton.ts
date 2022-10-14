@@ -8,8 +8,8 @@ import {br, fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import PT from 'prop-types';
-import {button, Button} from './Button';
+import {ReactNode} from 'react';
+import {button, ButtonProps} from './Button';
 
 /**
  * Convenience Button preconfigured for use as a trigger for resetting user customizations.
@@ -17,7 +17,7 @@ import {button, Button} from './Button';
  *
  * Can be provided an onClick handler, otherwise will call default framework handler.
  */
-export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmp.withFactory({
+export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmp.withFactory<RestoreDefaultsButtonProps>({
     displayName: 'RestoreDefaultsButton',
     model: false,
 
@@ -53,13 +53,11 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmp.withFacto
         });
     }
 });
-RestoreDefaultsButton.propTypes = {
-    ...Button.propTypes,
 
+export interface RestoreDefaultsButtonProps extends ButtonProps {
     /** Message for confirm dialog shown prior to clearing user customizations. */
-    warningMessage: PT.node,
+    warningMessage: ReactNode,
 
     /** Title for confirm dialog shown prior to clearing user customizations. */
-    warningTitle: PT.string
-};
-
+    warningTitle: string
+}

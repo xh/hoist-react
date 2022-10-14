@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
-import {button, Button} from '@xh/hoist/desktop/cmp/button';
+import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 
@@ -13,7 +13,7 @@ import {Icon} from '@xh/hoist/icon';
  * Convenience Button to open the admin client.
  * Visible only to users with the hoistAdmin application role.
  */
-export const [LaunchAdminButton, launchAdminButton] = hoistCmp.withFactory({
+export const [LaunchAdminButton, launchAdminButton] = hoistCmp.withFactory<ButtonProps>({
     displayName: 'LaunchAdminButton',
     model: false,
 
@@ -28,5 +28,3 @@ export const [LaunchAdminButton, launchAdminButton] = hoistCmp.withFactory({
         });
     }
 });
-LaunchAdminButton.propTypes = {...Button.propTypes};
-

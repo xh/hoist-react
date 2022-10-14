@@ -8,8 +8,7 @@ import {hoistCmp, RefreshContextModel, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
-import PT from 'prop-types';
-import {Button, button} from './Button';
+import {button, ButtonProps} from './Button';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
@@ -18,7 +17,7 @@ import {Button, button} from './Button';
  * be linked to any model in props with LoadSupport enabled, or the contextual
  * {@see RefreshContextModel}.
  */
-export const [RefreshButton, refreshButton] = hoistCmp.withFactory({
+export const [RefreshButton, refreshButton] = hoistCmp.withFactory<ButtonProps>({
     displayName: 'RefreshButton',
     model: false,  // For consistency with all other buttons -- the model prop here could be replaced by 'target'
 
@@ -41,12 +40,3 @@ export const [RefreshButton, refreshButton] = hoistCmp.withFactory({
         });
     }
 });
-
-RefreshButton.propTypes = {
-    ...Button.propTypes,
-
-    /** HoistModel to refresh. */
-    model: PT.object
-};
-
-
