@@ -7,13 +7,13 @@
 import {hoistCmp, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {button, Button} from './Button';
+import {button, ButtonProps} from './Button';
 
 /**
  * Convenience Button preconfigured for use as a trigger for the XH feedback dialog.
  * Can be provided an onClick handler, otherwise will call default framework handler.
  */
-export const [FeedbackButton, feedbackButton] = hoistCmp.withFactory({
+export const [FeedbackButton, feedbackButton] = hoistCmp.withFactory<ButtonProps>({
     displayName: 'FeedbackButton',
     model: false,
 
@@ -27,5 +27,3 @@ export const [FeedbackButton, feedbackButton] = hoistCmp.withFactory({
         });
     }
 });
-FeedbackButton.propTypes = {...Button.propTypes};
-

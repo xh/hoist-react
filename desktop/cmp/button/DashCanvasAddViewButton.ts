@@ -11,13 +11,12 @@ import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils'
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
-import PT from 'prop-types';
-import {button, Button} from './Button';
+import {button, ButtonProps} from './Button';
 
 /**
  * A convenience menu button to add views to a DashCanvas.
  */
-export const [DashCanvasAddViewButton, dashCanvasAddViewButton] = hoistCmp.withFactory({
+export const [DashCanvasAddViewButton, dashCanvasAddViewButton] = hoistCmp.withFactory<DashCanvasAddViewButtonProps>({
     displayName: 'DashCanvasAddViewButton',
     model: false,
 
@@ -39,9 +38,8 @@ export const [DashCanvasAddViewButton, dashCanvasAddViewButton] = hoistCmp.withF
         });
     }
 });
-DashCanvasAddViewButton.propTypes = {
-    ...Button.propTypes,
 
+export interface DashCanvasAddViewButtonProps extends ButtonProps {
     /** DashCanvasModel for which this button should allow the user to add views. */
-    dashCanvasModel: PT.instanceOf(DashCanvasModel)
-};
+    dashCanvasModel?: DashCanvasModel
+}

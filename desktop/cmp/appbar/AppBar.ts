@@ -6,15 +6,15 @@
  */
 
 import {span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, XH} from '@xh/hoist/core';
 import {appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
-import {appMenuButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
+import {appMenuButton, AppMenuButtonProps, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {whatsNewButton} from '@xh/hoist/desktop/cmp/button/WhatsNewButton';
 import '@xh/hoist/desktop/register';
 import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import PT from 'prop-types';
+import {ReactNode, ReactElement} from 'react';
 import './AppBar.scss';
 
 /**
@@ -25,7 +25,7 @@ import './AppBar.scss';
  * The standard buttons which are visible will be based on user roles and application configuration,
  * or they can each be explicitly hidden.
  */
-export const [AppBar, appBar] = hoistCmp.withFactory({
+export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
     displayName: 'AppBar',
     model: false,
     className: 'xh-appbar',
@@ -58,13 +58,13 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                         icon ? span({className: 'xh-appbar-icon', item: icon}) : null,
                         title ? span({className: 'xh-appbar-title', item: title}) : null,
                         appBarSeparator({omit: isEmpty(leftItems)}),
-                        ...leftItems || []
+                        ...leftItems ?? []
                     ]
                 }),
                 navbarGroup({
                     align: 'right',
                     items: [
-                        ...rightItems || [],
+                        ...rightItems ?? [],
                         whatsNewButton({omit: hideWhatsNewButton}),
                         refreshButton({omit: hideRefreshButton}),
                         appMenuButton({
@@ -78,31 +78,31 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
     }
 });
 
-AppBar.propTypes = {
+export interface AppBarProps extends HoistProps {
     /** Position of the AppMenuButton. */
-    appMenuButtonPosition: PT.oneOf(['left', 'right']),
+    appMenuButtonPosition?: 'left'|'right',
 
     /** Allows overriding the default properties of the App Menu button. @see AppMenuButton */
-    appMenuButtonProps: PT.object,
+    appMenuButtonProps?: AppMenuButtonProps,
 
     /** True to hide the AppMenuButton. */
-    hideAppMenuButton: PT.bool,
+    hideAppMenuButton?: boolean,
 
     /** True to hide the Refresh button. */
-    hideRefreshButton: PT.bool,
+    hideRefreshButton?: boolean,
 
     /** True to hide the "What's New?" button, even if an unread changelog entry is available. */
-    hideWhatsNewButton: PT.bool,
+    hideWhatsNewButton?: boolean,
 
     /** Icon to display to the left of the title. */
-    icon: PT.element,
+    icon?: ReactElement;
 
-    /** Items to be added to the left side of the AppBar, immediately after the title (or . */
-    leftItems: PT.node,
+    /** Items to be added to the left side of the AppBar, immediately after the title. */
+    leftItems?: ReactNode[],
 
     /** Items to be added to the right side of the AppBar, before the standard buttons. */
-    rightItems: PT.node,
+    rightItems?: ReactNode[],
 
     /** Title to display to the left side of the AppBar. Defaults to XH.clientAppName. */
-    title: PT.node
-};
+    title?: ReactNode
+}

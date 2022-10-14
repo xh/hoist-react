@@ -10,10 +10,9 @@ import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooser';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {popover} from '@xh/hoist/kit/blueprint';
+import {popover, Position} from '@xh/hoist/kit/blueprint';
 import {stopPropagation, withDefault} from '@xh/hoist/utils/js';
-import PT from 'prop-types';
-import {button, Button} from './Button';
+import {button, ButtonProps} from './Button';
 
 /**
  * A convenience button to trigger the display of a ColChooser for user selection and discovery of
@@ -22,7 +21,7 @@ import {button, Button} from './Button';
  *
  * Requires the `GridModel.colChooserModel` config option. Set to true for default implementation.
  */
-export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
+export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChooserButtonProps>({
     displayName: 'ColChooserButton',
     model: false,
 
@@ -71,20 +70,10 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
     }
 });
 
-ColChooserButton.propTypes = {
-    ...Button.propTypes,
-
+export interface ColChooserButtonProps extends ButtonProps {
     /** GridModel of the grid for which this button should show a chooser. */
-    gridModel: PT.instanceOf(GridModel),
+    gridModel?: GridModel,
 
     /** Position for chooser popover, as per Blueprint docs. */
-    popoverPosition: PT.oneOf([
-        'top-left', 'top', 'top-right',
-        'right-top', 'right', 'right-bottom',
-        'bottom-right', 'bottom', 'bottom-left',
-        'left-bottom', 'left', 'left-top',
-        'auto'
-    ])
-};
-
-
+    popoverPosition?: Position
+}

@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button/Button';
+import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button/Button';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -14,7 +14,7 @@ import {errorIf, withDefault} from '@xh/hoist/utils/js';
 /**
  * A convenience button to toggle a Panel's modal view state.
 */
-export const [ModalToggleButton, modalToggleButton] = hoistCmp.withFactory({
+export const [ModalToggleButton, modalToggleButton] = hoistCmp.withFactory<ModalToggleButtonProps>({
     displayName: 'ModalToggleButton',
     model: false,
 
@@ -32,3 +32,7 @@ export const [ModalToggleButton, modalToggleButton] = hoistCmp.withFactory({
         });
     }
 });
+
+export interface ModalToggleButtonProps extends ButtonProps {
+    panelModel?: PanelModel
+}

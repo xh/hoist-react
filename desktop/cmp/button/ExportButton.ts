@@ -9,8 +9,8 @@ import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
-import PT from 'prop-types';
-import {button, Button} from './Button';
+import {ExportOptions} from '@xh/hoist/svc';
+import {button, ButtonProps} from './Button';
 
 /**
  * Convenience Button preconfigured for use as a trigger for an export/download of data.
@@ -24,12 +24,11 @@ import {button, Button} from './Button';
  *
  * Requires the `GridModel.enableExport` config option to be true.
  */
-export const [ExportButton, exportButton] = hoistCmp.withFactory({
+export const [ExportButton, exportButton] = hoistCmp.withFactory<ExportButtonProps>({
     displayName: 'ExportButton',
     model: false,
 
     render({icon, title, onClick, gridModel, exportOptions = {}, disabled, ...rest}, ref) {
-
         const contextGridModel = useContextModel(GridModel);
 
         if (!onClick) {
@@ -52,17 +51,15 @@ export const [ExportButton, exportButton] = hoistCmp.withFactory({
         });
     }
 });
-ExportButton.propTypes = {
-    ...Button.propTypes,
-    gridModel: PT.instanceOf(GridModel),
-    exportOptions: PT.object
-};
+
+export interface ExportButtonProps extends ButtonProps {
+    gridModel?: GridModel,
+    exportOptions?: ExportOptions
+}
 
 //---------------------------
 // Implementation
 //---------------------------
-function exportGridData(gridModel, exportOptions) {
+function exportGridData(gridModel: GridModel, exportOptions: ExportOptions) {
     gridModel.exportAsync(exportOptions).catchDefault();
 }
-
-

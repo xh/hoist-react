@@ -4,23 +4,22 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import PT from 'prop-types';
+import type * as CSS from 'csstype';
 
 /**
  * Wrapper around Blueprint's ButtonGroup component, with LayoutSupport.
  */
-export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory({
+export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>({
     displayName: 'ButtonGroup',
     model: false,
     className: 'xh-button-group',
 
     render(props, ref) {
         const [layoutProps, {fill, minimal, vertical, style, ...rest}] = splitLayoutProps(props);
-
         return bpButtonGroup({
             fill,
             minimal,
@@ -34,16 +33,17 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory({
         });
     }
 });
-ButtonGroup.propTypes = {
+
+export interface ButtonGroupProps extends HoistProps {
     /** True to have all buttons fill available width equally. */
-    fill: PT.bool,
+    fill?: boolean,
 
     /** True to render each button with minimal surrounding chrome (default false). */
-    minimal: PT.bool,
+    minimal?: boolean,
 
     /** Style block. */
-    style: PT.object,
+    style?: CSS.Properties,
 
     /** True to render in a vertical orientation. */
-    vertical: PT.bool
-};
+    vertical?: boolean,
+}
