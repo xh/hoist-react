@@ -114,7 +114,8 @@ export class FileChooserModel extends HoistModel {
                     }]
                 }
             ],
-            emptyText: 'No files selected.'
+            emptyText: 'No files selected.',
+            xhImpl: true
         });
     }
 
