@@ -23,7 +23,7 @@ export interface IconSpec extends BoxProps {
      * variant of each icon. Pass a value of either 'fas' for a heavier-weight/solid variant
      * or 'fal' for a lighter-weight variant.
      */
-    prefix?: 'far'|'fas'|'fal';
+    prefix?: 'far'|'fas'|'fal'|'fab';
 
     /** Additional css class(es) to apply. */
     className?: string;
