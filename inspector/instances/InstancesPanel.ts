@@ -14,7 +14,6 @@ import {popover} from '@xh/hoist/kit/blueprint';
 export const instancesPanel = hoistCmp.factory({
     model: creates(InstancesModel),
 
-    /** @param {InstancesModel} model */
     render({model}) {
         const {instancesPanelModel, selectedSyncRun} = model,
             headerItems = [];
@@ -65,10 +64,9 @@ export const instancesPanel = hoistCmp.factory({
     }
 });
 
-const instanceGridBar = hoistCmp.factory(
-    /** @param {InstancesModel} */
+const instanceGridBar = hoistCmp.factory<InstancesModel>(
     ({model}) => {
-        const {modelInstanceGridModel} = model;
+        const {instancesGridModel} = model;
         return toolbar({
             items: [
                 buttonGroupInput({
@@ -88,10 +86,10 @@ const instanceGridBar = hoistCmp.factory(
                     ]
                 }),
                 filler(),
-                gridCountLabel({unit: 'instance', gridModel: modelInstanceGridModel}),
+                gridCountLabel({unit: 'instance', gridModel: instancesGridModel}),
                 '-',
                 storeFilterField({
-                    gridModel: modelInstanceGridModel,
+                    gridModel: instancesGridModel,
                     bind: 'instancesStoreFilter',
                     matchMode: 'any'
                 })
@@ -100,8 +98,7 @@ const instanceGridBar = hoistCmp.factory(
     }
 );
 
-const propertiesGridBar = hoistCmp.factory(
-    /** @param {InstancesModel} */
+const propertiesGridBar = hoistCmp.factory<InstancesModel>(
     ({model}) => {
         const {propertiesGridModel} = model;
         return toolbar({

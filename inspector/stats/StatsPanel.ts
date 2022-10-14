@@ -12,7 +12,6 @@ import {popover} from '@xh/hoist/kit/blueprint';
 export const statsPanel = hoistCmp.factory({
     model: creates(StatsModel),
 
-    /** @param {StatsModel} model */
     render({model}) {
         return panel({
             title: 'Stats',

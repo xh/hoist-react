@@ -1,7 +1,7 @@
 import {boolCheckCol, GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {a} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, persist, XH} from '@xh/hoist/core';
-import {FieldType} from '@xh/hoist/data';
+import {HoistBase, hoistCmp, HoistModel, persist, XH} from '@xh/hoist/core';
+import {FieldType, StoreRecord} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate} from '@xh/hoist/format';
@@ -11,6 +11,7 @@ import {wait} from '@xh/hoist/promise';
 import {trimToDepth} from '@xh/hoist/utils/js';
 import {compact, find, forIn, head, without} from 'lodash';
 import {isObservableProp, makeObservable, runInAction} from 'mobx';
+import {StatsModel} from '../stats/StatsModel';
 
 const {AUTO, BOOL, DATE, NUMBER, STRING} = FieldType;
 
@@ -23,16 +24,12 @@ export class InstancesModel extends HoistModel {
 
     persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.instances`};
 
-    /** @member {GridModel} */
-    instancesGridModel;
-    /** @member {GridModel} */
-    propertiesGridModel;
-    /** @member {PanelModel} */
-    instancesPanelModel;
+    instancesGridModel: GridModel;
+    propertiesGridModel: GridModel;
+    instancesPanelModel: PanelModel;
 
-    /** @return {StatsModel} */
-    get statsModel() {
-        return XH.getActiveModels(it => it.constructor.name === 'StatsModel' && it.xhImpl)[0];
+    get statsModel(): StatsModel {
+        return XH.getActiveModels(StatsModel)[0] as StatsModel;
     }
 
     get selectedSyncRun() {
@@ -55,8 +52,7 @@ export class InstancesModel extends HoistModel {
     get observablePropsOnly() {return this.propQuickFilters?.includes('observablePropsOnly')}
     get ownPropsOnly() {return this.propQuickFilters?.includes('ownPropsOnly')}
 
-    /** @return {HoistBase[]} */
-    get selectedInstances() {
+    get selectedInstances(): HoistBase[] {
         return this.instancesGridModel.selectedIds.map(it => this.getInstance(it));
     }
 
@@ -90,7 +86,7 @@ export class InstancesModel extends HoistModel {
         this.autoLoadPropertiesGrid();
     }
 
-    async selectInstanceAsync(xhId) {
+    async selectInstanceAsync(xhId: string) {
         const inst = this.getInstance(xhId);
 
         if (inst.xhImpl && !this.showXhImpl) {
@@ -109,10 +105,10 @@ export class InstancesModel extends HoistModel {
         await instancesGridModel.selectAsync(rec);
     }
 
-    logInstanceToConsole(rec) {
+    logInstanceToConsole(rec: StoreRecord) {
         if (!rec) return;
 
-        const xhId = rec.id,
+        const xhId = rec.id as string,
             instance = this.getInstance(xhId);
 
         if (!instance) {
@@ -126,7 +122,7 @@ export class InstancesModel extends HoistModel {
         }
     }
 
-    logPropToConsole(rec) {
+    logPropToConsole(rec: StoreRecord) {
         if (!rec) return;
 
         const {instanceXhId, instanceDisplayName, property} = rec.data,
@@ -143,7 +139,7 @@ export class InstancesModel extends HoistModel {
         }
     }
 
-    togglePropsWatchlistItem(record) {
+    togglePropsWatchlistItem(record: StoreRecord) {
         const {instanceXhId, property, isGetter} = record.data,
             {propsWatchlist} = this,
             currItem = this.getWatchlistItem(instanceXhId, property);
@@ -153,7 +149,7 @@ export class InstancesModel extends HoistModel {
             [...propsWatchlist, {instanceXhId, property, isGetter}];
     }
 
-    getInstance(xhId) {
+    getInstance(xhId: string): HoistBase {
         if (!xhId) return null;
         return head(XH.getActiveModels(it => it.xhId === xhId)) ??
             XH.getServices().find(it => it.xhId === xhId) ??
@@ -164,7 +160,7 @@ export class InstancesModel extends HoistModel {
     //------------------
     // Implementation
     //------------------
-    createInstancesGridModel() {
+    private createInstancesGridModel() {
         return new GridModel({
             persistWith: {...this.persistWith, path: 'instancesGrid', persistGrouping: false},
             autosizeOptions: {mode: GridAutosizeMode.MANAGED},
@@ -202,7 +198,7 @@ export class InstancesModel extends HoistModel {
                         {
                             icon: Icon.refresh({intent: 'success'}),
                             tooltip: 'Call loadAsync()',
-                            actionFn: ({record}) => this.getInstance(record.id)?.loadAsync(),
+                            actionFn: ({record}) => (this.getInstance(record.id) as any)?.loadAsync(),
                             displayFn: ({record}) => ({hidden: !record.data.hasLoadSupport})
                         }
                     ]
@@ -238,7 +234,7 @@ export class InstancesModel extends HoistModel {
         });
     }
 
-    createPropertiesGridModel() {
+    private createPropertiesGridModel() {
         const iconCol = {width: 40, align: 'center', resizable: false};
         return new GridModel({
             persistWith: {...this.persistWith, path: 'propertiesGrid'},
@@ -337,7 +333,7 @@ export class InstancesModel extends HoistModel {
         });
     }
 
-    autoLoadInstancesGrid() {
+    private autoLoadInstancesGrid() {
         this.addAutorun({
             run: () => {
                 const {showXhImpl, instancesGridModel, selectedSyncRun} = this,
@@ -356,7 +352,7 @@ export class InstancesModel extends HoistModel {
         });
     }
 
-    autoLoadPropertiesGrid() {
+    private autoLoadPropertiesGrid() {
         this.addAutorun({
             run: () => {
                 const {propertiesGridModel, selectedInstances, propsWatchlist} = this,
@@ -399,7 +395,7 @@ export class InstancesModel extends HoistModel {
         });
     }
 
-    getDescriptors(instance) {
+    private getDescriptors(instance) {
         let ret = Object.getOwnPropertyDescriptors(instance),
             proto = Object.getPrototypeOf(instance);
 
@@ -410,7 +406,7 @@ export class InstancesModel extends HoistModel {
         return ret;
     }
 
-    getRecData({instance, property, fromWatchlistItem = false, isGetter = false}) {
+    private getRecData({instance, property, fromWatchlistItem = false, isGetter = false}) {
         const {ownPropsOnly, observablePropsOnly, showUnderscoreProps} = this,
             isOwnProperty = Object.hasOwn(instance, property),
             isObservable = isObservableProp(instance, property);
@@ -457,14 +453,15 @@ export class InstancesModel extends HoistModel {
         };
     }
 
-    shouldLoadGetter(instanceXhId, property) {
+    private shouldLoadGetter(instanceXhId, property) {
         return !!find(this.loadedGetters, {instanceXhId, property});
     }
 
-    loadGetter(rec) {
+    @action
+    private loadGetter(rec) {
         const {instanceXhId, property} = rec.data;
         if (!this.shouldLoadGetter(instanceXhId, property)) {
-            this.setLoadedGetters([...this.loadedGetters, {instanceXhId, property}]);
+            this.loadedGetters = [...this.loadedGetters, {instanceXhId, property}];
         }
     }
 
@@ -476,17 +473,19 @@ export class InstancesModel extends HoistModel {
         });
     }
 
-    getWatchlistItem(instanceXhId, property) {
+    private getWatchlistItem(instanceXhId, property) {
         return find(this.propsWatchlist, {instanceXhId, property});
     }
 }
 
 const timestampRenderer = v => fmtDate(v, {fmt: 'HH:mm:ss.SSS'});
 
-const propsGridGroupRenderer = hoistCmp.factory(({value, node, model}) => {
-    if (model.selectedInstances.length === 1 || value === 'Watchlist') return value;
+const propsGridGroupRenderer = hoistCmp.factory<InstancesModel>(
+    ({value, node, model}) => {
+        if (model.selectedInstances.length === 1 || value === 'Watchlist') return value;
 
-    const firstRecData = node.allLeafChildren[0]?.data.data ?? {},
-        {instanceXhId, instanceDisplayName} = firstRecData;
-    return a({item: instanceDisplayName, onClick: () => model.selectInstanceAsync(instanceXhId)});
-});
+        const firstRecData = node.allLeafChildren[0]?.data.data ?? {},
+            {instanceXhId, instanceDisplayName} = firstRecData;
+        return a({item: instanceDisplayName, onClick: () => model.selectInstanceAsync(instanceXhId)});
+    }
+);

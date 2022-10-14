@@ -15,15 +15,11 @@ export class StatsModel extends HoistModel {
 
     persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.stats`};
 
-    /** @member {PanelModel} */
-    panelModel;
-    /** @member {GridModel} */
-    gridModel;
-    /** @member {ChartModel} */
-    chartModel;
+    panelModel: PanelModel;
+    gridModel: GridModel;
+    chartModel: ChartModel;
 
-    /** @return {number} */
-    get selectedSyncRun() {
+    get selectedSyncRun(): number {
         return this.gridModel.selectedRecord?.data.syncRun;
     }
 
@@ -102,7 +98,7 @@ export class StatsModel extends HoistModel {
         );
     }
 
-    updateChartModel() {
+    private updateChartModel() {
         const {stats} = XH.inspectorService,
             modelCountData = [],
             modelCountChangeData = [],
