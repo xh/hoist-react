@@ -24,7 +24,7 @@ export const xhLogo = hoistCmp.factory({
             };
 
         return <svg className="xh-corp-logo" data-name="xh-corp-logo" xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 669.79 390.46" style={style}>
+            viewBox="0 0 669.79 390.46" style={style as any}>
             <path
                 d="M450.79,335.79h11.07v24.77h29.06V335.79H502V398H490.92V370.57H461.86V398H450.79Z"
                 transform="translate(-55.03 -30.27)"/>

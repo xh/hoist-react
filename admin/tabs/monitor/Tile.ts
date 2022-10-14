@@ -7,7 +7,7 @@
 import {div, vframe, vbox} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {hoistCmp} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
+import {Icon, IconSpec} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
 import './Tile.scss';
 
@@ -52,7 +52,7 @@ export const tile = hoistCmp.factory(
 );
 
 function statusProperties(status) {
-    const iCfg = {size: '8x', prefix: 'fal'};
+    const iCfg: IconSpec = {size: '8x', prefix: 'fal'};
     switch (status) {
         case 'OK':
             return {statusText: 'OK', icon: Icon.checkCircle(iCfg)};

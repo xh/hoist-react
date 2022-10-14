@@ -1,7 +1,7 @@
 import {boolCheckCol, GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {a} from '@xh/hoist/cmp/layout';
 import {HoistBase, hoistCmp, HoistModel, persist, XH} from '@xh/hoist/core';
-import {FieldType, StoreRecord} from '@xh/hoist/data';
+import {StoreRecord} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate} from '@xh/hoist/format';
@@ -12,8 +12,6 @@ import {trimToDepth} from '@xh/hoist/utils/js';
 import {compact, find, forIn, head, without} from 'lodash';
 import {isObservableProp, makeObservable, runInAction} from 'mobx';
 import {StatsModel} from '../stats/StatsModel';
-
-const {AUTO, BOOL, DATE, NUMBER, STRING} = FieldType;
 
 /**
  * Displays a list of current HoistModel, HoistService, and Store instances, with the ability to
@@ -167,18 +165,18 @@ export class InstancesModel extends HoistModel {
             emptyText: 'No matching (and alive) instances found.',
             store: {
                 fields: [
-                    {name: 'className', type: STRING},
-                    {name: 'displayGroup', type: STRING},
-                    {name: 'created', type: DATE},
-                    {name: 'syncRun', type: NUMBER},
-                    {name: 'isHoistService', type: BOOL},
-                    {name: 'isHoistModel', type: BOOL},
-                    {name: 'isStore', type: BOOL},
-                    {name: 'isLinked', type: BOOL},
-                    {name: 'isXhImpl', type: BOOL},
-                    {name: 'hasLoadSupport', type: BOOL},
-                    {name: 'lastLoadCompleted', type: DATE},
-                    {name: 'lastLoadException', type: AUTO}
+                    {name: 'className', type: 'string'},
+                    {name: 'displayGroup', type: 'string'},
+                    {name: 'created', type: 'date'},
+                    {name: 'syncRun', type: 'number'},
+                    {name: 'isHoistService', type: 'bool'},
+                    {name: 'isHoistModel', type: 'bool'},
+                    {name: 'isStore', type: 'bool'},
+                    {name: 'isLinked', type: 'bool'},
+                    {name: 'isXhImpl', type: 'bool'},
+                    {name: 'hasLoadSupport', type: 'bool'},
+                    {name: 'lastLoadCompleted', type: 'date'},
+                    {name: 'lastLoadException', type: 'auto'}
                 ]
             },
             sortBy: ['created|desc'],
@@ -250,20 +248,20 @@ export class InstancesModel extends HoistModel {
             },
             store: {
                 fields: [
-                    {name: 'instanceXhId', type: STRING},
-                    {name: 'instanceDisplayName', type: STRING},
-                    {name: 'property', type: STRING},
-                    {name: 'displayProperty', displayName: 'Property', type: STRING},
-                    {name: 'displayGroup', type: STRING},
-                    {name: 'valueType', type: STRING},
-                    {name: 'value', type: AUTO},
-                    {name: 'isWatchlistItem', type: BOOL},
-                    {name: 'isObservable', type: BOOL},
-                    {name: 'isHoistModel', type: BOOL},
-                    {name: 'isHoistService', type: BOOL},
-                    {name: 'isStore', type: BOOL},
-                    {name: 'isGetter', type: BOOL},
-                    {name: 'isLoadedGetter', type: BOOL}
+                    {name: 'instanceXhId', type: 'string'},
+                    {name: 'instanceDisplayName', type: 'string'},
+                    {name: 'property', type: 'string'},
+                    {name: 'displayProperty', displayName: 'Property', type: 'string'},
+                    {name: 'displayGroup', type: 'string'},
+                    {name: 'valueType', type: 'string'},
+                    {name: 'value', type: 'auto'},
+                    {name: 'isWatchlistItem', type: 'bool'},
+                    {name: 'isObservable', type: 'bool'},
+                    {name: 'isHoistModel', type: 'bool'},
+                    {name: 'isHoistService', type: 'bool'},
+                    {name: 'isStore', type: 'bool'},
+                    {name: 'isGetter', type: 'bool'},
+                    {name: 'isLoadedGetter', type: 'bool'}
                 ]
             },
             columns: [

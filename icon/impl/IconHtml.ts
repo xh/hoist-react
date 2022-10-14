@@ -22,7 +22,7 @@ export function iconHtml({iconName, prefix, title, className, size}) {
     return icon(iconDef, {classes, title}).html[0];
 }
 
-export function enhanceFaClasses(className, size) {
+export function enhanceFaClasses(className: string, size: string) {
     let ret = classNames(className, 'fa-fw', 'xh-icon');
     if (isString(size)) {
         ret = classNames(ret, `fa-${size}`);
