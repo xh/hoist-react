@@ -165,10 +165,8 @@ function buildMenuItems(props: AppMenuButtonProps) {
     ]);
 }
 
-// Todo: Use MenuItemSpec type rather than Record<string,any>
-function parseMenuItems(items: (Record<string, any>|string|ReactElement)[]) {
-    const i = items as any;
-    return i.filter(it => !it.omit)
+function parseMenuItems(items: any) {
+    return items.filter(it => !it.omit)
         .filter(filterConsecutiveMenuSeparators())
         .map(it => {
             if (it === '-') return menuDivider();

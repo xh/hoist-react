@@ -104,5 +104,6 @@ export interface ButtonProps extends BoxProps {
     style?: CSS.Properties,
     text?: ReactNode,
     title?: string,
-    tooltip?: string /** Alias for title. */
+    /** Alias for title. */
+    tooltip?: string
 }
