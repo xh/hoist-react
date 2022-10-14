@@ -7,7 +7,6 @@
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {pinPadImpl as desktopPinPadImpl} from '@xh/hoist/dynamics/desktop';
 import {pinPadImpl as mobilePinPadImpl} from '@xh/hoist/dynamics/mobile';
-import PT from 'prop-types';
 
 import {PinPadModel} from './PinPadModel';
 
@@ -27,8 +26,5 @@ export const [PinPad, pinPad] = hoistCmp.withFactory({
         return XH.isMobileApp ? mobilePinPadImpl(props, ref) : desktopPinPadImpl(props, ref);
     }
 });
-PinPadModel.propTypes = {
-    model: PT.oneOfType([PT.instanceOf(PinPadModel), PT.object])
-};
 
 

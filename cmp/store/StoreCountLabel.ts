@@ -5,18 +5,17 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {box} from '@xh/hoist/cmp/layout';
-import {hoistCmp} from '@xh/hoist/core';
+import {BoxProps, hoistCmp} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
 import {fmtNumber} from '@xh/hoist/format';
 import {pluralize, singularize} from '@xh/hoist/utils/js';
-import PT from 'prop-types';
 
 /**
  * Displays the number of (post-filtered) records loaded into a Store.
  *
  * Using with a Grid? {@see GridCountLabel} for an alternative that also displays selection count.
  */
-export const [StoreCountLabel, storeCountLabel] = hoistCmp.withFactory({
+export const [StoreCountLabel, storeCountLabel] = hoistCmp.withFactory<StoreCountLabelProps>({
 
     className: 'xh-store-count-label',
 
@@ -34,17 +33,17 @@ export const [StoreCountLabel, storeCountLabel] = hoistCmp.withFactory({
     }
 });
 
-StoreCountLabel.propTypes = {
+export interface StoreCountLabelProps extends BoxProps {
 
     /** Store to which this component should bind. */
-    store: PT.instanceOf(Store),
+    store?: Store;
 
     /**
      * True to count nested child records.
      * If false (default) only root records will be included in count.
      */
-    includeChildren: PT.bool,
+    includeChildren?: boolean;
 
     /** Units label appropriate for records being counted (e.g. "user" -> "50 users"). */
-    unit: PT.string
-};
+    unit?: string;
+}

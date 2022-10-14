@@ -16,34 +16,27 @@ import FastClick from '@onsenui/fastclick';
 
 export class PinPadModel extends HoistModel {
 
-    /** @member {boolean} */
-    @bindable disabled;
-    /** @member {string} */
-    @bindable headerText;
-    /** @member {string} */
-    @bindable subHeaderText;
-    /** @member {string} */
-    @bindable errorText;
+    @bindable disabled: boolean;
+    @bindable headerText: string;
+    @bindable subHeaderText: string;
+    @bindable errorText: string;
 
     ref = createObservableRef();
 
-    @observable _enteredDigits;
-    _deleteWasLast = false;
-    _pinLength;
+    @observable
+    private _enteredDigits: number[];
+    private _deleteWasLast = false;
+    private _pinLength;
 
     /**
-     * @param {Object} [c] - configuration object.
-     * @param {number} [c.pinLength] - The length of the PIN to get from the user, default 4.
-     * @param {string} [c.headerText] - initial text to show formatted as a header.
-     * @param {string} [c.subHeaderText] - initial text to show formatted as a subheader.
+     * @param [config.pinLength] - The length of the PIN to get from the user, default 4.
+     * @param [config.headerText] - initial text to show formatted as a header.
+     * @param [config.subHeaderText] - initial text to show formatted as a subheader.
      */
-    constructor({
-        pinLength = 4,
-        headerText = '',
-        subHeaderText = ''
-    } = {}) {
+    constructor(config: {pinLength?: number, headerText?: string, subHeaderText?: string} = {}) {
         super();
         makeObservable(this);
+        const {pinLength = 4, headerText = '', subHeaderText = ''} = config;
         this.headerText = headerText;
         this.subHeaderText = subHeaderText;
 
@@ -65,11 +58,11 @@ export class PinPadModel extends HoistModel {
      * The completed PIN entered by the user.  Observe this property to track the state
      * of user progress.
      *
-     * @returns {string} - null if the user has not finished entering a PIN, otherwise the PIN
+     * @returns null if the user has not finished entering a PIN, otherwise the PIN
      *      the user entered.
      */
     @computed
-    get completedPin() {
+    get completedPin(): string {
         const {_enteredDigits, _pinLength} = this;
         return _enteredDigits.length === _pinLength ?
             _enteredDigits.join('') :
@@ -81,7 +74,7 @@ export class PinPadModel extends HoistModel {
      */
     @action
     clear() {
-        this._enteredDigits.clear();
+        this._enteredDigits = [];
         this._deleteWasLast = false;
     }
 
@@ -94,7 +87,7 @@ export class PinPadModel extends HoistModel {
 
     @action
     enterDigit(digit) {
-        if (this.completePin) return;
+        if (this.completedPin) return;
         this._deleteWasLast = false;
         this._enteredDigits.push(digit);
     }
@@ -110,7 +103,7 @@ export class PinPadModel extends HoistModel {
         const {_pinLength, _enteredDigits, _deleteWasLast, completedPin, activeIndex} = this;
 
         // Show bullet or empty
-        const ret = times(_pinLength, i => i < activeIndex ?  '•' : ' ');
+        const ret: any[] = times(_pinLength, i => i < activeIndex ?  '•' : ' ');
 
         // ... and reveal previous, if going forward
         if (activeIndex > 0 && !completedPin && !_deleteWasLast) {

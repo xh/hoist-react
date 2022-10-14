@@ -4,9 +4,8 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import {BoxProps, hoistCmp} from '@xh/hoist/core';
 import classNames from 'classnames';
-import PT from 'prop-types';
 import {div} from '@xh/hoist/cmp/layout';
 import './Badge.scss';
 
@@ -14,7 +13,7 @@ import './Badge.scss';
  * Badge indicator, generally displayed inline with text/title, showing a count or other small
  * indicator that something is new or has content.
  */
-export const [Badge, badge] = hoistCmp.withFactory({
+export const [Badge, badge] = hoistCmp.withFactory<BadgeProps>({
     displayName: 'Badge',
     model: false,
 
@@ -37,9 +36,10 @@ export const [Badge, badge] = hoistCmp.withFactory({
         });
     }
 });
-Badge.propTypes = {
-    /** Sets fontsize to half that of parent element (default false). */
-    compact: PT.bool,
 
-    intent: PT.oneOf(['primary', 'success', 'warning', 'danger'])
-};
+export interface BadgeProps extends BoxProps {
+    /** Sets fontsize to half that of parent element (default false). */
+    compact?: boolean;
+
+    intent?: 'primary' | 'success' | 'warning' | 'danger'
+}

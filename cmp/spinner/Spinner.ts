@@ -5,9 +5,11 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {img} from '@xh/hoist/cmp/layout';
-import {hoistCmp} from '@xh/hoist/core';
-import PT from 'prop-types';
+import {hoistCmp, HoistProps} from '@xh/hoist/core';
+
+// @ts-ignore
 import compactSpinnerImg from './spinner-20px.png';
+// @ts-ignore
 import spinnerImg from './spinner-50px.png';
 
 /**
@@ -19,7 +21,7 @@ import spinnerImg from './spinner-50px.png';
  * via a remote desktop technology such as Citrix (where the spinners bundled with e.g. Blueprint
  * were observed to cause unpredictable and unexpectedly severe performance issues).
  */
-export const [Spinner, spinner] = hoistCmp.withFactory({
+export const [Spinner, spinner] = hoistCmp.withFactory<SpinnerProps>({
     displayName: 'Spinner',
     className: 'xh-spinner',
     model: false,
@@ -37,10 +39,7 @@ export const [Spinner, spinner] = hoistCmp.withFactory({
     }
 });
 
-Spinner.propTypes = {
-    /** Additional custom className. */
-    className: PT.string,
-
+export interface SpinnerProps extends HoistProps {
     /** True to return a smaller 20px image vs default 50px. */
-    compact: PT.bool
-};
+    compact?: boolean;
+}
