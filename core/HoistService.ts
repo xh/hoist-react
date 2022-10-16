@@ -4,7 +4,10 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistBase, managed, LoadSupport, LoadSpec, Loadable} from './';
+import {HoistBase, managed, LoadSupport, LoadSpec, Loadable, Some} from './';
+import {camelCase, castArray} from 'lodash';
+import {throwIf, withDebug} from '@xh/hoist/utils/js';
+import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 
 
 /**
@@ -75,4 +78,74 @@ export class HoistService extends HoistBase implements Loadable {
     async loadAsync(loadSpec?: LoadSpec|Partial<LoadSpec>) {
         return this.loadSupport?.loadAsync(loadSpec);
     }
+}
+
+
+/**
+ * Install HoistServices on a target.
+ *
+ * @param serviceClasses - Classes extending HoistService
+ * @param target - object on which a reference to the services should be installed.
+ * Applications should typically place these services on a global singleton object. For
+ * import and reference throughout the app.
+ *
+ * This method will create, initialize, and install the services classes listed on the target.
+ * All services will be initialized concurrently. To guarantee execution order of service
+ * initialization, make multiple calls to this method with await.
+ *
+ * Applications must choose a unique name of the form xxxService to avoid naming collisions on
+ * the target. If naming collisions are detected, an error will be thrown.
+ *
+ * @package Applications should use HoistAppModel.initServicesAsync() instead.
+ */
+export async function initServicesAsync(serviceClasses: Some<HoistServiceClass>, target: object) {
+    serviceClasses = castArray(serviceClasses);
+    const notSvc = serviceClasses.find((it: any) => !it.isHoistService);
+    throwIf(notSvc, `Cannot initialize ${notSvc?.name} - does not extend HoistService`);
+
+    const svcs = serviceClasses.map(serviceClass => new serviceClass());
+    await initServicesInternalAsync(svcs);
+
+    svcs.forEach(svc => {
+        const name = camelCase(svc.constructor.name);
+        throwIf(target[name], (
+            `Service cannot be installed: property '${name}' already exists on target object,
+                indicating duplicate/conflicting service names or an (unsupported) attempt to
+                install the same service twice.`
+        ));
+        target[name] = svc;
+        instanceManager.registerService(svc);
+    });
+}
+
+async function initServicesInternalAsync(svcs: HoistService[]) {
+    const promises = svcs.map(it => {
+        return withDebug(`Initializing ${it.constructor.name}`, () => {
+            return it.initAsync();
+        }, 'XH');
+    });
+
+    const results: any[] = await Promise.allSettled(promises),
+        errs = results.filter(it => it.status === 'rejected');
+
+    if (errs.length === 1) throw errs[0].reason;
+    if (errs.length > 1) {
+        // Enhance entire result col w/class name, we care about errs only
+        results.forEach((it, idx) => {
+            it.name = svcs[idx].constructor.name;
+        });
+
+        throw this.exception({
+            message: [
+                'Failed to initialize services: ',
+                ...errs.map(it => it.reason.message + ' (' + it.name + ')')
+            ],
+            details: errs,
+            isRoutine: errs.every(it => it.reason.isRoutine)
+        });
+    }
+}
+
+export interface HoistServiceClass {
+    new(): HoistService;
 }

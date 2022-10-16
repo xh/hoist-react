@@ -4,7 +4,6 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {p} from '@xh/hoist/cmp/layout';
 import {
     HoistService,
     AppSpec,
@@ -14,7 +13,9 @@ import {
     ExceptionHandlerOptions,
     ExceptionHandler,
     TrackOptions,
-    SizingMode
+    SizingMode,
+    HoistServiceClass,
+    initServicesAsync
 } from './';
 import {Store} from '@xh/hoist/data';
 import {instanceManager} from './impl/InstanceManager';
@@ -43,12 +44,12 @@ import {
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {
+    apiDeprecated,
     checkMinVersion,
     getClientDeviceInfo,
-    throwIf,
-    withDebug
+    throwIf
 } from '@xh/hoist/utils/js';
-import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
+import {compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import {createRoot} from 'react-dom/client';
 import parser from 'ua-parser-js';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
@@ -255,7 +256,7 @@ export class XHClass {
      *
      * @param appSpec - specifications for this application. Should be an AppSpec, or a config for one.
      */
-    renderApp(appSpec: AppSpec) {
+    renderApp<T extends HoistAppModel>(appSpec: AppSpec<T>) {
         const spinner = document.getElementById('xh-preload-spinner');
         if (spinner) spinner.style.display = 'none';
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
@@ -263,39 +264,23 @@ export class XHClass {
         const root = createRoot(document.getElementById('xh-root')),
             rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
         root.render(rootView);
+
+        return new Promise<T>((resolve, reject) => this.resolveRender = resolve);
     }
+
+    private resolveRender: (m: any) => void;
 
     /**
      * Install HoistServices on this object.
-     *
-     * @param serviceClasses - Classes extending HoistService
-     *
-     * This method will create, initialize, and install the services classes listed on XH.
-     * All services will be initialized concurrently. To guarantee execution order of service
-     * initialization, make multiple calls to this method with await.
-     *
-     * Note that the instantiated services will be placed directly on the XH object for easy access.
-     * Applications must choose a unique name of the form xxxService to avoid naming collisions.
-     * If naming collisions are detected, an error will be thrown.
+     * @deprecated.  Use initServicesAsync() instead.
      */
-    async installServicesAsync(...serviceClasses: (new () => HoistService)[]) {
-        const notSvc = serviceClasses.find((it: any) => !it.isHoistService);
-        throwIf(notSvc, `Cannot initialize ${notSvc?.name} - does not extend HoistService`);
-
-        const svcs = serviceClasses.map(serviceClass => new serviceClass());
-        await this.initServicesInternalAsync(svcs);
-
-        svcs.forEach(svc => {
-            const name = camelCase(svc.constructor.name);
-            throwIf(this[name], (
-                `Service cannot be installed: property '${name}' already exists on XH object,
-                indicating duplicate/conflicting service names or an (unsupported) attempt to
-                install the same service twice.`
-            ));
-            this[name] = svc;
-            instanceManager.registerService(svc);
-        });
+    async installServicesAsync(...serviceClasses: HoistServiceClass[]) {
+        apiDeprecated('installServicesAsync',
+            {msg: 'Use HoistAppModel.initServicesAsync instead.', v: 'v53'}
+        );
+        return initServicesAsync(serviceClasses, this);
     }
+
 
     /**
      * Transition the application state.
@@ -698,8 +683,8 @@ export class XHClass {
         }
 
         try {
-            await this.installServicesAsync(FetchService);
-            await this.installServicesAsync(TrackService);
+            await initServicesAsync(FetchService, this);
+            await initServicesAsync(TrackService, this);
 
             // pre-flight allows clean recognition when we have no server.
             try {
@@ -755,7 +740,7 @@ export class XHClass {
         try {
 
             // Install identity service and confirm access
-            await this.installServicesAsync(IdentityService);
+            await initServicesAsync(IdentityService, this);
             const access = this.checkAccess();
             if (!access.hasAccess) {
                 this.accessDeniedMessage = access.message || 'Access denied.';
@@ -765,9 +750,9 @@ export class XHClass {
 
             // Complete initialization process
             this.setAppState('INITIALIZING');
-            await this.installServicesAsync(LocalStorageService);
-            await this.installServicesAsync(
-                EnvironmentService, PrefService, ConfigService, JsonBlobService
+            await initServicesAsync(LocalStorageService, this);
+            await initServicesAsync(
+                [EnvironmentService, PrefService, ConfigService, JsonBlobService], this
             );
 
             // Confirm hoist-core version after environment service loaded
@@ -779,10 +764,10 @@ export class XHClass {
                 `);
             }
 
-            await this.installServicesAsync(
+            await initServicesAsync([
                 AlertBannerService, AutoRefreshService, ChangelogService, IdleService,
                 InspectorService, GridAutosizeService, GridExportService, WebSocketService
-            );
+            ], this);
             this.acm.init();
 
             this.setDocTitle();
@@ -792,6 +777,7 @@ export class XHClass {
 
             const modelClass:any  = this.appSpec.modelClass;
             this.appModel = new modelClass();
+            this.resolveRender(this.appModel);
             await this.appModel.initAsync();
             this.startRouter();
             this.startOptionsDialog();
@@ -869,34 +855,6 @@ export class XHClass {
 
     private get acm(): AppContainerModel {
         return this.appContainerModel;
-    }
-
-    private async initServicesInternalAsync(svcs: HoistService[]) {
-        const promises = svcs.map(it => {
-            return withDebug(`Initializing ${it.constructor.name}`, () => {
-                return it.initAsync();
-            }, 'XH');
-        });
-
-        const results: any[] = await Promise.allSettled(promises),
-            errs = results.filter(it => it.status === 'rejected');
-
-        if (errs.length === 1) throw errs[0].reason;
-        if (errs.length > 1) {
-            // Enhance entire result col w/class name, we care about errs only
-            results.forEach((it, idx) => {
-                it.name = svcs[idx].constructor.name;
-            });
-
-            throw this.exception({
-                message: [
-                    p('Failed to initialize services:'),
-                    ...errs.map(it => p(it.reason.message + ' (' + it.name + ')'))
-                ],
-                details: errs,
-                isRoutine: errs.every(it => it.reason.isRoutine)
-            });
-        }
     }
 
     private trackLoad() {

@@ -32,6 +32,9 @@ export type Intent = 'primary'|'success'|'warning'|'danger';
  */
 export type DebounceSpec = number|(DebounceSettings & {interval: number});
 
+
+export type Some<T> = T|T[];
+
 /**
  * Options for showing a "toast" notification that appears and then automatically dismisses.
  */

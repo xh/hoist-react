@@ -29,9 +29,7 @@ export interface HoistProps<M=HoistModel> {
      */
     className?: string;
 
-    /**
-     * All other props
-     */
+    /** All other props. */
     [x:string]: any;
 }
 

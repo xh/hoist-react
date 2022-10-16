@@ -13,7 +13,7 @@ import {Component, ComponentClass, FunctionComponent} from 'react';
  * Specification for a client-side Hoist application.
  * Passed to XH.renderApp() to kick-off app rendering and available thereafter as `XH.appSpec`.
  */
-export class AppSpec {
+export class AppSpec<T extends HoistAppModel=HoistAppModel> {
 
     /**
      *  Short code for this particular JS client application.
@@ -21,7 +21,7 @@ export class AppSpec {
      *  set to a more specific value (e.g. 'myAppMobile') to identify the client app in common
      *  code or configs.
      */
-    clientAppCode: string;
+    clientAppCode?: string;
 
     /**
      * Display name for this particular JS client application.
@@ -29,13 +29,13 @@ export class AppSpec {
      * the project's Webpack config, but can be set here to a more specific value (e.g.
      * 'MyApp Mobile').
      */
-    clientAppName: string;
+    clientAppName?: string;
 
     /**
      * Root Model class for the application. Note this is a reference
      * to the class itself, not an instance, and must extend {@see HoistAppModel}.
      */
-    modelClass: new () => HoistAppModel;
+    modelClass: new () => T;
 
     /**
      * Root HoistComponent for the application. Despite the name,
@@ -68,37 +68,37 @@ export class AppSpec {
      *  Write a track log statement after the app has loaded and fully initialized?
      *  Message will include elapsed time of asset loading and init.
      */
-    trackAppLoad: boolean;
+    trackAppLoad?: boolean;
 
     /** Enable Hoist websocket connectivity? (default false) */
-    webSocketsEnabled: boolean;
+    webSocketsEnabled?: boolean;
 
     /**
      * Optional custom Component to display when App has been suspended. The component will
      * receive a single prop -- onReactivate -- a callback called when the user has acknowledged
      * the suspension and wishes to reload the app.
      */
-    idlePanel: ElemFactory|FunctionComponent|Component;
+    idlePanel?: ElemFactory|FunctionComponent|Component;
 
     /**
      * Optional custom Component to display when the user is denied access to app. Intended for
      * apps that implement custom auth flows. See also `lockoutMessage` for a more lightweight
      * customization option.
      */
-    lockoutPanel: ElemFactory|FunctionComponent|Component;
+    lockoutPanel?: ElemFactory|FunctionComponent|Component;
 
     /** Optional message to show on login form (for non-SSO apps). */
-    loginMessage: string;
+    loginMessage?: string;
 
     /** Optional message to show users when denied access to app. */
-    lockoutMessage: string;
+    lockoutMessage?: string;
 
     /**
      * True to show the built-in browser context menu when no app-specific menu would be shown
      * (e.g. from a Grid). False (the default) prevents the browser menu from being shown anywhere
      * upon right-click.
      */
-    showBrowserContextMenu: boolean;
+    showBrowserContextMenu?: boolean;
 
     /**
      * True to disable Field-level XSS protection by default across all Stores/Fields in the app.
@@ -106,7 +106,7 @@ export class AppSpec {
      * have tight performance tolerances and/or load very large recordsets.
      * {@see FieldConfig.disableXssProtection}
      */
-    disableXssProtection: boolean;
+    disableXssProtection?: boolean;
 
     constructor({
         clientAppCode = XH.appCode,
