@@ -5,71 +5,76 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
+import {HoistModel, managed, PersistenceProvider, PersistOptions, XH} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {genDisplayName} from '@xh/hoist/data';
+import {CubeField, genDisplayName} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {cloneDeep, difference, isFunction, isArray, isEmpty, isEqual, isString, keys, sortBy} from 'lodash';
 
+interface GroupingChooserModelConfig {
+    /**
+     * Dimensions available for selection. When using GroupingChooser to create Cube queries,
+     * it is recommended to pass the `dimensions` from the related cube (or a filtered subset thereof).
+     */
+    dimensions?: (DimensionSpec[]|CubeField[]|string[]);
+
+    /** Initial value as an array of dimension names, or a function to produce such an array. */
+    initialValue?: string[]|(() => string[]);
+
+    /** Initial favorites as an array of dim name arrays, or a function to produce such an array. */
+    initialFavorites?: string[][]|(() => string[][]);
+
+    /** Options governing persistence. */
+    persistWith?: GroupingChooserPersistOptions,
+
+    /** True to accept an empty list as a valid value. */
+    allowEmpty?: boolean;
+
+    /** Maximum number of dimensions allowed in a single grouping. */
+    maxDepth?: number;
+}
+
 export class GroupingChooserModel extends HoistModel {
 
-    /** @member {string[]} - names of dimensions selected for grouping. */
-    @observable.ref value;
-    /** @member {string[][]} - array of dim-name value arrays */
-    @observable.ref favorites = [];
+    @observable.ref value: string[];
 
-    /** @member {Object<string, DimensionSpec>} */
-    dimensions;
-    /** @member {string[]} */
-    dimensionNames;
-    /** @member {boolean} */
-    allowEmpty;
-    /** @member {number} */
-    maxDepth;
-    /** @member {PersistenceProvider} */
-    @managed provider = null;
-    persistValue = false;
-    persistFavorites = false;
+    @observable.ref favorites: string[][] = [];
+
+    dimensions: Record<string, DimensionSpec>;
+    dimensionNames: string[];
+    allowEmpty: boolean;
+    maxDepth: number;
+
+    @managed provider: PersistenceProvider = null;
+    persistValue: boolean = false;
+    persistFavorites: boolean = false;
 
     // Implementation fields for Control
-    @observable.ref pendingValue = [];
-    @observable editorIsOpen = false;
-    @observable favoritesIsOpen = false;
+    @observable.ref pendingValue: string[] = [];
+    @observable editorIsOpen: boolean = false;
+    @observable favoritesIsOpen: boolean = false;
 
     popoverRef = createObservableRef();
 
     @computed
-    get availableDims() {
+    get availableDims(): string[] {
         return difference(this.dimensionNames, this.pendingValue);
     }
 
     @computed
-    get isValid() {
+    get isValid(): boolean {
         return this.validateValue(this.pendingValue);
     }
 
     @computed
-    get isAddEnabled() {
+    get isAddEnabled(): boolean {
         const {pendingValue, maxDepth, dimensionNames, availableDims} = this,
             limit = maxDepth > 0 ? Math.min(maxDepth, dimensionNames.length) : dimensionNames.length,
             atMaxDepth = pendingValue.length === limit;
         return !atMaxDepth && !isEmpty(availableDims);
     }
 
-    /**
-     * @param c - GroupingChooserModel configuration.
-     * @param {(DimensionSpec[]|CubeField[]|string[])} c.dimensions - dimensions available for
-     *     selection. When using GroupingChooser to create Cube queries, it is recommended to pass
-     *     the `dimensions` from the related cube (or a filtered subset thereof).
-     * @param {(string[]|function)} [c.initialValue] - initial value as an array of dimension names,
-     *     or a function to produce such an array.
-     * @param {(string[][]|function)} [c.initialFavorites] - initial favorites as an array of
-     *     dim name arrays, or a function to produce such an array.
-     * @param {?GroupingChooserPersistOptions} [c.persistWith] - options governing persistence.
-     * @param {boolean} [c.allowEmpty] - accept an empty list as a valid value.
-     * @param {?number} [c.maxDepth] - maximum number of dimensions allowed in a single grouping.
-     */
     constructor({
         dimensions,
         initialValue = [],
@@ -77,9 +82,10 @@ export class GroupingChooserModel extends HoistModel {
         persistWith = null,
         allowEmpty = false,
         maxDepth = null
-    }) {
+    }: GroupingChooserModelConfig) {
         super();
         makeObservable(this);
+
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionNames = keys(this.dimensions);
         this.allowEmpty = allowEmpty;
@@ -125,7 +131,7 @@ export class GroupingChooserModel extends HoistModel {
     }
 
     @action
-    setValue(value) {
+    setValue(value: string[]) {
         if (!this.validateValue(value)) {
             console.warn('Attempted to set GroupingChooser to invalid value: ' + value);
             return;
@@ -269,7 +275,7 @@ export class GroupingChooserModel extends HoistModel {
     // Persistence handling
     //-------------------------
     get persistState() {
-        const ret = {};
+        const ret = {} as any;
         if (this.persistValue) ret.value = this.value;
         if (this.persistFavorites) ret.favorites = this.favorites;
         return ret;
@@ -278,15 +284,21 @@ export class GroupingChooserModel extends HoistModel {
 }
 
 /**
- * @typedef {Object} DimensionSpec - metadata for dimensions that are available for selection via
- *      a GroupingChooser control. Note that {@see CubeField} instances satisfy this interface.
- * @property {string} name - shortname or code (almost always a `CubeField.name`).
- * @property {string} displayName - user-friendly / longer name for display.
+ * Metadata for dimensions that are available for selection via a GroupingChooser control.
+ * Note that {@see CubeField} instances satisfy this interface.
  */
+interface DimensionSpec {
+    /** Shortname or code (almost always a `CubeField.name`). */
+    name?: string;
 
-/**
- * @typedef {Object} GroupingChooserPersistOptions
- * @extends PersistOptions
- * @property {boolean} [persistValue] - true (default) to save value to state.
- * @property {boolean} [persistFavorites] - true (default) to include favorites.
- */
+    /** User-friendly / longer name for display. */
+    displayName?: string;
+}
+
+interface GroupingChooserPersistOptions extends PersistOptions {
+    /** True (default) to save value to state. */
+    persistValue?: boolean;
+
+    /** True (default) to include favorites. */
+    persistFavorites?: boolean;
+}
