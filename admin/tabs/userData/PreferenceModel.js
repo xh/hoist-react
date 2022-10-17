@@ -38,9 +38,11 @@ export class PreferenceModel extends HoistModel {
 
         const required = true,
             enableCreate = true,
-            hidden = true;
+            hidden = true,
+            readonly = !XH.getUser().isHoistAdmin;
 
         this.gridModel = new RestGridModel({
+            readonly,
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,
@@ -68,7 +70,7 @@ export class PreferenceModel extends HoistModel {
                 del: (records) =>  `Are you sure you want to delete ${records.length} preference(s)? Deleting preferences can break running apps.`
 
             },
-            menuActions: [
+            menuActions: readonly ? [] : [
                 addAction,
                 editAction,
                 deleteAction,

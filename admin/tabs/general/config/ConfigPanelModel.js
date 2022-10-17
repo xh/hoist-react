@@ -41,9 +41,11 @@ export class ConfigPanelModel extends HoistModel {
 
         const required = true,
             enableCreate = true,
-            hidden = true;
+            hidden = true,
+            readonly = !XH.getUser().isHoistAdmin;
 
         this.gridModel = new RestGridModel({
+            readonly,
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,
@@ -66,13 +68,13 @@ export class ConfigPanelModel extends HoistModel {
             actionWarning: {
                 del: (records) =>  `Are you sure you want to delete ${records.length} config(s)? Deleting configs can break running apps.`
             },
-            toolbarActions: [
+            toolbarActions: readonly ? [] : [
                 addAction,
                 editAction,
                 cloneAction,
                 deleteAction
             ],
-            menuActions: [
+            menuActions: readonly ? [] : [
                 addAction,
                 editAction,
                 cloneAction,

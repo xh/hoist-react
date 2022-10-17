@@ -4,13 +4,24 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import {XH, hoistCmp} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {deleteAction, restGrid} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
 
 export const feedbackPanel = hoistCmp.factory(
-    () => restGrid({model: modelSpec})
+    () => {
+        const readonly = !XH.getUser().isHoistAdmin,
+            getActions = () => readonly ? [] : [deleteAction];
+
+        return restGrid({model: {
+            ...modelSpec,
+            readonly,
+            toolbarActions: getActions(),
+            menuActions: getActions(),
+            formActions: getActions()
+        }});
+    }
 );
 
 const modelSpec = {
@@ -30,9 +41,6 @@ const modelSpec = {
             {...Col.dateCreated.field, displayName: 'Date'}
         ]
     },
-    toolbarActions: [deleteAction],
-    menuActions: [deleteAction],
-    formActions: [deleteAction],
     unit: 'report',
     sortBy: 'dateCreated|desc',
     filterFields: ['username', 'msg'],

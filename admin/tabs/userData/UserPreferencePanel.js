@@ -4,12 +4,15 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import {XH, hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
 
 export const userPreferencePanel = hoistCmp.factory(
-    () => restGrid({model: modelSpec})
+    () => {
+        const readonly = !XH.getUser().isHoistAdmin;
+        return restGrid({model: {...modelSpec, readonly}});
+    }
 );
 
 const required = true,

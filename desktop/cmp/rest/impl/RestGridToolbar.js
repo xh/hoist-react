@@ -31,7 +31,7 @@ export const restGridToolbar = hoistCmp.factory({
                 selModel: gridModel.selModel
             }),
             toolbarSep({
-                omit: isEmpty(extraItems)
+                omit: isEmpty(extraItems) || isEmpty(actions)
             }),
             ...extraItems,
             filler(),

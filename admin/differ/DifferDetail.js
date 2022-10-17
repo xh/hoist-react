@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {filler, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
@@ -23,6 +23,8 @@ export const differDetail = hoistCmp.factory({
     render({model}) {
         if (!model.record) return null;
 
+        const readonly = !XH.getUser().isHoistAdmin;
+
         return dialog({
             title: 'Detail',
             isOpen: model.record,
@@ -34,14 +36,16 @@ export const differDetail = hoistCmp.factory({
                     filler(),
                     button({
                         text: 'Cancel',
-                        onClick: () => model.close()
+                        onClick: () => model.close(),
+                        omit: readonly
                     }),
                     button({
                         text: 'Accept Remote',
                         icon: Icon.cloudDownload(),
                         intent: 'primary',
                         minimal: false,
-                        onClick: () => model.confirmApplyRemote()
+                        onClick: () => model.confirmApplyRemote(),
+                        omit: readonly
                     })
                 ]
             })

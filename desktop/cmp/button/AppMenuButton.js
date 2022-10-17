@@ -71,7 +71,7 @@ AppMenuButton.propTypes = {
 
     /**
      * True to hide the Impersonate Item.
-     * Always hidden for users w/o HOIST_ADMIN role or if impersonation is disabled.
+     * Always hidden for users w/o HOIST_IMPERSONATOR role or if impersonation is disabled.
      */
     hideImpersonateItem: PT.bool,
 
@@ -101,7 +101,7 @@ function buildMenuItems({
     extraItems = []
 }) {
     hideAboutItem = hideAboutItem || !XH.acm.hasAboutDialog();
-    hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdmin;
+    hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdminReader;
     hideChangelogItem = hideChangelogItem || !XH.changelogService.enabled;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
     hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);

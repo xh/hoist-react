@@ -52,7 +52,8 @@ export class DifferModel extends HoistModel {
             const selection = selectedRecords || [record];
             this.confirmApplyRemote(selection);
         },
-        recordsRequired: true
+        recordsRequired: true,
+        hidden: !XH.getUser().isHoistAdmin
     };
 
     get remoteHosts() {

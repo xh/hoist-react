@@ -8,7 +8,7 @@ import {MemoryMonitorModel} from '@xh/hoist/admin/tabs/server/memory/MemoryMonit
 import {chart} from '@xh/hoist/cmp/chart';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, placeholder} from '@xh/hoist/cmp/layout';
-import {creates, hoistCmp} from '@xh/hoist/core';
+import {XH, creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
@@ -21,17 +21,21 @@ export const memoryMonitorPanel = hoistCmp.factory({
             return placeholder(model.minVersionWarning);
         }
 
+        const readonly = !XH.getUser().isHoistAdmin;
+
         return panel({
             tbar: [
                 button({
                     text: 'Take Snapshot',
                     icon: Icon.camera(),
+                    omit: readonly,
                     onClick: () => model.takeSnapshotAsync()
                 }),
                 button({
                     text: 'Request GC',
                     icon: Icon.trash(),
                     intent: 'danger',
+                    omit: readonly,
                     onClick: () => model.requestGcAsync()
                 }),
                 filler(),
