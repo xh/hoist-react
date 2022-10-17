@@ -1,6 +1,13 @@
 # Changelog
 
-## v52.0.0-SNAPSHOT - unreleased
+## v52.0.2 - 2022-10-13
+
+### 🐞 Bug Fixes
+
+* Form field dirty checking now uses lodash `isEqual` to compare initial and current values,
+  avoiding false positives with Array values.
+
+## v52.0.1 - 2022-10-10
 
 ### 🎁 New Features
 

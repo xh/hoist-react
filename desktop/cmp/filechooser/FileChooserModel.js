@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {fileExtCol, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -22,47 +22,16 @@ export class FileChooserModel extends HoistModel {
     @bindable
     lastRejectedCount;
 
-    gridModel = new GridModel({
-        hideHeaders: true,
-        store: {
-            idSpec: 'name',
-            fields: [
-                {name: 'name', type: 'string'},
-                {name: 'size', type: 'number'}
-            ]
-        },
-        columns: [
-            {
-                colId: 'icon',
-                field: 'name',
-                ...fileExtCol
-            },
-            {field: 'name', flex: 1},
-            {
-                field: 'size',
-                width: 90,
-                align: 'right',
-                renderer: v => filesize(v)
-            },
-            {
-                ...actionCol,
-                width: calcActionColWidth(1),
-                actions: [{
-                    icon: Icon.delete(),
-                    tooltip: 'Remove file',
-                    intent: 'danger',
-                    actionFn: ({record}) => {
-                        this.removeFileByName(record.data.name);
-                    }
-                }]
-            }
-        ],
-        emptyText: 'No files selected'
-    });
+    /** @member {GridModel} */
+    @managed
+    gridModel;
 
     constructor() {
         super();
         makeObservable(this);
+
+        this.gridModel = this.createGridModel();
+
         this.addReaction({
             track: () => this.files,
             run: (files) => this.onFilesChange(files)
@@ -109,6 +78,47 @@ export class FileChooserModel extends HoistModel {
     //------------------------
     // Implementation
     //------------------------
+    createGridModel() {
+        return new GridModel({
+            hideHeaders: true,
+            store: {
+                idSpec: 'name',
+                fields: [
+                    {name: 'name', type: 'string'},
+                    {name: 'size', type: 'number'}
+                ]
+            },
+            columns: [
+                {
+                    colId: 'icon',
+                    field: 'name',
+                    ...fileExtCol
+                },
+                {field: 'name', flex: 1},
+                {
+                    field: 'size',
+                    width: 90,
+                    align: 'right',
+                    renderer: v => filesize(v)
+                },
+                {
+                    ...actionCol,
+                    width: calcActionColWidth(1),
+                    actions: [{
+                        icon: Icon.delete(),
+                        tooltip: 'Remove file',
+                        intent: 'danger',
+                        actionFn: ({record}) => {
+                            this.removeFileByName(record.data.name);
+                        }
+                    }]
+                }
+            ],
+            emptyText: 'No files selected.',
+            xhImpl: true
+        });
+    }
+
     onDrop(accepted, rejected, enableMulti) {
         if (!isEmpty(accepted)) {
             if (!enableMulti) {

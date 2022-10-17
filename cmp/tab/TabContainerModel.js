@@ -107,6 +107,7 @@ export class TabContainerModel extends HoistModel {
         this.track = track;
         this.setTabs(tabs);
         this.refreshContextModel = new RefreshContextModel();
+        this.refreshContextModel.xhImpl = xhImpl;
 
         if (route) {
             if (XH.isMobileApp) {
