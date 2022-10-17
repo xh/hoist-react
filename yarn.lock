@@ -1877,10 +1877,10 @@
   resolved "https://registry.yarnpkg.com/@webpack-cli/serve/-/serve-1.7.0.tgz#e1993689ac42d2b16e9194376cfb6753f6254db1"
   integrity sha512-oxnCNGj88fL+xzV+dacXs44HcDwf1ovs3AuEzvP7mqXw7fQntqIhQ1BRmynh4qEKQSSSRSWVyXRjmTbZIX9V2Q==
 
-"@xh/eslint-config@5.0.0-SNAPSHOT.1665096041564":
-  version "5.0.0-SNAPSHOT.1665096041564"
-  resolved "https://registry.yarnpkg.com/@xh/eslint-config/-/eslint-config-5.0.0-SNAPSHOT.1665096041564.tgz#c9df790535646d9e466a28f91a9a797ac2126f9b"
-  integrity sha512-/vqHdN1qCcVjg16BOFQwy8yE03oI2Zu9jQE/t571h7BQSiypnb2WlIKWVlDdQGLtQKEttGvQKI03/OkvXSAGaA==
+"@xh/eslint-config@5.0.0-SNAPSHOT.1666009301552":
+  version "5.0.0-SNAPSHOT.1666009301552"
+  resolved "https://registry.yarnpkg.com/@xh/eslint-config/-/eslint-config-5.0.0-SNAPSHOT.1666009301552.tgz#42379d48adf0e6a284a67c7b01f0a0ea6e7b85df"
+  integrity sha512-0H503D6pB9Xq3DZINexDm/m7c5TunT8JUjU7u+s9aulj/5QddWK7ytPncxqVQVtV4870N/8aiwRvDi/UXJ40IQ==
   dependencies:
     "@babel/core" "^7.18.0"
     "@babel/eslint-parser" "^7.18.0"
@@ -1892,10 +1892,10 @@
     eslint-plugin-react-hooks "^4.6.0"
     typescript "4.8.3"
 
-"@xh/hoist-dev-utils@~7.0.0-SNAPSHOT":
-  version "7.0.0-SNAPSHOT.1665098347172"
-  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-7.0.0-SNAPSHOT.1665098347172.tgz#0af769a907c1606beb1aad5a00ea0a8211f85ff8"
-  integrity sha512-B3vluu3tj1zS5RyeKa5xgjln60Nmm+tnyQEHs7D2YcnhxrOnSsmV1Qe2qivvIqwd49q8YlRg2+8Prdt2FMCO6w==
+"@xh/hoist-dev-utils@^7.0.0-SNAPSHOT.1666010090930":
+  version "7.0.0-SNAPSHOT.1666010090930"
+  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-7.0.0-SNAPSHOT.1666010090930.tgz#81635f7de44e46baf1c3376d8be221b8e7492d95"
+  integrity sha512-avb9J85Lpt3swmzv3iVwYLmPAHM8fGYCd2ht24+/1/xIqqAOY3NhjdLvI81FcFi71ba2VrL+CkQEET9yMnflQg==
   dependencies:
     "@babel/core" "~7.18.9"
     "@babel/plugin-proposal-decorators" "~7.18.9"
@@ -1905,7 +1905,7 @@
     "@cerner/duplicate-package-checker-webpack-plugin" "~2.3.0"
     "@types/lodash" "^4.0.0"
     "@types/react" "^17.0.0"
-    "@xh/eslint-config" "5.0.0-SNAPSHOT.1665096041564"
+    "@xh/eslint-config" "5.0.0-SNAPSHOT.1666009301552"
     autoprefixer "~10.4.7"
     babel-loader "~8.2.5"
     babel-plugin-transform-imports "~2.0.0"

@@ -7,8 +7,7 @@
 import {observeResize, observeVisibleChange} from '@xh/hoist/utils/js';
 /* eslint-disable react-hooks/exhaustive-deps */
 import {useCallback, useEffect, useRef} from 'react';
-// @ts-ignore
-import {DOMRect} from 'dom';
+
 
 /**
  * Hook to run a function once after component has been mounted.

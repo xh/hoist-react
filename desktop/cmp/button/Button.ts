@@ -98,7 +98,7 @@ export interface ButtonProps<M=HoistModel|null> extends BoxProps<M> {
     icon?: ReactElement;
     intent?: Intent,
     minimal?: boolean,
-    onClick?: (e: any) => void,
+    onClick?: (e: MouseEvent) => void,
     outlined?: boolean,
     rightIcon?: ReactElement;
     style?: CSS.Properties,
