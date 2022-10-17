@@ -6,13 +6,12 @@
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {box, div, fragment, hbox, hframe, p, placeholder, vbox, vframe} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses, XH} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, uses, XH} from '@xh/hoist/core';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import '@xh/hoist/desktop/register';
 import classNames from 'classnames';
 import {compact, uniq} from 'lodash';
-import PT from 'prop-types';
 import {splitter} from './impl/Splitter';
 
 import './SplitTreeMap.scss';
@@ -24,7 +23,7 @@ import {treeMap} from './TreeMap';
  *
  * @see SplitTreeMapModel
  */
-export const [SplitTreeMap, splitTreeMap]  = hoistCmp.withFactory({
+export const [SplitTreeMap, splitTreeMap]  = hoistCmp.withFactory<BoxProps<SplitTreeMapModel>>({
     displayName: 'SplitTreeMap',
     model: uses(SplitTreeMapModel),
     className: 'xh-split-treemap',
@@ -43,12 +42,7 @@ export const [SplitTreeMap, splitTreeMap]  = hoistCmp.withFactory({
     }
 });
 
-SplitTreeMap.propTypes = {
-    /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(SplitTreeMapModel), PT.object])
-};
-
-const childMaps = hoistCmp.factory(
+const childMaps = hoistCmp.factory<SplitTreeMapModel>(
     ({model}) => {
         const {
             primaryMapModel,
@@ -68,7 +62,7 @@ const childMaps = hoistCmp.factory(
         if (pTotal && sTotal) {
             // pFlex value is rounded to limit the precision of our flex config and avoid extra
             // render cycles due to imperceptible changes in the ratio between the sides.
-            pFlex = (pTotal / sTotal).toFixed(2);
+            pFlex = parseFloat((pTotal / sTotal).toFixed(2));
         } else if (pTotal && !sTotal) {
             sFlex = 0;
         } else if (!pTotal && sTotal) {
@@ -106,7 +100,7 @@ const childMaps = hoistCmp.factory(
     }
 );
 
-const mapTitle = hoistCmp.factory(
+const mapTitle = hoistCmp.factory<SplitTreeMapModel>(
     ({model, isPrimary}) => {
         const {mapTitleFn, orientation} = model,
             // Title orientation is perpendicular to overall orientation

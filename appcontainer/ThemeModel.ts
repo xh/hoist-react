@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, Theme, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 
 /**
@@ -35,7 +35,7 @@ export class ThemeModel extends HoistModel {
     }
 
     @action
-    setTheme(value: 'system'|'dark'|'light', persist = true) {
+    setTheme(value: Theme, persist = true) {
         switch (value) {
             case 'system':
                 this.setDarkTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);

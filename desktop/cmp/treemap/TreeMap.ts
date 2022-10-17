@@ -6,7 +6,7 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div, placeholder} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, lookup, useLocalModel, uses, XH} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistModel, lookup, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import '@xh/hoist/desktop/register';
@@ -22,7 +22,6 @@ import {
 import classNames from 'classnames';
 import equal from 'fast-deep-equal';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
-import PT from 'prop-types';
 
 import './TreeMap.scss';
 import {TreeMapModel} from './TreeMapModel';
@@ -35,7 +34,7 @@ import {TreeMapModel} from './TreeMapModel';
  *
  * @see TreeMapModel
  */
-export const [TreeMap, treeMap] = hoistCmp.withFactory({
+export const [TreeMap, treeMap] = hoistCmp.withFactory<BoxProps<TreeMapModel>>({
     displayName: 'TreeMap',
     model: uses(TreeMapModel),
     className: 'xh-treemap',
@@ -97,11 +96,6 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     }
 });
 
-TreeMap.propTypes = {
-    /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(TreeMapModel), PT.object])
-};
-
 class TreeMapLocalModel extends HoistModel {
     xhImpl = true;
 
@@ -111,9 +105,12 @@ class TreeMapLocalModel extends HoistModel {
 
     chart = null;
     clickCount = 0;
+    debouncedClickHandler;
+
+    _prevConfig;
 
     get theme() {
-        if (this.model.theme) return this.model.theme;
+        if (this.model.theme && this.model.theme !== 'system') return this.model.theme;
         return XH.darkTheme ? 'dark' : 'light';
     }
 
@@ -157,12 +154,12 @@ class TreeMapLocalModel extends HoistModel {
         // recreate the entire chart or just reload the series data.
         const config = this.getMergedConfig(),
             chartCfg = omit(config, 'series', 'tooltip'),
-            canUpdateInPlace = this.chart && equal(chartCfg, this.prevConfig);
+            canUpdateInPlace = this.chart && equal(chartCfg, this._prevConfig);
 
         if (canUpdateInPlace) {
             this.reloadSeriesData(config.series[0].data);
         } else {
-            this.prevConfig = cloneDeep(chartCfg);
+            this._prevConfig = cloneDeep(chartCfg);
             this.createChart(config);
         }
 

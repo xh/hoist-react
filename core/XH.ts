@@ -15,7 +15,8 @@ import {
     TrackOptions,
     SizingMode,
     HoistServiceClass,
-    initServicesAsync
+    initServicesAsync,
+    Theme
 } from './';
 import {Store} from '@xh/hoist/data';
 import {instanceManager} from './impl/InstanceManager';
@@ -345,7 +346,7 @@ export class XHClass {
     /**
      * Sets the theme directly (useful for custom app option controls).
      */
-    setTheme(value: 'light'|'dark'|'system', persist: boolean = true) {
+    setTheme(value: Theme, persist: boolean = true) {
         return this.acm.themeModel.setTheme(value, persist);
     }
 
