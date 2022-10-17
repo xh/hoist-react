@@ -14,8 +14,6 @@ import classNames from 'classnames';
 import {ReactNode, ReactElement} from 'react';
 import type * as CSS from 'csstype';
 import './Button.scss';
-// @ts-ignore -- TODO: Remove when eslint updated
-import {MouseEvent} from 'dom';
 
 /**
  * Wrapper around Blueprint's Button component. Defaults to the `minimal` style for reduced chrome
