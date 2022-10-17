@@ -432,7 +432,7 @@ const cmp = hoistCmp.factory(
                 position: props.popoverPosition ?? 'auto',
                 boundary: props.popoverBoundary ?? 'viewport',
                 portalContainer: props.portalContainer ?? document.body,
-                popoverRef: (v) => {model.popoverRef.current = v},  // Workaround for #2272
+                popoverRef: model.popoverRef,
                 onClose: model.onPopoverClose,
                 onInteraction: (nextOpenState) => {
                     if (props.showPickerOnFocus) {

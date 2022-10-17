@@ -55,7 +55,7 @@ export class GroupingChooserModel extends HoistModel {
     @observable editorIsOpen: boolean = false;
     @observable favoritesIsOpen: boolean = false;
 
-    popoverRef = createObservableRef();
+    popoverRef = createObservableRef<HTMLElement>();
 
     @computed
     get availableDims(): string[] {
