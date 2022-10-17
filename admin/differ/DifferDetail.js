@@ -32,20 +32,18 @@ export const differDetail = hoistCmp.factory({
             onClose: () => model.close(),
             item: panel({
                 item: diffTable(),
-                bbar: [
+                bbar: readonly ? [] : [
                     filler(),
                     button({
                         text: 'Cancel',
-                        onClick: () => model.close(),
-                        omit: readonly
+                        onClick: () => model.close()
                     }),
                     button({
                         text: 'Accept Remote',
                         icon: Icon.cloudDownload(),
                         intent: 'primary',
                         minimal: false,
-                        onClick: () => model.confirmApplyRemote(),
-                        omit: readonly
+                        onClick: () => model.confirmApplyRemote()
                     })
                 ]
             })

@@ -71,7 +71,7 @@ AppMenuButton.propTypes = {
 
     /**
      * True to hide the Impersonate Item.
-     * Always hidden for users w/o HOIST_IMPERSONATOR role or if impersonation is disabled.
+     * Always hidden for users w/o HOIST_ADMIN role or if impersonation is disabled.
      */
     hideImpersonateItem: PT.bool,
 

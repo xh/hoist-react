@@ -61,13 +61,13 @@ export class JsonBlobModel extends HoistModel {
                     {...Col.lastUpdatedBy.field, editable: false}
                 ]
             },
-            toolbarActions: readonly ? [] : [
+            toolbarActions: [
                 addAction,
                 editAction,
                 cloneAction,
                 deleteAction
             ],
-            menuActions: readonly ? [] : [
+            menuActions: [
                 addAction,
                 editAction,
                 cloneAction,

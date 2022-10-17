@@ -11,6 +11,7 @@ import {XH, creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
+import {toolbarSeparator} from '@xh/hoist/desktop/cmp/toolbar';
 import {EhCacheModel} from './EhCacheModel';
 
 export const ehCachePanel = hoistCmp.factory({
@@ -35,7 +36,7 @@ export const ehCachePanel = hoistCmp.factory({
                     onClick: () => model.clearAllAsync(),
                     omit: readonly
                 }),
-                '-',
+                toolbarSeparator({omit: readonly}),
                 gridCountLabel({unit: 'cache'}),
                 '-',
                 storeFilterField({matchMode: 'any'}),

@@ -70,7 +70,7 @@ export class PreferenceModel extends HoistModel {
                 del: (records) =>  `Are you sure you want to delete ${records.length} preference(s)? Deleting preferences can break running apps.`
 
             },
-            menuActions: readonly ? [] : [
+            menuActions: [
                 addAction,
                 editAction,
                 deleteAction,

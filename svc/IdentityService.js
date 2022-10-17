@@ -95,7 +95,7 @@ export class IdentityService extends HoistService {
      * triggering any impersonation attempts.
      */
     get canImpersonate() {
-        return this.user.hasImpersonatorRole && XH.getConf('xhEnableImpersonation', false);
+        return this.user.isHoistAdmin && XH.getConf('xhEnableImpersonation', false);
     }
 
     /**
@@ -105,7 +105,7 @@ export class IdentityService extends HoistService {
      * affordances and to trigger impersonation actions.
      */
     get canAuthUserImpersonate() {
-        return this._authUser.hasImpersonatorRole && XH.getConf('xhEnableImpersonation', false);
+        return this._authUser.isHoistAdmin && XH.getConf('xhEnableImpersonation', false);
     }
 
     /**
@@ -151,7 +151,6 @@ export class IdentityService extends HoistService {
         user.hasRole = (role) => user.roles.includes(role);
         user.isHoistAdmin = user.hasRole('HOIST_ADMIN');
         user.isHoistAdminReader = user.hasRole('HOIST_ADMIN_READER');
-        user.hasImpersonatorRole = user.hasRole('HOIST_IMPERSONATOR');
         user.hasGate = (gate) => this.hasGate(gate, user);
         return deepFreeze(user);
     }

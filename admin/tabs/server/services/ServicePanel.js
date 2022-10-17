@@ -11,6 +11,7 @@ import {XH, creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
+import {toolbarSeparator} from '@xh/hoist/desktop/cmp/toolbar';
 import {ServiceModel} from './ServiceModel';
 
 export const servicePanel = hoistCmp.factory({
@@ -36,7 +37,7 @@ export const servicePanel = hoistCmp.factory({
                     omit: readonly,
                     disabled: model.gridModel.selModel.isEmpty
                 }),
-                '-',
+                toolbarSeparator({omit: readonly}),
                 gridCountLabel({unit: 'service'}),
                 '-',
                 storeFilterField({matchMode: 'any'}),

@@ -11,16 +11,8 @@ import * as Col from '@xh/hoist/admin/columns';
 
 export const feedbackPanel = hoistCmp.factory(
     () => {
-        const readonly = !XH.getUser().isHoistAdmin,
-            getActions = () => readonly ? [] : [deleteAction];
-
-        return restGrid({model: {
-            ...modelSpec,
-            readonly,
-            toolbarActions: getActions(),
-            menuActions: getActions(),
-            formActions: getActions()
-        }});
+        const readonly = !XH.getUser().isHoistAdmin;
+        return restGrid({model: {...modelSpec, readonly}});
     }
 );
 
@@ -41,6 +33,9 @@ const modelSpec = {
             {...Col.dateCreated.field, displayName: 'Date'}
         ]
     },
+    toolbarActions: [deleteAction],
+    menuActions: [deleteAction],
+    formActions: [deleteAction],
     unit: 'report',
     sortBy: 'dateCreated|desc',
     filterFields: ['username', 'msg'],

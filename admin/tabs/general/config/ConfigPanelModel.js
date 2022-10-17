@@ -68,13 +68,13 @@ export class ConfigPanelModel extends HoistModel {
             actionWarning: {
                 del: (records) =>  `Are you sure you want to delete ${records.length} config(s)? Deleting configs can break running apps.`
             },
-            toolbarActions: readonly ? [] : [
+            toolbarActions: [
                 addAction,
                 editAction,
                 cloneAction,
                 deleteAction
             ],
-            menuActions: readonly ? [] : [
+            menuActions: [
                 addAction,
                 editAction,
                 cloneAction,
