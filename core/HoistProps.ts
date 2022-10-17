@@ -13,7 +13,7 @@ import {LayoutProps} from '@xh/hoist/utils/react';
  * This interface brings in additional properties that are added to the props
  * collection by HoistComponent.
  */
-export interface HoistProps<M=HoistModel> {
+export interface HoistProps<M extends HoistModel = HoistModel> {
 
     /**
      * Associated HoistModel for this Component.  Depending on the component, may be specified as
@@ -39,4 +39,4 @@ export interface HoistProps<M=HoistModel> {
  * Most component will typically separate these props out and pass them along to another component
  * which also supports this interface.  Eventually, they should be passed to a Box class.
  */
-export interface BoxProps<M=HoistModel> extends HoistProps<M>, LayoutProps {}
+export interface BoxProps<M extends HoistModel = HoistModel> extends HoistProps<M>, LayoutProps {}
