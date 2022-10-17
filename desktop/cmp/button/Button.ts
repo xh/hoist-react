@@ -98,7 +98,7 @@ export interface ButtonProps extends BoxProps {
     icon?: ReactElement;
     intent?: Intent,
     minimal?: boolean,
-    onClick?: () => void,
+    onClick?: (e: any) => void,
     outlined?: boolean,
     rightIcon?: ReactElement;
     style?: CSS.Properties,
