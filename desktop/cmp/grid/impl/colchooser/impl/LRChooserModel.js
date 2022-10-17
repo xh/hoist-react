@@ -247,7 +247,6 @@ export class LRChooserModel extends HoistModel {
             this.rearrangeRows(swapped, overRow);
         }
         this.merge();
-        // this.reorderData();
         this._inRightGrid = false;
         this.onChange?.();
     }
@@ -311,160 +310,38 @@ export class LRChooserModel extends HoistModel {
         }
     }
 
-    // TODO: may cause problems with selecting multiple nested rows?
-    getNestingDepth(rows) {
-        let count = 0;
-        rows.forEach(row => row.forEachDescendant(() => count++));
-        return count;
-    }
-
-    reorderData() {
-        let sortOrder = 0,
-            rightStore = sortBy(this.rightModel.store.rootRecords, 'raw.sortOrder');
-
-        rightStore.forEach(rec => rec.forEachDescendant(row => {
-            row.raw.sortOrder = sortOrder;
-            sortOrder++;
-        }));
-        this.refreshStores();
-    }
-
-    merge() {
-        let data = sortBy(this._data, 'sortOrder'),
-            ids = [],
-            rowOne,
-            rowTwo;
-
-        for (let i = 0; i < data.length - 1; i++) {
-            rowOne = data[i];
-            rowTwo = data[i + 1];
-            if (rowOne.text === rowTwo.text) {
-                rowOne.children.push(...rowTwo.children);
-                rowOne.children = this.mergeRecursive(rowOne.children);
-                ids.push(rowTwo.id);
-            }
-        }
-
-        this._data = data.filter(row => {
-            if (!includes(ids, row.id) && !(!row.isLeaf && isEmpty(row.children))) return row;
-        });
-
-        this.refreshStores();
-    }
-
-    mergeRecursive(rows) {
-        console.log('now merging: ', rows);
-        let idsToDelete = [],
-            rowOne,
-            rowTwo;
-        for (let i = 0; i < rows.length - 1; i++) {
-            for (let j = i + 1; j < rows.length; j++) {
-                rowOne = rows[i];
-                rowTwo = rows[j];
-                if (rowOne.text === rowTwo.text) {
-                    rowOne.children.push(...rowTwo.children);
-                    if (!isEmpty(rowOne.children)) rowOne.children = this.mergeRecursive(rowOne.children);
-                    rowOne.children = this.reorderChildren(rowOne.children, rowOne.sortOrder);
-                    idsToDelete.push(rowTwo.id);
-                }
-            }
-        }
-        return isEmpty(idsToDelete) ? rows : rows.filter(row => !includes(idsToDelete, row.id));
-    }
-
     split(row, toIndex, side) {
-        const {isLeaf, children, text, value, exclude, locked, description, name} = row.raw,
-            ancestors = sortBy(row.allAncestors, 'raw.sortOrder'),
-            newAncestors = ancestors.map((row, idx) => {
-                return {
-                    id: XH.genId(),
-                    side,
-                    text: row.data.text,
-                    name: row.data.text,
-                    sortOrder: toIndex + idx
-                };
-            }),
-            newNode = {
-                children: children,
-                text: text,
-                side,
-                sortOrder: toIndex + ancestors.length
-            },
-            nextAncestor = newAncestors[ancestors.length - 1];
+        // 1) generate a new node and ancestors
+        const ancestors = sortBy(row.allAncestors, 'raw.sortOrder'),
+            newAncestors = this.makeNewAncestors(row, toIndex, side, ancestors),
+            newNode = this.makeNewNode(row, toIndex, side, newAncestors);
 
         let data = this._data;
 
-        if (isLeaf) {
-            newNode.id = `${nextAncestor.id}>>${value}`;
-            newNode.value = value;
-            newNode.isLeaf = true;
-            newNode.description = description;
-            newNode.exclude = exclude;
-            newNode.locked = locked;
-        } else {
-            newNode.id = `${nextAncestor.id}>>${name}`;
-            newNode.children = this.reorderChildren(children, toIndex + ancestors.length);
-        }
-
+        // 2) append the new node to the new ancestors
         newAncestors[newAncestors.length - 1].children = [newNode];
 
-        for (let i = 0; i < ancestors.length - 1; i++) {
-            newAncestors[i].children = [newAncestors[i + 1]];
-        }
-
-        // remove the split row from its original ancestor
+        // 3) remove the original node row from its previous ancestor
         ancestors[ancestors.length - 1].raw.children = filter(
             ancestors[ancestors.length - 1].raw.children,
             (col => col.id !== row.id)
         );
 
-        function removeNodes(root) {
-            let ids = [];
-            root.children.forEach(row => {
-                if (!row.isLeaf) {
-                    if (isEmpty(row.children)) {
-                        ids.push(row.id);
-                    } else {
-                        row.children = removeNodes(row);
-                    }
-                }
-            });
-            return filter(root.children, row => ids.indexOf(row.id) === -1);
-        }
-
+        // 4) remove any drifting nodes
         let rootId = ancestors[0].id,
             root = filter(data, row => row.id === rootId)[0];
-        console.log('root:', root);
-        if (isEmpty(root.children)) {
-            console.log('deleting root');
+
+        if (isEmpty(root?.children)) {
             data = filter(data, row => row.id !== rootId);
         } else {
-            root.children = removeNodes(root);
+            root.children = this.removeNodes(root);
         }
 
-        // put the new ancestors in _data to be refreshed
+        // 5) put the new ancestors in _data to be refreshed
         data.push(newAncestors[0]);
         this._data = data;
 
         this.refreshStores();
-    }
-
-    reorderChildren(children, toIndex) {
-        let sortOrder = toIndex;
-
-        function traverseChildren(children) {
-            return children.map((child, idx) => {
-                sortOrder += idx;
-                child.sortOrder = sortOrder;
-                if (!isEmpty(child.children)) {
-                    child.children = traverseChildren(child.children, sortOrder);
-                }
-                return child;
-            });
-        }
-
-        return traverseChildren(children);
-
     }
 
     appendRows(rows) {
@@ -481,7 +358,55 @@ export class LRChooserModel extends HoistModel {
             lastSortOrder++;
             row.raw.sortOrder = lastSortOrder;
         };
+
         rows.forEach(row => {row.forEachDescendant(append)});
+    }
+
+    merge() {
+        let data = sortBy(this._data, 'sortOrder'),
+            idsToDelete = [],
+            rowOne,
+            rowTwo;
+
+        for (let i = 0; i < data.length - 1; i++) {
+            rowOne = data[i];
+            rowTwo = data[i + 1];
+            // TODO: better method for equality
+            if (rowOne.text === rowTwo.text) {
+                rowOne.children.push(...rowTwo.children);
+                rowOne.children = this.mergeRecursive(rowOne.children);
+                idsToDelete.push(rowTwo.id);
+            }
+        }
+
+        function isObsolete(row) {
+            // row is a non-leaf node without children
+            return !row.isLeaf && isEmpty(row.children);
+        }
+
+        this._data = filter(data, row => !includes(idsToDelete, row.id) && !isObsolete(row));
+
+        this.refreshStores();
+    }
+
+    mergeRecursive(rows) {
+        let idsToDelete = [],
+            rowOne,
+            rowTwo;
+        for (let i = 0; i < rows.length - 1; i++) {
+            for (let j = i + 1; j < rows.length; j++) {
+                rowOne = rows[i];
+                rowTwo = rows[j];
+                if (rowOne.text === rowTwo.text) {
+                    rowOne.children.push(...rowTwo.children);
+                    if (!isEmpty(rowOne.children)) rowOne.children = this.mergeRecursive(rowOne.children);
+                    rowOne.children = this.reorderChildren(rowOne.children, rowOne.sortOrder);
+                    idsToDelete.push(rowTwo.id);
+                }
+            }
+        }
+
+        return isEmpty(idsToDelete) ? rows : filter(rows, row => !includes(idsToDelete, row.id));
     }
 
     shiftRows(rows, toIndex, depth) {
@@ -506,7 +431,6 @@ export class LRChooserModel extends HoistModel {
     }
 
     swapSides(rows) {
-
         const row = rows[0];
         if (!isEmpty(row.allAncestors)) {
             this.split(row, 0, 'left');
@@ -518,6 +442,99 @@ export class LRChooserModel extends HoistModel {
             row.raw.side = (side === 'left' ? 'right' : 'left');
         });
 
+        this.refreshStores();
+    }
+
+    makeNewAncestors(row, toIndex, side, ancestors) {
+        const newAncestors = ancestors.map((row, idx) => {
+            return {
+                id: XH.genId(),
+                side,
+                text: row.data.text,
+                name: row.data.text,
+                sortOrder: toIndex + idx
+            };
+        });
+
+        for (let i = 0; i < ancestors.length - 1; i++) {
+            newAncestors[i].children = [newAncestors[i + 1]];
+        }
+
+        return newAncestors;
+    }
+
+    makeNewNode(row, toIndex, side, ancestors) {
+        const {isLeaf, children, text, value, exclude, locked, description, name} = row.raw,
+            nextAncestor = ancestors[ancestors.length - 1],
+            newNode = {
+                children: children,
+                text: text,
+                side,
+                sortOrder: toIndex + ancestors.length
+            };
+
+        if (isLeaf) {
+            newNode.id = `${nextAncestor.id}>>${value}`;
+            newNode.value = value;
+            newNode.isLeaf = true;
+            newNode.description = description;
+            newNode.exclude = exclude;
+            newNode.locked = locked;
+        } else {
+            newNode.id = `${nextAncestor.id}>>${name}`;
+            newNode.children = this.reorderChildren(children, toIndex + ancestors.length);
+        }
+
+        return newNode;
+    }
+
+    removeNodes(root) {
+        let idsToDelete = [];
+        root.children.forEach(row => {
+            if (!row.isLeaf) {
+                if (isEmpty(row.children)) {
+                    idsToDelete.push(row.id);
+                } else {
+                    row.children = this.removeNodes(row);
+                }
+            }
+        });
+
+        return filter(root.children, row => !includes(idsToDelete, row.id));
+    }
+
+    reorderChildren(children, toIndex) {
+        let sortOrder = toIndex;
+
+        function traverse(children) {
+            return children.map((child, idx) => {
+                sortOrder += idx;
+                child.sortOrder = sortOrder;
+                if (!isEmpty(child.children)) {
+                    child.children = traverse(child.children, sortOrder);
+                }
+                return child;
+            });
+        }
+
+        return traverse(children);
+    }
+
+    // TODO: may cause problems with selecting multiple nested rows?
+    getNestingDepth(rows) {
+        let count = 0;
+        rows.forEach(row => row.forEachDescendant(() => count++));
+        return count;
+    }
+
+    reorderData() {
+        let sortOrder = 0,
+            rightStore = sortBy(this.rightModel.store.rootRecords, 'raw.sortOrder');
+
+        rightStore.forEach(rec => rec.forEachDescendant(row => {
+            row.raw.sortOrder = sortOrder;
+            sortOrder++;
+        }));
         this.refreshStores();
     }
 
