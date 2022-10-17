@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
-import {BoxProps, hoistCmp, Intent} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistModel, Intent} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -91,7 +91,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
     }
 });
 
-export interface ButtonProps extends BoxProps {
+export interface ButtonProps<M=HoistModel|null> extends BoxProps<M> {
     active?: boolean,
     autoFocus?: boolean,
     disabled?: boolean,

@@ -87,12 +87,9 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
     }
 });
 
-export interface GroupingChooserProps extends ButtonProps {
+export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> {
     /** Text to represent empty state (i.e. value = null or []) */
     emptyText?: string,
-
-    /** Primary component model instance. */
-    model?: GroupingChooserModel,
 
     /** Min height in pixels of the popover menu itself. */
     popoverMinHeight?: number,
