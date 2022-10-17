@@ -15,7 +15,7 @@ import './SuspendPanel.scss';
 
 /**
  * Generic Panel to display when the app is suspended.
- * @private
+ * @internal
  */
 export const suspendPanel = hoistCmp.factory({
     displayName: 'SuspendPanel',

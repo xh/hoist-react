@@ -362,9 +362,8 @@ function lookupModel(spec, props, modelLookup, displayName) {
 }
 
 /**
- * @package -- Not for application use.
- *
  * Component to render certain errors caught within hoistComponent.
+ * @internal
  */
 export function setCmpErrorDisplay(ef: ElemFactory) {
     cmpErrorDisplay = ef;

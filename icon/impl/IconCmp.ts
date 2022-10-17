@@ -9,11 +9,9 @@ import {elemFactory, hoistCmp} from '@xh/hoist/core';
 import {enhanceFaClasses} from './IconHtml';
 
 /**
- * @private
- *
  * Internal component for a FontAwesome Icon in Hoist.
- *
  * Applications should use the factory methods on Icon instead.
+ * @internal
  */
 export const iconCmp = hoistCmp.factory({
     displayName: 'Icon',

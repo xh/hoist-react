@@ -12,8 +12,8 @@ import {BannerModel} from './BannerModel';
 
 /**
  * Supporting model for managing the display of one or more app-wide banners.
- * @see {XH.showBanner()}
- * @private
+ * @see XH.showBanner()
+ * @internal
  */
 export class BannerSourceModel extends HoistModel {
     xhImpl = true;

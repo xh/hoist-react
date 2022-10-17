@@ -14,7 +14,7 @@ import './LockoutPanel.scss';
 /**
  * Panel for display to prevent user access to all content.
  *
- * @private
+ * @internal
  */
 export const lockoutPanel = hoistCmp.factory({
     displayName: 'LockoutPanel',

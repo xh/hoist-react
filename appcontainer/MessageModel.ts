@@ -12,8 +12,9 @@ import {isEmpty} from 'lodash';
 
 /**
  * Model for a single instance of a modal dialog.
- * Not intended for direct application use. {@see XHClass#message()} and related for the public API.
- * @private
+ * Not intended for direct application use.
+ * @see XHClass.message()
+ * @internal
  */
 export class MessageModel extends HoistModel {
     xhImpl = true;

@@ -8,7 +8,7 @@
 import {Field} from '../../Field';
 
 /**
- * @private
+ * @internal
  */
 export class RowUpdate {
 

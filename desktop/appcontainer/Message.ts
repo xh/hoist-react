@@ -19,8 +19,8 @@ import './Message.scss';
 
 /**
  * A preconfigured dialog component used to render modal messages.
- * Not intended for direct application use. {@see XHClass#message()} and related for the public API.
- * @private
+ * @see XHClass.message()
+ * @internal
  */
 export const message = hoistCmp.factory({
     model: uses(MessageModel),

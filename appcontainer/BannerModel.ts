@@ -8,7 +8,7 @@ import {BannerSpec, HoistModel} from '@xh/hoist/core';
 
 /**
  * Model for a single instance of a banner. Immutable.
- * @private
+ * @internal
  */
 export class BannerModel extends HoistModel {
     xhImpl = true;

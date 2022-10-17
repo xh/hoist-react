@@ -654,7 +654,7 @@ export class XHClass {
     /**
      * Called when application container first mounted in order to trigger initial
      * authentication and initialization of framework and application.
-     * @private - not intended for application use.
+     * @internal
      */
     async initAsync() {
         // Avoid multiple calls, which can occur if AppContainer remounted.
@@ -733,7 +733,7 @@ export class XHClass {
     /**
      * Complete initialization. Called after the client has confirmed that the user is generally
      * authenticated and known to the server (regardless of application roles at this point).
-     * @private - not intended for application use.
+     * @internal
      */
     @action
     async completeInitAsync() {
@@ -793,7 +793,7 @@ export class XHClass {
      *
      * Suspension is a terminal state, requiring user to reload the app.
      * Used for idling, forced version upgrades, and ad-hoc killing of problematic clients.
-     * @package - not intended for application use.
+     * @internal
      */
     suspendApp(suspendData) {
         if (XH.appState === 'SUSPENDED') return;

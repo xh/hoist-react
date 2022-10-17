@@ -16,7 +16,7 @@ import {createRef} from 'react';
 import {LogDisplayModel} from './LogDisplayModel';
 
 /**
- * @private
+ * @internal
  */
 export class LogViewerModel extends HoistModel {
 

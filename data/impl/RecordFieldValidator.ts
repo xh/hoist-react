@@ -11,8 +11,8 @@ import {computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx'
 import {compact, flatten, isEmpty, isNil} from 'lodash';
 
 /**
- * Computes validation state for a Field on a StoreRecord instance
- * @private
+ * Computes validation state for a Field on a StoreRecord instance.
+ * @internal
  */
 export class RecordFieldValidator extends HoistBase {
 

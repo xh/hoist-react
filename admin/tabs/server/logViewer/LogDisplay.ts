@@ -18,7 +18,7 @@ import {LogDisplayModel} from './LogDisplayModel';
 import './LogViewer.scss';
 
 /**
- * @private
+ * @internal
  */
 export const logDisplay = hoistCmp.factory({
     model: uses(LogDisplayModel),

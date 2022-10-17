@@ -8,7 +8,7 @@ import {HOURS} from '@xh/hoist/utils/datetime';
 import {fmtNumber} from '@xh/hoist/format';
 
 /**
- * @private Pending additional support for client-side Time zone API
+ * @internal - pending additional support for a client-side Time Zone API.
  */
 export function fmtTimeZone(name: string, offset: number): string {
     if (!name) return '';

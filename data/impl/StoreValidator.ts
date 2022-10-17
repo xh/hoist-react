@@ -15,8 +15,8 @@ import {Store} from '../Store';
 import {StoreRecordId} from '../StoreRecord';
 
 /**
- * Computes validation state for a Store's uncommitted Records
- * @private
+ * Computes validation state for a Store's uncommitted Records.
+ * @internal
  */
 export class StoreValidator extends HoistBase {
 

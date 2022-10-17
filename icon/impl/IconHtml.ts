@@ -9,11 +9,9 @@ import classNames from 'classnames';
 import {isString} from 'lodash';
 
 /**
- * @private
- *
  * Get the raw text of an SVG tag for an icon
- *
  * Applications should use the factory methods on Icon instead.
+ * @internal
  */
 export function iconHtml({iconName, prefix, title, className, size}) {
     const iconDef = findIconDefinition({prefix, iconName}),

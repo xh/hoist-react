@@ -164,7 +164,7 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     //------------------
     // For use by Hoist
     //------------------
-    /** @package*/
+    /** @internal */
     @action
     setComponentProps(newProps) {
         const props = this._componentProps;
@@ -176,10 +176,7 @@ export abstract class HoistModel extends HoistBase implements Loadable {
         });
     }
 
-    /**
-     * Does this model match a ModelSelector?
-     * @package
-     */
+    /** @internal */
     matchesSelector(selector: ModelSelector, acceptWildcard: boolean = false): boolean {
         let sel: any = selector;
         // 1) check class ref first, it's a function, but distinct from callable function below

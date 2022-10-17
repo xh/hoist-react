@@ -11,7 +11,7 @@ import {ToastModel} from './ToastModel';
 
 /**
  *  Supports displaying a pop-up Toast.
- *  @private
+ *  @internal
  */
 export class ToastSourceModel extends HoistModel {
     xhImpl = true;

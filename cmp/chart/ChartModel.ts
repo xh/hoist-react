@@ -19,7 +19,7 @@ interface ChartModelConfig {
     /** True to showContextMenu.  Defaults to true.  Desktop only. */
     showContextMenu?: boolean;
 
-    /** @package - for internal Hoist use only.*/
+    /** @internal */
     xhImpl?: boolean;
 }
 

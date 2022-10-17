@@ -67,7 +67,7 @@ export class Store extends HoistBase {
     @observable.ref
     summaryRecord: StoreRecord = null;
 
-    /** @package - used internally by any StoreFilterField that is bound to this store. */
+    /** @internal - used internally by any StoreFilterField bound to this store. */
     @observable
     xhFilterText: string = null;
 

@@ -42,17 +42,9 @@ export class TaskObserver {
     }
 
     /**
-     * @package
-     *
      * Create a TaskObserver bound to a single Promise.
-     *
-     * Not typically used directly by applications. Instead see {@see Promise.linkTo}, which
-     * provides an efficient way to link an existing TaskObserver to a promise.
-     *
-     * @param {Promise} promise
-     * @param {string} [message]
-     *
-     * @returns {TaskObserver}
+     * @see {@link Promise.linkTo} - preferred way to link an existing TaskObserver to a promise.
+     * @internal
      */
     static forPromise({promise, message}) {
         return new PromiseObserver(promise, message);
@@ -99,8 +91,7 @@ export class TaskObserver {
     /**
      * This class is abstract and should not be instantiated directly. To get an instance of this
      * class, use static methods trackFirst(), trackLast() or fromPromise().
-     *
-     * @package
+     * @internal
      */
     constructor() {
         throwIf(

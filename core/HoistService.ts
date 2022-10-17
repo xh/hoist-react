@@ -96,7 +96,7 @@ export class HoistService extends HoistBase implements Loadable {
  * Applications must choose a unique name of the form xxxService to avoid naming collisions on
  * the target. If naming collisions are detected, an error will be thrown.
  *
- * @package Applications should use HoistAppModel.initServicesAsync() instead.
+ * @internal - apps should use {@link HoistAppModel.initServicesAsync} instead.
  */
 export async function initServicesAsync(serviceClasses: Some<HoistServiceClass>, target: object) {
     serviceClasses = castArray(serviceClasses);

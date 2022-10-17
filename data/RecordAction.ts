@@ -74,7 +74,7 @@ export class RecordAction {
 
     /**
      * Called by UI elements to get the display configuration for rendering the action.
-     * @package Not typically used by applications.
+     * @internal
      */
     getDisplaySpec({record, selectedRecords, gridModel, column, ...rest}: ActionFnData) {
         const recordCount = record && isEmpty(selectedRecords) ?
@@ -112,7 +112,7 @@ export class RecordAction {
 
     /**
      * Called by UI elements to trigger the action.
-     * @package Not typically used by applications.
+     * @internal
      */
     call({record, selectedRecords, gridModel, column, ...rest}: ActionFnData) {
         if (!this.actionFn) return;

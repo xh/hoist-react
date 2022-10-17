@@ -50,13 +50,11 @@ export abstract class HoistBase {
     get isHoistBase(): boolean {return true}
 
     /**
-     * For XH internal use only - marks this instance as created by and for
-     * Hoist as part of its own implementation. Used as a filter within Hoist Inspector to
-     * distinguish services and models that are either:
-     *    a) created directly by the app developer -or-
-     *    b) important/public parts of the Hoist API
-     * from those that are not.
-     * @package
+     * For XH internal use only - marks this instance as created by and for Hoist as part of its
+     * own implementation. Used as a filter within Hoist Inspector to distinguish services and
+     * models that are either created directly by the app developer or important/public parts of
+     * the Hoist API from those that are not.
+     * @internal
      */
     xhImpl: boolean = undefined;
 

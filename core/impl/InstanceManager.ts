@@ -11,9 +11,7 @@ import {observable, action, makeObservable} from '@xh/hoist/mobx';
 
 /**
  * Generic singleton object for cataloging global models and services.
- *
- * Not intended for application use.
- * @package
+ * @internal
  */
 class InstanceManager {
 

@@ -12,7 +12,7 @@ import {CreatesSpec, UsesSpec, HoistModel} from './';
  *
  * {@see uses()} and {@see creates()} for standard factories that produce instances of this type.
  *
- * @private
+ * @internal
  */
 export type ModelSpec<T extends HoistModel=HoistModel> = CreatesSpec<T> | UsesSpec<T>;
 

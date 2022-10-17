@@ -13,9 +13,7 @@ import {button} from '@xh/hoist/mobile/cmp/button';
 import './Toast.scss';
 
 /**
- * Display an instance of ToastModel.
- *
- * @private
+ * @internal
  */
 export const toast = hoistCmp.factory({
     displayName: 'Toast',

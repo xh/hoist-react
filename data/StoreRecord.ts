@@ -252,11 +252,11 @@ export class StoreRecord {
     /**
      * Finalize this record for use in Store, post acceptance by RecordSet.
      *
-     * We finalize the StoreRecord post-construction in RecordSet, only once we know that it is going to
-     * be accepted in the new RecordSet (and is not a duplicate).  This is a performance
+     * We finalize the StoreRecord post-construction in RecordSet, only once we know that it is
+     * going to be accepted in the new RecordSet (and is not a duplicate). This is a performance
      * optimization to avoid operations like freezing on transient records.
      *
-     * @package - not for application use.
+     * @internal
      */
     finalize() {
         if (this.store.freezeData) {

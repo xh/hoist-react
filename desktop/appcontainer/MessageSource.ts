@@ -11,8 +11,7 @@ import {message} from './Message';
 
 /**
  *  Support for publishing multiple Messages in the DOM.
- *
- *  @private
+ *  @internal
  */
 export const messageSource = hoistCmp.factory({
     displayName: 'MessageSource',

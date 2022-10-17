@@ -57,12 +57,10 @@ export function useLocalModel<T extends HoistModel>(spec?: HoistModelClass<T> | 
 
 
 /**
- * @private
+ * Integrate a HoistModel owned by a component into the component's lifecycle, enabling support for
+ * both the Loading lifecycle and destruction. No-op, if model is null.
  *
- * Integrate a HoistModel owned by a component into the component's lifecycle,
- * enabling support for both the Loading lifecycle and destruction.
- *
- * No-op, if model is null.
+ * @internal
  */
 /* eslint-disable react-hooks/exhaustive-deps */
 export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, props: object) {
@@ -124,10 +122,9 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
 
 
 /**
- * @package -- not for application use.
- *
  * Default Context for useLocalModel.  Set by HoistComponent during render to minimize app
- * boiler plate required.
+ * boilerplate required.
  * @type {null}
+ * @internal
  */
 export const localModelContext = {modelLookup: null, props: null};
