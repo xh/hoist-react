@@ -464,7 +464,7 @@ export class GridModel extends HoistModel {
      * construction time. This is the state without any saved grid state or user changes applied.
      * This method will clear the persistent grid state saved for this grid, if any.
      *
-     * @return {boolean} true if defaults were restored
+     * @returns {boolean} true if defaults were restored
      */
     async restoreDefaultsAsync() {
         if (this.restoreDefaultsWarning) {
@@ -657,17 +657,17 @@ export class GridModel extends HoistModel {
         }
     }
 
-    /** @return {boolean} - true if any records are selected. */
+    /** @returns {boolean} - true if any records are selected. */
     get hasSelection() {return !this.selModel.isEmpty}
 
-    /** @return {StoreRecord[]} - currently selected records. */
+    /** @returns {StoreRecord[]} - currently selected records. */
     get selectedRecords() {return this.selModel.selectedRecords}
 
-    /** @return {StoreRecordId[]} - IDs of currently selected records. */
+    /** @returns {StoreRecordId[]} - IDs of currently selected records. */
     get selectedIds() {return this.selModel.selectedIds}
 
     /**
-     * @return {?StoreRecord} - single selected record, or null if multiple/no records selected.
+     * @returns {?StoreRecord} - single selected record, or null if multiple/no records selected.
      *
      * Note that this getter will also change if just the data of selected record is changed
      * due to store loading or editing.  Applications only interested in the identity
@@ -676,7 +676,7 @@ export class GridModel extends HoistModel {
     get selectedRecord() {return this.selModel.selectedRecord}
 
     /**
-     * @return {?StoreRecordId} - ID of selected record, or null if multiple/no records selected.
+     * @returns {?StoreRecordId} - ID of selected record, or null if multiple/no records selected.
      *
      * Note that this getter will *not* change if just the data of selected record is changed
      * due to store loading or editing.  Applications also interested in the contents of the
@@ -684,7 +684,7 @@ export class GridModel extends HoistModel {
      */
     get selectedId() {return this.selModel.selectedId}
 
-    /** @return {boolean} - true if this grid has no records to show in its store. */
+    /** @returns {boolean} - true if this grid has no records to show in its store. */
     get empty() {return this.store.empty}
 
     get isReady() {return this.agGridModel.isReady}
@@ -1122,7 +1122,7 @@ export class GridModel extends HoistModel {
      *      will be used, if any, or the first overall StoreRecord in the grid.
      * @param {string} [colId] - ID of column on which to start editing. If unspecified, the first
      *      editable column will be used.
-     * @return {Promise<void>}
+     * @returns {Promise<void>}
      */
     async beginEditAsync({record, colId} = {}) {
         await this.whenReadyAsync();
@@ -1184,7 +1184,7 @@ export class GridModel extends HoistModel {
      * Stop an inline editing session, if one is in-progress.
      * @param {boolean} dropPendingChanges - true to cancel current edit without saving pending
      *      changes in the active editor(s) to the backing StoreRecord.
-     * @return {Promise<void>}
+     * @returns {Promise<void>}
      */
     async endEditAsync(dropPendingChanges = false) {
         await this.whenReadyAsync();
@@ -1218,7 +1218,7 @@ export class GridModel extends HoistModel {
      * subject to a minimal async debounce.
      *
      * @param {number} [timeout] - timeout in ms
-     * @return {Promise<boolean>} - latest ready state of grid
+     * @returns {Promise<boolean>} - latest ready state of grid
      */
     async whenReadyAsync(timeout = 3 * SECONDS) {
         try {
@@ -1611,7 +1611,7 @@ export class GridModel extends HoistModel {
  *      added/removed from a row, via rowClassRules config.
  * @param {RowClassParams} agParams - as provided by AG-Grid.
  * @param {?StoreRecord} agParams.data - the backing Hoist record, if any.
- * @return {boolean} - true if the class to which this function is keyed should be added, false if
+ * @returns {boolean} - true if the class to which this function is keyed should be added, false if
  *      it should be removed.
  */
 

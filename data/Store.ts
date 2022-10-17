@@ -564,7 +564,7 @@ export class Store extends HoistBase {
 
     /**
      * @param recOrId, record or the id of a record.
-     * @return true if the StoreRecord is in the store, but currently excluded by a filter.
+     * @returns true if the StoreRecord is in the store, but currently excluded by a filter.
      *      False if the record is either not in the Store at all, or not filtered out.
      */
     recordIsFiltered(recOrId: StoreRecordOrId): boolean {

@@ -68,10 +68,10 @@ export class Field {
  * Parse a value according to a field type.
  * @param val - raw value to parse.
  * @param type - data type of the field to use for possible conversion.
- * @param [defaultValue] - typed value to return if `val` undefined or null.
- * @param [disableXssProtection] - true to disable XSS (cross-site scripting) protection.
- *      {@see FieldConfig} docs for additional details.
- * @return resulting value, potentially parsed or cast as per type.
+ * @param defaultValue - typed value to return if `val` undefined or null.
+ * @param disableXssProtection - true to disable XSS (cross-site scripting) protection.
+ *      @see {@link FieldConfig} docs for additional details.
+ * @returns resulting value, potentially parsed or cast as per type.
  */
 export function parseFieldValue(
     val: any,
@@ -138,7 +138,7 @@ export type FieldType = typeof FieldType[keyof typeof FieldType];
 
 /**
  * @param fieldName - short name / code for a field.
- * @return fieldName transformed into user-facing / longer name for display.
+ * @returns fieldName transformed into user-facing / longer name for display.
  */
 export function genDisplayName(fieldName: string): string {
     return fieldName === 'id' ? 'ID' : startCase(fieldName);

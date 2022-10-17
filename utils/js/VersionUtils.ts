@@ -46,7 +46,7 @@ export function checkMaxVersion(version: string, maxVersion: string): boolean {
 /**
  * Normalizes a Java/Maven style x.0-SNAPSHOT version to a semver compatible x.0.0-SNAPSHOT string.
  * @param version
- * @return normalized version, if input matched as above, or input version unmodified.
+ * @returns normalized version, if input matched as above, or input version unmodified.
  */
 export function normalizeVersion(version: string): string {
     const isTwoDigitSnap = /^\d+\.0-SNAPSHOT$/.test(version);

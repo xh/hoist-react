@@ -334,7 +334,7 @@ export const Icon = {
  *
  * @param iconElem - react element representing a Hoist Icon component.
  *      This must be element created by Hoist's built-in Icon factories.
- * @return  html of the <svg> tag representing the icon.
+ * @returns  html of the <svg> tag representing the icon.
  */
 export function convertIconToHtml(iconElem: ReactElement): string {
     throwIf(!(iconElem?.type as any)?.isHoistComponent,

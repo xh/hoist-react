@@ -49,13 +49,13 @@ export class RestFormModel extends HoistModel {
 
     /**
      * @param {String} field
-     * @return {RestField}
+     * @returns {RestField}
      */
     getStoreField(field) {return this.store.getField(field)}
 
     /**
      * @param {String} field
-     * @return {FieldModel}
+     * @returns {FieldModel}
      */
     getFormFieldModel(field) {return this.formModel.getField(field)}
 

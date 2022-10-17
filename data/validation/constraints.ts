@@ -140,7 +140,7 @@ export function dateIs(c: {
 * Apply a constraint to an array of values, e.g values coming from a tag picker.
 *
 * @param constraint - the executed constraint function to use on each individual value.
-* @return a constraint appropriate for an array of values.
+* @returns a constraint appropriate for an array of values.
 */
 export function constrainAll<T>(constraint: Constraint<T>): Constraint<T[]> {
     return (fieldState, map) => {

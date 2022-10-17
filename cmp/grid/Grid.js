@@ -852,5 +852,5 @@ class GridLocalModel extends HoistModel {
 /**
  * @callback Grid~groupRowRendererFn - renderer for a group row
  * @param {ICellRendererParams} context - The group renderer params from ag-Grid.
- * @return {Element} - the formatted value for display.
+ * @returns {Element} - the formatted value for display.
  */

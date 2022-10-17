@@ -241,7 +241,7 @@ export abstract class HoistBase {
         }
     }
 
-    /** @return {boolean} - true if this instance has been destroyed. */
+    /** @returns {boolean} - true if this instance has been destroyed. */
     get isDestroyed() {return this._destroyed}
 
     /**

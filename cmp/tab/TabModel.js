@@ -92,17 +92,17 @@ export class TabModel extends HoistModel {
         this.containerModel.activateTab(this.id);
     }
 
-    /** @return {RenderMode} */
+    /** @returns {RenderMode} */
     get renderMode() {
         return this._renderMode ?? this.containerModel.renderMode;
     }
 
-    /** @return {RefreshMode} */
+    /** @returns {RefreshMode} */
     get refreshMode() {
         return this._refreshMode ?? this.containerModel.refreshMode;
     }
 
-    /** @return {boolean} */
+    /** @returns {boolean} */
     @computed
     get isActive() {
         return this.containerModel.activeTabId === this.id;

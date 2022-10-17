@@ -22,7 +22,7 @@ import {useImperativeHandle} from 'react';
  * @param {function} component - React Component to render - should be a HoistInput
  * @param {Object} props - props passed to containing component
  * @param {Object} ref - forwardRef passed to containing component
- * @return {ReactElement} - React Element to be rendered
+ * @returns {ReactElement} - React Element to be rendered
  */
 export function useInlineEditorModel(component, props, ref) {
     const {className, inputProps, agParams} = props,

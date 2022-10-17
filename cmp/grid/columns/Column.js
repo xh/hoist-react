@@ -504,7 +504,7 @@ export class Column {
 
     /**
      * @param {StoreRecord} record
-     * @return {boolean} - true if this column supports editing its field for the given StoreRecord.
+     * @returns {boolean} - true if this column supports editing its field for the given StoreRecord.
      */
     isEditableForRecord(record) {
         const {editable, gridModel} = this;
@@ -514,7 +514,7 @@ export class Column {
             editable;
     }
 
-    /** @return {Object} - a Column definition appropriate for AG-Grid. */
+    /** @returns {Object} - a Column definition appropriate for AG-Grid. */
     getAgSpec() {
         const {gridModel, field, headerName, displayName, agOptions} = this,
             ret = {
@@ -850,7 +850,7 @@ export class Column {
 
 /**
  * @param {(Column|ColumnGroup)} column
- * @return {function(*): string[]}
+ * @returns {function(*): string[]}
  */
 export function getAgHeaderClassFn(column) {
     // Generate CSS classes for headers.
@@ -905,28 +905,28 @@ export function getAgHeaderClassFn(column) {
  *      Note that columns with renderers that access/rely on record fields other than the primary
  *      value should also have their `rendererIsComplex` flag set to true to ensure they are
  *      re-run whenever the record (and not just the primary value) changes.
- * @return {Element} - the formatted value for display.
+ * @returns {Element} - the formatted value for display.
  */
 
 /**
  * @callback Column~exportValueFn - function to return a value for export.
  * @param {*} value - cell data value (column + row).
  * @param {CellContext} context - additional data about the column, row and GridModel.
- * @return {*} - value for export.
+ * @returns {*} - value for export.
  */
 
 /**
  * @callback Column~sortValueFn - function to return a value for sorting.
  * @param {*} value - cell data value (column + row).
  * @param {CellContext} context - additional data about the column, row and GridModel.
- * @return {*} - value for sort.
+ * @returns {*} - value for sort.
  */
 
 /**
  * @callback Column~cellClassFn - function to generate grid cell CSS classes.
  * @param {*} value - cell data value (column + row).
  * @param {CellContext} context - additional data about the column, row and GridModel.
- * @return {(string|string[])} - CSS class(es) to use.
+ * @returns {(string|string[])} - CSS class(es) to use.
  */
 
 /**
@@ -935,14 +935,14 @@ export function getAgHeaderClassFn(column) {
  * @param {CellClassParams} agParams - as provided by Ag-Grid.
  * @param {*} agParams.value - the current cell value.
  * @param {?StoreRecord} agParams.data - the backing Hoist record for the row, if any.
- * @return {boolean} - true if the class to which this function is keyed should be added, false if
+ * @returns {boolean} - true if the class to which this function is keyed should be added, false if
  *      it should be removed.
  */
 
 /**
  * @callback Column~headerClassFn - function to generate header CSS classes.
  * @param {HeaderContext} context - contains data about the column and GridModel.
- * @return {(string|string[])} - CSS class(es) to use.
+ * @returns {(string|string[])} - CSS class(es) to use.
  */
 
 /**
@@ -964,7 +964,7 @@ export function getAgHeaderClassFn(column) {
  * @callback Column~tooltipFn - normalized renderer function to produce a grid column tooltip.
  * @param {*} value - cell data value (column + row).
  * @param {TooltipMetadata} metadata - additional data about the column and row.
- * @return {string} - the formatted value for display.
+ * @returns {string} - the formatted value for display.
  */
 
 /**
@@ -979,7 +979,7 @@ export function getAgHeaderClassFn(column) {
  * @callback Column~tooltipElementFn - function for a grid cell tooltip returning a React element.
  * @param {*} value - tooltip value.
  * @param {TooltipMetadata} metadata - additional data about the column and row.
- * @return {Element} - the React element to show as a tooltip.
+ * @returns {Element} - the React element to show as a tooltip.
  */
 
 /**
@@ -994,7 +994,7 @@ export function getAgHeaderClassFn(column) {
  * @param {GridModel} gridModel - gridModel for the grid.
  * @param {Object} [agParams] - the ag-Grid header value getter params. Not present when called
  *      during ColumnHeader rendering.
- * @return {element} - the header name to render in the Column header
+ * @returns {element} - the header name to render in the Column header
  */
 
 /**
@@ -1006,7 +1006,7 @@ export function getAgHeaderClassFn(column) {
  * @param {Store} params.store - Store containing the grid data.
  * @param {Column} params.column - column for the cell being edited.
  * @param {GridModel} params.gridModel - gridModel for the grid.
- * @return {boolean} - true if cell is editable
+ * @returns {boolean} - true if cell is editable
  */
 
 /**
@@ -1016,7 +1016,7 @@ export function getAgHeaderClassFn(column) {
  * @param {StoreRecord} params.record - row-level data record.
  * @param {Column} params.column - column for the cell being edited.
  * @param {GridModel} params.gridModel - gridModel for the grid.
- * @return {Element} - the React element to use as the cell editor.
+ * @returns {Element} - the React element to use as the cell editor.
  */
 
 /**
