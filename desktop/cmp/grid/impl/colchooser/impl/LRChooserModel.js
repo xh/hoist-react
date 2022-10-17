@@ -4,7 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
-import {filter, isEmpty, sortBy, maxBy} from 'lodash';
+import {filter, isEmpty, sortBy, maxBy, includes} from 'lodash';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
@@ -105,7 +105,6 @@ export class LRChooserModel extends HoistModel {
         super();
         makeObservable(this);
         this.onChange = onChange;
-        window.lrModel = this;
         const store = {
             fields: [
                 {name: 'text', type: 'string'},
@@ -215,153 +214,6 @@ export class LRChooserModel extends HoistModel {
         });
     }
 
-    getNestingDepth(rows) {
-        let count = 0;
-        rows.forEach(row => row.forEachDescendant(() => count++));
-        return count;
-    }
-
-    reorderData() {
-        let sortOrder = 0,
-            rightStore = sortBy(this.rightModel.store.rootRecords, 'raw.sortOrder');
-
-        rightStore.forEach(rec => rec.forEachDescendant(row => {
-            row.raw.sortOrder = sortOrder;
-            sortOrder++;
-        }));
-        this.refreshStores();
-    }
-
-    split(row, toIndex, side) {
-        const ancestors = sortBy(row.allAncestors, 'raw.sortOrder'),
-            // make new ancestors for the moved row
-            newAncestors = ancestors.map((node, idx) => {
-                return {
-                    id: XH.genId(),
-                    side,
-                    text: node.data.text,
-                    name: node.data.text,
-                    sortOrder: toIndex + idx + 1
-                };
-            });
-
-        // make a completely new row as the child of the last ancestor
-        const newChild = {
-            children: row.raw.children,
-            text: row.raw.text,
-            description: row.raw.description,
-            exclude: row.raw.exclude,
-            locked: row.raw.visible,
-            side,
-            sortOrder: toIndex + ancestors.length + 1
-        };
-
-        if (row.raw.value) {
-            newChild.id = `${newAncestors[ancestors.length - 1].id}>>${row.raw.value}`;
-            newChild.value = row.raw.value;
-            newChild.isLeaf = true;
-        } else {
-            newChild.id = `${newAncestors[ancestors.length - 1].id}>>${row.raw.name}`;
-            newChild.children = row.raw.children.map((child, idx) => {
-                return {
-                    ...child,
-                    sortOrder: toIndex + ancestors.length + idx + 2
-                };
-            });
-        }
-
-        if (ancestors.length === 2) {
-            newAncestors[1].children = [newChild];
-            // lowest ancestor is then made the parent of the next
-            newAncestors[0].children = [newAncestors[1]];
-
-            // remove the moved child row from its old ancestor
-            ancestors[1].raw.children = ancestors[1].raw.children.filter(col => col.id !== row.id);
-        } else {
-            newAncestors[0].children = [newChild];
-            ancestors[0].raw.children = ancestors[0].raw.children.filter(col => col.id !== row.id);
-        }
-
-        // put the new ancestors in _data to be refreshed
-        this._data.push(newAncestors[0]);
-        this.refreshStores();
-    }
-
-    appendRows(rows) {
-        const rightStore = this.rightModel.store.allRecords;
-        let lastSortOrder = maxBy(rightStore, rec => rec.data.sortOrder).data.sortOrder;
-
-        const row = rows[0];
-        if (!isEmpty(row.allAncestors)) {
-            this.split(row, lastSortOrder + 1, 'right');
-            return;
-        }
-
-        const append = row => {
-            lastSortOrder++;
-            row.raw.sortOrder = lastSortOrder;
-        };
-        rows.forEach(row => {row.forEachDescendant(append)});
-    }
-
-    shiftRows(rows, toIndex, depth) {
-        const shift = row => {
-            if (toIndex <= row.data.sortOrder) {
-                row.raw.sortOrder += depth;
-            }
-        };
-
-        rows.forEach(row => row.forEachDescendant(shift));
-    }
-
-    insertRows(rows, toIndex) {
-        let idx = toIndex;
-
-        const insert = row => {
-            row.raw.sortOrder = idx;
-            idx++;
-        };
-
-        rows.forEach(row => row.forEachDescendant(insert));
-    }
-
-    // accepts an array containing a single row or multiple rows
-    rearrangeRows(rows, overRow = null) {
-        if (!overRow) {
-            this.appendRows(rows);
-        } else {
-            let toIndex = overRow.data.sortOrder,
-                rightRoots = this.rightModel.store.rootRecords;
-            const depth = this.getNestingDepth(rows);
-            // shift rows by the number of rows being inserted, including nesting
-            const row = rows[0];
-            if (!isEmpty(row.allAncestors)) {
-                const depth = row.allAncestors?.length + row.allChildren?.length + 1;
-                this.shiftRows(rightRoots, toIndex, depth);
-                this.split(row, toIndex, 'right');
-                return;
-            }
-            this.shiftRows(rightRoots, toIndex, depth);
-            // update inserted row sortOrders to fit within the allotted space
-            this.insertRows(rows, toIndex);
-        }
-    }
-
-    swapSides(rows) {
-
-        const row = rows[0];
-        if (!isEmpty(row.allAncestors)) {
-            this.split(row, 0, 'left');
-        }
-
-        rows.forEach(row => {
-            const {locked, side} = row.raw;
-            if (locked) return;
-            row.raw.side = (side === 'left' ? 'right' : 'left');
-        });
-        this.refreshStores();
-    }
-
     // Row Drag Event Handlers
     onLeftDragEnd(e) {
         const rows = (e.nodes).map(r => r.data);
@@ -374,7 +226,6 @@ export class LRChooserModel extends HoistModel {
     onRightDragEnd(e) {
         this._dropTargetId = null;
         this.rightModel.agApi.redrawRows();
-
         const rows = (e.nodes).map(r => r.data),
             overRow = e.overNode?.data;
 
@@ -395,8 +246,8 @@ export class LRChooserModel extends HoistModel {
             });
             this.rearrangeRows(swapped, overRow);
         }
-
-        this.reorderData();
+        this.merge();
+        // this.reorderData();
         this._inRightGrid = false;
         this.onChange?.();
     }
@@ -434,6 +285,240 @@ export class LRChooserModel extends HoistModel {
             this.reorderData();
             this.onChange?.();
         }
+    }
+
+    // accepts an array containing a single row or multiple rows
+    rearrangeRows(rows, overRow = null) {
+        if (!overRow) {
+            this.appendRows(rows);
+        } else {
+            let toIndex = overRow.data.sortOrder,
+                rightRoots = this.rightModel.store.rootRecords;
+            const row = rows[0],
+                splitting = !isEmpty(row.allAncestors) && (row.parentId !== overRow.parentId),
+                depth = splitting ?
+                    row.allAncestors?.length + this.getNestingDepth([row]) :
+                    this.getNestingDepth(rows);
+            // shift rows by the number of rows being inserted, including nesting
+            this.shiftRows(rightRoots, toIndex, depth);
+            if (splitting) {
+                // split a nested row
+                this.split(row, toIndex, 'right');
+            } else {
+                // update inserted row sortOrders to fit within the allotted space
+                this.insertRows(rows, toIndex);
+            }
+        }
+    }
+
+    // TODO: may cause problems with selecting multiple nested rows?
+    getNestingDepth(rows) {
+        let count = 0;
+        rows.forEach(row => row.forEachDescendant(() => count++));
+        return count;
+    }
+
+    reorderData() {
+        let sortOrder = 0,
+            rightStore = sortBy(this.rightModel.store.rootRecords, 'raw.sortOrder');
+
+        rightStore.forEach(rec => rec.forEachDescendant(row => {
+            row.raw.sortOrder = sortOrder;
+            sortOrder++;
+        }));
+        this.refreshStores();
+    }
+
+    merge() {
+        let data = sortBy(this._data, 'sortOrder'),
+            ids = [],
+            rowOne,
+            rowTwo;
+
+        for (let i = 0; i < data.length - 1; i++) {
+            rowOne = data[i];
+            rowTwo = data[i + 1];
+            if (rowOne.text === rowTwo.text) {
+                rowOne.children.push(...rowTwo.children);
+                rowOne.children = this.mergeRecursive(rowOne.children);
+                ids.push(rowTwo.id);
+            }
+        }
+
+        this._data = data.filter(row => {
+            if (!includes(ids, row.id) && !(!row.isLeaf && isEmpty(row.children))) return row;
+        });
+
+        this.refreshStores();
+    }
+
+    mergeRecursive(rows) {
+        console.log('now merging: ', rows);
+        let idsToDelete = [],
+            rowOne,
+            rowTwo;
+        for (let i = 0; i < rows.length - 1; i++) {
+            for (let j = i + 1; j < rows.length; j++) {
+                rowOne = rows[i];
+                rowTwo = rows[j];
+                if (rowOne.text === rowTwo.text) {
+                    rowOne.children.push(...rowTwo.children);
+                    if (!isEmpty(rowOne.children)) rowOne.children = this.mergeRecursive(rowOne.children);
+                    rowOne.children = this.reorderChildren(rowOne.children, rowOne.sortOrder);
+                    idsToDelete.push(rowTwo.id);
+                }
+            }
+        }
+        return isEmpty(idsToDelete) ? rows : rows.filter(row => !includes(idsToDelete, row.id));
+    }
+
+    split(row, toIndex, side) {
+        const {isLeaf, children, text, value, exclude, locked, description, name} = row.raw,
+            ancestors = sortBy(row.allAncestors, 'raw.sortOrder'),
+            newAncestors = ancestors.map((row, idx) => {
+                return {
+                    id: XH.genId(),
+                    side,
+                    text: row.data.text,
+                    name: row.data.text,
+                    sortOrder: toIndex + idx
+                };
+            }),
+            newNode = {
+                children: children,
+                text: text,
+                side,
+                sortOrder: toIndex + ancestors.length
+            },
+            nextAncestor = newAncestors[ancestors.length - 1];
+
+        let data = this._data;
+
+        if (isLeaf) {
+            newNode.id = `${nextAncestor.id}>>${value}`;
+            newNode.value = value;
+            newNode.isLeaf = true;
+            newNode.description = description;
+            newNode.exclude = exclude;
+            newNode.locked = locked;
+        } else {
+            newNode.id = `${nextAncestor.id}>>${name}`;
+            newNode.children = this.reorderChildren(children, toIndex + ancestors.length);
+        }
+
+        newAncestors[newAncestors.length - 1].children = [newNode];
+
+        for (let i = 0; i < ancestors.length - 1; i++) {
+            newAncestors[i].children = [newAncestors[i + 1]];
+        }
+
+        // remove the split row from its original ancestor
+        ancestors[ancestors.length - 1].raw.children = filter(
+            ancestors[ancestors.length - 1].raw.children,
+            (col => col.id !== row.id)
+        );
+
+        function removeNodes(root) {
+            let ids = [];
+            root.children.forEach(row => {
+                if (!row.isLeaf) {
+                    if (isEmpty(row.children)) {
+                        ids.push(row.id);
+                    } else {
+                        row.children = removeNodes(row);
+                    }
+                }
+            });
+            return filter(root.children, row => ids.indexOf(row.id) === -1);
+        }
+
+        let rootId = ancestors[0].id,
+            root = filter(data, row => row.id === rootId)[0];
+        console.log('root:', root);
+        if (isEmpty(root.children)) {
+            console.log('deleting root');
+            data = filter(data, row => row.id !== rootId);
+        } else {
+            root.children = removeNodes(root);
+        }
+
+        // put the new ancestors in _data to be refreshed
+        data.push(newAncestors[0]);
+        this._data = data;
+
+        this.refreshStores();
+    }
+
+    reorderChildren(children, toIndex) {
+        let sortOrder = toIndex;
+
+        function traverseChildren(children) {
+            return children.map((child, idx) => {
+                sortOrder += idx;
+                child.sortOrder = sortOrder;
+                if (!isEmpty(child.children)) {
+                    child.children = traverseChildren(child.children, sortOrder);
+                }
+                return child;
+            });
+        }
+
+        return traverseChildren(children);
+
+    }
+
+    appendRows(rows) {
+        const rightStore = this.rightModel.store.allRecords;
+        let lastSortOrder = maxBy(rightStore, rec => rec.data.sortOrder).data.sortOrder;
+
+        const row = rows[0];
+        if (!isEmpty(row.allAncestors)) {
+            this.split(row, lastSortOrder + 1, 'right');
+            return;
+        }
+
+        const append = row => {
+            lastSortOrder++;
+            row.raw.sortOrder = lastSortOrder;
+        };
+        rows.forEach(row => {row.forEachDescendant(append)});
+    }
+
+    shiftRows(rows, toIndex, depth) {
+        const shift = row => {
+            if (row.data.sortOrder >= toIndex) {
+                row.raw.sortOrder += depth;
+            }
+        };
+
+        rows.forEach(row => row.forEachDescendant(shift));
+    }
+
+    insertRows(rows, toIndex) {
+        let idx = toIndex;
+
+        const insert = row => {
+            row.raw.sortOrder = idx;
+            idx++;
+        };
+
+        rows.forEach(row => row.forEachDescendant(insert));
+    }
+
+    swapSides(rows) {
+
+        const row = rows[0];
+        if (!isEmpty(row.allAncestors)) {
+            this.split(row, 0, 'left');
+        }
+
+        rows.forEach(row => {
+            const {locked, side} = row.raw;
+            if (locked) return;
+            row.raw.side = (side === 'left' ? 'right' : 'left');
+        });
+
+        this.refreshStores();
     }
 
     loadReaction() {
