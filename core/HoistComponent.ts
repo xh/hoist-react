@@ -37,7 +37,7 @@ import {
  * Configuration for creating a Component.  May be specified either as a render function,
  * or an object containing a render function and associated metadata.
  */
-export type ComponentConfig<P extends HoistProps, M extends HoistModel> =
+export type ComponentConfig<P extends HoistProps> =
     ((props: P, ref?: ForwardedRef<any>) => ReactNode) |
     {
 
@@ -50,7 +50,7 @@ export type ComponentConfig<P extends HoistProps, M extends HoistModel> =
      * return of {@link uses} or {@link creates} - these factory functions will create a spec for
      * either externally-provided or internally-created models. Defaults to `uses('*')`.
      */
-    model?: ModelSpec<M>|boolean;
+    model?: ModelSpec<P['model']>|boolean;
 
     /**
      * Base CSS class for this component. Will be combined with any className
@@ -105,9 +105,10 @@ export type ComponentConfig<P extends HoistProps, M extends HoistModel> =
  *   - `hoistComponent.withFactory` - returns a 2-element list containing both the newly defined
  *          Component and an elemFactory for it.
  */
-export function hoistComponent<A extends HoistModel|HoistProps = HoistModel, B extends HoistModel = HoistModel>(
-    config: ComponentConfig<A extends HoistModel ? HoistProps<A>: A, A extends HoistModel ? A : B>
-): FunctionComponent<A extends HoistModel ? HoistProps<A> : A>  {
+export function hoistComponent<T extends HoistProps>(config: ComponentConfig<T>): FunctionComponent<T>;
+export function hoistComponent<T extends HoistModel>(config: ComponentConfig<HoistProps<T>>): FunctionComponent<HoistProps<T>>;
+
+export function hoistComponent(config: ComponentConfig<HoistProps>): FunctionComponent {
     // 0) Pre-process/parse args.
     if (isFunction(config)) config = {render: config, displayName: config.name};
 
@@ -167,6 +168,21 @@ export function hoistComponent<A extends HoistModel|HoistProps = HoistModel, B e
  */
 export const hoistCmp = hoistComponent;
 
+export function hoistComponentFactory<T extends HoistModel>(config: ComponentConfig<HoistProps<T>>): ElemFactory<HoistProps<T>>;
+export function hoistComponentFactory<T extends HoistProps>(config: ComponentConfig<T>): ElemFactory<T>;
+
+export function hoistComponentFactory(config: ComponentConfig<HoistProps>): ElemFactory {
+    return elemFactory(hoistComponent(config));
+}
+
+export function hoistComponentWithFactory<T extends HoistModel>(config: ComponentConfig<HoistProps<T>>): [FunctionComponent<HoistProps<T>>, ElemFactory<HoistProps<T>>];
+export function hoistComponentWithFactory<T extends HoistProps>(config: ComponentConfig<T>):[FunctionComponent<T>, ElemFactory<T>];
+
+export function hoistComponentWithFactory(config: ComponentConfig<HoistProps>): [FunctionComponent, ElemFactory] {
+    const ret = hoistComponent(config);
+    return [ret, elemFactory(ret)];
+}
+
 /**
  * Create a new Hoist functional component and return an element factory for it.
  *
@@ -176,26 +192,14 @@ export const hoistCmp = hoistComponent;
  *
  * @returns an elementFactory function for use within parent comp render() functions.
  */
-hoistComponent.factory = function<A extends HoistModel|HoistProps = HoistModel, B extends HoistModel = HoistModel>(
-    config: ComponentConfig<A extends HoistModel ? HoistProps<A>: A, A extends HoistModel ? A : B>
-): ElemFactory<A extends HoistModel ? HoistProps<A> : A> {
-    return elemFactory(hoistComponent(config));
-};
+hoistComponent.factory = hoistComponentFactory;
 
 /**
  * Create a new Hoist functional component and return it *and* a corresponding element factory.
  *
  * @returns Array, with the Component as the first element and its elemFactory as the second.
  */
-hoistComponent.withFactory = function<A extends HoistModel|HoistProps = HoistModel, B extends HoistModel = HoistModel>(
-    config: ComponentConfig<A extends HoistModel ? HoistProps<A>: A, A extends HoistModel ? A : B>
-): [
-    FunctionComponent<A extends HoistModel ? HoistProps<A> : A>,
-    ElemFactory<A extends HoistModel ? HoistProps<A> : A>
-] {
-    const ret = hoistComponent(config);
-    return [ret, elemFactory(ret)];
-};
+hoistComponent.withFactory = hoistComponentWithFactory;
 
 
 //------------------------------------
