@@ -44,6 +44,8 @@ export class DifferModel extends HoistModel {
     @bindable
     hasLoaded = false;
 
+    get readonly() {return this.parentModel?.gridModel.readonly}
+
     applyRemoteAction = {
         text: 'Apply Remote',
         icon: Icon.cloudDownload(),
@@ -52,8 +54,8 @@ export class DifferModel extends HoistModel {
             const selection = selectedRecords || [record];
             this.confirmApplyRemote(selection);
         },
-        recordsRequired: true,
-        hidden: !XH.getUser().isHoistAdmin
+        displayFn: () => ({hidden: this.readonly}),
+        recordsRequired: true
     };
 
     get remoteHosts() {

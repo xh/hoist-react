@@ -40,7 +40,8 @@ export class LogViewerModel extends HoistModel {
         icon: Icon.delete(),
         intent: 'danger',
         recordsRequired: true,
-        actionFn: () => this.deleteSelectedAsync()
+        actionFn: () => this.deleteSelectedAsync(),
+        displayFn: () => ({hidden: !XH.getUser().isHoistAdmin})
     };
 
     downloadFileAction = {
