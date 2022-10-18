@@ -12,10 +12,11 @@ import '@xh/hoist/mobile/register';
 
 /**
  * Convenience configuration for the `theme` AppOption.
- * @param {{}} [formFieldProps]
- * @param {{}} [inputProps]
  */
-export const themeAppOption = ({formFieldProps, inputProps} = {}) => {
+export const themeAppOption = ({
+    formFieldProps,
+    inputProps
+}: ThemeAppOptionSpec = {}) => {
     return {
         name: 'theme',
         formField: {
@@ -50,3 +51,10 @@ export const themeAppOption = ({formFieldProps, inputProps} = {}) => {
         valueSetter: (v) => XH.setTheme(v)
     };
 };
+
+interface ThemeAppOptionSpec {
+    /** Props for nested FormField - todo: replace with FormFieldProps */
+    formFieldProps?: Record<string, any>,
+    /** Props for nested ButtonGroupInput - todo: replace with ButtonGroupInputProps */
+    inputProps?: Record<string, any>
+}

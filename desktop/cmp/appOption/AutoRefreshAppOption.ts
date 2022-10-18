@@ -5,15 +5,16 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {switchInput} from '@xh/hoist/mobile/cmp/input';
-import '@xh/hoist/mobile/register';
+import {switchInput} from '@xh/hoist/desktop/cmp/input';
+import '@xh/hoist/desktop/register';
 
 /**
  * Convenience configuration for the `autoRefresh` AppOption.
- * @param {{}} [formFieldProps]
- * @param {{}} [inputProps]
  */
-export const autoRefreshAppOption = ({formFieldProps, inputProps} = {}) => {
+export const autoRefreshAppOption = ({
+    formFieldProps,
+    inputProps
+}: AutoRefreshAppOptionSpec = {}) => {
     return {
         omit: XH.autoRefreshService.interval <= 0,
         name: 'autoRefresh',
@@ -26,3 +27,10 @@ export const autoRefreshAppOption = ({formFieldProps, inputProps} = {}) => {
         }
     };
 };
+
+interface AutoRefreshAppOptionSpec {
+    /** Props for nested FormField - todo: replace with FormFieldProps */
+    formFieldProps?: Record<string, any>,
+    /** Props for nested SwitchInput - todo: replace with SwitchInputProps */
+    inputProps?: Record<string, any>
+}

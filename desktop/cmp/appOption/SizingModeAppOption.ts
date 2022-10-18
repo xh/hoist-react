@@ -4,19 +4,20 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {SizingMode, XH} from '@xh/hoist/core';
-import {button} from '@xh/hoist/mobile/cmp/button';
-import {buttonGroupInput} from '@xh/hoist/mobile/cmp/input';
-import '@xh/hoist/mobile/register';
+import {AppOptionSpec, SizingMode, XH} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
+import '@xh/hoist/desktop/register';
 import {startCase, values} from 'lodash';
 
 /**
  * Convenience configuration for the `sizingMode` AppOption.
- * @param {SizingMode[]} [modes] - Supported SizingModes
- * @param {{}} [formFieldProps]
- * @param {{}} [inputProps]
  */
-export const sizingModeAppOption = ({modes, formFieldProps, inputProps} = {}) => {
+export const sizingModeAppOption = ({
+    modes,
+    formFieldProps,
+    inputProps
+}: SizingModeAppOptionSpec = {}): AppOptionSpec => {
     if (!modes) modes = values(SizingMode);
     return {
         name: 'sizingMode',
@@ -31,7 +32,6 @@ export const sizingModeAppOption = ({modes, formFieldProps, inputProps} = {}) =>
                         fontSize: `var(--xh-grid-${mode}-font-size-px)`
                     }
                 })),
-                width: '100%',
                 ...inputProps
             }),
             ...formFieldProps
@@ -40,3 +40,12 @@ export const sizingModeAppOption = ({modes, formFieldProps, inputProps} = {}) =>
         valueSetter: (v) => XH.setSizingMode(v)
     };
 };
+
+interface SizingModeAppOptionSpec {
+    /** Supported SizingModes */
+    modes?: SizingMode[],
+    /** Props for nested FormField - todo: replace with FormFieldProps */
+    formFieldProps?: Record<string, any>,
+    /** Props for nested ButtonGroupInput - todo: replace with ButtonGroupInputProps */
+    inputProps?: Record<string, any>
+}
