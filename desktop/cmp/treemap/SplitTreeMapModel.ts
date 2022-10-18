@@ -187,7 +187,7 @@ type SplitTreeMapFilterFn = (record: RawData|StoreRecord) => boolean;
  * Function to generate the region title to display.
  * `isPrimary` is true if the region is the primary (top/left) map in the pair.
  */
-type SplitTreeMapTitleFn = (treeMapModel: TreeMapModel, isPrimary:boolean) => string|ReactNode;
+type SplitTreeMapTitleFn = (treeMapModel: TreeMapModel, isPrimary: boolean) => ReactNode;
 
 /**
  * Layout orientation:

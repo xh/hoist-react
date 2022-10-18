@@ -109,7 +109,7 @@ class TreeMapLocalModel extends HoistModel {
     clickCount = 0;
     debouncedClickHandler;
 
-    _prevConfig;
+    private prevConfig;
 
     get theme() {
         if (this.model.theme && this.model.theme !== 'system') return this.model.theme;
@@ -156,12 +156,12 @@ class TreeMapLocalModel extends HoistModel {
         // recreate the entire chart or just reload the series data.
         const config = this.getMergedConfig(),
             chartCfg = omit(config, 'series', 'tooltip'),
-            canUpdateInPlace = this.chart && equal(chartCfg, this._prevConfig);
+            canUpdateInPlace = this.chart && equal(chartCfg, this.prevConfig);
 
         if (canUpdateInPlace) {
             this.reloadSeriesData(config.series[0].data);
         } else {
-            this._prevConfig = cloneDeep(chartCfg);
+            this.prevConfig = cloneDeep(chartCfg);
             this.createChart(config);
         }
 
