@@ -7,7 +7,15 @@
 
 import {XH, managed, LoadSupport, LoadSpec, Loadable} from '@xh/hoist/core';
 
-import {Store} from './Store';
+import {Store, StoreConfig} from './Store';
+
+export interface UrlStoreConfig extends StoreConfig {
+    /** URL from which to load data. */
+    url: string;
+
+    /** Property name (key) of the object returned by URL from which to extract record data. */
+    dataRoot?: string;
+}
 
 /**
  * A store with built-in support for loading data from a URL.
@@ -20,16 +28,8 @@ export class UrlStore extends Store implements Loadable {
     @managed
     loadSupport: LoadSupport = new LoadSupport(this);
 
-    /**
-     * @param url - URL from which to load data.
-     * @param [dataRoot] - Key of root node for records in returned data object.
-     * @param {...*} - Additional arguments to pass to Store.
-     */
-    constructor(
-        {url, dataRoot = null, ...localStoreArgs}:
-        {url: string, dataRoot?: string, [key:string]:any}
-    ) {
-        super(localStoreArgs as any);
+    constructor({url, dataRoot = null, ...storeConfig}: UrlStoreConfig) {
+        super(storeConfig);
         this.url = url;
         this.dataRoot = dataRoot;
     }
@@ -44,10 +44,7 @@ export class UrlStore extends Store implements Loadable {
         return this.loadSupport.loadAsync(loadSpec);
     }
 
-
-    /**
-     * @internal - call loadAsync() instead.
-     */
+    /** @internal - call loadAsync() instead. */
     async doLoadAsync(loadSpec: LoadSpec): Promise<void> {
         const {url, dataRoot} = this;
         let data = await XH.fetchJson({url, loadSpec});

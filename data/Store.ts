@@ -31,6 +31,133 @@ import { FilterLike } from './filter/Types';
 
 export type RawData = Record<string, any>;
 
+export interface StoreConfig {
+
+    /** Field names, configs, or instances. */
+    fields: string[]|FieldConfig[]|Field[];
+
+    /**
+     * Default configs applied to `Field` instances constructed internally by this Store.
+     * @see FieldConfig
+     */
+    fieldDefaults?: any;
+
+    /**
+     * Specification for producing an immutable unique id for each record. May be provided as
+     * either a string property name (default is 'id') or a function that receives the raw data
+     * and returns a string. This property will be normalized to a function upon Store construction.
+     * If there is no natural id to select/generate, you can use `XH.genId` to generate a unique id
+     * on the fly. NOTE that in this case, grids and other components bound to this store will not
+     * be able to maintain record state across reloads.
+     */
+    idSpec?: string | ((data: RawData) => StoreRecordId);
+
+    /**
+     * Initial data to load in to the Store.
+     */
+    data?: RawData[]
+
+    /**
+     * Function to run on each individual data object
+     * presented to loadData() prior to creating a StoreRecord from that object. This function
+     * must return an object, cloning the original object if edits are necessary.
+     */
+    processRawData?: (data: RawData) => RawData;
+
+    /**
+     * One or more filters or configs to create one. If an array, a single 'AND' filter
+     * will be created.
+     */
+    filter?: FilterLike;
+
+    /** True if all children of a passing record should also be considered passing (default false).*/
+    filterIncludesChildren?: boolean;
+
+    /** True (default) to load hierarchical/tree data, if any. */
+    loadTreeData?: boolean;
+
+    /**
+     * The property on each raw data object that holds its (raw) child objects, if any.
+     * Default 'children', no effect if `loadTreeData: false`.
+     */
+    loadTreeDataFrom?: string;
+
+    /** True to treat the root node in hierarchical data as the summary record (default false). */
+    loadRootAsSummary?: boolean;
+
+    /**
+     * True to freeze the internal data object of the record. May be set to false to maximize
+     * performance.  Note that the internal data of the record should in all cases be considered
+     * immutable (default true).
+     */
+    freezeData?: boolean;
+
+    /**
+     * Set to true to indicate that the id for a record implies a fixed position of the record
+     * within the any tree hierarchy.  May be set to true to maximize performance (default false).
+     */
+    idEncodesTreePath?: boolean;
+
+    /**
+     * Set to true to indicate that records can be cached and reused based on id and the
+     * raw data object they refer to.  This is a useful optimization for large datasets with
+     * immutable raw data, allowing them to avoid equality checks, object creation, and raw
+     * data processing when reloading reference-identical data. Should not be used if a
+     * processRawData function that depends on external state is provided, as this function
+     * will be circumvented on subsequent reloads.  Default false.
+     */
+    reuseRecords?: boolean;
+
+    /**
+     *  Flags for experimental features. These features are designed for early client-access and
+     *  testing, but are not yet part of the Hoist API.
+     */
+    experimental?: Record<string, any>;
+}
+
+/**
+ * Object representing data changes to perform on a Store's committed record set in a single
+ * transaction.
+ */
+export interface StoreTransaction {
+
+    /**
+     * List of raw data objects representing records to be updated.
+     * Updates must be matched to existing records by id in order to be applied. The form of the
+     * update objects should be the same as presented to loadData(), with the exception that any
+     * children property will be ignored, and any existing children for the record being updated
+     * will be preserved. If the record is a child, the new updated instance will be assigned to
+     * the same parent. (Meaning: parent/child relationships *cannot* be modified via updates.)
+     */
+    update?: RawData[];
+
+    /** Raw data of new records to be added, */
+    add?: (RawData|ChildRawData)[];
+
+    /** IDs of existing records to be removed. Any descendents will also be removed. */
+    remove?: string[];
+
+    /**
+     *  Update to the dedicated summary row for this store.  If the store has its
+     *  `loadRootAsSummary` flag set to true, the summary record should instead be provided via the
+     *  `update` property.
+     */
+    rawSummaryData?: RawData;
+}
+
+export interface ChildRawData {
+
+    /** ID of the pre-existing parent record. */
+    parentId: string;
+
+    /**
+     * Data for the child records to be added. Can include a `children` property to be processed
+     * into new (grand)child records.
+     */
+    rawData: RawData[];
+}
+
+
 /**
  * A managed and observable set of local, in-memory Records.
  */
@@ -896,131 +1023,4 @@ function forIn(obj, fn) {
 
 function isChildRawDataObject(obj):boolean {
     return obj.hasOwnProperty('rawData') && obj.hasOwnProperty('parentId');
-}
-
-
-/**
- * Object representing data changes to perform on a Store's committed record set in a single
- * transaction.
- */
-export interface StoreTransaction {
-
-    /**
-     * List of raw data objects representing records to be updated.
-     * Updates must be matched to existing records by id in order to be applied. The form of the
-     * update objects should be the same as presented to loadData(), with the exception that any
-     * children property will be ignored, and any existing children for the record being updated
-     * will be preserved. If the record is a child, the new updated instance will be assigned to
-     * the same parent. (Meaning: parent/child relationships *cannot* be modified via updates.)
-     */
-   update?: RawData[];
-
-    /** Raw data of new records to be added, */
-   add?: (RawData|ChildRawData)[];
-
-    /** IDs of existing records to be removed. Any descendents will also be removed. */
-   remove?: string[];
-
-    /**
-     *  Update to the dedicated summary row for this store.  If the store has its
-     *  `loadRootAsSummary` flag set to true, the summary record should instead be provided via the
-     *  `update` property.
-     */
-    rawSummaryData?: RawData;
-}
-
-export interface ChildRawData {
-
-    /** ID of the pre-existing parent record. */
-    parentId: string;
-
-    /**
-     * Data for the child records to be added. Can include a `children` property to be processed
-     * into new (grand)child records.
-     */
-    rawData: RawData[];
-}
-
-export interface StoreConfig {
-
-    /** Field names, configs, or instances. */
-    fields: string[]|FieldConfig[]|Field[];
-
-    /**
-     * Default configs applied to `Field` instances constructed internally by this Store.
-     * @see FieldConfig
-     */
-    fieldDefaults?: any;
-
-    /**
-     * Specification for producing an immutable unique id for each record. May be provided as
-     * either a string property name (default is 'id') or a function that receives the raw data
-     * and returns a string. This property will be normalized to a function upon Store construction.
-     * If there is no natural id to select/generate, you can use `XH.genId` to generate a unique id
-     * on the fly. NOTE that in this case, grids and other components bound to this store will not
-     * be able to maintain record state across reloads.
-     */
-    idSpec?: string | ((data: RawData) => StoreRecordId);
-
-    /**
-     * Initial data to load in to the Store.
-     */
-    data?: RawData[]
-
-    /**
-     * Function to run on each individual data object
-     * presented to loadData() prior to creating a StoreRecord from that object. This function
-     * must return an object, cloning the original object if edits are necessary.
-     */
-    processRawData?: (data: RawData) => RawData;
-
-    /**
-     * One or more filters or configs to create one. If an array, a single 'AND' filter
-     * will be created.
-     */
-    filter?: FilterLike;
-
-    /** True if all children of a passing record should also be considered passing (default false).*/
-    filterIncludesChildren?: boolean;
-
-    /** True (default) to load hierarchical/tree data, if any. */
-    loadTreeData?: boolean;
-
-    /**
-     * The property on each raw data object that holds its (raw) child objects, if any.
-     * Default 'children', no effect if `loadTreeData: false`.
-     */
-    loadTreeDataFrom?: string;
-
-    /** True to treat the root node in hierarchical data as the summary record (default false). */
-    loadRootAsSummary?: boolean;
-
-    /**
-     * True to freeze the internal data object of the record. May be set to false to maximize
-     * performance.  Note that the internal data of the record should in all cases be considered
-     * immutable (default true).
-     */
-    freezeData?: boolean;
-
-    /**
-     * Set to true to indicate that the id for a record implies a fixed position of the record
-     * within the any tree hierarchy.  May be set to true to maximize performance (default false).
-     */
-    idEncodesTreePath?: boolean;
-
-    /**
-     * Set to true to indicate that records can be cached and reused based on id and the
-     * raw data object they refer to.  This is a useful optimization for large datasets with
-     * immutable raw data, allowing them to avoid equality checks, object creation, and raw
-     * data processing when reloading reference-identical data. Should not be used if a
-     * processRawData function that depends on external state is provided, as this function
-     * will be circumvented on subsequent reloads.  Default false.
-     */
-    reuseRecords?: boolean;
-
-    /**
-     *  Flags for experimental features. These features are designed for early client-access and
-     *  testing, but are not yet part of the Hoist API.
-     */
-    experimental?: Record<string, any>;
 }
