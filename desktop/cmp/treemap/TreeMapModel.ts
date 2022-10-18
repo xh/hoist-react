@@ -12,7 +12,7 @@ import '@xh/hoist/desktop/register';
 import {numberRenderer} from '@xh/hoist/format';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {ReactElement} from 'react';
+import {ReactNode} from 'react';
 import {cloneDeep, get, isEmpty, isFinite, max, set, sortBy, sumBy, unset} from 'lodash';
 
 /**
@@ -107,7 +107,7 @@ export interface TreeMapModelConfig {
     tooltip?: boolean|TreeMapTooltipFn,
 
     /** Element/text to render if TreeMap has no records. */
-    emptyText?: string|ReactElement,
+    emptyText?: ReactNode,
 
     /** Data filter to apply to records. */
     filter?: FilterLike
@@ -127,7 +127,7 @@ export class TreeMapModel extends HoistModel {
     onClick: (StoreRecord, MouseEvent) => void;
     onDoubleClick: (StoreRecord, MouseEvent) => void;
     tooltip: boolean|TreeMapTooltipFn;
-    emptyText: string|ReactElement;
+    emptyText: ReactNode;
 
     //------------------------
     // Observable API

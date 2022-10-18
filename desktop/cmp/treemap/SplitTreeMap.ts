@@ -18,12 +18,12 @@ import './SplitTreeMap.scss';
 import {SplitTreeMapModel} from './SplitTreeMapModel';
 import {treeMap} from './TreeMap';
 
+export type SplitTreeMapProps = BoxProps<SplitTreeMapModel>;
+
 /**
  * A component which divides data across two TreeMaps.
- *
- * @see SplitTreeMapModel
  */
-export const [SplitTreeMap, splitTreeMap]  = hoistCmp.withFactory<BoxProps<SplitTreeMapModel>>({
+export const [SplitTreeMap, splitTreeMap]  = hoistCmp.withFactory<SplitTreeMapProps>({
     displayName: 'SplitTreeMap',
     model: uses(SplitTreeMapModel),
     className: 'xh-split-treemap',

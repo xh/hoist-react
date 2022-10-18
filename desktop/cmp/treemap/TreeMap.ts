@@ -26,6 +26,8 @@ import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import './TreeMap.scss';
 import {TreeMapModel} from './TreeMapModel';
 
+export type TreeMapProps = BoxProps<TreeMapModel>;
+
 /**
  * Component for rendering a TreeMap.
  *
@@ -34,7 +36,7 @@ import {TreeMapModel} from './TreeMapModel';
  *
  * @see TreeMapModel
  */
-export const [TreeMap, treeMap] = hoistCmp.withFactory<BoxProps<TreeMapModel>>({
+export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
     displayName: 'TreeMap',
     model: uses(TreeMapModel),
     className: 'xh-treemap',
@@ -96,12 +98,12 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<BoxProps<TreeMapModel>>({
     }
 });
 
+
 class TreeMapLocalModel extends HoistModel {
     xhImpl = true;
 
-    /** @member {TreeMapModel} */
-    @lookup(TreeMapModel) model;
-    chartRef = createObservableRef();
+    @lookup(TreeMapModel) model: TreeMapModel;
+    chartRef = createObservableRef<HTMLElement>();
 
     chart = null;
     clickCount = 0;
