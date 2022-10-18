@@ -24,7 +24,7 @@ interface DockViewProps extends HoistProps<DockViewModel> {
 /**
  * Wrapper for contents to be shown within a DockContainer.
  *
- * @private
+ * @internal
  */
 export const dockView = hoistCmp.factory<DockViewProps>({
     displayName: 'DockView',

@@ -4,10 +4,9 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistProps, uses, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {dockContainerImpl as desktopDockContainerImpl} from '@xh/hoist/dynamics/desktop';
-import {throwIf} from '@xh/hoist/utils/js';
 import {DockContainerModel} from './DockContainerModel';
 
 export interface DockContainerProps extends HoistProps<DockContainerModel> {
@@ -36,7 +35,6 @@ export const [DockContainer, dockContainer] = hoistCmp.withFactory<DockContainer
     model: uses(DockContainerModel),
     className: 'xh-dock-container',
     render(props, ref) {
-        throwIf(XH.isMobileApp, 'DockContainer is not implemented on mobile');
         return desktopDockContainerImpl(props, ref);
     }
 });

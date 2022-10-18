@@ -57,7 +57,7 @@ export class DockViewModel extends HoistModel {
 
     id: string;
     @observable title: string;
-    @observable icon: ReactElement;
+    @observable.ref icon: ReactElement;
     @observable docked: boolean;
     @observable collapsed: boolean;
     content: Content;

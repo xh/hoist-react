@@ -14,7 +14,7 @@ import {DockContainerProps} from '../DockContainer';
 /**
  * Desktop implementation of DockContainer.
  *
- * @private
+ * @internal
  */
 export function dockContainerImpl({model, className, compactHeaders, ...props}: DockContainerProps, ref) {
     return hbox({

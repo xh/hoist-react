@@ -37,8 +37,8 @@ export class DockContainerModel extends HoistModel {
     constructor({
         views = [],
         direction = 'rtl',
-        renderMode = RenderMode.LAZY,
-        refreshMode = RefreshMode.ON_SHOW_LAZY
+        renderMode = 'lazy',
+        refreshMode = 'onShowLazy'
     }: DockContainerConfig = {}) {
         super();
         makeObservable(this);
