@@ -17,7 +17,7 @@ import {button, ButtonProps} from './Button';
  * be linked to any model in props with LoadSupport enabled, or the contextual
  * {@see RefreshContextModel}.
  */
-export const [RefreshButton, refreshButton] = hoistCmp.withFactory<ButtonProps>({
+export const [RefreshButton, refreshButton] = hoistCmp.withFactory<RefreshButtonProps>({
     displayName: 'RefreshButton',
     model: false,  // For consistency with all other buttons -- the model prop here could be replaced by 'target'
 
@@ -41,3 +41,5 @@ export const [RefreshButton, refreshButton] = hoistCmp.withFactory<ButtonProps>(
         });
     }
 });
+
+export type RefreshButtonProps = ButtonProps<HoistModel>;
