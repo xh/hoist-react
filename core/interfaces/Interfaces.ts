@@ -1,7 +1,8 @@
-import {ReactElement, ReactNode} from 'react';
+import {ElemFactory} from '@xh/hoist/core';
+import {RuleLike} from '@xh/hoist/data';
+import {Component, FunctionComponent, ReactElement, ReactNode} from 'react';
 import {DebounceSettings} from 'lodash';
 import {LoadSpec} from '../load';
-import {RuleLike} from '@xh/hoist/data';
 
 /**
  * User of the application, as loaded from the server.
@@ -37,6 +38,16 @@ export type Theme = 'system'|'dark'|'light';
  */
 export type DebounceSpec = number|(DebounceSettings & {interval: number});
 
+/**
+ * Argument passed to components that create views on demand.
+ *
+ * Used by the TabContainer, DashContainer, DockView, and Navigator APIs to process the 'content'
+ * configs provided to them for their tabs and views.
+ *
+ * Can be a ReactElement, HoistComponent or function. If a function, it may be an ElemFactory or any
+ * function that returns a ReactElement. In either case, the function will be called with no arguments.
+ */
+export type Content = ReactElement|FunctionComponent|Component|ElemFactory|(() => ReactElement);
 
 export type Some<T> = T|T[];
 

@@ -8,7 +8,18 @@ import {HoistModel, managed, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-import {DockViewModel} from './DockViewModel';
+import {DockViewModel, DockViewConfig} from './DockViewModel';
+
+interface DockContainerConfig {
+    /** DockViewModel configs to be displayed. */
+    views?: DockViewConfig[],
+    /** Direction in which docked views build up as they are added to the container. */
+    direction?: DockViewDirection,
+    /** Strategy for rendering DockViews. Can also be set per-view via `DockViewModelConfig.renderMode` */
+    renderMode?: RenderMode,
+    /** Strategy for refreshing DockViews. Can also be set per-view via `DockViewModelConfig.refreshMode` */
+    refreshMode?: RefreshMode,
+}
 
 /**
  * Model for a DockContainer, representing its contents.
@@ -18,41 +29,22 @@ import {DockViewModel} from './DockViewModel';
  */
 export class DockContainerModel extends HoistModel {
 
-    /** @member {DockViewModel[]} */
-    @managed @observable.ref views = [];
+    @managed @observable.ref views: DockViewModel[] = [];
+    direction: DockViewDirection;
+    renderMode: RenderMode;
+    refreshMode: RefreshMode;
 
-    /** @member {string} */
-    direction;
-
-    /** @member {RenderMode} */
-    renderMode;
-
-    /** @member {RefreshMode} */
-    refreshMode;
-
-    /**
-     * @param {Object} [c] - DockContainerModel configuration.
-     * @param {Object[]} [c.views] - DockViewModel configs to be displayed.
-     * @param {string} [c.direction] - direction in which docked views build up as they are added to
-     *      the container. Valid values are 'ltr', 'rtl' - the default of 'rtl' causes the first
-     *      view to be docked to the bottom right of the container with each subsequent view docked
-     *      to the left of view before it.
-     * @param {RenderMode} [c.renderMode] - strategy for rendering DockViews. Can be set
-     *      per-tab via `DockViewModel.renderMode`. See enum for description of supported modes.
-     * @param {RefreshMode} [c.refreshMode] - strategy for refreshing DockViews. Can be set
-     *      per-tab via `DockViewModel.refreshMode`. See enum for description of supported modes.
-     */
     constructor({
         views = [],
         direction = 'rtl',
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY
-    } = {}) {
+    }: DockContainerConfig = {}) {
         super();
         makeObservable(this);
         views = views.filter(v => !v.omit);
 
-        ensureUniqueBy(views, 'id', 'Multiple DockContainerModel views have the same id.');
+        ensureUniqueBy(views as [], 'id', 'Multiple DockContainerModel views have the same id.');
         throwIf(!['ltr', 'rtl'].includes(direction), 'Unsupported value for direction.');
 
         this.views = views.map(v => new DockViewModel({...v, containerModel: this}));
@@ -61,35 +53,33 @@ export class DockContainerModel extends HoistModel {
         this.refreshMode = refreshMode;
     }
 
-    getView(id) {
+    getView(id: string): DockViewModel {
         return this.views.find(it => it.id === id);
     }
 
-    /**
-     * @param {Object} cfg - Config for DockViewModel to be added.
-     */
     @action
-    addView(cfg = {}) {
+    addView(cfg: DockViewConfig) {
         const {id} = cfg;
         if (id && this.getView(id)) this.removeView(id);
         this.views = [new DockViewModel({...cfg, containerModel: this}), ...this.views];
     }
 
     @action
-    removeView(id) {
+    removeView(id: string) {
         const view = this.getView(id);
         if (view) XH.safeDestroy(view);
         this.views = this.views.filter(it => it.id !== id);
     }
 
-    expandView(id) {
+    expandView(id: string) {
         const view = this.getView(id);
         if (view) view.expand();
     }
 
-    collapseView(id) {
+    collapseView(id: string) {
         const view = this.getView(id);
         if (view) view.collapse();
     }
-
 }
+
+type DockViewDirection = 'ltr'|'rtl';

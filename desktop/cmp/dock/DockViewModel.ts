@@ -4,11 +4,46 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, ManagedRefreshContextModel, XH} from '@xh/hoist/core';
+import {Content, HoistModel, managed, ManagedRefreshContextModel, RefreshContextModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
 import '@xh/hoist/desktop/register';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
+import {ReactElement} from 'react';
+import {DockContainerModel} from './DockContainerModel';
+
+export interface DockViewConfig {
+    /** Unique identifier for this DockViewModel. */
+    id: string,
+    /** Parent DockContainerModel. Provided by the container when constructing the model - no need to specify manually. */
+    containerModel: DockContainerModel,
+    /** Title text added to the header. */
+    title?: string,
+    /** An icon placed at the left-side of the header. */
+    icon?: ReactElement,
+    /** Content to be rendered by this DockView. */
+    content: Content,
+    /** Width in pixels. If not set, width will be determined by the content. */
+    width?: number,
+    /** Height in pixels. If not set, height will be determined by the content. */
+    height?: number,
+    /** Width of collapsed header in pixels. If not set, width will be determined by the length of the title. */
+    collapsedWidth?: number,
+    /** Strategy for rendering this DockView. If null, will default to its container's mode. */
+    renderMode?: RenderMode,
+    /** Strategy for refreshing this DockView. If null, will default to its container's mode. */
+    refreshMode?: RefreshMode,
+    /** true to exclude this DockView.  */
+    omit?: boolean,
+    /** true (default) to initialise in dock, false to use Dialog. Respects allowDialog. */
+    docked?: boolean,
+    /** true to initialise collapsed, false (default) for expanded. */
+    collapsed?: boolean,
+    /** true (default) to allow removing from the dock entirely. */
+    allowClose?: boolean,
+    /** true (default) to allow popping out of the dock and displaying in a modal Dialog. */
+    allowDialog?: boolean
+}
 
 /**
  * Model for a DockView within a DockContainer. Specifies the actual content (child component)
@@ -20,58 +55,37 @@ import {throwIf} from '@xh/hoist/utils/js';
  */
 export class DockViewModel extends HoistModel {
 
-    id;
-    @bindable title;
-    @bindable icon;
-    @observable docked;
-    @observable collapsed;
-    content;
-    width;
-    height;
-    collapsedWidth;
-    allowClose;
-    allowDialog;
+    id: string;
+    @observable title: string;
+    @observable icon: ReactElement;
+    @observable docked: boolean;
+    @observable collapsed: boolean;
+    content: Content;
+    width: number;
+    height: number;
+    collapsedWidth: number;
+    allowClose: boolean;
+    allowDialog: boolean;
 
-    containerModel;
-    @managed refreshContextModel;
-    @managed modalSupportModel;
+    containerModel: DockContainerModel;
+    @managed refreshContextModel: RefreshContextModel;
+    @managed modalSupportModel: ModalSupportModel;
 
-    get isActive() {
+    private _renderMode: RenderMode;
+    private _refreshMode: RefreshMode;
+
+    get isActive(): boolean {
         return !this.collapsed;
     }
 
-    get renderMode() {
+    get renderMode(): RenderMode {
         return this._renderMode ?? this.containerModel.renderMode;
     }
 
-    get refreshMode() {
+    get refreshMode(): RefreshMode {
         return this._refreshMode ?? this.containerModel.refreshMode;
     }
 
-    /**
-     * @param {Object} c - DockViewModel configuration.
-     * @param {string} c.id - unique identifier for this DockViewModel.
-     * @param {DockContainerModel} c.containerModel - parent DockContainerModel. Provided by the
-     *      container when constructing these models - no need to specify manually.
-     * @param {string} [c.title] - Title text added to the header.
-     * @param {Element} [c.icon] - An icon placed at the left-side of the header.
-     * @param {(ReactElement|Object|function)} c.content - content to be rendered by this DockView.
-     *      Element, HoistComponent, or a function returning a react element.
-     * @param {number} [c.width] - width in pixels. If not set, width will be determined by the content.
-     * @param {number} [c.height] - height in pixels. If not set, height will be determined by the content.
-     * @param {number} [c.collapsedWidth] - width of collapsed header in pixels. If not set, width
-     *      will be determined by the length of the title.
-     * @param {RenderMode} [c.renderMode] - strategy for rendering this DockView. If null, will
-     *      default to its container's mode. See enum for description of supported modes.
-     * @param {RefreshMode} [c.refreshMode] - strategy for refreshing this DockView. If null, will
-     *      default to its container's mode. See enum for description of supported modes.
-     * @param {boolean} [c.docked] - true (default) to initialise in dock, false to use Dialog.
-     *      Respects allowDialog.
-     * @param {boolean} [c.collapsed] - true to initialise collapsed, false (default) for expanded.
-     * @param {boolean} [c.allowClose] - true (default) to allow removing from the dock entirely.
-     * @param {boolean} [c.allowDialog] - true (default) to allow popping out of the dock and
-     *      displaying in a modal Dialog.
-     */
     constructor({
         id,
         containerModel,
@@ -87,10 +101,11 @@ export class DockViewModel extends HoistModel {
         collapsed = false,
         allowClose = true,
         allowDialog = true
-    }) {
+    }: DockViewConfig) {
         super();
         makeObservable(this);
         throwIf(!id, 'DockViewModel requires an id');
+
         this.id = id;
         this.containerModel = containerModel;
         this.title = title;
@@ -113,6 +128,16 @@ export class DockViewModel extends HoistModel {
         this.modalSupportModel = new ModalSupportModel({
             width: width ?? null, height: height ?? null, canOutsideClickClose: false
         });
+    }
+
+    @action
+    setTitle(title: string) {
+        this.title = title;
+    }
+
+    @action
+    setIcon(icon: ReactElement) {
+        this.icon = icon;
     }
 
     //-----------------------

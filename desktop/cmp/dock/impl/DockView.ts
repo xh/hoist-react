@@ -6,7 +6,7 @@
  */
 import {DockViewModel} from '@xh/hoist/desktop/cmp/dock';
 import {div, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {modalSupport} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupport';
 import '@xh/hoist/desktop/register';
@@ -16,16 +16,20 @@ import classNames from 'classnames';
 import {useRef} from 'react';
 import './Dock.scss';
 
+interface DockViewProps extends HoistProps<DockViewModel> {
+    /** True to style docked headers with reduced padding and font-size. */
+    compactHeaders?: boolean
+}
+
 /**
  * Wrapper for contents to be shown within a DockContainer.
  *
  * @private
  */
-export const dockView = hoistCmp.factory({
+export const dockView = hoistCmp.factory<DockViewProps>({
     displayName: 'DockView',
     model: uses(DockViewModel),
     className: 'xh-dock-view',
-
     render({model, className, compactHeaders}) {
         const {width, height, collapsedWidth, collapsed, docked, isActive, renderMode, refreshContextModel} = model,
             wasActivated = useRef(false);
@@ -60,11 +64,12 @@ export const dockView = hoistCmp.factory({
     }
 });
 
-
-const headerCmp = hoistCmp.factory(
+//------------------
+// Implementation
+//------------------
+const headerCmp = hoistCmp.factory<DockViewModel>(
     ({model, compactHeaders}) => {
         const {icon, title, collapsed, docked, allowClose, allowDialog} = model;
-
         return div({
             className: `xh-dock-view__header ${compactHeaders ? 'xh-dock-view__header--compact' : ''}`,
             item: hbox({
