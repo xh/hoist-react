@@ -25,6 +25,11 @@ export interface HoistUser {
 export type Intent = 'primary'|'success'|'warning'|'danger';
 
 /**
+ * Values available for App Theme
+ */
+export type Theme = 'system'|'dark'|'light';
+
+/**
  * Specification for debouncing in Hoist.
  *
  * When specified as object, should contain an 'interval' and other optional keys for
