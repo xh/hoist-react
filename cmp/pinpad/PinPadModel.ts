@@ -14,6 +14,13 @@ import {times} from 'lodash';
 // safe to use with the desktop kit.
 import FastClick from '@onsenui/fastclick';
 
+interface PinPadModelConfig {
+    /** The length of the PIN to get from the user, default 4. */
+    pinLength?: number,
+    headerText?: string,
+    subHeaderText?: string
+}
+
 export class PinPadModel extends HoistModel {
 
     @bindable disabled: boolean;
@@ -28,12 +35,7 @@ export class PinPadModel extends HoistModel {
     private _deleteWasLast = false;
     private _pinLength;
 
-    /**
-     * @param [config.pinLength] - The length of the PIN to get from the user, default 4.
-     * @param [config.headerText] - initial text to show formatted as a header.
-     * @param [config.subHeaderText] - initial text to show formatted as a subheader.
-     */
-    constructor(config: {pinLength?: number, headerText?: string, subHeaderText?: string} = {}) {
+    constructor(config: PinPadModelConfig = {}) {
         super();
         makeObservable(this);
         const {pinLength = 4, headerText = '', subHeaderText = ''} = config;

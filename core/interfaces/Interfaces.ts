@@ -211,15 +211,14 @@ export interface TrackOptions {
 
     /**
      * Flag to indicate relative importance of activity.
-     * Default 'INFO'. Note, errors should be tracked via `XH.handleException()`, which
-     * will post to the server for dedicated logging if requested. {@see ExceptionHandler}
+     * Default 'INFO'. Note, errors should be tracked via {@link XH.handleException}, which
+     * will post to the server for dedicated logging if requested.
      */
     severity?: string;
 
     /**
-     * Set to true to log this message only once during the current session.
-     * The unique key identifying this message for this purpose will be
-     * comprised of the category and the message.
+     * Set to true to log this message only once during the current session. The category and
+     * message text will be used as a compound key to identify repeated messages.
      */
     oncePerSession?: boolean;
 

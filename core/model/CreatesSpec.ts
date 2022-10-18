@@ -31,7 +31,7 @@ export function creates<T extends HoistModel>(
 }
 
 export interface CreatesOptions {
-    /** Mode for publishing this model to context.*/
+    /** Mode for publishing this model to context. */
     publishMode?: ModelPublishMode;
 }
 

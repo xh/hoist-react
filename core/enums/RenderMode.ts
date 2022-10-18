@@ -7,8 +7,7 @@
 
 /**
  * Options for how contents should be rendered by their parent container.
- * Used by TabContainerModel, DashContainerModel, and PanelModel.
- * @enum {string}
+ * Used by {@link TabContainerModel}, {@link DashContainerModel}, and {@link PanelModel}.
  */
 export const RenderMode = Object.freeze({
 

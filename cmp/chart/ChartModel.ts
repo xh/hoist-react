@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {castArray, cloneDeep, merge} from 'lodash';
 
 interface ChartModelConfig {
@@ -39,7 +39,7 @@ export class ChartModel extends HoistModel {
     /**
      * The HighCharts instance currently being displayed. This may be used for reading
      * information about the chart, but any mutations to the chart should
-     * be done via {@see ChartModel.setHighchartsConfig} or {@see ChartModel.setSeries}.
+     * be done via {@link setHighchartsConfig} or {@link setSeries}.
      */
     @observable.ref
     highchart: any;
@@ -60,13 +60,13 @@ export class ChartModel extends HoistModel {
     }
 
     /**
-     * Set the Highcharts configuration.
+     *  Update the Highcharts instance configuration.
      *
-     * @param config - Highcharts configuration object. May include any
-     *      Highcharts options other than `series`, which should be set via `setSeries()`.
-     *
-     *  See also {@see updateHighChartsConfig} for a method that will allow updating individual
+     *  See also {@link updateHighchartsConfig} for a method that will allow updating individual
      *  properties in this object.
+     *
+     *  @param config - Highcharts configuration object. May include any Highcharts options other
+     *      than `series`, which should be set via `setSeries()`.
      */
     @action
     setHighchartsConfig(config: any) {
@@ -75,7 +75,7 @@ export class ChartModel extends HoistModel {
 
 
     /**
-     *  Merge new properties settings into the Highcharts configuration (Deep merge)
+     * Merge new properties settings into the Highcharts configuration (Deep merge)
      *
      * @param update - Updates to Highcharts configuration settings.  May include any
      *      Highcharts options other than `series`, which should be set via `setSeries()`.

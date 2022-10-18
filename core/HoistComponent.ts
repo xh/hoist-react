@@ -46,9 +46,9 @@ export type ComponentConfig<P extends HoistProps, M extends HoistModel> =
 
     /**
      * Spec defining the model to be rendered by this component.
-     * Specify as false for components that don't require a primary model. Otherwise,
-     * {@see uses()} and {@see creates()} - these two factory functions will create an appropriate
-     * spec for either externally-provided or internally-created models. Defaults to `uses('*')`.
+     * Specify as false for components that don't require a primary model. Otherwise, set to the
+     * return of {@link uses} or {@link creates} - these factory functions will create a spec for
+     * either externally-provided or internally-created models. Defaults to `uses('*')`.
      */
     model?: ModelSpec<M>|boolean;
 
@@ -90,7 +90,7 @@ export type ComponentConfig<P extends HoistProps, M extends HoistModel> =
  * MobX-powered reactivity and auto-re-rendering of observable properties read from models and
  * any other sources of observable state.
  *
- * Forward refs (@link https://reactjs.org/docs/forwarding-refs.html) are supported by specifying a
+ * Forward refs {@link https://reactjs.org/docs/forwarding-refs.html} are supported by specifying a
  * render function that accepts two arguments. In that case, the second arg will be considered a
  * ref, and this utility will apply `React.forwardRef` as required.
  *
@@ -163,7 +163,7 @@ export function hoistComponent<A extends HoistModel|HoistProps = HoistModel, B e
 
 
 /**
- * A (satisfyingly short) alias for {@see hoistComponent}.
+ * A (satisfyingly short) alias for {@link hoistComponent}.
  */
 export const hoistCmp = hoistComponent;
 

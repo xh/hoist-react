@@ -145,7 +145,7 @@ export function genDisplayName(fieldName: string): string {
 }
 
 /**
- * ctor arguments for a Hoist data package Field.
+ * Constructor arguments for a Hoist data package Field.
  */
 export interface FieldConfig {
 
@@ -157,7 +157,7 @@ export interface FieldConfig {
 
     /**
      *  User-facing / longer name for display, defaults to `name`
-     *  transformed via `genDisplayName()` (e.g. 'myField' -> 'My Field').
+     *  transformed via `genDisplayName()` (e.g. 'myField' translates to 'My Field').
      */
     displayName?: string;
 
@@ -169,11 +169,12 @@ export interface FieldConfig {
 
     /**
      * True to disable built-in XSS (cross-site scripting) protection, applied by default to all
-     * incoming String values via the DOMPurify library. DOMPurify provides fast escaping of
-     * dangerous HTML, scripting, and other content that can be used to execute XSS attacks, while
-     * allowing common and expected HTML and style tags.
+     * incoming String values via the {@link https://github.com/cure53/DOMPurify DOMPurify library}.
+     *
+     * DOMPurify provides fast escaping of dangerous HTML, scripting, and other content that can be
+     * used to execute XSS attacks, while allowing common and expected HTML and style tags.
+     *
      * Please contact XH if you find yourself needing to disable this protection!
-     *  {@link https://github.com/cure53/DOMPurify}
      */
     disableXssProtection ?: boolean;
 }

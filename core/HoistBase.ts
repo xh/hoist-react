@@ -135,7 +135,7 @@ export abstract class HoistBase {
      * functions returned by this method.
      *
      * @param specs - one or more autoruns to add
-     * @returns {function|function[]} - disposer(s) to manually dispose of each created autorun.
+     * @returns disposer(s) to manually dispose of each created autorun.
      */
     addAutorun(...specs: (AutoRunSpec|(()=>any))[]) : IReactionDisposer|IReactionDisposer[] {
         const disposers = specs.map(s => {
@@ -168,9 +168,7 @@ export abstract class HoistBase {
         this[setter].call(this, value);
     }
 
-    /**
-     * A unique id for this object within the lifetime of this document.
-     */
+    /** @returns a unique id for this object within the lifetime of this document. */
     get xhId(): string {
         return getOrCreate(this, '_xhId', XH.genId);
     }
@@ -181,11 +179,11 @@ export abstract class HoistBase {
      * Managed objects are assumed to hold objects that are created by the referencing object
      * and therefore should be destroyed when the referencing object is destroyed.
      *
-     * See also {@see managed}, a decorator that can be used to mark any object held within
+     * See also {@link managed}, a decorator that can be used to mark any object held within
      * a given property as managed.
      *
-     * @param obj - object to be destroyed
-     * @returns object passed.
+     * @param obj - object to be destroyed when this instance is destroyed
+     * @returns object passed
      */
     markManaged<T>(obj: T): T {
         // If markManaged is unexpectedly called on an object after this instance has been
@@ -202,21 +200,18 @@ export abstract class HoistBase {
      *  Method to make a class property persistent, syncing its value via a configured
      * `PersistenceProvider` to maintain and restore values across browser sessions.
      *
-     * This may be used on any @observable or @bindable class property which is a primitive.
-     * It will initialize the observable's value from the class's default
-     * `PersistenceProvider` and will subsequently write back any changes to the property
-     * to that Provider. If the Provider has not yet been populated with a value, or an
-     * error occurs, it will use the value set in-code instead.
+     * This may be used on any `@observable` or `@bindable` class property which is a primitive.
+     * It will initialize the observable's value from the class's default `PersistenceProvider` and
+     * will write back any changes to the property to that Provider. If the Provider has not yet
+     * been populated with a value, or an error occurs, it will use the value set in-code instead.
      *
-     * @param property - name of property on this object to bind to a
-     *      persistence provider.
-     * @param [options] - options governing the persistence of this
-     *      object.  These will be applied on top of any default persistWith options defined
-     *      on the instance itself.
+     * See also {@link persist} and {@link persist.with} for a decorator that may be used directly
+     * on the property declaration itself. Use this method in the general case, when you need to
+     * control the timing.
      *
-     * See also @persist and @persist.with for a convenient decorator that may be used
-     * directly on the property declaration itself.  Use this method in the general case,
-     * when you need to control the timing.
+     * @param property - name of property on this object to bind to a persistence provider.
+     * @param options - options governing the persistence of this object. These will be applied
+     *      on top of any default persistWith options defined on the instance itself.
      */
     markPersist(property: string, options: PersistOptions = {}) {
         // Read from and attach to Provider, failing gently
@@ -239,7 +234,7 @@ export abstract class HoistBase {
         }
     }
 
-    /** @returns {boolean} - true if this instance has been destroyed. */
+    /** @returns true if this instance has been destroyed. */
     get isDestroyed() {return this._destroyed}
 
     /**
@@ -264,7 +259,7 @@ export interface ReactionSpec<T> extends IReactionOptions<T, any> {
     track?: () => T
 
     /**
-     * Function determing when reaction should fire - first arg to the underlying when() call.
+     * Function determining when reaction should fire - first arg to the underlying when() call.
      * Specify this or `track`.
      */
     when?: () => boolean
@@ -280,9 +275,7 @@ export interface ReactionSpec<T> extends IReactionOptions<T, any> {
  * Object containing options accepted by MobX 'autorun' API as well as arguments below.
  */
 export interface AutoRunSpec extends IAutorunOptions {
-    /**
-     * Function to run - first arg to underlying autorun() call.
-     */
+    /** Function to run - first arg to underlying autorun() call. */
     run?: () => void;
 }
 

@@ -19,36 +19,38 @@ import {instanceManager} from '../impl/InstanceManager';
  *
  * The most common use of `HoistModel` is to support Hoist components. Components can be configured
  * to create or lookup an instance of an appropriate model subclass using the `model` config passed
- * to {@see hoistComponent} factory. Hoist will automatically pass the resolved model instance as a
+ * to {@link hoistComponent.factory}. Hoist will automatically pass the resolved model instance as a
  * prop to the component's `render()` function, where the model's properties can be read/rendered
  * and any imperative APIs wired to buttons, callbacks, and other handlers.
  *
  * Certain models are instantiated by Hoist and linked directly in a one-to-one relationship with
- * a specific component that renders them -- these models are considered "linked", and play a
+ * a specific component that renders them. These models are considered "linked", and they play a
  * special role in the framework.  In particular, linked models:
- *      - are specified by the `creates` directive as well as the `useLocalModel` hook.
- *      - support an observable `componentProps` property which can be used to observe the props of
- *      their associated component.
- *      - support a `lookupModel` method and a `@lookup` decorator that can be used to acquire
+ *      - are specified by the {@link creates} directive as well as the {@link useLocalModel} hook.
+ *      - support an observable {@link componentProps} property which can be used to observe the
+ *      props of their associated component.
+ *      - support a {@link lookupModel} method and a `@lookup` decorator that can be used to acquire
  *      references to "ancestors" to this model in the component hierarchy.
- *      - support `onLinked` and `afterLinked` lifecycle methods, called during the first rendering
- *      of their associated component.  Use these methods for any work requiring the availability
- *      of lookups or `componentProps`.
+ *      - support {@link onLinked} and {@link afterLinked} lifecycle methods, called during the
+ *      first rendering of their associated component. Use these methods for any work requiring the
+ *      availability of lookups or `componentProps`.
  *      - have `loadAsync()` called automatically when their component is first mounted, as well
- *      as register themselves for subsequent refreshes with the nearest {@see RefreshContextModel}
+ *      as register themselves for subsequent refreshes with the nearest {@link RefreshContextModel}
  *      in the component hierarchy.
  *      - are destroyed when their linked component is unmounted.
  *
  * It is very common to decorate properties on models with `@observable` and related field-level
  * annotations. This enables automatic, MobX-powered re-rendering of components when these model
  * properties change, or when specific reactions have been wired by the developer via
- * `addReaction()` and related utils from {@see HoistBase}.  When declaring any observable
- * properties on your model class, note that you **must** call `makeObservable(this)` to initialize
- * the observability of the object.
+ * `addReaction()` and related utils from {@link HoistBase}.
+ *
+ * When declaring any observable properties on your model class, note that you **must** call
+ * `makeObservable(this)` within your model's constructor in order for MobX to begin tracking your
+ * observables and reacting to changes.
  *
  * HoistModels that need to load or refresh their state from any external source (e.g. a remote
  * API or local service call) are encouraged to implement the abstract `doLoadAsync()` method
- * defined on this superclass. This will trigger the installation of a {@see LoadSupport} instance
+ * defined on this superclass. This will trigger the installation of a {@link LoadSupport} instance
  * on the model and enable several extensions to help track and manage async loads via the model's
  * public `loadAsync()` entry point.
  */

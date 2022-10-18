@@ -14,7 +14,7 @@ import {throwIf} from '@xh/hoist/utils/js';
  *
  *  - class (or superclass) to match
  *  - class name (as a string)
- *  - '*' to accept any Model
+ *  - `"*"` to accept any Model
  *  - boolean
  *  - function taking a model and returning any of the above.
  */
@@ -57,9 +57,9 @@ export function formatSelector(selector: ModelSelector): string {
  * Parameterized decorator to inject an instance of an ancestor model in the Model lookup
  * hierarchy into this object.
  *
- * The decorated property will be filled only when the Model is linked to the Component Hierarchy.
- * Accessing properties decorated with @lookup should first be done in the onLinked(),
- * or afterLinked() handlers.
+ * The decorated property will be filled only when the Model is linked to the Component hierarchy.
+ * Accessing properties decorated with `@lookup` should first be done in the
+ * {@link HoistModel.onLinked} or {@link HoistModel.afterLinked} handlers.
  */
 export const lookup: any = (selector: ModelSelector) => {
     ensureIsSelector(selector);
