@@ -6,7 +6,7 @@
  */
 
 /**
- * @private
+ * @internal
  */
 export function shallowEqualArrays(a: [], b: []): boolean {
     if (a === b) return true;

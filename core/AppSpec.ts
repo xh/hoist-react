@@ -33,7 +33,7 @@ export class AppSpec<T extends HoistAppModel=HoistAppModel> {
 
     /**
      * Root Model class for the application. Note this is a reference
-     * to the class itself, not an instance, and must extend {@see HoistAppModel}.
+     * to the class itself, not an instance, and must extend {@link HoistAppModel}.
      */
     modelClass: new () => T;
 
@@ -104,7 +104,7 @@ export class AppSpec<T extends HoistAppModel=HoistAppModel> {
      * True to disable Field-level XSS protection by default across all Stores/Fields in the app.
      * For use with secure, internal apps that do not display arbitrary/external user input and
      * have tight performance tolerances and/or load very large recordsets.
-     * {@see FieldConfig.disableXssProtection}
+     * @see FieldConfig.disableXssProtection
      */
     disableXssProtection?: boolean;
 

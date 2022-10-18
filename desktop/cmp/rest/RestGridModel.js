@@ -95,13 +95,13 @@ export class RestGridModel extends HoistModel {
     @managed
     formModel = null;
 
-    /** @return {RestStore} */
+    /** @returns {RestStore} */
     get store() {return this.gridModel.store}
-    /** @return {StoreSelectionModel} */
+    /** @returns {StoreSelectionModel} */
     get selModel() {return this.gridModel.selModel}
-    /** @return {StoreRecord[]} */
+    /** @returns {StoreRecord[]} */
     get selectedRecords() {return this.gridModel.selectedRecords}
-    /** @return {StoreRecord} */
+    /** @returns {StoreRecord} */
     get selectedRecord() {return this.gridModel.selectedRecord}
 
     /**

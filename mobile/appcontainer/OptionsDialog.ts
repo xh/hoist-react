@@ -16,9 +16,7 @@ import {mask} from '@xh/hoist/mobile/cmp/mask';
 import './OptionsDialog.scss';
 
 /**
- * Display Options dialog
- *
- * @private
+ * @internal
  */
 export const optionsDialog = hoistCmp.factory({
     displayName: 'OptionsDialog',

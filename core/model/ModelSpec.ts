@@ -9,10 +9,8 @@ import {CreatesSpec, UsesSpec, HoistModel} from './';
 
 /**
  * Specification for model to be rendered by a HoistComponent.
- *
- * {@see uses()} and {@see creates()} for standard factories that produce instances of this type.
- *
- * @private
+ * See {@link uses} and {@link creates} for standard factories that produce instances of this type.
+ * @internal
  */
 export type ModelSpec<T extends HoistModel=HoistModel> = CreatesSpec<T> | UsesSpec<T>;
 

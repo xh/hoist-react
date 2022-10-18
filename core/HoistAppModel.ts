@@ -10,7 +10,7 @@ import {Route} from 'router5';
 import {ReactNode} from 'react';
 /**
  * Specialized base class for defining the central model for a Hoist app as specified by its
- * {@see AppSpec.modelClass} config. That config should reference a concrete implementation class
+ * See the {@link AppSpec.modelClass} config, which should reference a concrete implementation class
  * extending this base. Hoist will create and then initialize an instance of that class after
  * the framework has successfully initialized and will make it available to all app code via the
  * `XH.appModel` getter.
@@ -19,11 +19,11 @@ import {ReactNode} from 'react';
  * customize important metadata. Initialization of all resources (e.g. application level services)
  * should be done in `initAsync()`.
  *
- * Hoist will load/reload this Model during the global refresh process.  This will occur before the
- * application's global XH.refreshContextModel has been refreshed, (when all mounted and 'owned'
+ * Hoist will load/reload this Model during the global refresh process. This will occur before the
+ * application's global `XH.refreshContextModel` has been refreshed (when all mounted and 'owned'
  * HoistModels in the application are refreshed). AppModels should implement `doLoadAsync()` if
  * required to refresh all other app-wide services and models, respecting any ordering and phasing
- * requirements specific to its needs. {@see HoistModel.doLoadAsync()}
+ * requirements specific to its needs.
  */
 export class HoistAppModel extends HoistModel {
 
@@ -46,7 +46,7 @@ export class HoistAppModel extends HoistModel {
     async initAsync() {}
 
     /**
-     * Called by {@see IdentityService.logoutAsync} to provide an app-specific hook prior
+     * Called by {@link IdentityService.logoutAsync} to provide an app-specific hook prior
      * to logging out an authenticated user. Applicable only to apps that generally support
      * logout (i.e. not SSO) and require handling in addition to Hoist server logout.
      */

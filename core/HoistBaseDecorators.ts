@@ -31,13 +31,13 @@ export const managed: any = (target: HoistBaseClass, property: string, descripto
 /**
  * Decorator to make a class property persistent.
  *
- * This decorator provides the same functionality as HoistBase.markPersist().  See that method
+ * This decorator provides the same functionality as {@link HoistBase.markPersist}. See that method
  * for more details.
  *
  * This decorator should always be applied "before" the mobx decorator, i.e. second in file line
- * order: `@bindable @persist fooBarFlag = true`.
+ * order: `@bindable @persist fooBarFlag = true`
  *
- * See also @persist.with, a higher-order version of this decorator that allows for setting
+ * See also `@persist.with`, a higher-order version of this decorator that allows for setting
  * property-specific persistence options.
  */
 export const persist: any = (target: HoistBaseClass, property: string, descriptor: any) => {
@@ -45,12 +45,8 @@ export const persist: any = (target: HoistBaseClass, property: string, descripto
 };
 
 /**
- * Decorator to make a class property persistent.
- *
- * This is a higher-order version of `@persist`.  Use this variant as a function to
- * provide custom PersistOptions.
- *
- * @param {PersistOptions} options
+ * Decorator to make a class property persistent. This is a higher-order version of `@persist`.
+ * Use this variant as a function to provide custom PersistOptions.
  */
 persist.with = function(options: PersistOptions): any {
     return function(target, property, descriptor) {

@@ -55,7 +55,7 @@ export class GroupingChooserModel extends HoistModel {
     @observable editorIsOpen: boolean = false;
     @observable favoritesIsOpen: boolean = false;
 
-    popoverRef = createObservableRef();
+    popoverRef = createObservableRef<HTMLElement>();
 
     @computed
     get availableDims(): string[] {
@@ -285,7 +285,7 @@ export class GroupingChooserModel extends HoistModel {
 
 /**
  * Metadata for dimensions that are available for selection via a GroupingChooser control.
- * Note that {@see CubeField} instances satisfy this interface.
+ * Note that {@link CubeField} instances satisfy this interface.
  */
 interface DimensionSpec {
     /** Shortname or code (almost always a `CubeField.name`). */

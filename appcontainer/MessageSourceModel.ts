@@ -11,8 +11,9 @@ import {MessageModel} from './MessageModel';
 
 /**
  * Supports managed display of modal message dialogs via `XH.message()` and friends.
- * Not intended for direct application use. {@see XHClass#message()} and related for the public API.
- * @private
+ * Not intended for direct application use.
+ * @see XHClass.message()
+ * @internal
  */
 export class MessageSourceModel extends HoistModel {
     xhImpl = true;

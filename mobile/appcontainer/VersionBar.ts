@@ -11,7 +11,7 @@ import {button} from '@xh/hoist/mobile/cmp/button';
 import './VersionBar.scss';
 
 /**
- * @private
+ * @internal
  */
 export const versionBar = hoistCmp.factory({
 

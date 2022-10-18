@@ -15,7 +15,7 @@ import './AboutDialog.scss';
  * and its plugins. Can also display the values of other soft-configuration entries as
  * specified by the xhAboutMenuConfigs configuration key.
  *
- * @private
+ * @internal
  */
 export const aboutDialog = hoistCmp.factory({
     displayName: 'AboutDialog',

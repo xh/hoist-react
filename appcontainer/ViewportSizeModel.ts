@@ -11,10 +11,9 @@ import {isFinite, isString} from 'lodash';
 import {runInAction} from 'mobx';
 
 /**
- * Track observable width / height of the browser viewport, and provide observable
- * access to device orientation
+ * Exposes width / height of browser viewport + device orientation as observables.
  *
- * @private
+ * @internal
  */
 export class ViewportSizeModel extends HoistModel {
     xhImpl = true;

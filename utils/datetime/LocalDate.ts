@@ -271,7 +271,7 @@ export class LocalDate {
     //-------------------
     // Implementation
     //-------------------
-    /** @private - use one of the static factory methods instead. */
+    /** @internal - use one of the static factory methods instead. */
     private constructor(s) {
         const m = moment(s, 'YYYY-MM-DD', true);
         throwIf(

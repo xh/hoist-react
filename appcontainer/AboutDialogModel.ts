@@ -11,8 +11,7 @@ import {warnIf} from '@xh/hoist/utils/js';
 import {isNull, reject} from 'lodash';
 
 /**
- * Support for About Dialog.
- *  @private
+ * @internal
  */
 export class AboutDialogModel extends HoistModel {
     xhImpl = true;

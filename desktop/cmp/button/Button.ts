@@ -91,7 +91,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
     }
 });
 
-export interface ButtonProps<M=HoistModel|null> extends BoxProps<M> {
+export interface ButtonProps<M extends HoistModel = null> extends BoxProps<M> {
     active?: boolean,
     autoFocus?: boolean,
     disabled?: boolean,

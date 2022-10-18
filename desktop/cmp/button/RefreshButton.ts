@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, RefreshContextModel, useContextModel} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, RefreshContextModel, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
@@ -17,7 +17,7 @@ import {button, ButtonProps} from './Button';
  * be linked to any model in props with LoadSupport enabled, or the contextual
  * {@see RefreshContextModel}.
  */
-export const [RefreshButton, refreshButton] = hoistCmp.withFactory<ButtonProps>({
+export const [RefreshButton, refreshButton] = hoistCmp.withFactory<RefreshButtonProps>({
     displayName: 'RefreshButton',
     model: false,  // For consistency with all other buttons -- the model prop here could be replaced by 'target'
 
@@ -25,9 +25,10 @@ export const [RefreshButton, refreshButton] = hoistCmp.withFactory<ButtonProps>(
         const refreshContextModel = useContextModel(RefreshContextModel);
 
         if (!onClick) {
-            errorIf(model && !model.loadSupport, 'Models provided to RefreshButton must enable LoadSupport.');
-            model = withDefault(model, refreshContextModel);
-            onClick = model ? () => model.refreshAsync() : null;
+            let target: HoistModel = model;
+            errorIf(target && !target.loadSupport, 'Models provided to RefreshButton must enable LoadSupport.');
+            target = withDefault(target, refreshContextModel);
+            onClick = target ? () => target.refreshAsync() : null;
         }
 
         return button({
@@ -40,3 +41,5 @@ export const [RefreshButton, refreshButton] = hoistCmp.withFactory<ButtonProps>(
         });
     }
 });
+
+export type RefreshButtonProps = ButtonProps<HoistModel>;

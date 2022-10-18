@@ -50,7 +50,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             ...layoutProps,
             item: popover({
                 isOpen,
-                popoverRef: (v) => (model.popoverRef as any)(v), // Workaround for #2272
+                popoverRef: model.popoverRef,
                 popoverClassName: classNames('xh-grouping-chooser-popover', editorIsOpen ? 'xh-popup--framed' : null),
                 position: favoritesIsOpen ? 'bottom-right' : popoverPosition,
                 minimal: favoritesIsOpen,

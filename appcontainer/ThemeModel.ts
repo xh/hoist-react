@@ -8,7 +8,7 @@ import {HoistModel, Theme, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 
 /**
- * @private
+ * @internal
  */
 export class ThemeModel extends HoistModel {
     xhImpl = true;

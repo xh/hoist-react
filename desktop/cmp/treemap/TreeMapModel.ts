@@ -549,18 +549,18 @@ export type TreeMapColorMode = 'linear'|'wash'|'none';
 
 /**
  * Normalized renderer function to display value in the tree map tooltip.
- * @return {string} - the formatted value (html) for display.
+ * @returns {string} - the formatted value (html) for display.
  */
 type TreeMapValueRendererFn = (value: any, record: StoreRecord) => string;
 
 /**
  * Normalized renderer function to display heat in the tree map tooltip.
- * @return {string} - the formatted value (html) for display.
+ * @returns {string} - the formatted value (html) for display.
  */
 type TreeMapHeatRendererFn = (value: any, record: StoreRecord) => string;
 
 /**
  * Normalized renderer function to produce a tree map tooltip.
- * @return {string} - the formatted value (html) for display.
+ * @returns {string} - the formatted value (html) for display.
  */
 type TreeMapTooltipFn = (record: StoreRecord) => string;

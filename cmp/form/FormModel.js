@@ -40,7 +40,7 @@ export class FormModel extends HoistModel {
     /** @member {Object} - container object for FieldModel instances, keyed by field name. */
     @observable.ref fields = {};
 
-    /** @return {FieldModel[]} - all FieldModel instances, as an array. */
+    /** @returns {FieldModel[]} - all FieldModel instances, as an array. */
     @managed
     get fieldList() {return values(this.fields)}
 
@@ -56,7 +56,7 @@ export class FormModel extends HoistModel {
     _valuesProxy = this.createValuesProxy();
 
     /**
-     * @return {Object} - proxy for access to observable field values, keyed by field name.
+     * @returns {Object} - proxy for access to observable field values, keyed by field name.
      *
      * Read field value(s) off of this object within a reaction's track or component render function
      * to react to changes to those specific values - e.g. to disable one field based on the value
@@ -112,14 +112,14 @@ export class FormModel extends HoistModel {
 
     /**
      * @param {string} fieldName
-     * @return {FieldModel}
+     * @returns {FieldModel}
      */
     getField(fieldName) {
         return this.fields[fieldName];
     }
 
     /**
-     * @return {Object} - snapshot of current field values, keyed by field name.
+     * @returns {Object} - snapshot of current field values, keyed by field name.
      *
      * Call within a reaction's track or component render function to react to *any* field change.
      * {@see values} instead if you need to get or react to the value of a *single* field.
@@ -167,7 +167,7 @@ export class FormModel extends HoistModel {
         forEach(values, (v, k) => fields[k]?.setValue(v));
     }
 
-    /** @return {boolean} - true if any fields have been changed since last reset/init. */
+    /** @returns {boolean} - true if any fields have been changed since last reset/init. */
     @computed
     get isDirty() {
         return some(this.fields, m => m.isDirty);
@@ -194,7 +194,7 @@ export class FormModel extends HoistModel {
      * @see FieldModel.focus() for important information on this method
      * and its limitations.
      *
-     * @return {FieldModel}
+     * @returns {FieldModel}
      */
     @computed
     get focusedField() {
@@ -216,7 +216,7 @@ export class FormModel extends HoistModel {
     //------------------------
     // Validation
     //------------------------
-    /** @return {ValidationState} - the current validation state. */
+    /** @returns {ValidationState} - the current validation state. */
     @computed
     get validationState() {
         const VS = ValidationState,
@@ -226,18 +226,18 @@ export class FormModel extends HoistModel {
         return VS.Valid;
     }
 
-    /** @return {boolean} - true if any fields are currently recomputing their validation state. */
+    /** @returns {boolean} - true if any fields are currently recomputing their validation state. */
     @computed
     get isValidationPending() {
         return some(this.fields, m => m.isValidationPending);
     }
 
-    /** @return {boolean} - true if all fields are valid. */
+    /** @returns {boolean} - true if all fields are valid. */
     get isValid() {
         return this.validationState == ValidationState.Valid;
     }
 
-    /** @return {string[]} - list of all validation errors for this form. */
+    /** @returns {string[]} - list of all validation errors for this form. */
     get allErrors() {
         return flatMap(this.fields, s => s.allErrors);
     }
@@ -248,7 +248,7 @@ export class FormModel extends HoistModel {
      * @param {Object} [c]
      * @param {boolean} [c.display] - true to trigger the display of validation errors (if any)
      *      by bound FormField components after validation is complete.
-     * @return {Promise<boolean>}
+     * @returns {Promise<boolean>}
      */
     async validateAsync({display = true} = {}) {
         const promises = map(this.fields, m => m.validateAsync({display}));

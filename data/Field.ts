@@ -13,9 +13,7 @@ import equal from 'fast-deep-equal';
 import {isDate, isString, toNumber, isFinite, startCase, isFunction, castArray} from 'lodash';
 import DOMPurify from 'dompurify';
 
-/**
- * Metadata for an individual data field within a {@see Record}.
- */
+/** Metadata for an individual data field within a {@link StoreRecord}. */
 export class Field {
 
     get isField() {return true}
@@ -68,10 +66,10 @@ export class Field {
  * Parse a value according to a field type.
  * @param val - raw value to parse.
  * @param type - data type of the field to use for possible conversion.
- * @param [defaultValue] - typed value to return if `val` undefined or null.
- * @param [disableXssProtection] - true to disable XSS (cross-site scripting) protection.
- *      {@see FieldConfig} docs for additional details.
- * @return resulting value, potentially parsed or cast as per type.
+ * @param defaultValue - typed value to return if `val` undefined or null.
+ * @param disableXssProtection - true to disable XSS (cross-site scripting) protection.
+ *      @see {@link FieldConfig} docs for additional details.
+ * @returns resulting value, potentially parsed or cast as per type.
  */
 export function parseFieldValue(
     val: any,
@@ -138,14 +136,14 @@ export type FieldType = typeof FieldType[keyof typeof FieldType];
 
 /**
  * @param fieldName - short name / code for a field.
- * @return fieldName transformed into user-facing / longer name for display.
+ * @returns fieldName transformed into user-facing / longer name for display.
  */
 export function genDisplayName(fieldName: string): string {
     return fieldName === 'id' ? 'ID' : startCase(fieldName);
 }
 
 /**
- * ctor arguments for a Hoist data package Field.
+ * Constructor arguments for a Hoist data package Field.
  */
 export interface FieldConfig {
 
@@ -157,7 +155,7 @@ export interface FieldConfig {
 
     /**
      *  User-facing / longer name for display, defaults to `name`
-     *  transformed via `genDisplayName()` (e.g. 'myField' -> 'My Field').
+     *  transformed via `genDisplayName()` (e.g. 'myField' translates to 'My Field').
      */
     displayName?: string;
 
@@ -169,11 +167,12 @@ export interface FieldConfig {
 
     /**
      * True to disable built-in XSS (cross-site scripting) protection, applied by default to all
-     * incoming String values via the DOMPurify library. DOMPurify provides fast escaping of
-     * dangerous HTML, scripting, and other content that can be used to execute XSS attacks, while
-     * allowing common and expected HTML and style tags.
+     * incoming String values using {@link https://github.com/cure53/DOMPurify | DOMPurify}.
+     *
+     * DOMPurify provides fast escaping of dangerous HTML, scripting, and other content that can be
+     * used to execute XSS attacks, while allowing common and expected HTML and style tags.
+     *
      * Please contact XH if you find yourself needing to disable this protection!
-     *  {@link https://github.com/cure53/DOMPurify}
      */
     disableXssProtection ?: boolean;
 }

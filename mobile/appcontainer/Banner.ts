@@ -16,8 +16,8 @@ import './Banner.scss';
 
 /**
  * Internal component to display a single instance of an app-wide banner.
- * @see {XH.showBanner()}
- * @private
+ * @see XH.showBanner()
+ * @internal
  */
 export const banner = hoistCmp.factory({
     displayName: 'Banner',

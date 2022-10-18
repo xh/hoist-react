@@ -40,8 +40,8 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
         ...props
     }: TileFrameProps, ref) {
         const localModel = useLocalModel(TileFrameLocalModel),
-            [width, setWidth] = useState(),
-            [height, setHeight] = useState();
+            [width, setWidth] = useState<number>(),
+            [height, setHeight] = useState<number>();
 
         children = Children.toArray(children);
 

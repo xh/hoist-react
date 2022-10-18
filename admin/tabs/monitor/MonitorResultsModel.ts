@@ -17,7 +17,7 @@ export class MonitorResultsModel extends HoistModel {
     @observable.ref results = [];
     @observable lastRun = null;
     @managed timer = null;
-    viewRef = createObservableRef();
+    viewRef = createObservableRef<HTMLElement>();
 
     @computed
     get passed(): number {

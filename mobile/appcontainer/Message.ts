@@ -16,9 +16,8 @@ import {withDefault} from '@xh/hoist/utils/js';
 import './Message.scss';
 
 /**
- * Render a modal dialog
- *
- * @private
+ * Renders a modal dialog.
+ * @internal
  */
 export const message = hoistCmp.factory({
     displayName: 'Message',

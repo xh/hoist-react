@@ -10,24 +10,21 @@ import {LoadSupport} from './';
 /**
  * Object describing a load/refresh request in Hoist.
  *
- * Instances of this class are created within the public API wrappers provided by the `LoadSupport`
- * base class and are passed to subclass (i.e. application code) implementations of `doLoadAsync()`.
+ * Instances of this class are created within the public APIs provided by {@link LoadSupport}
+ * and are passed to subclass (i.e. app-level) implementations of `doLoadAsync()`.
  *
  * Application implementations of `doLoadAsync()` can consult this object's flags. Of particular
- * interest are the `isStale` and `isObsolete` properties, which implementations can read after any
- * async calls return to determine if a newer, subsequent load has already been requested:
- *
- *   + `isStale` will be true if any loads have been *started* after the run being evaluated.
- *   + `isObsolete` will return true if there is a newer load which has successfully *completed*.
+ * interest are {@link isStale} and {@link isObsolete}, which implementations can read after any
+ * async calls return to determine if a newer, subsequent load has already been requested.
  *
  * In addition, `doLoadAsync()` implementations should typically pass along this object to any
- * calls they make to `loadAsync()` on other objects, as well as all calls to `FetchService` APIs.
+ * calls they make to `loadAsync()` on other objects + all calls to {@link FetchService} APIs.
  *
- * Note that Hoist's exception handling and activity tracking will consult the `isAutoRefresh` flag
- * on specs associated with their calls to automatically adjust their behavior (e.g. not showing an
+ * Note that Hoist's exception handling and activity tracking will consult the {@link isAutoRefresh}
+ * flag on specs passed to their calls to automatically adjust their behavior (e.g. not showing an
  * exception dialog on error, not tracking background refresh activity).
  *
- * {@see LoadSupport}
+ * @see LoadSupport
  */
 export class LoadSpec {
 
@@ -51,12 +48,12 @@ export class LoadSpec {
     /** Application specific information about the load request */
     meta: object;
 
-    /** True if a more recent request to load this object's owner has started. */
+    /** True if a more recent request to load this object's owner has *started*. */
     get isStale(): boolean {
         return this !== this.owner.lastRequested;
     }
 
-    /** True if a more recent request to load this object's owner has successfully completed.*/
+    /** True if a more recent request to load this object's owner has *successfully completed*. */
     get isObsolete(): boolean {
         return this.owner.lastSucceeded?.loadNumber > this.loadNumber;
     }

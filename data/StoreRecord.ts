@@ -12,14 +12,14 @@ import {RecordValidator} from './impl/RecordValidator';
 import {Field} from './Field';
 
 /**
- * Wrapper object for each data element within a {@see Store}. Records must be assigned a unique ID
+ * Wrapper object for each data element within a {@link Store}. Records must be assigned a unique ID
  * within their Store and manage a bundle of data with fields defined by the Store. They track the
  * state of that data through possible updates, with support for tracking edits and "committing"
  * changes to provide dirty state.
  *
  * Each StoreRecord holds a pointer to its parent record, if any, via that parent's ID. (Note this
- * is deliberately not a direct object reference, to allow parent records to be recreated
- * without requiring children to also be recreated.)
+ * is deliberately not a direct object reference, to allow parent records to be recreated without
+ * requiring children to also be recreated.)
  *
  * Records are intended to be created and managed internally by Store implementations and should
  * most not typically be constructed directly within application code.
@@ -39,8 +39,9 @@ export class StoreRecord {
      * An object containing the current field values for this record.
      *
      * Note that this object will only contain explicit 'own' properties for fields that are
-     * not at their default values - default values will be present via the prototype. For an
-     * object providing an explicit enumeration of all field values {@see StoreRecord.getValues()}.
+     * not at their default values - default values will be present via the prototype.
+     *
+     * Call {@link getValues} for an object providing an explicit enumeration of all field values.
      */
     data: Record<string, any>;
 
@@ -174,33 +175,14 @@ export class StoreRecord {
     /**
      * Construct a StoreRecord from a pre-processed `data` source object.
      *
-     * Not typically called by applications directly. `Store` instances create `StoreRecord` instances
-     * when loading or updating data through their public APIs. {@see Store.createRecord} for the
-     * primary implementation, which includes parsing based on `data/Field` types and definitions.
+     * Not typically called by applications directly - `Store` instances create `StoreRecord`s when
+     * loading or updating data through their public APIs. See {@link Store.createRecord} for the
+     * primary implementation, which includes parsing based on the Store's {@link Field} types
+     * and definitions.
      *
-     * @param config.id - Record ID
-     * @param config.store - Store containing this StoreRecord.
-     * @param config.data - data for this StoreRecord, pre-processed if applicable by
-     *      `Store.processRawData()` and `Field.parseVal()`. Note: This must be a new object
-     *      dedicated to this StoreRecord. This object will be enhanced with an id and frozen.
-     * @param [config.raw] - the original data for the StoreRecord, prior to any Store
-     *      pre-processing.  This data is for reference only and will not be altered by this object.
-     * @param [config.committedData] - the committed version of the data that was loaded
-     *      into a StoreRecord in the Store. Pass `null` to indicate that this is a "new" StoreRecord that has
-     *      been added since the last load.
-     * @param [config.parent] - parent record, if any.
-     * @param [config.isSummary] - whether this StoreRecord is a summary StoreRecord, used to show
-     *      aggregate, grand-total level information in grids when enabled.
+     * @internal
      */
-    constructor(config: {
-        id: StoreRecordId,
-        store: Store,
-        data: any,
-        raw?: any,
-        committedData?: any,
-        parent?: StoreRecord,
-        isSummary?: boolean
-    }) {
+    constructor(config: StoreRecordConfig) {
         const {id, store, data, raw = null, committedData = data, parent, isSummary = false} = config;
         throwIf(
             isNil(id),
@@ -222,7 +204,7 @@ export class StoreRecord {
     /**
      * Calls 'fn' for each child record of this record.
      * @param fn - the function to call.
-     * @param [fromFiltered] - true to skip records excluded by any active filter.
+     * @param fromFiltered - true to skip records excluded by any active filter.
      */
     forEachChild(fn: (r: StoreRecord) => void, fromFiltered: boolean = false) {
         this.store.getChildrenById(this.id, fromFiltered).forEach(fn);
@@ -231,7 +213,7 @@ export class StoreRecord {
     /**
      * Calls 'fn' for each descendant record of this record.
      * @param fn - the function to call.
-     * @param [fromFiltered] - true to skip records excluded by any active filter.
+     * @param fromFiltered - true to skip records excluded by any active filter.
      */
     forEachDescendant(fn: (r: StoreRecord) => void, fromFiltered: boolean = false) {
         this.store.getDescendantsById(this.id, fromFiltered).forEach(fn);
@@ -239,8 +221,8 @@ export class StoreRecord {
 
     /**
      * Calls 'fn' for each ancestor record of this record.
-     * @param {function} fn - the function to call.
-     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
+     * @param fn - the function to call.
+     * @param fromFiltered - true to skip records excluded by any active filter.
      */
     forEachAncestor(fn: (r: StoreRecord) => void, fromFiltered: boolean = false) {
         this.store.getAncestorsById(this.id, fromFiltered).forEach(fn);
@@ -252,11 +234,11 @@ export class StoreRecord {
     /**
      * Finalize this record for use in Store, post acceptance by RecordSet.
      *
-     * We finalize the StoreRecord post-construction in RecordSet, only once we know that it is going to
-     * be accepted in the new RecordSet (and is not a duplicate).  This is a performance
+     * We finalize the StoreRecord post-construction in RecordSet, only once we know that it is
+     * going to be accepted in the new RecordSet (and is not a duplicate). This is a performance
      * optimization to avoid operations like freezing on transient records.
      *
-     * @package - not for application use.
+     * @internal
      */
     finalize() {
         if (this.store.freezeData) {
@@ -271,3 +253,38 @@ export type StoreRecordId = number|string;
 /** A Hoist StoreRecord, or an ID for one. */
 export type StoreRecordOrId = StoreRecordId|StoreRecord;
 
+/** StoreRecord constructor arguments. */
+export interface StoreRecordConfig {
+    /** Unique ID for the Record. */
+    id: StoreRecordId;
+
+    /** Store containing this StoreRecord. */
+    store: Store;
+
+    /**
+     * Data for this StoreRecord, pre-processed if applicable by `Store.processRawData()` and
+     * `Field.parseVal()`. Note this must be a new object dedicated to this StoreRecord.
+     * This object will be enhanced with an id and frozen.
+     */
+    data: any,
+
+    /**
+     * The original data for the StoreRecord, prior to any Store pre-processing.
+     * This data is for reference only and will not be altered by this object.
+     */
+    raw?: any,
+
+    /**
+     * The version of the data that was last loaded via the Store load APIs. Pass `null` to
+     * signal that this is a "new" StoreRecord that has been added since the last load.
+     */
+    committedData? : any,
+
+    parent?: StoreRecord,
+
+    /**
+     * True to indicate this is a summary StoreRecord, used to show aggregate, grand-total level
+     * information in grids when enabled.
+     */
+    isSummary?: boolean
+}

@@ -13,10 +13,10 @@ import {isPlainObject} from 'lodash';
 /**
  * Provides support for objects that participate in Hoist's loading/refresh lifecycle.
  *
- * This utility is used by core Hoist classes such as {@see HoistModel} and {@see HoistService},
- * which will automatically create an instance of this class if they have declared a concrete
- * implementation of `doLoadAsync()`, signalling that they wish to take advantage of the additional
- * tracking and management provided here.
+ * This utility is used by core Hoist classes such as {@link HoistModel} and {@link HoistService}.
+ * Model and service instances will automatically create an instance of this class if they have
+ * declared a concrete implementation of `doLoadAsync()`, signalling that they wish to take
+ * advantage of the additional tracking and management provided here.
  *
  * Not typically created directly by applications.
  */
@@ -121,7 +121,7 @@ export class LoadSupport extends HoistBase implements Loadable {
  * will not cause the entire batch to throw.
  *
  * @param objs - list of objects to be loaded
- * @param [loadSpec] - metadata related to this request.
+ * @param loadSpec - optional metadata related to this request.
 */
 export async function loadAllAsync(objs: Loadable[], loadSpec?: LoadSpec|any) {
     const promises = objs.map(it => it.loadAsync(loadSpec)),

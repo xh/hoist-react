@@ -20,7 +20,7 @@ import {BaseRow} from './row/BaseRow';
 
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.
- * Applications should create via the {@see Cube.createView()} factory.
+ * Applications should create via the {@link Cube.createView} factory.
  */
 export class View extends HoistBase {
 
@@ -56,13 +56,13 @@ export class View extends HoistBase {
     private _aggContext: AggregationContext = null;
 
     /**
-     * @private - applications should use `Cube.createView()`.
-     *
      * @param config.query - query to be used to construct this view.
      * @param [config.stores] - Stores to be loaded/reloaded with data from this view.
      *      Optional - to receive data only, observe/read this class's `result` property instead.
      * @param [config.connect] - true to reactively update this class's `result` and connected
      *      store(s) (if any) when data in the underlying Cube is changed.
+     *
+     * @internal - applications should use `Cube.createView()`.
      */
     constructor(config: {query: Query, stores?: Store[]|Store, connect?: boolean}) {
         super();

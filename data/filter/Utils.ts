@@ -118,7 +118,7 @@ export function withFilterByTypes(filter: Filter, newFilter: FilterLike, types: 
 
 /**
  * Recursively flatten a CompoundFilter, and return an array of all nested non-compound filters
- * @return array of all nested non-compound filters
+ * @returns array of all nested non-compound filters
  */
 export function flattenFilter(spec: FilterLike): Filter[] {
     const s = spec as any;

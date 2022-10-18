@@ -17,8 +17,8 @@ import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
  *
  * Services are distinct from Models in that they are typically constructed and initialized within
  * either `XH` (for Hoist-provided services) or within the `initAsync()` method of your primary
- * `AppModel` - {@see XH.installServicesAsync()}. A single instance of each service is constructed
- * and installed as a property on the `XH` singleton.
+ * `AppModel` - see {@link XH.installServicesAsync}. A single instance of each service is
+ * constructed and installed as a property on the `XH` singleton.
  *
  * (E.g. an app that defines and initializes a custom `TradeEntryService` class can access and use
  * that instance as `XH.tradeEntryService`. This mirrors the pattern for singleton service
@@ -96,7 +96,7 @@ export class HoistService extends HoistBase implements Loadable {
  * Applications must choose a unique name of the form xxxService to avoid naming collisions on
  * the target. If naming collisions are detected, an error will be thrown.
  *
- * @package Applications should use HoistAppModel.initServicesAsync() instead.
+ * @internal - apps should use {@link HoistAppModel.initServicesAsync} instead.
  */
 export async function initServicesAsync(serviceClasses: Some<HoistServiceClass>, target: object) {
     serviceClasses = castArray(serviceClasses);

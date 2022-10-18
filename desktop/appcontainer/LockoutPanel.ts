@@ -15,7 +15,7 @@ import './LockoutPanel.scss';
 /**
  * Displayed in place of the UI when user does not have any access, as per AppSpec.checkAccess.
  *
- * @private
+ * @internal
  */
 export const lockoutPanel = hoistCmp.factory({
     displayName: 'LockoutPanel',

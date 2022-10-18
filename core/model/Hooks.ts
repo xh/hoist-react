@@ -23,8 +23,7 @@ import {each, isUndefined} from 'lodash';
 
 /**
  * Hook to allow a component to access a HoistModel provided in context by an ancestor component.
- *
- * @param [selector] - selector to identify model to be returned.
+ * @param selector - selector to identify the model to be returned.
  * @returns model or null if no matching model found.
  */
 export function useContextModel<T extends HoistModel>(selector: ModelSelector<T> = '*'): T {
@@ -34,10 +33,9 @@ export function useContextModel<T extends HoistModel>(selector: ModelSelector<T>
 }
 
 /**
- * Create a new model that will be maintained for lifetime of component and destroyed
- * when component is unmounted.
- *
- * @param [spec] - class of HoistModel to create, or a function to call to generate one.
+ * Create a new model that will be maintained for lifetime of the component and destroyed when the
+ * component is unmounted.
+ * @param spec - class of HoistModel to create, or a function returning one.
  */
 export function useLocalModel<T extends HoistModel>(spec?: HoistModelClass<T> | (() => T)): T {
     const [ret] = useState(() => {
@@ -57,12 +55,9 @@ export function useLocalModel<T extends HoistModel>(spec?: HoistModelClass<T> | 
 
 
 /**
- * @private
- *
- * Integrate a HoistModel owned by a component into the component's lifecycle,
- * enabling support for both the Loading lifecycle and destruction.
- *
- * No-op, if model is null.
+ * Integrate a HoistModel owned by a component into the component's lifecycle, enabling support for
+ * both the Loading lifecycle and destruction. No-op, if model is null.
+ * @internal
  */
 /* eslint-disable react-hooks/exhaustive-deps */
 export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, props: object) {
@@ -124,10 +119,8 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
 
 
 /**
- * @package -- not for application use.
- *
- * Default Context for useLocalModel.  Set by HoistComponent during render to minimize app
- * boiler plate required.
- * @type {null}
+ * Default Context for useLocalModel.
+ * Set by HoistComponent during render to minimize app boilerplate required.
+ * @internal
  */
 export const localModelContext = {modelLookup: null, props: null};

@@ -15,7 +15,7 @@ import {FieldType} from '../../../data';
 //----------------------------------------------------------
 /**
  * Create an option representing a detailed field suggestion
- * @return {FilterChooserOption}
+ * @returns {FilterChooserOption}
  */
 export function fieldOption({fieldSpec, isExact = false}) {
     const {displayName} = fieldSpec;
@@ -30,7 +30,7 @@ export function fieldOption({fieldSpec, isExact = false}) {
 
 /**
  * Create an option representing a minimal field suggestion
- * @return {FilterChooserOption}
+ * @returns {FilterChooserOption}
  */
 export function minimalFieldOption({fieldSpec}) {
     const {displayName} = fieldSpec;
@@ -45,7 +45,7 @@ export function minimalFieldOption({fieldSpec}) {
 
 /**
  * Create an option representing an existing or suggested FieldFilter.
- * @return {FilterChooserOption}
+ * @returns {FilterChooserOption}
  */
 export function fieldFilterOption({filter, fieldSpec, isExact = false}) {
     let {fieldType, displayName} = fieldSpec,
@@ -76,7 +76,7 @@ export function fieldFilterOption({filter, fieldSpec, isExact = false}) {
 
 /**
  * Create an option representing a compound filter. For display purposes only.
- * @return {FilterChooserOption}
+ * @returns {FilterChooserOption}
  */
 export function compoundFilterOption({filter, fieldNames}) {
     return {
@@ -89,7 +89,7 @@ export function compoundFilterOption({filter, fieldNames}) {
 
 /**
  * Create an option representing an [unselectable] message
- * @return {FilterChooserOption}
+ * @returns {FilterChooserOption}
  */
 export function msgOption(msg) {
     return {

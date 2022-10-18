@@ -8,7 +8,7 @@ import {TaskObserver} from '../';
 import {LoadSpec} from './';
 
 /**
- * Object that supports Hoist's loading/refresh lifecycle.
+ * Interface for the primary load/refresh APIs on models and services with {@link LoadSupport}.
  */
 export interface Loadable {
 
@@ -34,35 +34,30 @@ export interface Loadable {
      * calling the objects `doLoadAsync()` implementation.  See also `refreshAsync()` and
      * `autoRefreshAsync()` for convenience variants of this method.
      *
-     * @param [loadSpec] - LoadSpec, or a simple Object containing properties to create one.
-     *
-     *      Note that implementations of `doLoadAsync()` that delegate to loadAsync() calls of
-     *      other objects should typically pass along the LoadSpec object they receive -- or an
-     *      enriched version of it -- to their delegates.
+     * @param loadSpec - a {@link LoadSpec}, or an object containing properties to create one.
      */
-
     loadAsync(loadSpec?: LoadSpec|Partial<LoadSpec>): Promise<void>;
 
     /**
      * Refresh the target.
-     * @param [meta] - optional metadata for the request.
+     * @param meta - optional metadata for the request.
      */
     refreshAsync(meta?: object): Promise<void>;
 
     /**
      * Auto-refresh the target.
-     * @param [meta] - optional metadata for the request.
+     * @param meta - optional metadata for the request.
      */
     autoRefreshAsync(meta?: object): Promise<void>;
 
     /**
      * Implement this method to load data or other state from external data sources or services.
-     * This is a template method -- callers should call `loadAsync()` or `refreshAsync()` instead.
+     * This is a template method - callers should call `loadAsync()` or `refreshAsync()` instead.
      *
      * @param loadSpec - metadata about the underlying request. Implementations should
      *      take care to pass this parameter in calls to any delegates that support it, e.g.
      *      when calling the `loadAsync()` method of other services or child models with
-     *      `loadSupport` or when making calls to the core {@see FetchService} APIs.
+     *      `loadSupport` or when making calls to {@link FetchService} APIs.
      */
     doLoadAsync(loadSpec: LoadSpec): Promise<void>;
 }

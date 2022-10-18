@@ -5,15 +5,14 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hbox, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, XH} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, XH} from '@xh/hoist/core';
 import {fmtTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import PT from 'prop-types';
 
 /**
- * Provides a visual indicator of connection status for {@see WebSocketService}.
+ * Provides a visual indicator of connection status for @see {@link WebSocketService}.
  */
-export const [WebSocketIndicator, webSocketIndicator] = hoistCmp.withFactory({
+export const [WebSocketIndicator, webSocketIndicator] = hoistCmp.withFactory<WebSocketIndicatorProps>({
     displayName: 'WebSocketIndicator',
     model: false,
 
@@ -51,7 +50,7 @@ export const [WebSocketIndicator, webSocketIndicator] = hoistCmp.withFactory({
     }
 });
 
-WebSocketIndicator.propTypes = {
+export interface WebSocketIndicatorProps extends BoxProps {
     /** True to display status as an icon only, without text label. */
-    iconOnly: PT.bool
-};
+    iconOnly?: boolean
+}

@@ -149,7 +149,7 @@ export class XHClass {
     /**
      * Primary convenience alias for reading soft configuration values.
      * @param key - identifier of the config to return.
-     * @param [defaultVal] - value to return if there is no client-side config with this key.
+     * @param defaultVal - value to return if there is no client-side config with this key.
      * @returns the soft-configured value.
      */
     getConf(key: string, defaultVal?: any): any {
@@ -159,7 +159,7 @@ export class XHClass {
     /**
      * Primary convenience alias for reading user preference values.
      * @param key - identifier of the pref to return.
-     * @param [defaultVal] - value to return if there is no pref with this key.
+     * @param defaultVal - value to return if there is no pref with this key.
      * @returns the user's preference, or the data-driven default if pref not yet set by user.
      */
     getPref(key: string, defaultVal?: any): any {
@@ -246,17 +246,13 @@ export class XHClass {
     @observable
     authUsername: string = null;
 
-    /** Root level application model {@see HoistAppModel}.*/
+    /** Root level application model. */
     appModel: HoistAppModel = null;
 
-    /** Specifications for this application, provided in call to `XH.renderApp()`.*/
+    /** Specifications for this application, provided in call to `XH.renderApp()`. */
     appSpec: AppSpec = null;
 
-    /**
-     * Main entry point. Initialize and render application code.
-     *
-     * @param appSpec - specifications for this application. Should be an AppSpec, or a config for one.
-     */
+    /** Main entry point. Initialize and render application code. */
     renderApp<T extends HoistAppModel>(appSpec: AppSpec<T>) {
         const spinner = document.getElementById('xh-preload-spinner');
         if (spinner) spinner.style.display = 'none';
@@ -273,7 +269,7 @@ export class XHClass {
 
     /**
      * Install HoistServices on this object.
-     * @deprecated.  Use initServicesAsync() instead.
+     * @deprecated - use initServicesAsync() instead.
      */
     async installServicesAsync(...serviceClasses: HoistServiceClass[]) {
         apiDeprecated('installServicesAsync',
@@ -285,7 +281,7 @@ export class XHClass {
 
     /**
      * Transition the application state.
-     * Used by framework. Not intended for application use.
+     * @internal
      */
     @action
     setAppState(appState: AppState) {
@@ -299,8 +295,8 @@ export class XHClass {
      *
      * This method will reload the entire application document in the browser.
      * To simply trigger a refresh of the loadable content within the application,
-     * see XH.refreshAppAsync() instead.
-     **/
+     * see {@link XH.refreshAppAsync} instead.
+     */
     @action
     reloadApp() {
         never().linkTo(this.appLoadModel);
@@ -311,10 +307,10 @@ export class XHClass {
      * Refresh the current application.
      *
      * This method will do an "in-place" refresh of the loadable content as defined by the app.
-     * It is a short-cut to XH.refreshContextModel.refreshAsync().
+     * It is a short-cut to `XH.refreshContextModel.refreshAsync()`.
      *
      * To trigger a full reload of the application document in the browser (including code)
-     * see XH.reloadApp() instead.
+     * see {@link XH.reloadApp} instead.
      */
     refreshAppAsync() {
         return this.refreshContextModel.refreshAsync();
@@ -519,7 +515,7 @@ export class XHClass {
     // Exception Support
     //--------------------------
     /**
-     * Handle an exception. This method is an alias for {@see ExceptionHandler.handleException}.
+     * Handle an exception. This method is an alias for {@link ExceptionHandler.handleException}.
      *
      * This method may be called by applications in order to provide logging, reporting, and
      * display of exceptions. It is typically called directly in catch() blocks.
@@ -527,31 +523,31 @@ export class XHClass {
      * See also Promise.catchDefault(). That method will delegate its arguments to this method
      * and provides a more convenient interface for catching exceptions in Promise chains.
      *
-     * @param exception - Error or thrown object - if not an Error, an
-     *      Exception will be created via Exception.create().
-     * @param [options] - controls on how the exception should be shown and/or logged.
+     * @param exception - Error or thrown object - if not an Error, an Exception will be created
+     *      via `Exception.create()`.
+     * @param options - provides further control over how the exception is shown and/or logged.
      */
     handleException(exception: Error|object|string, options?: ExceptionHandlerOptions) {
         this.exceptionHandler.handleException(exception, options);
     }
 
     /**
-     * Show an exception. This method is an alias for {@see ExceptionHandler.showException}.
+     * Show an exception. This method is an alias for {@link ExceptionHandler.showException}.
      *
      * Intended to be used for the deferred / user-initiated showing of exceptions that have
      * already been appropriately logged. Applications should typically prefer `handleException`.
      *
-     * @param exception - Error or thrown object - if not an Error, an
-     *      Exception will be created via `Exception.create()`.
-     * @param [options] - controls on how the exception should be shown and/or logged.
+     * @param exception - Error or thrown object - if not an Error, an Exception will be created
+     *      via `Exception.create()`.
+     * @param options - provides further control over how the exception is shown and/or logged.
      */
     showException(exception: Error|object|string, options?: ExceptionHandlerOptions) {
         this.exceptionHandler.showException(exception, options);
     }
 
     /**
-     * Create a new exception - {@see Exception} for Hoist conventions / extensions to JS Errors.
-     * @param cfg - properties to add to the returned Error. If a string, will become the 'message' value.
+     * Create a new exception - See {@link Exception} for Hoist extensions to JS Errors.
+     * @param cfg - properties to add to the returned Error. If a string, will be the `message`.
      */
     exception(cfg: object|string): Error {
         return Exception.create(cfg);
@@ -560,19 +556,19 @@ export class XHClass {
     //---------------------------
     // Miscellaneous
     //---------------------------
-    /** Show "about this app" dialog, powered by {@see EnvironmentService}. */
+    /** Show "about this app" dialog, powered by {@link EnvironmentService}. */
     showAboutDialog() {
         this.acm.aboutDialogModel.show();
     }
 
-    /** Show a "release notes" dialog, powered by {@see ChangelogService}. */
+    /** Show a "release notes" dialog, powered by {@link ChangelogService}. */
     showChangelog() {
         this.acm.changelogDialogModel.show();
     }
 
     /**
      * Show a dialog to elicit feedback from the user.
-     * @param [message] - optional message to preset within the feedback dialog.
+     * @param message - optional message to preset within the feedback dialog.
      */
     showFeedbackDialog({message}: {message?: string} = {}) {
         this.acm.feedbackDialogModel.show({message});
@@ -655,7 +651,7 @@ export class XHClass {
     /**
      * Called when application container first mounted in order to trigger initial
      * authentication and initialization of framework and application.
-     * @private - not intended for application use.
+     * @internal
      */
     async initAsync() {
         // Avoid multiple calls, which can occur if AppContainer remounted.
@@ -734,7 +730,7 @@ export class XHClass {
     /**
      * Complete initialization. Called after the client has confirmed that the user is generally
      * authenticated and known to the server (regardless of application roles at this point).
-     * @private - not intended for application use.
+     * @internal
      */
     @action
     async completeInitAsync() {
@@ -794,7 +790,7 @@ export class XHClass {
      *
      * Suspension is a terminal state, requiring user to reload the app.
      * Used for idling, forced version upgrades, and ad-hoc killing of problematic clients.
-     * @package - not intended for application use.
+     * @internal
      */
     suspendApp(suspendData) {
         if (XH.appState === 'SUSPENDED') return;

@@ -19,7 +19,7 @@ import './OptionsDialog.scss';
  * Dialog to provide a built-in editor for app-wide user preferences, as specified by
  * the `HoistAppModel.getAppOptions()` template method.
  *
- * @private
+ * @internal
  */
 export const optionsDialog = hoistCmp.factory({
     displayName: 'OptionsDialog',

@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {box, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, managed, useLocalModel, XH, lookup} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, managed, useLocalModel, XH, lookup, BoxProps} from '@xh/hoist/core';
 import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
 import {action, observable, makeObservable, computed} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
@@ -13,7 +13,6 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import moment from 'moment';
-import PT from 'prop-types';
 
 /**
  * A component to display the approximate amount of time between a given timestamp and now in a
@@ -21,7 +20,7 @@ import PT from 'prop-types';
  *
  * Automatically updates on a regular interval to stay current.
  */
-export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
+export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory<RelativeTimestampProps>({
     displayName: 'RelativeTimestamp',
     className: 'xh-relative-timestamp',
 
@@ -40,19 +39,20 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
         });
     }
 });
-RelativeTimestamp.propTypes = {
+
+interface RelativeTimestampProps extends BoxProps {
     /**
      * Property on context model containing timestamp.
      * Specify as an alternative to direct `timestamp` prop (and minimize parent re-renders).
      */
-    bind: PT.string,
+    bind?: string;
 
     /** Date or milliseconds representing the starting time / time to compare. See also `bind`. */
-    timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]),
+    timestamp?: Date|number;
 
-    /** @see getRelativeTimestamp options. */
-    options: PT.object
-};
+    /** Formatting options */
+    options?: RelativeTimestampOptions
+}
 
 class RelativeTimestampLocalModel extends HoistModel {
     xhImpl = true;
@@ -88,35 +88,52 @@ class RelativeTimestampLocalModel extends HoistModel {
     }
 
     @action
-    refreshDisplay() {
+    private refreshDisplay() {
         this.display = getRelativeTimestamp(this.timestamp, this.options);
     }
 }
 
 
+export interface RelativeTimestampOptions {
+
+    /** Allow dates greater than Date.now().*/
+    allowFuture?: boolean;
+
+    /** Use shorter timestamp text, default true for mobile clients. */
+    short?: boolean;
+
+    /** Label preceding timestamp.*/
+    prefix?: string;
+
+    /** Appended to future timestamps. */
+    futureSuffix?: string;
+
+    /** Appended to past timestamps. */
+    pastSuffix?: string;
+
+    /** String to return when timestamps are within `epsilon`. */
+    equalString?: string;
+
+    /** Threshold interval (in seconds) for `equalString`. **/
+    epsilon?: number;
+
+    /** String to return when timestamp is empty/falsy. */
+    emptyResult?: string;
+
+    /** Time to which the input timestamp is compared. */
+    relativeTo?: Date|number;
+
+}
 /**
  * Returns a string describing the approximate amount of time between a given timestamp and the
  * present moment in a friendly, human readable format.
- *
- * @param {(Date|int)} timestamp - Date or milliseconds representing the starting time / time to compare.
- * @param {Object} [options]
- * @param {boolean} [options.allowFuture] - Allow dates greater than Date.now().
- * @param {boolean} [options.short] - Use shorter timestamp text, default true for mobile clients.
- * @param {string} [options.prefix] - Label preceding timestamp.
- * @param {string} [options.futureSuffix] - appended to future timestamps.
- * @param {string} [options.pastSuffix] - appended to past timestamps.
- * @param {string} [options.equalString] - string to return when timestamps are within `epsilon`.
- * @param {number} [options.epsilon] - threshold interval (in seconds) for `equalString`.
- * @param {string} [options.emptyResult] - string to return when timestamp is empty/falsey.
- * @param {(Date|int)} [options.relativeTo] - time to which the input timestamp is compared
  */
-export function getRelativeTimestamp(timestamp, options = {}) {
+export function getRelativeTimestamp(timestamp: Date|number, options: RelativeTimestampOptions = {}) {
     const relTo = options.relativeTo,
         relFmt = relTo ? fmtCompactDate(relTo) : null,
         relFmtIsTime = relFmt?.includes(':');
 
     options = {
-        timestamp,
         allowFuture: false,
         short: XH.isMobileApp,
         futureSuffix: relTo ? `after ${relFmt}` : 'from now',
@@ -131,15 +148,15 @@ export function getRelativeTimestamp(timestamp, options = {}) {
 
     if (!timestamp) return options.emptyResult;
 
-    return doFormat(options);
+    return doFormat(timestamp, options);
 }
 
 //------------------------
 // Implementation
 //------------------------
-function doFormat(opts) {
+function doFormat(timestamp: Date|number, opts: RelativeTimestampOptions) {
     const {prefix, equalString, epsilon, allowFuture, short} = opts,
-        diff = opts.relativeTo - opts.timestamp,
+        diff = toTimestamp(opts.relativeTo) - toTimestamp(timestamp),
         elapsed = Math.abs(diff),
         isEqual = elapsed <= (epsilon ?? 0) * SECONDS,
         isFuture = !isEqual && diff < 0;
@@ -167,4 +184,8 @@ function doFormat(opts) {
     }
 
     return prefix ? prefix + ' ' + ret : ret;
+}
+
+function toTimestamp(v: Date|number): number {
+    return v instanceof Date ? v.getTime() : v;
 }

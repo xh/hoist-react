@@ -15,11 +15,11 @@ import './AboutDialog.scss';
 
 /**
  * A dialog box showing basic metadata and version information about the Hoist application
- * and its plugins
+ * and its plugins.
  *
- * To customize the entries shown, override HoistAppModel.getAboutDialogItems()
+ * To customize the entries shown, override HoistAppModel.getAboutDialogItems().
  *
- * @private
+ * @internal
  */
 export const aboutDialog = hoistCmp.factory({
     displayName: 'AboutDialog',

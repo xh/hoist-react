@@ -6,8 +6,7 @@
  */
 
 /**
- * Options for how Grids should be sized.
- * @enum {string}
+ * Standardized sizes used by Grid - affects padding, row heights, font sizes, etc.
  */
 export const SizingMode = Object.freeze({
     TINY: 'tiny',

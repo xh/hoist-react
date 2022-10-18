@@ -29,7 +29,7 @@ export class GridFilterModel extends HoistModel {
     /** @member {GridFilterFieldSpec[]} */
     @managed fieldSpecs = [];
 
-    /** @return {Filter} */
+    /** @returns {Filter} */
     get filter() {
         return this.bind.filter;
     }
@@ -118,7 +118,7 @@ export class GridFilterModel extends HoistModel {
 
     /**
      * @param {string} field
-     * @return {FieldFilter[]} - all FieldFilters for specified field
+     * @returns {FieldFilter[]} - all FieldFilters for specified field
      */
     getColumnFilters(field) {
         return flattenFilter(this.filter).filter(it => it.field === field);
@@ -126,7 +126,7 @@ export class GridFilterModel extends HoistModel {
 
     /**
      * @param {string} field
-     * @return {CompoundFilter} - the CompoundFilter that wraps the filters for specified field
+     * @returns {CompoundFilter} - the CompoundFilter that wraps the filters for specified field
      */
     getColumnCompoundFilter(field) {
         return this.getOuterCompoundFilter(this.filter, field);

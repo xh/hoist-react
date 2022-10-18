@@ -9,9 +9,7 @@ import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
- *  Manage Impersonation.
- *
- *  @private
+ *  @internal
  */
 export class ImpersonationBarModel extends HoistModel {
     xhImpl = true;

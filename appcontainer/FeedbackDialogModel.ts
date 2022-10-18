@@ -10,7 +10,7 @@ import {stripTags} from '@xh/hoist/utils/js';
 
 /**
  * Manages built-in collection of user feedback.
- * @private
+ * @internal
  */
 export class FeedbackDialogModel extends HoistModel {
     xhImpl = true;

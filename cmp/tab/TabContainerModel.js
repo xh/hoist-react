@@ -184,7 +184,7 @@ export class TabContainerModel extends HoistModel {
      * @param {Object} [opts] - optional flags
      * @param {number} [opts.index] - index in tab collection where tab is to be added.
      * @param {boolean} [opts.activateImmediately] - true to immediately activate new tab.
-     * @return {TabModel}
+     * @returns {TabModel}
      */
     @action
     addTab(tab, {index = this.tabs.length, activateImmediately = false} = {}) {
@@ -224,23 +224,23 @@ export class TabContainerModel extends HoistModel {
     //-------------------------------
     // Access Tabs, active management
     //-------------------------------
-    /** @return {TabModel} */
+    /** @returns {TabModel} */
     findTab(id) {
         return find(this.tabs, {id});
     }
 
-    /** @return {TabModel} */
+    /** @returns {TabModel} */
     get activeTab() {
         return this.findTab(this.activeTabId);
     }
 
-    /** @return {?TabModel} - the tab immediately before the active tab in the model's tab list. */
+    /** @returns {?TabModel} - the tab immediately before the active tab in the model's tab list. */
     get prevTab() {
         const activeTabIdx = this.tabs.indexOf(this.activeTab);
         return activeTabIdx > 0 ? this.tabs[activeTabIdx - 1] : null;
     }
 
-    /** @return {?TabModel} - the tab immediately after the active tab in the model's tab list. */
+    /** @returns {?TabModel} - the tab immediately after the active tab in the model's tab list. */
     get nextTab() {
         const activeTabIdx = this.tabs.indexOf(this.activeTab);
         return activeTabIdx < this.tabs.length - 1 ? this.tabs[activeTabIdx + 1] : null;

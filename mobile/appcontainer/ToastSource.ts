@@ -11,12 +11,9 @@ import {head} from 'lodash';
 import {toast} from './Toast';
 
 /**
- *  Support for popping global Toasts into the DOM.
- *
- *  This component uses a queue based approach, and will
- *  ensure only one toast is showing at a time.
- *
- *  @private
+ * Support for rendering Toast alerts.
+ * This component uses a queue based approach, ensuring only one toast is showing at a time.
+ * @internal
  */
 export const toastSource = hoistCmp.factory({
     displayName: 'ToastSource',

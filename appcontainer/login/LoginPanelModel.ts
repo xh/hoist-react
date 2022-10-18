@@ -9,8 +9,8 @@ import {observable, bindable, computed, makeObservable, action} from '@xh/hoist/
 import {debounced} from '@xh/hoist/utils/js';
 
 /**
- * Support for Forms-based Login.
- * @private
+ * Supports username/password form-based login.
+ * @internal
  */
 export class LoginPanelModel extends HoistModel {
 

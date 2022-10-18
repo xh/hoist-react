@@ -157,7 +157,7 @@ export class GridExportService extends HoistService {
      *
      * @param [c.node] - rendered ag-Grid row, if available.  Necessary for exporting agGrid aggregates.
      * @param [c.forExcel] - for posting to server-side excel export, default false.
-     * @return value suitable for export to excel, csv, or clipboard.
+     * @returns value suitable for export to excel, csv, or clipboard.
      */
     getExportableValueForCell(
         {gridModel, record, column, node, forExcel = false}:
