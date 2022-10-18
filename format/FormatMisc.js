@@ -42,6 +42,21 @@ export function fmtSpan(v, {
     return asHtml ? fmtSpanHtml(v, opts) : fmtSpanElement(v, opts);
 }
 
+/**
+ * Format JSON string
+ *
+ * @param {string} str - string to be formatted into JSON
+ * @param {Object} [opts] - an options object:
+ * @param {function|array} [opts.replacer] - method or array pattern for replacing/skipping nodes
+ * @param {string|number} [opts.space] - set indentation
+ */
+export function fmtJson(str, {
+    replacer = undefined,
+    space = 2
+} = {}) {
+    return JSON.stringify(JSON.parse(str), replacer, space);
+}
+
 //-----------------
 // Implementation
 //-----------------
