@@ -4,12 +4,15 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, uses, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {dockContainerImpl as desktopDockContainerImpl} from '@xh/hoist/dynamics/desktop';
-import {throwIf} from '@xh/hoist/utils/js';
-import PT from 'prop-types';
 import {DockContainerModel} from './DockContainerModel';
+
+export interface DockContainerProps extends HoistProps<DockContainerModel> {
+    /** True to style docked headers with reduced padding and font-size. */
+    compactHeaders?: boolean
+}
 
 /**
  * DockContainer provides a user-friendly way to render multiple child components "docked" to its
@@ -28,20 +31,10 @@ import {DockContainerModel} from './DockContainerModel';
  *
  * @see DockContainerModel
  */
-export const [DockContainer, dockContainer] = hoistCmp.withFactory({
+export const [DockContainer, dockContainer] = hoistCmp.withFactory<DockContainerProps>({
     model: uses(DockContainerModel),
     className: 'xh-dock-container',
-
     render(props, ref) {
-        throwIf(XH.isMobileApp, 'DockContainer is not implemented on mobile');
         return desktopDockContainerImpl(props, ref);
     }
-
 });
-DockContainer.propTypes = {
-    /** True to style docked headers with reduced padding and font-size. */
-    compactHeaders: PT.bool,
-
-    /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(DockContainerModel), PT.object])
-};

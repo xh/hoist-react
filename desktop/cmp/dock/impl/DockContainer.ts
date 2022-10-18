@@ -9,14 +9,14 @@ import '@xh/hoist/desktop/register';
 import classNames from 'classnames';
 import './Dock.scss';
 import {dockView} from './DockView';
+import {DockContainerProps} from '../DockContainer';
 
 /**
  * Desktop implementation of DockContainer.
  *
- * @private
+ * @internal
  */
-
-export function dockContainerImpl({model, className, compactHeaders, ...props}, ref) {
+export function dockContainerImpl({model, className, compactHeaders, ...props}: DockContainerProps, ref) {
     return hbox({
         ref,
         className: classNames(className, `xh-dock-container--${model.direction}`),

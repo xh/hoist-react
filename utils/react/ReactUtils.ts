@@ -4,10 +4,10 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {FunctionComponent, ReactElement, cloneElement, createElement, isValidElement, Component} from 'react';
-import {throwIf} from '../js';
+import {Content} from '@xh/hoist/core';
+import {ReactElement, cloneElement, createElement, isValidElement} from 'react';
 import {isFunction, isNil} from 'lodash';
-import {ElemFactory} from '@xh/hoist/core';
+import {throwIf} from '../js';
 
 /**
  * Return the display name for either a class-based or functional Component.
@@ -25,13 +25,10 @@ export function getReactElementName(obj: any): string {
  * @param content - ReactElement, HoistComponent or function returning a ReactElement.
  *      If a function, it may be an ElemFactory or any function that returns a ReactElement. In
  *      either case, the function will be called with no arguments.
- * @param [addProps] -- optional additional props to apply to the element.  These will override
+ * @param addProps -- optional additional props to apply to the element.  These will override
  *      any existing props placed on the element, and should be used with care.
  */
-export function elementFromContent(
-    content: ReactElement|FunctionComponent|Component|ElemFactory|(() => ReactElement),
-    addProps?: object
-): ReactElement {
+export function elementFromContent(content: Content, addProps?: object): ReactElement {
     let c = content as any;
     if (isNil(c)) return null;
 
