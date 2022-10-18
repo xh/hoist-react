@@ -9,8 +9,9 @@
   "license": "Apache-2.0",
   "scripts": {
     "lint": "yarn lint:all",
-    "lint:all": "yarn lint:js && yarn lint:styles",
-    "lint:js": "eslint --ext .js,.jsx,.ts,.tsx .",
+    "lint:all": "yarn lint:ts && yarn lint:js && yarn lint:styles",
+    "lint:js": "eslint --ext .js,.jsx .",
+    "lint:ts": "eslint --ext .ts,.tsx .",
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
     "prepare": "husky install"
   },
@@ -78,6 +79,7 @@
   },
   "devDependencies": {
     "@xh/hoist-dev-utils": "^7.0.0-SNAPSHOT.1666010090930",
+    "eslint-plugin-tsdoc": "^0.2.0",
     "husky": "^8.0.0",
     "lint-staged": "~13.0.3",
     "postcss": "^8.0.0",

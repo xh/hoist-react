@@ -12,8 +12,6 @@ import {pluralize, singularize} from '@xh/hoist/utils/js';
 
 /**
  * Displays the number of (post-filtered) records loaded into a Store.
- *
- * Using with a Grid? {@see GridCountLabel} for an alternative that also displays selection count.
  */
 export const [StoreCountLabel, storeCountLabel] = hoistCmp.withFactory<StoreCountLabelProps>({
 
@@ -44,6 +42,6 @@ export interface StoreCountLabelProps extends BoxProps {
      */
     includeChildren?: boolean;
 
-    /** Units label appropriate for records being counted (e.g. "user" -> "50 users"). */
+    /** Units label appropriate for records being counted (e.g. "user" yields "50 users"). */
     unit?: string;
 }

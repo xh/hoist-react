@@ -9,7 +9,7 @@ import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import './VersionBar.scss';
 
-/** @private */
+/** @internal */
 export const versionBar = hoistCmp.factory({
     displayName: 'VersionBar',
     render() {

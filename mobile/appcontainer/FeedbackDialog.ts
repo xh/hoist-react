@@ -13,9 +13,7 @@ import {textArea} from '@xh/hoist/mobile/cmp/input';
 import './FeedbackDialog.scss';
 
 /**
- * Display Feedback form
- *
- * @private
+ * @internal
  */
 export const feedbackDialog = hoistCmp.factory({
     displayName: 'FeedbackDialog',

@@ -19,7 +19,7 @@ import {hspacer} from '../../cmp/layout';
 import {DifferDetailModel} from './DifferDetailModel';
 
 /**
- * @private
+ * @internal
  */
 export class DifferModel extends HoistModel {
 

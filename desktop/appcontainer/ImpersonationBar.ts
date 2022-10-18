@@ -17,7 +17,7 @@ import './ImpersonationBar.scss';
  * An admin-only toolbar that provides a UI for impersonating application users, as well as ending
  * any current impersonation setting. Can be shown via a global Shift+i keyboard shortcut.
  *
- * @private
+ * @internal
  */
 export const impersonationBar = hoistCmp.factory({
     displayName: 'ImpersonationBar',

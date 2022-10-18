@@ -17,8 +17,7 @@ import {dismissButton} from './ExceptionDialog';
 /**
  * Sub-dialog for displaying exception details.  Includes affordances for submitting an
  * error report to the server.
- *
- * @private
+ * @internal
  */
 export const exceptionDialogDetails = hoistCmp.factory({
     model: uses(ExceptionDialogModel),

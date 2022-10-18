@@ -10,7 +10,7 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {values, isPlainObject} from 'lodash';
 
 /**
- * @private
+ * @internal
  */
 export class SizingModeModel extends HoistModel {
     xhImpl = true;

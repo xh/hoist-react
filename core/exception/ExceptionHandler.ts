@@ -31,8 +31,8 @@ export interface ExceptionHandlerOptions {
     logOnServer?: boolean;
 
     /**
-     * Display an alert dialog to the user. Default true, excepting 'isAutoRefresh' and
-     * 'isFetchAborted' exceptions.
+     * Display an alert dialog to the user.
+     * Default true, excepting 'isAutoRefresh' and 'isFetchAborted' exceptions.
      */
     showAlert?: boolean;
 
@@ -43,15 +43,26 @@ export interface ExceptionHandlerOptions {
     alertType?: string;
 
     /**
-     *  Force user to fully refresh the app in order to dismiss - default false, excepting
-     *  session-related exceptions.
+     * Force user to fully refresh the app in order to dismiss - default false, excepting
+     * session-related exceptions.
      */
     requireReload?: boolean;
 
     /**
-     *  A list of parameters that should be hidden from the exception log and alert.
+     * A list of parameters that should be hidden from the exception log and alert.
      */
     hideParams?: string[];
+}
+
+export interface ExceptionHandlerLoggingOptions {
+    exception: Error;
+    /** True if the user was shown a modal alert. */
+    userAlerted: boolean;
+    /**
+     * Optional user-provided message detailing what they did to trigger the error, or any other
+     * details the user chooses to provide.
+     */
+    userMessage?: string;
 }
 
 /**
@@ -91,12 +102,12 @@ export class ExceptionHandler {
      * Hoist-specific exception options, displaying an appropriate error dialog to users, and
      * logging back to the server for stateful error tracking in the Admin Console.
      *
-     * Typical application entry points to this method are the {@see XH.handleException} alias and
-     * {@see Promise.catchDefault}.
+     * Typical application entry points to this method are the {@link XH.handleException} alias and
+     * {@link Promise.catchDefault}.
      *
-     * This handler provides the most value with Exceptions created by {@see Exception.create}.
+     * This handler provides the most value with Exceptions created by {@link Exception.create}.
      * Hoist automatically creates such exceptions in most instances, most notably in FetchService,
-     * which generates de-serialized versions of server exceptions. {@see XH.exception} for a
+     * which generates de-serialized versions of server exceptions. See {@link XH.exception} for a
      * convenient way to create these enhanced exceptions in application code.
      *
      * This handler will respect an `isRoutine` flag set on Exceptions that can be thrown in the
@@ -105,7 +116,7 @@ export class ExceptionHandler {
      *
      * @param exception - Error or thrown object - if not an Error, an Exception will be created
      *      via `Exception.create()`.
-     * @param [options] - controls on how the exception should be shown and/or logged.
+     * @param options - provides further control over how the exception is shown and/or logged.
     */
     handleException(exception: any, options?: ExceptionHandlerOptions) {
         if (this.#isUnloading) return;
@@ -143,9 +154,9 @@ export class ExceptionHandler {
      * Intended to be used for the deferred / user-initiated showing of exceptions that have
      * already been appropriately logged. Applications should typically prefer `handleException`.
      *
-     * @param exception - Error or thrown object - if not an Error, an
-     *      Exception will be created via `Exception.create()`.
-     * @param [options] - controls on how the exception should be shown and/or logged.
+     * @param exception - Error or thrown object - if not an Error, an Exception will be created
+     *      via `Exception.create()`.
+     * @param options - provides further control over how the exception is shown and/or logged.
      */
     showException(exception: any, options?: ExceptionHandlerOptions) {
         if (this.#isUnloading) return;
@@ -159,20 +170,12 @@ export class ExceptionHandler {
      * This method will swallow any exceptions thrown in the course of its own execution, failing
      * silently to avoid masking or compounding the actual exception to be handled.
      *
-     * (Note the App version is POSTed to ensure we capture the version of the client the user is
-     * actually running when the exception was generated.)
+     * Note the App version is POSTed to ensure we capture the version of the client the user is
+     * actually running when the exception was generated.
      *
-     * @param {Object} options - an options object
-     * @param options.exception - an instance of the Javascript Error object.
-     * @param options.userAlerted - true if the user was shown a modal alert.
-     * @param [options.userMessage] - a user-provided message, if any, detailing what they
-     *      did to trigger the error, or any other details the user chooses to provide.
      * @returns true if message was successfully sent to server.
      */
-    async logOnServerAsync(
-        {exception, userAlerted, userMessage}:
-        {exception: any, userAlerted: boolean, userMessage?: string}
-    ): Promise<boolean>  {
+    async logOnServerAsync({exception, userAlerted, userMessage}: ExceptionHandlerLoggingOptions): Promise<boolean>  {
         try {
             const error = this.stringifyErrorSafely(exception),
                 username = XH.getUsername();

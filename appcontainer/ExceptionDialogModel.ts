@@ -10,10 +10,10 @@ import {action, observable, makeObservable} from '@xh/hoist/mobx';
 /**
  * Manages the default display of exceptions.
  *
- * Currently we allow only a single exception (the latest) to be displayed at a time.
+ * Currently, we allow only a single exception (the latest) to be displayed at a time.
  * Consider modifying to allow stacking, as with Message.
  *
- * @private
+ * @internal
  */
 export class ExceptionDialogModel extends HoistModel {
     xhImpl = true;

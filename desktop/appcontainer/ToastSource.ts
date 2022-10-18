@@ -17,7 +17,7 @@ import './Toast.scss';
 /**
  *  Support for showing Toasts in an application. This component does not render any content
  *  directly, but for technical reasons (primarily symmetry with mobile) it remains a component.
- *  @private
+ *  @internal
  */
 export const toastSource = hoistCmp.factory({
     displayName: 'ToastSource',

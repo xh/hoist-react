@@ -47,7 +47,7 @@ export class ConfigService extends HoistService {
      *      the config has not been created on the server - instead of throwing. Use sparingly!
      *      In general, it's better to not provide defaults here, but instead keep entries up-to-date
      *      via the Admin client and have it be obvious when one is missing.
-     * @return the soft-configured value.
+     * @returns the soft-configured value.
      */
     get(key: string, defaultValue?: any): any {
         const data = this._data;

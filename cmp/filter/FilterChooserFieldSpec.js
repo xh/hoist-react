@@ -152,7 +152,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
  *      the fieldSpecs values getter to determine if they should be considered suggestions.
  * @param {string} query - raw user query
  * @param {*} parsedQuery - parsed user query (or undefined, if parsing failed)
- * @return {function} - a test function taking a formatted value and value, and
+ * @returns {function} - a test function taking a formatted value and value, and
  *      returning a boolean, if the value should be considered a match for query.
  */
 
@@ -160,12 +160,12 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
  * @callback FilterChooserValueRendererCb
  * @param {*} value
  * @param {string} op
- * @return {string} - formatted value suitable for display to the user.
+ * @returns {string} - formatted value suitable for display to the user.
  */
 
 /**
  * @callback FilterChooserValueParserCb
  * @param {string} input
  * @param {string} op
- * @return {*} - the parsed value.
+ * @returns {*} - the parsed value.
  */

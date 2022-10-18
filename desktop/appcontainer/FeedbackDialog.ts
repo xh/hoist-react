@@ -14,9 +14,7 @@ import {dialog} from '@xh/hoist/kit/blueprint';
 
 /**
  * A simple dialog component to collect user feedback from directly within the application.
- * @see FeedbackService
- *
- * @private
+ * @internal
  */
 export const feedbackDialog = hoistCmp.factory({
     displayName: 'FeedbackDialog',

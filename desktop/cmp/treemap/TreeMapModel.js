@@ -465,7 +465,7 @@ export class TreeMapModel extends HoistModel {
 /**
  * @callback TreeMapModel~tooltipFn - normalized renderer function to produce a tree map tooltip.
  * @param {StoreRecord} record - row-level data record.
- * @return {string} - the formatted value (html) for display.
+ * @returns {string} - the formatted value (html) for display.
  */
 
 /**
@@ -473,7 +473,7 @@ export class TreeMapModel extends HoistModel {
  *      tree map tooltip.
  * @param {*} value - raw node data value.
  * @param {StoreRecord} record - row-level data record.
- * @return {string} - the formatted value (html) for display.
+ * @returns {string} - the formatted value (html) for display.
  */
 
 /**
@@ -481,5 +481,5 @@ export class TreeMapModel extends HoistModel {
  *      tree map tooltip.
  * @param {*} value - raw node data value.
  * @param {StoreRecord} record - row-level data record.
- * @return {string} - the formatted value (html) for display.
+ * @returns {string} - the formatted value (html) for display.
  */

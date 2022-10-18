@@ -8,11 +8,9 @@
 import {XH} from './..';
 
 /**
- * Generic singleton object for registering Mobile and Desktop Components
- * and ensuring that they are never cross-imported.
- *
- * Not intended for application use.
- * @package
+ * Generic singleton object for registering Mobile and Desktop Components and ensuring that they
+ * are never cross-imported within the same client application bundle.
+ * @internal
  */
 class PlatformManager {
 

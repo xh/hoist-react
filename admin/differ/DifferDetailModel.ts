@@ -10,7 +10,7 @@ import {DifferModel} from './DifferModel';
 import {StoreRecord} from '@xh/hoist/data';
 
 /**
- * @private
+ * @internal
  */
 export class DifferDetailModel extends HoistModel  {
 

@@ -46,11 +46,7 @@ export class UrlStore extends Store implements Loadable {
 
 
     /**
-     * Not for application use.
-     *
-     * Call loadAsync() instead.
-     *
-     * @package
+     * @internal - call loadAsync() instead.
      */
     async doLoadAsync(loadSpec: LoadSpec): Promise<void> {
         const {url, dataRoot} = this;

@@ -15,7 +15,7 @@ import {maxBy} from 'lodash';
 import {LogViewerModel} from './LogViewerModel';
 
 /**
- * @private
+ * @internal
  */
 export class LogDisplayModel extends HoistModel {
 

@@ -15,8 +15,8 @@ import {Store} from '../Store';
 import {StoreRecordId} from '../StoreRecord';
 
 /**
- * Computes validation state for a Store's uncommitted Records
- * @private
+ * Computes validation state for a Store's uncommitted Records.
+ * @internal
  */
 export class StoreValidator extends HoistBase {
 
@@ -84,7 +84,7 @@ export class StoreValidator extends HoistBase {
         return this.isValid;
     }
 
-    /** @return The current validation state for the store. */
+    /** @returns The current validation state for the store. */
     getValidationState(): ValidationState {
         const VS = ValidationState,
             states = map(this._validators, v => v.validationState);
@@ -93,7 +93,7 @@ export class StoreValidator extends HoistBase {
         return VS.Valid;
     }
 
-    /** @return map of StoreRecord IDs -> StoreRecord-level error maps. */
+    /** @returns map of StoreRecord IDs -> StoreRecord-level error maps. */
     getErrorMap(): StoreErrorMap {
         const ret = {};
         this._validators.forEach(v => ret[v.id] = v.errors);

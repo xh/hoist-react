@@ -12,8 +12,8 @@ import {find, map, some, sumBy} from 'lodash';
 import {RecordFieldValidator} from './RecordFieldValidator';
 
 /**
- * Computes validation state for a StoreRecord
- * @private
+ * Computes validation state for a StoreRecord.
+ * @internal
  */
 export class RecordValidator extends HoistBase {
 

@@ -12,7 +12,7 @@
  * a function that takes only a value, for convenient use with e.g. grid cell rendering.
  *
  * @param {function} formatter - an existing formatter method.
- * @return {function(v: Object):function} - a configurable renderer.
+ * @returns {function(v: Object):function} - a configurable renderer.
  */
 export function createRenderer(formatter) {
     return function(config) {

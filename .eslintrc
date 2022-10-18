@@ -1,5 +1,11 @@
 {
-  "extends": [
-      "@xh/eslint-config"
-  ]
+    "plugins": [
+        "eslint-plugin-tsdoc"
+    ],
+    "extends": [
+        "@xh/eslint-config"
+    ],
+    "rules": {
+        "tsdoc/syntax": "warn"
+    }
 }

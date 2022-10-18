@@ -171,7 +171,7 @@ export class SplitTreeMapModel extends HoistModel {
 /**
  * @callback SplitTreeMapFilterFn
  * @param {StoreRecord} record - record to evaluate for inclusion in the primary vs. secondary map.
- * @return {boolean} - true if record belongs to / should appear within the primary map, falsy to
+ * @returns {boolean} - true if record belongs to / should appear within the primary map, falsy to
  *      have it allocated to the secondary map.
  */
 
@@ -179,5 +179,5 @@ export class SplitTreeMapModel extends HoistModel {
  * @callback SplitTreeMapTitleFn
  * @param {TreeMapModel} treeMapModel - model for the region's inner TreeMap.
  * @param {boolean} isPrimary - true if the region is the primary (top/left) map in the pair.
- * @return {(string|ReactNode)} - the region title to display.
+ * @returns {(string|ReactNode)} - the region title to display.
  */

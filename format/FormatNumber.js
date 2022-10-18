@@ -404,7 +404,7 @@ export function parseNumber(value) {
 /**
  * @callback fmtNumber~tooltipFn - renderer for a custom tooltip.
  * @param {number} originalValue - number to be formatted.
- * @return {string} - the formatted value for display.
+ * @returns {string} - the formatted value for display.
  */
 
 /**

@@ -9,11 +9,9 @@ import {Component} from 'react';
 
 /**
  * A minimal component implementing a React error boundary.
+ * Any errors during rendering will yield a simple error string and a call to the onError callback.
  *
- * Any errors occurring during rendering will yield a simple error
- * string, and a call to the onError callback.
- *
- * @private
+ * @internal
  */
 export class ErrorBoundary extends Component {
 

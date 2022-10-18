@@ -25,10 +25,11 @@ import {throwIf} from '@xh/hoist/utils/js';
  * Note that multiple instances of this object may be writing into the same location.
  * Implementations should take care to incorporate any writes immediately into the readable state.
  *
- * {@see PrefProvider} - stores state in a predefined Hoist application Preference.
- * {@see LocalStorageProvider} - stores state in browser local storage under a configured key.
- * {@see DashViewProvider} - stores state with other Dashboard-specific state via a `DashViewModel`.
- * {@see CustomProvider} - API for app and components to provide their own storage mechanism.
+ * Hoist-provided implementations include:
+ *   - {@link PrefProvider} - stores state in a predefined Hoist application Preference.
+ *   - {@link LocalStorageProvider} - stores state in browser local storage under a configured key.
+ *   - {@link DashViewProvider} - stores state with other Dashboard-specific state via a `DashViewModel`.
+ *   - {@link CustomProvider} - API for app and components to provide their own storage mechanism.
  */
 export class PersistenceProvider {
 

@@ -285,7 +285,7 @@ export class GroupingChooserModel extends HoistModel {
 
 /**
  * Metadata for dimensions that are available for selection via a GroupingChooser control.
- * Note that {@see CubeField} instances satisfy this interface.
+ * Note that {@link CubeField} instances satisfy this interface.
  */
 interface DimensionSpec {
     /** Shortname or code (almost always a `CubeField.name`). */

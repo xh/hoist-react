@@ -13,7 +13,7 @@ import {AppOption} from './AppOption';
 
 /**
  * Manages built-in setting of options.
- * @private
+ * @internal
  */
 export class OptionsDialogModel extends HoistModel {
     xhImpl = true;

@@ -21,7 +21,7 @@ import {ThemeModel} from './ThemeModel';
 import {ToastSourceModel} from './ToastSourceModel';
 
 /**
- *  Root object for Framework GUI State.
+ * Root object for Framework GUI State.
  */
 export class AppContainerModel extends HoistModel {
 
@@ -71,10 +71,10 @@ export class AppContainerModel extends HoistModel {
      * Show the update Banner. Called by EnvironmentService when the server reports that a
      * new (or at least different) version is available and the user should be prompted.
      *
-     * @param {string} version - updated version from server.
-     * @param {string} [build] - updated build from server - included for snapshot version prompts.
+     * @param version - updated version from server.
+     * @param build - updated build from server - included for snapshot version prompts.
      */
-    showUpdateBanner(version, build) {
+    showUpdateBanner(version: string, build?: string) {
         // Display build tag for snaps only - not of much interest across actual version updates.
         if (version.includes('SNAPSHOT') && build && build !== 'UNKNOWN') {
             version += ` (b${build})`;

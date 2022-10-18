@@ -16,9 +16,8 @@ import {exceptionDialogDetails} from './ExceptionDialogDetails';
 
 /**
  * Dialog for display of exceptions, with support for viewing a detailed stacktrace
- * and an option to force the reload of the application (in the case of a fatal exception).
- *
- * @private
+ * and an option to force reload of the application (in the case of a fatal exception).
+ * @internal
  */
 export const exceptionDialog = hoistCmp.factory({
     displayName: 'Exception Dialog',
@@ -74,7 +73,7 @@ const bbar = hoistCmp.factory<ExceptionDialogModel>(
 
 /**
  * A Dismiss button that either forces reload, or allows close.
- * @private
+ * @internal
  */
 export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(
     ({model}) => {
