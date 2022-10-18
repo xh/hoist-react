@@ -20,7 +20,7 @@ import {BaseRow} from './row/BaseRow';
 
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.
- * Applications should create via the {@see Cube.createView()} factory.
+ * Applications should create via the {@link Cube.createView} factory.
  */
 export class View extends HoistBase {
 

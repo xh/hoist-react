@@ -166,12 +166,12 @@ export interface RecordActionSpec {
     hidden?: boolean;
 
     /**
-     * How many records must be 'active'
-     *  (selected and / or clicked upon) for the action to be enabled.
-     *  int: specifies exactly n number of records. Defaults to 1 for single record actions.
-     *      Can specify 0 to only enable action if no records are active.
-     *  true: specifies that number of records > 0. Allows for arbitrary number of records.
-     *  false: specifies any number of records (0 - infinity, inclusive). Always active.
+     * Count of records that must be 'active' (selected and / or clicked upon) for the action to be
+     * enabled.
+     *  - int: specifies exactly n number of records. Defaults to 1 for single record actions.
+     *      Can specify 0 to only enable action if *no* records are active.
+     *  - true: specifies a non-zero number of records.
+     *  - false: specifies any number of records (0 - infinity, inclusive). Always active.
      */
     recordsRequired?: boolean | number;
 }

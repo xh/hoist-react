@@ -155,7 +155,7 @@ export class Store extends HoistBase {
      * created with its `loadRootAsSummary` flag set to true.
      *
      * @param rawData - source data to load
-     * @param [rawSummaryData] - source data for an optional summary record, representing
+     * @param rawSummaryData - source data for an optional summary record, representing
      *      a custom aggregation to show as a "grand total" for the dataset, if desired.
      */
     @action
@@ -188,7 +188,7 @@ export class Store extends HoistBase {
      * i.e. they should be in the same form as when passed to `loadData()`. The added/updated
      * source data will be run through this Store's `idSpec` and `processRawData` functions.
      *
-     * Adds can also be provided as a {@see ChildRawData} object of the form `{rawData, parentId}`
+     * Adds can also be provided as a {@link ChildRawData} object of the form `{rawData, parentId}`
      * to add new Records under a known, pre-existing parent StoreRecord.
      *
      * Unlike `loadData()`, existing Records that are *not* included in this update transaction
@@ -334,7 +334,7 @@ export class Store extends HoistBase {
      * @param data - source data for new StoreRecord(s). Note that this data will
      *      *not* be processed by this Store's `processRawData` or `idSpec` functions, but will be
      *      parsed and potentially transformed according to this Store's Field definitions.
-     * @param [parentId] - ID of the pre-existing parent record under which this new
+     * @param parentId - ID of the pre-existing parent record under which this new
      *      record should be added, if any.
      */
     @action
@@ -563,9 +563,8 @@ export class Store extends HoistBase {
     }
 
     /**
-     * @param recOrId, record or the id of a record.
-     * @returns true if the StoreRecord is in the store, but currently excluded by a filter.
-     *      False if the record is either not in the Store at all, or not filtered out.
+     * @returns true if the StoreRecord is in the store but currently excluded by a filter;
+     *      false if the record is either not in the Store at all or not filtered out.
      */
     recordIsFiltered(recOrId: StoreRecordOrId): boolean {
         const id = recOrId instanceof StoreRecord ? recOrId.id : recOrId;
@@ -624,9 +623,9 @@ export class Store extends HoistBase {
      * Get a record by ID, or null if no matching record found.
      *
      * @param id - ID of record to be queried.
-     * @param [respectFilter] - false (default) to return a StoreRecord with the given
-     *      ID even if an active filter is excluding it from the primary `records` collection.
-     *      True to restrict matches to this Store's post-filter StoreRecord collection only.
+     * @param respectFilter - false (default) to return a StoreRecord with the given ID even if an
+     *      active filter is excluding it from the primary `records` collection. True to restrict
+     *      matches to this Store's post-filter StoreRecord collection only.
      */
     getById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord {
         if (isNil(id)) return null;
@@ -643,7 +642,7 @@ export class Store extends HoistBase {
      * be more convenient for most app-level callers.
      *
      * @param id - ID of record to be queried.
-     * @param [respectFilter] - true to skip records excluded by any active filter.
+     * @param respectFilter - true to skip records excluded by any active filter.
      */
     getChildrenById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord[] {
         const rs = respectFilter ? this._filtered : this._current,
@@ -658,7 +657,7 @@ export class Store extends HoistBase {
      * likely be more convenient for most app-level callers.
      *
      * @param id - ID of record to be queried.
-     * @param [respectFilter] - true to skip records excluded by any active filter.
+     * @param respectFilter - true to skip records excluded by any active filter.
      */
     getDescendantsById(id: StoreRecordId, respectFilter = false): StoreRecord[] {
         const rs = respectFilter ? this._filtered : this._current,
@@ -673,7 +672,7 @@ export class Store extends HoistBase {
      * likely be more convenient for most app-level callers.
      *
      * @param id - ID of record to be queried.
-     * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
+     * @param respectFilter - true to skip records excluded by any active filter.
      */
     getAncestorsById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord[] {
         const rs = respectFilter ? this._filtered : this._current,
@@ -916,17 +915,10 @@ export interface StoreTransaction {
      */
    update?: RawData[];
 
-    /**
-     *  List of raw data representing records to be added, Each top-level
-     *  item in the array must be either a rawData object of the form passed to loadData or a
-     *  wrapped form {@see ChildRawData};
-     */
+    /** Raw data of new records to be added, */
    add?: (RawData|ChildRawData)[];
 
-    /**
-     * list of ids representing records to be removed. Any descendents of these records will also
-     * be removed.
-     */
+    /** IDs of existing records to be removed. Any descendents will also be removed. */
    remove?: string[];
 
     /**
@@ -939,12 +931,12 @@ export interface StoreTransaction {
 
 export interface ChildRawData {
 
-    /** Id of the pre-existing parent record. */
+    /** ID of the pre-existing parent record. */
     parentId: string;
 
     /**
-     * Data for the child records to be added. Can include a `children`
-     * property that will be processed into new (grand)child records.
+     * Data for the child records to be added. Can include a `children` property to be processed
+     * into new (grand)child records.
      */
     rawData: RawData[];
 }
@@ -955,8 +947,8 @@ export interface StoreConfig {
     fields: string[]|FieldConfig[]|Field[];
 
     /**
-     * Default configs applied to `Field` instances constructed
-     * internally by this Store. {@see FieldConfig} for options.
+     * Default configs applied to `Field` instances constructed internally by this Store.
+     * @see FieldConfig
      */
     fieldDefaults?: any;
 
@@ -1000,9 +992,7 @@ export interface StoreConfig {
      */
     loadTreeDataFrom?: string;
 
-    /**
-     *  True to treat the root node in hierarchical data as the summary record (default false).
-     */
+    /** True to treat the root node in hierarchical data as the summary record (default false). */
     loadRootAsSummary?: boolean;
 
     /**

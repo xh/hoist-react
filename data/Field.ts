@@ -13,9 +13,7 @@ import equal from 'fast-deep-equal';
 import {isDate, isString, toNumber, isFinite, startCase, isFunction, castArray} from 'lodash';
 import DOMPurify from 'dompurify';
 
-/**
- * Metadata for an individual data field within a {@see Record}.
- */
+/** Metadata for an individual data field within a {@link StoreRecord}. */
 export class Field {
 
     get isField() {return true}
@@ -169,7 +167,7 @@ export interface FieldConfig {
 
     /**
      * True to disable built-in XSS (cross-site scripting) protection, applied by default to all
-     * incoming String values via the {@link https://github.com/cure53/DOMPurify DOMPurify library}.
+     * incoming String values using {@link https://github.com/cure53/DOMPurify | DOMPurify}.
      *
      * DOMPurify provides fast escaping of dangerous HTML, scripting, and other content that can be
      * used to execute XSS attacks, while allowing common and expected HTML and style tags.
