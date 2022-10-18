@@ -10,6 +10,13 @@ import {button} from '@xh/hoist/mobile/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
 
+interface ThemeAppOptionSpec {
+    /** Props for nested FormField - todo: replace with FormFieldProps */
+    formFieldProps?: Record<string, any>,
+    /** Props for nested ButtonGroupInput - todo: replace with ButtonGroupInputProps */
+    inputProps?: Record<string, any>
+}
+
 /**
  * Convenience configuration for the `theme` AppOption.
  */
@@ -51,10 +58,3 @@ export const themeAppOption = ({
         valueSetter: (v) => XH.setTheme(v)
     };
 };
-
-interface ThemeAppOptionSpec {
-    /** Props for nested FormField - todo: replace with FormFieldProps */
-    formFieldProps?: Record<string, any>,
-    /** Props for nested ButtonGroupInput - todo: replace with ButtonGroupInputProps */
-    inputProps?: Record<string, any>
-}

@@ -10,6 +10,15 @@ import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {startCase, values} from 'lodash';
 
+interface SizingModeAppOptionSpec {
+    /** Supported SizingModes */
+    modes?: SizingMode[],
+    /** Props for nested FormField - todo: replace with FormFieldProps */
+    formFieldProps?: Record<string, any>,
+    /** Props for nested ButtonGroupInput - todo: replace with ButtonGroupInputProps */
+    inputProps?: Record<string, any>
+}
+
 /**
  * Convenience configuration for the `sizingMode` AppOption.
  */
@@ -40,12 +49,3 @@ export const sizingModeAppOption = ({
         valueSetter: (v) => XH.setSizingMode(v)
     };
 };
-
-interface SizingModeAppOptionSpec {
-    /** Supported SizingModes */
-    modes?: SizingMode[],
-    /** Props for nested FormField - todo: replace with FormFieldProps */
-    formFieldProps?: Record<string, any>,
-    /** Props for nested ButtonGroupInput - todo: replace with ButtonGroupInputProps */
-    inputProps?: Record<string, any>
-}
