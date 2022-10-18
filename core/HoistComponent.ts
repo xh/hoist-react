@@ -272,7 +272,7 @@ function callRender(render, spec, model, modelLookup, props, ref, displayName) {
             component '${displayName}'.  Ensure the proper model is available via context, or
             specify explicitly using the 'model' prop.
         `);
-        return cmpErrorDisplay({...getLayoutProps(props), item: 'No model found'});
+        return cmpErrDisplay({...getLayoutProps(props), item: 'No model found'});
     }
     const ctx = localModelContext;
     try {
@@ -366,7 +366,7 @@ function lookupModel(spec, props, modelLookup, displayName) {
  * @internal
  */
 export function setCmpErrorDisplay(ef: ElemFactory) {
-    cmpErrorDisplay = ef;
+    cmpErrDisplay = ef;
 }
 
-let cmpErrorDisplay: ElemFactory = null;
+let cmpErrDisplay: ElemFactory = null;
