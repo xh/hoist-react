@@ -4,19 +4,29 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {SizingMode, XH} from '@xh/hoist/core';
+import {AppOptionSpec, SizingMode, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {startCase, values} from 'lodash';
 
+interface SizingModeAppOptionSpec {
+    /** Supported SizingModes */
+    modes?: SizingMode[],
+    /** Props for nested FormField - todo: replace with FormFieldProps */
+    formFieldProps?: Record<string, any>,
+    /** Props for nested ButtonGroupInput - todo: replace with ButtonGroupInputProps */
+    inputProps?: Record<string, any>
+}
+
 /**
  * Convenience configuration for the `sizingMode` AppOption.
- * @param {SizingMode[]} [modes] - Supported SizingModes
- * @param {{}} [formFieldProps]
- * @param {{}} [inputProps]
  */
-export const sizingModeAppOption = ({modes, formFieldProps, inputProps} = {}) => {
+export const sizingModeAppOption = ({
+    modes,
+    formFieldProps,
+    inputProps
+}: SizingModeAppOptionSpec = {}): AppOptionSpec => {
     if (!modes) modes = values(SizingMode);
     return {
         name: 'sizingMode',
