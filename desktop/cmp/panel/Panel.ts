@@ -43,9 +43,9 @@ interface PanelProps extends BoxProps<PanelModel> {
 
     /**
      * Specification of a context menu.
-     *  @see useContextMenu() for more information on accepted values for this prop.
+     * @see useContextMenu() for more information on accepted values for this prop.
      */
-    contextMenu?: any;
+    contextMenu?: any;   // TODO: assign type when available.
 
     /**
      * Specification of hotkeys as prescribed by blueprint.

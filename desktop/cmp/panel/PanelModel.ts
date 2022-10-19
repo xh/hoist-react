@@ -13,6 +13,7 @@ import {
     PrefProvider, RefreshContextModel,
     RefreshMode,
     RenderMode,
+    Side,
     XH
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
@@ -50,7 +51,7 @@ export interface PanelConfig {
      * Side towards which the panel collapses or shrinks. This relates
      * to the position within a parent vbox or hbox in which the panel should be placed.
      */
-    side?: 'top'|'bottom'|'left'|'right';
+    side?: Side;
 
     /**
      * Set to true to enable built-in support for showing panel contents in a modal, or provide a
@@ -103,13 +104,12 @@ export class PanelModel extends HoistModel {
     // Immutable Properties
     //-----------------------
     readonly resizable: boolean;
-    resizeWhileDragging: boolean;
     readonly collapsible: boolean;
     readonly defaultSize: number;
     readonly minSize: number;
     readonly maxSize: number;
     readonly defaultCollapsed: boolean;
-    readonly side: 'top'|'bottom'|'left'|'right';
+    readonly side: Side;
     readonly renderMode: RenderMode;
     readonly refreshMode: RefreshMode;
     readonly showSplitter: boolean;
@@ -121,6 +121,10 @@ export class PanelModel extends HoistModel {
     @managed refreshContextModel: RefreshContextModel;
     @managed provider: PersistenceProvider;
 
+    //----------------
+    // Settable State
+    //----------------
+    resizeWhileDragging: boolean;
 
     //---------------------
     // Observable State

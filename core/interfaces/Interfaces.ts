@@ -32,6 +32,11 @@ export type Intent = 'primary'|'success'|'warning'|'danger';
 export type Theme = 'system'|'dark'|'light';
 
 /**
+ * Side for layout related components such as Panel and TabContainer.
+ */
+export type Side = 'top'|'bottom'|'left'|'right';
+
+/**
  * Specification for debouncing in Hoist.
  *
  * When specified as object, should contain an 'interval' and other optional keys for
