@@ -24,7 +24,7 @@ export const clientErrorDetail = hoistCmp.factory<ClientErrorsModel>(
 
         return panel({
             className: 'xh-admin-activity-detail',
-            model: {
+            modelConfig: {
                 side: 'bottom',
                 defaultSize: 370
             },

@@ -20,7 +20,7 @@ export const inspectorPanel = hoistCmp.factory({
             title: `Inspector - Hoist v${XH.environmentService.get('hoistReactVersion')}`,
             icon: Icon.search(),
             className: 'xh-inspector',
-            model: {
+            modelConfig: {
                 defaultSize: 400,
                 side: 'bottom',
                 persistWith: XH.inspectorService.persistWith,

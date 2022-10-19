@@ -6,10 +6,11 @@
  */
 import {box, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {
+    BoxProps, ElemFactory,
     hoistCmp,
-    ModelPublishMode,
     refreshContextView,
     RenderMode,
+    Some,
     TaskObserver,
     useContextModel,
     uses
@@ -21,13 +22,71 @@ import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import '@xh/hoist/desktop/register';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, omitBy} from 'lodash';
-import PT from 'prop-types';
-import {Children, isValidElement, useRef} from 'react';
+import {Children, isValidElement, ReactElement, ReactNode, useRef} from 'react';
 import {modalSupport} from '../modalsupport/ModalSupport';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
 import './Panel.scss';
 import {PanelModel} from './PanelModel';
+import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
+
+
+interface PanelProps extends BoxProps<PanelModel> {
+    /** True to style panel header (if displayed) with reduced padding and font-size. */
+    compactHeader?: boolean,
+
+    /** Items to be added to the right-side of the panel's header. */
+    headerItems?: ReactNode[],
+
+    /** An icon placed at the left-side of the panel's header. */
+    icon?: ReactElement,
+
+    /**
+     * Specification of a context menu.
+     * @see useContextMenu() for more information on accepted values for this prop.
+     */
+    contextMenu?: any;   // TODO: assign type when available.
+
+    /**
+     * Specification of hotkeys as prescribed by blueprint.
+     * @see useHotkeys() for more information on accepted values for this prop.
+     */
+    hotkeys?: HotkeyConfig[]
+
+    /**
+     * LoadingIndicator to render on this panel. Set to:
+     *   + a ReactElement specifying a LoadingIndicator,
+     *   + true for a default LoadingIndicator,
+     *   + one or more tasks for a default LoadingIndicator bound to the tasks
+     *   + the string 'onLoad' for a default LoadingIndicator bound to the loading of the current model.
+     */
+    loadingIndicator?: Some<TaskObserver>|ReactElement|boolean|'onLoad';
+
+    /**
+     * Mask to render on this panel. Set to:
+     *   + a ReactElement specifying a Mask instance,
+     *   + true for a default mask,
+     *   + one or more tasks for a default load mask bound to the tasks
+     *   + the string 'onLoad' for a default load mask bound to the loading of the current model.
+     */
+    mask?: Some<TaskObserver>|ReactElement|boolean|'onLoad';
+
+    /**
+     * A toolbar to be docked at the top of the panel.
+     * If specified as an array, items will be passed as children to a Toolbar component.
+     */
+    tbar?: Some<ReactNode>;
+
+    /**
+     * A toolbar to be docked at the top of the panel.
+     * If specified as an array, items will be passed as children to a Toolbar component.
+     */
+    bbar?: Some<ReactNode>;
+
+    /** Title text added to the panel's header. */
+    title?: ReactNode;
+}
+
 
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
@@ -37,14 +96,12 @@ import {PanelModel} from './PanelModel';
  * optional `PanelModel` config as a prop to enable and customize these features.
  *
  * A Panel will accept a ref argument to provide access to its top level DOM element.
- *
- * @see PanelModel
  */
-export const [Panel, panel] = hoistCmp.withFactory({
+export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
     displayName: 'Panel',
     model: uses(PanelModel, {
         fromContext: false,
-        publishMode: ModelPublishMode.LIMITED,
+        publishMode: 'limited',
         createDefault: () => new PanelModel({collapsible: false, resizable: false, xhImpl: true})
     }),
     className: 'xh-panel',
@@ -151,7 +208,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
 });
 
 function parseLoadDecorator(prop, name, contextModel) {
-    const cmp = (name === 'mask' ? mask : loadingIndicator);
+    const cmp: ElemFactory = (name === 'mask' ? mask : loadingIndicator);
     if (!prop)                                  return null;
     if (isValidElement(prop))                   return prop;
     if (prop === true)                          return cmp({isDisplayed: true});
@@ -165,62 +222,3 @@ function parseLoadDecorator(prop, name, contextModel) {
     }
     return cmp({bind: prop, spinner: true});
 }
-
-Panel.propTypes = {
-    /** True to style panel header (if displayed) with reduced padding and font-size. */
-    compactHeader: PT.bool,
-
-    /** Items to be added to the right-side of the panel's header. */
-    headerItems: PT.node,
-
-    /** An icon placed at the left-side of the panel's header. */
-    icon: PT.element,
-
-    /**
-     * Specification of a context menu.
-     *  @see useContextMenu() for more information on accepted values for this prop.
-     */
-    contextMenu: PT.oneOfType([PT.func, PT.array, PT.node]),
-
-    /**
-     * Specification of hotkeys as prescribed by blueprint.
-     * @see useHotkeys() for more information on accepted values for this prop.
-     */
-    hotkeys: PT.oneOfType([PT.array, PT.node]),
-
-    /**
-     * LoadingIndicator to render on this panel. Set to:
-     *   + a ReactElement specifying a LoadingIndicator,
-     *   + true for a default LoadingIndicator,
-     *   + one or more tasks for a default LoadingIndicator bound to the tasks
-     *   + the string 'onLoad' for a default LoadingIndicator bound to the loading of the current model.
-     */
-    loadingIndicator: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(PT.instanceOf(TaskObserver)), PT.element, PT.bool, PT.string]),
-
-    /**
-     * Mask to render on this panel. Set to:
-     *   + a ReactElement specifying a Mask instance,
-     *   + true for a default mask,
-     *   + one or more tasks for a default load mask bound to the tasks
-     *   + the string 'onLoad' for a default load mask bound to the loading of the current model.
-     */
-    mask: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(PT.instanceOf(TaskObserver)), PT.element, PT.bool, PT.string]),
-
-    /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(PanelModel), PT.object]),
-
-    /**
-     * A toolbar to be docked at the top of the panel.
-     * If specified as an array, items will be passed as children to a Toolbar component.
-     */
-    tbar: PT.oneOfType([PT.element, PT.array]),
-
-    /**
-     * A toolbar to be docked at the top of the panel.
-     * If specified as an array, items will be passed as children to a Toolbar component.
-     */
-    bbar: PT.oneOfType([PT.element, PT.array]),
-
-    /** Title text added to the panel's header. */
-    title: PT.oneOfType([PT.string, PT.node])
-};

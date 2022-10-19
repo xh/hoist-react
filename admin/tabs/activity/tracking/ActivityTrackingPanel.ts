@@ -108,7 +108,7 @@ const aggregateView = hoistCmp.factory<ActivityTrackingModel>(
             title: 'Aggregate Activity Report',
             icon: Icon.users(),
             compactHeader: true,
-            model: {
+            modelConfig: {
                 side: 'left',
                 defaultSize: 500,
                 persistWith: {...PERSIST_ACTIVITY, path: 'aggReportPanel'}

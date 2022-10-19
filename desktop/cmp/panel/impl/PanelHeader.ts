@@ -87,7 +87,7 @@ export const panelHeader = hoistCmp.factory({
 
 const collapseButton = hoistCmp.factory(
     ({panelModel}) => {
-        const {showHeaderCollapseButton, collapsible, isModal} = panelModel;
+        const {showHeaderCollapseButton, collapsible, isModal} = panelModel as PanelModel;
         if (!showHeaderCollapseButton || !collapsible || isModal) return null;
 
         const {vertical, collapsed, contentFirst} = panelModel,
@@ -105,7 +105,7 @@ const collapseButton = hoistCmp.factory(
 
 const modalButton = hoistCmp.factory(
     ({panelModel}) => {
-        const {showModalToggleButton, hasModalSupport} = panelModel;
+        const {showModalToggleButton, hasModalSupport} = panelModel as PanelModel;
         if (!showModalToggleButton || !hasModalSupport) return null;
         return modalToggleButton();
     }

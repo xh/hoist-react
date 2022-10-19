@@ -9,20 +9,18 @@
  * Convenience configuration for a PanelModel.modalSupport
  */
 export class ModalSupportOptions {
-    /** @member {?String|number} */
-    width;
-    /** @member {?String|number} */
-    height;
-    /** @member boolean */
-    canOutsideClickClose;
+
+    width: string|number;
+    height: string|number;
+    canOutsideClickClose: boolean;
+
     /**
-     *
-     * @param {Object} opts
-     * @param {String|number} [width] - css width
-     * @param {String|number} [height] - css height
-     * @param {boolean} [canOutsideClickClose]
+     * @param width - css width
+     * @param height - css height
+     * @param canOutsideClickClose
      */
-    constructor({width = '90vw', height = '90vh', canOutsideClickClose = true} = {}) {
+    constructor(opts: {width?: string|number, height?: string|number, canOutsideClickClose?: boolean} = {}) {
+        const {width = '90vw', height = '90vh', canOutsideClickClose = true} = opts;
         this.width = width;
         this.height = height;
         this.canOutsideClickClose = canOutsideClickClose;

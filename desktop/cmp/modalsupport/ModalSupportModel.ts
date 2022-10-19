@@ -6,30 +6,27 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {ModalSupportOptions} from '@xh/hoist/desktop/cmp/panel';
+import {ModalSupportOptions} from '@xh/hoist/desktop/cmp/modalsupport';
 import '@xh/hoist/desktop/register';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {observable, makeObservable, action} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 
 /**
  * Core Model for a ModalSupport component.
  * This model will place its component's child in 1 of 2 managed DOM nodes (either modal or inline)
- * @private
  */
 export class ModalSupportModel extends HoistModel {
     xhImpl = true;
 
-    @bindable isModal = false;
+    @observable
+    isModal: boolean = false;
+    options: ModalSupportOptions;
 
-    inlineRef = createObservableRef();
-    modalRef = createObservableRef();
-    hostNode;
-    options;
+    inlineRef = createObservableRef<HTMLElement>();
+    modalRef = createObservableRef<HTMLElement>();
+    hostNode: HTMLElement;
 
-    /**
-     * @param {ModalSupportOptions|Object} opts
-     */
-    constructor(opts = new ModalSupportOptions()) {
+    constructor(opts: Partial<ModalSupportOptions> = new ModalSupportOptions()) {
         super();
         makeObservable(this);
         this.hostNode = this.createHostNode();
@@ -48,9 +45,9 @@ export class ModalSupportModel extends HoistModel {
     }
 
     /**
-     * @returns {HTMLDivElement} Empty div set to inherit all styling from its parent
+     * @returns Empty div set to inherit all styling from its parent
      */
-    createHostNode() {
+    createHostNode(): HTMLElement {
         const hostNode = document.createElement('div');
         hostNode.style.all = 'inherit';
         hostNode.classList.add('xh-modal-support__host');
@@ -58,16 +55,16 @@ export class ModalSupportModel extends HoistModel {
         return hostNode;
     }
 
-    /**
-     * Toggle the current state of `isModal`
-     */
-    toggleIsModal() {
-        this.setIsModal(!this.isModal);
+    @action
+    setIsModal(v: boolean) {
+        this.isModal = v;
     }
 
-    /**
-     * Destroy the `hostNode` DOM Element
-     */
+    @action
+    toggleIsModal() {
+        this.isModal = !this.isModal;
+    }
+
     destroy() {
         this.hostNode.remove();
         super.destroy();
