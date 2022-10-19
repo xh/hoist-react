@@ -344,10 +344,8 @@ function defaultReadonlyRenderer(value) {
     if (isFinite(value)) return fmtNumber(value);
     if (isBoolean(value)) return value.toString();
 
-    if (!isNil(value)) {
-        // format JSON, but fail and ignore on plain text
-        try {value = fmtJson(value)} catch (e) {}
-    }
+    // format JSON, but fail and ignore on plain text
+    try {value = fmtJson(value)} catch (e) {}
 
     return span(value != null ? value.toString() : null);
 }
