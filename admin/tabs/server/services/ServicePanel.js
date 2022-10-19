@@ -18,7 +18,7 @@ export const servicePanel = hoistCmp.factory({
     model: creates(ServiceModel),
 
     render({model}) {
-        const readonly = !XH.getUser().isHoistAdmin;
+        const {readonly} = XH.appModel;
 
         return panel({
             mask: 'onLoad',

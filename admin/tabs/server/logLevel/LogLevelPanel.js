@@ -10,10 +10,7 @@ import * as Col from '@xh/hoist/admin/columns';
 import * as LogLevelCol from './LogLevelColumns';
 
 export const logLevelPanel = hoistCmp.factory(
-    () => {
-        const readonly = !XH.getUser().isHoistAdmin;
-        return restGrid({model: {...modelSpec, readonly}});
-    }
+    () => restGrid({model: {...modelSpec, readonly: XH.appModel.readonly}})
 );
 
 const modelSpec = {

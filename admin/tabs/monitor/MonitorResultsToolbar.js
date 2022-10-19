@@ -17,15 +17,14 @@ export const monitorResultsToolbar = hoistCmp.factory(
         const {passed, warned, failed, inactive, results} = model,
             getClassName = (hide) => {
                 return `xh-monitor-result-count ${hide ? 'xh-monitor-result-count--hidden' : ''}`;
-            },
-            readonly = !XH.getUser().isHoistAdmin;
+            };
 
         return toolbar(
             button({
                 icon: Icon.refresh(),
                 text: 'Run all now',
                 disabled: isEmpty(results),
-                omit: readonly,
+                omit: XH.appModel.readonly,
                 onClick: () => model.forceRunAllMonitorsAsync()
             }),
             hbox({

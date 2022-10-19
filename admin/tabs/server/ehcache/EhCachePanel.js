@@ -18,7 +18,7 @@ export const ehCachePanel = hoistCmp.factory({
     model: creates(EhCacheModel),
 
     render({model}) {
-        const readonly = !XH.getUser().isHoistAdmin;
+        const {readonly} = XH.appModel;
 
         return panel({
             mask: 'onLoad',

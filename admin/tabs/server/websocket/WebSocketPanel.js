@@ -23,8 +23,6 @@ export const webSocketPanel = hoistCmp.factory({
     render({model}) {
         if (!XH.webSocketService.enabled) return notPresentMessage();
 
-        const readonly = !XH.getUser().isHoistAdmin;
-
         return panel({
             tbar: [
                 button({
@@ -32,7 +30,7 @@ export const webSocketPanel = hoistCmp.factory({
                     icon: Icon.stopCircle(),
                     intent: 'danger',
                     disabled: !model.gridModel.hasSelection,
-                    omit: readonly,
+                    omit: XH.appModel.readonly,
                     onClick: () => model.forceSuspendOnSelectedAsync()
                 }),
                 filler(),

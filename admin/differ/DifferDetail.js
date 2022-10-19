@@ -23,8 +23,6 @@ export const differDetail = hoistCmp.factory({
     render({model}) {
         if (!model.record) return null;
 
-        const readonly = !XH.getUser().isHoistAdmin;
-
         return dialog({
             title: 'Detail',
             isOpen: model.record,
@@ -32,7 +30,7 @@ export const differDetail = hoistCmp.factory({
             onClose: () => model.close(),
             item: panel({
                 item: diffTable(),
-                bbar: readonly ? [] : [
+                bbar: XH.appModel.readonly ? [] : [
                     filler(),
                     button({
                         text: 'Cancel',

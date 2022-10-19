@@ -32,11 +32,10 @@ export class JsonBlobModel extends HoistModel {
 
         const required = true,
             enableCreate = true,
-            hidden = true,
-            readonly = !XH.getUser().isHoistAdmin;
+            hidden = true;
 
         this.gridModel = new RestGridModel({
-            readonly,
+            readonly: XH.appModel.readonly,
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,

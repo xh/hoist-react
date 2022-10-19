@@ -21,7 +21,7 @@ export const memoryMonitorPanel = hoistCmp.factory({
             return placeholder(model.minVersionWarning);
         }
 
-        const readonly = !XH.getUser().isHoistAdmin;
+        const {readonly} = XH.appModel;
 
         return panel({
             tbar: [

@@ -9,10 +9,7 @@ import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
 
 export const userPreferencePanel = hoistCmp.factory(
-    () => {
-        const readonly = !XH.getUser().isHoistAdmin;
-        return restGrid({model: {...modelSpec, readonly}});
-    }
+    () => restGrid({model: {...modelSpec, readonly: XH.appModel.readonly}})
 );
 
 const required = true,
