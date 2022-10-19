@@ -6,13 +6,28 @@
  */
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
-import {hoistCmp, HoistModel, TaskObserver, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, HoistProps, TaskObserver, useLocalModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
+import {ReactNode} from 'react';
 import classNames from 'classnames';
-import PT from 'prop-types';
 import './Mask.scss';
+
+export interface MaskProps extends HoistProps {
+    /** Task(s) that should be monitored to determine if the mask should be displayed. */
+    bind?: TaskObserver|TaskObserver[],
+    /** True to display mask. */
+    isDisplayed?: boolean,
+    /** Optional text to be displayed. */
+    message?: ReactNode,
+    /** True to display a spinning image.  Default false. */
+    spinner?: boolean,
+    /** True (default) to contain mask within its parent, false to fill the viewport. */
+    inline?: boolean,
+    /** Click handler **/
+    onClick?: (e: MouseEvent) => void
+}
 
 /**
  * Mask with optional spinner and text.
@@ -22,7 +37,7 @@ import './Mask.scss';
  * Note that the Panel component's `mask` prop provides a common and convenient method for masking
  * sections of the UI without needing to manually create or manage this component.
  */
-export const [Mask, mask] = hoistCmp.withFactory({
+export const [Mask, mask] = hoistCmp.withFactory<MaskProps>({
     displayName: 'Mask',
     className: 'xh-mask',
 
@@ -57,27 +72,6 @@ export const [Mask, mask] = hoistCmp.withFactory({
         });
     }
 });
-
-Mask.propTypes = {
-
-    /** Task(s) that should be monitored to determine if the mask should be displayed. */
-    bind: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(PT.instanceOf(TaskObserver))]),
-
-    /** True to display mask. */
-    isDisplayed: PT.bool,
-
-    /** Optional text to be displayed. */
-    message: PT.oneOfType([PT.string, PT.element]),
-
-    /** True to display a spinning image.  Default false. */
-    spinner: PT.bool,
-
-    /** True (default) to contain mask within its parent, false to fill the viewport. */
-    inline: PT.bool,
-
-    /** Click handler **/
-    onClick: PT.func
-};
 
 class MaskLocalModel extends HoistModel {
     xhImpl = true;
