@@ -5,24 +5,48 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div, frame, p} from '@xh/hoist/cmp/layout';
-import {hoistCmp} from '@xh/hoist/core';
-import {button} from '@xh/hoist/mobile/cmp/button';
+import {hoistCmp, HoistProps} from '@xh/hoist/core';
+import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {isEmpty, isNil, isString} from 'lodash';
-import PT from 'prop-types';
-import {isValidElement} from 'react';
+import {isValidElement, ReactNode} from 'react';
 
 import './ErrorMessage.scss';
+
+export interface ErrorMessageProps extends HoistProps {
+    /**
+     * If provided, will render a "Retry" button that calls this function.
+     * Use `actionButtonProps` for further control over this button.
+     */
+    actionFn?: (e: MouseEvent) => void,
+    /**
+     * If provided, component will render an inline action button - prompting to user to take some
+     * action that might resolve the error, such as retrying a failed data load.
+     */
+    actionButtonProps?: ButtonProps,
+    /**
+     * Error to display. If undefined, this component will look for an error property on its model.
+     * If no error is found, this component will not be displayed.
+     */
+    error?: Error|string|Record<string, any>,
+    /**
+     * Message to display for the error.
+     * Defaults to the error, or any 'message' property contained within it.
+     */
+    message?: ReactNode,
+    /** Optional title to display above the message. */
+    title?: ReactNode
+}
 
 /**
  * Component for displaying an error with standardized styling.
  */
-export const [ErrorMessage, errorMessage] = hoistCmp.withFactory({
+export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessageProps>({
     className: 'xh-error-message',
     render({
         className,
         model,
-        error = model?.error,
+        error = (model as any)?.error,
         message,
         title,
         actionFn,
@@ -55,30 +79,6 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory({
         });
     }
 });
-
-ErrorMessage.propTypes = {
-    /**
-     * If provided, component will render an inline action button - prompting to user to take some
-     * action that might resolve the error, such as retrying a failed data load. Accepts all props
-     * suitable for `Button`.
-     */
-    actionButtonProps: PT.object,
-
-    /**
-     *  Error to display. If undefined, this component will look for an error property on its model.
-     *  If no error is found, this component will not be displayed.
-     */
-    error: PT.oneOfType([PT.instanceOf(Error), PT.object,  PT.string]),
-
-    /**
-     *  Message to display for the error.
-     *  Defaults to the error, or any 'message' property contained within it.
-     */
-    message: PT.oneOfType([PT.element, PT.string]),
-
-    /** Optional title to display above the message. */
-    title: PT.oneOfType([PT.element, PT.string])
-};
 
 const titleCmp = hoistCmp.factory(
     ({title}) => {

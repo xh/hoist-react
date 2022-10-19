@@ -6,15 +6,17 @@
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button, Button} from '@xh/hoist/mobile/cmp/button';
+import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
+
+export type OptionsButtonProps = ButtonProps;
 
 /**
  * Convenience Button preconfigured for use as a trigger for opening the XH options dialog.
  *
  * Can be provided an onClick handler, otherwise will use default action provided by framework.
  */
-export const [OptionsButton, optionsButton] = hoistCmp.withFactory({
+export const [OptionsButton, optionsButton] = hoistCmp.withFactory<OptionsButtonProps>({
     displayName: 'OptionsButton',
     model: false,
 
@@ -23,7 +25,6 @@ export const [OptionsButton, optionsButton] = hoistCmp.withFactory({
         onClick = () => XH.showOptionsDialog(),
         ...props
     }) {
-        return button(icon, onClick, props);
+        return button({icon, onClick, ...props});
     }
 });
-OptionsButton.propTypes = Button.propTypes;

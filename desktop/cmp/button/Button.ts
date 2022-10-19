@@ -15,6 +15,23 @@ import {ReactNode, ReactElement} from 'react';
 import type * as CSS from 'csstype';
 import './Button.scss';
 
+export interface ButtonProps<M extends HoistModel = null> extends BoxProps<M> {
+    active?: boolean,
+    autoFocus?: boolean,
+    disabled?: boolean,
+    icon?: ReactElement;
+    intent?: Intent,
+    minimal?: boolean,
+    onClick?: (e: MouseEvent) => void,
+    outlined?: boolean,
+    rightIcon?: ReactElement;
+    style?: CSS.Properties,
+    text?: ReactNode,
+    title?: string,
+    /** Alias for title. */
+    tooltip?: string
+}
+
 /**
  * Wrapper around Blueprint's Button component. Defaults to the `minimal` style for reduced chrome
  * and adds layout support for top-level sizing and margin/padding props.
@@ -90,20 +107,3 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
         });
     }
 });
-
-export interface ButtonProps<M extends HoistModel = null> extends BoxProps<M> {
-    active?: boolean,
-    autoFocus?: boolean,
-    disabled?: boolean,
-    icon?: ReactElement;
-    intent?: Intent,
-    minimal?: boolean,
-    onClick?: (e: MouseEvent) => void,
-    outlined?: boolean,
-    rightIcon?: ReactElement;
-    style?: CSS.Properties,
-    text?: ReactNode,
-    title?: string,
-    /** Alias for title. */
-    tooltip?: string
-}

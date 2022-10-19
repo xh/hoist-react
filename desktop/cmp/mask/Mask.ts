@@ -17,16 +17,16 @@ import './Mask.scss';
 export interface MaskProps extends HoistProps {
     /** Task(s) that should be monitored to determine if the mask should be displayed. */
     bind?: TaskObserver|TaskObserver[],
+    /** True (default) to contain mask within its parent, false to fill the viewport. */
+    inline?: boolean,
     /** True to display mask. */
     isDisplayed?: boolean,
     /** Optional text to be displayed. */
     message?: ReactNode,
-    /** True to display a spinning image.  Default false. */
-    spinner?: boolean,
-    /** True (default) to contain mask within its parent, false to fill the viewport. */
-    inline?: boolean,
     /** Click handler **/
-    onClick?: (e: MouseEvent) => void
+    onClick?: (e: MouseEvent) => void,
+    /** True to display a spinning image.  Default false. */
+    spinner?: boolean
 }
 
 /**

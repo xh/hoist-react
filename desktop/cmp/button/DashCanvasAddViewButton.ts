@@ -13,6 +13,11 @@ import {popover} from '@xh/hoist/kit/blueprint';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
 import {button, ButtonProps} from './Button';
 
+export interface DashCanvasAddViewButtonProps extends ButtonProps {
+    /** DashCanvasModel for which this button should allow the user to add views. */
+    dashCanvasModel?: DashCanvasModel
+}
+
 /**
  * A convenience menu button to add views to a DashCanvas.
  */
@@ -38,8 +43,3 @@ export const [DashCanvasAddViewButton, dashCanvasAddViewButton] = hoistCmp.withF
         });
     }
 });
-
-export interface DashCanvasAddViewButtonProps extends ButtonProps {
-    /** DashCanvasModel for which this button should allow the user to add views. */
-    dashCanvasModel?: DashCanvasModel
-}
