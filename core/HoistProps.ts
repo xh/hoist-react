@@ -24,6 +24,13 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
     model?: M;
 
     /**
+     * Used for specifying the *configuration* of a model to be created by Hoist for this component
+     * when first mounted.  Should be used only on a component that specifies the 'uses()' directive
+     * with the `createFromConfig` set as true. See the `uses()` directive for more information.
+     */
+    modelConfig?: Record<string, any>;
+
+    /**
      * ClassName for the component.  Includes the classname as provided in props, enhanced with
      * any base class name provided by the component definition itself.
      */

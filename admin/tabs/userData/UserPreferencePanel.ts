@@ -7,9 +7,11 @@
 import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
+import {getApp} from '@xh/hoist/admin/AppModel';
+
 
 export const userPreferencePanel = hoistCmp.factory(
-    () => restGrid({model: modelSpec})
+    () => restGrid({model: {...modelSpec, readonly: getApp().readonly}})
 );
 
 const required = true,

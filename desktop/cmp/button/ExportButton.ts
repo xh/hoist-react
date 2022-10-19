@@ -12,6 +12,11 @@ import {errorIf, withDefault} from '@xh/hoist/utils/js';
 import {ExportOptions} from '@xh/hoist/svc';
 import {button, ButtonProps} from './Button';
 
+export interface ExportButtonProps extends ButtonProps {
+    gridModel?: GridModel,
+    exportOptions?: ExportOptions
+}
+
 /**
  * Convenience Button preconfigured for use as a trigger for an export/download of data.
  *
@@ -51,11 +56,6 @@ export const [ExportButton, exportButton] = hoistCmp.withFactory<ExportButtonPro
         });
     }
 });
-
-export interface ExportButtonProps extends ButtonProps {
-    gridModel?: GridModel,
-    exportOptions?: ExportOptions
-}
 
 //---------------------------
 // Implementation

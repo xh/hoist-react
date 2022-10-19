@@ -7,16 +7,20 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button, Button} from '@xh/hoist/mobile/cmp/button';
+import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import PT from 'prop-types';
+
+export interface ExpandCollapseButtonProps extends ButtonProps {
+    /** GridModel of the grid for which this button should show a chooser. */
+    gridModel?: GridModel
+}
 
 /**
  * A convenience button to expand / collapse all rows in grouped or tree grid.
  */
-export const [ExpandCollapseButton, expandCollapseButton] = hoistCmp.withFactory({
+export const [ExpandCollapseButton, expandCollapseButton] = hoistCmp.withFactory<ExpandCollapseButtonProps>({
     displayName: 'ExpandCollapseButton',
     model: false,
     render({
@@ -41,9 +45,3 @@ export const [ExpandCollapseButton, expandCollapseButton] = hoistCmp.withFactory
         return button({disabled, icon, onClick, ...props});
     }
 });
-ExpandCollapseButton.propTypes = {
-    ...Button.propTypes,
-
-    /** GridModel of the grid for which this button should autosize columns. */
-    gridModel: PT.instanceOf(GridModel)
-};

@@ -9,11 +9,13 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {button, ButtonProps} from './Button';
 
+export type FeedbackButtonProps = ButtonProps;
+
 /**
  * Convenience Button preconfigured for use as a trigger for the XH feedback dialog.
  * Can be provided an onClick handler, otherwise will call default framework handler.
  */
-export const [FeedbackButton, feedbackButton] = hoistCmp.withFactory<ButtonProps>({
+export const [FeedbackButton, feedbackButton] = hoistCmp.withFactory<FeedbackButtonProps>({
     displayName: 'FeedbackButton',
     model: false,
 

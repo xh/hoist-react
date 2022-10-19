@@ -10,6 +10,8 @@ import {Icon} from '@xh/hoist/icon';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
 import {button, ButtonProps} from './Button';
 
+export type RefreshButtonProps = ButtonProps<HoistModel>;
+
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
  *
@@ -41,5 +43,3 @@ export const [RefreshButton, refreshButton] = hoistCmp.withFactory<RefreshButton
         });
     }
 });
-
-export type RefreshButtonProps = ButtonProps<HoistModel>;

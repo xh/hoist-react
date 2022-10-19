@@ -11,9 +11,49 @@ import {isEqual, find} from 'lodash';
 import {FilterLike, FilterTestFn} from '../filter/Types';
 import {CubeField} from './CubeField';
 import {Cube} from './Cube';
+
 /**
- *  Specification used to define the shape of the data returned by a Cube.
+ * Queries determine what data is extracted from a cube and how it should be grouped + aggregated.
+ *
+ * Note that if no dimensions are provided, 'includeRoot' or 'includeLeaves' should be true -
+ * otherwise no data will be returned!
  */
+export interface QueryConfig {
+    /**
+     * Associated Cube. Required, but note that `Cube.executeQuery()` will install a reference to
+     * itself on the query config (automatically)
+     */
+    cube?: Cube;
+
+    /**
+     * Field names. If unspecified will include all available fields
+     * from the source Cube, otherwise supply a subset to optimize aggregation performance.
+     */
+    fields?: string[];
+
+    /**
+     * Field names to group on. Any fields provided must also be in fields config, above. If none
+     * given the resulting data will not be grouped.
+     */
+    dimensions?: string[];
+
+    /**
+     * One or more filters or configs to create one.  If an array, a single 'AND' filter will
+     * be created.
+     */
+    filter?: FilterLike
+
+    /**
+     * IncludeRoot?: True to include a synthetic root node in the return with grand total
+     * aggregate values.
+     */
+    includeRoot?: boolean;
+
+    /** True to include leaf nodes in return.*/
+    includeLeaves?: boolean;
+}
+
+/** {@inheritDoc QueryConfig} */
 export class Query {
 
     fields: CubeField[];
@@ -95,45 +135,4 @@ export class Query {
             return field;
         });
     }
-}
-
-/**
- * Configuration for a query.
- *
- * Note that if no dimensions are provided, 'includeRoot' or 'includeLeaves' should be true.
- * Otherwise no data will be returned by this view!
- */
-export interface QueryConfig {
-    /**
-     *   Associated Cube. Required, but note that `Cube.executeQuery()` will install a reference to
-     *   itself on the query config (automatically)
-     */
-    cube?: Cube;
-
-    /**
-     * Field names. If unspecified will include all available fields
-     * from the source Cube, otherwise supply a subset to optimize aggregation performance.
-     */
-    fields?: string[];
-
-    /**
-     * Field names to group on. Any fields provided must also be in fields config, above. If none
-     * given the resulting data will not be grouped.
-     */
-    dimensions?: string[];
-
-    /**
-     * One or more filters or configs to create one.  If an array, a single 'AND' filter will
-     * be created.
-     */
-    filter?: FilterLike
-
-    /**
-     * IncludeRoot?: True to include a synthetic root node in the return with grand total
-     * aggregate values.
-     */
-    includeRoot?: boolean;
-
-    /** True to include leaf nodes in return.*/
-    includeLeaves?: boolean;
 }

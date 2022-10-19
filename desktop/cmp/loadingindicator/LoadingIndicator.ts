@@ -21,7 +21,7 @@ export interface LoadingIndicatorProps extends HoistProps {
     corner: 'tl'|'tr'|'bl'|'br',
     /** True to display the indicator. */
     isDisplayed?: boolean,
-    /**  Max characters allowed in message, after which it will be elided. Default 30. */
+    /** Max characters allowed in message, after which it will be elided. Default 30. */
     maxMessageLength?: number,
     /** Optional text to be displayed - can also be sourced from bound TaskObserver. */
     message?: string,

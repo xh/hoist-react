@@ -14,6 +14,14 @@ import {popover, Position} from '@xh/hoist/kit/blueprint';
 import {stopPropagation, withDefault} from '@xh/hoist/utils/js';
 import {button, ButtonProps} from './Button';
 
+export interface ColChooserButtonProps extends ButtonProps {
+    /** GridModel of the grid for which this button should show a chooser. */
+    gridModel?: GridModel,
+
+    /** Position for chooser popover, as per Blueprint docs. */
+    popoverPosition?: Position
+}
+
 /**
  * A convenience button to trigger the display of a ColChooser for user selection and discovery of
  * available Grid columns. For use by applications when a button is desired in addition to the
@@ -69,11 +77,3 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
         });
     }
 });
-
-export interface ColChooserButtonProps extends ButtonProps {
-    /** GridModel of the grid for which this button should show a chooser. */
-    gridModel?: GridModel,
-
-    /** Position for chooser popover, as per Blueprint docs. */
-    popoverPosition?: Position
-}

@@ -61,9 +61,6 @@ export class StoreValidator extends HoistBase {
     @observable.ref
     private _validators: RecordValidator[] = [];
 
-    /**
-     * @param config.store - Store to validate
-     */
     constructor(config: {store: Store}) {
         super();
         makeObservable(this);
@@ -93,7 +90,7 @@ export class StoreValidator extends HoistBase {
         return VS.Valid;
     }
 
-    /** @returns map of StoreRecord IDs -> StoreRecord-level error maps. */
+    /** @returns map of StoreRecord IDs to StoreRecord-level error maps. */
     getErrorMap(): StoreErrorMap {
         const ret = {};
         this._validators.forEach(v => ret[v.id] = v.errors);
@@ -121,6 +118,6 @@ export class StoreValidator extends HoistBase {
     }
 }
 
-/** Map of StoreRecord IDs -> StoreRecord-level error maps. */
+/** Map of StoreRecord IDs to StoreRecord-level error maps. */
 export type StoreErrorMap = Record<StoreRecordId, RecordErrorMap>
 

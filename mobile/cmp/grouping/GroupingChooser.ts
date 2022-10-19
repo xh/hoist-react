@@ -9,22 +9,32 @@ import {box, div, filler, hbox, placeholder, span, vbox, vframe} from '@xh/hoist
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
-import {button, Button} from '@xh/hoist/mobile/cmp/button';
+import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {select} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, isEmpty, sortBy} from 'lodash';
-import PT from 'prop-types';
 
 import './GroupingChooser.scss';
+
+export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> {
+    /** Text to represent empty state (i.e. value = null or [])*/
+    emptyText?: string,
+    /** Title for popover (default "GROUP BY") or null to suppress. */
+    popoverTitle?: string,
+    /** Min height in pixels of the popover inner content (excl. header & toolbar). */
+    popoverMinHeight?: number,
+    /** Width in pixels of the popover menu itself. */
+    popoverWidth?: number
+}
 
 /**
  * Control for selecting a list of dimensions for grouping APIs.
  * @see GroupingChooserModel
  */
-export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
+export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingChooserProps>({
     displayName: 'GroupingChooser',
     model: uses(GroupingChooserModel),
     className: 'xh-grouping-chooser',
@@ -60,29 +70,10 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory({
     }
 });
 
-GroupingChooser.propTypes = {
-    ...Button.propTypes,
-
-    /** Text to represent empty state (i.e. value = null or [])*/
-    emptyText: PT.string,
-
-    /** Primary component model instance. */
-    model: PT.instanceOf(GroupingChooserModel),
-
-    /** Title for popover (default "GROUP BY") or null to suppress. */
-    popoverTitle: PT.string,
-
-    /** Min height in pixels of the popover inner content (excl. header & toolbar). */
-    popoverMinHeight: PT.number,
-
-    /** Width in pixels of the popover menu itself. */
-    popoverWidth: PT.number
-};
-
 //---------------------------
 // Popover
 //---------------------------
-const popoverCmp = hoistCmp.factory(
+const popoverCmp = hoistCmp.factory<GroupingChooserModel>(
     ({model, popoverTitle, popoverWidth, popoverMinHeight, emptyText}) => {
         const {editorIsOpen, favoritesIsOpen, isValid, value} = model,
             isOpen = editorIsOpen || favoritesIsOpen,
@@ -140,7 +131,7 @@ const editor = hoistCmp.factory({
     }
 });
 
-const dimensionList = hoistCmp.factory({
+const dimensionList = hoistCmp.factory<GroupingChooserModel>({
     render({model, emptyText}) {
         if (isEmpty(model.pendingValue)) {
             return model.allowEmpty ?
@@ -168,7 +159,7 @@ const dimensionList = hoistCmp.factory({
     }
 });
 
-const dimensionRow = hoistCmp.factory({
+const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
     render({model, dimension, idx}) {
         // The options for this select include its current value
         const options = getDimOptions([...model.availableDims, dimension], model);
@@ -216,7 +207,7 @@ const dimensionRow = hoistCmp.factory({
     }
 });
 
-const addDimensionControl = hoistCmp.factory({
+const addDimensionControl = hoistCmp.factory<GroupingChooserModel>({
     render({model}) {
         if (!model.isAddEnabled) return null;
         const options = getDimOptions(model.availableDims, model);
@@ -253,7 +244,7 @@ function getDimOptions(dims, model) {
 //------------------
 // Favorites
 //------------------
-const favoritesButton = hoistCmp.factory({
+const favoritesButton = hoistCmp.factory<GroupingChooserModel>({
     render({model}) {
         if (!model.persistFavorites) return null;
         return button({
@@ -265,7 +256,7 @@ const favoritesButton = hoistCmp.factory({
     }
 });
 
-const favoritesMenu = hoistCmp.factory({
+const favoritesMenu = hoistCmp.factory<GroupingChooserModel>({
     render({model}) {
         const options = model.favoritesOptions;
 
@@ -278,7 +269,7 @@ const favoritesMenu = hoistCmp.factory({
     }
 });
 
-const favoriteMenuItem = hoistCmp.factory({
+const favoriteMenuItem = hoistCmp.factory<GroupingChooserModel>({
     render({model, value, label}) {
         return hbox({
             className: 'xh-grouping-chooser__favorite',

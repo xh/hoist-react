@@ -15,10 +15,16 @@ import {monitorTab} from './tabs/monitor/MonitorTab';
 import {serverTab} from './tabs/server/ServerTab';
 import {userDataTab} from './tabs/userData/UserDataTab';
 
+export function getApp(): AppModel {
+    return XH.appModel as AppModel;
+}
+
 export class AppModel extends HoistAppModel {
 
     @managed
     tabModel: TabContainerModel;
+
+    get readonly() {return !XH.getUser().isHoistAdmin}
 
     constructor() {
         super();

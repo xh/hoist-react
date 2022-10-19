@@ -11,6 +11,14 @@ import {Icon} from '@xh/hoist/icon';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
 import {button, ButtonProps} from './Button';
 
+export interface ColAutosizeButtonProps extends ButtonProps {
+    /** GridModel of the grid for which this button should autosize columns. */
+    gridModel?: GridModel,
+
+    /** Options for the grid autosize. {@see GridModel#autosizeAsync()} */
+    autosizeOptions?: GridAutosizeOptions
+}
+
 /**
  * A convenience button to autosize visible Grid columns.
  */
@@ -43,11 +51,3 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory<ColAu
         });
     }
 });
-
-export interface ColAutosizeButtonProps extends ButtonProps {
-    /** GridModel of the grid for which this button should autosize columns. */
-    gridModel?: GridModel,
-
-    /** Options for the grid autosize. {@see GridModel#autosizeAsync()} */
-    autosizeOptions?: GridAutosizeOptions
-}

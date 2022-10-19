@@ -213,7 +213,7 @@ export function ensureUnique(arr: [], exceptionMessage?: string) {
  * @param uniqueKey - the property that must hold a unique value for each item.
  * @param [exceptionMessage] - error to throw if non-unique values found.
  */
-export function ensureUniqueBy(arr: [], uniqueKey: string, exceptionMessage?: string) {
+export function ensureUniqueBy(arr: any[], uniqueKey: string, exceptionMessage?: string) {
     exceptionMessage = exceptionMessage ?? `Multiple items in the provided array have the same ${uniqueKey} - must be unique.`;
     throwIf(arr.length != uniqBy(arr, uniqueKey).length, exceptionMessage);
 }

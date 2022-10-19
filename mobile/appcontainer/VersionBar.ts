@@ -49,6 +49,6 @@ function isShowing() {
             return false;
         case 'auto':
         default:
-            return (env !== 'Production' || XH.getUser().isHoistAdmin);
+            return (env !== 'Production' || XH.getUser().isHoistAdminReader);
     }
 }

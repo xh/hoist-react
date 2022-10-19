@@ -18,7 +18,8 @@ export const addAction = {
     text: 'Add',
     icon: Icon.add(),
     intent: 'success',
-    actionFn: ({gridModel}) => gridModel.restGridModel.addRecord()
+    actionFn: ({gridModel}) => gridModel.restGridModel.addRecord(),
+    displayFn: ({gridModel}) => ({hidden: gridModel.restGridModel.readonly})
 };
 
 export const editAction = {
@@ -26,7 +27,8 @@ export const editAction = {
     icon: Icon.edit(),
     intent: 'primary',
     recordsRequired: 1,
-    actionFn: ({record, gridModel}) => gridModel.restGridModel.editRecord(record)
+    actionFn: ({record, gridModel}) => gridModel.restGridModel.editRecord(record),
+    displayFn: ({gridModel}) => ({hidden: gridModel.restGridModel.readonly})
 };
 
 export const viewAction = {
@@ -40,9 +42,8 @@ export const cloneAction = {
     text: 'Clone',
     icon: Icon.copy(),
     recordsRequired: 1,
-    actionFn: ({record, gridModel}) => {
-        gridModel.restGridModel.cloneRecord(record);
-    }
+    actionFn: ({record, gridModel}) => gridModel.restGridModel.cloneRecord(record),
+    displayFn: ({gridModel}) => ({hidden: gridModel.restGridModel.readonly})
 };
 
 export const deleteAction = {
@@ -50,8 +51,8 @@ export const deleteAction = {
     icon: Icon.delete(),
     intent: 'danger',
     recordsRequired: true,
-    displayFn: ({record}) => ({
-        hidden: record && record.id === null // Hide this action if we are acting on a "new" record
+    displayFn: ({gridModel, record}) => ({
+        hidden: (record && record.id === null) || gridModel.restGridModel.readonly // Hide this action if we are acting on a "new" record
     }),
     actionFn: ({gridModel}) => gridModel.restGridModel.confirmDeleteRecords()
 };

@@ -13,6 +13,8 @@ import * as Col from '@xh/hoist/admin/columns';
 import {isDate} from 'lodash';
 import {LoadSpec} from '../../../core';
 import * as JBCol from './JsonBlobColumns';
+import {getApp} from '@xh/hoist/admin/AppModel';
+
 
 import {DifferModel} from '../../differ/DifferModel';
 
@@ -36,6 +38,7 @@ export class JsonBlobModel extends HoistModel {
             hidden = true;
 
         this.gridModel = new RestGridModel({
+            readonly: getApp().readonly,
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,

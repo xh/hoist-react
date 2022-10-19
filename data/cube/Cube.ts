@@ -6,12 +6,12 @@
  */
 
 import {HoistBase, managed} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
-import {CubeField} from './CubeField';
+import {CubeField, CubeFieldConfig} from './CubeField';
 import {Query, QueryConfig} from './Query';
 import {View} from './View';
-import {RawData, Store, StoreTransaction} from '../Store';
+import {RawData, Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
 import {StoreRecord} from '../StoreRecord';
 import {AggregateRow} from './row/AggregateRow';
 import {BucketRow} from './row/BucketRow';
@@ -20,12 +20,51 @@ import {BucketSpec} from './BucketSpec';
 import {defaultsDeep, isEmpty} from 'lodash';
 
 
+export interface CubeConfig {
+    fields: CubeField[]|CubeFieldConfig[];
+
+    /** Default configs applied to all `CubeField`s constructed internally by this Cube. */
+    fieldDefaults?: Partial<CubeFieldConfig>;
+
+    /** Array of initial raw data. */
+    data?: RawData[];
+
+    /** See {@link StoreConfig.idSpec} */
+    idSpec?: StoreRecordIdSpec;
+
+    /** See {@link StoreConfig.processRawData} */
+    processRawData?: (data: RawData) => RawData;
+
+    /** Convenience bucket for app-specific metadata associated with the loaded dataset. */
+    info?: Record<string, any>;
+
+    /**
+     * Optional function to be called for each aggregate node to determine if it should be "locked",
+     * preventing drill-down into its children.
+     */
+    lockFn?: LockFn;
+
+    /**
+     * Optional function to be called for each dimension during row generation to determine if the
+     * children of that dimension should be bucketed into additional dynamic dimensions.
+     */
+    bucketSpecFn?: BucketSpecFn;
+
+    /**
+     * Optional function to be called on all single child rows during view processing.
+     * Return true to omit the row.
+     */
+    omitFn?: OmitFn;
+}
+
 /**
  * A data store that supports grouping, aggregating, and filtering data on multiple dimensions.
  *
- * This object is a wrapper around a Store.   It allows executing queries against that store
- * that performing filtering, grouping, and aggregating.  It also support the creation of
- * observable "views" for showing realtime updates to this data..
+ * This object is a wrapper around a "flat" Store containing leaf-level facts. It supports creating
+ * Views on that data via structured Queries that can filter, group, and aggregate the flat source
+ * data and produce a hierarchical result ready for use in (e.g.) tree grids and maps. Views can
+ * be transiently created to run a Query once, on demand, or can be retained to provide efficient,
+ * auto-updating results in response to updates to the underlying data.
  */
 export class Cube extends HoistBase {
 
@@ -41,23 +80,6 @@ export class Cube extends HoistBase {
 
     _connectedViews: Set<View> = new Set();
 
-    /**
-     * @param {Object} c - Cube configuration.
-     * @param {(CubeField[]|CubeFieldConfig[])} c.fields - CubeField instances or configs.
-     * @param {{}} [fieldDefaults] - default configs applied to `CubeField` instances constructed
-     *      internally by this Cube for its Store. {@see CubeFieldConfig} for options.
-     * @param {Object[]} [c.data] - array of initial raw data.
-     * @param {(function|string)} [c.idSpec] - {@see Store.idSpec} - default 'id'.
-     * @param {function} [c.processRawData] - {@see Store.processRawData}
-     * @param {Object} [c.info] - app-specific metadata to be associated with this data.
-     * @param {LockFn} [c.lockFn] - optional function to be called for each aggregate node to
-     *      determine if it should be "locked", preventing drilldown into its children.
-     * @param {BucketSpecFn} [c.bucketSpecFn] - optional function to be called for each dimension
-     *      during row generation to determine if the children of that dimension should be bucketed
-     *      into additional dynamic dimensions.
-     * @param {OmitFn} [c.omitFn] - optional function to be called on all single child rows during
-     *      view processing.  Return true to omit the row.
-     */
     constructor({
         fields,
         fieldDefaults = {},
@@ -68,7 +90,7 @@ export class Cube extends HoistBase {
         lockFn,
         bucketSpecFn,
         omitFn
-    }:any) {
+    }: CubeConfig) {
         super();
         makeObservable(this);
         this.store = new Store({
@@ -124,22 +146,27 @@ export class Cube extends HoistBase {
      * Create a View on this data.
      *
      * Creates a dynamic View of the cube data, based on a query.  Useful for binding to grids a
-     * and efficiently displaying changing results in the cube.
+     * and efficiently displaying changing results in the Cube.
      *
-     * Note: Applications should call the disconnect() or destroy() method on the View
-     * returned when appropriate to avoid unnecessary processing.
+     * Note: Applications should call {@link View.disconnect} or {@link View.destroy} on the View
+     * created by this method when appropriate to avoid unnecessary processing.
      *
-     * @param {Object} c - config object.
-     * @param {Query} c.query - query to be used to construct this view.
-     * @param {(Store[]|Store)} [c.stores] - Stores to be loaded/reloaded with data from this view.
+     * @param query - query to be used to construct this view.
+     * @param stores - Stores to be loaded/reloaded with data from this view.
      *      To receive data only, use the 'results' property of the returned View instead.
-     * @param {boolean} [c.connect] - true to update View automatically when data in
+     * @param connect - true to update View automatically when data in
      *      the underlying cube is changed. Default false.
-     * @returns {View}
      */
-    createView({query, stores, connect = false}) {
-        query = new Query({...query, cube: this});
-        return new View({query, stores, connect});
+    createView({query, stores, connect = false}: {
+        query: QueryConfig;
+        stores?: Store[]|Store;
+        connect?: boolean
+    }): View {
+        return new View({
+            query: new Query({...query, cube: this}),
+            stores,
+            connect
+        });
     }
 
     /**
@@ -181,15 +208,16 @@ export class Cube extends HoistBase {
 
     /**
      * Update this cube with incremental data set changes and/or info.
-     * This method largely delegates to {@see Store.updateData()} - see that method for more info.
+     * This method largely delegates to {@link Store.updateData} - see that method for more info.
      *
      * Note that this method will update its views asynchronously in order to avoid locking
      * up the browser when attached to multiple expensive views.
      *
-     * @param rawData
+     * @param rawData - data changes to process. If provided as an array, rawData will be processed
+     *      into adds and updates, with updates determined by matching existing records by ID.
      * @param infoUpdates - new key-value pairs to be applied to existing info on this cube.
      */
-    async updateDataAsync(rawData: RawData[]|StoreTransaction, infoUpdates: Record<string, any>) {
+    async updateDataAsync(rawData: RawData[]|StoreTransaction, infoUpdates: Record<string, any>): Promise<void> {
         // 1) Process data
         const changeLog = this.store.updateData(rawData);
 
@@ -255,8 +283,8 @@ export class Cube extends HoistBase {
 export type LockFn = (row: AggregateRow|BucketRow) => boolean;
 
 /**
- * Function to be called for each single child during row generation to determine if
- * it should be skipped.  Useful for removing aggregates that are degenerate due to context.
+ * Function to be called for each single child during row generation to determine if it should be
+ * skipped.  Useful for removing aggregates that are degenerate due to context.
  */
 export type OmitFn = (row: AggregateRow|BucketRow) => boolean;
 

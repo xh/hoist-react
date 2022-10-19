@@ -9,11 +9,16 @@ import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {isEmpty, isNil, isString} from 'lodash';
-import {isValidElement, ReactNode} from 'react';
+import {isValidElement, ReactNode, MouseEvent} from 'react';
 
 import './ErrorMessage.scss';
 
 export interface ErrorMessageProps extends HoistProps {
+    /**
+     * If provided, will render a "Retry" button that calls this function.
+     * Use `actionButtonProps` for further control over this button.
+     */
+    actionFn?: (e: MouseEvent) => void,
     /**
      * If provided, component will render an inline action button - prompting to user to take some
      * action that might resolve the error, such as retrying a failed data load.
@@ -47,7 +52,6 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessagePro
         actionFn,
         actionButtonProps
     }, ref) {
-
         if (actionFn) {
             actionButtonProps = {...actionButtonProps, onClick: actionFn};
         }

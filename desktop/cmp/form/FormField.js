@@ -9,7 +9,7 @@ import {FieldModel, FormContext} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
+import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
@@ -343,6 +343,10 @@ function defaultReadonlyRenderer(value) {
     if (isDate(value)) return fmtDateTime(value);
     if (isFinite(value)) return fmtNumber(value);
     if (isBoolean(value)) return value.toString();
+
+    // format JSON, but fail and ignore on plain text
+    try {value = fmtJson(value)} catch (e) {}
+
     return span(value != null ? value.toString() : null);
 }
 

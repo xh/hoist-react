@@ -8,9 +8,10 @@ import {hoistCmp} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {deleteAction, restGrid} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
+import {getApp} from '@xh/hoist/admin/AppModel';
 
 export const feedbackPanel = hoistCmp.factory(
-    () => restGrid({model: modelSpec})
+    () => restGrid({model: {...modelSpec, readonly: getApp().readonly}})
 );
 
 const modelSpec = {

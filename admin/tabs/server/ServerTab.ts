@@ -17,7 +17,7 @@ import {webSocketPanel} from './websocket/WebSocketPanel';
 
 export const serverTab = hoistCmp.factory(
     () => tabContainer({
-        model: {
+        modelConfig: {
             route: 'default.server',
             switcher: {orientation: 'left'},
             tabs: [

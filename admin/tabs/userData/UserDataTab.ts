@@ -13,7 +13,7 @@ import {jsonBlobPanel} from './JsonBlobPanel';
 
 export const userDataTab = hoistCmp.factory(
     () => tabContainer({
-        model: {
+        modelConfig: {
             route: 'default.userData',
             switcher: {orientation: 'left'},
             tabs: [

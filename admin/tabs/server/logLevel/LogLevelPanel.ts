@@ -8,9 +8,11 @@ import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
 import * as LogLevelCol from './LogLevelColumns';
+import {getApp} from '@xh/hoist/admin/AppModel';
+
 
 export const logLevelPanel = hoistCmp.factory(
-    () => restGrid({model: modelSpec})
+    () => restGrid({model: {...modelSpec, readonly: getApp().readonly}})
 );
 
 const modelSpec = {
