@@ -310,6 +310,24 @@ export class LRChooserModel extends HoistModel {
         }
     }
 
+    appendRows(rows) {
+        const rightStore = this.rightModel.store.allRecords;
+        let lastSortOrder = maxBy(rightStore, rec => rec.data.sortOrder).data.sortOrder;
+
+        const row = rows[0];
+        if (!isEmpty(row.allAncestors)) {
+            this.split(row, lastSortOrder + 1, 'right');
+            return;
+        }
+
+        const append = row => {
+            lastSortOrder++;
+            row.raw.sortOrder = lastSortOrder;
+        };
+
+        rows.forEach(row => {row.forEachDescendant(append)});
+    }
+
     split(row, toIndex, side) {
         // 1) generate a new node and ancestors
         const ancestors = sortBy(row.allAncestors, 'raw.sortOrder'),
@@ -342,24 +360,6 @@ export class LRChooserModel extends HoistModel {
         this._data = data;
 
         this.refreshStores();
-    }
-
-    appendRows(rows) {
-        const rightStore = this.rightModel.store.allRecords;
-        let lastSortOrder = maxBy(rightStore, rec => rec.data.sortOrder).data.sortOrder;
-
-        const row = rows[0];
-        if (!isEmpty(row.allAncestors)) {
-            this.split(row, lastSortOrder + 1, 'right');
-            return;
-        }
-
-        const append = row => {
-            lastSortOrder++;
-            row.raw.sortOrder = lastSortOrder;
-        };
-
-        rows.forEach(row => {row.forEachDescendant(append)});
     }
 
     merge() {

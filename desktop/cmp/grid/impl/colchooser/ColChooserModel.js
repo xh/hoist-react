@@ -6,7 +6,7 @@
  */
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {LRChooserModel} from './impl';
-import {isEmpty} from 'lodash';
+import {clone, isEmpty} from 'lodash';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 
 /**
@@ -124,12 +124,45 @@ export class ColChooserModel extends HoistModel {
         this.lrModel.setData([...leftData, ...rightData]);
     }
 
+    findRootLeafPaths(n) {
+        const paths = [];
+        function findRootLeafPath(node, path) {
+            if (!node.children) {
+                path.push(node.colId);
+                paths.push(clone(path));
+                path.pop();
+                return;
+            }
+            path.push(node.groupId);
+            node.children.forEach(child => {
+                findRootLeafPath(child, path);
+            });
+            path.pop();
+        }
+        findRootLeafPath(n, []);
+        return paths;
+    }
+
 
     // Translate array of columnGroups and columns into tree structure for colChooser rows
     createChooserData(side) {
         const {gridModel} = this,
             allColumns = gridModel.columns,
-            colIds = gridModel.columnState.map(col => col.colId);
+            colIds = gridModel.columnState.map(col => col.colId),
+            allPaths = {};
+
+        allColumns.forEach(col => {
+            if (col.children) {
+                const paths = this.findRootLeafPaths(col);
+                paths.forEach(path => {
+                    const leaf = path.pop();
+                    allPaths[leaf] = path;
+                });
+            } else {
+                allPaths[col.colId] = null;
+            }
+        });
+
         const processColumns = (cols, path) => {
             const ret = [];
             cols.forEach(col => {
@@ -174,6 +207,7 @@ export class ColChooserModel extends HoistModel {
             });
             return ret;
         };
+
         return processColumns(allColumns, 'root');
     }
 }
