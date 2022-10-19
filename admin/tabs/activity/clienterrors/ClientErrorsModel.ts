@@ -8,7 +8,7 @@ import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {fmtDate} from '@xh/hoist/format';
+import {fmtDate, fmtJson} from '@xh/hoist/format';
 import {action, bindable, observable, makeObservable, comparer} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import * as Col from '@xh/hoist/admin/columns';
@@ -164,7 +164,7 @@ export class ClientErrorsModel extends HoistModel {
         let formattedErrorJson = errorData;
         if (formattedErrorJson) {
             try {
-                formattedErrorJson = JSON.stringify(JSON.parse(errorData), null, 2);
+                formattedErrorJson = fmtJson(errorData);
             } catch (ignored) {}
         }
 

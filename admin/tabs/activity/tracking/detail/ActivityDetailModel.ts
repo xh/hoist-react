@@ -8,6 +8,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {managed, HoistModel, XH, lookup} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {fmtJson} from '@xh/hoist/format';
 import * as Col from '@xh/hoist/admin/columns';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
 
@@ -104,7 +105,7 @@ export class ActivityDetailModel extends HoistModel {
         let formattedTrackData = trackData;
         if (formattedTrackData) {
             try {
-                formattedTrackData = JSON.stringify(JSON.parse(trackData), null, 2);
+                formattedTrackData = fmtJson(trackData);
             } catch (ignored) {}
         }
 

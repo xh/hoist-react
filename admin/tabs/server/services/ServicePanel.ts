@@ -11,12 +11,17 @@ import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
+import {toolbarSeparator} from '@xh/hoist/desktop/cmp/toolbar';
 import {ServiceModel} from './ServiceModel';
+import {getApp} from '@xh/hoist/admin/AppModel';
+
 
 export const servicePanel = hoistCmp.factory({
     model: creates(ServiceModel),
 
     render({model}) {
+        const {readonly} = getApp();
+
         return panel({
             mask: 'onLoad',
             tbar: [
@@ -31,9 +36,10 @@ export const servicePanel = hoistCmp.factory({
                     text: 'Clear Selected',
                     intent: 'danger',
                     onClick: () => model.clearCachesAsync(),
+                    omit: readonly,
                     disabled: model.gridModel.selModel.isEmpty
                 }),
-                '-',
+                toolbarSeparator({omit: readonly}),
                 gridCountLabel({unit: 'service'}),
                 '-',
                 storeFilterField({matchMode: 'any'}),

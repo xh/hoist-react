@@ -8,6 +8,7 @@ import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import * as codemirror from 'codemirror';
 import 'codemirror/mode/javascript/javascript';
+import {fmtJson} from '@xh/hoist/format';
 import {CodeInput, codeInput} from './CodeInput';
 import {jsonlint} from './impl/jsonlint';
 
@@ -20,7 +21,7 @@ export const [JsonInput, jsonInput] = hoistCmp.withFactory({
     render(props, ref) {
         return codeInput({
             linter,
-            formatter,
+            formatter: fmtJson,
             mode: 'application/json',
             ...props,
             ref
@@ -29,7 +30,6 @@ export const [JsonInput, jsonInput] = hoistCmp.withFactory({
 });
 JsonInput.propTypes = CodeInput.propTypes;
 JsonInput.hasLayoutSupport = true;
-
 
 //----------------------
 // Implementation
@@ -52,8 +52,4 @@ function linter(text) {
     } catch (ignored) {}
 
     return errors;
-}
-
-function formatter(text) {
-    return JSON.stringify(JSON.parse(text), undefined, 2);
 }

@@ -9,7 +9,7 @@ import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {isEmpty, isNil, isString} from 'lodash';
-import {isValidElement, ReactNode} from 'react';
+import {isValidElement, ReactNode, MouseEvent} from 'react';
 
 import './ErrorMessage.scss';
 

@@ -15,6 +15,8 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
+import {getApp} from '@xh/hoist/admin/AppModel';
+
 
 export const webSocketPanel = hoistCmp.factory({
 
@@ -22,6 +24,7 @@ export const webSocketPanel = hoistCmp.factory({
 
     render({model}) {
         if (!XH.webSocketService.enabled) return notPresentMessage();
+
         return panel({
             tbar: [
                 button({
@@ -29,6 +32,7 @@ export const webSocketPanel = hoistCmp.factory({
                     icon: Icon.stopCircle(),
                     intent: 'danger',
                     disabled: !model.gridModel.hasSelection,
+                    omit: getApp().readonly,
                     onClick: () => model.forceSuspendOnSelectedAsync()
                 }),
                 filler(),

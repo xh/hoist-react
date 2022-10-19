@@ -16,6 +16,7 @@ export interface HoistUser {
     displayName: string;
     roles: string[];
     isHoistAdmin: boolean;
+    isHoistAdminReader: boolean;
     hasRole(s: string): boolean;
     hasGate(s: string): boolean;
 }
