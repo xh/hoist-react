@@ -52,8 +52,8 @@ export class StoreSelectionModel extends HoistModel {
      * Single selected record, or null if multiple/no records selected.
      *
      * Note that this getter will also change if just the data of selected record is changed
-     * due to store loading or editing.  Applications only interested in the identity
-     * of the selection should use {@see selectedId} instead.
+     * due to store loading or editing.  Applications only interested in the *identity*
+     * of the selection should use {@link selectedId} instead.
      */
     get selectedRecord(): StoreRecord {
         const {selectedRecords} = this;
@@ -64,20 +64,20 @@ export class StoreSelectionModel extends HoistModel {
      * ID of selected record, or null if multiple/no records selected.
      *
      * Note that this getter will *not* change if just the data of selected record is changed
-     * due to store loading or editing.  Applications also interested in the contents of the
-     * of the selection should use the {@see selectedRecord} getter instead.
+     * due to store loading or editing.  Applications also interested in the *contents* of the
+     * selection should use the {@link selectedRecord} getter instead.
      */
     get selectedId(): StoreRecordId {
         const {selectedIds} = this;
         return selectedIds.length === 1 ? selectedIds[0] : null;
     }
 
-    /** True if selection is empty. */
+    /** @returns true if selection is empty. */
     get isEmpty(): boolean {
         return this.count === 0;
     }
 
-    /** Count of currently selected records. */
+    /** @returns count of currently selected records. */
     @computed
     get count(): number {
         return this.selectedRecords.length;
@@ -86,7 +86,7 @@ export class StoreSelectionModel extends HoistModel {
     /**
      * Set the selection.
      * @param records - single record/ID or array of records/IDs to select.
-     * @param [clearSelection] - true to clear previous selection (rather than add to it).
+     * @param clearSelection - true to clear previous selection (rather than add to it).
      */
     @action
     select(records: StoreRecordOrId|StoreRecordOrId[], clearSelection: boolean = true) {

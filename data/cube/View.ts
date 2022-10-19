@@ -18,6 +18,32 @@ import {BucketRow} from './row/BucketRow';
 import {LeafRow} from './row/LeafRow';
 import {BaseRow} from './row/BaseRow';
 
+export interface ViewConfig {
+    /** Query to be used to construct this view. */
+    query: Query;
+
+    /**
+     * Store(s) to be automatically (re)loaded with data from this view. Optional - read the View's
+     * observable `result` property directly to use without a Store.
+     */
+    stores?: Store[]|Store;
+
+    /**
+     * True to reactively update the View's `result` and any connected store(s) when data in the
+     * underlying Cube is changed. False (default) to have this view run its query once to capture
+     * a snapshot without further updates based on Cube changes.
+     */
+    connect?: boolean
+}
+
+export interface DimensionValue {
+    /** Dimension field. */
+    field: CubeField;
+
+    /** Unique non-null values for the dimension */
+    values: Set<any>;
+}
+
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.
  * Applications should create via the {@link Cube.createView} factory.
@@ -55,16 +81,8 @@ export class View extends HoistBase {
     private _recordMap: Map<StoreRecordId, StoreRecord> = null;
     private _aggContext: AggregationContext = null;
 
-    /**
-     * @param config.query - query to be used to construct this view.
-     * @param [config.stores] - Stores to be loaded/reloaded with data from this view.
-     *      Optional - to receive data only, observe/read this class's `result` property instead.
-     * @param [config.connect] - true to reactively update this class's `result` and connected
-     *      store(s) (if any) when data in the underlying Cube is changed.
-     *
-     * @internal - applications should use `Cube.createView()`.
-     */
-    constructor(config: {query: Query, stores?: Store[]|Store, connect?: boolean}) {
+    /** @internal - applications should use {@link Cube.createView} */
+    constructor(config: ViewConfig) {
         super();
         makeObservable(this);
 
@@ -105,9 +123,9 @@ export class View extends HoistBase {
     /**
      * Change the query in some way, re-computing the data in this View to reflect the new query.
      *
-     * @param overrides - changes to be applied to the query. May include any arguments to
-     *      the query constructor with the exception of `cube`, which cannot be changed on a view
-     *      once set via the initial query.
+     * @param overrides - changes to be applied to the query. May include any arguments to the query
+     *      constructor with the exception of `cube`, which cannot be changed on a view once set
+     *      via the initial query.
      */
     @action
     updateQuery(overrides) {
@@ -407,12 +425,4 @@ export class View extends HoistBase {
         this.disconnect();
         super.destroy();
     }
-}
-
-export interface DimensionValue {
-    /** Dimension field. */
-    field: CubeField;
-
-    /** Unique non-null values for the dimension */
-    values: Set<any>;
 }

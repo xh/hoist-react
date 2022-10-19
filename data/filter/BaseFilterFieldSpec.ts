@@ -15,8 +15,6 @@ import {FieldFilterOperator} from './Types';
  *
  * @see FilterChooserFieldSpec
  * @see GridFilterFieldSpec
- *
- * @abstract
  */
 export abstract class BaseFilterFieldSpec extends HoistBase {
 
@@ -85,12 +83,12 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
     /**
      * Determines operations supported by this field.
      *
-     * Type 'range' indicates the field should use mathematical / logical operations
-     * ('>', '>=', '<', '<=', '=', '!=').
+     * Type 'range' indicates the field should use mathematical / logical operations:
+     * `(>, >=, <, <=, =, !=)`.
      *
-     * Type 'value' indicates the field should use equality operators
-     * ('=', '!=', 'like', 'not like', 'begins', 'ends') against a suggested exact value or
-     * user-provided input.
+     * Type 'value' indicates the field should use equality operators:
+     * `(=, !=, like, not like, begins, ends)`
+     * against a suggested exact value or user-provided input.
      */
     get filterType(): 'range'|'value'|'collection' {
         switch (this.fieldType) {
