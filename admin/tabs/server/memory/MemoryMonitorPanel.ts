@@ -38,7 +38,7 @@ export const memoryMonitorPanel = hoistCmp.factory({
             items: [
                 grid(),
                 panel({
-                    model: {
+                    modelConfig: {
                         side: 'bottom',
                         defaultSize: 400
                     },

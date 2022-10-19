@@ -13,8 +13,8 @@ import {PanelModel} from '../../PanelModel';
 export class DraggerModel extends HoistModel {
     xhImpl = true;
 
-    /** @member {PanelModel} */
-    @lookup(PanelModel) panelModel;
+    @lookup(PanelModel)
+    panelModel: PanelModel;
 
     ref = createObservableRef();
 
@@ -25,8 +25,9 @@ export class DraggerModel extends HoistModel {
     panelParent = null;
     dragBar = null;
     maxSize = null;
+    throttledSetSize;
 
-    onLinked() {
+    override onLinked() {
         this.throttledSetSize = throttle(size => this.panelModel.setSize(size), 50);
 
         // Add listeners to el to ensure we can get non-passive handlers than can preventDefault()
@@ -39,7 +40,7 @@ export class DraggerModel extends HoistModel {
         });
     }
 
-    addListeners(el) {
+    private addListeners(el) {
         if (XH.isDesktop) {
             el.addEventListener('dragstart', this.onDragStart);
             el.addEventListener('drag', this.onDrag);
@@ -51,7 +52,7 @@ export class DraggerModel extends HoistModel {
         }
     }
 
-    onDragStart = (e) => {
+    private onDragStart = (e) => {
         const dragger = e.target;
         this.panelEl = dragger.parentElement;
         const {panelEl: panel, panelModel} = this;
@@ -72,7 +73,7 @@ export class DraggerModel extends HoistModel {
         panelModel.setIsResizing(true);
 
         if (!panelModel.resizeWhileDragging) {
-            this.dragBar = this.getDraggableSplitter(dragger);
+            this.dragBar = this.getDraggableSplitter();
             this.panelParent.appendChild(this.dragBar);
             this.diff = 0;
         }
@@ -82,7 +83,7 @@ export class DraggerModel extends HoistModel {
         this.maxSize = panelModel.maxSize ? Math.min(panelModel.maxSize, calcMaxSize) : calcMaxSize;
     };
 
-    onDrag = (e) => {
+    private onDrag = (e) => {
         if (!this.resizeState) return;
 
         e.preventDefault();
@@ -116,7 +117,7 @@ export class DraggerModel extends HoistModel {
         }
     };
 
-    onDragEnd = () => {
+    private onDragEnd = () => {
         if (XH.isDesktop) this.setIframePointerEvents('auto');
 
         const {panelModel} = this;
@@ -125,7 +126,7 @@ export class DraggerModel extends HoistModel {
         panelModel.setIsResizing(false);
 
         if (!panelModel.resizeWhileDragging) {
-            this.updateSize();
+            this.updateSize(false);
             this.panelParent.removeChild(this.dragBar);
         }
 
@@ -138,7 +139,7 @@ export class DraggerModel extends HoistModel {
         this.dragBar = null;
     };
 
-    updateSize(throttle) {
+    private updateSize(throttle: boolean) {
         const {minSize} = this.panelModel,
             {startSize} = this;
 
@@ -152,7 +153,7 @@ export class DraggerModel extends HoistModel {
         }
     }
 
-    getDraggableSplitter() {
+    private getDraggableSplitter() {
         // clone .xh-resizable-splitter to get its styling
         const splitter = this.panelEl.querySelector('.xh-resizable-splitter'),
             ret = splitter.cloneNode();
@@ -164,7 +165,7 @@ export class DraggerModel extends HoistModel {
         return ret;
     }
 
-    moveDragBar() {
+    private moveDragBar() {
         const {diff, dragBar, maxSize, panelModel, panelEl: panel, startSize} = this,
             {side, minSize} = panelModel;
 
@@ -197,7 +198,7 @@ export class DraggerModel extends HoistModel {
         }
     }
 
-    getSiblingAvailSize() {
+    private getSiblingAvailSize() {
         const {panelModel, panelEl} = this,
             sib = panelModel.contentFirst ? panelEl.nextElementSibling : panelEl.previousElementSibling,
             sibIsResizable = sib.classList.contains('xh-resizable'),
@@ -210,25 +211,25 @@ export class DraggerModel extends HoistModel {
             sib.clientWidth - (sibIsResizable ? sibSplitter.offsetWidth : 0);
     }
 
-    parseEventPositions(e) {
+    private parseEventPositions(e) {
         const {screenX, screenY, clientX, clientY} = this.isValidTouchEvent(e) ? e.touches[0] : e;
         return {screenX, screenY, clientX, clientY};
     }
 
-    isValidMouseEvent(e) {
+    private isValidMouseEvent(e) {
         return e.buttons && e.buttons !== 0;
     }
 
-    isValidTouchEvent(e) {
+    private isValidTouchEvent(e) {
         return e.touches && e.touches.length > 0;
     }
 
     /**
-     * @param {('none'|'auto')} v - Workaround to allow dragging over iframe, which is its own
+     * @param v - Workaround to allow dragging over iframe, which is its own
      *  separate document and cannot listen for events from main document.
      */
-    setIframePointerEvents(v) {
-        for (const el of document.getElementsByTagName('iframe')) {
+    setIframePointerEvents(v: 'none'|'auto') {
+        for (const el of document.getElementsByTagName('iframe') as any) {
             el.style['pointer-events'] = v;
         }
     }

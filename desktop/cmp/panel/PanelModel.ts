@@ -9,18 +9,89 @@ import {
     managed,
     ManagedRefreshContextModel,
     PersistenceProvider,
-    PrefProvider,
+    PersistOptions,
+    PrefProvider, RefreshContextModel,
     RefreshMode,
     RenderMode,
     XH
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable, comparer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 import {createRef} from 'react';
-import {ModalSupportModel} from '../modalsupport/ModalSupportModel';
+import {ModalSupportModel, ModalSupportOptions} from '../modalsupport/';
+
+export interface PanelConfig {
+
+    /** Can panel be resized? */
+    resizable?: boolean;
+
+    /** Redraw panel as resize happens? */
+    resizeWhileDragging?: boolean;
+
+    /** Can panel be collapsed, showing only its header? */
+    collapsible?: boolean;
+
+    /** Default size (in px) of the panel. */
+    defaultSize?: number;
+
+    /** Minimum size (in px) to which the panel can be resized. */
+    minSize?: number;
+
+    /** Maximum size (in px) to which the panel can be resized. */
+    maxSize?: number;
+
+    /** Default collapsed state. */
+    defaultCollapsed?: boolean;
+
+    /**
+     * Side towards which the panel collapses or shrinks. This relates
+     * to the position within a parent vbox or hbox in which the panel should be placed.
+     */
+    side?: 'top'|'bottom'|'left'|'right';
+
+    /**
+     * Set to true to enable built-in support for showing panel contents in a modal, or provide a
+     * config to further configure.
+     */
+    modalSupport?: boolean | ModalSupportOptions;
+
+    /** How should collapsed content be rendered? Ignored if collapsible is false. */
+    renderMode?: RenderMode;
+
+    /** How should collapsed content be refreshed? Ignored if collapsible is false. */
+    refreshMode?: RefreshMode;
+
+    /** Options governing persistence. */
+    persistWith?: PersistOptions
+
+    /** Should a splitter be rendered at the panel edge? */
+    showSplitter?: boolean;
+
+    /**
+     * Should the collapse button be visible on the splitter? Only applicable if the splitter
+     * is visible and the panel is collapsible.
+     */
+    showSplitterCollapseButton?: boolean;
+
+    /**
+     * Should a collapse button be added to the end of the panel header? Only applicable if the
+     * panel is collapsible.
+     */
+    showHeaderCollapseButton?: boolean;
+
+    /**
+     * Should a modal toggle button be added to the end of the panel header? Only applicable if
+     * the panel has modal support.
+     */
+    showModalToggleButton?: boolean;
+
+    /** @internal */
+    xhImpl?;
+}
+
 
 /**
  * PanelModel supports configuration and state-management for user-driven Panel resizing and
@@ -31,47 +102,51 @@ export class PanelModel extends HoistModel {
     //-----------------------
     // Immutable Properties
     //-----------------------
-    resizable;
-    resizeWhileDragging;
-    collapsible;
-    defaultSize;
-    minSize;
-    maxSize;
-    defaultCollapsed;
-    side;
-    renderMode;
-    refreshMode;
-    showSplitter;
-    showSplitterCollapseButton;
-    showHeaderCollapseButton;
-    showModalToggleButton;
+    readonly resizable: boolean;
+    resizeWhileDragging: boolean;
+    readonly collapsible: boolean;
+    readonly defaultSize: number;
+    readonly minSize: number;
+    readonly maxSize: number;
+    readonly defaultCollapsed: boolean;
+    readonly side: 'top'|'bottom'|'left'|'right';
+    readonly renderMode: RenderMode;
+    readonly refreshMode: RefreshMode;
+    readonly showSplitter: boolean;
+    readonly showSplitterCollapseButton: boolean;
+    readonly showHeaderCollapseButton: boolean;
+    readonly showModalToggleButton: boolean;
 
-    @managed refreshContextModel;
-    @managed provider;
+    @managed modalSupportModel: ModalSupportModel;
+    @managed refreshContextModel: RefreshContextModel;
+    @managed provider: PersistenceProvider;
 
 
     //---------------------
     // Observable State
     //---------------------
     /** Is the Panel rendering in a collapsed state? */
-    @observable collapsed = false;
+    @observable
+    collapsed: boolean = false;
 
     /** Size in pixels along sizing dimension.  Used when object is *not* collapsed. */
-    @observable size = null;
+    @observable
+    size: number = null;
 
     /** Is this panel currently resizing? */
-    @observable isResizing = false;
+    @observable
+    isResizing: boolean = false;
 
     /** Is the panel rendering in its modal view state? Observable property. */
-    get isModal() {
+    get isModal(): boolean {
         return !!this.modalSupportModel?.isModal;
     }
 
-    get hasModalSupport() {
+    get hasModalSupport(): boolean {
         return !!this.modalSupportModel;
     }
 
-    get isActive() {
+    get isActive(): boolean {
         return !this.collapsed;
     }
 
@@ -79,34 +154,7 @@ export class PanelModel extends HoistModel {
     // Implementation
     //-----------------
     _resizeRef;
-    @managed modalSupportModel;
 
-    /**
-     * @param {Object} c - PanelModel configuration
-     * @param {boolean} [c.resizable] - Can panel be resized?
-     * @param {boolean} [c.resizeWhileDragging] - Redraw panel as resize happens?
-     * @param {boolean} [c.collapsible] - Can panel be collapsed, showing only its header?
-     * @param {number} [c.defaultSize] - Default size (in px) of the panel.
-     * @param {number} [c.minSize] - Minimum size (in px) to which the panel can be resized.
-     * @param {?number} [c.maxSize] - Maximum size (in px) to which the panel can be resized.
-     * @param {boolean} [c.defaultCollapsed] - Default collapsed state.
-     * @param {string} [c.side] - Side towards which the panel collapses or shrinks. This relates
-     *      to the position within a parent vbox or hbox in which the panel should be placed.
-     * @param {boolean|ModalSupportOptions|Object} [c.modalSupport] - set to true to enable built-in
-     *      support for showing panel contents in a modal, or provide a config to further configure.
-     * @param {RenderMode} [c.renderMode] - How should collapsed content be rendered?
-     *      Ignored if collapsible is false.
-     * @param {RefreshMode} [c.refreshMode] - How should collapsed content be refreshed?
-     *      Ignored if collapsible is false.
-     * @param {PersistOptions} [c.persistWith] - options governing persistence.
-     * @param {boolean} [c.showSplitter] - Should a splitter be rendered at the panel edge?
-     * @param {boolean} [c.showSplitterCollapseButton] - Should the collapse button be visible
-     *      on the splitter? Only applicable if the splitter is visible and the panel is collapsible.
-     * @param {boolean} [c.showHeaderCollapseButton] - Should a collapse button be added to the
-     *      end of the panel header? Only applicable if the panel is collapsible.
-     * @param {boolean} [c.showModalToggleButton] - Should a modal toggle button be added to the
-     *      end of the panel header? Only applicable if the panel has modal support.
-     */
     constructor({
         collapsible = true,
         resizable = true,
@@ -117,15 +165,15 @@ export class PanelModel extends HoistModel {
         defaultCollapsed = false,
         side,
         modalSupport = false,
-        renderMode = RenderMode.LAZY,
-        refreshMode = RefreshMode.ON_SHOW_LAZY,
+        renderMode = 'lazy',
+        refreshMode = 'onShowLazy',
         persistWith = null,
         showSplitter = resizable || collapsible,
         showSplitterCollapseButton = showSplitter && collapsible,
         showHeaderCollapseButton = true,
         showModalToggleButton = true,
         xhImpl = false
-    }) {
+    }: PanelConfig) {
         super();
         makeObservable(this);
         this.xhImpl = xhImpl;
@@ -193,9 +241,9 @@ export class PanelModel extends HoistModel {
         // Attach to provider last
         if (this.provider) {
             this.addReaction({
-                equals: 'shallow',
+                equals: comparer.shallow,
                 track: () => {
-                    const state = {};
+                    const state: any = {};
                     if (collapsible) state.collapsed = this.collapsed;
                     if (resizable) state.size = this.size;
                     return state;
@@ -209,7 +257,7 @@ export class PanelModel extends HoistModel {
     // Actions + public setters
     //----------------------
     @action
-    setCollapsed(collapsed) {
+    setCollapsed(collapsed: boolean) {
         throwIf(collapsed  && !this.collapsible, 'Panel does not support collapsing.');
 
         // When opening we never want to shrink -- in that degenerate case restore default size.
@@ -231,7 +279,7 @@ export class PanelModel extends HoistModel {
         this.setCollapsed(!this.collapsed);
     }
 
-    setIsModal(isModal) {
+    setIsModal(isModal: boolean) {
         throwIf(!this.hasModalSupport, 'ModalSupport not enabled for this panel.');
         this.modalSupportModel.setIsModal(isModal);
     }
@@ -241,40 +289,39 @@ export class PanelModel extends HoistModel {
     }
 
     @action
-    setSize(v) {
+    setSize(v: number) {
         this.size = v;
     }
 
     @action
-    setIsResizing(v) {
+    setIsResizing(v: boolean) {
         this.isResizing = v;
         if (!v) this.dispatchResize();
     }
 
     /**
      * Enable/disable dynamic re-rendering of contents while dragging to resize.
-     * @param {boolean} v
      */
-    setResizeWhileDragging(v) {
+    setResizeWhileDragging(v: boolean) {
         this.resizeWhileDragging = v;
     }
 
     //---------------------------------------------
     // Implementation (for related private classes)
     //---------------------------------------------
-    get vertical() {
+    get vertical(): boolean {
         return this.side === 'top' || this.side === 'bottom';
     }
 
     // Does the Panel come before the resizing affordances?
-    get contentFirst() {
+    get contentFirst(): boolean {
         return this.side === 'top' || this.side === 'left';
     }
 
     //---------------------------------------------
     // Implementation (internal)
     //---------------------------------------------
-    legacyState() {
+    private legacyState() {
         const {provider} = this;
         if (provider instanceof PrefProvider) {
             try {
@@ -292,14 +339,8 @@ export class PanelModel extends HoistModel {
         return null;
     }
 
-    dispatchResize() {
+    private dispatchResize() {
         // Forces other components to redraw if required.
         wait().then(() => window.dispatchEvent(new Event('resize')));
     }
-
-    destroy() {
-        this.hostNode?.remove();
-        super.destroy();
-    }
-
 }

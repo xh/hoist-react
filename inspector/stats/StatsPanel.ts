@@ -22,7 +22,7 @@ export const statsPanel = hoistCmp.factory({
                 grid(),
                 panel({
                     item: chart(),
-                    model: {
+                    modelConfig: {
                         side: 'bottom',
                         defaultSize: 200,
                         xhImpl: true
