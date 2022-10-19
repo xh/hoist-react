@@ -19,6 +19,8 @@ export class AppModel extends HoistAppModel {
     @managed
     tabModel;
 
+    get readonly() {return !XH.getUser().isHoistAdmin}
+
     constructor() {
         super();
 

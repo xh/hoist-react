@@ -101,7 +101,7 @@ function buildMenuItems({
     extraItems = []
 }) {
     hideAboutItem = hideAboutItem || !XH.acm.hasAboutDialog();
-    hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdmin;
+    hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdminReader;
     hideChangelogItem = hideChangelogItem || !XH.changelogService.enabled;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
     hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);

@@ -4,13 +4,13 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import {XH, hoistCmp} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {deleteAction, restGrid} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
 
 export const feedbackPanel = hoistCmp.factory(
-    () => restGrid({model: modelSpec})
+    () => restGrid({model: {...modelSpec, readonly: XH.appModel.readonly}})
 );
 
 const modelSpec = {

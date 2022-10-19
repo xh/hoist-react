@@ -22,6 +22,7 @@ export const webSocketPanel = hoistCmp.factory({
 
     render({model}) {
         if (!XH.webSocketService.enabled) return notPresentMessage();
+
         return panel({
             tbar: [
                 button({
@@ -29,6 +30,7 @@ export const webSocketPanel = hoistCmp.factory({
                     icon: Icon.stopCircle(),
                     intent: 'danger',
                     disabled: !model.gridModel.hasSelection,
+                    omit: XH.appModel.readonly,
                     onClick: () => model.forceSuspendOnSelectedAsync()
                 }),
                 filler(),

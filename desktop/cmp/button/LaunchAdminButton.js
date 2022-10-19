@@ -18,7 +18,7 @@ export const [LaunchAdminButton, launchAdminButton] = hoistCmp.withFactory({
     model: false,
 
     render(props, ref) {
-        if (!XH.getUser().isHoistAdmin) return null;
+        if (!XH.getUser().isHoistAdminReader) return null;
         return button({
             ref,
             icon: Icon.wrench(),

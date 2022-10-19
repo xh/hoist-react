@@ -17,6 +17,7 @@ export class AlertBannerModel extends HoistModel {
 
     @managed
     formModel = new FormModel({
+        readonly: XH.appModel.readonly,
         fields: [
             {name: 'active'},
             {

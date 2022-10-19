@@ -6,7 +6,7 @@
  */
 import {filler, hbox, label} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
-import {hoistCmp} from '@xh/hoist/core';
+import {XH, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -24,6 +24,7 @@ export const monitorResultsToolbar = hoistCmp.factory(
                 icon: Icon.refresh(),
                 text: 'Run all now',
                 disabled: isEmpty(results),
+                omit: XH.appModel.readonly,
                 onClick: () => model.forceRunAllMonitorsAsync()
             }),
             hbox({
