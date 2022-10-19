@@ -108,7 +108,7 @@ const bbar = hoistCmp.factory(
                 selModel: model.gridModel.selModel,
                 buttonProps: {intent: 'primary'}
             }),
-            toolbarSep(),
+            toolbarSep({omit: model.readonly}),
             button({
                 text: 'Close',
                 onClick: () => model.parentModel.closeDiffer()

@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {filler, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
@@ -30,7 +30,7 @@ export const differDetail = hoistCmp.factory({
             onClose: () => model.close(),
             item: panel({
                 item: diffTable(),
-                bbar: [
+                bbar: XH.appModel.readonly ? [] : [
                     filler(),
                     button({
                         text: 'Cancel',

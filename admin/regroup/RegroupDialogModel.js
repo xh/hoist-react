@@ -20,7 +20,8 @@ export class RegroupDialogModel extends HoistModel {
         text: 'Change Group',
         icon: Icon.grip(),
         recordsRequired: true,
-        actionFn: () => this.open()
+        actionFn: () => this.open(),
+        displayFn: () => ({hidden: this._parent.gridModel.readonly})
     };
 
     get options() {

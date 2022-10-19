@@ -41,6 +41,7 @@ export class PreferenceModel extends HoistModel {
             hidden = true;
 
         this.gridModel = new RestGridModel({
+            readonly: XH.appModel.readonly,
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,
