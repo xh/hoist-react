@@ -12,7 +12,7 @@ import {monitorResultsPanel} from './MonitorResultsPanel';
 
 export const monitorTab = hoistCmp.factory(() => {
     return tabContainer({
-        model: {
+        modelConfig: {
             route: 'default.monitor',
             switcher: {orientation: 'left'},
             tabs: [

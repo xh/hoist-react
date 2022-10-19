@@ -6,6 +6,6 @@ import {apiDeprecated} from '../utils/js';
 //--------------------------------------------------------------------
 export const App = AppComponent;
 apiDeprecated(
-    'The of @xh/hoist/admin/App has been deprecated.  Use @xh/hoist/admin/AppComponent instead.',
-    {v: 'v55'}
+    '@xh/hoist/admin/App',
+    {v: 'v55', msg: 'Use @xh/hoist/admin/AppComponent instead.'}
 );

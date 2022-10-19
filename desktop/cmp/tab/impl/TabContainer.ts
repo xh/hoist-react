@@ -10,12 +10,13 @@ import {isEmpty} from 'lodash';
 import '../Tabs.scss';
 import {tabSwitcher} from '../TabSwitcher';
 import {tab} from './Tab';
+import {TabContainerModel, TabContainerProps} from '@xh/hoist/cmp/tab';
 
 /**
  * Desktop implementation of TabContainer.
- * @private
+ * @internal
  */
-export function tabContainerImpl({model, className, ...props}) {
+export function tabContainerImpl({model, className, ...props}: TabContainerProps) {
     const layoutProps = getLayoutProps(props),
         vertical = ['left', 'right'].includes(model.switcher?.orientation),
         container = vertical ? hbox : vbox;
@@ -32,7 +33,7 @@ export function tabContainerImpl({model, className, ...props}) {
     });
 }
 
-function getChildren(model) {
+function getChildren(model: TabContainerModel) {
     const {tabs, activeTabId, switcher} = model,
         switcherBefore = ['left', 'top'].includes(switcher?.orientation),
         switcherAfter = ['right', 'bottom'].includes(switcher?.orientation);

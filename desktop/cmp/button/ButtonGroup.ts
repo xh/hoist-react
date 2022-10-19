@@ -8,7 +8,7 @@ import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import type * as CSS from 'csstype';
+import {CSSProperties} from 'react';
 
 export interface ButtonGroupProps extends HoistProps {
     /** True to have all buttons fill available width equally. */
@@ -18,7 +18,7 @@ export interface ButtonGroupProps extends HoistProps {
     minimal?: boolean,
 
     /** Style block. */
-    style?: CSS.Properties,
+    style?: CSSProperties,
 
     /** True to render in a vertical orientation. */
     vertical?: boolean,
