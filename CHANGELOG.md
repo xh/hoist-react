@@ -1,6 +1,6 @@
 # Changelog
 
-## v53.0.0 - SNAPSHOT
+## v53.0.0 - 2022-10-19
 
 ### 🎁 New Features
 
@@ -11,7 +11,7 @@
 * The `HOIST_ADMIN_READER` role can be assigned to users in the `roles` soft-config.
 
 ### 💥 Breaking Changes
-* Upgrading to Hoist-React v53+ requires an upgrade of Hoist-Core to v15+
+* Upgrading to Hoist-React v53+ requires an upgrade of Hoist-Core to v14.4.0+
   to take advantage of the new `HOIST_ADMIN_READER` role.
 
 ## v52.0.2 - 2022-10-13
