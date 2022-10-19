@@ -338,7 +338,7 @@ function lookupModel(spec, props, modelLookup, displayName) {
             return {model: new selector(model), isLinked: true, fromContext: false};
         }
         if (isPlainObject(modelConfig)) {  // 1b) new location
-            return {model: new selector(model), isLinked: true, fromContext: false};
+            return {model: new selector(modelConfig), isLinked: true, fromContext: false};
         }
     }
 
