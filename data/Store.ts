@@ -50,17 +50,17 @@ export interface StoreConfig {
      * on the fly. NOTE that in this case, grids and other components bound to this store will not
      * be able to maintain record state across reloads.
      */
-    idSpec?: string | ((data: RawData) => StoreRecordId);
+    idSpec?: StoreRecordIdSpec;
 
     /**
      * Initial data to load in to the Store.
      */
-    data?: RawData[]
+    data?: RawData[];
 
     /**
-     * Function to run on each individual data object
-     * presented to loadData() prior to creating a StoreRecord from that object. This function
-     * must return an object, cloning the original object if edits are necessary.
+     * Function to run on each individual data object presented to `loadData()` prior to creating
+     * a `StoreRecord` from that object. This function must return an object, cloning the original
+     * object if edits are necessary.
      */
     processRawData?: (data: RawData) => RawData;
 
@@ -94,7 +94,7 @@ export interface StoreConfig {
 
     /**
      * Set to true to indicate that the id for a record implies a fixed position of the record
-     * within the any tree hierarchy.  May be set to true to maximize performance (default false).
+     * within the tree hierarchy.  May be set to true to maximize performance (default false).
      */
     idEncodesTreePath?: boolean;
 
@@ -120,7 +120,6 @@ export interface StoreConfig {
  * transaction.
  */
 export interface StoreTransaction {
-
     /**
      * List of raw data objects representing records to be updated.
      * Updates must be matched to existing records by id in order to be applied. The form of the
@@ -146,7 +145,6 @@ export interface StoreTransaction {
 }
 
 export interface ChildRawData {
-
     /** ID of the pre-existing parent record. */
     parentId: string;
 
@@ -157,6 +155,7 @@ export interface ChildRawData {
     rawData: RawData[];
 }
 
+export type StoreRecordIdSpec = string | ((data: RawData) => StoreRecordId)
 
 /**
  * A managed and observable set of local, in-memory Records.
@@ -215,7 +214,6 @@ export class Store extends HoistBase {
     private _created = Date.now();
     private _fieldMap: Map<string, Field>;
     experimental: any;
-
 
     constructor({
         fields,

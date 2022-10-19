@@ -26,7 +26,7 @@ export class Rule {
 /**
  * Function to validate a value.
  *
- * @param fieldState
+ * @param fieldState - context w/value for the constraint's target Field.
  * @param allValues - current values for all fields in form, keyed by field name.
  * @returns String or array of strings describing errors, or null or undefined if rule passes successfully.
  */

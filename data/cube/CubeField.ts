@@ -23,6 +23,39 @@ import {
 } from '@xh/hoist/data';
 import {isString} from 'lodash';
 
+export interface CubeFieldConfig extends FieldConfig {
+
+    /** True to allow this field to be used for grouping.*/
+    isDimension?: boolean;
+
+    /**
+     * Instance of a Hoist Cube Aggregator (from the aggregate package), or string alias for the
+     * same (e.g. 'MAX').
+     */
+    aggregator?: Aggregator|'AVG'|'AVG_STRICT'|'CHILD_COUNT'|'LEAF_COUNT'|'MAX'|'MIN'|'NULL'|'SINGLE'|'SUM'|'SUM_STRICT'|'UNIQUE';
+
+    /** Function to determine if aggregation should be performed at a given level of a query result. */
+    canAggregateFn?: CanAggregateFn;
+
+    /** True if any further groupings below this dimension would be derivative (have only one member). */
+    isLeafDimension?: boolean;
+
+    /**
+     * Name of field that is a 'parent' dimension of this dimension. This marks this dimension as a
+     * sub-dimension of the parent dimension (e.g. 'asset group' and 'asset'). This allows the view
+     * to skip creating derivative nodes when a parent node has a single identical child node.
+     */
+    parentDimension?: string;
+}
+
+/**
+ * @param dimension - dimension of aggregation
+ * @param value - value of record on dimension
+ * @param appliedDims - *all* applied dimension values for this record
+ */
+export type CanAggregateFn = (dimension: string, value: any, appliedDims: Record<string, any>) => boolean;
+
+
 /**
  * Metadata used to define a measure or dimension in Cube. For properties present on raw data source
  * objects to be included in a Cube, the Cube must be configured with a matching Field that tells
@@ -91,34 +124,3 @@ export class CubeField extends Field {
         return null;
     }
 }
-
-export interface CubeFieldConfig extends FieldConfig {
-
-    /** True to allow this field to be used for grouping.*/
-    isDimension?: boolean
-
-    /** Instance of a Hoist Cube Aggregator (from the aggregate package), or string alias for the same (e.g. 'MAX'). */
-    aggregator?: Aggregator|'AVG'|'AVG_STRICT'|'CHILD_COUNT'|'LEAF_COUNT'|'MAX'|'MIN'|'NULL'|'SINGLE'|'SUM'|'SUM_STRICT'|'UNIQUE';
-
-    /** Function to determine if aggregation should be performed at any given level of a query result. */
-    canAggregateFn?: CanAggregateFn;
-
-    /** True if any further groupings below this dimension would be derivative (have only one member). */
-    isLeafDimension?: boolean;
-
-    /**
-     * Name of field that is a 'parent' dimension of this
-     * dimension. This marks this dimension as a sub-dimension of the parent dimension
-     * (e.g. 'asset group' and 'asset').  This will allow the Cube view to skip creating
-     * derivative nodes when a parent node has a single identical child node.
-     */
-    parentDimension?: string;
-}
-
-/**
- * @callback CanAggregateFn
- * @param dimension - dimension of aggregation
- * @param value - value of record on dimension
- * @param appliedDims - *all* applied dimension values for this record
- */
-export type CanAggregateFn = (dimension: string, value: any, appliedDims: Record<string, any>) => boolean;

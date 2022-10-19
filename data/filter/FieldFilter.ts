@@ -26,7 +26,7 @@ import {FieldFilterOperator, FieldFilterSpec, FilterTestFn} from './Types';
  * Filters by comparing the value of a given field to one or more given candidate values using one
  * of several supported operators.
  *
- * Note that the comparison operators [<,<=,>,>=] always return false for null and undefined values,
+ * Note that the comparison operators `[<,<=,>,>=]` always return false for null and undefined values,
  * favoring the behavior of Excel over Javascript's implicit conversion of nullish values to 0.
  *
  * Immutable.
@@ -43,7 +43,8 @@ export class FieldFilter extends Filter {
     static ARRAY_OPERATORS = ['=', '!=', 'like', 'not like', 'begins', 'ends', 'includes', 'excludes'];
 
     /**
-     * Constructor - not typically called by apps - create from config via `parseFilter()` instead.
+     * Constructor - not typically called by apps - create via {@link parseFilter} instead.
+     * @internal
      */
     constructor({field, op, value}: FieldFilterSpec) {
         super();

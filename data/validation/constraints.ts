@@ -54,11 +54,11 @@ export function lengthIs(c: {min?: number, max?: number}): Constraint<string> {
 /**
  * Validate a number.
  *
- * @param [c.min] - minimum value (value must be gte)
- * @param [c.max] - maximum value (value must be lte)
- * @param [c.gt] - greater than
- * @param [c.lt] - less than
- * @param [c.notZero] - true to disallow 0.
+ * @param c.min - minimum value (value must be gte)
+ * @param c.max - maximum value (value must be lte)
+ * @param c.gt - greater than
+ * @param c.lt - less than
+ * @param c.notZero - true to disallow 0.
  */
 export function numberIs(
     c: {min?: number, max?: number, gt?: number, lt?: number, notZero?: boolean}
@@ -78,11 +78,11 @@ export function numberIs(
 /**
  * Validate a date or LocalDate against allowed min/max boundaries.
  *
- * @param [c.min] - earliest allowed value for the date to be checked.
+ * @param c.min - earliest allowed value for the date to be checked.
  *      Supports strings 'now' (instant rule is run) and 'today' (any time on the current day).
- * @param [c.max] - latest allowed value for the date to be checked.
+ * @param c.max - latest allowed value for the date to be checked.
  *      Supports strings 'now' (instant rule is run) and 'today' (any time on the current day).
- * @param [c.fmt] - custom date format to be used in validation message.
+ * @param c.fmt - custom date format to be used in validation message.
  */
 export function dateIs(c: {
     min?: Date|LocalDate|'now'|'today',
@@ -159,7 +159,6 @@ export function constrainAll<T>(constraint: Constraint<T>): Constraint<T[]> {
 
 /**
 * Validate that a value does not contain specific strings or characters.
-*
 * @param excludeVals - one or more strings to exclude
 */
 export function stringExcludes(...excludeVals: string[]): Constraint<string> {
@@ -170,9 +169,7 @@ export function stringExcludes(...excludeVals: string[]): Constraint<string> {
     };
 }
 
-/**
- * Validate that a value is JSON
- */
+/** Validate that a value is JSON. */
 export const isValidJson: Constraint = ({value, displayName}) => {
     try {
         JSON.parse(value);
