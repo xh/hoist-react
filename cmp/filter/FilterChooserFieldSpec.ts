@@ -4,8 +4,9 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {BaseFilterFieldSpec} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
-import {FieldType, parseFieldValue} from '@xh/hoist/data';
+import {BaseFilterFieldSpec, BaseFilterFieldSpecConfig} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
+import {FieldFilterOperator} from '@xh/hoist/data/filter/Types';
+import {FieldType, parseFieldValue, View} from '@xh/hoist/data';
 import {fmtDate, parseNumber} from '@xh/hoist/format';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
@@ -14,40 +15,42 @@ import {renderToStaticMarkup} from 'react-dom/server';
 
 const {INT, NUMBER} = FieldType;
 
+export interface FilterChooserFieldSpecConfig extends BaseFilterFieldSpecConfig {
+    /**
+     * Function to produce a suitably formatted string for display to the user
+     * for any given field value.
+     */
+    valueRenderer?: FilterChooserValueRendererCb,
+    /**
+     * Function to parse user's input from a FilterChooser control into a typed data value for
+     * use in filtering comparisons.
+     */
+    valueParser?: FilterChooserValueParserCb,
+    /** Sample / representative value displayed by `FilterChooser` components to aid usability. */
+    example?: string,
+}
+
 /**
  * Filter field specification class for the typeahead `FilterChooser` component. Manages additional
  * configuration related to data values available for suggestion.
  *
  * Apps should NOT instantiate this class directly. Instead {@see FilterChooserModel.fieldSpecs}
  * for the relevant config to set these options.
+ *
+ * @internal
  */
 export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
 
-    /** @member {FilterChooserValueRendererCb} */
-    valueRenderer;
+    valueRenderer: FilterChooserValueRendererCb;
+    valueParser: FilterChooserValueParserCb;
+    example: string;
 
-    /** @member {FilterChooserValueParserCb} */
-    valueParser;
-
-    /** @member {string} */
-    example;
-
-    /**
-     * @param {Object} c - FilterChooserFieldSpec configuration.
-     * @param {FilterChooserValueRendererCb} [c.valueRenderer] - function to produce a suitably
-     *      formatted string for display to the user for any given field value.
-     * @param {FilterChooserValueParserCb} [c.valueParser] - function to parse user's input from a
-     *      filter chooser control into a typed data value for use in filtering comparisons.
-     * @param {string} [c.example] - sample / representative value displayed by `FilterChooser`
-     *      components to aid usability
-     * @param {*} [c...rest] - arguments for BaseFilterFieldSpec.
-     */
     constructor({
         valueRenderer,
         valueParser,
         example,
         ...rest
-    }) {
+    }: FilterChooserFieldSpecConfig) {
         super(rest);
 
         this.valueRenderer = valueRenderer;
@@ -77,7 +80,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         );
     }
 
-    renderValue(value, op) {
+    renderValue(value: any, op: FieldFilterOperator) {
         let ret;
         if (isFunction(this.valueRenderer)) {
             ret = this.valueRenderer(value, op);
@@ -93,7 +96,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         return stripTags(ret);
     }
 
-    parseValue(value, op) {
+    parseValue(value: any, op: FieldFilterOperator) {
         try {
             if (isFunction(this.valueParser)) {
                 return this.valueParser(value, op);
@@ -113,7 +116,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         if (example) return example;
         if (this.isBoolFieldType) return 'true | false';
         if (this.isDateBasedFieldType) return 'YYYY-MM-DD';
-        if (this.isNumericFieldType) return this.renderValue(1234);
+        if (this.isNumericFieldType) return this.renderValue(1234, '=');
         return 'value';
     }
 
@@ -131,7 +134,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
 
         // Note use of unfiltered recordset here to source suggest values. This allows chooser to
         // suggest values from already-filtered fields that will expand the results when selected.
-        const sourceStore = source.isView ? source.cube.store : source;
+        const sourceStore = source instanceof View ? source.cube.store : source;
         sourceStore.allRecords.forEach(rec => {
             const val = rec.get(field);
             if (!isNil(val)) {
@@ -148,20 +151,12 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
 }
 
 /**
- * @callback SuggestValuesCb - a function to be run against all values returned by
- *      the fieldSpecs values getter to determine if they should be considered suggestions.
- * @param {string} query - raw user query
- * @param {*} parsedQuery - parsed user query (or undefined, if parsing failed)
- * @returns {function} - a test function taking a formatted value and value, and
- *      returning a boolean, if the value should be considered a match for query.
- */
-
-/**
  * @callback FilterChooserValueRendererCb
  * @param {*} value
  * @param {string} op
  * @returns {string} - formatted value suitable for display to the user.
  */
+type FilterChooserValueRendererCb = (value: any, op: FieldFilterOperator) => string;
 
 /**
  * @callback FilterChooserValueParserCb
@@ -169,3 +164,4 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
  * @param {string} op
  * @returns {*} - the parsed value.
  */
+type FilterChooserValueParserCb = (input: string, op: FieldFilterOperator) => any;

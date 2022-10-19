@@ -9,6 +9,32 @@ import {Field, Store, FieldFilter, FieldType, genDisplayName, View} from '@xh/ho
 import {isEmpty} from 'lodash';
 import {FieldFilterOperator} from './Types';
 
+export interface BaseFilterFieldSpecConfig {
+    /** Identifying field name to filter on. */
+    field: string;
+    /** Type of field, will default from related field on source if provided, or 'auto'. */
+    fieldType?: FieldType;
+    /** DisplayName, will default from related field on source if provided */
+    displayName?: string;
+    /** Operators available for filtering, will default to a supported set based on type.*/
+    ops?: FieldFilterOperator[];
+    /** Used to source matching data `Field` and extract values if configured. */
+    source?: Store|View;
+    /**
+     * True to provide interfaces and auto-complete options
+     * with enumerated matches for creating '=' or '!=' filters. Defaults to true for
+     * enumerable fieldTypes. Always true if 'values' provided or if fieldType is BOOL.
+     */
+    enableValues?: boolean;
+    /**
+     * True to require value entered to be an available value for '=' and '!=' operators.
+     * Defaults to false.
+     */
+    forceSelection?: boolean;
+    /** Explicit list of available values for this field. */
+    values?: any[];
+}
+
 /**
  * Defines field-level filtering options and provides metadata for presenting these options in
  * UI affordances such as FilterChooser to Grid Column Filters.
@@ -20,37 +46,14 @@ import {FieldFilterOperator} from './Types';
  */
 export abstract class BaseFilterFieldSpec extends HoistBase {
 
-    /** Identifying field name to filter on. */
     field: string;
-
-    /** Type of field, will default from related field on source if provided, or 'auto'. */
     fieldType: FieldType;
-
-    /** DisplayName, will default from related field on source if provided */
     displayName: string;
-
-    /** Operators available for filtering, will default to a supported set based on type.*/
     ops: FieldFilterOperator[];
-
-    /** Used to source matching data `Field` and extract values if configured. */
     source: Store|View;
-
-    /**
-     * True to provide interfaces and auto-complete options
-     * with enumerated matches for creating '=' or '!=' filters. Defaults to true for
-     * enumerable fieldTypes. Always true if 'values' provided or if fieldType is BOOL.
-     */
     enableValues: boolean;
-
-    /**
-     *  True to require value entered to be an available value for '=' and '!=' operators.
-     *  Defaults to false.
-     */
     forceSelection: boolean;
-
-    /** Explicit list of available values for this field. */
     values: any[];
-
     hasExplicitValues: boolean;
 
     constructor({
@@ -62,7 +65,7 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
         enableValues,
         forceSelection,
         values
-    }: Partial<BaseFilterFieldSpec>) {
+    }: BaseFilterFieldSpecConfig) {
         super();
         this.field = field;
         this.source = source;

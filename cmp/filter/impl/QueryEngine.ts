@@ -18,7 +18,15 @@ import {
     sortBy,
     without
 } from 'lodash';
-import {fieldFilterOption, fieldOption, minimalFieldOption, msgOption} from './Option';
+import {
+    fieldFilterOption,
+    fieldOption,
+    FilterChooserOption,
+    minimalFieldOption,
+    msgOption
+} from './Option';
+import {FilterChooserModel} from '../FilterChooserModel';
+import {FilterChooserFieldSpec} from '../FilterChooserFieldSpec';
 
 /**
  * Provide the querying support for FilterChooserModel.
@@ -30,10 +38,9 @@ import {fieldFilterOption, fieldOption, minimalFieldOption, msgOption} from './O
  */
 export class QueryEngine {
 
-    /** @member {FilterChooserModel} */
-    model;
+    model: FilterChooserModel;
 
-    constructor(model) {
+    constructor(model: FilterChooserModel) {
         this.model = model;
     }
 
@@ -42,32 +49,30 @@ export class QueryEngine {
     //
     // Returns a set of options appropriate for react-select to display.
     //-----------------------------------------------------------------
-    async queryAsync(query) {
+    async queryAsync(query: string): Promise<FilterChooserOption[]> {
         const q = this.getDecomposedQuery(query);
 
         //-----------------------------------------------------------------------
         // We respond in five primary states, described and implemented below.
         //-----------------------------------------------------------------------
-        let ret = [];
         if (!q) {
-            ret = this.whenNoQuery();
+            return this.whenNoQuery();
         } else if (q.field && !q.op) {
-            ret = this.openSearching(q);
+            return castArray(this.openSearching(q));
         } else if (q.field && q.op === 'is') {
-            ret = this.withIsSearchingOnField(q);
+            return castArray(this.withIsSearchingOnField(q));
         } else if (q.field && q.op) {
-            ret = this.valueSearchingOnField(q);
+            return castArray(this.valueSearchingOnField(q));
         } else if (!q.field && q.op && q.value) {
-            ret = this.valueSearchingOnAll(q);
+            return castArray(this.valueSearchingOnAll(q));
         }
-
-        return castArray(ret);
+        return [];
     }
 
     //------------------------------------------------------------------------
     // 1) No query -- return all field suggestions if enabled
     //------------------------------------------------------------------------
-    whenNoQuery() {
+    whenNoQuery(): FilterChooserOption[] {
         const {suggestFieldsWhenEmpty, sortFieldSuggestions, introHelpText} = this.model;
         if (!suggestFieldsWhenEmpty) return [];
 
@@ -75,7 +80,7 @@ export class QueryEngine {
         if (sortFieldSuggestions) ret = this.sort(ret);
 
         if (introHelpText) {
-            ret.unshift(msgOption(introHelpText));
+            ret.unshift(msgOption(introHelpText as string));
         }
 
         return ret;
@@ -84,7 +89,7 @@ export class QueryEngine {
     //------------------------------------------------------------------------
     // 2) No op yet, so field not fixed -- get field or value matches.
     //------------------------------------------------------------------------
-    openSearching(q) {
+    openSearching(q): FilterChooserOption|FilterChooserOption[] {
         // Suggest matching *fields* for the user to select on their way to a more targeted query.
         let ret = this.getFieldOpts(q.field);
 
@@ -103,13 +108,12 @@ export class QueryEngine {
         ret = this.sortAndTruncate(ret);
 
         return isEmpty(ret) ? msgOption(`No matches found for '${q.field}'`) : ret;
-
     }
 
     //--------------------------------------------------------
     // 3) Op is the psuedo 'is' operator and field is set
     //-------------------------------------------------------
-    withIsSearchingOnField(q) {
+    withIsSearchingOnField(q): FilterChooserOption|FilterChooserOption[] {
         const spec = find(this.fieldSpecs, s => caselessEquals(s.displayName, q.field));
         if (!spec) return msgOption(`No matching field found for '${q.field}'`);
 
@@ -135,7 +139,7 @@ export class QueryEngine {
     //----------------------------------------------------------------------------------
     // 4) We have an op and our field is set -- produce suggestions on that field
     //----------------------------------------------------------------------------------
-    valueSearchingOnField(q) {
+    valueSearchingOnField(q): FilterChooserOption|FilterChooserOption[] {
         const spec = find(this.fieldSpecs, s => caselessEquals(s.displayName, q.field));
 
         // Validation
@@ -155,7 +159,7 @@ export class QueryEngine {
         }
 
         // Add query value itself if needed and allowed
-        const value = spec.parseValue(q.value),
+        const value = spec.parseValue(q.value, q.op),
             valueValid = !isNaN(value) && !isNil(value) && value !== '',
             {forceSelection, enableValues} = spec;
 
@@ -191,7 +195,7 @@ export class QueryEngine {
     //------------------------------------------------------------------------------------------
     // 5) We have an op and a value but no field-- look in *all* fields for matching candidates
     //-------------------------------------------------------------------------------------------
-    valueSearchingOnAll(q) {
+    valueSearchingOnAll(q): FilterChooserOption|FilterChooserOption[] {
         let ret = flatMap(this.fieldSpecs, spec => this.getValueMatchesForField(q.op, q.value, spec));
         ret = this.sortAndTruncate(ret);
 
@@ -202,7 +206,7 @@ export class QueryEngine {
     //-------------------------------------------------
     // Helpers to produce suggestions
     //-------------------------------------------------
-    getFieldOpts(queryStr) {
+    getFieldOpts(queryStr): FilterChooserOption[] {
         const testFn = createWordBoundaryTest(queryStr);
         return this.fieldSpecs
             .filter(s => !queryStr || testFn(s.displayName))
@@ -212,21 +216,21 @@ export class QueryEngine {
             }));
     }
 
-    getMinimalFieldOpts() {
+    getMinimalFieldOpts(): FilterChooserOption[] {
         return this.fieldSpecs.map(fieldSpec => minimalFieldOption({fieldSpec}));
     }
 
-    getValueMatchesForField(op, queryStr, spec) {
+    getValueMatchesForField(op, queryStr, spec): FilterChooserOption[] {
         if (!spec.supportsSuggestions(op)) return [];
 
         const {values, field} = spec,
-            value = spec.parseValue(queryStr),
+            value = spec.parseValue(queryStr, '='),
             testFn = createWordBoundaryTest(queryStr);
 
         // assume spec will not produce dup values.  React-select will de-dup identical opts as well
         const ret = [];
         values.forEach(v => {
-            const formattedValue = spec.renderValue(v);
+            const formattedValue = spec.renderValue(v, '=');
             if (testFn(formattedValue)) {
                 ret.push(
                     fieldFilterOption({
@@ -240,11 +244,11 @@ export class QueryEngine {
         return ret;
     }
 
-    get fieldSpecs() {
+    get fieldSpecs(): FilterChooserFieldSpec[] {
         return this.model.fieldSpecs;
     }
 
-    getDecomposedQuery(raw) {
+    getDecomposedQuery(raw: string): any {
         if (isEmpty(raw)) return null;
 
         // 'is' is a pseudo operator, both is and like need word boundaries
@@ -294,7 +298,7 @@ export class QueryEngine {
         return {field, op, value};
     }
 
-    sortAndTruncate(results) {
+    sortAndTruncate(results: FilterChooserOption[]): FilterChooserOption[] {
         results = this.sort(results);
 
         const max = this.model.maxResults;
@@ -303,7 +307,7 @@ export class QueryEngine {
             results;
     }
 
-    sort(results) {
+    sort(results: FilterChooserOption[]): FilterChooserOption[] {
         return sortBy(results, o => o.type, o => !o.isExact, o => o.label);
     }
 }

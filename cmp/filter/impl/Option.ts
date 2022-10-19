@@ -7,7 +7,24 @@
 
 import {parseFieldValue} from '@xh/hoist/data';
 import {isNil} from 'lodash';
+import {FilterChooserFieldSpec} from '../FilterChooserFieldSpec';
 import {FieldType} from '../../../data';
+
+export interface FilterChooserOption {
+    /**
+     * Indicates if option allows user to select a fully-formed filter, or a field to use for
+     * filtering, or if option is an unselectable informational message.
+     */
+    type: 'filter'|'field'|'msg'|'minimalField',
+    /** Unique value for the underlying Select. */
+    value: string,
+    /** Unique display for the underlying Select. */
+    label: string,
+    /** If based on a matching process, was this an exact match? */
+    isExact: boolean,
+    /** Additional properties specific to the option type */
+    [key: string]: any
+}
 
 // ---------------------------------------------------------
 // Generate Options for FilterChooserModel query responses.
@@ -17,8 +34,8 @@ import {FieldType} from '../../../data';
  * Create an option representing a detailed field suggestion
  * @returns {FilterChooserOption}
  */
-export function fieldOption({fieldSpec, isExact = false}) {
-    const {displayName} = fieldSpec;
+export function fieldOption({fieldSpec, isExact = false}): FilterChooserOption {
+    const {displayName} = fieldSpec as FilterChooserFieldSpec;
     return {
         type: 'field',
         value: JSON.stringify({displayName}),
@@ -32,8 +49,8 @@ export function fieldOption({fieldSpec, isExact = false}) {
  * Create an option representing a minimal field suggestion
  * @returns {FilterChooserOption}
  */
-export function minimalFieldOption({fieldSpec}) {
-    const {displayName} = fieldSpec;
+export function minimalFieldOption({fieldSpec}): FilterChooserOption {
+    const {displayName} = fieldSpec as FilterChooserFieldSpec;
     return {
         type: 'minimalField',
         value: JSON.stringify({displayName}),
@@ -47,8 +64,8 @@ export function minimalFieldOption({fieldSpec}) {
  * Create an option representing an existing or suggested FieldFilter.
  * @returns {FilterChooserOption}
  */
-export function fieldFilterOption({filter, fieldSpec, isExact = false}) {
-    let {fieldType, displayName} = fieldSpec,
+export function fieldFilterOption({filter, fieldSpec, isExact = false}): FilterChooserOption {
+    let {fieldType, displayName} = fieldSpec as FilterChooserFieldSpec,
         displayOp,
         displayValue;
 
@@ -78,7 +95,7 @@ export function fieldFilterOption({filter, fieldSpec, isExact = false}) {
  * Create an option representing a compound filter. For display purposes only.
  * @returns {FilterChooserOption}
  */
-export function compoundFilterOption({filter, fieldNames}) {
+export function compoundFilterOption({filter, fieldNames}): FilterChooserOption {
     return {
         type: 'filter',
         value: JSON.stringify(filter),
@@ -91,7 +108,7 @@ export function compoundFilterOption({filter, fieldNames}) {
  * Create an option representing an [unselectable] message
  * @returns {FilterChooserOption}
  */
-export function msgOption(msg) {
+export function msgOption(msg: string): FilterChooserOption {
     return {
         type: 'msg',
         value: msg,
@@ -99,13 +116,3 @@ export function msgOption(msg) {
         isExact: false
     };
 }
-
-/**
- * @typedef {Object} FilterChooserOption - option generated for a `FilterChooser` `Select` input.
- * @property {string} type - one of ['filter'|'field'|'msg'] - indicates if option allows user to
- *      select a fully-formed filter or a field to use for filtering, or if option is an
- *      unselectable informational message.
- * @property {string} value - unique value for the underlying Select.
- * @property {string} label - unique display for the underlying Select.
- * @property {boolean} isExact - if based on a matching process, was this an exact match?
- */

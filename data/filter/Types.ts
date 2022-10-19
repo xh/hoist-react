@@ -6,7 +6,7 @@
  */
 
 import {Filter} from './Filter';
-import {RawData, StoreRecord, Field} from '../';
+import {RawData, StoreRecord, Field, CompoundFilter, FieldFilter} from '../';
 
 export type CompoundFilterOperator = 'AND'|'OR'|'and'|'or';
 export interface CompoundFilterSpec {
@@ -49,3 +49,12 @@ export type FilterLike = Filter |
     FunctionFilterSpec |
     FilterTestFn |
     FilterLike[];
+
+/**
+ * A variant of FilterLike, that excludes FunctionFilters.
+ */
+export type FilterChooserFilterLike = CompoundFilter |
+    CompoundFilterSpec |
+    FieldFilter |
+    FieldFilterSpec |
+    FilterChooserFilterLike[];
