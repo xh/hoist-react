@@ -11,6 +11,14 @@ import {Icon} from '@xh/hoist/icon';
 import {ReactNode} from 'react';
 import {button, ButtonProps} from './Button';
 
+export interface RestoreDefaultsButtonProps extends ButtonProps {
+    /** Message for confirm dialog shown prior to clearing user customizations. */
+    warningMessage: ReactNode,
+
+    /** Title for confirm dialog shown prior to clearing user customizations. */
+    warningTitle: string
+}
+
 /**
  * Convenience Button preconfigured for use as a trigger for resetting user customizations.
  * Clears all user preferences, all grid state saved to local storage, and then reloads the app.
@@ -53,11 +61,3 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmp.withFacto
         });
     }
 });
-
-export interface RestoreDefaultsButtonProps extends ButtonProps {
-    /** Message for confirm dialog shown prior to clearing user customizations. */
-    warningMessage: ReactNode,
-
-    /** Title for confirm dialog shown prior to clearing user customizations. */
-    warningTitle: string
-}

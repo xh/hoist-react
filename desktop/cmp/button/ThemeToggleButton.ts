@@ -9,10 +9,12 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {button, ButtonProps} from './Button';
 
+export type ThemeToggleButtonProps = ButtonProps;
+
 /**
  * Convenience Button preconfigured for use as a trigger for light/dark theme toggling.
  */
-export const [ThemeToggleButton, themeToggleButton] = hoistCmp.withFactory<ButtonProps>({
+export const [ThemeToggleButton, themeToggleButton] = hoistCmp.withFactory<ThemeToggleButtonProps>({
     displayName: 'ThemeToggleButton',
     model: false,
 

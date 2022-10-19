@@ -10,13 +10,23 @@ import {buttonGroupInput} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
 import {startCase, values} from 'lodash';
 
+interface SizingModeAppOptionSpec {
+    /** Supported SizingModes */
+    modes?: SizingMode[],
+    /** Props for nested FormField - todo: replace with FormFieldProps */
+    formFieldProps?: Record<string, any>,
+    /** Props for nested ButtonGroupInput - todo: replace with ButtonGroupInputProps */
+    inputProps?: Record<string, any>
+}
+
 /**
  * Convenience configuration for the `sizingMode` AppOption.
- * @param {SizingMode[]} [modes] - Supported SizingModes
- * @param {{}} [formFieldProps]
- * @param {{}} [inputProps]
  */
-export const sizingModeAppOption = ({modes, formFieldProps, inputProps} = {}) => {
+export const sizingModeAppOption = ({
+    modes,
+    formFieldProps,
+    inputProps
+}: SizingModeAppOptionSpec = {}) => {
     if (!modes) modes = values(SizingMode);
     return {
         name: 'sizingMode',

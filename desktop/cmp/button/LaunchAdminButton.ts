@@ -9,11 +9,13 @@ import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 
+export type LaunchAdminButtonProps = ButtonProps;
+
 /**
  * Convenience Button to open the admin client.
  * Visible only to users with the hoistAdmin application role.
  */
-export const [LaunchAdminButton, launchAdminButton] = hoistCmp.withFactory<ButtonProps>({
+export const [LaunchAdminButton, launchAdminButton] = hoistCmp.withFactory<LaunchAdminButtonProps>({
     displayName: 'LaunchAdminButton',
     model: false,
 

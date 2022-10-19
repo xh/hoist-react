@@ -8,13 +8,12 @@ import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {defaultsDeep} from 'lodash';
-import PT from 'prop-types';
-import {clipboardButton} from './ClipboardButton';
+import {clipboardButton, ClipboardButtonProps} from './ClipboardButton';
 
 /**
  * Convenience wrapper for a ClipboardButton to be rendered as a Blueprint menu item.
  */
-export const [ClipboardMenuItem, clipboardMenuItem] = hoistCmp.withFactory({
+export const [ClipboardMenuItem, clipboardMenuItem] = hoistCmp.withFactory<ClipboardButtonProps>({
     displayName: 'ClipboardMenuItem',
     model: false,
     observer: false,
@@ -36,14 +35,3 @@ export const [ClipboardMenuItem, clipboardMenuItem] = hoistCmp.withFactory({
         return clipboardButton(btnProps);
     }
 });
-ClipboardMenuItem.propTypes = {
-    icon: PT.element,
-
-    text: PT.string,
-
-    /** Function returning the text to copy. */
-    getCopyText: PT.func.isRequired,
-
-    /** Message to be displayed in a toast when copy is complete. */
-    successMessage: PT.string
-};

@@ -10,6 +10,20 @@ import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {CSSProperties} from 'react';
 
+export interface ButtonGroupProps extends HoistProps {
+    /** True to have all buttons fill available width equally. */
+    fill?: boolean,
+
+    /** True to render each button with minimal surrounding chrome (default false). */
+    minimal?: boolean,
+
+    /** Style block. */
+    style?: CSSProperties,
+
+    /** True to render in a vertical orientation. */
+    vertical?: boolean,
+}
+
 /**
  * Wrapper around Blueprint's ButtonGroup component, with LayoutSupport.
  */
@@ -33,17 +47,3 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
         });
     }
 });
-
-export interface ButtonGroupProps extends HoistProps {
-    /** True to have all buttons fill available width equally. */
-    fill?: boolean,
-
-    /** True to render each button with minimal surrounding chrome (default false). */
-    minimal?: boolean,
-
-    /** Style block. */
-    style?: CSSProperties,
-
-    /** True to render in a vertical orientation. */
-    vertical?: boolean,
-}

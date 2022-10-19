@@ -5,14 +5,27 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hspacer} from '@xh/hoist/cmp/layout';
-import {hoistCmp} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistModel, Intent} from '@xh/hoist/core';
 import {button as onsenButton} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import PT from 'prop-types';
+import {ReactNode, ReactElement} from 'react';
+import type * as CSS from 'csstype';
 import './Button.scss';
+
+export interface ButtonProps<M extends HoistModel = null> extends BoxProps<M> {
+    active?: boolean,
+    disabled?: boolean,
+    icon?: ReactElement;
+    intent?: Intent,
+    minimal?: boolean,
+    onClick?: (e: MouseEvent) => void,
+    outlined?: boolean,
+    style?: CSS.Properties,
+    text?: ReactNode
+}
 
 /**
  * Wrapper around Onsen's Button component. Adds layout support for top-level sizing and
@@ -89,16 +102,3 @@ export const [Button, button] = hoistCmp.withFactory({
         });
     }
 });
-
-Button.propTypes = {
-    active: PT.bool,
-    className: PT.string,
-    disabled: PT.bool,
-    icon: PT.element,
-    intent: PT.oneOf(['primary', 'success', 'warning', 'danger']),
-    minimal: PT.bool,
-    onClick: PT.func,
-    outlined: PT.bool,
-    style: PT.object,
-    text: PT.node
-};

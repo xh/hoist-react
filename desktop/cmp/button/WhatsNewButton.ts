@@ -9,13 +9,15 @@ import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button/Button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 
+export type WhatsNewButtonProps = ButtonProps;
+
 /**
  * Button that conditionally renders when there is a changelog entry for the current app version
  * that has yet to be viewed by the current user.
  *
  * {@see ChangelogService} for details on how to enable this overall system.
  */
-export const [WhatsNewButton, whatsNewButton] = hoistCmp.withFactory<ButtonProps>({
+export const [WhatsNewButton, whatsNewButton] = hoistCmp.withFactory<WhatsNewButtonProps>({
     displayName: 'WhatsNewButton',
     model: false,
     render(props) {

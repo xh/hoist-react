@@ -4,12 +4,13 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, RefreshContextModel, useContextModel} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, RefreshContextModel, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button, Button} from '@xh/hoist/mobile/cmp/button';
+import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {errorIf} from '@xh/hoist/utils/js';
-import PT from 'prop-types';
+
+export type RefreshButtonProps = ButtonProps<HoistModel>;
 
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
@@ -18,7 +19,7 @@ import PT from 'prop-types';
  * may be provided.  If neither of these props are provided, the contextual RefreshContextModel
  * for this button will be used.
  */
-export const [RefreshButton, refreshButton] = hoistCmp.withFactory({
+export const [RefreshButton, refreshButton] = hoistCmp.withFactory<RefreshButtonProps>({
     displayName: 'RefreshButton',
     model: false,  // For consistency with all other buttons -- the model prop here could be replaced by 'target'
 
@@ -34,10 +35,3 @@ export const [RefreshButton, refreshButton] = hoistCmp.withFactory({
         return button({icon, onClick, ...props});
     }
 });
-
-RefreshButton.propTypes = {
-    ...Button.propTypes,
-
-    /** HoistModel to refresh. */
-    model: PT.object
-};
