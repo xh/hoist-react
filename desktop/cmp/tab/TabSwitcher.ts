@@ -30,7 +30,7 @@ import {
 } from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, isEmpty, isFinite} from 'lodash';
-
+import {CSSProperties} from 'react';
 
 /**
  * Component to indicate and control the active tab of a TabContainer.
@@ -78,7 +78,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
             composeRefs(ref, impl.switcherRef);
 
         // Create tabs
-        const tabStyle: any = {};
+        const tabStyle: CSSProperties = {};
         if (!vertical && isFinite(tabWidth)) tabStyle.width = tabWidth + 'px';
         if (!vertical && isFinite(tabMinWidth)) tabStyle.minWidth = tabMinWidth + 'px';
         if (!vertical && isFinite(tabMaxWidth)) tabStyle.maxWidth = tabMaxWidth + 'px';
@@ -234,7 +234,7 @@ class TabSwitcherLocalModel extends HoistModel  {
     @debounced(1)
     scrollActiveTabIntoView() {
         if (!this.enableOverflow) return;
-        const tab = this.tabEls.find((tab: any) => tab.dataset.tabId === this.model.activeTabId);
+        const tab = this.tabEls.find((tab: HTMLElement) => tab.dataset.tabId === this.model.activeTabId);
         if (tab) tab.scrollIntoView();
     }
 

@@ -11,8 +11,7 @@ import {button as bpButton} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {ReactNode, ReactElement} from 'react';
-import type * as CSS from 'csstype';
+import {ReactNode, ReactElement, CSSProperties, MouseEvent} from 'react';
 import './Button.scss';
 
 /**
@@ -101,7 +100,7 @@ export interface ButtonProps<M extends HoistModel = null> extends BoxProps<M> {
     onClick?: (e: MouseEvent) => void,
     outlined?: boolean,
     rightIcon?: ReactElement;
-    style?: CSS.Properties,
+    style?: CSSProperties,
     text?: ReactNode,
     title?: string,
     /** Alias for title. */

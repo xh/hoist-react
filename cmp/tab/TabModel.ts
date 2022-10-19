@@ -14,11 +14,11 @@ import {
     Content,
     RefreshContextModel
 } from '@xh/hoist/core';
-import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
 import {TabContainerModel} from '@xh/hoist/cmp/tab/TabContainerModel';
-import {ReactNode} from 'react';
+import {ReactElement, ReactNode} from 'react';
 
 
 export interface TabConfig {
@@ -35,7 +35,7 @@ export interface TabConfig {
     title?: ReactNode;
 
     /** Display icon for the Tab in the container's TabSwitcher. */
-    icon?: ReactNode;
+    icon?: ReactElement;
 
     /** Tooltip for the Tab in the container's TabSwitcher. */
     tooltip?: ReactNode;
@@ -86,8 +86,8 @@ export class TabModel extends HoistModel {
 
     id: string;
     @observable.ref title: ReactNode;
-    @observable.ref icon: ReactNode;
-    @bindable tooltip: ReactNode;
+    @observable.ref icon: ReactElement;
+    @observable.ref tooltip: ReactNode;
     @observable disabled: boolean;
     excludeFromSwitcher: boolean;
     showRemoveAction: boolean;
@@ -114,7 +114,7 @@ export class TabModel extends HoistModel {
         refreshMode,
         renderMode,
         xhImpl = false
-    }:TabConfig) {
+    }: TabConfig) {
         super();
         makeObservable(this);
         this.xhImpl = xhImpl;
@@ -151,18 +151,23 @@ export class TabModel extends HoistModel {
     }
 
     @computed
-    get isActive() {
+    get isActive(): boolean {
         return this.containerModel.activeTabId === this.id;
     }
 
     @action
-    setIcon(icon: ReactNode) {
+    setIcon(icon: ReactElement) {
         this.icon = icon;
     }
 
     @action
     setTitle(title: ReactNode) {
         this.title = title;
+    }
+
+    @action
+    setTooltip(tooltip: ReactNode) {
+        this.tooltip = tooltip;
     }
 
     @action

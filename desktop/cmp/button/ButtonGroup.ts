@@ -8,7 +8,7 @@ import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import type * as CSS from 'csstype';
+import {CSSProperties} from 'react';
 
 /**
  * Wrapper around Blueprint's ButtonGroup component, with LayoutSupport.
@@ -42,7 +42,7 @@ export interface ButtonGroupProps extends HoistProps {
     minimal?: boolean,
 
     /** Style block. */
-    style?: CSS.Properties,
+    style?: CSSProperties,
 
     /** True to render in a vertical orientation. */
     vertical?: boolean,

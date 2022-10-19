@@ -106,7 +106,7 @@ export class TabContainerModel extends HoistModel {
     @managed
     refreshContextModel: RefreshContextModel;
 
-    private _lastActiveTabId;
+    private lastActiveTabId: string;
 
     constructor({
         tabs = [],
@@ -241,7 +241,7 @@ export class TabContainerModel extends HoistModel {
 
         // Activate alternative tab if we are about to remove active
         if (toRemove === activeTab) {
-            let toActivate = this.findTab(this._lastActiveTabId);
+            let toActivate = this.findTab(this.lastActiveTabId);
             if (!toActivate || toActivate === toRemove) {
                 toActivate = this.nextTab ?? this.prevTab;
             }
@@ -256,7 +256,7 @@ export class TabContainerModel extends HoistModel {
     //-------------------------------
     // Access Tabs, active management
     //-------------------------------
-    findTab(id): TabModel {
+    findTab(id: string): TabModel {
         return find(this.tabs, {id});
     }
 
@@ -318,7 +318,7 @@ export class TabContainerModel extends HoistModel {
         const tab = this.findTab(id);
         throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
-        this._lastActiveTabId = this.activeTabId;
+        this.lastActiveTabId = this.activeTabId;
         this.activeTabId = id;
         this.forwardRouterToTab(id);
     }
