@@ -5,25 +5,30 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
-import {button, Button} from '@xh/hoist/desktop/cmp/button';
+import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
 import copy from 'clipboard-copy';
-import PT from 'prop-types';
+
+export interface ClipboardButtonProps extends ButtonProps {
+    /** Function returning the text to copy. May be async. */
+    getCopyText: () => string|Promise<string>,
+    /** Message to be displayed in a toast when copy is complete. */
+    successMessage?: string
+}
 
 /**
  * Button to copy text to the clipboard.
  */
-export const [ClipboardButton, clipboardButton] = hoistCmp.withFactory({
+export const [ClipboardButton, clipboardButton] = hoistCmp.withFactory<ClipboardButtonProps>({
     displayName: 'ClipboardButton',
     model: false,
-
     render(props) {
         let {icon, onClick, text, getCopyText, successMessage, ...rest} = props;
 
         if (!onClick) {
-            onClick = async (e) => {
+            onClick = async () => {
                 const {successMessage, getCopyText} = props;
 
                 try {
@@ -49,13 +54,3 @@ export const [ClipboardButton, clipboardButton] = hoistCmp.withFactory({
         });
     }
 });
-
-ClipboardButton.propTypes = {
-    ...Button.propTypes,
-
-    /** Function returning the text to copy.  May be async. */
-    getCopyText: PT.func.isRequired,
-
-    /** Message to be displayed in a toast when copy is complete. */
-    successMessage: PT.string
-};
