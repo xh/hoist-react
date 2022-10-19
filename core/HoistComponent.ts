@@ -17,7 +17,7 @@ import {
     formatSelector,
     HoistModel
 } from './model';
-import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {apiDeprecated, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {useOnMount, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isObject} from 'lodash';
@@ -328,12 +328,18 @@ function createModel(spec) {
 }
 
 function lookupModel(spec, props, modelLookup, displayName) {
-    let {model} = props,
+    let {model, modelConfig} = props,
         {selector} = spec;
 
     // 1) props - config
-    if (model && isPlainObject(model) && spec.createFromConfig) {
-        return {model: new selector(model), isLinked: true, fromContext: false};
+    if (spec.createFromConfig) {
+        if (isPlainObject(model)) {   // 1a) legacy, pre-typescript
+            apiDeprecated('model', {msg: "Use 'modelConfig' instead. ", v: 'v55'});
+            return {model: new selector(model), isLinked: true, fromContext: false};
+        }
+        if (isPlainObject(modelConfig)) {  // 1b) new location
+            return {model: new selector(model), isLinked: true, fromContext: false};
+        }
     }
 
     // 2) props - instance

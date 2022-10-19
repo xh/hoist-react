@@ -15,7 +15,7 @@ import {userPanel} from './users/UserPanel';
 
 export const generalTab = hoistCmp.factory(
     () => tabContainer({
-        model: {
+        modelConfig: {
             route: 'default.general',
             switcher: {orientation: 'left'},
             tabs: [

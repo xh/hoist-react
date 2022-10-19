@@ -4,11 +4,13 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, ModelPublishMode, uses, XH, refreshContextView} from '@xh/hoist/core';
+import {hoistCmp, uses, XH, refreshContextView, BoxProps} from '@xh/hoist/core';
 import {tabContainerImpl as desktopTabContainerImpl} from '@xh/hoist/dynamics/desktop';
 import {tabContainerImpl as mobileTabContainerImpl} from '@xh/hoist/dynamics/mobile';
-import PT from 'prop-types';
 import {TabContainerModel} from './TabContainerModel';
+
+
+export type TabContainerProps = BoxProps<TabContainerModel>;
 
 /**
  * Display a set of child Tabs and (optionally) a switcher control.
@@ -18,17 +20,16 @@ import {TabContainerModel} from './TabContainerModel';
  * control on alternative edges of the container.
  *
  * If `switcher` is set to false then no TabSwitcher will be installed.  This setting
- * is useful for applications that wish to place an associated TabSwitcher elsewhere in the graphical
- * hierarchy (e.g. a shared menu bar), or control the visible Tab directly via other means.
+ * is useful for applications that wish to place an associated TabSwitcher elsewhere in the
+ * graphical hierarchy (e.g. a shared menu bar), or control the visible Tab directly via other
+ * means.
  *
- * This component's TabContainerModel configures all aspects of this container, including its children.
- * See that class for more details.
- *
- * @see TabContainerModel
+ * This component's TabContainerModel configures all aspects of this container, including its
+ * children. See that class for more details.
  */
-export const [TabContainer, tabContainer] = hoistCmp.withFactory({
+export const [TabContainer, tabContainer] = hoistCmp.withFactory<TabContainerProps>({
     displayName: 'TabContainer',
-    model: uses(TabContainerModel, {publishMode: ModelPublishMode.LIMITED}),
+    model: uses(TabContainerModel, {publishMode: 'limited'}),
     className: 'xh-tab-container',
 
     render(props, ref) {
@@ -38,9 +39,3 @@ export const [TabContainer, tabContainer] = hoistCmp.withFactory({
         });
     }
 });
-
-TabContainer.propTypes = {
-    model: PT.oneOfType([PT.instanceOf(TabContainerModel), PT.object])
-};
-
-

@@ -14,7 +14,7 @@ import {activityTrackingPanel} from './tracking/ActivityTrackingPanel';
 
 export const activityTab = hoistCmp.factory(
     () => tabContainer({
-        model: {
+        modelConfig: {
             route: 'default.activity',
             switcher: {orientation: 'left'},
             tabs: [

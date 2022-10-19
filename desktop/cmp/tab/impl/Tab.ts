@@ -6,7 +6,7 @@
  */
 import {frame} from '@xh/hoist/cmp/layout';
 import {TabModel} from '@xh/hoist/cmp/tab';
-import {hoistCmp, ModelPublishMode, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
+import {hoistCmp, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
 
@@ -18,12 +18,12 @@ import {useRef} from 'react';
  *   - Track and trigger refreshes according to {@see TabModel.refreshMode}.
  *   - Stretch its contents using a flex layout.
  *
- * @private
+ * @internal
  */
 export const tab = hoistCmp.factory({
     displayName: 'Tab',
     className: 'xh-tab',
-    model: uses(TabModel, {publishMode: ModelPublishMode.LIMITED}),
+    model: uses(TabModel, {publishMode: 'limited'}),
 
     render({model, className}) {
         let {content, isActive, renderMode, refreshContextModel} = model,

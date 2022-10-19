@@ -6,7 +6,7 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div, hframe, span} from '@xh/hoist/cmp/layout';
-import {TabContainerModel} from '@xh/hoist/cmp/tab';
+import {TabContainerModel, TabSwitcherProps} from '@xh/hoist/cmp/tab';
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
@@ -19,7 +19,7 @@ import {
     tabs as bpTabs,
     tooltip as bpTooltip
 } from '@xh/hoist/kit/blueprint';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {makeObservable, action, observable} from '@xh/hoist/mobx';
 import {debounced, isDisplayed, throwIf} from '@xh/hoist/utils/js';
 import {
     createObservableRef,
@@ -30,7 +30,7 @@ import {
 } from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, isEmpty, isFinite} from 'lodash';
-import PT from 'prop-types';
+
 
 /**
  * Component to indicate and control the active tab of a TabContainer.
@@ -42,11 +42,8 @@ import PT from 'prop-types';
  * Overflowing tabs can be displayed in a dropdown menu if `enableOverflow` is true.
  * Note that in order for tabs to overflow, the TabSwitcher or it's wrapper must have a
  * a maximum width.
- *
- * @see TabContainer
- * @see TabContainerModel
  */
-export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
+export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>({
     displayName: 'TabSwitcher',
     model: uses(TabContainerModel),
     className: 'xh-tab-switcher',
@@ -64,7 +61,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
     }, ref) {
         throwIf(!['top', 'bottom', 'left', 'right'].includes(orientation), 'Unsupported value for orientation.');
 
-        const {id, tabs, activeTabId} = model,
+        const {tabs, activeTabId} = model,
             layoutProps = getLayoutProps(props),
             vertical = ['left', 'right'].includes(orientation),
             impl = useLocalModel(() => new TabSwitcherLocalModel(model, enableOverflow, vertical));
@@ -81,7 +78,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
             composeRefs(ref, impl.switcherRef);
 
         // Create tabs
-        const tabStyle = {};
+        const tabStyle: any = {};
         if (!vertical && isFinite(tabWidth)) tabStyle.width = tabWidth + 'px';
         if (!vertical && isFinite(tabMinWidth)) tabStyle.minWidth = tabMinWidth + 'px';
         if (!vertical && isFinite(tabMaxWidth)) tabStyle.maxWidth = tabMaxWidth + 'px';
@@ -129,7 +126,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
                     ref,
                     className: `xh-tab-switcher__scroll`,
                     item: bpTabs({
-                        id,
+                        id: model.xhId,
                         vertical,
                         animate,
                         items,
@@ -146,33 +143,10 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
     }
 });
 
-TabSwitcher.propTypes = {
-    /** Primary component model instance. */
-    model: PT.instanceOf(TabContainerModel),
-
-    /** Relative position within the parent TabContainer. Defaults to 'top'. */
-    orientation: PT.oneOf(['top', 'bottom', 'left', 'right']),
-
-    /** True to animate the indicator when switching tabs. False (default) to change instantly. */
-    animate: PT.bool,
-
-    /** Enable scrolling and place tabs that overflow into a menu. Default to false. */
-    enableOverflow: PT.bool,
-
-    /** Width (in px) to render tabs. Only applies to horizontal orientations */
-    tabWidth: PT.number,
-
-    /** Minimum width (in px) to render tabs. Only applies to horizontal orientations */
-    tabMinWidth: PT.number,
-
-    /** Maximum width (in px) to render tabs. Only applies to horizontal orientations */
-    tabMaxWidth: PT.number
-};
-
 //-----------------
 // Implementation
 //-----------------
-const overflowMenu = hoistCmp.factory({
+const overflowMenu = hoistCmp.factory<TabContainerModel>({
     render({model, tabs, vertical}) {
         if (isEmpty(tabs)) return null;
 
@@ -212,14 +186,19 @@ const overflowMenu = hoistCmp.factory({
 class TabSwitcherLocalModel extends HoistModel  {
     xhImpl = true;
 
-    @bindable.ref overflowIds = [];
-    switcherRef = createObservableRef();
+    @observable.ref overflowIds = [];
+    switcherRef = createObservableRef<HTMLElement>();
     model;
     enableOverflow;
     vertical;
 
     get overflowTabs() {
         return compact(this.overflowIds.map(id => this.model.findTab(id)));
+    }
+
+    @action
+    setOverflowIds(ids: string[]) {
+        this.overflowIds = ids;
     }
 
     constructor(model, enableOverflow, vertical) {
@@ -255,7 +234,7 @@ class TabSwitcherLocalModel extends HoistModel  {
     @debounced(1)
     scrollActiveTabIntoView() {
         if (!this.enableOverflow) return;
-        const tab = this.tabEls.find(tab => tab.dataset.tabId === this.model.activeTabId);
+        const tab = this.tabEls.find((tab: any) => tab.dataset.tabId === this.model.activeTabId);
         if (tab) tab.scrollIntoView();
     }
 
@@ -270,7 +249,7 @@ class TabSwitcherLocalModel extends HoistModel  {
             visibleEnd = scrollPosition + client,
             ids = [];
 
-        this.tabEls.forEach(tab => {
+        this.tabEls.forEach((tab: any) => {
             // Tabs are considered overflowed if they are at least 25% obscured
             const {start, length, end} = this.getTabDimensions(tab),
                 buffer = Math.round(length * 0.25),
