@@ -20,7 +20,7 @@ import '@xh/hoist/desktop/register';
 import {action, makeObservable, observable, comparer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
-import {defaults, isNil, isPlainObject} from 'lodash';
+import {isNil} from 'lodash';
 import {createRef} from 'react';
 import {ModalSupportConfig, ModalSupportModel} from '../modalsupport/';
 
