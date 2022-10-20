@@ -20,9 +20,9 @@ import '@xh/hoist/desktop/register';
 import {action, makeObservable, observable, comparer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil} from 'lodash';
+import {defaults, isNil, isPlainObject} from 'lodash';
 import {createRef} from 'react';
-import {ModalSupportModel, ModalSupportOptions} from '../modalsupport/';
+import {ModalSupportConfig, ModalSupportModel} from '../modalsupport/';
 
 export interface PanelConfig {
 
@@ -57,7 +57,7 @@ export interface PanelConfig {
      * Set to true to enable built-in support for showing panel contents in a modal, or provide a
      * config to further configure.
      */
-    modalSupport?: boolean | ModalSupportOptions;
+    modalSupport?: boolean|ModalSupportConfig;
 
     /** How should collapsed content be rendered? Ignored if collapsible is false. */
     renderMode?: RenderMode;
@@ -66,7 +66,7 @@ export interface PanelConfig {
     refreshMode?: RefreshMode;
 
     /** Options governing persistence. */
-    persistWith?: PersistOptions
+    persistWith?: PersistOptions;
 
     /** Should a splitter be rendered at the panel edge? */
     showSplitter?: boolean;
