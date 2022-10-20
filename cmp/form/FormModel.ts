@@ -5,12 +5,31 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {ValidationState} from '@xh/hoist/data';
+import {RawData, ValidationState} from '@xh/hoist/data';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {flatMap, forEach, forOwn, map, mapValues, pickBy, some, values} from 'lodash';
+import {BaseFieldConfig, BaseFieldModel} from './field/BaseFieldModel';
 import {FieldModel} from './field/FieldModel';
 import {SubformsFieldModel} from './field/SubformsFieldModel';
+
+
+export interface FormConfig {
+
+    /**
+     * FieldModels, or configurations to create them, for all data fields managed by this FormModel.
+     */
+    fields?: (BaseFieldModel|BaseFieldConfig)[];
+
+    /** Map of initial values for fields in this model. */
+    initialValues?: RawData;
+
+    disabled?: boolean;
+    readonly?: boolean;
+
+    /** @internal */
+    xhImpl?: boolean;
+}
 
 /**
  * FormModel is the main entry point for Form specification. This Model's `fields` collection holds
@@ -37,26 +56,24 @@ import {SubformsFieldModel} from './field/SubformsFieldModel';
  */
 export class FormModel extends HoistModel {
 
-    /** @member {Object} - container object for FieldModel instances, keyed by field name. */
-    @observable.ref fields = {};
+    /** Container object for FieldModel instances, keyed by field name.*/
+    @observable.ref
+    fields: Record<string, BaseFieldModel> = {};
 
-    /** @returns {FieldModel[]} - all FieldModel instances, as an array. */
+    /** All FieldModel instances. */
     @managed
-    get fieldList() {return values(this.fields)}
+    get fieldList(): FieldModel[] {
+        return values(this.fields);
+    }
 
-    /** @member {FormModel} */
-    parent = null;
+    parent: FormModel = null;
+    @observable disabled: boolean;
+    @observable readonly: boolean;
 
-    /** @member {boolean} */
-    @observable disabled;
-
-    /** @member {boolean} */
-    @observable readonly;
-
-    _valuesProxy = this.createValuesProxy();
+    private valuesProxy = this.createValuesProxy();
 
     /**
-     * @returns {Object} - proxy for access to observable field values, keyed by field name.
+     * @returns proxy for access to observable field values, keyed by field name.
      *
      * Read field value(s) off of this object within a reaction's track or component render function
      * to react to changes to those specific values - e.g. to disable one field based on the value
@@ -65,26 +82,17 @@ export class FormModel extends HoistModel {
      *
      * {@see getData()} instead if you need to get or react to the values of *any/all* fields.
      */
-    get values() {
-        return this._valuesProxy;
+    get values(): Record<string, any> {
+        return this.valuesProxy;
     }
 
-    /**
-     * @param {Object} c - FormModel configuration.
-     * @param {(FieldModel[]|Object[])} [c.fields] - FieldModels, or configurations to create them,
-     *      for all data fields managed by this FormModel.
-     * @param {Object} [c.initialValues] - Map of initial values for fields in this model.
-     * @param {boolean} disabled
-     * @param {boolean} readonly
-     */
-    constructor(
-        {
-            fields = [],
-            initialValues = {},
-            disabled = false,
-            readonly = false,
-            xhImpl = false
-        } = {}) {
+    constructor({
+        fields = [],
+        initialValues = {},
+        disabled = false,
+        readonly = false,
+        xhImpl = false
+    }: FormConfig = {}) {
         super();
         makeObservable(this);
         this.xhImpl = xhImpl;
@@ -92,8 +100,8 @@ export class FormModel extends HoistModel {
         this.disabled = disabled;
         this.readonly = readonly;
         const models = {};
-        fields.forEach(f => {
-            const model = f instanceof FieldModel ? f : (f.subforms ? new SubformsFieldModel(f) : new FieldModel(f)),
+        fields.forEach((f: any) => {
+            const model = f instanceof BaseFieldModel ? f: (f.subforms ? new SubformsFieldModel(f) : new FieldModel(f)),
                 {name} = model;
             throwIf(models[name], 'Form cannot contain multiple fields with same name: ' + name);
             models[name] = model;
@@ -110,23 +118,19 @@ export class FormModel extends HoistModel {
         });
     }
 
-    /**
-     * @param {string} fieldName
-     * @returns {FieldModel}
-     */
-    getField(fieldName) {
+    getField(fieldName: string): FieldModel {
         return this.fields[fieldName];
     }
 
     /**
-     * @returns {Object} - snapshot of current field values, keyed by field name.
+     * Snapshot of current field values, keyed by field name.
      *
      * Call within a reaction's track or component render function to react to *any* field change.
      * {@see values} instead if you need to get or react to the value of a *single* field.
      *
-     * @param {boolean} [dirtyOnly] - true to include only dirty field values in the return
+     * @param dirtyOnly - true to include only dirty field values in the return
      */
-    getData(dirtyOnly = false) {
+    getData(dirtyOnly: boolean = false): RawData {
         const fields = dirtyOnly ? pickBy(this.fields, f => f.isDirty) : this.fields;
         return mapValues(fields, v =>  v.getData());
     }
@@ -149,39 +153,37 @@ export class FormModel extends HoistModel {
      * into the form for editing. If initial values are undefined for any field, the original
      * initial values specified during model construction will be used.
      *
-     * @param {Object} initialValues - map of field name to value.
+     * @param initialValues - map of field name to value.
      */
     @action
-    init(initialValues = {}) {
+    init(initialValues: RawData = {}) {
         forOwn(this.fields, m => m.init(initialValues[m.name]));
     }
 
     /**
      * Set the value of one or more fields on this form.
      *
-     * @param {Object} values - map of field name to value.
+     * @param values - map of field name to value.
      */
     @action
-    setValues(values) {
+    setValues(values: RawData) {
         const {fields} = this;
         forEach(values, (v, k) => fields[k]?.setValue(v));
     }
 
-    /** @returns {boolean} - true if any fields have been changed since last reset/init. */
+    /** True if any fields have been changed since last reset/init. */
     @computed
-    get isDirty() {
+    get isDirty(): boolean {
         return some(this.fields, m => m.isDirty);
     }
 
-    /** @param {boolean} readonly */
     @action
-    setReadonly(readonly) {
+    setReadonly(readonly: boolean) {
         this.readonly = readonly;
     }
 
-    /** @param {boolean} disabled */
     @action
-    setDisabled(disabled) {
+    setDisabled(disabled: boolean) {
         this.disabled = disabled;
     }
 
@@ -193,65 +195,58 @@ export class FormModel extends HoistModel {
      *
      * @see FieldModel.focus() for important information on this method
      * and its limitations.
-     *
-     * @returns {FieldModel}
      */
     @computed
-    get focusedField() {
+    get focusedField(): FieldModel {
         return this.fieldList.find(f => f.hasFocus);
     }
 
     /**
      * Focus a field on this form.
      *
-     * @param {string} - name of field to focus.
-     *
      * @see FieldModel.focus() for important information on this method
      * and its limitations.
      */
-    focusField(name) {
+    focusField(name: string) {
         this.getField(name)?.focus();
     }
 
     //------------------------
     // Validation
     //------------------------
-    /** @returns {ValidationState} - the current validation state. */
     @computed
-    get validationState() {
-        const VS = ValidationState,
-            states = map(this.fields, m => m.validationState);
-        if (states.includes(VS.NotValid)) return VS.NotValid;
-        if (states.includes(VS.Unknown)) return VS.Unknown;
-        return VS.Valid;
+    get validationState(): ValidationState {
+        const states = map(this.fields, m => m.validationState);
+        if (states.includes('NotValid')) return 'NotValid';
+        if (states.includes('Unknown')) return 'Unknown';
+        return 'Valid';
     }
 
-    /** @returns {boolean} - true if any fields are currently recomputing their validation state. */
+    /** True if any fields are currently recomputing their validation state. */
     @computed
-    get isValidationPending() {
+    get isValidationPending(): boolean {
         return some(this.fields, m => m.isValidationPending);
     }
 
-    /** @returns {boolean} - true if all fields are valid. */
-    get isValid() {
+    /** True if all fields are valid. */
+    get isValid(): boolean {
         return this.validationState == ValidationState.Valid;
     }
 
-    /** @returns {string[]} - list of all validation errors for this form. */
-    get allErrors() {
+    /** List of all validation errors for this form. */
+    get allErrors(): string[] {
         return flatMap(this.fields, s => s.allErrors);
     }
 
     /**
      * Recompute all validations and return true if the form is valid.
      *
-     * @param {Object} [c]
-     * @param {boolean} [c.display] - true to trigger the display of validation errors (if any)
+     * @param c.display - true to trigger the display of validation errors (if any)
      *      by bound FormField components after validation is complete.
-     * @returns {Promise<boolean>}
      */
-    async validateAsync({display = true} = {}) {
-        const promises = map(this.fields, m => m.validateAsync({display}));
+    async validateAsync(opts: {display?: boolean} = {}): Promise<boolean> {
+        const {display = true} = opts,
+            promises = map(this.fields, m => m.validateAsync({display}));
         await Promise.all(promises);
         return this.isValid;
     }
@@ -264,14 +259,14 @@ export class FormModel extends HoistModel {
     //------------------------
     // Implementation
     //------------------------
-    createValuesProxy() {
+    private createValuesProxy() {
         const me = this;
         return new Proxy({}, {
             get(target, name, receiver) {
                 // Allows Inspector to detect this as a proxy.
                 if (name === '_xhIsProxy') return true;
 
-                const field = me.fields[name];
+                const field = me.fields[name as string];
                 if (field?.isFieldModel) {
                     return field.getDataOrProxy();
                 }

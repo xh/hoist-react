@@ -5,12 +5,37 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, TaskObserver} from '@xh/hoist/core';
-import {genDisplayName, required, Rule, ValidationState} from '@xh/hoist/data';
+import {genDisplayName, required, Rule, RuleLike, ValidationState} from '@xh/hoist/data';
 import {action, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {executeIfFunction, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {compact, flatten, isEmpty, isEqual, isFunction, isNil} from 'lodash';
+import {FormModel} from '../FormModel';
+
+export interface BaseFieldConfig {
+
+    /** Unique name for this field within its parent FormModel. */
+    name: string;
+
+    /** User-facing name for labels and validation messages. */
+    displayName?: string;
+
+    /**
+     * Initial value of this field.  If a function, will be executed dynamically when form is
+     * initialized to provide value.
+     */
+    initialValue?: any;
+
+    /** True to disable the input control for this field.*/
+    disabled?: boolean;
+
+    /** True to render a read-only value (vs. an input control). */
+    readonly?: boolean;
+
+    /** Rules, rule configs, or validation functions to apply to this field. */
+    rules?: RuleLike[];
+}
 
 /**
  * Abstract Base class for FieldModels.
@@ -18,30 +43,24 @@ import {compact, flatten, isEmpty, isEqual, isFunction, isNil} from 'lodash';
  * @see FieldModel
  * @see SubformsFieldModel
  */
-export class BaseFieldModel extends HoistModel {
+export abstract class BaseFieldModel extends HoistModel {
 
     get isFieldModel() {return true}
 
-    /** @member {*} */
-    @observable.ref initialValue;
-    /** @member {*} */
-    @observable.ref value;
+    @observable.ref initialValue: any;
+    @observable.ref value: any;
 
-    /** @member {string} */
-    name;
-    /** @member {string} */
-    @observable displayName;
-
-    /** @member {Rule[]} */
-    rules = null;
+    name: string;
+    @observable displayName: string;
+    rules: Rule[] = null;
 
     /**
-     * @member {boolean} - true to trigger the display of any validation error messages by this
-     *      model's bound FormField component. False to hide any such messages - even if the value
-     *      is not in fact valid. This is often preferable when the user has yet to interact with
-     *      this field since init/reset and eagerly showing validation errors would be confusing.
+     * True to trigger the display of any validation error messages by this
+     * model's bound FormField component. False to hide any such messages - even if the value
+     * is not in fact valid. This is often preferable when the user has yet to interact with
+     * this field since init/reset and eagerly showing validation errors would be confusing.
      */
-    @observable validationDisplayed = false;
+    @observable validationDisplayed: boolean = false;
 
 
     /**
@@ -58,42 +77,31 @@ export class BaseFieldModel extends HoistModel {
      * is only a single such input.  In the case of multiple bound inputs, no guarantee is
      * provided regarding which one will be returned.
      */
-    get boundInput() {
-        return this._boundInputRef?.current;
+    get boundInput(): any {
+        return this.boundInputRef?.current;
     }
 
     //----------------------
     // Implementation State
     //----------------------
-    @observable _disabled;
-    @observable _readonly;
+    @observable private _disabled;
+    @observable private _readonly;
 
-    /** @member {FormModel} */
-    _formModel;
-    _origInitialValue;
+    private _formModel: FormModel;
+    private origInitialValue: any;
 
-    _boundInputRef = createObservableRef();
+    boundInputRef = createObservableRef();
 
     // An array with the result of evaluating each rule.  Each element will be array of strings
     // containing any validation errors for the rule.  If validation for the rule has not
     // completed will contain null
-    @observable _errors;
+    @observable
+    private _errors: string[][];
 
     @managed
-    _validationTask = TaskObserver.trackLast();
-    _validationRunId = 0;
+    private validationTask = TaskObserver.trackLast();
+    private validationRunId = 0;
 
-    /**
-     * @param {Object} c - FieldModel configuration.
-     * @param {string} c.name - unique name for this field within its parent FormModel.
-     * @param {string} [c.displayName] - user-facing name for labels and validation messages.
-     * @param {*} [c.initialValue] - initial value of this field.  If a function, will be
-     *      executed dynamically when form is initialized to provide value.
-     * @param {boolean} [c.disabled] - true to disable the input control for this field.
-     * @param {boolean} [c.readonly] - true to render a read-only value (vs. an input control).
-     * @param {(Rule[]|Object[]|Function[])} [c.rules] - Rules, rule configs, or validation
-     *      functions to apply to this field.
-     */
     constructor({
         name,
         displayName,
@@ -101,12 +109,12 @@ export class BaseFieldModel extends HoistModel {
         disabled = false,
         readonly = false,
         rules = []
-    }) {
+    }: BaseFieldConfig) {
         super();
         makeObservable(this);
         this.name = name;
         this.displayName = displayName ?? genDisplayName(name);
-        this._origInitialValue = initialValue;
+        this.origInitialValue = initialValue;
         this.value = this.initialValue = executeIfFunction(initialValue);
         this._disabled = disabled;
         this._readonly = readonly;
@@ -118,11 +126,11 @@ export class BaseFieldModel extends HoistModel {
     // Accessors and lifecycle
     //-----------------------------
     /** Parent FormModel - set via FormModel ctor/addField(). */
-    get formModel() {
+    get formModel(): FormModel {
         return this._formModel;
     }
 
-    set formModel(formModel) {
+    set formModel(formModel: FormModel) {
         this._formModel = formModel;
         this.addAutorun(() => {
             this.computeValidationAsync();
@@ -138,56 +146,54 @@ export class BaseFieldModel extends HoistModel {
      * For standard, single-field FieldModels, returns the current value stored in the field.
      * Overridden by SubformsFieldModels, which return the data for each sub-form in an array.
      */
-    getData() {
+    getData(): any {
         return this.value;
     }
 
-    /** @member {boolean} */
-    get disabled() {
+    get disabled(): boolean {
         return !!(this._disabled || this.formModel?.disabled);
     }
 
     @action
-    setDisabled(disabled) {
+    setDisabled(disabled: boolean) {
         this._disabled = disabled;
     }
 
-    /** @member {boolean} */
-    get readonly() {
+    get readonly(): boolean {
         return !!(this._readonly || this.formModel?.readonly);
     }
 
     @action
-    setReadonly(readonly) {
+    setReadonly(readonly: boolean) {
         this._readonly = readonly;
     }
 
     @action
-    setValue(v) {
+    setValue(v: any) {
         this.value = v;
     }
 
-    /** @member {string[]} - all validation errors for this field. */
+    /** All validation errors for this field. */
     @computed
-    get errors() {
+    get errors(): string[] {
         return compact(flatten(this._errors));
     }
 
 
-    /** @member {string[]} - all validation errors for this field and its sub-forms. */
-    get allErrors() {
+    /** All validation errors for this field and its sub-forms. */
+    get allErrors(): string[] {
         return this.errors;
     }
 
     /**
      * Set the initial value of the field, reset to that value, and reset validation state.
      *
-     * @param {*} [value] - if undefined, field will be reset to initial value specified
+     * @param value - if undefined, field will be reset to initial value specified
      *      when field was constructed.
      */
     @action
-    init(value) {
-        this.initialValue = executeIfFunction(withDefault(value, this._origInitialValue));
+    init(value: any) {
+        this.initialValue = executeIfFunction(withDefault(value, this.origInitialValue));
         this.reset();
     }
 
@@ -208,8 +214,8 @@ export class BaseFieldModel extends HoistModel {
         this.validationDisplayed = false;
     }
 
-    /** @member {boolean} - true if value has been changed since last reset/init. */
-    get isDirty() {
+    /** True if value has been changed since last reset/init. */
+    get isDirty(): boolean {
         return !isEqual(this.value, this.initialValue);
     }
 
@@ -223,7 +229,7 @@ export class BaseFieldModel extends HoistModel {
      * is only a single such input.  In the case of multiple bound inputs, no guarantee is provided
      * regarding which one is consulted by this getter.
      */
-    get hasFocus() {
+    get hasFocus(): boolean {
         return this.boundInput?.hasFocus;
     }
 
@@ -255,56 +261,55 @@ export class BaseFieldModel extends HoistModel {
      * when validation is requested on the parent FormModel, when the field is dirtied, or when a
      * HoistInput bound to the field is blurred.
      *
-     * @param {boolean} [includeSubforms] - true to include all subforms of this field.
+     * @param includeSubforms - true to include all subforms of this field.
      */
     @action
-    displayValidation(includeSubforms = true) {
+    displayValidation(includeSubforms: boolean = true) {
         this.validationDisplayed = true;
     }
 
     /** Validation state of the field. */
     @computed
-    get validationState() {
+    get validationState(): ValidationState {
         return this.deriveValidationState();
     }
 
-    /** @member {boolean} - true if this field is confirmed to be Valid. */
-    get isValid() {
-        return this.validationState === ValidationState.Valid;
+    /** True if this field is confirmed to be Valid. */
+    get isValid(): boolean {
+        return this.validationState === 'Valid';
     }
 
-    /** @member {boolean} - true if this field is confirmed to be NotValid. */
-    get isNotValid() {
-        return this.validationState === ValidationState.NotValid;
+    /** True if this field is confirmed to be NotValid. */
+    get isNotValid(): boolean {
+        return this.validationState === 'NotValid';
     }
 
     /**
-     * @member {boolean} - true if validation of this field is currently pending, in which case
-     *      the current state is out of date and should be considered provisional.
+     * True if validation of this field is currently pending, in which case
+     * the current state is out of date and should be considered provisional.
      */
-    get isValidationPending() {
-        return this._validationTask.isPending;
+    get isValidationPending(): boolean {
+        return this.validationTask.isPending;
     }
 
     /**
-     * @member {boolean} - true if this field requires a non-nullish (null or undefined) value,
-     *      i.e. if there is an active rule with the 'required' constraint.
+     * True if this field requires a non-nullish (null or undefined) value,
+     * i.e. if there is an active rule with the 'required' constraint.
      */
     @computed
-    get isRequired() {
+    get isRequired(): boolean {
         return this.rules.some(r => this.ruleIsActive(r) && r.check.includes(required));
     }
 
     /**
      * Recompute all validations and return true if the field is valid.
      *
-     * @param {Object} [c]
-     * @param {boolean} [c.display] - true to trigger the display of validation errors (if any)
+     * @param display - true to trigger the display of validation errors (if any)
      *      by the bound FormField component after validation is complete.
-     * @returns {Promise<boolean>}
      */
     @action
-    async validateAsync({display = true} = {}) {
+    async validateAsync(opts: {display?: boolean} = {}): Promise<boolean> {
+        const {display = true} = opts;
         await this.computeValidationAsync();
         if (display) this.displayValidation();
         return this.isValid;
@@ -313,13 +318,12 @@ export class BaseFieldModel extends HoistModel {
     //------------------------
     // Implementation
     //------------------------
-
     // Used by the dynamic FormModel.values proxy to dynamically navigate forms data by name.
     getDataOrProxy() {
         return this.value;
     }
 
-    processRuleSpecs(ruleSpecs) {
+    private processRuleSpecs(ruleSpecs: RuleLike[]): Rule[] {
         return ruleSpecs.map(spec => {
             if (spec instanceof Rule) return spec;
             if (isFunction(spec)) return new Rule({check: spec});
@@ -327,23 +331,23 @@ export class BaseFieldModel extends HoistModel {
         });
     }
 
-    async computeValidationAsync() {
-        await this.evaluateAsync().linkTo(this._validationTask);
+    private async computeValidationAsync(): Promise<ValidationState> {
+        await this.evaluateAsync().linkTo(this.validationTask);
         return this.validationState;
     }
 
-    async evaluateAsync() {
-        const runId = ++this._validationRunId;
+    private async evaluateAsync() {
+        const runId = ++this.validationRunId;
         const promises = this.rules.map(async (rule, idx) => {
             const result = await this.evaluateRuleAsync(rule);
-            if (runId === this._validationRunId) {
+            if (runId === this.validationRunId) {
                 runInAction(() => this._errors[idx] = result);
             }
         });
         await Promise.all(promises);
     }
 
-    async evaluateRuleAsync(rule) {
+    private async evaluateRuleAsync(rule) : Promise<string[]> {
         if (this.ruleIsActive(rule)) {
             const promises = rule.check.map(async (constraint) => {
                 const {value, name, displayName} = this,
@@ -358,18 +362,17 @@ export class BaseFieldModel extends HoistModel {
         return [];
     }
 
-    ruleIsActive(rule) {
+    private ruleIsActive(rule: Rule) {
         if (!this.formModel) return false;
         const {when} = rule;
         return !when || when(this, this.formModel.values);
     }
 
-    deriveValidationState() {
-        const VS = ValidationState;
+    protected deriveValidationState(): ValidationState {
         const {_errors} = this;
 
-        if (_errors.some(e => !isEmpty(e))) return VS.NotValid;
-        if (_errors.some(e => isNil(e))) return VS.Unknown;
-        return VS.Valid;
+        if (_errors.some(e => !isEmpty(e))) return 'NotValid';
+        if (_errors.some(e => isNil(e))) return 'Unknown';
+        return 'Valid';
     }
 }

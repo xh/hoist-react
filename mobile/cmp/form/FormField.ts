@@ -5,9 +5,9 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
-import {FieldModel, FormContext} from '@xh/hoist/cmp/form';
+import {FieldModel, FormContext, FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, ModelPublishMode, uses, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, uses, XH} from '@xh/hoist/core';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
@@ -16,9 +16,13 @@ import {errorIf, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
-import PT from 'prop-types';
-import {Children, cloneElement, useContext} from 'react';
+import {Children, cloneElement, ReactNode, useContext} from 'react';
 import './FormField.scss';
+
+
+export interface FormFieldProps extends BaseFormFieldProps {
+}
+
 
 /**
  * Standardised wrapper around a HoistInput component for use in a form. FormField provides
@@ -44,7 +48,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
     className: 'xh-form-field',
     model: uses(FieldModel, {
         fromContext: false,
-        publishMode: ModelPublishMode.NONE,
+        publishMode: 'none',
         optional: true
     }),
 
@@ -148,47 +152,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
     }
 });
 
-FormField.propTypes = {
-
-    /**
-     * CommitOnChange property for underlying HoistInput (for inputs that support).
-     * Defaulted from containing Form.
-     */
-    commitOnChange: PT.bool,
-
-    /** True to disable user interaction. Defaulted from backing FieldModel. */
-    disabled: PT.bool,
-
-    /** Property name on bound FormModel from which to read/write data. */
-    field: PT.string,
-
-    /** Additional description or info to be displayed alongside the input control. */
-    info: PT.node,
-
-    /**
-     * Label for form field. Defaults to Field displayName. Set to null to hide.
-     * Can be defaulted from contained Form (specifically, to null to hide all labels).
-     */
-    label: PT.node,
-
-    /**
-     * Apply minimal styling - validation errors are only displayed with a red outline.
-     * Defaulted from containing Form, or false.
-     */
-    minimal: PT.bool,
-
-    /**
-     * Optional function for use in readonly mode. Called with the Field's current value and should
-     * return an element suitable for presentation to the end-user. Defaulted from containing Form.
-     */
-    readonlyRenderer: PT.func,
-
-    /** The indicator to display next to a required field. Defaults to `*`. */
-    requiredIndicator: PT.string
-};
-
-
-const readonlyChild = hoistCmp.factory({
+const readonlyChild = hoistCmp.factory<Partial<HoistProps>>({
     model: false,
 
     render({model, readonlyRenderer}) {
@@ -197,8 +161,7 @@ const readonlyChild = hoistCmp.factory({
     }
 });
 
-
-const editableChild = hoistCmp.factory({
+const editableChild = hoistCmp.factory<Partial<FormFieldProps>>({
     model: false,
 
     render({model, child, childIsSizeable, disabled, commitOnChange, width, height, flex}) {
@@ -206,11 +169,11 @@ const editableChild = hoistCmp.factory({
             {propTypes} = child.type;
 
         // Overrides -- be sure not to clobber selected properties on child
-        const overrides = {
+        const overrides: Partial<FormFieldProps> = {
             model,
             bind: 'value',
             disabled: props.disabled || disabled,
-            ref: composeRefs(model?._boundInputRef, child.ref)
+            ref: composeRefs(model?.boundInputRef, child.ref)
         };
 
         // If FormField is sized and item doesn't specify its own dimensions,
@@ -257,7 +220,7 @@ function getValidChild(children) {
     return child;
 }
 
-function defaultReadonlyRenderer(value) {
+function defaultReadonlyRenderer(value): ReactNode {
     if (isLocalDate(value)) return fmtDate(value);
     if (isDate(value)) return fmtDateTime(value);
     if (isFinite(value)) return fmtNumber(value);
@@ -265,7 +228,7 @@ function defaultReadonlyRenderer(value) {
     return span(value != null ? value.toString() : null);
 }
 
-function defaultProp(name, props, formContext, defaultVal) {
+function defaultProp(name: string, props: Partial<FormFieldProps>, formContext: FormContextType, defaultVal: any): any {
     const fieldDefault = formContext.fieldDefaults ? formContext.fieldDefaults[name] : null;
     return withDefault(props[name], fieldDefault, defaultVal);
 }
