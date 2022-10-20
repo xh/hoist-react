@@ -5,14 +5,14 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {switchInput} from '@xh/hoist/desktop/cmp/input';
+import {switchInput, SwitchInputProps} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 
 interface AutoRefreshAppOptionSpec {
     /** Props for nested FormField - todo: replace with FormFieldProps */
     formFieldProps?: Record<string, any>,
-    /** Props for nested SwitchInput - todo: replace with SwitchInputProps */
-    inputProps?: Record<string, any>
+    /** Props for nested SwitchInput */
+    inputProps?: SwitchInputProps
 }
 
 /**

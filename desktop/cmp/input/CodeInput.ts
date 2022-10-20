@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, managed, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -36,8 +36,72 @@ import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/dracula.css';
 import {compact, defaultsDeep, isEqual, isFunction} from 'lodash';
 import {findDOMNode} from 'react-dom';
-import PT from 'prop-types';
+import {ReactElement} from 'react';
 import './CodeInput.scss';
+
+export interface CodeInputProps extends HoistInputProps<CodeInputModel> {
+    /** True to focus the control on render. */
+    autoFocus?: boolean,
+
+    /** True to commit on every change/keystroke, default false. */
+    commitOnChange?: boolean,
+
+    /**
+     * Configuration object with any properties supported by the CodeMirror API.
+     * @see {@link https://codemirror.net/doc/manual.html#api_configuration|CodeMirror Docs}
+     */
+    editorProps?: Record<string, any>,
+
+    /**
+     * True to enable case-insensitive searching within the input. Default false, except in
+     * fullscreen mode, where search will be shown unless explicitly *disabled*. Note that
+     * enabling search forces the display of a toolbar, regardless of `showToolbar` prop.
+     */
+    enableSearch?: boolean,
+
+    /**
+     * Callback to autoformat the code. Given the unformatted code, this should return a
+     * properly-formatted copy.
+     */
+    formatter: (str: string) => string,
+
+    /**
+     * A CodeMirror linter to provide error detection and hinting in the gutter.
+     */
+    linter: (text: string) => any[],
+
+    /**
+     * A CodeMirror language mode - default none (plain-text). See the CodeMirror docs
+     * ({@link https://codemirror.net/mode/}) regarding available modes.
+     * Applications must import any mode they wish to enable.
+     */
+    mode?: string
+
+    /**
+     * True to prevent user modification of editor contents, while still allowing user to
+     * focus, select, and copy contents.
+     */
+    readonly?: boolean,
+
+    /** True to display a copy button at bottom-right of input. */
+    showCopyButton?: boolean,
+
+    /**
+     * True (default) to display autoformat button at bottom-right of input. Requires a
+     * `formatter` to be configured and content to be editable (!readonly, !disabled).
+     */
+    showFormatButton?: boolean,
+
+    /** True (default) to display fullscreen button at bottom-right of input. */
+    showFullscreenButton?: boolean,
+
+    /**
+     * True to display action buttons and/or find functionality in a dedicated bottom toolbar.
+     * Default is false unless enableSearch==true or in fullscreen mode. When false, enabled
+     * action buttons show only when the input focused and float in the bottom-right corner.
+     */
+    showToolbar?: boolean
+}
 
 /**
  * Code-editor style input, powered by CodeMirror. Displays a gutter with line numbers, mono-spaced
@@ -49,77 +113,14 @@ import './CodeInput.scss';
  * TODO - understanding sizing spec / requirements for component vs. generated CodeMirror.
  * Reconcile LayoutSupport with width/height props. https://github.com/xh/hoist-react/issues/327
  */
-export const [CodeInput, codeInput] = hoistCmp.withFactory({
+export const [CodeInput, codeInput] = hoistCmp.withFactory<CodeInputProps>({
     displayName: 'CodeInput',
     className: 'xh-code-input',
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, CodeInputModel);
     }
 });
-CodeInput.propTypes = {
-    ...HoistInputPropTypes,
-
-    /** True to focus the control on render. */
-    autoFocus: PT.bool,
-
-    /** True to commit on every change/keystroke, default false. */
-    commitOnChange: PT.bool,
-
-    /**
-     * Configuration object with any properties supported by the CodeMirror API.
-     * @see {@link https://codemirror.net/doc/manual.html#api_configuration|CodeMirror Docs}
-     */
-    editorProps: PT.object,
-
-    /**
-     * True to enable case-insensitive searching within the input. Default false, except in
-     * fullscreen mode, where search will be shown unless explicitly *disabled*. Note that
-     * enabling search forces the display of a toolbar, regardless of `showToolbar` prop.
-     */
-    enableSearch: PT.bool,
-
-    /**
-     * Callback to autoformat the code. Given the unformatted code, this should return a
-     * properly-formatted copy.
-     */
-    formatter: PT.func,
-
-    /** A CodeMirror linter to provide error detection and hinting in the gutter. */
-    linter: PT.func,
-
-    /**
-     * A CodeMirror language mode - default none (plain-text). See the CodeMirror docs
-     * ({@link https://codemirror.net/mode/}) regarding available modes.
-     * Applications must import any mode they wish to enable.
-     */
-    mode: PT.string,
-
-    /**
-     * True to prevent user modification of editor contents, while still allowing user to
-     * focus, select, and copy contents.
-     */
-    readonly: PT.bool,
-
-    /** True to display a copy button at bottom-right of input. */
-    showCopyButton: PT.bool,
-
-    /**
-     * True (default) to display autoformat button at bottom-right of input. Requires a
-     * `formatter` to be configured and content to be editable (!readonly, !disabled).
-     */
-    showFormatButton: PT.bool,
-
-    /** True (default) to display fullscreen button at bottom-right of input. */
-    showFullscreenButton: PT.bool,
-
-    /**
-     * True to display action buttons and/or find functionality in a dedicated bottom toolbar.
-     * Default is false unless enableSearch==true or in fullscreen mode. When false, enabled
-     * action buttons show only when the input focused and float in the bottom-right corner.
-     */
-    showToolbar: PT.bool
-};
-CodeInput.hasLayoutSupport = true;
+(CodeInput as any).hasLayoutSupport = true;
 
 //------------------------------
 // Implementation
@@ -127,44 +128,45 @@ CodeInput.hasLayoutSupport = true;
 class CodeInputModel extends HoistInputModel {
     xhImpl = true;
 
-    /** @member {ModalSupportModel} */
-    @managed modalSupportModel = new ModalSupportModel();
+    @managed modalSupportModel: ModalSupportModel = new ModalSupportModel();
 
-    /** @member {CodeMirror} - a CodeMirror editor instance. */
-    editor;
+    /** A CodeMirror editor instance. */
+    editor: any;
 
     // Support for internal search feature.
     cursor = null;
-    @bindable query = '';
-    @observable currentMatchIdx = -1;
+    @bindable query: string = '';
+    @observable currentMatchIdx: number = -1;
     @observable.ref matches = [];
-    get matchCount() {return this.matches.length}
+    get matchCount(): number {return this.matches.length}
 
-    get fullScreen() {
+    get fullScreen(): boolean {
         return this.modalSupportModel.isModal;
     }
 
-    get commitOnChange() {return withDefault(this.componentProps.commitOnChange, true)}
+    get showCopyButton(): boolean {
+        return withDefault(this.componentProps.showCopyButton, false);
+    }
 
-    get showCopyButton() {return withDefault(this.componentProps.showCopyButton, false)}
+    get showFullscreenButton(): boolean {
+        return withDefault(this.componentProps.showFullscreenButton, true);
+    }
 
-    get showFullscreenButton() {return withDefault(this.componentProps.showFullscreenButton, true)}
-
-    get showFormatButton() {
+    get showFormatButton(): boolean {
         const {disabled, readonly, formatter, showFormatButton} = this.componentProps;
         return (!disabled && !readonly && isFunction(formatter) && withDefault(showFormatButton, true));
     }
 
-    get showAnyActionButtons() {
+    get showAnyActionButtons(): boolean {
         const {showCopyButton, showFormatButton, showFullscreenButton} = this;
         return showCopyButton || showFormatButton || showFullscreenButton;
     }
 
-    get showSearchInput() {
+    get showSearchInput(): boolean {
         return withDefault(this.componentProps.enableSearch, this.fullScreen);
     }
 
-    get showToolbar() {
+    get showToolbar(): boolean {
         const {componentProps, showSearchInput, showAnyActionButtons, fullScreen} = this;
         // Always show if showing searchInput - it's the only place searchInput can live.
         if (showSearchInput) return true;
@@ -174,7 +176,7 @@ class CodeInputModel extends HoistInputModel {
         return (fullScreen && showAnyActionButtons && componentProps.showToolbar !== false);
     }
 
-    get actionButtons() {
+    get actionButtons(): ReactElement[] {
         const {showCopyButton, showFormatButton, showFullscreenButton, editor} = this;
         return compact([
             showCopyButton ? clipboardButton({
@@ -196,16 +198,20 @@ class CodeInputModel extends HoistInputModel {
         ]);
     }
 
-    blur() {
+    override get commitOnChange(): boolean {
+        return withDefault(this.componentProps.commitOnChange, true);
+    }
+
+    override blur() {
         this.editor?.execCommand('undoSelection');
         this.editor?.getInputField().blur();
     }
 
-    focus() {
+    override focus() {
         this.editor?.focus();
     }
 
-    select() {
+    override select() {
         this.editor?.execCommand('selectAll');
     }
 
@@ -258,7 +264,6 @@ class CodeInputModel extends HoistInputModel {
             debounce: 300
         });
     }
-
 
     manageCodeEditor = (textAreaComp) => {
         if (textAreaComp) {
@@ -434,7 +439,7 @@ class CodeInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory(
+const cmp = hoistCmp.factory<CodeInputModel>(
     ({model, className, ...props}, ref) => {
         return box({
             className: 'xh-code-input__outer-wrapper',
@@ -455,7 +460,7 @@ const cmp = hoistCmp.factory(
     }
 );
 
-const inputCmp = hoistCmp.factory(
+const inputCmp = hoistCmp.factory<CodeInputModel>(
     ({model, ...props}, ref) => vbox({
         items: [
             div({
@@ -475,10 +480,9 @@ const inputCmp = hoistCmp.factory(
     })
 );
 
-const toolbarCmp = hoistCmp.factory(
+const toolbarCmp = hoistCmp.factory<CodeInputModel>(
     ({model}) => {
         const {actionButtons, showSearchInput, fullScreen} = model;
-
         return toolbar({
             className: 'xh-code-input__toolbar',
             compact: !fullScreen,
@@ -491,10 +495,9 @@ const toolbarCmp = hoistCmp.factory(
     }
 );
 
-const searchInputCmp = hoistCmp.factory(
+const searchInputCmp = hoistCmp.factory<CodeInputModel>(
     ({model}) => {
         const {query, cursor, currentMatchIdx, matchCount, fullScreen} = model;
-
         return fragment(
             // Frame wrapper added due to issues with textInput not supporting all layout props as it should.
             frame({
@@ -550,10 +553,9 @@ const searchInputCmp = hoistCmp.factory(
     }
 );
 
-const actionButtonsCmp = hoistCmp.factory(
+const actionButtonsCmp = hoistCmp.factory<CodeInputModel>(
     ({model}) => {
         const {hasFocus, actionButtons} = model;
-
         return (hasFocus && actionButtons.length) ?
             hbox({
                 className: 'xh-code-input__action-buttons',

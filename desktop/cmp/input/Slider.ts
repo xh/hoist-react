@@ -4,81 +4,80 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box} from '@xh/hoist/cmp/layout';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, Some} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {rangeSlider as bpRangeSlider, slider as bpSlider} from '@xh/hoist/kit/blueprint';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isArray} from 'lodash';
-import PT from 'prop-types';
+import {ReactNode} from 'react';
 import './Slider.scss';
 
-/**
- * A slider input to edit either a single number or an array of two (for a range).
- */
-export const [Slider, slider] = hoistCmp.withFactory({
-    displayName: 'Slider',
-    className: 'xh-slider',
-    render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, SliderInputModel);
-    }
-});
-Slider.propTypes = {
-    ...HoistInputPropTypes,
-    value: PT.oneOfType([PT.number, PT.arrayOf(PT.number)]),
+export interface SliderProps extends HoistInputProps<SliderInputModel> {
+    value?: Some<number>,
 
     /** Maximum value */
-    max: PT.number,
+    max?: number,
 
     /** Minimum value */
-    min: PT.number,
+    min?: number,
 
     /**
      * Callback to render each label, passed the number value for that label point.
      * If true, labels will use number value formatted to labelStepSize decimal places.
      * If false, labels will not be shown.
      */
-    labelRenderer: PT.oneOfType([PT.bool, PT.func]),
+    labelRenderer?: boolean|((value: number) => ReactNode),
 
     /** Increment between successive labels. Must be greater than zero. Defaults to 1. */
-    labelStepSize: PT.number,
+    labelStepSize?: number,
 
     /** Increment between values. Must be greater than zero. Defaults to 1. */
-    stepSize: PT.number,
+    stepSize?: number,
 
     /**
      * True to render a solid bar between min and current values (for simple slider) or between
      * handles (for range slider). Defaults to true.
      */
-    showTrackFill: PT.bool,
+    showTrackFill?: boolean,
 
     /** True to render in a vertical orientation. */
-    vertical: PT.bool
-};
-Slider.hasLayoutSupport = true;
+    vertical?: boolean
+}
+
+/**
+ * A slider input to edit either a single number or an array of two (for a range).
+ */
+export const [Slider, slider] = hoistCmp.withFactory<SliderProps>({
+    displayName: 'Slider',
+    className: 'xh-slider',
+    render(props, ref) {
+        return useHoistInputModel(cmp, props, ref, SliderInputModel);
+    }
+});
+(Slider as any).hasLayoutSupport = true;
 
 
 //-----------------------
 // Implementation
 //-----------------------
 class SliderInputModel extends HoistInputModel {
+    get sliderHandle(): HTMLElement {
+        return this.domEl?.querySelector('.bp4-slider-handle');
+    }
 
-    blur() {
+    override blur() {
         this.sliderHandle?.blur();
     }
 
-    focus() {
+    override focus() {
         this.sliderHandle?.focus();
-    }
-
-    get sliderHandle() {
-        return this.domEl?.querySelector('.bp4-slider-handle');
     }
 }
 
-const cmp = hoistCmp.factory(
+const cmp = hoistCmp.factory<SliderProps>(
     ({model, className, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props),
             sliderType = isArray(model.renderValue) ? bpRangeSlider : bpSlider;

@@ -4,41 +4,40 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {switchControl} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import PT from 'prop-types';
+import {ReactNode} from 'react';
 import './SwitchInput.scss';
+
+export interface SwitchInputProps extends HoistInputProps<SwitchInputModel> {
+    value?: boolean,
+
+    /** True if the control should appear as an inline element (defaults to true). */
+    inline?: boolean,
+
+    /**
+     * Label displayed adjacent to the control itself.
+     * Can be used with or without an additional overall label as provided by FormField.
+     */
+    label?: string|ReactNode,
+
+    /** Placement of the inline label relative to the control itself, default right. */
+    labelSide?: 'left'|'right'
+}
 
 /**
  * Switch (toggle) control for non-nullable boolean values.
  */
-export const [SwitchInput, switchInput] = hoistCmp.withFactory({
+export const [SwitchInput, switchInput] = hoistCmp.withFactory<SwitchInputProps>({
     displayName: 'SwitchInput',
     className: 'xh-switch-input',
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, SwitchInputModel);
     }
 });
-SwitchInput.propTypes = {
-    ...HoistInputPropTypes,
-
-    value: PT.bool,
-
-    /** True if the control should appear as an inline element (defaults to true). */
-    inline: PT.bool,
-
-    /**
-     * Label displayed adjacent to the control itself.
-     * Can be used with or without an additional overall label as provided by FormField.
-     */
-    label: PT.oneOfType([PT.string, PT.element]),
-
-    /** Placement of the inline label relative to the control itself, default right. */
-    labelSide: PT.oneOf(['left', 'right'])
-};
 
 //-----------------------
 // Implementation
@@ -47,7 +46,7 @@ class SwitchInputModel extends HoistInputModel {
     // Class defined for debug / labelling purposes - no overrides needed.
 }
 
-const cmp = hoistCmp.factory(
+const cmp = hoistCmp.factory<SwitchInputProps>(
     ({model, className, ...props}, ref) => {
         const labelSide = withDefault(props.labelSide, 'right');
 

@@ -9,18 +9,20 @@ import '@xh/hoist/desktop/register';
 import * as codemirror from 'codemirror';
 import 'codemirror/mode/javascript/javascript';
 import {fmtJson} from '@xh/hoist/format';
-import {CodeInput, codeInput} from './CodeInput';
+import {codeInput, CodeInputProps} from './CodeInput';
 import {jsonlint} from './impl/jsonlint';
+
+export type JsonInputProps = CodeInputProps;
 
 /**
  * Code-editor style input for editing and validating JSON, powered by CodeMirror.
  */
-export const [JsonInput, jsonInput] = hoistCmp.withFactory({
+export const [JsonInput, jsonInput] = hoistCmp.withFactory<JsonInputProps>({
     displayName: 'JsonInput',
     className: 'xh-json-input',
     render(props, ref) {
         return codeInput({
-            linter,
+            linter: linter,
             formatter: fmtJson,
             mode: 'application/json',
             ...props,
@@ -28,13 +30,12 @@ export const [JsonInput, jsonInput] = hoistCmp.withFactory({
         });
     }
 });
-JsonInput.propTypes = CodeInput.propTypes;
-JsonInput.hasLayoutSupport = true;
+(JsonInput as any).hasLayoutSupport = true;
 
 //----------------------
 // Implementation
 //-----------------------
-function linter(text) {
+function linter(text: string) {
     const errors = [];
     if (!text) return errors;
 

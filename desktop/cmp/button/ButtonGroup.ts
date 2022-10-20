@@ -4,13 +4,13 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, HoistProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {CSSProperties} from 'react';
 
-export interface ButtonGroupProps extends HoistProps {
+export interface ButtonGroupProps<M extends HoistModel = null> extends HoistProps<M> {
     /** True to have all buttons fill available width equally. */
     fill?: boolean,
 

@@ -4,12 +4,12 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, useLocalModel} from '@xh/hoist/core';
+import {ElemFactory, HoistModel, HoistModelClass, HoistProps, useLocalModel} from '@xh/hoist/core';
 import {FieldModel} from '@xh/hoist/cmp/form';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {isEqual} from 'lodash';
-import {useImperativeHandle} from 'react';
+import {ForwardedRef, ReactElement, ReactInstance, useImperativeHandle} from 'react';
 import {findDOMNode} from 'react-dom';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import './HoistInput.scss';
@@ -57,17 +57,11 @@ import './HoistInput.scss';
  */
 export class HoistInputModel extends HoistModel {
 
-    /**
-     * Does this input have the focus?
-     * @type {boolean}
-     */
-    @observable hasFocus = false;
+    /** Does this input have the focus? */
+    @observable hasFocus: boolean = false;
 
-    /**
-     * Field (if any) associated with this control.
-     * @member {FieldModel}
-     */
-    getField() {
+    /** Field (if any) associated with this control. */
+    getField(): FieldModel {
         const {model} = this;
         return model instanceof FieldModel ? model : null;
     }
@@ -77,13 +71,11 @@ export class HoistInputModel extends HoistModel {
      *
      * HoistInput implementations should implement this by placing the `domRef` ref on the
      * root of the rendered component sub-tree.
-     *
-     * @member {Element}
      */
-    get domEl() {
-        const {current} = this.domRef;
+    get domEl(): HTMLElement {
+        const current = this.domRef.current as ReactInstance;
         // eslint-disable-next-line no-undef
-        return (!current || current instanceof Element) ? current : findDOMNode(current);
+        return (!current || current instanceof Element ? current : findDOMNode(current)) as HTMLElement;
     }
 
     /**
@@ -94,29 +86,25 @@ export class HoistInputModel extends HoistModel {
      * Implementations may target a specific input via placing the 'inputRef' ref
      * on the appropriate element during rendering.  Otherwise the dom will be
      * searched for the first rendered <input>.
-     *
-     * @returns {Element}
      */
-    get inputEl() {
-        return this.inputRef.current ?? this.domEl?.querySelector('input');
+    get inputEl(): HTMLInputElement {
+        return (this.inputRef.current ?? this.domEl?.querySelector('input')) as HTMLInputElement;
     }
 
     /**
      * Bound model, if any.
-     *
-     * @returns {HoistModel}
      */
-    get model() {
+    get model(): HoistModel {
         return this.componentProps.model;
     }
 
     //-----------------------
     // Implementation State
     //------------------------
-    @observable.ref internalValue = null;    // Cached internal value
-    inputRef = createObservableRef();        // ref to internal <input> element, if any
-    domRef = createObservableRef();          // ref to outermost element, or class Component.
-    isDirty = false;
+    @observable.ref internalValue: any = null;          // Cached internal value
+    inputRef = createObservableRef<HTMLInputElement>(); // ref to internal <input> element, if any
+    domRef = createObservableRef<HTMLElement>();        // ref to outermost element, or class Component.
+    isDirty: boolean = false;
 
     constructor() {
         super();
@@ -155,13 +143,13 @@ export class HoistInputModel extends HoistModel {
      * True if this input should commit immediately when its value is changed.
      * Components can/do provide a prop to override this value.
      */
-    get commitOnChange() {
+    get commitOnChange(): boolean {
         return true;
     }
 
     /** The value to be rendered internally by control. **/
     @computed
-    get renderValue() {
+    get renderValue(): any {
         return this.hasFocus ?
             this.internalValue :
             this.internalFromExternal();
@@ -172,7 +160,7 @@ export class HoistInputModel extends HoistModel {
      * For bound controls, this is the most recent value committed to the Model.
      */
     @computed
-    get externalValue() {
+    get externalValue(): any {
         const {value, bind} = this.componentProps,
             {model} = this;
         if (model && bind) {
@@ -182,7 +170,7 @@ export class HoistInputModel extends HoistModel {
     }
 
     @action
-    setInternalValue(val) {
+    setInternalValue(val: any) {
         if (isEqual(val, this.internalValue)) return;
         this.internalValue = val;
     }
@@ -191,7 +179,7 @@ export class HoistInputModel extends HoistModel {
      * Set normalized internal value and fire associated change events.
      * This is the primary method for HoistInput implementations to call on value change.
      */
-    noteValueChange(val) {
+    noteValueChange(val: any) {
         this.isDirty = true;
         const {onChange} = this.componentProps,
             oldVal = this.internalValue;
@@ -211,12 +199,12 @@ export class HoistInputModel extends HoistModel {
     }
 
     /** Hook to convert an internal representation of the value to an appropriate external one. */
-    toExternal(internal) {
+    toExternal(internal: any) {
         return internal;
     }
 
     /** Hook to convert an external representation of the value to an appropriate internal one. */
-    toInternal(external) {
+    toInternal(external: any) {
         return external;
     }
 
@@ -239,9 +227,9 @@ export class HoistInputModel extends HoistModel {
         this.hasFocus = false;
     }
 
-    onBlur = (e) => {
+    onBlur = (e: MouseEvent) => {
         // Ignore focus jumping internally from *within* the control.
-        if (!this.containsElement(e.relatedTarget)) {
+        if (!this.containsElement(e.relatedTarget as HTMLElement)) {
             this.noteBlurred();
         }
     };
@@ -264,11 +252,11 @@ export class HoistInputModel extends HoistModel {
     //----------------------
     // Implementation
     //------------------------
-    isValid(externalValue) {
+    isValid(externalValue: any) {
         return true;
     }
 
-    internalFromExternal() {
+    internalFromExternal(): any {
         const ret = this.toInternal(this.externalValue);
 
         // keep references consistent (to prevent unwanted renders)
@@ -277,7 +265,7 @@ export class HoistInputModel extends HoistModel {
         return ret;
     }
 
-    externalFromInternal() {
+    externalFromInternal(): any {
         return this.toExternal(this.internalValue);
     }
 
@@ -318,7 +306,7 @@ export class HoistInputModel extends HoistModel {
         if (onCommit) onCommit(newValue, currentValue);
     }
 
-    containsElement(elem) {
+    containsElement(elem: HTMLElement) {
         const {domEl} = this;
         if (domEl) {
             while (elem) {
@@ -331,19 +319,23 @@ export class HoistInputModel extends HoistModel {
 }
 
 /**
- *  Hook to render a display component with a HoistInputModel in context.
+ * Hook to render a display component with a HoistInputModel in context.
  *
- *  Places model in context and composes appropriate
- *  CSS class names for current model state.
+ * Places model in context and composes appropriate
+ * CSS class names for current model state.
  *
- * @param {function} component - react component to render
- * @param {Object} props - props passed to containing component
+ * @param component - react component to render
+ * @param props - props passed to containing component
  * @param {Object} ref - forwardRef passed to containing component
- * @param {Class} [modelSpec] - specify to use particular subclass of HoistInputModel
- * @returns {element} - react element to be rendered
+ * @param {Class} modelSpec - specify to use particular subclass of HoistInputModel
  */
-export function useHoistInputModel(component, props, ref, modelSpec = HoistInputModel) {
-    const inputModel = useLocalModel(modelSpec);
+export function useHoistInputModel(
+    component: ElemFactory,
+    props: HoistProps,
+    ref: ForwardedRef<any>,
+    modelSpec?: HoistModelClass<HoistInputModel>
+): ReactElement {
+    const inputModel = useLocalModel<HoistInputModel>(modelSpec ?? HoistInputModel);
 
     useImperativeHandle(ref, () => inputModel);
 
